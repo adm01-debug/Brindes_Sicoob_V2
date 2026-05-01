@@ -268,7 +268,12 @@ export function Header({ onMenuToggle, searchQuery, onSearchChange }: HeaderProp
               >
                 <div className="relative">
                   <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center ring-2 ring-background shadow-md">
-                    {profile?.avatar_url ? (
+                    {currentOrg?.logo_url ? (
+                      <img
+                        src={currentOrg.logo_url}
+                        alt={currentOrg.name}
+                        className="w-8 h-8 rounded-full object-cover" loading="lazy" />
+                    ) : profile?.avatar_url ? (
                       <img
                         src={profile.avatar_url}
                         alt={displayName}
