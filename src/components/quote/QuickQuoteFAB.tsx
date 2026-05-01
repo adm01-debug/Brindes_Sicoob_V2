@@ -94,7 +94,7 @@ export function QuickQuoteFAB({ productId, productName }: QuickQuoteFABProps) {
   }, [bridgeOpen, expertOpen, pendingMessage]);
 
   // Don't show on certain pages
-  const hiddenPaths = ["/orcamentos/novo", "/auth", "/mockup-generator"];
+  const hiddenPaths = ["/orcamentos/novo", "/login", "/mockup-generator"];
   if (hiddenPaths.some((path) => location.pathname.startsWith(path))) {
     return null;
   }
