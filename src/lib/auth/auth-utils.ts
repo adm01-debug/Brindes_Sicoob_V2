@@ -8,11 +8,11 @@ export function getGreeting(): string {
 }
 
 export const FLOW_GREETINGS = [
-  "{greeting}, {name}! Que bom te ver! Estou pronto pra te ajudar a vender mais hoje. \ud83d\ude80",
-  "{greeting}, {name}! J\u00e1 separei algumas novidades do cat\u00e1logo pra voc\u00ea! \ud83d\ude0e",
-  "E a\u00ed, {name}! Bora fazer acontecer! Estou aqui sempre que precisar. \ud83d\udcaa",
-  "{greeting}, {name}! Tenho insights fresquinhos esperando por voc\u00ea! \u2728",
-  "Fala, {name}! Pronto pra mais um dia de vendas incr\u00edveis? \ud83c\udfaf",
+  "{greeting}, {name}! Bem-vindo ao Portal de Compras Sicoob. \ud83d\ude80",
+  "{greeting}, {name}! J\u00e1 separei alguns materiais importantes pra voc\u00ea! \ud83d\ude0e",
+  "Ol\u00e1, {name}! Como posso ajudar sua cooperativa hoje? \ud83d\udcaa",
+  "{greeting}, {name}! Temos novidades no cat\u00e1logo Sicoob esperando por voc\u00ea! \u2728",
+  "Fala, {name}! Pronto para otimizar as compras da cooperativa? \ud83c\udfaf",
 ];
 
 export function getRandomGreeting(name: string): string {

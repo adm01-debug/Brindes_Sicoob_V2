@@ -111,7 +111,7 @@ export function Header({ onMenuToggle, searchQuery, onSearchChange }: HeaderProp
           <Button
             variant="ghost"
             size="icon"
-            className="lg:hidden hover:bg-primary/10 hover:text-primary h-8 w-8 sm:h-9 sm:w-9"
+            className="lg:hidden hover:bg-[#7DB61C]/10 hover:text-[#7DB61C] h-8 w-8 sm:h-9 sm:w-9"
             onClick={onMenuToggle}
            aria-label="Menu"><Menu className="h-5 w-5" />
           </Button>
@@ -135,7 +135,7 @@ export function Header({ onMenuToggle, searchQuery, onSearchChange }: HeaderProp
           <Button
             variant="ghost"
             size="icon" aria-label="Buscar"
-            className="md:hidden h-8 w-8 hover:bg-primary/10 hover:text-primary"
+            className="md:hidden h-8 w-8 hover:bg-[#7DB61C]/10 hover:text-[#7DB61C]"
             onClick={() => {
               const event = new KeyboardEvent('keydown', { key: 'k', ctrlKey: true });
               document.dispatchEvent(event);
