@@ -439,7 +439,7 @@ export function DevAccessDeniedPage({
               >
                 <a
                   href={`mailto:${DEV_ACCESS_CONTACT_EMAIL}?subject=${encodeURIComponent(
-                    `[Promo Gifts] Acesso técnico — ${blockedPath}`,
+                    `[Brindes Sicoob] Acesso técnico — ${blockedPath}`,
                   )}`}
                 >
                   <Mail className="h-4 w-4 mr-2" />
@@ -459,7 +459,7 @@ export function DevAccessDeniedPage({
             >
               <a
                 href={`mailto:${DEV_ACCESS_CONTACT_EMAIL}?subject=${encodeURIComponent(
-                  `[Promo Gifts] Solicitação de acesso técnico — ${blockedPath}`,
+                  `[Brindes Sicoob] Solicitação de acesso técnico — ${blockedPath}`,
                 )}&body=${encodeURIComponent(
                   `Olá, equipe técnica.\n\nGostaria de solicitar acesso à página: ${window.location.origin}${blockedPath}\n\nMotivo: ${reason || "(não informado)"}\n\nObrigado.`,
                 )}`}

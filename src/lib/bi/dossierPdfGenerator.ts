@@ -102,7 +102,7 @@ export function generateBIDossierPDF(data: DossierData): Blob {
   doc.setFont("helvetica", "bold");
   doc.setFontSize(11);
   doc.setTextColor(255, 255, 255);
-  doc.text("PROMO GIFTS", 14, 18);
+  doc.text("BRINDES SICOOB", 14, 18);
   doc.setFont("helvetica", "normal");
   doc.setFontSize(8.5);
   doc.text("Inteligência Comercial · Business Analytic", 14, 24);

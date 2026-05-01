@@ -125,7 +125,7 @@ export default function AdminConexoesStatusPage() {
   return (
     <div className="container mx-auto max-w-6xl space-y-6 py-6">
       <PageSEO
-        title="Status da sincronização de conexões | Promo Gifts"
+        title="Status da sincronização de conexões | Brindes Sicoob"
         description="Histórico recente da sincronização de external_connections e diagnóstico de credenciais."
       />
 

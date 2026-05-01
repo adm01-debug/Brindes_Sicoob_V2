@@ -97,7 +97,7 @@ export async function exportCollectionPDF({
       doc.internal.pageSize.getHeight() - 8,
       { align: "right" }
     );
-    doc.text("Promo Gifts", 14, doc.internal.pageSize.getHeight() - 8);
+    doc.text("Brindes Sicoob", 14, doc.internal.pageSize.getHeight() - 8);
   }
 
   const fileName = `colecao-${collectionName.toLowerCase().replace(/\s+/g, "-")}.pdf`;

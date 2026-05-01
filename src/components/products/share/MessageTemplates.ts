@@ -36,7 +36,7 @@ ${product.stockStatus === "in-stock" ? "Disponibilidade: Em estoque" : "Disponib
 Ficamos à disposição para maiores informações.
 
 Atenciosamente,
-Promo Brindes`;
+Brindes Sicoob`;
     },
   },
   {
@@ -58,7 +58,7 @@ ${product.description || ""}
 📦 Qtd mínima: ${product.minQuantity} un
 ${product.stockStatus === "in-stock" ? "✅ Em estoque" : "⚠️ Consultar disponibilidade"}
 
-Promo Brindes - Brindes com Excelência!`;
+Brindes Sicoob - Brindes com Excelência!`;
     },
   },
   {
@@ -81,7 +81,7 @@ ${product.stockStatus === "in-stock" ? "🚀 PRONTA ENTREGA!" : "⏰ Consulte pr
 ⚡ Condições especiais para pedidos esta semana!
 📞 Fale conosco agora mesmo!
 
-Promo Brindes - Brindes com Excelência!`;
+Brindes Sicoob - Brindes com Excelência!`;
     },
   },
 ];

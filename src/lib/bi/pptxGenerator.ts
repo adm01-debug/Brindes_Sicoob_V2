@@ -66,7 +66,7 @@ export async function generateBIPptx({
   const pptx = new PptxGenJS();
   pptx.layout = "LAYOUT_WIDE"; // 13.33 x 7.5
   pptx.title = `Briefing BI — ${clientName}`;
-  pptx.company = "Promo Gifts";
+  pptx.company = "Brindes Sicoob";
 
   // ====================== SLIDE 1 — CAPA / HERO ======================
   const s1 = pptx.addSlide();
@@ -319,7 +319,7 @@ export async function generateBIPptx({
     { x: 0.8, y: 6.4, w: 12, h: 0.5, fontSize: 12, color: C.bgLight, italic: true, align: "center" },
   );
 
-  s5.addText("Promo Gifts · Business Analytic", {
+  s5.addText("Brindes Sicoob · Business Analytic", {
     x: 0.8, y: 7.05, w: 12, h: 0.3, fontSize: 9, color: C.muted, align: "center", charSpacing: 2,
   });
 
@@ -410,7 +410,7 @@ export async function generateBIPptx({
       fontSize: 13, color: "FFFFFF", italic: true, valign: "top",
     });
 
-    s6.addText("Promo Gifts · Business Analytic — Mapa de Categorias", {
+    s6.addText("Brindes Sicoob · Business Analytic — Mapa de Categorias", {
       x: 0.8, y: 7.05, w: 12, h: 0.3, fontSize: 9, color: C.muted, align: "center", charSpacing: 2,
     });
   }

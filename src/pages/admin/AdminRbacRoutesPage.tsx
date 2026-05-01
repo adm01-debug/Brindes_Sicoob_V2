@@ -131,7 +131,7 @@ export default function AdminRbacRoutesPage() {
   return (
     <>
       <Helmet>
-        <title>Auditoria RBAC de Rotas — Promo Gifts</title>
+        <title>Auditoria RBAC de Rotas — Brindes Sicoob</title>
         <meta
           name="description"
           content="Matriz de auditoria das rotas técnicas, papéis exigidos, guards e helpers RLS."

@@ -186,7 +186,7 @@ export function GlobalCommandBar({ children, showTrigger = false }: GlobalComman
                 <span>fechar</span>
               </span>
             </div>
-            <span className="text-primary">Promo Brindes</span>
+            <span className="text-primary">Brindes Sicoob</span>
           </div>
         </Command>
       </CommandDialog>

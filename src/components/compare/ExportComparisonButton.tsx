@@ -85,7 +85,7 @@ export function ExportComparisonButton({ products, targetSelector = "#compare-ex
       const imgHeight = (canvas.height * imgWidth) / canvas.width;
 
       pdf.setFontSize(16);
-      pdf.text("Comparação de Produtos — Promo Gifts", 10, 12);
+      pdf.text("Comparação de Produtos — Brindes Sicoob", 10, 12);
       pdf.setFontSize(9);
       pdf.text(new Date().toLocaleDateString("pt-BR"), pageWidth - 30, 12);
 

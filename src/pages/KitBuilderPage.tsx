@@ -105,7 +105,7 @@ export default function KitBuilderPage() {
 
   // Item 8 — dynamic document title
   useEffect(() => {
-    const baseTitle = 'Kit Maker · Promo Gifts';
+    const baseTitle = 'Kit Maker · Brindes Sicoob';
     document.title = kitState.name?.trim()
       ? `${kitState.name} · Kit Maker`
       : baseTitle;

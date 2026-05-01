@@ -121,7 +121,7 @@ export function useWebAuthn() {
           {
             challenge,
             rp: {
-              name: "Promo Brindes",
+              name: "Brindes Sicoob",
               id: window.location.hostname,
             },
             user: {

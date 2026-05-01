@@ -60,7 +60,7 @@ export function generateKitOgImage(input: KitOgInput): string | null {
     ctx.fillStyle = "rgba(255,255,255,0.7)";
     ctx.font = "500 22px system-ui, -apple-system, 'Segoe UI', sans-serif";
     ctx.textAlign = "right";
-    ctx.fillText("Promo Gifts", 1120, 540);
+    ctx.fillText("Brindes Sicoob", 1120, 540);
     ctx.textAlign = "left";
 
     return canvas.toDataURL("image/png");

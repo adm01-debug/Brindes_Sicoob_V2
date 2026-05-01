@@ -52,7 +52,7 @@ export function MfaEnrollmentDialog({ open, onOpenChange, enforce = false }: Mfa
 
       const { data, error } = await supabase.auth.mfa.enroll({
         factorType: "totp",
-        friendlyName: `Promo Gifts Admin · ${new Date().toLocaleDateString("pt-BR")}`,
+        friendlyName: `Brindes Sicoob Admin · ${new Date().toLocaleDateString("pt-BR")}`,
       });
       if (error) throw error;
       setFactorId(data.id);

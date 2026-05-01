@@ -288,7 +288,7 @@ export default function PublicCollectionPage() {
 
       <footer className="border-t border-border py-6 text-center text-xs text-muted-foreground">
         <Heart className="h-3 w-3 inline mr-1 text-primary" />
-        Coleção compartilhada via Promo Gifts
+        Coleção compartilhada via Brindes Sicoob
       </footer>
     </div>
   );
