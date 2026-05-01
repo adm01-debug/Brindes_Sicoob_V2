@@ -171,13 +171,13 @@ export default function Auth() {
     <main className="min-h-screen flex bg-background" role="main" aria-label="Autenticação">
       <PageSEO
         title="Login"
-        description="Acesse a plataforma Promo Gifts. Faça login para gerenciar seus orçamentos e catálogo."
+        description="Acesse o Portal de Compras Sicoob. Faça login para gerenciar seus orçamentos e materiais."
         path="/login"
         jsonLd={{
           "@context": "https://schema.org",
           "@type": "WebPage",
-          "name": "Login — Promo Gifts",
-          "description": "Página de autenticação da plataforma Promo Gifts.",
+          "name": "Login — Portal Sicoob",
+          "description": "Página de autenticação do Portal de Compras Sicoob.",
           "url": "https://criar-together-now.lovable.app/login"
         }}
       />
@@ -189,15 +189,15 @@ export default function Auth() {
         <div className="w-full max-w-md space-y-8 animate-fade-in">
           {/* Mobile Logo */}
           <div className="text-center lg:hidden space-y-3">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-xl bg-orange shadow-lg shadow-orange/30">
-              <Gift className="h-8 w-8 text-orange-foreground" />
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-xl bg-primary shadow-lg shadow-primary/30">
+              <span className="text-2xl font-bold text-primary-foreground">S</span>
             </div>
             <div>
               <h1 className="font-display text-2xl font-bold text-foreground">
-                Promo Gifts
+                Portal Sicoob
               </h1>
               <p className="text-sm text-muted-foreground">
-                Plataforma de Vendas
+                Portal de Compras
               </p>
             </div>
           </div>
@@ -300,7 +300,7 @@ export default function Auth() {
                           data-testid="login-email-input"
                           type="email"
                           placeholder="seu@email.com"
-                          className="pl-10 bg-input border-border focus:border-orange focus:ring-orange"
+                          className="pl-10 bg-input border-border focus:border-primary focus:ring-primary"
                           {...loginForm.register("email")}
                           ref={(el) => {
                             loginForm.register("email").ref(el);
@@ -324,14 +324,14 @@ export default function Auth() {
                           data-testid="login-password-input"
                           type={showPassword ? "text" : "password"}
                           placeholder="••••••••"
-                          className="pl-10 pr-10 bg-input border-border focus:border-orange focus:ring-orange"
+                          className="pl-10 pr-10 bg-input border-border focus:border-primary focus:ring-primary"
                           {...loginForm.register("password")}
                         />
                         <button
                           type="button"
                           data-testid="login-password-toggle"
                           onClick={() => setShowPassword(!showPassword)}
-                          className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-orange transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center -mr-2"
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-primary transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center -mr-2"
                           aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
                         >
                           {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -349,7 +349,7 @@ export default function Auth() {
                         type="button"
                         data-testid="login-forgot-link"
                         variant="link"
-                        className="p-0 h-auto text-sm text-orange hover:text-orange/80"
+                        className="p-0 h-auto text-sm text-primary hover:text-primary/80"
                         onClick={() => setShowForgotPassword(true)}
                       >
                         Esqueci minha senha
@@ -359,8 +359,8 @@ export default function Auth() {
                     <Button 
                       type="submit" 
                       data-testid="login-submit"
-                      variant="orange"
-                      className="w-full h-12 text-base font-semibold shadow-lg shadow-orange/25 hover:shadow-xl hover:shadow-orange/30 transition-all duration-300" 
+                      variant="default"
+                      className="w-full h-12 text-base font-semibold shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 transition-all duration-300"
                       disabled={isSubmitting}
                     >
                       {isSubmitting ? (
@@ -405,7 +405,7 @@ export default function Auth() {
           {currentIP && (
             <div className="flex items-center justify-center gap-3 mx-auto px-5 py-2.5 rounded-full bg-card/80 backdrop-blur-md border border-border/60 shadow-md max-w-fit opacity-0" style={{ animation: 'scale-fade-in 0.5s ease-out 600ms forwards' }}>
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                <Globe className="h-3.5 w-3.5 text-orange" />
+                <Globe className="h-3.5 w-3.5 text-primary" />
                 <span className="font-mono">{currentIP}</span>
               </div>
               {geoLocation && (
