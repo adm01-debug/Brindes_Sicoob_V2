@@ -57,15 +57,14 @@ export function AuthBrandingPanel() {
     <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-card via-card to-background relative overflow-hidden">
       {/* Background decoration */}
       <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute top-1/4 -left-20 w-80 h-80 bg-orange/10 rounded-full blur-3xl" />
-        <div className="absolute bottom-1/4 right-0 w-96 h-96 bg-orange/5 rounded-full blur-3xl" />
+        <div className="absolute top-1/4 -left-20 w-80 h-80 bg-primary/10 rounded-full blur-3xl" />
+        <div className="absolute bottom-1/4 right-0 w-96 h-96 bg-primary/5 rounded-full blur-3xl" />
         <div className="absolute top-1/2 left-1/3 w-64 h-64 bg-success/5 rounded-full blur-3xl" />
         {[...Array(18)].map((_, i) => {
           const size = 1 + (i % 3); const top = (i * 37 + 11) % 100; const left = (i * 53 + 7) % 100;
           const dur = 2 + (i % 4); const delay = (i * 0.3) % 2;
           return (<div key={`star-${i}`} className="absolute rounded-full bg-foreground/30" style={{ width: `${size}px`, height: `${size}px`, top: `${top}%`, left: `${left}%`, animation: `twinkle ${dur}s ease-in-out ${delay}s infinite` }} />);
         })}
-        <ContinuousRockets />
       </div>
 
       {/* Content */}
