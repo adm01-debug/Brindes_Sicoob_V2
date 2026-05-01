@@ -285,6 +285,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setNextAAL(null);
           setHasMFA(false);
           setIsLoading(false);
+          
+          // Limpeza automática de dados sensíveis da sessão
+          try {
+            sessionStorage.clear();
+            // Não limpamos localStorage.clear() para não perder o tema,
+            // mas limpamos dados de produtos/negócio específicos.
+            const keysToClear = [
+              "product-favorites",
+              "product-comparison",
+              "recently-viewed-products",
+              "duplicate_product"
+            ];
+            keysToClear.forEach(k => localStorage.removeItem(k));
+          } catch (e) {
+            console.warn("Falha ao limpar armazenamento local no logout", e);
+          }
         }
         // NÃO seta isLoading=false aqui — espera fetchUserData terminar (#5)
       }
