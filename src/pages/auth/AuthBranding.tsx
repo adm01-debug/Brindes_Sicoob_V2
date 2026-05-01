@@ -71,8 +71,12 @@ export function AuthBrandingPanel() {
       <div className="relative z-10 flex flex-col justify-center items-center px-12 xl:px-20 w-full">
         <div className="space-y-6">
           <div className="flex items-center gap-3">
-            <div className="w-14 h-14 rounded-xl bg-primary flex items-center justify-center shadow-lg shadow-primary/30">
-              <span className="text-xl font-bold text-primary-foreground">S</span>
+            <div className="w-16 h-16 rounded-2xl bg-white flex items-center justify-center shadow-xl p-2.5 border border-white/20">
+              <img 
+                src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/ca/Sicoob_logo.svg/2560px-Sicoob_logo.svg.png" 
+                alt="Sicoob" 
+                className="w-full h-full object-contain"
+              />
             </div>
             <div>
               <h1 className="font-display text-3xl font-bold text-foreground">Portal Sicoob</h1>

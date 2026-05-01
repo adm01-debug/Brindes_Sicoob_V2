@@ -189,8 +189,12 @@ export default function Auth() {
         <div className="w-full max-w-md space-y-8 animate-fade-in">
           {/* Mobile Logo */}
           <div className="text-center lg:hidden space-y-3">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-xl bg-primary shadow-lg shadow-primary/30">
-              <span className="text-2xl font-bold text-primary-foreground">S</span>
+            <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-white shadow-xl p-3 border border-border/40 mx-auto">
+              <img 
+                src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/ca/Sicoob_logo.svg/2560px-Sicoob_logo.svg.png" 
+                alt="Sicoob" 
+                className="w-full h-full object-contain"
+              />
             </div>
             <div>
               <h1 className="font-display text-2xl font-bold text-foreground">

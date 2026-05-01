@@ -108,6 +108,13 @@ export function Header({ onMenuToggle, searchQuery, onSearchChange }: HeaderProp
       <div className="flex items-center justify-between h-full px-2 sm:px-4 lg:px-6">
         {/* ══════ Left section — Menu + Âncora contextual (#1) ══════ */}
         <div className="flex items-center gap-2 sm:gap-3 min-w-0 shrink-0">
+          <div className="flex lg:hidden items-center mr-2">
+            <img 
+              src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/ca/Sicoob_logo.svg/2560px-Sicoob_logo.svg.png" 
+              alt="Sicoob" 
+              className="h-7 w-auto object-contain"
+            />
+          </div>
           <Button
             variant="ghost"
             size="icon"
