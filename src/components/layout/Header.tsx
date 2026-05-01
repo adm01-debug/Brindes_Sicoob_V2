@@ -71,12 +71,26 @@ export function Header({ onMenuToggle, searchQuery, onSearchChange }: HeaderProp
   };
 
   const handleSignOut = async () => {
-    await signOut();
-    toast({
-      title: "Até logo!",
-      description: "Você saiu da sua conta",
-    });
-    navigate("/auth");
+    try {
+      await signOut();
+      toast({
+        title: "Até logo!",
+        description: "Você saiu da sua conta",
+      });
+      // Limpeza profunda de estados locais se necessário
+      localStorage.removeItem('favorites-storage');
+      localStorage.removeItem('comparison-storage');
+      localStorage.removeItem('recently-viewed-storage');
+      
+      navigate("/login", { replace: true });
+    } catch (error) {
+      console.error("Erro ao sair:", error);
+      toast({
+        variant: "destructive",
+        title: "Erro ao sair",
+        description: "Ocorreu um problema ao tentar encerrar sua sessão.",
+      });
+    }
   };
 
   const displayName = currentOrg?.name || profile?.full_name || user?.email?.split("@")[0] || "Minha Cooperativa";
