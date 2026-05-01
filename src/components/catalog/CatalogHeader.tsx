@@ -66,7 +66,7 @@ export function CatalogHeader({
         )}
 
         <h1 className="font-display text-xl sm:text-2xl lg:text-3xl font-bold whitespace-nowrap">
-          Catálogo de Produtos
+          Catálogo de Materiais
           <span className="text-muted-foreground font-normal text-sm sm:text-base ml-2">
             · {shouldShowCatalogSkeleton
               ? "Carregando catálogo..."

@@ -21,16 +21,16 @@ export default function Index() {
   return (
     <MainLayout>
       <PageSEO
-        title="Catálogo de Produtos"
-        description="Explore nosso catálogo com mais de 15.000 brindes promocionais. Filtre por categoria, cor e preço."
+        title="Portal de Compras Sicoob - Catálogo de Materiais"
+        description="Explore o catálogo oficial do Sicoob. Materiais de papelaria, brindes e itens institucionais."
         path="/"
         jsonLd={{
           "@context": "https://schema.org",
           "@type": "CollectionPage",
-          "name": "Catálogo de Produtos Promocionais",
-          "description": "Mais de 15.000 brindes promocionais com filtros inteligentes por categoria, cor, preço e fornecedor.",
+          "name": "Catálogo de Materiais Sicoob",
+          "description": "Portal de compras centralizado para materiais e brindes do sistema Sicoob.",
           "url": "https://criar-together-now.lovable.app/",
-          "isPartOf": { "@type": "WebSite", "name": "Promo Gifts", "url": "https://criar-together-now.lovable.app" }
+          "isPartOf": { "@type": "WebSite", "name": "Sicoob", "url": "https://criar-together-now.lovable.app" }
         }}
       />
       <div>
