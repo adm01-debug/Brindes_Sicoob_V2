@@ -46,9 +46,9 @@ export const ContinuousRockets = React.forwardRef<HTMLDivElement>(function Conti
 });
 
 const FEATURES = [
-  { label: "+20.000", desc: "Produtos", icon: Package },
+  { label: "+20.000", desc: "Materiais", icon: Package },
   { label: "+100", desc: "Fornecedores", icon: Factory },
-  { label: "Filtros", desc: "Avançados", icon: SlidersHorizontal },
+  { label: "Catálogo", desc: "Inteligente", icon: SlidersHorizontal },
   { label: "IA", desc: "Assistente Pessoal", icon: Brain },
 ];
 
@@ -72,22 +72,21 @@ export function AuthBrandingPanel() {
       <div className="relative z-10 flex flex-col justify-center items-center px-12 xl:px-20 w-full">
         <div className="space-y-6">
           <div className="flex items-center gap-3">
-            <div className="w-14 h-14 rounded-xl bg-orange flex items-center justify-center shadow-lg shadow-orange/30">
-              <Gift className="h-7 w-7 text-orange-foreground" />
+            <div className="w-14 h-14 rounded-xl bg-primary flex items-center justify-center shadow-lg shadow-primary/30">
+              <span className="text-xl font-bold text-primary-foreground">S</span>
             </div>
             <div>
-              <h1 className="font-display text-3xl font-bold text-foreground">Promo Gifts</h1>
-              <p className="text-orange font-semibold uppercase tracking-widest text-sm -mt-1">Plataforma de Vendas</p>
+              <h1 className="font-display text-3xl font-bold text-foreground">Portal Sicoob</h1>
+              <p className="text-primary font-semibold uppercase tracking-widest text-sm -mt-1">Portal de Compras</p>
             </div>
           </div>
 
           <div className="space-y-4 max-w-md">
             <h2 className="text-4xl xl:text-5xl font-display font-bold text-foreground leading-tight">
-              Um Universo de Produtos, para o{" "}
-              <span className="text-orange">Melhor Time das Galáxias!</span>
+              Portal de Compras - <span className="text-primary">Sicoob</span>
             </h2>
             <p className="text-lg text-muted-foreground">
-              Tenha acesso ao maior mix de produtos personalizados, consulte estoque em tempo real, visualize locais e técnicas de personalização. Feito especialmente para você decolar!!!
+              Tenha acesso ao catálogo oficial de materiais e brindes. Consulte estoque em tempo real e personalize seus pedidos com a identidade do sistema.
             </p>
           </div>
 
@@ -95,15 +94,15 @@ export function AuthBrandingPanel() {
             {FEATURES.map((item, i) => {
               const IconComponent = item.icon;
               return (
-                <div key={i} className="p-4 rounded-xl bg-card/95 backdrop-blur-md border border-border shadow-lg hover:shadow-xl hover:border-orange/50 hover:scale-[1.02] transition-all duration-300 group opacity-0"
+                <div key={i} className="p-4 rounded-xl bg-card/95 backdrop-blur-md border border-border shadow-lg hover:shadow-xl hover:border-primary/50 hover:scale-[1.02] transition-all duration-300 group opacity-0"
                   style={{ animation: `scale-fade-in 0.5s ease-out ${300 + i * 150}ms forwards` }}>
                   <div className="flex items-start justify-between">
                     <div>
-                      <p className="text-2xl font-bold text-orange">{item.label}</p>
+                      <p className="text-2xl font-bold text-primary">{item.label}</p>
                       <p className="text-sm font-medium text-foreground">{item.desc}</p>
                     </div>
-                    <div className="w-11 h-11 rounded-xl bg-orange/15 flex items-center justify-center group-hover:bg-orange/25 transition-colors">
-                      <IconComponent className="h-5 w-5 text-orange" />
+                    <div className="w-11 h-11 rounded-xl bg-primary/15 flex items-center justify-center group-hover:bg-primary/25 transition-colors">
+                      <IconComponent className="h-5 w-5 text-primary" />
                     </div>
                   </div>
                 </div>
