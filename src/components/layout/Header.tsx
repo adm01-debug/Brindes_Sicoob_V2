@@ -77,7 +77,7 @@ export function Header({ onMenuToggle, searchQuery, onSearchChange }: HeaderProp
     navigate("/auth");
   };
 
-  const displayName = profile?.full_name || user?.email?.split("@")[0] || "Usuário";
+  const displayName = profile?.full_name || user?.email?.split("@")[0] || "Minha Cooperativa";
   const roleLabel = getRoleLabel(role);
 
   // #10 — Truncate inteligente: "Joaquim Ataides" → "Joaquim A."

@@ -74,7 +74,7 @@ function VirtualFooter({ hasMore, loadMoreRef, productsCount, totalEstimate, fil
   if (hasMore) return (
     <div className="flex flex-col items-center gap-3 pt-8 pb-4 px-4">
       <div ref={loadMoreRef} style={{ minHeight: "1px" }} />
-      <p className="text-sm text-muted-foreground">Mostrando {productsCount} de {total} produtos</p>
+      <p className="text-sm text-muted-foreground">Mostrando {productsCount} de {total} materiais</p>
       {isLoadingMore && (skeletonType === "grid"
         ? <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 w-full mt-4">{Array.from({ length: 5 }).map((_, i) => <div key={i} className="space-y-3"><Skeleton className="aspect-square w-full rounded-xl" /><Skeleton className="h-4 w-3/4" /><Skeleton className="h-4 w-1/2" /></div>)}</div>
         : <ProductListSkeleton count={3} />
@@ -261,7 +261,7 @@ export function CatalogContent({
       <div className={`${CONTAINER_CLASS} p-4`}>
         <EmptyState
           variant={hasActiveCatalogConstraints ? "search" : "products"}
-          title={hasActiveCatalogConstraints ? "Nenhum produto encontrado" : "Catálogo indisponível no momento"}
+          title={hasActiveCatalogConstraints ? "Nenhum material encontrado" : "Catálogo indisponível no momento"}
           description={hasActiveCatalogConstraints ? "Tente ajustar os filtros, remover termos da busca ou buscar em todas as categorias." : "O catálogo ainda não retornou itens para exibição."}
           action={hasActiveCatalogConstraints && onResetFilters ? { label: "Limpar tudo e ver catálogo completo", onClick: onResetFilters } : undefined}
           className="min-h-[420px]"
@@ -281,7 +281,7 @@ export function CatalogContent({
       />
       {hasMoreProducts && (
         <div ref={loadMoreRef} className="flex flex-col items-center gap-3 pt-8 pb-4 px-4" style={{ minHeight: "60px" }}>
-          <p className="text-sm text-muted-foreground">Mostrando {paginatedProducts.length} de {(totalEstimate ?? filteredProducts.length).toLocaleString("pt-BR")} produtos</p>
+          <p className="text-sm text-muted-foreground">Mostrando {paginatedProducts.length} de {(totalEstimate ?? filteredProducts.length).toLocaleString("pt-BR")} materiais</p>
         </div>
       )}
     </div>

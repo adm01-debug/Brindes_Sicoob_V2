@@ -73,7 +73,7 @@ export default function CollectionsPage() {
             { icon: FolderHeart, value: totalCollections, label: "Total Coleções", color: "text-primary" },
             { icon: FolderOpen, value: externalCollections.length, label: "Coleções Catálogo", color: "text-blue-500" },
             { icon: Star, value: localCollections.length, label: "Minhas Coleções", color: "text-amber-500" },
-            { icon: Package, value: totalProducts, label: "Produtos", color: "text-emerald-500" },
+            { icon: Package, value: totalProducts, label: "Materiais", color: "text-emerald-500" },
           ].map((stat, idx) => (
             <motion.div
               key={stat.label}

@@ -354,7 +354,7 @@ export default function FavoritesPage() {
             </div>
             <div>
               <h1 data-testid="page-title-favoritos" className="text-2xl lg:text-3xl font-display font-bold text-foreground">
-                Meus Favoritos
+                Meus Materiais Favoritos
               </h1>
               <p data-testid="favorites-count" className="text-muted-foreground text-sm">
                 <span data-testid="favorites-count-items">{headerTotalCount}</span>{" "}
