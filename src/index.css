@@ -72,9 +72,9 @@ html[data-scroll-locked] body {
     --primary-glow: 190 100% 20%;
     --primary-foreground: 0 0% 100%;
 
-    /* ===== CORES SECUNDÁRIAS ===== */
-    --secondary: 220 14% 92%;
-    --secondary-foreground: 222 25% 18%;
+    /* ===== CORES SECUNDÁRIAS (VERDE ÁGUA — #7DB61C) ===== */
+    --secondary: 82 73% 41%;
+    --secondary-foreground: 0 0% 100%;
 
     /* ===== MUTED ===== */
     --muted: 220 14% 90%;
@@ -84,7 +84,7 @@ html[data-scroll-locked] body {
     --surface: 220 14% 98%;
     --surface-hover: 220 14% 95%;
     --text-secondary: 220 12% 42%;
-    --interactive: 25 95% 53%;
+    --interactive: 82 73% 41%;
     --divider: 220 14% 86%;
 
     /* ===== ACCENT ===== */
@@ -108,12 +108,12 @@ html[data-scroll-locked] body {
     --cart-hover: 152 69% 41%;
     --cart-foreground: 0 0% 100%;
 
-    /* ===== VERDE ÁGUA (COR SECUNDÁRIA — #7DB61C) ===== */
-    --orange: 82 73% 41%;
-    --orange-hover: 82 73% 36%;
-    --orange-active: 82 73% 31%;
-    --orange-glow: 82 73% 51%;
-    --orange-foreground: 0 0% 100%;
+    /* ===== AMARELO (COR DE DESTAQUE — #FFBB00) ===== */
+    --orange: 44 100% 50%;
+    --orange-hover: 44 100% 45%;
+    --orange-active: 44 100% 40%;
+    --orange-glow: 44 100% 60%;
+    --orange-foreground: 190 100% 13%;
 
     /* ===== HIGHLIGHT COLORS ===== */
     --highlight-gold: 45 93% 47%;
@@ -123,7 +123,7 @@ html[data-scroll-locked] body {
     /* ===== BORDAS E INPUTS ===== */
     --border: 220 14% 86%;
     --input: 220 14% 90%;
-    --ring: 25 95% 53%;
+    --ring: 190 100% 13%;
 
     --radius: 1rem;
 
@@ -143,13 +143,13 @@ html[data-scroll-locked] body {
 
     /* ===== SIDEBAR ===== */
     --sidebar-background: 220 14% 98%;
-    --sidebar-foreground: 222 25% 10%;
-    --sidebar-primary: 25 95% 53%;
+    --sidebar-foreground: 190 100% 13%;
+    --sidebar-primary: 190 100% 13%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 220 14% 93%;
-    --sidebar-accent-foreground: 222 25% 13%;
+    --sidebar-accent: 82 73% 41% / 0.1;
+    --sidebar-accent-foreground: 190 100% 13%;
     --sidebar-border: 220 14% 90%;
-    --sidebar-ring: 25 95% 53%;
+    --sidebar-ring: 190 100% 13%;
 
     /* ===== GRADIENTES ===== */
     --gradient-primary: linear-gradient(135deg, hsl(190 100% 13%), hsl(190 100% 10%));
@@ -275,9 +275,9 @@ html[data-scroll-locked] body {
     --primary-glow: 190 100% 25%;
     --primary-foreground: 0 0% 100%;
 
-    /* ===== CORES SECUNDÁRIAS ===== */
-    --secondary: 225 16% 13%;
-    --secondary-foreground: 210 40% 92%;
+    /* ===== CORES SECUNDÁRIAS (VERDE ÁGUA) ===== */
+    --secondary: 82 73% 41%;
+    --secondary-foreground: 0 0% 100%;
 
     /* ===== MUTED ===== */
     --muted: 225 14% 16%;
@@ -287,11 +287,11 @@ html[data-scroll-locked] body {
     --surface: 225 18% 9%;
     --surface-hover: 225 16% 12%;
     --text-secondary: 215 20% 72%;
-    --interactive: 24 100% 55%;
+    --interactive: 82 73% 41%;
     --divider: 225 14% 18%;
 
-    /* ===== ACCENT ===== */
-    --accent: 225 16% 13%;
+    /* ===== ACCENT (AMARELO SICOOB) ===== */
+    --accent: 44 100% 50%;
     --accent-foreground: 210 40% 98%;
 
     /* ===== DESTRUCTIVE ===== */
@@ -311,12 +311,12 @@ html[data-scroll-locked] body {
     --cart-hover: 152 69% 45%;
     --cart-foreground: 0 0% 100%;
 
-    /* ===== VERDE ÁGUA (COR SECUNDÁRIA — Fusion glow) ===== */
-    --orange: 82 73% 41%;
-    --orange-hover: 82 73% 46%;
-    --orange-active: 82 73% 51%;
-    --orange-glow: 82 73% 38%;
-    --orange-foreground: 0 0% 100%;
+    /* ===== AMARELO (COR DE DESTAQUE — Fusion glow) ===== */
+    --orange: 44 100% 50%;
+    --orange-hover: 44 100% 55%;
+    --orange-active: 44 100% 60%;
+    --orange-glow: 44 100% 48%;
+    --orange-foreground: 190 100% 13%;
 
     /* ===== HIGHLIGHT COLORS ===== */
     --highlight-gold: 45 93% 55%;
@@ -326,7 +326,7 @@ html[data-scroll-locked] body {
     /* ===== BORDAS E INPUTS — subtle warm tint ===== */
     --border: 225 12% 16%;
     --input: 225 16% 11%;
-    --ring: 24 100% 50%;
+    --ring: 190 100% 15%;
 
     /* ===== ELEVAÇÃO ===== */
     --elevated: 225 16% 11%;
@@ -345,12 +345,12 @@ html[data-scroll-locked] body {
     /* ===== SIDEBAR ===== */
     --sidebar-background: 225 20% 5%;
     --sidebar-foreground: 210 40% 98%;
-    --sidebar-primary: 24 100% 50%;
+    --sidebar-primary: 190 100% 15%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 225 16% 12%;
+    --sidebar-accent: 82 73% 41% / 0.15;
     --sidebar-accent-foreground: 210 40% 98%;
     --sidebar-border: 225 14% 12%;
-    --sidebar-ring: 24 100% 50%;
+    --sidebar-ring: 190 100% 15%;
 
     /* ===== GRADIENTES — Fusion-inspired dramatic gradients ===== */
     --gradient-primary: linear-gradient(
