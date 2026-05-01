@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+// HMR: ensure this module re-binds to the latest AuthContext singleton after edits.
 
 export interface Organization {
   id: string;
