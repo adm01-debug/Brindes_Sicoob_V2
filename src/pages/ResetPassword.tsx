@@ -116,7 +116,7 @@ export default function ResetPassword() {
   if (isCheckingToken) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
-      <PageSEO title="Redefinir Senha" description="Redefina sua senha de acesso à plataforma Promo Gifts." path="/reset-password" />
+      <PageSEO title="Redefinir Senha" description="Redefina sua senha de acesso à plataforma Brindes Sicoob." path="/reset-password" />
         <Loader2 className="h-8 w-8 animate-spin text-orange" />
       </div>
     );
@@ -186,7 +186,7 @@ export default function ResetPassword() {
           </div>
           <div>
             <h1 className="font-display text-2xl font-bold text-foreground">
-              Promo Brindes
+              Brindes Sicoob
             </h1>
           </div>
         </div>

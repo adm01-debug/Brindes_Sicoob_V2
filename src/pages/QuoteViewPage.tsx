@@ -309,7 +309,7 @@ export default function QuoteViewPage() {
       <PresentationMode
         title={`Proposta ${quote.quote_number || ""}`}
         subtitle={quote.client_company || quote.client_name || undefined}
-        brandName="Promo Brindes"
+        brandName="Brindes Sicoob"
         onClose={() => setShowPresentation(false)}
         slides={quote.items.map((item) => ({
           id: item.id || item.product_id,
