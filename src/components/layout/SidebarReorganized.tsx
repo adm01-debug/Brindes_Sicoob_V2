@@ -73,7 +73,7 @@ const navGroups: NavGroup[] = [
     icon: Package,
     defaultOpen: true,
     items: [
-      { icon: Package, label: "Produtos", href: "/", tourId: "products", shortcut: "Alt+P" },
+      { icon: Package, label: "Materiais", href: "/", tourId: "products", shortcut: "Alt+P" },
       { icon: SlidersHorizontal, label: "Super Filtro", href: "/filtros", shortcut: "Alt+F" },
       { icon: Zap, label: "Novidades", href: "/novidades" },
       { icon: RefreshCw, label: "Reposição", href: "/reposicao" },
@@ -122,7 +122,7 @@ const navGroups: NavGroup[] = [
       { icon: ShieldCheck, label: "Acesso & Bots", href: "/admin/seguranca-acesso", devOnly: true },
       { icon: Plug, label: "Conexões", href: "/admin/conexoes", devOnly: true },
       { icon: FolderOpen, label: "Cadastros", href: "/admin/cadastros", adminOnly: true, children: [
-        { icon: Package, label: "Produtos", href: "/admin/cadastros?tab=products" },
+        { icon: Package, label: "Materiais", href: "/admin/cadastros?tab=products" },
         { icon: Truck, label: "Fornecedores", href: "/admin/cadastros?tab=suppliers" },
         { icon: Palette, label: "Gravação", href: "/admin/cadastros?tab=personalizacao" },
       ]},

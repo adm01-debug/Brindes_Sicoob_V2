@@ -66,7 +66,7 @@ export function CatalogHeader({
         )}
 
         <h1 className="font-display text-xl sm:text-2xl lg:text-3xl font-bold whitespace-nowrap">
-          Catálogo de Produtos
+          Catálogo de Materiais
           <span className="text-muted-foreground font-normal text-sm sm:text-base ml-2">
             · {shouldShowCatalogSkeleton
               ? "Carregando catálogo..."
@@ -85,7 +85,7 @@ export function CatalogHeader({
         {/* Search inline next to product count on desktop */}
         <div className="hidden sm:block w-80 lg:w-[25rem]" ref={searchRef}>
           <SmartSearchInput
-            placeholder="Buscar produtos…  /"
+            placeholder="Buscar materiais…  /"
             onSelect={onSelect}
             className="w-full"
           />
@@ -99,7 +99,7 @@ export function CatalogHeader({
       {/* Search full-width on mobile */}
       <div className="flex items-center gap-2 w-full sm:hidden">
         <SmartSearchInput
-          placeholder="Buscar produtos..."
+          placeholder="Buscar materiais..."
           onSelect={onSelect}
           className="flex-1"
         />
