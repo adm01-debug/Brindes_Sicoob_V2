@@ -39,12 +39,12 @@ const SUPPLIER_COLORS: Record<string, SupplierColorConfig> = {
     border: 'border-[#FF3B30]/30',
     hex: '#FF3B30',
   },
-  // Fallback - Laranja Vivo (cor principal do sistema)
+  // Fallback - Sicoob Amarelo (cor de destaque do sistema)
   default: {
-    bg: 'bg-orange-500/15',
-    text: 'text-orange-500',
-    border: 'border-orange-500/30',
-    hex: '#f97316',
+    bg: 'bg-orange/15',
+    text: 'text-orange',
+    border: 'border-orange/30',
+    hex: '#FFBB00',
   },
 };
 

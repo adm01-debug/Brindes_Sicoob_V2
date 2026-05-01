@@ -628,22 +628,30 @@ function buildGxPreset(p: PresetParams): ThemePreset {
 
 export const THEME_PRESETS: ThemePreset[] = [
   // === CLASSIC PRESETS (mantidas) ===
-  {
-    ...buildPreset({
+  (() => {
+    const base = buildPreset({
       id: 'corporate',
-      name: 'Padrão',
-      emoji: '💼',
-      h: 221,
-      s: 83,
-      l: 53,
-      gh: 230,
-      sh: 215,
-      ss: 70,
-      sl: 55,
-      description: 'Azul profissional',
-    }),
-    category: 'classic',
-  },
+      name: 'Sicoob',
+      emoji: '💚',
+      h: 190,
+      s: 100,
+      l: 13,
+      gh: 44,
+      sh: 82,
+      ss: 73,
+      sl: 41,
+      description: 'Cores oficiais Sicoob',
+    });
+    const sicoobYellow = '44 100% 50%';
+    const sicoobGreenAgua = '82 73% 41%';
+    base.light.accent = sicoobYellow;
+    base.light.orange = sicoobYellow;
+    base.light.interactive = sicoobGreenAgua;
+    base.dark.accent = sicoobYellow;
+    base.dark.orange = sicoobYellow;
+    base.dark.interactive = sicoobGreenAgua;
+    return { ...base, category: 'classic' as const };
+  })(),
   {
     ...buildPreset({
       id: 'purpure',
