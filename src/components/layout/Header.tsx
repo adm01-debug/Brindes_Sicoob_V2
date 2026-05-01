@@ -18,6 +18,7 @@ import { useComparisonStore } from "@/stores/useComparisonStore";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { useOnboardingContext } from "@/contexts/OnboardingContext";
+import { useOrganization } from "@/contexts/OrganizationContext";
 
 import { StockAlertsIndicator } from "@/components/inventory/StockAlertsIndicator";
 import { NotificationBell } from "@/components/notifications/NotificationDrawer";
@@ -44,6 +45,7 @@ export function Header({ onMenuToggle, searchQuery, onSearchChange }: HeaderProp
   const favoriteCount = useFavoritesStore((s) => s.favoriteCount);
   const compareCount = useComparisonStore((s) => s.compareCount);
   const { user, profile, role, isAdmin, signOut, rolesLoaded } = useAuth();
+  const { currentOrg } = useOrganization();
   const currentSection = useCurrentSection();
   const { restartTour, hasCompletedTour, isLoading: onboardingLoading } = useOnboardingContext();
 
@@ -77,7 +79,7 @@ export function Header({ onMenuToggle, searchQuery, onSearchChange }: HeaderProp
     navigate("/auth");
   };
 
-  const displayName = profile?.full_name || user?.email?.split("@")[0] || "Minha Cooperativa";
+  const displayName = currentOrg?.name || profile?.full_name || user?.email?.split("@")[0] || "Minha Cooperativa";
   const roleLabel = getRoleLabel(role);
 
   // #10 — Truncate inteligente: "Joaquim Ataides" → "Joaquim A."
@@ -266,7 +268,12 @@ export function Header({ onMenuToggle, searchQuery, onSearchChange }: HeaderProp
               >
                 <div className="relative">
                   <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center ring-2 ring-background shadow-md">
-                    {profile?.avatar_url ? (
+                    {currentOrg?.logo_url ? (
+                      <img
+                        src={currentOrg.logo_url}
+                        alt={currentOrg.name}
+                        className="w-8 h-8 rounded-full object-cover" loading="lazy" />
+                    ) : profile?.avatar_url ? (
                       <img
                         src={profile.avatar_url}
                         alt={displayName}
