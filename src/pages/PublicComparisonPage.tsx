@@ -180,7 +180,7 @@ export default function PublicComparisonPage() {
   return (
     <div className="min-h-screen bg-background">
       <Helmet>
-        <title>Comparação compartilhada — Promo Gifts</title>
+        <title>Comparação compartilhada — Brindes Sicoob</title>
         <meta name="robots" content="noindex" />
       </Helmet>
 
@@ -265,7 +265,7 @@ export default function PublicComparisonPage() {
 
       <footer className="border-t border-border py-6 text-center text-xs text-muted-foreground">
         <Heart className="h-3 w-3 inline mr-1 text-primary" />
-        Comparação compartilhada via Promo Gifts
+        Comparação compartilhada via Brindes Sicoob
       </footer>
     </div>
   );

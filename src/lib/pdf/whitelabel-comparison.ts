@@ -58,7 +58,7 @@ export async function exportWhitelabelComparisonPDF(opts: {
   pdf.setTextColor(255, 255, 255);
   pdf.setFontSize(13);
   pdf.text(
-    branding?.name ? `Comparação de Produtos — ${branding.name}` : "Comparação de Produtos — Promo Gifts",
+    branding?.name ? `Comparação de Produtos — ${branding.name}` : "Comparação de Produtos — Brindes Sicoob",
     10, 9
   );
   pdf.setFontSize(8);
