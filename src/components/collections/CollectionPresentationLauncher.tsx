@@ -35,7 +35,7 @@ export function CollectionPresentationLauncher({ products, collectionName, curat
       slides={slides}
       title={collectionName}
       subtitle={curatorName ? `Curadoria de ${curatorName}` : undefined}
-      brandName="Promo Gifts"
+      brandName="Brindes Sicoob"
       onClose={onClose}
     />
   );

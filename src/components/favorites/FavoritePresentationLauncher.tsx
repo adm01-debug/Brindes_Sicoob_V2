@@ -37,7 +37,7 @@ export function FavoritePresentationLauncher({ products, listName, curatorName, 
       slides={slides}
       title={listName}
       subtitle={curatorName ? `Curadoria de ${curatorName}` : undefined}
-      brandName="Promo Gifts"
+      brandName="Brindes Sicoob"
       onClose={onClose}
     />
   );

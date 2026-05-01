@@ -137,7 +137,7 @@ export function useFiltersPageState() {
   const sortBy = filters.sortBy || 'name';
   const setSortBy = useCallback((value: string) => { setFilters(prev => ({ ...prev, sortBy: value })); }, []);
 
-  // Promo Brindes sales ranking (lazy — only fetched when needed)
+  // Brindes Sicoob sales ranking (lazy — only fetched when needed)
   const { data: promoSalesMap } = usePromoSalesRanking();
   const { data: supplierSalesMap } = useSupplierSalesRanking();
 

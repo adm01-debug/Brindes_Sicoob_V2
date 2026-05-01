@@ -318,7 +318,7 @@ export function ProductSparkline({ productId, className }: ProductSparklineProps
             {/* Source legend — sempre visível para deixar claro de onde vem o dado */}
             <div className="px-3 py-1.5 bg-muted/40 border-t border-border/40">
               <span className="text-[9px] text-muted-foreground/70 italic leading-tight block">
-                Proxy: unidades depletadas no estoque do fornecedor (não representa vendas da Promo Brindes).
+                Proxy: unidades depletadas no estoque do fornecedor (não representa vendas da Brindes Sicoob).
               </span>
             </div>
 

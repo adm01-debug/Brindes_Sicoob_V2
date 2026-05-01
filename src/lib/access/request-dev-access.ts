@@ -62,7 +62,7 @@ export function getThrottleStatus(userId: string): {
 }
 
 function buildMailto(input: RequestDevAccessInput): string {
-  const subject = `[Promo Gifts] Solicitação de acesso a área técnica — ${input.blockedPath}`;
+  const subject = `[Brindes Sicoob] Solicitação de acesso a área técnica — ${input.blockedPath}`;
   const lines = [
     `Solicitante: ${input.userEmail ?? input.userId}`,
     `Rota bloqueada: ${input.blockedPath}`,
