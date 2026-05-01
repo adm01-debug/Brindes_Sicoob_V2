@@ -108,10 +108,17 @@ export function Header({ onMenuToggle, searchQuery, onSearchChange }: HeaderProp
       <div className="flex items-center justify-between h-full px-2 sm:px-4 lg:px-6">
         {/* ══════ Left section — Menu + Âncora contextual (#1) ══════ */}
         <div className="flex items-center gap-2 sm:gap-3 min-w-0 shrink-0">
+          <div className="flex lg:hidden items-center mr-2">
+            <img 
+              src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/ca/Sicoob_logo.svg/2560px-Sicoob_logo.svg.png" 
+              alt="Sicoob" 
+              className="h-7 w-auto object-contain"
+            />
+          </div>
           <Button
             variant="ghost"
             size="icon"
-            className="lg:hidden hover:bg-primary/10 hover:text-primary h-8 w-8 sm:h-9 sm:w-9"
+            className="lg:hidden hover:bg-[#7DB61C]/10 hover:text-[#7DB61C] h-8 w-8 sm:h-9 sm:w-9"
             onClick={onMenuToggle}
            aria-label="Menu"><Menu className="h-5 w-5" />
           </Button>
@@ -135,7 +142,7 @@ export function Header({ onMenuToggle, searchQuery, onSearchChange }: HeaderProp
           <Button
             variant="ghost"
             size="icon" aria-label="Buscar"
-            className="md:hidden h-8 w-8 hover:bg-primary/10 hover:text-primary"
+            className="md:hidden h-8 w-8 hover:bg-[#7DB61C]/10 hover:text-[#7DB61C]"
             onClick={() => {
               const event = new KeyboardEvent('keydown', { key: 'k', ctrlKey: true });
               document.dispatchEvent(event);

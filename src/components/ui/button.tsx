@@ -16,6 +16,9 @@ const buttonVariants = cva(
         ghost: "hover:bg-accent hover:text-accent-foreground",
         link: "text-primary underline-offset-4 hover:underline",
         orange: "bg-orange text-orange-foreground hover:bg-orange-hover active:bg-orange-active shadow-md hover:shadow-glow-orange",
+        sicoob: "bg-[#003641] text-white hover:bg-[#002a33] active:bg-[#001e26] shadow-sm",
+        sicoobSecondary: "bg-[#7DB61C] text-white hover:bg-[#6ca318] active:bg-[#5b8a14] shadow-sm",
+        sicoobAccent: "bg-[#FFBB00] text-[#003641] hover:bg-[#e6a800] active:bg-[#cc9600] shadow-sm",
         // Nova variante premium com gradiente
         premium: "bg-gradient-to-r from-primary via-primary to-primary-hover text-primary-foreground shadow-lg hover:shadow-xl hover:shadow-primary/25 active:shadow-md",
         // Variante success para ações de confirmação
