@@ -21,7 +21,7 @@ const NotFound = () => {
             <Gift className="h-7 w-7 text-primary" />
           </div>
           <span className="font-display text-sm font-semibold text-muted-foreground tracking-wide uppercase">
-            Promo Gifts
+            Brindes Sicoob
           </span>
         </div>
 

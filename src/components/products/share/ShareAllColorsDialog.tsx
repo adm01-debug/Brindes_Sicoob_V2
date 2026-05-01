@@ -44,7 +44,7 @@ ${product.stockStatus === "in-stock" ? "✅ Pronta entrega" : "⚠️ Consultar 
 
 👆 Cada cor acompanha foto ilustrativa.
 
-Promo Brindes - Brindes com Excelência!`;
+Brindes Sicoob - Brindes com Excelência!`;
 }
 
 export function ShareAllColorsDialog({ open, onOpenChange, product }: ShareAllColorsDialogProps) {
