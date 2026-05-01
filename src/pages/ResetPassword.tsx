@@ -139,7 +139,7 @@ export default function ResetPassword() {
             <Button
               variant="orange"
               className="w-full"
-              onClick={() => navigate('/auth')}
+              onClick={() => navigate('/login')}
             >
               Voltar ao login
             </Button>
