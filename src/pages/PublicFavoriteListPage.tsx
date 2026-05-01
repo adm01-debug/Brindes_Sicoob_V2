@@ -177,7 +177,7 @@ export default function PublicFavoriteListPage() {
               </div>
             </div>
             <div className="text-[10px] text-muted-foreground/70 uppercase tracking-wider self-end">
-              Promo Gifts • Curadoria
+              Sicoob • Curadoria
             </div>
           </div>
         </div>
@@ -265,12 +265,9 @@ export default function PublicFavoriteListPage() {
       </main>
 
       <footer className="border-t border-border py-6 mt-12 text-center">
-        <a
-          href="https://promogifts.com.br"
-          className="text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-1"
-        >
-          Powered by Promo Gifts <ExternalLink className="h-3 w-3" />
-        </a>
+        <span className="text-xs text-muted-foreground inline-flex items-center gap-1">
+          Powered by Sicoob
+        </span>
       </footer>
     </div>
   );
