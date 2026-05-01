@@ -47,7 +47,7 @@ export function use2FA(targetUserId?: string) {
 
   const generateSecret = useCallback((email: string): { secret: string; uri: string } => {
     const totp = new OTPAuth.TOTP({
-       issuer: 'Promo Gifts',
+       issuer: 'Brindes Sicoob',
       label: email,
       algorithm: 'SHA1',
       digits: 6,
@@ -65,7 +65,7 @@ export function use2FA(targetUserId?: string) {
   const verifyToken = useCallback((secret: string, token: string): boolean => {
     try {
       const totp = new OTPAuth.TOTP({
-        issuer: 'Promo Gifts',
+        issuer: 'Brindes Sicoob',
         label: 'user',
         algorithm: 'SHA1',
         digits: 6,
