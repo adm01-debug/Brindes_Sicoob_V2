@@ -20,7 +20,7 @@ export function ProposalHeader({ data, isContinuation }: Props) {
         <div style={{ position: "relative", zIndex: 10, display: "flex", justifyContent: "space-between", alignItems: "center", padding: "0 36px", height: "64px" }}>
           <LogoWithTransparentBg
             src="/images/promo-brindes-logo-v2.png"
-            alt="Promo Brindes"
+            alt="Sicoob"
             style={{ height: "30px", display: "block" }}
           />
           <div style={{ textAlign: "right", color: "#fff", display: "flex", alignItems: "center", gap: "16px" }}>
@@ -71,7 +71,7 @@ export function ProposalHeader({ data, isContinuation }: Props) {
       }}>
         <LogoWithTransparentBg
           src="/images/promo-brindes-logo-v2.png"
-          alt="Promo Brindes"
+          alt="Sicoob"
           style={{ width: "100%", height: "auto", display: "block" }}
         />
       </div>

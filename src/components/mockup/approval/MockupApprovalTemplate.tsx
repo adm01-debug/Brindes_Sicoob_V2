@@ -175,7 +175,7 @@ function ApprovalHeader({ documentNumber, date }: { documentNumber: string; date
         <rect x="0" y={H - barH} width={W} height={barH} fill={GREEN} />
       </svg>
       <div style={{ position: "absolute", zIndex: 10, top: "0", left: "50px", bottom: `${barH}px`, width: "234px", display: "flex", flexDirection: "column", alignItems: "flex-start", justifyContent: "center", padding: "10px 14px" }}>
-        <LogoWithTransparentBg src="/images/promo-brindes-logo-v2.png" alt="Promo Brindes" style={{ width: "100%", height: "auto", display: "block" }} />
+        <div className="bg-primary p-4 rounded-lg"><span className="text-white font-bold text-xl">SICOOB</span></div>
       </div>
       <div style={{ position: "absolute", zIndex: 10, textAlign: "right", color: "#ffffff", top: "0", bottom: "0", right: "32px", display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "flex-end" }}>
         <p style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 900, fontSize: "20px", textTransform: "uppercase", letterSpacing: "3px", margin: "0 0 6px 0", lineHeight: 1, whiteSpace: "nowrap" }}>

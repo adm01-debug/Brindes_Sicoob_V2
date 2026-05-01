@@ -251,7 +251,7 @@ export function NoveltyProductGrid() {
               <SelectItem value="name">Nome (A-Z)</SelectItem><SelectItem value="price-asc">Preço (Menor → Maior)</SelectItem>
               <SelectItem value="price-desc">Preço (Maior → Menor)</SelectItem><SelectItem value="newest">Mais Recentes</SelectItem>
               <SelectItem value="stock">Maior Estoque</SelectItem><SelectItem value="best-seller-supplier">+ Vendidos Fornecedores</SelectItem>
-              <SelectItem value="best-seller-promo">+ Vendidos Promo Brindes</SelectItem>
+              <SelectItem value="best-seller-promo">+ Vendidos Sicoob</SelectItem>
             </SelectContent>
           </Select>
           {hasActiveFilters && <Button variant="ghost" size="sm" className="h-7 text-[11px] px-2 text-muted-foreground hover:text-foreground" onClick={clearFilters}><X className="h-3 w-3 mr-0.5" />Limpar</Button>}
