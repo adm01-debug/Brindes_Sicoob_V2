@@ -131,7 +131,7 @@ export default function PublicDossierPage() {
 
       <footer className="border-t bg-card mt-8">
         <div className="max-w-6xl mx-auto px-4 py-4 text-center text-xs text-muted-foreground">
-          Dossiê gerado por Promo Gifts · Business Intelligence
+          Dossiê gerado por Sicoob · Portal de Compras
         </div>
       </footer>
     </div>

@@ -65,11 +65,11 @@ html[data-scroll-locked] body {
     --command-text-subtle: 220 10% 62%;
     --command-shadow: 222 25% 10% / 0.18;
 
-    /* ===== CORES PRIMÁRIAS (LARANJA — IGUAL DARK) ===== */
-    --primary: 25 95% 53%;
-    --primary-hover: 25 95% 48%;
-    --primary-active: 25 95% 43%;
-    --primary-glow: 25 95% 63%;
+    /* ===== CORES PRIMÁRIAS (VERDE SICOOB — #003641) ===== */
+    --primary: 190 100% 13%;
+    --primary-hover: 190 100% 10%;
+    --primary-active: 190 100% 8%;
+    --primary-glow: 190 100% 20%;
     --primary-foreground: 0 0% 100%;
 
     /* ===== CORES SECUNDÁRIAS ===== */
@@ -108,11 +108,11 @@ html[data-scroll-locked] body {
     --cart-hover: 152 69% 41%;
     --cart-foreground: 0 0% 100%;
 
-    /* ===== LARANJA (COR DE DESTAQUE) ===== */
-    --orange: 25 95% 53%;
-    --orange-hover: 25 95% 48%;
-    --orange-active: 25 95% 43%;
-    --orange-glow: 25 95% 63%;
+    /* ===== VERDE ÁGUA (COR SECUNDÁRIA — #7DB61C) ===== */
+    --orange: 82 73% 41%;
+    --orange-hover: 82 73% 36%;
+    --orange-active: 82 73% 31%;
+    --orange-glow: 82 73% 51%;
     --orange-foreground: 0 0% 100%;
 
     /* ===== HIGHLIGHT COLORS ===== */
@@ -152,15 +152,15 @@ html[data-scroll-locked] body {
     --sidebar-ring: 25 95% 53%;
 
     /* ===== GRADIENTES ===== */
-    --gradient-primary: linear-gradient(135deg, hsl(25 95% 53%), hsl(25 95% 45%));
+    --gradient-primary: linear-gradient(135deg, hsl(190 100% 13%), hsl(190 100% 10%));
     --gradient-secondary: linear-gradient(135deg, hsl(220 14% 92%), hsl(220 14% 96%));
     --gradient-success: linear-gradient(135deg, hsl(142 71% 45%), hsl(142 71% 55%));
     --gradient-surface: linear-gradient(180deg, hsl(0 0% 100%), hsl(220 14% 96%));
     --gradient-divider: linear-gradient(90deg, transparent, hsl(220 14% 86% / 0.5), transparent);
     --gradient-hero: linear-gradient(
       135deg,
-      hsl(25 95% 53% / 0.08) 0%,
-      hsl(25 95% 45% / 0.04) 100%
+      hsl(190 100% 13% / 0.08) 0%,
+      hsl(190 100% 13% / 0.04) 100%
     );
     --gradient-cta: linear-gradient(135deg, hsl(var(--orange)), hsl(var(--orange-hover)));
     --gradient-cta-hover: linear-gradient(
@@ -268,11 +268,11 @@ html[data-scroll-locked] body {
     --command-text-subtle: 0 0% 54%;
     --command-shadow: 0 0% 0% / 0.92;
 
-    /* ===== CORES PRIMÁRIAS (LARANJA — mais vibrante) ===== */
-    --primary: 24 100% 50%;
-    --primary-hover: 22 100% 55%;
-    --primary-active: 20 100% 60%;
-    --primary-glow: 25 100% 55%;
+    /* ===== CORES PRIMÁRIAS (VERDE SICOOB — mais intenso) ===== */
+    --primary: 190 100% 15%;
+    --primary-hover: 190 100% 12%;
+    --primary-active: 190 100% 10%;
+    --primary-glow: 190 100% 25%;
     --primary-foreground: 0 0% 100%;
 
     /* ===== CORES SECUNDÁRIAS ===== */
@@ -311,11 +311,11 @@ html[data-scroll-locked] body {
     --cart-hover: 152 69% 45%;
     --cart-foreground: 0 0% 100%;
 
-    /* ===== LARANJA (COR DE DESTAQUE — Fusion glow) ===== */
-    --orange: 24 100% 50%;
-    --orange-hover: 22 100% 55%;
-    --orange-active: 20 100% 60%;
-    --orange-glow: 25 100% 48%;
+    /* ===== VERDE ÁGUA (COR SECUNDÁRIA — Fusion glow) ===== */
+    --orange: 82 73% 41%;
+    --orange-hover: 82 73% 46%;
+    --orange-active: 82 73% 51%;
+    --orange-glow: 82 73% 38%;
     --orange-foreground: 0 0% 100%;
 
     /* ===== HIGHLIGHT COLORS ===== */

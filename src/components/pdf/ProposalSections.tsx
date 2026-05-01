@@ -26,7 +26,7 @@ export function HeaderSection({ data }: { data: ProposalTemplateData }) {
         <rect x="0" y={H - barH} width={W} height={barH} fill="#00c853" />
       </svg>
       <div style={{ position: "absolute", zIndex: 10, top: "0", left: "24px", bottom: `${barH}px`, width: "324px", display: "flex", alignItems: "center", justifyContent: "flex-start", padding: "12px 14px" }}>
-        <img src="/images/promo-brindes-logo.png" alt="Promo Brindes" style={{ width: "100%", height: "auto", display: "block", imageRendering: "high-quality" as React.CSSProperties["imageRendering"], mixBlendMode: "multiply" }} crossOrigin="anonymous" loading="lazy" />
+        <div style={{ width: "100%", height: "auto", display: "flex", alignItems: "center", justifyContent: "center", padding: "20px", background: "hsl(190 100% 13%)", borderRadius: "8px" }}><span style={{ color: "white", fontSize: "24px", fontWeight: "bold" }}>SICOOB</span></div>
       </div>
       <div style={{ position: "absolute", zIndex: 10, textAlign: "right", color: "#ffffff", top: "50%", right: "32px", transform: "translateY(-60%)" }}>
         <p style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 900, fontSize: "28px", textTransform: "uppercase", letterSpacing: "3px", margin: "0 0 8px 0", lineHeight: 1, whiteSpace: "nowrap" }}>Proposta Comercial</p>

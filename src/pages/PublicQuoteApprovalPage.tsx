@@ -54,7 +54,7 @@ export default function PublicQuoteApprovalPage() {
   return (
     <div className="min-h-screen bg-background">
       <Helmet>
-        <title>Proposta #{quote.quote_number} | Promo Gifts</title>
+        <title>Proposta #{quote.quote_number} | Sicoob</title>
         <meta name="description" content={`Proposta comercial #${quote.quote_number} para aprovação`} />
         <meta name="robots" content="noindex, nofollow" />
       </Helmet>
@@ -252,7 +252,7 @@ export default function PublicQuoteApprovalPage() {
 
       {/* Footer */}
       <div className="border-t border-border mt-8 py-6 text-center text-xs text-muted-foreground">
-        <p>Proposta gerada automaticamente • Promo Gifts</p>
+        <p>Proposta gerada automaticamente • Sicoob</p>
       </div>
     </div>
   );

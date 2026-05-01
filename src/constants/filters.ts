@@ -44,5 +44,5 @@ export const SORT_OPTIONS = [
   { value: 'newest', label: 'Mais Recentes' },
   { value: 'stock', label: 'Maior Estoque' },
   { value: 'best-seller-supplier', label: '+ Vendidos Fornecedores' },
-  { value: 'best-seller-promo', label: '+ Vendidos Promo Brindes' },
+  { value: 'best-seller-promo', label: '+ Vendidos Sicoob' },
 ];
