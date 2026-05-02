@@ -43,7 +43,17 @@ export const useApprovalRequests = (orderId?: string) => {
       let query = supabase
         .from("sicoob_approval_requests")
         .select(`
-          *,
+          id,
+          order_id,
+          requester_id,
+          approver_id,
+          status,
+          request_reason,
+          rejection_reason,
+          amount_at_request,
+          threshold_at_request,
+          created_at,
+          updated_at,
           requester:profiles!requester_id(display_name)
         `)
         .order("created_at", { ascending: false });
