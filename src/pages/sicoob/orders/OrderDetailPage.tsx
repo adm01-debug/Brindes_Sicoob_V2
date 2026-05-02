@@ -15,7 +15,10 @@ import {
   CheckCircle,
   XCircle,
   AlertTriangle,
-  Info
+  Info,
+  Plus,
+  Trash2,
+  Search
 } from "lucide-react";
 import { 
   Card, 
@@ -33,6 +36,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { usePaBudget } from "@/hooks/usePaBudget";
 import { useApprovalThreshold } from "@/hooks/useApprovalThreshold";
 import { useApprovalRequests } from "@/hooks/useSicoobApprovals";
+import { useSicoobOrderItems } from "@/hooks/useSicoobOrderItems";
+import { useProducts } from "@/hooks/useProducts";
 import { 
   Dialog, 
   DialogContent, 
@@ -43,6 +48,7 @@ import {
   DialogTrigger
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 import { 
   Tooltip, 
   TooltipContent, 
