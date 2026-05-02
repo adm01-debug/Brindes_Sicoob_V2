@@ -77,7 +77,7 @@ Deno.serve(async (req) => {
          console.warn(`Erro ao criar user auth ${user.email}:`, authError.message);
       }
 
-      // Upsert no Profile
+      // Upsert no Profile usando user_id como critério de conflito
       const { error: profileError } = await supabase
         .from("profiles")
         .upsert({
@@ -87,6 +87,8 @@ Deno.serve(async (req) => {
           role: user.role,
           cooperativa_id: user.cooperativa_id,
           pa_id: user.pa_id
+        }, { 
+          onConflict: 'user_id' 
         });
 
       if (profileError) throw profileError;
