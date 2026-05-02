@@ -107,7 +107,20 @@ export default function OrderDetailPage() {
   const { history: orderHistory } = useSicoobOrderHistory(id);
   const { addItem, removeItem } = useSicoobOrderItems(id);
   
-  const { data: products } = useProducts({ search: productSearch, limit: 5 }, { enabled: isAddItemDialogOpen });
+  const { data: categories } = useCategories();
+  const { data: products, isLoading: isLoadingProducts } = useProducts(
+    { 
+      search: productSearch, 
+      category: selectedCategoryId !== "all" ? selectedCategoryId : undefined,
+      limit: 20 
+    }, 
+    { enabled: isAddItemDialogOpen }
+  );
+
+  const selectedProduct = useMemo(() => 
+    products?.find(p => p.id === selectedProductId),
+  [products, selectedProductId]);
+
 
   const activeRequest = useMemo(() => 
     requests?.find(r => r.status === 'pending'), 
