@@ -15,7 +15,7 @@ export type RoleVisual = {
   /** Ícone Lucide associado ao role. */
   Icon: LucideIcon;
   /** Variante do <Badge> shadcn. */
-  variant: "default" | "secondary" | "outline";
+  variant: "default" | "secondary" | "outline" | "accent" | "success" | "warning";
   /** Classes adicionais usando tokens semânticos do design system. */
   className: string;
   /** Descrição curta para tooltips/legendas. */
@@ -27,7 +27,7 @@ export const ROLE_VISUAL: Record<AppRole, RoleVisual> = {
     label: "Dev",
     Icon: Code2,
     variant: "default",
-    className: "bg-accent text-accent-foreground border-accent",
+    className: "bg-reward text-reward-foreground border-reward",
     description: "Acesso técnico total: integrações, chaves MCP e auditoria.",
   },
   supervisor: {
@@ -41,7 +41,7 @@ export const ROLE_VISUAL: Record<AppRole, RoleVisual> = {
     label: "Agente",
     Icon: User,
     variant: "secondary",
-    className: "",
+    className: "bg-secondary/15 text-secondary border-secondary/20",
     description: "Cria orçamentos e atende clientes dentro de sua alçada.",
   },
   // ── Aliases legados ──
