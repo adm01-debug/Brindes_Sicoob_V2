@@ -71,9 +71,17 @@ import {
   useOrderLogistics, 
   useOrderInvoices, 
   useOrderPayments, 
-  useOrderPilotApprovals 
+  useOrderPilotApprovals,
+  useOrderComments,
+  useOrderTemplates
 } from "@/hooks/useOrderExtensions";
+import { OrderLogisticsTab } from "@/components/sicoob/orders/OrderLogisticsTab";
+import { OrderInvoicesTab } from "@/components/sicoob/orders/OrderInvoicesTab";
+import { OrderPaymentsTab } from "@/components/sicoob/orders/OrderPaymentsTab";
+import { OrderPilotApprovalsTab } from "@/components/sicoob/orders/OrderPilotApprovalsTab";
+import { OrderTemplatesTab } from "@/components/sicoob/orders/OrderTemplatesTab";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function OrderDetailPage() {
   const { id } = useParams();
@@ -513,29 +521,33 @@ export default function OrderDetailPage() {
             </Card>
 
             <Tabs defaultValue="items">
-              <TabsList className="w-full justify-start overflow-x-auto">
-                <TabsTrigger value="items" className="gap-2">
-                  <Package className="h-4 w-4" />
+              <TabsList className="w-full justify-start overflow-x-auto bg-transparent border-b rounded-none h-auto p-0 gap-6">
+                <TabsTrigger value="items" className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none bg-transparent px-0 pb-2 h-auto">
+                  <Package className="h-4 w-4 mr-2" />
                   Itens
                 </TabsTrigger>
-                <TabsTrigger value="logistics" className="gap-2">
-                  <Truck className="h-4 w-4" />
+                <TabsTrigger value="logistics" className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none bg-transparent px-0 pb-2 h-auto">
+                  <Truck className="h-4 w-4 mr-2" />
                   Logística
                 </TabsTrigger>
-                <TabsTrigger value="invoices" className="gap-2">
-                  <FileText className="h-4 w-4" />
+                <TabsTrigger value="invoices" className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none bg-transparent px-0 pb-2 h-auto">
+                  <FileText className="h-4 w-4 mr-2" />
                   NF
                 </TabsTrigger>
-                <TabsTrigger value="payments" className="gap-2">
-                  <CreditCard className="h-4 w-4" />
+                <TabsTrigger value="payments" className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none bg-transparent px-0 pb-2 h-auto">
+                  <CreditCard className="h-4 w-4 mr-2" />
                   Pagamento
                 </TabsTrigger>
-                <TabsTrigger value="pilots" className="gap-2">
-                  <ImageIcon className="h-4 w-4" />
+                <TabsTrigger value="pilots" className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none bg-transparent px-0 pb-2 h-auto">
+                  <ImageIcon className="h-4 w-4 mr-2" />
                   Aprovações
                 </TabsTrigger>
-                <TabsTrigger value="timeline" className="gap-2">
-                  <History className="h-4 w-4" />
+                <TabsTrigger value="templates" className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none bg-transparent px-0 pb-2 h-auto">
+                  <Layout className="h-4 w-4 mr-2" />
+                  Templates
+                </TabsTrigger>
+                <TabsTrigger value="timeline" className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none bg-transparent px-0 pb-2 h-auto">
+                  <History className="h-4 w-4 mr-2" />
                   Timeline
                 </TabsTrigger>
               </TabsList>
@@ -552,135 +564,27 @@ export default function OrderDetailPage() {
                 </Card>
               </TabsContent>
 
-              <TabsContent value="logistics" className="pt-4">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Truck className="h-5 w-5" />
-                      Rastreamento e Entrega
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label>Transportadora</Label>
-                        <Input 
-                          defaultValue={logistics?.carrier_name} 
-                          onBlur={(e) => updateLogistics.mutate({ carrier_name: e.target.value })}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label>Código de Rastreio</Label>
-                        <Input 
-                          defaultValue={logistics?.tracking_code}
-                          onBlur={(e) => updateLogistics.mutate({ tracking_code: e.target.value })}
-                        />
-                      </div>
-                    </div>
-                    {logistics?.delivery_photo_url && (
-                      <div className="pt-4 border-t">
-                        <Label>Foto da Entrega</Label>
-                        <img src={logistics.delivery_photo_url} alt="Entrega" className="mt-2 rounded-lg max-h-48" />
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
+              <TabsContent value="logistics" className="pt-6">
+                <OrderLogisticsTab orderId={id!} />
               </TabsContent>
 
-              <TabsContent value="invoices" className="pt-4">
-                <Card>
-                  <CardHeader className="flex flex-row items-center justify-between">
-                    <CardTitle className="flex items-center gap-2">
-                      <FileText className="h-5 w-5" />
-                      Notas Fiscais
-                    </CardTitle>
-                    <Button size="sm" variant="outline" className="gap-2">
-                      <Plus className="h-4 w-4" /> Anexar XML
-                    </Button>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-2">
-                      {invoices?.map((inv: any) => (
-                        <div key={inv.id} className="flex items-center justify-between p-3 border rounded-lg">
-                          <div className="flex items-center gap-3">
-                            <FileText className="h-8 w-8 text-blue-500" />
-                            <div>
-                              <p className="font-medium">NF #{inv.invoice_number}</p>
-                              <p className="text-xs text-muted-foreground">Valor: R$ {Number(inv.amount).toLocaleString('pt-BR')}</p>
-                            </div>
-                          </div>
-                          <Button variant="ghost" size="sm" asChild>
-                            <a href={inv.xml_url} target="_blank" rel="noreferrer">Baixar</a>
-                          </Button>
-                        </div>
-                      ))}
-                      {!invoices?.length && <p className="text-center py-8 text-muted-foreground text-sm">Nenhuma nota fiscal anexada.</p>}
-                    </div>
-                  </CardContent>
-                </Card>
+              <TabsContent value="invoices" className="pt-6">
+                <OrderInvoicesTab orderId={id!} />
               </TabsContent>
 
-              <TabsContent value="payments" className="pt-4">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <CreditCard className="h-5 w-5" />
-                      Informações de Pagamento
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    {payments?.map((pay: any) => (
-                      <div key={pay.id} className="flex justify-between items-center p-3 border rounded-lg">
-                        <div>
-                          <p className="font-medium">{pay.payment_method}</p>
-                          <p className="text-xs text-muted-foreground">{pay.transaction_id || 'Processando'}</p>
-                        </div>
-                        <Badge variant={pay.payment_status === 'paid' ? 'default' : 'secondary'}>
-                          {pay.payment_status}
-                        </Badge>
-                      </div>
-                    ))}
-                    {!payments?.length && <p className="text-center py-8 text-muted-foreground text-sm">Aguardando processamento de pagamento.</p>}
-                  </CardContent>
-                </Card>
+              <TabsContent value="payments" className="pt-6">
+                <OrderPaymentsTab orderId={id!} />
               </TabsContent>
 
-              <TabsContent value="pilots" className="pt-4">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <ImageIcon className="h-5 w-5" />
-                      Aprovação de Mockups e Pilotos
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-6">
-                    {approvals?.map((app: any) => (
-                      <div key={app.id} className="space-y-4 p-4 border rounded-lg">
-                        <img src={app.photo_url} alt="Piloto" className="rounded-lg w-full max-h-64 object-contain bg-muted" />
-                        <div className="flex items-center justify-between">
-                          <Badge className={cn(
-                            app.status === 'approved' ? 'bg-emerald-500' : 
-                            app.status === 'rejected' ? 'bg-red-500' : 'bg-amber-500'
-                          )}>
-                            {app.status.toUpperCase()}
-                          </Badge>
-                          <div className="flex gap-2">
-                            {app.status === 'pending' && (
-                              <>
-                                <Button variant="outline" size="sm" onClick={() => updateApprovalStatus.mutate({ id: app.id, status: 'rejected' })}>Rejeitar</Button>
-                                <Button size="sm" onClick={() => updateApprovalStatus.mutate({ id: app.id, status: 'approved' })}>Aprovar</Button>
-                              </>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                    {!approvals?.length && <p className="text-center py-8 text-muted-foreground text-sm">Nenhum piloto enviado para aprovação.</p>}
-                  </CardContent>
-                </Card>
+              <TabsContent value="pilots" className="pt-6">
+                <OrderPilotApprovalsTab orderId={id!} />
+              </TabsContent>
+              
+              <TabsContent value="templates" className="pt-6">
+                <OrderTemplatesTab orderId={id!} />
               </TabsContent>
 
-              <TabsContent value="timeline" className="pt-4">
+              <TabsContent value="timeline" className="pt-6">
                 <OrderAuditTimeline orderId={id!} />
               </TabsContent>
             </Tabs>

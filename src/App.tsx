@@ -124,6 +124,7 @@ const SicoobOrdersPage = lazyWithRetry(() => import("./pages/sicoob/orders/Order
 const SicoobOrdersKanbanPage = lazyWithRetry(() => import("./pages/sicoob/orders/OrdersKanbanPage"));
 const SicoobOrderDetailPage = lazyWithRetry(() => import("./pages/sicoob/orders/OrderDetailPage"));
 const SicoobSellerPanelPage = lazyWithRetry(() => import("./pages/sicoob/orders/SellerPanelPage"));
+const SicoobLogisticsReportPage = lazyWithRetry(() => import("./pages/sicoob/LogisticsReportPage"));
 
 // Clients (CRM) Pages
 const ClientsPage = lazyWithRetry(() => import("./pages/ClientsPage"));
@@ -284,8 +285,9 @@ const App = () => {
                                 <Route path="/admin/sicoob" element={<SicoobManagementPage />} />
                                 <Route path="/sicoob/pedidos" element={<SicoobOrdersPage />} />
                                 <Route path="/sicoob/pedidos/kanban" element={<SicoobOrdersKanbanPage />} />
-                                <Route path="/sicoob/pedidos/:id" element={<SicoobOrderDetailPage />} />
-                              </Route>
+                                 <Route path="/sicoob/pedidos/:id" element={<SicoobOrderDetailPage />} />
+                                 <Route path="/sicoob/logistica" element={<SicoobLogisticsReportPage />} />
+                               </Route>
                               <Route element={<ProtectedRoute allowedRoles={['vendedor']} />}>
                                 <Route path="/sicoob/vendas" element={<SicoobSellerPanelPage />} />
                               </Route>
