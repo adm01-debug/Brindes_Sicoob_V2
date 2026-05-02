@@ -564,39 +564,8 @@ export default function OrderDetailPage() {
                 </Card>
               </TabsContent>
 
-              <TabsContent value="logistics" className="pt-4">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Truck className="h-5 w-5" />
-                      Rastreamento e Entrega
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label>Transportadora</Label>
-                        <Input 
-                          defaultValue={logistics?.carrier_name} 
-                          onBlur={(e) => updateLogistics.mutate({ carrier_name: e.target.value })}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label>Código de Rastreio</Label>
-                        <Input 
-                          defaultValue={logistics?.tracking_code}
-                          onBlur={(e) => updateLogistics.mutate({ tracking_code: e.target.value })}
-                        />
-                      </div>
-                    </div>
-                    {logistics?.delivery_photo_url && (
-                      <div className="pt-4 border-t">
-                        <Label>Foto da Entrega</Label>
-                        <img src={logistics.delivery_photo_url} alt="Entrega" className="mt-2 rounded-lg max-h-48" />
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
+              <TabsContent value="logistics" className="pt-6">
+                <OrderLogisticsTab orderId={id!} />
               </TabsContent>
 
               <TabsContent value="invoices" className="pt-4">
