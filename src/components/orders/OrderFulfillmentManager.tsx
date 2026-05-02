@@ -2,6 +2,7 @@
  * OrderFulfillmentManager — controle de fulfillment + tracking + transportadora.
  */
 import { useState } from "react";
+import { toast } from "sonner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -40,7 +41,13 @@ export function OrderFulfillmentManager({ order }: OrderFulfillmentManagerProps)
             <Label htmlFor="ful-status">Fulfillment</Label>
             <Select
               value={order.fulfillment_status}
-              onValueChange={(v) => update.mutate({ fulfillment_status: v })}
+              onValueChange={(v) => {
+                if (!canTransitionTo(order.fulfillment_status, v)) {
+                  toast.error("Transição de fulfillment inválida");
+                  return;
+                }
+                update.mutate({ fulfillment_status: v });
+              }}
               disabled={update.isPending}
             >
               <SelectTrigger id="ful-status" className="mt-1">
