@@ -377,6 +377,10 @@ function ContextRuleCard({ title, doText, dontText }: { title: string; doText: s
     </Card>
   );
 }
+
+function ContrastRow({ token, bg, label, ratio, pass, usage }: { 
+  token: string; bg: string; label: string; ratio: string; pass: boolean; usage: string;
+}) {
   const bgClass = TOKEN_MAP[token as keyof typeof TOKEN_MAP] || "bg-muted";
   return (
     <TableRow>
