@@ -510,28 +510,31 @@ export default function OrderDetailPage() {
                   {orderItems?.map((item: any) => (
                     <div key={item.id} className="flex items-center justify-between py-3 border-b last:border-0">
                       <div className="flex gap-4">
-                        <div className="w-12 h-12 bg-muted rounded flex items-center justify-center">
+                        <div className={cn(
+                          "w-12 h-12 bg-muted rounded flex items-center justify-center transition-opacity",
+                          removeItem.isPending && "opacity-50"
+                        )}>
                           <Package className="h-6 w-6 text-muted-foreground" />
                         </div>
-                        <div>
+                        <div className={cn("transition-opacity", removeItem.isPending && "opacity-50")}>
                           <p className="font-medium">{item.product_name || "Produto Sicoob"}</p>
                           <p className="text-xs text-muted-foreground">Qtd: {item.quantity}</p>
                         </div>
                       </div>
                       <div className="text-right flex items-center gap-4">
-                        <div>
+                        <div className={cn("transition-opacity", removeItem.isPending && "opacity-50")}>
                           <p className="font-bold">R$ {Number(item.unit_price * item.quantity).toLocaleString('pt-BR')}</p>
                           <p className="text-xs text-muted-foreground">Un: R$ {Number(item.unit_price).toLocaleString('pt-BR')}</p>
                         </div>
-                        {orderData.status === 'pending' && (
+                        {(orderData.status === 'pending' || orderData.status === 'draft') && (
                           <Button 
                             variant="ghost" 
                             size="icon" 
-                            className="text-muted-foreground hover:text-destructive"
+                            className="text-destructive hover:text-destructive hover:bg-destructive/10"
                             onClick={() => handleRemoveItem(item.id)}
                             disabled={removeItem.isPending}
                           >
-                            <Trash2 className="h-4 w-4" />
+                            <Trash2 className={cn("h-4 w-4", removeItem.isPending && "animate-pulse")} />
                           </Button>
                         )}
                       </div>
