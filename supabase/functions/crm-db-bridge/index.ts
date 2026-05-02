@@ -893,11 +893,17 @@ Deno.serve((req) => {
     if (wasCold || Deno.env.get("LOG_CRM_BRIDGE_VERBOSE") === "on") {
       const using = CRM_SERVICE_KEY ? "SERVICE_KEY" : "ANON_KEY";
       const keySource = CRM_SERVICE_KEY ? svcRes.source : anonRes.source;
+      let urlPrefix = "invalid";
+      try {
+        urlPrefix = new URL(CRM_URL).origin;
+      } catch {
+        urlPrefix = "invalid";
+      }
       console.log(JSON.stringify({
         evt: "crm-creds-resolved",
         url_source: urlRes.source,
         url_via_alias: urlRes.resolved_name !== "EXTERNAL_CRM_URL",
-        url_prefix: CRM_URL.substring(0, 30),
+        url_prefix: urlPrefix,
         using,
         key_source: keySource,
         key_len: CRM_KEY.length,
