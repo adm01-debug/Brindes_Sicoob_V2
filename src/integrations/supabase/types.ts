@@ -725,6 +725,86 @@ export type Database = {
           },
         ]
       }
+      cooperativa_budgets: {
+        Row: {
+          ano: number
+          cooperativa_id: string
+          created_at: string
+          id: string
+          limite_alcada: number | null
+          mes: number
+          observacoes: string | null
+          updated_at: string
+          verba_total: number
+        }
+        Insert: {
+          ano: number
+          cooperativa_id: string
+          created_at?: string
+          id?: string
+          limite_alcada?: number | null
+          mes: number
+          observacoes?: string | null
+          updated_at?: string
+          verba_total?: number
+        }
+        Update: {
+          ano?: number
+          cooperativa_id?: string
+          created_at?: string
+          id?: string
+          limite_alcada?: number | null
+          mes?: number
+          observacoes?: string | null
+          updated_at?: string
+          verba_total?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cooperativa_budgets_cooperativa_id_fkey"
+            columns: ["cooperativa_id"]
+            isOneToOne: false
+            referencedRelation: "cooperativas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cooperativas: {
+        Row: {
+          cidade: string | null
+          cnpj: string | null
+          codigo: string
+          created_at: string
+          id: string
+          is_active: boolean
+          nome: string
+          uf: string | null
+          updated_at: string
+        }
+        Insert: {
+          cidade?: string | null
+          cnpj?: string | null
+          codigo: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          nome: string
+          uf?: string | null
+          updated_at?: string
+        }
+        Update: {
+          cidade?: string | null
+          cnpj?: string | null
+          codigo?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          nome?: string
+          uf?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       custom_kits: {
         Row: {
           box_data: Json | null
@@ -3060,6 +3140,53 @@ export type Database = {
           },
         ]
       }
+      pa_budgets: {
+        Row: {
+          ano: number
+          created_at: string
+          id: string
+          limite_alcada: number | null
+          mes: number
+          observacoes: string | null
+          pa_id: string
+          updated_at: string
+          verba_consumida: number
+          verba_total: number
+        }
+        Insert: {
+          ano: number
+          created_at?: string
+          id?: string
+          limite_alcada?: number | null
+          mes: number
+          observacoes?: string | null
+          pa_id: string
+          updated_at?: string
+          verba_consumida?: number
+          verba_total?: number
+        }
+        Update: {
+          ano?: number
+          created_at?: string
+          id?: string
+          limite_alcada?: number | null
+          mes?: number
+          observacoes?: string | null
+          pa_id?: string
+          updated_at?: string
+          verba_consumida?: number
+          verba_total?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pa_budgets_pa_id_fkey"
+            columns: ["pa_id"]
+            isOneToOne: false
+            referencedRelation: "postos_atendimento"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       permissions: {
         Row: {
           category: string
@@ -3089,6 +3216,56 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      postos_atendimento: {
+        Row: {
+          cidade: string | null
+          codigo: string
+          cooperativa_id: string
+          created_at: string
+          endereco: string | null
+          id: string
+          is_active: boolean
+          nome: string
+          responsavel_user_id: string | null
+          uf: string | null
+          updated_at: string
+        }
+        Insert: {
+          cidade?: string | null
+          codigo: string
+          cooperativa_id: string
+          created_at?: string
+          endereco?: string | null
+          id?: string
+          is_active?: boolean
+          nome: string
+          responsavel_user_id?: string | null
+          uf?: string | null
+          updated_at?: string
+        }
+        Update: {
+          cidade?: string | null
+          codigo?: string
+          cooperativa_id?: string
+          created_at?: string
+          endereco?: string | null
+          id?: string
+          is_active?: boolean
+          nome?: string
+          responsavel_user_id?: string | null
+          uf?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "postos_atendimento_cooperativa_id_fkey"
+            columns: ["cooperativa_id"]
+            isOneToOne: false
+            referencedRelation: "cooperativas"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       price_history: {
         Row: {
@@ -3370,6 +3547,7 @@ export type Database = {
       profiles: {
         Row: {
           avatar_url: string | null
+          cooperativa_id: string | null
           created_at: string
           department: string | null
           email: string | null
@@ -3377,6 +3555,7 @@ export type Database = {
           id: string
           is_active: boolean | null
           last_login_at: string | null
+          pa_id: string | null
           phone: string | null
           preferences: Json | null
           role: string | null
@@ -3385,6 +3564,7 @@ export type Database = {
         }
         Insert: {
           avatar_url?: string | null
+          cooperativa_id?: string | null
           created_at?: string
           department?: string | null
           email?: string | null
@@ -3392,6 +3572,7 @@ export type Database = {
           id?: string
           is_active?: boolean | null
           last_login_at?: string | null
+          pa_id?: string | null
           phone?: string | null
           preferences?: Json | null
           role?: string | null
@@ -3400,6 +3581,7 @@ export type Database = {
         }
         Update: {
           avatar_url?: string | null
+          cooperativa_id?: string | null
           created_at?: string
           department?: string | null
           email?: string | null
@@ -3407,13 +3589,29 @@ export type Database = {
           id?: string
           is_active?: boolean | null
           last_login_at?: string | null
+          pa_id?: string | null
           phone?: string | null
           preferences?: Json | null
           role?: string | null
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profiles_cooperativa_id_fkey"
+            columns: ["cooperativa_id"]
+            isOneToOne: false
+            referencedRelation: "cooperativas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profiles_pa_id_fkey"
+            columns: ["pa_id"]
+            isOneToOne: false
+            referencedRelation: "postos_atendimento"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       public_token_failures: {
         Row: {
@@ -5223,6 +5421,8 @@ export type Database = {
         Args: { _name: string; _slug: string }
         Returns: string
       }
+      current_user_cooperativa_id: { Args: never; Returns: string }
+      current_user_pa_id: { Args: never; Returns: string }
       e2e_cleanup_check_rate_limit: {
         Args: { p_key: string; p_max: number; p_window_seconds: number }
         Returns: {
@@ -5457,6 +5657,8 @@ export type Database = {
       is_admin_strict: { Args: { _user_id?: string }; Returns: boolean }
       is_dev: { Args: { _user_id?: string }; Returns: boolean }
       is_dnd_active: { Args: never; Returns: boolean }
+      is_gerente_pa: { Args: { _user_id?: string }; Returns: boolean }
+      is_gestor_compras: { Args: { _user_id?: string }; Returns: boolean }
       is_kit_collaborator: {
         Args: { _kit_id: string; _user_id: string }
         Returns: boolean
@@ -5472,6 +5674,7 @@ export type Database = {
       }
       is_seller_only: { Args: { _user_id?: string }; Returns: boolean }
       is_supervisor_or_above: { Args: { _user_id?: string }; Returns: boolean }
+      is_vendedor_role: { Args: { _user_id?: string }; Returns: boolean }
       log_access_denied: {
         Args: {
           _blocked_path: string
@@ -5656,7 +5859,14 @@ export type Database = {
       }
     }
     Enums: {
-      app_role: "admin" | "manager" | "vendedor" | "supervisor" | "dev"
+      app_role:
+        | "admin"
+        | "manager"
+        | "vendedor"
+        | "supervisor"
+        | "dev"
+        | "gestor_compras"
+        | "gerente_pa"
       org_role: "owner" | "admin" | "member"
       role_migration_item_status:
         | "pending"
@@ -5807,7 +6017,15 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "manager", "vendedor", "supervisor", "dev"],
+      app_role: [
+        "admin",
+        "manager",
+        "vendedor",
+        "supervisor",
+        "dev",
+        "gestor_compras",
+        "gerente_pa",
+      ],
       org_role: ["owner", "admin", "member"],
       role_migration_item_status: [
         "pending",
