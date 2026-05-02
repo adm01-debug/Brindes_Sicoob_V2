@@ -18,6 +18,8 @@ import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { OrderStatusTimeline } from "@/components/orders/OrderStatusTimeline";
 import { OrderFulfillmentManager } from "@/components/orders/OrderFulfillmentManager";
+import { OrderPilotWorkflow } from "@/components/orders/OrderPilotWorkflow";
+import { OrderAuditTimeline } from "@/components/orders/OrderAuditTimeline";
 
 const statusConfig: Record<string, { label: string; color: string }> = {
   pending: { label: "Pendente", color: "bg-warning/20 text-warning border-warning/30" },
@@ -244,6 +246,12 @@ export default function OrderDetailPage() {
 
             {/* Logística */}
             <OrderFulfillmentManager order={order} />
+
+            {/* Fluxo de Piloto */}
+            <OrderPilotWorkflow orderId={order.id} />
+
+            {/* Auditoria */}
+            <OrderAuditTimeline orderId={order.id} />
           </div>
 
           {/* Sidebar */}

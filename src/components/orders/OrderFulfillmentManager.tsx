@@ -18,9 +18,14 @@ export function OrderFulfillmentManager({ order }: OrderFulfillmentManagerProps)
   const update = useUpdateOrder(order.id);
   const [tracking, setTracking] = useState(order.tracking_number ?? "");
   const [shippingType, setShippingType] = useState(order.shipping_type ?? "");
+  const [carrier, setCarrier] = useState((order as any).shipping_carrier ?? "");
+  const [deliveryForecast, setDeliveryForecast] = useState((order as any).shipping_delivery_forecast ? new Date((order as any).shipping_delivery_forecast).toISOString().split('T')[0] : "");
 
   const dirty =
-    tracking !== (order.tracking_number ?? "") || shippingType !== (order.shipping_type ?? "");
+    tracking !== (order.tracking_number ?? "") || 
+    shippingType !== (order.shipping_type ?? "") ||
+    carrier !== ((order as any).shipping_carrier ?? "") ||
+    deliveryForecast !== ((order as any).shipping_delivery_forecast ? new Date((order as any).shipping_delivery_forecast).toISOString().split('T')[0] : "");
 
   return (
     <Card>
@@ -59,6 +64,28 @@ export function OrderFulfillmentManager({ order }: OrderFulfillmentManagerProps)
             />
           </div>
         </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <Label htmlFor="carrier">Transportadora</Label>
+            <Input
+              id="carrier"
+              value={carrier}
+              onChange={(e) => setCarrier(e.target.value)}
+              placeholder="Ex: Braspress, Correios..."
+              className="mt-1"
+            />
+          </div>
+          <div>
+            <Label htmlFor="forecast">Previsão de Entrega</Label>
+            <Input
+              id="forecast"
+              type="date"
+              value={deliveryForecast}
+              onChange={(e) => setDeliveryForecast(e.target.value)}
+              className="mt-1"
+            />
+          </div>
+        </div>
         <div>
           <Label htmlFor="tracking">Código de rastreio</Label>
           <Input
@@ -74,7 +101,9 @@ export function OrderFulfillmentManager({ order }: OrderFulfillmentManagerProps)
             update.mutate({
               tracking_number: tracking || null,
               shipping_type: shippingType || null,
-            })
+              shipping_carrier: carrier || null,
+              shipping_delivery_forecast: deliveryForecast || null,
+            } as any)
           }
           disabled={!dirty || update.isPending}
           size="sm"

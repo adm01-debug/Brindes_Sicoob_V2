@@ -110,16 +110,20 @@ export const ORDER_STATUS_FLOW = [
   "pending",
   "confirmed",
   "in_production",
-  "shipped",
+  "in_separation",
+  "in_transit",
   "delivered",
+  "completed",
 ] as const;
 
 export const ORDER_STATUS_LABELS: Record<string, string> = {
   pending: "Pendente",
   confirmed: "Confirmado",
   in_production: "Em Produção",
-  shipped: "Enviado",
+  in_separation: "Em Separação",
+  in_transit: "Em Transporte",
   delivered: "Entregue",
+  completed: "Concluído",
   cancelled: "Cancelado",
 };
 
