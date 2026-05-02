@@ -107,7 +107,7 @@ export default function ColorDocumentationPage() {
           <div className="flex items-center gap-2">
             <Button variant="outline" className="gap-2" onClick={toggleTheme}>
               {theme === "dark" ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-              Modo Demo
+              Alternar Tema (Light/Dark)
             </Button>
             <Button variant="outline" className="gap-2" onClick={() => exportTokensJSON()}>
               <Download className="h-4 w-4" />
@@ -124,13 +124,6 @@ export default function ColorDocumentationPage() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
             <ColorCard 
-              name="Brand (Teal 2024)" 
-              token="--brand" 
-              hex="#00AE9D" 
-              className="bg-brand text-brand-foreground"
-              description="Cor de ação, CTAs, energia moderna."
-            />
-            <ColorCard 
               name="Primary (Institucional)" 
               token="--primary" 
               hex="#003641" 
@@ -138,16 +131,23 @@ export default function ColorDocumentationPage() {
               description="Âncora, logos, headers, peso bancário."
             />
             <ColorCard 
-              name="Secondary (Lima)" 
-              token="--secondary" 
-              hex="#7DB61C" 
-              className="bg-secondary text-secondary-foreground"
-              description="Acento, badges pontuais."
+              name="Brand (Teal/Verde)" 
+              token="--brand" 
+              hex="#C5D41C" 
+              className="bg-brand text-brand-foreground"
+              description="Energia, ação e identidade moderna."
+            />
+            <ColorCard 
+              name="Gray (Cinza)" 
+              token="--gray" 
+              hex="#858485" 
+              className="bg-muted text-muted-foreground"
+              description="Neutralidade e suporte visual."
             />
             <ColorCard 
               name="Accent (Amarelo)" 
               token="--accent" 
-              hex="#FFBB00" 
+              hex="#F2AE21" 
               className="bg-accent text-accent-foreground"
               description="Destaque, moedas, urgência."
             />
@@ -603,10 +603,10 @@ function exportTokensJSON() {
       updated_at: new Date().toISOString()
     },
     tokens: {
-      brand: "#00AE9D",
+      brand: "#C5D41C",
       primary: "#003641",
-      secondary: "#7DB61C",
-      accent: "#FFBB00",
+      gray: "#858485",
+      accent: "#F2AE21",
       reward: "#5C2D91"
     },
     status_mapping: SICOOB_STATUS_CONFIG,

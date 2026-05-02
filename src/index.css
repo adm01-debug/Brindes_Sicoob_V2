@@ -73,13 +73,13 @@ html[data-scroll-locked] body {
     --primary-glow: 190 100% 20%;
     --primary-foreground: 0 0% 100%;
 
-    /* ===== MARCA / AÇÃO (VERDE-TEAL SICOOB 2024 — #00AE9D) ===== */
+    /* ===== MARCA / AÇÃO (SICOOB MARCA — #C5D41C) ===== */
     /* Uso: CTAs principais, hero, ações de conversão, energia cooperativa. */
-    --brand: 175 100% 25%;
-    --brand-hover: 175 100% 28%;
-    --brand-active: 175 100% 22%;
-    --brand-glow: 175 100% 42%;
-    --brand-foreground: 0 0% 100%;
+    --brand: 65 72% 47%;
+    --brand-hover: 65 72% 52%;
+    --brand-active: 65 72% 42%;
+    --brand-glow: 65 72% 60%;
+    --brand-foreground: 190 100% 10%;
     --brand-soft: 175 100% 34%;
 
     /* ===== CORES SECUNDÁRIAS (VERDE-LIMA — #7DB61C) ===== */
@@ -105,8 +105,8 @@ html[data-scroll-locked] body {
     --interactive: 82 73% 41%;
     --divider: 220 14% 86%;
 
-    /* ===== ACCENT (AMARELO SICOOB — #FFBB00) ===== */
-    --accent: 44 100% 50%;
+    /* ===== ACCENT (AMARELO SICOOB — #F2AE21) ===== */
+    --accent: 40 89% 54%;
     --accent-foreground: 190 100% 13%;
 
     /* ===== DESTRUCTIVE ===== */
@@ -307,13 +307,13 @@ html[data-scroll-locked] body {
     --primary-glow: 190 100% 25%;
     --primary-foreground: 0 0% 100%;
 
-    /* ===== MARCA / AÇÃO (VERDE-TEAL SICOOB — dark) ===== */
-    --brand: 175 90% 38%;
-    --brand-hover: 175 90% 32%;
-    --brand-active: 175 90% 26%;
-    --brand-glow: 175 100% 48%;
-    --brand-foreground: 0 0% 100%;
-    --brand-soft: 175 90% 38%;
+    /* ===== MARCA / AÇÃO (SICOOB — dark) ===== */
+    --brand: 65 72% 47%;
+    --brand-hover: 65 72% 52%;
+    --brand-active: 65 72% 42%;
+    --brand-glow: 65 72% 60%;
+    --brand-foreground: 190 100% 10%;
+    --brand-soft: 65 72% 47%;
 
     /* ===== CORES SECUNDÁRIAS (VERDE-LIMA — dark) ===== */
     --secondary: 82 73% 41%;
@@ -336,8 +336,8 @@ html[data-scroll-locked] body {
     --interactive: 82 73% 41%;
     --divider: 225 14% 18%;
 
-    /* ===== ACCENT (AMARELO SICOOB — dark, foreground corrigido para WCAG AA) ===== */
-    --accent: 44 100% 50%;
+    /* ===== ACCENT (AMARELO SICOOB — #F2AE21 dark) ===== */
+    --accent: 40 89% 54%;
     --accent-foreground: 190 100% 13%;
 
     /* ===== DESTRUCTIVE ===== */
