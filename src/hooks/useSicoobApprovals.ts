@@ -24,6 +24,19 @@ export const useApprovalRequests = (orderId?: string) => {
   const { profile } = useAuth();
   const queryClient = useQueryClient();
 
+  const recordHistory = async (orderId: string, prevStatus: string, newStatus: string, comment?: string) => {
+    const { error } = await supabase
+      .from("sicoob_order_history")
+      .insert({
+        order_id: orderId,
+        user_id: profile?.id,
+        previous_status: prevStatus,
+        new_status: newStatus,
+        comment: comment || null,
+      });
+    if (error) console.error("Error recording history:", error);
+  };
+
   const { data: requests, isLoading } = useQuery({
     queryKey: ["approval_requests", orderId],
     queryFn: async () => {
@@ -51,6 +64,7 @@ export const useApprovalRequests = (orderId?: string) => {
       reason: string; 
       amount: number; 
       threshold: number;
+      previousStatus: string;
     }) => {
       const { error: requestError } = await supabase
         .from("sicoob_approval_requests")
@@ -71,11 +85,19 @@ export const useApprovalRequests = (orderId?: string) => {
         .eq("id", payload.orderId);
 
       if (orderError) throw orderError;
+
+      await recordHistory(
+        payload.orderId, 
+        payload.previousStatus, 
+        'waiting_approval', 
+        `Solicitação de aprovação: ${payload.reason}`
+      );
     },
     onSuccess: () => {
       toast.success("Solicitação de aprovação enviada");
       queryClient.invalidateQueries({ queryKey: ["approval_requests"] });
       queryClient.invalidateQueries({ queryKey: ["sicoob_orders"] });
+      queryClient.invalidateQueries({ queryKey: ["sicoob_order_history", orderId] });
     },
     onError: (error: any) => {
       toast.error("Erro ao enviar solicitação: " + error.message);
@@ -83,7 +105,7 @@ export const useApprovalRequests = (orderId?: string) => {
   });
 
   const approveRequest = useMutation({
-    mutationFn: async (payload: { requestId: string; orderId: string }) => {
+    mutationFn: async (payload: { requestId: string; orderId: string; previousStatus: string }) => {
       const { error: requestError } = await supabase
         .from("sicoob_approval_requests")
         .update({
@@ -97,18 +119,26 @@ export const useApprovalRequests = (orderId?: string) => {
       const { error: orderError } = await supabase
         .from("sicoob_orders")
         .update({ 
-          status: 'pending', // Volta para pendente mas aprovado pela alçada
+          status: 'confirmed', 
           approved_by: profile?.id,
           approved_at: new Date().toISOString()
         })
         .eq("id", payload.orderId);
 
       if (orderError) throw orderError;
+
+      await recordHistory(
+        payload.orderId, 
+        payload.previousStatus, 
+        'confirmed', 
+        'Solicitação de alçada aprovada por gestor'
+      );
     },
     onSuccess: () => {
       toast.success("Solicitação aprovada com sucesso");
       queryClient.invalidateQueries({ queryKey: ["approval_requests"] });
       queryClient.invalidateQueries({ queryKey: ["sicoob_orders"] });
+      queryClient.invalidateQueries({ queryKey: ["sicoob_order_history", orderId] });
     },
     onError: (error: any) => {
       toast.error("Erro ao aprovar: " + error.message);
@@ -116,7 +146,7 @@ export const useApprovalRequests = (orderId?: string) => {
   });
 
   const rejectRequest = useMutation({
-    mutationFn: async (payload: { requestId: string; orderId: string; reason: string }) => {
+    mutationFn: async (payload: { requestId: string; orderId: string; reason: string; previousStatus: string }) => {
       const { error: requestError } = await supabase
         .from("sicoob_approval_requests")
         .update({
@@ -134,14 +164,48 @@ export const useApprovalRequests = (orderId?: string) => {
         .eq("id", payload.orderId);
 
       if (orderError) throw orderError;
+
+      await recordHistory(
+        payload.orderId, 
+        payload.previousStatus, 
+        'rejected', 
+        `Solicitação de alçada rejeitada: ${payload.reason}`
+      );
     },
     onSuccess: () => {
       toast.success("Solicitação rejeitada");
       queryClient.invalidateQueries({ queryKey: ["approval_requests"] });
       queryClient.invalidateQueries({ queryKey: ["sicoob_orders"] });
+      queryClient.invalidateQueries({ queryKey: ["sicoob_order_history", orderId] });
     },
     onError: (error: any) => {
       toast.error("Erro ao rejeitar: " + error.message);
+    }
+  });
+
+  const updateStatus = useMutation({
+    mutationFn: async (payload: { orderId: string; newStatus: string; previousStatus: string; comment?: string }) => {
+      const { error: orderError } = await supabase
+        .from("sicoob_orders")
+        .update({ status: payload.newStatus })
+        .eq("id", payload.orderId);
+
+      if (orderError) throw orderError;
+
+      await recordHistory(
+        payload.orderId,
+        payload.previousStatus,
+        payload.newStatus,
+        payload.comment
+      );
+    },
+    onSuccess: () => {
+      toast.success("Status do pedido atualizado");
+      queryClient.invalidateQueries({ queryKey: ["sicoob_orders"] });
+      queryClient.invalidateQueries({ queryKey: ["sicoob_order_history", orderId] });
+    },
+    onError: (error: any) => {
+      toast.error("Erro ao atualizar status: " + error.message);
     }
   });
 
@@ -150,6 +214,7 @@ export const useApprovalRequests = (orderId?: string) => {
     isLoading,
     createRequest,
     approveRequest,
-    rejectRequest
+    rejectRequest,
+    updateStatus
   };
 };
