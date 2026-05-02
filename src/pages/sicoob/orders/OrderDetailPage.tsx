@@ -9,6 +9,7 @@ import {
   MessageSquare,
   AlertCircle,
   CheckCircle,
+  Badge as LucideBadge,
   AlertTriangle,
   Plus,
   Trash2,
