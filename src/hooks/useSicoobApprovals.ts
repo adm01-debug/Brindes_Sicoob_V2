@@ -21,7 +21,7 @@ export interface ApprovalRequest {
 }
 
 export const useApprovalRequests = (orderId?: string) => {
-  const { profile } = useAuth();
+  const { profile, isAdmin, isSupervisorOrAbove, isGerentePa } = useAuth();
   const queryClient = useQueryClient();
 
   const recordHistory = async (orderId: string, prevStatus: string, newStatus: string, comment?: string) => {
