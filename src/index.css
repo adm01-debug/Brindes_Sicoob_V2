@@ -113,13 +113,27 @@ html[data-scroll-locked] body {
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    /* ===== ESTADOS ===== */
-    --success: 142 71% 45%;
+    /* ===== ESTADOS (harmonizados com paleta Sicoob 2024) ===== */
+    --success: 155 60% 38%;
     --success-foreground: 0 0% 100%;
     --warning: 38 92% 50%;
-    --warning-foreground: 0 0% 100%;
+    --warning-foreground: 190 100% 13%;
     --info: 200 85% 55%;
     --info-foreground: 0 0% 100%;
+
+    /* ===== STATUS DO WORKFLOW SICOOB (fulfillment_status) ===== */
+    --status-production: 38 92% 50%;
+    --status-production-foreground: 190 100% 13%;
+    --status-separation: 200 85% 55%;
+    --status-separation-foreground: 0 0% 100%;
+    --status-transit: 271 53% 47%;
+    --status-transit-foreground: 0 0% 100%;
+    --status-delivered: 155 60% 38%;
+    --status-delivered-foreground: 0 0% 100%;
+    --status-completed: 190 100% 13%;
+    --status-completed-foreground: 0 0% 100%;
+    --status-cancelled: 0 72% 51%;
+    --status-cancelled-foreground: 0 0% 100%;
 
     /* ===== CART (EMERALD) ===== */
     --cart: 152 69% 36%;
