@@ -385,31 +385,78 @@ export default function OrderDetailPage() {
                           </DialogDescription>
                         </DialogHeader>
                         <div className="space-y-4 py-4">
-                          <div className="relative">
-                            <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                            <Input 
-                              placeholder="Buscar produto..." 
-                              className="pl-9"
-                              value={productSearch}
-                              onChange={(e) => setProductSearch(e.target.value)}
-                            />
+                          <div className="flex gap-2">
+                            <div className="relative flex-1">
+                              <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                              <Input 
+                                placeholder="Buscar produto..." 
+                                className="pl-9"
+                                value={productSearch}
+                                onChange={(e) => setProductSearch(e.target.value)}
+                              />
+                            </div>
+                            <Select value={selectedCategoryId} onValueChange={setSelectedCategoryId}>
+                              <SelectTrigger className="w-[140px]">
+                                <SelectValue placeholder="Categoria" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="all">Todas</SelectItem>
+                                {categories?.map(cat => (
+                                  <SelectItem key={cat.id} value={cat.id.toString()}>
+                                    {cat.name}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
                           </div>
                           
-                          <div className="space-y-2 max-h-48 overflow-y-auto">
-                            {products?.map(product => (
-                              <div 
-                                key={product.id}
-                                className={`p-2 border rounded cursor-pointer flex justify-between items-center transition-colors ${selectedProductId === product.id ? 'border-primary bg-primary/5' : 'hover:bg-muted'}`}
-                                onClick={() => setSelectedProductId(product.id)}
-                              >
-                                <div>
-                                  <p className="text-sm font-medium">{product.name}</p>
-                                  <p className="text-xs text-muted-foreground">R$ {product.price.toLocaleString('pt-BR')}</p>
+                          <div className="space-y-2 max-h-48 overflow-y-auto border rounded-md p-1">
+                            {isLoadingProducts ? (
+                              <div className="p-4 text-center text-xs text-muted-foreground">Carregando produtos...</div>
+                            ) : products?.length === 0 ? (
+                              <div className="p-4 text-center text-xs text-muted-foreground">Nenhum produto encontrado.</div>
+                            ) : (
+                              products?.map(product => (
+                                <div 
+                                  key={product.id}
+                                  className={`p-2 border rounded cursor-pointer flex justify-between items-center transition-colors ${selectedProductId === product.id ? 'border-primary bg-primary/5' : 'hover:bg-muted'}`}
+                                  onClick={() => {
+                                    setSelectedProductId(product.id);
+                                    setSelectedVariantColor(null); // Reset variation when changing product
+                                  }}
+                                >
+                                  <div>
+                                    <p className="text-sm font-medium">{product.name}</p>
+                                    <p className="text-xs text-muted-foreground">R$ {product.price.toLocaleString('pt-BR')}</p>
+                                  </div>
+                                  {selectedProductId === product.id && <CheckCircle className="h-4 w-4 text-primary" />}
                                 </div>
-                                {selectedProductId === product.id && <CheckCircle className="h-4 w-4 text-primary" />}
-                              </div>
-                            ))}
+                              ))
+                            )}
                           </div>
+
+                          {selectedProduct && selectedProduct.colors && selectedProduct.colors.length > 0 && (
+                            <div className="space-y-2">
+                              <label className="text-xs font-medium">Variação de Cor</label>
+                              <div className="flex flex-wrap gap-2">
+                                {selectedProduct.colors.map((color, idx) => (
+                                  <button
+                                    key={`${color.name}-${idx}`}
+                                    type="button"
+                                    onClick={() => setSelectedVariantColor(color.name)}
+                                    className={cn(
+                                      "px-3 py-1.5 rounded-full text-xs border transition-all",
+                                      selectedVariantColor === color.name 
+                                        ? "bg-primary text-primary-foreground border-primary" 
+                                        : "bg-background hover:border-primary/50"
+                                    )}
+                                  >
+                                    {color.name}
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+                          )}
 
                           {selectedProductId && (
                             <div className="flex items-center gap-4 pt-2">
