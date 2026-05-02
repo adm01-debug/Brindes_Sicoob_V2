@@ -4723,6 +4723,142 @@ export type Database = {
         }
         Relationships: []
       }
+      sicoob_order_history: {
+        Row: {
+          comment: string | null
+          created_at: string
+          id: string
+          new_status: string
+          order_id: string | null
+          previous_status: string | null
+          user_id: string | null
+        }
+        Insert: {
+          comment?: string | null
+          created_at?: string
+          id?: string
+          new_status: string
+          order_id?: string | null
+          previous_status?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string
+          id?: string
+          new_status?: string
+          order_id?: string | null
+          previous_status?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sicoob_order_history_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "sicoob_orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sicoob_order_items: {
+        Row: {
+          created_at: string
+          id: string
+          order_id: string | null
+          product_id: string | null
+          product_name: string
+          quantity: number
+          total_price: number
+          unit_price: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          order_id?: string | null
+          product_id?: string | null
+          product_name: string
+          quantity?: number
+          total_price: number
+          unit_price: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          order_id?: string | null
+          product_id?: string | null
+          product_name?: string
+          quantity?: number
+          total_price?: number
+          unit_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sicoob_order_items_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "sicoob_orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sicoob_orders: {
+        Row: {
+          cooperative_id: string | null
+          created_at: string
+          created_by: string | null
+          delivery_address: string | null
+          id: string
+          notes: string | null
+          pa_id: string | null
+          status: string
+          total_amount: number | null
+          tracking_code: string | null
+          updated_at: string
+        }
+        Insert: {
+          cooperative_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          delivery_address?: string | null
+          id?: string
+          notes?: string | null
+          pa_id?: string | null
+          status?: string
+          total_amount?: number | null
+          tracking_code?: string | null
+          updated_at?: string
+        }
+        Update: {
+          cooperative_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          delivery_address?: string | null
+          id?: string
+          notes?: string | null
+          pa_id?: string | null
+          status?: string
+          total_amount?: number | null
+          tracking_code?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sicoob_orders_cooperative_id_fkey"
+            columns: ["cooperative_id"]
+            isOneToOne: false
+            referencedRelation: "cooperativas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sicoob_orders_pa_id_fkey"
+            columns: ["pa_id"]
+            isOneToOne: false
+            referencedRelation: "postos_atendimento"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       simulator_wizard_drafts: {
         Row: {
           created_at: string
@@ -5332,6 +5468,7 @@ export type Database = {
         Args: { _ip: string; _user_id: string }
         Returns: undefined
       }
+      check_migration_status: { Args: never; Returns: Json }
       check_rate_limit: {
         Args: {
           _block_duration_seconds?: number
