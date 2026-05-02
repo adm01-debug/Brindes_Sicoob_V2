@@ -150,11 +150,11 @@ export const CooperativasTab = () => {
               <div className="grid gap-4 py-4">
                 <div className="space-y-2">
                   <label htmlFor="name">Nome da Cooperativa</label>
-                  <Input id="name" name="name" placeholder="Ex: Sicoob Credisul" required />
+                  <Input id="name" name="nome" placeholder="Ex: Sicoob Credisul" required />
                 </div>
                 <div className="space-y-2">
                   <label htmlFor="code">Código/Número</label>
-                  <Input id="code" name="code" placeholder="Ex: 4321" required />
+                  <Input id="code" name="codigo" placeholder="Ex: 4321" required />
                 </div>
               </div>
               <DialogFooter>
@@ -239,7 +239,7 @@ export const CooperativasTab = () => {
                   <label htmlFor="edit-name">Nome da Cooperativa</label>
                   <Input
                     id="edit-name"
-                    name="name"
+                    name="nome"
                     defaultValue={editingCoop.nome}
                     required
                   />
@@ -248,7 +248,7 @@ export const CooperativasTab = () => {
                   <label htmlFor="edit-code">Código/Número</label>
                   <Input
                     id="edit-code"
-                    name="code"
+                    name="codigo"
                     defaultValue={editingCoop.codigo}
                     required
                   />
