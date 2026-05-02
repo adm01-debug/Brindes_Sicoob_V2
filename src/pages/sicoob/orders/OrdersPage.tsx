@@ -62,6 +62,9 @@ const FUNNEL_STATUSES = Object.keys(STATUS_MAP);
 
 export default function OrdersPage() {
   const navigate = useNavigate();
+  const { isVendedorRole, isAdmin } = useAuth();
+  const canCreateOrder = isVendedorRole || isAdmin;
+
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [paFilter, setPaFilter] = useState<string>("all");
