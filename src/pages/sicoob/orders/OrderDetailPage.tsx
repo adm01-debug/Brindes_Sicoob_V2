@@ -5,17 +5,11 @@ import { PageSEO } from "@/components/seo/PageSEO";
 import { Button } from "@/components/ui/button";
 import { 
   ArrowLeft, 
-  Clock, 
-  User, 
-  MapPin, 
   Package, 
-  History,
   MessageSquare,
   AlertCircle,
   CheckCircle,
-  XCircle,
   AlertTriangle,
-  Info,
   Plus,
   Trash2,
   Search
@@ -30,8 +24,6 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePaBudget } from "@/hooks/usePaBudget";
 import { useApprovalThreshold } from "@/hooks/useApprovalThreshold";
@@ -49,7 +41,6 @@ import {
   DialogTitle,
   DialogTrigger
 } from "@/components/ui/dialog";
-import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { 
   Tooltip, 
@@ -57,49 +48,38 @@ import {
   TooltipProvider, 
   TooltipTrigger 
 } from "@/components/ui/tooltip";
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from "@/components/ui/select";
+import { useSicoobOrder, useSicoobOrderDetails } from "@/hooks/sicoob/useSicoobOrder";
+import { OrderStatusBadge } from "@/components/sicoob/orders/OrderStatusBadge";
+import { OrderActionDialog } from "@/components/sicoob/orders/OrderActionDialog";
+import { OrderItemsHistory } from "@/components/sicoob/orders/OrderItemsHistory";
 
 export default function OrderDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { profile, isSupervisorOrAbove, isGerentePa } = useAuth();
+  
   const [requestReason, setRequestReason] = useState("");
   const [rejectionReason, setRejectionReason] = useState("");
   const [isRequestDialogOpen, setIsRequestDialogOpen] = useState(false);
   const [isRejectDialogOpen, setIsRejectDialogOpen] = useState(false);
   const [isAddItemDialogOpen, setIsAddItemDialogOpen] = useState(false);
+  
   const [productSearch, setProductSearch] = useState("");
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>("all");
   const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
   const [selectedVariantColor, setSelectedVariantColor] = useState<string | null>(null);
   const [itemQuantity, setItemQuantity] = useState(1);
 
+  const { data: orderData, isLoading: isLoadingOrder } = useSicoobOrder(id);
+  const { items: orderItems, logs: itemLogs } = useSicoobOrderDetails(id);
 
-  const { data: orderData, isLoading: isLoadingOrder } = useQuery({
-    queryKey: ["sicoob_order", id],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("sicoob_orders")
-        .select("id, cooperative_id, pa_id, created_by, status, total_amount, notes, delivery_address, tracking_code, created_at, updated_at, approved_by, approved_at, order_number")
-        .eq("id", id)
-        .single();
-      if (error) throw error;
-      return data;
-    },
-    enabled: !!id
-  });
-
-  const { data: orderItems } = useQuery({
-    queryKey: ["sicoob_order_items", id],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("sicoob_order_items")
-        .select("id, order_id, product_id, product_name, quantity, unit_price, total_price")
-        .eq("order_id", id);
-      if (error) throw error;
-      return data;
-    },
-    enabled: !!id
-  });
 
   const { budget, remainingBudget } = usePaBudget(orderData?.pa_id);
   const { threshold, needsApproval } = useApprovalThreshold();
@@ -121,31 +101,10 @@ export default function OrderDetailPage() {
     products?.find(p => p.id === selectedProductId),
   [products, selectedProductId]);
 
-
   const activeRequest = useMemo(() => 
     requests?.find(r => r.status === 'pending'), 
   [requests]);
 
-  const { data: itemLogs } = useQuery({
-    queryKey: ["sicoob_order_item_logs", id],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("sicoob_order_item_logs")
-        .select(`
-          id,
-          action,
-          old_data,
-          new_data,
-          created_at,
-          user:profiles!user_id(display_name)
-        `)
-        .eq("order_id", id)
-        .order("created_at", { ascending: false });
-      if (error) throw error;
-      return data;
-    },
-    enabled: !!id
-  });
 
 
   const handleAddItem = () => {
@@ -302,43 +261,29 @@ export default function OrderDetailPage() {
           <div>
             <div className="flex items-center gap-2">
               <h1 className="text-2xl font-bold">Pedido #{orderData.order_number}</h1>
-              <Badge variant="secondary" className={
-                orderData.status === 'waiting_approval' ? "bg-amber-500/10 text-amber-500 border-amber-500/20" :
-                orderData.status === 'rejected' ? "bg-red-500/10 text-red-500 border-red-500/20" :
-                "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
-              }>
-                {orderData.status === 'waiting_approval' ? "Aguardando Aprovação" : 
-                 orderData.status === 'rejected' ? "Rejeitado" : 
-                 "Confirmado"}
-              </Badge>
+              <OrderStatusBadge status={orderData.status} />
             </div>
             <p className="text-sm text-muted-foreground">Criado em {new Date(orderData.created_at).toLocaleString('pt-BR')}</p>
           </div>
           <div className="ml-auto flex gap-2">
             {activeRequest && canApprove ? (
               <>
-                <Dialog open={isRejectDialogOpen} onOpenChange={setIsRejectDialogOpen}>
-                  <DialogTrigger asChild>
-                    <Button variant="outline" className="text-destructive">Rejeitar</Button>
-                  </DialogTrigger>
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle>Rejeitar Pedido</DialogTitle>
-                      <DialogDescription>
-                        Informe o motivo da rejeição deste pedido.
-                      </DialogDescription>
-                    </DialogHeader>
-                    <Textarea 
-                      placeholder="Motivo da rejeição..." 
-                      value={rejectionReason}
-                      onChange={(e) => setRejectionReason(e.target.value)}
-                    />
-                    <DialogFooter>
-                      <Button variant="outline" onClick={() => setIsRejectDialogOpen(false)}>Cancelar</Button>
-                      <Button variant="destructive" onClick={handleReject}>Confirmar Rejeição</Button>
-                    </DialogFooter>
-                  </DialogContent>
-                </Dialog>
+                <Button variant="outline" className="text-destructive" onClick={() => setIsRejectDialogOpen(true)}>
+                  Rejeitar
+                </Button>
+
+                <OrderActionDialog
+                  isOpen={isRejectDialogOpen}
+                  onOpenChange={setIsRejectDialogOpen}
+                  title="Rejeitar Pedido"
+                  description="Informe o motivo da rejeição deste pedido."
+                  placeholder="Motivo da rejeição..."
+                  confirmLabel="Confirmar Rejeição"
+                  confirmVariant="destructive"
+                  value={rejectionReason}
+                  onValueChange={setRejectionReason}
+                  onConfirm={handleReject}
+                />
 
                 <Button 
                   className="bg-emerald-600 hover:bg-emerald-700" 
@@ -349,35 +294,24 @@ export default function OrderDetailPage() {
                 </Button>
               </>
             ) : orderData.status === 'pending' && isOverThreshold && !activeRequest ? (
-              <Dialog open={isRequestDialogOpen} onOpenChange={setIsRequestDialogOpen}>
-                <DialogTrigger asChild>
-                  <Button className="bg-amber-600 hover:bg-amber-700 text-white">
-                    Solicitar Aprovação
-                  </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Solicitar Aprovação de Alçada</DialogTitle>
-                    <DialogDescription>
-                      Este pedido de <strong>R$ {orderTotal.toLocaleString('pt-BR')}</strong> excede sua alçada de <strong>R$ {threshold.toLocaleString('pt-BR')}</strong>.
-                    </DialogDescription>
-                  </DialogHeader>
-                  <div className="space-y-4 py-4">
-                    <p className="text-sm font-medium">Justifique a necessidade deste pedido:</p>
-                    <Textarea 
-                      placeholder="Ex: Reposição urgente de material promocional..." 
-                      value={requestReason}
-                      onChange={(e) => setRequestReason(e.target.value)}
-                    />
-                  </div>
-                  <DialogFooter>
-                    <Button variant="outline" onClick={() => setIsRequestDialogOpen(false)}>Cancelar</Button>
-                    <Button className="bg-amber-600 hover:bg-amber-700" onClick={handleRequestApproval}>
-                      Enviar Solicitação
-                    </Button>
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>
+              <>
+                <Button className="bg-amber-600 hover:bg-amber-700 text-white" onClick={() => setIsRequestDialogOpen(true)}>
+                  Solicitar Aprovação
+                </Button>
+
+                <OrderActionDialog
+                  isOpen={isRequestDialogOpen}
+                  onOpenChange={setIsRequestDialogOpen}
+                  title="Solicitar Aprovação de Alçada"
+                  description={`Este pedido de R$ ${orderTotal.toLocaleString('pt-BR')} excede sua alçada de R$ ${threshold.toLocaleString('pt-BR')}. Justifique a necessidade deste pedido:`}
+                  placeholder="Ex: Reposição urgente de material promocional..."
+                  confirmLabel="Enviar Solicitação"
+                  confirmVariant="default"
+                  value={requestReason}
+                  onValueChange={setRequestReason}
+                  onConfirm={handleRequestApproval}
+                />
+              </>
             ) : null}
           </div>
         </div>
