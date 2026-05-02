@@ -240,17 +240,27 @@ export default function OrderDetailPage() {
     }
   };
 
-  const handleStatusUpdate = (newStatus: any) => {
-    const { data: updateData, error } = supabase
-      .from('orders')
-      .update({ fulfillment_status: newStatus })
-      .eq('id', id);
-    
-    if (error) {
-      toast.error("Erro ao atualizar status: " + error.message);
-    } else {
+  const handleStatusUpdate = async (newStatus: any) => {
+    try {
+      const currentStatus = orderData?.fulfillment_status || 'pending';
+      
+      // Validação de transição (Sincronização bidirecional/Bloqueio)
+      if (!canTransitionTo(currentStatus, newStatus)) {
+        toast.error(`Transição inválida de ${currentStatus} para ${newStatus}`);
+        return;
+      }
+
+      const { error } = await supabase
+        .from('orders')
+        .update({ fulfillment_status: newStatus, updated_at: new Date().toISOString() })
+        .eq('id', id);
+      
+      if (error) throw error;
+
       toast.success("Status de produção atualizado");
       refetchOrder();
+    } catch (error: any) {
+      toast.error("Erro ao atualizar status: " + error.message);
     }
   };
 
@@ -265,6 +275,15 @@ export default function OrderDetailPage() {
   }
 
   const canApprove = isSupervisorOrAbove || (isGerentePa && orderData?.pa_id === profile?.pa_id);
+  
+  // Controle de permissões por aba
+  const allowedTabs = useMemo(() => {
+    const tabs = ["status", "logistics", "invoices", "timeline"];
+    if (isSupervisorOrAbove) {
+      tabs.push("payments", "approvals", "templates");
+    }
+    return tabs;
+  }, [isSupervisorOrAbove]);
 
   return (
     <MainLayout>
@@ -526,36 +545,45 @@ export default function OrderDetailPage() {
                   <Package className="h-4 w-4 mr-2" />
                   Itens
                 </TabsTrigger>
-                <TabsTrigger value="logistics" className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none bg-transparent px-0 pb-2 h-auto">
-                  <Truck className="h-4 w-4 mr-2" />
-                  Logística
-                </TabsTrigger>
-                <TabsTrigger value="invoices" className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none bg-transparent px-0 pb-2 h-auto">
-                  <FileText className="h-4 w-4 mr-2" />
-                  NF
-                </TabsTrigger>
-                {(isSupervisorOrAbove || isGerentePa) && (
+                {allowedTabs.includes("logistics") && (
+                  <TabsTrigger value="logistics" className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none bg-transparent px-0 pb-2 h-auto">
+                    <Truck className="h-4 w-4 mr-2" />
+                    Logística
+                  </TabsTrigger>
+                )}
+                {allowedTabs.includes("invoices") && (
+                  <TabsTrigger value="invoices" className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none bg-transparent px-0 pb-2 h-auto">
+                    <FileText className="h-4 w-4 mr-2" />
+                    NF
+                  </TabsTrigger>
+                )}
+                {allowedTabs.includes("payments") && (
                   <TabsTrigger value="payments" className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none bg-transparent px-0 pb-2 h-auto">
                     <CreditCard className="h-4 w-4 mr-2" />
                     Pagamento
                   </TabsTrigger>
                 )}
-                <TabsTrigger value="pilots" className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none bg-transparent px-0 pb-2 h-auto">
-                  <ImageIcon className="h-4 w-4 mr-2" />
-                  Aprovações
-                </TabsTrigger>
-                <TabsTrigger value="templates" className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none bg-transparent px-0 pb-2 h-auto">
-                  <Layout className="h-4 w-4 mr-2" />
-                  Templates
-                </TabsTrigger>
-                <TabsTrigger value="timeline" className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none bg-transparent px-0 pb-2 h-auto">
-                  <History className="h-4 w-4 mr-2" />
-                  Timeline
-                </TabsTrigger>
+                {allowedTabs.includes("approvals") && (
+                  <TabsTrigger value="pilots" className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none bg-transparent px-0 pb-2 h-auto">
+                    <ImageIcon className="h-4 w-4 mr-2" />
+                    Aprovações
+                  </TabsTrigger>
+                )}
+                {allowedTabs.includes("templates") && (
+                  <TabsTrigger value="templates" className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none bg-transparent px-0 pb-2 h-auto">
+                    <Layout className="h-4 w-4 mr-2" />
+                    Templates
+                  </TabsTrigger>
+                )}
+                {allowedTabs.includes("timeline") && (
+                  <TabsTrigger value="timeline" className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none bg-transparent px-0 pb-2 h-auto">
+                    <History className="h-4 w-4 mr-2" />
+                    Timeline
+                  </TabsTrigger>
+                )}
               </TabsList>
 
               <TabsContent value="items" className="space-y-4 pt-4">
-                {/* ... existing card content for items moved here if needed or kept outside ... */}
                 <Card>
                    <CardHeader>
                      <CardTitle className="text-sm">Auditoria de Itens</CardTitle>
@@ -566,31 +594,41 @@ export default function OrderDetailPage() {
                 </Card>
               </TabsContent>
 
-              <TabsContent value="logistics" className="pt-6">
-                <OrderLogisticsTab orderId={id!} />
-              </TabsContent>
+              {allowedTabs.includes("logistics") && (
+                <TabsContent value="logistics" className="pt-6">
+                  <OrderLogisticsTab orderId={id!} />
+                </TabsContent>
+              )}
 
-              <TabsContent value="invoices" className="pt-6">
-                <OrderInvoicesTab orderId={id!} />
-              </TabsContent>
+              {allowedTabs.includes("invoices") && (
+                <TabsContent value="invoices" className="pt-6">
+                  <OrderInvoicesTab orderId={id!} />
+                </TabsContent>
+              )}
 
-              {(isSupervisorOrAbove || isGerentePa) && (
+              {allowedTabs.includes("payments") && (
                 <TabsContent value="payments" className="pt-6">
                   <OrderPaymentsTab orderId={id!} />
                 </TabsContent>
               )}
 
-              <TabsContent value="pilots" className="pt-6">
-                <OrderPilotApprovalsTab orderId={id!} />
-              </TabsContent>
+              {allowedTabs.includes("approvals") && (
+                <TabsContent value="pilots" className="pt-6">
+                  <OrderPilotApprovalsTab orderId={id!} />
+                </TabsContent>
+              )}
               
-              <TabsContent value="templates" className="pt-6">
-                <OrderTemplatesTab orderId={id!} />
-              </TabsContent>
+              {allowedTabs.includes("templates") && (
+                <TabsContent value="templates" className="pt-6">
+                  <OrderTemplatesTab orderId={id!} />
+                </TabsContent>
+              )}
 
-              <TabsContent value="timeline" className="pt-6">
-                <OrderAuditTimeline orderId={id!} />
-              </TabsContent>
+              {allowedTabs.includes("timeline") && (
+                <TabsContent value="timeline" className="pt-6">
+                  <OrderAuditTimeline orderId={id!} />
+                </TabsContent>
+              )}
             </Tabs>
           </div>
           <div className="space-y-6">
@@ -602,7 +640,7 @@ export default function OrderDetailPage() {
                 <div className="space-y-2">
                   <Label className="text-xs">Status do Workflow</Label>
                   <Select 
-                    defaultValue={orderData.fulfillment_status || 'pending'} 
+                    value={orderData.fulfillment_status || 'pending'} 
                     onValueChange={handleStatusUpdate}
                   >
                     <SelectTrigger>
@@ -654,9 +692,8 @@ export default function OrderDetailPage() {
                     </AlertDescription>
                   </Alert>
                 )}
-              </CardContent>
-            </Card>
-          </div>
+
+                {!isOverBudget && (
                   <div className="p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-lg">
                     <p className="text-xs text-emerald-600 font-medium flex items-center gap-1">
                       <CheckCircle className="h-3 w-3" />
