@@ -75,10 +75,16 @@ export default function ColorDocumentationPage() {
               Tokens oficiais baseados na peça Sicoob 2024 (Poupança Premiada).
             </p>
           </div>
-          <Button variant="outline" className="gap-2" onClick={() => exportTokensJSON()}>
-            <Download className="h-4 w-4" />
-            Exportar Tokens (JSON)
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" className="gap-2" onClick={toggleTheme}>
+              {theme === "dark" ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              Modo Demo
+            </Button>
+            <Button variant="outline" className="gap-2" onClick={() => exportTokensJSON()}>
+              <Download className="h-4 w-4" />
+              Exportar Tokens (JSON)
+            </Button>
+          </div>
         </div>
 
         {/* 1. Core Tokens */}
@@ -203,9 +209,30 @@ export default function ColorDocumentationPage() {
         </section>
         {/* 4. Contrast Matrix */}
         <section className="space-y-6">
-          <div className="flex items-center gap-2 border-b pb-2">
-            <Hash className="h-5 w-5 text-brand" />
-            <h2 className="text-2xl font-semibold">Matriz de Contraste (WCAG AA)</h2>
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b pb-2">
+            <div className="flex items-center gap-2">
+              <Hash className="h-5 w-5 text-brand" />
+              <h2 className="text-2xl font-semibold">Matriz de Contraste (WCAG AA)</h2>
+            </div>
+            
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-muted-foreground">Filtrar:</span>
+              <Select value={filterToken} onValueChange={setFilterToken}>
+                <SelectTrigger className="w-[180px] h-8">
+                  <SelectValue placeholder="Todos os tokens" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos</SelectItem>
+                  <SelectItem value="brand">Brand</SelectItem>
+                  <SelectItem value="primary">Primary</SelectItem>
+                  <SelectItem value="reward">Reward</SelectItem>
+                  <SelectItem value="accent">Accent</SelectItem>
+                  <SelectItem value="success">Success</SelectItem>
+                  <SelectItem value="warning">Warning</SelectItem>
+                  <SelectItem value="destructive">Destructive</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
           <Card>
             <CardContent className="p-0">
@@ -220,10 +247,17 @@ export default function ColorDocumentationPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  <ContrastRow token="brand" bg="background" label="Brand vs BG" expected="4.5+" ratio="4.64" pass={true} />
-                  <ContrastRow token="primary" bg="background" label="Primary vs BG" expected="4.5+" ratio="12.29" pass={true} />
-                  <ContrastRow token="reward" bg="background" label="Reward vs BG" expected="4.5+" ratio="8.83" pass={true} />
-                  <ContrastRow token="accent" bg="primary" label="Accent vs Institucional" expected="4.5+" ratio="7.58" pass={true} />
+                  {filteredContrast.map(data => (
+                    <ContrastRow 
+                      key={data.token}
+                      token={data.token} 
+                      bg={data.bg} 
+                      label={`${data.token} vs BG`} 
+                      ratio={data.ratio} 
+                      pass={data.pass}
+                      usage={data.usage}
+                    />
+                  ))}
                 </TableBody>
               </Table>
             </CardContent>
@@ -301,14 +335,15 @@ export default function ColorDocumentationPage() {
   );
 }
 
-function ContrastRow({ token, bg, label, expected, ratio, pass }: { 
-  token: string; bg: string; label: string; expected: string; ratio: string; pass: boolean 
+function ContrastRow({ token, bg, label, ratio, pass, usage }: { 
+  token: string; bg: string; label: string; ratio: string; pass: boolean; usage: string;
 }) {
+  const bgClass = TOKEN_MAP[token as keyof typeof TOKEN_MAP] || "bg-muted";
   return (
     <TableRow>
       <TableCell className="font-medium">
         <div className="flex items-center gap-2">
-          <div className={`w-3 h-3 rounded bg-${token}`} />
+          <div className={cn("w-3 h-3 rounded", bgClass)} />
           {token}
         </div>
       </TableCell>
@@ -319,7 +354,7 @@ function ContrastRow({ token, bg, label, expected, ratio, pass }: {
           {pass ? "PASS" : "FAIL"}
         </Badge>
       </TableCell>
-      <TableCell className="text-xs text-muted-foreground">Texto normal, CTAs, Badges.</TableCell>
+      <TableCell className="text-xs text-muted-foreground">{usage}</TableCell>
     </TableRow>
   );
 }
