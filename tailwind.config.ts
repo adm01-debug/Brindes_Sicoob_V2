@@ -39,6 +39,20 @@ export default {
           DEFAULT: "hsl(var(--secondary))",
           foreground: "hsl(var(--secondary-foreground))",
         },
+        brand: {
+          DEFAULT: "hsl(var(--brand))",
+          hover: "hsl(var(--brand-hover))",
+          active: "hsl(var(--brand-active))",
+          glow: "hsl(var(--brand-glow))",
+          foreground: "hsl(var(--brand-foreground))",
+          soft: "hsl(var(--brand-soft))",
+        },
+        reward: {
+          DEFAULT: "hsl(var(--reward))",
+          hover: "hsl(var(--reward-hover))",
+          foreground: "hsl(var(--reward-foreground))",
+          soft: "hsl(var(--reward-soft))",
+        },
         destructive: {
           DEFAULT: "hsl(var(--destructive))",
           foreground: "hsl(var(--destructive-foreground))",
@@ -102,11 +116,23 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
-        // Status indicators (replacing gamification colors)
+        // Status indicators (Sicoob workflow + legacy)
         status: {
           active: "hsl(var(--success))",
           pending: "hsl(var(--warning))",
           inactive: "hsl(var(--muted-foreground))",
+          production: "hsl(var(--status-production))",
+          "production-foreground": "hsl(var(--status-production-foreground))",
+          separation: "hsl(var(--status-separation))",
+          "separation-foreground": "hsl(var(--status-separation-foreground))",
+          transit: "hsl(var(--status-transit))",
+          "transit-foreground": "hsl(var(--status-transit-foreground))",
+          delivered: "hsl(var(--status-delivered))",
+          "delivered-foreground": "hsl(var(--status-delivered-foreground))",
+          completed: "hsl(var(--status-completed))",
+          "completed-foreground": "hsl(var(--status-completed-foreground))",
+          cancelled: "hsl(var(--status-cancelled))",
+          "cancelled-foreground": "hsl(var(--status-cancelled-foreground))",
         },
         // Chart colors
         chart: {

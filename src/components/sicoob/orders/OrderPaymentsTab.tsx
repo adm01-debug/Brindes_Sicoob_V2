@@ -12,8 +12,8 @@ export function OrderPaymentsTab({ orderId }: OrderPaymentsTabProps) {
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'paid': return <CheckCircle2 className="h-4 w-4 text-emerald-500" />;
-      case 'pending': return <Clock className="h-4 w-4 text-amber-500" />;
+      case 'paid': return <CheckCircle2 className="h-4 w-4 text-success" />;
+      case 'pending': return <Clock className="h-4 w-4 text-warning" />;
       case 'overdue': return <AlertCircle className="h-4 w-4 text-destructive" />;
       default: return null;
     }
@@ -60,7 +60,7 @@ export function OrderPaymentsTab({ orderId }: OrderPaymentsTabProps) {
                     Vencimento: {new Date(payment.due_date).toLocaleDateString('pt-BR')}
                   </div>
                   {payment.paid_at && (
-                    <p className="text-xs text-emerald-600 font-medium">
+                    <p className="text-xs text-success font-medium">
                       Pago em: {new Date(payment.paid_at).toLocaleDateString('pt-BR')}
                     </p>
                   )}

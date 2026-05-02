@@ -34,9 +34,9 @@ export function OrderPilotApprovalsTab({ orderId }: OrderPilotApprovalsTabProps)
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case 'approved': return <Badge className="bg-emerald-500 hover:bg-emerald-600">Aprovado</Badge>;
+      case 'approved': return <Badge className="bg-success text-success-foreground hover:bg-success/90">Aprovado</Badge>;
       case 'rejected': return <Badge variant="destructive">Rejeitado</Badge>;
-      case 'revision': return <Badge variant="secondary" className="bg-amber-500 text-white hover:bg-amber-600">Revisão</Badge>;
+      case 'revision': return <Badge variant="secondary" className="bg-warning text-warning-foreground hover:bg-warning/90">Revisão</Badge>;
       case 'pending': return <Badge variant="outline" className="animate-pulse">Aguardando</Badge>;
       default: return <Badge variant="outline">{status}</Badge>;
     }
@@ -89,7 +89,7 @@ export function OrderPilotApprovalsTab({ orderId }: OrderPilotApprovalsTabProps)
                   </div>
                   <div className="flex flex-wrap gap-2">
                     <Button 
-                      className="bg-emerald-600 hover:bg-emerald-700"
+                      className="bg-success text-success-foreground hover:bg-success/90"
                       onClick={() => handleAction(approval.id, 'approved')}
                       disabled={updateApprovalStatus.isPending}
                     >
@@ -98,7 +98,7 @@ export function OrderPilotApprovalsTab({ orderId }: OrderPilotApprovalsTabProps)
                     </Button>
                     <Button 
                       variant="outline" 
-                      className="text-amber-600 border-amber-200 hover:bg-amber-50"
+                      className="text-warning border-warning/40 hover:bg-warning/10"
                       onClick={() => handleAction(approval.id, 'revision')}
                       disabled={updateApprovalStatus.isPending}
                     >

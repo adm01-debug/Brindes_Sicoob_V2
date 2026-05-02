@@ -308,10 +308,10 @@ export default function OrderDetailPage() {
 ...
       <div className="space-y-6">
         {activeRequest && (
-          <Alert className="bg-amber-500/10 border-amber-500/20">
-            <AlertTriangle className="h-5 w-5 text-amber-500" />
-            <AlertTitle className="text-amber-700">Solicitação de Aprovação Pendente</AlertTitle>
-            <AlertDescription className="text-amber-600">
+          <Alert className="bg-warning/10 border-warning/20">
+            <AlertTriangle className="h-5 w-5 text-warning" />
+            <AlertTitle className="text-warning">Solicitação de Aprovação Pendente</AlertTitle>
+            <AlertDescription className="text-warning/90">
               Este pedido excedeu a alçada de <strong>R$ {activeRequest.threshold_at_request.toLocaleString('pt-BR')}</strong> e aguarda aprovação de um gestor.
               <p className="mt-2"><strong>Motivo:</strong> {activeRequest.request_reason}</p>
             </AlertDescription>
@@ -360,7 +360,7 @@ export default function OrderDetailPage() {
                 />
 
                 <Button 
-                  className="bg-emerald-600 hover:bg-emerald-700" 
+                  className="bg-success text-success-foreground hover:bg-success/90" 
                   onClick={handleApprove}
                 >
                   <CheckCircle className="mr-2 h-4 w-4" />
@@ -369,7 +369,7 @@ export default function OrderDetailPage() {
               </>
             ) : orderData.status === 'pending' && isOverThreshold && !activeRequest ? (
               <>
-                <Button className="bg-amber-600 hover:bg-amber-700 text-white" onClick={() => setIsRequestDialogOpen(true)}>
+                <Button className="bg-warning text-warning-foreground hover:bg-warning/90" onClick={() => setIsRequestDialogOpen(true)}>
                   Solicitar Aprovação
                 </Button>
 
@@ -688,14 +688,14 @@ export default function OrderDetailPage() {
                     <span className="flex items-center gap-1.5">
                       Verba PA Disponível
                     </span>
-                    <span className={isOverBudget ? "text-destructive font-bold flex items-center gap-1" : "text-emerald-600 font-bold"}>
+                    <span className={isOverBudget ? "text-destructive font-bold flex items-center gap-1" : "text-success font-bold"}>
                       {isOverBudget && <AlertTriangle className="h-3 w-3" />}
                       R$ {remainingBudget.toLocaleString('pt-BR')}
                     </span>
                   </div>
                   <div className="w-full h-2.5 bg-secondary rounded-full overflow-hidden relative">
                     <div 
-                      className={`h-full transition-all duration-500 ${isOverBudget ? 'bg-destructive' : 'bg-emerald-500'}`} 
+                      className={`h-full transition-all duration-500 ${isOverBudget ? 'bg-destructive' : 'bg-success'}`} 
                       style={{ width: `${Math.min((orderTotal / Math.max(remainingBudget, 1)) * 100, 100)}%` }} 
                     />
                   </div>
@@ -711,8 +711,8 @@ export default function OrderDetailPage() {
                 )}
 
                 {!isOverBudget && (
-                  <div className="p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-lg">
-                    <p className="text-xs text-emerald-600 font-medium flex items-center gap-1">
+                  <div className="p-3 bg-success/10 border border-success/20 rounded-lg">
+                    <p className="text-xs text-success font-medium flex items-center gap-1">
                       <CheckCircle className="h-3 w-3" />
                       Dentro da alçada e verba disponível.
                     </p>

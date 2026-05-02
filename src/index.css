@@ -65,16 +65,34 @@ html[data-scroll-locked] body {
     --command-text-subtle: 220 10% 62%;
     --command-shadow: 222 25% 10% / 0.18;
 
-    /* ===== CORES PRIMÁRIAS (VERDE SICOOB — #003641) ===== */
+    /* ===== CORES PRIMÁRIAS (VERDE SICOOB INSTITUCIONAL — #003641) ===== */
+    /* Uso: logo, headers, tipografia âncora. NÃO usar como cor de ação dominante. */
     --primary: 190 100% 13%;
     --primary-hover: 190 100% 10%;
     --primary-active: 190 100% 8%;
     --primary-glow: 190 100% 20%;
     --primary-foreground: 0 0% 100%;
 
-    /* ===== CORES SECUNDÁRIAS (VERDE ÁGUA — #7DB61C) ===== */
+    /* ===== MARCA / AÇÃO (VERDE-TEAL SICOOB 2024 — #00AE9D) ===== */
+    /* Uso: CTAs principais, hero, ações de conversão, energia cooperativa. */
+    --brand: 175 100% 34%;
+    --brand-hover: 175 100% 28%;
+    --brand-active: 175 100% 22%;
+    --brand-glow: 175 100% 42%;
+    --brand-foreground: 0 0% 100%;
+    --brand-soft: 175 100% 34%;
+
+    /* ===== CORES SECUNDÁRIAS (VERDE-LIMA — #7DB61C) ===== */
+    /* Uso pontual: badges secundários, ações complementares. */
     --secondary: 82 73% 41%;
     --secondary-foreground: 0 0% 100%;
+
+    /* ===== REWARD (ROXO SELO PROMOCIONAL — #5C2D91) ===== */
+    /* Uso: pontos Coopera, cupons, badges de promoção. */
+    --reward: 271 53% 37%;
+    --reward-hover: 271 53% 30%;
+    --reward-foreground: 0 0% 100%;
+    --reward-soft: 271 53% 37%;
 
     /* ===== MUTED ===== */
     --muted: 220 14% 90%;
@@ -95,13 +113,27 @@ html[data-scroll-locked] body {
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    /* ===== ESTADOS ===== */
-    --success: 142 71% 45%;
+    /* ===== ESTADOS (harmonizados com paleta Sicoob 2024) ===== */
+    --success: 155 60% 38%;
     --success-foreground: 0 0% 100%;
     --warning: 38 92% 50%;
-    --warning-foreground: 0 0% 100%;
+    --warning-foreground: 190 100% 13%;
     --info: 200 85% 55%;
     --info-foreground: 0 0% 100%;
+
+    /* ===== STATUS DO WORKFLOW SICOOB (fulfillment_status) ===== */
+    --status-production: 38 92% 50%;
+    --status-production-foreground: 190 100% 13%;
+    --status-separation: 200 85% 55%;
+    --status-separation-foreground: 0 0% 100%;
+    --status-transit: 271 53% 47%;
+    --status-transit-foreground: 0 0% 100%;
+    --status-delivered: 155 60% 38%;
+    --status-delivered-foreground: 0 0% 100%;
+    --status-completed: 190 100% 13%;
+    --status-completed-foreground: 0 0% 100%;
+    --status-cancelled: 0 72% 51%;
+    --status-cancelled-foreground: 0 0% 100%;
 
     /* ===== CART (EMERALD) ===== */
     --cart: 152 69% 36%;
@@ -182,7 +214,7 @@ html[data-scroll-locked] body {
     --shadow-glow-primary: 0 0 20px hsl(25 95% 53% / 0.2);
     --shadow-glow-secondary: 0 0 20px hsl(220 14% 92% / 0.3);
     --shadow-glow-success: 0 0 20px hsl(142 71% 45% / 0.2);
-    --shadow-glow-warning: 0 0 20px hsl(38 92% 50% / 0.25);
+    --shadow-glow-warning: 0 0 20px hsl(44 100% 50% / 0.25);
     --shadow-header: 0 1px 3px hsl(222 25% 10% / 0.06), 0 1px 2px hsl(222 25% 10% / 0.04);
 
     /* ===== SPACING RHYTHM ===== */
@@ -222,12 +254,12 @@ html[data-scroll-locked] body {
     --z-tooltip: 110;
     --z-spotlight: 120;
 
-    /* ===== CHART ===== */
-    --chart-1: 25 95% 53%;
-    --chart-2: 142 71% 45%;
-    --chart-3: 45 93% 47%;
-    --chart-4: 200 85% 55%;
-    --chart-5: 0 84% 60%;
+    /* ===== CHART (harmonizado com paleta Sicoob 2024) ===== */
+    --chart-1: 175 100% 34%;
+    --chart-2: 190 100% 13%;
+    --chart-3: 44 100% 50%;
+    --chart-4: 82 73% 41%;
+    --chart-5: 271 53% 37%;
 
     /* ===== CORES DE PRODUTOS ===== */
     --color-red: 0 84% 60%;
@@ -268,16 +300,30 @@ html[data-scroll-locked] body {
     --command-text-subtle: 0 0% 54%;
     --command-shadow: 0 0% 0% / 0.92;
 
-    /* ===== CORES PRIMÁRIAS (VERDE SICOOB — mais intenso) ===== */
+    /* ===== CORES PRIMÁRIAS (VERDE SICOOB INSTITUCIONAL — dark) ===== */
     --primary: 190 100% 15%;
     --primary-hover: 190 100% 12%;
     --primary-active: 190 100% 10%;
     --primary-glow: 190 100% 25%;
     --primary-foreground: 0 0% 100%;
 
-    /* ===== CORES SECUNDÁRIAS (VERDE ÁGUA) ===== */
+    /* ===== MARCA / AÇÃO (VERDE-TEAL SICOOB — dark) ===== */
+    --brand: 175 90% 38%;
+    --brand-hover: 175 90% 32%;
+    --brand-active: 175 90% 26%;
+    --brand-glow: 175 100% 48%;
+    --brand-foreground: 0 0% 100%;
+    --brand-soft: 175 90% 38%;
+
+    /* ===== CORES SECUNDÁRIAS (VERDE-LIMA — dark) ===== */
     --secondary: 82 73% 41%;
     --secondary-foreground: 0 0% 100%;
+
+    /* ===== REWARD (ROXO SELO — dark) ===== */
+    --reward: 271 60% 55%;
+    --reward-hover: 271 60% 48%;
+    --reward-foreground: 0 0% 100%;
+    --reward-soft: 271 60% 55%;
 
     /* ===== MUTED ===== */
     --muted: 225 14% 16%;
@@ -290,21 +336,35 @@ html[data-scroll-locked] body {
     --interactive: 82 73% 41%;
     --divider: 225 14% 18%;
 
-    /* ===== ACCENT (AMARELO SICOOB) ===== */
+    /* ===== ACCENT (AMARELO SICOOB — dark, foreground corrigido para WCAG AA) ===== */
     --accent: 44 100% 50%;
-    --accent-foreground: 210 40% 98%;
+    --accent-foreground: 190 100% 13%;
 
     /* ===== DESTRUCTIVE ===== */
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
 
-    /* ===== ESTADOS ===== */
-    --success: 142 76% 48%;
+    /* ===== ESTADOS (harmonizados — dark) ===== */
+    --success: 155 65% 45%;
     --success-foreground: 0 0% 100%;
-    --warning: 38 95% 52%;
-    --warning-foreground: 0 0% 100%;
+    --warning: 44 100% 55%;
+    --warning-foreground: 190 100% 13%;
     --info: 200 85% 58%;
     --info-foreground: 0 0% 100%;
+
+    /* ===== STATUS DO WORKFLOW SICOOB — dark ===== */
+    --status-production: 44 100% 55%;
+    --status-production-foreground: 190 100% 13%;
+    --status-separation: 200 85% 58%;
+    --status-separation-foreground: 0 0% 100%;
+    --status-transit: 271 60% 58%;
+    --status-transit-foreground: 0 0% 100%;
+    --status-delivered: 155 65% 45%;
+    --status-delivered-foreground: 0 0% 100%;
+    --status-completed: 175 90% 38%;
+    --status-completed-foreground: 0 0% 100%;
+    --status-cancelled: 0 72% 55%;
+    --status-cancelled-foreground: 0 0% 100%;
 
     /* ===== CART (EMERALD) ===== */
     --cart: 152 69% 38%;
@@ -398,17 +458,17 @@ html[data-scroll-locked] body {
     --shadow-glow-primary: 0 0 30px hsl(var(--primary) / 0.4), 0 0 60px hsl(var(--primary) / 0.15);
     --shadow-glow-secondary: 0 0 25px hsl(225 16% 13% / 0.5);
     --shadow-glow-success: 0 0 25px hsl(142 76% 48% / 0.35);
-    --shadow-glow-warning: 0 0 25px hsl(38 95% 52% / 0.4);
+    --shadow-glow-warning: 0 0 25px hsl(44 100% 55% / 0.4);
     --shadow-header:
       0 1px 3px hsl(225 20% 2% / 0.7), 0 0 20px hsl(var(--primary) / 0.03),
       inset 0 1px 0 hsl(225 15% 18% / 0.3);
 
-    /* ===== CHART ===== */
-    --chart-1: 24 100% 50%;
-    --chart-2: 142 76% 50%;
-    --chart-3: 45 93% 55%;
-    --chart-4: 200 85% 58%;
-    --chart-5: 0 72% 55%;
+    /* ===== CHART (Sicoob — dark) ===== */
+    --chart-1: 175 90% 42%;
+    --chart-2: 190 100% 30%;
+    --chart-3: 44 100% 55%;
+    --chart-4: 82 73% 48%;
+    --chart-5: 271 60% 58%;
   }
 }
 
