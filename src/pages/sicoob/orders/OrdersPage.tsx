@@ -132,10 +132,12 @@ export default function OrdersPage() {
               <LayoutGrid className="h-4 w-4 mr-2" />
               Kanban
             </Button>
-            <Button onClick={() => navigate("/sicoob/pedidos/novo")}>
-              <Plus className="h-4 w-4 mr-2" />
-              Novo Pedido
-            </Button>
+            {canCreateOrder && (
+              <Button onClick={() => navigate("/sicoob/pedidos/novo")}>
+                <Plus className="h-4 w-4 mr-2" />
+                Novo Pedido
+              </Button>
+            )}
           </div>
         </div>
 
