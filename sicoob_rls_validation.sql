@@ -5,9 +5,9 @@
 
 BEGIN;
 
--- 1. Desativar restrições temporariamente para permitir dados de teste sem auth.users reais
+-- 1. Desativar restrições temporariamente
+SET CONSTRAINTS ALL DEFERRED;
 ALTER TABLE public.profiles DISABLE TRIGGER ALL;
-ALTER TABLE public.sicoob_orders DISABLE TRIGGER ALL;
 
 -- 2. Setup de Dados de Teste
 DO $$
