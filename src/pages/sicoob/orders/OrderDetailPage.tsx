@@ -196,11 +196,36 @@ export default function OrderDetailPage() {
                   </span>
                   <span className="font-bold">02:15:00</span>
                 </div>
-                <div className="p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg">
-                  <p className="text-xs text-blue-600 font-medium">
-                    Este pedido está dentro do limite de alçada do PA (R$ 5.000,00).
-                  </p>
+                
+                <div className="space-y-2">
+                  <div className="flex justify-between text-xs">
+                    <span>Verba Disponível</span>
+                    <span className={orderTotal > availableBudget ? "text-destructive font-bold" : ""}>
+                      R$ {availableBudget.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                    </span>
+                  </div>
+                  <div className="w-full h-1.5 bg-secondary rounded-full overflow-hidden">
+                    <div 
+                      className="h-full bg-primary" 
+                      style={{ width: `${Math.min((availableBudget / 1000) * 100, 100)}%` }} 
+                    />
+                  </div>
                 </div>
+
+                {orderTotal > availableBudget ? (
+                  <Alert variant="destructive" className="py-2">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertDescription className="text-xs">
+                      Atenção: O total do pedido (R$ {orderTotal.toFixed(2)}) excede a verba disponível (R$ {availableBudget.toFixed(2)}).
+                    </AlertDescription>
+                  </Alert>
+                ) : (
+                  <div className="p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg">
+                    <p className="text-xs text-blue-600 font-medium">
+                      Este pedido está dentro do limite de alçada do PA (R$ {budgetLimit.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}).
+                    </p>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>
