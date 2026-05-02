@@ -62,6 +62,9 @@ const FUNNEL_STATUSES = Object.keys(STATUS_MAP);
 
 export default function OrdersPage() {
   const navigate = useNavigate();
+  const { isVendedorRole, isAdmin } = useAuth();
+  const canCreateOrder = isVendedorRole || isAdmin;
+
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [paFilter, setPaFilter] = useState<string>("all");
@@ -129,10 +132,12 @@ export default function OrdersPage() {
               <LayoutGrid className="h-4 w-4 mr-2" />
               Kanban
             </Button>
-            <Button onClick={() => navigate("/sicoob/pedidos/novo")}>
-              <Plus className="h-4 w-4 mr-2" />
-              Novo Pedido
-            </Button>
+            {canCreateOrder && (
+              <Button onClick={() => navigate("/sicoob/pedidos/novo")}>
+                <Plus className="h-4 w-4 mr-2" />
+                Novo Pedido
+              </Button>
+            )}
           </div>
         </div>
 
