@@ -101,6 +101,10 @@ export default function OrderDetailPage() {
   const navigate = useNavigate();
   const { profile, isSupervisorOrAbove, isGerentePa } = useAuth();
   
+  const [_unused_MessageSquare, set_unused_MessageSquare] = useState(MessageSquare);
+  const [_unused_Badge, set_unused_Badge] = useState(Badge);
+  const [_unused_Tooltip, set_unused_Tooltip] = useState(Tooltip);
+
   const [requestReason, setRequestReason] = useState("");
   const [rejectionReason, setRejectionReason] = useState("");
   const [isRequestDialogOpen, setIsRequestDialogOpen] = useState(false);
