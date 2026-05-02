@@ -116,6 +116,10 @@ export const useApprovalRequests = (orderId?: string) => {
 
   const approveRequest = useMutation({
     mutationFn: async (payload: { requestId: string; orderId: string; previousStatus: string }) => {
+      if (!isAdmin && !isSupervisorOrAbove && !isGerentePa) {
+        throw new Error("Permissão insuficiente para aprovar solicitações.");
+      }
+
       const { error: requestError } = await supabase
         .from("sicoob_approval_requests")
         .update({
