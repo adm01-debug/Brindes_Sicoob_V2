@@ -12,7 +12,13 @@ import {
   AlertTriangle,
   Plus,
   Trash2,
-  Search
+  Search,
+  Truck,
+  FileText,
+  CreditCard,
+  Image as ImageIcon,
+  History,
+  Layout
 } from "lucide-react";
 import { 
   Card, 
@@ -42,6 +48,7 @@ import {
   DialogTrigger
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { 
   Tooltip, 
   TooltipContent, 
@@ -59,6 +66,14 @@ import { useSicoobOrder, useSicoobOrderDetails } from "@/hooks/sicoob/useSicoobO
 import { OrderStatusBadge } from "@/components/sicoob/orders/OrderStatusBadge";
 import { OrderActionDialog } from "@/components/sicoob/orders/OrderActionDialog";
 import { OrderItemsHistory } from "@/components/sicoob/orders/OrderItemsHistory";
+import { OrderAuditTimeline } from "@/components/sicoob/orders/OrderAuditTimeline";
+import { 
+  useOrderLogistics, 
+  useOrderInvoices, 
+  useOrderPayments, 
+  useOrderPilotApprovals 
+} from "@/hooks/useOrderExtensions";
+import { cn } from "@/lib/utils";
 
 export default function OrderDetailPage() {
   const { id } = useParams();
@@ -77,15 +92,20 @@ export default function OrderDetailPage() {
   const [selectedVariantColor, setSelectedVariantColor] = useState<string | null>(null);
   const [itemQuantity, setItemQuantity] = useState(1);
 
-  const { data: orderData, isLoading: isLoadingOrder } = useSicoobOrder(id);
+  const { data: orderData, isLoading: isLoadingOrder, refetch: refetchOrder } = useSicoobOrder(id);
   const { items: orderItems, logs: itemLogs } = useSicoobOrderDetails(id);
-
 
   const { budget, remainingBudget } = usePaBudget(orderData?.pa_id);
   const { threshold, needsApproval } = useApprovalThreshold();
   const { requests, createRequest, approveRequest, rejectRequest, updateStatus } = useApprovalRequests(id);
   const { history: orderHistory } = useSicoobOrderHistory(id);
   const { addItem, removeItem } = useSicoobOrderItems(id);
+  
+  // Extension hooks
+  const { logistics, updateLogistics } = useOrderLogistics(id);
+  const { invoices, addInvoice, uploadFile } = useOrderInvoices(id);
+  const { payments } = useOrderPayments(id);
+  const { approvals, updateApprovalStatus } = useOrderPilotApprovals(id);
   
   const { data: categories } = useCategories();
   const { data: products, isLoading: isLoadingProducts } = useProducts(
@@ -104,8 +124,6 @@ export default function OrderDetailPage() {
   const activeRequest = useMemo(() => 
     requests?.find(r => r.status === 'pending'), 
   [requests]);
-
-
 
   const handleAddItem = () => {
     if (!selectedProduct) return;
@@ -134,7 +152,6 @@ export default function OrderDetailPage() {
       removeItem.mutate(itemId);
     }
   };
-
 
   const orderTotal = orderData?.total_amount || 0;
   const isOverThreshold = needsApproval(orderTotal);
@@ -173,7 +190,6 @@ export default function OrderDetailPage() {
         previousStatus: orderData.status 
       });
     } else {
-      // Aprovação direta se for gestor e não houver solicitação pendente
       updateStatus.mutate({ 
         orderId: id!, 
         newStatus: 'confirmed', 
@@ -213,6 +229,20 @@ export default function OrderDetailPage() {
           setRejectionReason("");
         }
       });
+    }
+  };
+
+  const handleStatusUpdate = (newStatus: any) => {
+    const { data: updateData, error } = supabase
+      .from('orders')
+      .update({ fulfillment_status: newStatus })
+      .eq('id', id);
+    
+    if (error) {
+      toast.error("Erro ao atualizar status: " + error.message);
+    } else {
+      toast.success("Status de produção atualizado");
+      refetchOrder();
     }
   };
 
@@ -482,95 +512,207 @@ export default function OrderDetailPage() {
               </CardContent>
             </Card>
 
-            <Tabs defaultValue="history">
-              <TabsList>
-                <TabsTrigger value="history" className="gap-2">
-                  <History className="h-4 w-4" />
-                  Histórico
-                </TabsTrigger>
-                <TabsTrigger value="comments" className="gap-2">
-                  <MessageSquare className="h-4 w-4" />
-                  Comentários
-                </TabsTrigger>
-                <TabsTrigger value="audit" className="gap-2">
+            <Tabs defaultValue="items">
+              <TabsList className="w-full justify-start overflow-x-auto">
+                <TabsTrigger value="items" className="gap-2">
                   <Package className="h-4 w-4" />
-                  Auditoria de Itens
+                  Itens
                 </TabsTrigger>
-
+                <TabsTrigger value="logistics" className="gap-2">
+                  <Truck className="h-4 w-4" />
+                  Logística
+                </TabsTrigger>
+                <TabsTrigger value="invoices" className="gap-2">
+                  <FileText className="h-4 w-4" />
+                  NF
+                </TabsTrigger>
+                <TabsTrigger value="payments" className="gap-2">
+                  <CreditCard className="h-4 w-4" />
+                  Pagamento
+                </TabsTrigger>
+                <TabsTrigger value="pilots" className="gap-2">
+                  <ImageIcon className="h-4 w-4" />
+                  Aprovações
+                </TabsTrigger>
+                <TabsTrigger value="timeline" className="gap-2">
+                  <History className="h-4 w-4" />
+                  Timeline
+                </TabsTrigger>
               </TabsList>
-              <TabsContent value="history">
+
+              <TabsContent value="items" className="space-y-4 pt-4">
+                {/* ... existing card content for items moved here if needed or kept outside ... */}
                 <Card>
-                  <CardContent className="pt-6">
-                    <div className="space-y-6">
-                      {orderHistory?.map((entry) => (
-                        <div key={entry.id} className="flex gap-4">
-                          <div className="flex flex-col items-center">
-                            <div className={`w-2 h-2 rounded-full mt-1.5 ${
-                              entry.new_status === 'confirmed' ? 'bg-emerald-500' : 
-                              entry.new_status === 'rejected' ? 'bg-red-500' : 
-                              entry.new_status === 'waiting_approval' ? 'bg-amber-500' : 'bg-blue-500'
-                            }`} />
-                            <div className="w-0.5 h-full bg-border" />
-                          </div>
-                          <div>
-                            <p className="text-sm font-bold">
-                              {entry.new_status === 'confirmed' ? 'Pedido Confirmado' : 
-                               entry.new_status === 'rejected' ? 'Pedido Rejeitado' : 
-                               entry.new_status === 'waiting_approval' ? 'Aguardando Aprovação' : 'Status Atualizado'}
-                            </p>
-                            <div className="flex flex-col gap-0.5">
-                              <p className="text-xs text-muted-foreground">
-                                <strong>De:</strong> {entry.previous_status} <strong>Para:</strong> {entry.new_status}
-                              </p>
-                              {entry.comment && (
-                                <p className="text-xs text-muted-foreground bg-muted p-2 rounded mt-1 italic">
-                                  "{entry.comment}"
-                                </p>
-                              )}
-                              <p className="text-[10px] text-muted-foreground flex items-center gap-1 mt-1">
-                                <User className="h-3 w-3" />
-                                {entry.user?.display_name || 'Sistema'} • {new Date(entry.created_at).toLocaleString('pt-BR')}
-                              </p>
+                   <CardHeader>
+                     <CardTitle className="text-sm">Auditoria de Itens</CardTitle>
+                   </CardHeader>
+                   <CardContent>
+                     <OrderItemsHistory logs={itemLogs} />
+                   </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="logistics" className="pt-4">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Truck className="h-5 w-5" />
+                      Rastreamento e Entrega
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label>Transportadora</Label>
+                        <Input 
+                          defaultValue={logistics?.carrier_name} 
+                          onBlur={(e) => updateLogistics.mutate({ carrier_name: e.target.value })}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Código de Rastreio</Label>
+                        <Input 
+                          defaultValue={logistics?.tracking_code}
+                          onBlur={(e) => updateLogistics.mutate({ tracking_code: e.target.value })}
+                        />
+                      </div>
+                    </div>
+                    {logistics?.delivery_photo_url && (
+                      <div className="pt-4 border-t">
+                        <Label>Foto da Entrega</Label>
+                        <img src={logistics.delivery_photo_url} alt="Entrega" className="mt-2 rounded-lg max-h-48" />
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="invoices" className="pt-4">
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between">
+                    <CardTitle className="flex items-center gap-2">
+                      <FileText className="h-5 w-5" />
+                      Notas Fiscais
+                    </CardTitle>
+                    <Button size="sm" variant="outline" className="gap-2">
+                      <Plus className="h-4 w-4" /> Anexar XML
+                    </Button>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-2">
+                      {invoices?.map((inv: any) => (
+                        <div key={inv.id} className="flex items-center justify-between p-3 border rounded-lg">
+                          <div className="flex items-center gap-3">
+                            <FileText className="h-8 w-8 text-blue-500" />
+                            <div>
+                              <p className="font-medium">NF #{inv.invoice_number}</p>
+                              <p className="text-xs text-muted-foreground">Valor: R$ {Number(inv.amount).toLocaleString('pt-BR')}</p>
                             </div>
                           </div>
+                          <Button variant="ghost" size="sm" asChild>
+                            <a href={inv.xml_url} target="_blank" rel="noreferrer">Baixar</a>
+                          </Button>
                         </div>
                       ))}
-                      {!orderHistory?.length && (
-                        <div className="flex gap-4">
-                          <div className="flex flex-col items-center">
-                            <div className="w-2 h-2 rounded-full bg-muted mt-1.5" />
-                          </div>
-                          <div>
-                            <p className="text-sm font-bold text-muted-foreground">Pedido Criado</p>
-                            <p className="text-xs text-muted-foreground">
-                              Em {new Date(orderData.created_at).toLocaleString('pt-BR')}
-                            </p>
-                          </div>
-                        </div>
-                      )}
+                      {!invoices?.length && <p className="text-center py-8 text-muted-foreground text-sm">Nenhuma nota fiscal anexada.</p>}
                     </div>
                   </CardContent>
                 </Card>
               </TabsContent>
-              <TabsContent value="comments">
+
+              <TabsContent value="payments" className="pt-4">
                 <Card>
-                  <CardContent className="pt-6">
-                    <p className="text-sm text-muted-foreground text-center py-4">Nenhum comentário ainda.</p>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <CreditCard className="h-5 w-5" />
+                      Informações de Pagamento
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {payments?.map((pay: any) => (
+                      <div key={pay.id} className="flex justify-between items-center p-3 border rounded-lg">
+                        <div>
+                          <p className="font-medium">{pay.payment_method}</p>
+                          <p className="text-xs text-muted-foreground">{pay.transaction_id || 'Processando'}</p>
+                        </div>
+                        <Badge variant={pay.payment_status === 'paid' ? 'default' : 'secondary'}>
+                          {pay.payment_status}
+                        </Badge>
+                      </div>
+                    ))}
+                    {!payments?.length && <p className="text-center py-8 text-muted-foreground text-sm">Aguardando processamento de pagamento.</p>}
                   </CardContent>
                 </Card>
               </TabsContent>
-              <TabsContent value="audit">
-                <OrderItemsHistory logs={itemLogs} />
+
+              <TabsContent value="pilots" className="pt-4">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <ImageIcon className="h-5 w-5" />
+                      Aprovação de Mockups e Pilotos
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    {approvals?.map((app: any) => (
+                      <div key={app.id} className="space-y-4 p-4 border rounded-lg">
+                        <img src={app.photo_url} alt="Piloto" className="rounded-lg w-full max-h-64 object-contain bg-muted" />
+                        <div className="flex items-center justify-between">
+                          <Badge className={cn(
+                            app.status === 'approved' ? 'bg-emerald-500' : 
+                            app.status === 'rejected' ? 'bg-red-500' : 'bg-amber-500'
+                          )}>
+                            {app.status.toUpperCase()}
+                          </Badge>
+                          <div className="flex gap-2">
+                            {app.status === 'pending' && (
+                              <>
+                                <Button variant="outline" size="sm" onClick={() => updateApprovalStatus.mutate({ id: app.id, status: 'rejected' })}>Rejeitar</Button>
+                                <Button size="sm" onClick={() => updateApprovalStatus.mutate({ id: app.id, status: 'approved' })}>Aprovar</Button>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                    {!approvals?.length && <p className="text-center py-8 text-muted-foreground text-sm">Nenhum piloto enviado para aprovação.</p>}
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="timeline" className="pt-4">
+                <OrderAuditTimeline orderId={id!} />
               </TabsContent>
             </Tabs>
           </div>
           <div className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Status da Alçada</CardTitle>
+                <CardTitle className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Produção e Logística</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="flex items-center justify-between text-sm">
+                <div className="space-y-2">
+                  <Label className="text-xs">Status do Workflow</Label>
+                  <Select 
+                    defaultValue={orderData.fulfillment_status || 'pending'} 
+                    onValueChange={handleStatusUpdate}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="pending">Pendente</SelectItem>
+                      <SelectItem value="in_production">Em Produção</SelectItem>
+                      <SelectItem value="in_separation">Em Separação</SelectItem>
+                      <SelectItem value="in_transit">Em Trânsito</SelectItem>
+                      <SelectItem value="delivered">Entregue</SelectItem>
+                      <SelectItem value="completed">Concluído</SelectItem>
+                      <SelectItem value="cancelled">Cancelado</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="flex items-center justify-between text-sm pt-2 border-t">
                   <span className="text-muted-foreground flex items-center gap-2">
                     <AlertCircle className="h-4 w-4" />
                     Limite de Alçada
@@ -582,16 +724,6 @@ export default function OrderDetailPage() {
                   <div className="flex justify-between text-xs items-center">
                     <span className="flex items-center gap-1.5">
                       Verba PA Disponível
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Info className="h-3.5 w-3.5 text-muted-foreground cursor-help" />
-                          </TooltipTrigger>
-                          <TooltipContent className="max-w-xs">
-                            <p>Saldo restante para o mês vigente após subtrair os pedidos já realizados.</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
                     </span>
                     <span className={isOverBudget ? "text-destructive font-bold flex items-center gap-1" : "text-emerald-600 font-bold"}>
                       {isOverBudget && <AlertTriangle className="h-3 w-3" />}
@@ -603,28 +735,20 @@ export default function OrderDetailPage() {
                       className={`h-full transition-all duration-500 ${isOverBudget ? 'bg-destructive' : 'bg-emerald-500'}`} 
                       style={{ width: `${Math.min((orderTotal / Math.max(remainingBudget, 1)) * 100, 100)}%` }} 
                     />
-                    {isOverBudget && (
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <span className="text-[10px] font-bold text-white uppercase tracking-tighter drop-shadow-sm">Overbudget</span>
-                      </div>
-                    )}
                   </div>
                 </div>
 
-                {isOverBudget ? (
-                  <Alert variant="destructive" className="py-2 bg-destructive/10 border-destructive/20 animate-pulse">
+                {isOverBudget && (
+                  <Alert variant="destructive" className="py-2 bg-destructive/10 border-destructive/20">
                     <AlertCircle className="h-4 w-4" />
                     <AlertDescription className="text-xs font-medium">
-                      <strong>ALERTA:</strong> Este pedido excede a verba total disponível no PA. O sistema bloqueará a aprovação final.
+                      Overbudget detectado.
                     </AlertDescription>
                   </Alert>
-                ) : isOverThreshold ? (
-                  <div className="p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg">
-                    <p className="text-xs text-amber-600 font-medium">
-                      Pedido acima da alçada. Requer aprovação de um gestor.
-                    </p>
-                  </div>
-                ) : (
+                )}
+              </CardContent>
+            </Card>
+          </div>
                   <div className="p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-lg">
                     <p className="text-xs text-emerald-600 font-medium flex items-center gap-1">
                       <CheckCircle className="h-3 w-3" />

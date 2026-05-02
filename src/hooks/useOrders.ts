@@ -108,16 +108,19 @@ export function useUpdateOrder(orderId?: string) {
 
 export const ORDER_STATUS_FLOW = [
   "pending",
+  "waiting_approval",
   "confirmed",
   "in_production",
   "in_separation",
   "in_transit",
   "delivered",
   "completed",
+  "cancelled"
 ] as const;
 
 export const ORDER_STATUS_LABELS: Record<string, string> = {
   pending: "Pendente",
+  waiting_approval: "Aguardando Aprovação",
   confirmed: "Confirmado",
   in_production: "Em Produção",
   in_separation: "Em Separação",
@@ -128,7 +131,11 @@ export const ORDER_STATUS_LABELS: Record<string, string> = {
 };
 
 export const FULFILLMENT_LABELS: Record<string, string> = {
-  unfulfilled: "Não Processado",
-  partial: "Parcial",
-  fulfilled: "Completo",
+  pending: "Pendente",
+  in_production: "Em Produção",
+  in_separation: "Em Separação",
+  in_transit: "Em Transporte",
+  delivered: "Entregue",
+  completed: "Concluído",
+  cancelled: "Cancelado",
 };
