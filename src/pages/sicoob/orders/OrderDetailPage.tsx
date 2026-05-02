@@ -75,7 +75,7 @@ export default function OrderDetailPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("sicoob_orders")
-        .select("*")
+        .select("id, cooperative_id, pa_id, created_by, status, total_amount, notes, delivery_address, tracking_code, created_at, updated_at, approved_by, approved_at, order_number")
         .eq("id", id)
         .single();
       if (error) throw error;
@@ -89,7 +89,7 @@ export default function OrderDetailPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("sicoob_order_items")
-        .select("*")
+        .select("id, order_id, product_id, product_name, quantity, unit_price, total_price")
         .eq("order_id", id);
       if (error) throw error;
       return data;

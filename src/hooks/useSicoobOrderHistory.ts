@@ -27,7 +27,13 @@ export const useSicoobOrderHistory = (orderId?: string) => {
       const { data, error } = await supabase
         .from("sicoob_order_history")
         .select(`
-          *,
+          id,
+          order_id,
+          user_id,
+          previous_status,
+          new_status,
+          comment,
+          created_at,
           user:profiles!user_id(display_name)
         `)
         .eq("order_id", orderId)
