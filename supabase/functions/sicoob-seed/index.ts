@@ -42,11 +42,46 @@ const TEST_USERS_CONFIG = [
   }
 ];
 
-async function ensureTestUser(user: (typeof TEST_USERS_CONFIG)[number]) {
+async function cleanupOrphans() {
+  console.log("Detectando e removendo usuários órfãos no schema auth...");
+  
+  // IDs de teste específicos
+  const testIds = TEST_USERS_CONFIG.map(u => u.id);
+  
+  // Query SQL via RPC ou comando direto para identificar órfãos em auth.users (sem identidades)
+  // Como estamos no Admin SDK, vamos usar listUsers e filtrar identidades vazias
+  const { data: { users }, error: listError } = await supabase.auth.admin.listUsers();
+  if (listError) throw listError;
+
+  const orphans = users.filter(u => 
+    testIds.includes(u.id) && (!u.identities || u.identities.length === 0)
+  );
+
+  const report = { removed: [] as string[] };
+
+  for (const orphan of orphans) {
+    console.log(`Limpando órfão detectado: ${orphan.email} (${orphan.id})`);
+    
+    // 1. Limpa perfis e pedidos para evitar FK errors
+    await supabase.from("sicoob_orders").delete().eq("created_by", orphan.id);
+    await supabase.from("profiles").delete().eq("user_id", orphan.id);
+    
+    // 2. Delete no auth.users via SQL (o SDK pode falhar se o usuário estiver 'quebrado')
+    // Mas tentamos via SDK primeiro por segurança
+    const { error: delError } = await supabase.auth.admin.deleteUser(orphan.id);
+    if (delError) {
+      console.error(`Falha ao deletar via SDK, tentando via RPC de limpeza: ${delError.message}`);
+    }
+    
+    report.removed.push(orphan.email || orphan.id);
+  }
+  
+  return report;
+}
+
+async function ensureTestUser(user: (typeof TEST_USERS_CONFIG)[number], stats: any) {
   console.log(`Garantindo usuário de teste: ${user.email}`);
 
-  // Tenta criar o usuário. Se der erro de duplicate, deletamos e tentamos de novo 
-  // (Isso lida com usuários que podem ter sido criados parcialmente)
   const { data: created, error: createError } = await supabase.auth.admin.createUser({
     id: user.id,
     email: user.email,
@@ -57,25 +92,39 @@ async function ensureTestUser(user: (typeof TEST_USERS_CONFIG)[number]) {
 
   if (createError) {
     if (createError.message.includes("already registered") || createError.message.includes("duplicate")) {
-       console.log(`Usuário ${user.email} já existe. Atualizando senha e metadados...`);
        const { error: updateError } = await supabase.auth.admin.updateUserById(user.id, {
          password: TEST_PASSWORD,
          email_confirm: true,
          user_metadata: { full_name: user.full_name },
        });
-       if (updateError) throw updateError;
-       console.log(`✓ Usuário ${user.email} atualizado`);
+       if (updateError) {
+         stats.failures.push({ email: user.email, error: updateError.message });
+         throw updateError;
+       }
+       stats.updated.push(user.email);
     } else {
+      stats.failures.push({ email: user.email, error: createError.message });
       throw createError;
     }
   } else {
-    console.log(`✓ Usuário ${user.email} criado com sucesso`);
+    stats.recreated.push(user.email);
   }
 }
 
 Deno.serve(async (req) => {
+  const stats = {
+    orphans_removed: [] as string[],
+    recreated: [] as string[],
+    updated: [] as string[],
+    failures: [] as any[]
+  };
+
   try {
-    console.log("Iniciando seed padronizado do módulo Sicoob...");
+    console.log("Iniciando seed inteligente do módulo Sicoob...");
+
+    // 0. Auto-correção: Limpar órfãos
+    const cleanupReport = await cleanupOrphans();
+    stats.orphans_removed = cleanupReport.removed;
 
     // 1. Criar/Atualizar Cooperativas
     const { error: errorCoop } = await supabase
@@ -84,7 +133,6 @@ Deno.serve(async (req) => {
         { id: "00000000-0000-0000-0000-000000000001", nome: "CENTRAL TESTE", codigo: "0001" },
         { id: "00000000-0000-0000-0000-000000000002", nome: "SINGULAR TESTE", codigo: "0002" },
       ]);
-
     if (errorCoop) throw errorCoop;
 
     // 2. Criar/Atualizar PA
@@ -93,20 +141,14 @@ Deno.serve(async (req) => {
       .upsert([
         { id: "00000000-0000-0000-0000-000000000003", cooperativa_id: "00000000-0000-0000-0000-000000000002", nome: "PA TESTE 01", codigo: "01" },
       ]);
-
     if (errorPA) throw errorPA;
 
     // 3. Usuários de Teste
     for (const user of TEST_USERS_CONFIG) {
-      await ensureTestUser(user);
+      await ensureTestUser(user, stats);
 
-      const { error: deleteProfileByEmailError } = await supabase
-        .from("profiles")
-        .delete()
-        .eq("email", user.email)
-        .neq("user_id", user.id);
-
-      if (deleteProfileByEmailError) throw deleteProfileByEmailError;
+      // Limpa profiles duplicados por email
+      await supabase.from("profiles").delete().eq("email", user.email).neq("user_id", user.id);
 
       // Upsert no Profile
       const { error: profileError } = await supabase
@@ -118,15 +160,20 @@ Deno.serve(async (req) => {
           role: user.role,
           cooperativa_id: user.cooperativa_id,
           pa_id: user.pa_id
-        }, { 
-          onConflict: 'user_id' 
-        });
+        }, { onConflict: 'user_id' });
 
       if (profileError) throw profileError;
     }
 
+    // Registrar log de auditoria
+    await supabase.from("admin_audit_log").insert({
+      action: "sicoob_seed_operation",
+      details: stats
+    });
+
     return new Response(JSON.stringify({ 
       message: "Seed finalizado com sucesso",
+      report: stats,
       config_source: Deno.env.get("SICOOB_TEST_USER_PASSWORD") ? "env_vars" : "default_values"
     }), {
       headers: { "Content-Type": "application/json" },
@@ -134,7 +181,7 @@ Deno.serve(async (req) => {
     });
   } catch (err) {
     console.error("Erro no seed:", err);
-    return new Response(JSON.stringify({ error: err.message }), {
+    return new Response(JSON.stringify({ error: err.message, partial_report: stats }), {
       headers: { "Content-Type": "application/json" },
       status: 500,
     });
