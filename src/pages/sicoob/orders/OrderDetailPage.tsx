@@ -126,6 +126,28 @@ export default function OrderDetailPage() {
     requests?.find(r => r.status === 'pending'), 
   [requests]);
 
+  const { data: itemLogs } = useQuery({
+    queryKey: ["sicoob_order_item_logs", id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("sicoob_order_item_logs")
+        .select(`
+          id,
+          action,
+          old_data,
+          new_data,
+          created_at,
+          user:profiles!user_id(display_name)
+        `)
+        .eq("order_id", id)
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!id
+  });
+
+
   const handleAddItem = () => {
     if (!selectedProduct) return;
 
