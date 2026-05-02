@@ -20,7 +20,7 @@ interface AppProvidersProps {
  * Auth, Theme, Accessibility and Query providers remain external
  * because they have different lifecycles.
  */
-export function AppProviders({ children }: AppProvidersProps) {
+export const AppProviders = ({ children }: AppProvidersProps) => {
   return (
     <OrganizationProvider>
       <ProductsProvider>

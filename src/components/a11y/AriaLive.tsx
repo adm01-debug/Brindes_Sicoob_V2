@@ -22,7 +22,7 @@ export function useAriaLive() {
   return context;
 }
 
-export function AriaLiveProvider({ children }: { children: ReactNode }) {
+export const AriaLiveProvider = ({ children }: { children: ReactNode }) => {
   const [politeMessage, setPoliteMessage] = useState("");
   const [assertiveMessage, setAssertiveMessage] = useState("");
   const [statusMessage, setStatusMessage] = useState("");

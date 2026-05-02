@@ -90,6 +90,16 @@ export function authDebug(scope: string, message: string, data?: unknown): void 
   const ts = new Date().toISOString();
   // eslint-disable-next-line no-console
   console.log(`${PREFIX} [${ts}] [${scope}] ${message}`, data ?? "");
+  
+  // Persistir no localStorage para o Widget de Diagnóstico ler sem depender de console.logs
+  if (typeof window !== "undefined") {
+    try {
+      const logs = JSON.parse(localStorage.getItem('auth_debug_history') || '[]');
+      logs.push({ ts, scope, message, data, type: 'info' });
+      localStorage.setItem('auth_debug_history', JSON.stringify(logs.slice(-50)));
+      window.dispatchEvent(new CustomEvent('auth_debug_update'));
+    } catch (e) { /* ignore */ }
+  }
 }
 
 export function authDebugError(scope: string, message: string, error: unknown): void {
@@ -100,6 +110,15 @@ export function authDebugError(scope: string, message: string, error: unknown): 
   const ts = new Date().toISOString();
   // eslint-disable-next-line no-console
   console.error(`${PREFIX} [${ts}] [${scope}] ${message}`, normalized);
+
+  if (typeof window !== "undefined") {
+    try {
+      const logs = JSON.parse(localStorage.getItem('auth_debug_history') || '[]');
+      logs.push({ ts, scope, message, data: normalized, type: 'error' });
+      localStorage.setItem('auth_debug_history', JSON.stringify(logs.slice(-50)));
+      window.dispatchEvent(new CustomEvent('auth_debug_update'));
+    } catch (e) { /* ignore */ }
+  }
 }
 
 /** Loga o estado bruto da URL no callback (query, hash, error params). */

@@ -21,6 +21,7 @@ import { getFallback } from "@/components/layout/SkeletonLoaders";
 import { BridgeStatusBanner } from "@/components/BridgeStatusBanner";
 import { CloudStatusBanner } from "@/components/system/CloudStatusBanner";
 import { DevOnlyBridgeOverlay } from "@/components/dev/DevOnlyBridgeOverlay";
+import { AuthDiagnosticsWidget } from "@/components/dev/AuthDiagnosticsWidget";
 import { RouteScrollReset } from "@/components/common/RouteScrollReset";
 import { startBridgeTelemetry } from "@/lib/external-db/bridge-telemetry-client";
 import { startColdStartRecorder } from "@/lib/external-db/cold-start-recorder";
@@ -151,16 +152,16 @@ import { loadThemeConfig, applyThemePreset, applyRadius } from '@/lib/theme-pres
 import { ThemeInitializer } from '@/components/ThemeInitializer';
 
 /** Componente interno que roda hooks que dependem de AuthProvider */
-function AppWithAuth({ children }: { children: ReactNode }) {
+const AppWithAuth = ({ children }: { children: ReactNode }) => {
   useCatalogPrefetch();
   return <>{children}</>;
-}
+};
 
 /** Location-aware Suspense that renders route-specific skeletons */
-function RouteSuspense({ children }: { children: ReactNode }) {
+const RouteSuspense = ({ children }: { children: ReactNode }) => {
   const { pathname } = useLocation();
   return <Suspense fallback={getFallback(pathname)}>{children}</Suspense>;
-}
+};
 
 const App = () => {
   useGlobalErrorCatcher();
@@ -205,6 +206,7 @@ const App = () => {
                       <CloudStatusBanner />
                       <BridgeStatusBanner />
                       <DevOnlyBridgeOverlay />
+                      <AuthDiagnosticsWidget />
                       <RouteScrollReset />
                       <RouteSuspense>
                         <Routes>
