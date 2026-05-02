@@ -46,6 +46,9 @@ const ROLE_LABEL: Record<RouteRole, string> = {
   authenticated: "Autenticado",
   admin: "Admin",
   dev: "Dev",
+  gestor_compras: "Gestor Compras",
+  gerente_pa: "Gerente PA",
+  vendedor: "Vendedor",
 };
 
 const ROLE_VARIANT: Record<
@@ -56,6 +59,9 @@ const ROLE_VARIANT: Record<
   authenticated: "secondary",
   admin: "default",
   dev: "destructive",
+  gestor_compras: "default",
+  gerente_pa: "secondary",
+  vendedor: "outline",
 };
 
 function csvEscape(v: string): string {
@@ -167,7 +173,7 @@ export default function AdminRbacRoutesPage() {
               <div className="text-2xl font-semibold">{summary.total}</div>
             </CardContent>
           </Card>
-          {(["public", "authenticated", "admin", "dev"] as RouteRole[]).map(
+          {(["public", "authenticated", "admin", "dev", "gestor_compras", "gerente_pa", "vendedor"] as RouteRole[]).map(
             (role) => (
               <Card key={role}>
                 <CardHeader className="pb-2">
@@ -243,6 +249,9 @@ export default function AdminRbacRoutesPage() {
                     <SelectItem value="authenticated">Autenticado</SelectItem>
                     <SelectItem value="admin">Admin</SelectItem>
                     <SelectItem value="dev">Dev</SelectItem>
+                    <SelectItem value="gestor_compras">Gestor Compras</SelectItem>
+                    <SelectItem value="gerente_pa">Gerente PA</SelectItem>
+                    <SelectItem value="vendedor">Vendedor</SelectItem>
                   </SelectContent>
                 </Select>
                 <Select
