@@ -20,14 +20,18 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Plus, Pencil, Trash2, Search } from "lucide-react";
+import { Plus, Pencil, Trash2, Search, ShieldAlert } from "lucide-react";
 import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 export const CooperativasTab = () => {
+  const { isDev } = useAuth();
   const [searchTerm, setSearchTerm] = useState("");
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [editingCoop, setEditingCoop] = useState<any>(null);
   const queryClient = useQueryClient();
+
 
   const { data: cooperativas, isLoading } = useQuery({
     queryKey: ["cooperativas"],
