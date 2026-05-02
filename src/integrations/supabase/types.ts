@@ -5535,6 +5535,16 @@ export type Database = {
         }
         Returns: Json
       }
+      check_sicoob_access_matrix: {
+        Args: { _test_role: Database["public"]["Enums"]["app_role"] }
+        Returns: {
+          can_delete: boolean
+          can_insert: boolean
+          can_select: boolean
+          can_update: boolean
+          tablename: string
+        }[]
+      }
       check_telemetry_regression: { Args: never; Returns: Json }
       claim_next_optimization: {
         Args: never
