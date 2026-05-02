@@ -58,30 +58,36 @@ Deno.test("RLS: Usuário PA deve ver apenas dados do seu PA", async () => {
   const supabase = createClient(SUPABASE_URL, SERVICE_ROLE_KEY);
   
   // Criar um pedido para o PA
-  const { data: orderPA } = await supabase
+  const { data: orderPA, error: err1 } = await supabase
     .from("sicoob_orders")
     .insert({
       pa_id: ID_PA,
       cooperative_id: ID_SINGULAR,
       total_amount: 100,
-      created_by: USERS.PA.id
+      created_by: USERS.PA.id,
+      order_number: `TEST-PA-${Date.now()}`
     })
     .select()
     .single();
 
+  if (err1) throw err1;
+
   // Criar um pedido de OUTRA cooperativa/PA
-  const { data: orderOther } = await supabase
+  const { data: orderOther, error: err2 } = await supabase
     .from("sicoob_orders")
     .insert({
       pa_id: "00000000-0000-0000-0000-000000000000",
       cooperative_id: "00000000-0000-0000-0000-000000000000",
       total_amount: 50,
-      created_by: "00000000-0000-0000-0000-000000000000"
+      created_by: "00000000-0000-0000-0000-000000000000",
+      order_number: `TEST-OTHER-${Date.now()}`
     })
     .select()
     .single();
 
-  // Simular query filtrada (como o RLS faria: WHERE pa_id = auth.user_pa_id())
+  if (err2) throw err2;
+
+  // Simular query filtrada
   const { data: visibleOrders } = await supabase
     .from("sicoob_orders")
     .select("*")
@@ -94,22 +100,22 @@ Deno.test("RLS: Usuário PA deve ver apenas dados do seu PA", async () => {
 Deno.test("RLS: Usuário SINGULAR deve ver dados de todos os seus PAs", async () => {
   const supabase = createClient(SUPABASE_URL, SERVICE_ROLE_KEY);
 
-  // Simular query filtrada (WHERE cooperative_id = auth.user_coop_id())
   const { data: visibleOrders } = await supabase
     .from("sicoob_orders")
     .select("*")
     .eq("cooperative_id", ID_SINGULAR);
 
-  // No seed, ID_PA está vinculado a ID_SINGULAR
   assert(visibleOrders?.every(o => o.cooperative_id === ID_SINGULAR), "Só deve ver pedidos da sua singular");
 });
 
 Deno.test("RLS: Usuário GESTOR deve ter acesso total", async () => {
   const supabase = createClient(SUPABASE_URL, SERVICE_ROLE_KEY);
 
-  const { count } = await supabase
+  const { count, error } = await supabase
     .from("sicoob_orders")
     .select("*", { count: 'exact', head: true });
 
+  if (error) throw error;
   assert(count !== null && count >= 0, "Gestor deve conseguir contar todos os pedidos");
 });
+
