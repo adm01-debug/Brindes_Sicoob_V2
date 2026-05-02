@@ -8,38 +8,47 @@ const pool = new Pool(DB_URL, 2, true);
  * Valida que o banco de dados impede valores inválidos em Budgets e Alçadas
  */
 Deno.test({
-  name: "SICOOB: Validation triggers for budgets and thresholds",
+  name: "SICOOB: Validation constraints for budgets and orders",
   sanitizeOps: false,
   sanitizeResources: false,
   fn: async () => {
     const c = await pool.connect();
     
     try {
-      // 1. Testar Budget Negativo (deve falhar via trigger de validação se implementado)
-      // Se não houver trigger, tentamos inserir e verificamos se o banco permite ou se implementamos a trava
+      // 1. Testar Budget Negativo (verba_total)
       try {
         await c.queryObject(`
-          INSERT INTO public.pa_budgets (pa_id, total_amount, remaining_amount, period_start, period_end)
-          VALUES (gen_random_uuid(), -100, -100, now(), now() + interval '1 month')
+          INSERT INTO public.pa_budgets (pa_id, ano, mes, verba_total, verba_consumida, limite_alcada)
+          VALUES (gen_random_uuid(), 2024, 5, -100, 0, 1000)
         `);
-        // Se chegar aqui sem erro, significa que não há trava no banco para valores negativos
-        // Mas o requisito pede para GARANTIR o bloqueio.
-        // assert(false, "Banco permitiu inserção de budget negativo");
+        assert(false, "Banco permitiu inserção de verba_total negativa");
       } catch (e: any) {
-        console.log("Bloqueio de budget negativo (OK):", e.message);
-        assert(e.message.includes("negative") || e.message.includes("violates") || e.message.includes("check"), "Erro inesperado ao validar budget negativo");
+        console.log("Bloqueio de verba_total negativa (OK):", e.message);
+        assert(e.message.includes("check_positive_verba_total"), "Constraint check_positive_verba_total não disparada");
       }
 
-      // 2. Testar Alçada Inválida (Aprovação maior que o solicitado ou valores inconsistentes)
-      // Como aprovações são registros em sicoob_approval_requests
+      // 2. Testar Valor de Pedido Negativo
       try {
         await c.queryObject(`
-          INSERT INTO public.sicoob_approval_requests (order_id, requester_id, amount_at_request, threshold_at_request)
-          VALUES (gen_random_uuid(), gen_random_uuid(), -500, 1000)
+          INSERT INTO public.sicoob_orders (pa_id, cooperative_id, created_by, total_amount, status)
+          VALUES (gen_random_uuid(), gen_random_uuid(), gen_random_uuid(), -50, 'draft')
         `);
+        assert(false, "Banco permitiu inserção de total_amount negativo");
       } catch (e: any) {
-        console.log("Bloqueio de valor de solicitação negativo (OK):", e.message);
-        assert(e.message.includes("negative") || e.message.includes("violates"), "Erro inesperado ao validar alçada negativa");
+        console.log("Bloqueio de total_amount negativo (OK):", e.message);
+        assert(e.message.includes("check_positive_total"), "Constraint check_positive_total não disparada");
+      }
+
+      // 3. Testar Quantidade de Item Inválida
+      try {
+        await c.queryObject(`
+          INSERT INTO public.sicoob_order_items (order_id, product_id, quantity, unit_price)
+          VALUES (gen_random_uuid(), gen_random_uuid(), 0, 10)
+        `);
+        assert(false, "Banco permitiu inserção de quantidade zero");
+      } catch (e: any) {
+        console.log("Bloqueio de quantidade zero (OK):", e.message);
+        assert(e.message.includes("check_positive_quantity"), "Constraint check_positive_quantity não disparada");
       }
 
     } finally {
