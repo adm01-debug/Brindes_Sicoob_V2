@@ -88,6 +88,7 @@ const AdminRbacRoutesPage = lazyWithRetry(() => import("./pages/admin/AdminRbacR
 const SellerDiscountLimitsAdminPage = lazyWithRetry(() => import("./pages/admin/SellerDiscountLimitsAdminPage"));
 const RlsDenialsAdminPage = lazyWithRetry(() => import("./pages/admin/RlsDenialsAdminPage"));
 const OwnershipAuditAdminPage = lazyWithRetry(() => import("./pages/admin/OwnershipAuditAdminPage"));
+const SicoobManagementPage = lazyWithRetry(() => import("./pages/admin/sicoob/SicoobManagementPage"));
 
 // Tools Pages
 const SimuladorWizard = lazyWithRetry(() => import("./pages/SimuladorWizard"));
@@ -263,6 +264,7 @@ const App = () => {
                               <Route path="/admin/video-variantes" element={<AdminVideoVariantsPage />} />
                               <Route path="/admin/kit-templates" element={<KitTemplatesAdminPage />} />
                               <Route path="/admin/kit-templates/metricas" element={<KitTemplatesMetricsPage />} />
+                              <Route path="/admin/sicoob" element={<SicoobManagementPage />} />
                               <Route path="/admin/aprovacoes-desconto" element={<DeprecatedRoute message="A gestão de descontos foi movida para a aba 'Descontos' em Usuários." redirectTo="/admin/usuarios?tab=discounts" />} />
                               <Route path="/admin/performance" element={<DeprecatedRoute message="O módulo de Performance foi descontinuado. Use o BI Comercial para análises." redirectTo="/ferramentas/bi" />} />
                               <Route path="/admin/performance-comercial" element={<DeprecatedRoute message="O módulo de Performance Comercial foi descontinuado. Use o BI Comercial para análises." redirectTo="/ferramentas/bi" />} />

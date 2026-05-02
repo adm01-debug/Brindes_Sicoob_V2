@@ -15,11 +15,13 @@ import { authService } from "@/services/authService";
 // mas a nova hierarquia oficial é: dev > supervisor > agente.
 export type AppRole =
   | "dev"
+  | "gestor_compras"
+  | "gerente_pa"
+  | "vendedor"
   | "supervisor"
   | "agente"
   | "admin"      // legado (alias de supervisor)
-  | "manager"    // legado
-  | "vendedor";  // legado (alias de agente)
+  | "manager";    // legado
 
 // Interface do Profile
 export interface Profile {
@@ -27,7 +29,9 @@ export interface Profile {
   user_id: string;
   email: string | null;
   full_name: string | null;
-  role: string | null;           // Auto-synced from user_roles via DB trigger (read-only mirror)
+  role: string | null;           // Auto-synced from user_roles via DB trigger
+  cooperativa_id: string | null; // Sicoob: Singular
+  pa_id: string | null;          // Sicoob: PA
   avatar_url: string | null;
   phone: string | null;
   department: string | null;
@@ -47,16 +51,19 @@ interface AuthContextType {
   roles: AppRole[];
   // Role principal (mais alta na hierarquia) para exibição/legado
   role: AppRole | null;
-  // Helpers da NOVA hierarquia (dev > supervisor > agente)
+  // Helpers da hierarquia Sicoob/Flow
   isDev: boolean;
-  isSupervisor: boolean;       // strict: apenas o nível supervisor (não inclui dev)
+  isGestorCompras: boolean;
+  isGerentePa: boolean;
+  isVendedor: boolean;
+  isSupervisor: boolean;
   isAgente: boolean;
-  isSupervisorOrAbove: boolean; // dev OR supervisor — equivale ao server-side is_supervisor_or_above
-  // Aliases retrocompatíveis (deprecated — preferir os acima)
-  isAdmin: boolean;            // = isSupervisorOrAbove
-  isManager: boolean;          // legado
-  isSeller: boolean;           // = isAgente
-  canManage: boolean;          // = isSupervisorOrAbove
+  isSupervisorOrAbove: boolean; // dev OR supervisor OR gestor_compras
+  // IDs organizacionais
+  cooperativaId: string | null;
+  paId: string | null;
+  // Aliases retrocompatíveis
+  isAdmin: boolean;
   isAuthenticated: boolean;
   // MFA / Authenticator Assurance Level
   currentAAL: 'aal1' | 'aal2' | null;
@@ -470,17 +477,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const has = (r: AppRole) => userRoles.includes(r);
   const isDev = has("dev");
+  const isGestorCompras = has("gestor_compras");
+  const isGerentePa = has("gerente_pa");
+  const isVendedor = has("vendedor");
   const isSupervisor = has("supervisor") || has("admin") || has("manager");
-  const isAgente = has("agente") || has("vendedor");
-  const isSupervisorOrAbove = checkIsSupervisorOrAbove(userRoles);
+  const isAgente = has("agente");
+  const isSupervisorOrAbove = isDev || isGestorCompras || isSupervisor;
 
   const primaryRole = getHighestRole(userRoles);
-
   const isAdmin = isSupervisorOrAbove;
-  const isManager = has("manager");
-  const isSeller = isAgente;
-  const canManage = isSupervisorOrAbove;
-  const mfaRequired = canManage && currentAAL !== 'aal2';
+  const mfaRequired = isSupervisorOrAbove && currentAAL !== 'aal2';
+
+  const cooperativaId = profile?.cooperativa_id || null;
+  const paId = profile?.pa_id || null;
 
 
   const value: AuthContextType = {
@@ -491,13 +500,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     roles: userRoles,
     role: primaryRole,
     isDev,
+    isGestorCompras,
+    isGerentePa,
+    isVendedor,
     isSupervisor,
     isAgente,
     isSupervisorOrAbove,
+    cooperativaId,
+    paId,
     isAdmin,
-    isManager,
-    isSeller,
-    canManage,
     isAuthenticated: !!user,
     currentAAL,
     nextAAL,

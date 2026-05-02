@@ -117,6 +117,7 @@ const navGroups: NavGroup[] = [
     defaultOpen: false,
     items: [
       { icon: Users, label: "Usuários", href: "/admin/usuarios", adminOnly: true },
+      { icon: Landmark, label: "Sicoob", href: "/admin/sicoob", adminOnly: true },
       { icon: Settings, label: "Configurações", href: "/configuracoes", adminOnly: true },
       { icon: ShieldCheck, label: "Segurança", href: "/admin/seguranca", devOnly: true },
       { icon: ShieldCheck, label: "Acesso & Bots", href: "/admin/seguranca-acesso", devOnly: true },
