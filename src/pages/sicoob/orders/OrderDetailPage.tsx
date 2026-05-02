@@ -474,7 +474,7 @@ export default function OrderDetailPage() {
                         </div>
                         <DialogFooter>
                           <Button variant="outline" onClick={() => setIsAddItemDialogOpen(false)}>Cancelar</Button>
-                          <Button disabled={!selectedProductId || addItem.isPending} onClick={handleAddItem}>
+                          <Button disabled={!selectedProductId || (selectedProduct?.colors?.length > 0 && !selectedVariantColor) || addItem.isPending} onClick={handleAddItem}>
                             {addItem.isPending ? "Adicionando..." : "Confirmar"}
                           </Button>
                         </DialogFooter>
