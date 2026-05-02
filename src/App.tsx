@@ -112,6 +112,12 @@ const PublicDossierPage = lazyWithRetry(() => import("./pages/PublicDossierPage"
 const OrdersPage = lazyWithRetry(() => import("./pages/OrdersPage"));
 const OrderDetailPage = lazyWithRetry(() => import("./pages/OrderDetailPage"));
 
+// Sicoob Orders
+const SicoobOrdersPage = lazyWithRetry(() => import("./pages/sicoob/orders/OrdersPage"));
+const SicoobOrdersKanbanPage = lazyWithRetry(() => import("./pages/sicoob/orders/OrdersKanbanPage"));
+const SicoobOrderDetailPage = lazyWithRetry(() => import("./pages/sicoob/orders/OrderDetailPage"));
+const SicoobSellerPanelPage = lazyWithRetry(() => import("./pages/sicoob/orders/SellerPanelPage"));
+
 // Clients (CRM) Pages
 const ClientsPage = lazyWithRetry(() => import("./pages/ClientsPage"));
 const ClientDetailPage = lazyWithRetry(() => import("./pages/ClientDetailPage"));
