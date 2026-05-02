@@ -140,12 +140,12 @@ html[data-scroll-locked] body {
     --cart-hover: 152 69% 41%;
     --cart-foreground: 0 0% 100%;
 
-    /* ===== AMARELO (COR DE DESTAQUE — #FFBB00) ===== */
-    --orange: 44 100% 50%;
-    --orange-hover: 44 100% 45%;
-    --orange-active: 44 100% 40%;
-    --orange-glow: 44 100% 60%;
-    --orange-foreground: 190 100% 13%;
+    /* ===== ORANGE (alias retrocompatível — agora aponta para Turquesa Sicoob) ===== */
+    --orange: 175 100% 34%;
+    --orange-hover: 175 100% 30%;
+    --orange-active: 175 100% 26%;
+    --orange-glow: 175 100% 42%;
+    --orange-foreground: 0 0% 100%;
 
     /* ===== HIGHLIGHT COLORS ===== */
     --highlight-gold: 45 93% 47%;
