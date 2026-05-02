@@ -30,6 +30,8 @@ const PersistentBreadcrumbs = lazyWithRetry(() => import("@/components/common/Pe
 
 import { cn } from "@/lib/utils";
 import { diagnostics } from "@/lib/diagnostics";
+import { APIInspector } from "@/components/debug/APIInspector";
+
 
 
 interface MainLayoutProps {
@@ -190,8 +192,12 @@ export function MainLayout({ children }: MainLayoutProps) {
           <SmartMobileNav />
         </Suspense>
       </div>
+      
+      {/* Dev-only API Inspector */}
+      {import.meta.env.DEV && <APIInspector />}
     </div>
   );
+
 
   return (
     <OnboardingProvider>
