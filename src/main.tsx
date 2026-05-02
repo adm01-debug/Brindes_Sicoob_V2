@@ -5,8 +5,10 @@ import { registerServiceWorker } from "@/lib/sw-register";
 import { installGlobalErrorHandlers } from "@/lib/error-reporter";
 import { initSentry } from "@/lib/sentry";
 import EnhancedErrorBoundary from "@/components/errors/EnhancedErrorBoundary";
+import "@/lib/diagnostics"; // Initialize diagnostics early
 import App from "./App.tsx";
 import "./index.css";
+
 
 // Initialize Sentry FIRST (no-op if VITE_SENTRY_DSN is unset)
 initSentry();

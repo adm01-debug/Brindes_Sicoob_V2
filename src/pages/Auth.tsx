@@ -23,9 +23,12 @@ import { loginSchema, type LoginFormData } from "@/lib/validations";
 
 type LoginForm = LoginFormData;
 
+import { diagnostics } from "@/lib/diagnostics";
+
 // ContinuousRockets and AuthBrandingPanel extracted to ./auth/AuthBranding.tsx
 
 export default function Auth() {
+
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const { toast } = useToast();
@@ -93,14 +96,18 @@ export default function Auth() {
   });
 
   const handleLogin = async (data: LoginForm) => {
+    diagnostics.log('info', 'Auth', `Iniciando login para ${data.email}`);
     setIsSubmitting(true);
+
     setIpBlocked(false);
     
     try {
       const { error } = await signIn(data.email, data.password);
       
       if (error) {
+        diagnostics.log('error', 'Auth', `Erro no signIn: ${error.message}`);
         await logLoginAttempt(data.email, null, false, error.message);
+
         
         if (error.message.includes("Invalid login credentials")) {
           toast({
@@ -122,7 +129,9 @@ export default function Auth() {
       const userId = sessionData?.session?.user?.id;
 
       if (userId) {
+        diagnostics.log('info', 'Auth', `Validando IP para usuário ${userId}`);
         const ipValidation = await validateIPForAuthenticatedUser(userId);
+
         
         if (!ipValidation.isAllowed && ipValidation.hasRestrictions) {
           await signOut();
