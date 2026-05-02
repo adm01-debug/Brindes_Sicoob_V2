@@ -18,11 +18,11 @@ export const OrderAuditTimeline = ({ orderId }: OrderAuditTimelineProps) => {
 
   const getEventIcon = (type: string) => {
     switch (type) {
-      case 'status_change': return <Truck className="h-4 w-4 text-blue-500" />;
-      case 'creation': return <Package className="h-4 w-4 text-emerald-500" />;
-      case 'approval': return <CheckCircle2 className="h-4 w-4 text-emerald-500" />;
-      case 'rejection': return <AlertCircle className="h-4 w-4 text-red-500" />;
-      default: return <FileText className="h-4 w-4 text-slate-400" />;
+      case 'status_change': return <Truck className="h-4 w-4 text-info" />;
+      case 'creation': return <Package className="h-4 w-4 text-success" />;
+      case 'approval': return <CheckCircle2 className="h-4 w-4 text-success" />;
+      case 'rejection': return <AlertCircle className="h-4 w-4 text-destructive" />;
+      default: return <FileText className="h-4 w-4 text-muted-foreground" />;
     }
   };
 
