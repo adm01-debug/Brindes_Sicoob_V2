@@ -2759,6 +2759,175 @@ export type Database = {
           },
         ]
       }
+      order_audit_events: {
+        Row: {
+          actor_id: string | null
+          actor_name: string | null
+          actor_role: string | null
+          description: string
+          event_category: string
+          event_type: string
+          id: string
+          metadata: Json | null
+          occurred_at: string
+          order_id: string
+        }
+        Insert: {
+          actor_id?: string | null
+          actor_name?: string | null
+          actor_role?: string | null
+          description: string
+          event_category: string
+          event_type: string
+          id?: string
+          metadata?: Json | null
+          occurred_at?: string
+          order_id: string
+        }
+        Update: {
+          actor_id?: string | null
+          actor_name?: string | null
+          actor_role?: string | null
+          description?: string
+          event_category?: string
+          event_type?: string
+          id?: string
+          metadata?: Json | null
+          occurred_at?: string
+          order_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_audit_events_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      order_comments: {
+        Row: {
+          attachments: Json | null
+          author_id: string
+          author_role: string | null
+          content: string
+          created_at: string
+          edited_at: string | null
+          id: string
+          is_internal: boolean
+          order_id: string
+          parent_id: string | null
+          read_by: Json | null
+          updated_at: string
+        }
+        Insert: {
+          attachments?: Json | null
+          author_id: string
+          author_role?: string | null
+          content: string
+          created_at?: string
+          edited_at?: string | null
+          id?: string
+          is_internal?: boolean
+          order_id: string
+          parent_id?: string | null
+          read_by?: Json | null
+          updated_at?: string
+        }
+        Update: {
+          attachments?: Json | null
+          author_id?: string
+          author_role?: string | null
+          content?: string
+          created_at?: string
+          edited_at?: string | null
+          id?: string
+          is_internal?: boolean
+          order_id?: string
+          parent_id?: string | null
+          read_by?: Json | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_comments_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_comments_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "order_comments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      order_invoices: {
+        Row: {
+          access_key: string | null
+          amount: number
+          created_at: string
+          created_by: string | null
+          due_date: string | null
+          id: string
+          invoice_number: string
+          issue_date: string | null
+          notes: string | null
+          order_id: string
+          pdf_url: string | null
+          serie: string | null
+          status: string
+          updated_at: string
+          xml_url: string | null
+        }
+        Insert: {
+          access_key?: string | null
+          amount: number
+          created_at?: string
+          created_by?: string | null
+          due_date?: string | null
+          id?: string
+          invoice_number: string
+          issue_date?: string | null
+          notes?: string | null
+          order_id: string
+          pdf_url?: string | null
+          serie?: string | null
+          status?: string
+          updated_at?: string
+          xml_url?: string | null
+        }
+        Update: {
+          access_key?: string | null
+          amount?: number
+          created_at?: string
+          created_by?: string | null
+          due_date?: string | null
+          id?: string
+          invoice_number?: string
+          issue_date?: string | null
+          notes?: string | null
+          order_id?: string
+          pdf_url?: string | null
+          serie?: string | null
+          status?: string
+          updated_at?: string
+          xml_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_invoices_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       order_items: {
         Row: {
           created_at: string
@@ -2802,6 +2971,291 @@ export type Database = {
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      order_logistics_tracking: {
+        Row: {
+          actual_delivery_at: string | null
+          carrier: string | null
+          carrier_url: string | null
+          created_at: string
+          created_by: string | null
+          delivery_photo_url: string | null
+          estimated_delivery: string | null
+          id: string
+          notes: string | null
+          order_id: string
+          recipient_name: string | null
+          tracking_code: string | null
+          updated_at: string
+          volumes: number | null
+          weight_kg: number | null
+        }
+        Insert: {
+          actual_delivery_at?: string | null
+          carrier?: string | null
+          carrier_url?: string | null
+          created_at?: string
+          created_by?: string | null
+          delivery_photo_url?: string | null
+          estimated_delivery?: string | null
+          id?: string
+          notes?: string | null
+          order_id: string
+          recipient_name?: string | null
+          tracking_code?: string | null
+          updated_at?: string
+          volumes?: number | null
+          weight_kg?: number | null
+        }
+        Update: {
+          actual_delivery_at?: string | null
+          carrier?: string | null
+          carrier_url?: string | null
+          created_at?: string
+          created_by?: string | null
+          delivery_photo_url?: string | null
+          estimated_delivery?: string | null
+          id?: string
+          notes?: string | null
+          order_id?: string
+          recipient_name?: string | null
+          tracking_code?: string | null
+          updated_at?: string
+          volumes?: number | null
+          weight_kg?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_logistics_tracking_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      order_payments: {
+        Row: {
+          amount: number
+          created_at: string
+          created_by: string | null
+          id: string
+          invoice_id: string | null
+          notes: string | null
+          order_id: string
+          payment_date: string
+          payment_method: string
+          receipt_url: string | null
+          reference: string | null
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          invoice_id?: string | null
+          notes?: string | null
+          order_id: string
+          payment_date: string
+          payment_method: string
+          receipt_url?: string | null
+          reference?: string | null
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          invoice_id?: string | null
+          notes?: string | null
+          order_id?: string
+          payment_date?: string
+          payment_method?: string
+          receipt_url?: string | null
+          reference?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_payments_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "order_invoices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_payments_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      order_pilot_approvals: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          mockup_thumbnail_url: string | null
+          mockup_url: string
+          order_id: string
+          order_item_id: string | null
+          parent_approval_id: string | null
+          reviewed_at: string | null
+          reviewer_name: string | null
+          reviewer_notes: string | null
+          revision_round: number
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          mockup_thumbnail_url?: string | null
+          mockup_url: string
+          order_id: string
+          order_item_id?: string | null
+          parent_approval_id?: string | null
+          reviewed_at?: string | null
+          reviewer_name?: string | null
+          reviewer_notes?: string | null
+          revision_round?: number
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          mockup_thumbnail_url?: string | null
+          mockup_url?: string
+          order_id?: string
+          order_item_id?: string | null
+          parent_approval_id?: string | null
+          reviewed_at?: string | null
+          reviewer_name?: string | null
+          reviewer_notes?: string | null
+          revision_round?: number
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_pilot_approvals_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_pilot_approvals_parent_approval_id_fkey"
+            columns: ["parent_approval_id"]
+            isOneToOne: false
+            referencedRelation: "order_pilot_approvals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      order_template_items: {
+        Row: {
+          created_at: string
+          id: string
+          notes: string | null
+          position: number
+          product_id: string
+          product_name: string | null
+          quantity: number
+          template_id: string
+          unit_price: number | null
+          variant_sku: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          notes?: string | null
+          position?: number
+          product_id: string
+          product_name?: string | null
+          quantity: number
+          template_id: string
+          unit_price?: number | null
+          variant_sku?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          notes?: string | null
+          position?: number
+          product_id?: string
+          product_name?: string | null
+          quantity?: number
+          template_id?: string
+          unit_price?: number | null
+          variant_sku?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_template_items_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "order_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      order_templates: {
+        Row: {
+          client_id: string | null
+          created_at: string
+          description: string | null
+          id: string
+          is_favorite: boolean
+          last_used_at: string | null
+          name: string
+          source_order_id: string | null
+          updated_at: string
+          use_count: number
+          user_id: string
+        }
+        Insert: {
+          client_id?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_favorite?: boolean
+          last_used_at?: string | null
+          name: string
+          source_order_id?: string | null
+          updated_at?: string
+          use_count?: number
+          user_id: string
+        }
+        Update: {
+          client_id?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_favorite?: boolean
+          last_used_at?: string | null
+          name?: string
+          source_order_id?: string | null
+          updated_at?: string
+          use_count?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_templates_source_order_id_fkey"
+            columns: ["source_order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
             referencedColumns: ["id"]
           },
         ]
@@ -5993,6 +6447,7 @@ export type Database = {
         Returns: boolean
       }
       is_manager_or_admin: { Args: never; Returns: boolean }
+      is_order_owner_or_admin: { Args: { _order_id: string }; Returns: boolean }
       is_org_member: {
         Args: { _org_id: string; _user_id: string }
         Returns: boolean
