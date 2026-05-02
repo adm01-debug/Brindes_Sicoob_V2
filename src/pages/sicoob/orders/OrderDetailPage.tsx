@@ -471,41 +471,52 @@ export default function OrderDetailPage() {
                 <Card>
                   <CardContent className="pt-6">
                     <div className="space-y-6">
-                      {requests?.map((req) => (
-                        <div key={req.id} className="flex gap-4">
+                      {orderHistory?.map((entry) => (
+                        <div key={entry.id} className="flex gap-4">
                           <div className="flex flex-col items-center">
                             <div className={`w-2 h-2 rounded-full mt-1.5 ${
-                              req.status === 'approved' ? 'bg-emerald-500' : 
-                              req.status === 'rejected' ? 'bg-red-500' : 'bg-amber-500'
+                              entry.new_status === 'confirmed' ? 'bg-emerald-500' : 
+                              entry.new_status === 'rejected' ? 'bg-red-500' : 
+                              entry.new_status === 'waiting_approval' ? 'bg-amber-500' : 'bg-blue-500'
                             }`} />
                             <div className="w-0.5 h-full bg-border" />
                           </div>
                           <div>
                             <p className="text-sm font-bold">
-                              {req.status === 'approved' ? 'Solicitação Aprovada' : 
-                               req.status === 'rejected' ? 'Solicitação Rejeitada' : 'Aguardando Aprovação'}
+                              {entry.new_status === 'confirmed' ? 'Pedido Confirmado' : 
+                               entry.new_status === 'rejected' ? 'Pedido Rejeitado' : 
+                               entry.new_status === 'waiting_approval' ? 'Aguardando Aprovação' : 'Status Atualizado'}
                             </p>
-                            <p className="text-xs text-muted-foreground">
-                              {req.status === 'pending' ? `Solicitado por ${req.requester?.display_name}` : 
-                               req.status === 'approved' ? 'Aprovado por gestor' : `Rejeitado: ${req.rejection_reason}`}
-                            </p>
-                            <p className="text-xs text-muted-foreground">
-                              Em {new Date(req.created_at).toLocaleString('pt-BR')}
-                            </p>
+                            <div className="flex flex-col gap-0.5">
+                              <p className="text-xs text-muted-foreground">
+                                <strong>De:</strong> {entry.previous_status} <strong>Para:</strong> {entry.new_status}
+                              </p>
+                              {entry.comment && (
+                                <p className="text-xs text-muted-foreground bg-muted p-2 rounded mt-1 italic">
+                                  "{entry.comment}"
+                                </p>
+                              )}
+                              <p className="text-[10px] text-muted-foreground flex items-center gap-1 mt-1">
+                                <User className="h-3 w-3" />
+                                {entry.user?.display_name || 'Sistema'} • {new Date(entry.created_at).toLocaleString('pt-BR')}
+                              </p>
+                            </div>
                           </div>
                         </div>
                       ))}
-                      <div className="flex gap-4">
-                        <div className="flex flex-col items-center">
-                          <div className="w-2 h-2 rounded-full bg-muted mt-1.5" />
+                      {!orderHistory?.length && (
+                        <div className="flex gap-4">
+                          <div className="flex flex-col items-center">
+                            <div className="w-2 h-2 rounded-full bg-muted mt-1.5" />
+                          </div>
+                          <div>
+                            <p className="text-sm font-bold text-muted-foreground">Pedido Criado</p>
+                            <p className="text-xs text-muted-foreground">
+                              Em {new Date(orderData.created_at).toLocaleString('pt-BR')}
+                            </p>
+                          </div>
                         </div>
-                        <div>
-                          <p className="text-sm font-bold text-muted-foreground">Pedido Criado</p>
-                          <p className="text-xs text-muted-foreground">
-                            Em {new Date(orderData.created_at).toLocaleString('pt-BR')}
-                          </p>
-                        </div>
-                      </div>
+                      )}
                     </div>
                   </CardContent>
                 </Card>
