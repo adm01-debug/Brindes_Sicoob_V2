@@ -25,7 +25,13 @@ import { AuthDiagnosticsWidget } from "@/components/dev/AuthDiagnosticsWidget";
 import { RouteScrollReset } from "@/components/common/RouteScrollReset";
 import { startBridgeTelemetry } from "@/lib/external-db/bridge-telemetry-client";
 import { startColdStartRecorder } from "@/lib/external-db/cold-start-recorder";
+import { DiagnosticOverlay } from "@/components/dev/DiagnosticOverlay";
+import { diagnostics } from "@/lib/diagnostics";
 import "./App.css";
+
+// Log app start
+diagnostics.log('event', 'App', 'Iniciando aplicação...');
+
 
 // Inicia o bridge telemetry e o recorder de cold-start (idempotentes).
 startBridgeTelemetry();
@@ -207,7 +213,9 @@ const App = () => {
                       <BridgeStatusBanner />
                       <DevOnlyBridgeOverlay />
                       <AuthDiagnosticsWidget />
+                      <DiagnosticOverlay />
                       <RouteScrollReset />
+
                       <RouteSuspense>
                         <Routes>
                           {/* Public Routes */}

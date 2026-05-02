@@ -29,6 +29,8 @@ const ScrollProgressIndicator = lazyWithRetry(() => import("@/components/common/
 const PersistentBreadcrumbs = lazyWithRetry(() => import("@/components/common/PersistentBreadcrumbs").then(m => ({ default: m.PersistentBreadcrumbs })));
 
 import { cn } from "@/lib/utils";
+import { diagnostics } from "@/lib/diagnostics";
+
 
 interface MainLayoutProps {
   children: React.ReactNode;
@@ -43,6 +45,11 @@ export function MainLayout({ children }: MainLayoutProps) {
 
   useScrollLockFix();
   useGlobalShortcuts();
+
+  useEffect(() => {
+    diagnostics.log('event', 'MainLayout', 'MainLayout montado');
+  }, []);
+
 
   // Propaga --breadcrumb-h ao :root para que stickys filhos (toolbars de
   // página) ancorem corretamente abaixo do Header + Breadcrumb. Em "/" a
