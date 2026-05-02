@@ -124,39 +124,39 @@ export default function ColorDocumentationPage() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
             <ColorCard 
-              name="Primary (Institucional)" 
+              name="Primary (Verde Escuro)" 
               token="--primary" 
               hex="#003641" 
               className="bg-primary text-primary-foreground"
-              description="Âncora, logos, headers, peso bancário."
+              description="Âncora institucional, headers, tipografia de peso."
             />
             <ColorCard 
-              name="Brand (Teal/Verde)" 
+              name="Brand (Turquesa)" 
               token="--brand" 
-              hex="#C5D41C" 
+              hex="#00AE9D" 
               className="bg-brand text-brand-foreground"
-              description="Energia, ação e identidade moderna."
+              description="Cor protagonista. CTAs, ações e energia cooperativa."
             />
             <ColorCard 
-              name="Gray (Cinza)" 
-              token="--gray" 
-              hex="#858485" 
-              className="bg-muted text-muted-foreground"
-              description="Neutralidade e suporte visual."
+              name="Secondary (Verde Médio)" 
+              token="--secondary" 
+              hex="#00875A" 
+              className="bg-secondary text-secondary-foreground"
+              description="Suporte ao turquesa, badges e ações complementares."
             />
             <ColorCard 
-              name="Accent (Amarelo)" 
+              name="Accent (Roxo)" 
               token="--accent" 
-              hex="#F2AE21" 
+              hex="#5C2D91" 
               className="bg-accent text-accent-foreground"
-              description="Destaque, moedas, urgência."
+              description="Detalhes pontuais, destaques sutis."
             />
              <ColorCard 
-              name="Reward (Roxo)" 
+              name="Reward (Roxo Claro)" 
               token="--reward" 
-              hex="#5C2D91" 
+              hex="#7B3FAB" 
               className="bg-reward text-reward-foreground"
-              description="Prêmios, Coopera, cupons."
+              description="Prêmios, Coopera, cupons promocionais."
             />
           </div>
         </section>
@@ -458,9 +458,9 @@ export default function ColorDocumentationPage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <ChecklistItem color="bg-brand" title="Brand (Teal)" description="Ações principais (CTAs), botões de conversão e elementos de identidade moderna." />
-                <ChecklistItem color="bg-accent" title="Accent (Amarelo)" description="Destaques sutis, selos de urgência ou prêmios. Usar sobre fundo institucional." />
-                <ChecklistItem color="bg-success" title="Success (Verde Sicoob)" description="Confirmações de sucesso, status 'Entregue' ou 'Concluído'." />
-                <ChecklistItem color="bg-warning" title="Warning (Amarelo/Ouro)" description="Avisos de atenção, status 'Em Revisão' ou pendências sutis." />
+                <ChecklistItem color="bg-accent" title="Accent (Roxo)" description="Detalhes pontuais, selos e destaques sutis sobre fundos claros ou turquesa." />
+                <ChecklistItem color="bg-success" title="Success (Verde)" description="Confirmações de sucesso, status 'Entregue' ou 'Concluído'." />
+                <ChecklistItem color="bg-warning" title="Warning (Âmbar)" description="Avisos de atenção, status 'Em Revisão' ou pendências sutis." />
                 <ChecklistItem color="bg-destructive" title="Danger (Vermelho)" description="Ações irreversíveis (excluir), erros críticos ou status 'Cancelado'." />
               </CardContent>
             </Card>
@@ -477,7 +477,7 @@ export default function ColorDocumentationPage() {
                   </li>
                   <li className="flex gap-2">
                     <ChevronRight className="h-4 w-4 text-brand shrink-0" />
-                    <span><strong className="text-foreground">Amarelo Accent:</strong> Nunca use texto branco sobre amarelo. Use <code className="text-[10px]">--primary</code>.</span>
+                    <span><strong className="text-foreground">Turquesa Brand:</strong> Cor protagonista. Usar em CTAs, foco e elementos de ação.</span>
                   </li>
                   <li className="flex gap-2">
                     <ChevronRight className="h-4 w-4 text-brand shrink-0" />
@@ -603,11 +603,11 @@ function exportTokensJSON() {
       updated_at: new Date().toISOString()
     },
     tokens: {
-      brand: "#C5D41C",
       primary: "#003641",
-      gray: "#858485",
-      accent: "#F2AE21",
-      reward: "#5C2D91"
+      brand: "#00AE9D",
+      secondary: "#00875A",
+      accent: "#5C2D91",
+      reward: "#7B3FAB"
     },
     status_mapping: SICOOB_STATUS_CONFIG,
     context_rules: contextRules

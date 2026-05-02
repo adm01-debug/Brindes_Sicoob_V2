@@ -73,26 +73,26 @@ html[data-scroll-locked] body {
     --primary-glow: 190 100% 20%;
     --primary-foreground: 0 0% 100%;
 
-    /* ===== MARCA / AÇÃO (SICOOB MARCA — #C5D41C) ===== */
-    /* Uso: CTAs principais, hero, ações de conversão, energia cooperativa. */
-    --brand: 65 72% 47%;
-    --brand-hover: 65 72% 52%;
-    --brand-active: 65 72% 42%;
-    --brand-glow: 65 72% 60%;
-    --brand-foreground: 190 100% 10%;
-    --brand-soft: 175 100% 34%;
+    /* ===== MARCA / AÇÃO (TURQUESA SICOOB — #00AE9D — predominante) ===== */
+    /* Uso: CTAs principais, hero, ações de conversão, cor protagonista. */
+    --brand: 175 100% 34%;
+    --brand-hover: 175 100% 30%;
+    --brand-active: 175 100% 26%;
+    --brand-glow: 175 100% 42%;
+    --brand-foreground: 0 0% 100%;
+    --brand-soft: 175 100% 38%;
 
-    /* ===== CORES SECUNDÁRIAS (VERDE-LIMA — #7DB61C) ===== */
-    /* Uso pontual: badges secundários, ações complementares. */
-    --secondary: 82 73% 41%;
+    /* ===== CORES SECUNDÁRIAS (VERDE MÉDIO — #00875A) ===== */
+    /* Uso: badges secundários, ações complementares, suporte ao turquesa. */
+    --secondary: 158 100% 26%;
     --secondary-foreground: 0 0% 100%;
 
-    /* ===== REWARD (ROXO SELO PROMOCIONAL — #5C2D91) ===== */
-    /* Uso: pontos Coopera, cupons, badges de promoção. */
+    /* ===== REWARD (ROXO — #5C2D91 — detalhes) ===== */
+    /* Uso: pontos Coopera, cupons, badges de promoção, acentos pontuais. */
     --reward: 271 53% 37%;
     --reward-hover: 271 53% 30%;
     --reward-foreground: 0 0% 100%;
-    --reward-soft: 271 53% 37%;
+    --reward-soft: 271 53% 50%;
 
     /* ===== MUTED ===== */
     --muted: 190 20% 92%;
@@ -105,9 +105,9 @@ html[data-scroll-locked] body {
     --interactive: 82 73% 41%;
     --divider: 220 14% 86%;
 
-    /* ===== ACCENT (AMARELO SICOOB — #F2AE21) ===== */
-    --accent: 40 89% 54%;
-    --accent-foreground: 190 100% 13%;
+    /* ===== ACCENT (ROXO SICOOB — #5C2D91 — detalhes) ===== */
+    --accent: 271 53% 37%;
+    --accent-foreground: 0 0% 100%;
 
     /* ===== DESTRUCTIVE ===== */
     --destructive: 0 84% 60%;
@@ -140,12 +140,12 @@ html[data-scroll-locked] body {
     --cart-hover: 152 69% 41%;
     --cart-foreground: 0 0% 100%;
 
-    /* ===== AMARELO (COR DE DESTAQUE — #FFBB00) ===== */
-    --orange: 44 100% 50%;
-    --orange-hover: 44 100% 45%;
-    --orange-active: 44 100% 40%;
-    --orange-glow: 44 100% 60%;
-    --orange-foreground: 190 100% 13%;
+    /* ===== ORANGE (alias retrocompatível — agora aponta para Turquesa Sicoob) ===== */
+    --orange: 175 100% 34%;
+    --orange-hover: 175 100% 30%;
+    --orange-active: 175 100% 26%;
+    --orange-glow: 175 100% 42%;
+    --orange-foreground: 0 0% 100%;
 
     /* ===== HIGHLIGHT COLORS ===== */
     --highlight-gold: 45 93% 47%;
@@ -307,23 +307,23 @@ html[data-scroll-locked] body {
     --primary-glow: 190 100% 25%;
     --primary-foreground: 0 0% 100%;
 
-    /* ===== MARCA / AÇÃO (SICOOB — dark) ===== */
-    --brand: 65 72% 47%;
-    --brand-hover: 65 72% 52%;
-    --brand-active: 65 72% 42%;
-    --brand-glow: 65 72% 60%;
-    --brand-foreground: 190 100% 10%;
-    --brand-soft: 65 72% 47%;
+    /* ===== MARCA / AÇÃO (TURQUESA SICOOB — dark) ===== */
+    --brand: 175 90% 42%;
+    --brand-hover: 175 90% 38%;
+    --brand-active: 175 90% 32%;
+    --brand-glow: 175 100% 50%;
+    --brand-foreground: 0 0% 100%;
+    --brand-soft: 175 90% 45%;
 
-    /* ===== CORES SECUNDÁRIAS (VERDE-LIMA — dark) ===== */
-    --secondary: 82 73% 41%;
+    /* ===== CORES SECUNDÁRIAS (VERDE MÉDIO — dark) ===== */
+    --secondary: 158 80% 32%;
     --secondary-foreground: 0 0% 100%;
 
-    /* ===== REWARD (ROXO SELO — dark) ===== */
-    --reward: 271 70% 75%;
-    --reward-hover: 271 60% 48%;
+    /* ===== REWARD (ROXO — dark) ===== */
+    --reward: 271 60% 60%;
+    --reward-hover: 271 60% 50%;
     --reward-foreground: 0 0% 100%;
-    --reward-soft: 271 60% 55%;
+    --reward-soft: 271 60% 65%;
 
     /* ===== MUTED ===== */
     --muted: 225 15% 12%;
@@ -336,9 +336,9 @@ html[data-scroll-locked] body {
     --interactive: 82 73% 41%;
     --divider: 225 14% 18%;
 
-    /* ===== ACCENT (AMARELO SICOOB — #F2AE21 dark) ===== */
-    --accent: 40 89% 54%;
-    --accent-foreground: 190 100% 13%;
+    /* ===== ACCENT (ROXO SICOOB — dark) ===== */
+    --accent: 271 60% 55%;
+    --accent-foreground: 0 0% 100%;
 
     /* ===== DESTRUCTIVE ===== */
     --destructive: 0 72% 51%;
@@ -371,12 +371,12 @@ html[data-scroll-locked] body {
     --cart-hover: 152 69% 45%;
     --cart-foreground: 0 0% 100%;
 
-    /* ===== AMARELO (COR DE DESTAQUE — Fusion glow) ===== */
-    --orange: 44 100% 50%;
-    --orange-hover: 44 100% 55%;
-    --orange-active: 44 100% 60%;
-    --orange-glow: 44 100% 48%;
-    --orange-foreground: 190 100% 13%;
+    /* ===== ORANGE (alias retrocompatível — turquesa dark) ===== */
+    --orange: 175 90% 42%;
+    --orange-hover: 175 90% 48%;
+    --orange-active: 175 90% 38%;
+    --orange-glow: 175 100% 50%;
+    --orange-foreground: 0 0% 100%;
 
     /* ===== HIGHLIGHT COLORS ===== */
     --highlight-gold: 45 93% 55%;
