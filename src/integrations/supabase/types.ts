@@ -4723,6 +4723,56 @@ export type Database = {
         }
         Relationships: []
       }
+      sicoob_approval_requests: {
+        Row: {
+          amount_at_request: number
+          approver_id: string | null
+          created_at: string
+          id: string
+          order_id: string
+          rejection_reason: string | null
+          request_reason: string | null
+          requester_id: string
+          status: string
+          threshold_at_request: number
+          updated_at: string
+        }
+        Insert: {
+          amount_at_request: number
+          approver_id?: string | null
+          created_at?: string
+          id?: string
+          order_id: string
+          rejection_reason?: string | null
+          request_reason?: string | null
+          requester_id: string
+          status?: string
+          threshold_at_request: number
+          updated_at?: string
+        }
+        Update: {
+          amount_at_request?: number
+          approver_id?: string | null
+          created_at?: string
+          id?: string
+          order_id?: string
+          rejection_reason?: string | null
+          request_reason?: string | null
+          requester_id?: string
+          status?: string
+          threshold_at_request?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sicoob_approval_requests_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "sicoob_orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       sicoob_order_history: {
         Row: {
           comment: string | null
@@ -4804,6 +4854,8 @@ export type Database = {
       }
       sicoob_orders: {
         Row: {
+          approved_at: string | null
+          approved_by: string | null
           cooperative_id: string | null
           created_at: string
           created_by: string | null
@@ -4817,6 +4869,8 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
           cooperative_id?: string | null
           created_at?: string
           created_by?: string | null
@@ -4830,6 +4884,8 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          approved_at?: string | null
+          approved_by?: string | null
           cooperative_id?: string | null
           created_at?: string
           created_by?: string | null
