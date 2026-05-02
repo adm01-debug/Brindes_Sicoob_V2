@@ -4915,6 +4915,39 @@ export type Database = {
           },
         ]
       }
+      sicoob_performance_reports: {
+        Row: {
+          buffers_hit: number | null
+          buffers_read: number | null
+          executed_at: string | null
+          execution_plan: Json
+          id: string
+          role_tested: string
+          table_name: string
+          total_time_ms: number | null
+        }
+        Insert: {
+          buffers_hit?: number | null
+          buffers_read?: number | null
+          executed_at?: string | null
+          execution_plan: Json
+          id?: string
+          role_tested: string
+          table_name: string
+          total_time_ms?: number | null
+        }
+        Update: {
+          buffers_hit?: number | null
+          buffers_read?: number | null
+          executed_at?: string | null
+          execution_plan?: Json
+          id?: string
+          role_tested?: string
+          table_name?: string
+          total_time_ms?: number | null
+        }
+        Relationships: []
+      }
       sicoob_rls_audit_logs: {
         Row: {
           executed_at: string | null
@@ -5682,6 +5715,10 @@ export type Database = {
           _label: string
           _reason: string
         }
+        Returns: string
+      }
+      generate_sicoob_performance_report: {
+        Args: { _role_name: string; _table_name: string }
         Returns: string
       }
       get_app_health_summary: { Args: { _minutes?: number }; Returns: Json }
