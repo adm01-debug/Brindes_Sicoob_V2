@@ -39,6 +39,20 @@ export default {
           DEFAULT: "hsl(var(--secondary))",
           foreground: "hsl(var(--secondary-foreground))",
         },
+        brand: {
+          DEFAULT: "hsl(var(--brand))",
+          hover: "hsl(var(--brand-hover))",
+          active: "hsl(var(--brand-active))",
+          glow: "hsl(var(--brand-glow))",
+          foreground: "hsl(var(--brand-foreground))",
+          soft: "hsl(var(--brand-soft))",
+        },
+        reward: {
+          DEFAULT: "hsl(var(--reward))",
+          hover: "hsl(var(--reward-hover))",
+          foreground: "hsl(var(--reward-foreground))",
+          soft: "hsl(var(--reward-soft))",
+        },
         destructive: {
           DEFAULT: "hsl(var(--destructive))",
           foreground: "hsl(var(--destructive-foreground))",
