@@ -504,24 +504,6 @@ function ChecklistItem({ color, title, description }: { color: string; title: st
     </div>
   );
 }
-                <CardTitle className="text-sm uppercase tracking-wider text-muted-foreground">Dicas de Contraste e Acessibilidade</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <ul className="list-disc list-inside text-sm space-y-2 text-muted-foreground">
-                  <li><strong className="text-foreground">Regra AA:</strong> Todo texto deve ter contraste mínimo de 4.5:1 contra o fundo.</li>
-                  <li><strong className="text-foreground">Amarelo Accent:</strong> Nunca use texto branco sobre o amarelo. Use sempre o verde institucional (<code className="text-[10px]">--primary</code>) como foreground.</li>
-                  <li><strong className="text-foreground">Fundos Suaves:</strong> Prefira usar as variantes <code className="text-[10px]">/10</code> (ex: <code className="text-[10px]">bg-brand/10</code>) para áreas grandes, mantendo a cor pura apenas para o texto/ícone.</li>
-                  <li><strong className="text-foreground">Modo Dark:</strong> No tema escuro, a luminosidade do <code className="text-[10px]">--primary</code> e <code className="text-[10px]">--reward</code> foi aumentada para garantir leitura sobre fundo <code className="text-[10px]">#000</code>.</li>
-                  <li><strong className="text-foreground">Hierarquia 60/30/10:</strong> 60% neutros, 30% marca (teal/escuro) e 10% destaques (amarelo/roxo).</li>
-                </ul>
-              </CardContent>
-            </Card>
-          </div>
-        </section>
-      </div>
-    </MainLayout>
-  );
-}
 
 function ContextRuleCard({ title, doText, dontText }: { title: string; doText: string; dontText: string }) {
   return (
