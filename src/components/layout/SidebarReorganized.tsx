@@ -24,6 +24,7 @@ import {
   Activity,
   Gauge,
   Truck,
+  Landmark,
   Palette,
   Brain,
   Workflow,
