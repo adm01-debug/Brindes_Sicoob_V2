@@ -27,11 +27,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Plus, Search, Filter } from "lucide-react";
+import { Plus, Filter, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+
 
 export const BudgetsTab = () => {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [validationError, setValidationError] = useState<string | null>(null);
   const queryClient = useQueryClient();
 
   const { data: budgets, isLoading: budgetsLoading } = useQuery({
@@ -88,15 +91,46 @@ export const BudgetsTab = () => {
 
   const handleCreate = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setValidationError(null);
     const formData = new FormData(e.currentTarget);
+    const amount = parseFloat(formData.get("amount") as string);
+    const alcada = parseFloat(formData.get("alcada") as string);
+    const year = parseInt(formData.get("year") as string);
+    const month = parseInt(formData.get("month") as string);
+
+    if (amount <= 0) {
+      setValidationError("O valor da verba deve ser maior que zero");
+      return;
+    }
+
+    if (alcada < 0) {
+      setValidationError("O limite de alçada não pode ser negativo");
+      return;
+    }
+
+    if (alcada > amount) {
+      setValidationError("O limite de alçada não pode ser maior que a verba total");
+      return;
+    }
+
+    if (year < 2000 || year > 2100) {
+      setValidationError("Ano inválido (deve ser entre 2000 e 2100)");
+      return;
+    }
+
     createMutation.mutate({
       pa_id: formData.get("pa_id"),
-      mes: parseInt(formData.get("month") as string),
-      ano: parseInt(formData.get("year") as string),
-      verba_total: parseFloat(formData.get("amount") as string),
+      mes: month,
+      ano: year,
+      verba_total: amount,
       verba_consumida: 0,
-      limite_alcada: parseFloat(formData.get("alcada") as string) || 0,
+      limite_alcada: alcada || 0,
     });
+  };
+
+  const handleOpenChange = (open: boolean) => {
+    setIsCreateOpen(open);
+    if (!open) setValidationError(null);
   };
 
   const formatCurrency = (value: number) => {
@@ -115,7 +149,7 @@ export const BudgetsTab = () => {
             Filtros
           </Button>
         </div>
-        <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
+        <Dialog open={isCreateOpen} onOpenChange={handleOpenChange}>
           <DialogTrigger asChild>
             <Button className="gap-2">
               <Plus className="h-4 w-4" />
@@ -130,6 +164,14 @@ export const BudgetsTab = () => {
                   Defina o limite de compras mensal para um Posto de Atendimento.
                 </DialogDescription>
               </DialogHeader>
+
+              {validationError && (
+                <Alert variant="destructive" className="my-2">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertTitle>Erro de Validação</AlertTitle>
+                  <AlertDescription>{validationError}</AlertDescription>
+                </Alert>
+              )}
               <div className="grid gap-4 py-4">
                 <div className="space-y-2">
                   <label>Posto de Atendimento (PA)</label>

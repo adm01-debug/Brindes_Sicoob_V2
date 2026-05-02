@@ -10,7 +10,8 @@ import {
   MapPin, 
   Package, 
   History,
-  MessageSquare
+  MessageSquare,
+  AlertCircle
 } from "lucide-react";
 import { 
   Card, 
@@ -20,10 +21,31 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { toast } from "sonner";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+
 
 export default function OrderDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const [isApproving, setIsApproving] = useState(false);
+
+  const orderTotal = 900.00;
+  const budgetLimit = 5000.00;
+  const availableBudget = 450.00; // Simulating low budget for validation example
+
+  const handleApprove = () => {
+    if (orderTotal > availableBudget) {
+      toast.error("Saldo de verba insuficiente para este pedido");
+      return;
+    }
+    
+    setIsApproving(true);
+    setTimeout(() => {
+      toast.success("Pedido aprovado com sucesso");
+      setIsApproving(false);
+    }, 1000);
+  };
 
   return (
     <MainLayout>
@@ -45,7 +67,13 @@ export default function OrderDetailPage() {
           </div>
           <div className="ml-auto flex gap-2">
             <Button variant="outline" className="text-destructive">Rejeitar</Button>
-            <Button className="bg-emerald-600 hover:bg-emerald-700">Aprovar Pedido</Button>
+            <Button 
+              className="bg-emerald-600 hover:bg-emerald-700" 
+              onClick={handleApprove}
+              disabled={isApproving}
+            >
+              {isApproving ? "Processando..." : "Aprovar Pedido"}
+            </Button>
           </div>
         </div>
 
@@ -168,11 +196,36 @@ export default function OrderDetailPage() {
                   </span>
                   <span className="font-bold">02:15:00</span>
                 </div>
-                <div className="p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg">
-                  <p className="text-xs text-blue-600 font-medium">
-                    Este pedido está dentro do limite de alçada do PA (R$ 5.000,00).
-                  </p>
+                
+                <div className="space-y-2">
+                  <div className="flex justify-between text-xs">
+                    <span>Verba Disponível</span>
+                    <span className={orderTotal > availableBudget ? "text-destructive font-bold" : ""}>
+                      R$ {availableBudget.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                    </span>
+                  </div>
+                  <div className="w-full h-1.5 bg-secondary rounded-full overflow-hidden">
+                    <div 
+                      className="h-full bg-primary" 
+                      style={{ width: `${Math.min((availableBudget / 1000) * 100, 100)}%` }} 
+                    />
+                  </div>
                 </div>
+
+                {orderTotal > availableBudget ? (
+                  <Alert variant="destructive" className="py-2">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertDescription className="text-xs">
+                      Atenção: O total do pedido (R$ {orderTotal.toFixed(2)}) excede a verba disponível (R$ {availableBudget.toFixed(2)}).
+                    </AlertDescription>
+                  </Alert>
+                ) : (
+                  <div className="p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg">
+                    <p className="text-xs text-blue-600 font-medium">
+                      Este pedido está dentro do limite de alçada do PA (R$ {budgetLimit.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}).
+                    </p>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>
