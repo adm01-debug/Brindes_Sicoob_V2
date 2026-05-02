@@ -12,7 +12,13 @@ import {
   AlertTriangle,
   Plus,
   Trash2,
-  Search
+  Search,
+  Truck,
+  FileText,
+  CreditCard,
+  Image as ImageIcon,
+  History,
+  Layout
 } from "lucide-react";
 import { 
   Card, 
@@ -42,6 +48,7 @@ import {
   DialogTrigger
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { 
   Tooltip, 
   TooltipContent, 
@@ -59,6 +66,14 @@ import { useSicoobOrder, useSicoobOrderDetails } from "@/hooks/sicoob/useSicoobO
 import { OrderStatusBadge } from "@/components/sicoob/orders/OrderStatusBadge";
 import { OrderActionDialog } from "@/components/sicoob/orders/OrderActionDialog";
 import { OrderItemsHistory } from "@/components/sicoob/orders/OrderItemsHistory";
+import { OrderAuditTimeline } from "@/components/sicoob/orders/OrderAuditTimeline";
+import { 
+  useOrderLogistics, 
+  useOrderInvoices, 
+  useOrderPayments, 
+  useOrderPilotApprovals 
+} from "@/hooks/useOrderExtensions";
+import { cn } from "@/lib/utils";
 
 export default function OrderDetailPage() {
   const { id } = useParams();
