@@ -5681,6 +5681,14 @@ export type Database = {
       cleanup_old_notifications: { Args: never; Returns: undefined }
       cleanup_rate_limits: { Args: never; Returns: undefined }
       cleanup_security_logs: { Args: never; Returns: Json }
+      cleanup_test_auth_orphans: {
+        Args: { test_ids: string[] }
+        Returns: {
+          deleted_id: string
+          email: string
+          success: boolean
+        }[]
+      }
       cleanup_webhook_logs: { Args: never; Returns: Json }
       complete_optimization: {
         Args: {
@@ -5894,6 +5902,16 @@ export type Database = {
           isOneToOne: false
           isSetofReturn: true
         }
+      }
+      get_test_auth_integrity: {
+        Args: { test_emails: string[] }
+        Returns: {
+          email: string
+          exists_in_users: boolean
+          has_identities: boolean
+          is_valid: boolean
+          user_id: string
+        }[]
       }
       get_top_collected_products: {
         Args: { _days?: number; _limit?: number }
