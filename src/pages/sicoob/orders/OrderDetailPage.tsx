@@ -407,9 +407,22 @@ export default function OrderDetailPage() {
                           <p className="text-xs text-muted-foreground">Qtd: {item.quantity}</p>
                         </div>
                       </div>
-                      <div className="text-right">
-                        <p className="font-bold">R$ {Number(item.unit_price * item.quantity).toLocaleString('pt-BR')}</p>
-                        <p className="text-xs text-muted-foreground">Un: R$ {Number(item.unit_price).toLocaleString('pt-BR')}</p>
+                      <div className="text-right flex items-center gap-4">
+                        <div>
+                          <p className="font-bold">R$ {Number(item.unit_price * item.quantity).toLocaleString('pt-BR')}</p>
+                          <p className="text-xs text-muted-foreground">Un: R$ {Number(item.unit_price).toLocaleString('pt-BR')}</p>
+                        </div>
+                        {orderData.status === 'pending' && (
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="text-muted-foreground hover:text-destructive"
+                            onClick={() => handleRemoveItem(item.id)}
+                            disabled={removeItem.isPending}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        )}
                       </div>
                     </div>
                   ))}
