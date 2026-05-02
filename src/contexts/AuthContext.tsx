@@ -29,7 +29,9 @@ export interface Profile {
   user_id: string;
   email: string | null;
   full_name: string | null;
-  role: string | null;           // Auto-synced from user_roles via DB trigger (read-only mirror)
+  role: string | null;           // Auto-synced from user_roles via DB trigger
+  cooperativa_id: string | null; // Sicoob: Singular
+  pa_id: string | null;          // Sicoob: PA
   avatar_url: string | null;
   phone: string | null;
   department: string | null;
