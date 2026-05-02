@@ -264,7 +264,30 @@ export default function ColorDocumentationPage() {
           </Card>
         </section>
         
-        {/* 5. Usage Checklist */}
+        {/* 5. Context Rules */}
+        <section className="space-y-6">
+          <div className="flex items-center gap-2 border-b pb-2">
+            <Info className="h-5 w-5 text-brand" />
+            <h2 className="text-2xl font-semibold">Regras por Contexto</h2>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <ContextRuleCard 
+              title="CTA / Ações"
+              doText="Usar --brand para ações primárias e --primary para ações institucionais secundárias."
+              dontText="Evitar cores de status (success/danger) para navegação comum."
+            />
+            <ContextRuleCard 
+              title="Feedback"
+              doText="Usar --success para fluxos concluídos e --warning para pendências."
+              dontText="Não usar --accent (amarelo) para erros críticos."
+            />
+            <ContextRuleCard 
+              title="Modais e Avisos"
+              doText="Usar variantes /10 para o fundo de alertas amplos."
+              dontText="Evitar fundos coloridos saturados que cansam a vista."
+            />
+          </div>
+        </section>
         <section className="space-y-6">
           <div className="flex items-center gap-2 border-b pb-2">
             <CheckSquare className="h-5 w-5 text-brand" />
@@ -335,9 +358,25 @@ export default function ColorDocumentationPage() {
   );
 }
 
-function ContrastRow({ token, bg, label, ratio, pass, usage }: { 
-  token: string; bg: string; label: string; ratio: string; pass: boolean; usage: string;
-}) {
+function ContextRuleCard({ title, doText, dontText }: { title: string; doText: string; dontText: string }) {
+  return (
+    <Card>
+      <CardHeader className="pb-2">
+        <CardTitle className="text-sm font-bold">{title}</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        <div className="space-y-1">
+          <p className="text-[10px] font-bold text-success uppercase tracking-wider">✅ Fazer</p>
+          <p className="text-xs text-muted-foreground">{doText}</p>
+        </div>
+        <div className="space-y-1">
+          <p className="text-[10px] font-bold text-destructive uppercase tracking-wider">❌ Evitar</p>
+          <p className="text-xs text-muted-foreground">{dontText}</p>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
   const bgClass = TOKEN_MAP[token as keyof typeof TOKEN_MAP] || "bg-muted";
   return (
     <TableRow>
