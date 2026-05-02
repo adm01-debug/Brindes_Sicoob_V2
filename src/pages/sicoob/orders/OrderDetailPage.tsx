@@ -568,37 +568,8 @@ export default function OrderDetailPage() {
                 <OrderLogisticsTab orderId={id!} />
               </TabsContent>
 
-              <TabsContent value="invoices" className="pt-4">
-                <Card>
-                  <CardHeader className="flex flex-row items-center justify-between">
-                    <CardTitle className="flex items-center gap-2">
-                      <FileText className="h-5 w-5" />
-                      Notas Fiscais
-                    </CardTitle>
-                    <Button size="sm" variant="outline" className="gap-2">
-                      <Plus className="h-4 w-4" /> Anexar XML
-                    </Button>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-2">
-                      {invoices?.map((inv: any) => (
-                        <div key={inv.id} className="flex items-center justify-between p-3 border rounded-lg">
-                          <div className="flex items-center gap-3">
-                            <FileText className="h-8 w-8 text-blue-500" />
-                            <div>
-                              <p className="font-medium">NF #{inv.invoice_number}</p>
-                              <p className="text-xs text-muted-foreground">Valor: R$ {Number(inv.amount).toLocaleString('pt-BR')}</p>
-                            </div>
-                          </div>
-                          <Button variant="ghost" size="sm" asChild>
-                            <a href={inv.xml_url} target="_blank" rel="noreferrer">Baixar</a>
-                          </Button>
-                        </div>
-                      ))}
-                      {!invoices?.length && <p className="text-center py-8 text-muted-foreground text-sm">Nenhuma nota fiscal anexada.</p>}
-                    </div>
-                  </CardContent>
-                </Card>
+              <TabsContent value="invoices" className="pt-6">
+                <OrderInvoicesTab orderId={id!} />
               </TabsContent>
 
               <TabsContent value="payments" className="pt-4">
