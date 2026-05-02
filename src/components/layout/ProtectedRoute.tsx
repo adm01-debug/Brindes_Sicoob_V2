@@ -3,7 +3,7 @@ import { Navigate, useLocation, Outlet } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
-type RequiredRole = "dev" | "supervisor" | "agente";
+type RequiredRole = "dev" | "supervisor" | "agente" | "gestor_compras" | "gerente_pa" | "vendedor";
 
 interface ProtectedRouteProps {
   children?: ReactNode;
@@ -43,7 +43,16 @@ export function ProtectedRoute({
   if (required === "dev" && !isDev) {
     return <Navigate to="/" replace />;
   }
+  if (required === "gestor_compras" && !isGestorCompras && !isDev) {
+    return <Navigate to="/" replace />;
+  }
   if (required === "supervisor" && !isSupervisorOrAbove) {
+    return <Navigate to="/" replace />;
+  }
+  if (required === "gerente_pa" && !isGerentePa && !isSupervisorOrAbove) {
+    return <Navigate to="/" replace />;
+  }
+  if (required === "vendedor" && !isVendedor && !isGerentePa && !isSupervisorOrAbove) {
     return <Navigate to="/" replace />;
   }
   // 'agente' = qualquer usuário autenticado, sem checagem extra.

@@ -7,6 +7,8 @@ import { MfaChallengeDialog } from "@/components/security/MfaChallengeDialog";
 
 interface AdminRouteProps {
   children?: ReactNode;
+  /** Papel mínimo para acessar. Se omitido, qualquer um com canManage acessa. */
+  requiredRole?: "dev" | "gestor_compras" | "supervisor";
 }
 
 /**
@@ -18,8 +20,8 @@ interface AdminRouteProps {
  *  - Sem MFA cadastrado → abre fluxo de enrollment obrigatório
  *  - Com MFA mas sessão em aal1 → abre challenge para elevar sessão
  */
-export function AdminRoute({ children }: AdminRouteProps) {
-  const { user, canManage, isLoading, currentAAL, hasMFA, mfaRequired } = useAuth();
+export function AdminRoute({ children, requiredRole }: AdminRouteProps) {
+  const { user, canManage, isDev, isGestorCompras, isSupervisor, isLoading, currentAAL, hasMFA, mfaRequired } = useAuth();
   const [enrollOpen, setEnrollOpen] = useState(false);
 
   useEffect(() => {
@@ -38,7 +40,14 @@ export function AdminRoute({ children }: AdminRouteProps) {
     return <Navigate to="/login" replace />;
   }
 
-  if (!canManage) {
+  // Verificação de permissão baseada no role exigido ou canManage genérico
+  const hasAccess = requiredRole 
+    ? (requiredRole === "dev" ? isDev : 
+       requiredRole === "gestor_compras" ? (isGestorCompras || isDev) : 
+       (isSupervisor || isGestorCompras || isDev))
+    : canManage;
+
+  if (!hasAccess) {
     return <Navigate to="/" replace />;
   }
 
