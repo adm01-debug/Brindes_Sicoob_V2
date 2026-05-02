@@ -576,42 +576,15 @@ export default function OrderDetailPage() {
                 <OrderPaymentsTab orderId={id!} />
               </TabsContent>
 
-              <TabsContent value="pilots" className="pt-4">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <ImageIcon className="h-5 w-5" />
-                      Aprovação de Mockups e Pilotos
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-6">
-                    {approvals?.map((app: any) => (
-                      <div key={app.id} className="space-y-4 p-4 border rounded-lg">
-                        <img src={app.photo_url} alt="Piloto" className="rounded-lg w-full max-h-64 object-contain bg-muted" />
-                        <div className="flex items-center justify-between">
-                          <Badge className={cn(
-                            app.status === 'approved' ? 'bg-emerald-500' : 
-                            app.status === 'rejected' ? 'bg-red-500' : 'bg-amber-500'
-                          )}>
-                            {app.status.toUpperCase()}
-                          </Badge>
-                          <div className="flex gap-2">
-                            {app.status === 'pending' && (
-                              <>
-                                <Button variant="outline" size="sm" onClick={() => updateApprovalStatus.mutate({ id: app.id, status: 'rejected' })}>Rejeitar</Button>
-                                <Button size="sm" onClick={() => updateApprovalStatus.mutate({ id: app.id, status: 'approved' })}>Aprovar</Button>
-                              </>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                    {!approvals?.length && <p className="text-center py-8 text-muted-foreground text-sm">Nenhum piloto enviado para aprovação.</p>}
-                  </CardContent>
-                </Card>
+              <TabsContent value="pilots" className="pt-6">
+                <OrderPilotApprovalsTab orderId={id!} />
+              </TabsContent>
+              
+              <TabsContent value="templates" className="pt-6">
+                <OrderTemplatesTab orderId={id!} />
               </TabsContent>
 
-              <TabsContent value="timeline" className="pt-4">
+              <TabsContent value="timeline" className="pt-6">
                 <OrderAuditTimeline orderId={id!} />
               </TabsContent>
             </Tabs>
