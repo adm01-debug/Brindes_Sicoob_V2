@@ -76,7 +76,11 @@ export function useSicoobOrderItems(orderId?: string) {
 
   const removeItem = useMutation({
     mutationFn: async (itemId: string) => {
+      if (!isVendedorRole && !isAdmin) {
+        throw new Error("Apenas vendedores ou administradores podem remover itens.");
+      }
       if (!orderId) throw new Error("Order ID is required");
+
 
       const { error: deleteError } = await supabase
         .from("sicoob_order_items")
