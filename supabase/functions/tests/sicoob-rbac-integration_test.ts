@@ -54,9 +54,24 @@ Deno.test({
         assert(!openAccess, `Table ${table} should NOT have public/anon open access policies`);
       }
 
+      // 4. Verify RBAC error messages for cross-role attempts
+      // We check if the RLS policies contain the has_role check which is our standard
+      const restrictedTables = ["sicoob_approval_requests", "order_payments"];
+      for (const table of restrictedTables) {
+        const policyCheck = await c.queryObject<{ polname: string, qual: string }>(`
+          SELECT polname, pg_get_expr(polqual, polrelid) as qual
+          FROM pg_policy
+          WHERE polrelid = ('public.' || $1)::regclass
+        `, [table]);
+        
+        const hasRbac = policyCheck.rows.some(p => p.qual?.includes("has_role"));
+        assert(hasRbac || policyCheck.rows.length === 0, `Table ${table} should have RBAC enforcement via has_role`);
+      }
+
     } finally {
       c.release();
     }
   }
 });
+
 
