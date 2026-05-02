@@ -603,10 +603,10 @@ function exportTokensJSON() {
       updated_at: new Date().toISOString()
     },
     tokens: {
-      brand: "#00AE9D",
+      brand: "#C5D41C",
       primary: "#003641",
-      secondary: "#7DB61C",
-      accent: "#FFBB00",
+      gray: "#858485",
+      accent: "#F2AE21",
       reward: "#5C2D91"
     },
     status_mapping: SICOOB_STATUS_CONFIG,
