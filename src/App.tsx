@@ -88,6 +88,7 @@ const AdminRbacRoutesPage = lazyWithRetry(() => import("./pages/admin/AdminRbacR
 const SellerDiscountLimitsAdminPage = lazyWithRetry(() => import("./pages/admin/SellerDiscountLimitsAdminPage"));
 const RlsDenialsAdminPage = lazyWithRetry(() => import("./pages/admin/RlsDenialsAdminPage"));
 const OwnershipAuditAdminPage = lazyWithRetry(() => import("./pages/admin/OwnershipAuditAdminPage"));
+const SicoobManagementPage = lazyWithRetry(() => import("./pages/admin/sicoob/SicoobManagementPage"));
 
 // Tools Pages
 const SimuladorWizard = lazyWithRetry(() => import("./pages/SimuladorWizard"));
