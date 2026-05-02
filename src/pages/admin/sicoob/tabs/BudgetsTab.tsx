@@ -89,13 +89,38 @@ export const BudgetsTab = () => {
   const handleCreate = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
+    const amount = parseFloat(formData.get("amount") as string);
+    const alcada = parseFloat(formData.get("alcada") as string);
+    const year = parseInt(formData.get("year") as string);
+    const month = parseInt(formData.get("month") as string);
+
+    if (amount <= 0) {
+      toast.error("O valor da verba deve ser maior que zero");
+      return;
+    }
+
+    if (alcada < 0) {
+      toast.error("O limite de alçada não pode ser negativo");
+      return;
+    }
+
+    if (alcada > amount) {
+      toast.error("O limite de alçada não pode ser maior que a verba total");
+      return;
+    }
+
+    if (year < 2000 || year > 2100) {
+      toast.error("Ano inválido");
+      return;
+    }
+
     createMutation.mutate({
       pa_id: formData.get("pa_id"),
-      mes: parseInt(formData.get("month") as string),
-      ano: parseInt(formData.get("year") as string),
-      verba_total: parseFloat(formData.get("amount") as string),
+      mes: month,
+      ano: year,
+      verba_total: amount,
       verba_consumida: 0,
-      limite_alcada: parseFloat(formData.get("alcada") as string) || 0,
+      limite_alcada: alcada || 0,
     });
   };
 
