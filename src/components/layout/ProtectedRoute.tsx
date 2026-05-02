@@ -21,7 +21,7 @@ export function ProtectedRoute({
   requireAdmin = false,
   requireDev = false,
 }: ProtectedRouteProps) {
-  const { user, isDev, isSupervisorOrAbove, isLoading } = useAuth();
+  const { user, isDev, isSupervisorOrAbove, isLoading, profile } = useAuth();
   const location = useLocation();
 
   if (isLoading) {
@@ -43,16 +43,19 @@ export function ProtectedRoute({
   if (required === "dev" && !isDev) {
     return <Navigate to="/" replace />;
   }
-  if (required === "gestor_compras" && !profile?.role === "gestor_compras" && !isDev) {
+  
+  const role = profile?.role;
+
+  if (required === "gestor_compras" && role !== "gestor_compras" && !isDev) {
     return <Navigate to="/" replace />;
   }
   if (required === "supervisor" && !isSupervisorOrAbove) {
     return <Navigate to="/" replace />;
   }
-  if (required === "gerente_pa" && !profile?.role === "gerente_pa" && !isSupervisorOrAbove) {
+  if (required === "gerente_pa" && role !== "gerente_pa" && !isSupervisorOrAbove) {
     return <Navigate to="/" replace />;
   }
-  if (required === "vendedor" && !profile?.role === "vendedor" && !profile?.role === "gerente_pa" && !isSupervisorOrAbove) {
+  if (required === "vendedor" && role !== "vendedor" && role !== "gerente_pa" && !isSupervisorOrAbove) {
     return <Navigate to="/" replace />;
   }
   // 'agente' = qualquer usuário autenticado, sem checagem extra.
