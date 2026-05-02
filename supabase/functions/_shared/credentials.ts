@@ -41,6 +41,32 @@ const ALIASES: Record<string, string[]> = {
   EXTERNAL_CRM_ANON_KEY: ["CRM_SUPABASE_ANON_KEY"],
 };
 
+function sanitizeResolvedCredential(name: string, value: string | null): string | null {
+  if (!value) return null;
+
+  const trimmed = value.trim();
+  if (!trimmed) return null;
+
+  const upper = trimmed.toUpperCase();
+  if (
+    upper === "PLACEHOLDER_VALUE_TO_BE_REPLACED" ||
+    upper.includes("PLACEHOLDER_VALUE_TO_BE_REPLACED")
+  ) {
+    return null;
+  }
+
+  if (name.endsWith("_URL")) {
+    try {
+      const url = new URL(trimmed);
+      if (url.protocol !== "https:") return null;
+    } catch {
+      return null;
+    }
+  }
+
+  return trimmed;
+}
+
 // =============================================================================
 // Metrics: per-isolate (in-memory). Reset on isolate restart.
 // =============================================================================
@@ -436,7 +462,10 @@ export async function resolveCredential(
         .eq("secret_name", name)
         .maybeSingle();
       if (!error && data?.secret_value) {
-        const value = data.secret_value as string;
+        const value = sanitizeResolvedCredential(name, data.secret_value as string);
+        if (!value) {
+          dbError = `invalid value stored for ${name}`;
+        } else {
         const now = Date.now();
         CACHE.set(name, { value, source: "db", expires_at: now + TTL_MS, stored_at: now });
         const duration = Date.now() - startedAt;
@@ -453,6 +482,7 @@ export async function resolveCredential(
           via_alias: false,
         });
         return { value, source: "db", resolved_name: name };
+        }
       }
       if (error) dbError = error.message;
     } catch (err) {
@@ -462,7 +492,7 @@ export async function resolveCredential(
   }
 
   // 2) Env at canonical name
-  const envCanonical = Deno.env.get(name);
+  const envCanonical = sanitizeResolvedCredential(name, Deno.env.get(name));
   if (envCanonical) {
     const now = Date.now();
     CACHE.set(name, { value: envCanonical, source: "env", expires_at: now + TTL_MS, stored_at: now });
@@ -485,7 +515,7 @@ export async function resolveCredential(
 
   // 3) Env at legacy aliases
   for (const alias of ALIASES[name] ?? []) {
-    const v = Deno.env.get(alias);
+    const v = sanitizeResolvedCredential(name, Deno.env.get(alias));
     if (v) {
       const now = Date.now();
       CACHE.set(name, { value: v, source: "env", expires_at: now + TTL_MS, stored_at: now });
