@@ -572,29 +572,8 @@ export default function OrderDetailPage() {
                 <OrderInvoicesTab orderId={id!} />
               </TabsContent>
 
-              <TabsContent value="payments" className="pt-4">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <CreditCard className="h-5 w-5" />
-                      Informações de Pagamento
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    {payments?.map((pay: any) => (
-                      <div key={pay.id} className="flex justify-between items-center p-3 border rounded-lg">
-                        <div>
-                          <p className="font-medium">{pay.payment_method}</p>
-                          <p className="text-xs text-muted-foreground">{pay.transaction_id || 'Processando'}</p>
-                        </div>
-                        <Badge variant={pay.payment_status === 'paid' ? 'default' : 'secondary'}>
-                          {pay.payment_status}
-                        </Badge>
-                      </div>
-                    ))}
-                    {!payments?.length && <p className="text-center py-8 text-muted-foreground text-sm">Aguardando processamento de pagamento.</p>}
-                  </CardContent>
-                </Card>
+              <TabsContent value="payments" className="pt-6">
+                <OrderPaymentsTab orderId={id!} />
               </TabsContent>
 
               <TabsContent value="pilots" className="pt-4">
