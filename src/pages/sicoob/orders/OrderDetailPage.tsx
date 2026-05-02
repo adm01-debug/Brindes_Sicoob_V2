@@ -16,7 +16,7 @@ import {
   Truck,
   FileText,
   CreditCard,
-  Image as ImageIcon,
+  ImageIcon,
   History,
   Layout
 } from "lucide-react";
