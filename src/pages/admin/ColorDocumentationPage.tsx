@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { SicoobStatusBadge } from "@/components/sicoob/SicoobStatusBadge";
 import { SicoobFulfillmentStatus, SICOOB_STATUS_CONFIG } from "@/lib/sicoob-status-config";
-import { Palette, CheckCircle2, AlertTriangle, Info, Trophy, Layout, Download, Table as TableIcon, Hash } from "lucide-react";
+import { Palette, CheckCircle2, AlertTriangle, Info, Trophy, Layout, Download, Table as TableIcon, Hash, CheckSquare } from "lucide-react";
 import { toast } from "sonner";
 import { 
   Table, 
@@ -187,6 +187,73 @@ export default function ColorDocumentationPage() {
               </Table>
             </CardContent>
           </Card>
+        </section>
+        
+        {/* 5. Usage Checklist */}
+        <section className="space-y-6">
+          <div className="flex items-center gap-2 border-b pb-2">
+            <CheckSquare className="h-5 w-5 text-brand" />
+            <h2 className="text-2xl font-semibold">Checklist de Uso Recomendado</h2>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-sm uppercase tracking-wider text-muted-foreground">Quando usar cada cor</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex gap-3">
+                  <div className="w-5 h-5 rounded bg-brand shrink-0" />
+                  <div>
+                    <p className="text-sm font-bold">Brand (Teal)</p>
+                    <p className="text-xs text-muted-foreground">Ações principais (CTAs), botões de conversão e elementos que trazem a identidade moderna do Sicoob 2024.</p>
+                  </div>
+                </div>
+                <div className="flex gap-3">
+                  <div className="w-5 h-5 rounded bg-accent shrink-0" />
+                  <div>
+                    <p className="text-sm font-bold">Accent (Amarelo)</p>
+                    <p className="text-xs text-muted-foreground">Destaques sutis, selos de urgência ou elementos que remetam a prêmios e moedas. No modo dark, usar sempre sobre fundo escuro (institucional).</p>
+                  </div>
+                </div>
+                <div className="flex gap-3">
+                  <div className="w-5 h-5 rounded bg-success shrink-0" />
+                  <div>
+                    <p className="text-sm font-bold">Success (Verde Sicoob)</p>
+                    <p className="text-xs text-muted-foreground">Confirmações de sucesso, status 'Entregue' ou 'Concluído'. É um verde mais sóbrio que o brand.</p>
+                  </div>
+                </div>
+                <div className="flex gap-3">
+                  <div className="w-5 h-5 rounded bg-warning shrink-0" />
+                  <div>
+                    <p className="text-sm font-bold">Warning (Amarelo/Ouro)</p>
+                    <p className="text-xs text-muted-foreground">Avisos de atenção, status 'Em Revisão' ou pendências que não impedem o fluxo, mas precisam de cuidado.</p>
+                  </div>
+                </div>
+                <div className="flex gap-3">
+                  <div className="w-5 h-5 rounded bg-destructive shrink-0" />
+                  <div>
+                    <p className="text-sm font-bold">Danger/Destructive (Vermelho)</p>
+                    <p className="text-xs text-muted-foreground">Ações irreversíveis (excluir), erros críticos ou status 'Cancelado/Rejeitado'.</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-sm uppercase tracking-wider text-muted-foreground">Dicas de Contraste e Acessibilidade</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <ul className="list-disc list-inside text-sm space-y-2 text-muted-foreground">
+                  <li><strong className="text-foreground">Regra AA:</strong> Todo texto deve ter contraste mínimo de 4.5:1 contra o fundo.</li>
+                  <li><strong className="text-foreground">Amarelo Accent:</strong> Nunca use texto branco sobre o amarelo. Use sempre o verde institucional (<code className="text-[10px]">--primary</code>) como foreground.</li>
+                  <li><strong className="text-foreground">Fundos Suaves:</strong> Prefira usar as variantes <code className="text-[10px]">/10</code> (ex: <code className="text-[10px]">bg-brand/10</code>) para áreas grandes, mantendo a cor pura apenas para o texto/ícone.</li>
+                  <li><strong className="text-foreground">Modo Dark:</strong> No tema escuro, a luminosidade do <code className="text-[10px]">--primary</code> e <code className="text-[10px]">--reward</code> foi aumentada para garantir leitura sobre fundo <code className="text-[10px]">#000</code>.</li>
+                  <li><strong className="text-foreground">Hierarquia 60/30/10:</strong> 60% neutros, 30% marca (teal/escuro) e 10% destaques (amarelo/roxo).</li>
+                </ul>
+              </CardContent>
+            </Card>
+          </div>
         </section>
       </div>
     </MainLayout>
