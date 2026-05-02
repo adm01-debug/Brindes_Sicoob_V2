@@ -27,15 +27,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Plus, Filter, AlertCircle } from "lucide-react";
+import { Plus, Filter, AlertCircle, ShieldAlert } from "lucide-react";
 import { toast } from "sonner";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-
+import { useAuth } from "@/contexts/AuthContext";
 
 export const BudgetsTab = () => {
+  const { isSupervisorOrAbove } = useAuth();
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [validationError, setValidationError] = useState<string | null>(null);
   const queryClient = useQueryClient();
+
 
   const { data: budgets, isLoading: budgetsLoading } = useQuery({
     queryKey: ["pa_budgets"],
