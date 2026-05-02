@@ -46,7 +46,6 @@ async function ensureTestUser(user: (typeof TEST_USERS_CONFIG)[number]) {
   const { data: listed, error: listError } = await supabase.auth.admin.listUsers({ page: 1, perPage: 200 });
   if (listError) throw listError;
 
-  const existingById = listed.users.find((candidate) => candidate.id === user.id);
   const existingByEmail = listed.users.find((candidate) => candidate.email?.toLowerCase() === user.email.toLowerCase());
 
   if (existingByEmail && existingByEmail.id !== user.id) {
@@ -62,17 +61,21 @@ async function ensureTestUser(user: (typeof TEST_USERS_CONFIG)[number]) {
     if (deleteProfileByEmailError) throw deleteProfileByEmailError;
   }
 
-  if (existingById || existingByEmail?.id === user.id) {
-    console.log(`Atualizando usuário de teste existente: ${user.email}`);
-    const { error: updateUserError } = await supabase.auth.admin.updateUserById(user.id, {
-      email: user.email,
-      password: TEST_PASSWORD,
-      email_confirm: true,
-      user_metadata: { full_name: user.full_name },
-    });
+  console.log(`Atualizando usuário de teste existente: ${user.email}`);
+  const { error: updateUserError } = await supabase.auth.admin.updateUserById(user.id, {
+    email: user.email,
+    password: TEST_PASSWORD,
+    email_confirm: true,
+    user_metadata: { full_name: user.full_name },
+  });
 
-    if (updateUserError) throw updateUserError;
+  if (!updateUserError) {
     return;
+  }
+
+  const updateMessage = updateUserError.message.toLowerCase();
+  if (!updateMessage.includes("not found") && !updateMessage.includes("user") && !updateMessage.includes("exist")) {
+    throw updateUserError;
   }
 
   console.log(`Criando usuário de teste: ${user.email}`);
