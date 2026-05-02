@@ -23,10 +23,10 @@ export default function SellerPanelPage() {
   const { user } = useAuth();
 
   const STATS = [
-    { title: "Meus Pedidos", value: "12", icon: Package, color: "text-blue-500" },
-    { title: "Aguardando", value: "3", icon: Clock, color: "text-amber-500" },
-    { title: "Aprovados", value: "8", icon: CheckCircle2, color: "text-emerald-500" },
-    { title: "Rejeitados", value: "1", icon: AlertCircle, color: "text-red-500" },
+    { title: "Meus Pedidos", value: "12", icon: Package, color: "text-info" },
+    { title: "Aguardando", value: "3", icon: Clock, color: "text-warning" },
+    { title: "Aprovados", value: "8", icon: CheckCircle2, color: "text-success" },
+    { title: "Rejeitados", value: "1", icon: AlertCircle, color: "text-destructive" },
   ];
 
   return (
@@ -75,7 +75,7 @@ export default function SellerPanelPage() {
                       <span className="font-bold text-sm">Pedido #S00{i}</span>
                       <span className="text-xs text-muted-foreground">R$ 450,00 • {i} itens</span>
                     </div>
-                    <div className="text-xs font-medium px-2 py-1 rounded bg-amber-500/10 text-amber-500 border border-amber-500/20">
+                    <div className="text-xs font-medium px-2 py-1 rounded bg-warning/10 text-warning border border-warning/20">
                       Pendente
                     </div>
                   </div>

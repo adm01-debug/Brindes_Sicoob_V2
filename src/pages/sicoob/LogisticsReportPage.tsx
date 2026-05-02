@@ -90,7 +90,7 @@ export default function LogisticsReportPage() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">Entregues (Mês)</CardTitle>
-              <CheckCircle className="h-4 w-4 text-emerald-500" />
+              <CheckCircle className="h-4 w-4 text-success" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{stats?.statuses?.delivered || 0}</div>
@@ -126,7 +126,7 @@ export default function LogisticsReportPage() {
                   <span>Finalizados</span>
                   <span className="font-medium">{stats?.statuses?.completed || 0}</span>
                 </div>
-                <Progress value={((stats?.statuses?.completed || 0) / (stats?.total || 1)) * 100} className="h-2 bg-emerald-100" />
+                <Progress value={((stats?.statuses?.completed || 0) / (stats?.total || 1)) * 100} className="h-2 bg-success/15" />
               </div>
             </CardContent>
           </Card>
@@ -149,7 +149,7 @@ export default function LogisticsReportPage() {
                       <p className="text-xs text-muted-foreground">Eficiência: 98%</p>
                     </div>
                   </div>
-                  <Badge variant="outline" className="text-emerald-600 border-emerald-200">Rápido</Badge>
+                  <Badge variant="outline" className="text-success border-success/40">Rápido</Badge>
                 </div>
                 <div className="flex items-center justify-between p-3 border rounded-lg">
                   <div className="flex items-center gap-3">
@@ -159,7 +159,7 @@ export default function LogisticsReportPage() {
                       <p className="text-xs text-muted-foreground">Eficiência: 85%</p>
                     </div>
                   </div>
-                  <Badge variant="outline" className="text-amber-600 border-amber-200">Médio</Badge>
+                  <Badge variant="outline" className="text-warning border-warning/40">Médio</Badge>
                 </div>
               </div>
             </CardContent>
