@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { SicoobStatusBadge } from "@/components/sicoob/SicoobStatusBadge";
 import { SicoobFulfillmentStatus, SICOOB_STATUS_CONFIG } from "@/lib/sicoob-status-config";
-import { Palette, CheckCircle2, AlertTriangle, Info, Trophy, Layout, Download, Table as TableIcon, Hash, CheckSquare } from "lucide-react";
+import { Palette, CheckCircle2, AlertTriangle, Info, Trophy, Layout, Download, Table as TableIcon, Hash, CheckSquare, Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
 import { 
   Table, 
@@ -15,6 +15,30 @@ import {
   TableHeader, 
   TableRow 
 } from "@/components/ui/table";
+import { Input } from "@/components/ui/input";
+import { useTheme } from "@/contexts/ThemeContext";
+
+const TOKEN_MAP = {
+  brand: "bg-brand",
+  primary: "bg-primary",
+  secondary: "bg-secondary",
+  accent: "bg-accent",
+  reward: "bg-reward",
+  success: "bg-success",
+  warning: "bg-warning",
+  destructive: "bg-destructive",
+};
+
+const TEXT_TOKEN_MAP = {
+  brand: "text-brand",
+  primary: "text-primary",
+  secondary: "text-secondary",
+  accent: "text-accent",
+  reward: "text-reward",
+  success: "text-success",
+  warning: "text-warning",
+  destructive: "text-destructive",
+};
 
 export default function ColorDocumentationPage() {
   const statuses: SicoobFulfillmentStatus[] = [
