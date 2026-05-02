@@ -100,12 +100,12 @@ export const ProductCardImage = memo(function ProductCardImage({
       <div className={cn("absolute inset-0 bg-gradient-to-t from-foreground/60 via-transparent to-transparent transition-opacity duration-500", isHovered ? "opacity-100" : "opacity-0")} />
 
       {/* Featured glow */}
-      {product.featured && <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-primary/5 pointer-events-none" />}
+      {product.featured && <div className="absolute inset-0 bg-gradient-to-br from-brand/10 via-transparent to-brand/5 pointer-events-none" />}
 
       {/* Badges - Top Left */}
       <div className="absolute top-2 sm:top-3 left-2 sm:left-3 flex flex-col gap-1 sm:gap-1.5 z-10">
         {product.featured && (
-          <Badge className="bg-gradient-to-r from-primary to-primary-glow text-primary-foreground text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 shadow-lg animate-glow-pulse">
+          <Badge className="bg-gradient-to-r from-brand to-brand-glow text-brand-foreground text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 shadow-lg animate-glow-pulse">
             <Sparkles className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-0.5 sm:mr-1" />
             <span className="hidden sm:inline">Destaque</span><span className="sm:hidden">★</span>
           </Badge>
