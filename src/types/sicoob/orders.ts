@@ -17,6 +17,23 @@ export const ORDER_STATUS_CONFIG: Record<OrderStatus, StatusConfig> = {
 
 export const ORDER_STATUS_OPTIONS = Object.keys(ORDER_STATUS_CONFIG) as OrderStatus[];
 
+export const SICOOB_VALID_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
+  draft: ["pending", "cancelled"],
+  pending: ["waiting_approval", "cancelled"],
+  waiting_approval: ["confirmed", "rejected", "cancelled"],
+  confirmed: ["logistic", "cancelled"],
+  logistic: ["completed", "cancelled"],
+  rejected: ["draft", "pending"],
+  completed: [],
+  cancelled: [],
+};
+
+export function canSicoobTransitionTo(current: OrderStatus, next: OrderStatus): boolean {
+  if (current === next) return true;
+  const validNext = SICOOB_VALID_TRANSITIONS[current] || [];
+  return validNext.includes(next);
+}
+
 
 export interface SicoobOrder {
   id: string;

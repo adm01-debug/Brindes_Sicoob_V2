@@ -79,12 +79,15 @@ export function useOrderDetail(orderId?: string) {
   });
 }
 
-export function useUpdateOrder(orderId?: string) {
+export function useUpdateOrder(orderId?: string, currentStatus?: string) {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (patch: Partial<OrderRow>) => {
+      if (patch.status && currentStatus && !canTransitionTo(currentStatus, patch.status)) {
+        throw new Error(`Transição de status inválida: de ${ORDER_STATUS_LABELS[currentStatus] || currentStatus} para ${ORDER_STATUS_LABELS[patch.status] || patch.status}`);
+      }
+      
       const { error } = await supabase
-        // rls-allow: applySellerScope chamado dinamicamente conforme escopo
         .from("orders")
         .update({ ...patch, updated_at: new Date().toISOString() })
         .eq("id", orderId!);
@@ -117,6 +120,26 @@ export const ORDER_STATUS_FLOW = [
   "completed",
   "cancelled"
 ] as const;
+
+export type OrderStatus = typeof ORDER_STATUS_FLOW[number];
+
+export const VALID_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
+  pending: ["waiting_approval", "cancelled"],
+  waiting_approval: ["confirmed", "cancelled"],
+  confirmed: ["in_production", "cancelled"],
+  in_production: ["in_separation", "cancelled"],
+  in_separation: ["in_transit", "cancelled"],
+  in_transit: ["delivered", "cancelled"],
+  delivered: ["completed", "cancelled"],
+  completed: [],
+  cancelled: [],
+};
+
+export function canTransitionTo(current: string, next: string): boolean {
+  if (current === next) return true;
+  const validNext = VALID_TRANSITIONS[current as OrderStatus] || [];
+  return validNext.includes(next as OrderStatus);
+}
 
 export const ORDER_STATUS_LABELS: Record<string, string> = {
   pending: "Pendente",

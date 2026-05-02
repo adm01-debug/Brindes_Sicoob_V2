@@ -2,20 +2,21 @@
  * OrderFulfillmentManager — controle de fulfillment + tracking + transportadora.
  */
 import { useState } from "react";
+import { toast } from "sonner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Truck } from "lucide-react";
-import { useUpdateOrder, FULFILLMENT_LABELS, type OrderRow } from "@/hooks/useOrders";
+import { useUpdateOrder, FULFILLMENT_LABELS, canTransitionTo, type OrderRow } from "@/hooks/useOrders";
 
 interface OrderFulfillmentManagerProps {
   order: OrderRow;
 }
 
 export function OrderFulfillmentManager({ order }: OrderFulfillmentManagerProps) {
-  const update = useUpdateOrder(order.id);
+  const update = useUpdateOrder(order.id, order.status);
   const [tracking, setTracking] = useState(order.tracking_number ?? "");
   const [shippingType, setShippingType] = useState(order.shipping_type ?? "");
   const [carrier, setCarrier] = useState((order as any).shipping_carrier ?? "");
@@ -40,7 +41,13 @@ export function OrderFulfillmentManager({ order }: OrderFulfillmentManagerProps)
             <Label htmlFor="ful-status">Fulfillment</Label>
             <Select
               value={order.fulfillment_status}
-              onValueChange={(v) => update.mutate({ fulfillment_status: v })}
+              onValueChange={(v) => {
+                if (!canTransitionTo(order.fulfillment_status, v)) {
+                  toast.error("Transição de fulfillment inválida");
+                  return;
+                }
+                update.mutate({ fulfillment_status: v });
+              }}
               disabled={update.isPending}
             >
               <SelectTrigger id="ful-status" className="mt-1">
