@@ -4,11 +4,49 @@ const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
 const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const supabase = createClient(supabaseUrl, supabaseKey);
 
+// Configuração de credenciais via variáveis de ambiente com fallbacks seguros para dev/test
+const TEST_PASSWORD = Deno.env.get("SICOOB_TEST_USER_PASSWORD") || "password123";
+
+const TEST_USERS_CONFIG = [
+  {
+    id: "00000000-0000-0000-0000-000000000004",
+    email: Deno.env.get("SICOOB_TEST_EMAIL_PA") || "pa@teste.com",
+    full_name: "Usuário PA Teste",
+    role: "sicoob_pa",
+    cooperativa_id: "00000000-0000-0000-0000-000000000002",
+    pa_id: "00000000-0000-0000-0000-000000000003"
+  },
+  {
+    id: "00000000-0000-0000-0000-000000000005",
+    email: Deno.env.get("SICOOB_TEST_EMAIL_SINGULAR") || "singular@teste.com",
+    full_name: "Usuário Singular Teste",
+    role: "sicoob_singular",
+    cooperativa_id: "00000000-0000-0000-0000-000000000002",
+    pa_id: null
+  },
+  {
+    id: "00000000-0000-0000-0000-000000000006",
+    email: Deno.env.get("SICOOB_TEST_EMAIL_CENTRAL") || "central@teste.com",
+    full_name: "Usuário Central Teste",
+    role: "sicoob_central",
+    cooperativa_id: "00000000-0000-0000-0000-000000000001",
+    pa_id: null
+  },
+  {
+    id: "00000000-0000-0000-0000-000000000007",
+    email: Deno.env.get("SICOOB_TEST_EMAIL_GESTOR") || "gestor@teste.com",
+    full_name: "Usuário Gestor Teste",
+    role: "sicoob_gestor",
+    cooperativa_id: null,
+    pa_id: null
+  }
+];
+
 Deno.serve(async (req) => {
   try {
-    console.log("Iniciando seed do módulo Sicoob...");
+    console.log("Iniciando seed padronizado do módulo Sicoob...");
 
-    // 1. Criar Cooperativas
+    // 1. Criar/Atualizar Cooperativas
     const { error: errorCoop } = await supabase
       .from("cooperativas")
       .upsert([
@@ -18,7 +56,7 @@ Deno.serve(async (req) => {
 
     if (errorCoop) throw errorCoop;
 
-    // 2. Criar PA
+    // 2. Criar/Atualizar PA
     const { error: errorPA } = await supabase
       .from("postos_atendimento")
       .upsert([
@@ -27,57 +65,23 @@ Deno.serve(async (req) => {
 
     if (errorPA) throw errorPA;
 
-    // 3. Usuários de Teste (Auth e Profile)
-    const testUsers = [
-      {
-        id: "00000000-0000-0000-0000-000000000004",
-        email: "pa@teste.com",
-        full_name: "Usuário PA Teste",
-        role: "sicoob_pa",
-        cooperativa_id: "00000000-0000-0000-0000-000000000002",
-        pa_id: "00000000-0000-0000-0000-000000000003"
-      },
-      {
-        id: "00000000-0000-0000-0000-000000000005",
-        email: "singular@teste.com",
-        full_name: "Usuário Singular Teste",
-        role: "sicoob_singular",
-        cooperativa_id: "00000000-0000-0000-0000-000000000002",
-        pa_id: null
-      },
-      {
-        id: "00000000-0000-0000-0000-000000000006",
-        email: "central@teste.com",
-        full_name: "Usuário Central Teste",
-        role: "sicoob_central",
-        cooperativa_id: "00000000-0000-0000-0000-000000000001",
-        pa_id: null
-      },
-      {
-        id: "00000000-0000-0000-0000-000000000007",
-        email: "gestor@teste.com",
-        full_name: "Usuário Gestor Teste",
-        role: "sicoob_gestor",
-        cooperativa_id: null,
-        pa_id: null
-      }
-    ];
-
-    for (const user of testUsers) {
-      // Criar no Auth se não existir (usando admin API para forçar senha e confirmação)
+    // 3. Usuários de Teste
+    for (const user of TEST_USERS_CONFIG) {
+      // Criar/Atualizar no Auth
       const { data: authUser, error: authError } = await supabase.auth.admin.createUser({
         id: user.id,
         email: user.email,
-        password: "password123",
+        password: TEST_PASSWORD,
         email_confirm: true,
         user_metadata: { full_name: user.full_name }
       });
 
       if (authError && authError.message !== "User already registered") {
          console.warn(`Erro ao criar user auth ${user.email}:`, authError.message);
+         // Se o erro for que o email já existe mas com outro ID, tentamos apenas o upsert do profile
       }
 
-      // Upsert no Profile usando user_id como critério de conflito
+      // Upsert no Profile
       const { error: profileError } = await supabase
         .from("profiles")
         .upsert({
@@ -94,7 +98,10 @@ Deno.serve(async (req) => {
       if (profileError) throw profileError;
     }
 
-    return new Response(JSON.stringify({ message: "Seed finalizado com sucesso" }), {
+    return new Response(JSON.stringify({ 
+      message: "Seed finalizado com sucesso",
+      config_source: Deno.env.get("SICOOB_TEST_USER_PASSWORD") ? "env_vars" : "default_values"
+    }), {
       headers: { "Content-Type": "application/json" },
       status: 200,
     });
