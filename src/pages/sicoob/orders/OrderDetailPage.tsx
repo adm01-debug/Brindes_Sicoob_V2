@@ -89,7 +89,7 @@ export default function OrderDetailPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("sicoob_order_items")
-        .select("*")
+        .select("id, order_id, product_id, product_name, quantity, unit_price, total_price")
         .eq("order_id", id);
       if (error) throw error;
       return data;
