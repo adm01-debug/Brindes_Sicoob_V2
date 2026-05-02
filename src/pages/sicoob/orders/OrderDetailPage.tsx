@@ -521,29 +521,33 @@ export default function OrderDetailPage() {
             </Card>
 
             <Tabs defaultValue="items">
-              <TabsList className="w-full justify-start overflow-x-auto">
-                <TabsTrigger value="items" className="gap-2">
-                  <Package className="h-4 w-4" />
+              <TabsList className="w-full justify-start overflow-x-auto bg-transparent border-b rounded-none h-auto p-0 gap-6">
+                <TabsTrigger value="items" className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none bg-transparent px-0 pb-2 h-auto">
+                  <Package className="h-4 w-4 mr-2" />
                   Itens
                 </TabsTrigger>
-                <TabsTrigger value="logistics" className="gap-2">
-                  <Truck className="h-4 w-4" />
+                <TabsTrigger value="logistics" className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none bg-transparent px-0 pb-2 h-auto">
+                  <Truck className="h-4 w-4 mr-2" />
                   Logística
                 </TabsTrigger>
-                <TabsTrigger value="invoices" className="gap-2">
-                  <FileText className="h-4 w-4" />
+                <TabsTrigger value="invoices" className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none bg-transparent px-0 pb-2 h-auto">
+                  <FileText className="h-4 w-4 mr-2" />
                   NF
                 </TabsTrigger>
-                <TabsTrigger value="payments" className="gap-2">
-                  <CreditCard className="h-4 w-4" />
+                <TabsTrigger value="payments" className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none bg-transparent px-0 pb-2 h-auto">
+                  <CreditCard className="h-4 w-4 mr-2" />
                   Pagamento
                 </TabsTrigger>
-                <TabsTrigger value="pilots" className="gap-2">
-                  <ImageIcon className="h-4 w-4" />
+                <TabsTrigger value="pilots" className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none bg-transparent px-0 pb-2 h-auto">
+                  <ImageIcon className="h-4 w-4 mr-2" />
                   Aprovações
                 </TabsTrigger>
-                <TabsTrigger value="timeline" className="gap-2">
-                  <History className="h-4 w-4" />
+                <TabsTrigger value="templates" className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none bg-transparent px-0 pb-2 h-auto">
+                  <Layout className="h-4 w-4 mr-2" />
+                  Templates
+                </TabsTrigger>
+                <TabsTrigger value="timeline" className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none bg-transparent px-0 pb-2 h-auto">
+                  <History className="h-4 w-4 mr-2" />
                   Timeline
                 </TabsTrigger>
               </TabsList>
