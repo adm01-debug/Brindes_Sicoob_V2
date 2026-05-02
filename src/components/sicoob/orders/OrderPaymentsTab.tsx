@@ -46,7 +46,7 @@ export function OrderPaymentsTab({ orderId }: OrderPaymentsTabProps) {
                     <CreditCard className="h-4 w-4 text-muted-foreground" />
                     Parcela #{payment.installment_number || 1}
                   </CardTitle>
-                  <Badge variant={payment.status === 'paid' ? 'outline' : 'secondary'} className="gap-1">
+                  <Badge variant={payment.status === 'paid' ? 'success' : 'warning'} className="gap-1">
                     {getStatusIcon(payment.status)}
                     {getStatusLabel(payment.status)}
                   </Badge>
