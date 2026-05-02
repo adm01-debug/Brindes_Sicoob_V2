@@ -336,8 +336,8 @@ html[data-scroll-locked] body {
     --interactive: 82 73% 41%;
     --divider: 225 14% 18%;
 
-    /* ===== ACCENT (AMARELO SICOOB — dark, foreground corrigido para WCAG AA) ===== */
-    --accent: 44 100% 50%;
+    /* ===== ACCENT (AMARELO SICOOB — #F2AE21 dark) ===== */
+    --accent: 40 89% 54%;
     --accent-foreground: 190 100% 13%;
 
     /* ===== DESTRUCTIVE ===== */
