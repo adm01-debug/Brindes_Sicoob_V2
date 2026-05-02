@@ -246,7 +246,7 @@ export default function OrderDetailPage() {
 
         {orderData.status === 'rejected' && (
           <Alert variant="destructive">
-            <XCircle className="h-5 w-5" />
+            <AlertCircle className="h-5 w-5" />
             <AlertTitle>Pedido Rejeitado</AlertTitle>
             <AlertDescription>
               Este pedido foi rejeitado por um gestor. Verifique o histórico para mais detalhes.

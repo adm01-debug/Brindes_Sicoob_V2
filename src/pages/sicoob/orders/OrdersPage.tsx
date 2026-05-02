@@ -42,7 +42,7 @@ import { cn } from "@/lib/utils";
 import type { DateRange } from "react-day-picker";
 import { useAuth } from "@/contexts/AuthContext";
 import { OrderStatusBadge } from "@/components/sicoob/orders/OrderStatusBadge";
-import { OrderStatus } from "@/types/sicoob/orders";
+import { OrderStatus, ORDER_STATUS_OPTIONS } from "@/types/sicoob/orders";
 
 // Mock data for initial UI
 const MOCK_ORDERS = [
@@ -53,7 +53,6 @@ const MOCK_ORDERS = [
   { id: '5', pa: 'PA Centro', singular: 'Sicoob Credicitrus', status: 'logistic' as OrderStatus, total: 2100.00, items: 7, date: '2024-04-20' },
 ];
 
-const STATUS_OPTIONS: OrderStatus[] = ['draft', 'pending', 'waiting_approval', 'confirmed', 'logistic', 'rejected', 'completed'];
 
 
 export default function OrdersPage() {
@@ -214,7 +213,7 @@ export default function OrdersPage() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">Todos</SelectItem>
-                    {STATUS_OPTIONS.map((s) => (
+                    {ORDER_STATUS_OPTIONS.map((s) => (
                       <SelectItem key={s} value={s}>
                         <div className="flex items-center gap-2">
                           <OrderStatusBadge status={s} />
