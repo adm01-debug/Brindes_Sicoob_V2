@@ -240,17 +240,27 @@ export default function OrderDetailPage() {
     }
   };
 
-  const handleStatusUpdate = (newStatus: any) => {
-    const { data: updateData, error } = supabase
-      .from('orders')
-      .update({ fulfillment_status: newStatus })
-      .eq('id', id);
-    
-    if (error) {
-      toast.error("Erro ao atualizar status: " + error.message);
-    } else {
+  const handleStatusUpdate = async (newStatus: any) => {
+    try {
+      const currentStatus = orderData?.fulfillment_status || 'pending';
+      
+      // Validação de transição (Sincronização bidirecional/Bloqueio)
+      if (!canTransitionTo(currentStatus, newStatus)) {
+        toast.error(`Transição inválida de ${currentStatus} para ${newStatus}`);
+        return;
+      }
+
+      const { error } = await supabase
+        .from('orders')
+        .update({ fulfillment_status: newStatus, updated_at: new Date().toISOString() })
+        .eq('id', id);
+      
+      if (error) throw error;
+
       toast.success("Status de produção atualizado");
       refetchOrder();
+    } catch (error: any) {
+      toast.error("Erro ao atualizar status: " + error.message);
     }
   };
 
@@ -265,6 +275,15 @@ export default function OrderDetailPage() {
   }
 
   const canApprove = isSupervisorOrAbove || (isGerentePa && orderData?.pa_id === profile?.pa_id);
+  
+  // Controle de permissões por aba
+  const allowedTabs = useMemo(() => {
+    const tabs = ["status", "logistics", "invoices", "timeline"];
+    if (isSupervisorOrAbove) {
+      tabs.push("payments", "approvals", "templates");
+    }
+    return tabs;
+  }, [isSupervisorOrAbove]);
 
   return (
     <MainLayout>

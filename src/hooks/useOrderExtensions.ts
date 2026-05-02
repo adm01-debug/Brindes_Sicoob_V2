@@ -85,30 +85,47 @@ export const useOrderInvoices = (orderId?: string) => {
   });
 
   const uploadFile = async (file: File, path: string) => {
-    // Validação de tipo e tamanho (max 10MB)
+    // Validação de tipo (PDF e XML)
+    const allowedTypes = ['application/pdf', 'text/xml', 'application/xml'];
+    if (!allowedTypes.includes(file.type) && !file.name.endsWith('.xml')) {
+      throw new Error("Tipo de arquivo não permitido. Apenas PDF e XML.");
+    }
+
+    // Validação de tamanho (max 10MB)
     const MAX_SIZE = 10 * 1024 * 1024;
     if (file.size > MAX_SIZE) throw new Error("Arquivo muito grande. Máximo 10MB.");
 
     const fileName = `${orderId}/${path}`;
     
-    // Verificar se já existe (simulando tratamento de duplicidade)
-    const { data: existing } = await supabase.storage
+    // Tratamento de duplicidade: Listar arquivos na pasta do pedido
+    const { data: existingFiles, error: listError } = await supabase.storage
       .from('order-documents')
-      .list(orderId);
+      .list(`${orderId}`);
     
-    if (existing?.some(f => f.name === path)) {
-      // Opcional: toast informativo ou renomear. Por agora, sobrescrevemos ou avisamos.
-      console.log("Arquivo duplicado detectado, sobrescrevendo...");
+    if (listError) {
+      console.error("Erro ao verificar duplicidade:", listError);
+    }
+
+    const isDuplicate = existingFiles?.some(f => f.name === path);
+    if (isDuplicate) {
+      // Se for duplicado, avisamos via erro ou poderíamos renomear. 
+      // O requisito pede tratamento de duplicidade.
+      throw new Error("Arquivo já existe. Por favor, renomeie o arquivo ou remova o anterior.");
     }
 
     const { data, error } = await supabase.storage
       .from('order-documents')
       .upload(fileName, file, {
-        upsert: true,
+        upsert: false, // Garantir que não sobrescreve sem intenção
         cacheControl: '3600'
       });
     
-    if (error) throw error;
+    if (error) {
+      if (error.message.includes('already exists')) {
+        throw new Error("Arquivo já existe no servidor.");
+      }
+      throw error;
+    }
     
     const { data: { publicUrl } } = supabase.storage
       .from('order-documents')
