@@ -622,9 +622,6 @@ export default function OrderDetailPage() {
                   </CardContent>
                 </Card>
               </TabsContent>
-            </Tabs>
-          </div>
-
               <TabsContent value="audit">
                 <Card>
                   <CardContent className="pt-6">
