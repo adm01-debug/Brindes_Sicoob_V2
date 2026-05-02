@@ -71,9 +71,17 @@ import {
   useOrderLogistics, 
   useOrderInvoices, 
   useOrderPayments, 
-  useOrderPilotApprovals 
+  useOrderPilotApprovals,
+  useOrderComments,
+  useOrderTemplates
 } from "@/hooks/useOrderExtensions";
+import { OrderLogisticsTab } from "@/components/sicoob/orders/OrderLogisticsTab";
+import { OrderInvoicesTab } from "@/components/sicoob/orders/OrderInvoicesTab";
+import { OrderPaymentsTab } from "@/components/sicoob/orders/OrderPaymentsTab";
+import { OrderPilotApprovalsTab } from "@/components/sicoob/orders/OrderPilotApprovalsTab";
+import { OrderTemplatesTab } from "@/components/sicoob/orders/OrderTemplatesTab";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function OrderDetailPage() {
   const { id } = useParams();
