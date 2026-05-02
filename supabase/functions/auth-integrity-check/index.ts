@@ -21,33 +21,25 @@ Deno.serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseKey);
 
     // Verifica integridade: existe no auth.users E no auth.identities?
-    // Usamos uma query SQL via rpc para checar o schema auth que o SDK não expõe diretamente para queries complexas
-    // Mas para simplificar e ser portátil, vamos usar o admin SDK para listar e verificar identidades
+    // Agora usamos a RPC segura get_test_auth_integrity que consulta o banco diretamente
     
+    const { data: integrityData, error: rpcError } = await supabase.rpc("get_test_auth_integrity", {
+      test_emails: emails
+    });
+
+    if (rpcError) throw rpcError;
+
     const results: Record<string, { isValid: boolean; reason?: string }> = {};
 
-    for (const email of emails) {
-      // 1. Busca usuário pelo email
-      const { data: { users }, error: listError } = await supabase.auth.admin.listUsers();
-      if (listError) throw listError;
-
-      const user = users.find(u => u.email?.toLowerCase() === email.toLowerCase());
-
-      if (!user) {
-        results[email] = { isValid: false, reason: "Inexistente" };
-        continue;
-      }
-
-      // 2. Verifica se tem identidades vinculadas (essencial para login via password)
-      // O SDK retorna identidades no objeto user
-      const hasIdentities = user.identities && user.identities.length > 0;
-
-      if (!hasIdentities) {
-        results[email] = { isValid: false, reason: "Órfão (sem identidades)" };
+    integrityData.forEach((row: any) => {
+      if (!row.exists_in_users) {
+        results[row.email] = { isValid: false, reason: "Inexistente" };
+      } else if (!row.has_identities) {
+        results[row.email] = { isValid: false, reason: "Órfão (sem identidades)" };
       } else {
-        results[email] = { isValid: true };
+        results[row.email] = { isValid: true };
       }
-    }
+    });
 
     return new Response(JSON.stringify(results), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },

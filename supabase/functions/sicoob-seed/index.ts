@@ -43,38 +43,22 @@ const TEST_USERS_CONFIG = [
 ];
 
 async function cleanupOrphans() {
-  console.log("Detectando e removendo usuários órfãos no schema auth...");
+  console.log("Detectando e removendo usuários órfãos usando RPC SQL...");
   
-  // IDs de teste específicos
   const testIds = TEST_USERS_CONFIG.map(u => u.id);
   
-  // Query SQL via RPC ou comando direto para identificar órfãos em auth.users (sem identidades)
-  // Como estamos no Admin SDK, vamos usar listUsers e filtrar identidades vazias
-  const { data: { users }, error: listError } = await supabase.auth.admin.listUsers();
-  if (listError) throw listError;
+  // Chama a nova RPC de limpeza que já lida com FKs e schema auth
+  const { data: cleaned, error: rpcError } = await supabase.rpc("cleanup_test_auth_orphans", {
+    test_ids: testIds
+  });
 
-  const orphans = users.filter(u => 
-    testIds.includes(u.id) && (!u.identities || u.identities.length === 0)
-  );
-
-  const report = { removed: [] as string[] };
-
-  for (const orphan of orphans) {
-    console.log(`Limpando órfão detectado: ${orphan.email} (${orphan.id})`);
-    
-    // 1. Limpa perfis e pedidos para evitar FK errors
-    await supabase.from("sicoob_orders").delete().eq("created_by", orphan.id);
-    await supabase.from("profiles").delete().eq("user_id", orphan.id);
-    
-    // 2. Delete no auth.users via SQL (o SDK pode falhar se o usuário estiver 'quebrado')
-    // Mas tentamos via SDK primeiro por segurança
-    const { error: delError } = await supabase.auth.admin.deleteUser(orphan.id);
-    if (delError) {
-      console.error(`Falha ao deletar via SDK, tentando via RPC de limpeza: ${delError.message}`);
-    }
-    
-    report.removed.push(orphan.email || orphan.id);
+  if (rpcError) {
+    console.error("Erro ao limpar órfãos via RPC:", rpcError);
+    throw rpcError;
   }
+
+  const report = { removed: (cleaned || []).map((c: any) => c.email || c.deleted_id) };
+  console.log(`Limpeza concluída. Removidos: ${report.removed.length}`);
   
   return report;
 }
@@ -165,10 +149,12 @@ Deno.serve(async (req) => {
       if (profileError) throw profileError;
     }
 
-    // Registrar log de auditoria
+    // Registrar log de auditoria com metadados consistentes
     await supabase.from("admin_audit_log").insert({
       action: "sicoob_seed_operation",
-      details: stats
+      details: stats,
+      ip_address: "127.0.0.1", // Fallback para seed
+      entity_type: "system_seed"
     });
 
     return new Response(JSON.stringify({ 
