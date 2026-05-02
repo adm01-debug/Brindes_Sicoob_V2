@@ -4,6 +4,9 @@ import { useOrderAudit } from "@/hooks/useOrderExtensions";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { History, User, Package, FileText, CheckCircle2, Truck, AlertCircle, ChevronLeft, ChevronRight, Filter } from "lucide-react";
+import { SicoobStatusBadge } from "@/components/sicoob/SicoobStatusBadge";
+import { getStatusConfig } from "@/lib/sicoob-status-config";
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
@@ -16,9 +19,14 @@ export const OrderAuditTimeline = ({ orderId }: OrderAuditTimelineProps) => {
   const [filters, setFilters] = useState({ event_type: 'all', startDate: '', endDate: '' });
   const { auditEvents, totalCount, isLoading, page, setPage, pageSize } = useOrderAudit(orderId, filters);
 
-  const getEventIcon = (type: string) => {
+  const getEventIcon = (type: string, event: any) => {
+    if (type === 'status_change') {
+      const status = event.new_value?.fulfillment_status;
+      const config = getStatusConfig(status);
+      const StatusIcon = config.icon;
+      return <StatusIcon className={cn("h-4 w-4", config.colorClass)} />;
+    }
     switch (type) {
-      case 'status_change': return <Truck className="h-4 w-4 text-info" />;
       case 'creation': return <Package className="h-4 w-4 text-success" />;
       case 'approval': return <CheckCircle2 className="h-4 w-4 text-success" />;
       case 'rejection': return <AlertCircle className="h-4 w-4 text-destructive" />;
@@ -90,7 +98,7 @@ export const OrderAuditTimeline = ({ orderId }: OrderAuditTimelineProps) => {
           {auditEvents?.map((event, idx) => (
             <div key={event.id} className="relative flex items-start gap-4 pl-1">
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border bg-white shadow-sm z-10">
-                {getEventIcon(event.event_type)}
+                {getEventIcon(event.event_type, event)}
               </div>
               <div className="flex flex-col gap-1 pt-1.5">
                 <div className="flex items-center gap-2">

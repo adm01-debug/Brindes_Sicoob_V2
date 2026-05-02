@@ -88,6 +88,7 @@ const PriceFreshnessSettingsPage = lazyWithRetry(() => import("./pages/admin/Pri
 const AdminSegurancaAcessoPage = lazyWithRetry(() => import("./pages/admin/AdminSegurancaAcessoPage"));
 const AdminSegurancaChavesPage = lazyWithRetry(() => import("./pages/admin/AdminSegurancaChavesPage"));
 const DevChallengeExamplesPage = lazyWithRetry(() => import("./pages/admin/DevChallengeExamplesPage"));
+const ColorDocumentationPage = lazyWithRetry(() => import("./pages/admin/ColorDocumentationPage"));
 const AdminMigracaoPapeisPage = lazyWithRetry(() => import("./pages/admin/AdminMigracaoPapeisPage"));
 const AdminConexoesPage = lazyWithRetry(() => import("./pages/admin/AdminConexoesPage"));
 const AdminConexoesStatusPage = lazyWithRetry(() => import("./pages/admin/AdminConexoesStatusPage"));
@@ -282,7 +283,8 @@ const App = () => {
                               <Route path="/admin/kit-templates" element={<KitTemplatesAdminPage />} />
                               <Route path="/admin/kit-templates/metricas" element={<KitTemplatesMetricsPage />} />
                               <Route element={<AdminRoute requiredRole="gestor_compras" />}>
-                                <Route path="/admin/sicoob" element={<SicoobManagementPage />} />
+                                 <Route path="/admin/sicoob" element={<SicoobManagementPage />} />
+                                 <Route path="/admin/design-system/colors" element={<ColorDocumentationPage />} />
                                 <Route path="/sicoob/pedidos" element={<SicoobOrdersPage />} />
                                 <Route path="/sicoob/pedidos/kanban" element={<SicoobOrdersKanbanPage />} />
                                  <Route path="/sicoob/pedidos/:id" element={<SicoobOrderDetailPage />} />
