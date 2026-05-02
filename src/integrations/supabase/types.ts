@@ -2667,6 +2667,30 @@ export type Database = {
         }
         Relationships: []
       }
+      notification_preferences: {
+        Row: {
+          email_enabled: boolean | null
+          events_config: Json | null
+          push_enabled: boolean | null
+          user_id: string
+          whatsapp_enabled: boolean | null
+        }
+        Insert: {
+          email_enabled?: boolean | null
+          events_config?: Json | null
+          push_enabled?: boolean | null
+          user_id: string
+          whatsapp_enabled?: boolean | null
+        }
+        Update: {
+          email_enabled?: boolean | null
+          events_config?: Json | null
+          push_enabled?: boolean | null
+          user_id?: string
+          whatsapp_enabled?: boolean | null
+        }
+        Relationships: []
+      }
       optimization_queue: {
         Row: {
           category: string
@@ -3268,6 +3292,7 @@ export type Database = {
           client_name: string | null
           client_phone: string | null
           created_at: string
+          delivery_photo_url: string | null
           delivery_time: string | null
           discount_amount: number | null
           fulfillment_status: string
@@ -3279,7 +3304,9 @@ export type Database = {
           payment_terms: string | null
           quote_id: string | null
           seller_id: string
+          shipping_carrier: string | null
           shipping_cost: number | null
+          shipping_delivery_forecast: string | null
           shipping_type: string | null
           status: string
           subtotal: number | null
@@ -3295,6 +3322,7 @@ export type Database = {
           client_name?: string | null
           client_phone?: string | null
           created_at?: string
+          delivery_photo_url?: string | null
           delivery_time?: string | null
           discount_amount?: number | null
           fulfillment_status?: string
@@ -3306,7 +3334,9 @@ export type Database = {
           payment_terms?: string | null
           quote_id?: string | null
           seller_id: string
+          shipping_carrier?: string | null
           shipping_cost?: number | null
+          shipping_delivery_forecast?: string | null
           shipping_type?: string | null
           status?: string
           subtotal?: number | null
@@ -3322,6 +3352,7 @@ export type Database = {
           client_name?: string | null
           client_phone?: string | null
           created_at?: string
+          delivery_photo_url?: string | null
           delivery_time?: string | null
           discount_amount?: number | null
           fulfillment_status?: string
@@ -3333,7 +3364,9 @@ export type Database = {
           payment_terms?: string | null
           quote_id?: string | null
           seller_id?: string
+          shipping_carrier?: string | null
           shipping_cost?: number | null
+          shipping_delivery_forecast?: string | null
           shipping_type?: string | null
           status?: string
           subtotal?: number | null
