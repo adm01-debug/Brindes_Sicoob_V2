@@ -27,14 +27,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Plus, Pencil, Trash2, Search } from "lucide-react";
+import { Plus, Pencil, Trash2, Search, ShieldAlert } from "lucide-react";
 import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
 
 export const PAsTab = () => {
+  const { isSupervisorOrAbove } = useAuth();
   const [searchTerm, setSearchTerm] = useState("");
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [editingPA, setEditingPA] = useState<any>(null);
   const queryClient = useQueryClient();
+
 
   const { data: pas, isLoading: pasLoading } = useQuery({
     queryKey: ["postos_atendimento"],
