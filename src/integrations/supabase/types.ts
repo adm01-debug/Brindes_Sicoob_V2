@@ -2999,6 +2999,56 @@ export type Database = {
           },
         ]
       }
+      order_logistics: {
+        Row: {
+          actual_delivery: string | null
+          carrier_name: string | null
+          created_at: string | null
+          delivery_photo_url: string | null
+          delivery_status: string | null
+          estimated_delivery: string | null
+          id: string
+          notes: string | null
+          order_id: string
+          tracking_code: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          actual_delivery?: string | null
+          carrier_name?: string | null
+          created_at?: string | null
+          delivery_photo_url?: string | null
+          delivery_status?: string | null
+          estimated_delivery?: string | null
+          id?: string
+          notes?: string | null
+          order_id: string
+          tracking_code?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          actual_delivery?: string | null
+          carrier_name?: string | null
+          created_at?: string | null
+          delivery_photo_url?: string | null
+          delivery_status?: string | null
+          estimated_delivery?: string | null
+          id?: string
+          notes?: string | null
+          order_id?: string
+          tracking_code?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_logistics_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       order_logistics_tracking: {
         Row: {
           actual_delivery_at: string | null
