@@ -64,6 +64,10 @@ export default function OrderDetailPage() {
   const [rejectionReason, setRejectionReason] = useState("");
   const [isRequestDialogOpen, setIsRequestDialogOpen] = useState(false);
   const [isRejectDialogOpen, setIsRejectDialogOpen] = useState(false);
+  const [isAddItemDialogOpen, setIsAddItemDialogOpen] = useState(false);
+  const [productSearch, setProductSearch] = useState("");
+  const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
+  const [itemQuantity, setItemQuantity] = useState(1);
 
   const { data: orderData, isLoading: isLoadingOrder } = useQuery({
     queryKey: ["sicoob_order", id],
