@@ -91,6 +91,7 @@ export const BudgetsTab = () => {
 
   const handleCreate = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setValidationError(null);
     const formData = new FormData(e.currentTarget);
     const amount = parseFloat(formData.get("amount") as string);
     const alcada = parseFloat(formData.get("alcada") as string);
@@ -98,22 +99,22 @@ export const BudgetsTab = () => {
     const month = parseInt(formData.get("month") as string);
 
     if (amount <= 0) {
-      toast.error("O valor da verba deve ser maior que zero");
+      setValidationError("O valor da verba deve ser maior que zero");
       return;
     }
 
     if (alcada < 0) {
-      toast.error("O limite de alçada não pode ser negativo");
+      setValidationError("O limite de alçada não pode ser negativo");
       return;
     }
 
     if (alcada > amount) {
-      toast.error("O limite de alçada não pode ser maior que a verba total");
+      setValidationError("O limite de alçada não pode ser maior que a verba total");
       return;
     }
 
     if (year < 2000 || year > 2100) {
-      toast.error("Ano inválido");
+      setValidationError("Ano inválido (deve ser entre 2000 e 2100)");
       return;
     }
 
@@ -125,6 +126,11 @@ export const BudgetsTab = () => {
       verba_consumida: 0,
       limite_alcada: alcada || 0,
     });
+  };
+
+  const handleOpenChange = (open: boolean) => {
+    setIsCreateOpen(open);
+    if (!open) setValidationError(null);
   };
 
   const formatCurrency = (value: number) => {
@@ -143,7 +149,7 @@ export const BudgetsTab = () => {
             Filtros
           </Button>
         </div>
-        <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
+        <Dialog open={isCreateOpen} onOpenChange={handleOpenChange}>
           <DialogTrigger asChild>
             <Button className="gap-2">
               <Plus className="h-4 w-4" />
@@ -158,6 +164,14 @@ export const BudgetsTab = () => {
                   Defina o limite de compras mensal para um Posto de Atendimento.
                 </DialogDescription>
               </DialogHeader>
+
+              {validationError && (
+                <Alert variant="destructive" className="my-2">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertTitle>Erro de Validação</AlertTitle>
+                  <AlertDescription>{validationError}</AlertDescription>
+                </Alert>
+              )}
               <div className="grid gap-4 py-4">
                 <div className="space-y-2">
                   <label>Posto de Atendimento (PA)</label>
