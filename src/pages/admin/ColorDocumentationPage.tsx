@@ -477,7 +477,7 @@ export default function ColorDocumentationPage() {
                   </li>
                   <li className="flex gap-2">
                     <ChevronRight className="h-4 w-4 text-brand shrink-0" />
-                    <span><strong className="text-foreground">Amarelo Accent:</strong> Nunca use texto branco sobre amarelo. Use <code className="text-[10px]">--primary</code>.</span>
+                    <span><strong className="text-foreground">Turquesa Brand:</strong> Cor protagonista. Usar em CTAs, foco e elementos de ação.</span>
                   </li>
                   <li className="flex gap-2">
                     <ChevronRight className="h-4 w-4 text-brand shrink-0" />
