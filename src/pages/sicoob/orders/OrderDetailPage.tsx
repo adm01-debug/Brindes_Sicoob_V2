@@ -15,7 +15,10 @@ import {
   CheckCircle,
   XCircle,
   AlertTriangle,
-  Info
+  Info,
+  Plus,
+  Trash2,
+  Search
 } from "lucide-react";
 import { 
   Card, 
@@ -33,6 +36,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { usePaBudget } from "@/hooks/usePaBudget";
 import { useApprovalThreshold } from "@/hooks/useApprovalThreshold";
 import { useApprovalRequests } from "@/hooks/useSicoobApprovals";
+import { useSicoobOrderItems } from "@/hooks/useSicoobOrderItems";
+import { useProducts } from "@/hooks/useProducts";
 import { 
   Dialog, 
   DialogContent, 
@@ -43,6 +48,7 @@ import {
   DialogTrigger
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 import { 
   Tooltip, 
   TooltipContent, 
@@ -58,6 +64,10 @@ export default function OrderDetailPage() {
   const [rejectionReason, setRejectionReason] = useState("");
   const [isRequestDialogOpen, setIsRequestDialogOpen] = useState(false);
   const [isRejectDialogOpen, setIsRejectDialogOpen] = useState(false);
+  const [isAddItemDialogOpen, setIsAddItemDialogOpen] = useState(false);
+  const [productSearch, setProductSearch] = useState("");
+  const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
+  const [itemQuantity, setItemQuantity] = useState(1);
 
   const { data: orderData, isLoading: isLoadingOrder } = useQuery({
     queryKey: ["sicoob_order", id],
@@ -89,10 +99,39 @@ export default function OrderDetailPage() {
   const { budget, remainingBudget } = usePaBudget(orderData?.pa_id);
   const { threshold, needsApproval } = useApprovalThreshold();
   const { requests, createRequest, approveRequest, rejectRequest } = useApprovalRequests(id);
+  const { addItem, removeItem } = useSicoobOrderItems(id);
+  
+  const { data: products } = useProducts({ search: productSearch, limit: 5 }, { enabled: isAddItemDialogOpen });
 
   const activeRequest = useMemo(() => 
     requests?.find(r => r.status === 'pending'), 
   [requests]);
+
+  const handleAddItem = () => {
+    const product = products?.find(p => p.id === selectedProductId);
+    if (!product) return;
+
+    addItem.mutate({
+      productId: product.id,
+      productName: product.name,
+      quantity: itemQuantity,
+      unitPrice: product.price,
+    }, {
+      onSuccess: () => {
+        setIsAddItemDialogOpen(false);
+        setProductSearch("");
+        setSelectedProductId(null);
+        setItemQuantity(1);
+      }
+    });
+  };
+
+  const handleRemoveItem = (itemId: string) => {
+    if (confirm("Deseja realmente remover este item?")) {
+      removeItem.mutate(itemId);
+    }
+  };
+
 
   const orderTotal = orderData?.total_amount || 0;
   const isOverThreshold = needsApproval(orderTotal);
@@ -280,9 +319,76 @@ export default function OrderDetailPage() {
           <div className="lg:col-span-2 space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <Package className="h-5 w-5" />
-                  Itens do Pedido
+                <CardTitle className="text-lg flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Package className="h-5 w-5" />
+                    Itens do Pedido
+                  </div>
+                  {orderData.status === 'pending' && (
+                    <Dialog open={isAddItemDialogOpen} onOpenChange={setIsAddItemDialogOpen}>
+                      <DialogTrigger asChild>
+                        <Button size="sm" className="gap-2">
+                          <Plus className="h-4 w-4" />
+                          Adicionar Item
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="max-w-md">
+                        <DialogHeader>
+                          <DialogTitle>Adicionar Item ao Pedido</DialogTitle>
+                          <DialogDescription>
+                            Busque um produto e informe a quantidade.
+                          </DialogDescription>
+                        </DialogHeader>
+                        <div className="space-y-4 py-4">
+                          <div className="relative">
+                            <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                            <Input 
+                              placeholder="Buscar produto..." 
+                              className="pl-9"
+                              value={productSearch}
+                              onChange={(e) => setProductSearch(e.target.value)}
+                            />
+                          </div>
+                          
+                          <div className="space-y-2 max-h-48 overflow-y-auto">
+                            {products?.map(product => (
+                              <div 
+                                key={product.id}
+                                className={`p-2 border rounded cursor-pointer flex justify-between items-center transition-colors ${selectedProductId === product.id ? 'border-primary bg-primary/5' : 'hover:bg-muted'}`}
+                                onClick={() => setSelectedProductId(product.id)}
+                              >
+                                <div>
+                                  <p className="text-sm font-medium">{product.name}</p>
+                                  <p className="text-xs text-muted-foreground">R$ {product.price.toLocaleString('pt-BR')}</p>
+                                </div>
+                                {selectedProductId === product.id && <CheckCircle className="h-4 w-4 text-primary" />}
+                              </div>
+                            ))}
+                          </div>
+
+                          {selectedProductId && (
+                            <div className="flex items-center gap-4 pt-2">
+                              <div className="flex-1 space-y-1">
+                                <label className="text-xs font-medium">Quantidade</label>
+                                <Input 
+                                  type="number" 
+                                  min="1" 
+                                  value={itemQuantity}
+                                  onChange={(e) => setItemQuantity(parseInt(e.target.value) || 1)}
+                                />
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                        <DialogFooter>
+                          <Button variant="outline" onClick={() => setIsAddItemDialogOpen(false)}>Cancelar</Button>
+                          <Button disabled={!selectedProductId || addItem.isPending} onClick={handleAddItem}>
+                            {addItem.isPending ? "Adicionando..." : "Confirmar"}
+                          </Button>
+                        </DialogFooter>
+                      </DialogContent>
+                    </Dialog>
+                  )}
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -298,9 +404,22 @@ export default function OrderDetailPage() {
                           <p className="text-xs text-muted-foreground">Qtd: {item.quantity}</p>
                         </div>
                       </div>
-                      <div className="text-right">
-                        <p className="font-bold">R$ {Number(item.unit_price * item.quantity).toLocaleString('pt-BR')}</p>
-                        <p className="text-xs text-muted-foreground">Un: R$ {Number(item.unit_price).toLocaleString('pt-BR')}</p>
+                      <div className="text-right flex items-center gap-4">
+                        <div>
+                          <p className="font-bold">R$ {Number(item.unit_price * item.quantity).toLocaleString('pt-BR')}</p>
+                          <p className="text-xs text-muted-foreground">Un: R$ {Number(item.unit_price).toLocaleString('pt-BR')}</p>
+                        </div>
+                        {orderData.status === 'pending' && (
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="text-muted-foreground hover:text-destructive"
+                            onClick={() => handleRemoveItem(item.id)}
+                            disabled={removeItem.isPending}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        )}
                       </div>
                     </div>
                   ))}
