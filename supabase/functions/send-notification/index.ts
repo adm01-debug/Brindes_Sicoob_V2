@@ -1,7 +1,6 @@
 import { getCorsHeaders } from '../_shared/cors.ts';
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 import { z } from "npm:zod@3.23.8";
-import { castRpcResult } from "../_shared/supabase-client-adapter.ts";
 
 const NotificationSchema = z.object({
   user_id: z.string().uuid(),
@@ -40,22 +39,20 @@ Deno.serve(async (req) => {
 
     const payload = parsed.data;
 
-    // Check DND status
-    const { data: isDND } = await castRpcResult<{
-      data: boolean | null;
-      error: { message: string } | null;
-    }>(supabase.rpc('is_dnd_active'));
+    // 1. Verificar Preferências do Usuário
+    const { data: prefs } = await supabase
+      .from('notification_preferences')
+      .select('*')
+      .eq('user_id', payload.user_id)
+      .maybeSingle();
 
-    // If DND is active and not urgent, skip
-    if (isDND && payload.type !== 'urgent') {
-      return jsonRes(corsHeaders, { 
-        success: true, 
-        skipped: true,
-        reason: 'DND active' 
-      });
+    // Se tiver preferência configurada e o evento estiver desabilitado, ignorar
+    const eventType = payload.metadata?.event_type as string;
+    if (prefs && eventType && prefs.events_config && prefs.events_config[eventType] === false) {
+      return jsonRes(corsHeaders, { success: true, skipped: true, reason: 'Event disabled in preferences' });
     }
 
-    // Insert into workspace_notifications
+    // 2. Insert into workspace_notifications (Push/UI)
     const { data: notification, error } = await supabase
       .from('workspace_notifications')
       .insert({
@@ -72,6 +69,17 @@ Deno.serve(async (req) => {
       .single();
 
     if (error) throw error;
+
+    // 3. Email (se habilitado)
+    if (!prefs || prefs.email_enabled) {
+      // Aqui integraria com o send-transactional-email ou similar
+      console.log(`Simulando envio de email para ${payload.user_id}: ${payload.title}`);
+    }
+
+    // 4. WhatsApp (se habilitado e disponível)
+    if (prefs?.whatsapp_enabled) {
+      console.log(`Simulando envio de WhatsApp para ${payload.user_id}`);
+    }
 
     return jsonRes(corsHeaders, { 
       success: true, 
