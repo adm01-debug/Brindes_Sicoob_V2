@@ -16,8 +16,8 @@ export function CatalogActiveFilters({ filters, setFilters, activeFiltersCount }
       {filters.colors.map((color) => (
         <Badge
           key={color}
-          variant="secondary"
-          className="cursor-pointer hover:bg-destructive/10"
+          variant="outline"
+          className="cursor-pointer hover:bg-destructive/10 border-brand/20 text-brand"
           onClick={() => setFilters({ ...filters, colors: filters.colors.filter((c) => c !== color) })}
         >
           🎨 {color}
@@ -29,8 +29,8 @@ export function CatalogActiveFilters({ filters, setFilters, activeFiltersCount }
         return cat ? (
           <Badge
             key={catId}
-            variant="secondary"
-            className="cursor-pointer hover:bg-destructive/10"
+            variant="outline"
+            className="cursor-pointer hover:bg-destructive/10 border-brand/20 text-brand"
             onClick={() => setFilters({ ...filters, categories: filters.categories.filter((c) => c !== catId) })}
           >
             {cat.icon} {cat.name}
@@ -40,8 +40,8 @@ export function CatalogActiveFilters({ filters, setFilters, activeFiltersCount }
       })}
       {filters.featured && (
         <Badge
-          variant="secondary"
-          className="cursor-pointer hover:bg-destructive/10"
+          variant="outline"
+          className="cursor-pointer hover:bg-destructive/10 border-brand/20 text-brand"
           onClick={() => setFilters({ ...filters, featured: false })}
         >
           ⭐ Destaques
@@ -50,8 +50,8 @@ export function CatalogActiveFilters({ filters, setFilters, activeFiltersCount }
       )}
       {filters.isKit && (
         <Badge
-          variant="secondary"
-          className="cursor-pointer hover:bg-destructive/10"
+          variant="outline"
+          className="cursor-pointer hover:bg-destructive/10 border-brand/20 text-brand"
           onClick={() => setFilters({ ...filters, isKit: false })}
         >
           📦 KITs
