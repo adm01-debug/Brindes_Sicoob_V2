@@ -42,6 +42,53 @@ const TEST_USERS_CONFIG = [
   }
 ];
 
+async function ensureTestUser(user: (typeof TEST_USERS_CONFIG)[number]) {
+  const { data: listed, error: listError } = await supabase.auth.admin.listUsers({ page: 1, perPage: 200 });
+  if (listError) throw listError;
+
+  const existingByEmail = listed.users.find((candidate) => candidate.email?.toLowerCase() === user.email.toLowerCase());
+
+  if (existingByEmail && existingByEmail.id !== user.id) {
+    const { error: deleteAuthError } = await supabase.auth.admin.deleteUser(existingByEmail.id);
+    if (deleteAuthError) throw deleteAuthError;
+
+    const { error: deleteProfileByEmailError } = await supabase
+      .from("profiles")
+      .delete()
+      .eq("email", user.email)
+      .neq("user_id", user.id);
+
+    if (deleteProfileByEmailError) throw deleteProfileByEmailError;
+  }
+
+  const { data: existingById, error: getByIdError } = await supabase.auth.admin.getUserById(user.id);
+  if (getByIdError && !getByIdError.message.toLowerCase().includes("not found")) {
+    throw getByIdError;
+  }
+
+  if (existingById?.user) {
+    const { error: updateUserError } = await supabase.auth.admin.updateUserById(user.id, {
+      email: user.email,
+      password: TEST_PASSWORD,
+      email_confirm: true,
+      user_metadata: { full_name: user.full_name },
+    });
+
+    if (updateUserError) throw updateUserError;
+    return;
+  }
+
+  const { error: createUserError } = await supabase.auth.admin.createUser({
+    id: user.id,
+    email: user.email,
+    password: TEST_PASSWORD,
+    email_confirm: true,
+    user_metadata: { full_name: user.full_name },
+  });
+
+  if (createUserError) throw createUserError;
+}
+
 Deno.serve(async (req) => {
   try {
     console.log("Iniciando seed padronizado do módulo Sicoob...");
@@ -67,19 +114,15 @@ Deno.serve(async (req) => {
 
     // 3. Usuários de Teste
     for (const user of TEST_USERS_CONFIG) {
-      // Criar/Atualizar no Auth
-      const { data: authUser, error: authError } = await supabase.auth.admin.createUser({
-        id: user.id,
-        email: user.email,
-        password: TEST_PASSWORD,
-        email_confirm: true,
-        user_metadata: { full_name: user.full_name }
-      });
+      await ensureTestUser(user);
 
-      if (authError && authError.message !== "User already registered") {
-         console.warn(`Erro ao criar user auth ${user.email}:`, authError.message);
-         // Se o erro for que o email já existe mas com outro ID, tentamos apenas o upsert do profile
-      }
+      const { error: deleteProfileByEmailError } = await supabase
+        .from("profiles")
+        .delete()
+        .eq("email", user.email)
+        .neq("user_id", user.id);
+
+      if (deleteProfileByEmailError) throw deleteProfileByEmailError;
 
       // Upsert no Profile
       const { error: profileError } = await supabase
