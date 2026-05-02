@@ -40,25 +40,21 @@ import { format, parseISO, isWithinInterval } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import type { DateRange } from "react-day-picker";
+import { useAuth } from "@/contexts/AuthContext";
+import { OrderStatusBadge } from "@/components/sicoob/orders/OrderStatusBadge";
+import { OrderStatus } from "@/types/sicoob/orders";
 
 // Mock data for initial UI
 const MOCK_ORDERS = [
-  { id: '1', pa: 'PA Centro', singular: 'Sicoob Credicitrus', status: 'draft', total: 1250.50, items: 4, date: '2024-05-01' },
-  { id: '2', pa: 'PA Sul', singular: 'Sicoob Coopercredi', status: 'pending_approval', total: 3400.00, items: 12, date: '2024-05-02' },
-  { id: '3', pa: 'PA Norte', singular: 'Sicoob Credicitrus', status: 'approved', total: 850.00, items: 2, date: '2024-04-30' },
-  { id: '4', pa: 'PA Leste', singular: 'Sicoob Coopercredi', status: 'rejected', total: 540.00, items: 3, date: '2024-04-25' },
-  { id: '5', pa: 'PA Centro', singular: 'Sicoob Credicitrus', status: 'in_funnel', total: 2100.00, items: 7, date: '2024-04-20' },
+  { id: '1', pa: 'PA Centro', singular: 'Sicoob Credicitrus', status: 'draft' as OrderStatus, total: 1250.50, items: 4, date: '2024-05-01' },
+  { id: '2', pa: 'PA Sul', singular: 'Sicoob Coopercredi', status: 'waiting_approval' as OrderStatus, total: 3400.00, items: 12, date: '2024-05-02' },
+  { id: '3', pa: 'PA Norte', singular: 'Sicoob Credicitrus', status: 'confirmed' as OrderStatus, total: 850.00, items: 2, date: '2024-04-30' },
+  { id: '4', pa: 'PA Leste', singular: 'Sicoob Coopercredi', status: 'rejected' as OrderStatus, total: 540.00, items: 3, date: '2024-04-25' },
+  { id: '5', pa: 'PA Centro', singular: 'Sicoob Credicitrus', status: 'logistic' as OrderStatus, total: 2100.00, items: 7, date: '2024-04-20' },
 ];
 
-const STATUS_MAP: Record<string, { label: string; color: string }> = {
-  draft: { label: 'Rascunho', color: 'bg-slate-500/10 text-slate-500' },
-  pending_approval: { label: 'Aguardando Aprovação', color: 'bg-amber-500/10 text-amber-500' },
-  approved: { label: 'Aprovado', color: 'bg-emerald-500/10 text-emerald-500' },
-  rejected: { label: 'Rejeitado', color: 'bg-red-500/10 text-red-500' },
-  in_funnel: { label: 'No Funil', color: 'bg-blue-500/10 text-blue-500' },
-};
+const STATUS_OPTIONS: OrderStatus[] = ['draft', 'pending', 'waiting_approval', 'confirmed', 'logistic', 'rejected', 'completed'];
 
-const FUNNEL_STATUSES = Object.keys(STATUS_MAP);
 
 export default function OrdersPage() {
   const navigate = useNavigate();
@@ -218,9 +214,11 @@ export default function OrdersPage() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">Todos</SelectItem>
-                    {FUNNEL_STATUSES.map((s) => (
+                    {STATUS_OPTIONS.map((s) => (
                       <SelectItem key={s} value={s}>
-                        {STATUS_MAP[s].label}
+                        <div className="flex items-center gap-2">
+                          <OrderStatusBadge status={s} />
+                        </div>
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -309,7 +307,7 @@ export default function OrdersPage() {
             <span className="text-xs text-muted-foreground">Filtros ativos:</span>
             {statusFilter !== "all" && (
               <Badge variant="secondary" className="gap-1">
-                {STATUS_MAP[statusFilter]?.label}
+                <OrderStatusBadge status={statusFilter as OrderStatus} />
                 <button onClick={() => setStatusFilter("all")} aria-label="Remover filtro de status">
                   <X className="h-3 w-3" />
                 </button>
@@ -361,9 +359,7 @@ export default function OrdersPage() {
                   <CardTitle className="text-sm font-medium">
                     Pedido #{order.id}
                   </CardTitle>
-                  <Badge variant="outline" className={STATUS_MAP[order.status]?.color}>
-                    {STATUS_MAP[order.status]?.label}
-                  </Badge>
+                  <OrderStatusBadge status={order.status} />
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">R$ {order.total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</div>
