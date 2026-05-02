@@ -116,7 +116,7 @@ export function Header({ onMenuToggle, searchQuery, onSearchChange }: HeaderProp
         "border-b transition-all duration-300 print:hidden",
         "bg-card/95 backdrop-blur-md border-border",
         "h-[var(--header-h)]",
-        isScrolled && "bg-card/98 backdrop-blur-lg shadow-md border-border/80",
+        isScrolled && "bg-card/98 backdrop-blur-lg shadow-md border-primary/15",
       )}
     >
       <div className="flex items-center justify-between h-full px-2 sm:px-4 lg:px-6">
@@ -132,7 +132,7 @@ export function Header({ onMenuToggle, searchQuery, onSearchChange }: HeaderProp
           <Button
             variant="ghost"
             size="icon"
-            className="lg:hidden hover:bg-[#7DB61C]/10 hover:text-[#7DB61C] h-8 w-8 sm:h-9 sm:w-9"
+            className="lg:hidden hover:bg-brand/10 hover:text-brand h-8 w-8 sm:h-9 sm:w-9"
             onClick={onMenuToggle}
            aria-label="Menu"><Menu className="h-5 w-5" />
           </Button>
@@ -156,7 +156,7 @@ export function Header({ onMenuToggle, searchQuery, onSearchChange }: HeaderProp
           <Button
             variant="ghost"
             size="icon" aria-label="Buscar"
-            className="md:hidden h-8 w-8 hover:bg-[#7DB61C]/10 hover:text-[#7DB61C]"
+            className="md:hidden h-8 w-8 hover:bg-brand/10 hover:text-brand"
             onClick={() => {
               const event = new KeyboardEvent('keydown', { key: 'k', ctrlKey: true });
               document.dispatchEvent(event);
@@ -191,7 +191,7 @@ export function Header({ onMenuToggle, searchQuery, onSearchChange }: HeaderProp
                 >
                   <Heart className="h-[17px] w-[17px]" strokeWidth={1.75} />
                   {favoriteCount > 0 && (
-                    <Badge className="absolute -top-0.5 -right-0.5 h-4 min-w-4 px-1 flex items-center justify-center text-[9px] bg-orange text-orange-foreground border-0">
+                    <Badge className="absolute -top-0.5 -right-0.5 h-4 min-w-4 px-1 flex items-center justify-center text-[9px] bg-accent text-accent-foreground border-0">
                       {favoriteCount > 99 ? "99+" : favoriteCount}
                     </Badge>
                   )}
@@ -212,7 +212,7 @@ export function Header({ onMenuToggle, searchQuery, onSearchChange }: HeaderProp
                 >
                   <GitCompare className="h-[17px] w-[17px]" strokeWidth={1.75} />
                   {compareCount > 0 && (
-                    <Badge className="absolute -top-0.5 -right-0.5 h-4 min-w-4 px-1 flex items-center justify-center text-[9px] bg-orange text-orange-foreground border-0">
+                    <Badge className="absolute -top-0.5 -right-0.5 h-4 min-w-4 px-1 flex items-center justify-center text-[9px] bg-accent text-accent-foreground border-0">
                       {compareCount > 4 ? "4" : compareCount}
                     </Badge>
                   )}
@@ -253,7 +253,7 @@ export function Header({ onMenuToggle, searchQuery, onSearchChange }: HeaderProp
                   <Heart className="h-4 w-4 mr-2" />
                   Favoritos
                   {favoriteCount > 0 && (
-                    <Badge className="ml-auto h-5 min-w-5 px-1.5 text-[10px] bg-orange text-orange-foreground border-0">
+                    <Badge className="ml-auto h-5 min-w-5 px-1.5 text-[10px] bg-accent text-accent-foreground border-0">
                       {favoriteCount}
                     </Badge>
                   )}
@@ -262,7 +262,7 @@ export function Header({ onMenuToggle, searchQuery, onSearchChange }: HeaderProp
                   <GitCompare className="h-4 w-4 mr-2" />
                   Comparar
                   {compareCount > 0 && (
-                    <Badge className="ml-auto h-5 min-w-5 px-1.5 text-[10px] bg-orange text-orange-foreground border-0">
+                    <Badge className="ml-auto h-5 min-w-5 px-1.5 text-[10px] bg-accent text-accent-foreground border-0">
                       {compareCount}
                     </Badge>
                   )}
@@ -371,7 +371,7 @@ export function Header({ onMenuToggle, searchQuery, onSearchChange }: HeaderProp
       </div>
 
       {/* #9 — Barra colorida de seção no bottom */}
-      <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-primary/80 via-primary to-primary/40 opacity-60" />
+      <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-primary via-brand to-primary/40 opacity-40" />
     </header>
   );
 }
