@@ -161,28 +161,111 @@ export default function OrderDetailPage() {
       <PageSEO title={`Pedido #${orderData?.order_number || id} - Sicoob`} description="Detalhes do pedido Sicoob." path={`/sicoob/pedidos/${id}`} noIndex />
 ...
       <div className="space-y-6">
+        {activeRequest && (
+          <Alert className="bg-amber-500/10 border-amber-500/20">
+            <AlertTriangle className="h-5 w-5 text-amber-500" />
+            <AlertTitle className="text-amber-700">Solicitação de Aprovação Pendente</AlertTitle>
+            <AlertDescription className="text-amber-600">
+              Este pedido excedeu a alçada de <strong>R$ {activeRequest.threshold_at_request.toLocaleString('pt-BR')}</strong> e aguarda aprovação de um gestor.
+              <p className="mt-2"><strong>Motivo:</strong> {activeRequest.request_reason}</p>
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {orderData.status === 'rejected' && (
+          <Alert variant="destructive">
+            <XCircle className="h-5 w-5" />
+            <AlertTitle>Pedido Rejeitado</AlertTitle>
+            <AlertDescription>
+              Este pedido foi rejeitado por um gestor. Verifique o histórico para mais detalhes.
+            </AlertDescription>
+          </Alert>
+        )}
+
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="icon" onClick={() => navigate("/sicoob/pedidos")}>
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-2xl font-bold">Pedido #{id}</h1>
-              <Badge variant="secondary" className="bg-amber-500/10 text-amber-500 border-amber-500/20">
-                Aguardando Aprovação
+              <h1 className="text-2xl font-bold">Pedido #{orderData.order_number}</h1>
+              <Badge variant="secondary" className={
+                orderData.status === 'waiting_approval' ? "bg-amber-500/10 text-amber-500 border-amber-500/20" :
+                orderData.status === 'rejected' ? "bg-red-500/10 text-red-500 border-red-500/20" :
+                "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
+              }>
+                {orderData.status === 'waiting_approval' ? "Aguardando Aprovação" : 
+                 orderData.status === 'rejected' ? "Rejeitado" : 
+                 "Confirmado"}
               </Badge>
             </div>
-            <p className="text-sm text-muted-foreground">Criado em 02 de Maio de 2026 às 14:45</p>
+            <p className="text-sm text-muted-foreground">Criado em {new Date(orderData.created_at).toLocaleString('pt-BR')}</p>
           </div>
           <div className="ml-auto flex gap-2">
-            <Button variant="outline" className="text-destructive">Rejeitar</Button>
-            <Button 
-              className="bg-emerald-600 hover:bg-emerald-700" 
-              onClick={handleApprove}
-              disabled={isApproving}
-            >
-              {isApproving ? "Processando..." : "Aprovar Pedido"}
-            </Button>
+            {activeRequest && canApprove ? (
+              <>
+                <Dialog open={isRejectDialogOpen} onOpenChange={setIsRejectDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button variant="outline" className="text-destructive">Rejeitar</Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Rejeitar Pedido</DialogTitle>
+                      <DialogDescription>
+                        Informe o motivo da rejeição deste pedido.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <Textarea 
+                      placeholder="Motivo da rejeição..." 
+                      value={rejectionReason}
+                      onChange={(e) => setRejectionReason(e.target.value)}
+                    />
+                    <DialogFooter>
+                      <Button variant="outline" onClick={() => setIsRejectDialogOpen(false)}>Cancelar</Button>
+                      <Button variant="destructive" onClick={handleReject}>Confirmar Rejeição</Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+
+                <Button 
+                  className="bg-emerald-600 hover:bg-emerald-700" 
+                  onClick={handleApprove}
+                >
+                  <CheckCircle className="mr-2 h-4 w-4" />
+                  Aprovar Pedido
+                </Button>
+              </>
+            ) : orderData.status === 'pending' && isOverThreshold && !activeRequest ? (
+              <Dialog open={isRequestDialogOpen} onOpenChange={setIsRequestDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button className="bg-amber-600 hover:bg-amber-700 text-white">
+                    Solicitar Aprovação
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Solicitar Aprovação de Alçada</DialogTitle>
+                    <DialogDescription>
+                      Este pedido de <strong>R$ {orderTotal.toLocaleString('pt-BR')}</strong> excede sua alçada de <strong>R$ {threshold.toLocaleString('pt-BR')}</strong>.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="space-y-4 py-4">
+                    <p className="text-sm font-medium">Justifique a necessidade deste pedido:</p>
+                    <Textarea 
+                      placeholder="Ex: Reposição urgente de material promocional..." 
+                      value={requestReason}
+                      onChange={(e) => setRequestReason(e.target.value)}
+                    />
+                  </div>
+                  <DialogFooter>
+                    <Button variant="outline" onClick={() => setIsRequestDialogOpen(false)}>Cancelar</Button>
+                    <Button className="bg-amber-600 hover:bg-amber-700" onClick={handleRequestApproval}>
+                      Enviar Solicitação
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+            ) : null}
           </div>
         </div>
 
@@ -197,26 +280,26 @@ export default function OrderDetailPage() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {[1, 2, 3].map((i) => (
-                    <div key={i} className="flex items-center justify-between py-3 border-b last:border-0">
+                  {orderItems?.map((item: any) => (
+                    <div key={item.id} className="flex items-center justify-between py-3 border-b last:border-0">
                       <div className="flex gap-4">
                         <div className="w-12 h-12 bg-muted rounded flex items-center justify-center">
                           <Package className="h-6 w-6 text-muted-foreground" />
                         </div>
                         <div>
-                          <p className="font-medium">Produto Sicoob Exemplo {i}</p>
-                          <p className="text-xs text-muted-foreground">SKU: SIC-00{i}</p>
+                          <p className="font-medium">{item.product_name || "Produto Sicoob"}</p>
+                          <p className="text-xs text-muted-foreground">Qtd: {item.quantity}</p>
                         </div>
                       </div>
                       <div className="text-right">
-                        <p className="font-bold">R$ 150,00</p>
-                        <p className="text-xs text-muted-foreground">Qtd: 2</p>
+                        <p className="font-bold">R$ {Number(item.unit_price * item.quantity).toLocaleString('pt-BR')}</p>
+                        <p className="text-xs text-muted-foreground">Un: R$ {Number(item.unit_price).toLocaleString('pt-BR')}</p>
                       </div>
                     </div>
                   ))}
                   <div className="flex justify-between pt-4 border-t-2 border-dashed">
                     <span className="font-bold">Total do Pedido</span>
-                    <span className="text-xl font-bold text-primary">R$ 900,00</span>
+                    <span className="text-xl font-bold text-primary">R$ {orderTotal.toLocaleString('pt-BR')}</span>
                   </div>
                 </div>
               </CardContent>
@@ -237,23 +320,39 @@ export default function OrderDetailPage() {
                 <Card>
                   <CardContent className="pt-6">
                     <div className="space-y-6">
-                      <div className="flex gap-4">
-                        <div className="flex flex-col items-center">
-                          <div className="w-2 h-2 rounded-full bg-primary mt-1.5" />
-                          <div className="w-0.5 h-full bg-border" />
+                      {requests?.map((req) => (
+                        <div key={req.id} className="flex gap-4">
+                          <div className="flex flex-col items-center">
+                            <div className={`w-2 h-2 rounded-full mt-1.5 ${
+                              req.status === 'approved' ? 'bg-emerald-500' : 
+                              req.status === 'rejected' ? 'bg-red-500' : 'bg-amber-500'
+                            }`} />
+                            <div className="w-0.5 h-full bg-border" />
+                          </div>
+                          <div>
+                            <p className="text-sm font-bold">
+                              {req.status === 'approved' ? 'Solicitação Aprovada' : 
+                               req.status === 'rejected' ? 'Solicitação Rejeitada' : 'Aguardando Aprovação'}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              {req.status === 'pending' ? `Solicitado por ${req.requester?.display_name}` : 
+                               req.status === 'approved' ? 'Aprovado por gestor' : `Rejeitado: ${req.rejection_reason}`}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              Em {new Date(req.created_at).toLocaleString('pt-BR')}
+                            </p>
+                          </div>
                         </div>
-                        <div>
-                          <p className="text-sm font-bold">Enviado para Aprovação</p>
-                          <p className="text-xs text-muted-foreground">Por João Vendedor em 02/05/2026 às 14:50</p>
-                        </div>
-                      </div>
+                      ))}
                       <div className="flex gap-4">
                         <div className="flex flex-col items-center">
                           <div className="w-2 h-2 rounded-full bg-muted mt-1.5" />
                         </div>
                         <div>
-                          <p className="text-sm font-bold text-muted-foreground">Pedido Criado (Rascunho)</p>
-                          <p className="text-xs text-muted-foreground">Por João Vendedor em 02/05/2026 às 14:45</p>
+                          <p className="text-sm font-bold text-muted-foreground">Pedido Criado</p>
+                          <p className="text-xs text-muted-foreground">
+                            Em {new Date(orderData.created_at).toLocaleString('pt-BR')}
+                          </p>
                         </div>
                       </div>
                     </div>
@@ -273,65 +372,50 @@ export default function OrderDetailPage() {
           <div className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Informações de Entrega</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4 text-sm">
-                <div className="flex gap-3">
-                  <MapPin className="h-4 w-4 text-muted-foreground shrink-0" />
-                  <div>
-                    <p className="font-bold">PA Centro (0012)</p>
-                    <p className="text-muted-foreground">Rua das Cooperativas, 123, Centro - Brasília/DF</p>
-                  </div>
-                </div>
-                <div className="flex gap-3">
-                  <User className="h-4 w-4 text-muted-foreground shrink-0" />
-                  <div>
-                    <p className="font-bold">Responsável</p>
-                    <p className="text-muted-foreground">Maria Gerente (PA Centro)</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Status do Orçamento</CardTitle>
+                <CardTitle className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Status da Alçada</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-muted-foreground flex items-center gap-2">
-                    <Clock className="h-4 w-4" />
-                    Tempo em espera
+                    <AlertCircle className="h-4 w-4" />
+                    Limite de Alçada
                   </span>
-                  <span className="font-bold">02:15:00</span>
+                  <span className="font-bold">R$ {threshold.toLocaleString('pt-BR')}</span>
                 </div>
                 
                 <div className="space-y-2">
                   <div className="flex justify-between text-xs">
-                    <span>Verba Disponível</span>
-                    <span className={orderTotal > availableBudget ? "text-destructive font-bold" : ""}>
-                      R$ {availableBudget.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                    <span>Verba PA Disponível</span>
+                    <span className={isOverBudget ? "text-destructive font-bold" : "text-emerald-600 font-bold"}>
+                      R$ {remainingBudget.toLocaleString('pt-BR')}
                     </span>
                   </div>
                   <div className="w-full h-1.5 bg-secondary rounded-full overflow-hidden">
                     <div 
-                      className="h-full bg-primary" 
-                      style={{ width: `${Math.min((availableBudget / 1000) * 100, 100)}%` }} 
+                      className={`h-full ${isOverBudget ? 'bg-destructive' : 'bg-emerald-500'}`} 
+                      style={{ width: `${Math.min((orderTotal / Math.max(remainingBudget, 1)) * 100, 100)}%` }} 
                     />
                   </div>
                 </div>
 
-                {orderTotal > availableBudget ? (
+                {isOverBudget ? (
                   <Alert variant="destructive" className="py-2">
                     <AlertCircle className="h-4 w-4" />
                     <AlertDescription className="text-xs">
-                      Atenção: O total do pedido (R$ {orderTotal.toFixed(2)}) excede a verba disponível (R$ {availableBudget.toFixed(2)}).
+                      Este pedido excede a verba total do PA. Mesmo com aprovação de alçada, não há saldo.
                     </AlertDescription>
                   </Alert>
+                ) : isOverThreshold ? (
+                  <div className="p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg">
+                    <p className="text-xs text-amber-600 font-medium">
+                      Pedido acima da alçada. Requer aprovação de um gestor.
+                    </p>
+                  </div>
                 ) : (
-                  <div className="p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg">
-                    <p className="text-xs text-blue-600 font-medium">
-                      Este pedido está dentro do limite de alçada do PA (R$ {budgetLimit.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}).
+                  <div className="p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-lg">
+                    <p className="text-xs text-emerald-600 font-medium flex items-center gap-1">
+                      <CheckCircle className="h-3 w-3" />
+                      Dentro da alçada e verba disponível.
                     </p>
                   </div>
                 )}
