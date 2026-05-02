@@ -42,8 +42,8 @@ Deno.test({
       // 3. Testar Quantidade de Item Inválida
       try {
         await c.queryObject(`
-          INSERT INTO public.sicoob_order_items (order_id, product_id, quantity, unit_price)
-          VALUES (gen_random_uuid(), gen_random_uuid(), 0, 10)
+          INSERT INTO public.sicoob_order_items (order_id, product_id, product_name, quantity, unit_price)
+          VALUES (gen_random_uuid(), gen_random_uuid(), 'Test', 0, 10)
         `);
         assert(false, "Banco permitiu inserção de quantidade zero");
       } catch (e: any) {
