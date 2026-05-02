@@ -14,7 +14,8 @@ import {
   AlertCircle,
   CheckCircle,
   XCircle,
-  AlertTriangle
+  AlertTriangle,
+  Info
 } from "lucide-react";
 import { 
   Card, 
@@ -42,6 +43,12 @@ import {
   DialogTrigger
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
+import { 
+  Tooltip, 
+  TooltipContent, 
+  TooltipProvider, 
+  TooltipTrigger 
+} from "@/components/ui/tooltip";
 
 export default function OrderDetailPage() {
   const { id } = useParams();
@@ -383,26 +390,44 @@ export default function OrderDetailPage() {
                   <span className="font-bold">R$ {threshold.toLocaleString('pt-BR')}</span>
                 </div>
                 
-                <div className="space-y-2">
-                  <div className="flex justify-between text-xs">
-                    <span>Verba PA Disponível</span>
-                    <span className={isOverBudget ? "text-destructive font-bold" : "text-emerald-600 font-bold"}>
+                <div className="space-y-3">
+                  <div className="flex justify-between text-xs items-center">
+                    <span className="flex items-center gap-1.5">
+                      Verba PA Disponível
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Info className="h-3.5 w-3.5 text-muted-foreground cursor-help" />
+                          </TooltipTrigger>
+                          <TooltipContent className="max-w-xs">
+                            <p>Saldo restante para o mês vigente após subtrair os pedidos já realizados.</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    </span>
+                    <span className={isOverBudget ? "text-destructive font-bold flex items-center gap-1" : "text-emerald-600 font-bold"}>
+                      {isOverBudget && <AlertTriangle className="h-3 w-3" />}
                       R$ {remainingBudget.toLocaleString('pt-BR')}
                     </span>
                   </div>
-                  <div className="w-full h-1.5 bg-secondary rounded-full overflow-hidden">
+                  <div className="w-full h-2.5 bg-secondary rounded-full overflow-hidden relative">
                     <div 
-                      className={`h-full ${isOverBudget ? 'bg-destructive' : 'bg-emerald-500'}`} 
+                      className={`h-full transition-all duration-500 ${isOverBudget ? 'bg-destructive' : 'bg-emerald-500'}`} 
                       style={{ width: `${Math.min((orderTotal / Math.max(remainingBudget, 1)) * 100, 100)}%` }} 
                     />
+                    {isOverBudget && (
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <span className="text-[10px] font-bold text-white uppercase tracking-tighter drop-shadow-sm">Overbudget</span>
+                      </div>
+                    )}
                   </div>
                 </div>
 
                 {isOverBudget ? (
-                  <Alert variant="destructive" className="py-2">
+                  <Alert variant="destructive" className="py-2 bg-destructive/10 border-destructive/20 animate-pulse">
                     <AlertCircle className="h-4 w-4" />
-                    <AlertDescription className="text-xs">
-                      Este pedido excede a verba total do PA. Mesmo com aprovação de alçada, não há saldo.
+                    <AlertDescription className="text-xs font-medium">
+                      <strong>ALERTA:</strong> Este pedido excede a verba total disponível no PA. O sistema bloqueará a aprovação final.
                     </AlertDescription>
                   </Alert>
                 ) : isOverThreshold ? (
