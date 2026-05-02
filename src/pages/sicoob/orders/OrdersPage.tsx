@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { PageSEO } from "@/components/seo/PageSEO";
 import { Button } from "@/components/ui/button";
@@ -35,7 +35,7 @@ import {
 import { Calendar } from "@/components/ui/calendar";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { format, parseISO, isWithinInterval } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
@@ -62,14 +62,42 @@ const FUNNEL_STATUSES = Object.keys(STATUS_MAP);
 
 export default function OrdersPage() {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { isVendedorRole, isAdmin } = useAuth();
   const canCreateOrder = isVendedorRole || isAdmin;
 
-  const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string>("all");
-  const [paFilter, setPaFilter] = useState<string>("all");
-  const [singularFilter, setSingularFilter] = useState<string>("all");
-  const [dateRange, setDateRange] = useState<DateRange | undefined>();
+  const [searchTerm, setSearchTerm] = useState(searchParams.get("search") || "");
+  const [statusFilter, setStatusFilter] = useState<string>(searchParams.get("status") || "all");
+  const [paFilter, setPaFilter] = useState<string>(searchParams.get("pa") || "all");
+  const [singularFilter, setSingularFilter] = useState<string>(searchParams.get("singular") || "all");
+  
+  const initialDateRange = useMemo(() => {
+    const from = searchParams.get("from");
+    const to = searchParams.get("to");
+    if (from) {
+      return {
+        from: new Date(from),
+        to: to ? new Date(to) : undefined
+      };
+    }
+    return undefined;
+  }, []); // Only on mount
+
+  const [dateRange, setDateRange] = useState<DateRange | undefined>(initialDateRange);
+
+  // Sync state to URL
+  useEffect(() => {
+    const params = new URLSearchParams();
+    if (searchTerm) params.set("search", searchTerm);
+    if (statusFilter !== "all") params.set("status", statusFilter);
+    if (paFilter !== "all") params.set("pa", paFilter);
+    if (singularFilter !== "all") params.set("singular", singularFilter);
+    if (dateRange?.from) params.set("from", dateRange.from.toISOString());
+    if (dateRange?.to) params.set("to", dateRange.to.toISOString());
+    
+    setSearchParams(params, { replace: true });
+  }, [searchTerm, statusFilter, paFilter, singularFilter, dateRange]);
+
 
   const paOptions = useMemo(
     () => Array.from(new Set(MOCK_ORDERS.map((o) => o.pa))),
