@@ -259,7 +259,7 @@ export const CooperativasTab = () => {
                   <label htmlFor="edit-name">Nome da Cooperativa</label>
                   <Input
                     id="edit-name"
-                    name="nome"
+                    name="name"
                     defaultValue={editingCoop.nome}
                     required
                   />
@@ -268,11 +268,12 @@ export const CooperativasTab = () => {
                   <label htmlFor="edit-code">Código/Número</label>
                   <Input
                     id="edit-code"
-                    name="codigo"
+                    name="code"
                     defaultValue={editingCoop.codigo}
                     required
                   />
                 </div>
+
               </div>
               <DialogFooter>
                 <Button type="submit" disabled={updateMutation.isPending}>
