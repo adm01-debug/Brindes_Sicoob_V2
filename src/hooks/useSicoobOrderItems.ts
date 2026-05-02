@@ -94,6 +94,19 @@ export function useSicoobOrderItems(orderId?: string) {
       }
       if (!orderId) throw new Error("Order ID is required");
 
+      // Validar status do pedido antes de remover
+      const { data: order, error: orderCheckError } = await supabase
+        .from("sicoob_orders")
+        .select("status")
+        .eq("id", orderId)
+        .single();
+      
+      if (orderCheckError) throw orderCheckError;
+      if (order?.status !== 'pending' && order?.status !== 'draft') {
+        throw new Error(`Não é possível remover itens de um pedido com status "${order?.status}".`);
+      }
+
+
 
       const { error: deleteError } = await supabase
         .from("sicoob_order_items")
