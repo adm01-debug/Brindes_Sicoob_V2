@@ -1636,7 +1636,14 @@ async function getExternalClient(corsHeaders: Record<string, string>) {
   if (!externalUrl || !externalKey) {
     console.warn('[external-db-bridge] EXTERNAL_PROMOBRIND_URL/KEY not configured (DB or env) — returning empty payload');
     return jsonResponse(
-      { records: [], data: [], count: 0, _unconfigured: true, _message: 'Banco externo não configurado' },
+      {
+        records: [],
+        data: [],
+        count: 0,
+        _unconfigured: true,
+        _message: 'Banco externo não configurado',
+        _details: 'Verifique EXTERNAL_PROMOBRIND_URL e as chaves salvas em Conexões. Valores placeholder/inválidos são descartados.',
+      },
       200,
       corsHeaders,
     );
