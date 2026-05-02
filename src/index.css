@@ -254,12 +254,12 @@ html[data-scroll-locked] body {
     --z-tooltip: 110;
     --z-spotlight: 120;
 
-    /* ===== CHART ===== */
-    --chart-1: 25 95% 53%;
-    --chart-2: 142 71% 45%;
-    --chart-3: 45 93% 47%;
-    --chart-4: 200 85% 55%;
-    --chart-5: 0 84% 60%;
+    /* ===== CHART (harmonizado com paleta Sicoob 2024) ===== */
+    --chart-1: 175 100% 34%;
+    --chart-2: 190 100% 13%;
+    --chart-3: 44 100% 50%;
+    --chart-4: 82 73% 41%;
+    --chart-5: 271 53% 37%;
 
     /* ===== CORES DE PRODUTOS ===== */
     --color-red: 0 84% 60%;
@@ -463,12 +463,12 @@ html[data-scroll-locked] body {
       0 1px 3px hsl(225 20% 2% / 0.7), 0 0 20px hsl(var(--primary) / 0.03),
       inset 0 1px 0 hsl(225 15% 18% / 0.3);
 
-    /* ===== CHART ===== */
-    --chart-1: 24 100% 50%;
-    --chart-2: 142 76% 50%;
-    --chart-3: 45 93% 55%;
-    --chart-4: 200 85% 58%;
-    --chart-5: 0 72% 55%;
+    /* ===== CHART (Sicoob — dark) ===== */
+    --chart-1: 175 90% 42%;
+    --chart-2: 190 100% 30%;
+    --chart-3: 44 100% 55%;
+    --chart-4: 82 73% 48%;
+    --chart-5: 271 60% 58%;
   }
 }
 
