@@ -73,26 +73,26 @@ html[data-scroll-locked] body {
     --primary-glow: 190 100% 20%;
     --primary-foreground: 0 0% 100%;
 
-    /* ===== MARCA / AÇÃO (SICOOB MARCA — #C5D41C) ===== */
-    /* Uso: CTAs principais, hero, ações de conversão, energia cooperativa. */
-    --brand: 65 72% 47%;
-    --brand-hover: 65 72% 52%;
-    --brand-active: 65 72% 42%;
-    --brand-glow: 65 72% 60%;
-    --brand-foreground: 190 100% 10%;
-    --brand-soft: 175 100% 34%;
+    /* ===== MARCA / AÇÃO (TURQUESA SICOOB — #00AE9D — predominante) ===== */
+    /* Uso: CTAs principais, hero, ações de conversão, cor protagonista. */
+    --brand: 175 100% 34%;
+    --brand-hover: 175 100% 30%;
+    --brand-active: 175 100% 26%;
+    --brand-glow: 175 100% 42%;
+    --brand-foreground: 0 0% 100%;
+    --brand-soft: 175 100% 38%;
 
-    /* ===== CORES SECUNDÁRIAS (VERDE-LIMA — #7DB61C) ===== */
-    /* Uso pontual: badges secundários, ações complementares. */
-    --secondary: 82 73% 41%;
+    /* ===== CORES SECUNDÁRIAS (VERDE MÉDIO — #00875A) ===== */
+    /* Uso: badges secundários, ações complementares, suporte ao turquesa. */
+    --secondary: 158 100% 26%;
     --secondary-foreground: 0 0% 100%;
 
-    /* ===== REWARD (ROXO SELO PROMOCIONAL — #5C2D91) ===== */
-    /* Uso: pontos Coopera, cupons, badges de promoção. */
+    /* ===== REWARD (ROXO — #5C2D91 — detalhes) ===== */
+    /* Uso: pontos Coopera, cupons, badges de promoção, acentos pontuais. */
     --reward: 271 53% 37%;
     --reward-hover: 271 53% 30%;
     --reward-foreground: 0 0% 100%;
-    --reward-soft: 271 53% 37%;
+    --reward-soft: 271 53% 50%;
 
     /* ===== MUTED ===== */
     --muted: 190 20% 92%;
