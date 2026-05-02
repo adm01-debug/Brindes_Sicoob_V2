@@ -43,9 +43,9 @@ export const PAsTab = () => {
         .from("postos_atendimento")
         .select(`
           *,
-          cooperativa:cooperativas(name, code)
+          cooperativa:cooperativas(nome, codigo)
         `)
-        .order("name");
+        .order("nome");
       if (error) throw error;
       return data;
     },
@@ -54,7 +54,7 @@ export const PAsTab = () => {
   const { data: cooperativas } = useQuery({
     queryKey: ["cooperativas"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("cooperativas").select("*").order("name");
+      const { data, error } = await supabase.from("cooperativas").select("*").order("nome");
       if (error) throw error;
       return data;
     },
@@ -85,8 +85,8 @@ export const PAsTab = () => {
       const { data, error } = await supabase
         .from("postos_atendimento")
         .update({
-          name: pa.name,
-          code: pa.code,
+          nome: pa.nome,
+          codigo: pa.codigo,
           cooperativa_id: pa.cooperativa_id,
         })
         .eq("id", pa.id)
@@ -120,17 +120,17 @@ export const PAsTab = () => {
   });
 
   const filtered = pas?.filter((p) =>
-    p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    p.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    p.cooperativa?.name.toLowerCase().includes(searchTerm.toLowerCase())
+    p.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    p.codigo.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    p.cooperativa?.nome.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const handleCreate = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     createMutation.mutate({
-      name: formData.get("name") as string,
-      code: formData.get("code") as string,
+      nome: formData.get("name") as string,
+      codigo: formData.get("code") as string,
       cooperativa_id: formData.get("cooperativa_id") as string,
     });
   };
@@ -140,8 +140,8 @@ export const PAsTab = () => {
     const formData = new FormData(e.currentTarget);
     updateMutation.mutate({
       id: editingPA.id,
-      name: formData.get("name") as string,
-      code: formData.get("code") as string,
+      nome: formData.get("name") as string,
+      codigo: formData.get("code") as string,
       cooperativa_id: formData.get("cooperativa_id") as string,
     });
   };
@@ -183,7 +183,7 @@ export const PAsTab = () => {
                     <SelectContent>
                       {cooperativas?.map((c) => (
                         <SelectItem key={c.id} value={c.id}>
-                          {c.code} - {c.name}
+                          {c.codigo} - {c.nome}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -236,12 +236,12 @@ export const PAsTab = () => {
                 <TableRow key={pa.id}>
                   <TableCell>
                     <span className="text-xs font-semibold text-muted-foreground mr-2">
-                      {pa.cooperativa?.code}
+                      {pa.cooperativa?.codigo}
                     </span>
-                    {pa.cooperativa?.name}
+                    {pa.cooperativa?.nome}
                   </TableCell>
-                  <TableCell className="font-medium">{pa.code}</TableCell>
-                  <TableCell>{pa.name}</TableCell>
+                  <TableCell className="font-medium">{pa.codigo}</TableCell>
+                  <TableCell>{pa.nome}</TableCell>
                   <TableCell className="text-right space-x-2">
                     <Button
                       variant="ghost"
@@ -291,7 +291,7 @@ export const PAsTab = () => {
                     <SelectContent>
                       {cooperativas?.map((c) => (
                         <SelectItem key={c.id} value={c.id}>
-                          {c.code} - {c.name}
+                          {c.codigo} - {c.nome}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -302,7 +302,7 @@ export const PAsTab = () => {
                   <Input
                     id="edit-name"
                     name="name"
-                    defaultValue={editingPA.name}
+                    defaultValue={editingPA.nome}
                     required
                   />
                 </div>
@@ -311,7 +311,7 @@ export const PAsTab = () => {
                   <Input
                     id="edit-code"
                     name="code"
-                    defaultValue={editingPA.code}
+                    defaultValue={editingPA.codigo}
                     required
                   />
                 </div>

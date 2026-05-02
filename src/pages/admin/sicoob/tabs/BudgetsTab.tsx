@@ -42,13 +42,13 @@ export const BudgetsTab = () => {
         .select(`
           *,
           pa:postos_atendimento(
-            name,
-            code,
-            cooperativa:cooperativas(name, code)
+            nome,
+            codigo,
+            cooperativa:cooperativas(nome, codigo)
           )
         `)
-        .order("year", { ascending: false })
-        .order("month", { ascending: false });
+        .order("ano", { ascending: false })
+        .order("mes", { ascending: false });
       if (error) throw error;
       return data;
     },
@@ -59,8 +59,8 @@ export const BudgetsTab = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("postos_atendimento")
-        .select("*, cooperativa:cooperativas(name, code)")
-        .order("name");
+        .select("*, cooperativa:cooperativas(nome, codigo)")
+        .order("nome");
       if (error) throw error;
       return data;
     },
@@ -91,10 +91,11 @@ export const BudgetsTab = () => {
     const formData = new FormData(e.currentTarget);
     createMutation.mutate({
       pa_id: formData.get("pa_id"),
-      month: parseInt(formData.get("month") as string),
-      year: parseInt(formData.get("year") as string),
-      allocated_amount: parseFloat(formData.get("amount") as string),
-      used_amount: 0,
+      mes: parseInt(formData.get("month") as string),
+      ano: parseInt(formData.get("year") as string),
+      verba_total: parseFloat(formData.get("amount") as string),
+      verba_consumida: 0,
+      limite_alcada: parseFloat(formData.get("alcada") as string) || 0,
     });
   };
 
@@ -139,7 +140,7 @@ export const BudgetsTab = () => {
                     <SelectContent>
                       {pas?.map((pa: any) => (
                         <SelectItem key={pa.id} value={pa.id}>
-                          {pa.cooperativa?.code} - {pa.name} ({pa.code})
+                          {pa.cooperativa?.codigo} - {pa.nome} ({pa.codigo})
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -181,6 +182,15 @@ export const BudgetsTab = () => {
                     required
                   />
                 </div>
+                <div className="space-y-2">
+                  <label>Limite de Alçada p/ Pedido (R$)</label>
+                  <Input
+                    name="alcada"
+                    type="number"
+                    step="0.01"
+                    placeholder="0,00"
+                    required
+                  />
               </div>
               <DialogFooter>
                 <Button type="submit" disabled={createMutation.isPending}>
@@ -219,25 +229,25 @@ export const BudgetsTab = () => {
               </TableRow>
             ) : (
               budgets?.map((b: any) => {
-                const balance = b.allocated_amount - b.used_amount;
-                const percentage = (b.used_amount / b.allocated_amount) * 100;
+                const balance = b.verba_total - b.verba_consumida;
+                const percentage = (b.verba_consumida / b.verba_total) * 100;
                 return (
                   <TableRow key={b.id}>
                     <TableCell>
                       <div className="text-xs text-muted-foreground">
-                        {b.pa?.cooperativa?.name}
+                        {b.pa?.cooperativa?.nome}
                       </div>
-                      <div className="font-medium">{b.pa?.name}</div>
+                      <div className="font-medium">{b.pa?.nome}</div>
                     </TableCell>
                     <TableCell>
-                      {new Date(0, b.month - 1).toLocaleString("pt-BR", {
+                      {new Date(0, b.mes - 1).toLocaleString("pt-BR", {
                         month: "short",
                       })}{" "}
-                      / {b.year}
+                      / {b.ano}
                     </TableCell>
-                    <TableCell>{formatCurrency(b.allocated_amount)}</TableCell>
+                    <TableCell>{formatCurrency(b.verba_total)}</TableCell>
                     <TableCell className="text-destructive">
-                      {formatCurrency(b.used_amount)}
+                      {formatCurrency(b.verba_consumida)}
                     </TableCell>
                     <TableCell className="font-bold">
                       {formatCurrency(balance)}
