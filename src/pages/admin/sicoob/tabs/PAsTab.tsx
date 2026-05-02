@@ -161,55 +161,63 @@ export const PAsTab = () => {
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
-        <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
-          <DialogTrigger asChild>
-            <Button className="gap-2">
-              <Plus className="h-4 w-4" />
-              Novo PA
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <form onSubmit={handleCreate}>
-              <DialogHeader>
-                <DialogTitle>Cadastrar Novo PA</DialogTitle>
-                <DialogDescription>
-                  Adicione um novo Posto de Atendimento vinculado a uma Singular.
-                </DialogDescription>
-              </DialogHeader>
-              <div className="grid gap-4 py-4">
-                <div className="space-y-2">
-                  <label>Singular Responsável</label>
-                  <Select name="cooperativa_id" required>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecione a Singular" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {cooperativas?.map((c) => (
-                        <SelectItem key={c.id} value={c.id}>
-                          {c.codigo} - {c.nome}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+        {isSupervisorOrAbove ? (
+          <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
+            <DialogTrigger asChild>
+              <Button className="gap-2">
+                <Plus className="h-4 w-4" />
+                Novo PA
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <form onSubmit={handleCreate}>
+                <DialogHeader>
+                  <DialogTitle>Cadastrar Novo PA</DialogTitle>
+                  <DialogDescription>
+                    Adicione um novo Posto de Atendimento vinculado a uma Singular.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="grid gap-4 py-4">
+                  <div className="space-y-2">
+                    <label>Singular Responsável</label>
+                    <Select name="cooperativa_id" required>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione a Singular" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {cooperativas?.map((c) => (
+                          <SelectItem key={c.id} value={c.id}>
+                            {c.codigo} - {c.nome}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <label htmlFor="name">Nome do PA</label>
+                    <Input id="name" name="name" placeholder="Ex: PA Centro" required />
+                  </div>
+                  <div className="space-y-2">
+                    <label htmlFor="code">Código/Número</label>
+                    <Input id="code" name="code" placeholder="Ex: 01" required />
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <label htmlFor="name">Nome do PA</label>
-                  <Input id="name" name="name" placeholder="Ex: PA Centro" required />
-                </div>
-                <div className="space-y-2">
-                  <label htmlFor="code">Código/Número</label>
-                  <Input id="code" name="code" placeholder="Ex: 01" required />
-                </div>
-              </div>
-              <DialogFooter>
-                <Button type="submit" disabled={createMutation.isPending}>
-                  {createMutation.isPending ? "Salvando..." : "Criar"}
-                </Button>
-              </DialogFooter>
-            </form>
-          </DialogContent>
-        </Dialog>
+                <DialogFooter>
+                  <Button type="submit" disabled={createMutation.isPending}>
+                    {createMutation.isPending ? "Salvando..." : "Criar"}
+                  </Button>
+                </DialogFooter>
+              </form>
+            </DialogContent>
+          </Dialog>
+        ) : (
+          <div className="flex items-center gap-2 text-sm text-muted-foreground bg-muted/50 px-3 py-1 rounded-md border">
+            <ShieldAlert className="h-4 w-4" />
+            Sem permissão para criar PAs
+          </div>
+        )}
       </div>
+
 
       <div className="border rounded-md">
         <Table>
