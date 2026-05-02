@@ -307,13 +307,13 @@ html[data-scroll-locked] body {
     --primary-glow: 190 100% 25%;
     --primary-foreground: 0 0% 100%;
 
-    /* ===== MARCA / AÇÃO (VERDE-TEAL SICOOB — dark) ===== */
-    --brand: 175 90% 38%;
-    --brand-hover: 175 90% 32%;
-    --brand-active: 175 90% 26%;
-    --brand-glow: 175 100% 48%;
-    --brand-foreground: 0 0% 100%;
-    --brand-soft: 175 90% 38%;
+    /* ===== MARCA / AÇÃO (SICOOB — dark) ===== */
+    --brand: 65 72% 47%;
+    --brand-hover: 65 72% 52%;
+    --brand-active: 65 72% 42%;
+    --brand-glow: 65 72% 60%;
+    --brand-foreground: 190 100% 10%;
+    --brand-soft: 65 72% 47%;
 
     /* ===== CORES SECUNDÁRIAS (VERDE-LIMA — dark) ===== */
     --secondary: 82 73% 41%;
