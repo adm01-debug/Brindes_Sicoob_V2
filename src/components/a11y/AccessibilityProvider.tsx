@@ -20,7 +20,7 @@ export function useA11y() {
   return context;
 }
 
-export function AccessibilityProvider({ children }: { children: ReactNode }) {
+export const AccessibilityProvider = ({ children }: { children: ReactNode }) => {
   const [reducedMotion, setReducedMotion] = useState(false);
   const [highContrast, setHighContrast] = useState(false);
   const [fontSize, setFontSize] = useState<"normal" | "large" | "larger">("normal");

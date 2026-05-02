@@ -151,16 +151,16 @@ import { loadThemeConfig, applyThemePreset, applyRadius } from '@/lib/theme-pres
 import { ThemeInitializer } from '@/components/ThemeInitializer';
 
 /** Componente interno que roda hooks que dependem de AuthProvider */
-function AppWithAuth({ children }: { children: ReactNode }) {
+const AppWithAuth = ({ children }: { children: ReactNode }) => {
   useCatalogPrefetch();
   return <>{children}</>;
-}
+};
 
 /** Location-aware Suspense that renders route-specific skeletons */
-function RouteSuspense({ children }: { children: ReactNode }) {
+const RouteSuspense = ({ children }: { children: ReactNode }) => {
   const { pathname } = useLocation();
   return <Suspense fallback={getFallback(pathname)}>{children}</Suspense>;
-}
+};
 
 const App = () => {
   useGlobalErrorCatcher();
