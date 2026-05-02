@@ -1,0 +1,48 @@
+{
+  "version": "1.0.0",
+  "updated_at": "2024-05-24T00:00:00Z",
+  "modules": [
+    {
+      "name": "CustomizableDashboard",
+      "dependencies": {
+        "tables": ["orders", "quotes"]
+      }
+    },
+    {
+      "name": "LogisticsReportPage",
+      "dependencies": {
+        "tables": ["orders", "order_logistics"]
+      }
+    },
+    {
+      "name": "OrderDetailPage_Sicoob",
+      "dependencies": {
+        "tables": [
+          "sicoob_orders",
+          "sicoob_order_items",
+          "sicoob_order_item_logs",
+          "sicoob_order_history",
+          "sicoob_approval_requests",
+          "pa_budgets",
+          "order_logistics",
+          "order_invoices",
+          "order_payments",
+          "order_pilot_approvals",
+          "order_audit_events",
+          "order_comments",
+          "order_templates",
+          "order_template_items",
+          "profiles"
+        ],
+        "external": ["categories", "products"]
+      }
+    },
+    {
+      "name": "OrdersPage_Sicoob",
+      "dependencies": {
+        "tables": ["sicoob_orders"],
+        "notes": "Current implementation uses mock data, needs migration"
+      }
+    }
+  ]
+}

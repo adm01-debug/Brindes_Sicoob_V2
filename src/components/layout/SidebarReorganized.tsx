@@ -100,7 +100,19 @@ const navGroups: NavGroup[] = [
     ],
   },
   {
+    id: "logistics",
+    label: "Logística Onda A",
+    icon: Truck,
+    defaultOpen: true,
+    items: [
+      { icon: Landmark, label: "Painel Sicoob", href: "/sicoob/pedidos" },
+      { icon: BarChart3, label: "Relatórios", href: "/sicoob/logistica" },
+      { icon: LayoutGrid, label: "Kanban", href: "/sicoob/pedidos/kanban" },
+    ],
+  },
+  {
     id: "intelligence",
+
     label: "Insights",
     icon: Brain,
     defaultOpen: false,
