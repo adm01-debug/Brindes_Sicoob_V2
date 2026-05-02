@@ -307,23 +307,23 @@ html[data-scroll-locked] body {
     --primary-glow: 190 100% 25%;
     --primary-foreground: 0 0% 100%;
 
-    /* ===== MARCA / AÇÃO (SICOOB — dark) ===== */
-    --brand: 65 72% 47%;
-    --brand-hover: 65 72% 52%;
-    --brand-active: 65 72% 42%;
-    --brand-glow: 65 72% 60%;
-    --brand-foreground: 190 100% 10%;
-    --brand-soft: 65 72% 47%;
+    /* ===== MARCA / AÇÃO (TURQUESA SICOOB — dark) ===== */
+    --brand: 175 90% 42%;
+    --brand-hover: 175 90% 38%;
+    --brand-active: 175 90% 32%;
+    --brand-glow: 175 100% 50%;
+    --brand-foreground: 0 0% 100%;
+    --brand-soft: 175 90% 45%;
 
-    /* ===== CORES SECUNDÁRIAS (VERDE-LIMA — dark) ===== */
-    --secondary: 82 73% 41%;
+    /* ===== CORES SECUNDÁRIAS (VERDE MÉDIO — dark) ===== */
+    --secondary: 158 80% 32%;
     --secondary-foreground: 0 0% 100%;
 
-    /* ===== REWARD (ROXO SELO — dark) ===== */
-    --reward: 271 70% 75%;
-    --reward-hover: 271 60% 48%;
+    /* ===== REWARD (ROXO — dark) ===== */
+    --reward: 271 60% 60%;
+    --reward-hover: 271 60% 50%;
     --reward-foreground: 0 0% 100%;
-    --reward-soft: 271 60% 55%;
+    --reward-soft: 271 60% 65%;
 
     /* ===== MUTED ===== */
     --muted: 225 15% 12%;
