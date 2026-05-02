@@ -555,6 +555,11 @@ export default function OrderDetailPage() {
                   <MessageSquare className="h-4 w-4" />
                   Comentários
                 </TabsTrigger>
+                <TabsTrigger value="audit" className="gap-2">
+                  <Package className="h-4 w-4" />
+                  Auditoria de Itens
+                </TabsTrigger>
+
               </TabsList>
               <TabsContent value="history">
                 <Card>
