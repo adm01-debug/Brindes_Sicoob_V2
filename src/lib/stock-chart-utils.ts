@@ -248,7 +248,7 @@ export const COMMERCIAL_FLAG_CONFIG: Record<IntelligenceFlag, FlagConfig> = {
   'stockout-risk': {
     icon: Zap,
     label: 'Esgotando Rápido',
-    colors: 'bg-amber-500/15 text-amber-600 border-amber-500/30',
+    colors: 'bg-accent/15 text-accent-foreground border-accent/30',
     description: 'Demanda do mercado está consumindo o estoque — feche antes que acabe',
   },
   'stagnant': {
@@ -260,7 +260,7 @@ export const COMMERCIAL_FLAG_CONFIG: Record<IntelligenceFlag, FlagConfig> = {
   'negotiation-opportunity': {
     icon: DollarSign,
     label: 'Negocie Preço',
-    colors: 'bg-emerald-500/15 text-emerald-600 border-emerald-500/30',
+    colors: 'bg-success/15 text-success border-success/30',
     description: 'Estoque parado no fornecedor — momento ideal para negociar desconto',
   },
   'frequent-restock': {
@@ -272,7 +272,7 @@ export const COMMERCIAL_FLAG_CONFIG: Record<IntelligenceFlag, FlagConfig> = {
   'class-a': {
     icon: Trophy,
     label: 'Best-Seller',
-    colors: 'bg-amber-500/15 text-amber-600 border-amber-500/30',
+    colors: 'bg-accent/15 text-accent-foreground border-accent/30',
     description: 'Top 20% em vendas no mercado — produto essencial no portfólio',
   },
 };
@@ -300,7 +300,7 @@ export const OPERATIONAL_FLAG_CONFIG: Record<IntelligenceFlag, FlagConfig> = {
   'negotiation-opportunity': {
     icon: DollarSign,
     label: 'Oportunidade de Desconto',
-    colors: 'bg-emerald-500/15 text-emerald-600 border-emerald-500/30',
+    colors: 'bg-success/15 text-success border-success/30',
     description: 'Estoque encalhado no fornecedor — bom momento para pedir desconto',
   },
   'frequent-restock': {
@@ -312,7 +312,7 @@ export const OPERATIONAL_FLAG_CONFIG: Record<IntelligenceFlag, FlagConfig> = {
   'class-a': {
     icon: Star,
     label: 'Classe A',
-    colors: 'bg-amber-500/15 text-amber-600 border-amber-500/30',
+    colors: 'bg-accent/15 text-accent-foreground border-accent/30',
     description: 'Top 20% em giro de estoque no fornecedor',
   },
 };

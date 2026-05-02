@@ -53,9 +53,9 @@ export const OrderAuditTimeline = ({ orderId }: OrderAuditTimelineProps) => {
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="mb-6 grid grid-cols-1 md:grid-cols-3 gap-4 p-4 border rounded-lg bg-slate-50">
+        <div className="mb-6 grid grid-cols-1 md:grid-cols-3 gap-4 p-4 border rounded-lg bg-muted/20">
           <div className="space-y-1">
-            <label className="text-xs font-medium text-slate-500 flex items-center gap-1">
+            <label className="text-xs font-medium text-muted-foreground flex items-center gap-1">
               <Filter className="h-3 w-3" /> Tipo de Evento
             </label>
             <Select 
@@ -75,7 +75,7 @@ export const OrderAuditTimeline = ({ orderId }: OrderAuditTimelineProps) => {
             </Select>
           </div>
           <div className="space-y-1">
-            <label className="text-xs font-medium text-slate-500">De</label>
+            <label className="text-xs font-medium text-muted-foreground">De</label>
             <Input 
               type="date" 
               className="h-9" 
@@ -84,7 +84,7 @@ export const OrderAuditTimeline = ({ orderId }: OrderAuditTimelineProps) => {
             />
           </div>
           <div className="space-y-1">
-            <label className="text-xs font-medium text-slate-500">Até</label>
+            <label className="text-xs font-medium text-muted-foreground">Até</label>
             <Input 
               type="date" 
               className="h-9" 
@@ -94,7 +94,7 @@ export const OrderAuditTimeline = ({ orderId }: OrderAuditTimelineProps) => {
           </div>
         </div>
 
-        <div className="relative space-y-4 before:absolute before:inset-0 before:ml-5 before:-translate-x-px before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-slate-200 before:to-transparent">
+        <div className="relative space-y-4 before:absolute before:inset-0 before:ml-5 before:-translate-x-px before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-border/60 before:to-transparent">
           {auditEvents?.map((event, idx) => (
             <div key={event.id} className="relative flex items-start gap-4 pl-1">
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border bg-white shadow-sm z-10">
