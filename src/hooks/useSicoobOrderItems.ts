@@ -77,13 +77,19 @@ export function useSicoobOrderItems(orderId?: string) {
       return await updateOrderTotal(orderId);
     },
     onSuccess: () => {
-      toast.success("Item adicionado com sucesso");
+      toast.success("Item adicionado com sucesso", {
+        description: "O total do pedido foi recalculado automaticamente."
+      });
       queryClient.invalidateQueries({ queryKey: ["sicoob_order", orderId] });
       queryClient.invalidateQueries({ queryKey: ["sicoob_order_items", orderId] });
+      queryClient.invalidateQueries({ queryKey: ["sicoob_order_item_logs", orderId] });
     },
     onError: (error: any) => {
       console.error("Error adding item:", error);
-      toast.error("Erro ao adicionar item: " + error.message);
+      const message = error.message || "Erro desconhecido ao processar sua solicitação.";
+      toast.error("Não foi possível adicionar o item", {
+        description: message,
+      });
     },
   });
 
