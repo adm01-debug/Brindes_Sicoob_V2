@@ -42,15 +42,64 @@ const TEST_USERS_CONFIG = [
   }
 ];
 
+async function findUserByEmail(email: string): Promise<{ id: string } | null> {
+  // Pagina por listUsers para encontrar o usuário pelo email (admin SDK não tem getUserByEmail estável)
+  for (let page = 1; page <= 20; page++) {
+    const { data, error } = await supabase.auth.admin.listUsers({ page, perPage: 200 });
+    if (error) throw error;
+    const found = data.users.find((u) => (u.email ?? "").toLowerCase() === email.toLowerCase());
+    if (found) return { id: found.id };
+    if (data.users.length < 200) break;
+  }
+  return null;
+}
+
 async function ensureTestUser(user: (typeof TEST_USERS_CONFIG)[number]) {
-  console.log(`Redefinindo senha do usuário de teste: ${user.email}`);
-  const { error: updateUserError } = await supabase.auth.admin.updateUserById(user.id, {
+  console.log(`Garantindo usuário de teste: ${user.email}`);
+
+  // 1) Tenta atualizar pelo ID esperado
+  const updateById = await supabase.auth.admin.updateUserById(user.id, {
     password: TEST_PASSWORD,
     email_confirm: true,
     user_metadata: { full_name: user.full_name },
   });
 
-  if (updateUserError) throw updateUserError;
+  if (!updateById.error) {
+    console.log(`✓ Senha redefinida via ID para ${user.email}`);
+    return;
+  }
+
+  console.warn(`updateUserById falhou para ${user.email}: ${updateById.error.message}. Buscando por email...`);
+
+  // 2) Procura por email — se existe com outro ID, atualiza por esse ID
+  const existing = await findUserByEmail(user.email);
+  if (existing) {
+    if (existing.id !== user.id) {
+      console.warn(`⚠ ${user.email} existe com ID ${existing.id} (esperado ${user.id}). Atualizando ID real.`);
+    }
+    const { error: updateRealError } = await supabase.auth.admin.updateUserById(existing.id, {
+      password: TEST_PASSWORD,
+      email_confirm: true,
+      user_metadata: { full_name: user.full_name },
+    });
+    if (updateRealError) throw updateRealError;
+    // Sincroniza profile com o ID real do auth.users
+    user.id = existing.id;
+    console.log(`✓ Senha redefinida via email para ${user.email}`);
+    return;
+  }
+
+  // 3) Não existe — cria com o ID esperado
+  const { data: created, error: createError } = await supabase.auth.admin.createUser({
+    id: user.id,
+    email: user.email,
+    password: TEST_PASSWORD,
+    email_confirm: true,
+    user_metadata: { full_name: user.full_name },
+  });
+  if (createError) throw createError;
+  if (created?.user?.id) user.id = created.user.id;
+  console.log(`✓ Usuário ${user.email} criado`);
 }
 
 Deno.serve(async (req) => {
