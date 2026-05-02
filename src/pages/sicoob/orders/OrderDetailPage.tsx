@@ -127,19 +127,22 @@ export default function OrderDetailPage() {
   [requests]);
 
   const handleAddItem = () => {
-    const product = products?.find(p => p.id === selectedProductId);
-    if (!product) return;
+    if (!selectedProduct) return;
 
+    const variantLabel = selectedVariantColor ? ` (${selectedVariantColor})` : "";
+    
     addItem.mutate({
-      productId: product.id,
-      productName: product.name,
+      productId: selectedProduct.id,
+      productName: `${selectedProduct.name}${variantLabel}`,
       quantity: itemQuantity,
-      unitPrice: product.price,
+      unitPrice: selectedProduct.price,
     }, {
       onSuccess: () => {
         setIsAddItemDialogOpen(false);
         setProductSearch("");
+        setSelectedCategoryId("all");
         setSelectedProductId(null);
+        setSelectedVariantColor(null);
         setItemQuantity(1);
       }
     });
