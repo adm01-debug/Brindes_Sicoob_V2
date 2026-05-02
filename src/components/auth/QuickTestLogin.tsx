@@ -6,11 +6,13 @@ import { User, Shield, Building2, Landmark, Rocket } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 
+const TEST_PASSWORD = import.meta.env.VITE_SICOOB_TEST_USER_PASSWORD || "password123";
+
 const TEST_USERS = [
   {
     role: "sicoob_pa",
     label: "Posto de Atendimento (PA)",
-    email: "pa@teste.com",
+    email: import.meta.env.VITE_SICOOB_TEST_EMAIL_PA || "pa@teste.com",
     icon: Landmark,
     description: "Cria e gerencia pedidos do posto.",
     color: "blue"
@@ -18,7 +20,7 @@ const TEST_USERS = [
   {
     role: "sicoob_singular",
     label: "Cooperativa Singular",
-    email: "singular@teste.com",
+    email: import.meta.env.VITE_SICOOB_TEST_EMAIL_SINGULAR || "singular@teste.com",
     icon: Building2,
     description: "Aprova pedidos das PAs vinculadas.",
     color: "indigo"
@@ -26,7 +28,7 @@ const TEST_USERS = [
   {
     role: "sicoob_central",
     label: "Cooperativa Central",
-    email: "central@teste.com",
+    email: import.meta.env.VITE_SICOOB_TEST_EMAIL_CENTRAL || "central@teste.com",
     icon: Shield,
     description: "Visão consolidada das singulares.",
     color: "purple"
@@ -34,7 +36,7 @@ const TEST_USERS = [
   {
     role: "sicoob_gestor",
     label: "Gestor Comercial",
-    email: "gestor@teste.com",
+    email: import.meta.env.VITE_SICOOB_TEST_EMAIL_GESTOR || "gestor@teste.com",
     icon: Rocket,
     description: "Administração total e logística.",
     color: "orange"
@@ -49,12 +51,12 @@ export function QuickTestLogin() {
   const handleQuickLogin = async (email: string) => {
     setLoadingEmail(email);
     try {
-      const { error } = await signIn(email, "password123");
+      const { error } = await signIn(email, TEST_PASSWORD);
       if (error) {
         toast({
           variant: "destructive",
           title: "Erro no login rápido",
-          description: "Certifique-se de que a rotina de seed foi executada.",
+          description: "Verifique se o seed foi executado e se as variáveis VITE_SICOOB_* estão alinhadas com o backend.",
         });
       } else {
         toast({
