@@ -40,7 +40,11 @@ export function useSicoobOrderItems(orderId?: string) {
       quantity: number;
       unitPrice: number;
     }) => {
+      if (!isVendedorRole && !isAdmin) {
+        throw new Error("Apenas vendedores ou administradores podem adicionar itens.");
+      }
       if (!orderId) throw new Error("Order ID is required");
+
 
       const totalPrice = quantity * unitPrice;
 
