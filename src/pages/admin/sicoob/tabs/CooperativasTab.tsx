@@ -136,40 +136,49 @@ export const CooperativasTab = () => {
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
-        <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
-          <DialogTrigger asChild>
-            <Button className="gap-2">
-              <Plus className="h-4 w-4" />
-              Nova Singular
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <form onSubmit={handleCreate}>
-              <DialogHeader>
-                <DialogTitle>Cadastrar Nova Singular</DialogTitle>
-                <DialogDescription>
-                  Adicione uma nova cooperativa central (Singular) ao sistema.
-                </DialogDescription>
-              </DialogHeader>
-              <div className="grid gap-4 py-4">
-                <div className="space-y-2">
-                  <label htmlFor="name">Nome da Cooperativa</label>
-                  <Input id="name" name="nome" placeholder="Ex: Sicoob Credisul" required />
+        
+        {isDev ? (
+          <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
+            <DialogTrigger asChild>
+              <Button className="gap-2">
+                <Plus className="h-4 w-4" />
+                Nova Singular
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <form onSubmit={handleCreate}>
+                <DialogHeader>
+                  <DialogTitle>Cadastrar Nova Singular</DialogTitle>
+                  <DialogDescription>
+                    Adicione uma nova cooperativa central (Singular) ao sistema.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="grid gap-4 py-4">
+                  <div className="space-y-2">
+                    <label htmlFor="name">Nome da Cooperativa</label>
+                    <Input id="name" name="name" placeholder="Ex: Sicoob Credisul" required />
+                  </div>
+                  <div className="space-y-2">
+                    <label htmlFor="code">Código/Número</label>
+                    <Input id="code" name="code" placeholder="Ex: 4321" required />
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <label htmlFor="code">Código/Número</label>
-                  <Input id="code" name="codigo" placeholder="Ex: 4321" required />
-                </div>
-              </div>
-              <DialogFooter>
-                <Button type="submit" disabled={createMutation.isPending}>
-                  {createMutation.isPending ? "Salvando..." : "Criar"}
-                </Button>
-              </DialogFooter>
-            </form>
-          </DialogContent>
-        </Dialog>
+                <DialogFooter>
+                  <Button type="submit" disabled={createMutation.isPending}>
+                    {createMutation.isPending ? "Salvando..." : "Criar"}
+                  </Button>
+                </DialogFooter>
+              </form>
+            </DialogContent>
+          </Dialog>
+        ) : (
+          <div className="flex items-center gap-2 text-sm text-muted-foreground bg-muted/50 px-3 py-1 rounded-md border">
+            <ShieldAlert className="h-4 w-4" />
+            Apenas desenvolvedores podem criar Singulares
+          </div>
+        )}
       </div>
+
 
       <div className="border rounded-md">
         <Table>
