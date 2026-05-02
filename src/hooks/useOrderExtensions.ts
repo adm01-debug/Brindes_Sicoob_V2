@@ -173,3 +173,67 @@ export const useOrderAudit = (orderId?: string) => {
 
   return { auditEvents, isLoading };
 };
+
+export const useOrderComments = (orderId?: string) => {
+  const queryClient = useQueryClient();
+
+  const { data: comments, isLoading } = useQuery({
+    queryKey: ["order-comments", orderId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("order_comments")
+        .select(`
+          *,
+          user:profiles(full_name, avatar_url)
+        `)
+        .eq("order_id", orderId)
+        .order("created_at", { ascending: true });
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!orderId,
+  });
+
+  const addComment = useMutation({
+    mutationFn: async ({ content, isInternal = false }: { content: string, isInternal?: boolean }) => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Usuário não autenticado");
+
+      const { data, error } = await supabase
+        .from("order_comments")
+        .insert({
+          order_id: orderId,
+          user_id: user.id,
+          content,
+          is_internal: isInternal
+        })
+        .select()
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["order-comments", orderId] });
+    },
+  });
+
+  return { comments, isLoading, addComment };
+};
+
+export const useOrderTemplates = (orderId?: string) => {
+  const { data: templates, isLoading } = useQuery({
+    queryKey: ["order-templates", orderId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("order_templates")
+        .select(`
+          *,
+          items:order_template_items(*)
+        `);
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  return { templates, isLoading };
+};
