@@ -4811,6 +4811,47 @@ export type Database = {
           },
         ]
       }
+      sicoob_order_item_logs: {
+        Row: {
+          action: string
+          created_at: string | null
+          id: string
+          item_id: string
+          new_data: Json | null
+          old_data: Json | null
+          order_id: string
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string | null
+          id?: string
+          item_id: string
+          new_data?: Json | null
+          old_data?: Json | null
+          order_id: string
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string | null
+          id?: string
+          item_id?: string
+          new_data?: Json | null
+          old_data?: Json | null
+          order_id?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sicoob_order_item_logs_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "sicoob_orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       sicoob_order_items: {
         Row: {
           created_at: string
