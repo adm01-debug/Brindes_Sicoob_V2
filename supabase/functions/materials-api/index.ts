@@ -57,8 +57,15 @@ Deno.serve(async (req) => {
     const externalUrl = Deno.env.get('EXTERNAL_SUPABASE_URL');
     const externalKey = Deno.env.get('EXTERNAL_SUPABASE_SERVICE_KEY');
 
-    if (!externalUrl || !externalKey) {
-      console.warn('[materials-api] EXTERNAL_SUPABASE_URL/KEY not configured — returning empty payload');
+    const isPlaceholder = (v?: string | null) =>
+      !v || /PLACEHOLDER_VALUE_TO_BE_REPLACED|placeholder|your-project|example\.com/i.test(v);
+    const isValidHttpsUrl = (v?: string | null) => {
+      if (!v) return false;
+      try { const u = new URL(v); return u.protocol === 'https:'; } catch { return false; }
+    };
+
+    if (!externalUrl || !externalKey || isPlaceholder(externalUrl) || isPlaceholder(externalKey) || !isValidHttpsUrl(externalUrl)) {
+      console.warn('[materials-api] EXTERNAL_SUPABASE_URL/KEY not configured or placeholder — returning empty payload');
       return new Response(
         JSON.stringify({ data: [], records: [], count: 0, _unconfigured: true, _message: 'Banco externo não configurado' }),
         { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
