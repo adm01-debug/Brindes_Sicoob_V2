@@ -31,12 +31,12 @@ BEGIN
     (pa3_id, coop2_id, 'PA 01 - Coop B', '01');
 
     -- Criar Perfis
-    INSERT INTO public.profiles (id, role, cooperativa_id, pa_id, full_name) VALUES 
-    (admin_user_id, 'admin', NULL, NULL, 'Admin Test'),
-    (vendedor_pa1_id, 'vendedor', coop1_id, pa1_id, 'Vendedor PA1'),
-    (gerente_pa1_id, 'gerente_pa', coop1_id, pa1_id, 'Gerente PA1'),
-    (gestor_coop1_id, 'gestor_compras', coop1_id, NULL, 'Gestor Coop1'),
-    (vendedor_pa3_id, 'vendedor', coop2_id, pa3_id, 'Vendedor PA3');
+    INSERT INTO public.profiles (id, user_id, role, cooperativa_id, pa_id, full_name) VALUES 
+    (admin_user_id, admin_user_id, 'admin', NULL, NULL, 'Admin Test'),
+    (vendedor_pa1_id, vendedor_pa1_id, 'vendedor', coop1_id, pa1_id, 'Vendedor PA1'),
+    (gerente_pa1_id, gerente_pa1_id, 'gerente_pa', coop1_id, pa1_id, 'Gerente PA1'),
+    (gestor_coop1_id, gestor_coop1_id, 'gestor_compras', coop1_id, NULL, 'Gestor Coop1'),
+    (vendedor_pa3_id, vendedor_pa3_id, 'vendedor', coop2_id, pa3_id, 'Vendedor PA3');
 
     -- Criar Pedidos
     INSERT INTO public.sicoob_orders (id, cooperative_id, pa_id, status, total_amount) VALUES 
