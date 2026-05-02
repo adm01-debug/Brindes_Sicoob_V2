@@ -11,7 +11,13 @@ import {
   ArrowRight,
   X,
   CalendarIcon,
+  Download,
+  FileDown,
+  Loader2,
 } from "lucide-react";
+import { toast } from "sonner";
+import { jsPDF } from "jspdf";
+import autoTable from "jspdf-autotable";
 import { Input } from "@/components/ui/input";
 import {
   Card,
@@ -60,11 +66,90 @@ export default function OrdersPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const { isVendedorRole, isAdmin } = useAuth();
   const canCreateOrder = isVendedorRole || isAdmin;
+  const [isExporting, setIsExporting] = useState<'csv' | 'pdf' | null>(null);
 
   const [searchTerm, setSearchTerm] = useState(searchParams.get("search") || "");
   const [statusFilter, setStatusFilter] = useState<string>(searchParams.get("status") || "all");
   const [paFilter, setPaFilter] = useState<string>(searchParams.get("pa") || "all");
   const [singularFilter, setSingularFilter] = useState<string>(searchParams.get("singular") || "all");
+
+  const exportToCSV = async () => {
+    setIsExporting('csv');
+    try {
+      // Simulate potential timeout/error if requested by testing hooks or environment
+      if (window.location.search.includes('simulate-timeout')) {
+        await new Promise(resolve => setTimeout(resolve, 5000));
+        throw new Error("Timeout na exportação");
+      }
+      
+      const headers = ["ID", "PA", "Singular", "Status", "Total (R$)", "Itens", "Data"];
+      const rows = filteredOrders.map(o => [
+        o.id,
+        o.pa,
+        o.singular,
+        o.status,
+        o.total.toFixed(2),
+        o.items,
+        o.date
+      ]);
+      
+      const csvContent = [
+        headers.join(","),
+        ...rows.map(r => r.join(","))
+      ].join("\n");
+      
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement("a");
+      const url = URL.createObjectURL(blob);
+      link.setAttribute("href", url);
+      link.setAttribute("download", `pedidos_sicoob_${format(new Date(), 'yyyy-MM-dd')}.csv`);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      toast.success("Exportação CSV concluída");
+    } catch (error: any) {
+      toast.error("Erro na exportação: " + error.message);
+    } finally {
+      setIsExporting(null);
+    }
+  };
+
+  const exportToPDF = async () => {
+    setIsExporting('pdf');
+    try {
+      if (window.location.search.includes('simulate-500')) {
+        throw new Error("Erro interno do servidor (Simulado)");
+      }
+
+      const doc = new jsPDF();
+      doc.text("Relatório de Pedidos Sicoob", 14, 15);
+      
+      const tableData = filteredOrders.map(o => [
+        o.id,
+        o.pa,
+        o.singular,
+        o.status,
+        `R$ ${o.total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`,
+        o.items,
+        format(parseISO(o.date), "dd/MM/yyyy")
+      ]);
+
+      autoTable(doc, {
+        startY: 20,
+        head: [["ID", "PA", "Singular", "Status", "Total", "Itens", "Data"]],
+        body: tableData,
+      });
+
+      doc.save(`pedidos_sicoob_${format(new Date(), 'yyyy-MM-dd')}.pdf`);
+      toast.success("Exportação PDF concluída");
+    } catch (error: any) {
+      toast.error("Erro na exportação: " + error.message);
+    } finally {
+      setIsExporting(null);
+    }
+  };
   
   const initialDateRange = useMemo(() => {
     const from = searchParams.get("from");
@@ -151,6 +236,30 @@ export default function OrdersPage() {
           </div>
 
           <div className="flex items-center gap-2">
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" disabled={isExporting !== null}>
+                  {isExporting ? (
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  ) : (
+                    <Download className="h-4 w-4 mr-2" />
+                  )}
+                  Exportar
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent align="end" className="w-48 p-2">
+                <div className="grid gap-1">
+                  <Button variant="ghost" className="justify-start font-normal h-8" onClick={exportToCSV}>
+                    <Download className="h-3 w-3 mr-2" />
+                    CSV
+                  </Button>
+                  <Button variant="ghost" className="justify-start font-normal h-8" onClick={exportToPDF}>
+                    <FileDown className="h-3 w-3 mr-2" />
+                    PDF
+                  </Button>
+                </div>
+              </PopoverContent>
+            </Popover>
             <Button variant="outline" onClick={() => navigate("/sicoob/pedidos/kanban")}>
               <LayoutGrid className="h-4 w-4 mr-2" />
               Kanban
