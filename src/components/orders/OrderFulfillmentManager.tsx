@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Truck } from "lucide-react";
-import { useUpdateOrder, FULFILLMENT_LABELS, canTransitionTo, type OrderRow } from "@/hooks/useOrders";
+import { useUpdateOrder, FULFILLMENT_LABELS, canTransitionTo, ORDER_STATUS_LABELS, type OrderRow } from "@/hooks/useOrders";
 
 interface OrderFulfillmentManagerProps {
   order: OrderRow;
@@ -43,7 +43,7 @@ export function OrderFulfillmentManager({ order }: OrderFulfillmentManagerProps)
               value={order.fulfillment_status}
               onValueChange={(v) => {
                 if (!canTransitionTo(order.fulfillment_status, v)) {
-                  toast.error("Transição de fulfillment inválida");
+                  toast.error(`Transição inválida de ${FULFILLMENT_LABELS[order.fulfillment_status] || order.fulfillment_status} para ${FULFILLMENT_LABELS[v] || v}`);
                   return;
                 }
                 update.mutate({ fulfillment_status: v });
