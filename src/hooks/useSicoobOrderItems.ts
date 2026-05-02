@@ -45,6 +45,19 @@ export function useSicoobOrderItems(orderId?: string) {
       }
       if (!orderId) throw new Error("Order ID is required");
 
+      // Validar status do pedido antes de adicionar
+      const { data: order, error: orderCheckError } = await supabase
+        .from("sicoob_orders")
+        .select("status")
+        .eq("id", orderId)
+        .single();
+      
+      if (orderCheckError) throw orderCheckError;
+      if (order?.status !== 'pending' && order?.status !== 'draft') {
+        throw new Error(`Não é possível adicionar itens a um pedido com status "${order?.status}".`);
+      }
+
+
 
       const totalPrice = quantity * unitPrice;
 
