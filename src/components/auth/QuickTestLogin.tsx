@@ -1,10 +1,12 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { User, Shield, Building2, Landmark, Rocket } from "lucide-react";
+import { AlertCircle, User, Shield, Building2, Landmark, Rocket, RefreshCcw, CheckCircle2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 const TEST_PASSWORD = import.meta.env.VITE_SICOOB_TEST_USER_PASSWORD || "password123";
 
@@ -46,7 +48,50 @@ const TEST_USERS = [
 export function QuickTestLogin() {
   const { signIn } = useAuth();
   const { toast } = useToast();
-  const [loadingEmail, setLoadingEmail] = React.useState<string | null>(null);
+  const [loadingEmail, setLoadingEmail] = useState<string | null>(null);
+  const [isSeeding, setIsSeeding] = useState(false);
+  const [integrityStatus, setIntegrityStatus] = useState<Record<string, { isValid: boolean; reason?: string }>>({});
+  const [isValidating, setIsValidating] = useState(true);
+
+  const checkIntegrity = async () => {
+    setIsValidating(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("auth-integrity-check", {
+        body: { emails: TEST_USERS.map(u => u.email) }
+      });
+      if (error) throw error;
+      setIntegrityStatus(data || {});
+    } catch (err) {
+      console.error("Erro ao validar integridade:", err);
+    } finally {
+      setIsValidating(false);
+    }
+  };
+
+  useEffect(() => {
+    checkIntegrity();
+  }, []);
+
+  const runSeed = async () => {
+    setIsSeeding(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("sicoob-seed", { method: "POST" });
+      if (error) throw error;
+      toast({
+        title: "Seed realizado com sucesso!",
+        description: `Ambiente sincronizado. Órfãos removidos: ${data.report.orphans_removed.length}`,
+      });
+      await checkIntegrity();
+    } catch (err) {
+      toast({
+        variant: "destructive",
+        title: "Falha no seed",
+        description: err.message,
+      });
+    } finally {
+      setIsSeeding(false);
+    }
+  };
 
   const handleQuickLogin = async (email: string) => {
     setLoadingEmail(email);
