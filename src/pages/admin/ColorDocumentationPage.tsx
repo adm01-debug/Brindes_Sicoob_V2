@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { SicoobStatusBadge } from "@/components/sicoob/SicoobStatusBadge";
 import { SicoobFulfillmentStatus, SICOOB_STATUS_CONFIG } from "@/lib/sicoob-status-config";
-import { Palette, CheckCircle2, AlertTriangle, Info, Trophy, Layout, Download, Table as TableIcon, Hash, CheckSquare, Eye, EyeOff } from "lucide-react";
+import { Palette, CheckCircle2, AlertTriangle, Info, Trophy, Layout, Download, Table as TableIcon, Hash, CheckSquare, Eye, EyeOff, AlertCircle } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { toast } from "sonner";
 import { 
   Table, 
