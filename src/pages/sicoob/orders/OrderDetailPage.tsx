@@ -39,6 +39,7 @@ import { useApprovalRequests } from "@/hooks/useSicoobApprovals";
 import { useSicoobOrderItems } from "@/hooks/useSicoobOrderItems";
 import { useSicoobOrderHistory } from "@/hooks/useSicoobOrderHistory";
 import { useProducts } from "@/hooks/useProducts";
+import { useCategories } from "@/hooks/useCategories";
 import { 
   Dialog, 
   DialogContent, 
