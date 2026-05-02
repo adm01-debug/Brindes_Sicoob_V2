@@ -1,0 +1,61 @@
+name: Sicoob Module CI
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'src/pages/sicoob/**'
+      - 'src/hooks/useSicoob*'
+      - 'supabase/functions/tests/sicoob-*'
+      - '.github/workflows/sicoob-ci.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'src/pages/sicoob/**'
+      - 'src/hooks/useSicoob*'
+      - 'supabase/functions/tests/sicoob-*'
+      - '.github/workflows/sicoob-ci.yml'
+
+jobs:
+  rls-security-gate:
+    name: Sicoob RLS & Security Gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup Deno
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+
+      - name: Run Sicoob RLS Validation
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          if [ -z "$SUPABASE_DB_URL" ]; then
+            echo "⚠️ SUPABASE_DB_URL not set, skipping DB-level RLS tests"
+            exit 0
+          fi
+          deno test --allow-net --allow-env supabase/functions/tests/sicoob-rls-validation_test.ts
+
+      - name: Run Sicoob RLS Coverage (Cross-Role)
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          if [ -z "$SUPABASE_DB_URL" ]; then
+            echo "⚠️ SUPABASE_DB_URL not set, skipping DB-level coverage tests"
+            exit 0
+          fi
+          deno test --allow-net --allow-env supabase/functions/tests/sicoob-rls-coverage_test.ts
+
+      - name: Run Sicoob Validation Constraints
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          if [ -z "$SUPABASE_DB_URL" ]; then
+            echo "⚠️ SUPABASE_DB_URL not set, skipping DB-level constraint tests"
+            exit 0
+          fi
+          deno test --allow-net --allow-env supabase/functions/tests/sicoob-validation-constraints_test.ts
