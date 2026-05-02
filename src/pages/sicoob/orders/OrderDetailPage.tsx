@@ -132,9 +132,6 @@ export default function OrderDetailPage() {
     }
   };
 
-  const activeRequest = useMemo(() => 
-    requests?.find(r => r.status === 'pending'), 
-  [requests]);
 
   const orderTotal = orderData?.total_amount || 0;
   const isOverThreshold = needsApproval(orderTotal);
