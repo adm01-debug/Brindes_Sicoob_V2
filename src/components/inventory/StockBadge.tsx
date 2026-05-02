@@ -5,118 +5,91 @@ import { cn } from '@/lib/utils';
 
 export type StockStatus = 'in-stock' | 'low-stock' | 'out-of-stock' | 'pre-order' | 'incoming';
 
-interface StockBadgeProps {
+interface StockBadgeProps extends React.HTMLAttributes<HTMLDivElement> {
   status: StockStatus;
   quantity?: number;
   showQuantity?: boolean;
   showIcon?: boolean;
   size?: 'sm' | 'md' | 'lg';
   expectedDate?: string;
-  className?: string;
 }
 
-const statusConfig: Record<StockStatus, {
-  label: string;
-  shortLabel: string;
-  icon: typeof Package;
-  className: string;
-  bgClass: string;
-}> = {
-  'in-stock': {
-    label: 'Em Estoque',
-    shortLabel: 'Disponível',
-    icon: Package,
-    className: 'text-primary dark:text-primary',
-    bgClass: 'bg-primary/10 border-primary/20',
-  },
-  'low-stock': {
-    label: 'Estoque Baixo',
-    shortLabel: 'Baixo',
-    icon: AlertTriangle,
-    className: 'text-warning dark:text-warning',
-    bgClass: 'bg-warning/10 dark:bg-warning/15 border-warning/20 dark:border-warning/40',
-  },
-  'out-of-stock': {
-    label: 'Sem Estoque',
-    shortLabel: 'Indisponível',
-    icon: XCircle,
-    className: 'text-destructive dark:text-destructive',
-    bgClass: 'bg-destructive/10 dark:bg-destructive/20 border-destructive/20 dark:border-destructive/40',
-  },
-  'pre-order': {
-    label: 'Pré-venda',
-    shortLabel: 'Pré-venda',
-    icon: TrendingUp,
-    className: 'text-primary',
-    bgClass: 'bg-primary/10 border-primary/20',
-  },
-  'incoming': {
-    label: 'Chegando',
-    shortLabel: 'Em trânsito',
-    icon: Clock,
-    className: 'text-primary/80',
-    bgClass: 'bg-primary/10 border-primary/15',
-  },
-};
+// ... keep existing code
+export const StockBadge = React.forwardRef<HTMLDivElement, StockBadgeProps>(
+  (
+    {
+      status,
+      quantity,
+      showQuantity = false,
+      showIcon = true,
+      size = 'md',
+      expectedDate,
+      className,
+      ...props
+    },
+    ref
+  ) => {
+    const config = statusConfig[status];
+    const sizeStyles = sizeConfig[size];
+    const Icon = config.icon;
 
-const sizeConfig = {
-  sm: {
-    badge: 'text-[10px] px-1.5 py-0.5 gap-1',
-    icon: 'h-3 w-3',
-  },
-  md: {
-    badge: 'text-xs px-2 py-1 gap-1.5',
-    icon: 'h-3.5 w-3.5',
-  },
-  lg: {
-    badge: 'text-sm px-3 py-1.5 gap-2',
-    icon: 'h-4 w-4',
-  },
-};
+    const formatQuantity = (qty: number) => {
+      if (qty >= 1000) {
+        return `${(qty / 1000).toFixed(1)}k`;
+      }
+      return qty.toLocaleString('pt-BR');
+    };
 
-export function StockBadge({
-  status,
-  quantity,
-  showQuantity = false,
-  showIcon = true,
-  size = 'md',
-  expectedDate,
-  className,
-}: StockBadgeProps) {
-  const config = statusConfig[status];
-  const sizeStyles = sizeConfig[size];
-  const Icon = config.icon;
-
-  const formatQuantity = (qty: number) => {
-    if (qty >= 1000) {
-      return `${(qty / 1000).toFixed(1)}k`;
-    }
-    return qty.toLocaleString('pt-BR');
-  };
-
-  const badgeContent = (
-    <Badge
-      variant="outline"
-      className={cn(
-        'font-medium inline-flex items-center border transition-all',
-        config.bgClass,
-        config.className,
-        sizeStyles.badge,
-        className
-      )}
-    >
-      {showIcon && <Icon className={sizeStyles.icon} />}
-      <span>
-        {showQuantity && quantity !== undefined ? (
-          <>
-            {formatQuantity(quantity)} un.
-          </>
-        ) : (
-          config.shortLabel
+    const badgeContent = (
+      <Badge
+        ref={ref}
+        variant="outline"
+        className={cn(
+          'font-medium inline-flex items-center border transition-all',
+          config.bgClass,
+          config.className,
+          sizeStyles.badge,
+          className
         )}
-      </span>
-    </Badge>
-  );
+        {...props}
+      >
+        {showIcon && <Icon className={sizeStyles.icon} />}
+        <span>
+          {showQuantity && quantity !== undefined ? (
+            <>{formatQuantity(quantity)} un.</>
+          ) : (
+            config.shortLabel
+          )}
+        </span>
+      </Badge>
+    );
+
+    // Se tem informação adicional, mostrar tooltip
+    if (expectedDate || (quantity !== undefined && !showQuantity)) {
+      return (
+        <Tooltip>
+          <TooltipTrigger asChild>{badgeContent}</TooltipTrigger>
+          <TooltipContent>
+            <div className="text-xs space-y-1">
+              <p className="font-medium">{config.label}</p>
+              {quantity !== undefined && (
+                <p>Quantidade: {quantity.toLocaleString('pt-BR')} unidades</p>
+              )}
+              {expectedDate && (
+                <p>Previsão: {new Date(expectedDate).toLocaleDateString('pt-BR')}</p>
+              )}
+            </div>
+          </TooltipContent>
+        </Tooltip>
+      );
+    }
+
+    return badgeContent;
+  }
+);
+
+StockBadge.displayName = "StockBadge";
+
 
   // Se tem informação adicional, mostrar tooltip
   if (expectedDate || (quantity !== undefined && !showQuantity)) {
@@ -151,35 +124,39 @@ export function getStockStatus(quantity: number, lowThreshold = 50): StockStatus
 }
 
 // Componente de indicador compacto para listas
-interface StockIndicatorProps {
+interface StockIndicatorProps extends React.HTMLAttributes<HTMLSpanElement> {
   status: StockStatus;
-  className?: string;
 }
 
-export function StockIndicator({ status, className }: StockIndicatorProps) {
-  const dotColor = {
-    'in-stock': 'bg-primary',
-    'low-stock': 'bg-warning',
-    'out-of-stock': 'bg-destructive',
-    'pre-order': 'bg-primary',
-    'incoming': 'bg-primary/70',
-  };
+export const StockIndicator = React.forwardRef<HTMLSpanElement, StockIndicatorProps>(
+  ({ status, className, ...props }, ref) => {
+    const dotColor = {
+      'in-stock': 'bg-primary',
+      'low-stock': 'bg-warning',
+      'out-of-stock': 'bg-destructive',
+      'pre-order': 'bg-primary',
+      'incoming': 'bg-primary/70',
+    };
 
-  return (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <span 
-          className={cn(
-            'inline-block w-2.5 h-2.5 rounded-full',
-            dotColor[status],
-            status === 'low-stock' && 'animate-pulse',
-            className
-          )}
-        />
-      </TooltipTrigger>
-      <TooltipContent>
-        {statusConfig[status].label}
-      </TooltipContent>
-    </Tooltip>
-  );
-}
+    return (
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <span
+            ref={ref}
+            className={cn(
+              'inline-block w-2.5 h-2.5 rounded-full',
+              dotColor[status],
+              status === 'low-stock' && 'animate-pulse',
+              className
+            )}
+            {...props}
+          />
+        </TooltipTrigger>
+        <TooltipContent>{statusConfig[status].label}</TooltipContent>
+      </Tooltip>
+    );
+  }
+);
+
+StockIndicator.displayName = "StockIndicator";
+
