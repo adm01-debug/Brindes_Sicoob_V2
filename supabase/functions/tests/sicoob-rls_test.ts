@@ -64,8 +64,7 @@ Deno.test("RLS: Usuário PA deve ver apenas dados do seu PA", async () => {
       pa_id: ID_PA,
       cooperative_id: ID_SINGULAR,
       total_amount: 100,
-      created_by: USERS.PA.id,
-      order_number: `TEST-PA-${Date.now()}`
+      created_by: USERS.PA.id
     })
     .select()
     .single();
@@ -79,8 +78,7 @@ Deno.test("RLS: Usuário PA deve ver apenas dados do seu PA", async () => {
       pa_id: "00000000-0000-0000-0000-000000000000",
       cooperative_id: "00000000-0000-0000-0000-000000000000",
       total_amount: 50,
-      created_by: "00000000-0000-0000-0000-000000000000",
-      order_number: `TEST-OTHER-${Date.now()}`
+      created_by: "00000000-0000-0000-0000-000000000000"
     })
     .select()
     .single();
