@@ -38,7 +38,7 @@ jobs:
             echo "⚠️ SUPABASE_DB_URL not set, skipping DB-level RLS tests"
             exit 0
           fi
-          deno test --allow-net --allow-env supabase/functions/tests/sicoob-rls-validation_test.ts
+          deno test --allow-net --allow-env --allow-read supabase/functions/tests/sicoob-rls-validation_test.ts
 
       - name: Run Sicoob RLS Coverage (Cross-Role)
         env:
@@ -48,7 +48,7 @@ jobs:
             echo "⚠️ SUPABASE_DB_URL not set, skipping DB-level coverage tests"
             exit 0
           fi
-          deno test --allow-net --allow-env supabase/functions/tests/sicoob-rls-coverage_test.ts
+          deno test --allow-net --allow-env --allow-read supabase/functions/tests/sicoob-rls-coverage_test.ts
 
       - name: Run Sicoob Validation Constraints
         env:
@@ -58,4 +58,4 @@ jobs:
             echo "⚠️ SUPABASE_DB_URL not set, skipping DB-level constraint tests"
             exit 0
           fi
-          deno test --allow-net --allow-env supabase/functions/tests/sicoob-validation-constraints_test.ts
+          deno test --allow-net --allow-env --allow-read supabase/functions/tests/sicoob-validation-constraints_test.ts
