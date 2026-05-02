@@ -620,6 +620,59 @@ export default function OrderDetailPage() {
             </Tabs>
           </div>
 
+              <TabsContent value="audit">
+                <Card>
+                  <CardContent className="pt-6">
+                    <div className="space-y-6">
+                      {itemLogs?.length === 0 ? (
+                        <p className="text-sm text-muted-foreground text-center py-4">Nenhuma alteração registrada nos itens.</p>
+                      ) : (
+                        itemLogs?.map((log: any) => (
+                          <div key={log.id} className="relative pl-6 pb-6 border-l last:border-l-0 last:pb-0">
+                            <div className="absolute left-[-5px] top-1 w-2.5 h-2.5 rounded-full bg-primary" />
+                            <div className="space-y-1">
+                              <p className="text-sm font-bold">
+                                {log.action === 'INSERT' ? 'Item Adicionado' : 
+                                 log.action === 'UPDATE' ? 'Item Atualizado' : 
+                                 'Item Removido'}
+                              </p>
+                              <p className="text-xs text-muted-foreground">
+                                por <strong>{log.user?.display_name || 'Sistema'}</strong> em {new Date(log.created_at).toLocaleString('pt-BR')}
+                              </p>
+                              <div className="mt-2 text-xs bg-muted/50 p-2 rounded border">
+                                {log.action === 'INSERT' && (
+                                  <p>Produto: {log.new_data?.product_name} (Qtd: {log.new_data?.quantity})</p>
+                                )}
+                                {log.action === 'DELETE' && (
+                                  <p>Produto: {log.old_data?.product_name} (Qtd: {log.old_data?.quantity})</p>
+                                )}
+                                {log.action === 'UPDATE' && (
+                                  <>
+                                    <p className="font-medium">{log.new_data?.product_name}</p>
+                                    <div className="grid grid-cols-2 gap-2 mt-1">
+                                      <div>
+                                        <p className="text-[10px] text-muted-foreground uppercase">Anterior</p>
+                                        <p>Qtd: {log.old_data?.quantity} (R$ {Number(log.old_data?.total_price).toLocaleString('pt-BR')})</p>
+                                      </div>
+                                      <div>
+                                        <p className="text-[10px] text-muted-foreground uppercase">Novo</p>
+                                        <p>Qtd: {log.new_data?.quantity} (R$ {Number(log.new_data?.total_price).toLocaleString('pt-BR')})</p>
+                                      </div>
+                                    </div>
+                                  </>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+            </Tabs>
+          </div>
+
           <div className="space-y-6">
             <Card>
               <CardHeader>
