@@ -458,9 +458,9 @@ export default function ColorDocumentationPage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <ChecklistItem color="bg-brand" title="Brand (Teal)" description="Ações principais (CTAs), botões de conversão e elementos de identidade moderna." />
-                <ChecklistItem color="bg-accent" title="Accent (Amarelo)" description="Destaques sutis, selos de urgência ou prêmios. Usar sobre fundo institucional." />
-                <ChecklistItem color="bg-success" title="Success (Verde Sicoob)" description="Confirmações de sucesso, status 'Entregue' ou 'Concluído'." />
-                <ChecklistItem color="bg-warning" title="Warning (Amarelo/Ouro)" description="Avisos de atenção, status 'Em Revisão' ou pendências sutis." />
+                <ChecklistItem color="bg-accent" title="Accent (Roxo)" description="Detalhes pontuais, selos e destaques sutis sobre fundos claros ou turquesa." />
+                <ChecklistItem color="bg-success" title="Success (Verde)" description="Confirmações de sucesso, status 'Entregue' ou 'Concluído'." />
+                <ChecklistItem color="bg-warning" title="Warning (Âmbar)" description="Avisos de atenção, status 'Em Revisão' ou pendências sutis." />
                 <ChecklistItem color="bg-destructive" title="Danger (Vermelho)" description="Ações irreversíveis (excluir), erros críticos ou status 'Cancelado'." />
               </CardContent>
             </Card>
