@@ -879,7 +879,10 @@ Deno.serve((req) => {
     const CRM_ANON_VAL = anonRes.value;
     const CRM_KEY = CRM_SERVICE_KEY || CRM_ANON_VAL;
     if (!CRM_URL || !CRM_KEY) {
-      return jsonResponse({ error: "CRM database credentials not configured" }, 500);
+      return jsonResponse({
+        error: "CRM connection is not configured correctly",
+        details: "Check EXTERNAL_CRM_URL and CRM keys in Connections. Placeholder or invalid URL values are ignored.",
+      }, 500);
     }
 
     const CRM_ANON = CRM_ANON_VAL ?? "";
@@ -910,7 +913,10 @@ Deno.serve((req) => {
     // paga cold-start. Em rajada paralela, fetch keep-alive evita re-handshake.
     const crm = await getCrmClient();
     if (!crm) {
-      return jsonResponse({ error: "CRM database credentials not configured" }, 500);
+      return jsonResponse({
+        error: "CRM connection is not configured correctly",
+        details: "The backend could not initialize the CRM client because the saved URL/key pair is missing or invalid.",
+      }, 500);
     }
 
     // Validate body with Zod schema
