@@ -92,7 +92,7 @@ export function QuickTestLogin() {
               onClick={() => handleQuickLogin(testUser.email)}
               disabled={!!loadingEmail}
             >
-              <div className={`p-1.5 rounded-lg bg-${testUser.color}-500/10 text-${testUser.color}-500 group-hover:bg-${testUser.color}-500/20 transition-colors`}>
+              <div className="p-1.5 rounded-lg bg-primary/10 text-primary group-hover:bg-primary/20 transition-colors">
                 <Icon className="h-4 w-4" />
               </div>
               <div className="flex-1 text-left">
