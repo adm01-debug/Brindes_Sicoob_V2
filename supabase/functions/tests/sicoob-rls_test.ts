@@ -71,14 +71,14 @@ Deno.test("RLS: Usuário PA deve ver apenas dados do seu PA", async () => {
 
   if (err1) throw err1;
 
-  // Criar um pedido de OUTRA cooperativa/PA
+  // Criar um pedido de OUTRA cooperativa
   const { data: orderOther, error: err2 } = await supabase
     .from("sicoob_orders")
     .insert({
-      pa_id: "00000000-0000-0000-0000-000000000000",
-      cooperative_id: "00000000-0000-0000-0000-000000000000",
+      pa_id: null,
+      cooperative_id: ID_CENTRAL,
       total_amount: 50,
-      created_by: "00000000-0000-0000-0000-000000000000"
+      created_by: USERS.CENTRAL.id
     })
     .select()
     .single();
