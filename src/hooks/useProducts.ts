@@ -30,15 +30,30 @@ export function useProducts(
     queryFn: async () => {
       const products = await fetchPromobrindProducts({
         search: filters?.search,
-        limit: filters?.limit,
+        limit: filters?.limit ?? 50,
       });
 
       let result = products.map(mapPromobrindToProduct);
 
+      // Relevância simples no frontend (se houver termo de busca)
+      if (filters?.search) {
+        const term = filters.search.toLowerCase();
+        result = result.sort((a, b) => {
+          const aExact = a.name.toLowerCase().startsWith(term) ? 1 : 0;
+          const bExact = b.name.toLowerCase().startsWith(term) ? 1 : 0;
+          if (aExact !== bExact) return bExact - aExact;
+          
+          const aIncludes = a.name.toLowerCase().includes(term) ? 1 : 0;
+          const bIncludes = b.name.toLowerCase().includes(term) ? 1 : 0;
+          return bIncludes - aIncludes;
+        });
+      }
+
       if (filters?.category) {
         result = result.filter(p =>
           p.category_name?.toLowerCase().includes(filters.category!.toLowerCase()) ||
-          p.category_id === filters.category
+          p.category_id === filters.category ||
+          p.category?.id?.toString() === filters.category
         );
       }
       if (filters?.minPrice !== undefined) {
