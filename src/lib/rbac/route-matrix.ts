@@ -12,7 +12,7 @@
  *  - notes:    observações operacionais (histórico, escopo).
  */
 
-export type RouteRole = "public" | "authenticated" | "admin" | "dev";
+export type RouteRole = "public" | "authenticated" | "admin" | "dev" | "gestor_compras" | "gerente_pa" | "vendedor";
 export type RouteGuard =
   | "public"
   | "ProtectedRoute"
@@ -100,7 +100,7 @@ export const RBAC_ROUTES: RbacRouteEntry[] = [
 
 /** Resumo agregado para cards de overview. */
 export function summarizeRoutes(routes: RbacRouteEntry[] = RBAC_ROUTES) {
-  const byRole = { public: 0, authenticated: 0, admin: 0, dev: 0 } as Record<RouteRole, number>;
+  const byRole = { public: 0, authenticated: 0, admin: 0, dev: 0, gestor_compras: 0, gerente_pa: 0, vendedor: 0 } as Record<RouteRole, number>;
   let mfa = 0;
   for (const r of routes) {
     byRole[r.role]++;
