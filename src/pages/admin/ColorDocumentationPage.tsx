@@ -169,41 +169,72 @@ export default function ColorDocumentationPage() {
           </div>
         </section>
 
-        {/* 3. Feedback States */}
+        {/* 3. Feedback States and Interactive Examples */}
         <section className="space-y-6">
           <div className="flex items-center gap-2 border-b pb-2">
             <AlertTriangle className="h-5 w-5 text-warning" />
-            <h2 className="text-2xl font-semibold">Feedback e Semântica</h2>
+            <h2 className="text-2xl font-semibold">Feedback e Exemplos Práticos</h2>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <Card className="border-success/30 bg-success/5">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-success flex items-center gap-2">
-                  <CheckCircle2 className="h-4 w-4" /> Sucesso
-                </CardTitle>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Alertas por Estado</CardTitle>
               </CardHeader>
-              <CardContent>
-                <p className="text-sm text-success/80">Operação realizada. Verde harmonizado (155 60% 38%).</p>
+              <CardContent className="space-y-4">
+                <Alert className="border-success/30 bg-success/10 text-success">
+                  <CheckCircle2 className="h-4 w-4" />
+                  <AlertTitle>Sucesso</AlertTitle>
+                  <AlertDescription>Operação concluída. Verde Sicoob 2024 harmonizado.</AlertDescription>
+                </Alert>
+                <Alert className="border-warning/30 bg-warning/10 text-warning">
+                  <AlertTriangle className="h-4 w-4" />
+                  <AlertTitle>Atenção</AlertTitle>
+                  <AlertDescription>Revisão necessária para prosseguir com o fluxo.</AlertDescription>
+                </Alert>
+                <Alert variant="destructive" className="bg-destructive/10">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertTitle>Erro Crítico</AlertTitle>
+                  <AlertDescription>Falha na comunicação com o backend ou ação negada.</AlertDescription>
+                </Alert>
+                <Alert className="border-brand/30 bg-brand/10 text-brand">
+                  <Info className="h-4 w-4" />
+                  <AlertTitle>Informativo</AlertTitle>
+                  <AlertDescription>Nova funcionalidade de IA disponível no painel.</AlertDescription>
+                </Alert>
               </CardContent>
             </Card>
-            <Card className="border-warning/30 bg-warning/5">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-warning flex items-center gap-2">
-                  <AlertTriangle className="h-4 w-4" /> Alerta
-                </CardTitle>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-sm font-bold uppercase tracking-wider text-muted-foreground">CTAs e Interatividade</CardTitle>
               </CardHeader>
-              <CardContent>
-                <p className="text-sm text-warning/80">Revisão necessária. Amarelo Sicoob (44 100% 50%).</p>
-              </CardContent>
-            </Card>
-            <Card className="border-info/30 bg-info/5">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-info flex items-center gap-2">
-                  <Info className="h-4 w-4" /> Informativo
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-info/80">Dados contextuais. Azul harmonizado.</p>
+              <CardContent className="space-y-6">
+                <div className="space-y-2">
+                  <p className="text-xs font-medium text-muted-foreground">Botões de Ação Principal</p>
+                  <div className="flex flex-wrap gap-2">
+                    <Button variant="default">Primário (Brand)</Button>
+                    <Button variant="premium">Premium (Brand Glow)</Button>
+                    <Button variant="success">Confirmar (Success)</Button>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <p className="text-xs font-medium text-muted-foreground">Botões de Alerta e Sistema</p>
+                  <div className="flex flex-wrap gap-2">
+                    <Button variant="destructive">Excluir (Danger)</Button>
+                    <Button variant="outline" className="border-warning text-warning hover:bg-warning/10">Revisar (Warning)</Button>
+                    <Button variant="sicoob">Institucional (Primary)</Button>
+                  </div>
+                </div>
+                <div className="space-y-2 pt-2 border-t">
+                  <p className="text-xs font-medium text-muted-foreground">Badges de Contexto</p>
+                  <div className="flex flex-wrap gap-2">
+                    <Badge variant="default">Destaque</Badge>
+                    <Badge variant="accent">Prêmio (Accent)</Badge>
+                    <Badge variant="success">Pago</Badge>
+                    <Badge variant="warning">Pendente</Badge>
+                    <Badge variant="destructive">Atrasado</Badge>
+                  </div>
+                </div>
               </CardContent>
             </Card>
           </div>
