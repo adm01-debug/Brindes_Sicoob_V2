@@ -65,16 +65,34 @@ html[data-scroll-locked] body {
     --command-text-subtle: 220 10% 62%;
     --command-shadow: 222 25% 10% / 0.18;
 
-    /* ===== CORES PRIMÁRIAS (VERDE SICOOB — #003641) ===== */
+    /* ===== CORES PRIMÁRIAS (VERDE SICOOB INSTITUCIONAL — #003641) ===== */
+    /* Uso: logo, headers, tipografia âncora. NÃO usar como cor de ação dominante. */
     --primary: 190 100% 13%;
     --primary-hover: 190 100% 10%;
     --primary-active: 190 100% 8%;
     --primary-glow: 190 100% 20%;
     --primary-foreground: 0 0% 100%;
 
-    /* ===== CORES SECUNDÁRIAS (VERDE ÁGUA — #7DB61C) ===== */
+    /* ===== MARCA / AÇÃO (VERDE-TEAL SICOOB 2024 — #00AE9D) ===== */
+    /* Uso: CTAs principais, hero, ações de conversão, energia cooperativa. */
+    --brand: 175 100% 34%;
+    --brand-hover: 175 100% 28%;
+    --brand-active: 175 100% 22%;
+    --brand-glow: 175 100% 42%;
+    --brand-foreground: 0 0% 100%;
+    --brand-soft: 175 100% 34%;
+
+    /* ===== CORES SECUNDÁRIAS (VERDE-LIMA — #7DB61C) ===== */
+    /* Uso pontual: badges secundários, ações complementares. */
     --secondary: 82 73% 41%;
     --secondary-foreground: 0 0% 100%;
+
+    /* ===== REWARD (ROXO SELO PROMOCIONAL — #5C2D91) ===== */
+    /* Uso: pontos Coopera, cupons, badges de promoção. */
+    --reward: 271 53% 37%;
+    --reward-hover: 271 53% 30%;
+    --reward-foreground: 0 0% 100%;
+    --reward-soft: 271 53% 37%;
 
     /* ===== MUTED ===== */
     --muted: 220 14% 90%;
