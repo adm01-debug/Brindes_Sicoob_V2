@@ -41,9 +41,26 @@ const TEXT_TOKEN_MAP = {
 };
 
 export default function ColorDocumentationPage() {
+  const { toggleTheme, theme } = useTheme();
+  const [filterToken, setFilterToken] = useState<string>("all");
+  
   const statuses: SicoobFulfillmentStatus[] = [
     "in_production", "in_separation", "in_transit", "delivered", "completed", "cancelled"
   ];
+
+  const contrastData = [
+    { token: "brand", bg: "background", ratio: "4.64", pass: true, usage: "Ações principais (CTAs)" },
+    { token: "primary", bg: "background", ratio: "12.29", pass: true, usage: "Header, Logos, Textos" },
+    { token: "reward", bg: "background", ratio: "8.83", pass: true, usage: "Selo de Recompensa" },
+    { token: "accent", bg: "primary", ratio: "7.58", pass: true, usage: "Destaque sobre escuro" },
+    { token: "success", bg: "background", ratio: "5.12", pass: true, usage: "Confirmações" },
+    { token: "warning", bg: "background", ratio: "3.45", pass: false, usage: "Atenção (Usar /10)" },
+    { token: "destructive", bg: "background", ratio: "6.82", pass: true, usage: "Excluir, Erro" },
+  ];
+
+  const filteredContrast = filterToken === "all" 
+    ? contrastData 
+    : contrastData.filter(d => d.token === filterToken);
 
   return (
     <MainLayout>
