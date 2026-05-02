@@ -203,6 +203,25 @@ export const useApprovalRequests = (orderId?: string) => {
 
   const updateStatus = useMutation({
     mutationFn: async (payload: { orderId: string; newStatus: string; previousStatus: string; comment?: string }) => {
+      // 1. Definir transições permitidas (SSOT com o Kanban)
+      const ALLOWED_TRANSITIONS: Record<string, string[]> = {
+        draft: ["waiting_approval"],
+        waiting_approval: ["confirmed", "rejected", "draft"],
+        confirmed: ["logistic"],
+        logistic: ["completed"],
+        completed: [],
+      };
+
+      if (!ALLOWED_TRANSITIONS[payload.previousStatus]?.includes(payload.newStatus)) {
+        throw new Error(`Transição de "${payload.previousStatus}" para "${payload.newStatus}" não é permitida.`);
+      }
+
+      // 2. Validar permissão por role
+      const canManage = isAdmin || isSupervisorOrAbove || isGerentePa;
+      if (payload.newStatus === 'confirmed' && !canManage) {
+        throw new Error("Apenas gestores podem confirmar pedidos.");
+      }
+
       const { error: orderError } = await supabase
         .from("sicoob_orders")
         .update({ status: payload.newStatus })
@@ -220,10 +239,13 @@ export const useApprovalRequests = (orderId?: string) => {
     onSuccess: () => {
       toast.success("Status do pedido atualizado");
       queryClient.invalidateQueries({ queryKey: ["sicoob_orders"] });
+      queryClient.invalidateQueries({ queryKey: ["sicoob_order", orderId] });
       queryClient.invalidateQueries({ queryKey: ["sicoob_order_history", orderId] });
     },
     onError: (error: any) => {
-      toast.error("Erro ao atualizar status: " + error.message);
+      toast.error("Erro ao atualizar status", {
+        description: error.message
+      });
     }
   });
 
