@@ -1,10 +1,20 @@
+import { useState } from "react";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { SicoobStatusBadge } from "@/components/sicoob/SicoobStatusBadge";
-import { SicoobFulfillmentStatus } from "@/lib/sicoob-status-config";
-import { Palette, CheckCircle2, AlertTriangle, Info, Trophy, Layout } from "lucide-react";
+import { SicoobFulfillmentStatus, SICOOB_STATUS_CONFIG } from "@/lib/sicoob-status-config";
+import { Palette, CheckCircle2, AlertTriangle, Info, Trophy, Layout, Download, Table as TableIcon, Hash } from "lucide-react";
+import { toast } from "sonner";
+import { 
+  Table, 
+  TableBody, 
+  TableCell, 
+  TableHead, 
+  TableHeader, 
+  TableRow 
+} from "@/components/ui/table";
 
 export default function ColorDocumentationPage() {
   const statuses: SicoobFulfillmentStatus[] = [
