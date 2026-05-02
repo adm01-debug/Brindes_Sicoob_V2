@@ -8,14 +8,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Truck } from "lucide-react";
-import { useUpdateOrder, FULFILLMENT_LABELS, type OrderRow } from "@/hooks/useOrders";
+import { useUpdateOrder, FULFILLMENT_LABELS, canTransitionTo, type OrderRow } from "@/hooks/useOrders";
 
 interface OrderFulfillmentManagerProps {
   order: OrderRow;
 }
 
 export function OrderFulfillmentManager({ order }: OrderFulfillmentManagerProps) {
-  const update = useUpdateOrder(order.id);
+  const update = useUpdateOrder(order.id, order.status);
   const [tracking, setTracking] = useState(order.tracking_number ?? "");
   const [shippingType, setShippingType] = useState(order.shipping_type ?? "");
   const [carrier, setCarrier] = useState((order as any).shipping_carrier ?? "");

@@ -1,5 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
-import { SicoobOrder, SicoobOrderItem, SicoobOrderItemLog } from "@/types/sicoob/orders";
+import { SicoobOrder, SicoobOrderItem, SicoobOrderItemLog, OrderStatus, canSicoobTransitionTo } from "@/types/sicoob/orders";
 
 export const sicoobOrderService = {
   async getOrderById(id: string): Promise<SicoobOrder> {
@@ -38,7 +38,11 @@ export const sicoobOrderService = {
     return data as unknown as SicoobOrderItemLog[];
   },
 
-  async updateOrderStatus(orderId: string, status: string): Promise<void> {
+  async updateOrderStatus(orderId: string, status: string, currentStatus?: string): Promise<void> {
+    if (currentStatus && !canSicoobTransitionTo(currentStatus as OrderStatus, status as OrderStatus)) {
+      throw new Error(`Transição de status inválida: de ${currentStatus} para ${status}`);
+    }
+
     const { error } = await supabase
       .from("sicoob_orders")
       .update({ status })
