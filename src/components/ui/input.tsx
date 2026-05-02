@@ -12,10 +12,10 @@ const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
           "file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground",
           "placeholder:text-muted-foreground",
           // Focus states melhorados (LP-08)
-          "focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary/20 focus-visible:border-primary",
+          "focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand/20 focus-visible:border-brand",
           "transition-all duration-200",
           // Hover state sutil
-          "hover:border-primary/50",
+          "hover:border-brand/50",
           "disabled:cursor-not-allowed disabled:opacity-50",
           "md:text-sm",
           className,

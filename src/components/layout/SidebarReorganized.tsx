@@ -336,7 +336,7 @@ export const SidebarReorganized = React.forwardRef<HTMLElement, SidebarProps>(
               <Button
                 variant="outline"
                 size="sm"
-                className="h-7 gap-1.5 text-[10px] border-sidebar-border/50 hover:bg-orange/10 hover:text-orange hover:border-orange/30 text-sidebar-foreground/40"
+                className="h-7 gap-1.5 text-[10px] border-sidebar-border/50 hover:bg-brand/10 hover:text-brand hover:border-brand/30 text-sidebar-foreground/40"
                 onClick={collapseAllGroups}
               >
                 <X className="h-3 w-3" />
@@ -347,7 +347,7 @@ export const SidebarReorganized = React.forwardRef<HTMLElement, SidebarProps>(
             <Button
               variant="ghost"
               size="icon"
-              className="h-7 w-7 hover:bg-sidebar-accent/50 hover:text-orange ml-auto text-sidebar-foreground/30"
+              className="h-7 w-7 hover:bg-sidebar-accent/50 hover:text-brand ml-auto text-sidebar-foreground/30"
               onClick={toggleCollapse}
               aria-label={isCollapsed ? "Expandir menu" : "Recolher menu"}
               title={isCollapsed ? "Expandir menu" : "Recolher menu"}

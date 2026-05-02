@@ -55,7 +55,7 @@ export function CatalogHeader({
                 variant="outline"
                 size="icon"
                 onClick={onReset}
-                className="shrink-0 h-9 w-9 border-primary/40 text-primary hover:bg-primary/10"
+                className="shrink-0 h-9 w-9 border-brand/40 text-brand hover:bg-brand/10"
                 aria-label="Voltar ao início"
               >
                 <Home className="h-4 w-4" />
@@ -72,7 +72,7 @@ export function CatalogHeader({
               ? "Carregando catálogo..."
               : hasActiveConstraints
                 ? <>
-                    <span className="text-primary font-semibold">{filteredCount.toLocaleString("pt-BR")}</span>
+                    <span className="text-brand font-semibold">{filteredCount.toLocaleString("pt-BR")}</span>
                     {totalEstimate ? ` de ${totalEstimate.toLocaleString("pt-BR")}` : ""} itens
                   </>
                 : totalEstimate

@@ -113,8 +113,8 @@ export function CatalogToolbar({
           className={cn(
             "gap-1.5 h-8 transition-all relative",
             selectionMode
-              ? "bg-primary text-primary-foreground shadow-md hover:bg-primary/90"
-              : "hover:border-primary/50"
+              ? "bg-brand text-brand-foreground shadow-md hover:bg-brand/90"
+              : "hover:border-brand/50"
           )}
           onClick={onToggleSelectionMode}
         >

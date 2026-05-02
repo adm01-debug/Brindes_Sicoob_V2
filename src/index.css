@@ -43,8 +43,8 @@ html[data-scroll-locked] body {
     --font-display: 'Outfit', system-ui, sans-serif;
 
     /* ===== BASE ===== */
-    --background: 220 14% 96%;
-    --foreground: 222 25% 10%;
+    --background: 220 20% 98%;
+    --foreground: 190 100% 10%;
 
     /* ===== CARDS ===== */
     --card: 0 0% 100%;
@@ -95,8 +95,8 @@ html[data-scroll-locked] body {
     --reward-soft: 271 53% 37%;
 
     /* ===== MUTED ===== */
-    --muted: 220 14% 90%;
-    --muted-foreground: 220 12% 46%;
+    --muted: 190 20% 92%;
+    --muted-foreground: 190 40% 25%;
 
     /* ===== SEMANTIC COLORS ===== */
     --surface: 220 14% 98%;
@@ -153,9 +153,9 @@ html[data-scroll-locked] body {
     --highlight-bronze: 30 50% 50%;
 
     /* ===== BORDAS E INPUTS ===== */
-    --border: 220 14% 86%;
-    --input: 220 14% 90%;
-    --ring: 190 100% 13%;
+    --border: 190 30% 15% / 0.12;
+    --input: 190 30% 15% / 0.08;
+    --ring: 175 100% 34%;
 
     --radius: 1rem;
 
@@ -278,8 +278,8 @@ html[data-scroll-locked] body {
 
   .dark {
     /* ===== BASE — Fusion-inspired deep blacks ===== */
-    --background: 225 20% 4%;
-    --foreground: 210 40% 98%;
+    --background: 225 25% 3%;
+    --foreground: 175 20% 96%;
 
     /* ===== CARDS — richer depth with warm undertone ===== */
     --card: 225 18% 8%;
@@ -326,8 +326,8 @@ html[data-scroll-locked] body {
     --reward-soft: 271 60% 55%;
 
     /* ===== MUTED ===== */
-    --muted: 225 14% 16%;
-    --muted-foreground: 215 20% 75%;
+    --muted: 225 15% 12%;
+    --muted-foreground: 175 20% 70%;
 
     /* ===== SEMANTIC COLORS ===== */
     --surface: 225 18% 9%;
@@ -383,10 +383,10 @@ html[data-scroll-locked] body {
     --highlight-silver: 220 15% 75%;
     --highlight-bronze: 30 55% 55%;
 
-    /* ===== BORDAS E INPUTS — subtle warm tint ===== */
-    --border: 225 12% 16%;
-    --input: 225 16% 11%;
-    --ring: 190 100% 15%;
+    /* ===== BORDAS E INPUTS — dark sicoob ===== */
+    --border: 175 40% 20% / 0.4;
+    --input: 175 40% 15% / 0.6;
+    --ring: 175 90% 38%;
 
     /* ===== ELEVAÇÃO ===== */
     --elevated: 225 16% 11%;
