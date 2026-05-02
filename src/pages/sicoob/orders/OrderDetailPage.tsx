@@ -28,6 +28,24 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 export default function OrderDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const [isApproving, setIsApproving] = useState(false);
+
+  const orderTotal = 900.00;
+  const budgetLimit = 5000.00;
+  const availableBudget = 450.00; // Simulating low budget for validation example
+
+  const handleApprove = () => {
+    if (orderTotal > availableBudget) {
+      toast.error("Saldo de verba insuficiente para este pedido");
+      return;
+    }
+    
+    setIsApproving(true);
+    setTimeout(() => {
+      toast.success("Pedido aprovado com sucesso");
+      setIsApproving(false);
+    }, 1000);
+  };
 
   return (
     <MainLayout>
