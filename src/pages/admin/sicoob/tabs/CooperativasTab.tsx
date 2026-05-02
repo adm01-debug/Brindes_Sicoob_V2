@@ -35,14 +35,14 @@ export const CooperativasTab = () => {
       const { data, error } = await supabase
         .from("cooperativas")
         .select("*")
-        .order("name");
+        .order("nome");
       if (error) throw error;
       return data;
     },
   });
 
   const createMutation = useMutation({
-    mutationFn: async (newCoop: { name: string; code: string }) => {
+    mutationFn: async (newCoop: { nome: string; codigo: string }) => {
       const { data, error } = await supabase
         .from("cooperativas")
         .insert([newCoop])
@@ -62,10 +62,10 @@ export const CooperativasTab = () => {
   });
 
   const updateMutation = useMutation({
-    mutationFn: async (coop: { id: string; name: string; code: string }) => {
+    mutationFn: async (coop: { id: string; nome: string; codigo: string }) => {
       const { data, error } = await supabase
         .from("cooperativas")
-        .update({ name: coop.name, code: coop.code })
+        .update({ nome: coop.nome, codigo: coop.codigo })
         .eq("id", coop.id)
         .select()
         .single();
@@ -97,16 +97,16 @@ export const CooperativasTab = () => {
   });
 
   const filtered = cooperativas?.filter((c) =>
-    c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    c.code.toLowerCase().includes(searchTerm.toLowerCase())
+    c.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    c.codigo.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const handleCreate = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     createMutation.mutate({
-      name: formData.get("name") as string,
-      code: formData.get("code") as string,
+      nome: formData.get("name") as string,
+      codigo: formData.get("code") as string,
     });
   };
 
@@ -115,8 +115,8 @@ export const CooperativasTab = () => {
     const formData = new FormData(e.currentTarget);
     updateMutation.mutate({
       id: editingCoop.id,
-      name: formData.get("name") as string,
-      code: formData.get("code") as string,
+      nome: formData.get("name") as string,
+      codigo: formData.get("code") as string,
     });
   };
 
@@ -193,8 +193,8 @@ export const CooperativasTab = () => {
             ) : (
               filtered?.map((coop) => (
                 <TableRow key={coop.id}>
-                  <TableCell className="font-medium">{coop.code}</TableCell>
-                  <TableCell>{coop.name}</TableCell>
+                  <TableCell className="font-medium">{coop.codigo}</TableCell>
+                  <TableCell>{coop.nome}</TableCell>
                   <TableCell>
                     {/* Placeholder for count of PAs */}
                     -
@@ -240,7 +240,7 @@ export const CooperativasTab = () => {
                   <Input
                     id="edit-name"
                     name="name"
-                    defaultValue={editingCoop.name}
+                    defaultValue={editingCoop.nome}
                     required
                   />
                 </div>
@@ -249,7 +249,7 @@ export const CooperativasTab = () => {
                   <Input
                     id="edit-code"
                     name="code"
-                    defaultValue={editingCoop.code}
+                    defaultValue={editingCoop.codigo}
                     required
                   />
                 </div>
