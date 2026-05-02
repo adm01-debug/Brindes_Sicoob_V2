@@ -574,9 +574,11 @@ export default function OrderDetailPage() {
                 <OrderInvoicesTab orderId={id!} />
               </TabsContent>
 
-              <TabsContent value="payments" className="pt-6">
-                <OrderPaymentsTab orderId={id!} />
-              </TabsContent>
+              {(isSupervisorOrAbove || isGerentePa) && (
+                <TabsContent value="payments" className="pt-6">
+                  <OrderPaymentsTab orderId={id!} />
+                </TabsContent>
+              )}
 
               <TabsContent value="pilots" className="pt-6">
                 <OrderPilotApprovalsTab orderId={id!} />
