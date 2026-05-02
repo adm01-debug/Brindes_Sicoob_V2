@@ -7,6 +7,35 @@ Este mapa descreve quais tabelas e funções do Supabase (RPCs) são consumidas 
 - `orders`
 - `quotes`
 
+## 📱 Módulo: LogisticsReportPage
+**Tabelas (from):**
+- `orders`
+- `order_logistics`
+
+## 📱 Módulo: OrderDetailPage (Sicoob)
+**Tabelas (from):**
+- `sicoob_orders`
+- `sicoob_order_items`
+- `sicoob_order_item_logs`
+- `sicoob_order_history`
+- `sicoob_approval_requests`
+- `pa_budgets`
+- `order_logistics`
+- `order_invoices`
+- `order_payments`
+- `order_pilot_approvals`
+- `order_audit_events`
+- `order_comments`
+- `order_templates`
+- `order_template_items`
+- `profiles`
+- `categories` (via external-db)
+- `products` (via external-db)
+
+## 📱 Módulo: OrdersPage (Sicoob)
+**Tabelas (from):**
+- `sicoob_orders` (A ser migrado de Mock para real)
+
 ## 📱 Módulo: Global Hooks / Services
 **Tabelas (from):**
 - `access_blocked_log`
@@ -115,4 +144,5 @@ Este mapa descreve quais tabelas e funções do Supabase (RPCs) são consumidas 
 ## 📱 Módulo: quotes-dashboard
 **Tabelas (from):**
 - `quote_approval_tokens`
+
 
