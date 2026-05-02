@@ -94,12 +94,24 @@ export function QuickTestLogin() {
   };
 
   const handleQuickLogin = async (email: string) => {
+    // Revalidamos a integridade localmente antes de permitir o clique, 
+    // mas o status já deve estar mapeado no integrityStatus
     const status = integrityStatus[email];
+    
     if (status && !status.isValid) {
       toast({
         variant: "destructive",
         title: "Usuário Inconsistente",
-        description: `Este perfil está com problemas: ${status.reason}. Execute o Seed para reparar.`,
+        description: `Este perfil (${email}) está corrompido: ${status.reason}. Clique em "Corrigir Agora" para reparar.`,
+      });
+      return;
+    }
+
+    if (!status && !isValidating) {
+      toast({
+        variant: "destructive",
+        title: "Usuário Não Encontrado",
+        description: "Este usuário não parece existir. Rode o seed.",
       });
       return;
     }
