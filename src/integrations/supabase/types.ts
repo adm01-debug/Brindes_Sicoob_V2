@@ -4915,6 +4915,33 @@ export type Database = {
           },
         ]
       }
+      sicoob_rls_audit_logs: {
+        Row: {
+          executed_at: string | null
+          id: string
+          issue_details: string | null
+          resolved: boolean | null
+          status: string
+          table_name: string
+        }
+        Insert: {
+          executed_at?: string | null
+          id?: string
+          issue_details?: string | null
+          resolved?: boolean | null
+          status: string
+          table_name: string
+        }
+        Update: {
+          executed_at?: string | null
+          id?: string
+          issue_details?: string | null
+          resolved?: boolean | null
+          status?: string
+          table_name?: string
+        }
+        Relationships: []
+      }
       simulator_wizard_drafts: {
         Row: {
           created_at: string
@@ -5500,6 +5527,7 @@ export type Database = {
           problem: string
         }[]
       }
+      audit_sicoob_rls_policies: { Args: never; Returns: undefined }
       auto_block_extreme_offenders: { Args: never; Returns: Json }
       auto_revoke_orphan_full_keys: {
         Args: { _source?: string }
