@@ -5788,9 +5788,7 @@ export type Database = {
         Args: { _template_id: string }
         Returns: undefined
       }
-      is_admin:
-        | { Args: never; Returns: boolean }
-        | { Args: { _user_id?: string }; Returns: boolean }
+      is_admin: { Args: { _user_id?: string }; Returns: boolean }
       is_admin_strict: { Args: { _user_id?: string }; Returns: boolean }
       is_dev: { Args: { _user_id?: string }; Returns: boolean }
       is_dnd_active: { Args: never; Returns: boolean }
