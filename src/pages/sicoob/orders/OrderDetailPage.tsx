@@ -99,6 +99,38 @@ export default function OrderDetailPage() {
   const { budget, remainingBudget } = usePaBudget(orderData?.pa_id);
   const { threshold, needsApproval } = useApprovalThreshold();
   const { requests, createRequest, approveRequest, rejectRequest } = useApprovalRequests(id);
+  const { addItem, removeItem } = useSicoobOrderItems(id);
+  
+  const { data: products } = useProducts({ search: productSearch, limit: 5 }, { enabled: isAddItemDialogOpen });
+
+  const activeRequest = useMemo(() => 
+    requests?.find(r => r.status === 'pending'), 
+  [requests]);
+
+  const handleAddItem = () => {
+    const product = products?.find(p => p.id === selectedProductId);
+    if (!product) return;
+
+    addItem.mutate({
+      productId: product.id,
+      productName: product.name,
+      quantity: itemQuantity,
+      unitPrice: product.price,
+    }, {
+      onSuccess: () => {
+        setIsAddItemDialogOpen(false);
+        setProductSearch("");
+        setSelectedProductId(null);
+        setItemQuantity(1);
+      }
+    });
+  };
+
+  const handleRemoveItem = (itemId: string) => {
+    if (confirm("Deseja realmente remover este item?")) {
+      removeItem.mutate(itemId);
+    }
+  };
 
   const activeRequest = useMemo(() => 
     requests?.find(r => r.status === 'pending'), 
