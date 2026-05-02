@@ -264,7 +264,9 @@ const App = () => {
                               <Route path="/admin/video-variantes" element={<AdminVideoVariantsPage />} />
                               <Route path="/admin/kit-templates" element={<KitTemplatesAdminPage />} />
                               <Route path="/admin/kit-templates/metricas" element={<KitTemplatesMetricsPage />} />
-                              <Route path="/admin/sicoob" element={<SicoobManagementPage />} />
+                              <Route element={<AdminRoute requiredRole="gestor_compras" />}>
+                                <Route path="/admin/sicoob" element={<SicoobManagementPage />} />
+                              </Route>
                               <Route path="/admin/aprovacoes-desconto" element={<DeprecatedRoute message="A gestão de descontos foi movida para a aba 'Descontos' em Usuários." redirectTo="/admin/usuarios?tab=discounts" />} />
                               <Route path="/admin/performance" element={<DeprecatedRoute message="O módulo de Performance foi descontinuado. Use o BI Comercial para análises." redirectTo="/ferramentas/bi" />} />
                               <Route path="/admin/performance-comercial" element={<DeprecatedRoute message="O módulo de Performance Comercial foi descontinuado. Use o BI Comercial para análises." redirectTo="/ferramentas/bi" />} />
