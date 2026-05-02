@@ -25,7 +25,16 @@ export function getRandomGreeting(name: string): string {
  * Higher roles have lower index in the array for comparison.
  * hierarchy: dev > supervisor > agente
  */
-const ROLE_HIERARCHY: AppRole[] = ["dev", "supervisor", "admin", "manager", "agente", "vendedor"];
+const ROLE_HIERARCHY: AppRole[] = [
+  "dev",
+  "gestor_compras",
+  "supervisor",
+  "admin",
+  "manager",
+  "gerente_pa",
+  "agente",
+  "vendedor",
+];
 
 export function getHighestRole(roles: AppRole[]): AppRole | null {
   if (!roles.length) return null;
@@ -39,5 +48,5 @@ export function getHighestRole(roles: AppRole[]): AppRole | null {
 }
 
 export function isSupervisorOrAbove(roles: AppRole[]): boolean {
-  return roles.some(r => ["dev", "supervisor", "admin", "manager"].includes(r));
+  return roles.some((r) => ["dev", "gestor_compras", "supervisor", "admin", "manager"].includes(r));
 }
