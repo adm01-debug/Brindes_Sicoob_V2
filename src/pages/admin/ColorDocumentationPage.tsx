@@ -305,18 +305,28 @@ export default function ColorDocumentationPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <ContextRuleCard 
               title="CTA / Ações"
-              doText="Usar --brand para ações primárias e --primary para ações institucionais secundárias."
-              dontText="Evitar cores de status (success/danger) para navegação comum."
+              doText="Usar --brand para ações primárias e --success para confirmações positivas."
+              dontText="Evitar cores de status para navegação comum ou links secundários."
             />
             <ContextRuleCard 
-              title="Feedback"
-              doText="Usar --success para fluxos concluídos e --warning para pendências."
-              dontText="Não usar --accent (amarelo) para erros críticos."
+              title="Feedback de Status"
+              doText="Usar o componente SicoobStatusBadge para mapear automaticamente o workflow."
+              dontText="Não inventar cores para status de pedido; usar o padrão centralizado."
             />
             <ContextRuleCard 
-              title="Modais e Avisos"
-              doText="Usar variantes /10 para o fundo de alertas amplos."
-              dontText="Evitar fundos coloridos saturados que cansam a vista."
+              title="Avisos e Formulários"
+              doText="Usar --warning em labels ou ícones de atenção sutil em campos pendentes."
+              dontText="Não usar vermelho (danger) para campos que são apenas opcionais ou de alerta."
+            />
+            <ContextRuleCard 
+              title="Mensagens de Erro"
+              doText="Usar --destructive (vermelho) apenas para erros que impedem a continuação do processo."
+              dontText="Evitar excesso de vermelho em telas simples; prefira o tom neutro (muted) para 'vazio'."
+            />
+            <ContextRuleCard 
+              title="Modais"
+              doText="Usar CTAs com --brand em modais de conversão e --primary em institucionais."
+              dontText="Evitar fundos coloridos saturados no overlay ou corpo do modal."
             />
           </div>
         </section>
