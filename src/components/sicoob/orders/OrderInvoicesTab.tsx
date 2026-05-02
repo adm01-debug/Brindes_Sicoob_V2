@@ -23,7 +23,7 @@ export function OrderInvoicesTab({ orderId }: OrderInvoicesTabProps) {
 
     try {
       setIsUploading(true);
-      const publicUrl = await uploadFile(file, `invoice-${type}`);
+      const publicUrl = await uploadFile(file, `${file.name}-${Date.now()}`);
       
       addInvoice.mutate({
         invoice_number: invoiceNumber || "PROVISÓRIA",
