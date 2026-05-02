@@ -5,6 +5,8 @@ import { toast } from "sonner";
 
 export function useSicoobOrderItems(orderId?: string) {
   const queryClient = useQueryClient();
+  const { isVendedorRole, isAdmin } = useAuth();
+
 
   const updateOrderTotal = async (orderId: string) => {
     const { data: items, error: itemsError } = await supabase
