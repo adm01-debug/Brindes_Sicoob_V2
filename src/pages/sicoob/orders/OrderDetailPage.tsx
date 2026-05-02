@@ -37,6 +37,7 @@ import { usePaBudget } from "@/hooks/usePaBudget";
 import { useApprovalThreshold } from "@/hooks/useApprovalThreshold";
 import { useApprovalRequests } from "@/hooks/useSicoobApprovals";
 import { useSicoobOrderItems } from "@/hooks/useSicoobOrderItems";
+import { useSicoobOrderHistory } from "@/hooks/useSicoobOrderHistory";
 import { useProducts } from "@/hooks/useProducts";
 import { 
   Dialog, 
