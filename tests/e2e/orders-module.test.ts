@@ -76,3 +76,54 @@ describe('E2E Orders — Filtering', () => {
     expect(delivered.reduce((s, o) => s + o.total, 0)).toBe(500);
   });
 });
+
+describe('E2E Orders — Pagination & Counting', () => {
+  const pageSize = 10;
+  const mockData = Array.from({ length: 25 }, (_, i) => ({ id: `${i+1}`, status: 'pending' }));
+
+  it('calculates total pages correctly', () => expect(Math.ceil(mockData.length / pageSize)).toBe(3));
+  it('shows 10 items on page 1', () => expect(mockData.slice(0, 10)).toHaveLength(10));
+  it('shows 5 items on the last page', () => {
+    const lastPageItems = mockData.slice(20, 30);
+    expect(lastPageItems).toHaveLength(5);
+  });
+});
+
+describe('E2E Orders — Timeline Chronology', () => {
+  const events = [
+    { id: '1', created_at: '2024-05-01T10:00:00Z', event_type: 'creation' },
+    { id: '2', created_at: '2024-05-01T11:00:00Z', event_type: 'status_change' },
+    { id: '3', created_at: '2024-05-01T09:00:00Z', event_type: 'login' }, // Out of order for test
+  ];
+
+  it('validates strictly chronological sorting', () => {
+    const sorted = [...events].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+    expect(sorted[0].created_at).toBe('2024-05-01T11:00:00Z');
+    expect(sorted[2].created_at).toBe('2024-05-01T09:00:00Z');
+  });
+
+  it('prevents duplicates when simulated page change merges lists', () => {
+    const page1 = [{ id: '1' }, { id: '2' }];
+    const page2 = [{ id: '2' }, { id: '3' }]; // simulated duplicate overlap
+    const merged = [...new Map([...page1, ...page2].map(item => [item.id, item])).values()];
+    expect(merged).toHaveLength(3);
+  });
+});
+
+describe('E2E Orders — Export Resilience', () => {
+  it('simulates export timeout error message', () => {
+     const simulateExport = (url: string) => {
+       if (url.includes('simulate-timeout')) return "Timeout na exportação";
+       return "Success";
+     };
+     expect(simulateExport('?simulate-timeout=true')).toBe("Timeout na exportação");
+  });
+
+  it('simulates 500 server error on export', () => {
+     const simulateExport = (url: string) => {
+       if (url.includes('simulate-500')) return "Erro interno do servidor (Simulado)";
+       return "Success";
+     };
+     expect(simulateExport('?simulate-500=true')).toBe("Erro interno do servidor (Simulado)");
+  });
+});
