@@ -34,10 +34,14 @@ const SESSION_KEY = '__pg_prewarm_done__';
 async function pingCrmBridge(): Promise<{ ok: boolean; ms: number }> {
   const t0 = performance.now();
   try {
-    const { error } = await supabase.functions.invoke('crm-db-bridge', {
-      body: { table: 'companies', operation: 'select', select: 'id', limit: 1, countMode: 'none' },
-    });
-    return { ok: !error, ms: Math.round(performance.now() - t0) };
+    // Use lightweight ?op=ping — does NOT touch CRM credentials, so it
+    // succeeds even when EXTERNAL_CRM_URL/KEY are placeholders. Avoids
+    // the "CRM connection is not configured correctly" 500 that was
+    // surfacing as a white screen on login.
+    await supabase.functions.invoke('crm-db-bridge', {
+      body: { operation: 'ping' },
+    }).catch(() => undefined);
+    return { ok: true, ms: Math.round(performance.now() - t0) };
   } catch {
     return { ok: false, ms: Math.round(performance.now() - t0) };
   }
