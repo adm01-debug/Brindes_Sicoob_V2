@@ -124,39 +124,39 @@ export default function ColorDocumentationPage() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
             <ColorCard 
-              name="Primary (Institucional)" 
+              name="Primary (Verde Escuro)" 
               token="--primary" 
               hex="#003641" 
               className="bg-primary text-primary-foreground"
-              description="Âncora, logos, headers, peso bancário."
+              description="Âncora institucional, headers, tipografia de peso."
             />
             <ColorCard 
-              name="Brand (Teal/Verde)" 
+              name="Brand (Turquesa)" 
               token="--brand" 
-              hex="#C5D41C" 
+              hex="#00AE9D" 
               className="bg-brand text-brand-foreground"
-              description="Energia, ação e identidade moderna."
+              description="Cor protagonista. CTAs, ações e energia cooperativa."
             />
             <ColorCard 
-              name="Gray (Cinza)" 
-              token="--gray" 
-              hex="#858485" 
-              className="bg-muted text-muted-foreground"
-              description="Neutralidade e suporte visual."
+              name="Secondary (Verde Médio)" 
+              token="--secondary" 
+              hex="#00875A" 
+              className="bg-secondary text-secondary-foreground"
+              description="Suporte ao turquesa, badges e ações complementares."
             />
             <ColorCard 
-              name="Accent (Amarelo)" 
+              name="Accent (Roxo)" 
               token="--accent" 
-              hex="#F2AE21" 
+              hex="#5C2D91" 
               className="bg-accent text-accent-foreground"
-              description="Destaque, moedas, urgência."
+              description="Detalhes pontuais, destaques sutis."
             />
              <ColorCard 
-              name="Reward (Roxo)" 
+              name="Reward (Roxo Claro)" 
               token="--reward" 
-              hex="#5C2D91" 
+              hex="#7B3FAB" 
               className="bg-reward text-reward-foreground"
-              description="Prêmios, Coopera, cupons."
+              description="Prêmios, Coopera, cupons promocionais."
             />
           </div>
         </section>
