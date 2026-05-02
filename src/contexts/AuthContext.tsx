@@ -477,17 +477,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const has = (r: AppRole) => userRoles.includes(r);
   const isDev = has("dev");
+  const isGestorCompras = has("gestor_compras");
+  const isGerentePa = has("gerente_pa");
+  const isVendedor = has("vendedor");
   const isSupervisor = has("supervisor") || has("admin") || has("manager");
-  const isAgente = has("agente") || has("vendedor");
-  const isSupervisorOrAbove = checkIsSupervisorOrAbove(userRoles);
+  const isAgente = has("agente");
+  const isSupervisorOrAbove = isDev || isGestorCompras || isSupervisor;
 
   const primaryRole = getHighestRole(userRoles);
-
   const isAdmin = isSupervisorOrAbove;
-  const isManager = has("manager");
-  const isSeller = isAgente;
-  const canManage = isSupervisorOrAbove;
-  const mfaRequired = canManage && currentAAL !== 'aal2';
+  const mfaRequired = isSupervisorOrAbove && currentAAL !== 'aal2';
+
+  const cooperativaId = profile?.cooperativa_id || null;
+  const paId = profile?.pa_id || null;
 
 
   const value: AuthContextType = {
