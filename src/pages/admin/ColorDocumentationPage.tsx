@@ -576,10 +576,48 @@ function ContrastRow({ token, ratio, usage }: {
 }
 
 function exportTokensJSON() {
+  const contextRules = [
+    {
+      context: "CTA / Ações",
+      do: "Usar --brand para ações primárias e --success para confirmações positivas.",
+      dont: "Evitar cores de status para navegação comum ou links secundários.",
+      tokens_recommended: ["--brand", "--success"],
+      tokens_avoid: ["--warning", "--destructive"]
+    },
+    {
+      context: "Feedback de Status",
+      do: "Usar o componente SicoobStatusBadge para mapear automaticamente o workflow.",
+      dont: "Não inventar cores para status de pedido; usar o padrão centralizado.",
+      tokens_recommended: ["SicoobStatusBadge"],
+      tokens_avoid: ["Custom Colors"]
+    },
+    {
+      context: "Avisos e Formulários",
+      do: "Usar --warning em labels ou ícones de atenção sutil em campos pendentes.",
+      dont: "Não usar vermelho (danger) para campos que são apenas opcionais ou de alerta.",
+      tokens_recommended: ["--warning"],
+      tokens_avoid: ["--destructive"]
+    },
+    {
+      context: "Mensagens de Erro",
+      do: "Usar --destructive (vermelho) apenas para erros que impedem a continuação do processo.",
+      dont: "Evitar excesso de vermelho em telas simples; prefira o tom neutro (muted) para 'vazio'.",
+      tokens_recommended: ["--destructive"],
+      tokens_avoid: ["--brand"]
+    },
+    {
+      context: "Modais",
+      do: "Usar CTAs com --brand em modais de conversão e --primary em institucionais.",
+      dont: "Evitar fundos coloridos saturados no overlay ou corpo do modal.",
+      tokens_recommended: ["--brand", "--primary"],
+      tokens_avoid: ["Saturated backgrounds"]
+    }
+  ];
+
   const data = {
     metadata: {
       project: "Sicoob Design System",
-      version: "1.0.0",
+      version: "1.1.0",
       updated_at: new Date().toISOString()
     },
     tokens: {
@@ -589,16 +627,17 @@ function exportTokensJSON() {
       accent: "#FFBB00",
       reward: "#5C2D91"
     },
-    status_mapping: SICOOB_STATUS_CONFIG
+    status_mapping: SICOOB_STATUS_CONFIG,
+    context_rules: contextRules
   };
 
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = url;
-  link.download = `sicoob-design-tokens-${new Date().toISOString().split('T')[0]}.json`;
+  link.download = `sicoob-design-tokens-audit-${new Date().toISOString().split('T')[0]}.json`;
   link.click();
-  toast.success("Tokens exportados com sucesso");
+  toast.success("Tokens e regras de contexto exportados para auditoria");
 }
 
 function ColorCard({ name, token, hex, className, description }: { 
