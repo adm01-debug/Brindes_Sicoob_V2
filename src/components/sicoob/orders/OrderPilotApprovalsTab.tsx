@@ -34,9 +34,9 @@ export function OrderPilotApprovalsTab({ orderId }: OrderPilotApprovalsTabProps)
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case 'approved': return <Badge className="bg-success text-success-foreground hover:bg-success/90">Aprovado</Badge>;
+      case 'approved': return <Badge variant="success">Aprovado</Badge>;
       case 'rejected': return <Badge variant="destructive">Rejeitado</Badge>;
-      case 'revision': return <Badge variant="secondary" className="bg-warning text-warning-foreground hover:bg-warning/90">Revisão</Badge>;
+      case 'revision': return <Badge variant="warning">Revisão</Badge>;
       case 'pending': return <Badge variant="outline" className="animate-pulse">Aguardando</Badge>;
       default: return <Badge variant="outline">{status}</Badge>;
     }
@@ -89,7 +89,7 @@ export function OrderPilotApprovalsTab({ orderId }: OrderPilotApprovalsTabProps)
                   </div>
                   <div className="flex flex-wrap gap-2">
                     <Button 
-                      className="bg-success text-success-foreground hover:bg-success/90"
+                      variant="success"
                       onClick={() => handleAction(approval.id, 'approved')}
                       disabled={updateApprovalStatus.isPending}
                     >
@@ -98,7 +98,7 @@ export function OrderPilotApprovalsTab({ orderId }: OrderPilotApprovalsTabProps)
                     </Button>
                     <Button 
                       variant="outline" 
-                      className="text-warning border-warning/40 hover:bg-warning/10"
+                      variant="warning"
                       onClick={() => handleAction(approval.id, 'revision')}
                       disabled={updateApprovalStatus.isPending}
                     >

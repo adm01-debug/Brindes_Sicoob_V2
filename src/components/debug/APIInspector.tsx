@@ -81,12 +81,12 @@ export function APIInspector() {
                         {log.message}
                       </div>
                       {isRpc && (
-                        <div className="text-amber-600 dark:text-amber-400 font-bold">
+                        <div className="text-accent font-bold">
                           RPC: {log.message.split('/rpc/')[1]?.split('?')[0]}
                         </div>
                       )}
                       {!isRpc && tableName && (
-                        <div className="text-blue-600 dark:text-blue-400 font-bold">
+                        <div className="text-brand font-bold">
                           Table: {tableName}
                         </div>
                       )}

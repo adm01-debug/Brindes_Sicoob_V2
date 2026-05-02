@@ -271,10 +271,10 @@ export default function Auth() {
                     <div
                       role="alert"
                       data-testid="social-login-fallback-banner"
-                      className="rounded-lg border border-amber-500/40 bg-amber-500/10 p-3 text-sm text-foreground space-y-2 animate-fade-in"
+                      className="rounded-lg border-warning/40 bg-warning/10 p-3 text-sm text-foreground space-y-2 animate-fade-in"
                     >
                       <div className="flex items-start gap-2">
-                        <AlertTriangle className="h-4 w-4 mt-0.5 text-amber-600 shrink-0" />
+                        <AlertTriangle className="h-4 w-4 mt-0.5 text-warning shrink-0" />
                         <div className="flex-1 space-y-1">
                           <p className="font-medium">Não consegui te autenticar pelo Google.</p>
                           <p className="text-xs text-muted-foreground break-words">{socialError}</p>
