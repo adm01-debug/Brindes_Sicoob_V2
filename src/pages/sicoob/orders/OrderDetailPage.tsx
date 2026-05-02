@@ -534,10 +534,12 @@ export default function OrderDetailPage() {
                   <FileText className="h-4 w-4 mr-2" />
                   NF
                 </TabsTrigger>
-                <TabsTrigger value="payments" className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none bg-transparent px-0 pb-2 h-auto">
-                  <CreditCard className="h-4 w-4 mr-2" />
-                  Pagamento
-                </TabsTrigger>
+                {(isSupervisorOrAbove || isGerentePa) && (
+                  <TabsTrigger value="payments" className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none bg-transparent px-0 pb-2 h-auto">
+                    <CreditCard className="h-4 w-4 mr-2" />
+                    Pagamento
+                  </TabsTrigger>
+                )}
                 <TabsTrigger value="pilots" className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none bg-transparent px-0 pb-2 h-auto">
                   <ImageIcon className="h-4 w-4 mr-2" />
                   Aprovações
@@ -572,9 +574,11 @@ export default function OrderDetailPage() {
                 <OrderInvoicesTab orderId={id!} />
               </TabsContent>
 
-              <TabsContent value="payments" className="pt-6">
-                <OrderPaymentsTab orderId={id!} />
-              </TabsContent>
+              {(isSupervisorOrAbove || isGerentePa) && (
+                <TabsContent value="payments" className="pt-6">
+                  <OrderPaymentsTab orderId={id!} />
+                </TabsContent>
+              )}
 
               <TabsContent value="pilots" className="pt-6">
                 <OrderPilotApprovalsTab orderId={id!} />

@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Progress } from "@/components/ui/progress";
 import { FileText, Upload, FileCode, Download, Trash2 } from "lucide-react";
 import { useOrderInvoices } from "@/hooks/useOrderExtensions";
 import { toast } from "sonner";
@@ -15,6 +16,7 @@ interface OrderInvoicesTabProps {
 export function OrderInvoicesTab({ orderId }: OrderInvoicesTabProps) {
   const { invoices, addInvoice, uploadFile, isLoading } = useOrderInvoices(orderId);
   const [invoiceNumber, setInvoiceNumber] = useState("");
+  const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>, type: 'xml' | 'pdf') => {
@@ -23,7 +25,9 @@ export function OrderInvoicesTab({ orderId }: OrderInvoicesTabProps) {
 
     try {
       setIsUploading(true);
-      const publicUrl = await uploadFile(file, `invoice-${type}`);
+      setUploadProgress(10);
+      const publicUrl = await uploadFile(file, `${file.name}-${Date.now()}`);
+      setUploadProgress(70);
       
       addInvoice.mutate({
         invoice_number: invoiceNumber || "PROVISÓRIA",
@@ -32,12 +36,14 @@ export function OrderInvoicesTab({ orderId }: OrderInvoicesTabProps) {
         metadata: { original_name: file.name }
       });
       
+      setUploadProgress(100);
       setInvoiceNumber("");
       toast.success(`${type.toUpperCase()} enviado com sucesso`);
     } catch (error: any) {
       toast.error("Erro no upload: " + error.message);
     } finally {
       setIsUploading(false);
+      setTimeout(() => setUploadProgress(0), 1000);
     }
   };
 
@@ -92,7 +98,15 @@ export function OrderInvoicesTab({ orderId }: OrderInvoicesTabProps) {
               </Button>
             </div>
           </div>
-          {isUploading && <p className="text-sm text-muted-foreground animate-pulse">Enviando arquivo...</p>}
+          {isUploading && (
+            <div className="space-y-2">
+              <div className="flex justify-between text-xs text-muted-foreground">
+                <span>Enviando arquivo...</span>
+                <span>{uploadProgress}%</span>
+              </div>
+              <Progress value={uploadProgress} className="h-1" />
+            </div>
+          )}
         </CardContent>
       </Card>
 
