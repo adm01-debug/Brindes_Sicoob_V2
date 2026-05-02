@@ -15,11 +15,13 @@ import { authService } from "@/services/authService";
 // mas a nova hierarquia oficial é: dev > supervisor > agente.
 export type AppRole =
   | "dev"
+  | "gestor_compras"
+  | "gerente_pa"
+  | "vendedor"
   | "supervisor"
   | "agente"
   | "admin"      // legado (alias de supervisor)
-  | "manager"    // legado
-  | "vendedor";  // legado (alias de agente)
+  | "manager";    // legado
 
 // Interface do Profile
 export interface Profile {
