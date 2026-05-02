@@ -105,9 +105,9 @@ html[data-scroll-locked] body {
     --interactive: 82 73% 41%;
     --divider: 220 14% 86%;
 
-    /* ===== ACCENT (AMARELO SICOOB — #F2AE21) ===== */
-    --accent: 40 89% 54%;
-    --accent-foreground: 190 100% 13%;
+    /* ===== ACCENT (ROXO SICOOB — #5C2D91 — detalhes) ===== */
+    --accent: 271 53% 37%;
+    --accent-foreground: 0 0% 100%;
 
     /* ===== DESTRUCTIVE ===== */
     --destructive: 0 84% 60%;
