@@ -43,47 +43,14 @@ const TEST_USERS_CONFIG = [
 ];
 
 async function ensureTestUser(user: (typeof TEST_USERS_CONFIG)[number]) {
-  const { data: listed, error: listError } = await supabase.auth.admin.listUsers({ page: 1, perPage: 200 });
-  if (listError) throw listError;
-
-  const existingById = listed.users.find((candidate) => candidate.id === user.id);
-  const existingByEmail = listed.users.find((candidate) => candidate.email?.toLowerCase() === user.email.toLowerCase());
-
-  if (existingByEmail && existingByEmail.id !== user.id) {
-    const { error: deleteAuthError } = await supabase.auth.admin.deleteUser(existingByEmail.id);
-    if (deleteAuthError) throw deleteAuthError;
-
-    const { error: deleteProfileByEmailError } = await supabase
-      .from("profiles")
-      .delete()
-      .eq("email", user.email)
-      .neq("user_id", user.id);
-
-    if (deleteProfileByEmailError) throw deleteProfileByEmailError;
-  }
-
-  if (existingById || existingByEmail?.id === user.id) {
-    console.log(`Atualizando senha do usuário de teste existente: ${user.email}`);
-    const { error: updateUserError } = await supabase.auth.admin.updateUserById(user.id, {
-      password: TEST_PASSWORD,
-      email_confirm: true,
-      user_metadata: { full_name: user.full_name },
-    });
-
-    if (updateUserError) throw updateUserError;
-    return;
-  }
-
-  console.log(`Criando usuário de teste: ${user.email}`);
-  const { error: createUserError } = await supabase.auth.admin.createUser({
-    id: user.id,
-    email: user.email,
+  console.log(`Redefinindo senha do usuário de teste: ${user.email}`);
+  const { error: updateUserError } = await supabase.auth.admin.updateUserById(user.id, {
     password: TEST_PASSWORD,
     email_confirm: true,
     user_metadata: { full_name: user.full_name },
   });
 
-  if (createUserError) throw createUserError;
+  if (updateUserError) throw updateUserError;
 }
 
 Deno.serve(async (req) => {
