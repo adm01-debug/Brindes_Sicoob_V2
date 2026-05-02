@@ -149,7 +149,8 @@ export default function OrderDetailPage() {
       orderId: id!,
       reason: requestReason,
       amount: orderTotal,
-      threshold: threshold
+      threshold: threshold,
+      previousStatus: orderData.status
     }, {
       onSuccess: () => {
         setIsRequestDialogOpen(false);
