@@ -285,8 +285,9 @@ const App = () => {
                                 <Route path="/admin/sicoob" element={<SicoobManagementPage />} />
                                 <Route path="/sicoob/pedidos" element={<SicoobOrdersPage />} />
                                 <Route path="/sicoob/pedidos/kanban" element={<SicoobOrdersKanbanPage />} />
-                                <Route path="/sicoob/pedidos/:id" element={<SicoobOrderDetailPage />} />
-                              </Route>
+                                 <Route path="/sicoob/pedidos/:id" element={<SicoobOrderDetailPage />} />
+                                 <Route path="/sicoob/logistica" element={<SicoobLogisticsReportPage />} />
+                               </Route>
                               <Route element={<ProtectedRoute allowedRoles={['vendedor']} />}>
                                 <Route path="/sicoob/vendas" element={<SicoobSellerPanelPage />} />
                               </Route>
