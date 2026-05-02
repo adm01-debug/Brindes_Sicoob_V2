@@ -124,13 +124,19 @@ export function useSicoobOrderItems(orderId?: string) {
       return await updateOrderTotal(orderId);
     },
     onSuccess: () => {
-      toast.success("Item removido com sucesso");
+      toast.success("Item removido com sucesso", {
+        description: "O total do pedido foi atualizado."
+      });
       queryClient.invalidateQueries({ queryKey: ["sicoob_order", orderId] });
       queryClient.invalidateQueries({ queryKey: ["sicoob_order_items", orderId] });
+      queryClient.invalidateQueries({ queryKey: ["sicoob_order_item_logs", orderId] });
     },
     onError: (error: any) => {
       console.error("Error removing item:", error);
-      toast.error("Erro ao remover item: " + error.message);
+      const message = error.message || "Não foi possível completar a remoção do item.";
+      toast.error("Erro ao remover item", {
+        description: message,
+      });
     },
   });
 
