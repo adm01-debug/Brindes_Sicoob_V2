@@ -272,6 +272,12 @@ const App = () => {
                               <Route path="/admin/kit-templates/metricas" element={<KitTemplatesMetricsPage />} />
                               <Route element={<AdminRoute requiredRole="gestor_compras" />}>
                                 <Route path="/admin/sicoob" element={<SicoobManagementPage />} />
+                                <Route path="/sicoob/pedidos" element={<SicoobOrdersPage />} />
+                                <Route path="/sicoob/pedidos/kanban" element={<SicoobOrdersKanbanPage />} />
+                                <Route path="/sicoob/pedidos/:id" element={<SicoobOrderDetailPage />} />
+                              </Route>
+                              <Route element={<ProtectedRoute allowedRoles={['vendedor']} />}>
+                                <Route path="/sicoob/vendas" element={<SicoobSellerPanelPage />} />
                               </Route>
                               <Route path="/admin/aprovacoes-desconto" element={<DeprecatedRoute message="A gestão de descontos foi movida para a aba 'Descontos' em Usuários." redirectTo="/admin/usuarios?tab=discounts" />} />
                               <Route path="/admin/performance" element={<DeprecatedRoute message="O módulo de Performance foi descontinuado. Use o BI Comercial para análises." redirectTo="/ferramentas/bi" />} />
