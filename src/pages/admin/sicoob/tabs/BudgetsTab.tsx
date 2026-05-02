@@ -34,6 +34,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 export const BudgetsTab = () => {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [validationError, setValidationError] = useState<string | null>(null);
   const queryClient = useQueryClient();
 
   const { data: budgets, isLoading: budgetsLoading } = useQuery({
