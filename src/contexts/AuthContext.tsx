@@ -51,16 +51,19 @@ interface AuthContextType {
   roles: AppRole[];
   // Role principal (mais alta na hierarquia) para exibição/legado
   role: AppRole | null;
-  // Helpers da NOVA hierarquia (dev > supervisor > agente)
+  // Helpers da hierarquia Sicoob/Flow
   isDev: boolean;
-  isSupervisor: boolean;       // strict: apenas o nível supervisor (não inclui dev)
+  isGestorCompras: boolean;
+  isGerentePa: boolean;
+  isVendedor: boolean;
+  isSupervisor: boolean;
   isAgente: boolean;
-  isSupervisorOrAbove: boolean; // dev OR supervisor — equivale ao server-side is_supervisor_or_above
-  // Aliases retrocompatíveis (deprecated — preferir os acima)
-  isAdmin: boolean;            // = isSupervisorOrAbove
-  isManager: boolean;          // legado
-  isSeller: boolean;           // = isAgente
-  canManage: boolean;          // = isSupervisorOrAbove
+  isSupervisorOrAbove: boolean; // dev OR supervisor OR gestor_compras
+  // IDs organizacionais
+  cooperativaId: string | null;
+  paId: string | null;
+  // Aliases retrocompatíveis
+  isAdmin: boolean;
   isAuthenticated: boolean;
   // MFA / Authenticator Assurance Level
   currentAAL: 'aal1' | 'aal2' | null;
