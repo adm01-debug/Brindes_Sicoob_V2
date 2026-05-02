@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { canSicoobTransitionTo, OrderStatus } from '../types/sicoob/orders';
+import { canSicoobTransitionTo } from './orders';
 
 describe('Sicoob Order Status Workflow', () => {
   it('should allow valid Sicoob transitions', () => {
