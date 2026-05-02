@@ -172,8 +172,8 @@ export const ProductCard = memo(forwardRef<HTMLElement, ProductCardProps>(functi
       className={cn(
         "group relative overflow-hidden rounded-xl sm:rounded-2xl bg-card cursor-pointer card-lift",
         "transition-all duration-300 ease-out active:scale-[0.98] active:transition-transform active:duration-100 touch-manipulation",
-        product.featured && "ring-2 ring-primary/20 shadow-lg",
-        hasHighlightedColor ? "border-2" : "border-[1.5px] border-primary/20 hover:border-primary/50 hover:shadow-xl",
+        product.featured && "ring-2 ring-brand/20 shadow-lg",
+        hasHighlightedColor ? "border-2" : "border-[1.5px] border-brand/20 hover:border-brand/50 hover:shadow-xl",
       )}
       style={hasHighlightedColor && matchedHighlightColor ? {
         borderColor: `${matchedHighlightColor}70`,
@@ -255,7 +255,7 @@ export const ProductCard = memo(forwardRef<HTMLElement, ProductCardProps>(functi
         <h3
           data-testid="product-card-name"
           data-product-name={product.name}
-          className="font-display font-semibold text-foreground line-clamp-2 min-h-[2.25rem] sm:min-h-[2.75rem] text-sm sm:text-base leading-snug group-hover:text-primary transition-colors duration-300"
+          className="font-display font-semibold text-foreground line-clamp-2 min-h-[2.25rem] sm:min-h-[2.75rem] text-sm sm:text-base leading-snug group-hover:text-brand transition-colors duration-300"
         >
           {product.name}
         </h3>
@@ -290,7 +290,7 @@ export const ProductCard = memo(forwardRef<HTMLElement, ProductCardProps>(functi
         })()}
 
         {Array.isArray(product.materials) && product.materials.length > 0 && (
-          <div className="hidden sm:flex flex-wrap gap-1.5 pt-2 border-t border-border/50">
+          <div className="hidden sm:flex flex-wrap gap-1.5 pt-2 border-t border-brand/10">
             {product.materials.slice(0, 2).map((material) => (
               <span key={material} className="text-xs px-2.5 py-1 rounded-full bg-muted/50 text-muted-foreground font-medium">{material}</span>
             ))}
