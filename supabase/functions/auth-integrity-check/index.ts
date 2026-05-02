@@ -27,7 +27,12 @@ Deno.serve(async (req) => {
       test_emails: emails
     });
 
-    if (rpcError) throw rpcError;
+    console.log("Integrity data from RPC:", JSON.stringify(integrityData));
+
+    if (rpcError) {
+      console.error("RPC Error details:", rpcError);
+      throw rpcError;
+    }
 
     const results: Record<string, { isValid: boolean; reason?: string }> = {};
 
