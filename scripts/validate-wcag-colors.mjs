@@ -32,7 +32,7 @@ function getContrastRatio(l1, l2) {
 // Valores extraídos do index.css
 const TOKENS = {
   light: {
-    brand: [175, 100, 34],
+    brand: [175, 100, 25],
     primary: [190, 100, 13],
     reward: [271, 53, 37],
     success: [155, 60, 38],
@@ -41,8 +41,8 @@ const TOKENS = {
   },
   dark: {
     brand: [175, 90, 38],
-    primary: [190, 100, 15],
-    reward: [271, 60, 55],
+    primary: [190, 40, 75],
+    reward: [271, 70, 75],
     background: [225, 25, 3],
     foreground: [175, 20, 96],
     accent: [44, 100, 50],

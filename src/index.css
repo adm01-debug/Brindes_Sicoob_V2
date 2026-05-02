@@ -75,7 +75,7 @@ html[data-scroll-locked] body {
 
     /* ===== MARCA / AÇÃO (VERDE-TEAL SICOOB 2024 — #00AE9D) ===== */
     /* Uso: CTAs principais, hero, ações de conversão, energia cooperativa. */
-    --brand: 175 100% 30%;
+    --brand: 175 100% 25%;
     --brand-hover: 175 100% 28%;
     --brand-active: 175 100% 22%;
     --brand-glow: 175 100% 42%;
@@ -301,7 +301,7 @@ html[data-scroll-locked] body {
     --command-shadow: 0 0% 0% / 0.92;
 
     /* ===== CORES PRIMÁRIAS (VERDE SICOOB INSTITUCIONAL — dark) ===== */
-    --primary: 190 40% 65%;
+    --primary: 190 40% 75%;
     --primary-hover: 190 100% 12%;
     --primary-active: 190 100% 10%;
     --primary-glow: 190 100% 25%;
@@ -320,7 +320,7 @@ html[data-scroll-locked] body {
     --secondary-foreground: 0 0% 100%;
 
     /* ===== REWARD (ROXO SELO — dark) ===== */
-    --reward: 271 70% 65%;
+    --reward: 271 70% 75%;
     --reward-hover: 271 60% 48%;
     --reward-foreground: 0 0% 100%;
     --reward-soft: 271 60% 55%;
