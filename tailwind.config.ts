@@ -116,11 +116,23 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
-        // Status indicators (replacing gamification colors)
+        // Status indicators (Sicoob workflow + legacy)
         status: {
           active: "hsl(var(--success))",
           pending: "hsl(var(--warning))",
           inactive: "hsl(var(--muted-foreground))",
+          production: "hsl(var(--status-production))",
+          "production-foreground": "hsl(var(--status-production-foreground))",
+          separation: "hsl(var(--status-separation))",
+          "separation-foreground": "hsl(var(--status-separation-foreground))",
+          transit: "hsl(var(--status-transit))",
+          "transit-foreground": "hsl(var(--status-transit-foreground))",
+          delivered: "hsl(var(--status-delivered))",
+          "delivered-foreground": "hsl(var(--status-delivered-foreground))",
+          completed: "hsl(var(--status-completed))",
+          "completed-foreground": "hsl(var(--status-completed-foreground))",
+          cancelled: "hsl(var(--status-cancelled))",
+          "cancelled-foreground": "hsl(var(--status-cancelled-foreground))",
         },
         // Chart colors
         chart: {
