@@ -20,14 +20,18 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Plus, Pencil, Trash2, Search } from "lucide-react";
+import { Plus, Pencil, Trash2, Search, ShieldAlert } from "lucide-react";
 import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 export const CooperativasTab = () => {
+  const { isDev } = useAuth();
   const [searchTerm, setSearchTerm] = useState("");
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [editingCoop, setEditingCoop] = useState<any>(null);
   const queryClient = useQueryClient();
+
 
   const { data: cooperativas, isLoading } = useQuery({
     queryKey: ["cooperativas"],
@@ -132,40 +136,49 @@ export const CooperativasTab = () => {
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
-        <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
-          <DialogTrigger asChild>
-            <Button className="gap-2">
-              <Plus className="h-4 w-4" />
-              Nova Singular
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <form onSubmit={handleCreate}>
-              <DialogHeader>
-                <DialogTitle>Cadastrar Nova Singular</DialogTitle>
-                <DialogDescription>
-                  Adicione uma nova cooperativa central (Singular) ao sistema.
-                </DialogDescription>
-              </DialogHeader>
-              <div className="grid gap-4 py-4">
-                <div className="space-y-2">
-                  <label htmlFor="name">Nome da Cooperativa</label>
-                  <Input id="name" name="nome" placeholder="Ex: Sicoob Credisul" required />
+        
+        {isDev ? (
+          <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
+            <DialogTrigger asChild>
+              <Button className="gap-2">
+                <Plus className="h-4 w-4" />
+                Nova Singular
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <form onSubmit={handleCreate}>
+                <DialogHeader>
+                  <DialogTitle>Cadastrar Nova Singular</DialogTitle>
+                  <DialogDescription>
+                    Adicione uma nova cooperativa central (Singular) ao sistema.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="grid gap-4 py-4">
+                  <div className="space-y-2">
+                    <label htmlFor="name">Nome da Cooperativa</label>
+                    <Input id="name" name="name" placeholder="Ex: Sicoob Credisul" required />
+                  </div>
+                  <div className="space-y-2">
+                    <label htmlFor="code">Código/Número</label>
+                    <Input id="code" name="code" placeholder="Ex: 4321" required />
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <label htmlFor="code">Código/Número</label>
-                  <Input id="code" name="codigo" placeholder="Ex: 4321" required />
-                </div>
-              </div>
-              <DialogFooter>
-                <Button type="submit" disabled={createMutation.isPending}>
-                  {createMutation.isPending ? "Salvando..." : "Criar"}
-                </Button>
-              </DialogFooter>
-            </form>
-          </DialogContent>
-        </Dialog>
+                <DialogFooter>
+                  <Button type="submit" disabled={createMutation.isPending}>
+                    {createMutation.isPending ? "Salvando..." : "Criar"}
+                  </Button>
+                </DialogFooter>
+              </form>
+            </DialogContent>
+          </Dialog>
+        ) : (
+          <div className="flex items-center gap-2 text-sm text-muted-foreground bg-muted/50 px-3 py-1 rounded-md border">
+            <ShieldAlert className="h-4 w-4" />
+            Apenas desenvolvedores podem criar Singulares
+          </div>
+        )}
       </div>
+
 
       <div className="border rounded-md">
         <Table>
@@ -200,26 +213,33 @@ export const CooperativasTab = () => {
                     -
                   </TableCell>
                   <TableCell className="text-right space-x-2">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => setEditingCoop(coop)}
-                    >
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="text-destructive"
-                      onClick={() => {
-                        if (confirm("Deseja realmente remover esta Singular?")) {
-                          deleteMutation.mutate(coop.id);
-                        }
-                      }}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                    {isDev ? (
+                      <>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => setEditingCoop(coop)}
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="text-destructive"
+                          onClick={() => {
+                            if (confirm("Deseja realmente remover esta Singular?")) {
+                              deleteMutation.mutate(coop.id);
+                            }
+                          }}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </>
+                    ) : (
+                      <span className="text-xs text-muted-foreground italic">Somente visualização</span>
+                    )}
                   </TableCell>
+
                 </TableRow>
               ))
             )}
@@ -239,7 +259,7 @@ export const CooperativasTab = () => {
                   <label htmlFor="edit-name">Nome da Cooperativa</label>
                   <Input
                     id="edit-name"
-                    name="nome"
+                    name="name"
                     defaultValue={editingCoop.nome}
                     required
                   />
@@ -248,11 +268,12 @@ export const CooperativasTab = () => {
                   <label htmlFor="edit-code">Código/Número</label>
                   <Input
                     id="edit-code"
-                    name="codigo"
+                    name="code"
                     defaultValue={editingCoop.codigo}
                     required
                   />
                 </div>
+
               </div>
               <DialogFooter>
                 <Button type="submit" disabled={updateMutation.isPending}>

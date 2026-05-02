@@ -27,12 +27,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Plus, Filter, AlertCircle } from "lucide-react";
+import { Plus, Filter, AlertCircle, ShieldAlert } from "lucide-react";
 import { toast } from "sonner";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-
+import { useAuth } from "@/contexts/AuthContext";
 
 export const BudgetsTab = () => {
+  const { isSupervisorOrAbove } = useAuth();
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [validationError, setValidationError] = useState<string | null>(null);
   const queryClient = useQueryClient();
@@ -149,99 +150,108 @@ export const BudgetsTab = () => {
             Filtros
           </Button>
         </div>
-        <Dialog open={isCreateOpen} onOpenChange={handleOpenChange}>
-          <DialogTrigger asChild>
-            <Button className="gap-2">
-              <Plus className="h-4 w-4" />
-              Alocar Verba
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <form onSubmit={handleCreate}>
-              <DialogHeader>
-                <DialogTitle>Alocar Verba para PA</DialogTitle>
-                <DialogDescription>
-                  Defina o limite de compras mensal para um Posto de Atendimento.
-                </DialogDescription>
-              </DialogHeader>
+        
+        {isSupervisorOrAbove ? (
+          <Dialog open={isCreateOpen} onOpenChange={handleOpenChange}>
+            <DialogTrigger asChild>
+              <Button className="gap-2">
+                <Plus className="h-4 w-4" />
+                Alocar Verba
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <form onSubmit={handleCreate}>
+                <DialogHeader>
+                  <DialogTitle>Alocar Verba para PA</DialogTitle>
+                  <DialogDescription>
+                    Defina o limite de compras mensal para um Posto de Atendimento.
+                  </DialogDescription>
+                </DialogHeader>
 
-              {validationError && (
-                <Alert variant="destructive" className="my-2">
-                  <AlertCircle className="h-4 w-4" />
-                  <AlertTitle>Erro de Validação</AlertTitle>
-                  <AlertDescription>{validationError}</AlertDescription>
-                </Alert>
-              )}
-              <div className="grid gap-4 py-4">
-                <div className="space-y-2">
-                  <label>Posto de Atendimento (PA)</label>
-                  <Select name="pa_id" required>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecione o PA" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {pas?.map((pa: any) => (
-                        <SelectItem key={pa.id} value={pa.id}>
-                          {pa.cooperativa?.codigo} - {pa.nome} ({pa.codigo})
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
+                {validationError && (
+                  <Alert variant="destructive" className="my-2">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertTitle>Erro de Validação</AlertTitle>
+                    <AlertDescription>{validationError}</AlertDescription>
+                  </Alert>
+                )}
+                <div className="grid gap-4 py-4">
                   <div className="space-y-2">
-                    <label>Mês</label>
-                    <Select name="month" defaultValue={new Date().getMonth() + 1 + ""}>
+                    <label>Posto de Atendimento (PA)</label>
+                    <Select name="pa_id" required>
                       <SelectTrigger>
-                        <SelectValue />
+                        <SelectValue placeholder="Selecione o PA" />
                       </SelectTrigger>
                       <SelectContent>
-                        {Array.from({ length: 12 }, (_, i) => (
-                          <SelectItem key={i + 1} value={i + 1 + ""}>
-                            {new Date(0, i).toLocaleString("pt-BR", { month: "long" })}
+                        {pas?.map((pa: any) => (
+                          <SelectItem key={pa.id} value={pa.id}>
+                            {pa.cooperativa?.codigo} - {pa.nome} ({pa.codigo})
                           </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
                   </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <label>Mês</label>
+                      <Select name="month" defaultValue={new Date().getMonth() + 1 + ""}>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {Array.from({ length: 12 }, (_, i) => (
+                            <SelectItem key={i + 1} value={i + 1 + ""}>
+                              {new Date(0, i).toLocaleString("pt-BR", { month: "long" })}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <label>Ano</label>
+                      <Input
+                        name="year"
+                        type="number"
+                        defaultValue={new Date().getFullYear()}
+                        required
+                      />
+                    </div>
+                  </div>
                   <div className="space-y-2">
-                    <label>Ano</label>
+                    <label>Valor da Verba (R$)</label>
                     <Input
-                      name="year"
+                      name="amount"
                       type="number"
-                      defaultValue={new Date().getFullYear()}
+                      step="0.01"
+                      placeholder="0,00"
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label>Limite de Alçada p/ Pedido (R$)</label>
+                    <Input
+                      name="alcada"
+                      type="number"
+                      step="0.01"
+                      placeholder="0,00"
                       required
                     />
                   </div>
                 </div>
-                <div className="space-y-2">
-                  <label>Valor da Verba (R$)</label>
-                  <Input
-                    name="amount"
-                    type="number"
-                    step="0.01"
-                    placeholder="0,00"
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label>Limite de Alçada p/ Pedido (R$)</label>
-                  <Input
-                    name="alcada"
-                    type="number"
-                    step="0.01"
-                    placeholder="0,00"
-                    required
-                  />
-              </div>
-              <DialogFooter>
-                <Button type="submit" disabled={createMutation.isPending}>
-                  {createMutation.isPending ? "Alocando..." : "Confirmar Alocação"}
-                </Button>
-              </DialogFooter>
-            </form>
-          </DialogContent>
-        </Dialog>
+                <DialogFooter>
+                  <Button type="submit" disabled={createMutation.isPending}>
+                    {createMutation.isPending ? "Alocando..." : "Confirmar Alocação"}
+                  </Button>
+                </DialogFooter>
+              </form>
+            </DialogContent>
+          </Dialog>
+        ) : (
+          <div className="flex items-center gap-2 text-sm text-muted-foreground bg-muted/50 px-3 py-1 rounded-md border">
+            <ShieldAlert className="h-4 w-4" />
+            Sem permissão para alocar verbas
+          </div>
+        )}
       </div>
 
       <div className="border rounded-md">
