@@ -180,6 +180,17 @@ export async function invokeCrmDb<T>(query: CrmQuery): Promise<CrmResponse<T>> {
       ? await extractCrmErrorMessage(error)
       : data?.error || "Unknown CRM error";
 
+    // Soft-degrade: when the CRM bridge reports it isn't configured (placeholder
+    // EXTERNAL_CRM_URL/keys), don't crash screens — return an empty result for
+    // read operations so the UI keeps rendering. Writes still surface the error.
+    const isNotConfigured = /CRM connection is not configured correctly|Invalid URL|PLACEHOLDER_VALUE_TO_BE_REPLACED/i.test(msg);
+    const isReadOp = query.operation === "select" || query.operation === "search";
+    if (isNotConfigured && isReadOp) {
+      logger.warn(`[CRM-DB] CRM not configured — returning empty payload [req_id=${requestId}]`);
+      record(false, null, msg);
+      return { data: (query.id ? null : []) as unknown as T };
+    }
+
     if (attempt < MAX_RETRIES && isRetryableCrmError(msg)) {
       const delay = INITIAL_BACKOFF_MS * Math.pow(2, attempt);
       logger.warn(`[CRM-DB] Retry ${attempt + 1}/${MAX_RETRIES} after ${delay}ms [req_id=${requestId}]: ${msg}`);
