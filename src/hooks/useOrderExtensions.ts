@@ -173,22 +173,45 @@ export const useOrderPilotApprovals = (orderId?: string) => {
   return { approvals, isLoading, updateApprovalStatus };
 };
 
-export const useOrderAudit = (orderId?: string) => {
-  const { data: auditEvents, isLoading } = useQuery({
-    queryKey: ["order-audit", orderId],
+export const useOrderAudit = (orderId?: string, filters?: { event_type?: string, startDate?: string, endDate?: string }) => {
+  const [page, setPage] = useState(1);
+  const pageSize = 10;
+
+  const { data, isLoading } = useQuery({
+    queryKey: ["order-audit", orderId, filters, page],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from("order_audit_events")
-        .select("*")
-        .eq("order_id", orderId)
-        .order("created_at", { ascending: false });
+        .select("*", { count: 'exact' })
+        .eq("order_id", orderId!)
+        .order("created_at", { ascending: false })
+        .range((page - 1) * pageSize, page * pageSize - 1);
+
+      if (filters?.event_type && filters.event_type !== 'all') {
+        query = query.eq("event_type", filters.event_type);
+      }
+      if (filters?.startDate) {
+        query = query.gte("created_at", filters.startDate);
+      }
+      if (filters?.endDate) {
+        query = query.lte("created_at", filters.endDate);
+      }
+
+      const { data, error, count } = await query;
       if (error) throw error;
-      return data;
+      return { events: data, count };
     },
     enabled: !!orderId,
   });
 
-  return { auditEvents, isLoading };
+  return { 
+    auditEvents: data?.events, 
+    totalCount: data?.count,
+    isLoading,
+    page,
+    setPage,
+    pageSize
+  };
 };
 
 export const useOrderComments = (orderId?: string) => {
