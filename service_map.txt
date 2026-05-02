@@ -1,0 +1,175 @@
+src/pages/CustomizableDashboard.tsx:      let quotesQ = supabase.from('quotes').select('id', { count: 'exact', head: true });
+src/pages/CustomizableDashboard.tsx:      let ordersQ = supabase.from('orders').select('id', { count: 'exact', head: true }).eq('status', 'pending');
+src/pages/CustomizableDashboard.tsx:      let draftQ = supabase.from('quotes').select('id', { count: 'exact', head: true }).eq('status', 'draft');
+src/pages/KitBuilderPage.tsx:        const { data, error } = await supabase.from('custom_kits').select('*').eq('id', kitIdParam).maybeSingle();
+src/pages/KitBuilderPage.tsx:        const { data, error } = await supabase.from('kit_templates').select('*').eq('id', templateIdParam).maybeSingle();
+src/pages/KitLibraryPage.tsx:      const { error } = await supabase.from('custom_kits').delete().eq('id', id);
+src/pages/KitLibraryPage.tsx:      const { error } = await supabase.from('custom_kits').insert(payload as never);
+src/pages/MockupHistoryPage.tsx:    const { error } = await supabase.from("generated_mockups").delete().eq("id", id);
+src/pages/OrderDetailPage.tsx:      supabase.from("orders").select("*").eq("id", id!).maybeSingle(),
+src/pages/OrderDetailPage.tsx:      supabase.from("order_items").select("*").eq("order_id", id!),
+src/pages/PermissionsPage.tsx:        const { error } = await supabase.from('permissions').insert(formData);
+src/pages/PermissionsPage.tsx:      const { error } = await supabase.from('permissions').delete().eq('id', id);
+src/pages/ProductDetail.tsx:      const { count } = await supabase.from("product_views").select("*", { count: "exact", head: true }).eq("product_id", id!).gte("created_at", thirtyDaysAgo.toISOString());
+src/pages/QuoteApprovalPage.tsx:      const { error } = await supabase.rpc("submit_quote_response", {
+src/pages/QuoteDetailPage.tsx:      const { data, error } = await supabase.from("quotes").select("*").eq("id", id!).single();
+src/pages/QuoteViewPage.tsx:                        await supabase.from("quotes").update({ status: "pending" } as Record<string, unknown>).eq("id", quote.id);
+src/pages/RolePermissionsPage.tsx:        supabase.from('permissions').select('*').order('category'),
+src/pages/RolePermissionsPage.tsx:        supabase.from('role_permissions').select('*'),
+src/pages/RolePermissionsPage.tsx:        await supabase.from('role_permissions').insert(toAdd);
+src/pages/RolesPage.tsx:      const { error } = await supabase.from('roles').delete().eq('id', id);
+src/pages/SystemStatusPage.tsx:      const { error } = await supabase.from("profiles").select("id").limit(1);
+src/pages/SystemStatusPage.tsx:          const { error } = await supabase.from(t).select("id", { count: "exact", head: true });
+src/pages/admin/AdminSegurancaAcessoPage.tsx:        supabase.from("bot_detection_log").select("*").order("created_at", { ascending: false }).limit(200),
+src/pages/admin/AdminSegurancaAcessoPage.tsx:        supabase.from("request_rate_limits").select("*").order("updated_at", { ascending: false }).limit(100),
+src/pages/admin/AdminSegurancaAcessoPage.tsx:        supabase.from("ip_access_control").select("*").order("created_at", { ascending: false }),
+src/pages/admin/AdminSegurancaAcessoPage.tsx:    const { error } = await supabase.from("ip_access_control").insert({
+src/pages/admin/AdminSegurancaAcessoPage.tsx:    const { error } = await supabase.from("ip_access_control").delete().eq("id", id);
+src/pages/admin/sicoob/tabs/CooperativasTab.tsx:      const { error } = await supabase.from("cooperativas").delete().eq("id", id);
+src/pages/admin/sicoob/tabs/PAsTab.tsx:      const { data, error } = await supabase.from("cooperativas").select("*").order("nome");
+src/pages/admin/sicoob/tabs/PAsTab.tsx:      const { error } = await supabase.from("postos_atendimento").delete().eq("id", id);
+src/pages/admin/sicoob/tabs/UserAssignmentTab.tsx:      const { data, error } = await supabase.from("cooperativas").select("*").order("name");
+src/pages/admin/sicoob/tabs/UserAssignmentTab.tsx:      const { data, error } = await supabase.from("postos_atendimento").select("*").order("name");
+src/pages/admin/telemetry/useAppHealth.ts:      const { data, error } = await supabase.rpc('get_app_health_summary', {
+src/pages/admin/telemetry/useAppHealth.ts:  const { data, error } = await supabase.rpc('lookup_request_id', {
+src/pages/admin/telemetry/useOptimizationQueue.ts:      const { error } = await supabase.rpc('enqueue_optimization' as never, {
+src/pages/admin/telemetry/useOptimizationQueue.ts:    const { error } = await supabase.from('optimization_queue' as never).delete().eq('id', id);
+src/pages/admin/telemetry/useOptimizationQueue.ts:    const { error } = await supabase.rpc('reset_optimization_queue' as never, { _only_running: false } as never);
+src/pages/admin/telemetry/useOptimizationQueue.ts:    const { data: claimed, error: claimErr } = await supabase.rpc('claim_next_optimization' as never);
+src/pages/admin/telemetry/useOptimizationQueue.ts:    const { data: guardrail } = await supabase.rpc('check_telemetry_regression' as never);
+src/pages/admin/telemetry/useOptimizationQueue.ts:    await supabase.rpc('complete_optimization' as never, {
+src/pages/admin/telemetry/usePlatformFailureMetrics.ts:      const { data, error } = await supabase.rpc('get_platform_failure_metrics', {
+src/pages/admin/telemetry/useRegressionGuardrail.ts:      const { data, error } = await supabase.rpc('check_telemetry_regression');
+src/pages/admin/telemetry/useTelemetryData.ts:    const { error } = await supabase.from('query_telemetry').delete().lt('created_at', threshold);
+src/pages/quote-view/QuoteActionHandlers.ts:  try { await supabase.from("quotes").update(crmUpdates).eq("id", quote.id); } catch { /* ignore */ }
+src/pages/quote-view/QuoteBitrixSync.ts:    await supabase.from("quotes").update(crmUpdates).eq("id", quote.id);
+src/pages/quotes-dashboard/useQuotesDashboard.ts:      const { data } = await supabase.from("quote_approval_tokens").select("id, viewed_at, responded_at");
+src/hooks/bi/useClientAffinity.ts:      const { data: rpcData, error } = await supabase.rpc("get_client_top_products", {
+src/hooks/bi/useClientCategoryAffinity.ts:      const { data, error } = await supabase.rpc("get_client_top_products", {
+src/hooks/bi/useClientSeasonality.ts:      const { data: clientData, error: clientErr } = await supabase.rpc(
+src/hooks/bi/useClientSeasonality.ts:            const { data: indData, error: indErr } = await supabase.rpc(
+src/hooks/bi/useClientVsIndustry.ts:      const { data, error } = await supabase.rpc("get_industry_benchmark_stats", {
+src/hooks/bi/useIndustryCategoryTrends.ts:      const { data, error } = await supabase.rpc("get_industry_top_products", {
+src/hooks/bi/useIndustryTrends.ts:        const { data, error } = await supabase.rpc("get_industry_top_products", {
+src/hooks/bi/useSeasonalPeakNotifications.ts:        const { error } = await supabase.from("workspace_notifications").insert({
+src/hooks/mockup/mockupGenerationService.ts:      const { data: productRow } = await supabase.from("products").select("id").eq("id", product.id).maybeSingle();
+src/hooks/mockup/mockupGenerationService.ts:      const { data: techRow } = await supabase.from("personalization_techniques").select("id").eq("id", technique.id).maybeSingle();
+src/hooks/mockup/mockupGenerationService.ts:    const { data: insertedRow, error } = await supabase.from("generated_mockups").insert({
+src/hooks/mockup/mockupGenerationService.ts:  const { error } = await supabase.from("generated_mockups").delete().eq("id", id);
+src/hooks/useAccessSecurity.ts:        supabase.from("access_security_settings").select("*").limit(1).single(),
+src/hooks/useAccessSecurity.ts:        supabase.from("ip_whitelist").select("*").order("created_at", { ascending: false }),
+src/hooks/useAccessSecurity.ts:        supabase.from("city_whitelist").select("*").order("created_at", { ascending: false }),
+src/hooks/useAccessSecurity.ts:        supabase.from("access_blocked_log").select("*").order("created_at", { ascending: false }).limit(50),
+src/hooks/useAccessSecurity.ts:    const { error } = await supabase.from("ip_whitelist").delete().eq("id", id);
+src/hooks/useAccessSecurity.ts:    const { error } = await supabase.from("ip_whitelist").update({ is_active } as Record<string, unknown>).eq("id", id);
+src/hooks/useAccessSecurity.ts:    const { error } = await supabase.from("city_whitelist").delete().eq("id", id);
+src/hooks/useAccessSecurity.ts:    const { error } = await supabase.from("city_whitelist").update({ is_active } as Record<string, unknown>).eq("id", id);
+src/hooks/useAdminKitTemplates.ts:      const { error } = await supabase.from('kit_templates').delete().eq('id', id);
+src/hooks/useAiUsage.ts:      const { data, error } = await supabase.rpc("check_ai_quota", { _user_id: user.id });
+src/hooks/useAuditLog.ts:      const { error } = await supabase.from('audit_log').insert({
+src/hooks/useCartTemplates.ts:      const { error } = await supabase.from("cart_templates").insert({
+src/hooks/useCartTemplates.ts:      const { error } = await supabase.from("cart_templates").delete().eq("id", templateId);
+src/hooks/useCollections.ts:                    await supabase.from("collection_items").insert(
+src/hooks/useCollections.ts:        supabase.from("collections").update(dbUpdates).eq("id", id).then();
+src/hooks/useCollections.ts:    supabase.from("collections").delete().eq("id", id).then();
+src/hooks/useCollections.ts:    await supabase.from("collection_items").insert({
+src/hooks/useCollections.ts:    await supabase.from("collection_items_trash" as never).delete().eq("id", t.id as string);
+src/hooks/useCollections.ts:      supabase.from("collection_items").upsert(inserts, {
+src/hooks/useCommercialIntelligence.ts:          supabase.from('quote_items').select('quote_id, product_id').gte('created_at', since).in('product_id', pids.slice(0, 200)),
+src/hooks/useCommercialIntelligence.ts:          supabase.from('order_items').select('order_id, product_id, quantity, unit_price').gte('created_at', since).in('product_id', pids.slice(0, 200)),
+src/hooks/useCommercialIntelligence.ts:          supabase.from('order_items').select('order_id, product_id, quantity, unit_price').gte('created_at', startOfMonth).in('product_id', pids.slice(0, 200)),
+src/hooks/useCommercialIntelligence.ts:          supabase.from('quote_items').select('quote_id, product_id').gte('created_at', startOfMonth).in('product_id', pids.slice(0, 200)),
+src/hooks/useCommercialIntelligence.ts:      let q1 = supabase.from('quotes').select('id, total, status, created_at').gte('created_at', since);
+src/hooks/useCommercialIntelligence.ts:      let o1 = supabase.from('orders').select('id, total, status, created_at').gte('created_at', since);
+src/hooks/useCommercialIntelligence.ts:      let q2 = supabase.from('quotes').select('id, total').gte('created_at', startOfMonth);
+src/hooks/useCommercialIntelligence.ts:      let o2 = supabase.from('orders').select('id, total').gte('created_at', startOfMonth);
+src/hooks/useCommercialIntelligence.ts:        pids ? supabase.from('order_items').select('product_id, product_sku, product_name, product_image_url, quantity, unit_price, order_id, created_at').gte('created_at', since).in('product_id', pids)
+src/hooks/useCommercialIntelligence.ts:          : supabase.from('order_items').select('product_id, product_sku, product_name, product_image_url, quantity, unit_price, order_id, created_at').gte('created_at', since),
+src/hooks/useCommercialIntelligence.ts:        pids ? supabase.from('quote_items').select('product_id, product_sku, product_name, product_image_url, quantity, unit_price, created_at').gte('created_at', since).in('product_id', pids)
+src/hooks/useCommercialIntelligence.ts:          : supabase.from('quote_items').select('product_id, product_sku, product_name, product_image_url, quantity, unit_price, created_at').gte('created_at', since),
+src/hooks/useCommercialIntelligence.ts:        const { data: oi } = await supabase.from('order_items').select('order_id').gte('created_at', since).in('product_id', pids);
+src/hooks/useCommercialIntelligence.ts:        const { data: orders } = await supabase.from('orders').select('id, client_company, total').in('id', orderIds.slice(0, 200));
+src/hooks/useCommercialIntelligence.ts:      const { data: orders } = await supabase.from('orders').select('client_company, total').gte('created_at', since);
+src/hooks/useCommercialIntelligence.ts:        pids ? supabase.from('quote_items').select('product_id, product_sku, product_name, product_image_url, quantity, created_at').gte('created_at', since).in('product_id', pids)
+src/hooks/useCommercialIntelligence.ts:          : supabase.from('quote_items').select('product_id, product_sku, product_name, product_image_url, quantity, created_at').gte('created_at', since),
+src/hooks/useCommercialIntelligence.ts:        pids ? supabase.from('order_items').select('product_id, product_sku, product_name, created_at').gte('created_at', since).in('product_id', pids)
+src/hooks/useCommercialIntelligence.ts:          : supabase.from('order_items').select('product_id, product_sku, product_name, created_at').gte('created_at', since),
+src/hooks/useCommercialIntelligence.ts:          supabase.from('order_items').select('quantity, unit_price, created_at').gte('created_at', sinceStr).in('product_id', pids),
+src/hooks/useCommercialIntelligence.ts:          supabase.from('quote_items').select('created_at').gte('created_at', sinceStr).in('product_id', pids),
+src/hooks/useCommercialIntelligence.ts:        let oq = supabase.from('orders').select('total, created_at').gte('created_at', sinceStr).order('created_at');
+src/hooks/useCommercialIntelligence.ts:        let qq = supabase.from('quotes').select('total, created_at').gte('created_at', sinceStr).order('created_at');
+src/hooks/useCommercialIntelligence.ts:        const { data: oi } = await supabase.from('order_items').select('order_id, quantity, unit_price').gte('created_at', since).in('product_id', pids);
+src/hooks/useCommercialIntelligence.ts:        const { data: orders } = await supabase.from('orders').select('id, client_name, client_company, total').in('id', orderIds.slice(0, 200));
+src/hooks/useCommercialIntelligence.ts:      const { data: orders } = await supabase.from('orders').select('client_name, client_company, total').gte('created_at', since);
+src/hooks/useCommercialIntelligence.ts:        ? await supabase.from('order_items').select('product_id, quantity, unit_price').gte('created_at', since).in('product_id', pids)
+src/hooks/useCommercialIntelligence.ts:        : await supabase.from('order_items').select('product_id, quantity, unit_price').gte('created_at', since);
+src/hooks/useCommercialIntelligence.ts:        ? await supabase.from('order_items').select('product_id, product_name, quantity, unit_price').gte('created_at', since).in('product_id', pids)
+src/hooks/useCommercialIntelligence.ts:        : await supabase.from('order_items').select('product_id, product_name, quantity, unit_price').gte('created_at', since);
+src/hooks/useComparisonWeights.ts:    await supabase.from("user_preferences").upsert({
+src/hooks/useDiscountApproval.ts:      await supabase.from("quote_history").insert({
+src/hooks/useDiscountApproval.ts:        await supabase.from("admin_audit_log").insert({
+src/hooks/useDiscountApproval.ts:        await supabase.from("workspace_notifications").insert(
+src/hooks/useDiscountApproval.ts:      await supabase.from("workspace_notifications").insert({
+src/hooks/useDiscountApproval.ts:        supabase.from("quotes").select("id, quote_number, client_name, client_company, total, subtotal").in("id", quoteIds),
+src/hooks/useDiscountApproval.ts:        supabase.from("profiles").select("user_id, full_name, email").in("user_id", sellerIds),
+src/hooks/useFavoriteLists.ts:      await supabase.rpc("ensure_default_favorite_list", { _user_id: user.id });
+src/hooks/useFavoriteLists.ts:      const { error } = await supabase.from("favorite_lists").delete().eq("id", id);
+src/hooks/useFavoriteLists.ts:      const { error } = await supabase.from("favorite_items").delete().eq("id", id);
+src/hooks/useFavoriteLists.ts:            await supabase.from("favorite_items").insert({
+src/hooks/useFavoriteLists.ts:            await supabase.from("favorite_items_trash").delete().eq("id", trashed.id);
+src/hooks/useFavoriteLists.ts:      const { error: insErr } = await supabase.from("favorite_items").insert({
+src/hooks/useFavoriteLists.ts:      const { error } = await supabase.from("favorite_items_trash").delete().eq("id", trashId);
+src/hooks/useFavoriteQuickAdd.ts:        const { error } = await supabase.from("favorite_items").upsert(
+src/hooks/useKitCollaboration.ts:      const { error } = await supabase.from('kit_collaborators').insert({
+src/hooks/useKitCollaboration.ts:      const { error } = await supabase.from('kit_collaborators').delete().eq('id', id);
+src/hooks/useKitCollaboration.ts:      const { error } = await supabase.from('kit_comments').insert({
+src/hooks/useKitCollaboration.ts:      const { error } = await supabase.from('kit_comments').update({ resolved: true }).eq('id', id);
+src/hooks/useKitVariants.ts:      const { data, error } = await supabase.from('kit_variants').insert(payload).select().single();
+src/hooks/useKitVariants.ts:      const { error } = await supabase.from('kit_variants').delete().eq('id', id);
+src/hooks/useLoginAttempts.ts:        supabase.from("login_attempts").select("*", { count: "exact", head: true }).gte("created_at", last24h),
+src/hooks/useLoginAttempts.ts:        supabase.from("login_attempts").select("*", { count: "exact", head: true }).gte("created_at", last24h).eq("success", false),
+src/hooks/useLoginAttempts.ts:        supabase.from("login_attempts").select("*", { count: "exact", head: true }).gte("created_at", last7d),
+src/hooks/useMagicUpGeneration.ts:      const { data: existing } = await supabase.from("magic_up_generations").select("metadata,status").eq("id", currentVariation.id).maybeSingle();
+src/hooks/useMagicUpGeneration.ts:      await supabase.from("magic_up_generations").update({
+src/hooks/useMagicUpGeneration.ts:      const { data: existing } = await supabase.from("magic_up_generations").select("metadata").eq("id", currentVariation.id).maybeSingle();
+src/hooks/useMagicUpGeneration.ts:      await supabase.from("magic_up_generations").update({
+src/hooks/useMagicUpGeneration.ts:    await supabase.from("magic_up_generations").update({ is_favorite: newVal }).eq("id", currentVariation.id);
+src/hooks/useMagicUpGeneration.ts:    await supabase.from("magic_up_generations").update({ is_favorite: !current }).eq("id", id);
+src/hooks/useMagicUpGeneration.ts:    await supabase.from("magic_up_generations").delete().eq("id", id);
+src/hooks/useMagicUpState.ts:      const { data } = await supabase.from("magic_up_generations").select("id, generated_image_url, product_name, scene_title, scene_category, is_favorite, created_at, client_name, quality_score, status, channel, aspect_ratio, metadata, copy_pack").eq("user_id", user.id).order("created_at", { ascending: false }).limit(50);
+src/hooks/useMagicUpState.ts:      ? await supabase.from("magic_up_campaigns").update(basePayload satisfies TablesUpdate<"magic_up_campaigns">).eq("id", draft.id).select("id, updated_at").single()
+src/hooks/useMagicUpState.ts:      : await supabase.from("magic_up_campaigns").insert({ ...basePayload, user_id: user.id } satisfies TablesInsert<"magic_up_campaigns">).select("id, created_at, updated_at").single();
+src/hooks/useMagicUpState.ts:      ? await supabase.from("magic_up_brand_kits").update(payload satisfies TablesUpdate<"magic_up_brand_kits">).eq("id", brandKit.id).select("id, updated_at").single()
+src/hooks/useMagicUpState.ts:      : await supabase.from("magic_up_brand_kits").insert({ ...payload, user_id: user.id } satisfies TablesInsert<"magic_up_brand_kits">).select("id, updated_at").single();
+src/hooks/useOrders.ts:      let q = supabase.from("orders").select("*").order("created_at", { ascending: false });
+src/hooks/useOrders.ts:        supabase.from("orders").select("*").eq("id", orderId!).maybeSingle(),
+src/hooks/useOrders.ts:        supabase.from("order_items").select("*").eq("order_id", orderId!),
+src/hooks/useQuoteApprovalToken.ts:      const { data, error } = await supabase.rpc("get_quote_token_by_value", { _token: token! });
+src/hooks/useQuoteComments.ts:      const { error } = await supabase.from("quote_comments").insert({
+src/hooks/useQuoteComments.ts:    await supabase.from("workspace_notifications").insert(notifications);
+src/hooks/useQuoteHistory.ts:      await supabase.from("quote_history").insert({
+src/hooks/useQuoteTemplates.ts:      const { error: delErr } = await supabase.from("quote_templates").delete().eq("id", id);
+src/hooks/useQuotes.ts:      await supabase.from("quote_history").insert({
+src/hooks/useQuotes.ts:        await supabase.from("quote_item_personalizations").insert(persPayload);
+src/hooks/useQuotes.ts:      const { data: inserted, error: insErr } = await supabase.from("quotes").insert(insertPayload).select("*");
+src/hooks/useQuotes.ts:      const { error: updErr } = await supabase.from("quotes").update({ status }).eq("id", quoteId);
+src/hooks/useQuotes.ts:      const { error: delErr } = await supabase.from("quotes").delete().eq("id", quoteId);
+src/hooks/useQuotes.ts:      await supabase.from("quote_items").delete().eq("quote_id", quoteId);
+src/hooks/useRoleMigration.ts:        const { data, error } = await supabase.rpc("execute_role_migration_batch", {
+src/hooks/useSalesGoals.ts:      const { error } = await supabase.from("sales_goals").delete().eq("id", goalId);
+src/hooks/useSalesHistoryMacro.ts:          supabase.from('quotes').select('id').eq('seller_id', user.id).gte('created_at', cutoffStr).limit(2000),
+src/hooks/useSalesHistoryMacro.ts:          supabase.from('orders').select('id').eq('seller_id', user.id).gte('created_at', cutoffStr).limit(2000),
+src/hooks/useSalesHistoryMacro.ts:          ? supabase.from('quotes').select('id, seller_id, status').in('id', quoteIds.slice(0, 500)).in('status', ['sent', 'approved', 'rejected', 'expired', 'converted'])
+src/hooks/useSalesHistoryMacro.ts:          ? supabase.from('orders').select('id, seller_id, status').in('id', orderIds.slice(0, 500))
+src/hooks/useSalesHistoryMacro.ts:        const { data: profiles } = await supabase.from('profiles').select('user_id, full_name').in('user_id', allSellerIds);
+src/hooks/useSellerCarts.ts:        supabase.from("seller_cart_items").update({ sort_order }).eq("id", id)
+src/hooks/useSellerCarts.ts:        const { error: itemsErr } = await supabase.from("seller_cart_items").insert(newItems);
+src/hooks/useSellerCarts.ts:      const { error } = await supabase.from("seller_cart_items").insert({
+src/hooks/useSimulation.ts:      const { data, error } = await supabase.from("personalization_simulations").select(`*, bitrix_clients (id, name, ramo)`).order("created_at", { ascending: false }).limit(50);
+src/hooks/useSimulation.ts:      const { error } = await supabase.from("personalization_simulations").insert([{
+src/hooks/useSimulation.ts:    mutationFn: async (id: string) => { const { error } = await supabase.from("personalization_simulations").delete().eq("id", id); if (error) throw error; },
+src/hooks/useVideoVariantLinks.ts:      let q = supabase.from("video_variant_links").select("*").order("created_at", { ascending: false });
+src/hooks/useVideoVariantLinks.ts:      const { data, error } = await supabase.from("video_variant_links").insert(link).select().single();
+src/hooks/useVideoVariantLinks.ts:      const { error } = await supabase.from("video_variant_links").delete().eq("id", id);
+src/hooks/useWebAuthn.ts:        const { error } = await supabase.from("user_passkeys").insert({
+src/hooks/voice/logVoiceCommand.ts:      await supabase.from("voice_command_logs").insert({
