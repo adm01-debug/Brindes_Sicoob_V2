@@ -1,9 +1,12 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 
 export function useSicoobOrderItems(orderId?: string) {
   const queryClient = useQueryClient();
+  const { isVendedorRole, isAdmin } = useAuth();
+
 
   const updateOrderTotal = async (orderId: string) => {
     const { data: items, error: itemsError } = await supabase
@@ -37,7 +40,11 @@ export function useSicoobOrderItems(orderId?: string) {
       quantity: number;
       unitPrice: number;
     }) => {
+      if (!isVendedorRole && !isAdmin) {
+        throw new Error("Apenas vendedores ou administradores podem adicionar itens.");
+      }
       if (!orderId) throw new Error("Order ID is required");
+
 
       const totalPrice = quantity * unitPrice;
 
@@ -69,7 +76,11 @@ export function useSicoobOrderItems(orderId?: string) {
 
   const removeItem = useMutation({
     mutationFn: async (itemId: string) => {
+      if (!isVendedorRole && !isAdmin) {
+        throw new Error("Apenas vendedores ou administradores podem remover itens.");
+      }
       if (!orderId) throw new Error("Order ID is required");
+
 
       const { error: deleteError } = await supabase
         .from("sicoob_order_items")
