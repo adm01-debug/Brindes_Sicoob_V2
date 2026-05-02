@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { PageSEO } from "@/components/seo/PageSEO";
@@ -11,7 +11,10 @@ import {
   Package, 
   History,
   MessageSquare,
-  AlertCircle
+  AlertCircle,
+  CheckCircle,
+  XCircle,
+  AlertTriangle
 } from "lucide-react";
 import { 
   Card, 
@@ -23,34 +26,140 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { usePaBudget } from "@/hooks/usePaBudget";
+import { useApprovalThreshold } from "@/hooks/useApprovalThreshold";
+import { useApprovalRequests } from "@/hooks/useSicoobApprovals";
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogDescription, 
+  DialogFooter, 
+  DialogHeader, 
+  DialogTitle,
+  DialogTrigger
+} from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
 
 export default function OrderDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [isApproving, setIsApproving] = useState(false);
+  const { profile, isSupervisorOrAbove, isGerentePa } = useAuth();
+  const [requestReason, setRequestReason] = useState("");
+  const [rejectionReason, setRejectionReason] = useState("");
+  const [isRequestDialogOpen, setIsRequestDialogOpen] = useState(false);
+  const [isRejectDialogOpen, setIsRejectDialogOpen] = useState(false);
 
-  const orderTotal = 900.00;
-  const budgetLimit = 5000.00;
-  const availableBudget = 450.00; // Simulating low budget for validation example
+  const { data: orderData, isLoading: isLoadingOrder } = useQuery({
+    queryKey: ["sicoob_order", id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("sicoob_orders")
+        .select("*")
+        .eq("id", id)
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!id
+  });
+
+  const { data: orderItems } = useQuery({
+    queryKey: ["sicoob_order_items", id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("sicoob_order_items")
+        .select("*")
+        .eq("order_id", id);
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!id
+  });
+
+  const { budget, remainingBudget } = usePaBudget(orderData?.pa_id);
+  const { threshold, needsApproval } = useApprovalThreshold();
+  const { requests, createRequest, approveRequest, rejectRequest } = useApprovalRequests(id);
+
+  const activeRequest = useMemo(() => 
+    requests?.find(r => r.status === 'pending'), 
+  [requests]);
+
+  const orderTotal = orderData?.total_amount || 0;
+  const isOverThreshold = needsApproval(orderTotal);
+  const isOverBudget = orderTotal > remainingBudget;
+
+  const handleRequestApproval = async () => {
+    if (!requestReason.trim()) {
+      toast.error("Por favor, informe o motivo da solicitação");
+      return;
+    }
+
+    createRequest.mutate({
+      orderId: id!,
+      reason: requestReason,
+      amount: orderTotal,
+      threshold: threshold
+    }, {
+      onSuccess: () => {
+        setIsRequestDialogOpen(false);
+        setRequestReason("");
+      }
+    });
+  };
 
   const handleApprove = () => {
-    if (orderTotal > availableBudget) {
+    if (isOverBudget) {
       toast.error("Saldo de verba insuficiente para este pedido");
       return;
     }
-    
-    setIsApproving(true);
-    setTimeout(() => {
+
+    if (activeRequest) {
+      approveRequest.mutate({ requestId: activeRequest.id, orderId: id! });
+    } else {
+      // Aprovação direta se for gestor e não houver solicitação pendente
       toast.success("Pedido aprovado com sucesso");
-      setIsApproving(false);
-    }, 1000);
+    }
   };
+
+  const handleReject = () => {
+    if (!rejectionReason.trim()) {
+      toast.error("Por favor, informe o motivo da rejeição");
+      return;
+    }
+
+    if (activeRequest) {
+      rejectRequest.mutate({ 
+        requestId: activeRequest.id, 
+        orderId: id!, 
+        reason: rejectionReason 
+      }, {
+        onSuccess: () => {
+          setIsRejectDialogOpen(false);
+          setRejectionReason("");
+        }
+      });
+    }
+  };
+
+  if (isLoadingOrder) {
+    return (
+      <MainLayout>
+        <div className="flex items-center justify-center h-64">
+          <p>Carregando detalhes do pedido...</p>
+        </div>
+      </MainLayout>
+    );
+  }
+
+  const canApprove = isSupervisorOrAbove || (isGerentePa && orderData?.pa_id === profile?.pa_id);
 
   return (
     <MainLayout>
-      <PageSEO title={`Pedido #${id} - Sicoob`} description="Detalhes do pedido Sicoob." path={`/sicoob/pedidos/${id}`} noIndex />
-      
+      <PageSEO title={`Pedido #${orderData?.order_number || id} - Sicoob`} description="Detalhes do pedido Sicoob." path={`/sicoob/pedidos/${id}`} noIndex />
+...
       <div className="space-y-6">
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="icon" onClick={() => navigate("/sicoob/pedidos")}>
