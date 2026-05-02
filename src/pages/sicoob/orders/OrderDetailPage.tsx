@@ -99,7 +99,8 @@ export default function OrderDetailPage() {
 
   const { budget, remainingBudget } = usePaBudget(orderData?.pa_id);
   const { threshold, needsApproval } = useApprovalThreshold();
-  const { requests, createRequest, approveRequest, rejectRequest } = useApprovalRequests(id);
+  const { requests, createRequest, approveRequest, rejectRequest, updateStatus } = useApprovalRequests(id);
+  const { history: orderHistory } = useSicoobOrderHistory(id);
   const { addItem, removeItem } = useSicoobOrderItems(id);
   
   const { data: products } = useProducts({ search: productSearch, limit: 5 }, { enabled: isAddItemDialogOpen });
