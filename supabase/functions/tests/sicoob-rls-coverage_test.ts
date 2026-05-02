@@ -1,8 +1,10 @@
 import { assert, assertEquals } from "https://deno.land/std@0.208.0/assert/mod.ts";
 import { Pool } from "https://deno.land/x/postgres@v0.19.3/mod.ts";
+import "https://deno.land/std@0.224.0/dotenv/load.ts";
 
 const DB_URL = Deno.env.get("SUPABASE_DB_URL") ?? "";
 const pool = new Pool(DB_URL, 2, true);
+
 
 interface PolicyRow {
   polname: string;
