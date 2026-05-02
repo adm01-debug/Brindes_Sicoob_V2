@@ -67,7 +67,13 @@ export default function OrderDetailPage() {
           </div>
           <div className="ml-auto flex gap-2">
             <Button variant="outline" className="text-destructive">Rejeitar</Button>
-            <Button className="bg-emerald-600 hover:bg-emerald-700">Aprovar Pedido</Button>
+            <Button 
+              className="bg-emerald-600 hover:bg-emerald-700" 
+              onClick={handleApprove}
+              disabled={isApproving}
+            >
+              {isApproving ? "Processando..." : "Aprovar Pedido"}
+            </Button>
           </div>
         </div>
 
