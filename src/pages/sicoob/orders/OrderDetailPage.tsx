@@ -674,7 +674,6 @@ export default function OrderDetailPage() {
               </TabsContent>
             </Tabs>
           </div>
-
           <div className="space-y-6">
             <Card>
               <CardHeader>
