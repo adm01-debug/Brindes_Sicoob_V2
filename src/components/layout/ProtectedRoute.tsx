@@ -43,16 +43,16 @@ export function ProtectedRoute({
   if (required === "dev" && !isDev) {
     return <Navigate to="/" replace />;
   }
-  if (required === "gestor_compras" && !isGestorCompras && !isDev) {
+  if (required === "gestor_compras" && !profile?.role === "gestor_compras" && !isDev) {
     return <Navigate to="/" replace />;
   }
   if (required === "supervisor" && !isSupervisorOrAbove) {
     return <Navigate to="/" replace />;
   }
-  if (required === "gerente_pa" && !isGerentePa && !isSupervisorOrAbove) {
+  if (required === "gerente_pa" && !profile?.role === "gerente_pa" && !isSupervisorOrAbove) {
     return <Navigate to="/" replace />;
   }
-  if (required === "vendedor" && !isVendedor && !isGerentePa && !isSupervisorOrAbove) {
+  if (required === "vendedor" && !profile?.role === "vendedor" && !profile?.role === "gerente_pa" && !isSupervisorOrAbove) {
     return <Navigate to="/" replace />;
   }
   // 'agente' = qualquer usuário autenticado, sem checagem extra.
