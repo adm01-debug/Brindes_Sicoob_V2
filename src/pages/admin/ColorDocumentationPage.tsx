@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { SicoobStatusBadge } from "@/components/sicoob/SicoobStatusBadge";
 import { SicoobFulfillmentStatus, SICOOB_STATUS_CONFIG } from "@/lib/sicoob-status-config";
-import { Palette, CheckCircle2, AlertTriangle, Info, Trophy, Layout, Download, Table as TableIcon, Hash, CheckSquare } from "lucide-react";
+import { Palette, CheckCircle2, AlertTriangle, Info, Trophy, Layout, Download, Table as TableIcon, Hash, CheckSquare, Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
 import { 
   Table, 
@@ -15,11 +15,52 @@ import {
   TableHeader, 
   TableRow 
 } from "@/components/ui/table";
+import { Input } from "@/components/ui/input";
+import { useTheme } from "@/contexts/ThemeContext";
+
+const TOKEN_MAP = {
+  brand: "bg-brand",
+  primary: "bg-primary",
+  secondary: "bg-secondary",
+  accent: "bg-accent",
+  reward: "bg-reward",
+  success: "bg-success",
+  warning: "bg-warning",
+  destructive: "bg-destructive",
+};
+
+const TEXT_TOKEN_MAP = {
+  brand: "text-brand",
+  primary: "text-primary",
+  secondary: "text-secondary",
+  accent: "text-accent",
+  reward: "text-reward",
+  success: "text-success",
+  warning: "text-warning",
+  destructive: "text-destructive",
+};
 
 export default function ColorDocumentationPage() {
+  const { toggleTheme, theme } = useTheme();
+  const [filterToken, setFilterToken] = useState<string>("all");
+  
   const statuses: SicoobFulfillmentStatus[] = [
     "in_production", "in_separation", "in_transit", "delivered", "completed", "cancelled"
   ];
+
+  const contrastData = [
+    { token: "brand", bg: "background", ratio: "4.64", pass: true, usage: "Ações principais (CTAs)" },
+    { token: "primary", bg: "background", ratio: "12.29", pass: true, usage: "Header, Logos, Textos" },
+    { token: "reward", bg: "background", ratio: "8.83", pass: true, usage: "Selo de Recompensa" },
+    { token: "accent", bg: "primary", ratio: "7.58", pass: true, usage: "Destaque sobre escuro" },
+    { token: "success", bg: "background", ratio: "5.12", pass: true, usage: "Confirmações" },
+    { token: "warning", bg: "background", ratio: "3.45", pass: false, usage: "Atenção (Usar /10)" },
+    { token: "destructive", bg: "background", ratio: "6.82", pass: true, usage: "Excluir, Erro" },
+  ];
+
+  const filteredContrast = filterToken === "all" 
+    ? contrastData 
+    : contrastData.filter(d => d.token === filterToken);
 
   return (
     <MainLayout>
@@ -34,10 +75,16 @@ export default function ColorDocumentationPage() {
               Tokens oficiais baseados na peça Sicoob 2024 (Poupança Premiada).
             </p>
           </div>
-          <Button variant="outline" className="gap-2" onClick={() => exportTokensJSON()}>
-            <Download className="h-4 w-4" />
-            Exportar Tokens (JSON)
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" className="gap-2" onClick={toggleTheme}>
+              {theme === "dark" ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              Modo Demo
+            </Button>
+            <Button variant="outline" className="gap-2" onClick={() => exportTokensJSON()}>
+              <Download className="h-4 w-4" />
+              Exportar Tokens (JSON)
+            </Button>
+          </div>
         </div>
 
         {/* 1. Core Tokens */}
@@ -162,9 +209,30 @@ export default function ColorDocumentationPage() {
         </section>
         {/* 4. Contrast Matrix */}
         <section className="space-y-6">
-          <div className="flex items-center gap-2 border-b pb-2">
-            <Hash className="h-5 w-5 text-brand" />
-            <h2 className="text-2xl font-semibold">Matriz de Contraste (WCAG AA)</h2>
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b pb-2">
+            <div className="flex items-center gap-2">
+              <Hash className="h-5 w-5 text-brand" />
+              <h2 className="text-2xl font-semibold">Matriz de Contraste (WCAG AA)</h2>
+            </div>
+            
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-muted-foreground">Filtrar:</span>
+              <Select value={filterToken} onValueChange={setFilterToken}>
+                <SelectTrigger className="w-[180px] h-8">
+                  <SelectValue placeholder="Todos os tokens" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos</SelectItem>
+                  <SelectItem value="brand">Brand</SelectItem>
+                  <SelectItem value="primary">Primary</SelectItem>
+                  <SelectItem value="reward">Reward</SelectItem>
+                  <SelectItem value="accent">Accent</SelectItem>
+                  <SelectItem value="success">Success</SelectItem>
+                  <SelectItem value="warning">Warning</SelectItem>
+                  <SelectItem value="destructive">Destructive</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
           <Card>
             <CardContent className="p-0">
@@ -179,17 +247,47 @@ export default function ColorDocumentationPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  <ContrastRow token="brand" bg="background" label="Brand vs BG" expected="4.5+" ratio="4.64" pass={true} />
-                  <ContrastRow token="primary" bg="background" label="Primary vs BG" expected="4.5+" ratio="12.29" pass={true} />
-                  <ContrastRow token="reward" bg="background" label="Reward vs BG" expected="4.5+" ratio="8.83" pass={true} />
-                  <ContrastRow token="accent" bg="primary" label="Accent vs Institucional" expected="4.5+" ratio="7.58" pass={true} />
+                  {filteredContrast.map(data => (
+                    <ContrastRow 
+                      key={data.token}
+                      token={data.token} 
+                      bg={data.bg} 
+                      label={`${data.token} vs BG`} 
+                      ratio={data.ratio} 
+                      pass={data.pass}
+                      usage={data.usage}
+                    />
+                  ))}
                 </TableBody>
               </Table>
             </CardContent>
           </Card>
         </section>
         
-        {/* 5. Usage Checklist */}
+        {/* 5. Context Rules */}
+        <section className="space-y-6">
+          <div className="flex items-center gap-2 border-b pb-2">
+            <Info className="h-5 w-5 text-brand" />
+            <h2 className="text-2xl font-semibold">Regras por Contexto</h2>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <ContextRuleCard 
+              title="CTA / Ações"
+              doText="Usar --brand para ações primárias e --primary para ações institucionais secundárias."
+              dontText="Evitar cores de status (success/danger) para navegação comum."
+            />
+            <ContextRuleCard 
+              title="Feedback"
+              doText="Usar --success para fluxos concluídos e --warning para pendências."
+              dontText="Não usar --accent (amarelo) para erros críticos."
+            />
+            <ContextRuleCard 
+              title="Modais e Avisos"
+              doText="Usar variantes /10 para o fundo de alertas amplos."
+              dontText="Evitar fundos coloridos saturados que cansam a vista."
+            />
+          </div>
+        </section>
         <section className="space-y-6">
           <div className="flex items-center gap-2 border-b pb-2">
             <CheckSquare className="h-5 w-5 text-brand" />
@@ -260,14 +358,31 @@ export default function ColorDocumentationPage() {
   );
 }
 
-function ContrastRow({ token, bg, label, expected, ratio, pass }: { 
-  token: string; bg: string; label: string; expected: string; ratio: string; pass: boolean 
-}) {
+function ContextRuleCard({ title, doText, dontText }: { title: string; doText: string; dontText: string }) {
+  return (
+    <Card>
+      <CardHeader className="pb-2">
+        <CardTitle className="text-sm font-bold">{title}</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        <div className="space-y-1">
+          <p className="text-[10px] font-bold text-success uppercase tracking-wider">✅ Fazer</p>
+          <p className="text-xs text-muted-foreground">{doText}</p>
+        </div>
+        <div className="space-y-1">
+          <p className="text-[10px] font-bold text-destructive uppercase tracking-wider">❌ Evitar</p>
+          <p className="text-xs text-muted-foreground">{dontText}</p>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+  const bgClass = TOKEN_MAP[token as keyof typeof TOKEN_MAP] || "bg-muted";
   return (
     <TableRow>
       <TableCell className="font-medium">
         <div className="flex items-center gap-2">
-          <div className={`w-3 h-3 rounded bg-${token}`} />
+          <div className={cn("w-3 h-3 rounded", bgClass)} />
           {token}
         </div>
       </TableCell>
@@ -278,7 +393,7 @@ function ContrastRow({ token, bg, label, expected, ratio, pass }: {
           {pass ? "PASS" : "FAIL"}
         </Badge>
       </TableCell>
-      <TableCell className="text-xs text-muted-foreground">Texto normal, CTAs, Badges.</TableCell>
+      <TableCell className="text-xs text-muted-foreground">{usage}</TableCell>
     </TableRow>
   );
 }

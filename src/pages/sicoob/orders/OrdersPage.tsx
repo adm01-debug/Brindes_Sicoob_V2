@@ -14,10 +14,12 @@ import {
   Download,
   FileDown,
   Loader2,
+  FileSpreadsheet,
 } from "lucide-react";
 import { toast } from "sonner";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
+import * as XLSX from "xlsx";
 import { Input } from "@/components/ui/input";
 import {
   Card,
@@ -66,7 +68,7 @@ export default function OrdersPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const { isVendedorRole, isAdmin } = useAuth();
   const canCreateOrder = isVendedorRole || isAdmin;
-  const [isExporting, setIsExporting] = useState<'csv' | 'pdf' | null>(null);
+  const [isExporting, setIsExporting] = useState<'csv' | 'pdf' | 'xlsx' | null>(null);
 
   const [searchTerm, setSearchTerm] = useState(searchParams.get("search") || "");
   const [statusFilter, setStatusFilter] = useState<string>(searchParams.get("status") || "all");
@@ -144,6 +146,32 @@ export default function OrdersPage() {
 
       doc.save(`pedidos_sicoob_${format(new Date(), 'yyyy-MM-dd')}.pdf`);
       toast.success("Exportação PDF concluída");
+    } catch (error: any) {
+      toast.error("Erro na exportação: " + error.message);
+    } finally {
+      setIsExporting(null);
+    }
+  };
+
+  const exportToXLSX = async () => {
+    setIsExporting('xlsx');
+    try {
+      const data = filteredOrders.map(o => ({
+        "ID": o.id,
+        "PA": o.pa,
+        "Singular": o.singular,
+        "Status": o.status,
+        "Total (R$)": o.total,
+        "Itens": o.items,
+        "Data": format(parseISO(o.date), "dd/MM/yyyy")
+      }));
+
+      const worksheet = XLSX.utils.json_to_sheet(data);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Pedidos Sicoob");
+      
+      XLSX.writeFile(workbook, `pedidos_sicoob_${format(new Date(), 'yyyy-MM-dd')}.xlsx`);
+      toast.success("Exportação XLSX concluída");
     } catch (error: any) {
       toast.error("Erro na exportação: " + error.message);
     } finally {
@@ -256,6 +284,10 @@ export default function OrdersPage() {
                   <Button variant="ghost" className="justify-start font-normal h-8" onClick={exportToPDF}>
                     <FileDown className="h-3 w-3 mr-2" />
                     PDF
+                  </Button>
+                  <Button variant="ghost" className="justify-start font-normal h-8" onClick={exportToXLSX}>
+                    <FileSpreadsheet className="h-3 w-3 mr-2" />
+                    Excel (XLSX)
                   </Button>
                 </div>
               </PopoverContent>
