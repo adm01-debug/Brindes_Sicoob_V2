@@ -17,6 +17,7 @@ import { useIPValidation } from "@/hooks/useIPValidation";
 import { PasskeyLogin } from "@/components/auth/PasskeyLogin";
 import { SocialLoginButtons } from "@/components/auth/SocialLoginButtons";
 import { supabase } from "@/integrations/supabase/client";
+import { QuickTestLogin } from "@/components/auth/QuickTestLogin";
 
 import { loginSchema, type LoginFormData } from "@/lib/validations";
 
@@ -404,6 +405,9 @@ export default function Auth() {
             </>
             )}
           </Card>
+
+          {/* Login Rápido para Testes */}
+          <QuickTestLogin />
 
           {/* IP/Location Widget */}
           {currentIP && (
