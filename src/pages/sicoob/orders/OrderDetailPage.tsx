@@ -166,10 +166,19 @@ export default function OrderDetailPage() {
     }
 
     if (activeRequest) {
-      approveRequest.mutate({ requestId: activeRequest.id, orderId: id! });
+      approveRequest.mutate({ 
+        requestId: activeRequest.id, 
+        orderId: id!, 
+        previousStatus: orderData.status 
+      });
     } else {
       // Aprovação direta se for gestor e não houver solicitação pendente
-      toast.success("Pedido aprovado com sucesso");
+      updateStatus.mutate({ 
+        orderId: id!, 
+        newStatus: 'confirmed', 
+        previousStatus: orderData.status,
+        comment: 'Aprovação direta por gestor'
+      });
     }
   };
 
@@ -183,7 +192,20 @@ export default function OrderDetailPage() {
       rejectRequest.mutate({ 
         requestId: activeRequest.id, 
         orderId: id!, 
-        reason: rejectionReason 
+        reason: rejectionReason,
+        previousStatus: orderData.status
+      }, {
+        onSuccess: () => {
+          setIsRejectDialogOpen(false);
+          setRejectionReason("");
+        }
+      });
+    } else {
+      updateStatus.mutate({
+        orderId: id!,
+        newStatus: 'rejected',
+        previousStatus: orderData.status,
+        comment: rejectionReason
       }, {
         onSuccess: () => {
           setIsRejectDialogOpen(false);
