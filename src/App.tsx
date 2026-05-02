@@ -124,6 +124,7 @@ const SicoobOrdersPage = lazyWithRetry(() => import("./pages/sicoob/orders/Order
 const SicoobOrdersKanbanPage = lazyWithRetry(() => import("./pages/sicoob/orders/OrdersKanbanPage"));
 const SicoobOrderDetailPage = lazyWithRetry(() => import("./pages/sicoob/orders/OrderDetailPage"));
 const SicoobSellerPanelPage = lazyWithRetry(() => import("./pages/sicoob/orders/SellerPanelPage"));
+const SicoobLogisticsReportPage = lazyWithRetry(() => import("./pages/sicoob/LogisticsReportPage"));
 
 // Clients (CRM) Pages
 const ClientsPage = lazyWithRetry(() => import("./pages/ClientsPage"));
