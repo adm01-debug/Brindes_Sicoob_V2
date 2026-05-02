@@ -20,12 +20,12 @@ DECLARE
     vendedor_pa3_id UUID := gen_random_uuid(); -- PA3 pertence à Coop 2
 BEGIN
     -- Criar Cooperativas
-    INSERT INTO public.cooperativas (id, name, code) VALUES 
+    INSERT INTO public.cooperativas (id, nome, codigo) VALUES 
     (coop1_id, 'Coop A (Test)', '001'),
     (coop2_id, 'Coop B (Test)', '002');
 
     -- Criar PAs
-    INSERT INTO public.postos_atendimento (id, cooperativa_id, name, code) VALUES 
+    INSERT INTO public.postos_atendimento (id, cooperativa_id, nome, codigo) VALUES 
     (pa1_id, coop1_id, 'PA 01 - Coop A', '01'),
     (pa2_id, coop1_id, 'PA 02 - Coop A', '02'),
     (pa3_id, coop2_id, 'PA 01 - Coop B', '01');
