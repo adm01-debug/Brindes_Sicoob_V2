@@ -9,13 +9,20 @@ import React from "react";
 vi.mock("@/integrations/supabase/client", () => ({
   supabase: {
     auth: {
-      getSession: vi.fn(),
+      getSession: vi.fn(() => Promise.resolve({ data: { session: null }, error: null })),
       onAuthStateChange: vi.fn(() => ({
         data: { subscription: { unsubscribe: vi.fn() } },
       })),
       signInWithPassword: vi.fn(),
       signOut: vi.fn(),
+      signUp: vi.fn(),
+      refreshSession: vi.fn(() => Promise.resolve({ data: { session: null }, error: null })),
+      mfa: {
+        getAuthenticatorAssuranceLevel: vi.fn(() => Promise.resolve({ data: { currentLevel: 'aal1' }, error: null })),
+        listFactors: vi.fn(() => Promise.resolve({ data: { totp: [] }, error: null })),
+      }
     },
+
     from: vi.fn(() => ({
       select: vi.fn(() => ({
         eq: vi.fn(() => ({
