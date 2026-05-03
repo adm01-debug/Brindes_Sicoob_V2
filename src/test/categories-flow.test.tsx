@@ -117,22 +117,26 @@ describe('Categories Flow - CRUD & Validation', () => {
   });
 
   it('should show error toast when supabase fails on insert', async () => {
-    (supabase.from as any).mockImplementationOnce(() => ({
+    (supabase.from as any).mockImplementation(() => ({
       select: vi.fn().mockReturnThis(),
-      order: vi.fn().mockResolvedValue({ data: [], error: null }),
+      order: vi.fn().mockImplementation(() => Promise.resolve({ 
+        data: [{ id: '1', name: 'Existing', slug: 'existing-slug', sort_order: 1 }], 
+        error: null 
+      })),
       insert: vi.fn().mockReturnThis(),
-      select: vi.fn().mockReturnThis(),
-      single: vi.fn().mockResolvedValue({ data: null, error: { message: 'DB Error' } }),
+      single: vi.fn().mockImplementation(() => Promise.resolve({ data: null, error: { message: 'DB Error' } })),
     }));
 
     render(<CategoriesManager />);
+    await waitFor(() => expect(screen.getByText('Existing')).toBeDefined());
+    
     fireEvent.click(screen.getByText(/Nova Categoria/i));
     fireEvent.change(screen.getByLabelText(/Nome/i), { target: { value: 'Error Test' } });
     fireEvent.change(screen.getByLabelText(/Slug/i), { target: { value: 'error-test' } });
     fireEvent.click(screen.getByText(/Salvar/i));
 
     await waitFor(() => {
-      expect(toast.error).toHaveBeenCalledWith("Erro ao salvar categoria");
+      expect(toast.error).toHaveBeenCalledWith("DB Error");
     });
   });
 });
