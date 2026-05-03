@@ -161,9 +161,29 @@ export const UserAssignmentTab = () => {
                     <div className="text-xs text-muted-foreground">{user.email}</div>
                   </TableCell>
                   <TableCell>
-                    <span className="px-2 py-1 rounded-full bg-secondary text-xs">
-                      {user.role}
-                    </span>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" className="h-auto p-0 hover:bg-transparent">
+                          <RoleBadge role={user.role} />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="start" className="w-56">
+                        <DropdownMenuLabel>Alterar Papel</DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={() => updateMutation.mutate({ userId: user.id, role: 'gestor_singular' })}>
+                          <RoleBadge role="gestor_singular" className="mr-2" /> Gestor Singular
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => updateMutation.mutate({ userId: user.id, role: 'gestor_pa' })}>
+                          <RoleBadge role="gestor_pa" className="mr-2" /> Gestor PA
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => updateMutation.mutate({ userId: user.id, role: 'vendedor' })}>
+                          <RoleBadge role="vendedor" className="mr-2" /> Vendedor
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => updateMutation.mutate({ userId: user.id, role: 'supervisor' })}>
+                          <RoleBadge role="supervisor" className="mr-2" /> Supervisor
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </TableCell>
                   <TableCell>
                     <Select
