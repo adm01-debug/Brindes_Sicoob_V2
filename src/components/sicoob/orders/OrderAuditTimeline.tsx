@@ -16,7 +16,7 @@ interface OrderAuditTimelineProps {
 }
 
 export const OrderAuditTimeline = ({ orderId }: OrderAuditTimelineProps) => {
-  const [filters, setFilters] = useState({ event_type: 'all', startDate: '', endDate: '' });
+  const [filters, setFilters] = useState({ event_type: 'all', startDate: '', endDate: '', search: '' });
   const { auditEvents, totalCount, isLoading, page, setPage, pageSize } = useOrderAudit(orderId, filters);
 
   const getEventIcon = (type: string, event: any) => {
