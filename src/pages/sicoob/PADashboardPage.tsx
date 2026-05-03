@@ -75,7 +75,7 @@ export default function PADashboardPage() {
                   <span>Uso da Verba</span>
                   <span>{budgetUsed.toFixed(0)}%</span>
                 </div>
-                <Progress value={budgetUsed} className="h-1.5" />
+                <Progress value={budgetUsed} className="h-1.5" indicatorClassName="bg-sicoob-green" />
               </div>
             </CardContent>
           </Card>
