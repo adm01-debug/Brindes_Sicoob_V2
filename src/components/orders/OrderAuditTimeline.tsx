@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { History, Circle, ArrowRight, Filter, SortAsc, SortDesc, Search, ChevronUp, ChevronDown } from "lucide-react";
-import { useOrderAudit } from "@/hooks/useOrderAudit";
+import { useOrderAudit } from "@/hooks/useOrderExtensions";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Button } from "@/components/ui/button";
