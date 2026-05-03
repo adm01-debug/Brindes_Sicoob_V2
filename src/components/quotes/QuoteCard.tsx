@@ -3,8 +3,11 @@
  */
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { FileText, User, Calendar } from "lucide-react";
+import { FileText, User, Calendar, RotateCcw } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { QUOTE_STATUS_CONFIG } from "@/lib/quote-status-config";
+import { OneClickReorder } from "@/components/orders/OneClickReorder";
+import { useAuth } from "@/contexts/AuthContext";
 
 export interface QuoteCardData {
   id: string;
@@ -16,15 +19,6 @@ export interface QuoteCardData {
   created_at: string;
   valid_until?: string | null;
 }
-
-const STATUS_VARIANTS: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
-  draft: "outline",
-  pending_approval: "secondary",
-  sent: "default",
-  approved: "default",
-  rejected: "destructive",
-  expired: "destructive",
-};
 
 interface QuoteCardProps {
   quote: QuoteCardData;
