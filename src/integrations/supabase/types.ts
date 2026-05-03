@@ -7127,6 +7127,27 @@ export type Database = {
       }
     }
     Views: {
+      sicoob_budget_audit: {
+        Row: {
+          ano: number | null
+          discrepancia: number | null
+          mes: number | null
+          pa_id: string | null
+          pa_nome: string | null
+          verba_calculada_pedidos: number | null
+          verba_registrada: number | null
+          verba_total: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pa_budgets_pa_id_fkey"
+            columns: ["pa_id"]
+            isOneToOne: false
+            referencedRelation: "postos_atendimento"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       v_full_scope_grants: {
         Row: {
           audit_id: string | null
