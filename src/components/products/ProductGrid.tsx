@@ -70,6 +70,8 @@ function ProductCardWrapper({
         "relative",
         isSelected && "ring-2 ring-primary/40 rounded-xl"
       )}
+      role="gridcell"
+      aria-selected={isSelected}
       style={reducedMotion ? undefined : {
         transitionDelay: hasAnimated ? '0ms' : `${Math.min(index * 80, 800)}ms`,
       }}
