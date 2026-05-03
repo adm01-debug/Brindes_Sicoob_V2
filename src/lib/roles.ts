@@ -44,6 +44,21 @@ export const ROLE_VISUAL: Record<AppRole, RoleVisual> = {
     className: "bg-secondary/15 text-secondary border-secondary/20",
     description: "Cria orçamentos e atende clientes dentro de sua alçada.",
   },
+  // ── SICOOB Specific Roles ──
+  gestor_singular: {
+    label: "Gestor Singular",
+    Icon: Landmark,
+    variant: "default",
+    className: "bg-sicoob-green text-white border-sicoob-green",
+    description: "Gestão estratégica da Cooperativa Singular.",
+  },
+  gestor_pa: {
+    label: "Gestor PA",
+    Icon: Building2,
+    variant: "secondary",
+    className: "bg-sicoob-green-light/20 text-sicoob-green-dark border-sicoob-green-light/30",
+    description: "Gestão operacional do Ponto de Atendimento.",
+  },
   // ── Aliases legados ──
   admin: {
     label: "Supervisor",
