@@ -13,6 +13,7 @@ export const sicoobRbacRoutes = [
   // Módulo Gestor Singular
   defineRoute({ path: "/gestor", component: lazyWithRetry(() => import("@/pages/sicoob/GestorDashboardPage")) }),
   defineRoute({ path: "/gestor/agregados", component: lazyWithRetry(() => import("@/pages/sicoob/GestorConsolidatedOrdersPage")) }),
+  defineRoute({ path: "/gestor/aprovacoes", component: lazyWithRetry(() => import("@/pages/sicoob/GestorApprovalsPage")) }),
   
   // Módulo Vendedor (Carteira)
   defineRoute({ path: "/vendedor/dashboard", component: lazyWithRetry(() => import("@/pages/sicoob/vendedor/SellerDashboardPage")) }),
