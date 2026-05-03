@@ -187,14 +187,13 @@ export const SidebarReorganized = React.forwardRef<HTMLElement, SidebarProps>(
     setOpenGroups(computeAutoOpen());
   }
 
-  const { isAdmin, isDev } = useAuth();
+  const { isAdmin, isDev, isGestorCompras } = useAuth();
 
   // Pending discount approval count for admin badge
   const { data: pendingApprovalCount } = useQuery({
     queryKey: ["pending-discount-approvals-count"],
     queryFn: async () => {
       const { count } = await supabase
-        // rls-allow: admin-only badge; RLS filtra
         .from("discount_approval_requests")
         .select("*", { count: "exact", head: true })
         .eq("status", "pending");
@@ -205,21 +204,51 @@ export const SidebarReorganized = React.forwardRef<HTMLElement, SidebarProps>(
     staleTime: 15_000,
   });
 
-  // Inject badge into navGroups dynamically
+  // Pending PAC requests for Singular Buyer badge
+  const { data: pendingPacRequestsCount } = useQuery({
+    queryKey: ["pending-pac-requests-count"],
+    queryFn: async () => {
+      const { count } = await supabase
+        .from("quotes")
+        .select("*", { count: "exact", head: true })
+        .eq("status", "pending_singular_approval");
+      return count || 0;
+    },
+    enabled: isGestorCompras || isDev,
+    refetchInterval: 30_000,
+    staleTime: 15_000,
+  });
+
+  // Inject badges into navGroups dynamically
   const enrichedNavGroups = useMemo(() => {
-    if (!isAdmin || !pendingApprovalCount) return navGroups;
     return navGroups.map(group => {
-      if (group.id !== "admin") return group;
-      return {
-        ...group,
-        items: group.items.map(item =>
-          item.href === "/admin/usuarios?tab=discounts"
-            ? { ...item, badge: pendingApprovalCount }
-            : item
-        ),
-      };
+      // 1) Admin badge
+      if (group.id === "admin" && isAdmin && pendingApprovalCount) {
+        return {
+          ...group,
+          items: group.items.map(item =>
+            item.href === "/admin/usuarios?tab=discounts"
+              ? { ...item, badge: pendingApprovalCount }
+              : item
+          ),
+        };
+      }
+      
+      // 2) Singular Buyer badge
+      if (group.id === "quotes" && (isGestorCompras || isDev) && pendingPacRequestsCount) {
+        return {
+          ...group,
+          items: group.items.map(item =>
+            item.href === "/orcamentos"
+              ? { ...item, badge: pendingPacRequestsCount }
+              : item
+          ),
+        };
+      }
+      
+      return group;
     });
-  }, [isAdmin, pendingApprovalCount]);
+  }, [isAdmin, isGestorCompras, isDev, pendingApprovalCount, pendingPacRequestsCount]);
 
   const toggleCollapse = () => setIsCollapsed(!isCollapsed);
   const collapseAllGroups = () => {
