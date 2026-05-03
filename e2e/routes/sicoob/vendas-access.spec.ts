@@ -34,4 +34,26 @@ test.describe("Sicoob Vendas — Access Control", () => {
     await gotoAndSettle(page, "/sicoob/vendas");
     await expect(page.url()).toContain("/login");
   });
+
+  test("Non-vendedor role accessing /sicoob/vendas shows Forbidden page and blocks data", async ({ page }) => {
+    // Assuming 'editor' role mimics a restricted user without vendedor role
+    await loginAs(page, "editor");
+    
+    // Intercept possible Sicoob API calls to verify they are not even attempted or are blocked
+    let apiCalled = false;
+    await page.route("**/functions/v1/sicoob-*", route => {
+      apiCalled = true;
+      route.abort();
+    });
+
+    await gotoAndSettle(page, "/sicoob/vendas");
+    
+    // Should show 403 Forbidden page
+    await expect(page.url()).toContain("/403");
+    await expect(page.getByTestId("app-forbidden")).toBeVisible();
+    
+    // Ensure the protected content is NOT present
+    await expect(page.getByTestId("seller-panel-root")).not.toBeVisible();
+  });
 });
+
