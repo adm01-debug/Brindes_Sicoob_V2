@@ -157,6 +157,12 @@ export default {
           brown: "hsl(var(--color-brown))",
           purple: "hsl(var(--color-purple))",
         },
+        // SICOOB Brand Palette (#10/10 consistency)
+        "sicoob-green": {
+          DEFAULT: "#A2D45E",
+          dark: "#003641",
+          light: "#C5E898",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",
