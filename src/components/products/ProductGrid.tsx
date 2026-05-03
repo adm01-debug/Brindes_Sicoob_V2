@@ -205,6 +205,7 @@ export function ProductGrid({
               className={`grid ${columnClasses[columns] || columnClasses[5]} absolute top-0 left-0 w-full ${
                 columns >= 8 ? 'gap-x-4 gap-y-8' : columns >= 6 ? 'gap-x-6 gap-y-8' : 'gap-x-8 gap-y-8'
               }`}
+              role="row"
               style={{
                 height: `${virtualRow.size}px`,
                 transform: `translateY(${virtualRow.start}px)`,
