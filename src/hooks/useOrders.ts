@@ -2,48 +2,15 @@
  * useOrders — hooks centralizados para listagem, detalhe e mutações de pedidos.
  */
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { logRlsDenial } from "@/lib/security/rls-denial-logger";
 import { useAuth } from "@/contexts/AuthContext";
+import { OrderService } from "@/services/OrderService";
+import { OrderRow, OrderFilters, OrderStatus } from "@/types/orders";
+import { ORDER_STATUS_LABELS, VALID_TRANSITIONS } from "@/constants/orders";
 
-export interface OrderRow {
-  id: string;
-  order_number: string;
-  status: string;
-  fulfillment_status: string;
-  total: number | null;
-  subtotal: number | null;
-  discount_amount: number | null;
-  shipping_cost: number | null;
-  shipping_type: string | null;
-  tracking_number: string | null;
-  delivery_time: string | null;
-  payment_terms: string | null;
-  client_id: string | null;
-  client_name: string | null;
-  client_company: string | null;
-  client_email: string | null;
-  client_phone: string | null;
-  notes: string | null;
-  internal_notes: string | null;
-  quote_id: string | null;
-  seller_id: string;
-  organization_id: string | null;
-  created_at: string;
-  updated_at: string;
-}
-
-/**
- * Filtros para listagem de pedidos
- */
-export interface OrderFilters {
-  search?: string;
-  status?: string;
-  startDate?: string;
-  endDate?: string;
-  clientCompany?: string;
-}
+export * from "@/types/orders";
+export * from "@/constants/orders";
 
 /**
  * Lista pedidos respeitando RLS e filtros avançados.
@@ -56,34 +23,10 @@ export function useOrdersList(
   return useQuery({
     queryKey: ["orders", "list", sellerId, scope, filters],
     enabled: !!sellerId,
-    queryFn: async (): Promise<OrderRow[]> => {
-      let q = supabase.from("orders").select("*").order("created_at", { ascending: false });
-      
-      if (scope === "self" && sellerId) q = q.eq("seller_id", sellerId);
-      
-      if (filters?.status && filters.status !== "all") {
-        q = q.eq("status", filters.status);
-      }
-      
-      if (filters?.clientCompany) {
-        q = q.ilike("client_company", `%${filters.clientCompany}%`);
-      }
-      
-      if (filters?.startDate) {
-        q = q.gte("created_at", filters.startDate);
-      }
-      
-      if (filters?.endDate) {
-        q = q.lte("created_at", filters.endDate);
-      }
-      
-      if (filters?.search) {
-        // Busca multicampo (OR)
-        q = q.or(`order_number.ilike.%${filters.search}%,client_name.ilike.%${filters.search}%,client_company.ilike.%${filters.search}%`);
-      }
-
-      const { data, error } = await q;
-      if (error) {
+    queryFn: async () => {
+      try {
+        return await OrderService.list(sellerId!, scope, filters);
+      } catch (error: any) {
         await logRlsDenial(error, {
           table: "orders", op: "SELECT",
           endpoint: "useOrdersList",
@@ -92,46 +35,40 @@ export function useOrdersList(
         });
         throw error;
       }
-      return (data ?? []) as OrderRow[];
     },
   });
 }
 
+/**
+ * Hook para detalhes de um pedido.
+ */
 export function useOrderDetail(orderId?: string) {
   return useQuery({
     queryKey: ["orders", "detail", orderId],
     enabled: !!orderId,
-    queryFn: async () => {
-      const [orderRes, itemsRes] = await Promise.all([
-        // rls-allow: applySellerScope chamado dinamicamente conforme escopo
-        supabase.from("orders").select("*").eq("id", orderId!).maybeSingle(),
-        supabase.from("order_items").select("*").eq("order_id", orderId!),
-      ]);
-      if (orderRes.error) throw orderRes.error;
-      return {
-        order: orderRes.data as OrderRow | null,
-        items: itemsRes.data ?? [],
-      };
-    },
+    queryFn: () => OrderService.getById(orderId!),
   });
 }
 
+/**
+ * Hook para atualização de pedidos com auditoria e notificações.
+ */
 export function useUpdateOrder(orderId?: string, currentStatus?: string) {
   const qc = useQueryClient();
   const { user } = useAuth();
 
   return useMutation({
     mutationFn: async (patch: Partial<OrderRow>) => {
+      if (!orderId) throw new Error("ID do pedido é obrigatório");
+
+      // Validar transição
       if (patch.status && currentStatus && !canTransitionTo(currentStatus, patch.status)) {
-        throw new Error(`Transição de status inválida: de ${ORDER_STATUS_LABELS[currentStatus] || currentStatus} para ${ORDER_STATUS_LABELS[patch.status] || patch.status}`);
+        throw new Error(`Transição de status inválida: de ${ORDER_STATUS_LABELS[currentStatus as OrderStatus] || currentStatus} para ${ORDER_STATUS_LABELS[patch.status as OrderStatus] || patch.status}`);
       }
       
-      const { error } = await supabase
-        .from("orders")
-        .update({ ...patch, updated_at: new Date().toISOString() })
-        .eq("id", orderId!);
-        
-      if (error) {
+      try {
+        await OrderService.update(orderId, patch);
+      } catch (error: any) {
         await logRlsDenial(error, {
           table: "orders", op: "UPDATE",
           endpoint: "useUpdateOrder",
@@ -141,49 +78,27 @@ export function useUpdateOrder(orderId?: string, currentStatus?: string) {
         throw error;
       }
 
-      // Log audit event if status changed
-      if (patch.status && patch.status !== currentStatus) {
-        await supabase.rpc('log_order_audit_event', {
-          p_order_id: orderId,
-          p_event_type: 'status_change',
-          p_description: `Status alterado de ${ORDER_STATUS_LABELS[currentStatus || ''] || currentStatus} para ${ORDER_STATUS_LABELS[patch.status] || patch.status}`,
-          p_metadata: { old_status: currentStatus, new_status: patch.status },
-          p_created_by_name: user?.email
+      // Se o status mudou, registrar auditoria e notificar
+      if (patch.status && patch.status !== currentStatus && user) {
+        const oldLabel = ORDER_STATUS_LABELS[currentStatus as OrderStatus] || currentStatus;
+        const newLabel = ORDER_STATUS_LABELS[patch.status as OrderStatus] || patch.status;
+        
+        await OrderService.logAudit({
+          orderId,
+          eventType: 'status_change',
+          description: `Status alterado de ${oldLabel} para ${newLabel}`,
+          metadata: { old_status: currentStatus, new_status: patch.status },
+          createdByName: user.email
         });
 
-        // Trigger email notification
-        try {
-          await supabase.functions.invoke('send-transactional-email', {
-            body: {
-              event_type: 'sicoob_order_status_change',
-              recipient_email: user?.email, // In production this would be the PA/Client email
-              recipient_name: user?.email?.split('@')[0],
-              data: {
-                order_number: orderId?.slice(0, 8),
-                new_status: ORDER_STATUS_LABELS[patch.status],
-                notes: patch.notes,
-                action_url: `${window.location.origin}/pedidos/${orderId}`
-              }
-            }
-          });
-        } catch (emailError) {
-          console.error('Failed to send email notification:', emailError);
-          // Fallback to in-app notification (already handled below)
-        }
-
-        // Create in-app notification (fallback and primary)
-        await supabase.from('notifications').insert({
-          user_id: user?.id,
-          title: "Status do Pedido Atualizado",
-          message: `O pedido #${orderId?.slice(0, 8)} mudou para ${ORDER_STATUS_LABELS[patch.status]}`,
-          type: 'info',
-          category: 'status',
-          source_system: 'compras',
-          source_entity_type: 'order',
-          source_entity_id: orderId,
-          action_url: `/pedidos/${orderId}`
+        await OrderService.notifyStatusChange({
+          orderId,
+          userId: user.id,
+          userEmail: user.email || "",
+          newStatus: patch.status as OrderStatus,
+          oldStatus: currentStatus || "",
+          notes: patch.notes || undefined
         });
-
       }
     },
     onSuccess: () => {
@@ -194,107 +109,29 @@ export function useUpdateOrder(orderId?: string, currentStatus?: string) {
   });
 }
 
-export const ORDER_STATUS_FLOW = [
-  "rascunho",
-  "enviado_gestor",
-  "aprovado_gestor",
-  "enviado_vendedor",
-  "em_producao",
-  "em_separacao",
-  "em_transporte",
-  "entregue",
-  "concluido",
-  "cancelado"
-] as const;
-
-export type OrderStatus = typeof ORDER_STATUS_FLOW[number];
-
-export const VALID_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
-  rascunho: ["enviado_gestor", "cancelado"],
-  enviado_gestor: ["aprovado_gestor", "rascunho", "cancelado"],
-  aprovado_gestor: ["enviado_vendedor", "cancelado"],
-  enviado_vendedor: ["em_producao", "cancelado"],
-  em_producao: ["em_separacao", "cancelado"],
-  em_separacao: ["em_transporte", "cancelado"],
-  em_transporte: ["entregue", "cancelado"],
-  entregue: ["concluido", "cancelado"],
-  concluido: [],
-  cancelado: [],
-};
-
+/**
+ * Funções utilitárias de transição expostas para compatibilidade
+ */
 export function canTransitionTo(current: string, next: string): boolean {
   if (current === next) return true;
   const validNext = VALID_TRANSITIONS[current as OrderStatus] || [];
   return validNext.includes(next as OrderStatus);
 }
 
-export const ORDER_STATUS_LABELS: Record<OrderStatus, string> = {
-  rascunho: "Rascunho",
-  enviado_gestor: "Enviado ao Gestor",
-  aprovado_gestor: "Aprovado pela Singular",
-  enviado_vendedor: "Enviado ao Vendedor",
-  em_producao: "Em Produção",
-  em_separacao: "Em Separação",
-  em_transporte: "Em Transporte",
-  entregue: "Entregue",
-  concluido: "Concluído",
-  cancelado: "Cancelado",
-};
-
-export const FULFILLMENT_LABELS = ORDER_STATUS_LABELS;
-
-// Type check to ensure ORDER_STATUS_LABELS covers all OrderStatus values
-const _statusCheck: Record<OrderStatus, string> = ORDER_STATUS_LABELS;
-
-
 /**
- * Hook principal para operações de Pedido.
+ * Hook para ações diversas em pedidos (duplicação, etc).
  */
-export function useOrders() {
+export function useOrderActions() {
   const qc = useQueryClient();
   const { user } = useAuth();
 
   const duplicateOrder = async (orderId: string): Promise<OrderRow | null> => {
+    if (!user) return null;
     try {
-      const { data: original, error: fetchErr } = await supabase
-        .from("orders")
-        .select("*, items:order_items(*)")
-        .eq("id", orderId)
-        .single();
-
-      if (fetchErr) throw fetchErr;
-
-      const newOrderNumber = `RE-${original.order_number.replace('PED-', '')}-${Math.floor(Math.random() * 1000)}`;
-      
-      const { data: newOrder, error: insErr } = await supabase
-        .from("orders")
-        .insert({
-          ...original,
-          id: undefined,
-          items: undefined,
-          order_number: newOrderNumber,
-          status: "rascunho",
-          created_at: new_date().toISOString(),
-          updated_at: new_date().toISOString(),
-          seller_id: user?.id
-        })
-        .select()
-        .single();
-
-      if (insErr) throw insErr;
-
-      if (original.items?.length) {
-        const items = original.items.map((it: any) => ({
-          ...it,
-          id: undefined,
-          order_id: newOrder.id,
-          created_at: undefined
-        }));
-        await supabase.from("order_items").insert(items);
-      }
-
+      const newOrder = await OrderService.duplicate(orderId, user.id);
       qc.invalidateQueries({ queryKey: ["orders"] });
-      return newOrder as OrderRow;
+      toast.success("Pedido duplicado com sucesso");
+      return newOrder;
     } catch (err) {
       console.error("Error duplicating order:", err);
       toast.error("Erro ao duplicar pedido");
@@ -307,5 +144,7 @@ export function useOrders() {
   };
 }
 
-function new_date() { return new Date(); }
-
+// Para manter compatibilidade com import { useOrders }
+export function useOrders() {
+  return useOrderActions();
+}
