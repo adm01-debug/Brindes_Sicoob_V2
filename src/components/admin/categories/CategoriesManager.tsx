@@ -278,6 +278,104 @@ export function CategoriesManager() {
 }
 
 function CategoryFormDialog({ open, onOpenChange, category, onSave, categories }: any) {
-...
+  const [formData, setFormData] = useState<any>({
+    name: '',
+    slug: '',
+    description: '',
+    parent_id: null,
+    sort_order: 0,
+  });
+
+  useEffect(() => {
+    if (category) {
+      setFormData({
+        name: category.name || '',
+        slug: category.slug || '',
+        description: category.description || '',
+        parent_id: category.parent_id || null,
+        sort_order: category.sort_order ?? 0,
+      });
+    } else {
+      setFormData({ name: '', slug: '', description: '', parent_id: null, sort_order: 0 });
+    }
+  }, [category, open]);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSave(formData);
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>{category ? 'Editar Categoria' : 'Nova Categoria'}</DialogTitle>
+        </DialogHeader>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <Label htmlFor="name">Nome</Label>
+            <Input
+              id="name"
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              required
+            />
+          </div>
+          <div>
+            <Label htmlFor="slug">Slug</Label>
+            <Input
+              id="slug"
+              value={formData.slug}
+              onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
+              required
+            />
+          </div>
+          <div>
+            <Label htmlFor="description">Descrição</Label>
+            <Textarea
+              id="description"
+              value={formData.description}
+              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+            />
+          </div>
+          <div>
+            <Label htmlFor="parent">Categoria Pai</Label>
+            <Select
+              value={formData.parent_id || 'none'}
+              onValueChange={(v) => setFormData({ ...formData, parent_id: v === 'none' ? null : v })}
+            >
+              <SelectTrigger id="parent">
+                <SelectValue placeholder="Nenhuma" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">Nenhuma</SelectItem>
+                {categories
+                  ?.filter((c: any) => c.id !== category?.id)
+                  .map((c: any) => (
+                    <SelectItem key={c.id} value={c.id}>
+                      {c.name}
+                    </SelectItem>
+                  ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <Label htmlFor="sort_order">Ordem</Label>
+            <Input
+              id="sort_order"
+              type="number"
+              value={formData.sort_order}
+              onChange={(e) => setFormData({ ...formData, sort_order: Number(e.target.value) })}
+            />
+          </div>
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+              Cancelar
+            </Button>
+            <Button type="submit">Salvar</Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
   );
 }
