@@ -224,19 +224,19 @@ Deno.serve(async (req) => {
           }
         }
 
-        return new Response(
+        return log.respond(new Response(
           JSON.stringify({ success: true, results }),
           { headers: { ...corsHeaders, "Content-Type": "application/json" } },
-        );
+        ));
       }
     }
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : "Unknown error";
-    console.error("Quote sync error:", error);
-    return new Response(JSON.stringify({ error: errorMessage }), {
+    log.error('request_failed', { error: errorMessage });
+    return log.respond(new Response(JSON.stringify({ error: errorMessage }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    }));
   }
 });
 
