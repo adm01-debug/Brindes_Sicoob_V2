@@ -55,7 +55,9 @@ export default function QuoteDetailPage() {
             </p>
           </div>
           <div className="flex items-center gap-2">
-            <Badge>{quote.status}</Badge>
+            <Badge variant={QUOTE_STATUS_CONFIG[quote.status]?.badgeVariant || "outline"} className={QUOTE_STATUS_CONFIG[quote.status]?.badgeClassName}>
+              {QUOTE_STATUS_CONFIG[quote.status]?.label || quote.status}
+            </Badge>
             <QuoteConvertToOrder quoteId={quote.id} status={quote.status} onConverted={() => refetch()} />
           </div>
         </header>
