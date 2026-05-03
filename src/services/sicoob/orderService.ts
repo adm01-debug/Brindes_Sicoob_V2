@@ -15,7 +15,7 @@ export const sicoobOrderService = {
     from?: string,
     to?: string
   }): Promise<SicoobOrder[]> {
-    let query = supabase.from("sicoob_orders").select("*");
+    let query = supabase.from("sicoob_orders").select("*, pa:postos_atendimento(nome), cooperativa:cooperativas(nome)");
 
     if (filters?.status && filters.status !== "all") {
       query = query.eq("status", filters.status);
