@@ -16,7 +16,7 @@ interface OrderAuditTimelineProps {
 export function OrderAuditTimeline({ orderId }: OrderAuditTimelineProps) {
   const [search, setSearch] = useState("");
   const [type, setType] = useState("all");
-  const { events, totalCount, isLoading, page, setPage, pageSize } = useOrderAudit(orderId, { search, type });
+  const { auditEvents: events, totalCount, isLoading, page, setPage, pageSize } = useOrderAudit(orderId, { search, event_type: type });
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
 
   if (isLoading && page === 1) return <div className="h-32 flex items-center justify-center">Carregando histórico...</div>;
