@@ -185,6 +185,8 @@ const App = () => {
                             <Route path="/tendencias" element={<TrendsPage />} />
                             <Route path="/notificacoes" element={<NotificationsPage />} />
                             <Route path="/gestor/compras" element={<GestorComprasPage />} />
+                            <Route path="/pedidos/:id/auditoria" element={<OrderAuditPage />} />
+                            <Route path="/admin/saude-testes" element={<TestDashboard />} />
 
                             {/* Error Fallback */}
                             <Route path="*" element={<div data-testid="page-not-found"><NotFound /></div>} />
