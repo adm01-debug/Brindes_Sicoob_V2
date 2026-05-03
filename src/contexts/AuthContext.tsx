@@ -59,12 +59,12 @@ interface AuthContextType {
   // Helpers da hierarquia Sicoob/Flow
   isDev: boolean;
   isGestorCompras: boolean;
+  isCompradorSingular: boolean;
   isGerentePa: boolean;
   isVendedor: boolean;
   isSupervisor: boolean;
   isAgente: boolean;
   isSupervisorOrAbove: boolean; // dev OR supervisor OR gestor_compras
-  canManage: boolean;           // Alias para isSupervisorOrAbove
   // IDs organizacionais
   cooperativaId: string | null;
   paId: string | null;
