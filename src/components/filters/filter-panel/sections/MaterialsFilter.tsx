@@ -108,7 +108,7 @@ export function MaterialsFilter({
                   <div key={group.group_slug} className={cn("rounded-lg border transition-all", hasSelection ? "border-orange/30 bg-orange/5" : "border-border/50 hover:border-border")}>
                     <div className="flex items-center gap-2 p-2">
                       <Checkbox checked={isSelected} onCheckedChange={() => toggleMaterialGroup(group.group_slug)} className="h-4 w-4" />
-                      <button type="button" onClick={() => toggleSection(`mat-${group.group_slug}`)} className="flex-1 flex items-center justify-between text-left" aria-label={`${isOpen ? 'Recolher' : 'Expandir'} tipos de ${group.group_name}`}>
+                      <button type="button" onClick={() => toggleSection(`mat-${group.group_slug}`)} className="flex-1 flex items-center justify-between text-left" aria-label={`${isOpen ? 'Recolher' : 'Expandir'} tipos de produtos em ${group.group_name}`}>
                         <span className={cn("text-sm font-medium", hasSelection && "text-orange")}>{group.group_name}</span>
                         <div className="flex items-center gap-1.5">
                           {selectedTypesCount > 0 && <Badge variant="secondary" className="h-4 text-[10px] px-1.5">{selectedTypesCount}</Badge>}
