@@ -392,9 +392,25 @@ export function QuoteBuilderSummaryColumn({
                 Solicitar Aprovação
               </Button>
             ) : (
-              <Button size="lg" className="w-full gap-2 h-12 text-sm font-bold bg-gradient-to-r from-primary to-primary/80 shadow-lg shadow-primary/20" onClick={() => onSave("pending")} disabled={quotesLoading || !isFormValid}>
-                {quotesLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Send className="h-5 w-5" />}
-                {isEditMode ? "Salvar" : "Criar"}
+              <Button 
+                size="lg" 
+                className={cn(
+                  "w-full gap-2 h-12 text-sm font-bold shadow-lg",
+                  isGerentePa 
+                    ? "bg-gradient-to-r from-emerald-600 to-emerald-700 shadow-emerald-600/20" 
+                    : "bg-gradient-to-r from-primary to-primary/80 shadow-primary/20"
+                )} 
+                onClick={() => onSave("pending")} 
+                disabled={quotesLoading || !isFormValid}
+              >
+                {quotesLoading ? (
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                ) : isGerentePa ? (
+                  <ClipboardCheck className="h-5 w-5" />
+                ) : (
+                  <Send className="h-5 w-5" />
+                )}
+                {isGerentePa ? "Enviar p/ Aprovação Singular" : (isEditMode ? "Salvar" : "Criar")}
               </Button>
             )}
             <Button variant="outline" className="w-full" onClick={() => onSave("draft")} disabled={quotesLoading || !isDraftValid}>
