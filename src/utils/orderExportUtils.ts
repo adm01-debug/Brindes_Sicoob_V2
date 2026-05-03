@@ -42,5 +42,45 @@ export async function exportOrdersToPDF(orderIds: string[]) {
   setTimeout(() => {
     toast.success(`${orderIds.length} pedidos exportados para PDF com sucesso.`);
     // In a real app, we would use jsPDF or call a server-side PDF generator
-  }, 2000);
+
+export const QUOTE_EXPORT_COLUMNS = ["ID", "Número", "Cliente", "Vendedor", "Status", "Valor Total", "Data de Criação"];
+
+export async function exportToExcel(data: any[], filename: string) {
+  try {
+    let csv = QUOTE_EXPORT_COLUMNS.join(",") + "\n";
+    data.forEach(item => {
+      const row = [
+        item.id,
+        item.quote_number || item.order_number || "",
+        item.client_company || item.client_name || "",
+        item.seller_name || "",
+        item.status,
+        item.total || 0,
+        item.created_at
+      ];
+      csv += row.join(",") + "\n";
+    });
+
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.setAttribute("href", url);
+    link.setAttribute("download", `${filename}_${new Date().getTime()}.csv`);
+    link.style.visibility = "hidden";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    toast.success("Exportação concluída!");
+  } catch (err) {
+    console.error(err);
+    toast.error("Erro na exportação");
+  }
+}
+
+export async function exportToPDF(data: any[], filename: string) {
+  toast.info("Exportação para PDF iniciada...");
+  // Mock PDF simulation
+  setTimeout(() => {
+    toast.success("PDF gerado com sucesso (simulado)");
+  }, 1500);
 }
