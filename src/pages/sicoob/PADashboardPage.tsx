@@ -115,32 +115,42 @@ export default function PADashboardPage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {stats?.recentOrders.map((order) => (
-                  <div key={order.id} className="flex items-center justify-between p-4 rounded-xl border border-border/50 bg-muted/20 hover:bg-muted/30 transition-colors">
-                    <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 rounded-full bg-background flex items-center justify-center border border-border">
-                        <ShoppingBag className="h-5 w-5 text-muted-foreground" />
-                      </div>
-                      <div>
-                        <div className="font-bold text-sm">Pedido #{order.id}</div>
-                        <div className="text-xs text-muted-foreground">{order.items} produtos • {formatCurrency(order.val)}</div>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-4">
-                      <div className="text-right hidden sm:block">
-                        <div className="text-xs font-medium">{order.date}</div>
-                        <Badge variant={order.status === 'approved' ? 'secondary' : (order.status === 'pending' ? 'outline' : 'default')} className="mt-1">
-                          {order.status === 'approved' ? 'Aprovado' : (order.status === 'pending' ? 'Pendente' : 'Enviado')}
-                        </Badge>
-                      </div>
-                      <Button variant="ghost" size="icon" asChild>
-                        <Link to={`/sicoob/pedidos/${order.id}`}>
-                          <ArrowRight className="h-4 w-4" />
-                        </Link>
-                      </Button>
-                    </div>
+                {isLoading ? (
+                   <div className="flex flex-col gap-4">
+                     {[1, 2, 3].map(i => (
+                       <div key={i} className="h-20 w-full animate-pulse bg-muted rounded-xl" />
+                     ))}
+                   </div>
+                ) : stats?.recentOrders.length === 0 ? (
+                  <div className="text-center py-8 text-muted-foreground">
+                    Nenhum pedido encontrado.
                   </div>
-                ))}
+                ) : (
+                  stats?.recentOrders.map((order: any) => (
+                    <div key={order.id} className="flex items-center justify-between p-4 rounded-xl border border-border/50 bg-muted/20 hover:bg-muted/30 transition-colors">
+                      <div className="flex items-center gap-4">
+                        <div className="w-10 h-10 rounded-full bg-background flex items-center justify-center border border-border">
+                          <ShoppingBag className="h-5 w-5 text-muted-foreground" />
+                        </div>
+                        <div>
+                          <div className="font-bold text-sm">Pedido #{order.order_number || order.id.slice(0, 8)}</div>
+                          <div className="text-xs text-muted-foreground">{formatCurrency(order.total_amount)}</div>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-4">
+                        <div className="text-right hidden sm:block">
+                          <div className="text-xs font-medium">{new Date(order.created_at).toLocaleDateString('pt-BR')}</div>
+                          <OrderStatusBadge status={order.status} className="mt-1" />
+                        </div>
+                        <Button variant="ghost" size="icon" asChild>
+                          <Link to={`/sicoob/pedidos/${order.id}`}>
+                            <ArrowRight className="h-4 w-4" />
+                          </Link>
+                        </Button>
+                      </div>
+                    </div>
+                  ))
+                )}
               </div>
             </CardContent>
           </Card>
