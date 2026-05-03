@@ -80,7 +80,7 @@ export default function SellerDashboardPage() {
 
           <Card className="border-[1.5px] md:col-span-2 bg-primary/5 border-primary/20">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-primary">Meta Mensal de Vendas</CardTitle>
+              <CardTitle className="text-sm font-medium text-sicoob-green-dark">Meta Mensal de Vendas</CardTitle>
               <Target className="h-4 w-4 text-primary" />
             </CardHeader>
             <CardContent className="space-y-3">
