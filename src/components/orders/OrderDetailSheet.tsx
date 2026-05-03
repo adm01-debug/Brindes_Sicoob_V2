@@ -18,6 +18,7 @@ interface OrderDetailSheetProps {
 }
 
 export function OrderDetailSheet({ orderId, isOpen, onClose }: OrderDetailSheetProps) {
+  const navigate = useNavigate();
   const { data, isLoading } = useOrderDetail(orderId || undefined);
 
   if (!orderId) return null;
