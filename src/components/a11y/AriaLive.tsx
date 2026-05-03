@@ -177,7 +177,7 @@ interface FormErrorAnnouncerProps {
   errors: string[];
 }
 
-export function FormErrorAnnouncer({ errors }: FormErrorAnnouncerProps) {
+export const FormErrorAnnouncer = forwardRef<HTMLDivElement, FormErrorAnnouncerProps>(({ errors }, _ref) => {
   const { announceAlert } = useAriaLive();
 
   useEffect(() => {
@@ -190,7 +190,9 @@ export function FormErrorAnnouncer({ errors }: FormErrorAnnouncerProps) {
   }, [errors, announceAlert]);
 
   return null;
-}
+});
+
+FormErrorAnnouncer.displayName = 'FormErrorAnnouncer';
 
 /**
  * Component for announcing action results
