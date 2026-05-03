@@ -4,13 +4,14 @@ import { GlobalSearchPalette } from "../GlobalSearchPalette";
 import { useGlobalSearch } from "../useGlobalSearch";
 import { MemoryRouter } from "react-router-dom";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import React from "react";
 
 // Mock the hook
 vi.mock("../useGlobalSearch", () => ({
   useGlobalSearch: vi.fn(),
 }));
 
-// Mock Voice Overlay to avoid lazy loading issues in tests
+// Mock Voice Overlay with immediate export (avoiding lazy/suspense issues)
 vi.mock("../VoiceSearchOverlayConnected", () => ({
   default: ({ isOpen, onClose, onAction }: any) => isOpen ? (
     <div data-testid="voice-overlay">
@@ -50,7 +51,8 @@ const defaultMockState = {
   ...mockHandlers,
 };
 
-const renderPalette = () => {
+const renderPalette = (mockState = defaultMockState) => {
+  (useGlobalSearch as any).mockReturnValue(mockState);
   return render(
     <TooltipProvider>
       <MemoryRouter>
@@ -73,33 +75,32 @@ describe("GlobalSearchPalette", () => {
   });
 
   it("renders correctly when open with no results", () => {
-    (useGlobalSearch as any).mockReturnValue(defaultMockState);
     renderPalette();
     expect(screen.getByPlaceholderText(/buscar produtos/i)).toBeInTheDocument();
   });
 
   it("handles undefined groupedResults gracefully", () => {
-    (useGlobalSearch as any).mockReturnValue({
+    renderPalette({
       ...defaultMockState,
       groupedResults: undefined,
     });
     
     // Should not throw
-    expect(() => renderPalette()).not.toThrow();
+    expect(screen.getByPlaceholderText(/buscar produtos/i)).toBeInTheDocument();
   });
 
   it("handles null groupedResults gracefully", () => {
-    (useGlobalSearch as any).mockReturnValue({
+    renderPalette({
       ...defaultMockState,
       groupedResults: null,
     });
     
     // Should not throw
-    expect(() => renderPalette()).not.toThrow();
+    expect(screen.getByPlaceholderText(/buscar produtos/i)).toBeInTheDocument();
   });
 
   it("displays search results when groupedResults is populated", () => {
-    (useGlobalSearch as any).mockReturnValue({
+    renderPalette({
       ...defaultMockState,
       query: "test",
       results: [{ id: "1", title: "Test Product", type: "product", href: "/p/1" }],
@@ -108,35 +109,31 @@ describe("GlobalSearchPalette", () => {
       },
     });
 
-    renderPalette();
     expect(screen.getByText(/Product/i)).toBeInTheDocument();
     expect(screen.getByText(/Produtos/i)).toBeInTheDocument();
   });
 
   it("displays loading state when isSearching is true", () => {
-    (useGlobalSearch as any).mockReturnValue({
+    renderPalette({
       ...defaultMockState,
       isSearching: true,
     });
 
-    renderPalette();
     expect(screen.getByText(/buscando resultados/i)).toBeInTheDocument();
   });
 
   it("displays empty state when no results found for a query", () => {
-    (useGlobalSearch as any).mockReturnValue({
+    renderPalette({
       ...defaultMockState,
       query: "nonexistent",
       results: [],
       groupedResults: {},
     });
 
-    renderPalette();
     expect(screen.getByText(/nenhum resultado para/i)).toBeInTheDocument();
   });
 
   it("calls setQuery when input changes", () => {
-    (useGlobalSearch as any).mockReturnValue(defaultMockState);
     renderPalette();
     
     const input = screen.getByPlaceholderText(/buscar produtos/i);
@@ -146,14 +143,14 @@ describe("GlobalSearchPalette", () => {
   });
 
   it("opens and closes voice search overlay", async () => {
-    (useGlobalSearch as any).mockReturnValue({
+    renderPalette({
       ...defaultMockState,
       voiceOverlayOpen: true,
     });
 
-    renderPalette();
-    
-    expect(screen.getByTestId("voice-overlay")).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByTestId("voice-overlay")).toBeInTheDocument();
+    });
     
     const closeBtn = screen.getByText("Close Voice");
     fireEvent.click(closeBtn);
@@ -162,12 +159,14 @@ describe("GlobalSearchPalette", () => {
   });
 
   it("handles voice search action updating UI", async () => {
-    (useGlobalSearch as any).mockReturnValue({
+    renderPalette({
       ...defaultMockState,
       voiceOverlayOpen: true,
     });
 
-    renderPalette();
+    await waitFor(() => {
+      expect(screen.getByTestId("voice-overlay")).toBeInTheDocument();
+    });
     
     const triggerBtn = screen.getByText("Trigger Search");
     fireEvent.click(triggerBtn);
@@ -179,12 +178,10 @@ describe("GlobalSearchPalette", () => {
   });
 
   it("respects accessibility requirements for focus trap and escape", async () => {
-    (useGlobalSearch as any).mockReturnValue(defaultMockState);
     renderPalette();
     
     const input = screen.getByPlaceholderText(/buscar produtos/i);
-    // In shadcn CommandDialog, it should auto-focus the input
-    // waitFor might be needed as focus often happens after a microtask
+    
     await waitFor(() => {
       expect(document.activeElement).toBe(input);
     });
@@ -201,16 +198,14 @@ describe("GlobalSearchPalette", () => {
       handleRemoveFromHistory: undefined,
     };
     
-    (useGlobalSearch as any).mockReturnValue(partialState);
-    
-    // Should render without crashing despite missing handlers
-    expect(() => renderPalette()).not.toThrow();
-    
-    renderPalette();
+    renderPalette(partialState);
     
     // Ensure we can still interact with the input which uses setQuery (present)
-    const input = screen.getByPlaceholderText(/buscar produtos/i);
+    const inputs = screen.getAllByPlaceholderText(/buscar produtos/i);
+    // CommandDialog might render double inputs in some portal scenarios during tests
+    const input = inputs[0];
     fireEvent.change(input, { target: { value: "test" } });
     expect(mockHandlers.setQuery).toHaveBeenCalledWith("test");
   });
+});
 });
