@@ -117,11 +117,14 @@ export const OrderAuditTimeline = ({ orderId }: OrderAuditTimelineProps) => {
                     {format(new Date(event.created_at), "dd/MM/yyyy HH:mm", { locale: ptBR })}
                   </span>
                 </div>
-                {event.actor_id && (
+                {(event.created_by_name || event.actor_role) && (
                   <div className="flex items-center gap-1 text-xs text-muted-foreground">
                     <User className="h-3 w-3" />
-                    <span>Realizado por sistema/usuário</span>
+                    <span>{event.created_by_name || "Sistema"} {event.actor_role ? `(${event.actor_role})` : ""}</span>
                   </div>
+                )}
+                {event.observations && (
+                  <p className="text-xs text-muted-foreground italic mt-1 line-clamp-2">{event.observations}</p>
                 )}
               </div>
             </div>
