@@ -199,6 +199,7 @@ Deno.serve(async (req) => {
     }).filter((p: any) => p !== null);
 
     if (products.length === 0) {
+      log.warn("all_items_rejected");
       throw new Error("Todos os itens foram rejeitados por dados inválidos (offer_id ou quantity). Verifique os dados dos produtos.");
     }
 
