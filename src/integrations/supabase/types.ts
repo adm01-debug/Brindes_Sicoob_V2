@@ -6390,11 +6390,13 @@ export type Database = {
         Row: {
           approved_at: string | null
           approved_by: string | null
+          audit_remaining_budget: number | null
           cooperative_id: string | null
           created_at: string
           created_by: string | null
           delivery_address: string | null
           id: string
+          is_pilot_order: boolean | null
           notes: string | null
           pa_id: string | null
           sla_deadline: string | null
@@ -6407,11 +6409,13 @@ export type Database = {
         Insert: {
           approved_at?: string | null
           approved_by?: string | null
+          audit_remaining_budget?: number | null
           cooperative_id?: string | null
           created_at?: string
           created_by?: string | null
           delivery_address?: string | null
           id?: string
+          is_pilot_order?: boolean | null
           notes?: string | null
           pa_id?: string | null
           sla_deadline?: string | null
@@ -6424,11 +6428,13 @@ export type Database = {
         Update: {
           approved_at?: string | null
           approved_by?: string | null
+          audit_remaining_budget?: number | null
           cooperative_id?: string | null
           created_at?: string
           created_by?: string | null
           delivery_address?: string | null
           id?: string
+          is_pilot_order?: boolean | null
           notes?: string | null
           pa_id?: string | null
           sla_deadline?: string | null
@@ -7121,6 +7127,27 @@ export type Database = {
       }
     }
     Views: {
+      sicoob_budget_audit: {
+        Row: {
+          ano: number | null
+          discrepancia: number | null
+          mes: number | null
+          pa_id: string | null
+          pa_nome: string | null
+          verba_calculada_pedidos: number | null
+          verba_registrada: number | null
+          verba_total: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pa_budgets_pa_id_fkey"
+            columns: ["pa_id"]
+            isOneToOne: false
+            referencedRelation: "postos_atendimento"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       v_full_scope_grants: {
         Row: {
           audit_id: string | null
@@ -7186,6 +7213,14 @@ export type Database = {
       can_view_connections: { Args: { _user_id?: string }; Returns: boolean }
       can_view_telemetry: { Args: { _user_id?: string }; Returns: boolean }
       check_ai_quota: { Args: { _user_id: string }; Returns: Json }
+      check_budget_availability: {
+        Args: { p_amount: number; p_pa_id: string }
+        Returns: {
+          has_budget: boolean
+          limit_alcada: number
+          remaining: number
+        }[]
+      }
       check_hardening_status: { Args: never; Returns: Json }
       check_ip_access: { Args: { _ip: string }; Returns: string }
       check_mcp_abuse_threshold: {
