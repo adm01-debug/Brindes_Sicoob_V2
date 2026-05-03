@@ -138,13 +138,28 @@ export function ImportExportManager({
     }
   };
 
-  const downloadTemplate = () => {
-    const worksheet = XLSX.utils.json_to_sheet(templateData || [
+  const downloadTemplate = (format: 'xlsx' | 'csv' = 'xlsx') => {
+    const data = templateData || [
       expectedColumns.reduce((acc, col) => ({ ...acc, [col.label]: '' }), {})
-    ]);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, entityName);
-    XLSX.writeFile(workbook, `${entityName}_template.xlsx`);
+    ];
+    
+    if (format === 'csv') {
+      const csv = Papa.unparse(data);
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.setAttribute('href', url);
+      link.setAttribute('download', `${entityName}_template.csv`);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } else {
+      const worksheet = XLSX.utils.json_to_sheet(data);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, entityName);
+      XLSX.writeFile(workbook, `${entityName}_template.xlsx`);
+    }
   };
 
   return (
@@ -177,9 +192,14 @@ export function ImportExportManager({
                   accept=".csv, .xlsx, .xls"
                   className="hidden"
                 />
-                <Button variant="outline" size="sm" onClick={downloadTemplate} className="gap-2">
-                  <Download className="h-4 w-4" /> Baixar Template (XLSX)
-                </Button>
+                <div className="flex gap-1">
+                  <Button variant="outline" size="sm" onClick={() => downloadTemplate('xlsx')} className="gap-2">
+                    <Download className="h-4 w-4" /> Template (XLSX)
+                  </Button>
+                  <Button variant="outline" size="sm" onClick={() => downloadTemplate('csv')} className="gap-2">
+                    <Download className="h-4 w-4" /> Template (CSV)
+                  </Button>
+                </div>
               </div>
               {previewData.length > 0 && (
                 <Badge variant={errors.length > 0 ? "destructive" : "default"}>

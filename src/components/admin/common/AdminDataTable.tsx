@@ -1,5 +1,5 @@
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   Table,
   TableBody,
@@ -15,12 +15,10 @@ import {
   ChevronLeft,
   ChevronRight,
   ArrowUpDown,
-  Filter,
   Inbox,
   Loader2,
   FileDown
 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 import {
   Select,
   SelectContent,
@@ -49,6 +47,14 @@ interface AdminDataTableProps<T> {
   onRowClick?: (row: T) => void;
   className?: string;
   onExport?: (data: T[]) => void;
+  // New props for server-side pagination
+  serverSide?: boolean;
+  totalCount?: number;
+  onPageChange?: (page: number) => void;
+  onPageSizeChange?: (pageSize: number) => void;
+  onSortChange?: (sort: { key: string; direction: 'asc' | 'desc' } | null) => void;
+  onSearchChange?: (term: string) => void;
+  currentPage?: number;
 }
 
 export function AdminDataTable<T extends { id?: string | number }>({
@@ -62,15 +68,35 @@ export function AdminDataTable<T extends { id?: string | number }>({
   actions,
   onRowClick,
   className,
-  onExport
+  onExport,
+  serverSide = false,
+  totalCount = 0,
+  onPageChange,
+  onPageSizeChange,
+  onSortChange,
+  onSearchChange,
+  currentPage: externalCurrentPage
 }: AdminDataTableProps<T>) {
   const [searchTerm, setSearchTerm] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
+  const [localCurrentPage, setLocalCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(initialPageSize);
   const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' } | null>(null);
 
-  // Filter data
+  const currentPage = serverSide ? (externalCurrentPage || 1) : localCurrentPage;
+
+  // Debounced search for server-side
+  useEffect(() => {
+    if (!serverSide) return;
+    const timer = setTimeout(() => {
+      onSearchChange?.(searchTerm);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [searchTerm, serverSide, onSearchChange]);
+
+  // Client-side filtering/sorting
   const filteredData = useMemo(() => {
+    if (serverSide) return data;
+
     let result = [...data];
 
     if (searchTerm && searchKey) {
@@ -79,7 +105,6 @@ export function AdminDataTable<T extends { id?: string | number }>({
         return value.includes(searchTerm.toLowerCase());
       });
     } else if (searchTerm) {
-      // Global search across all string fields if no searchKey
       result = result.filter(item => 
         Object.values(item).some(val => 
           String(val || "").toLowerCase().includes(searchTerm.toLowerCase())
@@ -99,19 +124,47 @@ export function AdminDataTable<T extends { id?: string | number }>({
     }
 
     return result;
-  }, [data, searchTerm, searchKey, sortConfig]);
+  }, [data, searchTerm, searchKey, sortConfig, serverSide]);
 
-  const totalPages = Math.ceil(filteredData.length / pageSize);
-  const paginatedData = filteredData.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+  const totalPages = serverSide 
+    ? Math.ceil(totalCount / pageSize) 
+    : Math.ceil(filteredData.length / pageSize);
+
+  const paginatedData = serverSide 
+    ? data 
+    : filteredData.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
   const handleSort = (key: string) => {
-    setSortConfig(prev => {
-      if (prev?.key === key) {
-        return { key, direction: prev.direction === 'asc' ? 'desc' : 'asc' };
-      }
-      return { key, direction: 'asc' };
-    });
+    const newConfig: { key: string; direction: 'asc' | 'desc' } | null = 
+      sortConfig?.key === key && sortConfig.direction === 'asc'
+        ? { key, direction: 'desc' }
+        : { key, direction: 'asc' };
+    
+    setSortConfig(newConfig);
+    if (serverSide) {
+      onSortChange?.(newConfig);
+    }
   };
+
+  const handlePageChange = (page: number) => {
+    if (serverSide) {
+      onPageChange?.(page);
+    } else {
+      setLocalCurrentPage(page);
+    }
+  };
+
+  const handlePageSizeChange = (size: string) => {
+    const newSize = Number(size);
+    setPageSize(newSize);
+    if (serverSide) {
+      onPageSizeChange?.(newSize);
+    } else {
+      setLocalCurrentPage(1);
+    }
+  };
+
+  const actualCount = serverSide ? totalCount : filteredData.length;
 
   return (
     <div className={cn("space-y-4", className)}>
@@ -121,20 +174,23 @@ export function AdminDataTable<T extends { id?: string | number }>({
           <Input
             placeholder={searchPlaceholder}
             value={searchTerm}
-            onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
+            onChange={(e) => { 
+              setSearchTerm(e.target.value); 
+              if (!serverSide) setLocalCurrentPage(1);
+            }}
             className="pl-9"
           />
         </div>
         <div className="flex items-center gap-2">
           {onExport && (
-            <Button variant="outline" size="sm" className="gap-2" onClick={() => onExport(filteredData)}>
+            <Button variant="outline" size="sm" className="gap-2" onClick={() => onExport(serverSide ? data : filteredData)}>
               <FileDown className="h-4 w-4" /> Exportar
             </Button>
           )}
           {actions}
           <Select
             value={String(pageSize)}
-            onValueChange={(v) => { setPageSize(Number(v)); setCurrentPage(1); }}
+            onValueChange={handlePageSizeChange}
           >
             <SelectTrigger className="w-[130px]">
               <SelectValue placeholder="Itens por página" />
@@ -144,6 +200,7 @@ export function AdminDataTable<T extends { id?: string | number }>({
               <SelectItem value="10">10 por página</SelectItem>
               <SelectItem value="20">20 por página</SelectItem>
               <SelectItem value="50">50 por página</SelectItem>
+              <SelectItem value="100">100 por página</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -160,7 +217,12 @@ export function AdminDataTable<T extends { id?: string | number }>({
                     onClick={() => col.sortable && handleSort(String(col.accessorKey))}
                   >
                     {col.header}
-                    {col.sortable && <ArrowUpDown className="h-3 w-3 opacity-50" />}
+                    {col.sortable && (
+                      <ArrowUpDown className={cn(
+                        "h-3 w-3 opacity-50",
+                        sortConfig?.key === col.accessorKey && "opacity-100 text-primary"
+                      )} />
+                    )}
                   </div>
                 </TableHead>
               ))}
@@ -209,13 +271,13 @@ export function AdminDataTable<T extends { id?: string | number }>({
       {totalPages > 1 && (
         <div className="flex items-center justify-between px-2">
           <p className="text-sm text-muted-foreground">
-            Mostrando {Math.min(filteredData.length, (currentPage - 1) * pageSize + 1)} a {Math.min(filteredData.length, currentPage * pageSize)} de {filteredData.length} resultados
+            Mostrando {Math.min(actualCount, (currentPage - 1) * pageSize + 1)} a {Math.min(actualCount, currentPage * pageSize)} de {actualCount} resultados
           </p>
           <div className="flex items-center gap-2">
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+              onClick={() => handlePageChange(currentPage - 1)}
               disabled={currentPage === 1}
             >
               <ChevronLeft className="h-4 w-4" />
@@ -223,7 +285,7 @@ export function AdminDataTable<T extends { id?: string | number }>({
             </Button>
             <div className="flex items-center gap-1">
               {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                let pageNum = currentPage;
+                let pageNum;
                 if (totalPages <= 5) pageNum = i + 1;
                 else if (currentPage <= 3) pageNum = i + 1;
                 else if (currentPage >= totalPages - 2) pageNum = totalPages - 4 + i;
@@ -235,7 +297,7 @@ export function AdminDataTable<T extends { id?: string | number }>({
                     variant={currentPage === pageNum ? "default" : "outline"}
                     size="sm"
                     className="w-8 h-8 p-0"
-                    onClick={() => setCurrentPage(pageNum)}
+                    onClick={() => handlePageChange(pageNum)}
                   >
                     {pageNum}
                   </Button>
@@ -245,7 +307,7 @@ export function AdminDataTable<T extends { id?: string | number }>({
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+              onClick={() => handlePageChange(currentPage + 1)}
               disabled={currentPage === totalPages}
             >
               Próxima

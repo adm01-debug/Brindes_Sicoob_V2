@@ -19,6 +19,10 @@ import * as XLSX from 'xlsx';
 export default function AdminAuditPage() {
   const [logs, setLogs] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [totalCount, setTotalCount] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [sort, setSort] = useState<{ key: string; direction: 'asc' | 'desc' } | null>({ key: 'created_at', direction: 'desc' });
   const [filters, setFilters] = useState({
     user: '',
     entity: '',
@@ -31,9 +35,9 @@ export default function AdminAuditPage() {
     try {
       let query = supabase
         .from('admin_audit_log')
-        .select('*')
-        .order('created_at', { ascending: false });
+        .select('*', { count: 'exact' });
 
+      // Apply filters
       if (filters.type !== 'ALL') {
         query = query.eq('event_type', filters.type);
       }
@@ -42,6 +46,60 @@ export default function AdminAuditPage() {
         query = query.ilike('entity_type', `%${filters.entity}%`);
       }
 
+      if (filters.user) {
+        // Since user_email is in metadata (JSONB), we use the arrow operator
+        query = query.filter('metadata->>user_email', 'ilike', `%${filters.user}%`);
+      }
+
+      if (filters.date) {
+        const startOfDay = new Date(filters.date);
+        startOfDay.setHours(0, 0, 0, 0);
+        const endOfDay = new Date(filters.date);
+        endOfDay.setHours(23, 59, 59, 999);
+        query = query.gte('created_at', startOfDay.toISOString()).lte('created_at', endOfDay.toISOString());
+      }
+
+      // Apply sorting
+      if (sort) {
+        query = query.order(sort.key, { ascending: sort.direction === 'asc' });
+      } else {
+        query = query.order('created_at', { ascending: false });
+      }
+
+      // Apply pagination
+      const from = (currentPage - 1) * pageSize;
+      const to = from + pageSize - 1;
+      query = query.range(from, to);
+
+      const { data, error, count } = await query;
+      if (error) throw error;
+
+      setLogs(data || []);
+      setTotalCount(count || 0);
+    } catch (error) {
+      console.error("Error fetching audit logs:", error);
+      toast.error("Erro ao carregar trilha de auditoria");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchLogs();
+  }, [filters, currentPage, pageSize, sort]);
+
+  const handleExport = async () => {
+    setIsLoading(true);
+    try {
+      let query = supabase
+        .from('admin_audit_log')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (filters.type !== 'ALL') query = query.eq('event_type', filters.type);
+      if (filters.entity) query = query.ilike('entity_type', `%${filters.entity}%`);
+      if (filters.user) query = query.filter('metadata->>user_email', 'ilike', `%${filters.user}%`);
+      
       if (filters.date) {
         const startOfDay = new Date(filters.date);
         startOfDay.setHours(0, 0, 0, 0);
@@ -53,43 +111,28 @@ export default function AdminAuditPage() {
       const { data, error } = await query;
       if (error) throw error;
 
-      let result = data || [];
-      if (filters.user) {
-        result = result.filter(log => 
-          (log.metadata?.user_email || '').toLowerCase().includes(filters.user.toLowerCase())
-        );
-      }
+      const exportData = (data || []).map(log => ({
+        'Data': format(new Date(log.created_at), 'dd/MM/yyyy HH:mm:ss'),
+        'Usuário': log.metadata?.user_email || log.user_id,
+        'Evento': log.event_type,
+        'Entidade': log.entity_type,
+        'ID Entidade': log.entity_id || '',
+        'Antes': JSON.stringify(log.old_data || {}),
+        'Depois': JSON.stringify(log.new_data || {}),
+        'IP/Agente': log.metadata?.user_agent || ''
+      }));
 
-      setLogs(result);
-    } catch (error) {
-      console.error("Error fetching audit logs:", error);
-      toast.error("Erro ao carregar trilha de auditoria");
+      const worksheet = XLSX.utils.json_to_sheet(exportData);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Auditoria");
+      XLSX.writeFile(workbook, `auditoria_admin_${new Date().toISOString().split('T')[0]}.xlsx`);
+      toast.success("Relatório exportado com sucesso");
+    } catch (err) {
+      console.error("Export error:", err);
+      toast.error("Erro ao exportar relatório");
     } finally {
       setIsLoading(false);
     }
-  };
-
-  useEffect(() => {
-    fetchLogs();
-  }, [filters]);
-
-  const handleExport = () => {
-    const exportData = logs.map(log => ({
-      'Data': format(new Date(log.created_at), 'dd/MM/yyyy HH:mm:ss'),
-      'Usuário': log.metadata?.user_email || log.user_id,
-      'Evento': log.event_type,
-      'Entidade': log.entity_type,
-      'ID Entidade': log.entity_id || '',
-      'Antes': JSON.stringify(log.old_data || {}),
-      'Depois': JSON.stringify(log.new_data || {}),
-      'IP/Agente': log.metadata?.user_agent || ''
-    }));
-
-    const worksheet = XLSX.utils.json_to_sheet(exportData);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Auditoria");
-    XLSX.writeFile(workbook, `auditoria_admin_${new Date().toISOString().split('T')[0]}.xlsx`);
-    toast.success("Relatório exportado com sucesso");
   };
 
   const columns = [
@@ -253,6 +296,13 @@ export default function AdminAuditPage() {
           columns={columns}
           isLoading={isLoading}
           searchPlaceholder="Busca rápida nos logs..."
+          serverSide
+          totalCount={totalCount}
+          currentPage={currentPage}
+          pageSize={pageSize}
+          onPageChange={setCurrentPage}
+          onPageSizeChange={setPageSize}
+          onSortChange={setSort}
         />
       </div>
     </MainLayout>
