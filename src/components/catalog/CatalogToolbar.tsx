@@ -61,11 +61,11 @@ export function CatalogToolbar({
   selectedCount = 0,
 }: CatalogToolbarProps) {
   return (
-    <div className="flex items-center justify-between gap-2 flex-wrap">
+    <div className="flex items-center justify-between gap-2 flex-wrap py-1">
       <div className="flex items-center gap-2 flex-shrink-0">
         <Sheet open={filterSheetOpen} onOpenChange={setFilterSheetOpen}>
           <SheetTrigger asChild>
-            <Button variant="outline" size="sm" className="px-2.5 sm:px-3">
+            <Button variant="outline" size="sm" className="px-2.5 sm:px-3 h-8 shadow-sm">
               <Filter className="h-4 w-4 sm:mr-2" />
               <span className="hidden sm:inline">Filtros</span>
               {activeFiltersCount > 0 && (
@@ -90,7 +90,7 @@ export function CatalogToolbar({
         </Sheet>
 
         <Select value={sortBy} onValueChange={(v) => setSortBy(v as SortOption)}>
-          <SelectTrigger className="w-10 sm:w-44" aria-label="Ordenar por">
+          <SelectTrigger className="w-10 sm:w-44 h-8 shadow-sm" aria-label="Ordenar por">
             <ArrowUpDown className="h-4 w-4 sm:mr-2 shrink-0" />
             <span className="hidden sm:inline"><SelectValue placeholder="Ordenar" /></span>
           </SelectTrigger>
