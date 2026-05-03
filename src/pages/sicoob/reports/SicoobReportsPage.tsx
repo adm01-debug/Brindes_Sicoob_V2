@@ -29,8 +29,8 @@ export default function SicoobReportsPage() {
                     <report.icon className="h-6 w-6" />
                   </div>
                   <div>
-                    <CardTitle className="text-lg">{report.title}</CardTitle>
-                    <CardDescription className="mt-1">{report.desc}</CardDescription>
+                    <CardTitle className="text-lg text-sicoob-green-dark">{report.title}</CardTitle>
+                    <CardDescription className="mt-1 italic">{report.desc}</CardDescription>
                   </div>
                 </div>
               </CardHeader>
