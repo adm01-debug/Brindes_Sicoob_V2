@@ -170,19 +170,107 @@ export default function AdminCampanhasPage() {
         </Card>
       </div>
 
-      <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
-        <DialogContent className="sm:max-w-[500px]">
-          <DialogHeader><DialogTitle>{editingCampaign ? 'Editar Campanha' : 'Nova Campanha'}</DialogTitle></DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-4 items-center gap-4"><Label className="text-right">Nome</Label><Input className="col-span-3" value={editingCampaign?.name || ''} onChange={(e) => setEditingCampaign({ ...(editingCampaign || {}), name: e.target.value })} /></div>
-            <div className="grid grid-cols-4 items-center gap-4"><Label className="text-right">Status</Label><div className="col-span-3"><Select value={editingCampaign?.status || 'draft'} onValueChange={(val) => setEditingCampaign({ ...(editingCampaign || {}), status: val })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="draft">Rascunho</SelectItem><SelectItem value="active">Ativa</SelectItem><SelectItem value="paused">Pausada</SelectItem><SelectItem value="completed">Concluída</SelectItem></SelectContent></Select></div></div>
-            <div className="grid grid-cols-4 items-center gap-4"><Label className="text-right">Orçamento</Label><Input type="number" className="col-span-3" value={editingCampaign?.budget || 0} onChange={(e) => setEditingCampaign({ ...(editingCampaign || {}), budget: parseFloat(e.target.value) })} /></div>
-            <div className="grid grid-cols-4 items-center gap-4"><Label className="text-right">Início</Label><Input type="date" className="col-span-3" value={editingCampaign?.start_date?.split('T')[0] || ''} onChange={(e) => setEditingCampaign({ ...(editingCampaign || {}), start_date: e.target.value })} /></div>
-            <div className="grid grid-cols-4 items-center gap-4"><Label className="text-right">Fim</Label><Input type="date" className="col-span-3" value={editingCampaign?.end_date?.split('T')[0] || ''} onChange={(e) => setEditingCampaign({ ...(editingCampaign || {}), end_date: e.target.value })} /></div>
-          </div>
-          <DialogFooter><Button variant="outline" onClick={() => setIsFormOpen(false)}>Cancelar</Button><Button onClick={() => handleSave(editingCampaign)}>Salvar</Button></DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <CampaignFormDialog 
+        open={isFormOpen} 
+        onOpenChange={setIsFormOpen} 
+        campaign={editingCampaign} 
+        onSave={handleSave} 
+      />
     </MainLayout>
+  );
+}
+
+function CampaignFormDialog({ open, onOpenChange, campaign, onSave }: any) {
+  const [formData, setFormData] = useState<any>({ 
+    name: '', 
+    status: 'draft', 
+    budget: 0, 
+    start_date: '', 
+    end_date: '', 
+    description: '',
+    target_audience: ''
+  });
+
+  useEffect(() => { 
+    if (campaign) {
+      setFormData({
+        ...campaign,
+        start_date: campaign.start_date?.split('T')[0] || '',
+        end_date: campaign.end_date?.split('T')[0] || ''
+      });
+    } else {
+      setFormData({ name: '', status: 'draft', budget: 0, start_date: '', end_date: '', description: '', target_audience: '' });
+    }
+  }, [campaign, open]);
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-[600px]">
+        <DialogHeader>
+          <DialogTitle>{campaign ? 'Editar Campanha' : 'Nova Campanha'}</DialogTitle>
+          <DialogDescription>Defina os parâmetros e segmentação da campanha.</DialogDescription>
+        </DialogHeader>
+        <Tabs defaultValue="basic" className="py-2">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="basic">Dados Básicos</TabsTrigger>
+            <TabsTrigger value="segmentation">Segmentação</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="basic" className="space-y-4 pt-4">
+            <div className="grid gap-2">
+              <Label htmlFor="name">Nome da Campanha</Label>
+              <Input id="name" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} placeholder="Ex: Black Friday 2024" />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="grid gap-2">
+                <Label htmlFor="status">Status</Label>
+                <Select value={formData.status} onValueChange={(val) => setFormData({ ...formData, status: val })}>
+                  <SelectTrigger id="status"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="draft">Rascunho</SelectItem>
+                    <SelectItem value="active">Ativa</SelectItem>
+                    <SelectItem value="paused">Pausada</SelectItem>
+                    <SelectItem value="completed">Concluída</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="budget">Orçamento (R$)</Label>
+                <Input id="budget" type="number" value={formData.budget} onChange={(e) => setFormData({ ...formData, budget: parseFloat(e.target.value) })} />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="grid gap-2">
+                <Label htmlFor="start">Data Início</Label>
+                <Input id="start" type="date" value={formData.start_date} onChange={(e) => setFormData({ ...formData, start_date: e.target.value })} />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="end">Data Fim</Label>
+                <Input id="end" type="date" value={formData.end_date} onChange={(e) => setFormData({ ...formData, end_date: e.target.value })} />
+              </div>
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="desc">Descrição</Label>
+              <Textarea id="desc" value={formData.description || ''} onChange={(e) => setFormData({ ...formData, description: e.target.value })} placeholder="Objetivos da campanha..." />
+            </div>
+          </TabsContent>
+
+          <TabsContent value="segmentation" className="space-y-4 pt-4">
+            <div className="grid gap-2">
+              <Label htmlFor="audience">Público-Alvo</Label>
+              <Input id="audience" value={formData.target_audience || ''} onChange={(e) => setFormData({ ...formData, target_audience: e.target.value })} placeholder="Ex: Clientes Inativos, Cooperados PAC..." />
+            </div>
+            <div className="p-4 bg-muted/30 rounded-lg border border-dashed text-center">
+              <Users className="h-8 w-8 mx-auto opacity-20 mb-2" />
+              <p className="text-xs text-muted-foreground">Filtros avançados de segmentação por comportamento de compra serão habilitados na Onda 3.</p>
+            </div>
+          </TabsContent>
+        </Tabs>
+        <DialogFooter className="mt-4">
+          <Button variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
+          <Button onClick={() => onSave(formData)}>Salvar Campanha</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
