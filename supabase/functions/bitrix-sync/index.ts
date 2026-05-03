@@ -25,15 +25,21 @@ function getSupabaseClient() {
 
 Deno.serve(async (req) => {
   const corsHeaders = getCorsHeaders(req);
+  const requestId = getOrCreateRequestId(req);
+  const log = createStructuredLogger({ fn: 'bitrix-sync', requestId, req });
+
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
+  log.info('request_start');
+
   try {
-    // AuthZ: bitrix-sync escreve no CRM externo — supervisor (admin) ou dev.
-    // Server-side double-check via has_role() para defesa em profundidade.
     const auth = await authorize(req, { requireRole: 'supervisor', enforceServerSide: true });
-    if (!auth.ok) return auth.response;
+    if (!auth.ok) {
+      log.warn('auth_failed', { reason: 'insufficient_privileges' });
+      return log.respond(auth.response);
+    }
 
     const bitrixWebhookUrl = Deno.env.get('BITRIX24_WEBHOOK_URL');
 
