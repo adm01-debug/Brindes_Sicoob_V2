@@ -225,8 +225,8 @@ export default function OrderDetailPage() {
   };
 
   const handleReject = () => {
-    if (!rejectionReason.trim()) {
-      toast.error("Por favor, informe o motivo da rejeição");
+    if (!rejectionReason.trim() || rejectionReason.length < 10) {
+      toast.error("Por favor, informe um motivo com pelo menos 10 caracteres.");
       return;
     }
 
@@ -343,6 +343,7 @@ export default function OrderDetailPage() {
                   value={rejectionReason}
                   onValueChange={setRejectionReason}
                   onConfirm={handleReject}
+                  confirmDisabled={rejectionReason.length < 10}
                 />
 
                 <Button 
@@ -370,6 +371,7 @@ export default function OrderDetailPage() {
                   value={requestReason}
                   onValueChange={setRequestReason}
                   onConfirm={handleRequestApproval}
+                  confirmDisabled={requestReason.length < 10}
                 />
               </>
             ) : null}

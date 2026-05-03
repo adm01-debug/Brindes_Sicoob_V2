@@ -1,9 +1,10 @@
 import React, { useState } from "react";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { FileText, FileSpreadsheet, FileBarChart, ArrowRight, Download, CalendarIcon, Wallet, Filter, Search, Loader2 } from "lucide-react";
+import { FileText, FileSpreadsheet, FileBarChart, History, Download, CalendarIcon, Loader2, Search } from "lucide-react";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
+import * as XLSX from "xlsx";
 import { Button } from "@/components/ui/button";
 import { formatCurrency } from "@/utils/formatters";
 import { useQuery } from "@tanstack/react-query";
@@ -18,6 +19,8 @@ import { cn } from "@/lib/utils";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { OrderStatusBadge } from "@/components/sicoob/orders/OrderStatusBadge";
+import { toast } from "sonner";
 
 const REPORTS = [
   { title: "Consumo por Ponto de Atendimento", desc: "Detalhamento de gastos e orçamentos por agência (PA).", icon: FileBarChart, type: "PDF / Excel" },
@@ -28,7 +31,7 @@ const REPORTS = [
 
 export default function SicoobReportsPage() {
   const { profile } = useAuth();
-  const [isExporting, setIsExporting] = useState<boolean>(false);
+  const [isExporting, setIsExporting] = useState<'pdf' | 'xlsx' | null>(null);
   const [date, setDate] = useState<DateRange | undefined>({
     from: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
     to: new Date()
@@ -74,13 +77,13 @@ export default function SicoobReportsPage() {
 
   const totalSpent = ordersInRange?.reduce((acc, order) => acc + (order.total_amount || 0), 0) || 0;
 
-  const handleExport = async () => {
+  const handleExportPDF = async () => {
     if (!ordersInRange || ordersInRange.length === 0) {
       toast.error("Não há dados para exportar no período selecionado.");
       return;
     }
 
-    setIsExporting(true);
+    setIsExporting('pdf');
     try {
       const doc = new jsPDF();
       doc.setFontSize(18);
@@ -114,9 +117,37 @@ export default function SicoobReportsPage() {
       doc.save(`extrato_sicoob_${format(new Date(), 'yyyy-MM-dd')}.pdf`);
       toast.success("Extrato exportado com sucesso (PDF)");
     } catch (error: any) {
-      toast.error("Erro ao exportar: " + error.message);
+      toast.error("Erro ao exportar PDF: " + error.message);
     } finally {
-      setIsExporting(false);
+      setIsExporting(null);
+    }
+  };
+
+  const handleExportExcel = async () => {
+    if (!ordersInRange || ordersInRange.length === 0) {
+      toast.error("Não há dados para exportar no período selecionado.");
+      return;
+    }
+
+    setIsExporting('xlsx');
+    try {
+      const data = ordersInRange.map(o => ({
+        "Data": format(new Date(o.created_at), "dd/MM/yyyy"),
+        "Pedido": o.order_number || o.id.slice(0, 8),
+        "Status": o.status.toUpperCase(),
+        "Valor (R$)": o.total_amount
+      }));
+
+      const worksheet = XLSX.utils.json_to_sheet(data);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Extrato SICOOB");
+      
+      XLSX.writeFile(workbook, `extrato_sicoob_${format(new Date(), 'yyyy-MM-dd')}.xlsx`);
+      toast.success("Extrato exportado com sucesso (XLSX)");
+    } catch (error: any) {
+      toast.error("Erro ao exportar Excel: " + error.message);
+    } finally {
+      setIsExporting(null);
     }
   };
 
@@ -156,18 +187,33 @@ export default function SicoobReportsPage() {
                 />
               </PopoverContent>
             </Popover>
-            <Button 
-              className="bg-sicoob-green hover:bg-sicoob-green-dark" 
-              onClick={handleExport}
-              disabled={isExporting}
-            >
-              {isExporting ? (
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-              ) : (
-                <Download className="h-4 w-4 mr-2" />
-              )}
-              Exportar
-            </Button>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button 
+                  className="bg-sicoob-green hover:bg-sicoob-green-dark" 
+                  disabled={isExporting !== null}
+                >
+                  {isExporting ? (
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  ) : (
+                    <Download className="h-4 w-4 mr-2" />
+                  )}
+                  Exportar
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent align="end" className="w-48 p-2">
+                <div className="grid gap-1">
+                  <Button variant="ghost" className="justify-start font-normal h-8" onClick={handleExportPDF}>
+                    <FileText className="h-3 w-3 mr-2" />
+                    PDF
+                  </Button>
+                  <Button variant="ghost" className="justify-start font-normal h-8" onClick={handleExportExcel}>
+                    <FileSpreadsheet className="h-3 w-3 mr-2" />
+                    Excel (XLSX)
+                  </Button>
+                </div>
+              </PopoverContent>
+            </Popover>
           </div>
         </div>
 

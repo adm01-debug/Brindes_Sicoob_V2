@@ -17,8 +17,9 @@ export const usePaDashboardStats = () => {
         .from("pa_budgets")
         .select("*")
         .eq("pa_id", paId)
-        .eq("ano", now.getFullYear())
-        .eq("mes", now.getMonth() + 1)
+        .order("ano", { ascending: false })
+        .order("mes", { ascending: false })
+        .limit(1)
         .maybeSingle();
 
       // 2. Get active orders count (anything not completed/cancelled/draft)

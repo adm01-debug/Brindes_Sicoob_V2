@@ -46,6 +46,7 @@ import {
   Megaphone,
   Mail,
   Wallet,
+  ShieldAlert,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
@@ -177,7 +178,8 @@ const navGroups: NavGroup[] = [
       { icon: Plug, label: "Conexões", href: "/admin/conexoes", devOnly: true },
       { icon: Sparkles, label: "Prompts IA", href: "/admin/prompts-ia", devOnly: true },
       { icon: Workflow, label: "Workflows IA", href: "/admin/workflows", devOnly: true },
-      { icon: ShieldCheck, label: "Auditoria RBAC", href: "/admin/rbac-rotas", devOnly: true },
+       { icon: ShieldCheck, label: "Auditoria RBAC", href: "/admin/rbac-rotas", devOnly: true },
+       { icon: ShieldAlert, label: "QA Pré-flight", href: "/sicoob/qa/preflight", devOnly: true },
     ],
   },
 ];

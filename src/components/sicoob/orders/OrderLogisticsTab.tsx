@@ -1,11 +1,12 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Truck, Calendar, MapPin, Package } from "lucide-react";
-import { useOrderLogistics } from "@/hooks/useOrderExtensions";
+import { Truck, Calendar, MapPin, Package, Camera, Loader2 } from "lucide-react";
+import { useOrderLogistics, useOrderInvoices } from "@/hooks/useOrderExtensions";
 import { Badge } from "@/components/ui/badge";
+import { toast } from "sonner";
 
 interface OrderLogisticsTabProps {
   orderId: string;
@@ -13,8 +14,11 @@ interface OrderLogisticsTabProps {
 
 export function OrderLogisticsTab({ orderId }: OrderLogisticsTabProps) {
   const { logistics, updateLogistics, isLoading } = useOrderLogistics(orderId);
+  const { uploadFile } = useOrderInvoices(orderId);
   const [trackingCode, setTrackingCode] = useState("");
   const [carrier, setCarrier] = useState("");
+  const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleUpdateTracking = () => {
     updateLogistics.mutate({
@@ -22,6 +26,27 @@ export function OrderLogisticsTab({ orderId }: OrderLogisticsTabProps) {
       carrier: carrier,
       status: 'in_transit'
     });
+  };
+
+  const handlePhotoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setIsUploadingPhoto(true);
+      const publicUrl = await uploadFile(file, `delivery-photo-${Date.now()}.jpg`);
+      
+      updateLogistics.mutate({
+        delivery_photo_url: publicUrl,
+        status: 'delivered'
+      });
+      
+      toast.success("Foto de entrega enviada com sucesso");
+    } catch (error: any) {
+      toast.error("Erro no upload da foto: " + error.message);
+    } finally {
+      setIsUploadingPhoto(false);
+    }
   };
 
   if (isLoading) return <div className="p-8 text-center">Carregando dados logísticos...</div>;
@@ -93,27 +118,58 @@ export function OrderLogisticsTab({ orderId }: OrderLogisticsTabProps) {
           </div>
           <Button 
             onClick={handleUpdateTracking} 
-            disabled={updateLogistics.isPending || (!trackingCode && !carrier)}
+            disabled={updateLogistics.isPending || !trackingCode.trim() || !carrier.trim()}
           >
             {updateLogistics.isPending ? "Salvando..." : "Salvar Informações"}
           </Button>
         </CardContent>
       </Card>
 
-      {logistics?.delivery_photo_url && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">Comprovante de Entrega</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <img 
-              src={logistics.delivery_photo_url} 
-              alt="Comprovante de entrega" 
-              className="max-w-md rounded-lg border shadow-sm"
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg flex items-center gap-2">
+            <Camera className="h-5 w-5" />
+            Comprovante de Entrega
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex flex-col items-center justify-center p-6 border-2 border-dashed rounded-lg bg-muted/30">
+            {logistics?.delivery_photo_url ? (
+              <div className="space-y-4 text-center">
+                <img 
+                  src={logistics.delivery_photo_url} 
+                  alt="Comprovante de entrega" 
+                  className="max-w-xs rounded-lg border shadow-sm mx-auto"
+                />
+                <Button variant="outline" size="sm" onClick={() => fileInputRef.current?.click()} disabled={isUploadingPhoto}>
+                  Alterar Foto
+                </Button>
+              </div>
+            ) : (
+              <div className="text-center space-y-3">
+                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
+                  <Camera className="h-6 w-6 text-primary" />
+                </div>
+                <div className="space-y-1">
+                  <p className="text-sm font-medium">Nenhuma foto enviada</p>
+                  <p className="text-xs text-muted-foreground">Envie uma foto do comprovante ou do produto entregue.</p>
+                </div>
+                <Button onClick={() => fileInputRef.current?.click()} disabled={isUploadingPhoto}>
+                  {isUploadingPhoto ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Plus className="h-4 w-4 mr-2" />}
+                  Enviar Foto
+                </Button>
+              </div>
+            )}
+            <input 
+              type="file" 
+              ref={fileInputRef} 
+              className="hidden" 
+              accept="image/*" 
+              onChange={handlePhotoUpload} 
             />
-          </CardContent>
-        </Card>
-      )}
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

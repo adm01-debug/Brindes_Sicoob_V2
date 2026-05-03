@@ -1,35 +1,15 @@
 import React from "react";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Users, ShoppingBag, Target, TrendingUp, Calendar, ArrowRight, UserPlus, Briefcase } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
+import { Users, ShoppingBag, Target, TrendingUp, Calendar, ArrowRight, UserPlus, Briefcase, Loader2 } from "lucide-react";
+import { useSellerDashboardStats } from "@/hooks/sicoob/useSellerDashboardStats";
 import { formatCurrency } from "@/utils/formatters";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { Progress } from "@/components/ui/progress";
 
 export default function SellerDashboardPage() {
-  const { data: stats } = useQuery({
-    queryKey: ["sicoob-seller-stats"],
-    queryFn: async () => {
-      return {
-        totalClients: 48,
-        activeOrders: 15,
-        monthlySales: 345000.00,
-        salesGoal: 500000.00,
-        topClients: [
-          { name: "Sicoob Central SC/RS", value: 120000, grow: "+12%" },
-          { name: "Sicoob MaxiCrédito", value: 85000, grow: "+5%" },
-          { name: "Sicoob São Miguel", value: 42000, grow: "-2%" },
-        ],
-        recentActivity: [
-          { action: "Pedido aprovado", client: "PA 01 - Centro", time: "2h atrás" },
-          { action: "Novo orçamento", client: "PA 04 - Industrial", time: "5h atrás" },
-          { action: "Entrega confirmada", client: "PA 02 - Norte", time: "1 dia atrás" },
-        ]
-      };
-    }
-  });
+  const { data: stats, isLoading } = useSellerDashboardStats();
 
   const goalProgress = stats ? (stats.monthlySales / stats.salesGoal) * 100 : 0;
 
@@ -103,29 +83,35 @@ export default function SellerDashboardPage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-6">
-                {stats?.topClients.map((client, idx) => (
-                  <div key={idx} className="flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                      <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center font-bold text-sm text-muted-foreground">
-                        {idx + 1}
+                {isLoading ? (
+                  <div className="flex justify-center py-12"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div>
+                ) : stats?.topClients.length === 0 ? (
+                  <div className="text-center py-8 text-muted-foreground italic">Nenhum dado de faturamento disponível.</div>
+                ) : (
+                  stats?.topClients.map((client, idx) => (
+                    <div key={idx} className="flex items-center justify-between">
+                      <div className="flex items-center gap-4">
+                        <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center font-bold text-sm text-muted-foreground">
+                          {idx + 1}
+                        </div>
+                        <div>
+                          <div className="font-semibold">{client.name}</div>
+                          <div className="text-xs text-muted-foreground">Faturamento: {formatCurrency(client.value)}</div>
+                        </div>
                       </div>
-                      <div>
-                        <div className="font-semibold">{client.name}</div>
-                        <div className="text-xs text-muted-foreground">Faturamento: {formatCurrency(client.value)}</div>
+                      <div className="flex items-center gap-4">
+                        <div className={`text-sm font-medium ${client.grow.startsWith('+') ? 'text-green-600' : 'text-red-600'}`}>
+                          {client.grow}
+                        </div>
+                        <Button variant="ghost" size="icon" asChild>
+                          <Link to="/clientes">
+                            <ArrowRight className="h-4 w-4" />
+                          </Link>
+                        </Button>
                       </div>
                     </div>
-                    <div className="flex items-center gap-4">
-                      <div className={`text-sm font-medium ${client.grow.startsWith('+') ? 'text-green-600' : 'text-red-600'}`}>
-                        {client.grow}
-                      </div>
-                      <Button variant="ghost" size="icon" asChild>
-                        <Link to="/clientes">
-                          <ArrowRight className="h-4 w-4" />
-                        </Link>
-                      </Button>
-                    </div>
-                  </div>
-                ))}
+                  ))
+                )}
               </div>
             </CardContent>
           </Card>
@@ -137,20 +123,26 @@ export default function SellerDashboardPage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-6">
-                {stats?.recentActivity.map((item, idx) => (
-                  <div key={idx} className="flex gap-4">
-                    <div className="relative mt-1">
-                      <div className="w-2 h-2 rounded-full bg-primary ring-4 ring-primary/20" />
-                      {idx < stats.recentActivity.length - 1 && (
-                        <div className="absolute top-2 left-1/2 -translate-x-1/2 w-[1px] h-10 bg-border" />
-                      )}
+                {isLoading ? (
+                  <div className="flex justify-center py-12"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div>
+                ) : stats?.recentActivity.length === 0 ? (
+                  <div className="text-center py-8 text-muted-foreground italic">Nenhuma atividade recente.</div>
+                ) : (
+                  stats?.recentActivity.map((item, idx) => (
+                    <div key={idx} className="flex gap-4">
+                      <div className="relative mt-1">
+                        <div className="w-2 h-2 rounded-full bg-primary ring-4 ring-primary/20" />
+                        {idx < stats.recentActivity.length - 1 && (
+                          <div className="absolute top-2 left-1/2 -translate-x-1/2 w-[1px] h-10 bg-border" />
+                        )}
+                      </div>
+                      <div>
+                        <div className="text-sm font-medium">{item.action}</div>
+                        <div className="text-xs text-muted-foreground">{item.client} • {item.time}</div>
+                      </div>
                     </div>
-                    <div>
-                      <div className="text-sm font-medium">{item.action}</div>
-                      <div className="text-xs text-muted-foreground">{item.client} • {item.time}</div>
-                    </div>
-                  </div>
-                ))}
+                  ))
+                )}
               </div>
               <Button variant="outline" className="w-full mt-6" asChild>
                 <Link to="/sicoob/pedidos">Ver Todos os Pedidos</Link>

@@ -20,6 +20,7 @@ interface OrderActionDialogProps {
   value: string;
   onValueChange: (value: string) => void;
   onConfirm: () => void;
+  confirmDisabled?: boolean;
 }
 
 export const OrderActionDialog = ({
@@ -33,6 +34,7 @@ export const OrderActionDialog = ({
   value,
   onValueChange,
   onConfirm,
+  confirmDisabled = false,
 }: OrderActionDialogProps) => {
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
@@ -52,7 +54,7 @@ export const OrderActionDialog = ({
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancelar
           </Button>
-          <Button variant={confirmVariant} onClick={onConfirm}>
+          <Button variant={confirmVariant} onClick={onConfirm} disabled={confirmDisabled}>
             {confirmLabel}
           </Button>
         </DialogFooter>
