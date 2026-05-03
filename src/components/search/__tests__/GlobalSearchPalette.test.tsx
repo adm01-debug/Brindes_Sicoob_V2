@@ -208,4 +208,3 @@ describe("GlobalSearchPalette", () => {
     expect(mockHandlers.setQuery).toHaveBeenCalledWith("test");
   });
 });
-});
