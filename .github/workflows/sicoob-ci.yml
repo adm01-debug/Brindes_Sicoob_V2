@@ -66,9 +66,12 @@ jobs:
           fi
           deno test --allow-net --allow-env --allow-read supabase/functions/tests/sicoob-validation-constraints_test.ts
 
-  frontend-unit-coverage:
-    name: Frontend Coverage Gate
+  frontend-quality-gate:
+    name: Frontend Quality (Unit & E2E)
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        test-type: [unit, e2e]
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-node@v4
@@ -76,6 +79,23 @@ jobs:
           node-version: 20
           cache: 'npm'
       - run: npm ci
-      - name: Run Frontend Tests with Coverage
-        run: npm run test -- src/components/layout/ProtectedRoute.test.tsx src/services/sicoob/orderService.test.ts src/pages/ForbiddenPage.test.tsx
+      
+      - name: Run Unit Tests with Coverage
+        if: matrix.test-type == 'unit'
+        run: npm run test:coverage:ci -- src/components/layout/ProtectedRoute.test.tsx src/services/sicoob/orderService.test.ts src/pages/ForbiddenPage.test.tsx
+
+      - name: Run E2E Sicoob Access Tests
+        if: matrix.test-type == 'e2e'
+        run: |
+          npx playwright install --with-deps chromium
+          npm run test:e2e -- e2e/routes/sicoob/vendas-access.spec.ts
+
+      - name: Upload Coverage Artifacts
+        if: matrix.test-type == 'unit' && always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-unit-coverage-report
+          path: coverage/
+          retention-days: 7
+
 
