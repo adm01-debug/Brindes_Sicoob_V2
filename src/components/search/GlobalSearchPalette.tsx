@@ -72,6 +72,7 @@ export function GlobalSearchPalette() {
       <div className="flex items-center gap-2 w-full md:w-auto">
         <button
           onClick={() => s.setOpen(true)}
+          data-testid="global-search-trigger"
           className="group relative flex items-center gap-2.5 px-3.5 py-2 text-sm rounded-xl border [border-color:hsl(var(--command-border))] hover:[border-color:hsl(var(--command-border-strong))] [background-color:hsl(var(--command-surface-raised))] hover:[background-color:hsl(var(--command-surface-soft))] transition-all duration-300 flex-1 md:w-64 overflow-hidden"
         >
           <div className="absolute inset-0 bg-gradient-to-r from-primary/0 via-primary/[0.03] to-primary/0 group-hover:via-primary/[0.06] transition-all duration-500 pointer-events-none" />
