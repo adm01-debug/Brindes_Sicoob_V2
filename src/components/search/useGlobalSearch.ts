@@ -2,7 +2,8 @@
  * useGlobalSearch — Hook that encapsulates all search logic for GlobalSearchPalette.
  * (REFATORADO para SOLID/Clean Code)
  */
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useMemo, useRef, useState, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useSearch } from "@/hooks/useSearch";
 import { useContextualSuggestions } from "@/hooks/useContextualSuggestions";
@@ -52,8 +53,9 @@ export function useGlobalSearch() {
   const [voiceOverlayOpen, setVoiceOverlayOpen] = useState(false);
   
   const debouncedQuery = useDebounce(query, 500);
-  const { history, quickSuggestions } = useSearch();
-  const { suggestions: contextualSuggestions } = useContextualSuggestions({ searchQuery: query });
+  const navigate = useNavigate();
+  const { history, quickSuggestions, addToHistory, removeFromHistory } = useSearch();
+  const { suggestions: contextualSuggestions, routeContext } = useContextualSuggestions({ searchQuery: query });
   const popularProducts = usePopularSearchItems(open);
   
   const { handleVoiceAction } = useVoiceSearchAction(setOpen, setVoiceOverlayOpen, setQuery, setResults);
@@ -142,10 +144,40 @@ export function useGlobalSearch() {
     if (debouncedQuery) performSemanticSearch(debouncedQuery);
   }, [debouncedQuery, performSemanticSearch]);
 
+  // ── Derived: groupedResults by type ──
+  const groupedResults = useMemo(() => {
+    const groups: Record<string, SearchResult[]> = {};
+    for (const r of results) {
+      (groups[r.type] ||= []).push(r);
+    }
+    return groups;
+  }, [results]);
+
+  // ── Handlers expected by GlobalSearchPalette ──
+  const handleSelect = useCallback((href: string) => {
+    if (query.trim()) addToHistory(query.trim());
+    setOpen(false);
+    if (href) navigate(href);
+  }, [navigate, query, addToHistory]);
+
+  const handleSuggestionClick = useCallback((term: string) => {
+    setQuery(term);
+  }, []);
+
+  const handleRemoveFromHistory = useCallback((term: string) => {
+    removeFromHistory(term);
+  }, [removeFromHistory]);
+
+  const handleOpenVoiceOverlay = useCallback(() => setVoiceOverlayOpen(true), []);
+  const handleCloseVoiceOverlay = useCallback(() => setVoiceOverlayOpen(false), []);
+
   return {
-    open, setOpen, query, setQuery, results, isSearching, isAIProcessing,
+    open, setOpen, query, setQuery, results, groupedResults, isSearching, isAIProcessing,
     searchIntent, popularProducts, typingSuggestions, voiceOverlayOpen,
-    handleVoiceAction, setVoiceOverlayOpen, contextualSuggestions
+    handleVoiceAction, setVoiceOverlayOpen, contextualSuggestions,
+    history, quickSuggestions, routeContext,
+    handleSelect, handleSuggestionClick, handleRemoveFromHistory,
+    handleOpenVoiceOverlay, handleCloseVoiceOverlay,
   };
 }
 
