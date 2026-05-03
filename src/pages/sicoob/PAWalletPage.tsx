@@ -42,11 +42,11 @@ export default function PAWalletPage() {
 
   return (
     <MainLayout>
-      <div className="container mx-auto p-6 space-y-6 animate-fade-in">
+      <div className="container mx-auto p-4 sm:p-6 space-y-6 animate-fade-in">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight text-display">Gestão de Verba</h1>
-            <p className="text-muted-foreground">Acompanhamento de saldo e limites do Ponto de Atendimento.</p>
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-display text-sicoob-green-dark">Gestão de Verba</h1>
+            <p className="text-sm text-muted-foreground italic">Controle seu saldo e garanta o abastecimento da sua agência.</p>
           </div>
           <div className="flex items-center gap-2 bg-muted/50 px-4 py-2 rounded-full border border-border/40">
             <Calendar className="w-4 h-4 text-primary" />
