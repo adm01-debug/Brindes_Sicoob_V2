@@ -27,25 +27,31 @@ const SyncQuoteBitrixSchema = z.object({
 });
 
 Deno.serve(async (req) => {
+  const requestId = getOrCreateRequestId(req);
+  const log = createStructuredLogger({ fn: "sync-quote-bitrix", requestId, req });
+  
   const corsHeaders = getCorsHeaders(req);
-  // Handle CORS preflight
-  if (req.method === "OPTIONS") {
-    return new Response("ok", { headers: corsHeaders });
-  }
+  if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
+
+  log.info("request_start");
 
   try {
     let rawBody: unknown;
-    try { rawBody = await req.json(); } catch {
-      return new Response(JSON.stringify({ error: "Invalid request body" }), {
+    try { 
+      rawBody = await req.json(); 
+    } catch {
+      log.warn("invalid_json_body");
+      return log.respond(new Response(JSON.stringify({ error: "Invalid request body" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      }));
     }
 
     const parsed = SyncQuoteBitrixSchema.safeParse(rawBody);
     if (!parsed.success) {
-      return new Response(JSON.stringify({ error: "Validation failed", details: parsed.error.flatten().fieldErrors }), {
+      log.warn("validation_failed", { errors: parsed.error.flatten().fieldErrors });
+      return log.respond(new Response(JSON.stringify({ error: "Validation failed", details: parsed.error.flatten().fieldErrors }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      }));
     }
 
     const {
