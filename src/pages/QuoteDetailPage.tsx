@@ -9,6 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { QuoteHistoryTimeline } from "@/components/quotes/QuoteHistoryTimeline";
+import { QuoteApprovalNotes } from "@/components/quotes/QuoteApprovalNotes";
 import { QuoteCommentsThread } from "@/components/quotes/QuoteCommentsThread";
 import { QuoteVersionsList } from "@/components/quotes/QuoteVersionsList";
 import { QuoteOrderBadge } from "@/components/quotes/QuoteOrderBadge";
