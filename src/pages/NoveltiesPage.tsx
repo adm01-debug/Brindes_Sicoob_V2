@@ -24,7 +24,7 @@ export default function NoveltiesPage() {
               Novidades
             </h1>
             <p className="text-sm text-muted-foreground">
-              Materiais recém-chegados ao catálogo nos últimos 30 dias
+              Produtos recém-chegados ao catálogo nos últimos 30 dias
             </p>
           </div>
         </div>

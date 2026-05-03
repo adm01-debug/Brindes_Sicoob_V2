@@ -46,7 +46,7 @@ export const ContinuousRockets = React.forwardRef<HTMLDivElement>(function Conti
 });
 
 const FEATURES = [
-  { label: "+20.000", desc: "Materiais", icon: Package },
+  { label: "+20.000", desc: "Produtos", icon: Package },
   { label: "+100", desc: "Fornecedores", icon: Factory },
   { label: "Catálogo", desc: "Inteligente", icon: SlidersHorizontal },
   { label: "IA", desc: "Assistente Pessoal", icon: Brain },

@@ -8,7 +8,7 @@ export default function ReplenishmentsPage() {
   return (
     <MainLayout>
       <PageSEO
-        title="Reposição — Materiais Repostos"
+        title="Reposição — Produtos Repostos"
         description="Acompanhe os produtos repostos pelos fornecedores nos últimos 30 dias. Visualize KPIs, filtre por categoria e fornecedor."
         path="/reposicao"
       />
