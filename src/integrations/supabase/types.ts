@@ -6183,6 +6183,36 @@ export type Database = {
         }
         Relationships: []
       }
+      sensitive_access_logs: {
+        Row: {
+          access_time: string | null
+          client_ip: string | null
+          columns_accessed: string[] | null
+          id: string
+          record_id: string | null
+          table_name: string
+          user_id: string | null
+        }
+        Insert: {
+          access_time?: string | null
+          client_ip?: string | null
+          columns_accessed?: string[] | null
+          id?: string
+          record_id?: string | null
+          table_name: string
+          user_id?: string | null
+        }
+        Update: {
+          access_time?: string | null
+          client_ip?: string | null
+          columns_accessed?: string[] | null
+          id?: string
+          record_id?: string | null
+          table_name?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       sicoob_approval_requests: {
         Row: {
           amount_at_request: number
@@ -7170,6 +7200,7 @@ export type Database = {
         }
         Returns: Json
       }
+      check_security_health: { Args: never; Returns: Json }
       check_sicoob_access_matrix: {
         Args: { _test_role: Database["public"]["Enums"]["app_role"] }
         Returns: {

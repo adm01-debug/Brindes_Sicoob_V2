@@ -26,9 +26,11 @@ export default function QaPreflightPage() {
   const { data: preflight, isLoading, refetch, isRefetching } = useQuery({
     queryKey: ["qa-preflight"],
     queryFn: async () => {
-      const { data, error } = await supabase.rpc("qa_preflight_check");
-      if (error) throw error;
-      return data as any;
+      const { data: preCheck, error: preError } = await supabase.rpc("qa_preflight_check");
+      const { data: secCheck, error: secError } = await supabase.rpc("check_security_health");
+      
+      if (preError || secError) throw (preError || secError);
+      return { ...(preCheck as any), security: secCheck };
     }
   });
 
@@ -129,7 +131,31 @@ export default function QaPreflightPage() {
           </Card>
         )}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <Card className={preflight?.security?.rls_health > 90 ? "border-blue-200 bg-blue-50/20" : "border-amber-200"}>
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center gap-2">
+                <ShieldCheck className="h-5 w-5 text-blue-600" />
+                Saúde de Segurança
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium">Score RLS</span>
+                <Badge variant={preflight?.security?.rls_health > 90 ? "success" : "destructive"}>
+                  {preflight?.security?.rls_health}%
+                </Badge>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium">Alteras. Admin (24h)</span>
+                <Badge variant="outline">{preflight?.security?.recent_admin_changes}</Badge>
+              </div>
+              <div className="pt-2 border-t text-[10px] text-muted-foreground italic">
+                Última checagem: {preflight?.security?.last_check ? new Date(preflight.security.last_check).toLocaleTimeString() : 'N/A'}
+              </div>
+            </CardContent>
+          </Card>
+
           <Card className={allOk ? "border-green-200 bg-green-50/30" : "border-amber-200"}>
             <CardHeader>
               <CardTitle className="text-lg">Checks de Banco de Dados</CardTitle>
