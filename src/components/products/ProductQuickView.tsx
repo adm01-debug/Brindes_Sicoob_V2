@@ -61,8 +61,21 @@ export const ProductQuickView = forwardRef<HTMLDivElement, ProductQuickViewProps
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [selectedColorId, setSelectedColorId] = useState<string | null>(null);
-  // imageLoaded removido — transição instantânea sem skeleton intermediário
   const [imageError, setImageError] = useState(false);
+  const dialogRef = useRef<HTMLDivElement>(null);
+
+  // Navegação por teclado para galeria
+  useEffect(() => {
+    if (!open) return;
+    
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "ArrowLeft") handlePrevImage();
+      if (e.key === "ArrowRight") handleNextImage();
+    };
+    
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [open, currentImageIndex]); // Depende do index para garantir que as funções handle usem o estado atual se não forem estáveis
 
   // Hook: buscar imagens do produto via BD externo (Briefing v3)
   const { data: productImages = [] } = useProductImages(open && product ? product.id : null);
