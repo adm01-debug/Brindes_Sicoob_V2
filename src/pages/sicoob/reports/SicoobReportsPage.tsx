@@ -31,7 +31,7 @@ const REPORTS = [
 
 export default function SicoobReportsPage() {
   const { profile } = useAuth();
-  const [isExporting, setIsExporting] = useState<boolean>(false);
+  const [isExporting, setIsExporting] = useState<'pdf' | 'xlsx' | null>(null);
   const [date, setDate] = useState<DateRange | undefined>({
     from: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
     to: new Date()
