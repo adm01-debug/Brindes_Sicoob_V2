@@ -189,8 +189,9 @@ Deno.serve(async (req) => {
       return log.respond(jsonResponse({ error: "not_found" }, 404, requestId));
     }
     if (existing.revoked_at) {
+      log.warn("key_already_revoked", { key_id });
       await auditFailure("denied", "mcp_key.revoke_denied", { reason: "already_revoked" }, key_id);
-      return jsonResponse({ error: "already_revoked" }, 409, requestId);
+      return log.respond(jsonResponse({ error: "already_revoked" }, 409, requestId));
     }
 
     // postgrest-js 2.95+ removeu .then/.catch do RPC builder — usar try/catch.
