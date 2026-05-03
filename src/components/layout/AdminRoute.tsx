@@ -48,7 +48,7 @@ export function AdminRoute({ children, requiredRole }: AdminRouteProps) {
     : canManage;
 
   if (!hasAccess) {
-    return <Navigate to="/" replace />;
+    return <Navigate to="/403" replace />;
   }
 
   // Admin/manager sem MFA → mostra dialog de enrollment obrigatório (não renderiza filhos)
