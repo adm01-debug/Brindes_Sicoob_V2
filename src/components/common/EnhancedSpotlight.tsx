@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo, useRef } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef, forwardRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import Fuse from "fuse.js";
@@ -11,7 +11,7 @@ import { filterByRoutePermission } from "@/lib/navigation/filter-restricted-item
 
 // SpotlightItem type imported from ./spotlight/SpotlightItems
 
-export function EnhancedSpotlight() {
+export const EnhancedSpotlight = forwardRef<HTMLDivElement, any>(function EnhancedSpotlight(_props, ref) {
   const [isOpen, setIsOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [selectedIndex, setSelectedIndex] = useState(0);
@@ -182,7 +182,8 @@ export function EnhancedSpotlight() {
   };
 
   return (
-    <AnimatePresence>
+    <div ref={ref}>
+      <AnimatePresence>
       {isOpen && (
         <>
           {/* Backdrop */}
@@ -346,10 +347,11 @@ export function EnhancedSpotlight() {
             </div>
           </motion.div>
         </>
-      )}
-    </AnimatePresence>
+        )}
+      </AnimatePresence>
+    </div>
   );
-}
+});
 
 // Trigger button component
 export function EnhancedSpotlightTrigger({ className }: { className?: string }) {

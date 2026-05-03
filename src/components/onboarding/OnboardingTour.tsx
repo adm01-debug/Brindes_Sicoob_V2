@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, forwardRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, ChevronLeft, ChevronRight, SkipForward, Sparkles, Play, Pause } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -14,7 +14,7 @@ interface TooltipPosition {
   bottom?: number;
 }
 
-export function OnboardingTour() {
+export const OnboardingTour = forwardRef<HTMLDivElement, any>(function OnboardingTour(_props, ref) {
   const {
     showTour,
     currentStep,
@@ -135,10 +135,9 @@ export function OnboardingTour() {
     };
   }, [showTour, currentStep, updatePositions]);
 
-  if (!showTour || !currentStepData) return null;
-
   return (
-    <AnimatePresence>
+    <div ref={ref}>
+      <AnimatePresence>
       <div className="fixed inset-0 z-[100] pointer-events-none">
         {/* Overlay with spotlight effect */}
         <motion.div
@@ -252,5 +251,6 @@ export function OnboardingTour() {
         </motion.div>
       </div>
     </AnimatePresence>
+    </div>
   );
-}
+});
