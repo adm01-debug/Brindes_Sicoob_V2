@@ -86,7 +86,7 @@ describe('Campaigns Flow - CRUD & Status', () => {
 
 
   it('should successfully create a new campaign', async () => {
-    renderWithRouter(<AdminCampanhasPage />);
+    renderWithContext(<AdminCampanhasPage />);
     
     // Wait for initial load
     await waitFor(() => expect(screen.getByText('Campaign 1')).toBeDefined());
