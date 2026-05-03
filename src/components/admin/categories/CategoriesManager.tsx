@@ -275,6 +275,7 @@ export function CategoriesManager() {
         category={editingCategory} 
         onSave={handleSave} 
         categories={categories}
+        isLoading={isLoading}
       />
     </div>
   );
