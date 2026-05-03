@@ -45,7 +45,7 @@ describe('CircuitBreaker', () => {
     const result = await breaker.execute(successFn);
     
     expect(result).toBe('success');
-    expect(breaker.getState()).toBe('CLOSED'); // Because successThreshold is 2 by default, wait, I need to check the default
+    expect(breaker.getState()).toBe('HALF_OPEN'); // With default successThreshold=2, 1 success = HALF_OPEN
   });
 
   it('should close the circuit after successThreshold is met in HALF_OPEN', async () => {
