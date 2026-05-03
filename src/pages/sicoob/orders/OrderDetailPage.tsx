@@ -225,8 +225,8 @@ export default function OrderDetailPage() {
   };
 
   const handleReject = () => {
-    if (!rejectionReason.trim()) {
-      toast.error("Por favor, informe o motivo da rejeição");
+    if (!rejectionReason.trim() || rejectionReason.length < 10) {
+      toast.error("Por favor, informe um motivo com pelo menos 10 caracteres.");
       return;
     }
 
