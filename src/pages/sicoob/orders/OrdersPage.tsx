@@ -92,12 +92,12 @@ export default function OrdersPage() {
       const headers = ["ID", "PA", "Singular", "Status", "Total (R$)", "Itens", "Data"];
       const rows = filteredOrders.map(o => [
         o.id,
-        o.pa,
-        o.singular,
+        (o as any).pa?.nome || o.pa_id,
+        (o as any).cooperativa?.nome || o.cooperative_id,
         o.status,
-        o.total.toFixed(2),
-        o.items,
-        o.date
+        o.total_amount.toFixed(2),
+        "N/A", // Items count would need another join
+        o.created_at
       ]);
       
       const csvContent = [
