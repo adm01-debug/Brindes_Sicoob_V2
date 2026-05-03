@@ -112,29 +112,31 @@ export function useUpdateOrder(orderId?: string, currentStatus?: string) {
 }
 
 export const ORDER_STATUS_FLOW = [
-  "pending",
-  "waiting_approval",
-  "confirmed",
-  "in_production",
-  "in_separation",
-  "in_transit",
-  "delivered",
-  "completed",
-  "cancelled"
+  "rascunho",
+  "enviado_gestor",
+  "aprovado_gestor",
+  "enviado_vendedor",
+  "em_producao",
+  "em_separacao",
+  "em_transporte",
+  "entregue",
+  "concluido",
+  "cancelado"
 ] as const;
 
 export type OrderStatus = typeof ORDER_STATUS_FLOW[number];
 
 export const VALID_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
-  pending: ["waiting_approval", "cancelled"],
-  waiting_approval: ["confirmed", "cancelled"],
-  confirmed: ["in_production", "cancelled"],
-  in_production: ["in_separation", "cancelled"],
-  in_separation: ["in_transit", "cancelled"],
-  in_transit: ["delivered", "cancelled"],
-  delivered: ["completed", "cancelled"],
-  completed: [],
-  cancelled: [],
+  rascunho: ["enviado_gestor", "cancelado"],
+  enviado_gestor: ["aprovado_gestor", "rascunho", "cancelado"],
+  aprovado_gestor: ["enviado_vendedor", "cancelado"],
+  enviado_vendedor: ["em_producao", "cancelado"],
+  em_producao: ["em_separacao", "cancelado"],
+  em_separacao: ["em_transporte", "cancelado"],
+  em_transporte: ["entregue", "cancelado"],
+  entregue: ["concluido", "cancelado"],
+  concluido: [],
+  cancelado: [],
 };
 
 export function canTransitionTo(current: string, next: string): boolean {
@@ -144,23 +146,77 @@ export function canTransitionTo(current: string, next: string): boolean {
 }
 
 export const ORDER_STATUS_LABELS: Record<string, string> = {
-  pending: "Pendente",
-  waiting_approval: "Aguardando Aprovação",
-  confirmed: "Confirmado",
-  in_production: "Em Produção",
-  in_separation: "Em Separação",
-  in_transit: "Em Transporte",
-  delivered: "Entregue",
-  completed: "Concluído",
-  cancelled: "Cancelado",
+  rascunho: "Rascunho",
+  enviado_gestor: "Enviado ao Gestor",
+  aprovado_gestor: "Aprovado pela Singular",
+  enviado_vendedor: "Enviado ao Vendedor",
+  em_producao: "Em Produção",
+  em_separacao: "Em Separação",
+  em_transporte: "Em Transporte",
+  entregue: "Entregue",
+  concluido: "Concluído",
+  cancelado: "Cancelado",
 };
 
-export const FULFILLMENT_LABELS: Record<string, string> = {
-  pending: "Pendente",
-  in_production: "Em Produção",
-  in_separation: "Em Separação",
-  in_transit: "Em Transporte",
-  delivered: "Entregue",
-  completed: "Concluído",
-  cancelled: "Cancelado",
-};
+/**
+ * Hook principal para operações de Pedido.
+ */
+export function useOrders() {
+  const qc = useQueryClient();
+  const { user } = useAuth();
+
+  const duplicateOrder = async (orderId: string): Promise<OrderRow | null> => {
+    try {
+      const { data: original, error: fetchErr } = await supabase
+        .from("orders")
+        .select("*, items:order_items(*)")
+        .eq("id", orderId)
+        .single();
+
+      if (fetchErr) throw fetchErr;
+
+      const newOrderNumber = `RE-${original.order_number.replace('PED-', '')}-${Math.floor(Math.random() * 1000)}`;
+      
+      const { data: newOrder, error: insErr } = await supabase
+        .from("orders")
+        .insert({
+          ...original,
+          id: undefined,
+          items: undefined,
+          order_number: newOrderNumber,
+          status: "rascunho",
+          created_at: new_date().toISOString(),
+          updated_at: new_date().toISOString(),
+          seller_id: user?.id
+        })
+        .select()
+        .single();
+
+      if (insErr) throw insErr;
+
+      if (original.items?.length) {
+        const items = original.items.map((it: any) => ({
+          ...it,
+          id: undefined,
+          order_id: newOrder.id,
+          created_at: undefined
+        }));
+        await supabase.from("order_items").insert(items);
+      }
+
+      qc.invalidateQueries({ queryKey: ["orders"] });
+      return newOrder as OrderRow;
+    } catch (err) {
+      console.error("Error duplicating order:", err);
+      toast.error("Erro ao duplicar pedido");
+      return null;
+    }
+  };
+
+  return {
+    duplicateOrder,
+  };
+}
+
+function new_date() { return new Date(); }
+
