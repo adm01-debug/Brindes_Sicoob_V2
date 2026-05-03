@@ -131,8 +131,9 @@ Deno.serve(async (req) => {
     }
 
     try { rawBody = await req.json(); } catch {
+      log.warn("invalid_json_body");
       await auditFailure("error", "mcp_key.revoke_error", { reason: "invalid_json" });
-      return jsonResponse({ error: "invalid_json" }, 400, requestId);
+      return log.respond(jsonResponse({ error: "invalid_json" }, 400, requestId));
     }
     const parsed = BodySchema.safeParse(rawBody);
     if (!parsed.success) {
