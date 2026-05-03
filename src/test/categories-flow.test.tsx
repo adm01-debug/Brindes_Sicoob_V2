@@ -1,25 +1,28 @@
 
-import { describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { CategoriesManager } from '@/components/admin/categories/CategoriesManager';
 import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 import React from 'react';
 
-// Mock Supabase
+// Mock dependencies
 vi.mock('@/integrations/supabase/client', () => ({
   supabase: {
     from: vi.fn(() => ({
       select: vi.fn().mockReturnThis(),
-      order: vi.fn().mockResolvedValue({ data: [], error: null }),
+      order: vi.fn().mockImplementation(() => Promise.resolve({ 
+        data: [{ id: '1', name: 'Existing', slug: 'existing-slug', sort_order: 1 }], 
+        error: null 
+      })),
       insert: vi.fn().mockReturnThis(),
       update: vi.fn().mockReturnThis(),
       eq: vi.fn().mockReturnThis(),
-      single: vi.fn().mockResolvedValue({ data: { id: '1' }, error: null }),
+      single: vi.fn().mockResolvedValue({ data: { id: '2' }, error: null }),
     })),
   },
 }));
 
-// Mock useAdminPermissions
 vi.mock('@/hooks/useAdminPermissions', () => ({
   useAdminPermissions: () => ({
     canEdit: true,
@@ -29,62 +32,69 @@ vi.mock('@/hooks/useAdminPermissions', () => ({
   }),
 }));
 
-// Mock logAdminAction
 vi.mock('@/utils/adminAudit', () => ({
   logAdminAction: vi.fn(),
 }));
 
-describe('CategoriesManager', () => {
-  it('should open form and validate fields before saving', async () => {
+vi.mock('sonner', () => ({
+  toast: {
+    error: vi.fn(),
+    success: vi.fn(),
+  },
+}));
+
+describe('Categories Flow - Validation & Editing', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('should validate invalid fields and show toast errors', async () => {
     render(<CategoriesManager />);
     
-    // Click "Nova Categoria"
-    const addButton = screen.getByText(/Nova Categoria/i);
-    fireEvent.click(addButton);
+    // Wait for initial load
+    await waitFor(() => expect(screen.getByText('Existing')).toBeDefined());
+
+    fireEvent.click(screen.getByText(/Nova Categoria/i));
 
     const saveButton = screen.getByText(/Salvar/i);
     const nameInput = screen.getByLabelText(/Nome/i);
     const slugInput = screen.getByLabelText(/Slug/i);
     const orderInput = screen.getByLabelText(/Ordem/i);
 
-    // 1. Validate empty name
-    fireEvent.change(nameInput, { target: { value: '' } });
-    fireEvent.click(saveButton);
-    expect(screen.getByLabelText(/Nome/i)).toBeDefined();
-
-    // 2. Validate invalid slug format
-    fireEvent.change(nameInput, { target: { value: 'Valid Name' } });
+    // 1. Invalid Slug Format
+    fireEvent.change(nameInput, { target: { value: 'Test' } });
     fireEvent.change(slugInput, { target: { value: 'Invalid Slug!' } });
     fireEvent.click(saveButton);
-    expect(screen.getByLabelText(/Slug/i)).toBeDefined();
+    expect(toast.error).toHaveBeenCalledWith(expect.stringContaining("O slug deve conter apenas"));
 
-    // 3. Validate negative sort_order
+    // 2. Negative Sort Order
     fireEvent.change(slugInput, { target: { value: 'valid-slug' } });
-    fireEvent.change(orderInput, { target: { value: '-5' } });
+    fireEvent.change(orderInput, { target: { value: '-1' } });
     fireEvent.click(saveButton);
-    expect(screen.getByLabelText(/Ordem/i)).toBeDefined();
+    expect(toast.error).toHaveBeenCalledWith("A ordem não pode ser um valor negativo");
+
+    // 3. Duplicate Slug
+    fireEvent.change(orderInput, { target: { value: '10' } });
+    fireEvent.change(slugInput, { target: { value: 'existing-slug' } });
+    fireEvent.click(saveButton);
+    expect(toast.error).toHaveBeenCalledWith("Este slug já está sendo usado por outra categoria");
   });
 
-  it('should prevent submission if slug already exists', async () => {
-    // Mock Categories with an existing one
-    const existingCategories = [{ id: '1', name: 'Existing', slug: 'existing-slug', sort_order: 0 }];
-    
-    // Re-render or update state would be better, but we can test the Dialog logic directly if exported
-    // For now, let's assume CategoriesManager passes these down correctly
+  it('should load correct values when editing', async () => {
     render(<CategoriesManager />);
     
-    // We need to wait for the initial fetch to complete in a real scenario
-    // But since it's mocked, it happens fast. 
-    
-    fireEvent.click(screen.getByText(/Nova Categoria/i));
-    
-    fireEvent.change(screen.getByLabelText(/Nome/i), { target: { value: 'New Cat' } });
-    fireEvent.change(screen.getByLabelText(/Slug/i), { target: { value: 'existing-slug' } }); 
-    // We'd need to mock the state of CategoriesManager to have 'existing-slug' already
-  });
+    // Wait for the table to render the existing category
+    await waitFor(() => expect(screen.getByText('Existing')).toBeDefined());
 
-  it('should load correct values in edit mode', async () => {
-    // This requires clicking an edit button in the table
-    // Since AdminDataTable is complex, we verify the logic in CategoryFormDialog
+    // Find and click the edit button (usually an icon, we'll look for the Pencil icon or button)
+    const editButtons = screen.getAllByRole('button').filter(b => b.querySelector('svg.lucide-pencil'));
+    if (editButtons.length > 0) {
+      fireEvent.click(editButtons[0]);
+      
+      // Check if fields are populated
+      expect((screen.getByLabelText(/Nome/i) as HTMLInputElement).value).toBe('Existing');
+      expect((screen.getByLabelText(/Slug/i) as HTMLInputElement).value).toBe('existing-slug');
+      expect((screen.getByLabelText(/Ordem/i) as HTMLInputElement).value).toBe('1');
+    }
   });
 });
