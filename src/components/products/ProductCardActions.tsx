@@ -87,14 +87,16 @@ export const ProductCardActions = memo(function ProductCardActions({
 
         {/* Collection */}
         <ActionButton icon={FolderPlus} label="Adicionar à coleção" className={btnClass}
+          ariaHasPopup="dialog"
           onClick={(e) => { e.stopPropagation(); markBusy(); onOpenVariantPicker('collection'); }} />
 
         {/* Share */}
         <ActionButton icon={Share2} label="Compartilhar" className={btnClass}
+          ariaHasPopup="dialog"
           onClick={(e) => { e.stopPropagation(); e.preventDefault(); markBusy(); onOpenVariantPicker('share'); }} />
 
         {/* Quote */}
-        <ActionButton icon={FileText} label="Orçamento" className={btnClass}
+        <ActionButton icon={FileText} label="Gerar Orçamento" className={btnClass}
           onClick={(e) => { e.stopPropagation(); markBusy(); onOpenVariantPicker('quote'); }} />
 
         {/* Add to Cart */}
@@ -106,7 +108,8 @@ export const ProductCardActions = memo(function ProductCardActions({
         />
 
         {/* Quick View */}
-        <ActionButton icon={Eye} label="Quick View" className={btnClass}
+        <ActionButton icon={Eye} label="Visualização Rápida" className={btnClass}
+          ariaHasPopup="dialog"
           onClick={(e) => { e.stopPropagation(); markBusy(); onQuickView(); }} />
       </div>
     </div>
