@@ -7,6 +7,9 @@ import { Badge } from "@/components/ui/badge";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useNavigate } from "react-router-dom";
+import { NotificationPreferences } from "@/components/settings/NotificationPreferences";
+import { Settings } from "lucide-react";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 
 export default function NotificationsPage() {
   const { notifications, markAsRead, markAllAsRead, isLoading } = useNotifications();
