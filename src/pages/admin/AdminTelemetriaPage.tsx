@@ -210,6 +210,10 @@ export default function AdminTelemetriaPage() {
           <BridgesLiveCard />
         </Suspense>
 
+        <Suspense fallback={<CardSkeleton height={520} label="Carregando logs do sistema" />}>
+          <AppLogsTable />
+        </Suspense>
+
         {/* Logs ao vivo das edge functions com correlação por request_id */}
         <Suspense fallback={<CardSkeleton height={520} label="Carregando logs edge functions" />}>
           <EdgeFunctionLogsPanel />
