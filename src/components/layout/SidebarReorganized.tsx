@@ -65,10 +65,33 @@ interface SidebarProps {
 
 const navGroups: NavGroup[] = [
   {
+    id: "sicoob-portal",
+    label: "Portal SICOOB",
+    icon: Landmark,
+    defaultOpen: true,
+    items: [
+      { icon: Gauge, label: "Painel Gestor", href: "/gestor", adminOnly: true },
+      { icon: Building, label: "Painel PA", href: "/dashboard-pa" },
+      { icon: Users, label: "Minha Carteira", href: "/vendedor/dashboard" },
+    ],
+  },
+  {
+    id: "sicoob-logistics",
+    label: "Operações",
+    icon: Truck,
+    defaultOpen: true,
+    items: [
+      { icon: Package, label: "Pedidos", href: "/sicoob/pedidos" },
+      { icon: LayoutGrid, label: "Acompanhamento", href: "/sicoob/pedidos/kanban" },
+      { icon: Truck, label: "Logística & POD", href: "/sicoob/logistica" },
+      { icon: Layers, label: "Agregados", href: "/gestor/agregados", adminOnly: true },
+    ],
+  },
+  {
     id: "quotes",
     label: "Orçamentos",
     icon: FileText,
-    defaultOpen: true,
+    defaultOpen: false,
     items: [
       { icon: Plus, label: "Novo Orçamento", href: "/orcamentos/novo", shortcut: "Alt+N" },
       { icon: FileText, label: "Meus Orçamentos", href: "/meus-orcamentos", tourId: "quotes", exact: true, shortcut: "Alt+O" },
@@ -80,7 +103,7 @@ const navGroups: NavGroup[] = [
     id: "catalog",
     label: "Catálogo",
     icon: Package,
-    defaultOpen: true,
+    defaultOpen: false,
     items: [
       { icon: Package, label: "Produtos", href: "/", tourId: "products", shortcut: "Alt+P" },
       { icon: SlidersHorizontal, label: "Super Filtro", href: "/filtros", shortcut: "Alt+F" },
@@ -108,20 +131,7 @@ const navGroups: NavGroup[] = [
     ],
   },
   {
-    id: "logistics",
-    label: "Logística Onda A",
-    icon: Truck,
-    defaultOpen: true,
-    adminOnly: true,
-    items: [
-      { icon: Landmark, label: "Painel Sicoob", href: "/sicoob/pedidos" },
-      { icon: BarChart3, label: "Relatórios", href: "/sicoob/logistica" },
-      { icon: LayoutGrid, label: "Kanban", href: "/sicoob/pedidos/kanban" },
-    ],
-  },
-  {
     id: "intelligence",
-
     label: "Insights",
     icon: Brain,
     defaultOpen: false,
@@ -129,6 +139,8 @@ const navGroups: NavGroup[] = [
       { icon: Brain, label: "Inteligência de Mercado", href: "/inteligencia-comercial" },
       { icon: Sparkles, label: "Business Analytic", href: "/ferramentas/bi" },
       { icon: Activity, label: "Tendências", href: "/tendencias" },
+      { icon: BarChart3, label: "Relatórios SICOOB", href: "/relatorios/sicoob" },
+      { icon: Gauge, label: "Analytics SICOOB", href: "/kpis/sicoob" },
     ],
   },
   {
@@ -139,14 +151,14 @@ const navGroups: NavGroup[] = [
     defaultOpen: false,
     items: [
       { icon: Users, label: "Usuários", href: "/admin/usuarios", adminOnly: true },
-      { icon: Landmark, label: "Sicoob", href: "/admin/sicoob", adminOnly: true },
+      { icon: Landmark, label: "Gestão SICOOB", href: "/admin/sicoob", adminOnly: true },
       { icon: FolderOpen, label: "Cadastros", href: "/admin/cadastros", adminOnly: true, children: [
         { icon: Package, label: "Produtos", href: "/admin/cadastros?tab=products" },
         { icon: Truck, label: "Fornecedores", href: "/admin/cadastros?tab=suppliers" },
         { icon: Palette, label: "Gravação", href: "/admin/cadastros?tab=personalizacao" },
         { icon: Filter, label: "Categorias", href: "/admin/categories" },
       ]},
-      { icon: Landmark, label: "Estrutura Sicoob", adminOnly: true, children: [
+      { icon: Landmark, label: "Estrutura SICOOB", adminOnly: true, children: [
         { icon: Landmark, label: "Singulares", href: "/admin/singulares" },
         { icon: Building, label: "Postos de Atendimento", href: "/admin/pas" },
         { icon: Users, label: "Parceiros", href: "/admin/cooperativas" },
