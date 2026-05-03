@@ -2,11 +2,10 @@ import { useState } from "react";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { PageSEO } from "@/components/seo/PageSEO";
 import { useAuth } from "@/contexts/AuthContext";
-import { Package, Search, Download, FileSpreadsheet, FileText } from "lucide-react";
-import { Input } from "@/components/ui/input";
+import { Package, Download, FileSpreadsheet, FileText } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
-import { useOrdersList, ORDER_STATUS_LABELS } from "@/hooks";
+import { useOrdersList, ORDER_STATUS_LABELS, OrderRow } from "@/hooks/useOrders";
 import { OrderCard } from "@/components/orders/OrderCard";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useSalesScope } from "@/lib/auth/visibility-scope";
@@ -16,19 +15,18 @@ import { exportToExcel, exportToPDF, ORDER_EXPORT_COLUMNS } from "@/utils/orderE
 import { format } from "date-fns";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { BatchExportDialog } from "@/components/orders/BatchExportDialog";
-
 import { OrderFilters, OrderFilterValues } from "@/components/orders/OrderFilters";
 
 export function OrdersPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const scope = useSalesScope();
+  
   const [filterValues, setFilterValues] = useState<OrderFilterValues>({
     search: "",
     status: "all",
     clientCompany: ""
   });
-  
-  const scope = useSalesScope();
   
   const { data: orders = [], isLoading } = useOrdersList(user?.id, scope, {
     search: filterValues.search,
@@ -38,12 +36,27 @@ export function OrdersPage() {
     endDate: filterValues.dateRange?.to?.toISOString()
   });
 
-  const filtered = orders; // Já filtrado pelo backend via hook useOrdersList
+  const handleExport = (type: 'excel' | 'pdf') => {
+    const data = orders.map(o => ({
+      ...o,
+      status_label: ORDER_STATUS_LABELS[o.status] || o.status,
+      total_formatted: (o.total || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }),
+      created_at_formatted: format(new Date(o.created_at), 'dd/MM/yyyy')
+    }));
+    
+    if (type === 'excel') {
+      exportToExcel({ items: data, filename: 'pedidos', columns: ORDER_EXPORT_COLUMNS });
+    } else {
+      exportToPDF({ items: data, filename: 'pedidos', columns: ORDER_EXPORT_COLUMNS });
+    }
+  };
 
   return (
     <MainLayout>
       <PageSEO title="Gestão de Pedidos" description="Acompanhe e gerencie todos os seus pedidos em um só lugar." path="/pedidos" />
+      
       <div className="w-full max-w-[1920px] mx-auto px-3 sm:px-4 lg:px-6 xl:px-8 py-3 sm:py-4 space-y-4 pb-24 md:pb-6 animate-fade-in">
+        
         <div className="flex items-start justify-between gap-3 flex-wrap">
           <div>
             <h1 data-testid="page-title-pedidos" className="text-2xl font-bold font-display text-foreground flex items-center gap-2">
@@ -56,65 +69,55 @@ export function OrdersPage() {
 
         <OrderFilters onFiltersChange={setFilterValues} />
         
-        <div className="flex items-center justify-end mb-4">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" className="gap-2">
-                  <Download className="h-4 w-4" /> Exportar
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => {
-                  const data = filtered.map(o => ({
-                    ...o,
-                    status_label: ORDER_STATUS_LABELS[o.status] || o.status,
-                    total_formatted: (o.total || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }),
-                    created_at_formatted: format(new Date(o.created_at), 'dd/MM/yyyy')
-                  }));
-                  exportToExcel({ items: data, filename: 'pedidos', columns: ORDER_EXPORT_COLUMNS });
-                }}>
-                  <FileSpreadsheet className="h-4 w-4 mr-2" /> Excel (.xlsx)
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => {
-                  const data = filtered.map(o => ({
-                    ...o,
-                    status_label: ORDER_STATUS_LABELS[o.status] || o.status,
-                    total_formatted: (o.total || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }),
-                    created_at_formatted: format(new Date(o.created_at), 'dd/MM/yyyy')
-                  }));
-                  exportToPDF({ items: data, filename: 'pedidos', columns: ORDER_EXPORT_COLUMNS });
-                }}>
-                  <FileText className="h-4 w-4 mr-2" /> PDF (.pdf)
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-            <BatchExportDialog entityType="orders" filters={filterValues} />
-          </div>
+        <div className="flex items-center justify-end mb-4 gap-2">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm" className="gap-2">
+                <Download className="h-4 w-4" /> Exportar
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => handleExport('excel')}>
+                <FileSpreadsheet className="h-4 w-4 mr-2" /> Excel (.xlsx)
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleExport('pdf')}>
+                <FileText className="h-4 w-4 mr-2" /> PDF (.pdf)
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+          <BatchExportDialog entityType="orders" filters={filterValues} />
+        </div>
 
         {isLoading ? (
           <div className="grid gap-3">
             {[0, 1, 2].map((i) => <Skeleton key={i} className="h-20" />)}
           </div>
-        ) : filtered.length === 0 ? (
-          <Card>
-            <CardContent className="flex flex-col items-center justify-center py-16 text-center">
-              <Package className="h-12 w-12 text-muted-foreground/50 mb-4" />
-              <h3 className="font-display text-lg font-medium text-foreground mb-1">
-                {filterValues.search ? "Nenhum pedido encontrado" : "Nenhum pedido ainda"}
-              </h3>
-              <p className="text-muted-foreground text-sm">
-                {filterValues.search ? "Tente buscar com outros termos" : "Seus pedidos aparecerão aqui quando criados"}
-              </p>
-            </CardContent>
-          </Card>
+        ) : orders.length === 0 ? (
+          <OrdersEmptyState search={filterValues.search} />
         ) : (
           <div className="grid gap-3">
-            {filtered.map((order) => (
+            {orders.map((order) => (
               <OrderCard key={order.id} order={order} onClick={() => navigate(`/pedidos/${order.id}`)} />
             ))}
           </div>
         )}
       </div>
     </MainLayout>
+  );
+}
+
+function OrdersEmptyState({ search }: { search?: string }) {
+  return (
+    <Card>
+      <CardContent className="flex flex-col items-center justify-center py-16 text-center">
+        <Package className="h-12 w-12 text-muted-foreground/50 mb-4" />
+        <h3 className="font-display text-lg font-medium text-foreground mb-1">
+          {search ? "Nenhum pedido encontrado" : "Nenhum pedido ainda"}
+        </h3>
+        <p className="text-muted-foreground text-sm">
+          {search ? "Tente buscar com outros termos" : "Seus pedidos aparecerão aqui quando criados"}
+        </p>
+      </CardContent>
+    </Card>
   );
 }
