@@ -246,6 +246,11 @@ export default function AdminUsuariosPage() {
             </TabsContent>
           )}
 
+          {isAdmin && (
+            <TabsContent value="access">
+              <AccessManagement />
+            </TabsContent>
+          )}
           {isDev && (
             <TabsContent value="audit">
               <RoleAuditLogPanel />
