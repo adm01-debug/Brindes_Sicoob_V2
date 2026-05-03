@@ -63,5 +63,7 @@ export const ProtectedRoute = forwardRef<HTMLDivElement, ProtectedRouteProps>(fu
 
   // Retorno único: Outlet (Layout Route) ou children. Sem forwardRef:
   // Router não passa refs para `element={<ProtectedRoute />}`.
-  return children ? <>{children}</> : <Outlet />;
-}
+  return children ? <div ref={ref}>{children}</div> : <div ref={ref}><Outlet /></div>;
+});
+
+ProtectedRoute.displayName = 'ProtectedRoute';
