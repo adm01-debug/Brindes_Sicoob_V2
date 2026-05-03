@@ -101,7 +101,12 @@ export function GlobalSearchPalette() {
       {/* ── Command Dialog ── */}
       <CommandDialog open={s.open} onOpenChange={s.setOpen}>
         <div className="relative">
-          <CommandInput placeholder="Buscar produtos, orçamentos, clientes..." value={s.query} onValueChange={s.setQuery} />
+          <CommandInput 
+            placeholder="Buscar produtos, orçamentos, clientes..." 
+            value={s.query} 
+            onValueChange={s.setQuery} 
+            data-testid="global-search-input"
+          />
           <div className="absolute bottom-0 left-6 right-6 h-[2px] rounded-full bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
         </div>
 
