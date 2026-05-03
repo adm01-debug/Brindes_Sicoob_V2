@@ -1,4 +1,3 @@
-
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import AdminCampanhasPage from '@/pages/admin/AdminCampanhasPage';
@@ -18,17 +17,21 @@ const queryClient = new QueryClient({
   },
 });
 
-// Mock dependencies
+// Mock everything that needs complex context
 vi.mock('@/contexts/AuthContext', () => ({
   useAuth: vi.fn(),
 }));
 
-// Mock useOnboarding to avoid complex context nesting
 vi.mock('@/hooks/useOnboarding', () => ({
-  useOnboarding: () => ({
-    onboarding: { step: 'done' },
-    completeStep: vi.fn()
-  })
+  useOnboarding: () => ({ onboarding: { step: 'done' } })
+}));
+
+vi.mock('@/components/layout/MainLayout', () => ({
+  MainLayout: ({ children }: { children: React.ReactNode }) => <div data-testid="main-layout">{children}</div>
+}));
+
+vi.mock('@/components/seo/PageSEO', () => ({
+  PageSEO: () => <div data-testid="page-seo" />
 }));
 
 const renderWithContext = (ui: React.ReactElement) => {
@@ -42,6 +45,7 @@ const renderWithContext = (ui: React.ReactElement) => {
     </HelmetProvider>
   );
 };
+
 
 // Mock Supabase
 vi.mock('@/integrations/supabase/client', () => ({
