@@ -30,7 +30,7 @@ export function QuoteConvertToOrder({ quoteId, status, onConverted }: QuoteConve
   const navigate = useNavigate();
   const [isConverting, setIsConverting] = useState(false);
 
-  if (status !== "approved") return null;
+  if (status !== "approved" && status !== "approved_singular") return null;
 
   const handleConvert = async () => {
     if (!user) {
