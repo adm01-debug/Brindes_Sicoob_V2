@@ -25,9 +25,21 @@ export default function NotificationsPage() {
             <Bell className="h-6 w-6 text-primary" />
             <h1 className="text-2xl font-bold">Central de Notificações</h1>
           </div>
-          <Button variant="outline" size="sm" onClick={() => markAllAsRead()}>
-            Marcar todas como lidas
-          </Button>
+          <div className="flex items-center gap-2">
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button variant="outline" size="sm" className="gap-2">
+                  <Settings className="h-4 w-4" /> Preferências
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[500px]">
+                <NotificationPreferences />
+              </DialogContent>
+            </Dialog>
+            <Button variant="outline" size="sm" onClick={() => markAllAsRead()}>
+              Marcar todas como lidas
+            </Button>
+          </div>
         </div>
 
         <div className="space-y-3">
