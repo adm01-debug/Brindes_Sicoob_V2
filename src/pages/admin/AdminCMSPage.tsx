@@ -1,15 +1,19 @@
 
+
 import React, { useState, useEffect, useMemo } from 'react';
 import { MainLayout } from "@/components/layout/MainLayout";
 import { PageSEO } from "@/components/seo/PageSEO";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Layout, Image, Settings, Globe, Plus, Pencil, Trash2 } from "lucide-react";
+import { Layout, Image, Settings, Globe, Plus, Pencil, Trash2, Palette, Eye, Type, Link as LinkIcon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { AdminDataTable } from "@/components/admin/common/AdminDataTable";
 import { logAdminAction } from "@/utils/adminAudit";
 import * as XLSX from 'xlsx';
