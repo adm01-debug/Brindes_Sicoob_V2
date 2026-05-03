@@ -4767,17 +4767,55 @@ export type Database = {
         }
         Relationships: []
       }
+      qa_runs: {
+        Row: {
+          error: string | null
+          executed_by: string | null
+          finished_at: string | null
+          id: string
+          persona: string | null
+          report: Json | null
+          scenario: string | null
+          started_at: string | null
+          status: string
+        }
+        Insert: {
+          error?: string | null
+          executed_by?: string | null
+          finished_at?: string | null
+          id?: string
+          persona?: string | null
+          report?: Json | null
+          scenario?: string | null
+          started_at?: string | null
+          status?: string
+        }
+        Update: {
+          error?: string | null
+          executed_by?: string | null
+          finished_at?: string | null
+          id?: string
+          persona?: string | null
+          report?: Json | null
+          scenario?: string | null
+          started_at?: string | null
+          status?: string
+        }
+        Relationships: []
+      }
       query_telemetry: {
         Row: {
           cache_hit: boolean
           count_mode: string | null
           created_at: string
           duration_ms: number
+          error_code: string | null
           error_kind: string | null
           error_message: string | null
           id: string
           is_503: boolean
           is_cold_start: boolean
+          is_rls_violation: boolean | null
           operation: string
           query_limit: number | null
           query_offset: number | null
@@ -4793,11 +4831,13 @@ export type Database = {
           count_mode?: string | null
           created_at?: string
           duration_ms: number
+          error_code?: string | null
           error_kind?: string | null
           error_message?: string | null
           id?: string
           is_503?: boolean
           is_cold_start?: boolean
+          is_rls_violation?: boolean | null
           operation: string
           query_limit?: number | null
           query_offset?: number | null
@@ -4813,11 +4853,13 @@ export type Database = {
           count_mode?: string | null
           created_at?: string
           duration_ms?: number
+          error_code?: string | null
           error_kind?: string | null
           error_message?: string | null
           id?: string
           is_503?: boolean
           is_cold_start?: boolean
+          is_rls_violation?: boolean | null
           operation?: string
           query_limit?: number | null
           query_offset?: number | null
@@ -6998,7 +7040,6 @@ export type Database = {
         Returns: {
           deleted_id: string
           email: string
-          success: boolean
         }[]
       }
       cleanup_webhook_logs: { Args: never; Returns: Json }
@@ -7387,6 +7428,7 @@ export type Database = {
       mcp_audit_actor: { Args: { _fallback: string }; Returns: string }
       notify_hardening_regression: { Args: never; Returns: Json }
       process_export_queue_v3: { Args: never; Returns: undefined }
+      qa_preflight_check: { Args: never; Returns: Json }
       record_dev_route_telemetry: {
         Args: {
           _blocked_path: string

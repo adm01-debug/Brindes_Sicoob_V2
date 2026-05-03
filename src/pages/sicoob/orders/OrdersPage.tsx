@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { PageSEO } from "@/components/seo/PageSEO";
 import { Button } from "@/components/ui/button";
@@ -62,6 +62,8 @@ export default function OrdersPage() {
   const { isVendedorRole, isAdmin, user } = useAuth();
   const canCreateOrder = isVendedorRole || isAdmin;
   const [isExporting, setIsExporting] = useState<'csv' | 'pdf' | 'xlsx' | null>(null);
+  const [selectedOrderIds, setSelectedOrderIds] = useState<string[]>([]);
+  const [isBulkApproving, setIsExportingBulk] = useState(false);
 
   const [searchTerm, setSearchTerm] = useState(searchParams.get("search") || "");
   const [statusFilter, setStatusFilter] = useState<string>(searchParams.get("status") || "all");
@@ -200,6 +202,35 @@ export default function OrdersPage() {
       setIsExporting(null);
     }
   };
+
+  const handleBulkApprove = async () => {
+    if (selectedOrderIds.length === 0) return;
+    
+    setIsExportingBulk(true);
+    try {
+      const result = await sicoobOrderService.approveOrdersBulk(selectedOrderIds);
+      
+      if (result.failures.length > 0) {
+        toast.warning(`Aprovação concluída com avisos`, {
+          description: `${result.successes.length} aprovados, ${result.failures.length} falharam.`,
+        });
+      } else {
+        toast.success(`${result.successes.length} pedidos aprovados com sucesso!`);
+      }
+      
+      setSelectedOrderIds([]);
+    } catch (error: any) {
+      toast.error("Erro na aprovação em lote: " + error.message);
+    } finally {
+      setIsExportingBulk(false);
+    }
+  };
+
+  const toggleSelectOrder = (id: string) => {
+    setSelectedOrderIds(prev => 
+      prev.includes(id) ? prev.filter(oid => oid !== id) : [...prev, id]
+    );
+  };
   
   const initialDateRange = useMemo(() => {
     const from = searchParams.get("from");
@@ -317,6 +348,33 @@ export default function OrdersPage() {
             )}
           </div>
         </div>
+
+        {selectedOrderIds.length > 0 && (
+          <Card className="bg-sicoob-green/5 border-sicoob-green/30 animate-in slide-in-from-top-4 duration-300">
+            <CardContent className="py-3 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Badge variant="secondary" className="bg-sicoob-green text-white">
+                  {selectedOrderIds.length} selecionados
+                </Badge>
+                <span className="text-sm font-medium text-sicoob-green-dark">Ações em lote disponíveis</span>
+              </div>
+              <div className="flex gap-2">
+                <Button variant="ghost" size="sm" onClick={() => setSelectedOrderIds([])}>
+                  Cancelar
+                </Button>
+                <Button 
+                  size="sm" 
+                  className="bg-sicoob-green hover:bg-sicoob-green-dark"
+                  onClick={handleBulkApprove}
+                  disabled={isBulkApproving}
+                >
+                  {isBulkApproving ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <CheckCircle2 className="h-4 w-4 mr-2" />}
+                  Aprovar Selecionados
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         <div className="flex flex-col sm:flex-row gap-2">
           <div className="relative flex-1">
@@ -513,8 +571,32 @@ export default function OrdersPage() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {filteredOrders.map((order: any) => (
-              <Card key={order.id} className="hover:shadow-md transition-shadow cursor-pointer border-[1.5px]" onClick={() => navigate(`/sicoob/pedidos/${order.id}`)}>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <Card 
+                key={order.id} 
+                className={cn(
+                  "hover:shadow-md transition-shadow cursor-pointer border-[1.5px] relative group",
+                  selectedOrderIds.includes(order.id) ? "border-sicoob-green bg-sicoob-green/5 shadow-sm" : ""
+                )} 
+                onClick={() => navigate(`/sicoob/pedidos/${order.id}`)}
+              >
+                <div 
+                  className={cn(
+                    "absolute top-3 left-3 z-10 opacity-0 group-hover:opacity-100 transition-opacity",
+                    selectedOrderIds.includes(order.id) ? "opacity-100" : ""
+                  )}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    toggleSelectOrder(order.id);
+                  }}
+                >
+                  <div className={cn(
+                    "w-5 h-5 rounded border-2 flex items-center justify-center transition-colors",
+                    selectedOrderIds.includes(order.id) ? "bg-sicoob-green border-sicoob-green text-white" : "bg-white border-muted-foreground/30"
+                  )}>
+                    {selectedOrderIds.includes(order.id) && <CheckCircle2 className="h-3 w-3" />}
+                  </div>
+                </div>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 pl-10">
                   <CardTitle className="text-sm font-bold text-sicoob-green-dark">
                     Pedido #{order.order_number || order.id.slice(0, 8)}
                   </CardTitle>

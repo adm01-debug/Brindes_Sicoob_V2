@@ -10,6 +10,8 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
+import { OrderHistoryDiff } from "./OrderHistoryDiff";
+
 
 interface OrderAuditTimelineProps {
   orderId: string;
@@ -122,6 +124,12 @@ export const OrderAuditTimeline = ({ orderId }: OrderAuditTimelineProps) => {
                     <User className="h-3 w-3" />
                     <span>{event.created_by_name || "Sistema"} {event.actor_role ? `(${event.actor_role})` : ""}</span>
                   </div>
+                )}
+                {event.event_type === 'status_change' && (
+                  <OrderHistoryDiff 
+                    oldValue={event.old_value?.fulfillment_status} 
+                    newValue={event.new_value?.fulfillment_status} 
+                  />
                 )}
                 {event.observations && (
                   <p className="text-xs text-muted-foreground italic mt-1 line-clamp-2">{event.observations}</p>
