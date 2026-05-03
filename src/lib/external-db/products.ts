@@ -163,7 +163,8 @@ async function enrichProducts(
   products: PromobrindProduct[],
   options?: { limit?: number }
 ) {
-  const productIds = products.map(p => p.id);
+  const productIdSet = new Set(products.map(p => p.id));
+  const productIds = Array.from(productIdSet);
   const uniqueSupplierIds = [...new Set(products.map(p => p.supplier_id).filter(Boolean))] as string[];
   const shouldRunHeavyEnrichment = products.length <= 500 || typeof options?.limit === 'number';
 
@@ -269,8 +270,8 @@ async function enrichProducts(
   const colorVariationMap = new Map(colorVariationsRecords.map((v) => [v.id as string, { name: v.name as string, slug: v.slug as string, group_id: v.group_id as string }]));
   const colorGroupMap = new Map(colorGroupsRecords.map((g) => [g.id as string, { name: g.name as string, slug: g.slug as string }]));
 
-  // Build image map
-  const productIdSet = new Set(productIds);
+  // Build image map (Set already exists)
+  // const productIdSet = new Set(productIds);
   const imagesByProduct = new Map<string, Array<{
     url: string; urlOriginal: string | null; filename: string | null; type: string;
     isPrimary: boolean; isOgImage: boolean; appliesToColor: boolean | null;
@@ -298,7 +299,7 @@ async function enrichProducts(
   }>>();
 
   variantsRecords.forEach((variant) => {
-    if (!variant.color_name || !productIds.includes(variant.product_id)) return;
+    if (!variant.color_name || !productIdSet.has(variant.product_id)) return;
     if (!colorsByProduct.has(variant.product_id)) colorsByProduct.set(variant.product_id, []);
     const colors = colorsByProduct.get(variant.product_id)!;
     if (colors.some(c => c.name === variant.color_name)) return;
