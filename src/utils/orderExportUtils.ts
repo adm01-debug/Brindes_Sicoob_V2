@@ -42,6 +42,8 @@ export async function exportOrdersToPDF(orderIds: string[]) {
   setTimeout(() => {
     toast.success(`${orderIds.length} pedidos exportados para PDF com sucesso.`);
     // In a real app, we would use jsPDF or call a server-side PDF generator
+  }, 2000);
+}
 
 export const QUOTE_EXPORT_COLUMNS = ["ID", "Número", "Cliente", "Vendedor", "Status", "Valor Total", "Data de Criação"];
 
