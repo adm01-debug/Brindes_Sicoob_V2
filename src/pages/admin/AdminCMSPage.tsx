@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useMemo } from 'react';
 import { MainLayout } from "@/components/layout/MainLayout";
 import { PageSEO } from "@/components/seo/PageSEO";
@@ -11,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { AdminDataTable } from "@/components/admin/common/AdminDataTable";
 import { logAdminAction } from "@/utils/adminAudit";
+import * as XLSX from 'xlsx';
 
 export default function AdminCMSPage() {
   return (
@@ -59,6 +61,21 @@ export default function AdminCMSPage() {
 function BannersTab() {
   const [banners, setBanners] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+
+  const handleExport = (data: any[]) => {
+    const exportData = data.map(b => ({
+      'Título': b.title,
+      'URL Imagem': b.image_url,
+      'Link': b.link_url || '',
+      'Posição': b.position,
+      'Ordem': b.sort_order,
+      'Status': b.is_active ? 'Ativo' : 'Inativo'
+    }));
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Banners");
+    XLSX.writeFile(workbook, `banners_cms_${new Date().toISOString().split('T')[0]}.xlsx`);
+  };
 
   const fetchBanners = async () => {
     setIsLoading(true);
@@ -148,6 +165,7 @@ function BannersTab() {
           isLoading={isLoading}
           searchPlaceholder="Buscar banners..."
           searchKey="title"
+          onExport={handleExport}
         />
       </CardContent>
     </Card>
@@ -232,4 +250,3 @@ function VisualTab() {
     </Card>
   );
 }
-

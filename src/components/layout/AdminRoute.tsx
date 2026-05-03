@@ -4,6 +4,7 @@ import { Loader2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { MfaEnrollmentDialog } from "@/components/security/MfaEnrollmentDialog";
 import { MfaChallengeDialog } from "@/components/security/MfaChallengeDialog";
+import { toast } from "sonner";
 
 interface AdminRouteProps {
   children?: ReactNode;
@@ -11,15 +12,6 @@ interface AdminRouteProps {
   requiredRole?: "dev" | "gestor_compras" | "supervisor";
 }
 
-/**
- * Wrapper para rotas administrativas.
- * Suporta Layout Routes (Outlet) e children diretos.
- * Redireciona para / se o usuário não for admin ou manager.
- *
- * Hardening: exige sessão em AAL2 (MFA verificado).
- *  - Sem MFA cadastrado → abre fluxo de enrollment obrigatório
- *  - Com MFA mas sessão em aal1 → abre challenge para elevar sessão
- */
 export const AdminRoute = forwardRef<HTMLDivElement, AdminRouteProps>(function AdminRoute({ children, requiredRole }, ref) {
   const { user, canManage, isDev, isGestorCompras, isSupervisor, isLoading, currentAAL, hasMFA, mfaRequired } = useAuth();
   const [enrollOpen, setEnrollOpen] = useState(false);
@@ -48,6 +40,16 @@ export const AdminRoute = forwardRef<HTMLDivElement, AdminRouteProps>(function A
     : canManage;
 
   if (!hasAccess) {
+    // Audit failed access attempt
+    import("@/utils/adminAudit").then(m => m.logAdminAction({
+      event_type: 'SECURITY_CONFIG_CHANGE',
+      entity_type: 'access_control',
+      metadata: { 
+        action: 'unauthorized_access_attempt',
+        path: window.location.pathname,
+        required_role: requiredRole || 'admin'
+      }
+    }));
     return <Navigate to="/403" replace />;
   }
 
@@ -75,8 +77,6 @@ export const AdminRoute = forwardRef<HTMLDivElement, AdminRouteProps>(function A
     );
   }
 
-  // Retorno único: Outlet (Layout Route) ou children. Sem forwardRef:
-  // Router não passa refs para `element={<AdminRoute />}`.
   return children ? <div ref={ref}>{children}</div> : <div ref={ref}><Outlet /></div>;
 });
 

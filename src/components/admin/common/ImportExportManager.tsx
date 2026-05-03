@@ -10,7 +10,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { FileUp, FileDown, AlertCircle, CheckCircle2, Loader2, Table as TableIcon } from "lucide-react";
+import { FileUp, FileDown, AlertCircle, CheckCircle2, Loader2, Table as TableIcon, Download } from "lucide-react";
 import * as XLSX from 'xlsx';
 import Papa from 'papaparse';
 import { toast } from "sonner";
@@ -177,8 +177,8 @@ export function ImportExportManager({
                   accept=".csv, .xlsx, .xls"
                   className="hidden"
                 />
-                <Button variant="ghost" size="sm" onClick={downloadTemplate}>
-                  Baixar Modelo
+                <Button variant="outline" size="sm" onClick={downloadTemplate} className="gap-2">
+                  <Download className="h-4 w-4" /> Baixar Template (XLSX)
                 </Button>
               </div>
               {previewData.length > 0 && (

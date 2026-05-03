@@ -17,7 +17,8 @@ import {
   ArrowUpDown,
   Filter,
   Inbox,
-  Loader2
+  Loader2,
+  FileDown
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -47,6 +48,7 @@ interface AdminDataTableProps<T> {
   actions?: React.ReactNode;
   onRowClick?: (row: T) => void;
   className?: string;
+  onExport?: (data: T[]) => void;
 }
 
 export function AdminDataTable<T extends { id?: string | number }>({
@@ -59,7 +61,8 @@ export function AdminDataTable<T extends { id?: string | number }>({
   emptyState,
   actions,
   onRowClick,
-  className
+  className,
+  onExport
 }: AdminDataTableProps<T>) {
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -123,6 +126,11 @@ export function AdminDataTable<T extends { id?: string | number }>({
           />
         </div>
         <div className="flex items-center gap-2">
+          {onExport && (
+            <Button variant="outline" size="sm" className="gap-2" onClick={() => onExport(filteredData)}>
+              <FileDown className="h-4 w-4" /> Exportar
+            </Button>
+          )}
           {actions}
           <Select
             value={String(pageSize)}
