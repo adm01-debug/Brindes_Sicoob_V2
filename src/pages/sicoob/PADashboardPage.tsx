@@ -63,10 +63,10 @@ export default function PADashboardPage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          <Card className="border-[1.5px] bg-primary/5 border-primary/20">
+          <Card className="border-[1.5px] bg-sicoob-green/5 border-sicoob-green/20">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-primary">Saldo Disponível</CardTitle>
-              <Wallet className="h-4 w-4 text-primary" />
+              <CardTitle className="text-sm font-medium text-sicoob-green-dark">Saldo Disponível</CardTitle>
+              <Wallet className="h-4 w-4 text-sicoob-green" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-primary">{formatCurrency(stats?.availableBudget || 0)}</div>
