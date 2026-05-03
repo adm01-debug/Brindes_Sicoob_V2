@@ -5,9 +5,9 @@
  * 'admin' e 'manager' são aliases legados — exibidos como Supervisor.
  */
 import type { LucideIcon } from "lucide-react";
-import { Code2, ShieldCheck, User } from "lucide-react";
+import { Code2, ShieldCheck, User, Landmark, Building2, Briefcase } from "lucide-react";
 
-export type AppRole = "dev" | "supervisor" | "vendedor" | "admin" | "manager";
+export type AppRole = "dev" | "supervisor" | "vendedor" | "admin" | "manager" | "gestor_singular" | "gestor_pa";
 
 export type RoleVisual = {
   /** Rótulo exibido ao usuário (sempre em português). */
