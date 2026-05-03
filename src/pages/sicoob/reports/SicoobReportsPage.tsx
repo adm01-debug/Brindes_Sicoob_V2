@@ -16,8 +16,8 @@ export default function SicoobReportsPage() {
     <MainLayout>
       <div className="container mx-auto p-6 space-y-6 animate-fade-in">
         <div>
-          <h1 className="text-3xl font-bold font-display tracking-tight text-sicoob-green-dark">Central de Relatórios</h1>
-          <p className="text-muted-foreground">Exportação de dados para auditoria e prestação de contas.</p>
+          <h1 className="text-3xl font-bold font-display tracking-tight text-sicoob-green-dark">Relatórios SICOOB</h1>
+          <p className="text-muted-foreground italic">Exportação de dados para auditoria, controle financeiro e conformidade.</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
