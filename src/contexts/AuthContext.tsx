@@ -304,16 +304,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const refreshProfile = async () => {
     if (user) {
-      fetchPromiseRef.current = null; // Forçar refresh
       await fetchUserData(user.id);
     }
   };
 
   /**
-   * Força um refresh completo após login social ou mudança de papéis:
-   *  1. Renova o JWT (`supabase.auth.refreshSession`) para trazer claims atuais.
-   *  2. Re-busca profile + user_roles (bypassando o cache do fetchPromiseRef).
-   *  3. Atualiza AAL/MFA.
+   * Força um refresh completo após login social ou mudança de papéis.
    */
   const refreshSession = useCallback(async () => {
     const log = createClientLogger('auth.refreshSession');
@@ -335,8 +331,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
       const uid = nextSession?.user?.id ?? user?.id;
       if (uid) {
-        fetchPromiseRef.current = null;
-        await Promise.all([fetchUserData(uid), fetchAAL()]);
+        await fetchUserData(uid);
       } else {
         authDebug("AuthContext.refreshSession", "no uid — skipping fetchUserData");
       }
@@ -346,20 +341,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       authDebugError("AuthContext.refreshSession", "unexpected exception", err);
       log.error('failed', { err: err instanceof Error ? err.message : String(err) });
     }
-  }, [user, fetchUserData, fetchAAL]);
+  }, [user, fetchUserData]);
 
-  const has = (r: AppRole) => userRoles.includes(r);
-  const isDev = has("dev");
-  const isGestorCompras = has("gestor_compras");
-  const isGerentePa = has("gerente_pa");
-  const isVendedor = has("vendedor");
-  const isSupervisor = has("supervisor") || has("admin") || has("manager");
-  const isAgente = has("agente");
-  const isSupervisorOrAbove = isDev || isGestorCompras || isSupervisor;
-
-  const primaryRole = getHighestRole(userRoles);
-  const isAdmin = isSupervisorOrAbove;
-  const mfaRequired = isSupervisorOrAbove && currentAAL !== 'aal2';
+  const role = useMemo(() => getHighestRole(userRoles), [userRoles]);
+  const isDev = userRoles.includes("dev");
+  const isGestorCompras = userRoles.includes("gestor_compras");
+  const isGerentePa = userRoles.includes("gerente_pa");
+  const isVendedor = userRoles.includes("vendedor");
+  const isSupervisor = userRoles.includes("supervisor") || userRoles.includes("admin");
+  const isAgente = userRoles.includes("agente");
+  const isSupervisorOrAbove = isDev || isSupervisor || isGestorCompras;
+  const canManage = isSupervisorOrAbove;
 
   const cooperativaId = profile?.cooperativa_id || null;
   const paId = profile?.pa_id || null;
@@ -371,7 +363,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     profile,
     isLoading,
     roles: userRoles,
-    role: primaryRole,
+    role,
     isDev,
     isGestorCompras,
     isGerentePa,
@@ -379,7 +371,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     isSupervisor,
     isAgente,
     isSupervisorOrAbove,
-    canManage: isSupervisorOrAbove,
+    canManage,
     cooperativaId,
     paId,
     isAdmin: isSupervisorOrAbove,
@@ -387,8 +379,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     currentAAL,
     nextAAL,
     hasMFA,
-    mfaRequired,
-    rolesLoaded: userRoles.length > 0,
+    mfaRequired: nextAAL === 'aal2' && currentAAL !== 'aal2',
+    rolesLoaded,
     refreshAAL: fetchAAL,
     signUp,
     signIn,
