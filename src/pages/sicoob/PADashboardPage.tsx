@@ -14,31 +14,17 @@ import {
   Package,
   Search
 } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
 import { formatCurrency } from "@/utils/formatters";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { usePaDashboardStats } from "@/hooks/sicoob/usePaDashboardStats";
 
 export default function PADashboardPage() {
-  const { data: stats } = useQuery({
-    queryKey: ["sicoob-pa-stats"],
-    queryFn: async () => {
-      return {
-        activeOrders: 4,
-        availableBudget: 15400.00,
-        monthlyLimit: 25000.00,
-        pendingApproval: 2,
-        deliveredThisMonth: 12,
-        recentOrders: [
-          { id: "101", items: 15, val: 3200.50, status: "approved", date: "Hoje" },
-          { id: "102", items: 8, val: 1450.00, status: "pending", date: "Ontem" },
-          { id: "103", items: 22, val: 5800.00, status: "shipped", date: "2 dias atrás" },
-        ]
-      };
-    }
-  });
+  const { data: stats, isLoading } = usePaDashboardStats();
 
-  const budgetUsed = stats ? ((stats.monthlyLimit - stats.availableBudget) / stats.monthlyLimit) * 100 : 0;
+  const budgetUsed = stats && stats.monthlyLimit > 0 
+    ? ((stats.monthlyLimit - stats.availableBudget) / stats.monthlyLimit) * 100 
+    : 0;
 
   return (
     <MainLayout>
