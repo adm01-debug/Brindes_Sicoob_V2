@@ -1,87 +1,27 @@
+
 /**
- * useQuoteBuilderState — Estado centralizado do QuoteBuilder
+ * useQuoteBuilderState — Estado centralizado do QuoteBuilder (REFATORADO)
  * Extrai toda a lógica de estado, cálculos e ações do QuoteBuilderPage.
  */
 
-import { useState, useMemo, useCallback, useEffect } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { useNavigate, useParams, useSearchParams, useLocation } from "react-router-dom";
 import { useSellerDiscountLimits } from "@/hooks/useSellerDiscountLimits";
 import { useDiscountApproval } from "@/hooks/useDiscountApproval";
-import { useQuery } from "@tanstack/react-query";
-import Fuse from "fuse.js";
 import { format, addDays } from "date-fns";
 import { toast } from "sonner";
 import { validateQuoteForm, QUOTE_FIELD_LABELS } from "@/lib/validations";
 import { useQuotes, type QuoteItem, type QuoteItemPersonalization } from "@/hooks/useQuotes";
 import { useQuoteTemplates, type QuoteTemplate, type QuoteTemplateItem } from "@/hooks/useQuoteTemplates";
 import { useAuth } from "@/contexts/AuthContext";
-import { findKnownHex } from "@/hooks/useProducts";
-import { useDebounce } from "@/hooks/useDebounce";
+import { getPriceFreshness } from "@/utils/price-freshness";
 import type { SelectedCompanyInfo, SelectedContactInfo } from "@/components/quotes/CompanyContactSelector";
 import type { ExternalVariantStock } from "@/hooks/useExternalVariantStock";
 import type { QuoteBuilderStep } from "@/components/quotes/QuoteBuilderStepper";
-import { createProductFuseOptions, dedupeById, rankProductSearchResults } from "@/utils/product-search";
-import { getPriceFreshness } from "@/utils/price-freshness";
-
-interface Product {
-  id: string;
-  name: string;
-  sku: string;
-  price: number;
-  images: string[] | null;
-  colors?: { name: string; hex?: string; stock?: number }[];
-  minQuantity?: number;
-  totalStock?: number;
-}
-
-interface RawProductColor {
-  name?: string;
-  hex?: string;
-  stock?: number;
-}
-
-function mapQuoteSearchProduct(p: PromobrindProduct, getProductImageUrl: (product: PromobrindProduct) => string | null): Product {
-  const imgUrl = getProductImageUrl(p);
-  const images = (p.images && p.images.length > 0) ? p.images : (imgUrl ? [imgUrl] : []);
-
-  return {
-    id: p.id,
-    name: p.name,
-    sku: p.sku,
-    price: p.sale_price ?? p.base_price ?? 0,
-    images,
-    colors: (p.colors || []).map((c: string | RawProductColor) => {
-      const name = typeof c === 'string' ? c : c.name || '';
-      const hex = (typeof c === 'string' ? undefined : c.hex) || findKnownHex(name) || undefined;
-      return { name, hex, stock: typeof c === 'string' ? undefined : c.stock };
-    }),
-    minQuantity: p.min_quantity ?? 1,
-    totalStock: p.stock_quantity ?? (p.colors || []).reduce((sum: number, c: string | RawProductColor) => sum + (typeof c === 'object' ? (c.stock ?? 0) : 0), 0),
-  };
-}
-
-async function loadQuoteSearchProducts(search: string): Promise<Product[]> {
-  const { fetchPromobrindProducts, getProductImageUrl } = await import("@/lib/external-db");
-  const normalizedSearch = search.trim();
-
-  if (!normalizedSearch) {
-    const productsData = await fetchPromobrindProducts({ limit: 20 });
-    return productsData.map((p) => mapQuoteSearchProduct(p, getProductImageUrl));
-  }
-
-  // Two-layer search: prefix matches (1st layer) + broad matches (2nd layer)
-  const [prefixMatches, broadMatches] = await Promise.all([
-    fetchPromobrindProducts({ filters: { _name_prefix: normalizedSearch }, limit: 200 }),
-    fetchPromobrindProducts({ search: normalizedSearch, limit: 500 }),
-  ]);
-
-  const mergedProducts = dedupeById([...prefixMatches, ...broadMatches]).map((product) =>
-    mapQuoteSearchProduct(product, getProductImageUrl)
-  );
-  const fuse = new Fuse(mergedProducts, createProductFuseOptions<Product>());
-
-  return rankProductSearchResults(mergedProducts, normalizedSearch, fuse);
-}
+import { calculateQuoteTotals, formatCurrency, calculateItemTotal, calculateItemPersonalizationTotal } from "@/utils/quote-calculations";
+import type { Product, DiscountType, DeliveryMode } from "@/types/quote-builder";
+import { useQuoteProductSearch } from "@/hooks/quote/useQuoteProductSearch";
+import { useQuoteInitialization } from "@/hooks/quote/useQuoteInitialization";
 
 export function useQuoteBuilderState() {
   const navigate = useNavigate();
@@ -91,7 +31,7 @@ export function useQuoteBuilderState() {
   const isEditMode = Boolean(quoteId);
 
   const { user } = useAuth();
-  const { createQuote, updateQuote, fetchQuote, techniques, isLoading: quotesLoading } = useQuotes();
+  const { createQuote, updateQuote, fetchQuote, isLoading: quotesLoading } = useQuotes();
   const { templates } = useQuoteTemplates();
   const { myLimit: maxDiscountPercent } = useSellerDiscountLimits();
   const { requestApproval } = useDiscountApproval();
@@ -103,33 +43,48 @@ export function useQuoteBuilderState() {
   const [contactInfo, setContactInfo] = useState<SelectedContactInfo | null>(null);
   const [validityDays, setValidityDays] = useState("7");
   const [validUntil, setValidUntil] = useState(format(addDays(new Date(), 7), "yyyy-MM-dd"));
-  const [discountType, setDiscountType] = useState<"percent" | "amount">("percent");
+  const [discountType, setDiscountType] = useState<DiscountType>("percent");
   const [discountValue, setDiscountValue] = useState(0);
-  /** Margem de negociação interna 0–50%. Default 0 (desligado). */
   const [negotiationMarkup, setNegotiationMarkup] = useState(0);
   const [notes, setNotes] = useState("");
   const [internalNotes, setInternalNotes] = useState("");
   const [items, setItems] = useState<QuoteItem[]>([]);
   const [quoteNumber, setQuoteNumber] = useState("");
   const [currentStatus, setCurrentStatus] = useState("draft");
-
   const [paymentTerms, setPaymentTerms] = useState("");
   const [deliveryTime, setDeliveryTime] = useState("");
-  const [deliveryMode, setDeliveryMode] = useState<"prazo" | "data">("prazo");
+  const [deliveryMode, setDeliveryMode] = useState<DeliveryMode>("prazo");
   const [deliveryDate, setDeliveryDate] = useState<Date | undefined>(undefined);
   const [shippingType, setShippingType] = useState("");
   const [shippingCost, setShippingCost] = useState(0);
-
-  const [productSearchOpen, setProductSearchOpen] = useState(false);
-  const [productSearch, setProductSearch] = useState("");
   const [selectedProductForColor, setSelectedProductForColor] = useState<Product | null>(null);
   const [templateApplied, setTemplateApplied] = useState<string | null>(null);
   const [loadingQuote, setLoadingQuote] = useState(isEditMode);
   const [expandedItems, setExpandedItems] = useState<Set<number>>(new Set());
   const [activeItemIndex, setActiveItemIndex] = useState<number | null>(null);
-  const debouncedProductSearch = useDebounce(productSearch, 400);
 
-  // ── Stepper ──
+  // ── Modular Hooks ──
+  const search = useQuoteProductSearch();
+  
+  useQuoteInitialization({
+    isEditMode, quoteId, fetchQuote, 
+    locationState: location.state, 
+    searchParams,
+    setters: {
+      setClientId, setContactId, setValidUntil, setNotes, setInternalNotes,
+      setQuoteNumber, setCurrentStatus, setContactInfo, setCompanyInfo,
+      setDiscountType, setDiscountValue, setNegotiationMarkup, setPaymentTerms,
+      setShippingType, setShippingCost, setDeliveryMode, setDeliveryDate,
+      setDeliveryTime, setItems, setLoadingQuote, setActiveItemIndex, setExpandedItems
+    }
+  });
+
+  // ── Computeds ──
+  const totals = useMemo(() => 
+    calculateQuoteTotals(items, negotiationMarkup, discountType, discountValue),
+    [items, negotiationMarkup, discountType, discountValue]
+  );
+
   const completedSteps = useMemo((): QuoteBuilderStep[] => {
     const steps: QuoteBuilderStep[] = [];
     if (clientId) steps.push("client");
@@ -139,220 +94,22 @@ export function useQuoteBuilderState() {
     return steps;
   }, [clientId, items.length, paymentTerms, deliveryTime, shippingType]);
 
-  // ── Route guard ──
-  const hasUnsavedData = useMemo(() => {
-    return clientId !== "" || items.length > 0 || notes !== "" || internalNotes !== "";
-  }, [clientId, items.length, notes, internalNotes]);
+  const validationErrors = useMemo(() => validateQuoteForm({
+    clientId, contactId, paymentTerms, deliveryTime, shippingType, shippingCost, itemsCount: items.length,
+  }), [clientId, contactId, paymentTerms, deliveryTime, shippingType, shippingCost, items.length]);
 
-  // Note: beforeunload is now handled by useUnsavedChangesGuard in QuoteBuilderPage
+  const isFormValid = validationErrors.length === 0;
+  const isDraftValid = !!clientId;
 
-  // ── Load existing quote ──
-  useEffect(() => {
-    if (!isEditMode || !quoteId) return;
-    setLoadingQuote(true);
-    fetchQuote(quoteId).then((quote) => {
-      if (quote) {
-        setClientId(quote.client_id || "");
-        setContactId(quote.client_id || "");
-        setValidUntil(quote.valid_until || format(addDays(new Date(), 30), "yyyy-MM-dd"));
-        setNotes(quote.notes || "");
-        setInternalNotes(quote.internal_notes || "");
-        setQuoteNumber(quote.quote_number || "");
-        setCurrentStatus(quote.status);
-        if (quote.client_name) {
-          setContactInfo({ id: "", name: quote.client_name, email: quote.client_email || undefined, phone: quote.client_phone || undefined });
-        }
-        if (quote.client_company) {
-          setCompanyInfo({ id: quote.client_id || "", name: quote.client_company, cnpj: quote.client_cnpj || undefined, ramo_atividade: undefined });
-        }
-        if (quote.discount_percent && quote.discount_percent > 0) { setDiscountType("percent"); setDiscountValue(quote.discount_percent); }
-        else if (quote.discount_amount && quote.discount_amount > 0) { setDiscountType("amount"); setDiscountValue(quote.discount_amount); }
-        if (typeof quote.negotiation_markup_percent === "number") setNegotiationMarkup(quote.negotiation_markup_percent);
-        if (quote.payment_terms) setPaymentTerms(quote.payment_terms);
-        if (quote.shipping_type) setShippingType(quote.shipping_type);
-        if (quote.shipping_cost) setShippingCost(quote.shipping_cost);
-        if (quote.delivery_time) {
-          if (quote.delivery_time.startsWith("date:")) {
-            setDeliveryMode("data");
-            setDeliveryDate(new Date(quote.delivery_time.slice(5) + "T12:00:00"));
-          } else {
-            setDeliveryMode("prazo");
-          }
-          setDeliveryTime(quote.delivery_time);
-        }
-        if (quote.items) setItems(quote.items);
-      }
-      setLoadingQuote(false);
-    });
-  }, [isEditMode, quoteId]);
+  const isDiscountExceeded = useMemo(() => {
+    if (maxDiscountPercent == null) return false;
+    const effectivePercent = discountType === "percent" 
+      ? discountValue 
+      : (totals.subtotal > 0 ? (discountValue / totals.subtotal) * 100 : 0);
+    return effectivePercent > maxDiscountPercent;
+  }, [maxDiscountPercent, discountType, discountValue, totals.subtotal]);
 
-  // ── Pre-fill from simulator ──
-  useEffect(() => {
-    const state = location.state as { fromSimulator?: boolean; simulationData?: { product?: { id: string; name: string; sku?: string; imageUrl?: string; price?: number }; quantity?: number; personalizations?: Array<{ technique?: { id: string; name: string }; specs?: { colors?: number; width?: number; height?: number }; pricing?: { setupPrice?: number; unitPrice?: number; totalPrice?: number } }> } } | null;
-    if (!state?.fromSimulator || !state.simulationData) return;
-    const { product, quantity, personalizations } = state.simulationData;
-    if (!product) return;
-    const quotePersonalizations: QuoteItemPersonalization[] = (personalizations || []).map((p) => ({
-      technique_id: p.technique?.id || '', technique_name: p.technique?.name || '',
-      colors_count: p.specs?.colors || 1, positions_count: 1,
-      width_cm: p.specs?.width || undefined, height_cm: p.specs?.height || undefined,
-      area_cm2: (p.specs?.width || 0) * (p.specs?.height || 0),
-      setup_cost: p.pricing?.setupPrice || 0, unit_cost: p.pricing?.unitPrice || 0,
-      total_cost: p.pricing?.totalPrice || 0,
-    }));
-    const newItem: QuoteItem = {
-      product_id: product.id, product_name: product.name, product_sku: product.sku || '',
-      product_image_url: product.imageUrl || undefined, quantity: quantity || 1,
-      unit_price: product.price || 0, personalizations: quotePersonalizations,
-    };
-    setItems([newItem]); setActiveItemIndex(0);
-    if (quotePersonalizations.length > 0) setExpandedItems(new Set([0]));
-    toast.success(`Produto "${product.name}" importado do simulador com ${quotePersonalizations.length} gravação(ões)`);
-    window.history.replaceState({}, document.title);
-  }, [location.state]);
-
-  // ── Pre-fill from cart ──
-  useEffect(() => {
-    const state = location.state as { fromCart?: boolean; companyId?: string; companyName?: string; companyLocation?: string; items?: Array<{ product_id: string; product_name: string; product_sku?: string; product_image_url?: string; quantity: number; unit_price: number; color_name?: string; color_hex?: string }> } | null;
-    if (!state?.fromCart || !state.items?.length) return;
-    if (state.companyId) setClientId(state.companyId);
-    const cartItems: QuoteItem[] = state.items.map((i) => ({
-      product_id: i.product_id, product_name: i.product_name, product_sku: i.product_sku || '',
-      product_image_url: i.product_image_url || undefined, quantity: i.quantity,
-      unit_price: i.unit_price, color_name: i.color_name || undefined,
-      color_hex: i.color_hex || undefined, personalizations: [],
-    }));
-    setItems(cartItems);
-    const companyLabel = state.companyName ? (state.companyLocation ? `${state.companyName} – ${state.companyLocation}` : state.companyName) : '';
-    toast.success(`${cartItems.length} item(ns) importado(s) do carrinho`, { description: companyLabel || undefined });
-    window.history.replaceState({}, document.title);
-  }, [location.state]);
-
-  // ── Pre-fill from collection ──
-  useEffect(() => {
-    const state = location.state as { fromCollection?: string; preloadProducts?: Array<{ product_id: string; product_name: string; product_sku?: string; product_image_url?: string | null; unit_price: number; quantity: number; color_name?: string | null; color_hex?: string | null }> } | null;
-    if (!state?.fromCollection || !state.preloadProducts?.length) return;
-    const collectionItems: QuoteItem[] = state.preloadProducts.map((p) => ({
-      product_id: p.product_id,
-      product_name: p.product_name,
-      product_sku: p.product_sku || '',
-      product_image_url: p.product_image_url || undefined,
-      quantity: p.quantity || 1,
-      unit_price: p.unit_price || 0,
-      color_name: p.color_name || undefined,
-      color_hex: p.color_hex || undefined,
-      personalizations: [],
-    }));
-    setItems(collectionItems);
-    toast.success(`${collectionItems.length} produto(s) importado(s) da coleção "${state.fromCollection}"`);
-    window.history.replaceState({}, document.title);
-  }, [location.state]);
-
-  // ── Pre-fill from URL params (single product or bulk items[]) ──
-  useEffect(() => {
-    if (isEditMode) return;
-    // Avoid duplicating if items already exist (e.g. restored draft)
-    if (items.length > 0) return;
-
-    // ── Bulk: items[] JSON array from catalog/filter selection ──
-    const rawItems = searchParams.getAll("items[]");
-    if (rawItems.length > 0) {
-      try {
-        const parsedItems: QuoteItem[] = rawItems.map(raw => {
-          const p = JSON.parse(raw);
-          return {
-            product_id: p.product_id || "",
-            product_name: p.product_name || "",
-            product_sku: p.product_sku || "",
-            product_image_url: p.product_image || undefined,
-            quantity: Math.max(1, p.quantity || 1),
-            unit_price: parseFloat(p.product_price || "0"),
-            color_name: p.color_name || undefined,
-            color_hex: p.color_hex || undefined,
-            personalizations: [],
-          };
-        });
-        if (parsedItems.length > 0) {
-          setItems(parsedItems);
-          setActiveItemIndex(0);
-          toast.success(`${parsedItems.length} produto${parsedItems.length > 1 ? 's' : ''} adicionado${parsedItems.length > 1 ? 's' : ''} ao orçamento`);
-          window.history.replaceState({}, document.title, location.pathname);
-          return;
-        }
-      } catch {
-        console.warn("Failed to parse items[] params");
-      }
-    }
-
-    // ── Single product: product_id param ──
-    const productId = searchParams.get("product_id") || searchParams.get("productId");
-    if (!productId) return;
-    const productName = searchParams.get("product_name") || "";
-    const colorName = searchParams.get("color_name") || undefined;
-    const colorHex = searchParams.get("color_hex") || undefined;
-    const newItem: QuoteItem = {
-      product_id: productId,
-      product_name: productName,
-      product_sku: searchParams.get("product_sku") || "",
-      product_image_url: searchParams.get("product_image") || undefined,
-      quantity: Math.max(1, parseInt(searchParams.get("min_quantity") || "1", 10)),
-      unit_price: parseFloat(searchParams.get("product_price") || "0"),
-      color_name: colorName,
-      color_hex: colorHex,
-      personalizations: [],
-    };
-    setItems([newItem]);
-    setActiveItemIndex(0);
-    if (productName) {
-      toast.success(`Produto "${productName}" adicionado ao orçamento${colorName ? ` — ${colorName}` : ''}`);
-    }
-    // Clean URL params without triggering React Router re-render
-    window.history.replaceState({}, document.title, location.pathname);
-  }, []);
-
-  const { data: products } = useQuery({
-    queryKey: ["quote-products-promobrind-search", debouncedProductSearch],
-    queryFn: () => loadQuoteSearchProducts(debouncedProductSearch),
-    enabled: productSearchOpen,
-    staleTime: 5 * 60 * 1000,
-    placeholderData: (previousData) => previousData,
-  });
-
-  const filteredProducts = useMemo(() => {
-    return products || [];
-  }, [products, productSearch]);
-
-  // ── Calculations ──
-  const formatCurrency = useCallback((value: number) => {
-    return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value);
-  }, []);
-
-  const calculateItemPersonalizationTotal = useCallback((item: QuoteItem) => {
-    return (item.personalizations || []).reduce((sum, p) => sum + (p.total_cost || 0), 0);
-  }, []);
-
-  const calculateItemTotal = useCallback((item: QuoteItem) => {
-    return item.quantity * item.unit_price + calculateItemPersonalizationTotal(item);
-  }, [calculateItemPersonalizationTotal]);
-
-  // ── Subtotal real (sem markup) e apresentado (com markup) ──
-  const realSubtotal = useMemo(() => items.reduce((sum, item) => sum + calculateItemTotal(item), 0), [items, calculateItemTotal]);
-  const markup = useMemo(() => Math.min(50, Math.max(0, negotiationMarkup || 0)), [negotiationMarkup]);
-  const subtotal = useMemo(
-    () => markup > 0 ? Math.round(realSubtotal * (1 + markup / 100) * 100) / 100 : realSubtotal,
-    [realSubtotal, markup]
-  );
-  const discountAmount = useMemo(() => discountType === "percent" ? subtotal * (discountValue / 100) : discountValue, [subtotal, discountType, discountValue]);
-  const total = useMemo(() => Math.max(0, subtotal - discountAmount), [subtotal, discountAmount]);
-
-  // ── Desconto REAL (sobre subtotal real) — usado para alçada ──
-  const realDiscountPercent = useMemo(() => {
-    if (realSubtotal <= 0) return 0;
-    const finalBeforeShipping = Math.max(0, subtotal - discountAmount);
-    return Math.round(((realSubtotal - finalBeforeShipping) / realSubtotal) * 10000) / 100;
-  }, [realSubtotal, subtotal, discountAmount]);
-
-  // ── Item actions ──
+  // ── Actions ──
   const toggleExpanded = useCallback((index: number) => {
     setExpandedItems(prev => { const n = new Set(prev); n.has(index) ? n.delete(index) : n.add(index); return n; });
   }, []);
@@ -361,16 +118,14 @@ export function useQuoteBuilderState() {
     setItems(prev => prev.map((item, idx) => idx === index ? { ...item, personalizations } : item));
   }, []);
 
-  const handleProductClick = useCallback((product: Product) => {
-    setSelectedProductForColor(product);
-  }, []);
-
   const addProductWithColor = useCallback((product: Product, variant: ExternalVariantStock | null) => {
     const colorName = variant?.color_name || undefined;
     const colorHex = variant?.color_hex || undefined;
     const sizeCode = variant?.size_code || undefined;
     const imageUrl = variant?.selected_thumbnail || (variant?.images?.length ? variant.images[0] : undefined) || (Array.isArray(product.images) && product.images.length > 0 ? product.images[0] : undefined);
+    
     const existingIndex = items.findIndex(i => i.product_id === product.id && i.color_name === colorName && i.size_code === sizeCode);
+    
     if (existingIndex >= 0) {
       setItems(prev => prev.map((item, idx) => idx === existingIndex ? { ...item, quantity: item.quantity + 1 } : item));
       setActiveItemIndex(existingIndex);
@@ -389,8 +144,8 @@ export function useQuoteBuilderState() {
         return newItems;
       });
     }
-    setSelectedProductForColor(null); setProductSearchOpen(false); setProductSearch("");
-  }, [items]);
+    setSelectedProductForColor(null); search.setProductSearchOpen(false); search.setProductSearch("");
+  }, [items, search]);
 
   const updateItemQuantity = useCallback((index: number, quantity: number) => {
     if (quantity < 1) return;
@@ -405,29 +160,6 @@ export function useQuoteBuilderState() {
     setItems(prev => prev.filter((_, idx) => idx !== index));
   }, []);
 
-  // ── Confirmação de preço com fornecedor (suprime badge "stale") ──
-  const confirmItemPrice = useCallback((index: number) => {
-    const ts = new Date().toISOString();
-    setItems(prev => prev.map((item, idx) => idx === index ? { ...item, price_confirmed_at: ts } : item));
-  }, []);
-
-  const confirmAllStalePrices = useCallback(() => {
-    const ts = new Date().toISOString();
-    setItems(prev => prev.map(item => {
-      if (item.price_confirmed_at) return item;
-      // Apenas itens cujo preço esteja em estado de alerta (aging/stale) e ainda não confirmado
-      const days = item.price_updated_at
-        ? Math.max(0, Math.floor((Date.now() - new Date(item.price_updated_at).getTime()) / (1000 * 60 * 60 * 24)))
-        : null;
-      const threshold = item.price_freshness_threshold_days && item.price_freshness_threshold_days > 0
-        ? item.price_freshness_threshold_days
-        : 60;
-      const shouldWarn = days !== null && days >= threshold * 0.5; // aging começa em 50% do threshold
-      return shouldWarn ? { ...item, price_confirmed_at: ts } : item;
-    }));
-  }, []);
-
-  // ── Template ──
   const applyTemplate = useCallback((template: QuoteTemplate) => {
     const newItems: QuoteItem[] = template.items_data.map((item) => ({
       product_id: item.productId || "", product_name: item.productName,
@@ -450,41 +182,6 @@ export function useQuoteBuilderState() {
     toast.success(`Template "${template.name}" aplicado!`);
   }, []);
 
-  const getTemplateItems = useCallback((): QuoteTemplateItem[] => {
-    return items.map(item => ({
-      productId: item.product_id, productSku: item.product_sku,
-      productName: item.product_name, productImageUrl: item.product_image_url,
-      quantity: item.quantity, unitPrice: item.unit_price,
-      colorName: item.color_name, colorHex: item.color_hex,
-      personalizations: item.personalizations?.map(p => ({
-        techniqueId: p.technique_id, techniqueName: p.technique_name || "",
-        colorsCount: p.colors_count, positionsCount: p.positions_count,
-        unitCost: p.unit_cost, setupCost: p.setup_cost,
-      })),
-    }));
-  }, [items]);
-
-  // ── Validation ──
-  const validationErrors = useMemo(() => validateQuoteForm({
-    clientId, contactId, paymentTerms, deliveryTime, shippingType, shippingCost, itemsCount: items.length,
-  }), [clientId, contactId, paymentTerms, deliveryTime, shippingType, shippingCost, items]);
-
-  const isFormValid = validationErrors.length === 0;
-  const isDraftValid = !!clientId;
-
-  // ── Discount limit check ──
-  const isDiscountExceeded = useMemo(() => {
-    if (maxDiscountPercent == null) return false;
-    if (discountType === "percent") return discountValue > maxDiscountPercent;
-    // For amount type, calculate effective percent
-    if (subtotal > 0) {
-      const effectivePercent = (discountValue / subtotal) * 100;
-      return effectivePercent > maxDiscountPercent;
-    }
-    return false;
-  }, [maxDiscountPercent, discountType, discountValue, subtotal]);
-
-  // ── Save ──
   const handleSaveQuote = useCallback(async (status: "draft" | "pending" | "pending_approval" = "draft", sellerNotes?: string) => {
     if (status === "draft") {
       if (!isDraftValid) { toast.error("Selecione uma empresa para salvar o rascunho."); return; }
@@ -493,8 +190,6 @@ export function useQuoteBuilderState() {
       toast.error(`Preencha os campos obrigatórios: ${missing}`); return;
     }
 
-    // ── Bloqueio de fechamento: itens com preço defasado precisam de confirmação ──
-    // Só validamos ao fechar (pending / pending_approval). Rascunho permanece livre.
     if (status !== "draft") {
       const staleUnconfirmed = items.filter(item => {
         if (item.price_confirmed_at) return false;
@@ -502,54 +197,38 @@ export function useQuoteBuilderState() {
         return f.isStale;
       });
       if (staleUnconfirmed.length > 0) {
-        const names = staleUnconfirmed
-          .slice(0, 3)
-          .map(i => i.product_name)
-          .filter(Boolean)
-          .join(", ");
-        const extra = staleUnconfirmed.length > 3 ? ` e mais ${staleUnconfirmed.length - 3}` : "";
-        toast.error("Confirme os preços defasados antes de fechar o orçamento", {
-          description: `${staleUnconfirmed.length} ${staleUnconfirmed.length === 1 ? "item está" : "itens estão"} com preço possivelmente defasado: ${names}${extra}. Use o botão "Confirmar com fornecedor" em cada item ou "Confirmar todos" no resumo.`,
-          duration: 8000,
-        });
+        toast.error("Confirme os preços defasados antes de fechar o orçamento");
         return;
       }
     }
-
-    const effectiveStatus = status === "pending_approval" ? "pending_approval" : status;
 
     const quoteData = {
       client_id: clientId || undefined, client_name: contactInfo?.name || undefined,
       client_company: companyInfo?.name || undefined, client_cnpj: companyInfo?.cnpj || undefined,
       client_email: contactInfo?.email || undefined, client_phone: contactInfo?.phone || undefined,
-      status: effectiveStatus, discount_percent: discountType === "percent" ? discountValue : 0,
+      status: status === "pending_approval" ? "pending_approval" : status, 
+      discount_percent: discountType === "percent" ? discountValue : 0,
       discount_amount: discountType === "amount" ? discountValue : 0,
-      negotiation_markup_percent: markup,
+      negotiation_markup_percent: totals.markup,
       notes: notes || undefined, internal_notes: internalNotes || undefined,
       valid_until: validUntil || undefined, payment_terms: paymentTerms || undefined,
       delivery_time: deliveryTime || undefined, shipping_type: shippingType || undefined,
       shipping_cost: (shippingType === "fob_pre" || shippingType === "fob") ? shippingCost : undefined,
     };
+
     let result;
     if (isEditMode && quoteId) { result = await updateQuote(quoteId, quoteData, items); }
     else { result = await createQuote(quoteData, items); }
 
-    // If pending_approval, create approval request usando desconto REAL (não aparente)
     if (result && status === "pending_approval" && maxDiscountPercent != null) {
-      await requestApproval(result.id, realDiscountPercent, maxDiscountPercent, sellerNotes);
+      await requestApproval(result.id, totals.realDiscountPercent, maxDiscountPercent, sellerNotes);
     }
 
     if (result) navigate(`/orcamentos/${result.id}`);
-  }, [isDraftValid, isFormValid, validationErrors, clientId, contactInfo, companyInfo, discountType, discountValue, markup, realDiscountPercent, notes, internalNotes, validUntil, paymentTerms, deliveryTime, shippingType, shippingCost, isEditMode, quoteId, items, navigate, updateQuote, createQuote, maxDiscountPercent, requestApproval]);
-
-  const defaultTemplate = useMemo(() => templates.find(t => t.is_default), [templates]);
+  }, [isDraftValid, isFormValid, validationErrors, clientId, contactInfo, companyInfo, discountType, discountValue, totals, notes, internalNotes, validUntil, paymentTerms, deliveryTime, shippingType, shippingCost, isEditMode, quoteId, items, navigate, updateQuote, createQuote, maxDiscountPercent, requestApproval]);
 
   return {
-    // Navigation
-    navigate, quoteId, isEditMode, loadingQuote,
-    // Auth
-    user,
-    // State setters
+    navigate, quoteId, isEditMode, loadingQuote, user,
     clientId, setClientId, contactId, setContactId,
     companyInfo, setCompanyInfo, contactInfo, setContactInfo,
     validityDays, setValidityDays, validUntil, setValidUntil,
@@ -560,22 +239,22 @@ export function useQuoteBuilderState() {
     paymentTerms, setPaymentTerms, deliveryTime, setDeliveryTime,
     deliveryMode, setDeliveryMode, deliveryDate, setDeliveryDate,
     shippingType, setShippingType, shippingCost, setShippingCost,
-    productSearchOpen, setProductSearchOpen, productSearch, setProductSearch,
+    ...search,
     selectedProductForColor, setSelectedProductForColor,
     templateApplied, setTemplateApplied,
     expandedItems, setExpandedItems, activeItemIndex, setActiveItemIndex,
-    // Computed
-    completedSteps, filteredProducts, subtotal, realSubtotal, discountAmount, total, realDiscountPercent,
+    completedSteps, ...totals,
     validationErrors, isFormValid, isDraftValid,
-    quotesLoading, templates, defaultTemplate,
-    // Discount limits
+    quotesLoading, templates, 
     maxDiscountPercent, isDiscountExceeded,
-    // Actions
     formatCurrency, calculateItemPersonalizationTotal, calculateItemTotal,
     toggleExpanded, handlePersonalizationsChange,
-    handleProductClick, addProductWithColor,
-    updateItemQuantity, updateItemPrice, removeItem,
-    confirmItemPrice, confirmAllStalePrices,
-    applyTemplate, getTemplateItems, handleSaveQuote,
+    handleProductClick: search.setProductSearchOpen,
+    addProductWithColor, updateItemQuantity, updateItemPrice, removeItem,
+    confirmItemPrice: (index: number) => {
+      const ts = new Date().toISOString();
+      setItems(prev => prev.map((item, idx) => idx === index ? { ...item, price_confirmed_at: ts } : item));
+    },
+    applyTemplate, handleSaveQuote,
   };
 }
