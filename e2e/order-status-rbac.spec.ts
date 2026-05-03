@@ -1,56 +1,82 @@
 import { test, expect } from '@playwright/test';
 import fs from 'fs';
 import path from 'path';
+import * as XLSX from 'xlsx';
+import pdf from 'pdf-parse';
 
 test.describe('Order RBAC and Status Flow E2E', () => {
-  test.beforeEach(async ({ page }) => {
-    // In a real E2E, we would navigate to login and authenticate
-    // await page.goto('/login');
-    // await page.fill('input[name="email"]', 'pac@example.com');
-  });
+  // Credentials from seed
+  const USERS = {
+    PAC: { email: 'pac@e2e.test', password: 'password123' },
+    GESTOR: { email: 'gestor@e2e.test', password: 'password123' },
+    VENDEDOR: { email: 'vendedor@e2e.test', password: 'password123' }
+  };
 
-  test('should allow status transitions based on roles', async ({ page }) => {
-    await page.goto('/sicoob/pedidos/kanban');
-    
-    // Simulating role selection for testing purposes if UI allows
-    // await page.selectOption('select[aria-label="Selecionar Papel"]', 'comprador_pac');
+  test('should allow PAC to create and view draft, but block seller actions', async ({ page }) => {
+    // 1. Login as PAC
+    await page.goto('/login');
+    await page.fill('input[name="email"]', USERS.PAC.email);
+    await page.fill('input[name="password"]', USERS.PAC.password);
+    await page.click('button[type="submit"]');
 
-    const orderId = 'PED-E2E-001';
-    const orderCard = page.locator(`text=${orderId}`);
-    await expect(orderCard).toBeVisible();
+    await expect(page).toHaveURL('/dashboard');
 
-    // Verify Drag and Drop restriction via UI cues (lock icon or cursor)
-    const lockIcon = page.locator('svg[aria-label="Sem permissão"]');
-    // For PAC, some transitions should be locked
-  });
+    // 2. Navigate to Orders and check RBAC block
+    await page.goto('/vendedor');
+    await expect(page.locator('text=Acesso Negado')).toBeVisible();
 
-  test('should validate exported file content', async ({ page }) => {
+    // 3. Export and Validate Content
     await page.goto('/sicoob/pedidos');
-    
-    // Trigger export
     const downloadPromise = page.waitForEvent('download');
     await page.click('button:has-text("Exportação em Lote")');
     await page.click('button:has-text("Solicitar Excel")');
     const download = await downloadPromise;
-
-    // Save and verify file
+    
     const filePath = path.join(__dirname, '../test-results', download.suggestedFilename());
     await download.saveAs(filePath);
-    
-    expect(fs.existsSync(filePath)).toBeTruthy();
-    const stats = fs.statSync(filePath);
-    expect(stats.size).toBeGreaterThan(0);
 
-    // Clean up
+    // Validate Excel content using XLSX
+    const workbook = XLSX.readFile(filePath);
+    const sheetName = workbook.SheetNames[0];
+    const sheet = workbook.Sheets[sheetName];
+    const data = XLSX.utils.sheet_to_json(sheet);
+    
+    expect(data.length).toBeGreaterThan(0);
+    // @ts-ignore
+    expect(data[0]).toHaveProperty('Status');
+    
     fs.unlinkSync(filePath);
   });
 
-  test('should verify audit log for status transitions', async ({ page }) => {
-    await page.goto('/sicoob/pedidos/PED-E2E-001');
+  test('should validate audit log details after status transition', async ({ page }) => {
+    // 1. Login as Gestor
+    await page.goto('/login');
+    await page.fill('input[name="email"]', USERS.GESTOR.email);
+    await page.fill('input[name="password"]', USERS.GESTOR.password);
+    await page.click('button[type="submit"]');
+
+    // 2. Open Order Detail and Check Audit
+    await page.goto('/sicoob/pedidos/00000000-0000-0000-0000-000000000010');
     
-    await expect(page.locator('text=Timeline de Auditoria')).toBeVisible();
+    const auditTimeline = page.locator('[data-testid="order-audit-timeline"]');
+    await expect(auditTimeline).toBeVisible();
     
-    // Check if the initial seed audit exists
-    await expect(page.locator('text=Pedido criado via script de seed')).toBeVisible();
+    // Validate specific audit entry fields
+    await expect(auditTimeline.locator('text=Pedido iniciado via E2E Seed')).toBeVisible();
+    await expect(auditTimeline.locator('text=Por: System')).toBeVisible();
+  });
+
+  test('should block unauthorized status transitions in Kanban', async ({ page }) => {
+    // 1. Login as PAC
+    await page.goto('/login');
+    await page.fill('input[name="email"]', USERS.PAC.email);
+    await page.fill('input[name="password"]', USERS.PAC.password);
+    await page.click('button[type="submit"]');
+
+    await page.goto('/sicoob/pedidos/kanban');
+    
+    // PAC should see lock icons on columns they can't move to
+    const lockedCard = page.locator('svg[aria-label="Sem permissão"]').first();
+    await expect(lockedCard).toBeVisible();
   });
 });
