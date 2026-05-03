@@ -19,6 +19,10 @@ import * as XLSX from 'xlsx';
 export default function AdminAuditPage() {
   const [logs, setLogs] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [totalCount, setTotalCount] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [sort, setSort] = useState<{ key: string; direction: 'asc' | 'desc' } | null>({ key: 'created_at', direction: 'desc' });
   const [filters, setFilters] = useState({
     user: '',
     entity: '',
@@ -31,15 +35,20 @@ export default function AdminAuditPage() {
     try {
       let query = supabase
         .from('admin_audit_log')
-        .select('*')
-        .order('created_at', { ascending: false });
+        .select('*', { count: 'exact' });
 
+      // Apply filters
       if (filters.type !== 'ALL') {
         query = query.eq('event_type', filters.type);
       }
       
       if (filters.entity) {
         query = query.ilike('entity_type', `%${filters.entity}%`);
+      }
+
+      if (filters.user) {
+        // Since user_email is in metadata (JSONB), we use the arrow operator
+        query = query.filter('metadata->>user_email', 'ilike', `%${filters.user}%`);
       }
 
       if (filters.date) {
@@ -50,17 +59,23 @@ export default function AdminAuditPage() {
         query = query.gte('created_at', startOfDay.toISOString()).lte('created_at', endOfDay.toISOString());
       }
 
-      const { data, error } = await query;
-      if (error) throw error;
-
-      let result = data || [];
-      if (filters.user) {
-        result = result.filter(log => 
-          (log.metadata?.user_email || '').toLowerCase().includes(filters.user.toLowerCase())
-        );
+      // Apply sorting
+      if (sort) {
+        query = query.order(sort.key, { ascending: sort.direction === 'asc' });
+      } else {
+        query = query.order('created_at', { ascending: false });
       }
 
-      setLogs(result);
+      // Apply pagination
+      const from = (currentPage - 1) * pageSize;
+      const to = from + pageSize - 1;
+      query = query.range(from, to);
+
+      const { data, error, count } = await query;
+      if (error) throw error;
+
+      setLogs(data || []);
+      setTotalCount(count || 0);
     } catch (error) {
       console.error("Error fetching audit logs:", error);
       toast.error("Erro ao carregar trilha de auditoria");
@@ -71,7 +86,7 @@ export default function AdminAuditPage() {
 
   useEffect(() => {
     fetchLogs();
-  }, [filters]);
+  }, [filters, currentPage, pageSize, sort]);
 
   const handleExport = () => {
     const exportData = logs.map(log => ({
