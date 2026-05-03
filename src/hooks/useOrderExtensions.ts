@@ -191,7 +191,7 @@ export const useOrderPilotApprovals = (orderId?: string) => {
   return { approvals, isLoading, updateApprovalStatus };
 };
 
-export const useOrderAudit = (orderId?: string, filters?: { event_type?: string, startDate?: string, endDate?: string, search?: string }) => {
+export const useOrderAudit = (orderId?: string, filters?: { event_type?: string, startDate?: string, endDate?: string, search?: string, role?: string }) => {
   const [page, setPage] = useState(1);
   const pageSize = 10;
 
