@@ -86,7 +86,7 @@ Deno.serve(async (req) => {
       auth: { persistSession: false },
     });
 
-    const { data: profile } = await adminClient.from("profiles").select("organization_id, pa_id").eq("user_id", sellerId).single();
+    const { data: profile } = await adminClient.from("profiles").select("cooperativa_id, pa_id").eq("user_id", sellerId).single();
 
     // Outro vendedor "fantasma" — UUID fixo
     const otherSellerId = "00000000-0000-0000-0000-00000000dead";
