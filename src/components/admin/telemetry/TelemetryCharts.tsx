@@ -33,6 +33,39 @@ interface TelemetryChartsProps {
 }
 
 export function TelemetryCharts({ rows, timeFilter }: TelemetryChartsProps) {
+  const [selectedMetrics, setSelectedMetrics] = useState({
+    lentas: true,
+    muitoLentas: true,
+    erros: true,
+    mediaMs: true,
+    maxMs: false
+  });
+
+  const exportToCSV = () => {
+    if (rows.length === 0) return;
+    
+    const headers = ["ID", "Duração (ms)", "Severidade", "Tabela", "RPC", "Data"];
+    const csvRows = rows.map(r => [
+      r.id,
+      r.duration_ms,
+      r.severity,
+      r.table_name || "",
+      r.rpc_name || "",
+      new Date(r.created_at).toISOString()
+    ]);
+
+    const csvContent = [headers, ...csvRows].map(e => e.join(",")).join("\n");
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `telemetria_export_${new Date().getTime()}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    toast.success("Dados exportados para CSV");
+  };
+
   // Agrupar por intervalo de tempo
   const timelineData = useMemo(() => {
     if (rows.length === 0) return [];
