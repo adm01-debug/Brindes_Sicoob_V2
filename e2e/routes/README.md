@@ -8,6 +8,7 @@ Cobertura por rota crítica do app, organizada em 4 áreas:
 | `routes/app/`          | Sim        | `routes-authed`      |
 | `routes/quotes/`       | Sim        | `routes-authed`      |
 | `routes/admin/`        | Sim+admin  | `routes-authed`      |
+| `routes/sicoob/`       | Sim+sicoob | `routes-authed`      |
 
 ## Padrão por rota (8 casos)
 
