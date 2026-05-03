@@ -28,6 +28,7 @@
     "test:e2e:debug": "npx playwright test --grep-invert @smoke --debug",
     "test:e2e:report": "npx playwright show-report",
     "test:e2e:install": "npx playwright install --with-deps chromium",
+    "test:cleanup": "curl -X POST $(echo $VITE_SUPABASE_URL)/functions/v1/e2e-cleanup -H 'Content-Type: application/json' -H \"x-e2e-cleanup-token: $E2E_CLEANUP_TOKEN\" -d '{\"email\": \"test@example.com\", \"dryRun\": false}'",
     "check:seller-scope": "node scripts/check-seller-scope.mjs",
     "check:route-error-element": "node scripts/check-route-error-element.mjs",
     "check:aschild-nesting": "node scripts/check-aschild-nesting.mjs",
