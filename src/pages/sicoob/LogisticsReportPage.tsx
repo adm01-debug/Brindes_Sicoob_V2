@@ -84,8 +84,8 @@ export default function LogisticsReportPage() {
 
         <Card className="border-[1.5px]">
           <CardHeader>
-            <CardTitle>Rastreamento em Tempo Real</CardTitle>
-            <CardDescription>Acompanhe o status e a localização dos pedidos despachados.</CardDescription>
+            <CardTitle className="text-sicoob-green-dark font-bold">Rastreamento em Tempo Real</CardTitle>
+            <CardDescription className="italic">Acompanhe o status e a localização exata de cada remessa SICOOB.</CardDescription>
           </CardHeader>
           <CardContent>
             <Table>
