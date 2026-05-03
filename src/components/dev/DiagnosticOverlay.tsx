@@ -47,7 +47,7 @@ export const DiagnosticOverlay = forwardRef<HTMLDivElement>((_props, ref) => {
   };
 
   return (
-    <div className="fixed bottom-4 left-4 z-[9999] font-mono text-[10px]">
+    <div ref={ref} className="fixed bottom-4 left-4 z-[9999] font-mono text-[10px]">
       <AnimatePresence>
         {!isOpen ? (
           <motion.div
