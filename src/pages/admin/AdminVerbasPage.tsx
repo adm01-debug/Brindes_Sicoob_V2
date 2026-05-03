@@ -5,13 +5,17 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Plus, Search, Pencil, Trash2, Wallet, TrendingUp, AlertTriangle } from "lucide-react";
+import { Plus, Search, Pencil, Trash2, Wallet, TrendingUp, AlertTriangle, History, Download } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useQuery } from "@tanstack/react-query";
+import { format } from "date-fns";
+import * as XLSX from 'xlsx';
 
 export default function AdminVerbasPage() {
   const [budgets, setBudgets] = useState<any[]>([]);
@@ -20,6 +24,20 @@ export default function AdminVerbasPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingBudget, setEditingBudget] = useState<any>(null);
+
+  const { data: auditLogs = [] } = useQuery({
+    queryKey: ['admin-budgets-audit'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('admin_audit_log')
+        .select('*')
+        .eq('entity_type', 'pa_budgets')
+        .order('created_at', { ascending: false })
+        .limit(50);
+      if (error) throw error;
+      return data || [];
+    }
+  });
 
   const fetchData = async () => {
     setIsLoading(true);
@@ -72,10 +90,27 @@ export default function AdminVerbasPage() {
     }
   };
 
+  const exportBudgets = () => {
+    const data = budgets.map(b => ({
+      'PA': b.postos_atendimento?.nome,
+      'Código': b.postos_atendimento?.codigo,
+      'Mês': b.mes,
+      'Ano': b.ano,
+      'Verba Total': b.verba_total,
+      'Consumido': b.verba_consumida,
+      'Alçada': b.limite_alcada
+    }));
+    const worksheet = XLSX.utils.json_to_sheet(data);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Verbas");
+    XLSX.writeFile(workbook, `verbas_admin_${format(new Date(), 'yyyy-MM-dd')}.xlsx`);
+  };
+
   const filtered = budgets.filter(b => 
     b.postos_atendimento?.nome?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     b.postos_atendimento?.codigo?.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
 
   return (
     <MainLayout>
@@ -127,59 +162,111 @@ export default function AdminVerbasPage() {
           </Card>
         </div>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
-            <div><CardTitle>Limites por PA</CardTitle><CardDescription>Gerencie as verbas mensais e limites de alçada</CardDescription></div>
-            <Button onClick={() => { setEditingBudget(null); setIsFormOpen(true); }} className="gap-2"><Plus className="h-4 w-4" /> Nova Verba</Button>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="relative"><Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" /><Input placeholder="Buscar por PA..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-9" /></div>
-            <div className="rounded-md border">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>PA</TableHead>
-                    <TableHead>Período</TableHead>
-                    <TableHead>Verba Total</TableHead>
-                    <TableHead>Consumido</TableHead>
-                    <TableHead>Limite Alçada</TableHead>
-                    <TableHead className="text-right">Ações</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {isLoading ? (
-                    <TableRow><TableCell colSpan={6} className="text-center py-8">Carregando...</TableCell></TableRow>
-                  ) : filtered.length === 0 ? (
-                    <TableRow><TableCell colSpan={6} className="text-center py-8 text-muted-foreground">Nenhuma verba encontrada</TableCell></TableRow>
-                  ) : (
-                    filtered.map((b) => {
-                      const percent = (b.verba_consumida / b.verba_total) * 100;
-                      return (
-                        <TableRow key={b.id}>
-                          <TableCell><div className="font-medium">{b.postos_atendimento?.nome}</div><div className="text-xs text-muted-foreground">{b.postos_atendimento?.codigo}</div></TableCell>
-                          <TableCell><Badge variant="outline">{String(b.mes).padStart(2, '0')}/{b.ano}</Badge></TableCell>
-                          <TableCell>R$ {b.verba_total.toLocaleString()}</TableCell>
-                          <TableCell>
-                            <div className="flex flex-col gap-1">
-                              <span className={percent > 90 ? "text-red-600 font-medium" : ""}>R$ {(b.verba_consumida || 0).toLocaleString()} ({percent.toFixed(1)}%)</span>
-                              <div className="w-24 h-1.5 bg-muted rounded-full overflow-hidden">
-                                <div className={`h-full ${percent > 90 ? "bg-red-500" : percent > 70 ? "bg-yellow-500" : "bg-green-500"}`} style={{ width: `${Math.min(100, percent)}%` }} />
-                              </div>
-                            </div>
-                          </TableCell>
-                          <TableCell>R$ {b.limite_alcada?.toLocaleString() || "-"}</TableCell>
-                          <TableCell className="text-right">
-                            <Button variant="ghost" size="icon" onClick={() => { setEditingBudget(b); setIsFormOpen(true); }}><Pencil className="h-4 w-4" /></Button>
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })
-                  )}
-                </TableBody>
-              </Table>
-            </div>
-          </CardContent>
-        </Card>
+        <Tabs defaultValue="limits" className="w-full">
+          <TabsList className="mb-4">
+            <TabsTrigger value="limits" className="gap-2"><Wallet className="h-4 w-4" /> Limites por PA</TabsTrigger>
+            <TabsTrigger value="history" className="gap-2"><History className="h-4 w-4" /> Histórico de Alterações</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="limits">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <div><CardTitle>Limites por PA</CardTitle><CardDescription>Gerencie as verbas mensais e limites de alçada</CardDescription></div>
+                <div className="flex gap-2">
+                  <Button variant="outline" onClick={exportBudgets} className="gap-2"><Download className="h-4 w-4" /> Exportar</Button>
+                  <Button onClick={() => { setEditingBudget(null); setIsFormOpen(true); }} className="gap-2"><Plus className="h-4 w-4" /> Nova Verba</Button>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="relative"><Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" /><Input placeholder="Buscar por PA..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-9" /></div>
+                <div className="rounded-md border overflow-hidden">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>PA</TableHead>
+                        <TableHead>Período</TableHead>
+                        <TableHead>Verba Total</TableHead>
+                        <TableHead>Consumido</TableHead>
+                        <TableHead>Limite Alçada</TableHead>
+                        <TableHead className="text-right">Ações</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {isLoading ? (
+                        <TableRow><TableCell colSpan={6} className="text-center py-8">Carregando...</TableCell></TableRow>
+                      ) : filtered.length === 0 ? (
+                        <TableRow><TableCell colSpan={6} className="text-center py-8 text-muted-foreground">Nenhuma verba encontrada</TableCell></TableRow>
+                      ) : (
+                        filtered.map((b) => {
+                          const percent = (b.verba_consumida / b.verba_total) * 100;
+                          return (
+                            <TableRow key={b.id}>
+                              <TableCell><div className="font-medium">{b.postos_atendimento?.nome}</div><div className="text-xs text-muted-foreground">{b.postos_atendimento?.codigo}</div></TableCell>
+                              <TableCell><Badge variant="outline">{String(b.mes).padStart(2, '0')}/{b.ano}</Badge></TableCell>
+                              <TableCell className="font-medium">R$ {b.verba_total.toLocaleString()}</TableCell>
+                              <TableCell>
+                                <div className="flex flex-col gap-1 min-w-[140px]">
+                                  <div className="flex justify-between text-[11px] mb-0.5">
+                                    <span className={percent > 90 ? "text-red-600 font-bold" : ""}>R$ {(b.verba_consumida || 0).toLocaleString()}</span>
+                                    <span className="text-muted-foreground">{percent.toFixed(1)}%</span>
+                                  </div>
+                                  <div className="w-full h-2 bg-muted rounded-full overflow-hidden border border-border/20">
+                                    <div className={`h-full transition-all duration-500 ${percent > 90 ? "bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.4)]" : percent > 70 ? "bg-yellow-500" : "bg-green-500"}`} style={{ width: `${Math.min(100, percent)}%` }} />
+                                  </div>
+                                </div>
+                              </TableCell>
+                              <TableCell>R$ {b.limite_alcada?.toLocaleString() || "-"}</TableCell>
+                              <TableCell className="text-right">
+                                <Button variant="ghost" size="icon" onClick={() => { setEditingBudget(b); setIsFormOpen(true); }}><Pencil className="h-4 w-4" /></Button>
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })
+                      )}
+                    </TableBody>
+                  </Table>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="history">
+            <Card>
+              <CardHeader>
+                <CardTitle>Histórico de Orçamentos</CardTitle>
+                <CardDescription>Últimas 50 ações realizadas no módulo de verbas</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="rounded-md border">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Data</TableHead>
+                        <TableHead>Evento</TableHead>
+                        <TableHead>Usuário</TableHead>
+                        <TableHead>Detalhes</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {auditLogs.length === 0 ? (
+                        <TableRow><TableCell colSpan={4} className="text-center py-8 text-muted-foreground">Nenhum histórico encontrado</TableCell></TableRow>
+                      ) : (
+                        auditLogs.map((log: any) => (
+                          <TableRow key={log.id}>
+                            <TableCell className="text-xs">{format(new Date(log.created_at), 'dd/MM/yyyy HH:mm')}</TableCell>
+                            <TableCell><Badge variant="outline" className="text-[10px] uppercase">{log.event_type}</Badge></TableCell>
+                            <TableCell className="text-xs">{log.metadata?.user_email || 'Sistema'}</TableCell>
+                            <TableCell className="text-xs font-mono max-w-[400px] truncate">{JSON.stringify(log.payload)}</TableCell>
+                          </TableRow>
+                        ))
+                      )}
+                    </TableBody>
+                  </Table>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
       </div>
 
       <BudgetFormDialog open={isFormOpen} onOpenChange={setIsFormOpen} budget={editingBudget} onSave={handleSave} pas={pas} />

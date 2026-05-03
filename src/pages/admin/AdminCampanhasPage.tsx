@@ -5,13 +5,17 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Plus, Search, Pencil, Trash2, Megaphone, Calendar, Tag } from "lucide-react";
+import { Plus, Search, Pencil, Trash2, Megaphone, Calendar, Tag, Filter, CheckCircle2, AlertCircle, Users } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { format } from "date-fns";
+import { logAdminAction } from "@/utils/adminAudit";
 
 export default function AdminCampanhasPage() {
   const [campaigns, setCampaigns] = useState<any[]>([]);
@@ -41,13 +45,26 @@ export default function AdminCampanhasPage() {
 
   const handleSave = async (formData: any) => {
     try {
-      if (editingCampaign) {
+      if (editingCampaign?.id) {
         const { error } = await supabase.from('campaigns').update(formData).eq('id', editingCampaign.id);
         if (error) throw error;
+        await logAdminAction({
+          event_type: 'UPDATE',
+          entity_type: 'campaigns',
+          entity_id: editingCampaign.id,
+          payload: formData,
+          previous_state: editingCampaign
+        });
         toast.success("Campanha atualizada com sucesso");
       } else {
-        const { error } = await supabase.from('campaigns').insert(formData);
+        const { data, error } = await supabase.from('campaigns').insert(formData).select().single();
         if (error) throw error;
+        await logAdminAction({
+          event_type: 'CREATE',
+          entity_type: 'campaigns',
+          entity_id: data.id,
+          payload: formData
+        });
         toast.success("Campanha criada com sucesso");
       }
       setIsFormOpen(false);
@@ -64,6 +81,11 @@ export default function AdminCampanhasPage() {
     try {
       const { error } = await supabase.from('campaigns').delete().eq('id', id);
       if (error) throw error;
+      await logAdminAction({
+        event_type: 'DELETE',
+        entity_type: 'campaigns',
+        entity_id: id
+      });
       toast.success("Campanha excluída com sucesso");
       fetchData();
     } catch (error) {
@@ -76,12 +98,13 @@ export default function AdminCampanhasPage() {
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case 'active': return <Badge className="bg-green-500">Ativa</Badge>;
-      case 'paused': return <Badge variant="secondary">Pausada</Badge>;
-      case 'completed': return <Badge variant="outline">Concluída</Badge>;
-      default: return <Badge variant="outline">Rascunho</Badge>;
+      case 'active': return <Badge className="bg-green-500 gap-1"><CheckCircle2 className="h-3 w-3" /> Ativa</Badge>;
+      case 'paused': return <Badge variant="secondary" className="gap-1"><AlertCircle className="h-3 w-3" /> Pausada</Badge>;
+      case 'completed': return <Badge variant="outline" className="gap-1"><CheckCircle2 className="h-3 w-3" /> Concluída</Badge>;
+      default: return <Badge variant="outline" className="gap-1">Rascunho</Badge>;
     }
   };
+
 
   return (
     <MainLayout>
@@ -147,19 +170,107 @@ export default function AdminCampanhasPage() {
         </Card>
       </div>
 
-      <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
-        <DialogContent className="sm:max-w-[500px]">
-          <DialogHeader><DialogTitle>{editingCampaign ? 'Editar Campanha' : 'Nova Campanha'}</DialogTitle></DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-4 items-center gap-4"><Label className="text-right">Nome</Label><Input className="col-span-3" value={editingCampaign?.name || ''} onChange={(e) => setEditingCampaign({ ...(editingCampaign || {}), name: e.target.value })} /></div>
-            <div className="grid grid-cols-4 items-center gap-4"><Label className="text-right">Status</Label><div className="col-span-3"><Select value={editingCampaign?.status || 'draft'} onValueChange={(val) => setEditingCampaign({ ...(editingCampaign || {}), status: val })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="draft">Rascunho</SelectItem><SelectItem value="active">Ativa</SelectItem><SelectItem value="paused">Pausada</SelectItem><SelectItem value="completed">Concluída</SelectItem></SelectContent></Select></div></div>
-            <div className="grid grid-cols-4 items-center gap-4"><Label className="text-right">Orçamento</Label><Input type="number" className="col-span-3" value={editingCampaign?.budget || 0} onChange={(e) => setEditingCampaign({ ...(editingCampaign || {}), budget: parseFloat(e.target.value) })} /></div>
-            <div className="grid grid-cols-4 items-center gap-4"><Label className="text-right">Início</Label><Input type="date" className="col-span-3" value={editingCampaign?.start_date?.split('T')[0] || ''} onChange={(e) => setEditingCampaign({ ...(editingCampaign || {}), start_date: e.target.value })} /></div>
-            <div className="grid grid-cols-4 items-center gap-4"><Label className="text-right">Fim</Label><Input type="date" className="col-span-3" value={editingCampaign?.end_date?.split('T')[0] || ''} onChange={(e) => setEditingCampaign({ ...(editingCampaign || {}), end_date: e.target.value })} /></div>
-          </div>
-          <DialogFooter><Button variant="outline" onClick={() => setIsFormOpen(false)}>Cancelar</Button><Button onClick={() => handleSave(editingCampaign)}>Salvar</Button></DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <CampaignFormDialog 
+        open={isFormOpen} 
+        onOpenChange={setIsFormOpen} 
+        campaign={editingCampaign} 
+        onSave={handleSave} 
+      />
     </MainLayout>
+  );
+}
+
+function CampaignFormDialog({ open, onOpenChange, campaign, onSave }: any) {
+  const [formData, setFormData] = useState<any>({ 
+    name: '', 
+    status: 'draft', 
+    budget: 0, 
+    start_date: '', 
+    end_date: '', 
+    description: '',
+    target_audience: ''
+  });
+
+  useEffect(() => { 
+    if (campaign) {
+      setFormData({
+        ...campaign,
+        start_date: campaign.start_date?.split('T')[0] || '',
+        end_date: campaign.end_date?.split('T')[0] || ''
+      });
+    } else {
+      setFormData({ name: '', status: 'draft', budget: 0, start_date: '', end_date: '', description: '', target_audience: '' });
+    }
+  }, [campaign, open]);
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-[600px]">
+        <DialogHeader>
+          <DialogTitle>{campaign ? 'Editar Campanha' : 'Nova Campanha'}</DialogTitle>
+          <DialogDescription>Defina os parâmetros e segmentação da campanha.</DialogDescription>
+        </DialogHeader>
+        <Tabs defaultValue="basic" className="py-2">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="basic">Dados Básicos</TabsTrigger>
+            <TabsTrigger value="segmentation">Segmentação</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="basic" className="space-y-4 pt-4">
+            <div className="grid gap-2">
+              <Label htmlFor="name">Nome da Campanha</Label>
+              <Input id="name" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} placeholder="Ex: Black Friday 2024" />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="grid gap-2">
+                <Label htmlFor="status">Status</Label>
+                <Select value={formData.status} onValueChange={(val) => setFormData({ ...formData, status: val })}>
+                  <SelectTrigger id="status"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="draft">Rascunho</SelectItem>
+                    <SelectItem value="active">Ativa</SelectItem>
+                    <SelectItem value="paused">Pausada</SelectItem>
+                    <SelectItem value="completed">Concluída</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="budget">Orçamento (R$)</Label>
+                <Input id="budget" type="number" value={formData.budget} onChange={(e) => setFormData({ ...formData, budget: parseFloat(e.target.value) })} />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="grid gap-2">
+                <Label htmlFor="start">Data Início</Label>
+                <Input id="start" type="date" value={formData.start_date} onChange={(e) => setFormData({ ...formData, start_date: e.target.value })} />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="end">Data Fim</Label>
+                <Input id="end" type="date" value={formData.end_date} onChange={(e) => setFormData({ ...formData, end_date: e.target.value })} />
+              </div>
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="desc">Descrição</Label>
+              <Textarea id="desc" value={formData.description || ''} onChange={(e) => setFormData({ ...formData, description: e.target.value })} placeholder="Objetivos da campanha..." />
+            </div>
+          </TabsContent>
+
+          <TabsContent value="segmentation" className="space-y-4 pt-4">
+            <div className="grid gap-2">
+              <Label htmlFor="audience">Público-Alvo</Label>
+              <Input id="audience" value={formData.target_audience || ''} onChange={(e) => setFormData({ ...formData, target_audience: e.target.value })} placeholder="Ex: Clientes Inativos, Cooperados PAC..." />
+            </div>
+            <div className="p-4 bg-muted/30 rounded-lg border border-dashed text-center">
+              <Users className="h-8 w-8 mx-auto opacity-20 mb-2" />
+              <p className="text-xs text-muted-foreground">Filtros avançados de segmentação por comportamento de compra serão habilitados na Onda 3.</p>
+            </div>
+          </TabsContent>
+        </Tabs>
+        <DialogFooter className="mt-4">
+          <Button variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
+          <Button onClick={() => onSave(formData)}>Salvar Campanha</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
