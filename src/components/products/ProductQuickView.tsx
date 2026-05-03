@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, useEffect, forwardRef } from "react";
+import { useState, useMemo, useCallback, useEffect, forwardRef, useRef } from "react";
 // framer-motion removido — transição via CSS animate-fade-in
 import {
   Heart,
@@ -61,8 +61,21 @@ export const ProductQuickView = forwardRef<HTMLDivElement, ProductQuickViewProps
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [selectedColorId, setSelectedColorId] = useState<string | null>(null);
-  // imageLoaded removido — transição instantânea sem skeleton intermediário
   const [imageError, setImageError] = useState(false);
+  const dialogRef = useRef<HTMLDivElement>(null);
+
+  // Navegação por teclado para galeria
+  useEffect(() => {
+    if (!open) return;
+    
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "ArrowLeft") handlePrevImage();
+      if (e.key === "ArrowRight") handleNextImage();
+    };
+    
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [open, currentImageIndex]); // Depende do index para garantir que as funções handle usem o estado atual se não forem estáveis
 
   // Hook: buscar imagens do produto via BD externo (Briefing v3)
   const { data: productImages = [] } = useProductImages(open && product ? product.id : null);
@@ -330,7 +343,8 @@ export const ProductQuickView = forwardRef<HTMLDivElement, ProductQuickViewProps
               <div className="flex items-center gap-3">
                 <Button
                   variant="outline"
-                  size="icon" aria-label="Remover"
+                  size="icon" 
+                  aria-label="Diminuir quantidade"
                   className="h-9 w-9"
                   onClick={() => setQuantity(Math.max(1, quantity - 1))}
                   disabled={quantity <= 1}
@@ -340,7 +354,7 @@ export const ProductQuickView = forwardRef<HTMLDivElement, ProductQuickViewProps
                 <span className="text-lg font-semibold w-12 text-center">{quantity}</span>
                 <Button
                   variant="outline"
-                  size="icon" aria-label="Adicionar"
+                  size="icon" aria-label="Aumentar quantidade"
                   className="h-9 w-9"
                   onClick={() => setQuantity(quantity + 1)}
                 >
@@ -378,8 +392,9 @@ export const ProductQuickView = forwardRef<HTMLDivElement, ProductQuickViewProps
                       )}
                       onClick={handleFavorite}
                       data-testid="product-favorite"
-                      aria-pressed={isFavorited}
-                     aria-label="Favoritar"><Heart className={cn("h-5 w-5", isFavorited && "fill-current")} />
+                       aria-pressed={isFavorited}
+                       aria-label={isFavorited ? "Remover dos favoritos" : "Adicionar aos favoritos"}>
+                      <Heart className={cn("h-5 w-5", isFavorited && "fill-current")} />
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>
@@ -397,7 +412,7 @@ export const ProductQuickView = forwardRef<HTMLDivElement, ProductQuickViewProps
                         isInCompare && "bg-primary/10 border-primary/30 text-primary"
                       )}
                       onClick={handleCompare}
-                     aria-label="Comparar"><GitCompare className="h-5 w-5" />
+                     aria-label={isInCompare ? "Remover da comparação" : "Adicionar à comparação"}><GitCompare className="h-5 w-5" />
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>
