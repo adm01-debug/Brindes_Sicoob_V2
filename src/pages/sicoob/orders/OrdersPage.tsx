@@ -233,7 +233,6 @@ export default function OrdersPage() {
   const paOptions = pas;
   const singularOptions = cooperatives;
 
-  const filteredOrders = orders;
 
   const activeFiltersCount =
     (statusFilter !== "all" ? 1 : 0) +
