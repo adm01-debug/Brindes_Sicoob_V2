@@ -123,19 +123,48 @@ A plataforma utiliza gates rigorosos para manter a qualidade da observabilidade:
 - **ESLint Baseline Gate:** `.eslint-baseline.json` bloqueia a introdução de novos warnings de lint que prejudiquem a observabilidade (ex: console.logs puros).
 - **Webhook Alerts → Sentry:** Monitoramento contínuo de webhooks inbound/outbound via cron job.
 
-## 9. Onboarding para Desenvolvedores (Stack de Logging)
+## 9. Onboarding Prático: Do Frontend ao Sentry
 
-Para novos desenvolvedores, estas são as diretrizes obrigatórias:
-1. **Sempre use loggers:** Nunca use `console.log`. Use `createClientLogger` no frontend e `createStructuredLogger` no backend.
-2. **Propagação de ID:** Sempre passe `log.headers()` nas chamadas `supabase.functions.invoke`.
-3. **Erros no Sentry:** Use `log.error('label', { error })` para que a exceção seja capturada com o `request_id` correto como tag.
-4. **Gates de CI:** Se seu código falhar nos scripts `check-edge-*`, verifique se você está seguindo os padrões de instrumentação.
+Para capturar e rastrear uma falha em tempo real, siga este fluxo:
 
-## 10. Como debugar uma falha (Checklist)
+1. **No Frontend (Captura):**
+   Ao implementar uma nova ação, use o logger para gerar o `request_id`.
+   ```ts
+   // src/pages/MyNewPage.tsx
+   const log = createClientLogger('my-feature.action');
+   
+   const handleAction = async () => {
+     log.info('iniciando_acao', { userId: user.id });
+     try {
+       const { data, error } = await supabase.functions.invoke('my-function', {
+         headers: log.headers() // ESSENCIAL: Propaga o X-Request-Id
+       });
+       if (error) throw error;
+     } catch (err) {
+       // O log.error automaticamente envia para o Sentry com a tag request_id
+       log.error('falha_na_acao', { error: err });
+     }
+   };
+   ```
 
-1. **Obter ID:** Pegue o `request_id` (UUIDv4) no Sentry ou no UI Error Boundary.
-2. **Localizar Logs:** Use o comando `rg` nos logs da Lovable Cloud filtrando pelo ID.
-3. **Traçar Fluxo:** O `request_id` deve estar presente no client, edge, logs de banco e webhooks.
-4. **Verificar Métricas:** Consulte `public.get_webhook_delivery_summary()` se for falha de integração.
+2. **No Browser (Inspecionar):**
+   - Abra o Console do DevTools.
+   - Procure pelo log estruturado: `{"event": "falha_na_acao", "request_id": "550e8400-e29b-..."}`.
+   - Copie o `request_id`.
+
+3. **No Sentry (Localizar):**
+   - Vá para **Issues** ou **Discover**.
+   - Filtre por `request_id:550e8400-e29b-...`.
+   - Você verá o erro exato, o rastro do usuário e os logs de backend correlacionados.
+
+4. **Nas Edge Functions (Confirmar):**
+   - No painel da Lovable Cloud → **Edge Function Logs**, cole o `request_id` na busca.
+   - Você verá o ciclo de vida completo da requisição, desde o `request_start` até o `request_end` (ou erro).
+
+---
+
+## 10. Gates de CI (Prevenção de Regressão)
+... keep existing code
+
 
 
