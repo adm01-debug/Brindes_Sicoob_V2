@@ -259,27 +259,11 @@ export default function OrderDetailPage() {
   };
 
   const handleStatusUpdate = async (newStatus: any) => {
-    try {
-      const currentStatus = orderData?.fulfillment_status || 'pending';
-      
-      // Validação de transição (Sincronização bidirecional/Bloqueio)
-      if (!canTransitionTo(currentStatus, newStatus)) {
-        toast.error(`Transição inválida de ${currentStatus} para ${newStatus}`);
-        return;
-      }
-
-      const { error } = await supabase
-        .from('orders')
-        .update({ fulfillment_status: newStatus, updated_at: new Date().toISOString() })
-        .eq('id', id);
-      
-      if (error) throw error;
-
-      toast.success("Status de produção atualizado");
-      refetchOrder();
-    } catch (error: any) {
-      toast.error("Erro ao atualizar status: " + error.message);
-    }
+    updateOrderStatusMutation.mutate({ 
+      orderId: id!, 
+      status: newStatus, 
+      currentStatus: orderData?.status 
+    });
   };
 
   if (isLoadingOrder) {
