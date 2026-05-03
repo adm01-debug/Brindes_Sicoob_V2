@@ -2,19 +2,21 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { MessageSquare, Send, User, Paperclip } from "lucide-react";
+import { MessageSquare, Send, User, Paperclip, Search, ChevronUp, ChevronDown } from "lucide-react";
 import { useOrderComments } from "@/hooks/useOrderComments";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 
 interface OrderCommentsProps {
   orderId: string;
 }
 
 export function OrderComments({ orderId }: OrderCommentsProps) {
-  const { comments, isLoading, addComment } = useOrderComments(orderId);
+  const [search, setSearch] = useState("");
+  const { comments, totalCount, isLoading, addComment, page, setPage, pageSize } = useOrderComments(orderId, { search });
   const [newComment, setNewComment] = useState("");
   const [isInternal, setIsInternal] = useState(false);
 
@@ -25,14 +27,23 @@ export function OrderComments({ orderId }: OrderCommentsProps) {
     setNewComment("");
   };
 
-  if (isLoading) return <div className="h-32 flex items-center justify-center">Carregando comentários...</div>;
+  if (isLoading && page === 1) return <div className="h-32 flex items-center justify-center">Carregando comentários...</div>;
 
   return (
-    <Card className="flex flex-col h-[500px]">
-      <CardHeader className="py-3">
+    <Card className="flex flex-col h-[600px]">
+      <CardHeader className="py-3 flex flex-row items-center justify-between">
         <CardTitle className="text-base flex items-center gap-2">
           <MessageSquare className="h-4 w-4 text-primary" /> Chat do Pedido
         </CardTitle>
+        <div className="relative w-48">
+          <Search className="absolute left-2 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
+          <Input 
+            placeholder="Buscar..." 
+            className="pl-8 h-8 text-xs" 
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
       </CardHeader>
       <CardContent className="flex-1 flex flex-col gap-4 overflow-hidden pt-0">
         <ScrollArea className="flex-1 pr-4">
