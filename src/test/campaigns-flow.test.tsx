@@ -6,10 +6,17 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import React from 'react';
 import { BrowserRouter } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
+
+// Mock dependencies
+vi.mock('@/contexts/AuthContext', () => ({
+  useAuth: vi.fn(),
+}));
 
 const renderWithRouter = (ui: React.ReactElement) => {
   return render(ui, { wrapper: BrowserRouter });
 };
+
 
 
 // Mock dependencies
