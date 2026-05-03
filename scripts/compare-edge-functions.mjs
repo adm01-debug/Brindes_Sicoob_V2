@@ -23,21 +23,18 @@ function compareFunctions() {
   let obsoleteInInventory = [];
 
   realFunctions.forEach(fn => {
-    // Regex mais precisa para buscar o nome da função entre backticks
-    const regex = new RegExp('`' + fn + '`');
-    if (!regex.test(inventoryContent)) {
+    if (!inventoryContent.includes('`' + fn + '`')) {
       missingInInventory.push(fn);
     }
   });
 
   // Extrair lista de funções do inventário (sessão 5)
-  // Pegar apenas o que está entre backticks e parece ser uma função (sem espaços, sem barras)
   const inventoryFunctionsMatch = inventoryContent.match(/`([a-z0-9-]+)`/g) || [];
   const inventoryFunctions = [...new Set(inventoryFunctionsMatch.map(f => f.replace(/`/g, '')))];
 
+  const blacklist = ['multi-tenant', 'multi-db', 'p0', 'p1', 'p2', 'v2', 'b2b', 'admin', 'vendedor', 'gerente_pa', 'gestor_compras', 'dev'];
+
   inventoryFunctions.forEach(fn => {
-    // Regras para ignorar termos que não são funções
-    const blacklist = ['multi-tenant', 'multi-db', 'p0', 'p1', 'p2', 'v2', 'b2b', 'admin', 'vendedor', 'gerente_pa', 'gestor_compras', 'dev'];
     if (blacklist.includes(fn)) return;
     if (fn.includes('/') || fn.includes('.') || fn.length < 3) return;
 
@@ -63,7 +60,6 @@ function compareFunctions() {
     console.log('✅ Nenhuma função obsoleta encontrada no inventário.');
   }
 
-  // Gera um arquivo de relatório para o CI
   const report = `
 # Relatório de Divergência de Edge Functions
 Data: ${new Date().toISOString()}
@@ -79,9 +75,6 @@ ${missingInInventory.length > 0 ? missingInInventory.map(f => `- ${f}`).join('\n
 ${obsoleteInInventory.length > 0 ? obsoleteInInventory.map(f => `- ${f}`).join('\n') : '- Nenhuma'}
   `;
   fs.writeFileSync('docs/EDGE_FUNCTIONS_DRIFT.md', report);
-  
-  // Opcional: falhar o build se houver divergência
-  // if (missingInInventory.length > 0 || obsoleteInInventory.length > 0) process.exit(1);
 }
 
 compareFunctions();
