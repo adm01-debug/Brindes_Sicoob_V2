@@ -185,6 +185,8 @@ export const ORDER_STATUS_LABELS: Record<string, string> = {
   cancelado: "Cancelado",
 };
 
+export const FULFILLMENT_LABELS: Record<string, string> = ORDER_STATUS_LABELS;
+
 /**
  * Hook principal para operações de Pedido.
  */
