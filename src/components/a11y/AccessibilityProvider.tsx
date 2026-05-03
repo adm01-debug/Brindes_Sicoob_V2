@@ -20,7 +20,9 @@ export function useA11y() {
   return context;
 }
 
-export const AccessibilityProvider = ({ children }: { children: ReactNode }) => {
+import { forwardRef } from 'react';
+
+export const AccessibilityProvider = forwardRef<HTMLDivElement, { children: ReactNode }>(({ children }, ref) => {
   const [reducedMotion, setReducedMotion] = useState(false);
   const [highContrast, setHighContrast] = useState(false);
   const [fontSize, setFontSize] = useState<"normal" | "large" | "larger">("normal");
