@@ -158,17 +158,11 @@ const App = () => {
                                 <Route key={r.path} path={r.path} element={<r.component />} />
                               ))}
                               
-                              <Route element={<ProtectedRoute requiredRole="gestor_compras" />}>
-                                {sicoobRoutes.filter(r => r.path !== "/sicoob/vendas").map(r => (
+                              <Route element={<SicoobRoute />}>
+                                {sicoobRoutes.map(r => (
                                   <Route key={r.path} path={r.path} element={<r.component />} />
                                 ))}
                                 <Route path="/admin/design-system/colors" element={<ColorDocumentationPage />} />
-                              </Route>
-
-                              <Route element={<ProtectedRoute requiredRole="vendedor" />}>
-                                {sicoobRoutes.filter(r => r.path === "/sicoob/vendas").map(r => (
-                                  <Route key={r.path} path={r.path} element={<r.component />} />
-                                ))}
                               </Route>
                             </Route>
 
