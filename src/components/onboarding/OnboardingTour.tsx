@@ -251,6 +251,7 @@ export const OnboardingTour = forwardRef<HTMLDivElement, any>(function Onboardin
           </div>
         </motion.div>
       </div>
+      )}
     </AnimatePresence>
     </div>
   );
