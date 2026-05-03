@@ -31,7 +31,7 @@ const PersistentBreadcrumbs = lazyWithRetry(() => import("@/components/common/Pe
 import { cn } from "@/lib/utils";
 import { diagnostics } from "@/lib/diagnostics";
 import { APIInspector } from "@/components/debug/APIInspector";
-import { CriticalErrorOverlay } from "@/components/common/CriticalErrorOverlay";
+
 
 
 
