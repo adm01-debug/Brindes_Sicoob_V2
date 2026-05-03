@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -216,9 +217,9 @@ export const useOrderAudit = (orderId?: string, filters?: { event_type?: string,
         query = query.ilike("description", `%${filters.search}%`);
       }
 
-      const { data, error, count } = await query.range((page - 1) * pageSize, page * pageSize - 1);
+      const { data: auditData, error, count } = await query.range((page - 1) * pageSize, page * pageSize - 1);
       if (error) throw error;
-      return { events: data, count };
+      return { events: auditData, count };
     },
     enabled: !!orderId,
   });
