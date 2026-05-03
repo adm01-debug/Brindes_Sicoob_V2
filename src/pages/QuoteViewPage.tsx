@@ -25,6 +25,7 @@ import { QuoteMobileActionBar } from "@/components/quotes/QuoteMobileActionBar";
 import { QuoteCommentsSection } from "@/components/quotes/QuoteCommentsSection";
 import { QuoteApprovalLinkCard } from "@/components/quotes/QuoteApprovalLinkCard";
 import { QuoteVersionHistory } from "@/components/quotes/QuoteVersionHistory";
+import { QuoteApprovalNotes } from "@/components/quotes/QuoteApprovalNotes";
 import { PresentationMode } from "@/components/presentation/PresentationMode";
 import { QuoteClientInfo } from "@/components/quotes/QuoteClientInfo";
 import { QuoteItemsTable } from "@/components/quotes/QuoteItemsTable";
