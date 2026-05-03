@@ -187,18 +187,33 @@ export default function SicoobReportsPage() {
                 />
               </PopoverContent>
             </Popover>
-            <Button 
-              className="bg-sicoob-green hover:bg-sicoob-green-dark" 
-              onClick={handleExport}
-              disabled={isExporting}
-            >
-              {isExporting ? (
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-              ) : (
-                <Download className="h-4 w-4 mr-2" />
-              )}
-              Exportar
-            </Button>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button 
+                  className="bg-sicoob-green hover:bg-sicoob-green-dark" 
+                  disabled={isExporting !== null}
+                >
+                  {isExporting ? (
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  ) : (
+                    <Download className="h-4 w-4 mr-2" />
+                  )}
+                  Exportar
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent align="end" className="w-48 p-2">
+                <div className="grid gap-1">
+                  <Button variant="ghost" className="justify-start font-normal h-8" onClick={handleExportPDF}>
+                    <FileText className="h-3 w-3 mr-2" />
+                    PDF
+                  </Button>
+                  <Button variant="ghost" className="justify-start font-normal h-8" onClick={handleExportExcel}>
+                    <FileSpreadsheet className="h-3 w-3 mr-2" />
+                    Excel (XLSX)
+                  </Button>
+                </div>
+              </PopoverContent>
+            </Popover>
           </div>
         </div>
 
