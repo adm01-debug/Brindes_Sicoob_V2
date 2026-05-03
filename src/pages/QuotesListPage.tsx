@@ -73,6 +73,7 @@ const sortOptions: { value: SortOption; label: string }[] = [
 
 export default function QuotesListPage() {
   const navigate = useNavigate();
+  const { isGestorCompras, isDev } = useAuth();
   const { quotes, isLoading, error, deleteQuote, duplicateQuote, updateQuoteStatus } = useQuotes();
 
   const [searchTerm, setSearchTerm] = useState("");
