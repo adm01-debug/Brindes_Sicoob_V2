@@ -190,7 +190,7 @@ export const useOrderPilotApprovals = (orderId?: string) => {
   return { approvals, isLoading, updateApprovalStatus };
 };
 
-export const useOrderAudit = (orderId?: string, filters?: { event_type?: string, startDate?: string, endDate?: string }) => {
+export const useOrderAudit = (orderId?: string, filters?: { event_type?: string, startDate?: string, endDate?: string, search?: string }) => {
   const [page, setPage] = useState(1);
   const pageSize = 10;
 
@@ -201,8 +201,7 @@ export const useOrderAudit = (orderId?: string, filters?: { event_type?: string,
         .from("order_audit_events")
         .select("*", { count: 'exact' })
         .eq("order_id", orderId!)
-        .order("created_at", { ascending: false })
-        .range((page - 1) * pageSize, page * pageSize - 1);
+        .order("created_at", { ascending: false });
 
       if (filters?.event_type && filters.event_type !== 'all') {
         query = query.eq("event_type", filters.event_type);
@@ -213,8 +212,11 @@ export const useOrderAudit = (orderId?: string, filters?: { event_type?: string,
       if (filters?.endDate) {
         query = query.lte("created_at", filters.endDate);
       }
+      if (filters?.search) {
+        query = query.ilike("description", `%${filters.search}%`);
+      }
 
-      const { data, error, count } = await query;
+      const { data, error, count } = await query.range((page - 1) * pageSize, page * pageSize - 1);
       if (error) throw error;
       return { events: data, count };
     },
