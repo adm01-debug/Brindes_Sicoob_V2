@@ -569,21 +569,22 @@ Deno.serve(async (req) => {
         );
     }
 
-    return new Response(
+    return log.respond(new Response(
       JSON.stringify(result),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    ));
 
   } catch (error: unknown) {
     if (error instanceof CircuitOpenError) {
-      return circuitOpenResponse(error, corsHeaders);
+      log.warn('circuit_breaker_open', { service: 'bitrix' });
+      return log.respond(circuitOpenResponse(error, corsHeaders));
     }
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    console.error('Bitrix24 sync error:', errorMessage);
-    return new Response(
+    log.error('request_error', { error: errorMessage });
+    return log.respond(new Response(
       JSON.stringify({ error: errorMessage }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    ));
   }
 });
 
