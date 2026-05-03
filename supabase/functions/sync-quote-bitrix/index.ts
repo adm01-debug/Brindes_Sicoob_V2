@@ -275,14 +275,13 @@ Deno.serve(async (req) => {
       payload.pdf = { filename, url: pdfUrl };
     }
 
-    // ── 7. Log (no sensitive content) ───────────────────────────────────────
-    console.log("Sending to n8n:", JSON.stringify({
-      ...payload,
-      pdf: payload.pdf ? { filename: (payload.pdf as any).filename, url: (payload.pdf as any).url } : undefined,
+    // ── 7. Log payload overview ──────────────────────────────────────────
+    log.info("payload_ready", {
+      title: payload.title,
       products_count: products.length,
-      seller_email_input: sellerEmail,
-      bitrix_company_id_input: bitrixCompanyId,
-    }));
+      has_pdf: !!payload.pdf,
+      company_id: companyId
+    });
 
     // ── 8. Call n8n webhook ──────────────────────────────────────────────────
     const response = await fetchWithBreaker("bitrix", webhookUrl, {
