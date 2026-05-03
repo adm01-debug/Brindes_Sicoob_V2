@@ -295,31 +295,32 @@ Deno.serve(async (req) => {
     if (contentType.includes("application/json")) {
       result = await response.json();
     } else {
-      // n8n sometimes returns plain text on error
       const text = await response.text();
       result = { raw: text };
     }
 
-    console.log("n8n response status:", response.status, "body:", JSON.stringify(result));
+    log.info("n8n_response", { status: response.status });
 
     if (!response.ok) {
       const errMsg = (result as any)?.error || (result as any)?.raw || `HTTP ${response.status}`;
+      log.error("n8n_failed", { error: errMsg, status: response.status });
       throw new Error(errMsg);
     }
 
-    return new Response(JSON.stringify({ success: true, result }), {
+    return log.respond(new Response(JSON.stringify({ success: true, result }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    }));
 
   } catch (error: unknown) {
     if (error instanceof CircuitOpenError) {
-      return circuitOpenResponse(error, corsHeaders);
+      log.warn("circuit_breaker_open");
+      return log.respond(circuitOpenResponse(error, corsHeaders));
     }
     const message = error instanceof Error ? error.message : String(error);
-    console.error("sync-quote-bitrix error:", message);
-    return new Response(
+    log.error("request_failed", { err: error });
+    return log.respond(new Response(
       JSON.stringify({ success: false, error: message }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+    ));
   }
 });
