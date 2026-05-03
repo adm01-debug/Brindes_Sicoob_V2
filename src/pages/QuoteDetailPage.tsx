@@ -59,6 +59,8 @@ export default function QuoteDetailPage() {
           </div>
         </header>
 
+        <QuoteSingularApprovalActions quoteId={quote.id} status={quote.status} onActionComplete={() => refetch()} />
+
         {isConverted && (
           <div className="flex items-start gap-3 rounded-lg border border-success/30 bg-success/5 px-4 py-3">
             <Lock className="h-5 w-5 text-success shrink-0 mt-0.5" />
