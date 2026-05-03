@@ -113,6 +113,18 @@ class DiagnosticsManager {
         return response;
       } catch (error) {
         this.log('error', 'fetch', `Failed ${url}`, error);
+        
+        // Signal critical 500 error if it's a critical route or status
+        if (url.includes('/api/') || url.includes('/functions/')) {
+          window.dispatchEvent(new CustomEvent('app-critical-error', { 
+            detail: { 
+              message: `Erro de rede ou servidor ao acessar ${url.split('/').pop()}`,
+              error,
+              type: 'server'
+            } 
+          }));
+        }
+        
         throw error;
       }
     };
