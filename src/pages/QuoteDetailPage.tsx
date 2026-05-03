@@ -13,6 +13,8 @@ import { QuoteCommentsThread } from "@/components/quotes/QuoteCommentsThread";
 import { QuoteVersionsList } from "@/components/quotes/QuoteVersionsList";
 import { QuoteOrderBadge } from "@/components/quotes/QuoteOrderBadge";
 import { QuoteConvertToOrder } from "@/components/quotes/QuoteConvertToOrder";
+import { QuoteSingularApprovalActions } from "@/components/quotes/QuoteSingularApprovalActions";
+import { QUOTE_STATUS_CONFIG } from "@/lib/quote-status-config";
 import { PageSEO } from "@/components/seo/PageSEO";
 import { Badge } from "@/components/ui/badge";
 import { Lock } from "lucide-react";
@@ -53,10 +55,14 @@ export default function QuoteDetailPage() {
             </p>
           </div>
           <div className="flex items-center gap-2">
-            <Badge>{quote.status}</Badge>
+            <Badge variant={QUOTE_STATUS_CONFIG[quote.status]?.badgeVariant || "outline"} className={QUOTE_STATUS_CONFIG[quote.status]?.badgeClassName}>
+              {QUOTE_STATUS_CONFIG[quote.status]?.label || quote.status}
+            </Badge>
             <QuoteConvertToOrder quoteId={quote.id} status={quote.status} onConverted={() => refetch()} />
           </div>
         </header>
+
+        <QuoteSingularApprovalActions quoteId={quote.id} status={quote.status} onActionComplete={() => refetch()} />
 
         {isConverted && (
           <div className="flex items-start gap-3 rounded-lg border border-success/30 bg-success/5 px-4 py-3">

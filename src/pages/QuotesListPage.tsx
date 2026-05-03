@@ -46,6 +46,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { useQuotes } from "@/hooks/useQuotes";
+import { useAuth } from "@/contexts/AuthContext";
 import Fuse from "fuse.js";
 import { format } from "date-fns";
 // DynamicBreadcrumbs removido: o MainLayout já renderiza PersistentBreadcrumbs sticky.
@@ -72,6 +73,7 @@ const sortOptions: { value: SortOption; label: string }[] = [
 
 export default function QuotesListPage() {
   const navigate = useNavigate();
+  const { isGestorCompras, isDev } = useAuth();
   const { quotes, isLoading, error, deleteQuote, duplicateQuote, updateQuoteStatus } = useQuotes();
 
   const [searchTerm, setSearchTerm] = useState("");
@@ -84,13 +86,14 @@ export default function QuotesListPage() {
   // ── KPIs ──
   const kpis = useMemo(() => {
     const total = quotes.length;
-    const approved = quotes.filter(q => q.status === "approved").length;
-    const pending = quotes.filter(q => ["pending", "sent"].includes(q.status)).length;
+    const approved = quotes.filter(q => q.status === "approved" || q.status === "approved_singular").length;
+    const pending = quotes.filter(q => ["pending", "sent", "pending_singular_approval"].includes(q.status)).length;
+    const pendingSingular = quotes.filter(q => q.status === "pending_singular_approval").length;
     const totalValue = quotes.reduce((sum, q) => sum + (q.total || 0), 0);
-    const approvedValue = quotes.filter(q => q.status === "approved").reduce((sum, q) => sum + (q.total || 0), 0);
+    const approvedValue = quotes.filter(q => q.status === "approved" || q.status === "approved_singular").reduce((sum, q) => sum + (q.total || 0), 0);
     const conversionRate = total > 0 ? Math.round((approved / total) * 100) : 0;
 
-    return { total, approved, pending, totalValue, approvedValue, conversionRate };
+    return { total, approved, pending, pendingSingular, totalValue, approvedValue, conversionRate };
   }, [quotes]);
 
   // ── Funil + ciclo médio ──
@@ -268,14 +271,16 @@ export default function QuotesListPage() {
                 </div>
               </CardContent>
             </Card>
-            <Card className="border-border/50">
+            <Card className={cn("border-border/50", (isGestorCompras || isDev) && kpis.pendingSingular > 0 && "border-emerald-500/50 bg-emerald-50/50")}>
               <CardContent className="p-3 flex items-center gap-3">
-                <div className="h-9 w-9 rounded-lg bg-warning/15 flex items-center justify-center shrink-0">
-                  <Clock className="h-4 w-4 text-warning" />
+                <div className={cn("h-9 w-9 rounded-lg flex items-center justify-center shrink-0", (isGestorCompras || isDev) && kpis.pendingSingular > 0 ? "bg-emerald-500/20" : "bg-warning/15")}>
+                  <Clock className={cn("h-4 w-4", (isGestorCompras || isDev) && kpis.pendingSingular > 0 ? "text-emerald-600" : "text-warning")} />
                 </div>
                 <div className="min-w-0">
-                  <p className="text-xs text-muted-foreground">Pendentes</p>
-                  <p className="text-sm font-bold text-foreground">{kpis.pending}</p>
+                  <p className="text-xs text-muted-foreground">{(isGestorCompras || isDev) ? "Aguardando Vc" : "Pendentes"}</p>
+                  <p className={cn("text-sm font-bold", (isGestorCompras || isDev) && kpis.pendingSingular > 0 ? "text-emerald-700" : "text-foreground")}>
+                    {(isGestorCompras || isDev) ? kpis.pendingSingular : kpis.pending}
+                  </p>
                 </div>
               </CardContent>
             </Card>

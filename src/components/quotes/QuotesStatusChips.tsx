@@ -13,7 +13,7 @@ interface QuotesStatusChipsProps {
   onChange: (status: string) => void;
 }
 
-const ORDER = ["all", "draft", "pending", "sent", "approved", "rejected", "expired"] as const;
+const ORDER = ["all", "draft", "pending_singular_approval", "pending", "sent", "approved", "rejected", "expired"] as const;
 
 export function QuotesStatusChips({ quotes, value, onChange }: QuotesStatusChipsProps) {
   const counts = useMemo(() => {

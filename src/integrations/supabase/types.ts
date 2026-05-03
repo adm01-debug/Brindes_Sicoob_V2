@@ -4607,6 +4607,8 @@ export type Database = {
       }
       quotes: {
         Row: {
+          approved_at: string | null
+          approved_by: string | null
           bitrix_deal_id: string | null
           bitrix_quote_id: string | null
           client_cnpj: string | null
@@ -4628,15 +4630,18 @@ export type Database = {
           negotiation_markup_percent: number
           notes: string | null
           organization_id: string | null
+          pa_id: string | null
           parent_quote_id: string | null
           payment_terms: string | null
           quote_number: string
           real_discount_percent: number | null
           real_subtotal: number | null
+          rejection_notes: string | null
           seller_id: string
           sent_at: string | null
           shipping_cost: number | null
           shipping_type: string | null
+          singular_id: string | null
           status: string
           subtotal: number
           synced_at: string | null
@@ -4647,6 +4652,8 @@ export type Database = {
           version: number
         }
         Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
           bitrix_deal_id?: string | null
           bitrix_quote_id?: string | null
           client_cnpj?: string | null
@@ -4668,15 +4675,18 @@ export type Database = {
           negotiation_markup_percent?: number
           notes?: string | null
           organization_id?: string | null
+          pa_id?: string | null
           parent_quote_id?: string | null
           payment_terms?: string | null
           quote_number?: string
           real_discount_percent?: number | null
           real_subtotal?: number | null
+          rejection_notes?: string | null
           seller_id: string
           sent_at?: string | null
           shipping_cost?: number | null
           shipping_type?: string | null
+          singular_id?: string | null
           status?: string
           subtotal?: number
           synced_at?: string | null
@@ -4687,6 +4697,8 @@ export type Database = {
           version?: number
         }
         Update: {
+          approved_at?: string | null
+          approved_by?: string | null
           bitrix_deal_id?: string | null
           bitrix_quote_id?: string | null
           client_cnpj?: string | null
@@ -4708,15 +4720,18 @@ export type Database = {
           negotiation_markup_percent?: number
           notes?: string | null
           organization_id?: string | null
+          pa_id?: string | null
           parent_quote_id?: string | null
           payment_terms?: string | null
           quote_number?: string
           real_discount_percent?: number | null
           real_subtotal?: number | null
+          rejection_notes?: string | null
           seller_id?: string
           sent_at?: string | null
           shipping_cost?: number | null
           shipping_type?: string | null
+          singular_id?: string | null
           status?: string
           subtotal?: number
           synced_at?: string | null
@@ -4735,10 +4750,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "quotes_pa_id_fkey"
+            columns: ["pa_id"]
+            isOneToOne: false
+            referencedRelation: "postos_atendimento"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "quotes_parent_quote_id_fkey"
             columns: ["parent_quote_id"]
             isOneToOne: false
             referencedRelation: "quotes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quotes_singular_id_fkey"
+            columns: ["singular_id"]
+            isOneToOne: false
+            referencedRelation: "cooperativas"
             referencedColumns: ["id"]
           },
         ]
@@ -6536,6 +6565,10 @@ export type Database = {
         Returns: boolean
       }
       is_seller_only: { Args: { _user_id?: string }; Returns: boolean }
+      is_singular_buyer_for_quote: {
+        Args: { quote_id: string; user_id: string }
+        Returns: boolean
+      }
       is_supervisor_or_above: { Args: { _user_id?: string }; Returns: boolean }
       is_vendedor_role: { Args: { _user_id?: string }; Returns: boolean }
       log_access_denied: {
@@ -6730,6 +6763,8 @@ export type Database = {
         | "dev"
         | "gestor_compras"
         | "gerente_pa"
+        | "comprador_pac"
+        | "comprador_singular"
       org_role: "owner" | "admin" | "member"
       role_migration_item_status:
         | "pending"
@@ -6888,6 +6923,8 @@ export const Constants = {
         "dev",
         "gestor_compras",
         "gerente_pa",
+        "comprador_pac",
+        "comprador_singular",
       ],
       org_role: ["owner", "admin", "member"],
       role_migration_item_status: [
