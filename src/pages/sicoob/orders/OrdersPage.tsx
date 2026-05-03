@@ -135,12 +135,12 @@ export default function OrdersPage() {
       
       const tableData = filteredOrders.map(o => [
         o.id,
-        o.pa,
-        o.singular,
+        (o as any).pa?.nome || o.pa_id,
+        (o as any).cooperativa?.nome || o.cooperative_id,
         o.status,
-        `R$ ${o.total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`,
-        o.items,
-        format(parseISO(o.date), "dd/MM/yyyy")
+        `R$ ${o.total_amount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`,
+        "N/A",
+        format(parseISO(o.created_at), "dd/MM/yyyy")
       ]);
 
       autoTable(doc, {
