@@ -17,21 +17,28 @@ import { format } from "date-fns";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { BatchExportDialog } from "@/components/orders/BatchExportDialog";
 
+import { OrderFilters, OrderFilterValues } from "@/components/orders/OrderFilters";
+
 export function OrdersPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [searchQuery, setSearchQuery] = useState("");
-  const scope = useSalesScope();
-  const { data: orders = [], isLoading } = useOrdersList(user?.id, scope);
-
-  const filtered = orders.filter((o) => {
-    const q = searchQuery.toLowerCase();
-    return (
-      o.order_number.toLowerCase().includes(q) ||
-      (o.notes ?? "").toLowerCase().includes(q) ||
-      (o.client_name ?? "").toLowerCase().includes(q)
-    );
+  const [filterValues, setFilterValues] = useState<OrderFilterValues>({
+    search: "",
+    status: "all",
+    clientCompany: ""
   });
+  
+  const scope = useSalesScope();
+  
+  const { data: orders = [], isLoading } = useOrdersList(user?.id, scope, {
+    search: filterValues.search,
+    status: filterValues.status,
+    clientCompany: filterValues.clientCompany,
+    startDate: filterValues.dateRange?.from?.toISOString(),
+    endDate: filterValues.dateRange?.to?.toISOString()
+  });
+
+  const filtered = orders; // Já filtrado pelo backend via hook useOrdersList
 
   return (
     <MainLayout>
@@ -47,18 +54,9 @@ export function OrdersPage() {
           <ScopeBadge />
         </div>
 
-        <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
-          <div className="relative w-full max-w-md">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Buscar por número, cliente ou nota..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
-            />
-          </div>
-          
-          <div className="flex items-center gap-2 w-full sm:w-auto">
+        <OrderFilters onFiltersChange={setFilterValues} />
+        
+        <div className="flex items-center justify-end mb-4">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" size="sm" className="gap-2">
@@ -90,7 +88,7 @@ export function OrdersPage() {
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-            <BatchExportDialog entityType="orders" filters={{ search: searchQuery }} />
+            <BatchExportDialog entityType="orders" filters={filterValues} />
           </div>
         </div>
 
@@ -103,10 +101,10 @@ export function OrdersPage() {
             <CardContent className="flex flex-col items-center justify-center py-16 text-center">
               <Package className="h-12 w-12 text-muted-foreground/50 mb-4" />
               <h3 className="font-display text-lg font-medium text-foreground mb-1">
-                {searchQuery ? "Nenhum pedido encontrado" : "Nenhum pedido ainda"}
+                {filterValues.search ? "Nenhum pedido encontrado" : "Nenhum pedido ainda"}
               </h3>
               <p className="text-muted-foreground text-sm">
-                {searchQuery ? "Tente buscar com outros termos" : "Seus pedidos aparecerão aqui quando criados"}
+                {filterValues.search ? "Tente buscar com outros termos" : "Seus pedidos aparecerão aqui quando criados"}
               </p>
             </CardContent>
           </Card>

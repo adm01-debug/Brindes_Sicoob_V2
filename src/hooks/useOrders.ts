@@ -35,24 +35,59 @@ export interface OrderRow {
 }
 
 /**
- * Lista pedidos respeitando RLS. Quando `scope === "self"`, aplica filtro
- * adicional por seller_id (defesa em profundidade); para "team"/"all" deixa
- * o RLS decidir o que aparece.
+ * Filtros para listagem de pedidos
  */
-export function useOrdersList(sellerId?: string, scope: "self" | "team" | "all" = "self") {
+export interface OrderFilters {
+  search?: string;
+  status?: string;
+  startDate?: string;
+  endDate?: string;
+  clientCompany?: string;
+}
+
+/**
+ * Lista pedidos respeitando RLS e filtros avançados.
+ */
+export function useOrdersList(
+  sellerId?: string, 
+  scope: "self" | "team" | "all" = "self",
+  filters?: OrderFilters
+) {
   return useQuery({
-    queryKey: ["orders", "list", sellerId, scope],
+    queryKey: ["orders", "list", sellerId, scope, filters],
     enabled: !!sellerId,
     queryFn: async (): Promise<OrderRow[]> => {
-      // rls-allow: applySellerScope chamado dinamicamente conforme escopo
       let q = supabase.from("orders").select("*").order("created_at", { ascending: false });
+      
       if (scope === "self" && sellerId) q = q.eq("seller_id", sellerId);
+      
+      if (filters?.status && filters.status !== "all") {
+        q = q.eq("status", filters.status);
+      }
+      
+      if (filters?.clientCompany) {
+        q = q.ilike("client_company", `%${filters.clientCompany}%`);
+      }
+      
+      if (filters?.startDate) {
+        q = q.gte("created_at", filters.startDate);
+      }
+      
+      if (filters?.endDate) {
+        q = q.lte("created_at", filters.endDate);
+      }
+      
+      if (filters?.search) {
+        // Busca multicampo (OR)
+        q = q.or(`order_number.ilike.%${filters.search}%,client_name.ilike.%${filters.search}%,client_company.ilike.%${filters.search}%`);
+      }
+
       const { data, error } = await q;
       if (error) {
         await logRlsDenial(error, {
           table: "orders", op: "SELECT",
           endpoint: "useOrdersList",
-          querySummary: `scope=${scope} sellerId=${sellerId ?? "?"}`,
+          querySummary: `scope=${scope} filters=${JSON.stringify(filters)}`,
           policyHint: "orders_select_scope",
         });
         throw error;

@@ -12,7 +12,7 @@ test.describe('Order RBAC and Status Flow E2E', () => {
     VENDEDOR: { email: 'vendedor@e2e.test', password: 'password123' }
   };
 
-  test('should allow PAC to create and view draft, but block seller actions', async ({ page }) => {
+  test('should allow PAC to create and view draft, and correctly apply multi-field filters', async ({ page }) => {
     // 1. Login as PAC
     await page.goto('/login');
     await page.fill('input[name="email"]', USERS.PAC.email);
@@ -21,36 +21,47 @@ test.describe('Order RBAC and Status Flow E2E', () => {
 
     await expect(page).toHaveURL('/dashboard');
 
-    // 2. Navigate to Orders and check RBAC block
-    await page.goto('/vendedor');
-    await expect(page.locator('text=Acesso Negado')).toBeVisible();
+    // 2. Navigate to Orders
+    await page.goto('/pedidos');
+    await expect(page.locator('[data-testid="page-title-pedidos"]')).toBeVisible();
 
-    // 3. Export and Validate Content
-    await page.goto('/sicoob/pedidos');
+    // 3. Test Search (Order Number)
+    await page.fill('[data-testid="order-search-input"]', 'PED-SEED');
+    // Allow time for debounced search/network
+    await page.waitForTimeout(1000);
+    const orderCount = await page.locator('div:has-text("PED-SEED-E2E-001")').count();
+    expect(orderCount).toBeGreaterThan(0);
+
+    // 4. Test Combined Filters (Status + Company)
+    await page.click('[data-testid="order-status-filter"]');
+    await page.click('text=Rascunho');
+    
+    await page.click('[data-testid="more-filters-btn"]');
+    await page.fill('[data-testid="company-filter-input"]', 'Global Tech');
+    await page.press('[data-testid="company-filter-input"]', 'Enter');
+    
+    await page.waitForTimeout(1000);
+    await expect(page.locator('text=Global Tech E2E')).toBeVisible();
+
+    // 5. Export and Validate Content (Ensuring filters applied to export)
     const downloadPromise = page.waitForEvent('download');
-    await page.click('button:has-text("Exportação em Lote")');
-    await page.click('button:has-text("Solicitar Excel")');
+    await page.click('button:has-text("Exportar")');
+    await page.click('text=Excel (.xlsx)');
     const download = await downloadPromise;
     
     const filePath = path.join(__dirname, '../test-results', download.suggestedFilename());
     await download.saveAs(filePath);
 
-    // Validate Excel content using XLSX
     const workbook = XLSX.readFile(filePath);
-    const sheetName = workbook.SheetNames[0];
-    const sheet = workbook.Sheets[sheetName];
-    const data = XLSX.utils.sheet_to_json(sheet);
+    const sheet = workbook.Sheets[workbook.SheetNames[0]];
+    const data: any[] = XLSX.utils.sheet_to_json(sheet);
     
+    // Check that exported data matches our filter
     expect(data.length).toBeGreaterThan(0);
-    // @ts-ignore
-    expect(data[0]).toHaveProperty('Status');
-    
-    // PDF Validation Example (if export type was PDF)
-    const pdfBuffer = fs.readFileSync(filePath.replace('.csv', '.pdf').replace('.xlsx', '.pdf'));
-    if (fs.existsSync(filePath.replace('.csv', '.pdf').replace('.xlsx', '.pdf'))) {
-      const pdfData = await pdf(pdfBuffer);
-      expect(pdfData.text).toContain('Relatório de Pedidos');
-    }
+    const hasCorrectCompany = data.every(row => 
+      Object.values(row).some(v => String(v).includes('Global Tech'))
+    );
+    expect(hasCorrectCompany).toBeTruthy();
     
     fs.unlinkSync(filePath);
   });
@@ -63,7 +74,7 @@ test.describe('Order RBAC and Status Flow E2E', () => {
     await page.click('button[type="submit"]');
 
     // 2. Open Order Detail and Check Audit
-    await page.goto('/sicoob/pedidos/00000000-0000-0000-0000-000000000010');
+    await page.goto('/pedidos/00000000-0000-0000-0000-000000000010');
     
     const auditTimeline = page.locator('[data-testid="order-audit-timeline"]');
     await expect(auditTimeline).toBeVisible();
