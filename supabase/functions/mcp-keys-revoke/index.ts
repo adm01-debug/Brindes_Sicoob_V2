@@ -184,8 +184,9 @@ Deno.serve(async (req) => {
       return log.respond(jsonResponse({ error: "internal_error", detail: fetchErr.message }, 500, requestId));
     }
     if (!existing) {
+      log.warn("key_not_found", { key_id });
       await auditFailure("denied", "mcp_key.revoke_denied", { reason: "not_found" }, key_id);
-      return jsonResponse({ error: "not_found" }, 404, requestId);
+      return log.respond(jsonResponse({ error: "not_found" }, 404, requestId));
     }
     if (existing.revoked_at) {
       await auditFailure("denied", "mcp_key.revoke_denied", { reason: "already_revoked" }, key_id);
