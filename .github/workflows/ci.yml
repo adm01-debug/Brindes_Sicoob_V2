@@ -67,6 +67,9 @@ jobs:
       - name: Route ref usage checker (guards + pages)
         run: node scripts/check-route-ref-usage.mjs
 
+      - name: Search hooks import checker (@/hooks/search/ alias)
+        run: node scripts/check-search-imports.mjs
+
       # ESLint roda em modo informativo (não bloqueante) — o gate real
       # é o baseline (.eslint-baseline.json), que falha apenas para erros NOVOS.
       # Veja scripts/check-eslint-baseline.mjs e scripts/eslint-baseline-generate.mjs.
