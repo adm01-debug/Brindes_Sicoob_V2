@@ -6924,6 +6924,7 @@ export type Database = {
       }
       mcp_audit_actor: { Args: { _fallback: string }; Returns: string }
       notify_hardening_regression: { Args: never; Returns: Json }
+      process_export_queue_v3: { Args: never; Returns: undefined }
       record_dev_route_telemetry: {
         Args: {
           _blocked_path: string
