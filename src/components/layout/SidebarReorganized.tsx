@@ -43,7 +43,6 @@ import {
   Bell,
   ClipboardCheck,
   Building,
-  Users,
   Megaphone,
   Mail,
   Wallet,
