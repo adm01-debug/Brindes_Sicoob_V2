@@ -148,12 +148,13 @@ Deno.serve(async (req) => {
     // Revogação tem efeito imediato em todas as integrações; exigimos confirmação por
     // senha + OTP recente (validados em consume_step_up_token, que re-checa is_dev no consumo).
     if (!step_up_token) {
+      log.warn("step_up_token_missing", { key_id });
       await auditFailure("denied", "mcp_key.revoke_denied", { reason: "step_up_required" }, key_id);
-      return jsonResponse(
+      return log.respond(jsonResponse(
         { error: "step_up_required", message: "Confirme sua identidade (senha + código por e-mail) antes de revogar uma chave MCP." },
         403,
         requestId,
-      );
+      ));
     }
     const { data: stepUpOk, error: stepUpErr } = await castRpcResult<RpcEnvelope<boolean>>(
       userClient.rpc("consume_step_up_token", {
