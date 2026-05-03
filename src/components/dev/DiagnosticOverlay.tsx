@@ -162,6 +162,6 @@ export const DiagnosticOverlay = forwardRef<HTMLDivElement>((_props, ref) => {
       </AnimatePresence>
     </div>
   );
-};
+});
 
 DiagnosticOverlay.displayName = 'DiagnosticOverlay';
