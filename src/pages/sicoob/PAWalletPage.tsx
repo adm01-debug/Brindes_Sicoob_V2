@@ -58,7 +58,7 @@ export default function PAWalletPage() {
     queryFn: async () => {
       if (!profile?.pa_id) return [];
       const { data, error } = await supabase
-        .from("budget_increase_requests")
+        .from("limit_increase_requests")
         .select("*")
         .eq("pa_id", profile.pa_id)
         .order("created_at", { ascending: false });
@@ -71,9 +71,9 @@ export default function PAWalletPage() {
   const createRequest = useMutation({
     mutationFn: async () => {
       if (!profile?.pa_id) throw new Error("PA não identificado");
-      const { error } = await supabase.from("budget_increase_requests").insert({
+      const { error } = await supabase.from("limit_increase_requests").insert({
         pa_id: profile.pa_id,
-        requested_amount: Number(requestedAmount),
+        requested_limit: Number(requestedAmount),
         reason: requestReason,
         status: 'pending'
       });
@@ -260,7 +260,7 @@ export default function PAWalletPage() {
                              <Clock className="h-5 w-5" />}
                           </div>
                           <div>
-                            <div className="font-bold text-sm">Aumento de {formatCurrency(req.requested_amount)}</div>
+                            <div className="font-bold text-sm">Aumento de {formatCurrency(req.requested_limit || req.requested_amount)}</div>
                             <div className="text-xs text-muted-foreground truncate max-w-[300px]">{req.reason}</div>
                             <div className="text-[10px] text-muted-foreground mt-1 uppercase font-medium">
                               {new Date(req.created_at).toLocaleDateString('pt-BR')} • {new Date(req.created_at).toLocaleTimeString('pt-BR')}

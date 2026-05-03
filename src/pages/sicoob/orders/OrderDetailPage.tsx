@@ -258,6 +258,8 @@ export default function OrderDetailPage() {
   };
 
   const handleStatusUpdate = async (newStatus: any) => {
+    if (!confirm(`Deseja realmente alterar o status do pedido para "${newStatus}"?`)) return;
+    
     updateOrderStatusMutation.mutate({ 
       orderId: id!, 
       status: newStatus, 

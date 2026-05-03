@@ -2252,6 +2252,56 @@ export type Database = {
           },
         ]
       }
+      limit_increase_requests: {
+        Row: {
+          approved_by: string | null
+          created_at: string | null
+          current_limit: number | null
+          id: string
+          pa_id: string | null
+          reason: string | null
+          rejection_reason: string | null
+          requested_by: string | null
+          requested_limit: number | null
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          approved_by?: string | null
+          created_at?: string | null
+          current_limit?: number | null
+          id?: string
+          pa_id?: string | null
+          reason?: string | null
+          rejection_reason?: string | null
+          requested_by?: string | null
+          requested_limit?: number | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          approved_by?: string | null
+          created_at?: string | null
+          current_limit?: number | null
+          id?: string
+          pa_id?: string | null
+          reason?: string | null
+          rejection_reason?: string | null
+          requested_by?: string | null
+          requested_limit?: number | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "limit_increase_requests_pa_id_fkey"
+            columns: ["pa_id"]
+            isOneToOne: false
+            referencedRelation: "postos_atendimento"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       login_attempts: {
         Row: {
           created_at: string

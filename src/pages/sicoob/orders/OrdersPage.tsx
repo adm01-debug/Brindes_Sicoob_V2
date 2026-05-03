@@ -15,6 +15,8 @@ import {
   FileDown,
   Loader2,
   FileSpreadsheet,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { toast } from "sonner";
 import { jsPDF } from "jspdf";
@@ -66,19 +68,34 @@ export default function OrdersPage() {
   const [paFilter, setPaFilter] = useState<string>(searchParams.get("pa") || "all");
   const [singularFilter, setSingularFilter] = useState<string>(searchParams.get("singular") || "all");
 
-  const { data: orders = [], isLoading: isLoadingOrders } = useQuery({
-    queryKey: ["sicoob_orders_list", searchTerm, statusFilter, paFilter, singularFilter, searchParams.get("from"), searchParams.get("to")],
-    queryFn: () => sicoobOrderService.listOrders({
-      search: searchTerm,
-      status: statusFilter,
-      pa_id: paFilter,
-      cooperative_id: singularFilter,
-      from: searchParams.get("from") || undefined,
-      to: searchParams.get("to") || undefined
-    })
+  const [page, setPage] = useState(1);
+  const pageSize = 9;
+
+  const { data: ordersData, isLoading: isLoadingOrders } = useQuery({
+    queryKey: ["sicoob_orders_list", searchTerm, statusFilter, paFilter, singularFilter, searchParams.get("from"), searchParams.get("to"), page],
+    queryFn: async () => {
+      const results = await sicoobOrderService.listOrders({
+        search: searchTerm,
+        status: statusFilter,
+        pa_id: paFilter,
+        cooperative_id: singularFilter,
+        from: searchParams.get("from") || undefined,
+        to: searchParams.get("to") || undefined
+      });
+      
+      // Implement client-side pagination since listOrders returns all
+      const start = (page - 1) * pageSize;
+      const end = start + pageSize;
+      return {
+        orders: results.slice(start, end),
+        total: results.length
+      };
+    }
   });
 
-  const filteredOrders = orders;
+  const filteredOrders = ordersData?.orders || [];
+  const totalOrders = ordersData?.total || 0;
+  const totalPages = Math.ceil(totalOrders / pageSize);
 
   const exportToCSV = async () => {
     setIsExporting('csv');
@@ -198,7 +215,7 @@ export default function OrdersPage() {
 
   const [dateRange, setDateRange] = useState<DateRange | undefined>(initialDateRange);
 
-  // Sync state to URL
+  // Sync state to URL and reset page on filter change
   useEffect(() => {
     const params = new URLSearchParams();
     if (searchTerm) params.set("search", searchTerm);
@@ -209,6 +226,7 @@ export default function OrdersPage() {
     if (dateRange?.to) params.set("to", dateRange.to.toISOString());
     
     setSearchParams(params, { replace: true });
+    setPage(1); // Reset page when filters change
   }, [searchTerm, statusFilter, paFilter, singularFilter, dateRange]);
 
 
@@ -477,7 +495,7 @@ export default function OrdersPage() {
         )}
 
         <div className="text-sm text-muted-foreground">
-          {filteredOrders.length} {filteredOrders.length === 1 ? "pedido encontrado" : "pedidos encontrados"}
+          {totalOrders} {totalOrders === 1 ? "pedido encontrado" : "pedidos encontrados"}
         </div>
 
         {isLoadingOrders ? (
@@ -514,6 +532,32 @@ export default function OrdersPage() {
                 </CardFooter>
               </Card>
             ))}
+          </div>
+        )}
+
+        {totalPages > 1 && (
+          <div className="flex items-center justify-center gap-2 mt-8">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setPage(p => Math.max(1, p - 1))}
+              disabled={page === 1}
+            >
+              <ChevronLeft className="h-4 w-4 mr-2" />
+              Anterior
+            </Button>
+            <span className="text-sm font-medium">
+              Página {page} de {totalPages}
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+              disabled={page === totalPages}
+            >
+              Próxima
+              <ChevronRight className="h-4 w-4 ml-2" />
+            </Button>
           </div>
         )}
       </div>

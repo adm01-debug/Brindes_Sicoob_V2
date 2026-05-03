@@ -1,7 +1,9 @@
 import React, { useState } from "react";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { FileText, FileSpreadsheet, FileBarChart, ArrowRight, Download, CalendarIcon, Wallet, Filter, Search } from "lucide-react";
+import { FileText, FileSpreadsheet, FileBarChart, ArrowRight, Download, CalendarIcon, Wallet, Filter, Search, Loader2 } from "lucide-react";
+import { jsPDF } from "jspdf";
+import autoTable from "jspdf-autotable";
 import { Button } from "@/components/ui/button";
 import { formatCurrency } from "@/utils/formatters";
 import { useQuery } from "@tanstack/react-query";
@@ -26,6 +28,7 @@ const REPORTS = [
 
 export default function SicoobReportsPage() {
   const { profile } = useAuth();
+  const [isExporting, setIsExporting] = useState<boolean>(false);
   const [date, setDate] = useState<DateRange | undefined>({
     from: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
     to: new Date()
@@ -71,6 +74,52 @@ export default function SicoobReportsPage() {
 
   const totalSpent = ordersInRange?.reduce((acc, order) => acc + (order.total_amount || 0), 0) || 0;
 
+  const handleExport = async () => {
+    if (!ordersInRange || ordersInRange.length === 0) {
+      toast.error("Não há dados para exportar no período selecionado.");
+      return;
+    }
+
+    setIsExporting(true);
+    try {
+      const doc = new jsPDF();
+      doc.setFontSize(18);
+      doc.setTextColor(0, 54, 65); // Sicoob Green Dark
+      doc.text("Extrato de Verba SICOOB", 14, 20);
+      
+      doc.setFontSize(10);
+      doc.setTextColor(100, 100, 100);
+      const periodLabel = date?.from 
+        ? `${format(date.from, "dd/MM/yyyy")} até ${date.to ? format(date.to, "dd/MM/yyyy") : format(new Date(), "dd/MM/yyyy")}`
+        : "Todo o período";
+      doc.text(`Período: ${periodLabel}`, 14, 28);
+      doc.text(`PA: ${profile?.pa_id || "Não identificado"}`, 14, 34);
+
+      const tableData = ordersInRange.map(o => [
+        format(new Date(o.created_at), "dd/MM/yyyy"),
+        `#${o.order_number || o.id.slice(0, 8)}`,
+        o.status.toUpperCase(),
+        `R$ ${o.total_amount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`
+      ]);
+
+      autoTable(doc, {
+        startY: 40,
+        head: [["Data", "Pedido", "Status", "Valor"]],
+        body: tableData,
+        headStyles: { fillStyle: 'fill', fillColor: [0, 54, 65] },
+        foot: [["", "TOTAL", "", `R$ ${totalSpent.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`]],
+        footStyles: { fillColor: [240, 240, 240], textColor: [0, 54, 65], fontStyle: 'bold' }
+      });
+
+      doc.save(`extrato_sicoob_${format(new Date(), 'yyyy-MM-dd')}.pdf`);
+      toast.success("Extrato exportado com sucesso (PDF)");
+    } catch (error: any) {
+      toast.error("Erro ao exportar: " + error.message);
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
   return (
     <MainLayout>
       <div className="container mx-auto p-4 sm:p-6 space-y-8 animate-fade-in">
@@ -107,8 +156,17 @@ export default function SicoobReportsPage() {
                 />
               </PopoverContent>
             </Popover>
-            <Button className="bg-sicoob-green hover:bg-sicoob-green-dark">
-              <Download className="h-4 w-4 mr-2" /> Exportar
+            <Button 
+              className="bg-sicoob-green hover:bg-sicoob-green-dark" 
+              onClick={handleExport}
+              disabled={isExporting}
+            >
+              {isExporting ? (
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              ) : (
+                <Download className="h-4 w-4 mr-2" />
+              )}
+              Exportar
             </Button>
           </div>
         </div>
