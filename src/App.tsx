@@ -151,7 +151,7 @@ const App = () => {
                                 <Route key={r.path} path={r.path} element={<r.component />} />
                               ))}
                               
-                              <Route element={<AdminRoute requiredRole="gestor_compras" />}>
+                              <Route element={<ProtectedRoute requiredRole="gestor_compras" />}>
                                 {sicoobRoutes.filter(r => r.path !== "/sicoob/vendas").map(r => (
                                   <Route key={r.path} path={r.path} element={<r.component />} />
                                 ))}
