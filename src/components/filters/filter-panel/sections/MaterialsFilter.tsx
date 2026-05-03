@@ -136,7 +136,7 @@ export function MaterialsFilter({
                 );
               })}
             {materialGroups.filter(g => !materialSearch || g.group_name.toLowerCase().includes(materialSearch.toLowerCase()) || getTypesForGroup(g.group_slug).some(t => t.type_name.toLowerCase().includes(materialSearch.toLowerCase()))).length === 0 && (
-              <p className="text-sm text-muted-foreground py-2 text-center">Nenhum material encontrado</p>
+              <p className="text-sm text-muted-foreground py-2 text-center">Nenhum produto encontrado</p>
             )}
           </div>
         </ScrollArea>
