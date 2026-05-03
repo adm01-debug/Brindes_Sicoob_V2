@@ -202,6 +202,35 @@ export default function OrdersPage() {
       setIsExporting(null);
     }
   };
+
+  const handleBulkApprove = async () => {
+    if (selectedOrderIds.length === 0) return;
+    
+    setIsExportingBulk(true);
+    try {
+      const result = await sicoobOrderService.approveOrdersBulk(selectedOrderIds);
+      
+      if (result.failures.length > 0) {
+        toast.warning(`Aprovação concluída com avisos`, {
+          description: `${result.successes.length} aprovados, ${result.failures.length} falharam.`,
+        });
+      } else {
+        toast.success(`${result.successes.length} pedidos aprovados com sucesso!`);
+      }
+      
+      setSelectedOrderIds([]);
+    } catch (error: any) {
+      toast.error("Erro na aprovação em lote: " + error.message);
+    } finally {
+      setIsExportingBulk(false);
+    }
+  };
+
+  const toggleSelectOrder = (id: string) => {
+    setSelectedOrderIds(prev => 
+      prev.includes(id) ? prev.filter(oid => oid !== id) : [...prev, id]
+    );
+  };
   
   const initialDateRange = useMemo(() => {
     const from = searchParams.get("from");
