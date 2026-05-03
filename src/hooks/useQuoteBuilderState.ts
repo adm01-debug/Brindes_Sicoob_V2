@@ -182,7 +182,7 @@ export function useQuoteBuilderState() {
     toast.success(`Template "${template.name}" aplicado!`);
   }, []);
 
-  const handleSaveQuote = useCallback(async (status: "draft" | "pending" | "pending_approval" = "draft", sellerNotes?: string) => {
+  const handleSaveQuote = useCallback(async (status: "draft" | "pending" | "pending_approval" | "pending_singular_approval" = "draft", sellerNotes?: string) => {
     if (status === "draft") {
       if (!isDraftValid) { toast.error("Selecione uma empresa para salvar o rascunho."); return; }
     } else if (!isFormValid) {
@@ -202,11 +202,17 @@ export function useQuoteBuilderState() {
       }
     }
 
+    // PAC workflow: force status to pending_singular_approval if user is Gerente PA and status is not draft
+    let finalStatus = status;
+    if (status === "pending" && (user?.isGerentePa || userRoles?.includes("comprador_pac"))) {
+      finalStatus = "pending_singular_approval";
+    }
+
     const quoteData = {
       client_id: clientId || undefined, client_name: contactInfo?.name || undefined,
       client_company: companyInfo?.name || undefined, client_cnpj: companyInfo?.cnpj || undefined,
       client_email: contactInfo?.email || undefined, client_phone: contactInfo?.phone || undefined,
-      status: status === "pending_approval" ? "pending_approval" : status, 
+      status: finalStatus, 
       discount_percent: discountType === "percent" ? discountValue : 0,
       discount_amount: discountType === "amount" ? discountValue : 0,
       negotiation_markup_percent: totals.markup,
@@ -220,12 +226,17 @@ export function useQuoteBuilderState() {
     if (isEditMode && quoteId) { result = await updateQuote(quoteId, quoteData, items); }
     else { result = await createQuote(quoteData, items); }
 
-    if (result && status === "pending_approval" && maxDiscountPercent != null) {
+    if (result && finalStatus === "pending_approval" && maxDiscountPercent != null) {
       await requestApproval(result.id, totals.realDiscountPercent, maxDiscountPercent, sellerNotes);
     }
 
-    if (result) navigate(`/orcamentos/${result.id}`);
-  }, [isDraftValid, isFormValid, validationErrors, clientId, contactInfo, companyInfo, discountType, discountValue, totals, notes, internalNotes, validUntil, paymentTerms, deliveryTime, shippingType, shippingCost, isEditMode, quoteId, items, navigate, updateQuote, createQuote, maxDiscountPercent, requestApproval]);
+    if (result) {
+      if (finalStatus === "pending_singular_approval") {
+        toast.success("Solicitação enviada para aprovação da Singular!");
+      }
+      navigate(`/orcamentos/${result.id}`);
+    }
+  }, [isDraftValid, isFormValid, validationErrors, clientId, contactInfo, companyInfo, discountType, discountValue, totals, notes, internalNotes, validUntil, paymentTerms, deliveryTime, shippingType, shippingCost, isEditMode, quoteId, items, navigate, updateQuote, createQuote, maxDiscountPercent, requestApproval, user?.isGerentePa, userRoles]);
 
   return {
     navigate, quoteId, isEditMode, loadingQuote, user,
