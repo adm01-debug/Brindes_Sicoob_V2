@@ -210,7 +210,7 @@ export const FULFILLMENT_LABELS = ORDER_STATUS_LABELS;
 
 // Type check to ensure ORDER_STATUS_LABELS covers all OrderStatus values
 const _statusCheck: Record<OrderStatus, string> = ORDER_STATUS_LABELS;
-console.log('Order labels initialized:', !!_statusCheck);
+
 
 /**
  * Hook principal para operações de Pedido.
