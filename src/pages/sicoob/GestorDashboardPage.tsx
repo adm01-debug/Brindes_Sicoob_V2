@@ -33,8 +33,8 @@ export default function GestorDashboardPage() {
       <div className="container mx-auto p-6 space-y-8 animate-fade-in">
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-bold font-display tracking-tight">Painel do Gestor</h1>
-            <p className="text-muted-foreground">Visão consolidada da Singular e aprovações pendentes.</p>
+            <h1 className="text-3xl font-bold font-display tracking-tight text-sicoob-green-dark">Gestão da Singular</h1>
+            <p className="text-muted-foreground">Visão consolidada da Singular e fluxo de aprovações.</p>
           </div>
           <Button asChild>
             <Link to="/sicoob/pedidos" className="gap-2">
