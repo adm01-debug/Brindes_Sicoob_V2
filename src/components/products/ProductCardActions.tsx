@@ -133,7 +133,8 @@ function ActionButton({
         <Button variant="secondary" size="icon" className={className} disabled={disabled}
           onClick={onClick} aria-label={label}
           data-testid={testId}
-          aria-pressed={ariaPressed}>
+          aria-pressed={ariaPressed}
+          aria-haspopup={ariaHasPopup}>
           <Icon className={cn("h-4 w-4 md:h-5 md:w-5 transition-all duration-300", iconClassName)} />
         </Button>
       </TooltipTrigger>
