@@ -34,7 +34,7 @@ interface NavItem {
 
 const mainNavItems: NavItem[] = [
   { icon: Home, label: "Início", href: "/", ariaLabel: "Ir para página inicial" },
-  { icon: Package, label: "Materiais", href: "/filtros", ariaLabel: "Ver catálogo de materiais" },
+  { icon: Package, label: "Produtos", href: "/filtros", ariaLabel: "Ver catálogo de produtos" },
   // FAB placeholder
   { icon: Plus, label: "Ação", href: "#fab", ariaLabel: "Ação rápida" },
   { icon: FileText, label: "Orçamentos", href: "/orcamentos", ariaLabel: "Gerenciar orçamentos" },

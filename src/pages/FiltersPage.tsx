@@ -150,9 +150,9 @@ export default function FiltersPage() {
             <div className="flex items-center gap-3 flex-wrap">
               <div className="flex-shrink-0">
                 <h1 data-testid="page-title-produtos" className="font-display text-xl sm:text-2xl lg:text-3xl font-bold whitespace-nowrap">
-                   Catálogo de Materiais
+                   Catálogo de Produtos
                   <span className="text-muted-foreground font-normal text-sm sm:text-base ml-2 inline-flex items-center gap-1.5">
-                    · <span className="tabular-nums">{state.isLoadingProducts && state.realProducts.length === 0 ? 'carregando...' : `${(state.activeFiltersCount > 0 ? state.filteredProducts.length : (state.totalEstimate ?? state.filteredProducts.length)).toLocaleString("pt-BR")}${!state.isFullyLoaded && state.activeFiltersCount === 0 ? '+' : ''} materiais`}</span>
+                    · <span className="tabular-nums">{state.isLoadingProducts && state.realProducts.length === 0 ? 'carregando...' : `${(state.activeFiltersCount > 0 ? state.filteredProducts.length : (state.totalEstimate ?? state.filteredProducts.length)).toLocaleString("pt-BR")}${!state.isFullyLoaded && state.activeFiltersCount === 0 ? '+' : ''} produtos`}</span>
                     {!state.isFullyLoaded && state.loadingProgress > 0 && state.loadingProgress < 100 && state.activeFiltersCount === 0 && (
                       <span className="inline-flex items-center gap-1 ml-1">
                         <span className="h-1 w-12 bg-muted/50 rounded-full overflow-hidden inline-block align-middle">
@@ -170,7 +170,7 @@ export default function FiltersPage() {
                 </h1>
               </div>
               <div className="flex items-center gap-2 flex-1 min-w-0">
-                <SmartSearchInput placeholder="Buscar materiais..." onSelect={(result) => result.type === "product" ? navigate(`/produto/${result.id}`) : state.handleFilterChange({ ...state.filters, search: result.label })} onSearch={(q) => state.handleFilterChange({ ...state.filters, search: q })} className="flex-1" />
+                <SmartSearchInput placeholder="Buscar produtos..." onSelect={(result) => result.type === "product" ? navigate(`/produto/${result.id}`) : state.handleFilterChange({ ...state.filters, search: result.label })} onSearch={(q) => state.handleFilterChange({ ...state.filters, search: q })} className="flex-1" />
                 {(state.filters.search || state.searchParams.get('search')) && (
                   <Badge variant="secondary" className="shrink-0 whitespace-nowrap">{state.isLoadingProducts && state.realProducts.length === 0 ? 'Carregando...' : `${state.filteredProducts.length.toLocaleString("pt-BR")} encontrado${state.filteredProducts.length !== 1 ? "s" : ""}`}</Badge>
                 )}
@@ -194,7 +194,7 @@ export default function FiltersPage() {
                         {state.activeFiltersCount > 0 && <Button variant="outline" size="sm" onClick={state.handleReset} className="text-xs shrink-0">Limpar ({state.activeFiltersCount})</Button>}
                         <Button size="sm" className="flex-1 tabular-nums" onClick={() => state.setMobileFiltersOpen(false)}>
                           <Filter className="h-3.5 w-3.5 mr-1.5" />
-                          {state.isLoadingProducts && state.realProducts.length === 0 ? 'Carregando...' : state.activeFiltersCount > 0 ? `Ver ${state.filteredProducts.length.toLocaleString('pt-BR')} resultado${state.filteredProducts.length !== 1 ? 's' : ''}` : `${(state.totalEstimate ?? state.filteredProducts.length).toLocaleString('pt-BR')} materiais`}
+                          {state.isLoadingProducts && state.realProducts.length === 0 ? 'Carregando...' : state.activeFiltersCount > 0 ? `Ver ${state.filteredProducts.length.toLocaleString('pt-BR')} resultado${state.filteredProducts.length !== 1 ? 's' : ''}` : `${(state.totalEstimate ?? state.filteredProducts.length).toLocaleString('pt-BR')} produtos`}
                         </Button>
                       </div>
                     </div>

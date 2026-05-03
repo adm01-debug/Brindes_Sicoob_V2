@@ -65,7 +65,7 @@ export default function CollectionsPage() {
 
   return (
     <MainLayout>
-      <PageSEO title="Coleções" description="Organize seus materiais favoritos em coleções personalizadas." path="/colecoes" />
+      <PageSEO title="Coleções" description="Organize seus produtos favoritos em coleções personalizadas." path="/colecoes" />
       <div className="w-full max-w-[1920px] mx-auto px-3 sm:px-4 lg:px-6 xl:px-8 py-3 sm:py-4 space-y-3 sm:space-y-4 pb-24 md:pb-6 animate-fade-in">
         {/* KPI Stat Cards */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -73,7 +73,7 @@ export default function CollectionsPage() {
             { icon: FolderHeart, value: totalCollections, label: "Total Coleções", color: "text-primary" },
             { icon: FolderOpen, value: externalCollections.length, label: "Coleções Catálogo", color: "text-brand" },
             { icon: Star, value: localCollections.length, label: "Minhas Coleções", color: "text-accent" },
-            { icon: Package, value: totalProducts, label: "Materiais", color: "text-success" },
+            { icon: Package, value: totalProducts, label: "Produtos", color: "text-success" },
           ].map((stat, idx) => (
             <motion.div
               key={stat.label}

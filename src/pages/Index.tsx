@@ -21,14 +21,14 @@ export default function Index() {
   return (
     <MainLayout>
       <PageSEO
-        title="Portal de Compras Sicoob - Catálogo de Materiais"
-        description="Explore o catálogo oficial do Sicoob. Materiais de papelaria, brindes e itens institucionais."
+        title="Portal de Compras Sicoob - Catálogo de Produtos"
+        description="Explore o catálogo oficial do Sicoob. Produtos de papelaria, brindes e itens institucionais."
         path="/"
         jsonLd={{
           "@context": "https://schema.org",
           "@type": "CollectionPage",
-          "name": "Catálogo de Materiais Sicoob",
-          "description": "Portal de compras centralizado para materiais e brindes do sistema Sicoob.",
+          "name": "Catálogo de Produtos Sicoob",
+          "description": "Portal de compras centralizado para produtos e brindes do sistema Sicoob.",
           "url": "https://criar-together-now.lovable.app/",
           "isPartOf": { "@type": "WebSite", "name": "Sicoob", "url": "https://criar-together-now.lovable.app" }
         }}

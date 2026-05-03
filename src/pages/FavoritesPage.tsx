@@ -340,7 +340,7 @@ export default function FavoritesPage() {
 
   return (
     <MainLayout>
-      <PageSEO title="Favoritos" description="Suas listas de materiais favoritos com organização, anotações e compartilhamento." path="/favoritos" />
+      <PageSEO title="Favoritos" description="Suas listas de produtos favoritos com organização, anotações e compartilhamento." path="/favoritos" />
       <div className="w-full max-w-[1920px] mx-auto px-3 sm:px-4 lg:px-6 xl:px-8 py-3 sm:py-4 pb-24 md:pb-6 animate-fade-in">
         {/* Header global */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
@@ -354,7 +354,7 @@ export default function FavoritesPage() {
             </div>
             <div>
               <h1 data-testid="page-title-favoritos" className="text-2xl lg:text-3xl font-display font-bold text-foreground">
-                Meus Materiais Favoritos
+                Meus Produtos Favoritos
               </h1>
               <p data-testid="favorites-count" className="text-muted-foreground text-sm">
                 <span data-testid="favorites-count-items">{headerTotalCount}</span>{" "}
