@@ -107,7 +107,7 @@ Deno.serve(async (req) => {
       }).select("id").single();
 
     if (foreignSellerQuote.data) {
-      const { data } = await userClient.from("quotes").select("id").eq("id", foreignSellerSellerQuote.data.id).maybeSingle();
+      const { data } = await userClient.from("quotes").select("id").eq("id", foreignSellerQuote.data.id).maybeSingle();
       const actual = data ? "allow" : "deny";
       push({
         table: "quotes", op: "SELECT", scenario: "Não ler orçamento de outro vendedor",
