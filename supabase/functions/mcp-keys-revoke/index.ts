@@ -8,6 +8,7 @@ import { getCorsHeaders } from "../_shared/cors.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.95.0";
 import { z } from "https://esm.sh/zod@3.23.8";
 import { getOrCreateRequestId, REQUEST_ID_HEADER } from "../_shared/request-id.ts";
+import { createStructuredLogger } from "../_shared/structured-logger.ts";
 import { writeAuditEntry, summarizePayload, extractRequestMeta } from "../_shared/audit-log.ts";
 import { recordMcpViolation, mapViolationReason } from "../_shared/mcp-violations.ts";
 import { castRpcResult } from "../_shared/supabase-client-adapter.ts";
