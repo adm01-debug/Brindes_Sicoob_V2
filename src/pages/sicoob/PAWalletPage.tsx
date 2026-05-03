@@ -80,7 +80,7 @@ export default function PAWalletPage() {
           <Card className="border-[1.5px] shadow-sm bg-sicoob-green/5 border-sicoob-green/20">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium">Saldo Disponível</CardTitle>
-              <Wallet className="w-4 h-4 text-primary" />
+              <Wallet className="w-4 h-4 text-sicoob-green" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-primary">{formatCurrency(remaining)}</div>
