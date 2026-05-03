@@ -140,8 +140,10 @@ const App = () => {
                                 <Route path="/admin/design-system/colors" element={<ColorDocumentationPage />} />
                               </Route>
 
-                              <Route element={<ProtectedRoute allowedRoles={['vendedor']} />}>
-                                <Route path="/sicoob/vendas" element={<sicoobRoutes.find(r => r.path === "/sicoob/vendas")?.component as any || null} />} />
+                              <Route element={<ProtectedRoute requiredRole="vendedor" />}>
+                                {sicoobRoutes.filter(r => r.path === "/sicoob/vendas").map(r => (
+                                  <Route key={r.path} path={r.path} element={<r.component />} />
+                                ))}
                               </Route>
                             </Route>
 
