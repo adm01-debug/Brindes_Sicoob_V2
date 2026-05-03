@@ -7,8 +7,9 @@ import { LogisticsPanel } from "./LogisticsPanel";
 import { FinancialPanel } from "./FinancialPanel";
 import { OrderAuditTimeline } from "./OrderAuditTimeline";
 import { OrderComments } from "./OrderComments";
-import { Loader2, Package } from "lucide-react";
+import { Loader2, Package, ExternalLink } from "lucide-react";
 import { formatCurrency } from "@/utils/quote-calculations";
+import { useNavigate } from "react-router-dom";
 
 interface OrderDetailSheetProps {
   orderId: string | null;
@@ -17,6 +18,7 @@ interface OrderDetailSheetProps {
 }
 
 export function OrderDetailSheet({ orderId, isOpen, onClose }: OrderDetailSheetProps) {
+  const navigate = useNavigate();
   const { data, isLoading } = useOrderDetail(orderId || undefined);
 
   if (!orderId) return null;
@@ -30,7 +32,12 @@ export function OrderDetailSheet({ orderId, isOpen, onClose }: OrderDetailSheetP
               <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
                 <Package className="h-4 w-4 text-primary" />
               </div>
-              <SheetTitle>Pedido #{data?.order?.order_number || orderId.slice(0, 8)}</SheetTitle>
+              <SheetTitle className="flex items-center gap-2">
+                Pedido #{data?.order?.order_number || orderId.slice(0, 8)}
+                <Button variant="ghost" size="icon" className="h-6 w-6" title="Ver Auditoria Completa" onClick={() => navigate(`/pedidos/${orderId}/auditoria`)}>
+                  <ExternalLink className="h-3 w-3" />
+                </Button>
+              </SheetTitle>
             </div>
             {data?.order?.status && <Badge>{data.order.status}</Badge>}
           </div>

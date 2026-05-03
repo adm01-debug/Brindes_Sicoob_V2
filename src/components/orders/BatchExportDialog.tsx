@@ -30,6 +30,7 @@ export function BatchExportDialog({ entityType, filters }: BatchExportDialogProp
   const [open, setOpen] = useState(false);
   const [frequency, setFrequency] = useState<'daily' | 'weekly' | 'monthly'>('daily');
   const [exportType, setExportType] = useState<'pdf' | 'excel'>('excel');
+  const [notifyByEmail, setNotifyByEmail] = useState(true);
 
   const entityJobs = jobs.filter(j => j.entity_type === entityType);
   const entityScheduled = scheduledExports.filter(s => s.entity_type === entityType);
@@ -159,6 +160,18 @@ export function BatchExportDialog({ entityType, filters }: BatchExportDialogProp
                       </SelectContent>
                     </Select>
                   </div>
+                </div>
+                <div className="flex items-center gap-2 px-1">
+                  <input 
+                    type="checkbox" 
+                    id="notify-email" 
+                    checked={notifyByEmail} 
+                    onChange={(e) => setNotifyByEmail(e.target.checked)}
+                    className="h-4 w-4 rounded border-gray-300"
+                  />
+                  <label htmlFor="notify-email" className="text-xs text-muted-foreground cursor-pointer">
+                    Notificar por e-mail após a geração (apenas papéis autorizados)
+                  </label>
                 </div>
                 <Button className="w-full gap-2" variant="outline" onClick={handleSchedule}>
                   <Calendar className="h-4 w-4" /> Confirmar Agendamento

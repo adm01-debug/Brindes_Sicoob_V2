@@ -191,7 +191,7 @@ export const useOrderPilotApprovals = (orderId?: string) => {
   return { approvals, isLoading, updateApprovalStatus };
 };
 
-export const useOrderAudit = (orderId?: string, filters?: { event_type?: string, startDate?: string, endDate?: string, search?: string }) => {
+export const useOrderAudit = (orderId?: string, filters?: { event_type?: string, startDate?: string, endDate?: string, search?: string, role?: string }) => {
   const [page, setPage] = useState(1);
   const pageSize = 10;
 
@@ -206,6 +206,9 @@ export const useOrderAudit = (orderId?: string, filters?: { event_type?: string,
 
       if (filters?.event_type && filters.event_type !== 'all') {
         query = query.eq("event_type", filters.event_type);
+      }
+      if (filters?.role && filters.role !== 'all') {
+        query = query.eq("actor_role", filters.role);
       }
       if (filters?.startDate) {
         query = query.gte("created_at", filters.startDate);
