@@ -69,7 +69,7 @@ export default function PADashboardPage() {
               <Wallet className="h-4 w-4 text-sicoob-green" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-primary">{formatCurrency(stats?.availableBudget || 0)}</div>
+              <div className="text-2xl font-bold text-sicoob-green-dark">{formatCurrency(stats?.availableBudget || 0)}</div>
               <div className="mt-2 space-y-1">
                 <div className="flex justify-between text-[10px] uppercase font-bold text-muted-foreground">
                   <span>Uso da Verba</span>
