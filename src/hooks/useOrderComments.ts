@@ -43,6 +43,15 @@ export function useOrderComments(orderId: string) {
         attachments
       });
       if (error) throw error;
+
+      // Log audit event
+      await supabase.rpc('log_order_audit_event', {
+        p_order_id: orderId,
+        p_event_type: 'comment',
+        p_description: isInternal ? "Nota interna adicionada" : "Comentário adicionado",
+        p_observations: content.slice(0, 100),
+        p_created_by_name: user?.email
+      });
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["order_comments", orderId] });
