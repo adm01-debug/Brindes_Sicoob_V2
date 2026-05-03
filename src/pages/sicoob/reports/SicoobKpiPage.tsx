@@ -1,25 +1,18 @@
-import React from "react";
+import React, { useState } from "react";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, Cell, PieChart, Pie } from "recharts";
-import { TrendingUp, Award, Clock, Target, AlertTriangle, Download } from "lucide-react";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, PieChart, Pie } from "recharts";
+import { TrendingUp, Clock, Target, AlertTriangle, Download, CalendarIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { formatCurrency } from "@/utils/formatters";
-
-const DATA_MONTHLY = [
-  { name: "Jan", valor: 45000 },
-  { name: "Fev", valor: 52000 },
-  { name: "Mar", valor: 48000 },
-  { name: "Abr", valor: 61000 },
-  { name: "Mai", valor: 55000 },
-];
-
-const DATA_CATEGORIES = [
-  { name: "Mochilas", value: 35 },
-  { name: "Escritório", value: 25 },
-  { name: "Eletrônicos", value: 20 },
-  { name: "Vestuário", value: 20 },
-];
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { ptBR } from "date-fns/locale";
+import { format, subMonths } from "date-fns";
+import { DateRange } from "react-day-picker";
+import { cn } from "@/lib/utils";
 
 const COLORS = ["#003641", "#7DB61C", "#9DB7C3", "#E3E829"];
 
