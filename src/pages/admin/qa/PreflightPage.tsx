@@ -91,7 +91,7 @@ export default function QaPreflightPage() {
       <div className="container mx-auto p-6 space-y-6 animate-fade-in">
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight text-sicoob-green-dark">QA Pré-flight §0-bis</h1>
+            <h1 className="text-3xl font-bold tracking-tight text-sicoob-green-dark">QA Pr&eacute;-flight &sect;0-bis</h1>
             <p className="text-muted-foreground italic">Validação de ambiente antes da execução de roteiros de teste.</p>
           </div>
           <Button variant="outline" onClick={() => refetch()} disabled={isLoading || isRefetching}>
@@ -193,7 +193,7 @@ export default function QaPreflightPage() {
               <Button variant="outline" className="justify-start gap-2 h-auto py-3 px-4" onClick={() => seedMutation.mutate('alcada-gestor')} disabled={isSeeding}>
                 <div className="flex flex-col items-start">
                   <span className="font-bold">Alçada Gestor</span>
-                  <span className="text-[10px] text-muted-foreground">Pedidos &gt; R$ 5k</span>
+                  <span className="text-[10px] text-muted-foreground">Pedidos {"\u003E"} R$ 5k</span>
                 </div>
               </Button>
               <Button variant="outline" className="justify-start gap-2 h-auto py-3 px-4" onClick={() => seedMutation.mutate('rls-cross')} disabled={isSeeding}>
