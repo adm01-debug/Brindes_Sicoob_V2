@@ -108,21 +108,19 @@ Deno.serve(async (req) => {
       // Spec §6.2: offer_id = product_variants.bitrix_product_id (obrigatório)
       const offerId = Number(item.bitrix_product_id);
       if (!Number.isFinite(offerId) || offerId <= 0) {
-        console.warn(`Item ignorado: bitrix_product_id inválido ("${item.bitrix_product_id}") — produto: ${item.name || item.product_name}`);
+        log.warn("item_ignored_invalid_offer_id", { bitrix_product_id: item.bitrix_product_id, name: item.name });
         return null;
       }
 
-      // product_name = nome do produto + " - " + cor
       const baseName = item.name || item.product_name || "Produto";
       const colorSuffix = item.color ? ` - ${item.color}` : "";
       const productName = `${baseName}${colorSuffix}`;
 
-      // SKU = supplier_sku da variante
       const sku = item.supplier_sku || item.composedCode || item.sku || item.product_sku || "";
 
       const qty = Number(item.quantity ?? 1);
       if (!Number.isFinite(qty) || qty <= 0) {
-        console.warn(`Item ignorado: quantity inválida (${item.quantity}) — produto: ${baseName}`);
+        log.warn("item_ignored_invalid_quantity", { quantity: item.quantity, name: baseName });
         return null;
       }
 
