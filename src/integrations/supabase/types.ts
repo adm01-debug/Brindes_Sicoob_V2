@@ -4809,11 +4809,13 @@ export type Database = {
           count_mode: string | null
           created_at: string
           duration_ms: number
+          error_code: string | null
           error_kind: string | null
           error_message: string | null
           id: string
           is_503: boolean
           is_cold_start: boolean
+          is_rls_violation: boolean | null
           operation: string
           query_limit: number | null
           query_offset: number | null
@@ -4829,11 +4831,13 @@ export type Database = {
           count_mode?: string | null
           created_at?: string
           duration_ms: number
+          error_code?: string | null
           error_kind?: string | null
           error_message?: string | null
           id?: string
           is_503?: boolean
           is_cold_start?: boolean
+          is_rls_violation?: boolean | null
           operation: string
           query_limit?: number | null
           query_offset?: number | null
@@ -4849,11 +4853,13 @@ export type Database = {
           count_mode?: string | null
           created_at?: string
           duration_ms?: number
+          error_code?: string | null
           error_kind?: string | null
           error_message?: string | null
           id?: string
           is_503?: boolean
           is_cold_start?: boolean
+          is_rls_violation?: boolean | null
           operation?: string
           query_limit?: number | null
           query_offset?: number | null
