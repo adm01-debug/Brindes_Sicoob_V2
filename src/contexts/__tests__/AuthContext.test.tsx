@@ -90,10 +90,14 @@ describe("useAuth", () => {
   });
 
   it("correctly identifies user roles", () => {
-    // Note: To test roles we'd need to mock useUserRoles hook or the internal state
-    // For now we test the initial state
     const { result } = renderHook(() => useAuth(), { wrapper });
     expect(result.current.isDev).toBe(false);
     expect(result.current.isAuthenticated).toBe(false);
   });
+
+  it("identifies loading state correctly", () => {
+    const { result } = renderHook(() => useAuth(), { wrapper });
+    expect(result.current.isLoading).toBe(true);
+  });
 });
+

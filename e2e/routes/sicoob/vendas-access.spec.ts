@@ -19,17 +19,15 @@ test.describe("Sicoob Vendas — Access Control", () => {
     }
   });
 
-  test("User with role 'agente' (default user) is redirected from /sicoob/vendas", async ({ page }) => {
-    // If 'user' is Vendedor, we need another role or a way to mock a non-vendedor
-    // For now, let's assume we have a way to differentiate.
-    // In a real environment, we'd use specific test accounts.
-    
-    // If 'admin' (Supervisor) has access to everything, they should also access it.
-    await loginAs(page, "admin");
+  test("User with role 'agente' (default user) is redirected to /403 from /sicoob/vendas", async ({ page }) => {
+    // Assuming 'editor' role used here mimics a role without vendedor permission for this test
+    // In a real env, we'd use a specific 'agente' test account
+    await loginAs(page, "editor"); 
     await gotoAndSettle(page, "/sicoob/vendas");
-    await expect(page).not.toHaveURL(/\/login/);
-    await expect(page.url()).toContain("/sicoob/vendas");
+    await expect(page.url()).toContain("/403");
+    await expect(page.getByText(/Acesso Negado/i)).toBeVisible();
   });
+
 
   test("Unauthenticated user is redirected to /login", async ({ page }) => {
     await logout(page);

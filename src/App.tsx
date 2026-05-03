@@ -70,6 +70,8 @@ const TrendsPage = lazyWithRetry(() => import("./pages/TrendsPage"));
 const NotFound = lazyWithRetry(() => import("./pages/NotFound"));
 const AdminTemasPage = lazyWithRetry(() => import("./pages/admin/AdminTemasPage"));
 const ColorDocumentationPage = lazyWithRetry(() => import("./pages/admin/ColorDocumentationPage"));
+const ForbiddenPage = lazyWithRetry(() => import("./pages/ForbiddenPage"));
+
 
 const App = () => {
   useGlobalErrorCatcher();
@@ -112,6 +114,8 @@ const App = () => {
                           {/* Static Redirects & Legacy (Unprotected) */}
                           <Route path="/configuracoes" element={<Navigate to="/admin/usuarios" replace />} />
                           <Route path="/perfil" element={<Navigate to="/admin/usuarios" replace />} />
+                          <Route path="/403" element={<ForbiddenPage />} />
+
 
                           {/* Protected Layout Route */}
                           <Route element={<ProtectedRoute />}>

@@ -41,23 +41,24 @@ export function ProtectedRoute({
     requiredRole ?? (requireDev ? "dev" : requireAdmin ? "supervisor" : undefined);
 
   if (required === "dev" && !isDev) {
-    return <Navigate to="/" replace />;
+    return <Navigate to="/403" replace />;
   }
   
   const role = profile?.role;
 
   if (required === "gestor_compras" && role !== "gestor_compras" && !isDev) {
-    return <Navigate to="/" replace />;
+    return <Navigate to="/403" replace />;
   }
   if (required === "supervisor" && !isSupervisorOrAbove) {
-    return <Navigate to="/" replace />;
+    return <Navigate to="/403" replace />;
   }
   if (required === "gerente_pa" && role !== "gerente_pa" && !isSupervisorOrAbove) {
-    return <Navigate to="/" replace />;
+    return <Navigate to="/403" replace />;
   }
   if (required === "vendedor" && role !== "vendedor" && role !== "gerente_pa" && !isSupervisorOrAbove) {
-    return <Navigate to="/" replace />;
+    return <Navigate to="/403" replace />;
   }
+
   // 'agente' = qualquer usuário autenticado, sem checagem extra.
 
   // Retorno único: Outlet (Layout Route) ou children. Sem forwardRef:
