@@ -15,19 +15,27 @@ const QA_USERS = [
 
 async function ensureUser(user: any) {
   console.log(`Garantindo usuário: ${user.email}`);
-  const { error } = await supabase.auth.admin.createUser({
-    id: user.id,
-    email: user.email,
-    password: QA_PASSWORD,
-    email_confirm: true,
-    user_metadata: { full_name: `QA ${user.role}` }
-  });
+  
+  // Try to find user by email first
+  const { data: { users }, error: listError } = await supabase.auth.admin.listUsers();
+  const existingUser = users?.find(u => u.email === user.email);
 
-  if (error && (error.message.includes("already registered") || error.message.includes("duplicate"))) {
-    await supabase.auth.admin.updateUserById(user.id, { password: QA_PASSWORD });
-  } else if (error) {
-    throw error;
+  if (existingUser) {
+    console.log(`Usuário ${user.email} já existe. Atualizando...`);
+    await supabase.auth.admin.updateUserById(existingUser.id, { password: QA_PASSWORD });
+    user.id = existingUser.id; // Use existing ID for profile upsert
+  } else {
+    const { data: newUser, error: createError } = await supabase.auth.admin.createUser({
+      email: user.email,
+      password: QA_PASSWORD,
+      email_confirm: true,
+      user_metadata: { full_name: `QA ${user.role}` }
+    });
+
+    if (createError) throw createError;
+    if (newUser?.user) user.id = newUser.user.id;
   }
+
 
   // Ensure profile using correct column 'full_name' instead of 'display_name'
   await supabase.from("profiles").upsert({
