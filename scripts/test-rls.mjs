@@ -29,7 +29,7 @@ async function testRLS() {
 
   // Tenta encontrar dois usuários com orgs ou PAs diferentes
   let userA = profiles[0];
-  let userB = profiles.find(p => p.organization_id !== userA.organization_id || p.pa_id !== userA.pa_id);
+  let userB = profiles.find(p => p.cooperativa_id !== userA.cooperativa_id || p.pa_id !== userA.pa_id);
 
   if (!userB) {
     console.warn('⚠️ Não foram encontrados usuários de organizações/PAs diferentes. Usando os dois primeiros.');
