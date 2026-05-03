@@ -62,6 +62,8 @@ export default function OrdersPage() {
   const { isVendedorRole, isAdmin, user } = useAuth();
   const canCreateOrder = isVendedorRole || isAdmin;
   const [isExporting, setIsExporting] = useState<'csv' | 'pdf' | 'xlsx' | null>(null);
+  const [selectedOrderIds, setSelectedOrderIds] = useState<string[]>([]);
+  const [isBulkApproving, setIsExportingBulk] = useState(false);
 
   const [searchTerm, setSearchTerm] = useState(searchParams.get("search") || "");
   const [statusFilter, setStatusFilter] = useState<string>(searchParams.get("status") || "all");
