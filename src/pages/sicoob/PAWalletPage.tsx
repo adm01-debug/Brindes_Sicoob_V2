@@ -142,35 +142,149 @@ export default function PAWalletPage() {
           </Card>
         </div>
 
-        <Card className="border-[1.5px]">
-          <CardHeader>
-            <CardTitle>Status da Utilização</CardTitle>
-            <CardDescription>Visualização gráfica do consumo de verba em tempo real.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <div className="flex justify-between text-sm font-medium">
-                <span>Progresso de Consumo</span>
-                <span className={cn(spentPercent > 90 ? "text-red-600" : "text-sicoob-green")}>{spentPercent.toFixed(1)}%</span>
-              </div>
-              <Progress 
-                value={spentPercent} 
-                className="h-3" 
-                indicatorClassName={spentPercent > 90 ? "bg-red-500" : "bg-sicoob-green"}
-              />
-            </div>
+        <Tabs defaultValue="status" className="w-full">
+          <TabsList className="grid w-full grid-cols-2 mb-4">
+            <TabsTrigger value="status" className="gap-2">
+              <TrendingUp className="h-4 w-4" /> Status da Verba
+            </TabsTrigger>
+            <TabsTrigger value="requests" className="gap-2">
+              <History className="h-4 w-4" /> Solicitações
+            </TabsTrigger>
+          </TabsList>
 
-            {spentPercent > 90 && (
-              <Alert variant="destructive" className="bg-red-50 border-red-200 text-red-800">
-                <AlertCircle className="h-4 w-4" />
-                <AlertTitle>Limite Crítico</AlertTitle>
-                <AlertDescription>
-                  Você atingiu mais de 90% da verba mensal. Novos pedidos podem exigir aprovação manual da Singular.
-                </AlertDescription>
-              </Alert>
-            )}
-          </CardContent>
-        </Card>
+          <TabsContent value="status">
+            <Card className="border-[1.5px]">
+              <CardHeader className="flex flex-row items-center justify-between">
+                <div>
+                  <CardTitle>Status da Utilização</CardTitle>
+                  <CardDescription>Visualização gráfica do consumo de verba em tempo real.</CardDescription>
+                </div>
+                <Dialog open={isRequestDialogOpen} onOpenChange={setIsRequestDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button className="gap-2 bg-sicoob-green hover:bg-sicoob-green-dark">
+                      <Plus className="h-4 w-4" /> Aumento de Limite
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Solicitar Aumento de Verba</DialogTitle>
+                      <DialogDescription>
+                        Descreva o valor adicional necessário e a justificativa para análise da Singular.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4 py-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="amount">Valor Adicional (R$)</Label>
+                        <Input 
+                          id="amount" 
+                          type="number" 
+                          placeholder="Ex: 5000" 
+                          value={requestedAmount}
+                          onChange={(e) => setRequestedAmount(e.target.value)}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="reason">Justificativa</Label>
+                        <Textarea 
+                          id="reason" 
+                          placeholder="Descreva o motivo da solicitação..." 
+                          className="min-h-[100px]"
+                          value={requestReason}
+                          onChange={(e) => setRequestReason(e.target.value)}
+                        />
+                      </div>
+                    </div>
+                    <DialogFooter>
+                      <Button variant="outline" onClick={() => setIsRequestDialogOpen(false)}>Cancelar</Button>
+                      <Button 
+                        disabled={!requestedAmount || !requestReason || createRequest.isPending}
+                        onClick={() => createRequest.mutate()}
+                      >
+                        {createRequest.isPending ? "Enviando..." : "Enviar Solicitação"}
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <div className="flex justify-between text-sm font-medium">
+                    <span>Progresso de Consumo</span>
+                    <span className={cn(spentPercent > 90 ? "text-red-600" : "text-sicoob-green")}>{spentPercent.toFixed(1)}%</span>
+                  </div>
+                  <Progress 
+                    value={spentPercent} 
+                    className="h-3" 
+                    indicatorClassName={spentPercent > 90 ? "bg-red-500" : "bg-sicoob-green"}
+                  />
+                </div>
+
+                {spentPercent > 90 && (
+                  <Alert variant="destructive" className="bg-red-50 border-red-200 text-red-800">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertTitle>Limite Crítico</AlertTitle>
+                    <AlertDescription>
+                      Você atingiu mais de 90% da verba mensal. Novos pedidos podem exigir aprovação manual da Singular.
+                    </AlertDescription>
+                  </Alert>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="requests">
+            <Card className="border-[1.5px]">
+              <CardHeader>
+                <CardTitle>Histórico de Solicitações</CardTitle>
+                <CardDescription>Acompanhe o status dos seus pedidos de aumento de limite.</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {requests?.length === 0 ? (
+                    <div className="text-center py-8 text-muted-foreground italic">
+                      Nenhuma solicitação realizada até o momento.
+                    </div>
+                  ) : (
+                    requests?.map((req: any) => (
+                      <div key={req.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-xl border border-border/50 bg-muted/20 gap-4">
+                        <div className="flex items-center gap-4">
+                          <div className={cn(
+                            "w-10 h-10 rounded-full flex items-center justify-center border",
+                            req.status === 'approved' ? "bg-green-50 border-green-200 text-green-600" : 
+                            req.status === 'rejected' ? "bg-red-50 border-red-200 text-red-600" : 
+                            "bg-amber-50 border-amber-200 text-amber-600"
+                          )}>
+                            {req.status === 'approved' ? <CheckCircle 2 className="h-5 w-5" /> : 
+                             req.status === 'rejected' ? <X className="h-5 w-5" /> : 
+                             <Clock className="h-5 w-5" />}
+                          </div>
+                          <div>
+                            <div className="font-bold text-sm">Aumento de {formatCurrency(req.requested_amount)}</div>
+                            <div className="text-xs text-muted-foreground truncate max-w-[300px]">{req.reason}</div>
+                            <div className="text-[10px] text-muted-foreground mt-1 uppercase font-medium">
+                              {new Date(req.created_at).toLocaleDateString('pt-BR')} • {new Date(req.created_at).toLocaleTimeString('pt-BR')}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                           <Badge variant={
+                             req.status === 'approved' ? "secondary" : 
+                             req.status === 'rejected' ? "destructive" : 
+                             "outline"
+                           }>
+                             {req.status === 'approved' ? "Aprovado" : 
+                              req.status === 'rejected' ? "Rejeitado" : 
+                              "Pendente"}
+                           </Badge>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
       </div>
     </MainLayout>
   );
