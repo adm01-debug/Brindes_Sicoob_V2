@@ -196,6 +196,8 @@ export default function QuoteViewPage() {
         </div>
         
         {/* Singular Approval Actions */}
+        {id && quote && <QuoteApprovalNotes notes={quote.rejection_notes} status={quote.status} />}
+        
         {id && quote && (
           <QuoteSingularApprovalActions 
             quoteId={id} 
