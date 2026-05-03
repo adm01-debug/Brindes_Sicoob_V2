@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { FolderTree, Pencil, Trash2, BarChart3, ListFilter, Plus } from "lucide-react";
+import { FolderTree, Pencil, Trash2, BarChart3, ListFilter, Plus, Loader2 } from "lucide-react";
+import { DialogDescription } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
@@ -46,6 +47,7 @@ export function CategoriesManager() {
   }, []);
 
   const handleSave = async (formData: any) => {
+    setIsLoading(true);
     try {
       if (editingCategory) {
         const { error } = await supabase
@@ -274,12 +276,13 @@ export function CategoriesManager() {
         category={editingCategory} 
         onSave={handleSave} 
         categories={categories}
+        isLoading={isLoading}
       />
     </div>
   );
 }
 
-function CategoryFormDialog({ open, onOpenChange, category, onSave, categories }: any) {
+function CategoryFormDialog({ open, onOpenChange, category, onSave, categories, isLoading }: any) {
   const [formData, setFormData] = useState<any>({
     name: '',
     slug: '',
@@ -339,9 +342,15 @@ function CategoryFormDialog({ open, onOpenChange, category, onSave, categories }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent onOpenAutoFocus={(e) => {
+        // Prevent default to control focus manually if needed, 
+        // but Radix usually handles initial focus on first focusable element (Name input).
+      }}>
         <DialogHeader>
           <DialogTitle>{category ? 'Editar Categoria' : 'Nova Categoria'}</DialogTitle>
+          <DialogDescription>
+            {category ? 'Altere as informações da categoria selecionada.' : 'Preencha os campos abaixo para criar uma nova categoria.'}
+          </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
@@ -351,6 +360,7 @@ function CategoryFormDialog({ open, onOpenChange, category, onSave, categories }
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               required
+              autoFocus
             />
           </div>
           <div>
@@ -404,7 +414,9 @@ function CategoryFormDialog({ open, onOpenChange, category, onSave, categories }
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancelar
             </Button>
-            <Button type="submit">Salvar</Button>
+            <Button type="submit" disabled={isLoading}>
+              {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Salvar'}
+            </Button>
           </DialogFooter>
         </form>
       </DialogContent>
