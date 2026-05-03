@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { PageSEO } from "@/components/seo/PageSEO";
 import { Button } from "@/components/ui/button";
