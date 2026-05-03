@@ -77,50 +77,54 @@ export const AriaLiveProvider = forwardRef<HTMLDivElement, { children: ReactNode
         announceProgress,
       }}
     >
-      {children}
+      <div ref={ref}>
+        {children}
 
-      {/* Polite announcements - non-interruptive */}
-      <div
-        role="status"
-        aria-live="polite"
-        aria-atomic="true"
-        className="sr-only"
-      >
-        {politeMessage}
-      </div>
+        {/* Polite announcements - non-interruptive */}
+        <div
+          role="status"
+          aria-live="polite"
+          aria-atomic="true"
+          className="sr-only"
+        >
+          {politeMessage}
+        </div>
 
-      {/* Assertive announcements - interruptive */}
-      <div
-        role="alert"
-        aria-live="assertive"
-        aria-atomic="true"
-        className="sr-only"
-      >
-        {assertiveMessage}
-      </div>
+        {/* Assertive announcements - interruptive */}
+        <div
+          role="alert"
+          aria-live="assertive"
+          aria-atomic="true"
+          className="sr-only"
+        >
+          {assertiveMessage}
+        </div>
 
-      {/* Status messages */}
-      <div
-        role="status"
-        aria-live="polite"
-        aria-atomic="true"
-        className="sr-only"
-      >
-        {statusMessage}
-      </div>
+        {/* Status messages */}
+        <div
+          role="status"
+          aria-live="polite"
+          aria-atomic="true"
+          className="sr-only"
+        >
+          {statusMessage}
+        </div>
 
-      {/* Progress announcements */}
-      <div
-        role="progressbar"
-        aria-live="polite"
-        aria-atomic="true"
-        className="sr-only"
-      >
-        {progressMessage}
+        {/* Progress announcements */}
+        <div
+          role="progressbar"
+          aria-live="polite"
+          aria-atomic="true"
+          className="sr-only"
+        >
+          {progressMessage}
+        </div>
       </div>
     </AriaLiveContext.Provider>
   );
-}
+});
+
+AriaLiveProvider.displayName = 'AriaLiveProvider';
 
 /**
  * Component to announce page navigation
