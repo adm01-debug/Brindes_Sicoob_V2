@@ -25,6 +25,20 @@ export default function AdminVerbasPage() {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingBudget, setEditingBudget] = useState<any>(null);
 
+  const { data: auditLogs = [] } = useQuery({
+    queryKey: ['admin-budgets-audit'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('admin_audit_log')
+        .select('*')
+        .eq('entity_type', 'pa_budgets')
+        .order('created_at', { ascending: false })
+        .limit(50);
+      if (error) throw error;
+      return data || [];
+    }
+  });
+
   const fetchData = async () => {
     setIsLoading(true);
     try {
@@ -76,10 +90,27 @@ export default function AdminVerbasPage() {
     }
   };
 
+  const exportBudgets = () => {
+    const data = budgets.map(b => ({
+      'PA': b.postos_atendimento?.nome,
+      'Código': b.postos_atendimento?.codigo,
+      'Mês': b.mes,
+      'Ano': b.ano,
+      'Verba Total': b.verba_total,
+      'Consumido': b.verba_consumida,
+      'Alçada': b.limite_alcada
+    }));
+    const worksheet = XLSX.utils.json_to_sheet(data);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Verbas");
+    XLSX.writeFile(workbook, `verbas_admin_${format(new Date(), 'yyyy-MM-dd')}.xlsx`);
+  };
+
   const filtered = budgets.filter(b => 
     b.postos_atendimento?.nome?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     b.postos_atendimento?.codigo?.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
 
   return (
     <MainLayout>
