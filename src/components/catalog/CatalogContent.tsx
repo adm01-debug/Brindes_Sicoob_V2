@@ -261,7 +261,7 @@ export function CatalogContent({
       <div className={`${CONTAINER_CLASS} p-4`}>
         <EmptyState
           variant={hasActiveCatalogConstraints ? "search" : "products"}
-          title={hasActiveCatalogConstraints ? "Nenhum material encontrado" : "Catálogo indisponível no momento"}
+          title={hasActiveCatalogConstraints ? "Nenhum produto encontrado" : "Catálogo indisponível no momento"}
           description={hasActiveCatalogConstraints ? "Tente ajustar os filtros, remover termos da busca ou buscar em todas as categorias." : "O catálogo ainda não retornou itens para exibição."}
           action={hasActiveCatalogConstraints && onResetFilters ? { label: "Limpar tudo e ver catálogo completo", onClick: onResetFilters } : undefined}
           className="min-h-[420px]"
