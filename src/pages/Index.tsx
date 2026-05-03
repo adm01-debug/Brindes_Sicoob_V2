@@ -21,7 +21,7 @@ export default function Index() {
   return (
     <MainLayout>
       <PageSEO
-        title="Portal de Compras Sicoob - Catálogo de Materiais"
+        title="Portal de Compras Sicoob - Catálogo de Produtos"
         description="Explore o catálogo oficial do Sicoob. Materiais de papelaria, brindes e itens institucionais."
         path="/"
         jsonLd={{
