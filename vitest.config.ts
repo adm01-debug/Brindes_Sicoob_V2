@@ -16,7 +16,9 @@ export default defineConfig({
       include: [
         'src/components/layout/ProtectedRoute.tsx',
         'src/services/sicoob/orderService.ts',
-        'src/pages/ForbiddenPage.tsx'
+        'src/pages/ForbiddenPage.tsx',
+        'src/components/search/GlobalSearchPalette.tsx',
+        'src/components/search/useGlobalSearch.ts'
       ],
       thresholds: {
         perFile: true,
@@ -38,6 +40,18 @@ export default defineConfig({
           branches: 100,
           functions: 100,
           lines: 100,
+        },
+        'src/components/search/GlobalSearchPalette.tsx': {
+          statements: 80,
+          branches: 70,
+          functions: 80,
+          lines: 80,
+        },
+        'src/components/search/useGlobalSearch.ts': {
+          statements: 60,
+          branches: 50,
+          functions: 60,
+          lines: 60,
         }
       }
     }
