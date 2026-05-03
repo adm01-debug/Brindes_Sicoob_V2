@@ -326,6 +326,42 @@ export type Database = {
         }
         Relationships: []
       }
+      campaigns: {
+        Row: {
+          budget: number | null
+          created_at: string | null
+          description: string | null
+          end_date: string | null
+          id: string
+          name: string
+          start_date: string | null
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          budget?: number | null
+          created_at?: string | null
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          name: string
+          start_date?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          budget?: number | null
+          created_at?: string | null
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          name?: string
+          start_date?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       cart_templates: {
         Row: {
           created_at: string
@@ -383,6 +419,81 @@ export type Database = {
           id?: string
           is_active?: boolean
           updated_at?: string
+        }
+        Relationships: []
+      }
+      cms_banners: {
+        Row: {
+          created_at: string | null
+          end_at: string | null
+          id: string
+          image_url: string
+          is_active: boolean | null
+          link_url: string | null
+          position: string | null
+          sort_order: number | null
+          start_at: string | null
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          end_at?: string | null
+          id?: string
+          image_url: string
+          is_active?: boolean | null
+          link_url?: string | null
+          position?: string | null
+          sort_order?: number | null
+          start_at?: string | null
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          end_at?: string | null
+          id?: string
+          image_url?: string
+          is_active?: boolean | null
+          link_url?: string | null
+          position?: string | null
+          sort_order?: number | null
+          start_at?: string | null
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      cms_sections: {
+        Row: {
+          content: Json | null
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+          sort_order: number | null
+          type: string
+          updated_at: string | null
+        }
+        Insert: {
+          content?: Json | null
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          sort_order?: number | null
+          type: string
+          updated_at?: string | null
+        }
+        Update: {
+          content?: Json | null
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          sort_order?: number | null
+          type?: string
+          updated_at?: string | null
         }
         Relationships: []
       }
@@ -802,6 +913,90 @@ export type Database = {
           nome?: string
           uf?: string | null
           updated_at?: string
+        }
+        Relationships: []
+      }
+      cooperativas_parceiras: {
+        Row: {
+          contact_email: string | null
+          contact_name: string | null
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+          phone: string | null
+          registration_number: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          contact_email?: string | null
+          contact_name?: string | null
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          phone?: string | null
+          registration_number?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          contact_email?: string | null
+          contact_name?: string | null
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          phone?: string | null
+          registration_number?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      coupons: {
+        Row: {
+          code: string
+          created_at: string | null
+          discount_type: string
+          discount_value: number
+          expires_at: string | null
+          id: string
+          is_active: boolean | null
+          max_discount_amount: number | null
+          min_purchase_amount: number | null
+          starts_at: string | null
+          updated_at: string | null
+          usage_count: number | null
+          usage_limit: number | null
+        }
+        Insert: {
+          code: string
+          created_at?: string | null
+          discount_type: string
+          discount_value: number
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          max_discount_amount?: number | null
+          min_purchase_amount?: number | null
+          starts_at?: string | null
+          updated_at?: string | null
+          usage_count?: number | null
+          usage_limit?: number | null
+        }
+        Update: {
+          code?: string
+          created_at?: string | null
+          discount_type?: string
+          discount_value?: number
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          max_discount_amount?: number | null
+          min_purchase_amount?: number | null
+          starts_at?: string | null
+          updated_at?: string | null
+          usage_count?: number | null
+          usage_limit?: number | null
         }
         Relationships: []
       }
@@ -2759,6 +2954,36 @@ export type Database = {
         }
         Relationships: []
       }
+      newsletter_subscribers: {
+        Row: {
+          created_at: string | null
+          email: string
+          full_name: string | null
+          id: string
+          is_active: boolean | null
+          source: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          email: string
+          full_name?: string | null
+          id?: string
+          is_active?: boolean | null
+          source?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          email?: string
+          full_name?: string | null
+          id?: string
+          is_active?: boolean | null
+          source?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       notification_preferences: {
         Row: {
           email_enabled: boolean | null
@@ -4012,6 +4237,53 @@ export type Database = {
           variant_id?: string | null
         }
         Relationships: []
+      }
+      product_categories: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          icon_url: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+          parent_id: string | null
+          slug: string
+          sort_order: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          icon_url?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          parent_id?: string | null
+          slug: string
+          sort_order?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          icon_url?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          parent_id?: string | null
+          slug?: string
+          sort_order?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_categories_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "product_categories"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       product_component_locations: {
         Row: {
@@ -5902,6 +6174,42 @@ export type Database = {
         }
         Relationships: []
       }
+      singulares: {
+        Row: {
+          address: string | null
+          code: string
+          created_at: string | null
+          email: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+          phone: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          address?: string | null
+          code: string
+          created_at?: string | null
+          email?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          phone?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          address?: string | null
+          code?: string
+          created_at?: string | null
+          email?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          phone?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       step_up_audit_log: {
         Row: {
           action: Database["public"]["Enums"]["step_up_action"] | null
@@ -6060,6 +6368,36 @@ export type Database = {
           updated_at?: string
           updated_by?: string | null
           value?: Json
+        }
+        Relationships: []
+      }
+      telemetry_logs: {
+        Row: {
+          client_info: Json | null
+          created_at: string | null
+          event_name: string
+          id: string
+          metadata: Json | null
+          page_path: string | null
+          user_id: string | null
+        }
+        Insert: {
+          client_info?: Json | null
+          created_at?: string | null
+          event_name: string
+          id?: string
+          metadata?: Json | null
+          page_path?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          client_info?: Json | null
+          created_at?: string | null
+          event_name?: string
+          id?: string
+          metadata?: Json | null
+          page_path?: string | null
+          user_id?: string | null
         }
         Relationships: []
       }
