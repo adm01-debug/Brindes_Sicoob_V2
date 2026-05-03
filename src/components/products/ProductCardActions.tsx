@@ -87,14 +87,16 @@ export const ProductCardActions = memo(function ProductCardActions({
 
         {/* Collection */}
         <ActionButton icon={FolderPlus} label="Adicionar à coleção" className={btnClass}
+          ariaHasPopup="dialog"
           onClick={(e) => { e.stopPropagation(); markBusy(); onOpenVariantPicker('collection'); }} />
 
         {/* Share */}
         <ActionButton icon={Share2} label="Compartilhar" className={btnClass}
+          ariaHasPopup="dialog"
           onClick={(e) => { e.stopPropagation(); e.preventDefault(); markBusy(); onOpenVariantPicker('share'); }} />
 
         {/* Quote */}
-        <ActionButton icon={FileText} label="Orçamento" className={btnClass}
+        <ActionButton icon={FileText} label="Gerar Orçamento" className={btnClass}
           onClick={(e) => { e.stopPropagation(); markBusy(); onOpenVariantPicker('quote'); }} />
 
         {/* Add to Cart */}
@@ -106,7 +108,8 @@ export const ProductCardActions = memo(function ProductCardActions({
         />
 
         {/* Quick View */}
-        <ActionButton icon={Eye} label="Quick View" className={btnClass}
+        <ActionButton icon={Eye} label="Visualização Rápida" className={btnClass}
+          ariaHasPopup="dialog"
           onClick={(e) => { e.stopPropagation(); markBusy(); onQuickView(); }} />
       </div>
     </div>
@@ -115,13 +118,14 @@ export const ProductCardActions = memo(function ProductCardActions({
 
 // Tiny helper to reduce repetition
 function ActionButton({
-  icon: Icon, label, className, iconClassName, disabled, onClick, testId, ariaPressed,
+  icon: Icon, label, className, iconClassName, disabled, onClick, testId, ariaPressed, ariaHasPopup,
 }: {
   icon: React.ComponentType<{ className?: string }>;
   label: string; className?: string; iconClassName?: string;
   disabled?: boolean; onClick: (e: React.MouseEvent) => void;
   testId?: string;
   ariaPressed?: boolean;
+  ariaHasPopup?: "dialog" | "menu" | "listbox" | "tree" | "grid";
 }) {
   return (
     <Tooltip>
@@ -129,7 +133,8 @@ function ActionButton({
         <Button variant="secondary" size="icon" className={className} disabled={disabled}
           onClick={onClick} aria-label={label}
           data-testid={testId}
-          aria-pressed={ariaPressed}>
+          aria-pressed={ariaPressed}
+          aria-haspopup={ariaHasPopup}>
           <Icon className={cn("h-4 w-4 md:h-5 md:w-5 transition-all duration-300", iconClassName)} />
         </Button>
       </TooltipTrigger>

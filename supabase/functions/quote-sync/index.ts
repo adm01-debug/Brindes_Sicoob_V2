@@ -1,9 +1,10 @@
 import { getCorsHeaders } from "../_shared/cors.ts";
-/// <reference lib="deno.ns" />
-import { createClient } from "npm:@supabase/supabase-js@2.49.1";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.42.7";
 import { z } from "https://esm.sh/zod@3.23.8";
 import { parseBodyWithSchema } from "../_shared/zod-validate.ts";
 import { resolveCredential } from "../_shared/credentials.ts";
+import { createStructuredLogger } from "../_shared/structured-logger.ts";
+import { getOrCreateRequestId } from "../_shared/request-id.ts";
 
 const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
 const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -99,21 +100,27 @@ interface PersonalizationData {
 }
 
 Deno.serve(async (req) => {
+  const requestId = getOrCreateRequestId(req);
+  const log = createStructuredLogger({ fn: 'quote-sync', requestId, req });
+
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: getCorsHeaders(req) });
   }
 
+  log.info('request_start');
   const corsHeaders = getCorsHeaders(req);
-
   const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
   try {
     // Validate body with Zod
     const parsed = await parseBodyWithSchema(req, RequestSchema, getCorsHeaders(req));
-    if ('error' in parsed) return parsed.error;
+    if ('error' in parsed) {
+      log.warn('validation_failed', { details: parsed.error });
+      return log.respond(parsed.error);
+    }
 
     const { action, data } = parsed.data;
-    console.log(`Quote sync action: ${action}`, data);
+    log.info('action_start', { action });
 
     switch (action) {
       case "sync_quote": {
@@ -217,19 +224,19 @@ Deno.serve(async (req) => {
           }
         }
 
-        return new Response(
+        return log.respond(new Response(
           JSON.stringify({ success: true, results }),
           { headers: { ...corsHeaders, "Content-Type": "application/json" } },
-        );
+        ));
       }
     }
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : "Unknown error";
-    console.error("Quote sync error:", error);
-    return new Response(JSON.stringify({ error: errorMessage }), {
+    log.error('request_failed', { error: errorMessage });
+    return log.respond(new Response(JSON.stringify({ error: errorMessage }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    }));
   }
 });
 

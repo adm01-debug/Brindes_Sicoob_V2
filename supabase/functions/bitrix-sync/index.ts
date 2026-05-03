@@ -3,6 +3,8 @@ import { authorize } from '../_shared/authorize.ts';
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 import { z } from "npm:zod@3.23.8";
 import { fetchWithBreaker, CircuitOpenError, circuitOpenResponse } from "../_shared/external-fetch.ts";
+import { createStructuredLogger } from "../_shared/structured-logger.ts";
+import { getOrCreateRequestId } from "../_shared/request-id.ts";
 
 const BitrixSyncSchema = z.object({
   action: z.enum([
@@ -23,15 +25,21 @@ function getSupabaseClient() {
 
 Deno.serve(async (req) => {
   const corsHeaders = getCorsHeaders(req);
+  const requestId = getOrCreateRequestId(req);
+  const log = createStructuredLogger({ fn: 'bitrix-sync', requestId, req });
+
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
+  log.info('request_start');
+
   try {
-    // AuthZ: bitrix-sync escreve no CRM externo — supervisor (admin) ou dev.
-    // Server-side double-check via has_role() para defesa em profundidade.
     const auth = await authorize(req, { requireRole: 'supervisor', enforceServerSide: true });
-    if (!auth.ok) return auth.response;
+    if (!auth.ok) {
+      log.warn('auth_failed', { reason: 'insufficient_privileges' });
+      return log.respond(auth.response);
+    }
 
     const bitrixWebhookUrl = Deno.env.get('BITRIX24_WEBHOOK_URL');
 
@@ -68,7 +76,10 @@ Deno.serve(async (req) => {
         // Fetch companies/clients from Bitrix24
         const response = await fetchWithBreaker("bitrix", `${bitrixWebhookUrl}/crm.company.list`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 
+            'Content-Type': 'application/json',
+            'X-Request-Id': requestId,
+          },
           body: JSON.stringify({
             select: [
               'ID',
@@ -561,21 +572,22 @@ Deno.serve(async (req) => {
         );
     }
 
-    return new Response(
+    return log.respond(new Response(
       JSON.stringify(result),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    ));
 
   } catch (error: unknown) {
     if (error instanceof CircuitOpenError) {
-      return circuitOpenResponse(error, corsHeaders);
+      log.warn('circuit_breaker_open', { service: 'bitrix' });
+      return log.respond(circuitOpenResponse(error, corsHeaders));
     }
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    console.error('Bitrix24 sync error:', errorMessage);
-    return new Response(
+    log.error('request_error', { error: errorMessage });
+    return log.respond(new Response(
       JSON.stringify({ error: errorMessage }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    ));
   }
 });
 
