@@ -233,28 +233,36 @@ export const useOrderAudit = (orderId?: string, filters?: { event_type?: string,
   };
 };
 
-export const useOrderComments = (orderId?: string) => {
+export const useOrderComments = (orderId?: string, filters?: { search?: string }) => {
   const queryClient = useQueryClient();
+  const [page, setPage] = useState(1);
+  const pageSize = 15;
 
-  const { data: comments, isLoading } = useQuery({
-    queryKey: ["order-comments", orderId],
+  const { data, isLoading } = useQuery({
+    queryKey: ["order-comments", orderId, filters, page],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from("order_comments")
         .select(`
           *,
           user:profiles(full_name, avatar_url)
-        `)
-        .eq("order_id", orderId)
-        .order("created_at", { ascending: true });
+        `, { count: 'exact' })
+        .eq("order_id", orderId!)
+        .order("created_at", { ascending: false });
+
+      if (filters?.search) {
+        query = query.ilike("content", `%${filters.search}%`);
+      }
+
+      const { data, error, count } = await query.range((page - 1) * pageSize, page * pageSize - 1);
       if (error) throw error;
-      return data;
+      return { comments: data, count };
     },
     enabled: !!orderId,
   });
 
   const addComment = useMutation({
-    mutationFn: async ({ content, isInternal = false }: { content: string, isInternal?: boolean }) => {
+    mutationFn: async ({ content, isInternal = false, attachments = null }: { content: string, isInternal?: boolean, attachments?: any[] }) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Usuário não autenticado");
 
@@ -264,7 +272,8 @@ export const useOrderComments = (orderId?: string) => {
           order_id: orderId,
           user_id: user.id,
           content,
-          is_internal: isInternal
+          is_internal: isInternal,
+          attachments
         })
         .select()
         .single();
@@ -273,10 +282,19 @@ export const useOrderComments = (orderId?: string) => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["order-comments", orderId] });
+      toast.success("Comentário enviado");
     },
   });
 
-  return { comments, isLoading, addComment };
+  return { 
+    comments: data?.comments, 
+    totalCount: data?.count,
+    isLoading, 
+    addComment,
+    page,
+    setPage,
+    pageSize
+  };
 };
 
 export const useOrderTemplates = (orderId?: string) => {
