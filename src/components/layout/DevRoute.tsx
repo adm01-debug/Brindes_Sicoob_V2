@@ -33,7 +33,7 @@ interface DevRouteProps {
  *      • CTA "Copiar link da página" para encaminhar manualmente.
  *      • Retorno para destino seguro (supervisor → /admin/usuarios, agente → /).
  */
-export function DevRoute({ children }: DevRouteProps) {
+export const DevRoute = forwardRef<HTMLDivElement, DevRouteProps>(function DevRoute({ children }, ref) {
   const {
     user,
     isDev,
