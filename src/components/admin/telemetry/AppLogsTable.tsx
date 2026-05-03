@@ -80,6 +80,7 @@ export function AppLogsTable() {
                 <TableHead>Tabela</TableHead>
                 <TableHead>Severidade</TableHead>
                 <TableHead>Duração</TableHead>
+                <TableHead>Request ID</TableHead>
                 <TableHead>Mensagem</TableHead>
               </TableRow>
             </TableHeader>
@@ -87,7 +88,7 @@ export function AppLogsTable() {
               {isLoading ? (
                 Array.from({ length: 5 }).map((_, i) => (
                   <TableRow key={i}>
-                    <TableCell colSpan={6}><Skeleton className="h-4 w-full" /></TableCell>
+                    <TableCell colSpan={7}><Skeleton className="h-4 w-full" /></TableCell>
                   </TableRow>
                 ))
               ) : data?.logs?.map((log: any) => (
@@ -97,6 +98,9 @@ export function AppLogsTable() {
                   <TableCell className="text-xs">{log.table_name || log.rpc_name}</TableCell>
                   <TableCell>{getSeverityBadge(log.severity)}</TableCell>
                   <TableCell className="text-xs">{log.duration_ms}ms</TableCell>
+                  <TableCell className="font-mono text-[10px] text-muted-foreground truncate max-w-[100px]" title={log.request_id}>
+                    {log.request_id || "-"}
+                  </TableCell>
                   <TableCell className="text-xs max-w-xs truncate" title={log.error_message}>
                     {log.error_message || "-"}
                   </TableCell>
@@ -104,7 +108,7 @@ export function AppLogsTable() {
               ))}
               {!isLoading && (!data?.logs || data.logs.length === 0) && (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center py-10 text-muted-foreground">
+                  <TableCell colSpan={7} className="text-center py-10 text-muted-foreground">
                     Nenhum log encontrado.
                   </TableCell>
                 </TableRow>
