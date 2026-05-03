@@ -46,6 +46,7 @@ export async function exportOrdersToPDF(orderIds: string[]) {
 }
 
 export const QUOTE_EXPORT_COLUMNS = ["ID", "Número", "Cliente", "Vendedor", "Status", "Valor Total", "Data de Criação"];
+export const ORDER_EXPORT_COLUMNS = ["ID", "Número", "Cliente", "Status", "Total", "Data"];
 
 export async function exportToExcel(data: any[], filename: string) {
   try {
