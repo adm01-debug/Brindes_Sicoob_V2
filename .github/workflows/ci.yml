@@ -77,8 +77,8 @@ jobs:
       - name: ESLint baseline gate (bloqueia apenas regressões novas)
         run: node scripts/check-eslint-baseline.mjs
 
-      - name: TypeScript type check
-        run: npx tsc --noEmit
+      - name: TypeScript type check (Strict)
+        run: npx tsc --noEmit --pretty
 
       - name: Run tests
         run: npm run test
