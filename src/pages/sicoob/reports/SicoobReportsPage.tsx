@@ -181,7 +181,7 @@ export default function SicoobReportsPage() {
                         <TableRow key={order.id}>
                           <TableCell className="text-xs">{new Date(order.created_at).toLocaleDateString('pt-BR')}</TableCell>
                           <TableCell className="font-mono text-xs">#{order.order_number || order.id.slice(0, 8)}</TableCell>
-                          <TableCell><Badge variant="secondary" className="text-[10px] uppercase">{order.status}</Badge></TableCell>
+                          <TableCell><OrderStatusBadge status={order.status} className="text-[10px] uppercase" /></TableCell>
                           <TableCell className="text-right font-medium">{formatCurrency(order.total_amount)}</TableCell>
                         </TableRow>
                       ))
