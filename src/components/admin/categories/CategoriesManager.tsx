@@ -411,7 +411,9 @@ function CategoryFormDialog({ open, onOpenChange, category, onSave, categories }
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancelar
             </Button>
-            <Button type="submit">Salvar</Button>
+            <Button type="submit" disabled={isLoading}>
+              {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Salvar'}
+            </Button>
           </DialogFooter>
         </form>
       </DialogContent>
