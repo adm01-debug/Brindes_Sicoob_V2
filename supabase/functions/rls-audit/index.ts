@@ -24,6 +24,8 @@ Deno.serve(async (req) => {
     const ANON = Deno.env.get("SUPABASE_ANON_KEY")!;
     const SERVICE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
+    console.log(`RLS Audit triggered: isAdminAudit=${isAdminAudit}, hasTarget=${!!targetUserId}`);
+
     const adminClient = createClient(SUPABASE_URL, SERVICE, {
       auth: { persistSession: false },
     });
