@@ -34,7 +34,7 @@ export default function GestorConsolidatedOrdersPage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <Card className="border-[1.5px] bg-primary/5">
+            <Card className="border-[1.5px] bg-sicoob-green/5 border-sicoob-green/20">
                 <CardHeader className="pb-2">
                     <CardTitle className="text-sm font-medium">Aguardando Vendedor</CardTitle>
                 </CardHeader>
