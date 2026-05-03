@@ -2,7 +2,7 @@ import { type ComponentType } from "react";
 
 export type RouteConfig = {
   path: string;
-  component: React.LazyExoticComponent<ComponentType<any>> | ComponentType<any>;
+  component: ComponentType<any>;
   exact?: boolean;
 };
 
