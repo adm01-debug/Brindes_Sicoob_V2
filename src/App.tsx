@@ -12,6 +12,7 @@ import { ProtectedRoute } from "@/components/layout/ProtectedRoute";
 import { AdminRoute } from "@/components/layout/AdminRoute";
 import { DevRoute } from "@/components/layout/DevRoute";
 import { DeprecatedRoute } from "@/components/layout/DeprecatedRoute";
+import { SicoobRoute } from "@/components/layout/SicoobRoute";
 import { AppProviders } from "@/components/providers/AppProviders";
 import { AccessibilityProvider, AriaLiveProvider } from "@/components/a11y";
 import { useGlobalErrorCatcher } from "@/hooks/useErrorHandler";
@@ -156,17 +157,11 @@ const App = () => {
                                 <Route key={r.path} path={r.path} element={<r.component />} />
                               ))}
                               
-                              <Route element={<ProtectedRoute requiredRole="gestor_compras" />}>
-                                {sicoobRoutes.filter(r => r.path !== "/sicoob/vendas").map(r => (
+                              <Route element={<SicoobRoute />}>
+                                {sicoobRoutes.map(r => (
                                   <Route key={r.path} path={r.path} element={<r.component />} />
                                 ))}
                                 <Route path="/admin/design-system/colors" element={<ColorDocumentationPage />} />
-                              </Route>
-
-                              <Route element={<ProtectedRoute requiredRole="vendedor" />}>
-                                {sicoobRoutes.filter(r => r.path === "/sicoob/vendas").map(r => (
-                                  <Route key={r.path} path={r.path} element={<r.component />} />
-                                ))}
                               </Route>
                             </Route>
 
