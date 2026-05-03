@@ -153,20 +153,69 @@ export function useQuotes() {
     }
   };
 
-  const updateQuoteStatus = async (quoteId: string, status: Quote["status"]): Promise<boolean> => {
+  const updateQuoteStatus = async (quoteId: string, status: Quote["status"], notes?: string): Promise<boolean> => {
     try {
-      const oldStatus = quotes.find(q => q.id === quoteId)?.status || "draft";
-      // rls-allow: applySellerScope chamado dinamicamente; mutações por id com RLS
-      const { error: updErr } = await supabase.from("quotes").update({ status }).eq("id", quoteId);
+      const quote = quotes.find(q => q.id === quoteId);
+      const oldStatus = quote?.status || "draft";
+      
+      const updateData: Record<string, any> = { status };
+      if (notes) updateData.rejection_notes = notes;
+      if (status === 'approved_singular') {
+        updateData.approved_at = new Date().toISOString();
+        updateData.approved_by = user?.id;
+      }
+
+      // rls-allow: lookup por id; RLS valida ownership
+      const { error: updErr } = await supabase.from("quotes").update(updateData).eq("id", quoteId);
       if (updErr) throw new Error(updErr.message);
+
+      // Notification logic (asynchronous)
+      const sendNotifications = async () => {
+        try {
+          if (status === 'pending_singular_approval') {
+            const { data: buyers } = await supabase.from('profiles')
+              .select('user_id')
+              .eq('cooperativa_id', quote?.singular_id || '')
+              .in('role', ['gestor_compras', 'comprador_singular']);
+            
+            if (buyers?.length) {
+              const notifs = buyers.map(b => ({
+                user_id: b.user_id,
+                title: "Nova solicitação de PAC",
+                message: `O PAC enviou o orçamento ${quote?.quote_number} para aprovação.`,
+                type: 'info',
+                category: 'approval',
+                action_url: `/orcamentos/${quoteId}`
+              }));
+              await supabase.from('workspace_notifications').insert(notifs);
+            }
+          } else if (['approved_singular', 'rejected_singular'].includes(status)) {
+            if (quote?.seller_id) {
+              await supabase.from('workspace_notifications').insert({
+                user_id: quote.seller_id,
+                title: status === 'approved_singular' ? "Solicitação Aprovada" : "Solicitação Reprovada",
+                message: status === 'approved_singular' 
+                  ? `Sua solicitação ${quote.quote_number} foi aprovada pela Singular.`
+                  : `Sua solicitação ${quote.quote_number} foi devolvida para ajustes.`,
+                type: status === 'approved_singular' ? 'success' : 'warning',
+                category: 'quote',
+                action_url: `/orcamentos/${quoteId}`
+              });
+            }
+          }
+        } catch (e) { console.warn("Failed to send notification:", e); }
+      };
+      sendNotifications();
+
       await logQuoteHistory(quoteId, "status_changed",
-        `Status alterado de "${STATUS_LABELS[oldStatus]}" para "${STATUS_LABELS[status]}"`,
-        { fieldChanged: "status", oldValue: oldStatus, newValue: status }
+        `Status alterado de "${STATUS_LABELS[oldStatus]}" para "${STATUS_LABELS[status]}"${notes ? `. Motivo: ${notes}` : ""}`,
+        { fieldChanged: "status", oldValue: oldStatus, newValue: status, metadata: notes ? { notes } : {} }
       );
       toast.success("Status atualizado");
       await fetchQuotes();
       return true;
-    } catch {
+    } catch (err) {
+      console.error("Error updating status:", err);
       toast.error("Erro ao atualizar status");
       return false;
     }

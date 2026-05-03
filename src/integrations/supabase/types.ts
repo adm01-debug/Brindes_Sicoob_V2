@@ -6714,6 +6714,18 @@ export type Database = {
         }[]
       }
       seed_discount_test_users: { Args: never; Returns: Json }
+      send_notification: {
+        Args: {
+          p_action_url?: string
+          p_category?: string
+          p_message: string
+          p_metadata?: Json
+          p_title: string
+          p_type?: string
+          p_user_id: string
+        }
+        Returns: string
+      }
       set_connection_failure_window_minutes: {
         Args: { minutes: number }
         Returns: number

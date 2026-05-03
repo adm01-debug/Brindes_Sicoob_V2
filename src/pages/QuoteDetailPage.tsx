@@ -9,6 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { QuoteHistoryTimeline } from "@/components/quotes/QuoteHistoryTimeline";
+import { QuoteApprovalNotes } from "@/components/quotes/QuoteApprovalNotes";
 import { QuoteCommentsThread } from "@/components/quotes/QuoteCommentsThread";
 import { QuoteVersionsList } from "@/components/quotes/QuoteVersionsList";
 import { QuoteOrderBadge } from "@/components/quotes/QuoteOrderBadge";
@@ -62,7 +63,14 @@ export default function QuoteDetailPage() {
           </div>
         </header>
 
-        <QuoteSingularApprovalActions quoteId={quote.id} status={quote.status} onActionComplete={() => refetch()} />
+        <QuoteApprovalNotes notes={quote.rejection_notes} status={quote.status} />
+
+        <QuoteSingularApprovalActions 
+          quoteId={quote.id} 
+          status={quote.status} 
+          quoteNumber={quote.quote_number} 
+          onActionComplete={() => refetch()} 
+        />
 
         {isConverted && (
           <div className="flex items-start gap-3 rounded-lg border border-success/30 bg-success/5 px-4 py-3">

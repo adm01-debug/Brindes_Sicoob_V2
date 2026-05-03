@@ -19,7 +19,7 @@ export interface QuoteStatusConfig {
 
 export const QUOTE_STATUS_CONFIG: Record<string, QuoteStatusConfig> = {
   draft: {
-    label: "Rascunho",
+    label: "Em rascunho",
     color: "hsl(var(--muted-foreground))",
     badgeVariant: "secondary",
     badgeClassName: "bg-warning/10 text-warning border-warning/40 border-dashed",
@@ -32,7 +32,7 @@ export const QUOTE_STATUS_CONFIG: Record<string, QuoteStatusConfig> = {
     icon: "shield",
   },
   pending_singular_approval: {
-    label: "Aprovação Singular",
+    label: "Em análise Singular",
     color: "hsl(142, 71%, 45%)",
     badgeVariant: "outline",
     badgeClassName: "bg-emerald-500/15 text-emerald-600 border-emerald-500/30",
@@ -45,20 +45,20 @@ export const QUOTE_STATUS_CONFIG: Record<string, QuoteStatusConfig> = {
     badgeClassName: "bg-emerald-600/15 text-emerald-700 border-emerald-600/30",
   },
   rejected_singular: {
-    label: "Rejeitado Singular",
+    label: "Reprovado Singular",
     color: "hsl(var(--destructive))",
     badgeVariant: "destructive",
     badgeClassName: "bg-destructive/15 text-destructive border-destructive/30",
   },
   pending: {
-    label: "Pendente",
+    label: "Enviado",
     color: "hsl(var(--warning))",
     badgeVariant: "outline",
     badgeClassName: "bg-info/15 text-info border-info/30",
     icon: "pulse",
   },
   sent: {
-    label: "Enviado",
+    label: "Em análise",
     color: "hsl(var(--info))",
     badgeVariant: "default",
     badgeClassName: "bg-primary/15 text-primary border-primary/30",
@@ -70,13 +70,13 @@ export const QUOTE_STATUS_CONFIG: Record<string, QuoteStatusConfig> = {
     badgeClassName: "bg-success/15 text-success border-success/30",
   },
   converted: {
-    label: "Convertido em Pedido",
+    label: "Oficializado",
     color: "hsl(var(--success))",
     badgeVariant: "default",
     badgeClassName: "bg-success/15 text-success border-success/30",
   },
   rejected: {
-    label: "Rejeitado",
+    label: "Reprovado",
     color: "hsl(var(--destructive))",
     badgeVariant: "destructive",
     badgeClassName: "bg-destructive/15 text-destructive border-destructive/30",

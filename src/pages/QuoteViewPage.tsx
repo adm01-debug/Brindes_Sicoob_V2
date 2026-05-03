@@ -25,6 +25,7 @@ import { QuoteMobileActionBar } from "@/components/quotes/QuoteMobileActionBar";
 import { QuoteCommentsSection } from "@/components/quotes/QuoteCommentsSection";
 import { QuoteApprovalLinkCard } from "@/components/quotes/QuoteApprovalLinkCard";
 import { QuoteVersionHistory } from "@/components/quotes/QuoteVersionHistory";
+import { QuoteApprovalNotes } from "@/components/quotes/QuoteApprovalNotes";
 import { PresentationMode } from "@/components/presentation/PresentationMode";
 import { QuoteClientInfo } from "@/components/quotes/QuoteClientInfo";
 import { QuoteItemsTable } from "@/components/quotes/QuoteItemsTable";
@@ -195,7 +196,16 @@ export default function QuoteViewPage() {
         </div>
         
         {/* Singular Approval Actions */}
-        {id && quote && <QuoteSingularApprovalActions quoteId={id} status={quote.status} onActionComplete={() => { if (id) fetchQuote(id).then(setQuote); }} />}
+        {id && quote && <QuoteApprovalNotes notes={quote.rejection_notes} status={quote.status} />}
+        
+        {id && quote && (
+          <QuoteSingularApprovalActions 
+            quoteId={id} 
+            status={quote.status} 
+            quoteNumber={quote.quote_number} 
+            onActionComplete={() => { if (id) fetchQuote(id).then(setQuote); }} 
+          />
+        )}
 
         {/* Discount Approval Banner */}
         {quote.status === "pending_approval" && (
