@@ -35,6 +35,7 @@
     "test:strict-ref": "STRICT_REF_WARNINGS=1 vitest run && node scripts/consolidate-console-snapshot.mjs",
     "smoke": "node scripts/smoke-tests.mjs",
     "test:e2e:smoke": "node scripts/run-smoke-filtered.mjs",
+    "test:e2e:smoke:2h": "node scripts/run-smoke-filtered.mjs --tag @smoke-2h",
     "test:e2e:smoke:headed": "npx playwright test --project=chromium-smoke --workers=1 --headed",
     "test:e2e:smoke:ui": "npx playwright test --project=chromium-smoke --workers=1 --ui",
     "test:e2e:smoke:debug": "npx playwright test --project=chromium-smoke --workers=1 --debug",
