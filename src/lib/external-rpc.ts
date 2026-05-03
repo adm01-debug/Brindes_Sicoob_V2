@@ -9,6 +9,12 @@
  */
 import { supabase } from '@/integrations/supabase/client';
 import { logger } from "@/lib/logger";
+import { CircuitBreaker } from "@/lib/security/circuit-breaker";
+
+const externalRpcBreaker = new CircuitBreaker('ExternalRPC', {
+  failureThreshold: 10,
+  cooldownPeriodMs: 60000,
+});
 
 const MAX_RETRIES = 3;
 const INITIAL_BACKOFF_MS = 800;
@@ -34,29 +40,31 @@ export async function invokeExternalRpc<T>(
   rpcName: string,
   params: Record<string, unknown>
 ): Promise<T> {
-  for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
-    const { data, error } = await supabase.functions.invoke('external-db-bridge', {
-      body: {
-        operation: 'rpc',
-        rpcName,
-        rpcParams: params,
-      },
-    });
+  return externalRpcBreaker.execute(async () => {
+    for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+      const { data, error } = await supabase.functions.invoke('external-db-bridge', {
+        body: {
+          operation: 'rpc',
+          rpcName,
+          rpcParams: params,
+        },
+      });
 
-    if (!error && data?.success) {
-      return data.data as T;
+      if (!error && data?.success) {
+        return data.data as T;
+      }
+
+      const msg = error?.message || data?.error || 'Erro na RPC';
+      if (attempt < MAX_RETRIES && isRetryableError(msg)) {
+        const delay = INITIAL_BACKOFF_MS * Math.pow(2, attempt);
+        logger.warn(`[external-rpc] Retry ${attempt + 1}/${MAX_RETRIES} for ${rpcName} after ${delay}ms: ${msg}`);
+        await new Promise(r => setTimeout(r, delay));
+        continue;
+      }
+
+      throw new Error(msg);
     }
 
-    const msg = error?.message || data?.error || 'Erro na RPC';
-    if (attempt < MAX_RETRIES && isRetryableError(msg)) {
-      const delay = INITIAL_BACKOFF_MS * Math.pow(2, attempt);
-      logger.warn(`[external-rpc] Retry ${attempt + 1}/${MAX_RETRIES} for ${rpcName} after ${delay}ms: ${msg}`);
-      await new Promise(r => setTimeout(r, delay));
-      continue;
-    }
-
-    throw new Error(msg);
-  }
-
-  throw new Error('Max retries exceeded');
+    throw new Error('Max retries exceeded');
+  });
 }

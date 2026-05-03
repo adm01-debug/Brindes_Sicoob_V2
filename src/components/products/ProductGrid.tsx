@@ -70,6 +70,8 @@ function ProductCardWrapper({
         "relative",
         isSelected && "ring-2 ring-primary/40 rounded-xl"
       )}
+      role="gridcell"
+      aria-selected={isSelected}
       style={reducedMotion ? undefined : {
         transitionDelay: hasAnimated ? '0ms' : `${Math.min(index * 80, 800)}ms`,
       }}
@@ -184,6 +186,9 @@ export function ProductGrid({
     <div 
       ref={containerRef}
       className="relative w-full overflow-hidden"
+      role="grid"
+      aria-label="Catálogo de produtos"
+      aria-busy={!isGridVisible}
     >
       <div
         style={{
@@ -202,6 +207,7 @@ export function ProductGrid({
               className={`grid ${columnClasses[columns] || columnClasses[5]} absolute top-0 left-0 w-full ${
                 columns >= 8 ? 'gap-x-4 gap-y-8' : columns >= 6 ? 'gap-x-6 gap-y-8' : 'gap-x-8 gap-y-8'
               }`}
+              role="row"
               style={{
                 height: `${virtualRow.size}px`,
                 transform: `translateY(${virtualRow.start}px)`,
