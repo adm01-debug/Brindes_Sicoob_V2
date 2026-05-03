@@ -180,12 +180,44 @@ export default function AdminCampanhasPage() {
         </div>
 
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
-            <div><CardTitle>Lista de Campanhas</CardTitle><CardDescription>Monitore e gerencie o status das campanhas</CardDescription></div>
-            <Button onClick={() => { setEditingCampaign(null); setIsFormOpen(true); }} className="gap-2"><Plus className="h-4 w-4" /> Nova Campanha</Button>
+          <CardHeader className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+              <CardTitle>Lista de Campanhas</CardTitle>
+              <CardDescription>Monitore e gerencie o status das campanhas</CardDescription>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <Button variant="outline" size="sm" onClick={() => handleExport('xlsx')} className="gap-2">
+                <FileDown className="h-4 w-4" /> XLSX
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => handleExport('csv')} className="gap-2">
+                <Download className="h-4 w-4" /> CSV
+              </Button>
+              <Button onClick={() => { setEditingCampaign(null); setIsFormOpen(true); }} className="gap-2">
+                <Plus className="h-4 w-4" /> Nova Campanha
+              </Button>
+            </div>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="relative"><Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" /><Input placeholder="Buscar por nome..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-9" /></div>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input placeholder="Buscar por nome..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-9" />
+              </div>
+              <Select value={filters.status} onValueChange={(v) => setFilters(f => ({ ...f, status: v }))}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos os Status</SelectItem>
+                  <SelectItem value="active">Ativa</SelectItem>
+                  <SelectItem value="paused">Pausada</SelectItem>
+                  <SelectItem value="completed">Concluída</SelectItem>
+                  <SelectItem value="draft">Rascunho</SelectItem>
+                </SelectContent>
+              </Select>
+              <Input type="date" value={filters.startDate} onChange={(e) => setFilters(f => ({ ...f, startDate: e.target.value }))} className="w-full" />
+              <Input type="date" value={filters.endDate} onChange={(e) => setFilters(f => ({ ...f, endDate: e.target.value }))} className="w-full" />
+            </div>
             <div className="rounded-md border">
               <Table>
                 <TableHeader>
