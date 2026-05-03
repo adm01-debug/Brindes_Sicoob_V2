@@ -52,6 +52,13 @@ const renderPalette = () => {
 describe("GlobalSearchPalette", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    
+    // Mock ResizeObserver
+    global.ResizeObserver = vi.fn().mockImplementation(() => ({
+      observe: vi.fn(),
+      unobserve: vi.fn(),
+      disconnect: vi.fn(),
+    }));
   });
 
   it("renders correctly when open with no results", () => {
