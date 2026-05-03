@@ -43,17 +43,14 @@ vi.mock('sonner', () => ({
   },
 }));
 
-describe('Categories Flow - Validation & Editing', () => {
+describe('Categories Flow - CRUD & Validation', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
   it('should validate invalid fields and show toast errors', async () => {
     render(<CategoriesManager />);
-    
-    // Wait for initial load
     await waitFor(() => expect(screen.getByText('Existing')).toBeDefined());
-
     fireEvent.click(screen.getByText(/Nova Categoria/i));
 
     const saveButton = screen.getByText(/Salvar/i);
@@ -66,35 +63,76 @@ describe('Categories Flow - Validation & Editing', () => {
     fireEvent.change(slugInput, { target: { value: 'Invalid Slug!' } });
     fireEvent.click(saveButton);
     expect(toast.error).toHaveBeenCalledWith(expect.stringContaining("O slug deve conter apenas"));
+    expect(screen.getByLabelText(/Nome/i)).toBeInTheDocument(); // Modal stays open
 
     // 2. Negative Sort Order
     fireEvent.change(slugInput, { target: { value: 'valid-slug' } });
     fireEvent.change(orderInput, { target: { value: '-1' } });
     fireEvent.click(saveButton);
     expect(toast.error).toHaveBeenCalledWith("A ordem não pode ser um valor negativo");
+    expect(screen.getByLabelText(/Nome/i)).toBeInTheDocument(); // Modal stays open
 
     // 3. Duplicate Slug
     fireEvent.change(orderInput, { target: { value: '10' } });
     fireEvent.change(slugInput, { target: { value: 'existing-slug' } });
     fireEvent.click(saveButton);
     expect(toast.error).toHaveBeenCalledWith("Este slug já está sendo usado por outra categoria");
+    expect(screen.getByLabelText(/Nome/i)).toBeInTheDocument(); // Modal stays open
   });
 
-  it('should load correct values when editing', async () => {
+  it('should successfully create a new category', async () => {
     render(<CategoriesManager />);
+    await waitFor(() => expect(screen.getByText('Existing')).toBeDefined());
+    fireEvent.click(screen.getByText(/Nova Categoria/i));
+
+    fireEvent.change(screen.getByLabelText(/Nome/i), { target: { value: 'New Category' } });
+    fireEvent.change(screen.getByLabelText(/Slug/i), { target: { value: 'new-category' } });
+    fireEvent.click(screen.getByText(/Salvar/i));
+
+    await waitFor(() => {
+      expect(supabase.from).toHaveBeenCalledWith('product_categories');
+      expect(toast.success).toHaveBeenCalledWith("Categoria criada com sucesso");
+    });
     
-    // Wait for the table to render the existing category
+    // Check if modal closed (it shouldn't be in the document anymore)
+    await waitFor(() => {
+      expect(screen.queryByLabelText(/Nome/i)).toBeNull();
+    });
+  });
+
+  it('should successfully update an existing category', async () => {
+    render(<CategoriesManager />);
     await waitFor(() => expect(screen.getByText('Existing')).toBeDefined());
 
-    // Find and click the edit button (usually an icon, we'll look for the Pencil icon or button)
     const editButtons = screen.getAllByRole('button').filter(b => b.querySelector('svg.lucide-pencil'));
-    if (editButtons.length > 0) {
-      fireEvent.click(editButtons[0]);
-      
-      // Check if fields are populated
-      expect((screen.getByLabelText(/Nome/i) as HTMLInputElement).value).toBe('Existing');
-      expect((screen.getByLabelText(/Slug/i) as HTMLInputElement).value).toBe('existing-slug');
-      expect((screen.getByLabelText(/Ordem/i) as HTMLInputElement).value).toBe('1');
-    }
+    fireEvent.click(editButtons[0]);
+
+    fireEvent.change(screen.getByLabelText(/Nome/i), { target: { value: 'Updated Name' } });
+    fireEvent.click(screen.getByText(/Salvar/i));
+
+    await waitFor(() => {
+      expect(supabase.from).toHaveBeenCalledWith('product_categories');
+      expect(toast.success).toHaveBeenCalledWith("Categoria atualizada com sucesso");
+    });
+  });
+
+  it('should show error toast when supabase fails on insert', async () => {
+    (supabase.from as any).mockImplementationOnce(() => ({
+      select: vi.fn().mockReturnThis(),
+      order: vi.fn().mockResolvedValue({ data: [], error: null }),
+      insert: vi.fn().mockReturnThis(),
+      select: vi.fn().mockReturnThis(),
+      single: vi.fn().mockResolvedValue({ data: null, error: { message: 'DB Error' } }),
+    }));
+
+    render(<CategoriesManager />);
+    fireEvent.click(screen.getByText(/Nova Categoria/i));
+    fireEvent.change(screen.getByLabelText(/Nome/i), { target: { value: 'Error Test' } });
+    fireEvent.change(screen.getByLabelText(/Slug/i), { target: { value: 'error-test' } });
+    fireEvent.click(screen.getByText(/Salvar/i));
+
+    await waitFor(() => {
+      expect(toast.error).toHaveBeenCalledWith("Erro ao salvar categoria");
+    });
   });
 });
