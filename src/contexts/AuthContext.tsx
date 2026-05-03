@@ -20,6 +20,8 @@ export type AppRole =
   | "dev"
   | "gestor_compras"
   | "gerente_pa"
+  | "comprador_pac"
+  | "comprador_singular"
   | "vendedor"
   | "supervisor"
   | "agente"
@@ -57,12 +59,12 @@ interface AuthContextType {
   // Helpers da hierarquia Sicoob/Flow
   isDev: boolean;
   isGestorCompras: boolean;
+  isCompradorSingular: boolean;
   isGerentePa: boolean;
   isVendedor: boolean;
   isSupervisor: boolean;
   isAgente: boolean;
   isSupervisorOrAbove: boolean; // dev OR supervisor OR gestor_compras
-  canManage: boolean;           // Alias para isSupervisorOrAbove
   // IDs organizacionais
   cooperativaId: string | null;
   paId: string | null;
@@ -346,11 +348,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const role = useMemo(() => getHighestRole(userRoles), [userRoles]);
   const isDev = userRoles.includes("dev");
   const isGestorCompras = userRoles.includes("gestor_compras");
-  const isGerentePa = userRoles.includes("gerente_pa");
+  const isGerentePa = userRoles.includes("gerente_pa") || userRoles.includes("comprador_pac");
   const isVendedor = userRoles.includes("vendedor");
   const isSupervisor = userRoles.includes("supervisor") || userRoles.includes("admin");
   const isAgente = userRoles.includes("agente");
-  const isSupervisorOrAbove = isDev || isSupervisor || isGestorCompras;
+  const isCompradorSingular = userRoles.includes("comprador_singular") || userRoles.includes("gestor_compras");
+  const isSupervisorOrAbove = isDev || isSupervisor || isCompradorSingular;
   const canManage = isSupervisorOrAbove;
 
   const cooperativaId = profile?.cooperativa_id || null;

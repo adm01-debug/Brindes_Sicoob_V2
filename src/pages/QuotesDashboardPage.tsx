@@ -18,7 +18,7 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useQuotesDashboard, statusConfig, formatCurrency, formatResponseTime } from "./quotes-dashboard/useQuotesDashboard";
 
-export default function QuotesDashboardPage() {
+export function QuotesDashboardPage() {
   const navigate = useNavigate();
   const s = useQuotesDashboard();
 

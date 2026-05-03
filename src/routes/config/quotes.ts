@@ -3,6 +3,8 @@ import { defineRoute } from "@/lib/router-utils";
 
 export const quoteRoutes = [
   defineRoute({ path: "/orcamentos", component: lazyWithRetry(() => import("@/pages/QuotesListPage")) }),
+  defineRoute({ path: "/meus-orcamentos", component: lazyWithRetry(() => import("@/pages/MeusOrcamentos")) }),
+  defineRoute({ path: "/gestor/orcamentos", component: lazyWithRetry(() => import("@/pages/GestorOrcamentos")) }),
   defineRoute({ path: "/orcamentos/dashboard", component: lazyWithRetry(() => import("@/pages/QuotesDashboardPage")) }),
   defineRoute({ path: "/orcamentos/lista", component: lazyWithRetry(() => import("@/pages/QuotesListPage")) }),
   defineRoute({ path: "/orcamentos/kanban", component: lazyWithRetry(() => import("@/pages/QuotesKanbanPage")) }),

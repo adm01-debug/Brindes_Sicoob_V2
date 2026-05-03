@@ -67,7 +67,8 @@ const navGroups: NavGroup[] = [
     defaultOpen: true,
     items: [
       { icon: Plus, label: "Novo Orçamento", href: "/orcamentos/novo", shortcut: "Alt+N" },
-      { icon: FileText, label: "Orçamentos", href: "/orcamentos", tourId: "quotes", exact: true, shortcut: "Alt+O" },
+      { icon: FileText, label: "Meus Orçamentos", href: "/meus-orcamentos", tourId: "quotes", exact: true, shortcut: "Alt+O" },
+      { icon: ClipboardCheck, label: "Gestão Singular", href: "/gestor/orcamentos", adminOnly: true },
       { icon: ShoppingCart, label: "Carrinhos", href: "/carrinhos", shortcut: "Alt+R" },
     ],
   },
