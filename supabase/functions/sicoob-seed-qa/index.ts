@@ -88,16 +88,16 @@ Deno.serve(async (req) => {
       report.details.push("Created additional PA for consolidation validation");
     } else if (scenario === "alcada-gestor") {
       steps.push("Submeter pedido > R$ 5.000", "Verificar status 'Aguardando Aprovação'", "Aprovar via Gestor de Compras");
-      // Seed a pending order that exceeds the PA limit
-      await supabase.from("pedidos").insert({
+      // Seed a pending order using sicoob_orders table
+      await supabase.from("sicoob_orders").insert({
         id: "00000000-0000-0000-0000-0000000000d1",
         pa_id: "00000000-0000-0000-0000-0000000000b1",
         solicitante_id: "00000000-0000-0000-0000-0000000000a1",
         status: "pendente_aprovacao",
-        valor_total: 7500.00,
-        observacao: "Pedido QA excedendo alçada para teste de fluxo de aprovação"
+        total_amount: 7500.00,
+        notes: "Pedido QA excedendo alçada para teste de fluxo de aprovação"
       });
-      report.details.push("Created pending order R$ 7.500 for approval flow testing");
+      report.details.push("Created pending order R$ 7.500 in sicoob_orders for approval flow testing");
     } else if (scenario === "rls-cross") {
       steps.push("Tentar acessar PA de outra Singular", "Verificar erro 403 / Lista vazia");
       // Seed a PA in another cooperative
