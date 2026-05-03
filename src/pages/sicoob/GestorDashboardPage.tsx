@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { MainLayout } from "@/components/layout/MainLayout";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Users, FileText, CheckCircle2, Clock, Building, ArrowRight } from "lucide-react";
+import { Users, FileText, CheckCircle2, Clock, Building, ArrowRight, Wallet, TrendingUp } from "lucide-react";
 import { formatCurrency } from "@/utils/formatters";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
@@ -12,7 +12,6 @@ export default function GestorDashboardPage() {
   const { data: stats } = useQuery({
     queryKey: ["sicoob-gestor-stats"],
     queryFn: async () => {
-      // Simulação de KPIs do Gestor Singular
       return {
         totalPAs: 12,
         pendingApprovals: 5,
@@ -136,6 +135,3 @@ export default function GestorDashboardPage() {
     </MainLayout>
   );
 }
-
-// Helper icons missing in imports
-import { Wallet } from "lucide-react";
