@@ -37,7 +37,7 @@ describe("ProtectedRoute", () => {
       </MemoryRouter>
     );
 
-    expect(screen.getByRole("progressbar", { hidden: true })).toBeDefined();
+    expect(document.querySelector(".animate-spin")).toBeDefined();
   });
 
   it("redirects to /login when no user session", () => {
