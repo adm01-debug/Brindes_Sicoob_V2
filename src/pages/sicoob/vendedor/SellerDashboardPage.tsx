@@ -38,8 +38,8 @@ export default function SellerDashboardPage() {
       <div className="container mx-auto p-6 space-y-8 animate-fade-in">
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-bold font-display tracking-tight">Minha Carteira</h1>
-            <p className="text-muted-foreground">Gestão comercial e acompanhamento de metas SICOOB.</p>
+            <h1 className="text-3xl font-bold font-display tracking-tight text-sicoob-green-dark">Minha Carteira</h1>
+            <p className="text-muted-foreground italic">Gestão comercial e aceleração de vendas SICOOB.</p>
           </div>
           <div className="flex gap-2">
             <Button variant="outline" asChild>
