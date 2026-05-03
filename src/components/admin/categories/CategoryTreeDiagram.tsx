@@ -22,6 +22,23 @@ interface CategoryTreeDiagramProps {
 export function CategoryTreeDiagram({ categories, onEdit }: CategoryTreeDiagramProps) {
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
+
+  const breadcrumbs = useMemo(() => {
+    if (!selectedNodeId) return [];
+    
+    const path: Category[] = [];
+    let current = categories.find(c => c.id === selectedNodeId);
+    
+    while (current) {
+      path.unshift(current);
+      const parentId = current.parent_id;
+      current = categories.find(c => c.id === parentId);
+    }
+    
+    return path;
+  }, [selectedNodeId, categories]);
+
 
   const treeData = useMemo(() => {
     const map: Record<string, any> = {};
