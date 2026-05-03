@@ -7,12 +7,14 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Users, UserCog, Loader2, KeyRound, Plus, Search, Percent, ArrowUpCircle, History } from "lucide-react";
+import { Users, UserCog, Loader2, KeyRound, Plus, Search, Percent, ArrowUpCircle, History, Ticket, Lock } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { PasswordResetApproval } from "@/components/admin/PasswordResetApproval";
 import { DiscountManagementPanel } from "@/components/admin/DiscountManagementPanel";
+import { CouponManager } from "@/components/admin/CouponManager";
+import { AccessManagement } from "@/components/admin/users/AccessManagement";
 import { usePasswordResetRequests } from "@/hooks/usePasswordResetRequests";
 
 import { useUserManagement } from "@/components/admin/users/useUserManagement";
@@ -27,7 +29,7 @@ import { RoleAuditLogPanel } from "@/components/admin/users/RoleAuditLogPanel";
 import { DevAccessAuditAlert } from "@/components/admin/DevAccessAuditAlert";
 import { type UserWithRole } from "@/components/admin/users/types";
 
-const VALID_TABS = ["users", "password-reset", "discounts", "audit"] as const;
+const VALID_TABS = ["users", "password-reset", "discounts", "coupons", "access", "audit"] as const;
 type TabValue = (typeof VALID_TABS)[number];
 
 export default function AdminUsuariosPage() {
@@ -144,6 +146,18 @@ export default function AdminUsuariosPage() {
                 )}
               </TabsTrigger>
             )}
+            {isAdmin && (
+              <TabsTrigger value="coupons" className="gap-2">
+                <Ticket className="h-4 w-4" />
+                Cupons
+              </TabsTrigger>
+            )}
+            {isAdmin && (
+              <TabsTrigger value="access" className="gap-2">
+                <Lock className="h-4 w-4" />
+                Gestão de Acesso
+              </TabsTrigger>
+            )}
             {isDev && (
               <TabsTrigger value="audit" className="gap-2">
                 <History className="h-4 w-4" />
@@ -218,6 +232,25 @@ export default function AdminUsuariosPage() {
             </TabsContent>
           )}
 
+          {isAdmin && (
+            <TabsContent value="coupons">
+              <Card className="border-border/50">
+                <CardHeader>
+                  <CardTitle>Gerenciador de Cupons</CardTitle>
+                  <CardDescription>Crie e gerencie cupons de desconto para os pedidos</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <CouponManager />
+                </CardContent>
+              </Card>
+            </TabsContent>
+          )}
+
+          {isAdmin && (
+            <TabsContent value="access">
+              <AccessManagement />
+            </TabsContent>
+          )}
           {isDev && (
             <TabsContent value="audit">
               <RoleAuditLogPanel />

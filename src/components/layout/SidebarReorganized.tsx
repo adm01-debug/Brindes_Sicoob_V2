@@ -42,6 +42,11 @@ import {
   LayoutGrid,
   Bell,
   ClipboardCheck,
+  Building,
+  Handshake,
+  Megaphone,
+  Mail,
+  Wallet,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
@@ -136,19 +141,31 @@ const navGroups: NavGroup[] = [
     items: [
       { icon: Users, label: "Usuários", href: "/admin/usuarios", adminOnly: true },
       { icon: Landmark, label: "Sicoob", href: "/admin/sicoob", adminOnly: true },
-      { icon: Settings, label: "Configurações", href: "/configuracoes", adminOnly: true },
-      { icon: ShieldCheck, label: "Segurança", href: "/admin/seguranca", devOnly: true },
-      { icon: ShieldCheck, label: "Acesso & Bots", href: "/admin/seguranca-acesso", devOnly: true },
-      { icon: Plug, label: "Conexões", href: "/admin/conexoes", devOnly: true },
       { icon: FolderOpen, label: "Cadastros", href: "/admin/cadastros", adminOnly: true, children: [
         { icon: Package, label: "Produtos", href: "/admin/cadastros?tab=products" },
         { icon: Truck, label: "Fornecedores", href: "/admin/cadastros?tab=suppliers" },
         { icon: Palette, label: "Gravação", href: "/admin/cadastros?tab=personalizacao" },
+        { icon: Filter, label: "Categorias", href: "/admin/categories" },
       ]},
+      { icon: Landmark, label: "Estrutura Sicoob", adminOnly: true, children: [
+        { icon: Landmark, label: "Singulares", href: "/admin/singulares" },
+        { icon: Building, label: "Postos de Atendimento", href: "/admin/pas" },
+        { icon: Handshake, label: "Parceiros", href: "/admin/cooperativas" },
+      ]},
+      { icon: Megaphone, label: "Marketing", adminOnly: true, children: [
+        { icon: Mail, label: "Newsletter", href: "/admin/newsletter" },
+        { icon: Megaphone, label: "Campanhas", href: "/admin/campanhas" },
+        { icon: LayoutGrid, label: "CMS", href: "/admin/cms" },
+      ]},
+      { icon: DollarSign, label: "Financeiro", adminOnly: true, children: [
+        { icon: Wallet, label: "Verbas", href: "/admin/verbas" },
+      ]},
+      { icon: Activity, label: "Telemetria", href: "/admin/telemetria", devOnly: true },
+      { icon: ShieldCheck, label: "Segurança", href: "/admin/seguranca", devOnly: true },
+      { icon: ShieldCheck, label: "Acesso & Bots", href: "/admin/seguranca-acesso", devOnly: true },
+      { icon: Plug, label: "Conexões", href: "/admin/conexoes", devOnly: true },
       { icon: Sparkles, label: "Prompts IA", href: "/admin/prompts-ia", devOnly: true },
       { icon: Workflow, label: "Workflows IA", href: "/admin/workflows", devOnly: true },
-      { icon: Activity, label: "Telemetria", href: "/admin/telemetria", devOnly: true },
-      { icon: DollarSign, label: "Validade de Preços", href: "/admin/validade-precos", devOnly: true },
       { icon: ShieldCheck, label: "Auditoria RBAC", href: "/admin/rbac-rotas", devOnly: true },
     ],
   },
