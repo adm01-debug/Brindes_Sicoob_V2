@@ -24,10 +24,13 @@ interface BatchExportDialogProps {
 }
 
 export function BatchExportDialog({ entityType, filters }: BatchExportDialogProps) {
-  const { jobs = [], isLoading, createJob, retryJob } = useExportJobs();
+  const { jobs = [], scheduledExports = [], isLoading, createJob, retryJob, createScheduledExport, deleteScheduledExport } = useExportJobs();
   const [open, setOpen] = useState(false);
+  const [frequency, setFrequency] = useState<'daily' | 'weekly' | 'monthly'>('daily');
+  const [exportType, setExportType] = useState<'pdf' | 'excel'>('excel');
 
   const entityJobs = jobs.filter(j => j.entity_type === entityType);
+  const entityScheduled = scheduledExports.filter(s => s.entity_type === entityType);
 
   const getStatusIcon = (status: ExportJob['status']) => {
     switch (status) {
@@ -36,6 +39,16 @@ export function BatchExportDialog({ entityType, filters }: BatchExportDialogProp
       case 'completed': return <CheckCircle2 className="h-4 w-4 text-green-500" />;
       case 'failed': return <AlertCircle className="h-4 w-4 text-destructive" />;
     }
+  };
+
+  const handleSchedule = () => {
+    createScheduledExport({
+      entity_type: entityType,
+      export_type: exportType,
+      frequency,
+      filters,
+      is_active: true
+    });
   };
 
   return (
@@ -49,78 +62,141 @@ export function BatchExportDialog({ entityType, filters }: BatchExportDialogProp
         <DialogHeader>
           <DialogTitle>Exportação em Lote</DialogTitle>
           <DialogDescription>
-            Solicite exportações de grandes volumes. Os arquivos serão gerados em segundo plano.
+            Solicite exportações de grandes volumes ou agende envios periódicos.
           </DialogDescription>
         </DialogHeader>
 
-        <div className="flex gap-2 mb-6">
-          <Button 
-            className="flex-1 gap-2" 
-            onClick={() => createJob({ export_type: 'excel', entity_type: entityType, filters })}
-          >
-            <FileSpreadsheet className="h-4 w-4" /> Solicitar Excel
-          </Button>
-          <Button 
-            className="flex-1 gap-2" 
-            variant="secondary"
-            onClick={() => createJob({ export_type: 'pdf', entity_type: entityType, filters })}
-          >
-            <FileText className="h-4 w-4" /> Solicitar PDF
-          </Button>
-        </div>
+        <Tabs defaultValue="instant" className="mt-4">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="instant">Exportação Instantânea</TabsTrigger>
+            <TabsTrigger value="scheduled">Agendamento</TabsTrigger>
+          </TabsList>
 
-        <div className="space-y-4">
-          <h4 className="text-sm font-semibold">Histórico de Exportações</h4>
-          <ScrollArea className="h-[300px] pr-4">
-            {isLoading ? (
-              <div className="py-10 text-center text-muted-foreground">Carregando histórico...</div>
-            ) : entityJobs.length === 0 ? (
-              <div className="py-10 text-center text-muted-foreground border border-dashed rounded-lg">
-                Nenhuma exportação solicitada recentemente.
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {entityJobs.map((job) => (
-                  <div key={job.id} className="p-3 border rounded-lg flex items-center justify-between gap-4">
-                    <div className="flex items-center gap-3">
-                      {getStatusIcon(job.status)}
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm font-medium uppercase">{job.export_type}</span>
-                          <Badge variant="outline" className="text-[10px] h-4">
-                            {format(new Date(job.created_at), 'dd/MM HH:mm', { locale: ptBR })}
-                          </Badge>
-                        </div>
-                        <p className="text-xs text-muted-foreground">
-                          {job.status === 'completed' 
-                            ? `${job.total_count} registros processados` 
-                            : job.status === 'failed' 
-                              ? `Erro: ${job.error_message}`
-                              : 'Aguardando processamento...'}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      {job.status === 'completed' && job.file_url && (
-                        <Button size="icon" variant="ghost" className="h-8 w-8" asChild>
-                          <a href={job.file_url} target="_blank" rel="noopener noreferrer">
-                            <ExternalLink className="h-4 w-4" />
-                          </a>
-                        </Button>
-                      )}
-                      {job.status === 'failed' && (
-                        <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => retryJob(job.id)}>
-                          <RefreshCw className="h-4 w-4" />
-                        </Button>
-                      )}
-                    </div>
+          <TabsContent value="instant" className="space-y-4 pt-4">
+            <div className="flex gap-2">
+              <Button 
+                className="flex-1 gap-2" 
+                onClick={() => createJob({ export_type: 'excel', entity_type: entityType, filters })}
+              >
+                <FileSpreadsheet className="h-4 w-4" /> Solicitar Excel
+              </Button>
+              <Button 
+                className="flex-1 gap-2" 
+                variant="secondary"
+                onClick={() => createJob({ export_type: 'pdf', entity_type: entityType, filters })}
+              >
+                <FileText className="h-4 w-4" /> Solicitar PDF
+              </Button>
+            </div>
+
+            <div className="space-y-3">
+              <h4 className="text-sm font-semibold">Histórico Recente</h4>
+              <ScrollArea className="h-[250px] pr-4">
+                {isLoading ? (
+                  <div className="py-10 text-center text-muted-foreground">Carregando...</div>
+                ) : entityJobs.length === 0 ? (
+                  <div className="py-10 text-center text-muted-foreground border border-dashed rounded-lg">
+                    Sem registros recentes.
                   </div>
-                ))}
+                ) : (
+                  <div className="space-y-2">
+                    {entityJobs.map((job) => (
+                      <div key={job.id} className="p-2 border rounded-md flex items-center justify-between text-xs">
+                        <div className="flex items-center gap-2">
+                          {getStatusIcon(job.status)}
+                          <div>
+                            <span className="font-medium uppercase">{job.export_type}</span>
+                            <p className="text-[10px] text-muted-foreground">
+                              {format(new Date(job.created_at), 'dd/MM HH:mm')}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          {job.status === 'completed' && job.file_url && (
+                            <Button size="icon" variant="ghost" className="h-7 w-7" asChild>
+                              <a href={job.file_url} target="_blank" rel="noopener noreferrer">
+                                <ExternalLink className="h-3.5 w-3.5" />
+                              </a>
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </ScrollArea>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="scheduled" className="space-y-4 pt-4">
+            <Card className="p-4 border-dashed">
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="text-xs font-medium">Frequência</label>
+                    <Select value={frequency} onValueChange={(v: any) => setFrequency(v)}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="daily">Diário</SelectItem>
+                        <SelectItem value="weekly">Semanal</SelectItem>
+                        <SelectItem value="monthly">Mensal</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-xs font-medium">Formato</label>
+                    <Select value={exportType} onValueChange={(v: any) => setExportType(v)}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="excel">Excel</SelectItem>
+                        <SelectItem value="pdf">PDF</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <Button className="w-full gap-2" variant="outline" onClick={handleSchedule}>
+                  <Calendar className="h-4 w-4" /> Confirmar Agendamento
+                </Button>
               </div>
-            )}
-          </ScrollArea>
-        </div>
+            </Card>
+
+            <div className="space-y-3">
+              <h4 className="text-sm font-semibold">Seus Agendamentos</h4>
+              <ScrollArea className="h-[180px] pr-4">
+                {entityScheduled.length === 0 ? (
+                  <p className="text-xs text-muted-foreground text-center py-4">Nenhum agendamento ativo.</p>
+                ) : (
+                  <div className="space-y-2">
+                    {entityScheduled.map((s) => (
+                      <div key={s.id} className="p-2 border rounded-md flex items-center justify-between text-xs">
+                        <div>
+                          <p className="font-medium capitalize">{s.frequency} - {s.export_type.toUpperCase()}</p>
+                          <p className="text-[10px] text-muted-foreground">
+                            Próximo: {s.next_run_at ? format(new Date(s.next_run_at), 'dd/MM') : 'Calculando...'}
+                          </p>
+                        </div>
+                        <Button 
+                          size="icon" 
+                          variant="ghost" 
+                          className="h-7 w-7 text-destructive hover:text-destructive" 
+                          onClick={() => deleteScheduledExport(s.id)}
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </ScrollArea>
+            </div>
+          </TabsContent>
+        </Tabs>
       </DialogContent>
     </Dialog>
   );
 }
+
