@@ -70,22 +70,23 @@ Deno.serve(async (req) => {
     });
 
     if (error) {
-      console.error("Failed to log login attempt:", error.message);
-      return new Response(
+      log.error("db_insert_failed", { err: error });
+      return log.respond(new Response(
         JSON.stringify({ error: "Failed to log attempt" }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      ));
     }
 
-    return new Response(
+    log.info("login_attempt_logged", { success, email_domain: email.split('@')[1] });
+    return log.respond(new Response(
       JSON.stringify({ ok: true }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+    ));
   } catch (err) {
-    console.error("log-login-attempt error:", err);
-    return new Response(
+    log.error("request_uncaught_error", { err });
+    return log.respond(new Response(
       JSON.stringify({ error: "Internal error" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+    ));
   }
 });
