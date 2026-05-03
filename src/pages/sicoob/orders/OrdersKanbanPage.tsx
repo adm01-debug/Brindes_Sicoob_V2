@@ -180,7 +180,7 @@ export function DraggableCard({ order, onClick, canDrag, reasonBlocked }: Dragga
 }
 
 // ---------- Droppable column ----------
-interface DroppableColumnProps {
+export interface DroppableColumnProps {
   column: ColumnDef;
   isOver: boolean;
   invalidTarget: boolean;
@@ -188,7 +188,7 @@ interface DroppableColumnProps {
   count: number;
 }
 
-function DroppableColumn({ column, isOver, invalidTarget, children, count }: DroppableColumnProps) {
+export function DroppableColumn({ column, isOver, invalidTarget, children, count }: DroppableColumnProps) {
   const { setNodeRef } = useDroppable({ id: column.id });
   return (
     <div
