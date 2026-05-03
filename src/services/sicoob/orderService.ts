@@ -36,6 +36,15 @@ export const sicoobOrderService = {
       query = query.lte("created_at", filters.to);
     }
 
+    const { data: profile } = await supabase.from("profiles").select("role, pa_id, cooperativa_id").eq("id", user.id).single();
+
+    // RLS will handle most of this, but we filter here for cleaner code/UX
+    if (profile?.role === 'gestor_pa' && profile.pa_id) {
+      query = query.eq("pa_id", profile.pa_id);
+    } else if (profile?.role === 'gestor_singular' && profile.cooperativa_id) {
+      query = query.eq("cooperative_id", profile.cooperativa_id);
+    }
+
     const { data, error } = await query.order("created_at", { ascending: false });
     if (error) throw error;
     
