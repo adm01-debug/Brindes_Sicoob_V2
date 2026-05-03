@@ -129,7 +129,7 @@ AriaLiveProvider.displayName = 'AriaLiveProvider';
 /**
  * Component to announce page navigation
  */
-export function RouteAnnouncer({ title }: { title: string }) {
+export const RouteAnnouncer = forwardRef<HTMLDivElement, { title: string }>(({ title }, _ref) => {
   const { announce } = useAriaLive();
 
   useEffect(() => {
@@ -137,7 +137,9 @@ export function RouteAnnouncer({ title }: { title: string }) {
   }, [title, announce]);
 
   return null;
-}
+});
+
+RouteAnnouncer.displayName = 'RouteAnnouncer';
 
 /**
  * Component for announcing loading states
