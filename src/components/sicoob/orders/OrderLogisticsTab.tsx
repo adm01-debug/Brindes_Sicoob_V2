@@ -14,8 +14,11 @@ interface OrderLogisticsTabProps {
 
 export function OrderLogisticsTab({ orderId }: OrderLogisticsTabProps) {
   const { logistics, updateLogistics, isLoading } = useOrderLogistics(orderId);
+  const { uploadFile } = useOrderInvoices(orderId);
   const [trackingCode, setTrackingCode] = useState("");
   const [carrier, setCarrier] = useState("");
+  const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleUpdateTracking = () => {
     updateLogistics.mutate({
