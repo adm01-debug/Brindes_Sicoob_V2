@@ -90,7 +90,6 @@ export function OrdersPage() {
             </DropdownMenu>
             <BatchExportDialog entityType="orders" filters={filterValues} />
           </div>
-        </div>
 
         {isLoading ? (
           <div className="grid gap-3">
