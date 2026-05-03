@@ -204,16 +204,6 @@ Deno.serve(async (req) => {
       });
       await adminClient.from("quotes").delete().eq("id", foreignPaQuote.data.id);
     }
-        push({
-          table: "quotes", op: "SELECT", scenario: "Não ler orçamento de outra organização",
-          expected: "deny", actual: actual as any,
-          passed: actual === "deny",
-          detail: data ? `vazou id=${data.id}` : error?.message,
-        });
-        await adminClient.from("quotes").delete().eq("id", foreignOrgQuote.data.id);
-      }
-    }
-    }
 
     // INSERT com seller_id próprio (allow)
     {
