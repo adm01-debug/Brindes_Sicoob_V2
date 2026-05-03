@@ -1,2 +1,4 @@
 export * from './useOrders';
-// Adicione outros hooks aqui conforme necessário
+export * from './useOrderExtensions';
+export * from './useNotificationPreferences';
+export * from './useExportJobs';
