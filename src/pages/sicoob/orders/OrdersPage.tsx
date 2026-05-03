@@ -51,22 +51,13 @@ import type { DateRange } from "react-day-picker";
 import { useAuth } from "@/contexts/AuthContext";
 import { OrderStatusBadge } from "@/components/sicoob/orders/OrderStatusBadge";
 import { OrderStatus, ORDER_STATUS_OPTIONS } from "@/types/sicoob/orders";
-
-// Mock data for initial UI
-const MOCK_ORDERS = [
-  { id: '1', pa: 'PA Centro', singular: 'Sicoob Credicitrus', status: 'draft' as OrderStatus, total: 1250.50, items: 4, date: '2024-05-01' },
-  { id: '2', pa: 'PA Sul', singular: 'Sicoob Coopercredi', status: 'waiting_approval' as OrderStatus, total: 3400.00, items: 12, date: '2024-05-02' },
-  { id: '3', pa: 'PA Norte', singular: 'Sicoob Credicitrus', status: 'confirmed' as OrderStatus, total: 850.00, items: 2, date: '2024-04-30' },
-  { id: '4', pa: 'PA Leste', singular: 'Sicoob Coopercredi', status: 'rejected' as OrderStatus, total: 540.00, items: 3, date: '2024-04-25' },
-  { id: '5', pa: 'PA Centro', singular: 'Sicoob Credicitrus', status: 'logistic' as OrderStatus, total: 2100.00, items: 7, date: '2024-04-20' },
-];
-
-
+import { sicoobOrderService } from "@/services/sicoob/orderService";
+import { useQuery } from "@tanstack/react-query";
 
 export default function OrdersPage() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { isVendedorRole, isAdmin } = useAuth();
+  const { isVendedorRole, isAdmin, user } = useAuth();
   const canCreateOrder = isVendedorRole || isAdmin;
   const [isExporting, setIsExporting] = useState<'csv' | 'pdf' | 'xlsx' | null>(null);
 
@@ -74,6 +65,20 @@ export default function OrdersPage() {
   const [statusFilter, setStatusFilter] = useState<string>(searchParams.get("status") || "all");
   const [paFilter, setPaFilter] = useState<string>(searchParams.get("pa") || "all");
   const [singularFilter, setSingularFilter] = useState<string>(searchParams.get("singular") || "all");
+
+  const { data: orders = [], isLoading: isLoadingOrders } = useQuery({
+    queryKey: ["sicoob_orders_list", searchTerm, statusFilter, paFilter, singularFilter, searchParams.get("from"), searchParams.get("to")],
+    queryFn: () => sicoobOrderService.listOrders({
+      search: searchTerm,
+      status: statusFilter,
+      pa_id: paFilter,
+      cooperative_id: singularFilter,
+      from: searchParams.get("from") || undefined,
+      to: searchParams.get("to") || undefined
+    })
+  });
+
+  const filteredOrders = orders;
 
   const exportToCSV = async () => {
     setIsExporting('csv');
