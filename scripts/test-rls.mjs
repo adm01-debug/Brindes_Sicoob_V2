@@ -44,7 +44,7 @@ async function testRLS() {
     .from('quotes')
     .insert({
       seller_id: userB.user_id,
-      organization_id: userB.organization_id,
+      singular_id: userB.cooperativa_id,
       pa_id: userB.pa_id,
       client_name: '[RLS-TEST] Registro do Usuário B',
       status: 'draft',
