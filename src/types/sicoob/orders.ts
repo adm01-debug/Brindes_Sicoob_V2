@@ -50,6 +50,8 @@ export interface SicoobOrder {
   updated_at: string;
   approved_by?: string;
   approved_at?: string;
+  pa?: { nome: string };
+  cooperativa?: { nome: string };
 }
 
 export interface SicoobOrderItem {
