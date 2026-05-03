@@ -7,15 +7,31 @@ import { toast } from 'sonner';
 import React from 'react';
 import { BrowserRouter } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: false,
+    },
+  },
+});
 
 // Mock dependencies
 vi.mock('@/contexts/AuthContext', () => ({
   useAuth: vi.fn(),
 }));
 
-const renderWithRouter = (ui: React.ReactElement) => {
-  return render(ui, { wrapper: BrowserRouter });
+const renderWithContext = (ui: React.ReactElement) => {
+  return render(
+    <QueryClientProvider client={queryClient}>
+      <BrowserRouter>
+        {ui}
+      </BrowserRouter>
+    </QueryClientProvider>
+  );
 };
+
 
 
 
