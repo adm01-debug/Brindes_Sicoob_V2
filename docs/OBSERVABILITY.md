@@ -123,10 +123,19 @@ A plataforma utiliza gates rigorosos para manter a qualidade da observabilidade:
 - **ESLint Baseline Gate:** `.eslint-baseline.json` bloqueia a introdução de novos warnings de lint que prejudiquem a observabilidade (ex: console.logs puros).
 - **Webhook Alerts → Sentry:** Monitoramento contínuo de webhooks inbound/outbound via cron job.
 
-## 9. Como debugar uma falha (Checklist)
+## 9. Onboarding para Desenvolvedores (Stack de Logging)
+
+Para novos desenvolvedores, estas são as diretrizes obrigatórias:
+1. **Sempre use loggers:** Nunca use `console.log`. Use `createClientLogger` no frontend e `createStructuredLogger` no backend.
+2. **Propagação de ID:** Sempre passe `log.headers()` nas chamadas `supabase.functions.invoke`.
+3. **Erros no Sentry:** Use `log.error('label', { error })` para que a exceção seja capturada com o `request_id` correto como tag.
+4. **Gates de CI:** Se seu código falhar nos scripts `check-edge-*`, verifique se você está seguindo os padrões de instrumentação.
+
+## 10. Como debugar uma falha (Checklist)
 
 1. **Obter ID:** Pegue o `request_id` (UUIDv4) no Sentry ou no UI Error Boundary.
 2. **Localizar Logs:** Use o comando `rg` nos logs da Lovable Cloud filtrando pelo ID.
 3. **Traçar Fluxo:** O `request_id` deve estar presente no client, edge, logs de banco e webhooks.
 4. **Verificar Métricas:** Consulte `public.get_webhook_delivery_summary()` se for falha de integração.
+
 
