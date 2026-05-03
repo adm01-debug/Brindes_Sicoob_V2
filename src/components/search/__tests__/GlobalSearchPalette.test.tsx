@@ -3,6 +3,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { GlobalSearchPalette } from "../GlobalSearchPalette";
 import { useGlobalSearch } from "../useGlobalSearch";
 import { MemoryRouter } from "react-router-dom";
+import { TooltipProvider } from "@/components/ui/tooltip";
 
 // Mock the hook
 vi.mock("../useGlobalSearch", () => ({
@@ -40,9 +41,11 @@ const defaultMockState = {
 
 const renderPalette = () => {
   return render(
-    <MemoryRouter>
-      <GlobalSearchPalette />
-    </MemoryRouter>
+    <TooltipProvider>
+      <MemoryRouter>
+        <GlobalSearchPalette />
+      </MemoryRouter>
+    </TooltipProvider>
   );
 };
 
