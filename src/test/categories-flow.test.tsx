@@ -139,4 +139,47 @@ describe('Categories Flow - CRUD & Validation', () => {
       expect(toast.error).toHaveBeenCalledWith("DB Error");
     });
   });
+
+  it('should disable submit button while loading', async () => {
+    render(<CategoriesManager />);
+    await waitFor(() => expect(screen.getByText('Existing')).toBeDefined());
+    fireEvent.click(screen.getByText(/Nova Categoria/i));
+
+    fireEvent.change(screen.getByLabelText(/Nome/i), { target: { value: 'Loading Test' } });
+    fireEvent.change(screen.getByLabelText(/Slug/i), { target: { value: 'loading-test' } });
+    
+    const saveButton = screen.getByRole('button', { name: /Salvar/i });
+    fireEvent.click(saveButton);
+    
+    // Check if disabled while async call is ongoing
+    expect(saveButton).toBeDisabled();
+  });
+
+  it('should show error toast if fetch fails', async () => {
+    (supabase.from as any).mockImplementationOnce(() => ({
+      select: vi.fn().mockReturnThis(),
+      order: vi.fn().mockImplementation(() => Promise.resolve({ 
+        data: null, 
+        error: { message: 'Fetch Failed' } 
+      })),
+    }));
+
+    render(<CategoriesManager />);
+    
+    await waitFor(() => {
+      expect(toast.error).toHaveBeenCalledWith("Erro ao carregar categorias");
+    });
+  });
+
+  it('should block submission for empty slug', async () => {
+    render(<CategoriesManager />);
+    await waitFor(() => expect(screen.getByText('Existing')).toBeDefined());
+    fireEvent.click(screen.getByText(/Nova Categoria/i));
+
+    fireEvent.change(screen.getByLabelText(/Nome/i), { target: { value: 'Test' } });
+    fireEvent.change(screen.getByLabelText(/Slug/i), { target: { value: '   ' } }); // only spaces
+    fireEvent.click(screen.getByText(/Salvar/i));
+
+    expect(toast.error).toHaveBeenCalledWith(expect.stringContaining("O slug deve conter apenas"));
+  });
 });
