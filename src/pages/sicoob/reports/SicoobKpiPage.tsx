@@ -93,7 +93,11 @@ export default function SicoobKpiPage() {
                   <XAxis dataKey="name" axisLine={false} tickLine={false} />
                   <YAxis axisLine={false} tickLine={false} tickFormatter={(val) => `R$${val/1000}k`} />
                   <Tooltip formatter={(val) => formatCurrency(val as number)} />
-                  <Bar dataKey="valor" fill="#003641" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="valor" fill="#003641" radius={[4, 4, 0, 0]}>
+                    {DATA_MONTHLY.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={index === DATA_MONTHLY.length - 1 ? '#7DB61C' : '#003641'} />
+                    ))}
+                  </Bar>
                 </BarChart>
               </ResponsiveContainer>
             </CardContent>
