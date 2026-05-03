@@ -1,5 +1,5 @@
-import { lazyWithRetry } from "@/lib/lazyWithRetry";
 import { defineRoute } from "@/lib/router-utils";
+import { lazyWithRetry } from "@/lib/lazyWithRetry";
 
 export const publicRoutes = [
   defineRoute({ path: "/login", component: lazyWithRetry(() => import("@/pages/Auth")) }),
