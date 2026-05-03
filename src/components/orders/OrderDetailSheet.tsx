@@ -7,8 +7,9 @@ import { LogisticsPanel } from "./LogisticsPanel";
 import { FinancialPanel } from "./FinancialPanel";
 import { OrderAuditTimeline } from "./OrderAuditTimeline";
 import { OrderComments } from "./OrderComments";
-import { Loader2, Package } from "lucide-react";
+import { Loader2, Package, ExternalLink } from "lucide-react";
 import { formatCurrency } from "@/utils/quote-calculations";
+import { useNavigate } from "react-router-dom";
 
 interface OrderDetailSheetProps {
   orderId: string | null;
