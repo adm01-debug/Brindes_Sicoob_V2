@@ -46,8 +46,21 @@ export function OrderComments({ orderId }: OrderCommentsProps) {
         </div>
       </CardHeader>
       <CardContent className="flex-1 flex flex-col gap-4 overflow-hidden pt-0">
+        {totalCount !== undefined && totalCount > pageSize && (
+          <div className="flex items-center justify-center gap-2 py-2 border-b">
+            <Button 
+              variant="ghost" 
+              size="xs" 
+              className="h-7 text-[10px]" 
+              onClick={() => setPage(p => p + 1)}
+              disabled={page * pageSize >= totalCount}
+            >
+              <ChevronUp className="h-3 w-3 mr-1" /> Ver mensagens anteriores
+            </Button>
+          </div>
+        )}
         <ScrollArea className="flex-1 pr-4">
-          <div className="space-y-4 py-2">
+          <div className="space-y-4 py-2 flex flex-col">
             {comments?.map((comment) => (
               <div key={comment.id} className={`flex flex-col ${comment.is_internal ? 'bg-amber-50 dark:bg-amber-950/20 p-2 rounded-lg border border-amber-100 dark:border-amber-900/30' : ''}`}>
                 <div className="flex items-center justify-between gap-2 mb-1">
