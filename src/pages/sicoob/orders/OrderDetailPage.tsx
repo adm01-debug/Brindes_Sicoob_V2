@@ -125,6 +125,7 @@ export default function OrderDetailPage() {
   const { requests, createRequest, approveRequest, rejectRequest, updateStatus } = useApprovalRequests(id);
   const { history: orderHistory } = useSicoobOrderHistory(id);
   const { addItem, removeItem } = useSicoobOrderItems(id);
+  const updateOrderStatusMutation = useUpdateSicoobOrderStatus();
   
   // Extension hooks
   const { logistics, updateLogistics } = useOrderLogistics(id);
