@@ -70,7 +70,7 @@ export function MaterialsFilter({
       )}
       <div className="relative">
         <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-        <Input placeholder="Buscar material..." value={materialSearch} onChange={(e) => setMaterialSearch(e.target.value)} className="h-8 text-sm pl-8 pr-8" aria-label="Buscar material por nome" />
+        <Input placeholder="Buscar produto..." value={materialSearch} onChange={(e) => setMaterialSearch(e.target.value)} className="h-8 text-sm pl-8 pr-8" aria-label="Buscar produto por nome" />
         {materialSearch && (
           <button type="button" onClick={() => setMaterialSearch('')} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground" aria-label="Limpar busca de material">
             <X className="h-3.5 w-3.5" />
