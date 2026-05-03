@@ -62,7 +62,7 @@ import {
   SelectTrigger, 
   SelectValue 
 } from "@/components/ui/select";
-import { useSicoobOrder, useSicoobOrderDetails } from "@/hooks/sicoob/useSicoobOrder";
+import { useSicoobOrder, useSicoobOrderDetails, useUpdateSicoobOrderStatus } from "@/hooks/sicoob/useSicoobOrder";
 import { OrderStatusBadge } from "@/components/sicoob/orders/OrderStatusBadge";
 import { OrderActionDialog } from "@/components/sicoob/orders/OrderActionDialog";
 import { OrderItemsHistory } from "@/components/sicoob/orders/OrderItemsHistory";
@@ -125,6 +125,7 @@ export default function OrderDetailPage() {
   const { requests, createRequest, approveRequest, rejectRequest, updateStatus } = useApprovalRequests(id);
   const { history: orderHistory } = useSicoobOrderHistory(id);
   const { addItem, removeItem } = useSicoobOrderItems(id);
+  const updateOrderStatusMutation = useUpdateSicoobOrderStatus();
   
   // Extension hooks
   const { logistics, updateLogistics } = useOrderLogistics(id);
@@ -215,11 +216,10 @@ export default function OrderDetailPage() {
         previousStatus: orderData.status 
       });
     } else {
-      updateStatus.mutate({ 
+      updateOrderStatusMutation.mutate({ 
         orderId: id!, 
-        newStatus: 'confirmed', 
-        previousStatus: orderData.status,
-        comment: 'Aprovação direta por gestor'
+        status: 'confirmed', 
+        currentStatus: orderData.status,
       });
     }
   };
@@ -258,27 +258,11 @@ export default function OrderDetailPage() {
   };
 
   const handleStatusUpdate = async (newStatus: any) => {
-    try {
-      const currentStatus = orderData?.fulfillment_status || 'pending';
-      
-      // Validação de transição (Sincronização bidirecional/Bloqueio)
-      if (!canTransitionTo(currentStatus, newStatus)) {
-        toast.error(`Transição inválida de ${currentStatus} para ${newStatus}`);
-        return;
-      }
-
-      const { error } = await supabase
-        .from('orders')
-        .update({ fulfillment_status: newStatus, updated_at: new Date().toISOString() })
-        .eq('id', id);
-      
-      if (error) throw error;
-
-      toast.success("Status de produção atualizado");
-      refetchOrder();
-    } catch (error: any) {
-      toast.error("Erro ao atualizar status: " + error.message);
-    }
+    updateOrderStatusMutation.mutate({ 
+      orderId: id!, 
+      status: newStatus, 
+      currentStatus: orderData?.status 
+    });
   };
 
   if (isLoadingOrder) {
@@ -601,7 +585,7 @@ export default function OrderDetailPage() {
               </TabsList>
 
               <TabsContent value="items" className="space-y-4 pt-4">
-                <Card>
+                <Card className="border-[1.5px]">
                    <CardHeader>
                      <CardTitle className="text-sm">Auditoria de Itens</CardTitle>
                    </CardHeader>
@@ -643,7 +627,14 @@ export default function OrderDetailPage() {
 
               {allowedTabs.includes("timeline") && (
                 <TabsContent value="timeline" className="pt-6">
-                  <OrderAuditTimeline orderId={id!} />
+                  <Card className="border-[1.5px]">
+                    <CardHeader>
+                      <CardTitle className="text-sm">Status Timeline</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <OrderAuditTimeline orderId={id!} />
+                    </CardContent>
+                  </Card>
                 </TabsContent>
               )}
             </Tabs>
@@ -657,20 +648,20 @@ export default function OrderDetailPage() {
                 <div className="space-y-2">
                   <Label className="text-xs">Status do Workflow</Label>
                   <Select 
-                    value={orderData.fulfillment_status || 'pending'} 
+                    value={orderData.status || 'pending'} 
                     onValueChange={handleStatusUpdate}
                   >
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
+                      <SelectItem value="draft">Rascunho</SelectItem>
                       <SelectItem value="pending">Pendente</SelectItem>
-                      <SelectItem value="in_production">Em Produção</SelectItem>
-                      <SelectItem value="in_separation">Em Separação</SelectItem>
-                      <SelectItem value="in_transit">Em Trânsito</SelectItem>
-                      <SelectItem value="delivered">Entregue</SelectItem>
+                      <SelectItem value="waiting_approval">Aguardando Aprovação</SelectItem>
+                      <SelectItem value="confirmed">Confirmado</SelectItem>
+                      <SelectItem value="logistic">Logística</SelectItem>
                       <SelectItem value="completed">Concluído</SelectItem>
-                      <SelectItem value="cancelled">Cancelado</SelectItem>
+                      <SelectItem value="rejected">Rejeitado</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
