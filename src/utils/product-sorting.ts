@@ -30,9 +30,11 @@ export function sortProducts(
       products.sort((a, b) => (b.stock || 0) - (a.stock || 0));
       break;
     case "newest":
-      products.sort((a, b) =>
-        new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime()
-      );
+      products.sort((a, b) => {
+        const timeA = a.created_at ? (typeof a.created_at === 'number' ? a.created_at : new Date(a.created_at).getTime()) : 0;
+        const timeB = b.created_at ? (typeof b.created_at === 'number' ? b.created_at : new Date(b.created_at).getTime()) : 0;
+        return timeB - timeA;
+      });
       break;
     case "best-seller-supplier": {
       const sMap = options?.supplierSalesMap;
