@@ -4083,6 +4083,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          approval_threshold: number | null
           avatar_url: string | null
           cooperativa_id: string | null
           created_at: string
@@ -4100,6 +4101,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          approval_threshold?: number | null
           avatar_url?: string | null
           cooperativa_id?: string | null
           created_at?: string
@@ -4117,6 +4119,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          approval_threshold?: number | null
           avatar_url?: string | null
           cooperativa_id?: string | null
           created_at?: string
@@ -4352,6 +4355,44 @@ export type Database = {
             columns: ["parent_id"]
             isOneToOne: false
             referencedRelation: "quote_comments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      quote_consolidations: {
+        Row: {
+          consolidated_by: string | null
+          created_at: string | null
+          id: string
+          notes: string | null
+          singular_id: string | null
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          consolidated_by?: string | null
+          created_at?: string | null
+          id?: string
+          notes?: string | null
+          singular_id?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          consolidated_by?: string | null
+          created_at?: string | null
+          id?: string
+          notes?: string | null
+          singular_id?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quote_consolidations_singular_id_fkey"
+            columns: ["singular_id"]
+            isOneToOne: false
+            referencedRelation: "cooperativas"
             referencedColumns: ["id"]
           },
         ]
@@ -4620,6 +4661,7 @@ export type Database = {
           client_response: string | null
           client_response_at: string | null
           client_response_notes: string | null
+          consolidation_id: string | null
           created_at: string
           delivery_time: string | null
           discount_amount: number
@@ -4665,6 +4707,7 @@ export type Database = {
           client_response?: string | null
           client_response_at?: string | null
           client_response_notes?: string | null
+          consolidation_id?: string | null
           created_at?: string
           delivery_time?: string | null
           discount_amount?: number
@@ -4710,6 +4753,7 @@ export type Database = {
           client_response?: string | null
           client_response_at?: string | null
           client_response_notes?: string | null
+          consolidation_id?: string | null
           created_at?: string
           delivery_time?: string | null
           discount_amount?: number
@@ -4742,6 +4786,13 @@ export type Database = {
           version?: number
         }
         Relationships: [
+          {
+            foreignKeyName: "quotes_consolidation_id_fkey"
+            columns: ["consolidation_id"]
+            isOneToOne: false
+            referencedRelation: "quote_consolidations"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "quotes_organization_id_fkey"
             columns: ["organization_id"]
@@ -6777,6 +6828,17 @@ export type Database = {
         | "gerente_pa"
         | "comprador_pac"
         | "comprador_singular"
+      order_status:
+        | "rascunho"
+        | "enviado_gestor"
+        | "aprovado_gestor"
+        | "enviado_vendedor"
+        | "em_producao"
+        | "em_separacao"
+        | "em_transporte"
+        | "entregue"
+        | "concluido"
+        | "cancelado"
       org_role: "owner" | "admin" | "member"
       role_migration_item_status:
         | "pending"
@@ -6937,6 +6999,18 @@ export const Constants = {
         "gerente_pa",
         "comprador_pac",
         "comprador_singular",
+      ],
+      order_status: [
+        "rascunho",
+        "enviado_gestor",
+        "aprovado_gestor",
+        "enviado_vendedor",
+        "em_producao",
+        "em_separacao",
+        "em_transporte",
+        "entregue",
+        "concluido",
+        "cancelado",
       ],
       org_role: ["owner", "admin", "member"],
       role_migration_item_status: [
