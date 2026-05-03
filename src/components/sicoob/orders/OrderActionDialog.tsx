@@ -34,6 +34,7 @@ export const OrderActionDialog = ({
   value,
   onValueChange,
   onConfirm,
+  confirmDisabled = false,
 }: OrderActionDialogProps) => {
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
