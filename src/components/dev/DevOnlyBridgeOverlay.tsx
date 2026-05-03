@@ -16,8 +16,12 @@ export const DevOnlyBridgeOverlay = forwardRef<HTMLDivElement>((_props, ref) => 
   if (!isAllowed) return null;
   
   return (
-    <Suspense fallback={null}>
-      <Overlay />
-    </Suspense>
+    <div ref={ref}>
+      <Suspense fallback={null}>
+        <Overlay />
+      </Suspense>
+    </div>
   );
-}
+});
+
+DevOnlyBridgeOverlay.displayName = 'DevOnlyBridgeOverlay';
