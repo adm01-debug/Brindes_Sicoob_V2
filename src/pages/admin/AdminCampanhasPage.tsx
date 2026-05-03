@@ -24,14 +24,27 @@ export default function AdminCampanhasPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingCampaign, setEditingCampaign] = useState<any>(null);
+  
+  // Advanced filters state
+  const [filters, setFilters] = useState({
+    status: 'all',
+    startDate: '',
+    endDate: ''
+  });
 
   const fetchData = async () => {
     setIsLoading(true);
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from('campaigns')
         .select('*')
         .order('created_at', { ascending: false });
+
+      if (filters.status !== 'all') {
+        query = query.eq('status', filters.status);
+      }
+
+      const { data, error } = await query;
       if (error) throw error;
       setCampaigns(data || []);
     } catch (error) {
@@ -42,7 +55,8 @@ export default function AdminCampanhasPage() {
     }
   };
 
-  useEffect(() => { fetchData(); }, []);
+  useEffect(() => { fetchData(); }, [filters.status]); // Re-fetch on status change
+
 
   const handleSave = async (formData: any) => {
     try {
