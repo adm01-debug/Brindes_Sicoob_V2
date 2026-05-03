@@ -9,6 +9,9 @@ export interface AuditEvent {
   metadata: any;
   created_at: string;
   created_by: string | null;
+  created_by_name: string | null;
+  category: string | null;
+  observations: string | null;
 }
 
 export function useOrderAudit(orderId: string) {
