@@ -13,8 +13,9 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
 } from "@/components/ui/dialog";
-import { AlertTriangle, Edit, Loader2, Package, Percent, Save, Send, Shield, ShoppingCart, Trash2, CheckCircle2, X } from "lucide-react";
+import { AlertTriangle, Edit, Loader2, Package, Percent, Save, Send, Shield, ShoppingCart, Trash2, CheckCircle2, X, ClipboardCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/contexts/AuthContext";
 import type { QuoteItem } from "@/hooks/useQuotes";
 import { NegotiationMarkupCard } from "@/components/quote/NegotiationMarkupCard";
 import { ConfirmDialog } from "@/components/common/ConfirmDialog";
