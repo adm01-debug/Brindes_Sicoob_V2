@@ -150,11 +150,11 @@ interface LoadingAnnouncerProps {
   loadedMessage?: string;
 }
 
-export function LoadingStateAnnouncer({
+export const LoadingStateAnnouncer = forwardRef<HTMLDivElement, LoadingAnnouncerProps>(({
   isLoading,
   loadingMessage = "Carregando conteúdo",
   loadedMessage = "Conteúdo carregado"
-}: LoadingAnnouncerProps) {
+}, _ref) => {
   const { announce } = useAriaLive();
 
   useEffect(() => {
@@ -166,7 +166,9 @@ export function LoadingStateAnnouncer({
   }, [isLoading, loadingMessage, loadedMessage, announce]);
 
   return null;
-}
+});
+
+LoadingStateAnnouncer.displayName = 'LoadingStateAnnouncer';
 
 /**
  * Component for announcing form errors
