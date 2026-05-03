@@ -1,8 +1,16 @@
 import { supabase } from "@/integrations/supabase/client";
 import { SicoobOrder, SicoobOrderItem, SicoobOrderItemLog, OrderStatus, canSicoobTransitionTo } from "@/types/sicoob/orders";
 
+/**
+ * Service for Sicoob Orders with authorization checks.
+ * Note: RLS on the database is the primary security layer, 
+ * but client-side checks provide better UX.
+ */
 export const sicoobOrderService = {
   async getOrderById(id: string): Promise<SicoobOrder> {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error("Usuário não autenticado");
+
     const { data, error } = await supabase
       .from("sicoob_orders")
       .select("*")
@@ -11,6 +19,7 @@ export const sicoobOrderService = {
     if (error) throw error;
     return data as SicoobOrder;
   },
+
 
   async getOrderItems(orderId: string): Promise<SicoobOrderItem[]> {
     const { data, error } = await supabase
