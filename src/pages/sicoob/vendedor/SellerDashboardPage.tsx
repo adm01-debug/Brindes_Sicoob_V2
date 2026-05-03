@@ -85,13 +85,12 @@ export default function SellerDashboardPage() {
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="flex justify-between items-end">
-                <div className="text-2xl font-bold text-primary">
+                <div className="text-2xl font-bold text-sicoob-green-dark">
                   {formatCurrency(stats?.monthlySales || 0)} 
-                  <span className="text-sm font-normal text-muted-foreground ml-2">de {formatCurrency(stats?.salesGoal || 0)}</span>
                 </div>
-                <div className="text-sm font-bold text-primary">{goalProgress.toFixed(0)}%</div>
+                <div className="text-sm font-bold text-sicoob-green-dark">{goalProgress.toFixed(0)}%</div>
               </div>
-              <Progress value={goalProgress} className="h-2" />
+              <Progress value={goalProgress} className="h-2" indicatorClassName="bg-sicoob-green" />
             </CardContent>
           </Card>
         </div>
