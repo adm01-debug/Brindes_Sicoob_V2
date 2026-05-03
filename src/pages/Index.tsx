@@ -27,7 +27,7 @@ export default function Index() {
         jsonLd={{
           "@context": "https://schema.org",
           "@type": "CollectionPage",
-          "name": "Catálogo de Materiais Sicoob",
+          "name": "Catálogo de Produtos Sicoob",
           "description": "Portal de compras centralizado para materiais e brindes do sistema Sicoob.",
           "url": "https://criar-together-now.lovable.app/",
           "isPartOf": { "@type": "WebSite", "name": "Sicoob", "url": "https://criar-together-now.lovable.app" }
