@@ -386,9 +386,9 @@ export default function OrdersPage() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">Todas</SelectItem>
-                    {singularOptions.map((s) => (
-                      <SelectItem key={s} value={s}>
-                        {s}
+                    {cooperatives.map((s) => (
+                      <SelectItem key={s.id} value={s.id}>
+                        {s.nome}
                       </SelectItem>
                     ))}
                   </SelectContent>
