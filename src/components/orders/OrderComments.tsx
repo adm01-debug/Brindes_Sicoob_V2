@@ -40,7 +40,7 @@ export function OrderComments({ orderId }: OrderCommentsProps) {
   if (isLoading && page === 1) return <div className="h-32 flex items-center justify-center">Carregando comentários...</div>;
 
   return (
-    <Card className="flex flex-col h-[600px]">
+    <Card className="flex flex-col h-[600px]" data-testid="order-chat">
       <CardHeader className="py-3 flex flex-col space-y-3">
         <div className="flex flex-row items-center justify-between">
           <CardTitle className="text-base flex items-center gap-2">
