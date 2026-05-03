@@ -172,8 +172,8 @@ export default function PADashboardPage() {
                 </p>
               </div>
               <Button variant="outline" className="w-full justify-start gap-3 h-12">
-                <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center">
-                  <TrendingUp className="h-3 w-3 text-primary" />
+                <div className="w-6 h-6 rounded-full bg-sicoob-green/10 flex items-center justify-center">
+                  <TrendingUp className="h-3 w-3 text-sicoob-green" />
                 </div>
                 <span className="text-sm font-medium">Solicitar Aumento de Limite</span>
               </Button>
