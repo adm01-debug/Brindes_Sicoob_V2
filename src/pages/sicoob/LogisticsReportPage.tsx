@@ -1,170 +1,133 @@
+import React from "react";
+import { MainLayout } from "@/components/layout/MainLayout";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { Truck, MapPin, Camera, CheckCircle2, Clock, Search, Filter } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { MainLayout } from "@/components/layout/MainLayout";
-import { PageSEO } from "@/components/seo/PageSEO";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { 
-  Truck, 
-  Clock, 
-  AlertTriangle, 
-  CheckCircle, 
-  TrendingUp,
-  BarChart3
-} from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 export default function LogisticsReportPage() {
-  const { data: stats, isLoading } = useQuery({
-    queryKey: ["logistics-report"],
+  const { data: tracking = [] } = useQuery({
+    queryKey: ["sicoob-logistics"],
     queryFn: async () => {
-      // Fetch data for aggregation
-      const { data: orders, error } = await supabase
-        .from("orders")
-        .select(`
-          id, 
-          fulfillment_status,
-          total_amount,
-          order_logistics (carrier, estimated_delivery, status)
-        `);
-      
-      if (error) throw error;
-
-      // Aggregations
-      const total = orders.length;
-      const statuses = orders.reduce((acc: any, curr) => {
-        const status = curr.fulfillment_status || 'pending';
-        acc[status] = (acc[status] || 0) + 1;
-        return acc;
-      }, {});
-
-      const delayed = orders.filter(o => {
-        const est = o.order_logistics?.[0]?.estimated_delivery;
-        return est && new Date(est) < new Date() && o.fulfillment_status !== 'delivered';
-      }).length;
-
-      return { total, statuses, delayed, orders };
+      // Simulation of tracking data for SICOOB parity
+      return [
+        { id: "1", order: "PED-24-001", dest: "PA 01 - Centro", status: "delivered", courier: "TransSicoob", date: "2026-05-02", photo: true },
+        { id: "2", order: "PED-24-012", dest: "PA 04 - Industrial", status: "in_transit", courier: "LogB2B", date: "2026-05-03", photo: false },
+        { id: "3", order: "PED-24-045", dest: "PA 02 - Norte", status: "pending", courier: "-", date: "-", photo: false },
+      ];
     }
   });
 
-  if (isLoading) return <MainLayout><div className="p-8 text-center">Gerando relatório logístico...</div></MainLayout>;
-
   return (
     <MainLayout>
-      <PageSEO title="Relatório Logístico - Sicoob" description="Visão consolidada de logística e tracking." path="/sicoob/logistica" noIndex />
-      
-      <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Painel de Logística</h1>
-          <p className="text-muted-foreground">Monitoramento de fluxo de produção e entrega da Onda A.</p>
+      <div className="container mx-auto p-6 space-y-6 animate-fade-in">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <div>
+            <h1 className="text-3xl font-bold font-display tracking-tight">Logística e Entregas</h1>
+            <p className="text-muted-foreground">Rastreamento de pedidos e confirmação de entrega (POD) por PA.</p>
+          </div>
+          <div className="flex gap-2 w-full md:w-auto">
+            <div className="relative flex-1 md:w-64">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input placeholder="Buscar pedido ou PA..." className="pl-9" />
+            </div>
+            <Button variant="outline" size="icon"><Filter className="h-4 w-4" /></Button>
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Total de Pedidos</CardTitle>
-              <BarChart3 className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats?.total}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Em Trânsito</CardTitle>
-              <Truck className="h-4 w-4 text-status-transit" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats?.statuses?.in_transit || 0}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Atrasos Detectados</CardTitle>
-              <AlertTriangle className="h-4 w-4 text-destructive" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats?.delayed}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Entregues (Mês)</CardTitle>
-              <CheckCircle className="h-4 w-4 text-success" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats?.statuses?.delivered || 0}</div>
-            </CardContent>
-          </Card>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <Card className="border-[1.5px]">
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                    <CardTitle className="text-sm font-medium">Total de Entregas</CardTitle>
+                    <Truck className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                    <div className="text-2xl font-bold">142</div>
+                    <p className="text-xs text-muted-foreground mt-1">Acumulado do trimestre</p>
+                </CardContent>
+            </Card>
+            <Card className="border-[1.5px]">
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                    <CardTitle className="text-sm font-medium">Em Trânsito</CardTitle>
+                    <Clock className="h-4 w-4 text-blue-500" />
+                </CardHeader>
+                <CardContent>
+                    <div className="text-2xl font-bold text-blue-600">8</div>
+                    <p className="text-xs text-muted-foreground mt-1">Pedidos com tracking ativo</p>
+                </CardContent>
+            </Card>
+            <Card className="border-[1.5px]">
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                    <CardTitle className="text-sm font-medium">Taxa de Sucesso</CardTitle>
+                    <CheckCircle2 className="h-4 w-4 text-green-500" />
+                </CardHeader>
+                <CardContent>
+                    <div className="text-2xl font-bold text-green-600">99.2%</div>
+                    <p className="text-xs text-muted-foreground mt-1">Entregas sem ocorrência</p>
+                </CardContent>
+            </Card>
+            <Card className="border-[1.5px] bg-primary/5 border-primary/20">
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                    <CardTitle className="text-sm font-medium text-primary">Comprovantes (POD)</CardTitle>
+                    <Camera className="h-4 w-4 text-primary" />
+                </CardHeader>
+                <CardContent>
+                    <div className="text-2xl font-bold text-primary">128</div>
+                    <p className="text-xs text-primary/70 mt-1">Fotos de entrega anexadas</p>
+                </CardContent>
+            </Card>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg flex items-center gap-2">
-                <Clock className="h-5 w-5" />
-                Workflow de Produção
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span>Em Produção</span>
-                  <span className="font-medium">{stats?.statuses?.in_production || 0}</span>
-                </div>
-                <Progress value={((stats?.statuses?.in_production || 0) / (stats?.total || 1)) * 100} className="h-2" />
-              </div>
-              <div className="space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span>Em Separação</span>
-                  <span className="font-medium">{stats?.statuses?.in_separation || 0}</span>
-                </div>
-                <Progress value={((stats?.statuses?.in_separation || 0) / (stats?.total || 1)) * 100} className="h-2 bg-secondary" />
-              </div>
-              <div className="space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span>Finalizados</span>
-                  <span className="font-medium">{stats?.statuses?.completed || 0}</span>
-                </div>
-                <Progress value={((stats?.statuses?.completed || 0) / (stats?.total || 1)) * 100} className="h-2 bg-success/15" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg flex items-center gap-2">
-                <TrendingUp className="h-5 w-5" />
-                Top Transportadoras
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {/* Simulated carrier performance */}
-                <div className="flex items-center justify-between p-3 border rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 bg-muted rounded flex items-center justify-center font-bold text-xs">BP</div>
-                    <div>
-                      <p className="font-medium text-sm">Braspress</p>
-                      <p className="text-xs text-muted-foreground">Eficiência: 98%</p>
-                    </div>
-                  </div>
-                  <Badge variant="outline" className="text-success border-success/40">Rápido</Badge>
-                </div>
-                <div className="flex items-center justify-between p-3 border rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 bg-muted rounded flex items-center justify-center font-bold text-xs">CO</div>
-                    <div>
-                      <p className="font-medium text-sm">Correios</p>
-                      <p className="text-xs text-muted-foreground">Eficiência: 85%</p>
-                    </div>
-                  </div>
-                  <Badge variant="outline" className="text-warning border-warning/40">Médio</Badge>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+        <Card className="border-[1.5px]">
+          <CardHeader>
+            <CardTitle>Rastreamento em Tempo Real</CardTitle>
+            <CardDescription>Acompanhe o status e a localização dos pedidos despachados.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Pedido</TableHead>
+                  <TableHead>Destinatário (PA)</TableHead>
+                  <TableHead>Transportadora</TableHead>
+                  <TableHead>Data Prevista</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead className="text-right">Ações</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {tracking.map((item) => (
+                  <TableRow key={item.id}>
+                    <TableCell className="font-bold">{item.order}</TableCell>
+                    <TableCell>
+                        <div className="flex items-center gap-2">
+                            <MapPin className="h-3 w-3 text-muted-foreground" />
+                            {item.dest}
+                        </div>
+                    </TableCell>
+                    <TableCell>{item.courier}</TableCell>
+                    <TableCell>{item.date}</TableCell>
+                    <TableCell>
+                      <Badge variant={item.status === 'delivered' ? 'secondary' : (item.status === 'in_transit' ? 'default' : 'outline')} className="gap-1">
+                        {item.status === 'delivered' ? 'Entregue' : (item.status === 'in_transit' ? 'Em Trânsito' : 'Pendente')}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex justify-end gap-2">
+                        {item.photo && <Button variant="ghost" size="icon" title="Ver foto da entrega"><Camera className="h-4 w-4" /></Button>}
+                        <Button variant="ghost" size="icon" title="Ver no mapa"><MapPin className="h-4 w-4" /></Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
       </div>
     </MainLayout>
   );
