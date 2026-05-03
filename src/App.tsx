@@ -109,6 +109,10 @@ const App = () => {
                             <Route key={r.path} path={r.path} element={<r.component />} />
                           ))}
 
+                          {/* Static Redirects & Legacy (Unprotected) */}
+                          <Route path="/configuracoes" element={<Navigate to="/admin/usuarios" replace />} />
+                          <Route path="/perfil" element={<Navigate to="/admin/usuarios" replace />} />
+
                           {/* Protected Layout Route */}
                           <Route element={<ProtectedRoute />}>
                             <Route path="/" element={<Index />} />
@@ -161,9 +165,7 @@ const App = () => {
                             <Route path="/clientes/:id" element={<ClientDetailPage />} />
                             <Route path="/tendencias" element={<TrendsPage />} />
 
-                            {/* Static Redirects & Legacy */}
-                            <Route path="/configuracoes" element={<Navigate to="/admin/usuarios" replace />} />
-                            <Route path="/perfil" element={<Navigate to="/admin/usuarios" replace />} />
+                            {/* Error Fallback */}
                             <Route path="*" element={<NotFound />} />
                           </Route>
                         </Routes>
