@@ -5,6 +5,8 @@ import reactHooks from 'eslint-plugin-react-hooks';
 import typescript from '@typescript-eslint/eslint-plugin';
 import typescriptParser from '@typescript-eslint/parser';
 import jsxA11y from 'eslint-plugin-jsx-a11y';
+import sonarjs from 'eslint-plugin-sonarjs';
+
 
 // Parser options compartilhados — apontam para o tsconfig.eslint.json que
 // inclui src/, e2e/, tests/ e scripts/. Isso evita o erro
@@ -51,6 +53,8 @@ export default [
       'react-hooks': reactHooks,
       '@typescript-eslint': typescript,
       'jsx-a11y': jsxA11y,
+      'sonarjs': sonarjs,
+
     },
     rules: {
       ...js.configs.recommended.rules,
@@ -88,6 +92,17 @@ export default [
       'react-hooks/rules-of-hooks': 'error',
       'react-hooks/exhaustive-deps': 'warn',
       'jsx-a11y/anchor-is-valid': 'warn',
+      
+      // Clean Code & Complexity (SonarJS)
+      'sonarjs/cognitive-complexity': ['error', 15],
+      'sonarjs/no-duplicate-string': 'warn',
+      'sonarjs/no-identical-functions': 'error',
+      'sonarjs/prefer-immediate-return': 'warn',
+      'complexity': ['error', 10],
+      'max-lines-per-function': ['warn', { max: 50, skipBlankLines: true, skipComments: true }],
+      'max-depth': ['error', 4],
+      'max-params': ['warn', 4],
+
     },
     settings: {
       react: { version: 'detect' },
