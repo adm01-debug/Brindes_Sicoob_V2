@@ -18,8 +18,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Search, Save, UserCheck } from "lucide-react";
+import { Search, Save, UserCheck, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
+import { RoleBadge } from "@/components/RoleBadge";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export const UserAssignmentTab = () => {
   const [searchTerm, setSearchTerm] = useState("");
