@@ -11,13 +11,16 @@ export default defineConfig({
     },
     coverage: {
       provider: 'v8',
-      reporter: ['text', 'json', 'html'],
+      reporter: ['text', 'json', 'html', 'json-summary'],
+      reportsDirectory: './coverage',
       include: [
         'src/components/layout/ProtectedRoute.tsx',
         'src/services/sicoob/orderService.ts',
         'src/pages/ForbiddenPage.tsx'
       ],
       thresholds: {
+        perFile: true,
+        autoUpdate: false,
         'src/components/layout/ProtectedRoute.tsx': {
           statements: 75,
           branches: 50,
@@ -38,5 +41,6 @@ export default defineConfig({
         }
       }
     }
+
   }
 });
