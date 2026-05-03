@@ -22,7 +22,7 @@ export default function Index() {
     <MainLayout>
       <PageSEO
         title="Portal de Compras Sicoob - Catálogo de Produtos"
-        description="Explore o catálogo oficial do Sicoob. Materiais de papelaria, brindes e itens institucionais."
+        description="Explore o catálogo oficial do Sicoob. Produtos de papelaria, brindes e itens institucionais."
         path="/"
         jsonLd={{
           "@context": "https://schema.org",
