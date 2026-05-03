@@ -11,6 +11,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle2, XCircle, ShieldAlert } from "lucide-react";
 import { toast } from "sonner";
+import { logAdminAction } from "@/utils/adminAudit";
 
 export function DiscountApprovalQueue() {
   const qc = useQueryClient();
@@ -20,7 +21,6 @@ export function DiscountApprovalQueue() {
     queryKey: ["discount-approval-queue"],
     queryFn: async () => {
       const { data, error } = await supabase
-        // rls-allow: admin-only via has_role; RLS filtra
         .from("discount_approval_requests")
         .select("*, quotes:quote_id(quote_number, client_name, client_company, total, subtotal, discount_percent, negotiation_markup_percent, real_subtotal, real_discount_percent)")
         .eq("status", "pending")
@@ -31,10 +31,9 @@ export function DiscountApprovalQueue() {
   });
 
   const respond = useMutation({
-    mutationFn: async ({ id, approved }: { id: string; approved: boolean }) => {
+    mutationFn: async ({ id, approved, request }: { id: string; approved: boolean, request: any }) => {
       const { data: u } = await supabase.auth.getUser();
       const { error } = await supabase
-        // rls-allow: admin-only via has_role; RLS filtra
         .from("discount_approval_requests")
         .update({
           status: approved ? "approved" : "rejected",
@@ -44,6 +43,17 @@ export function DiscountApprovalQueue() {
         })
         .eq("id", id);
       if (error) throw error;
+
+      await logAdminAction({
+        event_type: approved ? 'APPROVE_CHANGE' : 'REJECT_CHANGE',
+        entity_type: 'discount_approval_requests',
+        entity_id: id,
+        payload: { status: approved ? "approved" : "rejected", notes: notes[id] },
+        metadata: { 
+          quote_number: request.quotes?.quote_number,
+          requested_discount: request.requested_discount_percent 
+        }
+      });
     },
     onSuccess: () => {
       toast.success("Resposta registrada");
@@ -129,12 +139,12 @@ export function DiscountApprovalQueue() {
                 <Button
                   variant="outline"
                   className="border-destructive/50 text-destructive hover:bg-destructive/10"
-                  onClick={() => respond.mutate({ id: req.id, approved: false })}
+                  onClick={() => respond.mutate({ id: req.id, approved: false, request: req })}
                   disabled={respond.isPending}
                 >
                   <XCircle className="h-4 w-4 mr-2" /> Recusar
                 </Button>
-                <Button onClick={() => respond.mutate({ id: req.id, approved: true })} disabled={respond.isPending}>
+                <Button onClick={() => respond.mutate({ id: req.id, approved: true, request: req })} disabled={respond.isPending}>
                   <CheckCircle2 className="h-4 w-4 mr-2" /> Aprovar
                 </Button>
               </div>
@@ -145,3 +155,4 @@ export function DiscountApprovalQueue() {
     </div>
   );
 }
+
