@@ -100,8 +100,9 @@ Deno.serve(async (req) => {
     const authHeader = req.headers.get("Authorization") ?? "";
     const jwt = authHeader.replace(/^Bearer\s+/i, "");
     if (!jwt) {
+      log.warn("unauthenticated_missing_jwt");
       await auditFailure("denied", "mcp_key.revoke_denied", { reason: "unauthenticated" });
-      return jsonResponse({ error: "unauthenticated" }, 401, requestId);
+      return log.respond(jsonResponse({ error: "unauthenticated" }, 401, requestId));
     }
 
     const userClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
