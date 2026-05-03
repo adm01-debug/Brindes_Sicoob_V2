@@ -228,11 +228,11 @@ interface ListUpdateAnnouncerProps {
   action?: "loaded" | "filtered" | "sorted" | "updated";
 }
 
-export function ListUpdateAnnouncer({ 
+export const ListUpdateAnnouncer = forwardRef<HTMLDivElement, ListUpdateAnnouncerProps>(({ 
   count, 
   itemName = "item",
   action = "loaded" 
-}: ListUpdateAnnouncerProps) {
+}, _ref) => {
   const { announceStatus } = useAriaLive();
 
   useEffect(() => {
@@ -248,4 +248,6 @@ export function ListUpdateAnnouncer({
   }, [count, itemName, action, announceStatus]);
 
   return null;
-}
+});
+
+ListUpdateAnnouncer.displayName = 'ListUpdateAnnouncer';
