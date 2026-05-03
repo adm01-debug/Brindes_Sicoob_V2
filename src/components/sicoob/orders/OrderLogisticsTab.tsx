@@ -93,7 +93,7 @@ export function OrderLogisticsTab({ orderId }: OrderLogisticsTabProps) {
           </div>
           <Button 
             onClick={handleUpdateTracking} 
-            disabled={updateLogistics.isPending || (!trackingCode && !carrier)}
+            disabled={updateLogistics.isPending || !trackingCode.trim() || !carrier.trim()}
           >
             {updateLogistics.isPending ? "Salvando..." : "Salvar Informações"}
           </Button>
