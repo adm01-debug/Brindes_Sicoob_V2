@@ -42,17 +42,25 @@ const KNOWN_COLOR_HEX: Record<string, string> = {
   'prata acetinado (fosco)': '#868686', 'cromado': '#E8E8E8', 'ouro': '#FFD700',
 };
 
+// Pre-processamento para otimização de busca O(1)
+const NORMALIZED_HEX_MAP = new Map(
+  Object.entries(KNOWN_COLOR_HEX).map(([name, hex]) => [
+    name.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase(),
+    hex
+  ])
+);
+
 /** Busca hex em mapeamento conhecido */
 export function findKnownHex(colorName: string): string | null {
   if (!colorName) return null;
   const nameLower = colorName.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
 
-  for (const [key, hex] of Object.entries(KNOWN_COLOR_HEX)) {
-    const keyNorm = key.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-    if (keyNorm === nameLower) return hex;
-  }
-  for (const [key, hex] of Object.entries(KNOWN_COLOR_HEX)) {
-    const keyNorm = key.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  // O(1) direct match
+  const directMatch = NORMALIZED_HEX_MAP.get(nameLower);
+  if (directMatch) return directMatch;
+
+  // Partial match as fallback O(N) but avoids re-normalizing keys
+  for (const [keyNorm, hex] of NORMALIZED_HEX_MAP.entries()) {
     if (nameLower.includes(keyNorm) || keyNorm.includes(nameLower)) return hex;
   }
   return null;

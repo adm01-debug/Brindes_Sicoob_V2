@@ -57,6 +57,29 @@ interface AdminDataTableProps<T> {
   currentPage?: number;
 }
 
+const DataTableRow = React.memo(function DataTableRow<T extends { id?: string | number }>({ 
+  row, 
+  columns, 
+  onRowClick 
+}: { 
+  row: T; 
+  columns: Column<T>[]; 
+  onRowClick?: (row: T) => void 
+}) {
+  return (
+    <TableRow 
+      className={cn(onRowClick && "cursor-pointer hover:bg-muted/50 transition-colors")}
+      onClick={() => onRowClick?.(row)}
+    >
+      {columns.map((col, cIdx) => (
+        <TableCell key={cIdx}>
+          {col.cell ? col.cell(row) : String(row[col.accessorKey as keyof T] || "-")}
+        </TableCell>
+      ))}
+    </TableRow>
+  );
+});
+
 export function AdminDataTable<T extends { id?: string | number }>({
   data,
   columns,
@@ -105,10 +128,12 @@ export function AdminDataTable<T extends { id?: string | number }>({
         return value.includes(searchTerm.toLowerCase());
       });
     } else if (searchTerm) {
+      const lowerSearch = searchTerm.toLowerCase();
       result = result.filter(item => 
-        Object.values(item).some(val => 
-          String(val || "").toLowerCase().includes(searchTerm.toLowerCase())
-        )
+        Object.entries(item).some(([key, val]) => {
+          if (key === 'id') return false; // Skip ID for search
+          return String(val || "").toLowerCase().includes(lowerSearch);
+        })
       );
     }
 
@@ -251,17 +276,12 @@ export function AdminDataTable<T extends { id?: string | number }>({
               </TableRow>
             ) : (
               paginatedData.map((row, idx) => (
-                <TableRow 
+                <DataTableRow 
                   key={row.id || idx} 
-                  className={cn(onRowClick && "cursor-pointer hover:bg-muted/50 transition-colors")}
-                  onClick={() => onRowClick?.(row)}
-                >
-                  {columns.map((col, cIdx) => (
-                    <TableCell key={cIdx}>
-                      {col.cell ? col.cell(row) : String(row[col.accessorKey as keyof T] || "-")}
-                    </TableCell>
-                  ))}
-                </TableRow>
+                  row={row} 
+                  columns={columns} 
+                  onRowClick={onRowClick} 
+                />
               ))
             )}
           </TableBody>

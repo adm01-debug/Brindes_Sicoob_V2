@@ -1,7 +1,7 @@
 import { ProductCard } from "./ProductCard";
 import type { Product } from "@/hooks/useProducts";
 import type { ActiveColorFilter } from "@/utils/color-image-resolver";
-import { useEffect, useState, useRef, useMemo } from "react";
+import { useEffect, useState, useRef, useMemo, memo, useCallback } from "react";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { SelectionCheckbox } from "@/components/common/SelectionCheckbox";
 import { useVirtualizer } from "@tanstack/react-virtual";
@@ -28,7 +28,7 @@ export interface ProductGridProps {
   onToggleSelect?: (id: string) => void;
 }
 
-function ProductCardWrapper({ 
+const ProductCardWrapper = memo(function ProductCardWrapper({ 
   product, 
   index, 
   isVisible,
@@ -60,6 +60,19 @@ function ProductCardWrapper({
 
   const isSelected = selectionMode && selectedIds?.has(product.id);
 
+  const handleToggleSelect = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+    onToggleSelect?.(product.id);
+  }, [onToggleSelect, product.id]);
+
+  const handleCardClick = useCallback(() => {
+    if (selectionMode) {
+      onToggleSelect?.(product.id);
+    } else {
+      restProps.onClick?.();
+    }
+  }, [selectionMode, onToggleSelect, product.id, restProps.onClick]);
+
   return (
     <div
       ref={ref}
@@ -79,7 +92,7 @@ function ProductCardWrapper({
       {selectionMode && onToggleSelect && (
         <div 
           className="absolute top-2 left-2 z-20"
-          onClick={(e) => { e.stopPropagation(); onToggleSelect(product.id); }}
+          onClick={handleToggleSelect}
         >
           <SelectionCheckbox
             checked={!!isSelected}
@@ -92,11 +105,11 @@ function ProductCardWrapper({
         product={product} 
         hideCategoryBadges={hideCategoryBadges} 
         {...restProps}
-        onClick={selectionMode ? () => onToggleSelect?.(product.id) : restProps.onClick}
+        onClick={handleCardClick}
       />
     </div>
   );
-}
+});
 
 const columnClasses: Record<number, string> = {
   3: "grid-cols-2 sm:grid-cols-3",
@@ -132,21 +145,27 @@ export function ProductGrid({
   const [currentCols, setCurrentCols] = useState(columns);
   
   useEffect(() => {
+    let timeoutId: number;
     const updateCols = () => {
       const width = window.innerWidth;
-      if (width < 640) setCurrentCols(2);
-      else if (width < 1024) setCurrentCols(3);
-      else if (width < 1280) setCurrentCols(Math.min(columns, 4));
-      else setCurrentCols(columns);
+      let newCols = columns;
+      if (width < 640) newCols = 2;
+      else if (width < 1024) newCols = 3;
+      else if (width < 1280) newCols = Math.min(columns, 4);
+      
+      setCurrentCols((prev) => prev !== newCols ? newCols : prev);
     };
     
     updateCols();
     const handleResize = () => {
-      // Debounce opcional ou apenas throttle simples via requestAnimationFrame
-      window.requestAnimationFrame(updateCols);
+      cancelAnimationFrame(timeoutId);
+      timeoutId = requestAnimationFrame(updateCols);
     };
     window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      cancelAnimationFrame(timeoutId);
+    };
   }, [columns]);
 
   const rowCount = useMemo(() => Math.ceil(products.length / currentCols), [products.length, currentCols]);
