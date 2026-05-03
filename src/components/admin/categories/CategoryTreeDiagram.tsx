@@ -3,7 +3,7 @@ import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ChevronRight, ChevronDown, Folder, FolderOpen, Pencil, Search, Maximize2, Minimize2 } from "lucide-react";
+import { ChevronRight, ChevronDown, Folder, FolderOpen, Pencil, Search, Maximize2, Minimize2, ChevronRightIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface Category {
