@@ -15,9 +15,10 @@ export function CriticalErrorOverlay() {
     });
   }, []);
 
+  useEffect(() => {
     window.addEventListener('app-critical-error', handleCriticalError);
     return () => window.removeEventListener('app-critical-error', handleCriticalError);
-  }, []);
+  }, [handleCriticalError]);
 
   if (!error) return null;
 
