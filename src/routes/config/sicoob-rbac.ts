@@ -20,4 +20,7 @@ export const sicoobRbacRoutes = [
   // Relatórios e KPIs
   defineRoute({ path: "/relatorios/sicoob", component: lazyWithRetry(() => import("@/pages/sicoob/reports/SicoobReportsPage")) }),
   defineRoute({ path: "/kpis/sicoob", component: lazyWithRetry(() => import("@/pages/sicoob/reports/SicoobKpiPage")) }),
+  
+  // QA e Auditoria Sicoob
+  defineRoute({ path: "/sicoob/qa/preflight", component: lazyWithRetry(() => import("@/pages/admin/qa/PreflightPage")) }),
 ] as const;
