@@ -4767,6 +4767,42 @@ export type Database = {
         }
         Relationships: []
       }
+      qa_runs: {
+        Row: {
+          error: string | null
+          executed_by: string | null
+          finished_at: string | null
+          id: string
+          persona: string | null
+          report: Json | null
+          scenario: string | null
+          started_at: string | null
+          status: string
+        }
+        Insert: {
+          error?: string | null
+          executed_by?: string | null
+          finished_at?: string | null
+          id?: string
+          persona?: string | null
+          report?: Json | null
+          scenario?: string | null
+          started_at?: string | null
+          status?: string
+        }
+        Update: {
+          error?: string | null
+          executed_by?: string | null
+          finished_at?: string | null
+          id?: string
+          persona?: string | null
+          report?: Json | null
+          scenario?: string | null
+          started_at?: string | null
+          status?: string
+        }
+        Relationships: []
+      }
       query_telemetry: {
         Row: {
           cache_hit: boolean
@@ -6998,7 +7034,6 @@ export type Database = {
         Returns: {
           deleted_id: string
           email: string
-          success: boolean
         }[]
       }
       cleanup_webhook_logs: { Args: never; Returns: Json }
