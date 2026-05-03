@@ -7,12 +7,13 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Users, UserCog, Loader2, KeyRound, Plus, Search, Percent, ArrowUpCircle, History } from "lucide-react";
+import { Users, UserCog, Loader2, KeyRound, Plus, Search, Percent, ArrowUpCircle, History, Ticket } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { PasswordResetApproval } from "@/components/admin/PasswordResetApproval";
 import { DiscountManagementPanel } from "@/components/admin/DiscountManagementPanel";
+import { CouponManager } from "@/components/admin/CouponManager";
 import { usePasswordResetRequests } from "@/hooks/usePasswordResetRequests";
 
 import { useUserManagement } from "@/components/admin/users/useUserManagement";
