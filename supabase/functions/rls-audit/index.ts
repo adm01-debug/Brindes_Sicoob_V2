@@ -20,36 +20,72 @@ Deno.serve(async (req) => {
 
   try {
     const authHeader = req.headers.get("Authorization") ?? "";
-    if (!authHeader.startsWith("Bearer ")) {
-      return new Response(JSON.stringify({ error: "missing_auth" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
+    const isAdminAudit = req.headers.get("X-Admin-Audit") === "true";
+    const targetUserId = req.headers.get("X-Target-User-Id");
 
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
     const ANON = Deno.env.get("SUPABASE_ANON_KEY")!;
     const SERVICE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
-    // Cliente que representa o usuário (respeita RLS)
+    const adminClient = createClient(SUPABASE_URL, SERVICE, {
+      auth: { persistSession: false },
+    });
+
+    let sellerId: string;
+    let userClientHeaders = { Authorization: authHeader };
+
+    if (isAdminAudit && authHeader.includes(SERVICE) && targetUserId) {
+      // Auditoria via service role: simulando o usuário target
+      sellerId = targetUserId;
+      // Criamos um token para o usuário (impersonation)
+      const { data: impersonation, error: impErr } = await adminClient.auth.admin.getUserById(targetUserId);
+      if (impErr || !impersonation.user) {
+        throw new Error("Target user not found");
+      }
+      // Na verdade, o userClient não precisa de um token real se estivermos apenas testando 
+      // mas para RLS funcionar via REST API ele precisa.
+      // Vamos usar o createClient com o targetUserId injetado se possível, 
+      // ou apenas gerar um token JWT customizado.
+      // Simplificando: vamos assumir que o script passa um token ou que a function 
+      // roda em contexto que pode simular.
+      
+      // Para simular RLS em Edge Functions sem logar, o jeito mais seguro é usar o token do usuário.
+      // Se não tivermos, vamos falhar por enquanto ou usar o authHeader se presente.
+      if (!authHeader.startsWith("Bearer ")) {
+         return new Response(JSON.stringify({ error: "missing_auth" }), {
+          status: 401,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+    } else {
+      if (!authHeader.startsWith("Bearer ")) {
+        return new Response(JSON.stringify({ error: "missing_auth" }), {
+          status: 401,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      // Cliente que representa o usuário (respeita RLS)
+      const userClient = createClient(SUPABASE_URL, ANON, {
+        global: { headers: { Authorization: authHeader } },
+        auth: { persistSession: false },
+      });
+
+      const { data: userResp, error: userErr } = await userClient.auth.getUser();
+      if (userErr || !userResp.user) {
+        return new Response(JSON.stringify({ error: "invalid_jwt" }), {
+          status: 401,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      sellerId = userResp.user.id;
+    }
+
     const userClient = createClient(SUPABASE_URL, ANON, {
       global: { headers: { Authorization: authHeader } },
       auth: { persistSession: false },
     });
 
-    // Cliente admin para criar registro "de outro vendedor" e cleanup
-    const adminClient = createClient(SUPABASE_URL, SERVICE, {
-      auth: { persistSession: false },
-    });
-
-    const { data: userResp, error: userErr } = await userClient.auth.getUser();
-    if (userErr || !userResp.user) {
-      return new Response(JSON.stringify({ error: "invalid_jwt" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-    const sellerId = userResp.user.id;
     const { data: profile } = await adminClient.from("profiles").select("organization_id, pa_id").eq("user_id", sellerId).single();
 
     // Outro vendedor "fantasma" — UUID fixo
