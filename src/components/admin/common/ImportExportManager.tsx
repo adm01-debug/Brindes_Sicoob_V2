@@ -177,8 +177,8 @@ export function ImportExportManager({
                   accept=".csv, .xlsx, .xls"
                   className="hidden"
                 />
-                <Button variant="ghost" size="sm" onClick={downloadTemplate}>
-                  Baixar Modelo
+                <Button variant="outline" size="sm" onClick={downloadTemplate} className="gap-2">
+                  <Download className="h-4 w-4" /> Baixar Template (XLSX)
                 </Button>
               </div>
               {previewData.length > 0 && (

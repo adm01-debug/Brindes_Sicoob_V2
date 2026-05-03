@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useMemo } from 'react';
 import { MainLayout } from "@/components/layout/MainLayout";
 import { PageSEO } from "@/components/seo/PageSEO";
@@ -11,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { AdminDataTable } from "@/components/admin/common/AdminDataTable";
 import { logAdminAction } from "@/utils/adminAudit";
+import * as XLSX from 'xlsx';
 
 export default function AdminCMSPage() {
   return (
@@ -163,6 +165,7 @@ function BannersTab() {
           isLoading={isLoading}
           searchPlaceholder="Buscar banners..."
           searchKey="title"
+          onExport={handleExport}
         />
       </CardContent>
     </Card>
@@ -247,4 +250,3 @@ function VisualTab() {
     </Card>
   );
 }
-
