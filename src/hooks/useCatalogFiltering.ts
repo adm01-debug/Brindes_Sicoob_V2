@@ -107,6 +107,7 @@ export function useCatalogFiltering({
       return [];
     }
 
+    // Filtro por termo de produto (fallback legível do filtro de materiais)
     if (!hasMaterialFilter && filters.materiais.length) {
       const lowerMateriais = filters.materiais.map(m => m.toLowerCase());
       result = result.filter((p) => {

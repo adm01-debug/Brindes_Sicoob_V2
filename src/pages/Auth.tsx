@@ -181,7 +181,7 @@ export default function Auth() {
     <main className="min-h-screen flex bg-background" role="main" aria-label="Autenticação">
       <PageSEO
         title="Login"
-        description="Acesse o Portal de Compras Sicoob. Faça login para gerenciar seus orçamentos e materiais."
+        description="Acesse o Portal de Compras Sicoob. Faça login para gerenciar seus orçamentos e produtos."
         path="/login"
         jsonLd={{
           "@context": "https://schema.org",

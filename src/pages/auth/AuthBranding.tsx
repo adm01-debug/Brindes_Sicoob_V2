@@ -46,7 +46,7 @@ export const ContinuousRockets = React.forwardRef<HTMLDivElement>(function Conti
 });
 
 const FEATURES = [
-  { label: "+20.000", desc: "Materiais", icon: Package },
+  { label: "+20.000", desc: "Produtos", icon: Package },
   { label: "+100", desc: "Fornecedores", icon: Factory },
   { label: "Catálogo", desc: "Inteligente", icon: SlidersHorizontal },
   { label: "IA", desc: "Assistente Pessoal", icon: Brain },
@@ -89,7 +89,7 @@ export function AuthBrandingPanel() {
               Portal de Compras - <span className="text-primary">Sicoob</span>
             </h2>
             <p className="text-lg text-muted-foreground">
-              Tenha acesso ao catálogo oficial de materiais e brindes. Consulte estoque em tempo real e personalize seus pedidos com a identidade do sistema.
+              Tenha acesso ao catálogo oficial de produtos e brindes. Consulte estoque em tempo real e personalize seus pedidos com a identidade do sistema.
             </p>
           </div>
 

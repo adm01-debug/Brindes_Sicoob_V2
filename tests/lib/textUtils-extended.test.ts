@@ -29,7 +29,7 @@ describe('toTitleCase — comprehensive', () => {
     expect(toTitleCase('caixa do produto')).toBe('Caixa do Produto');
     expect(toTitleCase('caixa da marca')).toBe('Caixa da Marca');
     expect(toTitleCase('caixa das canetas')).toBe('Caixa das Canetas');
-    expect(toTitleCase('caixa dos materiais')).toBe('Caixa dos Materiais');
+    expect(toTitleCase('caixa dos produtos')).toBe('Caixa dos Produtos');
     expect(toTitleCase('feito com amor')).toBe('Feito com Amor');
     expect(toTitleCase('produto em oferta')).toBe('Produto em Oferta');
     expect(toTitleCase('item na lista')).toBe('Item na Lista');
