@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
-import { Activity, AlertTriangle, Gauge, Search, Webhook, Zap, Timer } from 'lucide-react';
+import { Activity, AlertTriangle, Gauge, Search, Webhook, Zap, Timer, Database } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
   useAppHealth,
@@ -50,7 +50,7 @@ export function AppHealthDashboard() {
   const [requestIdQuery, setRequestIdQuery] = useState('');
   const [lookupResult, setLookupResult] = useState<RequestIdLookup | null>(null);
   const [lookupLoading, setLookupLoading] = useState(false);
-  const { data, isLoading, isFetching, refetch } = useAppHealth(windowMinutes);
+  const { data, slowQueries, isLoadingSlow, isLoading, isFetching, refetch } = useAppHealth(windowMinutes);
 
   const handleLookup = async () => {
     const id = requestIdQuery.trim();
@@ -350,6 +350,52 @@ export function AppHealthDashboard() {
                           </span>
                         </td>
                         <td className="px-2 py-1.5 text-right tabular-nums">{fmtMs(r.p99_ms)}</td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Top Slow Queries (p95) */}
+        <Card className="xl:col-span-1">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm flex items-center gap-2">
+              <Database className="h-4 w-4 text-primary" />
+              Top Queries Lentas (p95)
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-0">
+            <div className="overflow-x-auto max-h-[360px]">
+              <table className="w-full text-xs">
+                <thead className="bg-muted/40 sticky top-0">
+                  <tr className="text-left">
+                    <th className="px-2 py-1.5">Op/Tabela</th>
+                    <th className="px-2 py-1.5 text-right">Count</th>
+                    <th className="px-2 py-1.5 text-right">Avg</th>
+                    <th className="px-2 py-1.5 text-right">p95</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {isLoadingSlow ? (
+                    <tr><td colSpan={4} className="p-3"><Skeleton className="h-20 w-full" /></td></tr>
+                  ) : slowQueries.length === 0 ? (
+                    <tr><td colSpan={4} className="p-3 text-center text-muted-foreground">Sem dados de query</td></tr>
+                  ) : (
+                    slowQueries.map((r, i) => (
+                      <tr key={i} className="border-t border-border/40">
+                        <td className="px-2 py-1.5 max-w-[160px] truncate font-mono" title={r.operation}>
+                          {r.operation}
+                        </td>
+                        <td className="px-2 py-1.5 text-right tabular-nums">{r.count}</td>
+                        <td className="px-2 py-1.5 text-right tabular-nums">{fmtMs(r.avg_ms)}</td>
+                        <td className="px-2 py-1.5 text-right tabular-nums">
+                          <span className={cn(r.p95_ms >= 500 ? 'text-destructive font-semibold' : 'text-warning')}>
+                            {fmtMs(r.p95_ms)}
+                          </span>
+                        </td>
                       </tr>
                     ))
                   )}
