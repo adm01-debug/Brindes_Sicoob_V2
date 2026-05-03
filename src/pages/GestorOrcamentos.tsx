@@ -56,13 +56,7 @@ export default function GestorOrcamentos() {
           </TabsContent>
 
           <TabsContent value="consolidation" className="mt-6">
-            <div className="flex flex-col items-center justify-center py-20 text-center border-2 border-dashed border-border/50 rounded-2xl bg-muted/5">
-              <Layers className="h-12 w-12 text-muted-foreground/30 mb-4" />
-              <h3 className="text-lg font-semibold">Consolidação de Pedidos</h3>
-              <p className="text-sm text-muted-foreground max-w-sm mt-2">
-                Agrupe solicitações de diferentes PACs para negociar melhores preços e fretes.
-              </p>
-            </div>
+             <OrderConsolidationPanel singularId={profile?.cooperativa_id || null} />
           </TabsContent>
 
           <TabsContent value="metrics" className="mt-6">
