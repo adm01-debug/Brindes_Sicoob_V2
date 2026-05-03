@@ -55,7 +55,8 @@
     "check:security-definer-acl": "node scripts/check-security-definer-acl.mjs",
     "check:npm-audit": "node scripts/check-npm-audit.mjs",
     "seed:qa": "node scripts/seed-qa.mjs",
-    "test:rls": "node scripts/test-rls.mjs"
+    "test:rls": "node scripts/test-rls.mjs",
+    "healthcheck": "node scripts/healthcheck.mjs"
   },
   "lint-staged": {
     "src/**/*.{ts,tsx}": [
