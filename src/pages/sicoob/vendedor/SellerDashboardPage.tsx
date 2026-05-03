@@ -9,27 +9,7 @@ import { Link } from "react-router-dom";
 import { Progress } from "@/components/ui/progress";
 
 export default function SellerDashboardPage() {
-  const { data: stats } = useQuery({
-    queryKey: ["sicoob-seller-stats"],
-    queryFn: async () => {
-      return {
-        totalClients: 48,
-        activeOrders: 15,
-        monthlySales: 345000.00,
-        salesGoal: 500000.00,
-        topClients: [
-          { name: "Sicoob Central SC/RS", value: 120000, grow: "+12%" },
-          { name: "Sicoob MaxiCrédito", value: 85000, grow: "+5%" },
-          { name: "Sicoob São Miguel", value: 42000, grow: "-2%" },
-        ],
-        recentActivity: [
-          { action: "Pedido aprovado", client: "PA 01 - Centro", time: "2h atrás" },
-          { action: "Novo orçamento", client: "PA 04 - Industrial", time: "5h atrás" },
-          { action: "Entrega confirmada", client: "PA 02 - Norte", time: "1 dia atrás" },
-        ]
-      };
-    }
-  });
+  const { data: stats, isLoading } = useSellerDashboardStats();
 
   const goalProgress = stats ? (stats.monthlySales / stats.salesGoal) * 100 : 0;
 
