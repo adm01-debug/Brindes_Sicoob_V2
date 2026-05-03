@@ -187,50 +187,63 @@ export function useOnboarding() {
 
   // Update current step in database
   const updateStep = useCallback(async (step: number) => {
-    if (!user || !onboardingId) return;
-
+    // Sempre atualiza o estado local primeiro — não pode travar por falha de DB
     setCurrentStep(step);
 
-    await supabase
-      .from("user_onboarding")
-      .update({
-        current_step: step,
-        completed_steps: ONBOARDING_STEPS.slice(0, step).map((s) => s.id),
-      })
-      .eq("id", onboardingId);
+    if (!user || !onboardingId) return;
+
+    try {
+      await supabase
+        .from("user_onboarding")
+        .update({
+          current_step: step,
+          completed_steps: ONBOARDING_STEPS.slice(0, step).map((s) => s.id),
+        })
+        .eq("id", onboardingId);
+    } catch (err) {
+      console.warn("[onboarding] failed to persist step", err);
+    }
   }, [user, onboardingId]);
 
   // Complete tour
   const completeTour = useCallback(async () => {
-    if (!user || !onboardingId) return;
-
     setShowTour(false);
     setHasCompletedTour(true);
 
-    await supabase
-      .from("user_onboarding")
-      .update({
-        has_completed_tour: true,
-        completed_at: new Date().toISOString(),
-        completed_steps: ONBOARDING_STEPS.map((s) => s.id),
-      })
-      .eq("id", onboardingId);
+    if (!user || !onboardingId) return;
+
+    try {
+      await supabase
+        .from("user_onboarding")
+        .update({
+          has_completed_tour: true,
+          completed_at: new Date().toISOString(),
+          completed_steps: ONBOARDING_STEPS.map((s) => s.id),
+        })
+        .eq("id", onboardingId);
+    } catch (err) {
+      console.warn("[onboarding] failed to persist completion", err);
+    }
   }, [user, onboardingId]);
 
   // Skip tour
   const skipTour = useCallback(async () => {
-    if (!user || !onboardingId) return;
-
     setShowTour(false);
     setHasCompletedTour(true);
 
-    await supabase
-      .from("user_onboarding")
-      .update({
-        has_completed_tour: true,
-        completed_at: new Date().toISOString(),
-      })
-      .eq("id", onboardingId);
+    if (!user || !onboardingId) return;
+
+    try {
+      await supabase
+        .from("user_onboarding")
+        .update({
+          has_completed_tour: true,
+          completed_at: new Date().toISOString(),
+        })
+        .eq("id", onboardingId);
+    } catch (err) {
+      console.warn("[onboarding] failed to persist skip", err);
+    }
   }, [user, onboardingId]);
 
   // Restart tour
