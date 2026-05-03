@@ -193,8 +193,8 @@ export function MainLayout({ children }: MainLayoutProps) {
         </Suspense>
       </div>
       
-      {/* Dev-only API Inspector */}
-      {import.meta.env.DEV && <APIInspector />}
+      {/* Restrito a usuários com papel `dev` (gate interno via useDevGate) */}
+      <APIInspector />
     </div>
   );
 

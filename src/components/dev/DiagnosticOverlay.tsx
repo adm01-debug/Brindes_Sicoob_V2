@@ -16,21 +16,24 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
+import { useDevGate } from "@/hooks/useDevGate";
 
 export const DiagnosticOverlay = () => {
+  const { isAllowed } = useDevGate();
   const [isOpen, setIsOpen] = useState(false);
   const [logs, setLogs] = useState<DiagnosticLog[]>([]);
   const [isMinimized, setIsMinimized] = useState(false);
 
   useEffect(() => {
+    if (!isAllowed) return;
     setLogs(diagnostics.getLogs());
     return diagnostics.subscribe((log) => {
       setLogs(prev => [log, ...prev].slice(0, 100));
     });
-  }, []);
+  }, [isAllowed]);
 
-  // Only show in development or if explicitly enabled
-  if (!import.meta.env.DEV && !window.location.search.includes('diag=true')) {
+  // Restrito a usuários com papel `dev` (via SSOT DevInfraGate)
+  if (!isAllowed) {
     return null;
   }
 
