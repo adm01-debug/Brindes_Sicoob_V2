@@ -10,12 +10,14 @@ import {
 } from "@dnd-kit/core";
 import { toast } from "sonner";
 import { useOrdersList, useUpdateOrder, ORDER_STATUS_LABELS, canTransitionTo, type OrderRow } from "@/hooks/useOrders";
-import { DroppableColumn } from "@/pages/sicoob/orders/OrdersKanbanPage"; // Reusing UI components
+import { DroppableColumn } from "@/pages/sicoob/orders/OrdersKanbanPage";
 import { DraggableCard } from "@/pages/sicoob/orders/OrdersKanbanPage";
 import { useAuth } from "@/contexts/AuthContext";
 import { Loader2 } from "lucide-react";
+import { OrderDetailSheet } from "./OrderDetailSheet";
 
 const COLUMNS = [
+
   { id: "rascunho", title: "Rascunho" },
   { id: "enviado_gestor", title: "Pendente Aprovação" },
   { id: "aprovado_gestor", title: "Aprovado Singular" },
@@ -29,6 +31,8 @@ export function ApprovalKanbanBoard() {
   const updateOrder = useUpdateOrder();
   
   const [activeId, setActiveId] = useState<string | null>(null);
+  const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
+
   
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
@@ -88,12 +92,13 @@ export function ApprovalKanbanBoard() {
                     pa: order.client_company || "Sem Empresa",
                     status: order.status as any,
                     total: order.total || 0,
-                    items: 0, // Should fetch items count if needed
+                    items: 0, 
                   }}
-                  onClick={() => {}} // Navigate to detail
+                  onClick={() => setSelectedOrderId(order.id)}
                   canDrag={true}
                 />
               ))}
+
             </DroppableColumn>
           );
         })}
@@ -108,6 +113,13 @@ export function ApprovalKanbanBoard() {
           </div>
         ) : null}
       </DragOverlay>
+
+      <OrderDetailSheet 
+        orderId={selectedOrderId} 
+        isOpen={!!selectedOrderId} 
+        onClose={() => setSelectedOrderId(null)} 
+      />
     </DndContext>
+
   );
 }
