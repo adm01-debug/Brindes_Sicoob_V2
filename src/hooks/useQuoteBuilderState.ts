@@ -30,7 +30,7 @@ export function useQuoteBuilderState() {
   const [searchParams] = useSearchParams();
   const isEditMode = Boolean(quoteId);
 
-  const { user } = useAuth();
+  const { user, roles: userRoles, isGerentePa } = useAuth();
   const { createQuote, updateQuote, fetchQuote, isLoading: quotesLoading } = useQuotes();
   const { templates } = useQuoteTemplates();
   const { myLimit: maxDiscountPercent } = useSellerDiscountLimits();
