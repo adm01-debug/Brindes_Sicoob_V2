@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { MainLayout } from "@/components/layout/MainLayout";
 import { PageSEO } from "@/components/seo/PageSEO";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Plus, Search, Pencil, Trash2, Megaphone, Calendar, Tag, Filter, CheckCircle2, AlertCircle, Users } from "lucide-react";
+import { Plus, Search, Pencil, Trash2, Megaphone, Calendar, Tag, Filter, CheckCircle2, AlertCircle, Users, FileDown, Download } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
@@ -14,8 +14,9 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { format } from "date-fns";
+import { format, isWithinInterval, startOfDay, endOfDay } from "date-fns";
 import { logAdminAction } from "@/utils/adminAudit";
+import * as XLSX from 'xlsx';
 
 export default function AdminCampanhasPage() {
   const [campaigns, setCampaigns] = useState<any[]>([]);
@@ -23,14 +24,27 @@ export default function AdminCampanhasPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingCampaign, setEditingCampaign] = useState<any>(null);
+  
+  // Advanced filters state
+  const [filters, setFilters] = useState({
+    status: 'all',
+    startDate: '',
+    endDate: ''
+  });
 
   const fetchData = async () => {
     setIsLoading(true);
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from('campaigns')
         .select('*')
         .order('created_at', { ascending: false });
+
+      if (filters.status !== 'all') {
+        query = query.eq('status', filters.status);
+      }
+
+      const { data, error } = await query;
       if (error) throw error;
       setCampaigns(data || []);
     } catch (error) {
@@ -41,7 +55,8 @@ export default function AdminCampanhasPage() {
     }
   };
 
-  useEffect(() => { fetchData(); }, []);
+  useEffect(() => { fetchData(); }, [filters.status]); // Re-fetch on status change
+
 
   const handleSave = async (formData: any) => {
     try {
@@ -94,7 +109,51 @@ export default function AdminCampanhasPage() {
     }
   };
 
-  const filtered = campaigns.filter(c => c.name.toLowerCase().includes(searchTerm.toLowerCase()));
+  const filtered = useMemo(() => {
+    return campaigns.filter(c => {
+      const matchesSearch = c.name.toLowerCase().includes(searchTerm.toLowerCase());
+      
+      let matchesDate = true;
+      if (filters.startDate || filters.endDate) {
+        const campaignStart = c.start_date ? new Date(c.start_date) : null;
+        if (campaignStart) {
+          if (filters.startDate && campaignStart < startOfDay(new Date(filters.startDate))) matchesDate = false;
+          if (filters.endDate && campaignStart > endOfDay(new Date(filters.endDate))) matchesDate = false;
+        } else if (filters.startDate || filters.endDate) {
+          matchesDate = false;
+        }
+      }
+      
+      return matchesSearch && matchesDate;
+    });
+  }, [campaigns, searchTerm, filters]);
+
+  const handleExport = (format: 'xlsx' | 'csv') => {
+    const data = filtered.map(c => ({
+      'Nome': c.name,
+      'Status': c.status,
+      'Orçamento': c.budget,
+      'Data Início': c.start_date ? format(new Date(c.start_date), 'dd/MM/yyyy') : '',
+      'Data Fim': c.end_date ? format(new Date(c.end_date), 'dd/MM/yyyy') : '',
+      'Público-Alvo': c.target_audience || ''
+    }));
+
+    if (format === 'xlsx') {
+      const worksheet = XLSX.utils.json_to_sheet(data);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Campanhas");
+      XLSX.writeFile(workbook, `campanhas_admin_${format(new Date(), 'yyyy-MM-dd')}.xlsx`);
+    } else {
+      const headers = Object.keys(data[0] || {}).join(",");
+      const csvContent = [headers, ...data.map(row => Object.values(row).join(","))].join("\n");
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = `campanhas_admin_${format(new Date(), 'yyyy-MM-dd')}.csv`;
+      link.click();
+    }
+    toast.success(`Relatório exportado em ${format.toUpperCase()}`);
+  };
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -121,12 +180,44 @@ export default function AdminCampanhasPage() {
         </div>
 
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
-            <div><CardTitle>Lista de Campanhas</CardTitle><CardDescription>Monitore e gerencie o status das campanhas</CardDescription></div>
-            <Button onClick={() => { setEditingCampaign(null); setIsFormOpen(true); }} className="gap-2"><Plus className="h-4 w-4" /> Nova Campanha</Button>
+          <CardHeader className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+              <CardTitle>Lista de Campanhas</CardTitle>
+              <CardDescription>Monitore e gerencie o status das campanhas</CardDescription>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <Button variant="outline" size="sm" onClick={() => handleExport('xlsx')} className="gap-2">
+                <FileDown className="h-4 w-4" /> XLSX
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => handleExport('csv')} className="gap-2">
+                <Download className="h-4 w-4" /> CSV
+              </Button>
+              <Button onClick={() => { setEditingCampaign(null); setIsFormOpen(true); }} className="gap-2">
+                <Plus className="h-4 w-4" /> Nova Campanha
+              </Button>
+            </div>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="relative"><Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" /><Input placeholder="Buscar por nome..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-9" /></div>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input placeholder="Buscar por nome..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-9" />
+              </div>
+              <Select value={filters.status} onValueChange={(v) => setFilters(f => ({ ...f, status: v }))}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos os Status</SelectItem>
+                  <SelectItem value="active">Ativa</SelectItem>
+                  <SelectItem value="paused">Pausada</SelectItem>
+                  <SelectItem value="completed">Concluída</SelectItem>
+                  <SelectItem value="draft">Rascunho</SelectItem>
+                </SelectContent>
+              </Select>
+              <Input type="date" value={filters.startDate} onChange={(e) => setFilters(f => ({ ...f, startDate: e.target.value }))} className="w-full" />
+              <Input type="date" value={filters.endDate} onChange={(e) => setFilters(f => ({ ...f, endDate: e.target.value }))} className="w-full" />
+            </div>
             <div className="rounded-md border">
               <Table>
                 <TableHeader>

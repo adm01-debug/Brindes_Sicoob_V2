@@ -3,7 +3,7 @@ import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ChevronRight, ChevronDown, Folder, FolderOpen, Pencil, Search, Maximize2, Minimize2 } from "lucide-react";
+import { ChevronRight, ChevronDown, Folder, FolderOpen, Pencil, Search, Maximize2, Minimize2, ChevronRightIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface Category {
@@ -22,6 +22,23 @@ interface CategoryTreeDiagramProps {
 export function CategoryTreeDiagram({ categories, onEdit }: CategoryTreeDiagramProps) {
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
+
+  const breadcrumbs = useMemo(() => {
+    if (!selectedNodeId) return [];
+    
+    const path: Category[] = [];
+    let current = categories.find(c => c.id === selectedNodeId);
+    
+    while (current) {
+      path.unshift(current);
+      const parentId = current.parent_id;
+      current = categories.find(c => c.id === parentId);
+    }
+    
+    return path;
+  }, [selectedNodeId, categories]);
+
 
   const treeData = useMemo(() => {
     const map: Record<string, any> = {};
@@ -81,13 +98,28 @@ export function CategoryTreeDiagram({ categories, onEdit }: CategoryTreeDiagramP
       <div key={node.id} className="select-none">
         <div 
           className={cn(
-            "flex items-center gap-2 py-2 px-3 rounded-md hover:bg-muted/50 transition-colors group",
-            level > 0 && "ml-6 border-l pl-4"
+            "flex items-center gap-2 py-2 px-3 rounded-md hover:bg-muted/50 transition-colors group cursor-pointer",
+            level > 0 && "ml-6 border-l pl-4",
+            selectedNodeId === node.id && "bg-primary/5 ring-1 ring-primary/20"
           )}
+          onClick={() => setSelectedNodeId(node.id)}
+          onDoubleClick={() => onEdit(node)}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') onEdit(node);
+            if (e.key === ' ') {
+              e.preventDefault();
+              toggleExpand(node.id);
+            }
+          }}
         >
           {hasChildren ? (
             <button 
-              onClick={() => toggleExpand(node.id)}
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleExpand(node.id);
+              }}
               className="p-0.5 hover:bg-muted rounded text-muted-foreground"
             >
               {isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
@@ -108,14 +140,20 @@ export function CategoryTreeDiagram({ categories, onEdit }: CategoryTreeDiagramP
             </span>
           </div>
 
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity"
-            onClick={() => onEdit(node)}
-          >
-            <Pencil className="h-3.5 w-3.5" />
-          </Button>
+          <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="h-7 w-7"
+              onClick={(e) => {
+                e.stopPropagation();
+                onEdit(node);
+              }}
+              title="Editar categoria (Atalho: Enter)"
+            >
+              <Pencil className="h-3.5 w-3.5" />
+            </Button>
+          </div>
         </div>
 
         {hasChildren && isExpanded && (
@@ -148,6 +186,21 @@ export function CategoryTreeDiagram({ categories, onEdit }: CategoryTreeDiagramP
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
+        {selectedNodeId && breadcrumbs.length > 0 && (
+          <div className="flex items-center gap-1 text-[10px] text-muted-foreground bg-muted/30 p-2 rounded-md border border-dashed">
+            {breadcrumbs.map((crumb, idx) => (
+              <React.Fragment key={crumb.id}>
+                <span 
+                  className="hover:text-primary cursor-pointer transition-colors font-medium"
+                  onClick={() => setSelectedNodeId(crumb.id)}
+                >
+                  {crumb.name}
+                </span>
+                {idx < breadcrumbs.length - 1 && <ChevronRightIcon className="h-3 w-3 opacity-50" />}
+              </React.Fragment>
+            ))}
+          </div>
+        )}
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input 

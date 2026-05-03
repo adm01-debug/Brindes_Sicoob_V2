@@ -24,6 +24,13 @@ export default function AdminVerbasPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingBudget, setEditingBudget] = useState<any>(null);
+  
+  // Budget alert settings
+  const [alertConfig, setAlertConfig] = useState({
+    warningThreshold: 70, // 70%
+    criticalThreshold: 90  // 90%
+  });
+
 
   const { data: auditLogs = [] } = useQuery({
     queryKey: ['admin-budgets-audit'],
@@ -154,7 +161,9 @@ export default function AdminVerbasPage() {
               <div className="flex justify-between items-start">
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">Alertas de Limite</p>
-                  <h3 className="text-2xl font-bold mt-1 text-red-600">{budgets.filter(b => b.verba_consumida > b.verba_total * 0.9).length}</h3>
+                  <h3 className="text-2xl font-bold mt-1 text-red-600">
+                    {budgets.filter(b => (b.verba_consumida / b.verba_total) * 100 > alertConfig.criticalThreshold).length}
+                  </h3>
                 </div>
                 <div className="p-2 bg-red-500/10 rounded-lg text-red-600"><AlertTriangle className="h-5 w-5" /></div>
               </div>
@@ -207,11 +216,16 @@ export default function AdminVerbasPage() {
                               <TableCell>
                                 <div className="flex flex-col gap-1 min-w-[140px]">
                                   <div className="flex justify-between text-[11px] mb-0.5">
-                                    <span className={percent > 90 ? "text-red-600 font-bold" : ""}>R$ {(b.verba_consumida || 0).toLocaleString()}</span>
+                                    <span className={percent > alertConfig.criticalThreshold ? "text-red-600 font-bold" : percent > alertConfig.warningThreshold ? "text-yellow-600 font-bold" : ""}>
+                                      R$ {(b.verba_consumida || 0).toLocaleString()}
+                                    </span>
                                     <span className="text-muted-foreground">{percent.toFixed(1)}%</span>
                                   </div>
                                   <div className="w-full h-2 bg-muted rounded-full overflow-hidden border border-border/20">
-                                    <div className={`h-full transition-all duration-500 ${percent > 90 ? "bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.4)]" : percent > 70 ? "bg-yellow-500" : "bg-green-500"}`} style={{ width: `${Math.min(100, percent)}%` }} />
+                                    <div 
+                                      className={`h-full transition-all duration-500 ${percent > alertConfig.criticalThreshold ? "bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.4)]" : percent > alertConfig.warningThreshold ? "bg-yellow-500" : "bg-green-500"}`} 
+                                      style={{ width: `${Math.min(100, percent)}%` }} 
+                                    />
                                   </div>
                                 </div>
                               </TableCell>
