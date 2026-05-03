@@ -28,7 +28,7 @@ export function OrderAuditTimeline({ orderId }: OrderAuditTimelineProps) {
   }) : [];
 
   return (
-    <Card>
+    <Card data-testid="order-audit-timeline">
       <CardHeader className="flex flex-col space-y-4 pb-3">
         <div className="flex flex-row items-center justify-between">
           <CardTitle className="text-base flex items-center gap-2">

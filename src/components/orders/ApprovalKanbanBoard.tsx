@@ -73,7 +73,7 @@ export function ApprovalKanbanBoard() {
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
     >
-      <div className="flex gap-4 overflow-x-auto pb-4 min-h-[500px]">
+      <div className="flex gap-4 overflow-x-auto pb-4 min-h-[500px]" data-testid="approval-kanban">
         {COLUMNS.map((column) => {
           const columnOrders = orders?.filter((o) => o.status === column.id) || [];
           return (
