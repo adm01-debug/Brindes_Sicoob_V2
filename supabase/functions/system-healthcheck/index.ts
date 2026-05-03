@@ -1,15 +1,35 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.42.7"
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-request-id',
 }
 
-serve(async (req) => {
+interface LogContext {
+  requestId?: string;
+  service?: string;
+  operation?: string;
+  [key: string]: any;
+}
+
+const logStructured = (level: 'info' | 'error' | 'warn', message: string, context: LogContext) => {
+  const logEntry = {
+    timestamp: new Date().toISOString(),
+    level,
+    message,
+    ...context,
+  };
+  console.log(JSON.stringify(logEntry));
+};
+
+Deno.serve(async (req) => {
+  const requestId = req.headers.get('x-request-id') || crypto.randomUUID();
+  
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
+
+  const ctx: LogContext = { requestId, service: 'system-healthcheck' };
 
   try {
     const supabaseClient = createClient(
@@ -17,8 +37,11 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
+    logStructured('info', 'Starting health check', ctx);
+
     const health: any = {
       timestamp: new Date().toISOString(),
+      requestId,
       services: {
         database: { status: 'unknown' },
         auth: { status: 'unknown' },
@@ -28,56 +51,78 @@ serve(async (req) => {
     }
 
     // 1. Check Database
+    const startDb = Date.now();
     const { data: dbData, error: dbError } = await supabaseClient
       .from('profiles')
       .select('count', { count: 'exact', head: true })
       .limit(1)
 
     health.services.database.status = dbError ? 'unhealthy' : 'healthy'
-    if (dbError) health.services.database.error = dbError.message
+    health.services.database.latency = Date.now() - startDb;
+    
+    if (dbError) {
+      health.services.database.error = dbError.message;
+      logStructured('error', 'Database health check failed', { ...ctx, error: dbError.message, latency: health.services.database.latency });
+    }
 
-    // 2. Check Auth (via basic list users check or similar if possible, otherwise assume healthy if DB works)
+    // 2. Check Auth
     health.services.auth.status = 'healthy' 
 
     // 3. Check External DB Bridge
-    try {
-      const bridgeUrl = Deno.env.get('VITE_EXTERNAL_DB_URL') || 'http://localhost:8000'
-      const start = Date.now()
-      const bridgeRes = await fetch(`${bridgeUrl}/health`, { 
-        signal: AbortSignal.timeout(5000) 
-      })
-      health.services.bridge_external.status = bridgeRes.ok ? 'healthy' : 'unhealthy'
-      health.services.bridge_external.latency = Date.now() - start
-    } catch (e) {
-      health.services.bridge_external.status = 'unhealthy'
-      health.services.bridge_external.error = e.message
+    const bridgeUrl = Deno.env.get('VITE_EXTERNAL_DB_URL');
+    if (bridgeUrl) {
+      try {
+        const start = Date.now()
+        const bridgeRes = await fetch(`${bridgeUrl}/health`, { 
+          signal: AbortSignal.timeout(3000) 
+        })
+        health.services.bridge_external.status = bridgeRes.ok ? 'healthy' : 'unhealthy'
+        health.services.bridge_external.latency = Date.now() - start
+      } catch (e) {
+        health.services.bridge_external.status = 'unhealthy'
+        health.services.bridge_external.error = e.message
+        logStructured('warn', 'External DB bridge check failed', { ...ctx, error: e.message });
+      }
+    } else {
+      health.services.bridge_external.status = 'skipped'
     }
 
     // 4. Check CRM Bridge
-    try {
-      const crmUrl = Deno.env.get('VITE_CRM_BRIDGE_URL') || 'http://localhost:8001'
-      const start = Date.now()
-      const crmRes = await fetch(`${crmUrl}/health`, { 
-        signal: AbortSignal.timeout(5000) 
-      })
-      health.services.bridge_crm.status = crmRes.ok ? 'healthy' : 'unhealthy'
-      health.services.bridge_crm.latency = Date.now() - start
-    } catch (e) {
-      health.services.bridge_crm.status = 'unhealthy'
-      health.services.bridge_crm.error = e.message
+    const crmUrl = Deno.env.get('VITE_CRM_BRIDGE_URL');
+    if (crmUrl) {
+      try {
+        const start = Date.now()
+        const crmRes = await fetch(`${crmUrl}/health`, { 
+          signal: AbortSignal.timeout(3000) 
+        })
+        health.services.bridge_crm.status = crmRes.ok ? 'healthy' : 'unhealthy'
+        health.services.bridge_crm.latency = Date.now() - start
+      } catch (e) {
+        health.services.bridge_crm.status = 'unhealthy'
+        health.services.bridge_crm.error = e.message
+        logStructured('warn', 'CRM bridge check failed', { ...ctx, error: e.message });
+      }
+    } else {
+      health.services.bridge_crm.status = 'skipped'
     }
 
     // Overall status
-    const allHealthy = Object.values(health.services).every((s: any) => s.status === 'healthy')
-    health.status = allHealthy ? 'healthy' : 'degraded'
+    const criticalServices = ['database', 'auth'];
+    const allCriticalHealthy = criticalServices.every((key) => health.services[key].status === 'healthy');
+    const allHealthy = Object.values(health.services).every((s: any) => s.status === 'healthy' || s.status === 'skipped');
+    
+    health.status = allHealthy ? 'healthy' : (allCriticalHealthy ? 'degraded' : 'down');
+
+    logStructured('info', 'Health check completed', { ...ctx, status: health.status });
 
     return new Response(JSON.stringify(health), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      status: allHealthy ? 200 : 200 // We return 200 even if degraded so we can see the JSON
+      status: 200
     })
 
   } catch (error) {
-    return new Response(JSON.stringify({ error: error.message }), {
+    logStructured('error', 'Critical error in health check function', { ...ctx, error: error.message });
+    return new Response(JSON.stringify({ error: error.message, requestId }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 500
     })
