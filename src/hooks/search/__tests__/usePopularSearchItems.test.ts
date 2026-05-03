@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, waitFor } from '@testing-library/react';
-import { usePopularSearchItems } from '../usePopularSearchItems';
+import { usePopularSearchItems } from '@/hooks/search/usePopularSearchItems';
 import { supabase } from '@/integrations/supabase/client';
 
 vi.mock('@/integrations/supabase/client', () => ({

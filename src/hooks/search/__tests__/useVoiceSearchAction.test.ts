@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook } from '@testing-library/react';
-import { useVoiceSearchAction } from '../useVoiceSearchAction';
+import { useVoiceSearchAction } from '@/hooks/search/useVoiceSearchAction';
 import { useNavigate } from 'react-router-dom';
 import { useVoiceCommandHistory } from '@/hooks/useVoiceCommandHistory';
 import { useOracleVoiceBridge } from '@/stores/oracleVoiceBridge';
