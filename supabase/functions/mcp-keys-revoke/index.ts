@@ -138,8 +138,9 @@ Deno.serve(async (req) => {
     const parsed = BodySchema.safeParse(rawBody);
     if (!parsed.success) {
       const fields = parsed.error.flatten().fieldErrors;
+      log.warn("validation_failed", { fields });
       await auditFailure("denied", "mcp_key.revoke_denied", { reason: "validation_failed", fields });
-      return jsonResponse({ error: "validation_failed", fields }, 422, requestId);
+      return log.respond(jsonResponse({ error: "validation_failed", fields }, 422, requestId));
     }
     const { key_id, reason, step_up_token } = parsed.data;
 
