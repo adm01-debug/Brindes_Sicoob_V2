@@ -67,14 +67,20 @@ export function CatalogHeader({
 
         <h1 className="font-display text-xl sm:text-2xl lg:text-3xl font-bold whitespace-nowrap text-sicoob-green-dark">
           Catálogo SICOOB
-          <span className="text-muted-foreground font-normal text-sm sm:text-base ml-2">
-            · {shouldShowCatalogSkeleton
+          <span className="text-muted-foreground font-normal text-sm sm:text-base ml-2 inline-flex items-center">
+            <span className="opacity-40 mx-1">·</span>
+            {shouldShowCatalogSkeleton
               ? "Carregando..."
               : hasActiveConstraints
-                ? <>
+                ? <span className="flex items-center gap-1.5">
                     <span className="text-sicoob-green font-semibold">{filteredCount.toLocaleString("pt-BR")}</span>
-                    {totalEstimate ? ` de ${totalEstimate.toLocaleString("pt-BR")}` : ""} itens
-                  </>
+                    {totalEstimate ? (
+                      <span className="text-muted-foreground/60 text-xs sm:text-sm">
+                        de {totalEstimate.toLocaleString("pt-BR")}
+                      </span>
+                    ) : ""} 
+                    <span className="text-muted-foreground/80">itens</span>
+                  </span>
                 : totalEstimate
                   ? `${totalEstimate.toLocaleString("pt-BR")} itens`
                   : `${filteredCount.toLocaleString("pt-BR")} itens`
