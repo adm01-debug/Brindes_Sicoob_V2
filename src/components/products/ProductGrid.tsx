@@ -1,9 +1,10 @@
 import { ProductCard } from "./ProductCard";
 import type { Product } from "@/hooks/useProducts";
 import type { ActiveColorFilter } from "@/utils/color-image-resolver";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useMemo } from "react";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { SelectionCheckbox } from "@/components/common/SelectionCheckbox";
+import { useVirtualizer } from "@tanstack/react-virtual";
 import { cn } from "@/lib/utils";
 
 export interface ProductGridProps {
