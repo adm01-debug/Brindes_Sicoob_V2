@@ -31,13 +31,9 @@ export const CloudStatusBanner = memo(function CloudStatusBanner() {
   
   if (!config) return null;
 
-  // Lógica de visibilidade desacoplada:
-  // Mensagens técnicas (warming) aparecem só para quem tem gate de infra.
-  // Mensagens críticas (down/degraded) aparecem para todos.
-  const isTechnical = status === 'warming';
-  const shouldShow = isTechnical ? isAllowed : true;
-
-  if (!shouldShow) return null;
+  // Mensagens de infra/backend são restritas a usuários com papel `dev`.
+  // Usuários finais (ex.: setor financeiro) não devem ver avisos técnicos.
+  if (!isAllowed) return null;
 
   const Icon = config.icon;
 
