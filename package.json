@@ -9,7 +9,7 @@
     "build:dev": "npm run typecheck && vite build --mode development",
     "preview": "vite preview",
     "test": "vitest run",
-    "test:coverage:ci": "vitest run --coverage --coverage.reporter=text --coverage.reporter=json --coverage.reporter=html",
+    "test:coverage:ci": "vitest run --coverage --coverage.reporter=text --coverage.reporter=json --coverage.reporter=html --coverage.reporter=junit --coverage.outputFile=test-results/junit.xml",
 
     "test:run": "vitest run",
     "test:coverage": "vitest run --coverage",
