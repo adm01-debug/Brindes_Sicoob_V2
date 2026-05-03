@@ -20,6 +20,8 @@ export type AppRole =
   | "dev"
   | "gestor_compras"
   | "gerente_pa"
+  | "comprador_pac"
+  | "comprador_singular"
   | "vendedor"
   | "supervisor"
   | "agente"
