@@ -15,6 +15,7 @@ import { useAuth } from "@/contexts/AuthContext";
  */
 export default function GestorOrcamentos() {
   const [activeTab, setActiveTab] = useState("requests");
+  const { profile } = useAuth();
 
   return (
     <MainLayout>
