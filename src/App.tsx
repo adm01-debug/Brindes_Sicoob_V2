@@ -13,6 +13,7 @@ import { AdminRoute } from "@/components/layout/AdminRoute";
 import { DevRoute } from "@/components/layout/DevRoute";
 import { DeprecatedRoute } from "@/components/layout/DeprecatedRoute";
 import { SicoobRoute } from "@/components/layout/SicoobRoute";
+import { SicoobRoute } from "@/components/layout/SicoobRoute";
 import { AppProviders } from "@/components/providers/AppProviders";
 import { AccessibilityProvider, AriaLiveProvider } from "@/components/a11y";
 import { useGlobalErrorCatcher } from "@/hooks/useErrorHandler";
