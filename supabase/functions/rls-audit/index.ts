@@ -26,8 +26,10 @@ Deno.serve(async (req) => {
 
     console.log(`RLS Audit: isAdminAudit=${isAdminAudit}, hasTarget=${!!targetUserId}`);
     
-    const isServiceRole = authHeader.includes(SERVICE) || req.headers.get("apikey") === SERVICE;
+    const isServiceRole = authHeader.includes(SERVICE) || req.headers.get("apikey") === SERVICE || req.headers.get("x-supabase-key") === SERVICE;
     
+    console.log(`isServiceRole evaluation: ${isServiceRole}`);
+
     let sellerId: string;
     
     if (isAdminAudit && isServiceRole && targetUserId) {
