@@ -6,6 +6,7 @@ import { installGlobalErrorHandlers } from "@/lib/error-reporter";
 import { initSentry } from "@/lib/sentry";
 import EnhancedErrorBoundary from "@/components/errors/EnhancedErrorBoundary";
 import "@/lib/diagnostics"; // Initialize diagnostics early
+import { injectRequestId } from "@/lib/request-id-injection";
 import App from "./App.tsx";
 import "./index.css";
 
@@ -15,6 +16,9 @@ initSentry();
 
 // Install global error handlers for unhandled errors/rejections
 installGlobalErrorHandlers();
+
+// Inject traceability headers
+injectRequestId();
 
 const root = document.getElementById("root");
 

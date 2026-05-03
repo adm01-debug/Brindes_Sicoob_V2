@@ -6272,6 +6272,36 @@ export type Database = {
           },
         ]
       }
+      sicoob_manager_audit: {
+        Row: {
+          action: string
+          created_at: string | null
+          details: Json | null
+          id: string
+          ip_address: string | null
+          manager_id: string
+          order_id: string
+        }
+        Insert: {
+          action: string
+          created_at?: string | null
+          details?: Json | null
+          id?: string
+          ip_address?: string | null
+          manager_id: string
+          order_id: string
+        }
+        Update: {
+          action?: string
+          created_at?: string | null
+          details?: Json | null
+          id?: string
+          ip_address?: string | null
+          manager_id?: string
+          order_id?: string
+        }
+        Relationships: []
+      }
       sicoob_order_history: {
         Row: {
           comment: string | null
@@ -7184,6 +7214,10 @@ export type Database = {
         Args: { _function_name: string; _model: string; _user_id: string }
         Returns: Json
       }
+      approve_sicoob_order: {
+        Args: { p_manager_id: string; p_order_id: string; p_request_id: string }
+        Returns: undefined
+      }
       audit_all_rls_compliance: { Args: never; Returns: Json }
       audit_ownership_orphans: {
         Args: { _triggered_by?: string }
@@ -7737,6 +7771,15 @@ export type Database = {
           _resource_id: string
           _resource_type: string
           _ua: string
+        }
+        Returns: undefined
+      }
+      reject_sicoob_order: {
+        Args: {
+          p_manager_id: string
+          p_order_id: string
+          p_reason: string
+          p_request_id: string
         }
         Returns: undefined
       }
