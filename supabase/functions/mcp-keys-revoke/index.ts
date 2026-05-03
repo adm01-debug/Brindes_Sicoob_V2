@@ -120,8 +120,9 @@ Deno.serve(async (req) => {
       admin.rpc("is_dev", { _user_id: userId }),
     );
     if (roleErr) {
+      log.error("role_check_failed", { err: roleErr });
       await auditFailure("error", "mcp_key.revoke_error", { reason: "role_check_failed", detail: roleErr.message });
-      return jsonResponse({ error: "internal_error", detail: roleErr.message }, 500, requestId);
+      return log.respond(jsonResponse({ error: "internal_error", detail: roleErr.message }, 500, requestId));
     }
     if (!roleCheck) {
       await auditFailure("denied", "mcp_key.revoke_denied", { reason: "not_dev" });
