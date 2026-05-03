@@ -88,23 +88,51 @@ export default function AdminAuditPage() {
     fetchLogs();
   }, [filters, currentPage, pageSize, sort]);
 
-  const handleExport = () => {
-    const exportData = logs.map(log => ({
-      'Data': format(new Date(log.created_at), 'dd/MM/yyyy HH:mm:ss'),
-      'Usuário': log.metadata?.user_email || log.user_id,
-      'Evento': log.event_type,
-      'Entidade': log.entity_type,
-      'ID Entidade': log.entity_id || '',
-      'Antes': JSON.stringify(log.old_data || {}),
-      'Depois': JSON.stringify(log.new_data || {}),
-      'IP/Agente': log.metadata?.user_agent || ''
-    }));
+  const handleExport = async () => {
+    setIsLoading(true);
+    try {
+      let query = supabase
+        .from('admin_audit_log')
+        .select('*')
+        .order('created_at', { ascending: false });
 
-    const worksheet = XLSX.utils.json_to_sheet(exportData);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Auditoria");
-    XLSX.writeFile(workbook, `auditoria_admin_${new Date().toISOString().split('T')[0]}.xlsx`);
-    toast.success("Relatório exportado com sucesso");
+      if (filters.type !== 'ALL') query = query.eq('event_type', filters.type);
+      if (filters.entity) query = query.ilike('entity_type', `%${filters.entity}%`);
+      if (filters.user) query = query.filter('metadata->>user_email', 'ilike', `%${filters.user}%`);
+      
+      if (filters.date) {
+        const startOfDay = new Date(filters.date);
+        startOfDay.setHours(0, 0, 0, 0);
+        const endOfDay = new Date(filters.date);
+        endOfDay.setHours(23, 59, 59, 999);
+        query = query.gte('created_at', startOfDay.toISOString()).lte('created_at', endOfDay.toISOString());
+      }
+
+      const { data, error } = await query;
+      if (error) throw error;
+
+      const exportData = (data || []).map(log => ({
+        'Data': format(new Date(log.created_at), 'dd/MM/yyyy HH:mm:ss'),
+        'Usuário': log.metadata?.user_email || log.user_id,
+        'Evento': log.event_type,
+        'Entidade': log.entity_type,
+        'ID Entidade': log.entity_id || '',
+        'Antes': JSON.stringify(log.old_data || {}),
+        'Depois': JSON.stringify(log.new_data || {}),
+        'IP/Agente': log.metadata?.user_agent || ''
+      }));
+
+      const worksheet = XLSX.utils.json_to_sheet(exportData);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Auditoria");
+      XLSX.writeFile(workbook, `auditoria_admin_${new Date().toISOString().split('T')[0]}.xlsx`);
+      toast.success("Relatório exportado com sucesso");
+    } catch (err) {
+      console.error("Export error:", err);
+      toast.error("Erro ao exportar relatório");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const columns = [
