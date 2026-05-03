@@ -50,9 +50,12 @@ Deno.serve(async (req) => {
       });
     }
     const sellerId = userResp.user.id;
+    const { data: profile } = await adminClient.from("profiles").select("organization_id, pa_id").eq("user_id", sellerId).single();
 
-    // Outro vendedor "fantasma" — UUID fixo que não corresponde ao usuário
+    // Outro vendedor "fantasma" — UUID fixo
     const otherSellerId = "00000000-0000-0000-0000-00000000dead";
+    const otherOrgId = "11111111-1111-1111-1111-111111111111";
+    const otherPaId = "22222222-2222-2222-2222-222222222222";
 
     const results: ScenarioResult[] = [];
     const push = (r: ScenarioResult) => results.push(r);
