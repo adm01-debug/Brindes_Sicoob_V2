@@ -243,34 +243,56 @@ export function CategoriesManager() {
         </Card>
       </div>
 
-      <div className="flex justify-end items-center gap-2 mb-4">
-        <ImportExportManager
-          entityName="Categorias"
-          onImport={handleImport}
-          onExport={handleExport}
-          expectedColumns={[
-            { key: 'name', label: 'Nome', required: true },
-            { key: 'slug', label: 'Slug', required: false },
-            { key: 'sort_order', label: 'Ordem', required: false, type: 'number' }
-          ]}
-          templateData={[
-            { Nome: 'Canetas', Slug: 'canetas', Ordem: 1 }
-          ]}
-        />
-        {canEdit && (
-          <Button onClick={() => { setEditingCategory(null); setIsFormOpen(true); }} className="gap-2">
-            <Plus className="h-4 w-4" /> Nova Categoria
-          </Button>
-        )}
+      <div className="flex justify-between items-center">
+        <div className="flex justify-end items-center gap-2">
+          <ImportExportManager
+            entityName="Categorias"
+            onImport={handleImport}
+            onExport={handleExport}
+            expectedColumns={[
+              { key: 'name', label: 'Nome', required: true },
+              { key: 'slug', label: 'Slug', required: false },
+              { key: 'sort_order', label: 'Ordem', required: false, type: 'number' }
+            ]}
+            templateData={[
+              { Nome: 'Canetas', Slug: 'canetas', Ordem: 1 }
+            ]}
+          />
+          {canEdit && (
+            <Button onClick={() => { setEditingCategory(null); setIsFormOpen(true); }} className="gap-2">
+              <Plus className="h-4 w-4" /> Nova Categoria
+            </Button>
+          )}
+        </div>
       </div>
 
-      <AdminDataTable
-        data={categories}
-        columns={columns}
-        isLoading={isLoading}
-        searchPlaceholder="Buscar por nome ou slug..."
-        searchKey="name"
-      />
+      <Tabs defaultValue="list" className="w-full">
+        <TabsList className="mb-4">
+          <TabsTrigger value="list" className="gap-2">
+            <ListIcon className="h-4 w-4" /> Lista
+          </TabsTrigger>
+          <TabsTrigger value="tree" className="gap-2">
+            <Network className="h-4 w-4" /> Árvore
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="list">
+          <AdminDataTable
+            data={categories}
+            columns={columns}
+            isLoading={isLoading}
+            searchPlaceholder="Buscar por nome ou slug..."
+            searchKey="name"
+          />
+        </TabsContent>
+
+        <TabsContent value="tree">
+          <CategoryTreeDiagram 
+            categories={categories} 
+            onEdit={(cat) => { setEditingCategory(cat); setIsFormOpen(true); }} 
+          />
+        </TabsContent>
+      </Tabs>
 
       <CategoryFormDialog 
         open={isFormOpen} 
