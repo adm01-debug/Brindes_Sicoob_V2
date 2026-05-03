@@ -354,7 +354,7 @@ export const ProductQuickView = forwardRef<HTMLDivElement, ProductQuickViewProps
                 <span className="text-lg font-semibold w-12 text-center">{quantity}</span>
                 <Button
                   variant="outline"
-                  size="icon" aria-label="Adicionar"
+                  size="icon" aria-label="Aumentar quantidade"
                   className="h-9 w-9"
                   onClick={() => setQuantity(quantity + 1)}
                 >
