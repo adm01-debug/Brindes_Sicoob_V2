@@ -300,8 +300,38 @@ function CategoryFormDialog({ open, onOpenChange, category, onSave, categories }
     }
   }, [category, open]);
 
+  const validateSlug = (slug: string) => {
+    return /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug);
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!formData.name.trim()) {
+      toast.error("O nome da categoria é obrigatório");
+      return;
+    }
+
+    if (!validateSlug(formData.slug)) {
+      toast.error("O slug deve conter apenas letras minúsculas, números e hifens (ex: categoria-exemplo)");
+      return;
+    }
+
+    if (formData.sort_order < 0) {
+      toast.error("A ordem não pode ser um valor negativo");
+      return;
+    }
+
+    // Check for duplicate slug (excluding current category)
+    const isDuplicateSlug = categories?.some((c: any) => 
+      c.slug === formData.slug && c.id !== category?.id
+    );
+
+    if (isDuplicateSlug) {
+      toast.error("Este slug já está sendo usado por outra categoria");
+      return;
+    }
+
     onSave(formData);
   };
 
