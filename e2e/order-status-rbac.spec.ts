@@ -74,7 +74,7 @@ test.describe('Order RBAC and Status Flow E2E', () => {
     await page.click('button[type="submit"]');
 
     // 2. Open Order Detail and Check Audit
-    await page.goto('/sicoob/pedidos/00000000-0000-0000-0000-000000000010');
+    await page.goto('/pedidos/00000000-0000-0000-0000-000000000010');
     
     const auditTimeline = page.locator('[data-testid="order-audit-timeline"]');
     await expect(auditTimeline).toBeVisible();
