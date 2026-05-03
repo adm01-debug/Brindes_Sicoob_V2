@@ -15,6 +15,7 @@ import { PasswordResetApproval } from "@/components/admin/PasswordResetApproval"
 import { DiscountManagementPanel } from "@/components/admin/DiscountManagementPanel";
 import { CouponManager } from "@/components/admin/CouponManager";
 import { AccessManagement } from "@/components/admin/users/AccessManagement";
+import { SicoobHierarchyTab } from "@/components/admin/users/SicoobHierarchyTab";
 import { usePasswordResetRequests } from "@/hooks/usePasswordResetRequests";
 
 import { useUserManagement } from "@/components/admin/users/useUserManagement";
@@ -29,7 +30,7 @@ import { RoleAuditLogPanel } from "@/components/admin/users/RoleAuditLogPanel";
 import { DevAccessAuditAlert } from "@/components/admin/DevAccessAuditAlert";
 import { type UserWithRole } from "@/components/admin/users/types";
 
-const VALID_TABS = ["users", "password-reset", "discounts", "coupons", "access", "audit"] as const;
+const VALID_TABS = ["users", "password-reset", "discounts", "coupons", "access", "audit", "sicoob-hierarchy"] as const;
 type TabValue = (typeof VALID_TABS)[number];
 
 export default function AdminUsuariosPage() {
@@ -164,7 +165,11 @@ export default function AdminUsuariosPage() {
                 Auditoria de Roles
               </TabsTrigger>
             )}
-          </TabsList>
+            <TabsTrigger value="sicoob-hierarchy" className="gap-2">
+                <Network className="h-4 w-4" />
+                Hierarquia SICOOB
+              </TabsTrigger>
+            </TabsList>
 
           <TabsContent value="users">
             <Card className="border-border/50">
@@ -256,6 +261,9 @@ export default function AdminUsuariosPage() {
               <RoleAuditLogPanel />
             </TabsContent>
           )}
+          <TabsContent value="sicoob-hierarchy">
+            <SicoobHierarchyTab />
+          </TabsContent>
         </Tabs>
 
         {/* Dialogs */}
