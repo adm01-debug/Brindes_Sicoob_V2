@@ -171,7 +171,7 @@ export function QuoteSingularApprovalActions({ quoteId, status, quoteNumber, onA
               disabled={isProcessing}
             >
               {isProcessing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Edit3 className="h-4 w-4" />}
-              Enviar para Ajuste
+              Solicitar Ajustes
             </Button>
           </DialogFooter>
         </DialogContent>
