@@ -123,7 +123,7 @@ export const COLORS: ProductColor[] = [
   { name: 'Transparente', hex: 'transparent', group: 'TRANSPARENTE' },
 ];
 
-// Categorias principais de Materiais Sicoob
+// Categorias principais de Produtos Sicoob
 export const CATEGORIES: Category[] = [
   { id: 560, name: 'BRINDES SICOOB', icon: '💚' },
   { id: 1001, name: 'PAPELARIA E ESCRITÓRIO', icon: '📝' },
