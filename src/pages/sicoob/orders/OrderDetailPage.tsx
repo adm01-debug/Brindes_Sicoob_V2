@@ -66,6 +66,7 @@ import { useSicoobOrder, useSicoobOrderDetails, useUpdateSicoobOrderStatus } fro
 import { OrderStatusBadge } from "@/components/sicoob/orders/OrderStatusBadge";
 import { OrderActionDialog } from "@/components/sicoob/orders/OrderActionDialog";
 import { OrderItemsHistory } from "@/components/sicoob/orders/OrderItemsHistory";
+import { SLABadge } from "@/components/sicoob/orders/SLABadge";
 import { OrderAuditTimeline } from "@/components/sicoob/orders/OrderAuditTimeline";
 import { 
   useOrderLogistics, 
@@ -322,6 +323,9 @@ export default function OrderDetailPage() {
             <div className="flex items-center gap-2">
               <h1 className="text-2xl font-bold text-sicoob-green-dark">Pedido #{orderData.order_number}</h1>
               <OrderStatusBadge status={orderData.status} />
+              {orderData.sla_status && (
+                <SLABadge status={orderData.sla_status} deadline={orderData.sla_deadline} />
+              )}
             </div>
             <p className="text-sm text-muted-foreground">Criado em {new Date(orderData.created_at).toLocaleString('pt-BR')}</p>
           </div>
