@@ -78,7 +78,9 @@ export default function OrdersPage() {
     })
   });
 
-  const filteredOrders = orders;
+  // filteredOrders já está declarado implicitamente ou explicitamente em outro lugar?
+  // Removendo a duplicata encontrada na linha 234 na versão anterior ou garantindo unicidade.
+  // No código lido acima, temos const filteredOrders = orders; na linha 81.
 
   const exportToCSV = async () => {
     setIsExporting('csv');
