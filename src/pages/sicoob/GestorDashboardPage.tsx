@@ -33,8 +33,8 @@ export default function GestorDashboardPage() {
       <div className="container mx-auto p-6 space-y-8 animate-fade-in">
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-bold font-display tracking-tight">Painel do Gestor</h1>
-            <p className="text-muted-foreground">Visão consolidada da Singular e aprovações pendentes.</p>
+            <h1 className="text-3xl font-bold font-display tracking-tight text-sicoob-green-dark">Gestão da Singular</h1>
+            <p className="text-muted-foreground">Visão consolidada da Singular e fluxo de aprovações.</p>
           </div>
           <Button asChild>
             <Link to="/sicoob/pedidos" className="gap-2">
@@ -69,12 +69,12 @@ export default function GestorDashboardPage() {
           <Card className="border-[1.5px] md:col-span-2">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium">Consumo Global da Singular</CardTitle>
-              <div className="text-sm font-bold text-primary">{budgetProgress.toFixed(1)}%</div>
+              <div className="text-sm font-bold text-sicoob-green-dark">{budgetProgress.toFixed(1)}%</div>
             </CardHeader>
             <CardContent className="space-y-3">
-              <div className="text-2xl font-bold">{formatCurrency(stats?.totalSpentMonth || 0)} <span className="text-sm font-normal text-muted-foreground">/ {formatCurrency(stats?.monthlyBudget || 0)}</span></div>
+              <div className="text-2xl font-bold text-sicoob-green-dark">{formatCurrency(stats?.totalSpentMonth || 0)} <span className="text-sm font-normal text-muted-foreground">/ {formatCurrency(stats?.monthlyBudget || 0)}</span></div>
               <div className="w-full bg-muted rounded-full h-2">
-                <div className="bg-primary h-2 rounded-full" style={{ width: `${budgetProgress}%` }} />
+                <div className="bg-sicoob-green h-2 rounded-full" style={{ width: `${budgetProgress}%` }} />
               </div>
             </CardContent>
           </Card>
@@ -110,21 +110,21 @@ export default function GestorDashboardPage() {
             </CardContent>
           </Card>
 
-          <Card className="border-[1.5px] bg-primary/5 border-primary/20">
+          <Card className="border-[1.5px] bg-sicoob-green/5 border-sicoob-green/20">
             <CardHeader>
-              <CardTitle className="text-primary">Ações Rápidas</CardTitle>
+              <CardTitle className="text-sicoob-green-dark">Ações Rápidas</CardTitle>
               <CardDescription>Ferramentas de gestão da Singular.</CardDescription>
             </CardHeader>
             <CardContent className="grid grid-cols-2 gap-4">
-              <Button variant="outline" className="h-auto py-4 flex-col gap-2" asChild>
+              <Button variant="outline" className="h-auto py-4 flex-col gap-2 hover:bg-sicoob-green/10 hover:border-sicoob-green/30" asChild>
                 <Link to="/admin/verbas">
-                  <Wallet className="h-5 w-5" />
+                  <Wallet className="h-5 w-5 text-sicoob-green" />
                   Gerir Verbas
                 </Link>
               </Button>
-              <Button variant="outline" className="h-auto py-4 flex-col gap-2" asChild>
+              <Button variant="outline" className="h-auto py-4 flex-col gap-2 hover:bg-sicoob-green/10 hover:border-sicoob-green/30" asChild>
                 <Link to="/gestor/agregados">
-                  <FileText className="h-5 w-5" />
+                  <FileText className="h-5 w-5 text-sicoob-green" />
                   Agregados
                 </Link>
               </Button>

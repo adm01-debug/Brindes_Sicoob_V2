@@ -25,8 +25,8 @@ export default function GestorConsolidatedOrdersPage() {
       <div className="container mx-auto p-6 space-y-6 animate-fade-in">
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-bold font-display tracking-tight">Pedidos Agregados</h1>
-            <p className="text-muted-foreground">Consolidação de pedidos da Singular para envio ao vendedor.</p>
+            <h1 className="text-3xl font-bold font-display tracking-tight text-sicoob-green-dark">Agregados da Singular</h1>
+            <p className="text-muted-foreground italic">Consolidação estratégica de pedidos para otimização logística.</p>
           </div>
           <Button className="gap-2">
             <Layers className="h-4 w-4" /> Nova Consolidação
@@ -34,13 +34,13 @@ export default function GestorConsolidatedOrdersPage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <Card className="border-[1.5px] bg-primary/5">
+            <Card className="border-[1.5px] bg-sicoob-green/5 border-sicoob-green/20">
                 <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-medium">Aguardando Vendedor</CardTitle>
+                    <CardTitle className="text-sm font-medium text-sicoob-green-dark">Aguardando Vendedor</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <div className="text-2xl font-bold">R$ 73.400,00</div>
-                    <p className="text-xs text-muted-foreground mt-1">Total em 2 lotes consolidados</p>
+                    <div className="text-2xl font-bold text-sicoob-green-dark">R$ 73.400,00</div>
+                    <p className="text-xs text-sicoob-green/70 mt-1 font-medium">Total em 2 lotes consolidados</p>
                 </CardContent>
             </Card>
             <Card className="border-[1.5px]">
@@ -57,16 +57,16 @@ export default function GestorConsolidatedOrdersPage() {
                     <CardTitle className="text-sm font-medium">Entregues (Mês)</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <div className="text-2xl font-bold text-green-600">R$ 89.200,00</div>
-                    <p className="text-xs text-muted-foreground mt-1">Ciclo finalizado com sucesso</p>
+                    <div className="text-2xl font-bold text-sicoob-green">R$ 89.200,00</div>
+                    <p className="text-xs text-sicoob-green/70 mt-1 font-medium">Ciclo finalizado com sucesso</p>
                 </CardContent>
             </Card>
         </div>
 
         <Card className="border-[1.5px]">
           <CardHeader>
-            <CardTitle>Histórico de Agregados</CardTitle>
-            <CardDescription>Lotes de pedidos enviados para produção por carteira.</CardDescription>
+            <CardTitle className="text-sicoob-green-dark font-bold">Histórico de Agregados</CardTitle>
+            <CardDescription className="italic">Lotes de pedidos enviados para produção por carteira de vendedor.</CardDescription>
           </CardHeader>
           <CardContent>
             <Table>

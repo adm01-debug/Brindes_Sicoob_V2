@@ -65,14 +65,14 @@ export function CatalogHeader({
           </Tooltip>
         )}
 
-        <h1 className="font-display text-xl sm:text-2xl lg:text-3xl font-bold whitespace-nowrap">
-          Catálogo de Produtos
+        <h1 className="font-display text-xl sm:text-2xl lg:text-3xl font-bold whitespace-nowrap text-sicoob-green-dark">
+          Catálogo SICOOB
           <span className="text-muted-foreground font-normal text-sm sm:text-base ml-2">
             · {shouldShowCatalogSkeleton
-              ? "Carregando catálogo..."
+              ? "Carregando..."
               : hasActiveConstraints
                 ? <>
-                    <span className="text-brand font-semibold">{filteredCount.toLocaleString("pt-BR")}</span>
+                    <span className="text-sicoob-green font-semibold">{filteredCount.toLocaleString("pt-BR")}</span>
                     {totalEstimate ? ` de ${totalEstimate.toLocaleString("pt-BR")}` : ""} itens
                   </>
                 : totalEstimate

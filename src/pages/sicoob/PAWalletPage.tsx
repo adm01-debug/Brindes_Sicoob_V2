@@ -1,4 +1,5 @@
 import React from "react";
+import { cn } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Wallet, TrendingUp, AlertCircle, Calendar } from "lucide-react";
@@ -42,11 +43,11 @@ export default function PAWalletPage() {
 
   return (
     <MainLayout>
-      <div className="container mx-auto p-6 space-y-6 animate-fade-in">
+      <div className="container mx-auto p-4 sm:p-6 space-y-6 animate-fade-in">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight text-display">Gestão de Verba</h1>
-            <p className="text-muted-foreground">Acompanhamento de saldo e limites do Ponto de Atendimento.</p>
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-display text-sicoob-green-dark">Gestão de Verba</h1>
+            <p className="text-sm text-muted-foreground italic">Controle seu saldo e garanta o abastecimento da sua agência.</p>
           </div>
           <div className="flex items-center gap-2 bg-muted/50 px-4 py-2 rounded-full border border-border/40">
             <Calendar className="w-4 h-4 text-primary" />
@@ -77,14 +78,14 @@ export default function PAWalletPage() {
             </CardContent>
           </Card>
 
-          <Card className="border-[1.5px] shadow-sm bg-primary/5">
+          <Card className="border-[1.5px] shadow-sm bg-sicoob-green/5 border-sicoob-green/20">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium">Saldo Disponível</CardTitle>
-              <Wallet className="w-4 h-4 text-primary" />
+              <Wallet className="w-4 h-4 text-sicoob-green" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-primary">{formatCurrency(remaining)}</div>
-              <p className="text-xs text-muted-foreground mt-1 text-primary/80 font-medium">Disponível para novos pedidos</p>
+              <div className="text-2xl font-bold text-sicoob-green-dark">{formatCurrency(remaining)}</div>
+              <p className="text-xs text-muted-foreground mt-1 text-sicoob-green-dark/80 font-medium">Disponível para novos pedidos</p>
             </CardContent>
           </Card>
         </div>
@@ -98,9 +99,13 @@ export default function PAWalletPage() {
             <div className="space-y-2">
               <div className="flex justify-between text-sm font-medium">
                 <span>Progresso de Consumo</span>
-                <span>{spentPercent.toFixed(1)}%</span>
+                <span className={cn(spentPercent > 90 ? "text-red-600" : "text-sicoob-green")}>{spentPercent.toFixed(1)}%</span>
               </div>
-              <Progress value={spentPercent} className="h-3" />
+              <Progress 
+                value={spentPercent} 
+                className="h-3" 
+                indicatorClassName={spentPercent > 90 ? "bg-red-500" : "bg-sicoob-green"}
+              />
             </div>
 
             {spentPercent > 90 && (

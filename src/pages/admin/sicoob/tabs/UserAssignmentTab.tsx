@@ -18,8 +18,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Search, Save, UserCheck } from "lucide-react";
+import { Search, Save, UserCheck, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
+import { RoleBadge } from "@/components/RoleBadge";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export const UserAssignmentTab = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -69,23 +78,27 @@ export const UserAssignmentTab = () => {
       userId,
       cooperativaId,
       paId,
+      role,
     }: {
       userId: string;
-      cooperativaId: string | null;
-      paId: string | null;
+      cooperativaId?: string | null;
+      paId?: string | null;
+      role?: string;
     }) => {
+      const updates: any = {};
+      if (cooperativaId !== undefined) updates.cooperativa_id = cooperativaId;
+      if (paId !== undefined) updates.pa_id = paId;
+      if (role !== undefined) updates.role = role;
+
       const { error } = await supabase
         .from("profiles")
-        .update({
-          cooperativa_id: cooperativaId || null,
-          pa_id: paId || null,
-        })
+        .update(updates)
         .eq("id", userId);
       if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin_profiles_sicoob"] });
-      toast.success("Vínculo atualizado com sucesso");
+      toast.success("Usuário atualizado com sucesso");
     },
     onError: (error: any) => {
       toast.error(`Erro ao atualizar: ${error.message}`);
@@ -148,9 +161,29 @@ export const UserAssignmentTab = () => {
                     <div className="text-xs text-muted-foreground">{user.email}</div>
                   </TableCell>
                   <TableCell>
-                    <span className="px-2 py-1 rounded-full bg-secondary text-xs">
-                      {user.role}
-                    </span>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" className="h-auto p-0 hover:bg-transparent">
+                          <RoleBadge role={user.role} />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="start" className="w-56">
+                        <DropdownMenuLabel>Alterar Papel</DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={() => updateMutation.mutate({ userId: user.id, role: 'gestor_singular' })}>
+                          <RoleBadge role="gestor_singular" className="mr-2" /> Gestor Singular
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => updateMutation.mutate({ userId: user.id, role: 'gestor_pa' })}>
+                          <RoleBadge role="gestor_pa" className="mr-2" /> Gestor PA
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => updateMutation.mutate({ userId: user.id, role: 'vendedor' })}>
+                          <RoleBadge role="vendedor" className="mr-2" /> Vendedor
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => updateMutation.mutate({ userId: user.id, role: 'supervisor' })}>
+                          <RoleBadge role="supervisor" className="mr-2" /> Supervisor
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </TableCell>
                   <TableCell>
                     <Select

@@ -295,9 +295,9 @@ export default function OrdersKanbanPage() {
                 <ArrowLeft className="h-5 w-5" />
               </Button>
               <div>
-                <h1 className="text-2xl font-bold">Funil de Pedidos</h1>
-                <p className="text-sm text-muted-foreground">
-                  Arraste os pedidos para mudar o status — transições inválidas são bloqueadas.
+                <h1 className="text-2xl font-bold text-sicoob-green-dark">Fluxo de Pedidos</h1>
+                <p className="text-sm text-muted-foreground italic">
+                  Gestão visual do funil SICOOB. Arraste para avançar no processo.
                 </p>
               </div>
             </div>

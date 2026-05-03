@@ -45,8 +45,8 @@ export default function PADashboardPage() {
       <div className="container mx-auto p-6 space-y-8 animate-fade-in">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
-            <h1 className="text-3xl font-bold font-display tracking-tight">Portal do PA</h1>
-            <p className="text-muted-foreground">Gestão de pedidos e verba da agência.</p>
+            <h1 className="text-3xl font-bold font-display tracking-tight text-sicoob-green-dark">Portal do PA</h1>
+            <p className="text-muted-foreground italic">Gestão tática de pedidos e abastecimento da agência.</p>
           </div>
           <div className="flex gap-2">
             <Button variant="outline" asChild>
@@ -63,19 +63,19 @@ export default function PADashboardPage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          <Card className="border-[1.5px] bg-primary/5 border-primary/20">
+          <Card className="border-[1.5px] bg-sicoob-green/5 border-sicoob-green/20">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-primary">Saldo Disponível</CardTitle>
-              <Wallet className="h-4 w-4 text-primary" />
+              <CardTitle className="text-sm font-medium text-sicoob-green-dark">Saldo Disponível</CardTitle>
+              <Wallet className="h-4 w-4 text-sicoob-green" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-primary">{formatCurrency(stats?.availableBudget || 0)}</div>
+              <div className="text-2xl font-bold text-sicoob-green-dark">{formatCurrency(stats?.availableBudget || 0)}</div>
               <div className="mt-2 space-y-1">
                 <div className="flex justify-between text-[10px] uppercase font-bold text-muted-foreground">
                   <span>Uso da Verba</span>
                   <span>{budgetUsed.toFixed(0)}%</span>
                 </div>
-                <Progress value={budgetUsed} className="h-1.5" />
+                <Progress value={budgetUsed} className="h-1.5" indicatorClassName="bg-sicoob-green" />
               </div>
             </CardContent>
           </Card>
@@ -172,8 +172,8 @@ export default function PADashboardPage() {
                 </p>
               </div>
               <Button variant="outline" className="w-full justify-start gap-3 h-12">
-                <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center">
-                  <TrendingUp className="h-3 w-3 text-primary" />
+                <div className="w-6 h-6 rounded-full bg-sicoob-green/10 flex items-center justify-center">
+                  <TrendingUp className="h-3 w-3 text-sicoob-green" />
                 </div>
                 <span className="text-sm font-medium">Solicitar Aumento de Limite</span>
               </Button>

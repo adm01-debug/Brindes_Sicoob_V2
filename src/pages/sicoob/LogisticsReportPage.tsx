@@ -27,8 +27,8 @@ export default function LogisticsReportPage() {
       <div className="container mx-auto p-6 space-y-6 animate-fade-in">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
-            <h1 className="text-3xl font-bold font-display tracking-tight">Logística e Entregas</h1>
-            <p className="text-muted-foreground">Rastreamento de pedidos e confirmação de entrega (POD) por PA.</p>
+            <h1 className="text-3xl font-bold font-display tracking-tight text-sicoob-green-dark">Operações & Logística</h1>
+            <p className="text-muted-foreground italic">Rastreamento de pedidos e prova de entrega (POD) para todos os PAs.</p>
           </div>
           <div className="flex gap-2 w-full md:w-auto">
             <div className="relative flex-1 md:w-64">
@@ -70,22 +70,22 @@ export default function LogisticsReportPage() {
                     <p className="text-xs text-muted-foreground mt-1">Entregas sem ocorrência</p>
                 </CardContent>
             </Card>
-            <Card className="border-[1.5px] bg-primary/5 border-primary/20">
+            <Card className="border-[1.5px] bg-sicoob-green/5 border-sicoob-green/20">
                 <CardHeader className="flex flex-row items-center justify-between pb-2">
-                    <CardTitle className="text-sm font-medium text-primary">Comprovantes (POD)</CardTitle>
-                    <Camera className="h-4 w-4 text-primary" />
+                    <CardTitle className="text-sm font-medium text-sicoob-green-dark">Comprovantes (POD)</CardTitle>
+                    <Camera className="h-4 w-4 text-sicoob-green" />
                 </CardHeader>
                 <CardContent>
-                    <div className="text-2xl font-bold text-primary">128</div>
-                    <p className="text-xs text-primary/70 mt-1">Fotos de entrega anexadas</p>
+                    <div className="text-2xl font-bold text-sicoob-green-dark">128</div>
+                    <p className="text-xs text-sicoob-green/70 mt-1">Fotos de entrega anexadas</p>
                 </CardContent>
             </Card>
         </div>
 
         <Card className="border-[1.5px]">
           <CardHeader>
-            <CardTitle>Rastreamento em Tempo Real</CardTitle>
-            <CardDescription>Acompanhe o status e a localização dos pedidos despachados.</CardDescription>
+            <CardTitle className="text-sicoob-green-dark font-bold">Rastreamento em Tempo Real</CardTitle>
+            <CardDescription className="italic">Acompanhe o status e a localização exata de cada remessa SICOOB.</CardDescription>
           </CardHeader>
           <CardContent>
             <Table>

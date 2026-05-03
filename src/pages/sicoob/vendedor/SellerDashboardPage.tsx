@@ -38,8 +38,8 @@ export default function SellerDashboardPage() {
       <div className="container mx-auto p-6 space-y-8 animate-fade-in">
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-bold font-display tracking-tight">Minha Carteira</h1>
-            <p className="text-muted-foreground">Gestão comercial e acompanhamento de metas SICOOB.</p>
+            <h1 className="text-3xl font-bold font-display tracking-tight text-sicoob-green-dark">Minha Carteira</h1>
+            <p className="text-muted-foreground italic">Gestão comercial e aceleração de vendas SICOOB.</p>
           </div>
           <div className="flex gap-2">
             <Button variant="outline" asChild>
@@ -80,18 +80,17 @@ export default function SellerDashboardPage() {
 
           <Card className="border-[1.5px] md:col-span-2 bg-primary/5 border-primary/20">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-primary">Meta Mensal de Vendas</CardTitle>
+              <CardTitle className="text-sm font-medium text-sicoob-green-dark">Meta Mensal de Vendas</CardTitle>
               <Target className="h-4 w-4 text-primary" />
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="flex justify-between items-end">
-                <div className="text-2xl font-bold text-primary">
+                <div className="text-2xl font-bold text-sicoob-green-dark">
                   {formatCurrency(stats?.monthlySales || 0)} 
-                  <span className="text-sm font-normal text-muted-foreground ml-2">de {formatCurrency(stats?.salesGoal || 0)}</span>
                 </div>
-                <div className="text-sm font-bold text-primary">{goalProgress.toFixed(0)}%</div>
+                <div className="text-sm font-bold text-sicoob-green-dark">{goalProgress.toFixed(0)}%</div>
               </div>
-              <Progress value={goalProgress} className="h-2" />
+              <Progress value={goalProgress} className="h-2" indicatorClassName="bg-sicoob-green" />
             </CardContent>
           </Card>
         </div>

@@ -78,9 +78,7 @@ export default function OrdersPage() {
     })
   });
 
-  // filteredOrders já está declarado implicitamente ou explicitamente em outro lugar?
-  // Removendo a duplicata encontrada na linha 234 na versão anterior ou garantindo unicidade.
-  // No código lido acima, temos const filteredOrders = orders; na linha 81.
+  const filteredOrders = orders;
 
   const exportToCSV = async () => {
     setIsExporting('csv');
@@ -254,9 +252,9 @@ export default function OrdersPage() {
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Pedidos Sicoob</h1>
-            <p className="text-muted-foreground">
-              Acompanhe e gerencie as solicitações de compra dos PAs.
+            <h1 className="text-3xl font-bold tracking-tight text-sicoob-green-dark">Gestão de Pedidos</h1>
+            <p className="text-muted-foreground italic">
+              Acompanhamento centralizado de solicitações e fluxo de abastecimento SICOOB.
             </p>
           </div>
 

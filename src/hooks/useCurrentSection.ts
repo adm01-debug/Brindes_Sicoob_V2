@@ -21,6 +21,15 @@ const sectionMap: Record<string, string> = {
   "/admin": "Administração",
   "/admin/temas": "Skins",
   "/seguranca": "Segurança",
+
+  // SICOOB Section
+  "/sicoob": "Portal SICOOB",
+  "/pa": "Portal PA",
+  "/gestor": "Gestão Singular",
+  "/vendedor": "Carteira Vendedor",
+  "/dashboard-pa": "Portal PA",
+  "/relatorios/sicoob": "Relatórios SICOOB",
+  "/kpis/sicoob": "Analytics SICOOB",
 };
 
 export function useCurrentSection(): string {
