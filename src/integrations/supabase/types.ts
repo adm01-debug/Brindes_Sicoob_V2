@@ -4134,6 +4134,33 @@ export type Database = {
           },
         ]
       }
+      pa_singularidades: {
+        Row: {
+          code: string | null
+          created_at: string
+          id: string
+          is_active: boolean | null
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          code?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          code?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       permissions: {
         Row: {
           category: string
@@ -4163,6 +4190,53 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      pontos_atendimento: {
+        Row: {
+          address: string | null
+          city: string | null
+          code: string | null
+          created_at: string
+          id: string
+          is_active: boolean | null
+          name: string
+          singular_id: string | null
+          state: string | null
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          city?: string | null
+          code?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          name: string
+          singular_id?: string | null
+          state?: string | null
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          city?: string | null
+          code?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          singular_id?: string | null
+          state?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pontos_atendimento_singular_id_fkey"
+            columns: ["singular_id"]
+            isOneToOne: false
+            referencedRelation: "pa_singularidades"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       postos_atendimento: {
         Row: {
