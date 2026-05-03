@@ -43,12 +43,14 @@ Deno.serve(async (req) => {
       }));
     }
 
-    const parsed = LoginAttemptSchema.safeParse(await req.json());
+    const body = await req.json().catch(() => null);
+    const parsed = LoginAttemptSchema.safeParse(body);
     if (!parsed.success) {
-      return new Response(
+      log.warn("validation_failed", { errors: parsed.error.flatten().fieldErrors });
+      return log.respond(new Response(
         JSON.stringify({ error: parsed.error.flatten().fieldErrors }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      ));
     }
     const { email, user_id, ip_address, success, failure_reason, user_agent } = parsed.data;
 
