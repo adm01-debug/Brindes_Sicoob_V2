@@ -29,6 +29,7 @@ export function QuoteSingularApprovalActions({ quoteId, status, quoteNumber, onA
   const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
   const [adjustDialogOpen, setAdjustDialogOpen] = useState(false);
   const [notes, setNotes] = useState("");
+  const [suggestedItems, setSuggestedItems] = useState("");
 
   // Only Singular Buyers (Gestor de Compras) can approve/reject PAC solicitations
   const canApprove = isGestorCompras || isDev;
