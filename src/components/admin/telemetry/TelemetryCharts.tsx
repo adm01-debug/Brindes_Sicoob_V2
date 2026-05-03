@@ -140,7 +140,7 @@ export function TelemetryCharts({ rows, timeFilter }: TelemetryChartsProps) {
         </CardHeader>
         <CardContent>
           <ResponsiveContainer width="100%" height={220}>
-              <Area Chart data={timelineData}>
+              <AreaChart data={timelineData}>
                 <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
                 <XAxis dataKey="time" tick={{ fontSize: 10 }} />
                 <YAxis tick={{ fontSize: 10 }} allowDecimals={false} />
