@@ -2,7 +2,8 @@ import React from "react";
 import { cn } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { Wallet, TrendingUp, AlertCircle, Calendar, Plus, History, Clock, FileText } from "lucide-react";
+import { Wallet, TrendingUp, AlertCircle, Calendar, Plus, History, Clock, FileText, CheckCircle2, X } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -254,7 +255,7 @@ export default function PAWalletPage() {
                             req.status === 'rejected' ? "bg-red-50 border-red-200 text-red-600" : 
                             "bg-amber-50 border-amber-200 text-amber-600"
                           )}>
-                            {req.status === 'approved' ? <CheckCircle 2 className="h-5 w-5" /> : 
+                            {req.status === 'approved' ? <CheckCircle2 className="h-5 w-5" /> : 
                              req.status === 'rejected' ? <X className="h-5 w-5" /> : 
                              <Clock className="h-5 w-5" />}
                           </div>
