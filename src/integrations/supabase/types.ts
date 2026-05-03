@@ -6192,6 +6192,8 @@ export type Database = {
           id: string
           notes: string | null
           pa_id: string | null
+          sla_deadline: string | null
+          sla_status: string | null
           status: string
           total_amount: number | null
           tracking_code: string | null
@@ -6207,6 +6209,8 @@ export type Database = {
           id?: string
           notes?: string | null
           pa_id?: string | null
+          sla_deadline?: string | null
+          sla_status?: string | null
           status?: string
           total_amount?: number | null
           tracking_code?: string | null
@@ -6222,6 +6226,8 @@ export type Database = {
           id?: string
           notes?: string | null
           pa_id?: string | null
+          sla_deadline?: string | null
+          sla_status?: string | null
           status?: string
           total_amount?: number | null
           tracking_code?: string | null
