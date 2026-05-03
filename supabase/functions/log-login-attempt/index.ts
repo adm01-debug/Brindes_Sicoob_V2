@@ -22,21 +22,25 @@ const loginLogLimiter = new RateLimiter({
 });
 
 Deno.serve(async (req) => {
+  const requestId = getOrCreateRequestId(req);
+  const log = createStructuredLogger({ fn: "log-login-attempt", requestId, req });
+  
   const corsHeaders = getCorsHeaders(req);
-
   const preflightResponse = handleCorsPreflightIfNeeded(req);
   if (preflightResponse) return preflightResponse;
 
+  log.info("request_start");
+
   try {
-    // Rate limit by IP
     const rateLimitResponse = await applyRateLimit(req, loginLogLimiter);
     if (rateLimitResponse) {
+      log.warn("rate_limit_exceeded");
       const headers = new Headers(rateLimitResponse.headers);
       Object.entries(corsHeaders).forEach(([k, v]) => headers.set(k, v));
-      return new Response(rateLimitResponse.body, {
+      return log.respond(new Response(rateLimitResponse.body, {
         status: rateLimitResponse.status,
         headers,
-      });
+      }));
     }
 
     const parsed = LoginAttemptSchema.safeParse(await req.json());
