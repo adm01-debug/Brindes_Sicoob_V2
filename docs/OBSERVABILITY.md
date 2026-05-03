@@ -106,7 +106,27 @@ try {
 3. **Auth logs** / **DB logs**: idem.
 4. **Webhook metrics**: `SELECT * FROM webhook_delivery_metrics WHERE request_id = '…'`.
 
-## 7. Gates de CI
+## 7. App Health Dashboard (`/admin/telemetria`)
 
-- `tests/observability/structured-logger.test.ts` — garante schema de saída.
-- `scripts/check-edge-structured-logging.mjs` — gate (próxima onda) para garantir que toda nova edge function importa `createStructuredLogger`.
+O dashboard administrativo centraliza a visão de saúde da aplicação:
+- **Saúde Global:** Latência média, taxa de erro (%), disponibilidade de serviços (External DB, CRM, Cloudflare).
+- **Consumo de IA:** Quotas por usuário/singular e latência de inferência.
+- **Auditoria de Chaves:** Eventos de emissão/rotação de chaves MCP.
+- **Diagnóstico Operacional:** Verificação de conectores e latência de RPCs críticos.
+
+## 8. Gates de CI (Prevenção de Regressão)
+
+A plataforma utiliza gates rigorosos para manter a qualidade da observabilidade:
+- **Edge Structured-Logging Gate:** `scripts/check-edge-structured-logging.mjs` bloqueia PRs se novas Edge Functions não usarem o logger estruturado.
+- **Edge Request-Id Propagation Gate:** Garante que o `X-Request-Id` seja propagado para serviços externos.
+- **Client Logging Gate:** Força o uso de `createClientLogger` em rotas críticas (Checkout, Auth, Admin).
+- **ESLint Baseline Gate:** `.eslint-baseline.json` bloqueia a introdução de novos warnings de lint que prejudiquem a observabilidade (ex: console.logs puros).
+- **Webhook Alerts → Sentry:** Monitoramento contínuo de webhooks inbound/outbound via cron job.
+
+## 9. Como debugar uma falha (Checklist)
+
+1. **Obter ID:** Pegue o `request_id` (UUIDv4) no Sentry ou no UI Error Boundary.
+2. **Localizar Logs:** Use o comando `rg` nos logs da Lovable Cloud filtrando pelo ID.
+3. **Traçar Fluxo:** O `request_id` deve estar presente no client, edge, logs de banco e webhooks.
+4. **Verificar Métricas:** Consulte `public.get_webhook_delivery_summary()` se for falha de integração.
+
