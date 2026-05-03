@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle2, XCircle, Loader2, AlertTriangle, RefreshCw, Play, FileText, History } from "lucide-react";
+import { CheckCircle2, XCircle, Loader2, AlertTriangle, RefreshCw, Play, FileText, History, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -13,6 +13,16 @@ export default function QaPreflightPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [isSeeding, setIsSeeding] = useState(false);
+  const [isAuditing, setIsAuditing] = useState(false);
+
+  const { data: rlsAudit, refetch: refetchAudit } = useQuery({
+    queryKey: ["qa-rls-audit"],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("audit_all_rls_compliance");
+      if (error) throw error;
+      return data as any;
+    }
+  });
   const { data: preflight, isLoading, refetch, isRefetching } = useQuery({
     queryKey: ["qa-preflight"],
     queryFn: async () => {
@@ -91,7 +101,7 @@ export default function QaPreflightPage() {
       <div className="container mx-auto p-6 space-y-6 animate-fade-in">
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight text-sicoob-green-dark">QA Pré-flight §0-bis</h1>
+            <h1 className="text-3xl font-bold tracking-tight text-sicoob-green-dark">QA Pr&eacute;-flight &sect;0-bis</h1>
             <p className="text-muted-foreground italic">Validação de ambiente antes da execução de roteiros de teste.</p>
           </div>
           <Button variant="outline" onClick={() => refetch()} disabled={isLoading || isRefetching}>
@@ -193,7 +203,7 @@ export default function QaPreflightPage() {
               <Button variant="outline" className="justify-start gap-2 h-auto py-3 px-4" onClick={() => seedMutation.mutate('alcada-gestor')} disabled={isSeeding}>
                 <div className="flex flex-col items-start">
                   <span className="font-bold">Alçada Gestor</span>
-                  <span className="text-[10px] text-muted-foreground">Pedidos &gt; R$ 5k</span>
+                  <span className="text-[10px] text-muted-foreground">Pedidos {"\u003E"} R$ 5k</span>
                 </div>
               </Button>
               <Button variant="outline" className="justify-start gap-2 h-auto py-3 px-4" onClick={() => seedMutation.mutate('rls-cross')} disabled={isSeeding}>
@@ -238,6 +248,72 @@ export default function QaPreflightPage() {
             </CardContent>
           </Card>
         </div>
+        <Card className="border-primary/20 bg-primary/5">
+          <CardHeader className="flex flex-row items-center justify-between">
+            <div className="flex items-center gap-3">
+              <ShieldCheck className="h-6 w-6 text-primary" />
+              <div>
+                <CardTitle className="text-lg">Auditoria de Segurança (RLS)</CardTitle>
+                <CardDescription>Monitoramento contínuo de políticas de acesso.</CardDescription>
+              </div>
+            </div>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => {
+                setIsAuditing(true);
+                refetchAudit().finally(() => setIsAuditing(false));
+              }}
+              disabled={isAuditing}
+            >
+              {isAuditing ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <RefreshCw className="h-4 w-4 mr-2" />}
+              Executar Auditoria
+            </Button>
+          </CardHeader>
+          <CardContent>
+            {rlsAudit ? (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="p-4 border rounded-xl bg-background text-center">
+                  <div className="text-2xl font-bold text-primary">{rlsAudit.score}%</div>
+                  <div className="text-[10px] text-muted-foreground uppercase tracking-wider font-bold">Safety Score</div>
+                </div>
+                <div className="p-4 border rounded-xl bg-background">
+                  <div className="text-sm font-bold mb-2">Tabelas Protegidas</div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-2xl font-bold">{rlsAudit.with_rls}</span>
+                    <span className="text-xs text-muted-foreground">de {rlsAudit.total} total</span>
+                  </div>
+                  <div className="w-full bg-muted h-1.5 mt-2 rounded-full overflow-hidden">
+                    <div 
+                      className="bg-green-500 h-full transition-all duration-1000" 
+                      style={{ width: `${(rlsAudit.with_rls / rlsAudit.total) * 100}%` }} 
+                    />
+                  </div>
+                </div>
+                <div className="p-4 border rounded-xl bg-background">
+                  <div className="text-sm font-bold mb-2">Gaps de Segurança</div>
+                  <div className="flex flex-wrap gap-1">
+                    {rlsAudit.missing.length > 0 ? (
+                      rlsAudit.missing.slice(0, 3).map((t: string) => (
+                        <Badge key={t} variant="destructive" className="text-[9px] px-1.5 py-0">NO-RLS: {t}</Badge>
+                      ))
+                    ) : (
+                      <Badge variant="success" className="text-[9px] px-1.5 py-0">Nenhum Gap Detectado</Badge>
+                    )}
+                    {rlsAudit.missing.length > 3 && (
+                      <Badge variant="outline" className="text-[9px] px-1.5 py-0">+{rlsAudit.missing.length - 3} mais</Badge>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
+                <ShieldCheck className="h-10 w-10 mb-2 opacity-20" />
+                <p className="text-sm">Auditoria pendente. Clique para iniciar.</p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
       </div>
     </MainLayout>
   );
