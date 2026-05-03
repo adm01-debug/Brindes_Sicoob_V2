@@ -271,14 +271,16 @@ export default function QuotesListPage() {
                 </div>
               </CardContent>
             </Card>
-            <Card className="border-border/50">
+            <Card className={cn("border-border/50", (isGestorCompras || isDev) && kpis.pendingSingular > 0 && "border-emerald-500/50 bg-emerald-50/50")}>
               <CardContent className="p-3 flex items-center gap-3">
-                <div className="h-9 w-9 rounded-lg bg-warning/15 flex items-center justify-center shrink-0">
-                  <Clock className="h-4 w-4 text-warning" />
+                <div className={cn("h-9 w-9 rounded-lg flex items-center justify-center shrink-0", (isGestorCompras || isDev) && kpis.pendingSingular > 0 ? "bg-emerald-500/20" : "bg-warning/15")}>
+                  <Clock className={cn("h-4 w-4", (isGestorCompras || isDev) && kpis.pendingSingular > 0 ? "text-emerald-600" : "text-warning")} />
                 </div>
                 <div className="min-w-0">
-                  <p className="text-xs text-muted-foreground">Pendentes</p>
-                  <p className="text-sm font-bold text-foreground">{kpis.pending}</p>
+                  <p className="text-xs text-muted-foreground">{(isGestorCompras || isDev) ? "Aguardando Vc" : "Pendentes"}</p>
+                  <p className={cn("text-sm font-bold", (isGestorCompras || isDev) && kpis.pendingSingular > 0 ? "text-emerald-700" : "text-foreground")}>
+                    {(isGestorCompras || isDev) ? kpis.pendingSingular : kpis.pending}
+                  </p>
                 </div>
               </CardContent>
             </Card>
