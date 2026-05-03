@@ -1,22 +1,11 @@
-import React, { createContext, useContext, type ReactNode, useMemo, useCallback, useState, useEffect, useRef } from "react";
+import React, { type ReactNode, useMemo, useCallback, useState, useEffect, useRef } from "react";
 import { type Product } from "@/hooks/useProducts";
 import { fetchPromobrindProducts } from "@/lib/external-db";
-
-// Re-use the same mapping logic from useProducts
 import { mapPromobrindToProduct } from "@/hooks/useProducts";
 import { logger } from "@/lib/logger";
+import { ProductsContext } from "./ProductsContextDef";
 
-interface ProductsContextType {
-  /** Cached products (only those that have been requested) */
-  products: Product[];
-  isLoading: boolean;
-  getProductById: (id: string) => Product | undefined;
-  getProductsByIds: (ids: string[]) => Product[];
-  /** Manually register products into the cache (e.g. from page-level queries) */
-  registerProducts: (products: Product[]) => void;
-}
-
-export const ProductsContext = createContext<ProductsContextType | undefined>(undefined);
+export { ProductsContext, useProductsContext, useProductsContextSafe } from "./ProductsContextDef";
 
 /**
  * Lazy-loading ProductsProvider.
