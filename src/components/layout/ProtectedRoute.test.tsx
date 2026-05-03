@@ -1,6 +1,6 @@
 import { renderHook } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { ProtectedRoute } from "../ProtectedRoute";
+import { ProtectedRoute } from "./ProtectedRoute";
 import { useAuth } from "@/contexts/AuthContext";
 import { MemoryRouter, Routes, Route } from "react-router-dom";
 import { render, screen } from "@testing-library/react";
