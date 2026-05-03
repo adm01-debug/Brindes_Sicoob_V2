@@ -315,3 +315,38 @@ export const useOrderTemplates = (orderId?: string) => {
 
   return { templates, isLoading };
 };
+
+export const useOrdersReport = (filters?: any) => {
+  return useQuery({
+    queryKey: ["orders-report", filters],
+    queryFn: async () => {
+      // Mock report data for now
+      return {
+        total_orders: 150,
+        total_amount: 450000,
+        average_ticket: 3000,
+        by_status: {
+          pending: 25,
+          shipped: 40,
+          completed: 85
+        }
+      };
+    }
+  });
+};
+
+export const useLogisticsTracking = (orderId?: string) => {
+  return useQuery({
+    queryKey: ["logistics-tracking", orderId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("order_logistics")
+        .select("*")
+        .eq("order_id", orderId)
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!orderId
+  });
+};
