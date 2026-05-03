@@ -25,8 +25,8 @@ export default function GestorConsolidatedOrdersPage() {
       <div className="container mx-auto p-6 space-y-6 animate-fade-in">
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-bold font-display tracking-tight">Pedidos Agregados</h1>
-            <p className="text-muted-foreground">Consolidação de pedidos da Singular para envio ao vendedor.</p>
+            <h1 className="text-3xl font-bold font-display tracking-tight text-sicoob-green-dark">Agregados da Singular</h1>
+            <p className="text-muted-foreground italic">Consolidação estratégica de pedidos para otimização logística.</p>
           </div>
           <Button className="gap-2">
             <Layers className="h-4 w-4" /> Nova Consolidação
