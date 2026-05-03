@@ -2,7 +2,9 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { MessageSquare, Send, User, Paperclip, Search, ChevronUp, ChevronDown } from "lucide-react";
+import { MessageSquare, Send, User, Paperclip, Search, ChevronUp, ChevronDown, Filter } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+
 import { useOrderComments } from "@/hooks/useOrderComments";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -16,7 +18,15 @@ interface OrderCommentsProps {
 
 export function OrderComments({ orderId }: OrderCommentsProps) {
   const [search, setSearch] = useState("");
-  const { comments, totalCount, isLoading, addComment, page, setPage, pageSize } = useOrderComments(orderId, { search });
+  const [hasAttachments, setHasAttachments] = useState(false);
+  const [filterInternal, setFilterInternal] = useState<boolean | undefined>(undefined);
+  
+  const { comments, totalCount, isLoading, addComment, page, setPage, pageSize } = useOrderComments(orderId, { 
+    search, 
+    hasAttachments,
+    isInternal: filterInternal
+  });
+  
   const [newComment, setNewComment] = useState("");
   const [isInternal, setIsInternal] = useState(false);
 
@@ -31,20 +41,43 @@ export function OrderComments({ orderId }: OrderCommentsProps) {
 
   return (
     <Card className="flex flex-col h-[600px]">
-      <CardHeader className="py-3 flex flex-row items-center justify-between">
-        <CardTitle className="text-base flex items-center gap-2">
-          <MessageSquare className="h-4 w-4 text-primary" /> Chat do Pedido
-        </CardTitle>
-        <div className="relative w-48">
+      <CardHeader className="py-3 flex flex-col space-y-3">
+        <div className="flex flex-row items-center justify-between">
+          <CardTitle className="text-base flex items-center gap-2">
+            <MessageSquare className="h-4 w-4 text-primary" /> Chat do Pedido
+          </CardTitle>
+          <div className="flex items-center gap-2">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-8 w-8">
+                  <Filter className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => setHasAttachments(prev => !prev)}>
+                  {hasAttachments ? "✓ Com Anexos" : "Mostrar apenas com anexos"}
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setFilterInternal(undefined)}>Todas as mensagens</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setFilterInternal(true)}>Apenas internas</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setFilterInternal(false)}>Apenas públicas</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        </div>
+        <div className="relative">
           <Search className="absolute left-2 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
           <Input 
-            placeholder="Buscar..." 
+            placeholder="Buscar mensagens..." 
             className="pl-8 h-8 text-xs" 
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setPage(1);
+            }}
           />
         </div>
       </CardHeader>
+
       <CardContent className="flex-1 flex flex-col gap-4 overflow-hidden pt-0">
         {totalCount !== undefined && totalCount > pageSize && (
           <div className="flex items-center justify-center gap-2 py-2 border-b">

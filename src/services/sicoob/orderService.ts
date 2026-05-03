@@ -103,20 +103,34 @@ export const sicoobOrderService = {
       const order = await this.getOrderById(orderId);
       const { data: { user } } = await supabase.auth.getUser();
       
-      await supabase.functions.invoke('send-notification', {
+      // Call standard transactional email function
+      await supabase.functions.invoke('send-transactional-email', {
         body: {
-          user_id: order.created_by,
-          title: "Status do Pedido Sicoob Atualizado",
-          message: `Seu pedido #${orderId.slice(0, 8)} mudou para ${status}`,
-          metadata: { order_id: orderId, event_type: 'sicoob_order_status_change' },
-          action_url: `/sicoob/pedidos/${orderId}`
+          event_type: 'sicoob_order_status_change',
+          recipient_email: user?.email, // Should ideally be order creator's email
+          recipient_name: user?.email?.split('@')[0],
+          data: {
+            order_number: orderId.slice(0, 8),
+            new_status: status,
+            action_url: `${window.location.origin}/sicoob/pedidos/${orderId}`
+          }
         }
       });
 
-      // Email fallback is handled inside send-notification/send-transactional-email
+      // In-app notification as fallback/primary
+      await supabase.from('notifications').insert({
+        user_id: order.created_by,
+        title: "Status do Pedido Sicoob Atualizado",
+        message: `Seu pedido #${orderId.slice(0, 8)} mudou para ${status}`,
+        type: 'info',
+        category: 'status',
+        source_entity_id: orderId,
+        action_url: `/sicoob/pedidos/${orderId}`
+      });
     } catch (err) {
-      console.warn("Falha ao enviar notificação, mas pedido foi atualizado:", err);
+      console.warn("Falha ao processar notificações, mas pedido foi atualizado:", err);
     }
+
   },
 
   async updateOrderTotal(orderId: string, total: number): Promise<void> {

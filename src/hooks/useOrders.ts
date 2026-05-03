@@ -113,12 +113,32 @@ export function useUpdateOrder(orderId?: string, currentStatus?: string) {
           p_event_type: 'status_change',
           p_description: `Status alterado de ${ORDER_STATUS_LABELS[currentStatus || ''] || currentStatus} para ${ORDER_STATUS_LABELS[patch.status] || patch.status}`,
           p_metadata: { old_status: currentStatus, new_status: patch.status },
-          p_created_by_name: user?.email // Simple way to get a name
+          p_created_by_name: user?.email
         });
 
-        // Create notification
+        // Trigger email notification
+        try {
+          await supabase.functions.invoke('send-transactional-email', {
+            body: {
+              event_type: 'sicoob_order_status_change',
+              recipient_email: user?.email, // In production this would be the PA/Client email
+              recipient_name: user?.email?.split('@')[0],
+              data: {
+                order_number: orderId?.slice(0, 8),
+                new_status: ORDER_STATUS_LABELS[patch.status],
+                notes: patch.notes,
+                action_url: `${window.location.origin}/pedidos/${orderId}`
+              }
+            }
+          });
+        } catch (emailError) {
+          console.error('Failed to send email notification:', emailError);
+          // Fallback to in-app notification (already handled below)
+        }
+
+        // Create in-app notification (fallback and primary)
         await supabase.from('notifications').insert({
-          user_id: user?.id, // Should ideally be the client/seller involved
+          user_id: user?.id,
           title: "Status do Pedido Atualizado",
           message: `O pedido #${orderId?.slice(0, 8)} mudou para ${ORDER_STATUS_LABELS[patch.status]}`,
           type: 'info',
@@ -128,6 +148,7 @@ export function useUpdateOrder(orderId?: string, currentStatus?: string) {
           source_entity_id: orderId,
           action_url: `/pedidos/${orderId}`
         });
+
       }
     },
     onSuccess: () => {

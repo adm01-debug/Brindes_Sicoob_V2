@@ -20,7 +20,7 @@ export interface OrderComment {
   };
 }
 
-export function useOrderComments(orderId: string, filters?: { search?: string }) {
+export function useOrderComments(orderId: string, filters?: { search?: string; hasAttachments?: boolean; isInternal?: boolean }) {
   const qc = useQueryClient();
   const { user } = useAuth();
   const [page, setPage] = useState(1);
@@ -42,6 +42,14 @@ export function useOrderComments(orderId: string, filters?: { search?: string })
         query = query.ilike("content", `%${filters.search}%`);
       }
 
+      if (filters?.hasAttachments) {
+        query = query.not("attachments", "is", null);
+      }
+
+      if (filters?.isInternal !== undefined) {
+        query = query.eq("is_internal", filters.isInternal);
+      }
+
       const { data, error, count } = await query.range((page - 1) * pageSize, page * pageSize - 1);
       if (error) throw error;
       return { 
@@ -51,6 +59,7 @@ export function useOrderComments(orderId: string, filters?: { search?: string })
     },
     enabled: !!orderId,
   });
+
 
   // Real-time subscription
   useEffect(() => {

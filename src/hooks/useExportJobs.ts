@@ -16,6 +16,19 @@ export interface ExportJob {
   created_at: string;
 }
 
+export interface ScheduledExport {
+  id: string;
+  user_id: string;
+  entity_type: 'orders' | 'quotes';
+  export_type: 'pdf' | 'excel';
+  filters: any;
+  frequency: 'daily' | 'weekly' | 'monthly';
+  last_run_at: string | null;
+  next_run_at: string | null;
+  is_active: boolean;
+  created_at: string;
+}
+
 export function useExportJobs() {
   const queryClient = useQueryClient();
 
@@ -29,6 +42,19 @@ export function useExportJobs() {
 
       if (error) throw error;
       return data as ExportJob[];
+    },
+  });
+
+  const { data: scheduledExports, isLoading: isLoadingScheduled } = useQuery({
+    queryKey: ["scheduled_exports"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("scheduled_exports")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      return data as ScheduledExport[];
     },
   });
 
@@ -74,10 +100,52 @@ export function useExportJobs() {
     },
   });
 
+  const createScheduledExport = useMutation({
+    mutationFn: async (exportData: Omit<ScheduledExport, "id" | "user_id" | "created_at" | "last_run_at" | "next_run_at">) => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Usuário não autenticado");
+
+      const { data, error } = await supabase
+        .from("scheduled_exports")
+        .insert({
+          ...exportData,
+          user_id: user.id,
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["scheduled_exports"] });
+      toast.success("Exportação agendada com sucesso!");
+    },
+  });
+
+  const deleteScheduledExport = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from("scheduled_exports")
+        .delete()
+        .eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["scheduled_exports"] });
+      toast.success("Agendamento removido.");
+    },
+  });
+
   return {
     jobs,
+    scheduledExports,
     isLoading,
+    isLoadingScheduled,
     createJob: createJob.mutate,
     retryJob: retryJob.mutate,
+    createScheduledExport: createScheduledExport.mutate,
+    deleteScheduledExport: deleteScheduledExport.mutate,
   };
 }
+

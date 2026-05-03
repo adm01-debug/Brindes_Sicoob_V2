@@ -5298,6 +5298,48 @@ export type Database = {
         }
         Relationships: []
       }
+      scheduled_exports: {
+        Row: {
+          created_at: string | null
+          entity_type: string
+          export_type: string
+          filters: Json | null
+          frequency: string
+          id: string
+          is_active: boolean | null
+          last_run_at: string | null
+          next_run_at: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          entity_type: string
+          export_type: string
+          filters?: Json | null
+          frequency: string
+          id?: string
+          is_active?: boolean | null
+          last_run_at?: string | null
+          next_run_at?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          entity_type?: string
+          export_type?: string
+          filters?: Json | null
+          frequency?: string
+          id?: string
+          is_active?: boolean | null
+          last_run_at?: string | null
+          next_run_at?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       scheduled_reports: {
         Row: {
           created_at: string
