@@ -89,3 +89,21 @@ Checklist mínimo:
 ### Bitrix24
 - `crm.item.get` com `entityTypeId=4` para Smart Companies (não usar `crm.company.get`)
 - OAuth2 sempre — webhook clássico está deprecado para nosso uso
+
+## 🏆 Padrões de Excelência (10/10)
+
+### Resiliência (Circuit Breaker)
+- Toda chamada RPC para serviços externos deve usar o `CircuitBreaker` (`src/lib/security/circuit-breaker.ts`).
+- Isso evita falhas em cascata e protege o sistema durante instabilidades de terceiros.
+
+### Acessibilidade (a11y)
+- Grades de produtos devem usar `role="grid"`, `role="row"` e `role="gridcell"`.
+- Interações complexas (carrosséis, diálogos) devem ter suporte completo a teclado e ARIA labels descritivos.
+
+### Performance & Telemetria
+- Imagens de produtos devem usar `loading="lazy"` e prefetching inteligente no hover.
+- Monitoramento de Core Web Vitals está ativo em `src/lib/telemetry/webVitals.ts`.
+- Logs estruturados devem ser usados em rotas críticas para depuração rápida.
+
+### Testes
+- Lógica de infraestrutura crítica (validadores, breakers, utils de segurança) deve ter cobertura de testes unitários com Vitest.
