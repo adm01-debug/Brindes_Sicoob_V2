@@ -14,6 +14,7 @@ import { QuoteVersionsList } from "@/components/quotes/QuoteVersionsList";
 import { QuoteOrderBadge } from "@/components/quotes/QuoteOrderBadge";
 import { QuoteConvertToOrder } from "@/components/quotes/QuoteConvertToOrder";
 import { QuoteSingularApprovalActions } from "@/components/quotes/QuoteSingularApprovalActions";
+import { QUOTE_STATUS_CONFIG } from "@/lib/quote-status-config";
 import { PageSEO } from "@/components/seo/PageSEO";
 import { Badge } from "@/components/ui/badge";
 import { Lock } from "lucide-react";
