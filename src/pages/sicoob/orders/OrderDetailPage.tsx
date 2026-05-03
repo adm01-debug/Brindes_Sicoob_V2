@@ -216,11 +216,10 @@ export default function OrderDetailPage() {
         previousStatus: orderData.status 
       });
     } else {
-      updateStatus.mutate({ 
+      updateOrderStatusMutation.mutate({ 
         orderId: id!, 
-        newStatus: 'confirmed', 
-        previousStatus: orderData.status,
-        comment: 'Aprovação direta por gestor'
+        status: 'confirmed', 
+        currentStatus: orderData.status,
       });
     }
   };
