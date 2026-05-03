@@ -1,8 +1,9 @@
 /**
  * ProductCardImage — Image section with carousel, badges, and color dots.
  * Extracted from ProductCard.tsx.
+ * Performance: Pre-fetches next/prev variant images on hover for instant switching.
  */
-import { memo } from "react";
+import { memo, useEffect, useRef } from "react";
 import { Sparkles, Package } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -47,6 +48,23 @@ export const ProductCardImage = memo(function ProductCardImage({
   allMatchingVariants, hasMultipleVariants, safeVariantIdx,
   onImageLoad, onVariantChange,
 }: ProductCardImageProps) {
+  // #10/10 PERFORMANCE: Pre-fetch images for other variants on hover
+  const prefetchedImages = useRef<Set<string>>(new Set());
+
+  useEffect(() => {
+    if (isHovered && hasMultipleVariants) {
+      // Pre-fetch all matching variant images when user hovers the card
+      allMatchingVariants.forEach((v, idx) => {
+        if (idx === safeVariantIdx || !v.image) return;
+        if (!prefetchedImages.current.has(v.image)) {
+          const img = new Image();
+          img.src = v.image;
+          prefetchedImages.current.add(v.image);
+        }
+      });
+    }
+  }, [isHovered, hasMultipleVariants, allMatchingVariants, safeVariantIdx]);
+
   return (
     <div
       className="relative aspect-[4/5] overflow-hidden product-img-container bg-muted/30"
