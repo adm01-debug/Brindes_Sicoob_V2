@@ -129,6 +129,7 @@ export function TelemetryCharts({ rows, timeFilter }: TelemetryChartsProps) {
   if (rows.length === 0) return null;
 
   return (
+    <>
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
       {/* Timeline de alertas */}
       <Card>
@@ -272,6 +273,7 @@ export function TelemetryCharts({ rows, timeFilter }: TelemetryChartsProps) {
         </Card>
       )}
     </div>
+    </>
   );
 }
 
