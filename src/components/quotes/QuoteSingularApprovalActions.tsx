@@ -94,29 +94,71 @@ export function QuoteSingularApprovalActions({ quoteId, status, quoteNumber, onA
     <div className="flex items-center gap-3 p-4 bg-emerald-50 border border-emerald-200 rounded-xl animate-in fade-in slide-in-from-top-2 duration-300">
       <div className="flex-1 min-w-0">
         <h4 className="text-sm font-bold text-emerald-900">Aprovação Singular</h4>
-        <p className="text-xs text-emerald-700 mt-0.5">Este orçamento foi solicitado por um PAC e aguarda sua validação.</p>
+        <p className="text-xs text-emerald-700 mt-0.5">O orçamento {quoteNumber} aguarda sua validação.</p>
       </div>
       <div className="flex items-center gap-2 shrink-0">
         <Button 
           variant="outline" 
           size="sm" 
+          className="h-8 gap-1.5 border-amber-300 text-amber-700 hover:bg-amber-100"
+          onClick={() => { setNotes(""); setAdjustDialogOpen(true); }}
+          disabled={isProcessing}
+        >
+          <Edit3 className="h-3.5 w-3.5" />
+          Ajustar
+        </Button>
+        <Button 
+          variant="outline" 
+          size="sm" 
           className="h-8 gap-1.5 border-destructive/30 text-destructive hover:bg-destructive/10"
-          onClick={() => setRejectDialogOpen(true)}
+          onClick={() => { setNotes(""); setRejectDialogOpen(true); }}
           disabled={isProcessing}
         >
           <XCircle className="h-3.5 w-3.5" />
-          Rejeitar
+          Reprovar
         </Button>
         <Button 
           size="sm" 
-          className="h-8 gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white"
+          className="h-8 gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm"
           onClick={handleApprove}
           disabled={isProcessing}
         >
           {isProcessing ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <CheckCircle2 className="h-3.5 w-3.5" />}
-          Aprovar Solicitação
+          Aprovar
         </Button>
       </div>
+
+      <Dialog open={adjustDialogOpen} onOpenChange={setAdjustDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Solicitar Ajustes</DialogTitle>
+            <DialogDescription>
+              Explique ao PAC quais modificações são necessárias (quantidades, itens, descontos, etc).
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3 py-2">
+            <Label htmlFor="adjust-notes">Instruções de Ajuste</Label>
+            <Textarea
+              id="adjust-notes"
+              placeholder="Ex: Reduzir a quantidade de canetas para 100 unidades..."
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              rows={4}
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setAdjustDialogOpen(false)}>Cancelar</Button>
+            <Button 
+              className="gap-1.5 bg-amber-600 hover:bg-amber-700 text-white"
+              onClick={handleAdjust}
+              disabled={isProcessing}
+            >
+              {isProcessing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Edit3 className="h-4 w-4" />}
+              Enviar para Ajuste
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={rejectDialogOpen} onOpenChange={setRejectDialogOpen}>
         <DialogContent>
