@@ -6,6 +6,7 @@ import { installGlobalErrorHandlers } from "@/lib/error-reporter";
 import { initSentry } from "@/lib/sentry";
 import EnhancedErrorBoundary from "@/components/errors/EnhancedErrorBoundary";
 import "@/lib/diagnostics"; // Initialize diagnostics early
+import { injectRequestId } from "@/lib/request-id-injection";
 import App from "./App.tsx";
 import "./index.css";
 
