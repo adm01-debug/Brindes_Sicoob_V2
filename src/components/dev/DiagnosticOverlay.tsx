@@ -163,3 +163,5 @@ export const DiagnosticOverlay = () => {
     </div>
   );
 };
+
+DiagnosticOverlay.displayName = 'DiagnosticOverlay';
