@@ -201,7 +201,7 @@ interface ActionResultAnnouncerProps {
   result: { type: "success" | "error"; message: string } | null;
 }
 
-export function ActionResultAnnouncer({ result }: ActionResultAnnouncerProps) {
+export const ActionResultAnnouncer = forwardRef<HTMLDivElement, ActionResultAnnouncerProps>(({ result }, _ref) => {
   const { announce, announceAlert } = useAriaLive();
 
   useEffect(() => {
@@ -215,7 +215,9 @@ export function ActionResultAnnouncer({ result }: ActionResultAnnouncerProps) {
   }, [result, announce, announceAlert]);
 
   return null;
-}
+});
+
+ActionResultAnnouncer.displayName = 'ActionResultAnnouncer';
 
 /**
  * Component for announcing list/table updates
