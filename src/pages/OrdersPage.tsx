@@ -88,7 +88,7 @@ export function OrdersPage() {
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-            <BatchExportDialog entityType="orders" filters={{ search: searchQuery }} />
+            <BatchExportDialog entityType="orders" filters={filterValues} />
           </div>
         </div>
 
@@ -101,10 +101,10 @@ export function OrdersPage() {
             <CardContent className="flex flex-col items-center justify-center py-16 text-center">
               <Package className="h-12 w-12 text-muted-foreground/50 mb-4" />
               <h3 className="font-display text-lg font-medium text-foreground mb-1">
-                {searchQuery ? "Nenhum pedido encontrado" : "Nenhum pedido ainda"}
+                {filterValues.search ? "Nenhum pedido encontrado" : "Nenhum pedido ainda"}
               </h3>
               <p className="text-muted-foreground text-sm">
-                {searchQuery ? "Tente buscar com outros termos" : "Seus pedidos aparecerão aqui quando criados"}
+                {filterValues.search ? "Tente buscar com outros termos" : "Seus pedidos aparecerão aqui quando criados"}
               </p>
             </CardContent>
           </Card>
