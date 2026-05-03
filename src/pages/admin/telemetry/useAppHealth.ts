@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { useMemo } from 'react';
 
 // ============================================================================
 // useAppHealth — KPIs da "Saúde da Aplicação"
@@ -58,7 +59,15 @@ export interface AppHealthSummary {
   edges_by_latency: EdgeLatencyRow[];
 }
 
+export interface SlowQueryRow {
+  operation: string;
+  p95_ms: number;
+  avg_ms: number;
+  count: number;
+}
+
 export function useAppHealth(windowMinutes: HealthWindow) {
+  const { data: summary, ...rest } = useQuery<AppHealthSummary>({
   return useQuery<AppHealthSummary>({
     queryKey: ['app-health-summary', windowMinutes],
     queryFn: async () => {
@@ -71,6 +80,30 @@ export function useAppHealth(windowMinutes: HealthWindow) {
     refetchInterval: 30_000,
     staleTime: 15_000,
   });
+
+  const { data: slowQueries = [], isLoading: isLoadingSlow } = useQuery<SlowQueryRow[]>({
+    queryKey: ['slow-queries-p95', windowMinutes],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('get_query_telemetry_p95', {
+        window_minutes: windowMinutes,
+      });
+      if (error) throw error;
+      return (data as any[] || []).map(r => ({
+        operation: r.operation,
+        p95_ms: Number(r.p95_ms),
+        avg_ms: Number(r.avg_ms),
+        count: Number(r.count)
+      }));
+    },
+    refetchInterval: 60_000,
+  });
+
+  return { 
+    data: summary, 
+    slowQueries, 
+    isLoadingSlow,
+    ...rest 
+  };
 }
 
 export interface RequestIdEvent {
