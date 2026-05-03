@@ -118,13 +118,14 @@ export const ProductCardActions = memo(function ProductCardActions({
 
 // Tiny helper to reduce repetition
 function ActionButton({
-  icon: Icon, label, className, iconClassName, disabled, onClick, testId, ariaPressed,
+  icon: Icon, label, className, iconClassName, disabled, onClick, testId, ariaPressed, ariaHasPopup,
 }: {
   icon: React.ComponentType<{ className?: string }>;
   label: string; className?: string; iconClassName?: string;
   disabled?: boolean; onClick: (e: React.MouseEvent) => void;
   testId?: string;
   ariaPressed?: boolean;
+  ariaHasPopup?: "dialog" | "menu" | "listbox" | "tree" | "grid";
 }) {
   return (
     <Tooltip>
