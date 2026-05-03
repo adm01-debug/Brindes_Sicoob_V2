@@ -139,11 +139,15 @@ export function ProductGrid({
     };
     
     updateCols();
-    window.addEventListener('resize', updateCols);
-    return () => window.removeEventListener('resize', updateCols);
+    const handleResize = () => {
+      // Debounce opcional ou apenas throttle simples via requestAnimationFrame
+      window.requestAnimationFrame(updateCols);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   }, [columns]);
 
-  const rowCount = Math.ceil(products.length / currentCol);
+  const rowCount = useMemo(() => Math.ceil(products.length / currentCols), [products.length, currentCols]);
   
   const virtualizer = useVirtualizer({
     count: rowCount,
