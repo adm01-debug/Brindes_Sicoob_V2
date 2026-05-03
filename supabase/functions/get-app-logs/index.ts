@@ -28,7 +28,7 @@ Deno.serve(async (req) => {
 
     let query = supabase
       .from("query_telemetry")
-      .select("*", { count: "exact" })
+      .select("*, request_id", { count: "exact" })
       .order("created_at", { ascending: false })
       .range(offset, offset + limit - 1);
 
