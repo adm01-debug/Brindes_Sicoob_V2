@@ -1,4 +1,4 @@
-import React, { type ReactNode } from "react";
+import React, { type ReactNode, forwardRef } from "react";
 
 interface VisuallyHiddenProps {
   children: ReactNode;
@@ -9,14 +9,16 @@ interface VisuallyHiddenProps {
  * Visually hides content while keeping it accessible to screen readers.
  * Use for descriptive text that provides context for assistive technologies.
  */
-export function VisuallyHidden({ children, as: component = "span" }: VisuallyHiddenProps) {
+export const VisuallyHidden = forwardRef<HTMLElement, VisuallyHiddenProps>(({ children, as: component = "span" }, ref) => {
   const Component = component;
   return (
-    <Component className="sr-only">
+    <Component ref={ref as any} className="sr-only">
       {children}
     </Component>
   );
-}
+});
+
+VisuallyHidden.displayName = 'VisuallyHidden';
 
 /**
  * Announces content to screen readers using ARIA live regions.
@@ -28,13 +30,14 @@ interface LiveRegionProps {
   atomic?: boolean;
 }
 
-export function LiveRegion({ 
+export const LiveRegion = forwardRef<HTMLDivElement, LiveRegionProps>(({ 
   children, 
   politeness = "polite", 
   atomic = true 
-}: LiveRegionProps) {
+}, ref) => {
   return (
     <div 
+      ref={ref}
       role="status" 
       aria-live={politeness} 
       aria-atomic={atomic}
@@ -43,7 +46,9 @@ export function LiveRegion({
       {children}
     </div>
   );
-}
+});
+
+LiveRegion.displayName = 'LiveRegion';
 
 /**
  * Provides accessible loading announcements.
@@ -54,14 +59,16 @@ interface LoadingAnnouncerProps {
   loadedMessage?: string;
 }
 
-export function LoadingAnnouncer({ 
+export const LoadingAnnouncer = forwardRef<HTMLDivElement, LoadingAnnouncerProps>(({ 
   isLoading, 
   loadingMessage = "Carregando...",
   loadedMessage = "Conteúdo carregado"
-}: LoadingAnnouncerProps) {
+}, ref) => {
   return (
-    <LiveRegion politeness="polite">
+    <LiveRegion ref={ref} politeness="polite">
       {isLoading ? loadingMessage : loadedMessage}
     </LiveRegion>
   );
-}
+});
+
+LoadingAnnouncer.displayName = 'LoadingAnnouncer';

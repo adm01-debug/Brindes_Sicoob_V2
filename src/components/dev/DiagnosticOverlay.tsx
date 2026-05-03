@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, forwardRef } from "react";
 import { diagnostics, DiagnosticLog } from "@/lib/diagnostics";
 import { 
   Terminal, 
@@ -18,7 +18,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { useDevGate } from "@/hooks/useDevGate";
 
-export const DiagnosticOverlay = () => {
+export const DiagnosticOverlay = forwardRef<HTMLDivElement>((_props, ref) => {
   const { isAllowed } = useDevGate();
   const [isOpen, setIsOpen] = useState(false);
   const [logs, setLogs] = useState<DiagnosticLog[]>([]);
@@ -47,7 +47,7 @@ export const DiagnosticOverlay = () => {
   };
 
   return (
-    <div className="fixed bottom-4 left-4 z-[9999] font-mono text-[10px]">
+    <div ref={ref} className="fixed bottom-4 left-4 z-[9999] font-mono text-[10px]">
       <AnimatePresence>
         {!isOpen ? (
           <motion.div
@@ -163,3 +163,5 @@ export const DiagnosticOverlay = () => {
     </div>
   );
 };
+
+DiagnosticOverlay.displayName = 'DiagnosticOverlay';

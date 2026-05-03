@@ -22,7 +22,9 @@ export function useAriaLive() {
   return context;
 }
 
-export const AriaLiveProvider = ({ children }: { children: ReactNode }) => {
+import { forwardRef } from 'react';
+
+export const AriaLiveProvider = forwardRef<HTMLDivElement, { children: ReactNode }>(({ children }, ref) => {
   const [politeMessage, setPoliteMessage] = useState("");
   const [assertiveMessage, setAssertiveMessage] = useState("");
   const [statusMessage, setStatusMessage] = useState("");
@@ -75,55 +77,59 @@ export const AriaLiveProvider = ({ children }: { children: ReactNode }) => {
         announceProgress,
       }}
     >
-      {children}
+      <div ref={ref}>
+        {children}
 
-      {/* Polite announcements - non-interruptive */}
-      <div
-        role="status"
-        aria-live="polite"
-        aria-atomic="true"
-        className="sr-only"
-      >
-        {politeMessage}
-      </div>
+        {/* Polite announcements - non-interruptive */}
+        <div
+          role="status"
+          aria-live="polite"
+          aria-atomic="true"
+          className="sr-only"
+        >
+          {politeMessage}
+        </div>
 
-      {/* Assertive announcements - interruptive */}
-      <div
-        role="alert"
-        aria-live="assertive"
-        aria-atomic="true"
-        className="sr-only"
-      >
-        {assertiveMessage}
-      </div>
+        {/* Assertive announcements - interruptive */}
+        <div
+          role="alert"
+          aria-live="assertive"
+          aria-atomic="true"
+          className="sr-only"
+        >
+          {assertiveMessage}
+        </div>
 
-      {/* Status messages */}
-      <div
-        role="status"
-        aria-live="polite"
-        aria-atomic="true"
-        className="sr-only"
-      >
-        {statusMessage}
-      </div>
+        {/* Status messages */}
+        <div
+          role="status"
+          aria-live="polite"
+          aria-atomic="true"
+          className="sr-only"
+        >
+          {statusMessage}
+        </div>
 
-      {/* Progress announcements */}
-      <div
-        role="progressbar"
-        aria-live="polite"
-        aria-atomic="true"
-        className="sr-only"
-      >
-        {progressMessage}
+        {/* Progress announcements */}
+        <div
+          role="progressbar"
+          aria-live="polite"
+          aria-atomic="true"
+          className="sr-only"
+        >
+          {progressMessage}
+        </div>
       </div>
     </AriaLiveContext.Provider>
   );
-}
+});
+
+AriaLiveProvider.displayName = 'AriaLiveProvider';
 
 /**
  * Component to announce page navigation
  */
-export function RouteAnnouncer({ title }: { title: string }) {
+export const RouteAnnouncer = forwardRef<HTMLDivElement, { title: string }>(({ title }, _ref) => {
   const { announce } = useAriaLive();
 
   useEffect(() => {
@@ -131,7 +137,9 @@ export function RouteAnnouncer({ title }: { title: string }) {
   }, [title, announce]);
 
   return null;
-}
+});
+
+RouteAnnouncer.displayName = 'RouteAnnouncer';
 
 /**
  * Component for announcing loading states
@@ -142,11 +150,11 @@ interface LoadingAnnouncerProps {
   loadedMessage?: string;
 }
 
-export function LoadingStateAnnouncer({
+export const LoadingStateAnnouncer = forwardRef<HTMLDivElement, LoadingAnnouncerProps>(({
   isLoading,
   loadingMessage = "Carregando conteúdo",
   loadedMessage = "Conteúdo carregado"
-}: LoadingAnnouncerProps) {
+}, _ref) => {
   const { announce } = useAriaLive();
 
   useEffect(() => {
@@ -158,7 +166,9 @@ export function LoadingStateAnnouncer({
   }, [isLoading, loadingMessage, loadedMessage, announce]);
 
   return null;
-}
+});
+
+LoadingStateAnnouncer.displayName = 'LoadingStateAnnouncer';
 
 /**
  * Component for announcing form errors
@@ -167,7 +177,7 @@ interface FormErrorAnnouncerProps {
   errors: string[];
 }
 
-export function FormErrorAnnouncer({ errors }: FormErrorAnnouncerProps) {
+export const FormErrorAnnouncer = forwardRef<HTMLDivElement, FormErrorAnnouncerProps>(({ errors }, _ref) => {
   const { announceAlert } = useAriaLive();
 
   useEffect(() => {
@@ -180,7 +190,9 @@ export function FormErrorAnnouncer({ errors }: FormErrorAnnouncerProps) {
   }, [errors, announceAlert]);
 
   return null;
-}
+});
+
+FormErrorAnnouncer.displayName = 'FormErrorAnnouncer';
 
 /**
  * Component for announcing action results
@@ -189,7 +201,7 @@ interface ActionResultAnnouncerProps {
   result: { type: "success" | "error"; message: string } | null;
 }
 
-export function ActionResultAnnouncer({ result }: ActionResultAnnouncerProps) {
+export const ActionResultAnnouncer = forwardRef<HTMLDivElement, ActionResultAnnouncerProps>(({ result }, _ref) => {
   const { announce, announceAlert } = useAriaLive();
 
   useEffect(() => {
@@ -203,7 +215,9 @@ export function ActionResultAnnouncer({ result }: ActionResultAnnouncerProps) {
   }, [result, announce, announceAlert]);
 
   return null;
-}
+});
+
+ActionResultAnnouncer.displayName = 'ActionResultAnnouncer';
 
 /**
  * Component for announcing list/table updates
@@ -214,11 +228,11 @@ interface ListUpdateAnnouncerProps {
   action?: "loaded" | "filtered" | "sorted" | "updated";
 }
 
-export function ListUpdateAnnouncer({ 
+export const ListUpdateAnnouncer = forwardRef<HTMLDivElement, ListUpdateAnnouncerProps>(({ 
   count, 
   itemName = "item",
   action = "loaded" 
-}: ListUpdateAnnouncerProps) {
+}, _ref) => {
   const { announceStatus } = useAriaLive();
 
   useEffect(() => {
@@ -234,4 +248,6 @@ export function ListUpdateAnnouncer({
   }, [count, itemName, action, announceStatus]);
 
   return null;
-}
+});
+
+ListUpdateAnnouncer.displayName = 'ListUpdateAnnouncer';

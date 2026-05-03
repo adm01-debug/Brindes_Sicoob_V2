@@ -1,4 +1,4 @@
-import { type ReactNode, useEffect, useState } from "react";
+import { type ReactNode, useEffect, useState, forwardRef } from "react";
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
@@ -33,7 +33,7 @@ interface DevRouteProps {
  *      • CTA "Copiar link da página" para encaminhar manualmente.
  *      • Retorno para destino seguro (supervisor → /admin/usuarios, agente → /).
  */
-export function DevRoute({ children }: DevRouteProps) {
+export const DevRoute = forwardRef<HTMLDivElement, DevRouteProps>(function DevRoute({ children }, ref) {
   const {
     user,
     isDev,
@@ -155,5 +155,7 @@ export function DevRoute({ children }: DevRouteProps) {
 
   // Retorno único: Outlet (Layout Route) ou children. Sem forwardRef:
   // Router não passa refs para `element={<DevRoute />}`.
-  return children ? <>{children}</> : <Outlet />;
-}
+  return children ? <div ref={ref}>{children}</div> : <div ref={ref}><Outlet /></div>;
+});
+
+DevRoute.displayName = 'DevRoute';

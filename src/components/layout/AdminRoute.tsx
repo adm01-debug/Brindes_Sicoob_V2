@@ -1,4 +1,4 @@
-import { type ReactNode, useState, useEffect } from "react";
+import { type ReactNode, useState, useEffect, forwardRef } from "react";
 import { Navigate, Outlet } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
@@ -20,7 +20,7 @@ interface AdminRouteProps {
  *  - Sem MFA cadastrado → abre fluxo de enrollment obrigatório
  *  - Com MFA mas sessão em aal1 → abre challenge para elevar sessão
  */
-export function AdminRoute({ children, requiredRole }: AdminRouteProps) {
+export const AdminRoute = forwardRef<HTMLDivElement, AdminRouteProps>(function AdminRoute({ children, requiredRole }, ref) {
   const { user, canManage, isDev, isGestorCompras, isSupervisor, isLoading, currentAAL, hasMFA, mfaRequired } = useAuth();
   const [enrollOpen, setEnrollOpen] = useState(false);
 
@@ -77,5 +77,7 @@ export function AdminRoute({ children, requiredRole }: AdminRouteProps) {
 
   // Retorno único: Outlet (Layout Route) ou children. Sem forwardRef:
   // Router não passa refs para `element={<AdminRoute />}`.
-  return children ? <>{children}</> : <Outlet />;
-}
+  return children ? <div ref={ref}>{children}</div> : <div ref={ref}><Outlet /></div>;
+});
+
+AdminRoute.displayName = 'AdminRoute';

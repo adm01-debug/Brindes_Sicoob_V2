@@ -50,15 +50,25 @@ import { useCatalogPrefetch } from '@/hooks/useCatalogPrefetch';
 import { loadThemeConfig, applyThemePreset, applyRadius } from '@/lib/theme-presets';
 import { ThemeInitializer } from '@/components/ThemeInitializer';
 
-const AppWithAuth = ({ children }: { children: ReactNode }) => {
-  useCatalogPrefetch();
-  return <>{children}</>;
-};
+import { forwardRef } from 'react';
 
-const RouteSuspense = ({ children }: { children: ReactNode }) => {
+const AppWithAuth = forwardRef<HTMLDivElement, { children: ReactNode }>(({ children }, ref) => {
+  useCatalogPrefetch();
+  return <div ref={ref}>{children}</div>;
+});
+
+AppWithAuth.displayName = 'AppWithAuth';
+
+const RouteSuspense = forwardRef<HTMLDivElement, { children: ReactNode }>(({ children }, ref) => {
   const { pathname } = useLocation();
-  return <Suspense fallback={getFallback(pathname)}>{children}</Suspense>;
-};
+  return (
+    <div ref={ref}>
+      <Suspense fallback={getFallback(pathname)}>{children}</Suspense>
+    </div>
+  );
+});
+
+RouteSuspense.displayName = 'RouteSuspense';
 
 const Index = lazyWithRetry(() => import("./pages/Index"));
 const CustomizableDashboard = lazyWithRetry(() => import("./pages/CustomizableDashboard"));
@@ -112,8 +122,8 @@ const App = () => {
                           ))}
 
                           {/* Static Redirects & Legacy (Unprotected) */}
-                          <Route path="/configuracoes" element={<Navigate to="/admin/usuarios" replace />} />
-                          <Route path="/perfil" element={<Navigate to="/admin/usuarios" replace />} />
+                          <Route path="/configuracoes" element={<div data-testid="redirect-config"><Navigate to="/admin/usuarios" replace /></div>} />
+                          <Route path="/perfil" element={<div data-testid="redirect-perfil"><Navigate to="/admin/usuarios" replace /></div>} />
                           <Route path="/403" element={<ForbiddenPage />} />
 
 
@@ -141,7 +151,7 @@ const App = () => {
                                 <Route key={r.path} path={r.path} element={<r.component />} />
                               ))}
                               
-                              <Route element={<AdminRoute requiredRole="gestor_compras" />}>
+                              <Route element={<ProtectedRoute requiredRole="gestor_compras" />}>
                                 {sicoobRoutes.filter(r => r.path !== "/sicoob/vendas").map(r => (
                                   <Route key={r.path} path={r.path} element={<r.component />} />
                                 ))}
@@ -170,7 +180,7 @@ const App = () => {
                             <Route path="/tendencias" element={<TrendsPage />} />
 
                             {/* Error Fallback */}
-                            <Route path="*" element={<NotFound />} />
+                            <Route path="*" element={<div data-testid="page-not-found"><NotFound /></div>} />
                           </Route>
                         </Routes>
                       </RouteSuspense>

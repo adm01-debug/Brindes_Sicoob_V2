@@ -20,7 +20,9 @@ export function useA11y() {
   return context;
 }
 
-export const AccessibilityProvider = ({ children }: { children: ReactNode }) => {
+import { forwardRef } from 'react';
+
+export const AccessibilityProvider = forwardRef<HTMLDivElement, { children: ReactNode }>(({ children }, ref) => {
   const [reducedMotion, setReducedMotion] = useState(false);
   const [highContrast, setHighContrast] = useState(false);
   const [fontSize, setFontSize] = useState<"normal" | "large" | "larger">("normal");
@@ -115,28 +117,32 @@ export const AccessibilityProvider = ({ children }: { children: ReactNode }) => 
         setHighContrast,
       }}
     >
-      {children}
-      
-      {/* Screen Reader Announcements */}
-      <div
-        role="status"
-        aria-live="polite"
-        aria-atomic="true"
-        className="sr-only"
-      >
-        {announcement?.priority === "polite" && announcement.message}
-      </div>
-      <div
-        role="alert"
-        aria-live="assertive"
-        aria-atomic="true"
-        className="sr-only"
-      >
-        {announcement?.priority === "assertive" && announcement.message}
+      <div ref={ref}>
+        {children}
+        
+        {/* Screen Reader Announcements */}
+        <div
+          role="status"
+          aria-live="polite"
+          aria-atomic="true"
+          className="sr-only"
+        >
+          {announcement?.priority === "polite" && announcement.message}
+        </div>
+        <div
+          role="alert"
+          aria-live="assertive"
+          aria-atomic="true"
+          className="sr-only"
+        >
+          {announcement?.priority === "assertive" && announcement.message}
+        </div>
       </div>
     </A11yContext.Provider>
   );
-}
+});
+
+AccessibilityProvider.displayName = 'AccessibilityProvider';
 
 // Skip to Main Content Link
 export function SkipToContent() {

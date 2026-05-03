@@ -1,4 +1,4 @@
-import { type ReactNode } from "react";
+import { type ReactNode, forwardRef } from "react";
 import { Navigate, useLocation, Outlet } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
@@ -15,12 +15,12 @@ interface ProtectedRouteProps {
   requireDev?: boolean;
 }
 
-export function ProtectedRoute({
+export const ProtectedRoute = forwardRef<HTMLDivElement, ProtectedRouteProps>(function ProtectedRoute({
   children,
   requiredRole,
   requireAdmin = false,
   requireDev = false,
-}: ProtectedRouteProps) {
+}, ref) {
   const { user, isDev, isSupervisorOrAbove, isLoading, profile } = useAuth();
   const location = useLocation();
 
@@ -63,5 +63,7 @@ export function ProtectedRoute({
 
   // Retorno único: Outlet (Layout Route) ou children. Sem forwardRef:
   // Router não passa refs para `element={<ProtectedRoute />}`.
-  return children ? <>{children}</> : <Outlet />;
-}
+  return children ? <div ref={ref}>{children}</div> : <div ref={ref}><Outlet /></div>;
+});
+
+ProtectedRoute.displayName = 'ProtectedRoute';
