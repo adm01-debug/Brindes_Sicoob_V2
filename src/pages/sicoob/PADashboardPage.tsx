@@ -45,8 +45,8 @@ export default function PADashboardPage() {
       <div className="container mx-auto p-6 space-y-8 animate-fade-in">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
-            <h1 className="text-3xl font-bold font-display tracking-tight">Portal do PA</h1>
-            <p className="text-muted-foreground">Gestão de pedidos e verba da agência.</p>
+            <h1 className="text-3xl font-bold font-display tracking-tight text-sicoob-green-dark">Portal do PA</h1>
+            <p className="text-muted-foreground italic">Gestão tática de pedidos e abastecimento da agência.</p>
           </div>
           <div className="flex gap-2">
             <Button variant="outline" asChild>
