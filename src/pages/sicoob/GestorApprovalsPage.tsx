@@ -47,28 +47,16 @@ export default function GestorApprovalsPage() {
 
   const approveMutation = useMutation({
     mutationFn: async ({ id, orderId }: { id: string, orderId: string }) => {
-      // In a real scenario, this would be a single transaction or a database function
-      // First update the request
-      const { error: reqError } = await supabase
-        .from('sicoob_approval_requests')
-        .update({ 
-          status: 'approved',
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', id);
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Usuário não autenticado");
 
-      if (reqError) throw reqError;
+      const { error } = await supabase.rpc('approve_sicoob_order', {
+        p_request_id: id,
+        p_order_id: orderId,
+        p_manager_id: user.id
+      });
 
-      // Then update the order
-      const { error: orderError } = await supabase
-        .from('sicoob_orders')
-        .update({ 
-          status: 'approved',
-          approved_at: new Date().toISOString()
-        })
-        .eq('id', orderId);
-
-      if (orderError) throw orderError;
+      if (error) throw error;
     },
     onSuccess: () => {
       toast.success("Pedido aprovado com sucesso!");
@@ -83,25 +71,17 @@ export default function GestorApprovalsPage() {
 
   const rejectMutation = useMutation({
     mutationFn: async ({ id, orderId, reason }: { id: string, orderId: string, reason: string }) => {
-      const { error: reqError } = await supabase
-        .from('sicoob_approval_requests')
-        .update({ 
-          status: 'rejected',
-          rejection_reason: reason,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', id);
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Usuário não autenticado");
 
-      if (reqError) throw reqError;
+      const { error } = await supabase.rpc('reject_sicoob_order', {
+        p_request_id: id,
+        p_order_id: orderId,
+        p_manager_id: user.id,
+        p_reason: reason
+      });
 
-      const { error: orderError } = await supabase
-        .from('sicoob_orders')
-        .update({ 
-          status: 'rejected'
-        })
-        .eq('id', orderId);
-
-      if (orderError) throw orderError;
+      if (error) throw error;
     },
     onSuccess: () => {
       toast.success("Pedido rejeitado.");
