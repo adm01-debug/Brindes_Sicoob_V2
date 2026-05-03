@@ -99,7 +99,7 @@ export function CatalogHeader({
       {/* Search full-width on mobile */}
       <div className="flex items-center gap-2 w-full sm:hidden">
         <SmartSearchInput
-          placeholder="Buscar materiais..."
+          placeholder="Buscar produtos..."
           onSelect={onSelect}
           className="flex-1"
         />
