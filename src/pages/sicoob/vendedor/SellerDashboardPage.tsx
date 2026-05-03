@@ -123,20 +123,26 @@ export default function SellerDashboardPage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-6">
-                {stats?.recentActivity.map((item, idx) => (
-                  <div key={idx} className="flex gap-4">
-                    <div className="relative mt-1">
-                      <div className="w-2 h-2 rounded-full bg-primary ring-4 ring-primary/20" />
-                      {idx < stats.recentActivity.length - 1 && (
-                        <div className="absolute top-2 left-1/2 -translate-x-1/2 w-[1px] h-10 bg-border" />
-                      )}
+                {isLoading ? (
+                  <div className="flex justify-center py-12"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div>
+                ) : stats?.recentActivity.length === 0 ? (
+                  <div className="text-center py-8 text-muted-foreground italic">Nenhuma atividade recente.</div>
+                ) : (
+                  stats?.recentActivity.map((item, idx) => (
+                    <div key={idx} className="flex gap-4">
+                      <div className="relative mt-1">
+                        <div className="w-2 h-2 rounded-full bg-primary ring-4 ring-primary/20" />
+                        {idx < stats.recentActivity.length - 1 && (
+                          <div className="absolute top-2 left-1/2 -translate-x-1/2 w-[1px] h-10 bg-border" />
+                        )}
+                      </div>
+                      <div>
+                        <div className="text-sm font-medium">{item.action}</div>
+                        <div className="text-xs text-muted-foreground">{item.client} • {item.time}</div>
+                      </div>
                     </div>
-                    <div>
-                      <div className="text-sm font-medium">{item.action}</div>
-                      <div className="text-xs text-muted-foreground">{item.client} • {item.time}</div>
-                    </div>
-                  </div>
-                ))}
+                  ))
+                )}
               </div>
               <Button variant="outline" className="w-full mt-6" asChild>
                 <Link to="/sicoob/pedidos">Ver Todos os Pedidos</Link>
