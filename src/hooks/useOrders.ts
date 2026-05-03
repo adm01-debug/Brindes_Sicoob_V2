@@ -172,7 +172,7 @@ export function canTransitionTo(current: string, next: string): boolean {
   return validNext.includes(next as OrderStatus);
 }
 
-export const ORDER_STATUS_LABELS: Record<string, string> = {
+export const ORDER_STATUS_LABELS: Record<OrderStatus, string> = {
   rascunho: "Rascunho",
   enviado_gestor: "Enviado ao Gestor",
   aprovado_gestor: "Aprovado pela Singular",
@@ -185,7 +185,11 @@ export const ORDER_STATUS_LABELS: Record<string, string> = {
   cancelado: "Cancelado",
 };
 
-export const FULFILLMENT_LABELS: Record<string, string> = ORDER_STATUS_LABELS;
+export const FULFILLMENT_LABELS = ORDER_STATUS_LABELS;
+
+// Type check to ensure ORDER_STATUS_LABELS covers all OrderStatus values
+const _statusCheck: Record<OrderStatus, string> = ORDER_STATUS_LABELS;
+console.log('Order labels initialized:', !!_statusCheck);
 
 /**
  * Hook principal para operações de Pedido.
