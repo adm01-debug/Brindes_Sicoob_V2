@@ -91,7 +91,7 @@ export default function QaPreflightPage() {
       <div className="container mx-auto p-6 space-y-6 animate-fade-in">
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight text-sicoob-green-dark">QA Pré-flight §0-bis</h1>
+            <h1 className="text-3xl font-bold tracking-tight text-sicoob-green-dark">QA Pr&eacute;-flight &sect;0-bis</h1>
             <p className="text-muted-foreground italic">Validação de ambiente antes da execução de roteiros de teste.</p>
           </div>
           <Button variant="outline" onClick={() => refetch()} disabled={isLoading || isRefetching}>
