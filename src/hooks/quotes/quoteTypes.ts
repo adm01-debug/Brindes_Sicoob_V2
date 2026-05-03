@@ -57,7 +57,7 @@ export interface Quote {
   client_company?: string;
   client_cnpj?: string;
   seller_id?: string;
-  status: "draft" | "pending" | "sent" | "approved" | "rejected" | "expired" | "pending_approval";
+  status: "draft" | "pending" | "sent" | "approved" | "rejected" | "expired" | "pending_approval" | "pending_singular_approval" | "approved_singular" | "rejected_singular";
   subtotal: number;
   discount_percent: number;
   discount_amount: number;
