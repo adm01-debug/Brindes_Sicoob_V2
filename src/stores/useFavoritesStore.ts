@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { Haptics } from "@/utils/haptics";
 
 const STORAGE_KEY = "product-favorites";
 
