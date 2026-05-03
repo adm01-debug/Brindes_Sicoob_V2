@@ -24,21 +24,18 @@ Deno.serve(async (req) => {
     const ANON = Deno.env.get("SUPABASE_ANON_KEY")!;
     const SERVICE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
-    console.log(`RLS Audit triggered: isAdminAudit=${isAdminAudit}, hasTarget=${!!targetUserId}`);
-
-    const adminClient = createClient(SUPABASE_URL, SERVICE, {
-      auth: { persistSession: false },
-    });
-
-    const isServiceRole = authHeader.includes(SERVICE);
-
+    console.log(`RLS Audit: isAdminAudit=${isAdminAudit}, hasTarget=${!!targetUserId}`);
+    
+    const isServiceRole = authHeader.includes(SERVICE) || req.headers.get("apikey") === SERVICE;
+    
     let sellerId: string;
     
-    // Decidir se usamos o token do header ou se simulamos um usuário
     if (isAdminAudit && isServiceRole && targetUserId) {
       sellerId = targetUserId;
+      console.log(`Admin audit for user: ${sellerId}`);
     } else {
       if (!authHeader.startsWith("Bearer ")) {
+        console.log("Missing Bearer token");
         return new Response(JSON.stringify({ error: "missing_auth" }), {
           status: 401,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -52,6 +49,7 @@ Deno.serve(async (req) => {
 
       const { data: userResp, error: userErr } = await userClientTemp.auth.getUser();
       if (userErr || !userResp.user) {
+        console.log("Invalid JWT");
         return new Response(JSON.stringify({ error: "invalid_jwt" }), {
           status: 401,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -60,15 +58,17 @@ Deno.serve(async (req) => {
       sellerId = userResp.user.id;
     }
 
-    // Cliente que representa o usuário para testar RLS
     const userClient = createClient(SUPABASE_URL, ANON, {
       global: { headers: { Authorization: authHeader } },
       auth: { persistSession: false },
     });
 
+    const adminClient = createClient(SUPABASE_URL, SERVICE, {
+      auth: { persistSession: false },
+    });
+
     const { data: profile } = await adminClient.from("profiles").select("cooperativa_id, pa_id").eq("user_id", sellerId).single();
 
-    // Outro vendedor "fantasma" — UUIDs fixos que não correspondem ao usuário
     const otherSellerId = "00000000-0000-0000-0000-00000000dead";
     const otherCoopId = "11111111-1111-1111-1111-111111111111";
     const otherPaId = "22222222-2222-2222-2222-222222222222";
@@ -86,7 +86,6 @@ Deno.serve(async (req) => {
       return "allow";
     };
 
-    // ============ QUOTES ============
     // 1. SELECT próprio
     const ownQuote = await adminClient.from("quotes").insert({
         seller_id: sellerId,
@@ -100,10 +99,11 @@ Deno.serve(async (req) => {
       push({
         table: "quotes", op: "SELECT", scenario: "Ler próprio orçamento",
         expected: "allow", actual: actual as any, passed: actual === "allow",
+        detail: error?.message
       });
     }
 
-    // 2. CROSS-SELLER (deny)
+    // 2. CROSS-SELLER
     const foreignSellerQuote = await adminClient.from("quotes").insert({
         seller_id: otherSellerId,
         client_name: "[RLS-AUDIT] Outro Vendedor",
@@ -120,7 +120,7 @@ Deno.serve(async (req) => {
       await adminClient.from("quotes").delete().eq("id", foreignSellerQuote.data.id);
     }
 
-    // 3. CROSS-PA (deny)
+    // 3. CROSS-PA
     const foreignPaQuote = await adminClient.from("quotes").insert({
         seller_id: otherSellerId,
         pa_id: otherPaId,
@@ -138,7 +138,7 @@ Deno.serve(async (req) => {
       await adminClient.from("quotes").delete().eq("id", foreignPaQuote.data.id);
     }
 
-    // 4. CROSS-COOP (deny)
+    // 4. CROSS-COOP
     const foreignCoopQuote = await adminClient.from("quotes").insert({
         seller_id: otherSellerId,
         singular_id: otherCoopId,
@@ -156,7 +156,7 @@ Deno.serve(async (req) => {
       await adminClient.from("quotes").delete().eq("id", foreignCoopQuote.data.id);
     }
 
-    // 5. CROSS-ORG (deny)
+    // 5. CROSS-ORG
     const foreignOrgQuote = await adminClient.from("quotes").insert({
         seller_id: otherSellerId,
         organization_id: otherOrgId,
@@ -174,7 +174,6 @@ Deno.serve(async (req) => {
       await adminClient.from("quotes").delete().eq("id", foreignOrgQuote.data.id);
     }
 
-    // Cleanup
     if (ownQuote.data?.id) await adminClient.from("quotes").delete().eq("id", ownQuote.data.id);
 
     const summary = {
@@ -190,6 +189,7 @@ Deno.serve(async (req) => {
       status: 200,
     });
   } catch (e) {
+    console.error(`Error in RLS Audit: ${e.message}`);
     return new Response(
       JSON.stringify({ error: "internal", detail: String((e as Error).message) }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
