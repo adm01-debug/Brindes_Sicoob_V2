@@ -208,8 +208,9 @@ Deno.serve(async (req) => {
       .update({ revoked_at: revokedAt })
       .eq("id", key_id);
     if (updErr) {
+      log.error("revoke_update_failed", { key_id, err: updErr });
       await auditFailure("error", "mcp_key.revoke_error", { reason: "update_failed", detail: updErr.message }, key_id);
-      return jsonResponse({ error: "update_failed", detail: updErr.message }, 500, requestId);
+      return log.respond(jsonResponse({ error: "update_failed", detail: updErr.message }, 500, requestId));
     }
 
     await writeAuditEntry(admin, {
