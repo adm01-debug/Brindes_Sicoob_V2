@@ -45,9 +45,12 @@ export function QuoteSingularApprovalActions({ quoteId, status, quoteNumber, onA
 
     setIsProcessing(true);
     try {
-      // For adjustments, we might use 'rejected_singular' with specific notes or a new status if needed.
-      // Reusing rejected_singular as it sends it back to the PAC for editing.
-      const ok = await updateQuoteStatus(quoteId, "rejected_singular", `Ajustes solicitados: ${notes}`);
+      // Create a composite message if suggested items are provided
+      const fullNotes = suggestedItems.trim() 
+        ? `${notes}\n\nModificações sugeridas:\n${suggestedItems}`
+        : notes;
+
+      const ok = await updateQuoteStatus(quoteId, "rejected_singular", fullNotes);
       if (ok) {
         toast.success("Solicitação de ajuste enviada ao PAC");
         setAdjustDialogOpen(false);
