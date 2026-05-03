@@ -36,11 +36,11 @@ export default function GestorConsolidatedOrdersPage() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <Card className="border-[1.5px] bg-sicoob-green/5 border-sicoob-green/20">
                 <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-medium">Aguardando Vendedor</CardTitle>
+                    <CardTitle className="text-sm font-medium text-sicoob-green-dark">Aguardando Vendedor</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <div className="text-2xl font-bold">R$ 73.400,00</div>
-                    <p className="text-xs text-muted-foreground mt-1">Total em 2 lotes consolidados</p>
+                    <div className="text-2xl font-bold text-sicoob-green-dark">R$ 73.400,00</div>
+                    <p className="text-xs text-sicoob-green/70 mt-1 font-medium">Total em 2 lotes consolidados</p>
                 </CardContent>
             </Card>
             <Card className="border-[1.5px]">
