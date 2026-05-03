@@ -78,23 +78,27 @@ export const UserAssignmentTab = () => {
       userId,
       cooperativaId,
       paId,
+      role,
     }: {
       userId: string;
-      cooperativaId: string | null;
-      paId: string | null;
+      cooperativaId?: string | null;
+      paId?: string | null;
+      role?: string;
     }) => {
+      const updates: any = {};
+      if (cooperativaId !== undefined) updates.cooperativa_id = cooperativaId;
+      if (paId !== undefined) updates.pa_id = paId;
+      if (role !== undefined) updates.role = role;
+
       const { error } = await supabase
         .from("profiles")
-        .update({
-          cooperativa_id: cooperativaId || null,
-          pa_id: paId || null,
-        })
+        .update(updates)
         .eq("id", userId);
       if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin_profiles_sicoob"] });
-      toast.success("Vínculo atualizado com sucesso");
+      toast.success("Usuário atualizado com sucesso");
     },
     onError: (error: any) => {
       toast.error(`Erro ao atualizar: ${error.message}`);
