@@ -22,11 +22,12 @@ interface Props {
   onActionComplete?: () => void;
 }
 
-export function QuoteSingularApprovalActions({ quoteId, status, onActionComplete }: Props) {
+export function QuoteSingularApprovalActions({ quoteId, status, quoteNumber, onActionComplete }: Props) {
   const { isGestorCompras, isDev } = useAuth();
   const { updateQuoteStatus, logQuoteHistory } = useQuotes();
   const [isProcessing, setIsProcessing] = useState(false);
   const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
+  const [adjustDialogOpen, setAdjustDialogOpen] = useState(false);
   const [notes, setNotes] = useState("");
 
   // Only Singular Buyers (Gestor de Compras) can approve/reject PAC solicitations
