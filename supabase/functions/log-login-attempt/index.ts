@@ -2,6 +2,8 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 import { getCorsHeaders, handleCorsPreflightIfNeeded } from "../_shared/cors.ts";
 import { RateLimiter, applyRateLimit } from "../_shared/rate-limiter.ts";
 import { z } from "npm:zod@3.23.8";
+import { createStructuredLogger } from "../_shared/structured-logger.ts";
+import { getOrCreateRequestId } from "../_shared/request-id.ts";
 
 const LoginAttemptSchema = z.object({
   email: z.string().email().max(255),
@@ -20,29 +22,35 @@ const loginLogLimiter = new RateLimiter({
 });
 
 Deno.serve(async (req) => {
+  const requestId = getOrCreateRequestId(req);
+  const log = createStructuredLogger({ fn: "log-login-attempt", requestId, req });
+  
   const corsHeaders = getCorsHeaders(req);
-
   const preflightResponse = handleCorsPreflightIfNeeded(req);
   if (preflightResponse) return preflightResponse;
 
+  log.info("request_start");
+
   try {
-    // Rate limit by IP
     const rateLimitResponse = await applyRateLimit(req, loginLogLimiter);
     if (rateLimitResponse) {
+      log.warn("rate_limit_exceeded");
       const headers = new Headers(rateLimitResponse.headers);
       Object.entries(corsHeaders).forEach(([k, v]) => headers.set(k, v));
-      return new Response(rateLimitResponse.body, {
+      return log.respond(new Response(rateLimitResponse.body, {
         status: rateLimitResponse.status,
         headers,
-      });
+      }));
     }
 
-    const parsed = LoginAttemptSchema.safeParse(await req.json());
+    const body = await req.json().catch(() => null);
+    const parsed = LoginAttemptSchema.safeParse(body);
     if (!parsed.success) {
-      return new Response(
+      log.warn("validation_failed", { errors: parsed.error.flatten().fieldErrors });
+      return log.respond(new Response(
         JSON.stringify({ error: parsed.error.flatten().fieldErrors }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      ));
     }
     const { email, user_id, ip_address, success, failure_reason, user_agent } = parsed.data;
 
@@ -62,22 +70,23 @@ Deno.serve(async (req) => {
     });
 
     if (error) {
-      console.error("Failed to log login attempt:", error.message);
-      return new Response(
+      log.error("db_insert_failed", { err: error });
+      return log.respond(new Response(
         JSON.stringify({ error: "Failed to log attempt" }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      ));
     }
 
-    return new Response(
+    log.info("login_attempt_logged", { success, email_domain: email.split('@')[1] });
+    return log.respond(new Response(
       JSON.stringify({ ok: true }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+    ));
   } catch (err) {
-    console.error("log-login-attempt error:", err);
-    return new Response(
+    log.error("request_uncaught_error", { err });
+    return log.respond(new Response(
       JSON.stringify({ error: "Internal error" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+    ));
   }
 });
