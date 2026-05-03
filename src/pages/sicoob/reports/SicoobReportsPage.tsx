@@ -25,37 +25,204 @@ const REPORTS = [
 ];
 
 export default function SicoobReportsPage() {
+  const { profile } = useAuth();
+  const [date, setDate] = useState<DateRange | undefined>({
+    from: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
+    to: new Date()
+  });
+
+  const { data: budgetHistory } = useQuery({
+    queryKey: ["pa-budget-history", profile?.pa_id],
+    queryFn: async () => {
+      if (!profile?.pa_id) return [];
+      const { data, error } = await supabase
+        .from("pa_budgets")
+        .select("*")
+        .eq("pa_id", profile.pa_id)
+        .order("ano", { ascending: false })
+        .order("mes", { ascending: false })
+        .limit(12);
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!profile?.pa_id
+  });
+
+  const { data: ordersInRange } = useQuery({
+    queryKey: ["pa-orders-range", profile?.pa_id, date?.from, date?.to],
+    queryFn: async () => {
+      if (!profile?.pa_id || !date?.from) return [];
+      let query = supabase
+        .from("sicoob_orders")
+        .select("*")
+        .eq("pa_id", profile.pa_id)
+        .gte("created_at", date.from.toISOString());
+      
+      if (date.to) {
+        query = query.lte("created_at", date.to.toISOString());
+      }
+
+      const { data, error } = await query.order("created_at", { ascending: false });
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!profile?.pa_id
+  });
+
+  const totalSpent = ordersInRange?.reduce((acc, order) => acc + (order.total_amount || 0), 0) || 0;
+
   return (
     <MainLayout>
-      <div className="container mx-auto p-6 space-y-6 animate-fade-in">
-        <div>
-          <h1 className="text-3xl font-bold font-display tracking-tight text-sicoob-green-dark">Relatórios SICOOB</h1>
-          <p className="text-muted-foreground italic">Exportação de dados para auditoria, controle financeiro e conformidade.</p>
+      <div className="container mx-auto p-4 sm:p-6 space-y-8 animate-fade-in">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <div>
+            <h1 className="text-3xl font-bold font-display tracking-tight text-sicoob-green-dark">Relatórios SICOOB</h1>
+            <p className="text-muted-foreground italic text-sm">Transparência e controle sobre a verba e os pedidos da agência.</p>
+          </div>
+          <div className="flex gap-2 w-full md:w-auto">
+             <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" className={cn("justify-start text-left font-normal w-full md:w-[280px]", !date && "text-muted-foreground")}>
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {date?.from ? (
+                    date.to ? (
+                      <>{format(date.from, "dd/MM/yy")} - {format(date.to, "dd/MM/yy")}</>
+                    ) : (
+                      format(date.from, "dd/MM/yy")
+                    )
+                  ) : (
+                    <span>Selecionar período</span>
+                  )}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="end">
+                <Calendar
+                  initialFocus
+                  mode="range"
+                  defaultMonth={date?.from}
+                  selected={date}
+                  onSelect={setDate}
+                  numberOfMonths={2}
+                  locale={ptBR}
+                />
+              </PopoverContent>
+            </Popover>
+            <Button className="bg-sicoob-green hover:bg-sicoob-green-dark">
+              <Download className="h-4 w-4 mr-2" /> Exportar
+            </Button>
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {REPORTS.map((report, idx) => (
-            <Card key={idx} className="border-[1.5px] hover:border-sicoob-green/50 transition-colors group">
-              <CardHeader className="flex flex-row items-start justify-between">
-                <div className="flex gap-4">
-                  <div className="p-3 rounded-xl bg-sicoob-green/10 text-sicoob-green group-hover:bg-sicoob-green group-hover:text-white transition-colors">
-                    <report.icon className="h-6 w-6" />
-                  </div>
-                  <div>
-                    <CardTitle className="text-lg text-sicoob-green-dark">{report.title}</CardTitle>
-                    <CardDescription className="mt-1 italic">{report.desc}</CardDescription>
-                  </div>
-                </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <Card className="border-[1.5px] bg-sicoob-green/5 border-sicoob-green/20">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-sicoob-green-dark">Gasto no Período</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-sicoob-green-dark">{formatCurrency(totalSpent)}</div>
+              <p className="text-xs text-sicoob-green/70 mt-1">{ordersInRange?.length || 0} pedidos realizados</p>
+            </CardContent>
+          </Card>
+          <Card className="border-[1.5px]">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium">Ticket Médio</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">
+                {formatCurrency(ordersInRange?.length ? totalSpent / ordersInRange.length : 0)}
+              </div>
+              <p className="text-xs text-muted-foreground mt-1 text-blue-600/80 font-medium">Por pedido consolidado</p>
+            </CardContent>
+          </Card>
+          <Card className="border-[1.5px]">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium">Economia Estimada</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-green-600">{formatCurrency(totalSpent * 0.12)}</div>
+              <p className="text-xs text-muted-foreground mt-1">Via compra centralizada (Singular)</p>
+            </CardContent>
+          </Card>
+        </div>
+
+        <Tabs defaultValue="extract" className="w-full">
+          <TabsList className="grid w-full grid-cols-2 mb-6">
+            <TabsTrigger value="extract" className="gap-2"><FileText className="h-4 w-4" /> Extrato de Verba</TabsTrigger>
+            <TabsTrigger value="history" className="gap-2"><History className="h-4 w-4" /> Histórico Mensal</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="extract" className="space-y-6">
+            <Card className="border-[1.5px]">
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center gap-2 text-sicoob-green-dark">
+                  <Search className="h-5 w-5" /> Movimentações do Período
+                </CardTitle>
+                <CardDescription>Lista detalhada de todos os débitos em verba para o intervalo selecionado.</CardDescription>
               </CardHeader>
-              <CardContent className="flex justify-between items-center">
-                <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Formato: {report.type}</span>
-                <Button variant="ghost" className="gap-2 text-sicoob-green hover:text-sicoob-green-dark">
-                  Gerar <Download className="h-4 w-4" />
-                </Button>
+              <CardContent>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Data</TableHead>
+                      <TableHead>Número</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead className="text-right">Valor</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {ordersInRange?.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={4} className="text-center py-8 text-muted-foreground italic">
+                          Nenhuma movimentação encontrada no período.
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      ordersInRange?.map((order) => (
+                        <TableRow key={order.id}>
+                          <TableCell className="text-xs">{new Date(order.created_at).toLocaleDateString('pt-BR')}</TableCell>
+                          <TableCell className="font-mono text-xs">#{order.order_number || order.id.slice(0, 8)}</TableCell>
+                          <TableCell><Badge variant="secondary" className="text-[10px] uppercase">{order.status}</Badge></TableCell>
+                          <TableCell className="text-right font-medium">{formatCurrency(order.total_amount)}</TableCell>
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
               </CardContent>
             </Card>
-          ))}
-        </div>
+          </TabsContent>
+
+          <TabsContent value="history" className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {budgetHistory?.map((bh: any) => (
+                <Card key={bh.id} className="border-[1.5px] hover:border-sicoob-green/30 transition-colors">
+                  <CardHeader className="pb-2">
+                    <div className="flex justify-between items-center">
+                       <CardTitle className="text-md capitalize">
+                         {format(new Date(bh.ano, bh.mes - 1), "MMMM 'de' yyyy", { locale: ptBR })}
+                       </CardTitle>
+                       <Badge variant="outline" className="bg-sicoob-green/5 text-sicoob-green border-sicoob-green/20">
+                         {((bh.verba_consumida / bh.verba_total) * 100).toFixed(0)}% Utilizado
+                       </Badge>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="space-y-4 pt-2">
+                     <div className="grid grid-cols-2 gap-4">
+                       <div className="space-y-1">
+                         <span className="text-[10px] uppercase font-bold text-muted-foreground">Verba Total</span>
+                         <div className="font-bold text-sm">{formatCurrency(bh.verba_total)}</div>
+                       </div>
+                       <div className="space-y-1">
+                         <span className="text-[10px] uppercase font-bold text-muted-foreground">Consumo</span>
+                         <div className="font-bold text-sm text-red-600">{formatCurrency(bh.verba_consumida)}</div>
+                       </div>
+                     </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </TabsContent>
+        </Tabs>
       </div>
     </MainLayout>
   );
