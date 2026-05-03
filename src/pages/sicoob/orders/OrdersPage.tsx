@@ -369,9 +369,9 @@ export default function OrdersPage() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">Todos</SelectItem>
-                    {paOptions.map((pa) => (
-                      <SelectItem key={pa} value={pa}>
-                        {pa}
+                    {pas.map((pa) => (
+                      <SelectItem key={pa.id} value={pa.id}>
+                        {pa.nome}
                       </SelectItem>
                     ))}
                   </SelectContent>
