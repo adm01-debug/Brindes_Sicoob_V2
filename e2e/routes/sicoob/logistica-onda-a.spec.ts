@@ -89,41 +89,24 @@ test.describe("Sicoob • Logística Onda A — usuário sem 'gestor_compras' (g
   });
 
   for (const r of ROUTES) {
-    test(`GAP UX: ${r.href} deveria ir para /403, não silenciosamente para /`, async ({ page }) => {
+    test(`redireciona ${r.href} para /403 para usuário sem permissão`, async ({ page }) => {
       await gotoAndSettle(page, r.href);
       await waitForRouteIdle(page);
 
-      // Não deve permanecer na rota protegida nem ir para /login (já está logado).
-      await expect(page).not.toHaveURL(new RegExp(`${r.href}$`));
-      await expect(page).not.toHaveURL(/\/login/);
-
-      // Comportamento ESPERADO (paridade com /sicoob/vendas → ForbiddenPage):
-      //   URL deveria conter /403 e mostrar "Acesso Negado".
-      // Comportamento ATUAL: redireciona silenciosamente para "/" — gap.
-      // Marcamos como fixme para sinalizar quando o fix for aplicado.
-      test.fixme(
-        true,
-        "RBAC silencioso: AdminRoute redireciona para '/' em vez de '/403'. " +
-          "Padronizar com ProtectedRoute → ForbiddenPage para feedback ao usuário."
-      );
+      // Deve redirecionar para /403
       await expect(page).toHaveURL(/\/403/);
+      
+      // Deve renderizar a página Forbidden
+      const forbiddenContainer = page.getByTestId("app-forbidden");
+      await expect(forbiddenContainer).toBeVisible();
       await expect(page.getByText(/Acesso Negado/i)).toBeVisible();
     });
   }
 
-  test("GAP sidebar: itens do grupo 'Logística Onda A' NÃO deveriam aparecer para vendedor", async ({ page }) => {
+  test("sidebar: itens do grupo 'Logística Onda A' NÃO aparecem para vendedor", async ({ page }) => {
     await gotoAndSettle(page, "/");
 
-    // Hoje os 3 itens vazam para todos os usuários autenticados (sidebar não
-    // marca o grupo como adminOnly nem cada item como adminOnly). Esse teste
-    // documenta o gap esperando que os links fiquem ocultos.
-    test.fixme(
-      true,
-      "Sidebar exibe 'Painel Sicoob/Relatórios/Kanban' para usuários sem " +
-        "gestor_compras. Adicionar `adminOnly: true` no grupo OU `requiredPermission` " +
-        "por item, OU usar isAdminOnlyPath() para filtrar via SSOT."
-    );
-
+    // Itens agora devem estar ocultos via adminOnly: true no SidebarReorganized
     for (const r of ROUTES) {
       await expect(page.getByRole("link", { name: r.label })).toHaveCount(0);
     }
