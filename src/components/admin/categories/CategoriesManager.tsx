@@ -133,10 +133,37 @@ export function CategoriesManager() {
             <CardDescription>Gerencie as categorias de produtos e suas hierarquias</CardDescription>
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" className="gap-2">
+            <Button variant="outline" size="sm" className="gap-2" onClick={() => {
+              const fileInput = document.createElement('input');
+              fileInput.type = 'file';
+              fileInput.accept = '.xlsx, .xls';
+              fileInput.onchange = async (e) => {
+                const file = (e.target as HTMLInputElement).files?.[0];
+                if (file) {
+                  try {
+                    const { importFromExcel } = await import('@/lib/admin-export-utils');
+                    const imported = await importFromExcel(file, 'product_categories', { 'Nome': 'name', 'Slug': 'slug', 'Descrição': 'description', 'Ordem': 'sort_order' }) as any[];
+                    // Preview could be added here, but for now we confirm directly or via toast
+                    if (confirm(`Importar ${imported.length} categorias?`)) {
+                      const { error } = await supabase.from('product_categories').insert(imported);
+                      if (error) throw error;
+                      toast.success("Categorias importadas com sucesso");
+                      fetchCategories();
+                    }
+                  } catch (err) {
+                    toast.error("Erro na importação: " + (err as Error).message);
+                  }
+                }
+              };
+              fileInput.click();
+            }}>
               <FileUp className="h-4 w-4" /> Importar
             </Button>
-            <Button variant="outline" size="sm" className="gap-2">
+            <Button variant="outline" size="sm" className="gap-2" onClick={async () => {
+              const { exportToExcel } = await import('@/lib/admin-export-utils');
+              await exportToExcel(categories, 'categorias-produtos');
+              toast.success("Exportação concluída");
+            }}>
               <FileDown className="h-4 w-4" /> Exportar
             </Button>
             <Button onClick={() => { setEditingCategory(null); setIsFormOpen(true); }} className="gap-2">
