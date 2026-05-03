@@ -17,6 +17,9 @@ initSentry();
 // Install global error handlers for unhandled errors/rejections
 installGlobalErrorHandlers();
 
+// Inject traceability headers
+injectRequestId();
+
 const root = document.getElementById("root");
 
 if (!root) {
