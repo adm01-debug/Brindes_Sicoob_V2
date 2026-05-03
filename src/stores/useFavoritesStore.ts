@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { Haptics } from "@/utils/haptics";
 
 const STORAGE_KEY = "product-favorites";
 
@@ -64,12 +65,14 @@ export const useFavoritesStore = create<FavoritesStore>((set, get) => {
       const next = [...favorites, { productId, addedAt: new Date().toISOString(), variant }];
       saveToStorage(next);
       set({ favorites: next, favoriteCount: next.length });
+      Haptics.notificationSuccess();
     },
 
     removeFavorite: (productId: string) => {
       const next = get().favorites.filter((f) => f.productId !== productId);
       saveToStorage(next);
       set({ favorites: next, favoriteCount: next.length });
+      Haptics.impactLight();
     },
 
     toggleFavorite: (productId: string, variant?: FavoriteVariantInfo) => {
@@ -80,6 +83,12 @@ export const useFavoritesStore = create<FavoritesStore>((set, get) => {
         : [...favorites, { productId, addedAt: new Date().toISOString(), variant }];
       saveToStorage(next);
       set({ favorites: next, favoriteCount: next.length });
+      
+      if (exists) {
+        Haptics.impactLight();
+      } else {
+        Haptics.notificationSuccess();
+      }
     },
 
     isFavorite: (productId: string) =>
@@ -91,6 +100,7 @@ export const useFavoritesStore = create<FavoritesStore>((set, get) => {
     clearFavorites: () => {
       saveToStorage([]);
       set({ favorites: [], favoriteCount: 0 });
+      Haptics.impactMedium();
     },
   };
 });
