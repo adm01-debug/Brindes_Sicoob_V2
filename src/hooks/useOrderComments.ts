@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -33,14 +34,24 @@ export function useOrderComments(orderId: string) {
   });
 
   // Real-time subscription
-  import("@/hooks/useOrderComments").then(() => {
-    supabase
+  useEffect(() => {
+    if (!orderId) return;
+    const channel = supabase
       .channel(`order_comments:${orderId}`)
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'order_comments', filter: `order_id=eq.${orderId}` }, () => {
+      .on('postgres_changes', { 
+        event: 'INSERT', 
+        schema: 'public', 
+        table: 'order_comments', 
+        filter: `order_id=eq.${orderId}` 
+      }, () => {
         qc.invalidateQueries({ queryKey: ["order_comments", orderId] });
       })
       .subscribe();
-  });
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [orderId, qc]);
 
   const addComment = useMutation({
     mutationFn: async ({ content, isInternal = false, attachments = null }: { content: string; isInternal?: boolean; attachments?: any }) => {
