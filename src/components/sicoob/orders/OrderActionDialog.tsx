@@ -20,6 +20,7 @@ interface OrderActionDialogProps {
   value: string;
   onValueChange: (value: string) => void;
   onConfirm: () => void;
+  confirmDisabled?: boolean;
 }
 
 export const OrderActionDialog = ({
