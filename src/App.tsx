@@ -105,7 +105,7 @@ const App = () => {
                       <RouteSuspense>
                         <Routes>
                           {/* Public Routes */}
-                          {publicRoutes.map(r => (
+                          {(publicRoutes as any).map((r: any) => (
                             <Route key={r.path} path={r.path} element={<r.component />} />
                           ))}
 
@@ -119,13 +119,13 @@ const App = () => {
                             <Route path="/dashboard" element={<CustomizableDashboard />} />
 
                             {/* Modular Routes */}
-                            {productRoutes.map(r => (
+                            {(productRoutes as any).map((r: any) => (
                               <Route key={r.path} path={r.path} element={<r.component />} />
                             ))}
-                            {quoteRoutes.map(r => (
+                            {(quoteRoutes as any).map((r: any) => (
                               <Route key={r.path} path={r.path} element={<r.component />} />
                             ))}
-                            {toolRoutes.map(r => (
+                            {(toolRoutes as any).map((r: any) => (
                               <Route key={r.path} path={r.path} element={<r.component />} />
                             ))}
 
@@ -133,19 +133,19 @@ const App = () => {
 
                             {/* Admin Routes */}
                             <Route element={<AdminRoute />}>
-                              {adminRoutes.map(r => (
+                              {(adminRoutes as any).map((r: any) => (
                                 <Route key={r.path} path={r.path} element={<r.component />} />
                               ))}
                               
                               <Route element={<AdminRoute requiredRole="gestor_compras" />}>
-                                {sicoobRoutes.filter(r => r.path !== "/sicoob/vendas").map(r => (
+                                {(sicoobRoutes as any).filter((r: any) => r.path !== "/sicoob/vendas").map((r: any) => (
                                   <Route key={r.path} path={r.path} element={<r.component />} />
                                 ))}
                                 <Route path="/admin/design-system/colors" element={<ColorDocumentationPage />} />
                               </Route>
 
                               <Route element={<ProtectedRoute requiredRole="vendedor" />}>
-                                {sicoobRoutes.filter(r => r.path === "/sicoob/vendas").map(r => (
+                                {(sicoobRoutes as any).filter((r: any) => r.path === "/sicoob/vendas").map((r: any) => (
                                   <Route key={r.path} path={r.path} element={<r.component />} />
                                 ))}
                               </Route>
@@ -153,7 +153,7 @@ const App = () => {
 
                             {/* Dev Routes */}
                             <Route element={<DevRoute />}>
-                              {devRoutes.map(r => (
+                              {(devRoutes as any).map((r: any) => (
                                 <Route key={r.path} path={r.path} element={<r.component />} />
                               ))}
                             </Route>
