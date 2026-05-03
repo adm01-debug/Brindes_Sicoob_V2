@@ -92,7 +92,7 @@ async function testRLS() {
     console.log('\n📊 RESULTADOS DA AUDITORIA RLS:');
     console.log(`Total: ${auditResult.summary.total} | Passou: ${auditResult.summary.passed} | Falhou: ${auditResult.summary.failed}`);
     
-    auditResult.results.forEach((r: any) => {
+    auditResult.results.forEach((r) => {
       const icon = r.passed ? '✅' : '❌';
       console.log(`${icon} [${r.table}] ${r.op}: ${r.scenario} -> ${r.actual} (Esperado: ${r.expected})`);
     });
