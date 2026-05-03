@@ -2,7 +2,9 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { MessageSquare, Send, User, Paperclip, Search, ChevronUp, ChevronDown } from "lucide-react";
+import { MessageSquare, Send, User, Paperclip, Search, ChevronUp, ChevronDown, Filter } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+
 import { useOrderComments } from "@/hooks/useOrderComments";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
