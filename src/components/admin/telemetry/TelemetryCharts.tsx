@@ -273,6 +273,7 @@ export function TelemetryCharts({ rows, timeFilter }: TelemetryChartsProps) {
         </Card>
       )}
     </div>
+    </>
   );
 }
 
