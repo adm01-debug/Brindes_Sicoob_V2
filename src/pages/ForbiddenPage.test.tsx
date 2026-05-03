@@ -3,15 +3,20 @@ import { render, screen, fireEvent } from "@testing-library/react";
 import { describe, it, expect, vi } from "vitest";
 import ForbiddenPage from "./ForbiddenPage";
 import { MemoryRouter } from "react-router-dom";
+import { HelmetProvider } from "react-helmet-async";
+
 
 
 describe("ForbiddenPage", () => {
   it("renders access denied message and path", () => {
     render(
-      <MemoryRouter initialEntries={["/restricted-path"]}>
-        <ForbiddenPage />
-      </MemoryRouter>
+      <HelmetProvider>
+        <MemoryRouter initialEntries={["/restricted-path"]}>
+          <ForbiddenPage />
+        </MemoryRouter>
+      </HelmetProvider>
     );
+
 
     expect(screen.getByText(/Acesso Negado/i)).toBeDefined();
     expect(screen.getByText(/\/restricted-path/i)).toBeDefined();
@@ -19,10 +24,13 @@ describe("ForbiddenPage", () => {
 
   it("has a link to return home", () => {
     render(
-      <MemoryRouter>
-        <ForbiddenPage />
-      </MemoryRouter>
+      <HelmetProvider>
+        <MemoryRouter>
+          <ForbiddenPage />
+        </MemoryRouter>
+      </HelmetProvider>
     );
+
 
     const homeLink = screen.getByRole("link", { name: /Ir para o início/i });
     expect(homeLink.getAttribute("href")).toBe("/");
@@ -32,10 +40,13 @@ describe("ForbiddenPage", () => {
     const backSpy = vi.spyOn(window.history, "back").mockImplementation(() => {});
     
     render(
-      <MemoryRouter>
-        <ForbiddenPage />
-      </MemoryRouter>
+      <HelmetProvider>
+        <MemoryRouter>
+          <ForbiddenPage />
+        </MemoryRouter>
+      </HelmetProvider>
     );
+
 
     const backButton = screen.getByRole("button", { name: /Voltar/i });
     fireEvent.click(backButton);
