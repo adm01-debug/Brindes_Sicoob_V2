@@ -9,6 +9,12 @@
  */
 import { supabase } from '@/integrations/supabase/client';
 import { logger } from "@/lib/logger";
+import { CircuitBreaker } from "@/lib/security/circuit-breaker";
+
+const externalRpcBreaker = new CircuitBreaker('ExternalRPC', {
+  failureThreshold: 10,
+  cooldownPeriodMs: 60000,
+});
 
 const MAX_RETRIES = 3;
 const INITIAL_BACKOFF_MS = 800;
