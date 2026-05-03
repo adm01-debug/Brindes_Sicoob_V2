@@ -8,6 +8,7 @@ import { logger } from "@/lib/logger";
 import { selectCrmById } from "@/lib/crm-db";
 import type { ProposalTemplateData } from "@/components/pdf/ProposalHtmlTemplate";
 import type { Quote } from "@/hooks/useQuotes";
+import { bitrixCircuitBreaker } from "@/utils/resilience";
 
 interface SyncBitrixParams {
   quote: Quote;
