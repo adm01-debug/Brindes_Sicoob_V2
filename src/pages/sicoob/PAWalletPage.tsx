@@ -83,8 +83,8 @@ export default function PAWalletPage() {
               <Wallet className="w-4 h-4 text-sicoob-green" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-primary">{formatCurrency(remaining)}</div>
-              <p className="text-xs text-muted-foreground mt-1 text-primary/80 font-medium">Disponível para novos pedidos</p>
+              <div className="text-2xl font-bold text-sicoob-green-dark">{formatCurrency(remaining)}</div>
+              <p className="text-xs text-muted-foreground mt-1 text-sicoob-green-dark/80 font-medium">Disponível para novos pedidos</p>
             </CardContent>
           </Card>
         </div>
