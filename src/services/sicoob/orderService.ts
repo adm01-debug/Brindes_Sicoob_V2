@@ -110,26 +110,30 @@ export const sicoobOrderService = {
       .eq("id", orderId);
     if (error) throw error;
 
-    // Trigger notification
+    // Trigger notification and registration
     try {
       const order = await this.getOrderById(orderId);
       const { data: { user } } = await supabase.auth.getUser();
       
-      // Call standard transactional email function
-      await supabase.functions.invoke('send-transactional-email', {
-        body: {
-          event_type: 'sicoob_order_status_change',
-          recipient_email: user?.email, // Should ideally be order creator's email
-          recipient_name: user?.email?.split('@')[0],
-          data: {
-            order_number: orderId.slice(0, 8),
-            new_status: status,
-            action_url: `${window.location.origin}/sicoob/pedidos/${orderId}`
+      // Call standard transactional email function if exists
+      try {
+        await supabase.functions.invoke('send-transactional-email', {
+          body: {
+            event_type: 'sicoob_order_status_change',
+            recipient_email: user?.email, 
+            recipient_name: user?.email?.split('@')[0],
+            data: {
+              order_number: orderId.slice(0, 8),
+              new_status: status,
+              action_url: `${window.location.origin}/sicoob/pedidos/${orderId}`
+            }
           }
-        }
-      });
+        });
+      } catch (e) {
+        console.warn("Edge function not available yet");
+      }
 
-      // In-app notification as fallback/primary
+      // In-app notification
       await supabase.from('notifications').insert({
         user_id: order.created_by,
         title: "Status do Pedido Sicoob Atualizado",
@@ -140,9 +144,8 @@ export const sicoobOrderService = {
         action_url: `/sicoob/pedidos/${orderId}`
       });
     } catch (err) {
-      console.warn("Falha ao processar notificações, mas pedido foi atualizado:", err);
+      console.warn("Falha ao processar notificações:", err);
     }
-
   },
 
   async updateOrderTotal(orderId: string, total: number): Promise<void> {
