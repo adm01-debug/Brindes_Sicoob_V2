@@ -45,13 +45,26 @@ export default function AdminCampanhasPage() {
 
   const handleSave = async (formData: any) => {
     try {
-      if (editingCampaign) {
+      if (editingCampaign?.id) {
         const { error } = await supabase.from('campaigns').update(formData).eq('id', editingCampaign.id);
         if (error) throw error;
+        await logAdminAction({
+          event_type: 'UPDATE',
+          entity_type: 'campaigns',
+          entity_id: editingCampaign.id,
+          payload: formData,
+          previous_state: editingCampaign
+        });
         toast.success("Campanha atualizada com sucesso");
       } else {
-        const { error } = await supabase.from('campaigns').insert(formData);
+        const { data, error } = await supabase.from('campaigns').insert(formData).select().single();
         if (error) throw error;
+        await logAdminAction({
+          event_type: 'CREATE',
+          entity_type: 'campaigns',
+          entity_id: data.id,
+          payload: formData
+        });
         toast.success("Campanha criada com sucesso");
       }
       setIsFormOpen(false);
@@ -68,6 +81,11 @@ export default function AdminCampanhasPage() {
     try {
       const { error } = await supabase.from('campaigns').delete().eq('id', id);
       if (error) throw error;
+      await logAdminAction({
+        event_type: 'DELETE',
+        entity_type: 'campaigns',
+        entity_id: id
+      });
       toast.success("Campanha excluída com sucesso");
       fetchData();
     } catch (error) {
@@ -80,12 +98,13 @@ export default function AdminCampanhasPage() {
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case 'active': return <Badge className="bg-green-500">Ativa</Badge>;
-      case 'paused': return <Badge variant="secondary">Pausada</Badge>;
-      case 'completed': return <Badge variant="outline">Concluída</Badge>;
-      default: return <Badge variant="outline">Rascunho</Badge>;
+      case 'active': return <Badge className="bg-green-500 gap-1"><CheckCircle2 className="h-3 w-3" /> Ativa</Badge>;
+      case 'paused': return <Badge variant="secondary" className="gap-1"><AlertCircle className="h-3 w-3" /> Pausada</Badge>;
+      case 'completed': return <Badge variant="outline" className="gap-1"><CheckCircle2 className="h-3 w-3" /> Concluída</Badge>;
+      default: return <Badge variant="outline" className="gap-1">Rascunho</Badge>;
     }
   };
+
 
   return (
     <MainLayout>
