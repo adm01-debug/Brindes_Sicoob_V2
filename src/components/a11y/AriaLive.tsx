@@ -22,7 +22,9 @@ export function useAriaLive() {
   return context;
 }
 
-export const AriaLiveProvider = ({ children }: { children: ReactNode }) => {
+import { forwardRef } from 'react';
+
+export const AriaLiveProvider = forwardRef<HTMLDivElement, { children: ReactNode }>(({ children }, ref) => {
   const [politeMessage, setPoliteMessage] = useState("");
   const [assertiveMessage, setAssertiveMessage] = useState("");
   const [statusMessage, setStatusMessage] = useState("");
