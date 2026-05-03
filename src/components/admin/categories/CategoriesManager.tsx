@@ -2,22 +2,26 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Plus, Search, Pencil, Trash2, FolderTree, FileDown, FileUp, MoreHorizontal, ChevronRight, ChevronDown, ListFilter, BarChart3 } from "lucide-react";
+import { FolderTree, Pencil, Trash2, BarChart3, ListFilter } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { AdminDataTable } from "@/components/admin/common/AdminDataTable";
+import { ImportExportManager } from "@/components/admin/common/ImportExportManager";
+import * as XLSX from 'xlsx';
+import { logAdminAction } from "@/utils/adminAudit";
+import { useAdminPermissions } from "@/hooks/useAdminPermissions";
 
 export function CategoriesManager() {
   const [categories, setCategories] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState("");
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<any>(null);
+  const { canEdit, canDelete, canImport, canExport } = useAdminPermissions();
 
   const fetchCategories = async () => {
     setIsLoading(true);
@@ -49,12 +53,31 @@ export function CategoriesManager() {
           .update(formData)
           .eq('id', editingCategory.id);
         if (error) throw error;
+
+        await logAdminAction({
+          event_type: 'UPDATE',
+          entity_type: 'product_categories',
+          entity_id: editingCategory.id,
+          payload: formData,
+          previous_state: editingCategory
+        });
+
         toast.success("Categoria atualizada com sucesso");
       } else {
-        const { error } = await supabase
+        const { data, error } = await supabase
           .from('product_categories')
-          .insert(formData);
+          .insert(formData)
+          .select()
+          .single();
         if (error) throw error;
+
+        await logAdminAction({
+          event_type: 'CREATE',
+          entity_type: 'product_categories',
+          entity_id: data.id,
+          payload: formData
+        });
+
         toast.success("Categoria criada com sucesso");
       }
       setIsFormOpen(false);
@@ -66,14 +89,22 @@ export function CategoriesManager() {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm("Tem certeza que deseja excluir esta categoria?")) return;
+  const handleDelete = async (id: string, name: string) => {
+    if (!confirm(`Tem certeza que deseja excluir a categoria "${name}"?`)) return;
     try {
       const { error } = await supabase
         .from('product_categories')
         .delete()
         .eq('id', id);
       if (error) throw error;
+
+      await logAdminAction({
+        event_type: 'DELETE',
+        entity_type: 'product_categories',
+        entity_id: id,
+        metadata: { name }
+      });
+
       toast.success("Categoria excluída com sucesso");
       fetchCategories();
     } catch (error) {
@@ -82,14 +113,94 @@ export function CategoriesManager() {
     }
   };
 
-  const filteredCategories = categories.filter(c => 
-    c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (c.description && c.description.toLowerCase().includes(searchTerm.toLowerCase()))
-  );
+  const handleImport = async (data: any[]) => {
+    const records = data.map(item => ({
+      name: item.Nome || item.name,
+      slug: item.Slug || item.slug || (item.Nome || item.name)?.toLowerCase().replace(/\s+/g, '-'),
+      description: item.Descrição || item.description || '',
+      sort_order: parseInt(item.Ordem || item.sort_order || '0'),
+      is_active: true
+    }));
+
+    const { error } = await supabase.from('product_categories').upsert(records, { onConflict: 'slug' });
+    if (error) throw error;
+
+    await logAdminAction({
+      event_type: 'IMPORT',
+      entity_type: 'product_categories',
+      payload: { count: records.length }
+    });
+
+    fetchCategories();
+  };
+
+  const handleExport = () => {
+    const exportData = categories.map(c => ({
+      'Nome': c.name,
+      'Slug': c.slug,
+      'Descrição': c.description || '',
+      'Ordem': c.sort_order,
+      'Status': c.is_active ? 'Ativa' : 'Inativa'
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Categorias");
+    XLSX.writeFile(workbook, `categorias_${new Date().toISOString().split('T')[0]}.xlsx`);
+
+    logAdminAction({
+      event_type: 'EXPORT',
+      entity_type: 'product_categories',
+      metadata: { count: exportData.length }
+    });
+  };
+
+  const columns = [
+    { 
+      header: "Nome", 
+      accessorKey: "name",
+      cell: (row: any) => (
+        <div className="flex items-center gap-2">
+          {row.parent_id && <Badge variant="outline" className="text-[10px] uppercase">Sub</Badge>}
+          <span className="font-medium">{row.name}</span>
+        </div>
+      ),
+      sortable: true
+    },
+    { header: "Slug", accessorKey: "slug", sortable: true },
+    { header: "Ordem", accessorKey: "sort_order", sortable: true },
+    { 
+      header: "Status", 
+      accessorKey: "is_active",
+      cell: (row: any) => (
+        <Badge variant={row.is_active ? "default" : "secondary"}>
+          {row.is_active ? "Ativa" : "Inativa"}
+        </Badge>
+      ),
+      sortable: true
+    },
+    {
+      header: "Ações",
+      accessorKey: "id",
+      cell: (row: any) => (
+        <div className="flex justify-end gap-2">
+          {canEdit && (
+            <Button variant="ghost" size="icon" onClick={() => { setEditingCategory(row); setIsFormOpen(true); }}>
+              <Pencil className="h-4 w-4" />
+            </Button>
+          )}
+          {canDelete && (
+            <Button variant="ghost" size="icon" className="text-destructive hover:bg-destructive/10" onClick={() => handleDelete(row.id, row.name)}>
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          )}
+        </div>
+      )
+    }
+  ];
 
   return (
     <div className="space-y-6">
-      {/* Category Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card>
           <CardContent className="p-6 flex items-center gap-4">
@@ -126,121 +237,34 @@ export function CategoriesManager() {
         </Card>
       </div>
 
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <div>
-            <CardTitle>Lista de Categorias</CardTitle>
-            <CardDescription>Gerencie as categorias de produtos e suas hierarquias</CardDescription>
-          </div>
-          <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" className="gap-2" onClick={() => {
-              const fileInput = document.createElement('input');
-              fileInput.type = 'file';
-              fileInput.accept = '.xlsx, .xls';
-              fileInput.onchange = async (e) => {
-                const file = (e.target as HTMLInputElement).files?.[0];
-                if (file) {
-                  try {
-                    const { importFromExcel } = await import('@/lib/admin-export-utils');
-                    const imported = await importFromExcel(file, 'product_categories', { 'Nome': 'name', 'Slug': 'slug', 'Descrição': 'description', 'Ordem': 'sort_order' }) as any[];
-                    // Preview could be added here, but for now we confirm directly or via toast
-                    if (confirm(`Importar ${imported.length} categorias?`)) {
-                      const { error } = await supabase.from('product_categories').insert(imported);
-                      if (error) throw error;
-                      toast.success("Categorias importadas com sucesso");
-                      fetchCategories();
-                    }
-                  } catch (err) {
-                    toast.error("Erro na importação: " + (err as Error).message);
-                  }
-                }
-              };
-              fileInput.click();
-            }}>
-              <FileUp className="h-4 w-4" /> Importar
-            </Button>
-            <Button variant="outline" size="sm" className="gap-2" onClick={async () => {
-              const { exportToExcel } = await import('@/lib/admin-export-utils');
-              await exportToExcel(categories, 'categorias-produtos');
-              toast.success("Exportação concluída");
-            }}>
-              <FileDown className="h-4 w-4" /> Exportar
-            </Button>
-            <Button onClick={() => { setEditingCategory(null); setIsFormOpen(true); }} className="gap-2">
-              <Plus className="h-4 w-4" /> Nova Categoria
-            </Button>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-center gap-2">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input 
-                placeholder="Buscar por nome ou descrição..." 
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-9"
-              />
-            </div>
-            <Button variant="outline" className="gap-2">
-              <ListFilter className="h-4 w-4" /> Filtros
-            </Button>
-          </div>
+      <div className="flex justify-end items-center gap-2 mb-4">
+        <ImportExportManager
+          entityName="Categorias"
+          onImport={handleImport}
+          onExport={handleExport}
+          expectedColumns={[
+            { key: 'name', label: 'Nome', required: true },
+            { key: 'slug', label: 'Slug', required: false },
+            { key: 'sort_order', label: 'Ordem', required: false, type: 'number' }
+          ]}
+          templateData={[
+            { Nome: 'Canetas', Slug: 'canetas', Ordem: 1 }
+          ]}
+        />
+        {canEdit && (
+          <Button onClick={() => { setEditingCategory(null); setIsFormOpen(true); }} className="gap-2">
+            <Plus className="h-4 w-4" /> Nova Categoria
+          </Button>
+        )}
+      </div>
 
-          <div className="rounded-md border">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-[40%]">Nome</TableHead>
-                  <TableHead>Slug</TableHead>
-                  <TableHead>Ordem</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Ações</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {isLoading ? (
-                  <TableRow>
-                    <TableCell colSpan={5} className="text-center py-8">Carregando categorias...</TableCell>
-                  </TableRow>
-                ) : filteredCategories.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">Nenhuma categoria encontrada</TableCell>
-                  </TableRow>
-                ) : (
-                  filteredCategories.map((category) => (
-                    <TableRow key={category.id}>
-                      <TableCell className="font-medium">
-                        <div className="flex items-center gap-2">
-                          {category.parent_id && <ChevronRight className="h-4 w-4 text-muted-foreground ml-4" />}
-                          {category.name}
-                        </div>
-                      </TableCell>
-                      <TableCell>{category.slug}</TableCell>
-                      <TableCell>{category.sort_order}</TableCell>
-                      <TableCell>
-                        <Badge variant={category.is_active ? "default" : "secondary"}>
-                          {category.is_active ? "Ativa" : "Inativa"}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex justify-end gap-2">
-                          <Button variant="ghost" size="icon" onClick={() => { setEditingCategory(category); setIsFormOpen(true); }}>
-                            <Pencil className="h-4 w-4" />
-                          </Button>
-                          <Button variant="ghost" size="icon" className="text-destructive" onClick={() => handleDelete(category.id)}>
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </div>
-        </CardContent>
-      </Card>
+      <AdminDataTable
+        data={categories}
+        columns={columns}
+        isLoading={isLoading}
+        searchPlaceholder="Buscar por nome ou slug..."
+        searchKey="name"
+      />
 
       <CategoryFormDialog 
         open={isFormOpen} 
@@ -254,110 +278,6 @@ export function CategoriesManager() {
 }
 
 function CategoryFormDialog({ open, onOpenChange, category, onSave, categories }: any) {
-  const [formData, setFormData] = useState<any>({
-    name: '',
-    slug: '',
-    description: '',
-    parent_id: null,
-    is_active: true,
-    sort_order: 0
-  });
-
-  useEffect(() => {
-    if (category) {
-      setFormData(category);
-    } else {
-      setFormData({
-        name: '',
-        slug: '',
-        description: '',
-        parent_id: null,
-        is_active: true,
-        sort_order: 0
-      });
-    }
-  }, [category, open]);
-
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px]">
-        <DialogHeader>
-          <DialogTitle>{category ? 'Editar Categoria' : 'Nova Categoria'}</DialogTitle>
-        </DialogHeader>
-        <div className="grid gap-4 py-4">
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="name" className="text-right">Nome</Label>
-            <Input 
-              id="name" 
-              className="col-span-3" 
-              value={formData.name} 
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })} 
-            />
-          </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="slug" className="text-right">Slug</Label>
-            <Input 
-              id="slug" 
-              className="col-span-3" 
-              value={formData.slug} 
-              onChange={(e) => setFormData({ ...formData, slug: e.target.value })} 
-            />
-          </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="parent" className="text-right">Superior</Label>
-            <div className="col-span-3">
-              <Select 
-                value={formData.parent_id || "root"} 
-                onValueChange={(val) => setFormData({ ...formData, parent_id: val === "root" ? null : val })}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Categoria Raiz" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="root">Categoria Raiz</SelectItem>
-                  {categories.filter((c: any) => c.id !== category?.id).map((c: any) => (
-                    <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="description" className="text-right">Descrição</Label>
-            <Textarea 
-              id="description" 
-              className="col-span-3" 
-              value={formData.description} 
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })} 
-            />
-          </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="order" className="text-right">Ordem</Label>
-            <Input 
-              id="order" 
-              type="number" 
-              className="col-span-3" 
-              value={formData.sort_order} 
-              onChange={(e) => setFormData({ ...formData, sort_order: parseInt(e.target.value) })} 
-            />
-          </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label className="text-right">Ativo</Label>
-            <div className="col-span-3 flex items-center gap-2">
-              <input 
-                type="checkbox" 
-                checked={formData.is_active} 
-                onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
-              />
-              <span className="text-sm">Habilitado</span>
-            </div>
-          </div>
-        </div>
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
-          <Button onClick={() => onSave(formData)}>Salvar</Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+...
   );
 }
