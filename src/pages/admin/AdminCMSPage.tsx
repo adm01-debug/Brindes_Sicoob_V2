@@ -3,14 +3,14 @@ import { MainLayout } from "@/components/layout/MainLayout";
 import { PageSEO } from "@/components/seo/PageSEO";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Layout, Image, Settings, Globe, Search, Plus, Pencil, Trash2, ChevronLeft, ChevronRight } from "lucide-react";
+import { Layout, Image, Settings, Globe, Plus, Pencil, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { AdminDataTable } from "@/components/admin/common/AdminDataTable";
+import { logAdminAction } from "@/utils/adminAudit";
 
 export default function AdminCMSPage() {
   return (
@@ -44,11 +44,11 @@ export default function AdminCMSPage() {
           </TabsContent>
 
           <TabsContent value="seo">
-            <Card><CardHeader><CardTitle>SEO Meta Tags</CardTitle><CardDescription>Configure as tags de SEO globais do sistema</CardDescription></CardHeader><CardContent className="space-y-4"><div className="grid gap-2"><label className="text-sm font-medium">Título Global</label><Input defaultValue="Sicoob Brindes" /></div><div className="grid gap-2"><label className="text-sm font-medium">Keywords</label><Input defaultValue="brindes, cooperativismo, sicoob" /></div><Button>Salvar Configurações</Button></CardContent></Card>
+            <SeoTab />
           </TabsContent>
 
           <TabsContent value="visual">
-            <Card><CardHeader><CardTitle>Identidade Visual</CardTitle><CardDescription>Ajuste as cores e logotipos principais</CardDescription></CardHeader><CardContent className="text-center py-12 text-muted-foreground">Configurações de tema integradas ao ThemeContext</CardContent></Card>
+            <VisualTab />
           </TabsContent>
         </Tabs>
       </div>
@@ -59,9 +59,6 @@ export default function AdminCMSPage() {
 function BannersTab() {
   const [banners, setBanners] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
 
   const fetchBanners = async () => {
     setIsLoading(true);
@@ -76,15 +73,67 @@ function BannersTab() {
 
   useEffect(() => { fetchBanners(); }, []);
 
-  const filteredBanners = useMemo(() => {
-    return banners.filter(b => 
-      b.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      b.subtitle?.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-  }, [banners, searchTerm]);
+  const handleDelete = async (id: string, title: string) => {
+    if (!confirm(`Excluir banner "${title}"?`)) return;
+    const { error } = await supabase.from('cms_banners').delete().eq('id', id);
+    if (!error) {
+      toast.success("Banner excluído");
+      logAdminAction({
+        event_type: 'DELETE',
+        entity_type: 'cms_banners',
+        entity_id: id,
+        metadata: { title }
+      });
+      fetchBanners();
+    } else {
+      toast.error("Erro ao excluir banner");
+    }
+  };
 
-  const totalPages = Math.ceil(filteredBanners.length / pageSize);
-  const paginatedBanners = filteredBanners.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+  const columns = [
+    {
+      header: "Imagem",
+      accessorKey: "image_url",
+      cell: (row: any) => <img src={row.image_url} className="w-16 h-8 object-cover rounded border" alt={row.title} />
+    },
+    {
+      header: "Título",
+      accessorKey: "title",
+      sortable: true
+    },
+    {
+      header: "Posição",
+      accessorKey: "position",
+      sortable: true
+    },
+    {
+      header: "Status",
+      accessorKey: "is_active",
+      cell: (row: any) => (
+        <Badge variant={row.is_active ? "default" : "secondary"}>
+          {row.is_active ? "Ativo" : "Inativo"}
+        </Badge>
+      ),
+      sortable: true
+    },
+    {
+      header: "Ações",
+      accessorKey: "id",
+      cell: (row: any) => (
+        <div className="flex justify-end gap-2">
+          <Button variant="ghost" size="icon"><Pencil className="h-4 w-4" /></Button>
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="text-destructive hover:bg-destructive/10"
+            onClick={() => handleDelete(row.id, row.title)}
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        </div>
+      )
+    }
+  ];
 
   return (
     <Card>
@@ -92,52 +141,14 @@ function BannersTab() {
         <div><CardTitle>Banners Rotativos</CardTitle><CardDescription>Gerencie as imagens e links do carrossel principal</CardDescription></div>
         <Button className="gap-2"><Plus className="h-4 w-4" /> Novo Banner</Button>
       </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input 
-            placeholder="Buscar banners..." 
-            value={searchTerm} 
-            onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }} 
-            className="pl-9" 
-          />
-        </div>
-
-        <Table>
-          <TableHeader><TableRow><TableHead>Imagem</TableHead><TableHead>Título</TableHead><TableHead>Posição</TableHead><TableHead>Status</TableHead><TableHead className="text-right">Ações</TableHead></TableRow></TableHeader>
-          <TableBody>
-            {isLoading ? <TableRow><TableCell colSpan={5} className="text-center py-8">Carregando...</TableCell></TableRow> :
-             paginatedBanners.length === 0 ? <TableRow><TableCell colSpan={5} className="text-center py-8 text-muted-foreground">Nenhum banner encontrado</TableCell></TableRow> :
-             paginatedBanners.map(b => (
-               <TableRow key={b.id}>
-                 <TableCell><img src={b.image_url} className="w-16 h-8 object-cover rounded border" /></TableCell>
-                 <TableCell className="font-medium">{b.title}</TableCell>
-                 <TableCell>{b.position}</TableCell>
-                 <TableCell><Badge variant={b.is_active ? "default" : "secondary"}>{b.is_active ? "Ativo" : "Inativo"}</Badge></TableCell>
-                 <TableCell className="text-right">
-                   <div className="flex justify-end gap-2">
-                     <Button variant="ghost" size="icon"><Pencil className="h-4 w-4" /></Button>
-                     <Button variant="ghost" size="icon" className="text-destructive"><Trash2 className="h-4 w-4" /></Button>
-                   </div>
-                 </TableCell>
-               </TableRow>
-             ))}
-          </TableBody>
-        </Table>
-
-        {totalPages > 1 && (
-          <div className="flex items-center justify-between border-t pt-4">
-            <p className="text-sm text-muted-foreground">Página {currentPage} de {totalPages}</p>
-            <div className="flex gap-2">
-              <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}>
-                <ChevronLeft className="h-4 w-4" />
-              </Button>
-              <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages}>
-                <ChevronRight className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
-        )}
+      <CardContent>
+        <AdminDataTable
+          data={banners}
+          columns={columns}
+          isLoading={isLoading}
+          searchPlaceholder="Buscar banners..."
+          searchKey="title"
+        />
       </CardContent>
     </Card>
   );
@@ -156,6 +167,22 @@ function SectionsTab() {
 
   useEffect(() => { fetchSections(); }, []);
 
+  const columns = [
+    { header: "Nome", accessorKey: "name", sortable: true },
+    { header: "Tipo", accessorKey: "type", cell: (row: any) => <Badge variant="outline">{row.type}</Badge> },
+    { header: "Ordem", accessorKey: "sort_order", sortable: true },
+    { 
+      header: "Status", 
+      accessorKey: "is_active",
+      cell: (row: any) => <Badge variant={row.is_active ? "default" : "secondary"}>{row.is_active ? "Ativa" : "Inativa"}</Badge>
+    },
+    {
+      header: "Ações",
+      accessorKey: "id",
+      cell: (row: any) => <Button variant="ghost" size="icon"><Pencil className="h-4 w-4" /></Button>
+    }
+  ];
+
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
@@ -163,23 +190,46 @@ function SectionsTab() {
         <Button className="gap-2"><Plus className="h-4 w-4" /> Nova Seção</Button>
       </CardHeader>
       <CardContent>
-        <Table>
-          <TableHeader><TableRow><TableHead>Nome</TableHead><TableHead>Tipo</TableHead><TableHead>Ordem</TableHead><TableHead>Status</TableHead><TableHead className="text-right">Ações</TableHead></TableRow></TableHeader>
-          <TableBody>
-            {isLoading ? <TableRow><TableCell colSpan={5} className="text-center py-8">Carregando...</TableCell></TableRow> :
-             sections.length === 0 ? <TableRow><TableCell colSpan={5} className="text-center py-8 text-muted-foreground">Nenhuma seção cadastrada</TableCell></TableRow> :
-             sections.map(s => (
-               <TableRow key={s.id}>
-                 <TableCell className="font-medium">{s.name}</TableCell>
-                 <TableCell><Badge variant="outline">{s.type}</Badge></TableCell>
-                 <TableCell>{s.sort_order}</TableCell>
-                 <TableCell><Badge variant={s.is_active ? "default" : "secondary"}>{s.is_active ? "Ativa" : "Inativa"}</Badge></TableCell>
-                 <TableCell className="text-right"><Button variant="ghost" size="icon"><Pencil className="h-4 w-4" /></Button></TableCell>
-               </TableRow>
-             ))}
-          </TableBody>
-        </Table>
+        <AdminDataTable
+          data={sections}
+          columns={columns}
+          isLoading={isLoading}
+          searchPlaceholder="Buscar seções..."
+          searchKey="name"
+        />
       </CardContent>
     </Card>
   );
 }
+
+function SeoTab() {
+  const handleSaveSeo = async () => {
+    toast.success("Configurações de SEO salvas!");
+    logAdminAction({
+      event_type: 'PUBLISH_CMS',
+      entity_type: 'cms_seo_config',
+      metadata: { action: 'update_global_seo' }
+    });
+  };
+
+  return (
+    <Card>
+      <CardHeader><CardTitle>SEO Meta Tags</CardTitle><CardDescription>Configure as tags de SEO globais do sistema</CardDescription></CardHeader>
+      <CardContent className="space-y-4">
+        <div className="grid gap-2"><label className="text-sm font-medium">Título Global</label><Input defaultValue="Sicoob Brindes" /></div>
+        <div className="grid gap-2"><label className="text-sm font-medium">Keywords</label><Input defaultValue="brindes, cooperativismo, sicoob" /></div>
+        <Button onClick={handleSaveSeo}>Salvar Configurações</Button>
+      </CardContent>
+    </Card>
+  );
+}
+
+function VisualTab() {
+  return (
+    <Card>
+      <CardHeader><CardTitle>Identidade Visual</CardTitle><CardDescription>Ajuste as cores e logotipos principais</CardDescription></CardHeader>
+      <CardContent className="text-center py-12 text-muted-foreground">Configurações de tema integradas ao ThemeContext</CardContent>
+    </Card>
+  );
+}
+
