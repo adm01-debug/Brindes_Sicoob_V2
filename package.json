@@ -8,8 +8,9 @@
     "build": "vite build",
     "build:dev": "vite build --mode development",
     "preview": "vite preview",
-    "test": "vitest run --coverage",
-    "test:watch": "vitest",
+    "test": "vitest run",
+    "test:coverage:ci": "vitest run --coverage --coverage.reporter=text --coverage.reporter=json --coverage.reporter=html",
+
     "test:run": "vitest run",
     "test:coverage": "vitest run --coverage",
     "coverage": "vitest run --coverage",
