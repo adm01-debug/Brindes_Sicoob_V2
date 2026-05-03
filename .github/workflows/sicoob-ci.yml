@@ -5,15 +5,21 @@ on:
     branches: [main]
     paths:
       - 'src/pages/sicoob/**'
+      - 'src/components/layout/ProtectedRoute*'
+      - 'src/services/sicoob/**'
       - 'src/hooks/useSicoob*'
       - 'supabase/functions/tests/sicoob-*'
+      - 'vitest.config.ts'
       - '.github/workflows/sicoob-ci.yml'
   pull_request:
     branches: [main]
     paths:
       - 'src/pages/sicoob/**'
+      - 'src/components/layout/ProtectedRoute*'
+      - 'src/services/sicoob/**'
       - 'src/hooks/useSicoob*'
       - 'supabase/functions/tests/sicoob-*'
+      - 'vitest.config.ts'
       - '.github/workflows/sicoob-ci.yml'
 
 jobs:
