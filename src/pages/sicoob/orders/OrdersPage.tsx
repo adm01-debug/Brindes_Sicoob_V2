@@ -51,22 +51,13 @@ import type { DateRange } from "react-day-picker";
 import { useAuth } from "@/contexts/AuthContext";
 import { OrderStatusBadge } from "@/components/sicoob/orders/OrderStatusBadge";
 import { OrderStatus, ORDER_STATUS_OPTIONS } from "@/types/sicoob/orders";
-
-// Mock data for initial UI
-const MOCK_ORDERS = [
-  { id: '1', pa: 'PA Centro', singular: 'Sicoob Credicitrus', status: 'draft' as OrderStatus, total: 1250.50, items: 4, date: '2024-05-01' },
-  { id: '2', pa: 'PA Sul', singular: 'Sicoob Coopercredi', status: 'waiting_approval' as OrderStatus, total: 3400.00, items: 12, date: '2024-05-02' },
-  { id: '3', pa: 'PA Norte', singular: 'Sicoob Credicitrus', status: 'confirmed' as OrderStatus, total: 850.00, items: 2, date: '2024-04-30' },
-  { id: '4', pa: 'PA Leste', singular: 'Sicoob Coopercredi', status: 'rejected' as OrderStatus, total: 540.00, items: 3, date: '2024-04-25' },
-  { id: '5', pa: 'PA Centro', singular: 'Sicoob Credicitrus', status: 'logistic' as OrderStatus, total: 2100.00, items: 7, date: '2024-04-20' },
-];
-
-
+import { sicoobOrderService } from "@/services/sicoob/orderService";
+import { useQuery } from "@tanstack/react-query";
 
 export default function OrdersPage() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { isVendedorRole, isAdmin } = useAuth();
+  const { isVendedorRole, isAdmin, user } = useAuth();
   const canCreateOrder = isVendedorRole || isAdmin;
   const [isExporting, setIsExporting] = useState<'csv' | 'pdf' | 'xlsx' | null>(null);
 
@@ -74,6 +65,20 @@ export default function OrdersPage() {
   const [statusFilter, setStatusFilter] = useState<string>(searchParams.get("status") || "all");
   const [paFilter, setPaFilter] = useState<string>(searchParams.get("pa") || "all");
   const [singularFilter, setSingularFilter] = useState<string>(searchParams.get("singular") || "all");
+
+  const { data: orders = [], isLoading: isLoadingOrders } = useQuery({
+    queryKey: ["sicoob_orders_list", searchTerm, statusFilter, paFilter, singularFilter, searchParams.get("from"), searchParams.get("to")],
+    queryFn: () => sicoobOrderService.listOrders({
+      search: searchTerm,
+      status: statusFilter,
+      pa_id: paFilter,
+      cooperative_id: singularFilter,
+      from: searchParams.get("from") || undefined,
+      to: searchParams.get("to") || undefined
+    })
+  });
+
+  const filteredOrders = orders;
 
   const exportToCSV = async () => {
     setIsExporting('csv');
@@ -87,12 +92,12 @@ export default function OrdersPage() {
       const headers = ["ID", "PA", "Singular", "Status", "Total (R$)", "Itens", "Data"];
       const rows = filteredOrders.map(o => [
         o.id,
-        o.pa,
-        o.singular,
+        (o as any).pa?.nome || o.pa_id,
+        (o as any).cooperativa?.nome || o.cooperative_id,
         o.status,
-        o.total.toFixed(2),
-        o.items,
-        o.date
+        o.total_amount.toFixed(2),
+        "N/A", // Items count would need another join
+        o.created_at
       ]);
       
       const csvContent = [
@@ -130,12 +135,12 @@ export default function OrdersPage() {
       
       const tableData = filteredOrders.map(o => [
         o.id,
-        o.pa,
-        o.singular,
+        (o as any).pa?.nome || o.pa_id,
+        (o as any).cooperativa?.nome || o.cooperative_id,
         o.status,
-        `R$ ${o.total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`,
-        o.items,
-        format(parseISO(o.date), "dd/MM/yyyy")
+        `R$ ${o.total_amount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`,
+        "N/A",
+        format(parseISO(o.created_at), "dd/MM/yyyy")
       ]);
 
       autoTable(doc, {
@@ -158,12 +163,12 @@ export default function OrdersPage() {
     try {
       const data = filteredOrders.map(o => ({
         "ID": o.id,
-        "PA": o.pa,
-        "Singular": o.singular,
+        "PA": (o as any).pa?.nome || o.pa_id,
+        "Singular": (o as any).cooperativa?.nome || o.cooperative_id,
         "Status": o.status,
-        "Total (R$)": o.total,
-        "Itens": o.items,
-        "Data": format(parseISO(o.date), "dd/MM/yyyy")
+        "Total (R$)": o.total_amount,
+        "Itens": "N/A",
+        "Data": format(parseISO(o.created_at), "dd/MM/yyyy")
       }));
 
       const worksheet = XLSX.utils.json_to_sheet(data);
@@ -207,35 +212,26 @@ export default function OrdersPage() {
   }, [searchTerm, statusFilter, paFilter, singularFilter, dateRange]);
 
 
-  const paOptions = useMemo(
-    () => Array.from(new Set(MOCK_ORDERS.map((o) => o.pa))),
-    [],
-  );
-  const singularOptions = useMemo(
-    () => Array.from(new Set(MOCK_ORDERS.map((o) => o.singular))),
-    [],
-  );
+  const { data: pas = [] } = useQuery({
+    queryKey: ["postos_atendimento"],
+    queryFn: async () => {
+      const { data } = await supabase.from("postos_atendimento").select("id, nome");
+      return data || [];
+    }
+  });
 
-  const filteredOrders = useMemo(() => {
-    const term = searchTerm.trim().toLowerCase();
-    return MOCK_ORDERS.filter((order) => {
-      if (term) {
-        const haystack = `${order.id} ${order.pa} ${order.singular}`.toLowerCase();
-        if (!haystack.includes(term)) return false;
-      }
-      if (statusFilter !== "all" && order.status !== statusFilter) return false;
-      if (paFilter !== "all" && order.pa !== paFilter) return false;
-      if (singularFilter !== "all" && order.singular !== singularFilter) return false;
-      if (dateRange?.from) {
-        const orderDate = parseISO(order.date);
-        const to = dateRange.to ?? dateRange.from;
-        if (!isWithinInterval(orderDate, { start: dateRange.from, end: to })) {
-          return false;
-        }
-      }
-      return true;
-    });
-  }, [searchTerm, statusFilter, paFilter, singularFilter, dateRange]);
+  const { data: cooperatives = [] } = useQuery({
+    queryKey: ["cooperativas"],
+    queryFn: async () => {
+      const { data } = await supabase.from("cooperativas").select("id, nome");
+      return data || [];
+    }
+  });
+
+  const paOptions = pas;
+  const singularOptions = cooperatives;
+
+  const filteredOrders = orders;
 
   const activeFiltersCount =
     (statusFilter !== "all" ? 1 : 0) +
@@ -373,9 +369,9 @@ export default function OrdersPage() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">Todos</SelectItem>
-                    {paOptions.map((pa) => (
-                      <SelectItem key={pa} value={pa}>
-                        {pa}
+                    {pas.map((pa) => (
+                      <SelectItem key={pa.id} value={pa.id}>
+                        {pa.nome}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -390,9 +386,9 @@ export default function OrdersPage() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">Todas</SelectItem>
-                    {singularOptions.map((s) => (
-                      <SelectItem key={s} value={s}>
-                        {s}
+                    {cooperatives.map((s) => (
+                      <SelectItem key={s.id} value={s.id}>
+                        {s.nome}
                       </SelectItem>
                     ))}
                   </SelectContent>

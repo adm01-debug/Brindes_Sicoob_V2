@@ -35,7 +35,7 @@ Plataforma multi-tenant com separação lógica e visual via **Skins Factory**.
 - **Coleções & Favoritos:** Paridade total, listas públicas, reações anônimas, watcher de preços.
 - **Kit Maker:** Wizard de montagem de kits com motion design, sugestão de identidade visual via IA.
 - **Magic Up Advertising:** Geração automática de banners e criativos via IA, scoring de anúncios.
-- **Quote Builder:** Precisão de 4 casas decimais, assinatura eletrônica, aprovação pública, templates.
+- **Quote & Order Builder:** Precisão de 4 casas decimais, assinatura eletrônica, aprovação pública, templates, exportação em lote (PDF/Excel), timeline de auditoria detalhada e chat colaborativo com paginação e busca.
 - **CRM Bridge:** Integração bidirecional robusta com Bitrix24 e SalesPro via `crm-db-bridge`.
 - **MCP Security:** Gestão de chaves, auditoria de uso, auto-revogação por papel e diagnóstico de telemetria.
 - **App Health:** Telemetria em tempo real, health dashboard e monitoramento de latência de RPCs.

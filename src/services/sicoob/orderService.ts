@@ -7,10 +7,50 @@ import { SicoobOrder, SicoobOrderItem, SicoobOrderItemLog, OrderStatus, canSicoo
  * but client-side checks provide better UX.
  */
 export const sicoobOrderService = {
-  async getOrderById(id: string): Promise<SicoobOrder> {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) throw new Error("Usuário não autenticado");
+  async listOrders(filters?: { 
+    search?: string, 
+    status?: string, 
+    pa_id?: string, 
+    cooperative_id?: string,
+    from?: string,
+    to?: string
+  }): Promise<SicoobOrder[]> {
+    let query = supabase.from("sicoob_orders").select("*, pa:postos_atendimento(nome), cooperativa:cooperativas(nome)");
 
+    if (filters?.status && filters.status !== "all") {
+      query = query.eq("status", filters.status);
+    }
+    if (filters?.pa_id && filters.pa_id !== "all") {
+      query = query.eq("pa_id", filters.pa_id);
+    }
+    if (filters?.cooperative_id && filters.cooperative_id !== "all") {
+      query = query.eq("cooperative_id", filters.cooperative_id);
+    }
+    if (filters?.from) {
+      query = query.gte("created_at", filters.from);
+    }
+    if (filters?.to) {
+      query = query.lte("created_at", filters.to);
+    }
+
+    const { data, error } = await query.order("created_at", { ascending: false });
+    if (error) throw error;
+    
+    let results = data as SicoobOrder[];
+    
+    if (filters?.search) {
+      const term = filters.search.toLowerCase();
+      results = results.filter(o => 
+        o.id.toLowerCase().includes(term) || 
+        o.notes?.toLowerCase().includes(term) ||
+        o.tracking_code?.toLowerCase().includes(term)
+      );
+    }
+    
+    return results;
+  },
+
+  async getOrderById(id: string): Promise<SicoobOrder> {
     const { data, error } = await supabase
       .from("sicoob_orders")
       .select("*")
@@ -54,9 +94,29 @@ export const sicoobOrderService = {
 
     const { error } = await supabase
       .from("sicoob_orders")
-      .update({ status })
+      .update({ status, updated_at: new Date().toISOString() })
       .eq("id", orderId);
     if (error) throw error;
+
+    // Trigger notification
+    try {
+      const order = await this.getOrderById(orderId);
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      await supabase.functions.invoke('send-notification', {
+        body: {
+          user_id: order.created_by,
+          title: "Status do Pedido Sicoob Atualizado",
+          message: `Seu pedido #${orderId.slice(0, 8)} mudou para ${status}`,
+          metadata: { order_id: orderId, event_type: 'sicoob_order_status_change' },
+          action_url: `/sicoob/pedidos/${orderId}`
+        }
+      });
+
+      // Email fallback is handled inside send-notification/send-transactional-email
+    } catch (err) {
+      console.warn("Falha ao enviar notificação, mas pedido foi atualizado:", err);
+    }
   },
 
   async updateOrderTotal(orderId: string, total: number): Promise<void> {

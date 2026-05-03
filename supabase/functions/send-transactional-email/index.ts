@@ -8,7 +8,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 
 interface EmailRequest {
-  event_type: "quote_sent" | "quote_approved" | "quote_rejected" | "order_created";
+  event_type: "quote_sent" | "quote_approved" | "quote_rejected" | "order_created" | "sicoob_order_status_change" | "sicoob_order_approval_request";
   recipient_email: string;
   recipient_name?: string;
   data: Record<string, unknown>;
@@ -115,6 +115,38 @@ function buildEmailContent(event: EmailRequest): { subject: string; html: string
             </div>
           </div>
         `,
+      };
+    
+    case "sicoob_order_status_change":
+      return {
+        subject: `🔄 Pedido Sicoob #${event.data.order_number || ""} - Novo Status`,
+        html: `
+          <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eee; padding: 20px;">
+            <h2>Atualização de Pedido</h2>
+            <p>Olá, ${name}!</p>
+            <p>O status do seu pedido <strong>#${event.data.order_number || ""}</strong> foi alterado para: <strong>${event.data.new_status}</strong>.</p>
+            ${event.data.notes ? `<p>Observações: ${event.data.notes}</p>` : ""}
+            <div style="margin-top: 20px;">
+              <a href="${event.data.action_url}" style="background: #004b8d; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Ver Detalhes</a>
+            </div>
+          </div>
+        `
+      };
+
+    case "sicoob_order_approval_request":
+      return {
+        subject: `⚠️ Aprovação Pendente - Pedido Sicoob #${event.data.order_number || ""}`,
+        html: `
+          <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eee; padding: 20px;">
+            <h2>Solicitação de Aprovação</h2>
+            <p>Olá, ${name}!</p>
+            <p>Um novo pedido do <strong>${event.data.pa_name}</strong> requer sua aprovação.</p>
+            <p>Valor total: <strong>R$ ${Number(event.data.total).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</strong></p>
+            <div style="margin-top: 20px;">
+              <a href="${event.data.action_url}" style="background: #004b8d; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Acessar Portal de Compras</a>
+            </div>
+          </div>
+        `
       };
 
     default:
