@@ -50,16 +50,16 @@ A plataforma conta com uma vasta camada de lógica serverless, categorizada abai
 - `bitrix-sync`, `crm-db-bridge`, `external-db-bridge`, `external-db-inspect`, `product-webhook`, `quote-sync`, `sync-quote-bitrix`, `bi-share-dossier`, `dropbox-list`, `github-credentials-test`, `github-fix-config`.
 
 ### Segurança & Governança (MCP)
-- `auth-integrity-check`, `block-ip-temporarily`, `mcp-keys-issue`, `mcp-keys-revoke`, `mcp-keys-rotate`, `mcp-keys-update`, `mcp-server`, `rls-audit`, `validate-access`, `step-up-verify`, `ownership-audit`, `ownership-repair`, `force-global-logout`, `log-login-attempt`, `detect-new-device`.
+- `auth-integrity-check`, `block-ip-temporarily`, `mcp-keys-issue`, `mcp-keys-revoke`, `mcp-keys-rotate`, `mcp-keys-update`, `mcp-server`, `rls-audit`, `validate-access`, `step-up-verify`, `ownership-audit`, `ownership-repair`, `force-global-logout`, `log-login-attempt`, `detect-new-device`, `secrets-manager`, `secure-upload`.
 
 ### Monitoramento & Saúde
-- `health-check`, `full-op-diagnostics`, `connection-tester`, `connections-auto-test`, `connections-health-check`, `connections-hub-audit`, `migration-health-check`, `rls-integration-tests`, `rls-matrix-export`, `process-queue`, `process-scheduled-reports`.
+- `health-check`, `full-op-diagnostics`, `connection-tester`, `connections-auto-test`, `connections-health-check`, `connections-hub-audit`, `migration-health-check`, `rls-integration-tests`, `rls-matrix-export`, `process-queue`, `process-scheduled-reports`, `e2e-auth-test`, `e2e-cleanup`.
 
 ### Comunicação & Notificação
-- `send-notification`, `send-digest`, `send-scheduled-reports`, `send-transactional-email`, `quote-followup-reminders`, `cleanup-notifications`, `verify-email`.
+- `send-notification`, `send-digest`, `send-scheduled-reports`, `send-transactional-email`, `quote-followup-reminders`, `cleanup-notifications`, `cleanup-novelties`, `verify-email`.
 
-### Public Share (React Templates)
-- `collections-public-react`, `comparisons-public-react`, `favorites-public-react`, `kit-public-view`, `quote-public-view`.
+### Watchers & Public Share
+- `collections-watcher`, `favorites-watcher`, `comparison-price-watcher`, `collections-public-react`, `comparisons-public-react`, `favorites-public-react`, `kit-public-view`, `quote-public-view`.
 
 ### Utilidades & Outros
 - `cnpj-lookup`, `image-proxy`, `categories-api`, `materials-api`, `commemorative-dates`, `expert-chat`, `get-visitor-info`, `magic-up-score`, `manage-users`, `market-intelligence-insights`, `sicoob-seed`, `sicoob-seed-debug`, `webhook-dispatcher`, `webhook-inbound`.
