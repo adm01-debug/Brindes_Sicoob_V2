@@ -122,8 +122,8 @@ const App = () => {
                           ))}
 
                           {/* Static Redirects & Legacy (Unprotected) */}
-                          <Route path="/configuracoes" element={<Navigate to="/admin/usuarios" replace />} />
-                          <Route path="/perfil" element={<Navigate to="/admin/usuarios" replace />} />
+                          <Route path="/configuracoes" element={<div data-testid="redirect-config"><Navigate to="/admin/usuarios" replace /></div>} />
+                          <Route path="/perfil" element={<div data-testid="redirect-perfil"><Navigate to="/admin/usuarios" replace /></div>} />
                           <Route path="/403" element={<ForbiddenPage />} />
 
 
