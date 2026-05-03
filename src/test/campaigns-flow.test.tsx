@@ -8,6 +8,7 @@ import React from 'react';
 import { BrowserRouter } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { HelmetProvider } from 'react-helmet-async';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -22,20 +23,27 @@ vi.mock('@/contexts/AuthContext', () => ({
   useAuth: vi.fn(),
 }));
 
+// Mock useOnboarding to avoid complex context nesting
+vi.mock('@/hooks/useOnboarding', () => ({
+  useOnboarding: () => ({
+    onboarding: { step: 'done' },
+    completeStep: vi.fn()
+  })
+}));
+
 const renderWithContext = (ui: React.ReactElement) => {
   return render(
-    <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
-        {ui}
-      </BrowserRouter>
-    </QueryClientProvider>
+    <HelmetProvider>
+      <QueryClientProvider client={queryClient}>
+        <BrowserRouter>
+          {ui}
+        </BrowserRouter>
+      </QueryClientProvider>
+    </HelmetProvider>
   );
 };
 
-
-
-
-// Mock dependencies
+// Mock Supabase
 vi.mock('@/integrations/supabase/client', () => ({
   supabase: {
     from: vi.fn(() => ({
@@ -55,8 +63,7 @@ vi.mock('@/integrations/supabase/client', () => ({
       insert: vi.fn().mockReturnThis(),
       update: vi.fn().mockReturnThis(),
       eq: vi.fn().mockReturnThis(),
-      select: vi.fn().mockReturnThis(),
-      single: vi.fn().mockResolvedValue({ data: { id: '2' }, error: null }),
+      single: vi.fn().mockImplementation(() => Promise.resolve({ data: { id: '2' }, error: null })),
     })),
   },
 }));
@@ -84,16 +91,13 @@ describe('Campaigns Flow - CRUD & Status', () => {
     });
   });
 
-
   it('should successfully create a new campaign', async () => {
     renderWithContext(<AdminCampanhasPage />);
     
-    // Wait for initial load
     await waitFor(() => expect(screen.getByText('Campaign 1')).toBeDefined());
 
     fireEvent.click(screen.getByText(/Nova Campanha/i));
 
-    // Fill form
     fireEvent.change(screen.getByLabelText(/Nome da Campanha/i), { target: { value: 'New Test Campaign' } });
     fireEvent.change(screen.getByLabelText(/Orçamento/i), { target: { value: '10000' } });
     
@@ -109,14 +113,10 @@ describe('Campaigns Flow - CRUD & Status', () => {
     renderWithContext(<AdminCampanhasPage />);
     await waitFor(() => expect(screen.getByText('Campaign 1')).toBeDefined());
 
-    // Click edit button
     const editButton = screen.getAllByRole('button').find(b => b.querySelector('svg.lucide-pencil'));
     if (editButton) {
       fireEvent.click(editButton);
-      
-      // Update name
       fireEvent.change(screen.getByLabelText(/Nome da Campanha/i), { target: { value: 'Updated Campaign' } });
-      
       fireEvent.click(screen.getByText(/Salvar Campanha/i));
 
       await waitFor(() => {
