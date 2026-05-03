@@ -268,6 +268,13 @@ export default function AdminAuditPage() {
           columns={columns}
           isLoading={isLoading}
           searchPlaceholder="Busca rápida nos logs..."
+          serverSide
+          totalCount={totalCount}
+          currentPage={currentPage}
+          pageSize={pageSize}
+          onPageChange={setCurrentPage}
+          onPageSizeChange={setPageSize}
+          onSortChange={setSort}
         />
       </div>
     </MainLayout>
