@@ -18,7 +18,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { useDevGate } from "@/hooks/useDevGate";
 
-export const DiagnosticOverlay = () => {
+export const DiagnosticOverlay = forwardRef<HTMLDivElement>((_props, ref) => {
   const { isAllowed } = useDevGate();
   const [isOpen, setIsOpen] = useState(false);
   const [logs, setLogs] = useState<DiagnosticLog[]>([]);
