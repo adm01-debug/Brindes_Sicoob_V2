@@ -161,6 +161,18 @@ export function BatchExportDialog({ entityType, filters }: BatchExportDialogProp
                     </Select>
                   </div>
                 </div>
+                <div className="flex items-center gap-2 px-1">
+                  <input 
+                    type="checkbox" 
+                    id="notify-email" 
+                    checked={notifyByEmail} 
+                    onChange={(e) => setNotifyByEmail(e.target.checked)}
+                    className="h-4 w-4 rounded border-gray-300"
+                  />
+                  <label htmlFor="notify-email" className="text-xs text-muted-foreground cursor-pointer">
+                    Notificar por e-mail após a geração (apenas papéis autorizados)
+                  </label>
+                </div>
                 <Button className="w-full gap-2" variant="outline" onClick={handleSchedule}>
                   <Calendar className="h-4 w-4" /> Confirmar Agendamento
                 </Button>
