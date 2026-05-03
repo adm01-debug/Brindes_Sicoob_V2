@@ -334,7 +334,7 @@ export default function OrderDetailPage() {
           </Button>
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-2xl font-bold">Pedido #{orderData.order_number}</h1>
+              <h1 className="text-2xl font-bold text-sicoob-green-dark">Pedido #{orderData.order_number}</h1>
               <OrderStatusBadge status={orderData.status} />
             </div>
             <p className="text-sm text-muted-foreground">Criado em {new Date(orderData.created_at).toLocaleString('pt-BR')}</p>
