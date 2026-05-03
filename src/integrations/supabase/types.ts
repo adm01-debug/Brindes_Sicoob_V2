@@ -4650,6 +4650,7 @@ export type Database = {
         Row: {
           approved_at: string | null
           approved_by: string | null
+          approved_pdf_url: string | null
           bitrix_deal_id: string | null
           bitrix_quote_id: string | null
           client_cnpj: string | null
@@ -4686,6 +4687,7 @@ export type Database = {
           singular_id: string | null
           status: string
           subtotal: number
+          suggested_modifications: Json | null
           synced_at: string | null
           synced_to_bitrix: boolean | null
           total: number
@@ -4696,6 +4698,7 @@ export type Database = {
         Insert: {
           approved_at?: string | null
           approved_by?: string | null
+          approved_pdf_url?: string | null
           bitrix_deal_id?: string | null
           bitrix_quote_id?: string | null
           client_cnpj?: string | null
@@ -4732,6 +4735,7 @@ export type Database = {
           singular_id?: string | null
           status?: string
           subtotal?: number
+          suggested_modifications?: Json | null
           synced_at?: string | null
           synced_to_bitrix?: boolean | null
           total?: number
@@ -4742,6 +4746,7 @@ export type Database = {
         Update: {
           approved_at?: string | null
           approved_by?: string | null
+          approved_pdf_url?: string | null
           bitrix_deal_id?: string | null
           bitrix_quote_id?: string | null
           client_cnpj?: string | null
@@ -4778,6 +4783,7 @@ export type Database = {
           singular_id?: string | null
           status?: string
           subtotal?: number
+          suggested_modifications?: Json | null
           synced_at?: string | null
           synced_to_bitrix?: boolean | null
           total?: number

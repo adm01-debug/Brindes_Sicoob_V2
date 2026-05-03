@@ -29,6 +29,7 @@ export function QuoteSingularApprovalActions({ quoteId, status, quoteNumber, onA
   const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
   const [adjustDialogOpen, setAdjustDialogOpen] = useState(false);
   const [notes, setNotes] = useState("");
+  const [suggestedItems, setSuggestedItems] = useState("");
 
   // Only Singular Buyers (Gestor de Compras) can approve/reject PAC solicitations
   const canApprove = isGestorCompras || isDev;
@@ -44,9 +45,12 @@ export function QuoteSingularApprovalActions({ quoteId, status, quoteNumber, onA
 
     setIsProcessing(true);
     try {
-      // For adjustments, we might use 'rejected_singular' with specific notes or a new status if needed.
-      // Reusing rejected_singular as it sends it back to the PAC for editing.
-      const ok = await updateQuoteStatus(quoteId, "rejected_singular", `Ajustes solicitados: ${notes}`);
+      // Create a composite message if suggested items are provided
+      const fullNotes = suggestedItems.trim() 
+        ? `${notes}\n\nModificações sugeridas:\n${suggestedItems}`
+        : notes;
+
+      const ok = await updateQuoteStatus(quoteId, "rejected_singular", fullNotes);
       if (ok) {
         toast.success("Solicitação de ajuste enviada ao PAC");
         setAdjustDialogOpen(false);
@@ -136,15 +140,28 @@ export function QuoteSingularApprovalActions({ quoteId, status, quoteNumber, onA
               Explique ao PAC quais modificações são necessárias (quantidades, itens, descontos, etc).
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-3 py-2">
-            <Label htmlFor="adjust-notes">Instruções de Ajuste</Label>
-            <Textarea
-              id="adjust-notes"
-              placeholder="Ex: Reduzir a quantidade de canetas para 100 unidades..."
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              rows={4}
-            />
+          <div className="space-y-4 py-2">
+            <div className="space-y-2">
+              <Label htmlFor="adjust-notes">Instruções de Ajuste</Label>
+              <Textarea
+                id="adjust-notes"
+                placeholder="Ex: Reduzir a quantidade de canetas para 100 unidades..."
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                rows={3}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="suggested-items">Alterações sugeridas (Itens/Qtds)</Label>
+              <Textarea
+                id="suggested-items"
+                placeholder="Ex: Item Caneta: 100un; Item Caderno: 50un..."
+                value={suggestedItems}
+                onChange={(e) => setSuggestedItems(e.target.value)}
+                rows={3}
+                className="bg-muted/30"
+              />
+            </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setAdjustDialogOpen(false)}>Cancelar</Button>
@@ -154,7 +171,7 @@ export function QuoteSingularApprovalActions({ quoteId, status, quoteNumber, onA
               disabled={isProcessing}
             >
               {isProcessing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Edit3 className="h-4 w-4" />}
-              Enviar para Ajuste
+              Solicitar Ajustes
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -192,7 +192,7 @@ export default function QuoteViewPage() {
           <div className="flex-1 bg-card border rounded-lg p-4">
             <QuoteStatusTimeline status={quote.status} createdAt={quote.created_at} updatedAt={quote.updated_at} clientResponseAt={quote.client_response_at} isSyncing={isSyncing} />
           </div>
-          <QuoteValidityBanner validUntil={quote.valid_until} status={quote.status} />
+          <QuoteValidityBanner validUntil={quote.valid_until} status={quote.status} pdfUrl={quote.approved_pdf_url} onDownloadPdf={handleDownloadPDF} />
         </div>
         
         {/* Singular Approval Actions */}
