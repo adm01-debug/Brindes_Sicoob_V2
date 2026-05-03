@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { ArrowLeft, Building2, Mail, Package, Phone, User, CreditCard, Clock, FileText } from "lucide-react";
+import { ArrowLeft, Building2, Mail, Package, Phone, User, CreditCard, Clock, FileText, Download } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { PageSEO } from "@/components/seo/PageSEO";
@@ -163,9 +163,28 @@ export default function OrderDetailPage() {
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <Badge variant="outline" className={sc.color}>{sc.label}</Badge>
             <Badge variant="outline" className={fc.color}>{fc.label}</Badge>
+            <Button variant="outline" size="sm" className="gap-2" onClick={() => {
+              const data = {
+                items: items.map(it => ({
+                  ...it,
+                  total: (it.quantity || 0) * (it.unit_price || 0)
+                })),
+                filename: `pedido_${order.order_number}`,
+                columns: [
+                  { header: "Produto", key: "product_name" },
+                  { header: "SKU", key: "product_sku" },
+                  { header: "Qtd", key: "quantity" },
+                  { header: "Preço", key: "unit_price" },
+                  { header: "Subtotal", key: "total" },
+                ]
+              };
+              exportToPDF(data as any);
+            }}>
+              <Download className="h-4 w-4" /> PDF
+            </Button>
           </div>
         </div>
 
