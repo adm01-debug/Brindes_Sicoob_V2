@@ -62,7 +62,7 @@ import {
   SelectTrigger, 
   SelectValue 
 } from "@/components/ui/select";
-import { useSicoobOrder, useSicoobOrderDetails } from "@/hooks/sicoob/useSicoobOrder";
+import { useSicoobOrder, useSicoobOrderDetails, useUpdateSicoobOrderStatus } from "@/hooks/sicoob/useSicoobOrder";
 import { OrderStatusBadge } from "@/components/sicoob/orders/OrderStatusBadge";
 import { OrderActionDialog } from "@/components/sicoob/orders/OrderActionDialog";
 import { OrderItemsHistory } from "@/components/sicoob/orders/OrderItemsHistory";
