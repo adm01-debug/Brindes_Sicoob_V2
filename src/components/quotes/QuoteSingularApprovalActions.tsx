@@ -56,9 +56,8 @@ export function QuoteSingularApprovalActions({ quoteId, status, onActionComplete
 
     setIsProcessing(true);
     try {
-      const ok = await updateQuoteStatus(quoteId, "rejected_singular");
+      const ok = await updateQuoteStatus(quoteId, "rejected_singular", notes);
       if (ok) {
-        await logQuoteHistory(quoteId, "singular_rejected", `Solicitação rejeitada pela Singular. Motivo: ${notes}`);
         toast.success("Orçamento devolvido para o PAC");
         setRejectDialogOpen(false);
         onActionComplete?.();
