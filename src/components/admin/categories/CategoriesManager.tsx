@@ -281,7 +281,7 @@ export function CategoriesManager() {
   );
 }
 
-function CategoryFormDialog({ open, onOpenChange, category, onSave, categories }: any) {
+function CategoryFormDialog({ open, onOpenChange, category, onSave, categories, isLoading }: any) {
   const [formData, setFormData] = useState<any>({
     name: '',
     slug: '',
