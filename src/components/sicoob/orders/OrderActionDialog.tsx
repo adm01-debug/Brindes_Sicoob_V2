@@ -54,7 +54,7 @@ export const OrderActionDialog = ({
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancelar
           </Button>
-          <Button variant={confirmVariant} onClick={onConfirm}>
+          <Button variant={confirmVariant} onClick={onConfirm} disabled={confirmDisabled}>
             {confirmLabel}
           </Button>
         </DialogFooter>
