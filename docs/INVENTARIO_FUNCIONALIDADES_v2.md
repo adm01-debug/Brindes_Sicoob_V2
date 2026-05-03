@@ -30,7 +30,6 @@ Plataforma multi-tenant com separação lógica e visual via **Skins Factory**.
 | **`admin`** | Gestão de usuários, cadastros de negócio e CMS | `/admin/usuarios`, `/admin/cadastros` |
 | **`dev`** | Operações técnicas, segurança e telemetria | `/admin/telemetria`, `/admin/seguranca`, `/admin/conexoes` |
 
-
 ## 4. Módulos de Destaque
 - **Comparação 10/10:** Score IA, radar de atributos, duel mode, share público, sparklines 30d.
 - **Coleções & Favoritos:** Paridade total, listas públicas, reações anônimas, watcher de preços.
@@ -42,14 +41,28 @@ Plataforma multi-tenant com separação lógica e visual via **Skins Factory**.
 - **App Health:** Telemetria em tempo real, health dashboard e monitoramento de latência de RPCs.
 
 ## 5. Lista de Edge Functions (~90)
-A plataforma conta com uma vasta camada de lógica serverless:
-- **IA/ML:** `ai-recommendations`, `bi-copilot`, `comparison-ai-advisor`, `generate-ad-image`, `generate-mockup`, `semantic-search`, `voice-agent`, `trends-insights`, `visual-search`.
-- **Integração/Sync:** `bitrix-sync`, `crm-db-bridge`, `external-db-bridge`, `product-webhook`, `quote-sync`, `sync-quote-bitrix`.
-- **Segurança/Governança:** `auth-integrity-check`, `block-ip-temporarily`, `mcp-keys-issue/revoke/rotate`, `rls-audit`, `validate-access`, `step-up-verify`, `ownership-audit/repair`.
-- **Comunicação:** `send-notification`, `send-digest`, `send-transactional-email`, `quote-followup-reminders`.
-- **Utilidades:** `cnpj-lookup`, `image-proxy`, `optimize-image`, `sitemap`, `process-queue`.
-- **Public Share:** `collections-public-react`, `comparisons-public-react`, `favorites-public-react`, `kit-public-view`, `quote-public-view`.
-- **Saúde/Dev:** `health-check`, `full-op-diagnostics`, `connection-tester`, `migration-health-check`.
+A plataforma conta com uma vasta camada de lógica serverless, categorizada abaixo:
+
+### IA & Multimodalidade
+- `ai-recommendations`, `bi-copilot`, `comparison-ai-advisor`, `generate-ad-image`, `generate-ad-prompt`, `generate-mockup`, `generate-mockup-nanobanana`, `generate-product-seo`, `kit-ai-builder`, `kit-identity-suggest`, `semantic-search`, `voice-agent`, `trends-insights`, `visual-search`, `elevenlabs-tts`, `elevenlabs-scribe-token`, `analyze-logo-colors`.
+
+### Integrações & Sync
+- `bitrix-sync`, `crm-db-bridge`, `external-db-bridge`, `external-db-inspect`, `product-webhook`, `quote-sync`, `sync-quote-bitrix`, `bi-share-dossier`, `dropbox-list`, `github-credentials-test`, `github-fix-config`.
+
+### Segurança & Governança (MCP)
+- `auth-integrity-check`, `block-ip-temporarily`, `mcp-keys-issue`, `mcp-keys-revoke`, `mcp-keys-rotate`, `mcp-keys-update`, `mcp-server`, `rls-audit`, `validate-access`, `step-up-verify`, `ownership-audit`, `ownership-repair`, `force-global-logout`, `log-login-attempt`, `detect-new-device`.
+
+### Monitoramento & Saúde
+- `health-check`, `full-op-diagnostics`, `connection-tester`, `connections-auto-test`, `connections-health-check`, `connections-hub-audit`, `migration-health-check`, `rls-integration-tests`, `rls-matrix-export`, `process-queue`, `process-scheduled-reports`.
+
+### Comunicação & Notificação
+- `send-notification`, `send-digest`, `send-scheduled-reports`, `send-transactional-email`, `quote-followup-reminders`, `cleanup-notifications`, `verify-email`.
+
+### Public Share (React Templates)
+- `collections-public-react`, `comparisons-public-react`, `favorites-public-react`, `kit-public-view`, `quote-public-view`.
+
+### Utilidades & Outros
+- `cnpj-lookup`, `image-proxy`, `categories-api`, `materials-api`, `commemorative-dates`, `expert-chat`, `get-visitor-info`, `magic-up-score`, `manage-users`, `market-intelligence-insights`, `sicoob-seed`, `sicoob-seed-debug`, `webhook-dispatcher`, `webhook-inbound`.
 
 ## 6. Arquitetura de Segurança e Observabilidade
 - **RLS First:** Políticas em todas as tabelas, audit trail imutável via triggers.
