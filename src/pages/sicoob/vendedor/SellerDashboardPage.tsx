@@ -83,29 +83,35 @@ export default function SellerDashboardPage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-6">
-                {stats?.topClients.map((client, idx) => (
-                  <div key={idx} className="flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                      <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center font-bold text-sm text-muted-foreground">
-                        {idx + 1}
+                {isLoading ? (
+                  <div className="flex justify-center py-12"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div>
+                ) : stats?.topClients.length === 0 ? (
+                  <div className="text-center py-8 text-muted-foreground italic">Nenhum dado de faturamento disponível.</div>
+                ) : (
+                  stats?.topClients.map((client, idx) => (
+                    <div key={idx} className="flex items-center justify-between">
+                      <div className="flex items-center gap-4">
+                        <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center font-bold text-sm text-muted-foreground">
+                          {idx + 1}
+                        </div>
+                        <div>
+                          <div className="font-semibold">{client.name}</div>
+                          <div className="text-xs text-muted-foreground">Faturamento: {formatCurrency(client.value)}</div>
+                        </div>
                       </div>
-                      <div>
-                        <div className="font-semibold">{client.name}</div>
-                        <div className="text-xs text-muted-foreground">Faturamento: {formatCurrency(client.value)}</div>
+                      <div className="flex items-center gap-4">
+                        <div className={`text-sm font-medium ${client.grow.startsWith('+') ? 'text-green-600' : 'text-red-600'}`}>
+                          {client.grow}
+                        </div>
+                        <Button variant="ghost" size="icon" asChild>
+                          <Link to="/clientes">
+                            <ArrowRight className="h-4 w-4" />
+                          </Link>
+                        </Button>
                       </div>
                     </div>
-                    <div className="flex items-center gap-4">
-                      <div className={`text-sm font-medium ${client.grow.startsWith('+') ? 'text-green-600' : 'text-red-600'}`}>
-                        {client.grow}
-                      </div>
-                      <Button variant="ghost" size="icon" asChild>
-                        <Link to="/clientes">
-                          <ArrowRight className="h-4 w-4" />
-                        </Link>
-                      </Button>
-                    </div>
-                  </div>
-                ))}
+                  ))
+                )}
               </div>
             </CardContent>
           </Card>
