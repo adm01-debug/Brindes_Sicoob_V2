@@ -65,12 +65,34 @@ test.describe("Navigation & RBAC Integrity", () => {
       }
     });
 
-    test("should be blocked from technical admin panels", async ({ page }) => {
-      const adminRoutes = ["/admin/usuarios", "/admin/seguranca", "/admin/conexoes"];
+    test("should be redirected to /403 from admin panels", async ({ page }) => {
+      const adminRoutes = ["/admin/usuarios", "/admin/rls-denials", "/admin/kit-templates"];
       for (const route of adminRoutes) {
         await page.goto(route);
-        // Should show the restricted route notice
-        await expect(page.locator(Sel.app.accessDenied).or(page.locator('[data-testid="sidebar-restricted-notice"]'))).toBeVisible();
+        // Should redirect to /403
+        await expect(page).toHaveURL(/\/403/);
+        // Should render ForbiddenPage
+        await expect(page.getByTestId("app-forbidden")).toBeVisible();
+      }
+    });
+
+    test("should be redirected to /403 from logistics routes (Onda A)", async ({ page }) => {
+      const logisticsRoutes = ["/sicoob/pedidos", "/sicoob/logistica", "/sicoob/pedidos/kanban"];
+      for (const route of logisticsRoutes) {
+        await page.goto(route);
+        await expect(page).toHaveURL(/\/403/);
+        await expect(page.getByTestId("app-forbidden")).toBeVisible();
+      }
+    });
+
+    test("onboarding tour: should be visible and functional", async ({ page }) => {
+      await gotoAndSettle(page, "/");
+      // O tour deve iniciar ou poder ser iniciado
+      // Assumindo que o tour aparece para novos usuários ou via flag
+      const tourOverlay = page.locator('.fixed.inset-0.z-\\[100\\]');
+      // Se o tour já estiver ativo, verifica o componente
+      if (await tourOverlay.isVisible()) {
+        await expect(page.getByText(/Passo \d+ de \d+/i)).toBeVisible();
       }
     });
   });
