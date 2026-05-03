@@ -63,6 +63,8 @@ export default function QuoteDetailPage() {
           </div>
         </header>
 
+        <QuoteApprovalNotes notes={quote.rejection_notes} status={quote.status} />
+
         <QuoteSingularApprovalActions 
           quoteId={quote.id} 
           status={quote.status} 
