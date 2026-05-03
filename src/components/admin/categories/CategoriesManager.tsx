@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { FolderTree, Pencil, Trash2, BarChart3, ListFilter, Plus, Loader2 } from "lucide-react";
+import { FolderTree, Pencil, Trash2, BarChart3, ListFilter, Plus, Loader2, Network, List as ListIcon } from "lucide-react";
 import { DialogDescription } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -13,6 +13,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { AdminDataTable } from "@/components/admin/common/AdminDataTable";
 import { ImportExportManager } from "@/components/admin/common/ImportExportManager";
+import { CategoryTreeDiagram } from "./CategoryTreeDiagram";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import * as XLSX from 'xlsx';
 import { logAdminAction } from "@/utils/adminAudit";
 import { useAdminPermissions } from "@/hooks/useAdminPermissions";
