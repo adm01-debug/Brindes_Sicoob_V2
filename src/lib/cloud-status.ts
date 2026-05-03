@@ -20,6 +20,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/lib/logger';
 import { pingHealth } from '@/lib/external-db/health-check';
+import { getRequestHeaders } from '@/lib/system/request-context'; // Novo utilitário para propagar X-Request-Id
 
 export type CloudStatus = 'healthy' | 'warming' | 'degraded' | 'down' | 'unknown';
 
@@ -83,14 +84,32 @@ async function checkRest(): Promise<{ ok: boolean; ms: number }> {
   const key = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string | undefined;
   if (!url || !key) return { ok: false, ms: 0 };
   try {
+    const headers = getRequestHeaders({ 
+      apikey: key, 
+      Authorization: `Bearer ${key}` 
+    });
     const res = await withTimeout(
       fetch(`${url}/rest/v1/`, {
         method: 'HEAD',
-        headers: { apikey: key, Authorization: `Bearer ${key}` },
+        headers,
       }),
       2500,
     );
     return { ok: res.ok || res.status === 404, ms: Math.round(performance.now() - t0) };
+  } catch {
+    return { ok: false, ms: Math.round(performance.now() - t0) };
+  }
+}
+
+async function checkHealthFunction(): Promise<{ ok: boolean; ms: number; data?: any }> {
+  const t0 = performance.now();
+  try {
+    const headers = getRequestHeaders();
+    const { data, error } = await supabase.functions.invoke('system-healthcheck', {
+      headers,
+    });
+    const ms = Math.round(performance.now() - t0);
+    return { ok: !error, ms, data };
   } catch {
     return { ok: false, ms: Math.round(performance.now() - t0) };
   }
@@ -115,21 +134,30 @@ export async function probeCloudStatus(force = false): Promise<CloudStatusSnapsh
   if (inFlight) return inFlight;
 
   inFlight = (async () => {
-    const [auth, bridgeRes, rest] = await Promise.all([
+    const [auth, bridgeRes, rest, healthFn] = await Promise.all([
       checkAuth(),
       pingHealth(2500).then((r) => ({ ok: r.ok, ms: r.ms })),
       checkRest(),
+      checkHealthFunction(),
     ]);
+
+    // O status do healthFn (que checa banco e bridges internas) tem precedência
     const signals = { auth, bridge: bridgeRes, rest };
+    let status = deriveStatus(signals);
+
+    // Se a function de health reportar erro crítico, refletimos isso
+    if (healthFn.ok && healthFn.data?.status === 'down') status = 'down';
+    if (healthFn.ok && healthFn.data?.status === 'degraded' && status === 'healthy') status = 'warming';
+
     const snapshot: CloudStatusSnapshot = {
-      status: deriveStatus(signals),
+      status,
       signals,
       checkedAt: Date.now(),
     };
     const previous = cached?.status;
     cached = snapshot;
     if (previous !== snapshot.status) {
-      logger.warn(`[CloudStatus] state change ${previous ?? 'unknown'} → ${snapshot.status}`, signals);
+      logger.warn(`[CloudStatus] state change ${previous ?? 'unknown'} → ${snapshot.status}`, { ...signals, healthFn: healthFn.data });
       target.dispatchEvent(new CustomEvent(EVENT_NAME, { detail: snapshot }));
     }
     return snapshot;
