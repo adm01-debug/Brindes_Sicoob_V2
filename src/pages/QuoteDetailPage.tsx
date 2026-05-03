@@ -13,6 +13,7 @@ import { QuoteCommentsThread } from "@/components/quotes/QuoteCommentsThread";
 import { QuoteVersionsList } from "@/components/quotes/QuoteVersionsList";
 import { QuoteOrderBadge } from "@/components/quotes/QuoteOrderBadge";
 import { QuoteConvertToOrder } from "@/components/quotes/QuoteConvertToOrder";
+import { QuoteSingularApprovalActions } from "@/components/quotes/QuoteSingularApprovalActions";
 import { PageSEO } from "@/components/seo/PageSEO";
 import { Badge } from "@/components/ui/badge";
 import { Lock } from "lucide-react";
