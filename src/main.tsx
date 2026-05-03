@@ -7,6 +7,7 @@ import { initSentry } from "@/lib/sentry";
 import EnhancedErrorBoundary from "@/components/errors/EnhancedErrorBoundary";
 import "@/lib/diagnostics"; // Initialize diagnostics early
 import { injectRequestId } from "@/lib/request-id-injection";
+import { reportWebVitals } from "@/lib/telemetry/webVitals";
 import App from "./App.tsx";
 import "./index.css";
 
