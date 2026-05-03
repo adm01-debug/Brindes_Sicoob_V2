@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, useRef, useCallback, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useState, useRef, useCallback, type ReactNode, useMemo } from "react";
 import { type User, type Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { logger } from "@/lib/logger";
@@ -8,6 +8,9 @@ import { toast } from "sonner";
 import { authDebug, authDebugError, summarizeSession, summarizeUser } from "@/lib/auth/auth-debug";
 import { getRandomGreeting, getHighestRole } from "@/lib/auth/auth-utils";
 import { authService } from "@/services/authService";
+import { useUserRoles } from "@/hooks/auth/useUserRoles";
+import { useUserProfile } from "@/hooks/auth/useUserProfile";
+import { useAuthAAL } from "@/hooks/auth/useAuthAAL";
 
 
 // Tipos de role conforme app_role enum no banco.
@@ -88,164 +91,39 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
-  const [profile, setProfile] = useState<Profile | null>(null);
-  const [userRoles, setUserRoles] = useState<AppRole[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [currentAAL, setCurrentAAL] = useState<'aal1' | 'aal2' | null>(null);
-  const [nextAAL, setNextAAL] = useState<'aal1' | 'aal2' | null>(null);
-  const [hasMFA, setHasMFA] = useState(false);
+  
+  const { userRoles, rolesLoaded, fetchRoles, clearRoles } = useUserRoles();
+  const { profile, fetchProfile, clearProfile } = useUserProfile();
+  const { currentAAL, nextAAL, hasMFA, fetchAAL, clearAAL } = useAuthAAL();
 
-  // Guards contra race conditions (#4) — usando Promise para coordenar chamadores
-  const fetchPromiseRef = useRef<Promise<void> | null>(null);
   const mountedRef = useRef(true);
 
-  const fetchAAL = useCallback(async () => {
-    try {
-      const data = await authService.fetchAAL();
-      if (!mountedRef.current) return;
-      setCurrentAAL(data.currentLevel);
-      setNextAAL(data.nextLevel);
-      setHasMFA(data.hasMFA);
-    } catch (e) {
-      if (import.meta.env.DEV) logger.warn('AAL fetch failed', e instanceof Error ? e.message : String(e));
-    }
-  }, []);
-
-
   const fetchUserData = useCallback(async (userId: string) => {
-    // Se já existe um fetch em andamento para este userId, aguardar ao invés de ignorar
-    if (fetchPromiseRef.current) {
-      await fetchPromiseRef.current;
-      return;
-    }
-    
-    const doFetch = async () => {
-      authDebug("AuthContext.fetchUserData", "start", { userId });
-      try {
-        // Garante que o cliente Supabase já tem a sessão hidratada antes de consultar
-        // tabelas com RLS (evita query como anon retornando 0 linhas → fallback "agente").
-        const { data: sessionData } = await supabase.auth.getSession();
-        const sess = sessionData?.session ?? null;
-        const sessUserId = sess?.user?.id ?? null;
-        const provider =
-          (sess?.user?.app_metadata as { provider?: string } | undefined)?.provider ?? null;
-        const sessionMatchesTarget = sessUserId === userId;
-
-        // Asserção: NUNCA consultar user_roles como anon. Se a sessão estiver ausente
-        // ou pertencer a outro usuário, abortar antes da query (evita resultado [] enganoso).
-        if (!sess || !sessUserId) {
-          authDebugError(
-            "AuthContext.fetchUserData",
-            "ABORT — no active session (would query as anon)",
-            { requestedUserId: userId, hasSession: !!sess },
-          );
-          if (import.meta.env.DEV) {
-            console.warn(
-              "[AUTH-DEBUG] fetchUserData abortado: sem sessão ativa. Não consultando user_roles como anon.",
-            );
-          }
-          return;
-        }
-        if (!sessionMatchesTarget) {
-          authDebugError("AuthContext.fetchUserData", "ABORT — session user mismatch", {
-            requestedUserId: userId,
-            sessionUserId: sessUserId,
-          });
-          return;
-        }
-
-        authDebug("AuthContext.fetchUserData", "session asserted", {
-          sessionUserId: sessUserId,
-          provider,
-          tokenType: sess.token_type ?? null,
-          expiresAt: sess.expires_at ?? null,
-          targetUserId: userId,
-          match: sessionMatchesTarget,
-        });
-
-        // Buscar profile e TODAS as roles em paralelo
-        const [profileResult, firstRoles] = await Promise.all([
-          authService.fetchProfile(userId),
-          authService.queryRoles(userId),
-        ]);
-
-        let rolesResult = firstRoles;
-        if (!rolesResult.error && (!rolesResult.data || rolesResult.data.length === 0)) {
-          authDebug("AuthContext.fetchUserData", "user_roles empty \u2014 retrying once", { userId });
-          await new Promise((r) => setTimeout(r, 250));
-          rolesResult = await authService.queryRoles(userId);
-          authDebug("AuthContext.fetchUserData", "user_roles retry result", {
-            count: rolesResult.data?.length ?? 0,
-            error: rolesResult.error?.message,
-          });
-        }
-
-
-        if (!mountedRef.current) return;
-
-        if (profileResult.error) {
-          authDebugError("AuthContext.fetchUserData", "profile query failed", profileResult.error);
-          if (import.meta.env.DEV) {
-            console.error("Error fetching profile:", profileResult.error);
-          }
-        } else if (profileResult.data) {
-          authDebug("AuthContext.fetchUserData", "profile loaded", {
-            id: profileResult.data.id,
-            role_mirror: profileResult.data.role,
-            is_active: profileResult.data.is_active,
-          });
-          setProfile(profileResult.data as Profile);
-
-          // Atualizar last_login_at (não bloqueia)
-          supabase
-            .from("profiles")
-            .update({ last_login_at: new Date().toISOString() })
-            .eq("user_id", userId)
-            .then(({ error }) => {
-              if (error && import.meta.env.DEV) {
-                logger.warn("Failed to update last_login_at:", error.message);
-              }
-            });
-        }
-
-        if (rolesResult.error) {
-          authDebugError("AuthContext.fetchUserData", "user_roles query failed", rolesResult.error);
-          if (import.meta.env.DEV) {
-            console.error("Error fetching user roles:", rolesResult.error);
-          }
-          // Não chutar fallback "agente" — deixa userRoles vazio (estado indeterminado);
-          // consumidores devem usar `rolesLoaded` para diferenciar carregando/falha de "sem role".
-        } else if (rolesResult.data) {
-          const roles = rolesResult.data.map((r) => r.role as AppRole);
-          authDebug("AuthContext.fetchUserData", "user_roles loaded", {
-            count: roles.length,
-            roles,
-          });
-          // Só atualiza se vieram roles reais. Lista vazia mantém o estado anterior
-          // (provavelmente sessão ainda hidratando — o retry acima já cobre o caso normal).
-          if (roles.length > 0) {
-            setUserRoles(roles);
-          }
-        }
-      } catch (error) {
-        authDebugError("AuthContext.fetchUserData", "unexpected exception", error);
-        if (import.meta.env.DEV) {
-          console.error("Error fetching user data:", error);
-        }
-        // Não chutar fallback "agente" — manter userRoles como está (vazio = indeterminado).
-      } finally {
-        fetchPromiseRef.current = null;
-        // isLoading só fica false APÓS os dados carregarem (#5)
-        if (mountedRef.current) {
-          setIsLoading(false);
-        }
-        authDebug("AuthContext.fetchUserData", "done");
+    authDebug("AuthContext.fetchUserData", "start", { userId });
+    try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const sess = sessionData?.session ?? null;
+      
+      if (!sess || sess.user.id !== userId) {
+        authDebugError("AuthContext.fetchUserData", "ABORT — session mismatch", { userId });
+        return;
       }
-    };
 
-    fetchPromiseRef.current = doFetch();
-    await fetchPromiseRef.current;
-  }, []);
+      await Promise.all([
+        fetchProfile(userId),
+        fetchRoles(userId),
+        fetchAAL()
+      ]);
+    } catch (error) {
+      authDebugError("AuthContext.fetchUserData", "unexpected exception", error);
+    } finally {
+      if (mountedRef.current) setIsLoading(false);
+    }
+  }, [fetchProfile, fetchRoles, fetchAAL]);
+
+
+// Removed large monolithic fetchUserData in favor of modular hooks above
 
   useEffect(() => {
     mountedRef.current = true;
@@ -281,17 +159,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           // Defer Supabase calls with setTimeout to avoid deadlocks
           setTimeout(() => {
             fetchUserData(session.user.id);
-            fetchAAL();
             // Pre-warm external DB + CRM bridge to avoid cold starts (1x por sessão)
             import('@/lib/external-db-prewarm').then(m => m.prewarmExternalDb({ oncePerSession: true }));
           }, 0);
         } else {
           authDebug("AuthContext.onAuthStateChange", "no session — clearing state");
-          setProfile(null);
-          setUserRoles([]);
-          setCurrentAAL(null);
-          setNextAAL(null);
-          setHasMFA(false);
+          clearProfile();
+          clearRoles();
+          clearAAL();
           setIsLoading(false);
           
           // Limpeza automática de dados sensíveis da sessão
@@ -322,7 +197,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       if (session?.user) {
         fetchUserData(session.user.id);
-        fetchAAL();
       } else {
         setIsLoading(false);
       }
@@ -416,11 +290,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       await supabase.auth.signOut();
       setUser(null);
       setSession(null);
-      setProfile(null);
-      setUserRoles([]);
-      setCurrentAAL(null);
-      setNextAAL(null);
-      setHasMFA(false);
+      clearProfile();
+      clearRoles();
+      clearAAL();
       // Permite prewarm no próximo login (mesma aba)
       import('@/lib/external-db-prewarm').then(m => m.resetPrewarmSession()).catch(() => {});
       log.info('ok');
@@ -432,16 +304,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const refreshProfile = async () => {
     if (user) {
-      fetchPromiseRef.current = null; // Forçar refresh
       await fetchUserData(user.id);
     }
   };
 
   /**
-   * Força um refresh completo após login social ou mudança de papéis:
-   *  1. Renova o JWT (`supabase.auth.refreshSession`) para trazer claims atuais.
-   *  2. Re-busca profile + user_roles (bypassando o cache do fetchPromiseRef).
-   *  3. Atualiza AAL/MFA.
+   * Força um refresh completo após login social ou mudança de papéis.
    */
   const refreshSession = useCallback(async () => {
     const log = createClientLogger('auth.refreshSession');
@@ -463,8 +331,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
       const uid = nextSession?.user?.id ?? user?.id;
       if (uid) {
-        fetchPromiseRef.current = null;
-        await Promise.all([fetchUserData(uid), fetchAAL()]);
+        await fetchUserData(uid);
       } else {
         authDebug("AuthContext.refreshSession", "no uid — skipping fetchUserData");
       }
@@ -474,20 +341,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       authDebugError("AuthContext.refreshSession", "unexpected exception", err);
       log.error('failed', { err: err instanceof Error ? err.message : String(err) });
     }
-  }, [user, fetchUserData, fetchAAL]);
+  }, [user, fetchUserData]);
 
-  const has = (r: AppRole) => userRoles.includes(r);
-  const isDev = has("dev");
-  const isGestorCompras = has("gestor_compras");
-  const isGerentePa = has("gerente_pa");
-  const isVendedor = has("vendedor");
-  const isSupervisor = has("supervisor") || has("admin") || has("manager");
-  const isAgente = has("agente");
-  const isSupervisorOrAbove = isDev || isGestorCompras || isSupervisor;
-
-  const primaryRole = getHighestRole(userRoles);
-  const isAdmin = isSupervisorOrAbove;
-  const mfaRequired = isSupervisorOrAbove && currentAAL !== 'aal2';
+  const role = useMemo(() => getHighestRole(userRoles), [userRoles]);
+  const isDev = userRoles.includes("dev");
+  const isGestorCompras = userRoles.includes("gestor_compras");
+  const isGerentePa = userRoles.includes("gerente_pa");
+  const isVendedor = userRoles.includes("vendedor");
+  const isSupervisor = userRoles.includes("supervisor") || userRoles.includes("admin");
+  const isAgente = userRoles.includes("agente");
+  const isSupervisorOrAbove = isDev || isSupervisor || isGestorCompras;
+  const canManage = isSupervisorOrAbove;
 
   const cooperativaId = profile?.cooperativa_id || null;
   const paId = profile?.pa_id || null;
@@ -499,7 +363,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     profile,
     isLoading,
     roles: userRoles,
-    role: primaryRole,
+    role,
     isDev,
     isGestorCompras,
     isGerentePa,
@@ -507,7 +371,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     isSupervisor,
     isAgente,
     isSupervisorOrAbove,
-    canManage: isSupervisorOrAbove,
+    canManage,
     cooperativaId,
     paId,
     isAdmin: isSupervisorOrAbove,
@@ -515,8 +379,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     currentAAL,
     nextAAL,
     hasMFA,
-    mfaRequired,
-    rolesLoaded: userRoles.length > 0,
+    mfaRequired: nextAAL === 'aal2' && currentAAL !== 'aal2',
+    rolesLoaded,
     refreshAAL: fetchAAL,
     signUp,
     signIn,
