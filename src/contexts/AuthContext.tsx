@@ -348,11 +348,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const role = useMemo(() => getHighestRole(userRoles), [userRoles]);
   const isDev = userRoles.includes("dev");
   const isGestorCompras = userRoles.includes("gestor_compras");
-  const isGerentePa = userRoles.includes("gerente_pa");
+  const isGerentePa = userRoles.includes("gerente_pa") || userRoles.includes("comprador_pac");
   const isVendedor = userRoles.includes("vendedor");
   const isSupervisor = userRoles.includes("supervisor") || userRoles.includes("admin");
   const isAgente = userRoles.includes("agente");
-  const isSupervisorOrAbove = isDev || isSupervisor || isGestorCompras;
+  const isCompradorSingular = userRoles.includes("comprador_singular") || userRoles.includes("gestor_compras");
+  const isSupervisorOrAbove = isDev || isSupervisor || isCompradorSingular;
   const canManage = isSupervisorOrAbove;
 
   const cooperativaId = profile?.cooperativa_id || null;
