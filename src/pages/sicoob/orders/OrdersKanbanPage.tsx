@@ -117,14 +117,14 @@ function canRoleMove(role: SicoobRole, from: StatusId, to: StatusId): boolean {
 }
 
 // ---------- Draggable card ----------
-interface DraggableCardProps {
+export interface DraggableCardProps {
   order: OrderCard;
   onClick: () => void;
   canDrag: boolean;
   reasonBlocked?: string;
 }
 
-function DraggableCard({ order, onClick, canDrag, reasonBlocked }: DraggableCardProps) {
+export function DraggableCard({ order, onClick, canDrag, reasonBlocked }: DraggableCardProps) {
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id: order.id,
     disabled: !canDrag,
