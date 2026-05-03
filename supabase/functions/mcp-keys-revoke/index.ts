@@ -179,8 +179,9 @@ Deno.serve(async (req) => {
       .eq("id", key_id)
       .maybeSingle();
     if (fetchErr) {
+      log.error("fetch_key_failed", { key_id, err: fetchErr });
       await auditFailure("error", "mcp_key.revoke_error", { reason: "fetch_failed", detail: fetchErr.message }, key_id);
-      return jsonResponse({ error: "internal_error", detail: fetchErr.message }, 500, requestId);
+      return log.respond(jsonResponse({ error: "internal_error", detail: fetchErr.message }, 500, requestId));
     }
     if (!existing) {
       await auditFailure("denied", "mcp_key.revoke_denied", { reason: "not_found" }, key_id);
