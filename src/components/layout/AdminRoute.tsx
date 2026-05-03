@@ -20,7 +20,7 @@ interface AdminRouteProps {
  *  - Sem MFA cadastrado → abre fluxo de enrollment obrigatório
  *  - Com MFA mas sessão em aal1 → abre challenge para elevar sessão
  */
-export function AdminRoute({ children, requiredRole }: AdminRouteProps) {
+export const AdminRoute = forwardRef<HTMLDivElement, AdminRouteProps>(function AdminRoute({ children, requiredRole }, ref) {
   const { user, canManage, isDev, isGestorCompras, isSupervisor, isLoading, currentAAL, hasMFA, mfaRequired } = useAuth();
   const [enrollOpen, setEnrollOpen] = useState(false);
 
