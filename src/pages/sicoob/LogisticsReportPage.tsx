@@ -27,8 +27,8 @@ export default function LogisticsReportPage() {
       <div className="container mx-auto p-6 space-y-6 animate-fade-in">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
-            <h1 className="text-3xl font-bold font-display tracking-tight">Logística e Entregas</h1>
-            <p className="text-muted-foreground">Rastreamento de pedidos e confirmação de entrega (POD) por PA.</p>
+            <h1 className="text-3xl font-bold font-display tracking-tight text-sicoob-green-dark">Operações & Logística</h1>
+            <p className="text-muted-foreground italic">Rastreamento de pedidos e prova de entrega (POD) para todos os PAs.</p>
           </div>
           <div className="flex gap-2 w-full md:w-auto">
             <div className="relative flex-1 md:w-64">
