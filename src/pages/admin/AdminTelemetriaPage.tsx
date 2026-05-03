@@ -81,6 +81,9 @@ const BreakerStatusCard = lazy(() =>
 const EdgeFunctionLogsPanel = lazy(() =>
   import('@/components/admin/telemetry/EdgeFunctionLogsPanel').then((m) => ({ default: m.EdgeFunctionLogsPanel })),
 );
+const AppLogsTable = lazy(() =>
+  import('@/components/admin/telemetry/AppLogsTable').then((m) => ({ default: m.AppLogsTable })),
+);
 
 
 const getSeverityBadge = (severity: string) => {
