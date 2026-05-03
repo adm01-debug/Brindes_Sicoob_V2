@@ -20,7 +20,7 @@ function validateLinks() {
   let errors = [];
 
   // 1. Verificar se o inventário cita MODULES e ROUTES
-  if (!inventoryContent.includes('MODULES.md') && !inventoryContent.includes('Master Module Index')) {
+  if (!inventoryContent.includes('MODULES.md')) {
     console.warn('⚠️ O inventário não cita explicitamente o Master Module Index (MODULES.md)');
   }
 

@@ -25,7 +25,7 @@ Plataforma multi-tenant com separação lógica e visual via **Skins Factory**.
 | Papel | Escopo | Rotas Chave |
 |-------|--------|-------------|
 | **`gerente_pa`** | Operação de Postos de Atendimento Sicoob | `/sicoob/pedidos`, `/meus-pedidos` |
-| **`gestor_compras`** | Aprovação e gestão de verbas | `/orcamentos/dashboard`, `/dashboard-gerencial` |
+| **`gestor_compras`** | Aprovação e gestão de verbas | `/orcamentos/dashboard`, `/orcamentos` |
 | **`vendedor`** | Gestão de pedidos, logística e CRM | `/orcamentos`, `/painel-kpis` |
 | **`admin`** | Gestão de usuários, cadastros de negócio e CMS | `/admin/usuarios`, `/admin/cadastros` |
 | **`dev`** | Operações técnicas, segurança e telemetria | `/admin/telemetria`, `/admin/seguranca`, `/admin/conexoes` |
