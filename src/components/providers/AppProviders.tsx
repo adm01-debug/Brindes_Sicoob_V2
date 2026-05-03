@@ -5,7 +5,7 @@
  * NOTE: Comparison, Favorites, and RecentlyViewed have been migrated to Zustand stores
  * and no longer need providers. Their context files export no-op providers for compat.
  */
-import { type ReactNode } from "react";
+import { type ReactNode, forwardRef } from "react";
 import { CollectionsProvider } from "@/contexts/CollectionsContext";
 import { ProductsProvider } from "@/contexts/ProductsContext";
 import { OrganizationProvider } from "@/contexts/OrganizationContext";
@@ -20,16 +20,20 @@ interface AppProvidersProps {
  * Auth, Theme, Accessibility and Query providers remain external
  * because they have different lifecycles.
  */
-export const AppProviders = ({ children }: AppProvidersProps) => {
+export const AppProviders = forwardRef<HTMLDivElement, AppProvidersProps>(({ children }, ref) => {
   return (
-    <OrganizationProvider>
-      <ProductsProvider>
-        <CollectionsProvider>
-          <DevChallengeProvider>
-            {children}
-          </DevChallengeProvider>
-        </CollectionsProvider>
-      </ProductsProvider>
-    </OrganizationProvider>
+    <div ref={ref}>
+      <OrganizationProvider>
+        <ProductsProvider>
+          <CollectionsProvider>
+            <DevChallengeProvider>
+              {children}
+            </DevChallengeProvider>
+          </CollectionsProvider>
+        </ProductsProvider>
+      </OrganizationProvider>
+    </div>
   );
-}
+});
+
+AppProviders.displayName = 'AppProviders';
