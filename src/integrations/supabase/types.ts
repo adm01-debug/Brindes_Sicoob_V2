@@ -71,6 +71,36 @@ export type Database = {
         }
         Relationships: []
       }
+      admin_config_audit: {
+        Row: {
+          action_type: string
+          changed_at: string | null
+          changed_by: string | null
+          id: string
+          new_data: Json | null
+          old_data: Json | null
+          table_name: string
+        }
+        Insert: {
+          action_type: string
+          changed_at?: string | null
+          changed_by?: string | null
+          id?: string
+          new_data?: Json | null
+          old_data?: Json | null
+          table_name: string
+        }
+        Update: {
+          action_type?: string
+          changed_at?: string | null
+          changed_by?: string | null
+          id?: string
+          new_data?: Json | null
+          old_data?: Json | null
+          table_name?: string
+        }
+        Relationships: []
+      }
       admin_settings: {
         Row: {
           created_at: string
@@ -4841,6 +4871,39 @@ export type Database = {
         }
         Relationships: []
       }
+      qa_rls_audits: {
+        Row: {
+          audited_at: string | null
+          id: string
+          metadata: Json | null
+          score: number
+          tables_missing_rls: string[] | null
+          tables_permissive_rls: string[] | null
+          tables_total: number
+          tables_with_rls: number
+        }
+        Insert: {
+          audited_at?: string | null
+          id?: string
+          metadata?: Json | null
+          score: number
+          tables_missing_rls?: string[] | null
+          tables_permissive_rls?: string[] | null
+          tables_total: number
+          tables_with_rls: number
+        }
+        Update: {
+          audited_at?: string | null
+          id?: string
+          metadata?: Json | null
+          score?: number
+          tables_missing_rls?: string[] | null
+          tables_permissive_rls?: string[] | null
+          tables_total?: number
+          tables_with_rls?: number
+        }
+        Relationships: []
+      }
       qa_run_steps: {
         Row: {
           created_at: string | null
@@ -7055,6 +7118,7 @@ export type Database = {
         Args: { _function_name: string; _model: string; _user_id: string }
         Returns: Json
       }
+      audit_all_rls_compliance: { Args: never; Returns: Json }
       audit_ownership_orphans: {
         Args: { _triggered_by?: string }
         Returns: string
