@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { exportToExcel, exportToPDF, ORDER_EXPORT_COLUMNS } from "@/utils/orderExportUtils";
 import { format } from "date-fns";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { BatchExportDialog } from "@/components/orders/BatchExportDialog";
 
 export function OrdersPage() {
   const { user } = useAuth();
@@ -89,6 +90,7 @@ export function OrdersPage() {
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
+            <BatchExportDialog entityType="orders" filters={{ search: searchQuery }} />
           </div>
         </div>
 

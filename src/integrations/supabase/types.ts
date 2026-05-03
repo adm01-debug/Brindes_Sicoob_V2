@@ -1073,6 +1073,98 @@ export type Database = {
           },
         ]
       }
+      export_audit_log: {
+        Row: {
+          created_at: string | null
+          export_type: string | null
+          file_url: string | null
+          filters: Json | null
+          id: string
+          job_id: string | null
+          record_count: number | null
+          status: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          export_type?: string | null
+          file_url?: string | null
+          filters?: Json | null
+          id?: string
+          job_id?: string | null
+          record_count?: number | null
+          status?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          export_type?: string | null
+          file_url?: string | null
+          filters?: Json | null
+          id?: string
+          job_id?: string | null
+          record_count?: number | null
+          status?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "export_audit_log_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "export_jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      export_jobs: {
+        Row: {
+          attempts: number | null
+          created_at: string | null
+          entity_type: string
+          error_message: string | null
+          export_type: string
+          file_url: string | null
+          filters: Json | null
+          id: string
+          max_attempts: number | null
+          status: string
+          total_count: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          attempts?: number | null
+          created_at?: string | null
+          entity_type: string
+          error_message?: string | null
+          export_type: string
+          file_url?: string | null
+          filters?: Json | null
+          id?: string
+          max_attempts?: number | null
+          status?: string
+          total_count?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          attempts?: number | null
+          created_at?: string | null
+          entity_type?: string
+          error_message?: string | null
+          export_type?: string
+          file_url?: string | null
+          filters?: Json | null
+          id?: string
+          max_attempts?: number | null
+          status?: string
+          total_count?: number | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       external_connections: {
         Row: {
           auto_test_enabled: boolean
@@ -6651,7 +6743,9 @@ export type Database = {
         }[]
       }
       get_unread_count: { Args: never; Returns: number }
+      get_user_cooperative_id: { Args: never; Returns: string }
       get_user_org_ids: { Args: { _user_id: string }; Returns: string[] }
+      get_user_pa_id: { Args: never; Returns: string }
       get_user_recent_comparisons: {
         Args: { p_limit?: number }
         Returns: {
@@ -6720,6 +6814,7 @@ export type Database = {
         Returns: boolean
       }
       is_supervisor_or_above: { Args: { _user_id?: string }; Returns: boolean }
+      is_vendedor: { Args: { _user_id?: string }; Returns: boolean }
       is_vendedor_role: { Args: { _user_id?: string }; Returns: boolean }
       log_access_denied: {
         Args: {
