@@ -1,3 +1,165 @@
+import React from "react";
+import { MainLayout } from "@/components/layout/MainLayout";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Users, ShoppingBag, Target, TrendingUp, Calendar, ArrowRight, UserPlus, Briefcase } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { formatCurrency } from "@/utils/formatters";
+import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
+import { Progress } from "@/components/ui/progress";
+
 export default function SellerDashboardPage() {
-  return <div className="p-6">Dashboard do Vendedor SICOOB (Em desenvolvimento)</div>;
+  const { data: stats } = useQuery({
+    queryKey: ["sicoob-seller-stats"],
+    queryFn: async () => {
+      return {
+        totalClients: 48,
+        activeOrders: 15,
+        monthlySales: 345000.00,
+        salesGoal: 500000.00,
+        topClients: [
+          { name: "Sicoob Central SC/RS", value: 120000, grow: "+12%" },
+          { name: "Sicoob MaxiCrédito", value: 85000, grow: "+5%" },
+          { name: "Sicoob São Miguel", value: 42000, grow: "-2%" },
+        ],
+        recentActivity: [
+          { action: "Pedido aprovado", client: "PA 01 - Centro", time: "2h atrás" },
+          { action: "Novo orçamento", client: "PA 04 - Industrial", time: "5h atrás" },
+          { action: "Entrega confirmada", client: "PA 02 - Norte", time: "1 dia atrás" },
+        ]
+      };
+    }
+  });
+
+  const goalProgress = stats ? (stats.monthlySales / stats.salesGoal) * 100 : 0;
+
+  return (
+    <MainLayout>
+      <div className="container mx-auto p-6 space-y-8 animate-fade-in">
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-3xl font-bold font-display tracking-tight">Minha Carteira</h1>
+            <p className="text-muted-foreground">Gestão comercial e acompanhamento de metas SICOOB.</p>
+          </div>
+          <div className="flex gap-2">
+            <Button variant="outline" asChild>
+              <Link to="/clientes" className="gap-2">
+                <Users className="h-4 w-4" /> Ver Clientes
+              </Link>
+            </Button>
+            <Button asChild>
+              <Link to="/orcamentos/novo" className="gap-2">
+                <ShoppingBag className="h-4 w-4" /> Novo Orçamento
+              </Link>
+            </Button>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          <Card className="border-[1.5px]">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium">Clientes na Carteira</CardTitle>
+              <Briefcase className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stats?.totalClients}</div>
+              <p className="text-xs text-muted-foreground mt-1">Singulares e PAs ativos</p>
+            </CardContent>
+          </Card>
+
+          <Card className="border-[1.5px]">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium">Pedidos em Aberto</CardTitle>
+              <ShoppingBag className="h-4 w-4 text-blue-500" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-blue-600">{stats?.activeOrders}</div>
+              <p className="text-xs text-muted-foreground mt-1 text-blue-600/80 font-medium">Em produção ou trânsito</p>
+            </CardContent>
+          </Card>
+
+          <Card className="border-[1.5px] md:col-span-2 bg-primary/5 border-primary/20">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium text-primary">Meta Mensal de Vendas</CardTitle>
+              <Target className="h-4 w-4 text-primary" />
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="flex justify-between items-end">
+                <div className="text-2xl font-bold text-primary">
+                  {formatCurrency(stats?.monthlySales || 0)} 
+                  <span className="text-sm font-normal text-muted-foreground ml-2">de {formatCurrency(stats?.salesGoal || 0)}</span>
+                </div>
+                <div className="text-sm font-bold text-primary">{goalProgress.toFixed(0)}%</div>
+              </div>
+              <Progress value={goalProgress} className="h-2" />
+            </CardContent>
+          </Card>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <Card className="border-[1.5px] md:col-span-2">
+            <CardHeader>
+              <CardTitle>Top Clientes (Mês)</CardTitle>
+              <CardDescription>Maiores volumes de faturamento por Cooperativa.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-6">
+                {stats?.topClients.map((client, idx) => (
+                  <div key={idx} className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center font-bold text-sm text-muted-foreground">
+                        {idx + 1}
+                      </div>
+                      <div>
+                        <div className="font-semibold">{client.name}</div>
+                        <div className="text-xs text-muted-foreground">Faturamento: {formatCurrency(client.value)}</div>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <div className={`text-sm font-medium ${client.grow.startsWith('+') ? 'text-green-600' : 'text-red-600'}`}>
+                        {client.grow}
+                      </div>
+                      <Button variant="ghost" size="icon" asChild>
+                        <Link to="/clientes">
+                          <ArrowRight className="h-4 w-4" />
+                        </Link>
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-[1.5px]">
+            <CardHeader>
+              <CardTitle>Atividade Recente</CardTitle>
+              <CardDescription>Últimas interações na sua carteira.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-6">
+                {stats?.recentActivity.map((item, idx) => (
+                  <div key={idx} className="flex gap-4">
+                    <div className="relative mt-1">
+                      <div className="w-2 h-2 rounded-full bg-primary ring-4 ring-primary/20" />
+                      {idx < stats.recentActivity.length - 1 && (
+                        <div className="absolute top-2 left-1/2 -translate-x-1/2 w-[1px] h-10 bg-border" />
+                      )}
+                    </div>
+                    <div>
+                      <div className="text-sm font-medium">{item.action}</div>
+                      <div className="text-xs text-muted-foreground">{item.client} • {item.time}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <Button variant="outline" className="w-full mt-6" asChild>
+                <Link to="/sicoob/pedidos">Ver Todos os Pedidos</Link>
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    </MainLayout>
+  );
 }
