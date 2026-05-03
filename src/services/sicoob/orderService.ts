@@ -15,6 +15,9 @@ export const sicoobOrderService = {
     from?: string,
     to?: string
   }): Promise<SicoobOrder[]> {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error("Usuário não autenticado");
+
     let query = supabase.from("sicoob_orders").select("*, pa:postos_atendimento(nome), cooperativa:cooperativas(nome)");
 
     if (filters?.status && filters.status !== "all") {
