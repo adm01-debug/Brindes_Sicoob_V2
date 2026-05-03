@@ -24,6 +24,13 @@ export default function AdminVerbasPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingBudget, setEditingBudget] = useState<any>(null);
+  
+  // Budget alert settings
+  const [alertConfig, setAlertConfig] = useState({
+    warningThreshold: 70, // 70%
+    criticalThreshold: 90  // 90%
+  });
+
 
   const { data: auditLogs = [] } = useQuery({
     queryKey: ['admin-budgets-audit'],
