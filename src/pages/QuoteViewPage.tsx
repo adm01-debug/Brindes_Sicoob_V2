@@ -193,6 +193,9 @@ export default function QuoteViewPage() {
           </div>
           <QuoteValidityBanner validUntil={quote.valid_until} status={quote.status} />
         </div>
+        
+        {/* Singular Approval Actions */}
+        {id && quote && <QuoteSingularApprovalActions quoteId={id} status={quote.status} onActionComplete={() => { if (id) fetchQuote(id).then(setQuote); }} />}
 
         {/* Discount Approval Banner */}
         {quote.status === "pending_approval" && (
