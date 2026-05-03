@@ -10,7 +10,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { FileUp, FileDown, AlertCircle, CheckCircle2, Loader2, Table as TableIcon } from "lucide-react";
+import { FileUp, FileDown, AlertCircle, CheckCircle2, Loader2, Table as TableIcon, Download } from "lucide-react";
 import * as XLSX from 'xlsx';
 import Papa from 'papaparse';
 import { toast } from "sonner";

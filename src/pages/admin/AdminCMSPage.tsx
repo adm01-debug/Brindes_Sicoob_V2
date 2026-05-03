@@ -60,6 +60,21 @@ function BannersTab() {
   const [banners, setBanners] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  const handleExport = (data: any[]) => {
+    const exportData = data.map(b => ({
+      'Título': b.title,
+      'URL Imagem': b.image_url,
+      'Link': b.link_url || '',
+      'Posição': b.position,
+      'Ordem': b.sort_order,
+      'Status': b.is_active ? 'Ativo' : 'Inativo'
+    }));
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Banners");
+    XLSX.writeFile(workbook, `banners_cms_${new Date().toISOString().split('T')[0]}.xlsx`);
+  };
+
   const fetchBanners = async () => {
     setIsLoading(true);
     const { data, error } = await supabase.from('cms_banners').select('*').order('sort_order', { ascending: true });

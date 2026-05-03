@@ -47,6 +47,7 @@ interface AdminDataTableProps<T> {
   actions?: React.ReactNode;
   onRowClick?: (row: T) => void;
   className?: string;
+  onExport?: (data: T[]) => void;
 }
 
 export function AdminDataTable<T extends { id?: string | number }>({
