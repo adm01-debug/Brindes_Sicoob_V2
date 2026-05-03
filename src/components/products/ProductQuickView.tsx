@@ -343,7 +343,8 @@ export const ProductQuickView = forwardRef<HTMLDivElement, ProductQuickViewProps
               <div className="flex items-center gap-3">
                 <Button
                   variant="outline"
-                  size="icon" aria-label="Remover"
+                  size="icon" 
+                  aria-label="Diminuir quantidade"
                   className="h-9 w-9"
                   onClick={() => setQuantity(Math.max(1, quantity - 1))}
                   disabled={quantity <= 1}
