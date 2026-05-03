@@ -152,25 +152,76 @@ export default function AdminSingularesPage() {
   );
 }
 
+
 function SingularFormDialog({ open, onOpenChange, singular, onSave }: any) {
   const [formData, setFormData] = useState<any>({ name: '', code: '', address: '', phone: '', email: '', is_active: true });
-  useEffect(() => { if (singular) setFormData(singular); else setFormData({ name: '', code: '', address: '', phone: '', email: '', is_active: true }); }, [singular, open]);
+  const [isSaving, setIsSaving] = useState(false);
+
+  useEffect(() => { 
+    if (singular) setFormData(singular); 
+    else setFormData({ name: '', code: '', address: '', phone: '', email: '', is_active: true }); 
+  }, [singular, open]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formData.name || !formData.code) {
+      toast.error("Nome e código são obrigatórios");
+      return;
+    }
+    setIsSaving(true);
+    try {
+      await onSave(formData);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px]">
-        <DialogHeader><DialogTitle>{singular ? 'Editar Singular' : 'Nova Singular'}</DialogTitle></DialogHeader>
-        <div className="grid gap-4 py-4">
-          <div className="grid grid-cols-4 items-center gap-4"><Label htmlFor="name" className="text-right">Nome</Label><Input id="name" className="col-span-3" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} /></div>
-          <div className="grid grid-cols-4 items-center gap-4"><Label htmlFor="code" className="text-right">Código</Label><Input id="code" className="col-span-3" value={formData.code} onChange={(e) => setFormData({ ...formData, code: e.target.value })} /></div>
-          <div className="grid grid-cols-4 items-center gap-4"><Label htmlFor="email" className="text-right">Email</Label><Input id="email" className="col-span-3" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} /></div>
-          <div className="grid grid-cols-4 items-center gap-4"><Label htmlFor="phone" className="text-right">Telefone</Label><Input id="phone" className="col-span-3" value={formData.phone} onChange={(e) => setFormData({ ...formData, phone: e.target.value })} /></div>
-          <div className="grid grid-cols-4 items-center gap-4"><Label htmlFor="address" className="text-right">Endereço</Label><Input id="address" className="col-span-3" value={formData.address} onChange={(e) => setFormData({ ...formData, address: e.target.value })} /></div>
+        <DialogHeader>
+          <DialogTitle>{singular ? 'Editar Singular' : 'Nova Singular'}</DialogTitle>
+          <DialogDescription>Preencha os dados da cooperativa regional.</DialogDescription>
+        </DialogHeader>
+        <form onSubmit={handleSubmit} className="grid gap-4 py-4">
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="name" className="text-right">Nome</Label>
+            <Input id="name" className="col-span-3" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} required />
+          </div>
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="code" className="text-right">Código</Label>
+            <Input id="code" className="col-span-3" value={formData.code} onChange={(e) => setFormData({ ...formData, code: e.target.value })} required placeholder="Ex: 4001" />
+          </div>
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="email" className="text-right">Email</Label>
+            <Input id="email" type="email" className="col-span-3" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} />
+          </div>
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="phone" className="text-right">Telefone</Label>
+            <Input id="phone" className="col-span-3" value={formData.phone} onChange={(e) => setFormData({ ...formData, phone: e.target.value })} />
+          </div>
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="address" className="text-right">Endereço</Label>
+            <Input id="address" className="col-span-3" value={formData.address} onChange={(e) => setFormData({ ...formData, address: e.target.value })} />
+          </div>
           <div className="grid grid-cols-4 items-center gap-4">
             <Label className="text-right">Ativo</Label>
-            <div className="col-span-3 flex items-center gap-2"><input type="checkbox" checked={formData.is_active} onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })} /><span className="text-sm">Habilitado</span></div>
+            <div className="col-span-3 flex items-center gap-2">
+              <input 
+                type="checkbox" 
+                id="is_active"
+                className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                checked={formData.is_active} 
+                onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })} 
+              />
+              <Label htmlFor="is_active" className="text-sm font-normal">Habilitado para transações</Label>
+            </div>
           </div>
-        </div>
-        <DialogFooter><Button variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button><Button onClick={() => onSave(formData)}>Salvar</Button></DialogFooter>
+          <DialogFooter className="pt-4">
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
+            <Button type="submit" disabled={isSaving}>{isSaving ? "Salvando..." : "Salvar"}</Button>
+          </DialogFooter>
+        </form>
       </DialogContent>
     </Dialog>
   );
