@@ -16,7 +16,7 @@ import { exportToExcel, exportToPDF, ORDER_EXPORT_COLUMNS } from "@/utils/orderE
 import { format } from "date-fns";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
-export default function OrdersPage() {
+export function OrdersPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");

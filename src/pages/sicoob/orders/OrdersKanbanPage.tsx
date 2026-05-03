@@ -117,14 +117,14 @@ function canRoleMove(role: SicoobRole, from: StatusId, to: StatusId): boolean {
 }
 
 // ---------- Draggable card ----------
-interface DraggableCardProps {
+export interface DraggableCardProps {
   order: OrderCard;
   onClick: () => void;
   canDrag: boolean;
   reasonBlocked?: string;
 }
 
-function DraggableCard({ order, onClick, canDrag, reasonBlocked }: DraggableCardProps) {
+export function DraggableCard({ order, onClick, canDrag, reasonBlocked }: DraggableCardProps) {
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id: order.id,
     disabled: !canDrag,
@@ -180,7 +180,7 @@ function DraggableCard({ order, onClick, canDrag, reasonBlocked }: DraggableCard
 }
 
 // ---------- Droppable column ----------
-interface DroppableColumnProps {
+export interface DroppableColumnProps {
   column: ColumnDef;
   isOver: boolean;
   invalidTarget: boolean;
@@ -188,7 +188,7 @@ interface DroppableColumnProps {
   count: number;
 }
 
-function DroppableColumn({ column, isOver, invalidTarget, children, count }: DroppableColumnProps) {
+export function DroppableColumn({ column, isOver, invalidTarget, children, count }: DroppableColumnProps) {
   const { setNodeRef } = useDroppable({ id: column.id });
   return (
     <div
