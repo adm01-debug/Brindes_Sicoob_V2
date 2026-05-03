@@ -117,28 +117,32 @@ export const AccessibilityProvider = forwardRef<HTMLDivElement, { children: Reac
         setHighContrast,
       }}
     >
-      {children}
-      
-      {/* Screen Reader Announcements */}
-      <div
-        role="status"
-        aria-live="polite"
-        aria-atomic="true"
-        className="sr-only"
-      >
-        {announcement?.priority === "polite" && announcement.message}
-      </div>
-      <div
-        role="alert"
-        aria-live="assertive"
-        aria-atomic="true"
-        className="sr-only"
-      >
-        {announcement?.priority === "assertive" && announcement.message}
+      <div ref={ref}>
+        {children}
+        
+        {/* Screen Reader Announcements */}
+        <div
+          role="status"
+          aria-live="polite"
+          aria-atomic="true"
+          className="sr-only"
+        >
+          {announcement?.priority === "polite" && announcement.message}
+        </div>
+        <div
+          role="alert"
+          aria-live="assertive"
+          aria-atomic="true"
+          className="sr-only"
+        >
+          {announcement?.priority === "assertive" && announcement.message}
+        </div>
       </div>
     </A11yContext.Provider>
   );
-}
+});
+
+AccessibilityProvider.displayName = 'AccessibilityProvider';
 
 // Skip to Main Content Link
 export function SkipToContent() {
