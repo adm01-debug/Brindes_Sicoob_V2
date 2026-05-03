@@ -80,7 +80,7 @@ export function MainLayout({ children }: MainLayoutProps) {
 
   const layoutContent = (
     <div className="min-h-screen bg-background ambient-glow print:min-h-0" role="document">
-      <CriticalErrorOverlay />
+      
       <div className="print:hidden">
         <Suspense fallback={null}>
           <ScrollProgressIndicator color="primary" height={3} />
