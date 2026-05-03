@@ -194,7 +194,7 @@ export default function FiltersPage() {
                         {state.activeFiltersCount > 0 && <Button variant="outline" size="sm" onClick={state.handleReset} className="text-xs shrink-0">Limpar ({state.activeFiltersCount})</Button>}
                         <Button size="sm" className="flex-1 tabular-nums" onClick={() => state.setMobileFiltersOpen(false)}>
                           <Filter className="h-3.5 w-3.5 mr-1.5" />
-                          {state.isLoadingProducts && state.realProducts.length === 0 ? 'Carregando...' : state.activeFiltersCount > 0 ? `Ver ${state.filteredProducts.length.toLocaleString('pt-BR')} resultado${state.filteredProducts.length !== 1 ? 's' : ''}` : `${(state.totalEstimate ?? state.filteredProducts.length).toLocaleString('pt-BR')} materiais`}
+                          {state.isLoadingProducts && state.realProducts.length === 0 ? 'Carregando...' : state.activeFiltersCount > 0 ? `Ver ${state.filteredProducts.length.toLocaleString('pt-BR')} resultado${state.filteredProducts.length !== 1 ? 's' : ''}` : `${(state.totalEstimate ?? state.filteredProducts.length).toLocaleString('pt-BR')} produtos`}
                         </Button>
                       </div>
                     </div>
