@@ -138,6 +138,7 @@ export const OnboardingTour = forwardRef<HTMLDivElement, any>(function Onboardin
   return (
     <div ref={ref}>
       <AnimatePresence>
+      {showTour && currentStepData && (
       <div className="fixed inset-0 z-[100] pointer-events-none">
         {/* Overlay with spotlight effect */}
         <motion.div
