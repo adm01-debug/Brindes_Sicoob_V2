@@ -1,345 +1,126 @@
-import React, { useState } from "react";
+import { useState, useEffect } from "react";
 import { MainLayout } from "@/components/layout/MainLayout";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { CheckCircle2, XCircle, Loader2, AlertTriangle, RefreshCw, Play, FileText, History, ShieldCheck } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useNavigate } from "react-router-dom";
+import { CheckCircle2, XCircle, Loader2, Play, ShieldCheck, Database, Users, ShoppingCart, Ticket } from "lucide-react";
 import { toast } from "sonner";
+import { runQaSeed } from "@/lib/qa-seed";
 
-export default function QaPreflightPage() {
-  const navigate = useNavigate();
-  const queryClient = useQueryClient();
-  const [isSeeding, setIsSeeding] = useState(false);
-  const [isAuditing, setIsAuditing] = useState(false);
+interface PreflightData {
+  users: boolean;
+  pas: boolean;
+  budgets: boolean;
+  coupons: boolean;
+  orders: boolean;
+  timestamp: string;
+}
 
-  const { data: rlsAudit, refetch: refetchAudit } = useQuery({
-    queryKey: ["qa-rls-audit"],
-    queryFn: async () => {
-      const { data, error } = await supabase.rpc("audit_all_rls_compliance");
+export default function PreflightPage() {
+  const [loading, setLoading] = useState(true);
+  const [data, setData] = useState<PreflightData | null>(null);
+  const [seeding, setSeeding] = useState(false);
+
+  async function checkStatus() {
+    setLoading(true);
+    try {
+      const { data: res, error } = await supabase.rpc('qa_preflight_check');
       if (error) throw error;
-      return data as any;
+      setData(res as unknown as PreflightData);
+    } catch (err) {
+      console.error(err);
+      toast.error("Falha ao validar ambiente");
+    } finally {
+      setLoading(false);
     }
-  });
-  const { data: preflight, isLoading, refetch, isRefetching } = useQuery({
-    queryKey: ["qa-preflight"],
-    queryFn: async () => {
-      const { data: preCheck, error: preError } = await supabase.rpc("qa_preflight_check");
-      const { data: secCheck, error: secError } = await supabase.rpc("check_security_health");
-      
-      if (preError || secError) throw (preError || secError);
-      return { ...(preCheck as any), security: secCheck };
+  }
+
+  async function handleSeed() {
+    setSeeding(true);
+    try {
+      await runQaSeed();
+      toast.success("Seed executado com sucesso");
+      await checkStatus();
+    } catch (err) {
+      toast.error("Falha ao executar seed");
+    } finally {
+      setSeeding(false);
     }
-  });
+  }
 
-  const { data: monitor } = useQuery({
-    queryKey: ["qa-monitor"],
-    queryFn: async () => {
-      const { data, error } = await supabase.functions.invoke("qa-block-monitor");
-      if (error) throw error;
-      return data;
-    },
-    refetchInterval: 30000
-  });
+  useEffect(() => {
+    checkStatus();
+  }, []);
 
-  const { data: runs } = useQuery({
-    queryKey: ["qa-recent-runs"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("qa_runs")
-        .select("*")
-        .order("started_at", { ascending: false })
-        .limit(5);
-      if (error) throw error;
-      return data;
-    }
-  });
-
-  const seedMutation = useMutation({
-    mutationFn: async (scenario: string) => {
-      setIsSeeding(true);
-      const { data, error } = await supabase.functions.invoke("sicoob-seed-qa", {
-        body: { scenario }
-      });
-      if (error) throw error;
-      return data;
-    },
-    onSuccess: (data) => {
-      toast.success("Seed executado com sucesso!");
-      queryClient.invalidateQueries({ queryKey: ["qa-recent-runs"] });
-      if (data?.runId) {
-        navigate(`/admin/qa/run/${data.runId}`);
-      }
-    },
-    onError: (err: any) => {
-      toast.error("Erro no seed: " + err.message);
-    },
-    onSettled: () => setIsSeeding(false)
-  });
-
-  const allOk = preflight && preflight.users && preflight.pas && preflight.budgets && preflight.coupons && preflight.orders && (!monitor?.blocks || monitor.blocks.length === 0);
-
-  const CheckItem = ({ label, ok }: { label: string, ok: boolean }) => (
-    <div className="flex items-center justify-between p-4 border rounded-xl bg-background shadow-sm">
-      <span className="font-medium text-sm">{label}</span>
-      {ok ? (
-        <div className="flex items-center gap-2 text-green-600">
-          <Badge variant="success" className="bg-green-100 text-green-700 border-green-200">OK</Badge>
-          <CheckCircle2 className="h-5 w-5" />
+  const CheckItem = ({ label, status, icon: Icon }: { label: string; status: boolean; icon: any }) => (
+    <div className="flex items-center justify-between p-4 border rounded-xl bg-card">
+      <div className="flex items-center gap-3">
+        <div className={`p-2 rounded-lg ${status ? 'bg-success/10 text-success' : 'bg-destructive/10 text-destructive'}`}>
+          <Icon className="h-5 w-5" />
         </div>
+        <span className="font-medium text-foreground">{label}</span>
+      </div>
+      {status ? (
+        <Badge variant="success" className="gap-1">
+          <CheckCircle2 className="h-3 w-3" /> OK
+        </Badge>
       ) : (
-        <div className="flex items-center gap-2 text-destructive">
-          <Badge variant="destructive">FALHA</Badge>
-          <XCircle className="h-5 w-5" />
-        </div>
+        <Badge variant="destructive" className="gap-1">
+          <XCircle className="h-3 w-3" /> Pendente
+        </Badge>
       )}
     </div>
   );
 
   return (
     <MainLayout>
-      <div className="container mx-auto p-6 space-y-6 animate-fade-in">
-        <div className="flex justify-between items-center">
+      <div className="max-w-4xl mx-auto space-y-6 animate-fade-in">
+        <header className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight text-sicoob-green-dark">QA Pr&eacute;-flight &sect;0-bis</h1>
-            <p className="text-muted-foreground italic">Validação de ambiente antes da execução de roteiros de teste.</p>
+            <h1 className="text-3xl font-bold tracking-tight text-sicoob-green-dark">QA Pré-flight §0-bis</h1>
+            <p className="text-muted-foreground mt-1">Validação de infraestrutura e dados para ciclos de QA</p>
           </div>
-          <Button variant="outline" onClick={() => refetch()} disabled={isLoading || isRefetching}>
-            {isRefetching ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <RefreshCw className="h-4 w-4 mr-2" />}
-            Revalidar
-          </Button>
-        </div>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={checkStatus} disabled={loading}>
+              {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <ShieldCheck className="h-4 w-4 mr-2" />}
+              Validar Agora
+            </Button>
+            <Button onClick={handleSeed} disabled={seeding}>
+              {seeding ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Database className="h-4 w-4 mr-2" />}
+              Executar Seed QA
+            </Button>
+          </div>
+        </header>
 
-        {monitor?.blocks?.length > 0 && (
-          <Card className="border-red-500 bg-red-50">
-            <CardHeader className="flex flex-row items-center gap-4">
-              <AlertTriangle className="h-8 w-8 text-red-600" />
-              <div>
-                <CardTitle className="text-red-800">🛑 BLOQUEIO CRÍTICO DETECTADO</CardTitle>
-                <CardDescription className="text-red-700">A execução de QA deve ser interrompida imediatamente.</CardDescription>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <ul className="list-disc pl-5 space-y-1 text-red-700 font-medium">
-                {monitor.blocks.map((b: any, i: number) => (
-                  <li key={i}>{b.message}</li>
-                ))}
-              </ul>
-            </CardContent>
-          </Card>
-        )}
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Card className={preflight?.security?.rls_health > 90 ? "border-blue-200 bg-blue-50/20" : "border-amber-200"}>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <Card>
             <CardHeader>
-              <CardTitle className="text-lg flex items-center gap-2">
-                <ShieldCheck className="h-5 w-5 text-blue-600" />
-                Saúde de Segurança
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">Score RLS</span>
-                <Badge variant={preflight?.security?.rls_health > 90 ? "success" : "destructive"}>
-                  {preflight?.security?.rls_health}%
-                </Badge>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">Alteras. Admin (24h)</span>
-                <Badge variant="outline">{preflight?.security?.recent_admin_changes}</Badge>
-              </div>
-              <div className="pt-2 border-t text-[10px] text-muted-foreground italic">
-                Última checagem: {preflight?.security?.last_check ? new Date(preflight.security.last_check).toLocaleTimeString() : 'N/A'}
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className={allOk ? "border-green-200 bg-green-50/30" : "border-amber-200"}>
-            <CardHeader>
-              <CardTitle className="text-lg">Checks de Banco de Dados</CardTitle>
-              <CardDescription>Verificação das tabelas e fixtures necessárias.</CardDescription>
+              <CardTitle className="text-lg">Infraestrutura QA</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              {isLoading ? (
-                <div className="flex items-center justify-center py-12">
-                  <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-                </div>
-              ) : (
-                <>
-                  <CheckItem label="Usuários QA (4+ contas)" ok={preflight?.users} />
-                  <CheckItem label="PA de Teste (PA-QA-001)" ok={preflight?.pas} />
-                  <CheckItem label="Orçamentos de PA (pa_budgets)" ok={preflight?.budgets} />
-                  <CheckItem label="Cupons Canônicos (BEMVINDO10)" ok={preflight?.coupons} />
-                  <CheckItem label="Massa de Pedidos" ok={preflight?.orders} />
-                </>
-              )}
+              <CheckItem label="Contas QA Provisionadas" status={data?.users ?? false} icon={Users} />
+              <CheckItem label="PAs Configuradas" status={data?.pas ?? false} icon={ShieldCheck} />
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">Instruções de QA</CardTitle>
-              <CardDescription>Critérios de continuidade e ferramentas.</CardDescription>
+              <CardTitle className="text-lg">Massa de Dados</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="p-4 rounded-xl border bg-muted/30 space-y-2">
-                <h4 className="font-bold text-sm">Resumo Geral</h4>
-                <div className="text-2xl font-bold flex items-center gap-2">
-                  {allOk ? (
-                    <span className="text-green-600 flex items-center gap-2">
-                      <CheckCircle2 className="h-7 w-7" /> AMBIENTE PRONTO
-                    </span>
-                  ) : (
-                    <span className="text-amber-600 flex items-center gap-2">
-                      <AlertTriangle className="h-7 w-7" /> AMBIENTE INSTÁVEL
-                    </span>
-                  )}
-                </div>
-              </div>
-              <div className="space-y-2 text-sm text-muted-foreground">
-                <p>1. Se houver falhas, rode <code>npm run seed:qa</code> no console.</p>
-                <p>2. Certifique-se de estar em uma <strong>aba anônima</strong> para evitar cache.</p>
-                <p>3. Abra o DevTools (F12) e monitore erros na aba Console.</p>
-              </div>
-              <Button className="w-full" variant={allOk ? "default" : "outline"} onClick={() => window.open('https://github.com', '_blank')}>
-                Ver Casos de Teste (DOD)
-              </Button>
+            <CardContent className="space-y-3">
+              <CheckItem label="Orçamentos na Fila" status={data?.orders ?? false} icon={ShoppingCart} />
+              <CheckItem label="Verbas Ativas" status={data?.budgets ?? false} icon={Database} />
+              <CheckItem label="Cupons de Teste" status={data?.coupons ?? false} icon={Ticket} />
             </CardContent>
           </Card>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg flex items-center gap-2">
-                <Play className="h-5 w-5 text-primary" />
-                Iniciar Cenários de QA
-              </CardTitle>
-              <CardDescription>Execute a massa de dados para testes específicos.</CardDescription>
-            </CardHeader>
-            <CardContent className="grid grid-cols-2 gap-3">
-              <Button variant="outline" className="justify-start gap-2 h-auto py-3 px-4" onClick={() => seedMutation.mutate('consolidacao')} disabled={isSeeding}>
-                <div className="flex flex-col items-start">
-                  <span className="font-bold">Consolidação</span>
-                  <span className="text-[10px] text-muted-foreground">Massa completa de PA/Postos</span>
-                </div>
-              </Button>
-              <Button variant="outline" className="justify-start gap-2 h-auto py-3 px-4" onClick={() => seedMutation.mutate('alcada-gestor')} disabled={isSeeding}>
-                <div className="flex flex-col items-start">
-                  <span className="font-bold">Alçada Gestor</span>
-                  <span className="text-[10px] text-muted-foreground">Pedidos {"\u003E"} R$ 5k</span>
-                </div>
-              </Button>
-              <Button variant="outline" className="justify-start gap-2 h-auto py-3 px-4" onClick={() => seedMutation.mutate('rls-cross')} disabled={isSeeding}>
-                <div className="flex flex-col items-start">
-                  <span className="font-bold">RLS Cross</span>
-                  <span className="text-[10px] text-muted-foreground">Segregação de Cooperativas</span>
-                </div>
-              </Button>
-              <Button variant="outline" className="justify-start gap-2 h-auto py-3 px-4" onClick={() => seedMutation.mutate('piloto')} disabled={isSeeding}>
-                <div className="flex flex-col items-start">
-                  <span className="font-bold">Modo Piloto</span>
-                  <span className="text-[10px] text-muted-foreground">Campanhas controladas</span>
-                </div>
-              </Button>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg flex items-center gap-2">
-                <History className="h-5 w-5" />
-                Execuções Recentes
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {runs?.map((run) => (
-                  <div key={run.id} className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 cursor-pointer" onClick={() => navigate(`/admin/qa/run/${run.id}`)}>
-                    <div>
-                      <div className="font-medium text-sm capitalize">{run.scenario.replace('-', ' ')}</div>
-                      <div className="text-[10px] text-muted-foreground">{new Date(run.started_at).toLocaleString()}</div>
-                    </div>
-                    <Badge variant={run.status === 'completed' ? 'success' : 'outline'}>
-                      {run.status}
-                    </Badge>
-                  </div>
-                ))}
-                <Button variant="ghost" className="w-full text-xs" onClick={() => navigate('/admin/qa/release-evidences')}>
-                  <FileText className="h-3 w-3 mr-2" /> Gerenciar Evidências de Release
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-        <Card className="border-primary/20 bg-primary/5">
-          <CardHeader className="flex flex-row items-center justify-between">
-            <div className="flex items-center gap-3">
-              <ShieldCheck className="h-6 w-6 text-primary" />
-              <div>
-                <CardTitle className="text-lg">Auditoria de Segurança (RLS)</CardTitle>
-                <CardDescription>Monitoramento contínuo de políticas de acesso.</CardDescription>
-              </div>
-            </div>
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={() => {
-                setIsAuditing(true);
-                refetchAudit().finally(() => setIsAuditing(false));
-              }}
-              disabled={isAuditing}
-            >
-              {isAuditing ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <RefreshCw className="h-4 w-4 mr-2" />}
-              Executar Auditoria
-            </Button>
-          </CardHeader>
-          <CardContent>
-            {rlsAudit ? (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="p-4 border rounded-xl bg-background text-center">
-                  <div className="text-2xl font-bold text-primary">{rlsAudit.score}%</div>
-                  <div className="text-[10px] text-muted-foreground uppercase tracking-wider font-bold">Safety Score</div>
-                </div>
-                <div className="p-4 border rounded-xl bg-background">
-                  <div className="text-sm font-bold mb-2">Tabelas Protegidas</div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-2xl font-bold">{rlsAudit.with_rls}</span>
-                    <span className="text-xs text-muted-foreground">de {rlsAudit.total} total</span>
-                  </div>
-                  <div className="w-full bg-muted h-1.5 mt-2 rounded-full overflow-hidden">
-                    <div 
-                      className="bg-green-500 h-full transition-all duration-1000" 
-                      style={{ width: `${(rlsAudit.with_rls / rlsAudit.total) * 100}%` }} 
-                    />
-                  </div>
-                </div>
-                <div className="p-4 border rounded-xl bg-background">
-                  <div className="text-sm font-bold mb-2">Gaps de Segurança</div>
-                  <div className="flex flex-wrap gap-1">
-                    {rlsAudit.missing.length > 0 ? (
-                      rlsAudit.missing.slice(0, 3).map((t: string) => (
-                        <Badge key={t} variant="destructive" className="text-[9px] px-1.5 py-0">NO-RLS: {t}</Badge>
-                      ))
-                    ) : (
-                      <Badge variant="success" className="text-[9px] px-1.5 py-0">Nenhum Gap Detectado</Badge>
-                    )}
-                    {rlsAudit.missing.length > 3 && (
-                      <Badge variant="outline" className="text-[9px] px-1.5 py-0">+{rlsAudit.missing.length - 3} mais</Badge>
-                    )}
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
-                <ShieldCheck className="h-10 w-10 mb-2 opacity-20" />
-                <p className="text-sm">Auditoria pendente. Clique para iniciar.</p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+        {data?.timestamp && (
+          <p className="text-[10px] text-muted-foreground text-center font-mono">
+            Última verificação: {new Date(data.timestamp).toLocaleString('pt-BR')}
+          </p>
+        )}
       </div>
     </MainLayout>
   );

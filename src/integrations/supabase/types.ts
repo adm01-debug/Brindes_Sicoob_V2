@@ -4993,6 +4993,7 @@ export type Database = {
           query_offset: number | null
           record_count: number | null
           retry_count: number
+          rls_blocked_count: number | null
           rpc_name: string | null
           severity: string
           table_name: string | null
@@ -5015,6 +5016,7 @@ export type Database = {
           query_offset?: number | null
           record_count?: number | null
           retry_count?: number
+          rls_blocked_count?: number | null
           rpc_name?: string | null
           severity?: string
           table_name?: string | null
@@ -5037,6 +5039,7 @@ export type Database = {
           query_offset?: number | null
           record_count?: number | null
           retry_count?: number
+          rls_blocked_count?: number | null
           rpc_name?: string | null
           severity?: string
           table_name?: string | null
@@ -7435,6 +7438,15 @@ export type Database = {
         Args: { window_minutes?: number }
         Returns: Json
       }
+      get_query_telemetry_p95: {
+        Args: { window_minutes?: number }
+        Returns: {
+          avg_ms: number
+          count: number
+          operation: string
+          p95_ms: number
+        }[]
+      }
       get_quote_token_by_value: {
         Args: { _token: string }
         Returns: {
@@ -7638,6 +7650,7 @@ export type Database = {
       mcp_audit_actor: { Args: { _fallback: string }; Returns: string }
       notify_hardening_regression: { Args: never; Returns: Json }
       process_export_queue_v3: { Args: never; Returns: undefined }
+      provision_qa_accounts: { Args: never; Returns: Json }
       qa_preflight_check: { Args: never; Returns: Json }
       record_dev_route_telemetry: {
         Args: {
@@ -7729,6 +7742,7 @@ export type Database = {
         }[]
       }
       seed_discount_test_users: { Args: never; Returns: Json }
+      seed_qa_scenario: { Args: { scenario_name: string }; Returns: Json }
       send_notification: {
         Args: {
           p_action_url?: string

@@ -42,6 +42,7 @@ export function useErrorHandler() {
           error_message: pgError.message,
           error_code: pgError.code,
           is_rls_violation: isRls,
+          rls_blocked_count: isRls ? 1 : 0,
           severity: isRls ? 'critical' : 'error',
         }).then(({ error: logErr }) => {
           if (logErr) console.warn('Falha ao logar erro na telemetria', logErr);
