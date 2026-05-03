@@ -14,6 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { PasswordResetApproval } from "@/components/admin/PasswordResetApproval";
 import { DiscountManagementPanel } from "@/components/admin/DiscountManagementPanel";
 import { CouponManager } from "@/components/admin/CouponManager";
+import { AccessManagement } from "@/components/admin/users/AccessManagement";
 import { usePasswordResetRequests } from "@/hooks/usePasswordResetRequests";
 
 import { useUserManagement } from "@/components/admin/users/useUserManagement";
