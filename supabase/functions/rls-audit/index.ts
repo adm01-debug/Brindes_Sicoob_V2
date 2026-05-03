@@ -192,8 +192,8 @@ Deno.serve(async (req) => {
       .from("quotes")
       .insert({
         seller_id: otherSellerId,
-        organization_id: otherOrgId,
-        client_name: "[RLS-AUDIT] Org Alheia",
+        cooperativa_id: otherCoopId,
+        client_name: "[RLS-AUDIT] Coop Alheia",
         status: "draft",
         subtotal: 0,
         total: 0,
@@ -206,7 +206,7 @@ Deno.serve(async (req) => {
         .from("quotes").select("id").eq("id", foreignOrgQuote.data.id).maybeSingle();
       const actual = error ? "deny" : data ? "allow" : "deny";
       push({
-        table: "quotes", op: "SELECT", scenario: "Não ler orçamento de outra organização",
+        table: "quotes", op: "SELECT", scenario: "Não ler orçamento de outra cooperativa",
         expected: "deny", actual: actual as any,
         passed: actual === "deny",
         detail: data ? `vazou id=${data.id}` : error?.message,
