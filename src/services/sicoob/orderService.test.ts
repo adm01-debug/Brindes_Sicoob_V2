@@ -22,27 +22,31 @@ describe("sicoobOrderService", () => {
     vi.clearAllMocks();
   });
 
-  it("throws error when user is not authenticated", async () => {
+  it("throws error and does not call database when user is not authenticated", async () => {
     (supabase.auth.getUser as any).mockResolvedValue({ data: { user: null }, error: null });
+    const fromSpy = vi.spyOn(supabase, "from");
 
     await expect(sicoobOrderService.getOrderById("1")).rejects.toThrow("Usuário não autenticado");
+    expect(fromSpy).not.toHaveBeenCalled();
   });
 
   it("calls supabase when authenticated", async () => {
     (supabase.auth.getUser as any).mockResolvedValue({ data: { user: { id: "123" } }, error: null });
     
     const mockOrder = { id: "1", status: "pending" };
+    const selectMock = {
+      eq: vi.fn().mockReturnThis(),
+      single: vi.fn().mockResolvedValue({ data: mockOrder, error: null })
+    };
     const fromMock = vi.fn().mockReturnValue({
-      select: vi.fn().mockReturnValue({
-        eq: vi.fn().mockReturnValue({
-          single: vi.fn().mockResolvedValue({ data: mockOrder, error: null })
-        })
-      })
+      select: vi.fn().mockReturnValue(selectMock)
     });
-    (supabase.from as any) = fromMock;
+    
+    vi.spyOn(supabase, "from").mockImplementation(fromMock);
 
     const result = await sicoobOrderService.getOrderById("1");
     expect(result).toEqual(mockOrder);
-    expect(fromMock).toHaveBeenCalledWith("sicoob_orders");
+    expect(supabase.from).toHaveBeenCalledWith("sicoob_orders");
   });
 });
+

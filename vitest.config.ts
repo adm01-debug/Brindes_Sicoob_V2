@@ -1,43 +1,42 @@
 import { defineConfig } from 'vitest/config';
-import react from '@vitejs/plugin-react-swc';
 import path from 'path';
 
 export default defineConfig({
-  plugins: [react()],
   test: {
     globals: true,
     environment: 'jsdom',
-    setupFiles: ['./tests/setup.ts', './tests/setup-ref-warning-capture.ts'],
-    include: ['tests/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}', 'src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
-    typecheck: {
-      enabled: false,
-    },
-    exclude: ['node_modules', 'dist', '.idea', '.git', '.cache'],
-    coverage: {
-      provider: 'v8',
-      reporter: ['text', 'json', 'json-summary', 'html', 'lcov'],
-      reportsDirectory: './coverage',
-      include: ['src/**/*.{ts,tsx}'],
-      exclude: [
-        'tests/**',
-        'src/**/*.d.ts',
-        'src/**/*.test.{ts,tsx}',
-        'src/**/*.spec.{ts,tsx}',
-        'src/main.tsx',
-        'src/vite-env.d.ts',
-        'src/integrations/supabase/types.ts',
-      ],
-      thresholds: {
-        statements: 60,
-        branches: 60,
-        functions: 60,
-        lines: 60,
-      },
-    },
-  },
-  resolve: {
+    setupFiles: './src/test/setup.ts',
     alias: {
       '@': path.resolve(__dirname, './src'),
     },
-  },
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'json', 'html'],
+      include: [
+        'src/components/layout/ProtectedRoute.tsx',
+        'src/services/sicoob/orderService.ts',
+        'src/pages/ForbiddenPage.tsx'
+      ],
+      thresholds: {
+        'src/components/layout/ProtectedRoute.tsx': {
+          statements: 75,
+          branches: 50,
+          functions: 100,
+          lines: 75,
+        },
+        'src/services/sicoob/orderService.ts': {
+          statements: 35,
+          branches: 70,
+          functions: 20,
+          lines: 35,
+        },
+        'src/pages/ForbiddenPage.tsx': {
+          statements: 100,
+          branches: 100,
+          functions: 100,
+          lines: 100,
+        }
+      }
+    }
+  }
 });

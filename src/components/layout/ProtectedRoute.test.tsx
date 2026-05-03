@@ -1,10 +1,12 @@
-import { renderHook } from "@testing-library/react";
+import React from "react";
+import { render, screen } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { ProtectedRoute } from "./ProtectedRoute";
 import { useAuth } from "@/contexts/AuthContext";
 import { MemoryRouter, Routes, Route } from "react-router-dom";
-import { render, screen } from "@testing-library/react";
-import React from "react";
+import { HelmetProvider } from "react-helmet-async";
+
+
 
 // Mock useAuth
 vi.mock("@/contexts/AuthContext", () => ({
@@ -28,14 +30,17 @@ describe("ProtectedRoute", () => {
     });
 
     render(
-      <MemoryRouter initialEntries={["/protected"]}>
-        <Routes>
-          <Route element={<ProtectedRoute />}>
-            <Route path="/protected" element={<MockComponent />} />
-          </Route>
-        </Routes>
-      </MemoryRouter>
+      <HelmetProvider>
+        <MemoryRouter initialEntries={["/protected"]}>
+          <Routes>
+            <Route element={<ProtectedRoute />}>
+              <Route path="/protected" element={<MockComponent />} />
+            </Route>
+          </Routes>
+        </MemoryRouter>
+      </HelmetProvider>
     );
+
 
     expect(document.querySelector(".animate-spin")).toBeDefined();
   });
@@ -48,15 +53,18 @@ describe("ProtectedRoute", () => {
     });
 
     render(
-      <MemoryRouter initialEntries={["/protected"]}>
-        <Routes>
-          <Route element={<ProtectedRoute />}>
-            <Route path="/protected" element={<MockComponent />} />
-          </Route>
-          <Route path="/login" element={<LoginPage />} />
-        </Routes>
-      </MemoryRouter>
+      <HelmetProvider>
+        <MemoryRouter initialEntries={["/protected"]}>
+          <Routes>
+            <Route element={<ProtectedRoute />}>
+              <Route path="/protected" element={<MockComponent />} />
+            </Route>
+            <Route path="/login" element={<LoginPage />} />
+          </Routes>
+        </MemoryRouter>
+      </HelmetProvider>
     );
+
 
     expect(screen.getByTestId("login-page")).toBeDefined();
   });
@@ -71,15 +79,18 @@ describe("ProtectedRoute", () => {
     });
 
     render(
-      <MemoryRouter initialEntries={["/vendas"]}>
-        <Routes>
-          <Route element={<ProtectedRoute requiredRole="vendedor" />}>
-            <Route path="/vendas" element={<MockComponent />} />
-          </Route>
-          <Route path="/403" element={<ForbiddenPage />} />
-        </Routes>
-      </MemoryRouter>
+      <HelmetProvider>
+        <MemoryRouter initialEntries={["/vendas"]}>
+          <Routes>
+            <Route element={<ProtectedRoute requiredRole="vendedor" />}>
+              <Route path="/vendas" element={<MockComponent />} />
+            </Route>
+            <Route path="/403" element={<ForbiddenPage />} />
+          </Routes>
+        </MemoryRouter>
+      </HelmetProvider>
     );
+
 
     expect(screen.getByTestId("forbidden-page")).toBeDefined();
   });
@@ -94,14 +105,17 @@ describe("ProtectedRoute", () => {
     });
 
     render(
-      <MemoryRouter initialEntries={["/vendas"]}>
-        <Routes>
-          <Route element={<ProtectedRoute requiredRole="vendedor" />}>
-            <Route path="/vendas" element={<MockComponent />} />
-          </Route>
-        </Routes>
-      </MemoryRouter>
+      <HelmetProvider>
+        <MemoryRouter initialEntries={["/vendas"]}>
+          <Routes>
+            <Route element={<ProtectedRoute requiredRole="vendedor" />}>
+              <Route path="/vendas" element={<MockComponent />} />
+            </Route>
+          </Routes>
+        </MemoryRouter>
+      </HelmetProvider>
     );
+
 
     expect(screen.getByTestId("protected-content")).toBeDefined();
   });
