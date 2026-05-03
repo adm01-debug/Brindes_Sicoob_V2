@@ -68,7 +68,6 @@ export interface SlowQueryRow {
 
 export function useAppHealth(windowMinutes: HealthWindow) {
   const { data: summary, ...rest } = useQuery<AppHealthSummary>({
-  return useQuery<AppHealthSummary>({
     queryKey: ['app-health-summary', windowMinutes],
     queryFn: async () => {
       const { data, error } = await supabase.rpc('get_app_health_summary', {
