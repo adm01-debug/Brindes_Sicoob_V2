@@ -80,7 +80,7 @@ export function MaterialsFilter({
       <div className="flex items-center justify-between text-[11px] text-muted-foreground px-1">
         <span>{materialGroups.length} grupos</span>
         <span>•</span>
-        <span>{allMaterials.length} materiais</span>
+        <span>{allMaterials.length} produtos</span>
         <span>•</span>
         <span className="text-orange font-medium">
           {materialFilterState.selectedGroups.length + materialFilterState.selectedTypes.length} selecionados
