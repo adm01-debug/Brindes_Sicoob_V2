@@ -142,4 +142,26 @@ export function useQuoteInitialization({ isEditMode, quoteId, fetchQuote, locati
       } catch (e) { console.warn("Failed to parse items[]", e); }
     }
   }, []);
+
+  // 5. Pre-fill from template (passed via state)
+  useEffect(() => {
+    const state = locationState as { templateItems?: any[] } | null;
+    if (!state?.templateItems?.length) return;
+    
+    const templateItems: QuoteItem[] = state.templateItems.map((i) => ({
+      product_id: i.product_id || i.productId || "",
+      product_name: i.product_name || i.productName || "",
+      product_sku: i.product_sku || i.productSku || "",
+      product_image_url: i.product_image_url || i.productImageUrl || undefined,
+      quantity: i.quantity || 1,
+      unit_price: i.unit_price || i.unitPrice || 0,
+      color_name: i.color_name || i.colorName || undefined,
+      color_hex: i.color_hex || i.colorHex || undefined,
+      personalizations: i.personalizations || [],
+    }));
+    
+    setters.setItems(templateItems);
+    toast.success(`${templateItems.length} item(ns) importado(s) do template`);
+    window.history.replaceState({}, document.title);
+  }, [locationState]);
 }
