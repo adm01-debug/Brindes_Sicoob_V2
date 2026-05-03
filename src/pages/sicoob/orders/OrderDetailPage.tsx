@@ -371,6 +371,7 @@ export default function OrderDetailPage() {
                   value={requestReason}
                   onValueChange={setRequestReason}
                   onConfirm={handleRequestApproval}
+                  confirmDisabled={requestReason.length < 10}
                 />
               </>
             ) : null}
