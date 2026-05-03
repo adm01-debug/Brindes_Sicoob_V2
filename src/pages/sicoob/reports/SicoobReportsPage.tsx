@@ -77,13 +77,13 @@ export default function SicoobReportsPage() {
 
   const totalSpent = ordersInRange?.reduce((acc, order) => acc + (order.total_amount || 0), 0) || 0;
 
-  const handleExport = async () => {
+  const handleExportPDF = async () => {
     if (!ordersInRange || ordersInRange.length === 0) {
       toast.error("Não há dados para exportar no período selecionado.");
       return;
     }
 
-    setIsExporting(true);
+    setIsExporting('pdf');
     try {
       const doc = new jsPDF();
       doc.setFontSize(18);
@@ -117,9 +117,37 @@ export default function SicoobReportsPage() {
       doc.save(`extrato_sicoob_${format(new Date(), 'yyyy-MM-dd')}.pdf`);
       toast.success("Extrato exportado com sucesso (PDF)");
     } catch (error: any) {
-      toast.error("Erro ao exportar: " + error.message);
+      toast.error("Erro ao exportar PDF: " + error.message);
     } finally {
-      setIsExporting(false);
+      setIsExporting(null);
+    }
+  };
+
+  const handleExportExcel = async () => {
+    if (!ordersInRange || ordersInRange.length === 0) {
+      toast.error("Não há dados para exportar no período selecionado.");
+      return;
+    }
+
+    setIsExporting('xlsx');
+    try {
+      const data = ordersInRange.map(o => ({
+        "Data": format(new Date(o.created_at), "dd/MM/yyyy"),
+        "Pedido": o.order_number || o.id.slice(0, 8),
+        "Status": o.status.toUpperCase(),
+        "Valor (R$)": o.total_amount
+      }));
+
+      const worksheet = XLSX.utils.json_to_sheet(data);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Extrato SICOOB");
+      
+      XLSX.writeFile(workbook, `extrato_sicoob_${format(new Date(), 'yyyy-MM-dd')}.xlsx`);
+      toast.success("Extrato exportado com sucesso (XLSX)");
+    } catch (error: any) {
+      toast.error("Erro ao exportar Excel: " + error.message);
+    } finally {
+      setIsExporting(null);
     }
   };
 
