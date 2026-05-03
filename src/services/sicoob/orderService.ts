@@ -7,10 +7,50 @@ import { SicoobOrder, SicoobOrderItem, SicoobOrderItemLog, OrderStatus, canSicoo
  * but client-side checks provide better UX.
  */
 export const sicoobOrderService = {
-  async getOrderById(id: string): Promise<SicoobOrder> {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) throw new Error("Usuário não autenticado");
+  async listOrders(filters?: { 
+    search?: string, 
+    status?: string, 
+    pa_id?: string, 
+    cooperative_id?: string,
+    from?: string,
+    to?: string
+  }): Promise<SicoobOrder[]> {
+    let query = supabase.from("sicoob_orders").select("*");
 
+    if (filters?.status && filters.status !== "all") {
+      query = query.eq("status", filters.status);
+    }
+    if (filters?.pa_id && filters.pa_id !== "all") {
+      query = query.eq("pa_id", filters.pa_id);
+    }
+    if (filters?.cooperative_id && filters.cooperative_id !== "all") {
+      query = query.eq("cooperative_id", filters.cooperative_id);
+    }
+    if (filters?.from) {
+      query = query.gte("created_at", filters.from);
+    }
+    if (filters?.to) {
+      query = query.lte("created_at", filters.to);
+    }
+
+    const { data, error } = await query.order("created_at", { ascending: false });
+    if (error) throw error;
+    
+    let results = data as SicoobOrder[];
+    
+    if (filters?.search) {
+      const term = filters.search.toLowerCase();
+      results = results.filter(o => 
+        o.id.toLowerCase().includes(term) || 
+        o.notes?.toLowerCase().includes(term) ||
+        o.tracking_code?.toLowerCase().includes(term)
+      );
+    }
+    
+    return results;
+  },
+
+  async getOrderById(id: string): Promise<SicoobOrder> {
     const { data, error } = await supabase
       .from("sicoob_orders")
       .select("*")
