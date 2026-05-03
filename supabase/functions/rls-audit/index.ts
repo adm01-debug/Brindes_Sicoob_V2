@@ -160,7 +160,33 @@ Deno.serve(async (req) => {
           passed: actual === "deny",
           detail: error?.message,
         });
+      // 3. CROSS-ORGANIZATION SELECT (deny esperado)
+      const foreignOrgQuote = await adminClient
+        .from("quotes")
+        .insert({
+          seller_id: otherSellerId,
+          organization_id: otherOrgId,
+          client_name: "[RLS-AUDIT] Org Alheia",
+          status: "draft",
+          subtotal: 0,
+          total: 0,
+        })
+        .select("id")
+        .single();
+
+      if (foreignOrgQuote.data) {
+        const { data, error } = await userClient
+          .from("quotes").select("id").eq("id", foreignOrgQuote.data.id).maybeSingle();
+        const actual = error ? "deny" : data ? "allow" : "deny";
+        push({
+          table: "quotes", op: "SELECT", scenario: "Não ler orçamento de outra organização",
+          expected: "deny", actual: actual as any,
+          passed: actual === "deny",
+          detail: data ? `vazou id=${data.id}` : error?.message,
+        });
+        await adminClient.from("quotes").delete().eq("id", foreignOrgQuote.data.id);
       }
+    }
     }
 
     // INSERT com seller_id próprio (allow)
