@@ -1,4 +1,4 @@
-import React, { type ReactNode } from "react";
+import React, { type ReactNode, forwardRef } from "react";
 
 interface VisuallyHiddenProps {
   children: ReactNode;
