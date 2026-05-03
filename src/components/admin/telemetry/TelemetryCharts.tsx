@@ -129,9 +129,9 @@ export function TelemetryCharts({ rows, timeFilter }: TelemetryChartsProps) {
   if (rows.length === 0) return null;
 
   return (
-    <>
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-      {/* Timeline de alertas */}
+    <div className="flex flex-col gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {/* Timeline de alertas */}
       <Card>
         <CardHeader className="pb-2">
           <CardTitle className="text-sm flex items-center gap-2">
@@ -273,7 +273,6 @@ export function TelemetryCharts({ rows, timeFilter }: TelemetryChartsProps) {
         </Card>
       )}
     </div>
-    </>
   );
 }
 
