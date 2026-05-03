@@ -59,14 +59,16 @@ interface LoadingAnnouncerProps {
   loadedMessage?: string;
 }
 
-export function LoadingAnnouncer({ 
+export const LoadingAnnouncer = forwardRef<HTMLDivElement, LoadingAnnouncerProps>(({ 
   isLoading, 
   loadingMessage = "Carregando...",
   loadedMessage = "Conteúdo carregado"
-}: LoadingAnnouncerProps) {
+}, ref) => {
   return (
-    <LiveRegion politeness="polite">
+    <LiveRegion ref={ref} politeness="polite">
       {isLoading ? loadingMessage : loadedMessage}
     </LiveRegion>
   );
-}
+});
+
+LoadingAnnouncer.displayName = 'LoadingAnnouncer';
