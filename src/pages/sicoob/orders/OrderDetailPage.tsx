@@ -649,7 +649,7 @@ export default function OrderDetailPage() {
                 <div className="space-y-2">
                   <Label className="text-xs">Status do Workflow</Label>
                   <Select 
-                    value={orderData.fulfillment_status || 'pending'} 
+                    value={orderData.status || 'pending'} 
                     onValueChange={handleStatusUpdate}
                   >
                     <SelectTrigger>
