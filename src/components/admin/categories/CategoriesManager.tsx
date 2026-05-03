@@ -357,6 +357,7 @@ function CategoryFormDialog({ open, onOpenChange, category, onSave, categories }
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               required
+              autoFocus
             />
           </div>
           <div>
