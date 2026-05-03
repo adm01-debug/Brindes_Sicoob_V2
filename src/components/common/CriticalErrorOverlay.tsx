@@ -1,19 +1,19 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { AlertCircle, RefreshCw, ShieldAlert, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { motion, AnimatePresence } from "framer-motion";
 
 export function CriticalErrorOverlay() {
-  const [error, setError] = useState<{ message: string; type: string } | null>(null);
+  const [error, setError] = useState<{ message: string; type: string; details?: string } | null>(null);
 
-  useEffect(() => {
-    const handleCriticalError = (e: any) => {
-      setError({
-        message: e.detail?.message || "Ocorreu um erro inesperado.",
-        type: e.detail?.type || "unknown"
-      });
-    };
+  const handleCriticalError = useCallback((e: any) => {
+    setError({
+      message: e.detail?.message || "Ocorreu um erro inesperado.",
+      type: e.detail?.type || "unknown",
+      details: e.detail?.error?.message || e.detail?.error?.toString()
+    });
+  }, []);
 
     window.addEventListener('app-critical-error', handleCriticalError);
     return () => window.removeEventListener('app-critical-error', handleCriticalError);
@@ -47,7 +47,12 @@ export function CriticalErrorOverlay() {
                   </Button>
                 </AlertTitle>
                 <AlertDescription className="text-base">
-                  <p className="font-medium text-destructive mb-2">{error.message}</p>
+                  <p className="font-medium text-destructive mb-1">{error.message}</p>
+                  {error.details && (
+                    <p className="text-[10px] font-mono opacity-60 mb-3 bg-destructive/5 p-1 rounded truncate">
+                      {error.details}
+                    </p>
+                  )}
                   <p className="text-sm text-muted-foreground">
                     O sistema detectou uma instabilidade que pode afetar a integridade dos dados. 
                     Recomendamos recarregar a aplicação.
