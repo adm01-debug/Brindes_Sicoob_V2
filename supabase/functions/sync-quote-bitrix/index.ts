@@ -97,9 +97,10 @@ Deno.serve(async (req) => {
     const itemsValidos = rawItems.filter((item: any) => !!item.bitrix_product_id);
     const itemsExcluidos = rawItems.length - itemsValidos.length;
     if (itemsExcluidos > 0) {
-      console.warn(`${itemsExcluidos} item(ns) excluído(s) do payload por não ter bitrix_product_id`);
+      log.warn("items_excluded_no_bitrix_id", { count: itemsExcluidos });
     }
     if (itemsValidos.length === 0) {
+      log.warn("no_valid_items_to_sync");
       throw new Error("Nenhum produto da proposta possui ID no Bitrix24 (bitrix_product_id nulo em todos os itens). Aguarde a importação do catálogo.");
     }
 
