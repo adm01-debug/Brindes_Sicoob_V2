@@ -28,10 +28,12 @@ Deno.serve(async (req) => {
       auth: { persistSession: false },
     });
 
+    const isServiceRole = authHeader.includes(SERVICE);
+
     let sellerId: string;
     
     // Decidir se usamos o token do header ou se simulamos um usuário
-    if (isAdminAudit && authHeader.includes(SERVICE) && targetUserId) {
+    if (isAdminAudit && isServiceRole && targetUserId) {
       sellerId = targetUserId;
     } else {
       if (!authHeader.startsWith("Bearer ")) {
