@@ -76,7 +76,10 @@ Deno.serve(async (req) => {
         // Fetch companies/clients from Bitrix24
         const response = await fetchWithBreaker("bitrix", `${bitrixWebhookUrl}/crm.company.list`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 
+            'Content-Type': 'application/json',
+            'X-Request-Id': requestId,
+          },
           body: JSON.stringify({
             select: [
               'ID',
