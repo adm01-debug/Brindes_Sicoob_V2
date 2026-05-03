@@ -480,7 +480,13 @@ export default function OrdersPage() {
           {filteredOrders.length} {filteredOrders.length === 1 ? "pedido encontrado" : "pedidos encontrados"}
         </div>
 
-        {filteredOrders.length === 0 ? (
+        {isLoadingOrders ? (
+           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+             {[1, 2, 3, 4, 5, 6].map(i => (
+               <Card key={i} className="h-32 animate-pulse bg-muted" />
+             ))}
+           </div>
+        ) : filteredOrders.length === 0 ? (
           <Card>
             <CardContent className="py-12 text-center text-muted-foreground">
               Nenhum pedido corresponde aos filtros selecionados.
@@ -488,23 +494,23 @@ export default function OrdersPage() {
           </Card>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {filteredOrders.map((order) => (
-              <Card key={order.id} className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => navigate(`/sicoob/pedidos/${order.id}`)}>
+            {filteredOrders.map((order: any) => (
+              <Card key={order.id} className="hover:shadow-md transition-shadow cursor-pointer border-[1.5px]" onClick={() => navigate(`/sicoob/pedidos/${order.id}`)}>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">
-                    Pedido #{order.id}
+                  <CardTitle className="text-sm font-bold text-sicoob-green-dark">
+                    Pedido #{order.order_number || order.id.slice(0, 8)}
                   </CardTitle>
                   <OrderStatusBadge status={order.status} />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">R$ {order.total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</div>
-                  <p className="text-xs text-muted-foreground">
-                    {order.pa} • {order.singular} • {order.items} itens
+                  <div className="text-2xl font-bold">R$ {order.total_amount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {order.pa?.nome || "PA Não Identificado"} • {order.cooperativa?.nome || "Singular"}
                   </p>
                 </CardContent>
-                <CardFooter className="text-xs text-muted-foreground pt-0">
-                  Criado em {format(parseISO(order.date), "dd/MM/yyyy", { locale: ptBR })}
-                  <ArrowRight className="h-3 w-3 ml-auto" />
+                <CardFooter className="text-[10px] uppercase font-bold text-muted-foreground pt-0">
+                  Criado em {format(parseISO(order.created_at), "dd/MM/yyyy", { locale: ptBR })}
+                  <ArrowRight className="h-3 w-3 ml-auto text-sicoob-green" />
                 </CardFooter>
               </Card>
             ))}
