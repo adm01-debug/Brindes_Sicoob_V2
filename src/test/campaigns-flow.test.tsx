@@ -59,7 +59,15 @@ vi.mock('sonner', () => ({
 describe('Campaigns Flow - CRUD & Status', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    (useAuth as any).mockReturnValue({
+      user: { id: 'test-user' },
+      profile: { role: 'dev' },
+      isDev: true,
+      canManage: true,
+      isLoading: false
+    });
   });
+
 
   it('should successfully create a new campaign', async () => {
     renderWithRouter(<AdminCampanhasPage />);
