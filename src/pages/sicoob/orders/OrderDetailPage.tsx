@@ -343,6 +343,7 @@ export default function OrderDetailPage() {
                   value={rejectionReason}
                   onValueChange={setRejectionReason}
                   onConfirm={handleReject}
+                  confirmDisabled={rejectionReason.length < 10}
                 />
 
                 <Button 
