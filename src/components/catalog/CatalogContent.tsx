@@ -281,7 +281,7 @@ export function CatalogContent({
       />
       {hasMoreProducts && (
         <div ref={loadMoreRef} className="flex flex-col items-center gap-3 pt-8 pb-4 px-4" style={{ minHeight: "60px" }}>
-          <p className="text-sm text-muted-foreground">Mostrando {paginatedProducts.length} de {(totalEstimate ?? filteredProducts.length).toLocaleString("pt-BR")} materiais</p>
+          <p className="text-sm text-muted-foreground">Mostrando {paginatedProducts.length} de {(totalEstimate ?? filteredProducts.length).toLocaleString("pt-BR")} produtos</p>
         </div>
       )}
     </div>
