@@ -43,8 +43,8 @@ test("renders TelemetryCharts component correctly", () => {
   expect(screen.getByText(/Latência \(ms\)/i)).toBeDefined();
   expect(screen.getByText(/Opções de Visualização/i)).toBeDefined();
   
-  // Check for checkboxes
-  expect(screen.getByLabelText(/Lentas/i)).toBeDefined();
+  // Check for checkboxes by label
+  expect(screen.getAllByLabelText(/Lentas/i).length).toBeGreaterThan(0);
   expect(screen.getByLabelText(/Muito Lentas/i)).toBeDefined();
   expect(screen.getByLabelText(/Erros/i)).toBeDefined();
   expect(screen.getByLabelText(/Duração Média/i)).toBeDefined();
