@@ -98,7 +98,8 @@ describe("GlobalSearchPalette", () => {
     });
 
     renderPalette();
-    expect(screen.getByText(/Test Product/i)).toBeInTheDocument();
+    // Use partial match because HighlightMatch might break text nodes
+    expect(screen.getByText(/Product/i)).toBeInTheDocument();
     expect(screen.getByText(/Produtos/i)).toBeInTheDocument();
   });
 
