@@ -15,36 +15,56 @@ const QA_USERS = [
 
 async function ensureUser(user: any) {
   console.log(`Garantindo usuário: ${user.email}`);
-  const { error } = await supabase.auth.admin.createUser({
-    id: user.id,
-    email: user.email,
-    password: QA_PASSWORD,
-    email_confirm: true,
-    user_metadata: { full_name: `QA ${user.role}` }
-  });
+  
+  // Try to find user by email first using admin API
+  const { data: { users }, error: listError } = await supabase.auth.admin.listUsers();
+  if (listError) throw listError;
+  
+  const existingUser = users?.find(u => u.email === user.email);
 
-  if (error && (error.message.includes("already registered") || error.message.includes("duplicate"))) {
-    await supabase.auth.admin.updateUserById(user.id, { password: QA_PASSWORD });
-  } else if (error) {
-    throw error;
+  if (existingUser) {
+    console.log(`Usuário ${user.email} já existe. Atualizando senha...`);
+    const { error: updateError } = await supabase.auth.admin.updateUserById(existingUser.id, { 
+      password: QA_PASSWORD,
+      user_metadata: { full_name: `QA ${user.role}` }
+    });
+    if (updateError) throw updateError;
+    user.id = existingUser.id;
+  } else {
+    console.log(`Criando novo usuário ${user.email}...`);
+    const { data: newUser, error: createError } = await supabase.auth.admin.createUser({
+      email: user.email,
+      password: QA_PASSWORD,
+      email_confirm: true,
+      user_metadata: { full_name: `QA ${user.role}` }
+    });
+
+    if (createError) {
+      console.error(`Erro ao criar ${user.email}:`, createError);
+      throw createError;
+    }
+    if (newUser?.user) user.id = newUser.user.id;
   }
 
-  // Ensure profile
+
+
+  // Ensure profile using correct column 'full_name' instead of 'display_name'
   await supabase.from("profiles").upsert({
     id: user.id,
     user_id: user.id,
     email: user.email,
-    display_name: `QA ${user.role}`,
+    full_name: `QA ${user.role}`,
     role: user.role,
     pa_id: user.pa_id || null,
     cooperativa_id: user.cooperativa_id || null
   }, { onConflict: "id" });
 }
 
+
 Deno.serve(async (req) => {
   const { scenario = "default" } = await req.json().catch(() => ({}));
   
-  // 1. Create QA Run
+  // 1. Create QA Run record
   const { data: run, error: runError } = await supabase
     .from("qa_runs")
     .insert({
@@ -58,7 +78,7 @@ Deno.serve(async (req) => {
 
   if (runError) return new Response(JSON.stringify({ error: runError.message }), { status: 500 });
 
-  const report: any = { runId: run.id, scenario, created: [], errors: [] };
+  const report: any = { runId: run.id, scenario, created: [], errors: [], details: [] };
 
   try {
     // 2. Base infrastructure
@@ -77,12 +97,39 @@ Deno.serve(async (req) => {
     
     if (scenario === "consolidacao") {
       steps.push("Validar listagem de PAs", "Validar totalizadores de orçamento");
+      // Seed data specific for consolidation tests
+      await supabase.from("postos_atendimento").upsert([
+        { id: "00000000-0000-0000-0000-0000000000b2", nome: "PA-QA-002", codigo: "PA02", cooperativa_id: "00000000-0000-0000-0000-0000000000c1" }
+      ]);
+      await supabase.from("pa_budgets").upsert([
+        { pa_id: "00000000-0000-0000-0000-0000000000b2", verba_total: 30000, verba_consumida: 15000, limite_alcada: 3000 }
+      ]);
+      report.details.push("Created additional PA for consolidation validation");
     } else if (scenario === "alcada-gestor") {
       steps.push("Submeter pedido > R$ 5.000", "Verificar status 'Aguardando Aprovação'", "Aprovar via Gestor de Compras");
+      // Seed a pending order using sicoob_orders table
+      await supabase.from("sicoob_orders").insert({
+        id: "00000000-0000-0000-0000-0000000000d1",
+        pa_id: "00000000-0000-0000-0000-0000000000b1",
+        solicitante_id: "00000000-0000-0000-0000-0000000000a1",
+        status: "pendente_aprovacao",
+        total_amount: 7500.00,
+        notes: "Pedido QA excedendo alçada para teste de fluxo de aprovação"
+      });
+      report.details.push("Created pending order R$ 7.500 in sicoob_orders for approval flow testing");
     } else if (scenario === "rls-cross") {
       steps.push("Tentar acessar PA de outra Singular", "Verificar erro 403 / Lista vazia");
+      // Seed a PA in another cooperative
+      await supabase.from("cooperativas").upsert({ id: "00000000-0000-0000-0000-0000000000c2", nome: "SING-QA-OUTRA", codigo: "QA02" });
+      await supabase.from("postos_atendimento").upsert({ id: "00000000-0000-0000-0000-0000000000b3", nome: "PA-LONGE", codigo: "PA99", cooperativa_id: "00000000-0000-0000-0000-0000000000c2" });
+      report.details.push("Created external cooperative for RLS cross-check");
     } else if (scenario === "piloto") {
       steps.push("Validar badge 'MODO PILOTO' no pedido", "Verificar aprovação automática conforme regra piloto");
+      // Mark singular as piloto
+      await supabase.from("cooperativas").update({ 
+        metadata: { is_piloto: true, piloto_config: { auto_approve_under: 1000 } } 
+      }).eq("id", "00000000-0000-0000-0000-0000000000c1");
+      report.details.push("Enabled MODO PILOTO for test singular");
     }
 
     if (steps.length > 0) {
@@ -98,6 +145,7 @@ Deno.serve(async (req) => {
 
     return new Response(JSON.stringify(report), { headers: { "Content-Type": "application/json" } });
   } catch (err) {
+    console.error("Seed error:", err);
     await supabase.from("qa_runs").update({ 
       status: 'failed', 
       error: err.message,
