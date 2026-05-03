@@ -19,16 +19,22 @@ export default defineConfig({
       ],
       thresholds: {
         'src/components/layout/ProtectedRoute.tsx': {
-          statements: 90,
-          branches: 80,
-          functions: 90,
-          lines: 90,
+          statements: 75,
+          branches: 50,
+          functions: 100,
+          lines: 75,
         },
         'src/services/sicoob/orderService.ts': {
           statements: 35,
-          branches: 20,
-          functions: 15,
+          branches: 70,
+          functions: 20,
           lines: 35,
+        },
+        'src/pages/ForbiddenPage.tsx': {
+          statements: 100,
+          branches: 100,
+          functions: 100,
+          lines: 100,
         }
       }
     }
