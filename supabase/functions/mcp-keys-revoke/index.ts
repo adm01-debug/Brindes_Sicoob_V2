@@ -164,12 +164,13 @@ Deno.serve(async (req) => {
       }),
     );
     if (stepUpErr || !stepUpOk) {
+      log.warn("step_up_token_invalid", { key_id, err: stepUpErr });
       await auditFailure("denied", "mcp_key.revoke_denied", { reason: "step_up_invalid", detail: stepUpErr?.message, expected_action: "mcp_key_revoke" }, key_id);
-      return jsonResponse(
+      return log.respond(jsonResponse(
         { error: "step_up_invalid", message: "Verificação dupla expirou ou é inválida. Refaça a confirmação." },
         403,
         requestId,
-      );
+      ));
     }
 
     const { data: existing, error: fetchErr } = await admin
