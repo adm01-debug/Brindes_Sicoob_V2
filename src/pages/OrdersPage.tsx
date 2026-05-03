@@ -17,21 +17,28 @@ import { format } from "date-fns";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { BatchExportDialog } from "@/components/orders/BatchExportDialog";
 
+import { OrderFilters, OrderFilterValues } from "@/components/orders/OrderFilters";
+
 export function OrdersPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [searchQuery, setSearchQuery] = useState("");
-  const scope = useSalesScope();
-  const { data: orders = [], isLoading } = useOrdersList(user?.id, scope);
-
-  const filtered = orders.filter((o) => {
-    const q = searchQuery.toLowerCase();
-    return (
-      o.order_number.toLowerCase().includes(q) ||
-      (o.notes ?? "").toLowerCase().includes(q) ||
-      (o.client_name ?? "").toLowerCase().includes(q)
-    );
+  const [filterValues, setFilterValues] = useState<OrderFilterValues>({
+    search: "",
+    status: "all",
+    clientCompany: ""
   });
+  
+  const scope = useSalesScope();
+  
+  const { data: orders = [], isLoading } = useOrdersList(user?.id, scope, {
+    search: filterValues.search,
+    status: filterValues.status,
+    clientCompany: filterValues.clientCompany,
+    startDate: filterValues.dateRange?.from?.toISOString(),
+    endDate: filterValues.dateRange?.to?.toISOString()
+  });
+
+  const filtered = orders; // Já filtrado pelo backend via hook useOrdersList
 
   return (
     <MainLayout>
