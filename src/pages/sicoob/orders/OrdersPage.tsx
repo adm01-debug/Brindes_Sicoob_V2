@@ -212,35 +212,26 @@ export default function OrdersPage() {
   }, [searchTerm, statusFilter, paFilter, singularFilter, dateRange]);
 
 
-  const paOptions = useMemo(
-    () => Array.from(new Set(MOCK_ORDERS.map((o) => o.pa))),
-    [],
-  );
-  const singularOptions = useMemo(
-    () => Array.from(new Set(MOCK_ORDERS.map((o) => o.singular))),
-    [],
-  );
+  const { data: pas = [] } = useQuery({
+    queryKey: ["postos_atendimento"],
+    queryFn: async () => {
+      const { data } = await supabase.from("postos_atendimento").select("id, nome");
+      return data || [];
+    }
+  });
 
-  const filteredOrders = useMemo(() => {
-    const term = searchTerm.trim().toLowerCase();
-    return MOCK_ORDERS.filter((order) => {
-      if (term) {
-        const haystack = `${order.id} ${order.pa} ${order.singular}`.toLowerCase();
-        if (!haystack.includes(term)) return false;
-      }
-      if (statusFilter !== "all" && order.status !== statusFilter) return false;
-      if (paFilter !== "all" && order.pa !== paFilter) return false;
-      if (singularFilter !== "all" && order.singular !== singularFilter) return false;
-      if (dateRange?.from) {
-        const orderDate = parseISO(order.date);
-        const to = dateRange.to ?? dateRange.from;
-        if (!isWithinInterval(orderDate, { start: dateRange.from, end: to })) {
-          return false;
-        }
-      }
-      return true;
-    });
-  }, [searchTerm, statusFilter, paFilter, singularFilter, dateRange]);
+  const { data: cooperatives = [] } = useQuery({
+    queryKey: ["cooperativas"],
+    queryFn: async () => {
+      const { data } = await supabase.from("cooperativas").select("id, nome");
+      return data || [];
+    }
+  });
+
+  const paOptions = pas;
+  const singularOptions = cooperatives;
+
+  const filteredOrders = orders;
 
   const activeFiltersCount =
     (statusFilter !== "all" ? 1 : 0) +
