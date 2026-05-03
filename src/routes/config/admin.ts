@@ -26,5 +26,7 @@ export const adminRoutes = [
   defineRoute({ path: "/admin/kit-templates/metricas", component: lazyWithRetry(() => import("@/pages/admin/KitTemplatesMetricsPage")) }),
   defineRoute({ path: "/admin/auditoria", component: lazyWithRetry(() => import("@/pages/admin/AdminAuditPage")) }),
   defineRoute({ path: "/admin/qa/preflight", component: lazyWithRetry(() => import("@/pages/admin/qa/PreflightPage")) }),
+  defineRoute({ path: "/admin/qa/release-evidences", component: lazyWithRetry(() => import("@/pages/admin/qa/ReleaseEvidencesPage")) }),
+  defineRoute({ path: "/admin/qa/run/:id", component: lazyWithRetry(() => import("@/pages/admin/qa/QARunDetailPage")) }),
   defineRoute({ path: "/admin/seguranca/rls", component: lazyWithRetry(() => import("@/pages/admin/RLSAuditPage")) }),
 ] as const;
