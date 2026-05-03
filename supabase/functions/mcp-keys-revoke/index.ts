@@ -237,10 +237,12 @@ Deno.serve(async (req) => {
       },
     });
 
-    return jsonResponse({ ok: true, id: existing.id, revoked_at: revokedAt }, 200, requestId);
+    log.info("key_revoked_success", { key_id });
+    return log.respond(jsonResponse({ ok: true, id: existing.id, revoked_at: revokedAt }, 200, requestId));
   } catch (err) {
     const detail = err instanceof Error ? err.message : String(err);
+    log.error("request_uncaught_error", { err });
     await auditFailure("error", "mcp_key.revoke_error", { reason: "uncaught", detail });
-    return jsonResponse({ error: "internal_error", detail }, 500, requestId);
+    return log.respond(jsonResponse({ error: "internal_error", detail }, 500, requestId));
   }
 });
