@@ -78,9 +78,12 @@ const ClientsPage = lazyWithRetry(() => import("./pages/ClientsPage"));
 const ClientDetailPage = lazyWithRetry(() => import("./pages/ClientDetailPage"));
 const TrendsPage = lazyWithRetry(() => import("./pages/TrendsPage"));
 const NotFound = lazyWithRetry(() => import("./pages/NotFound"));
+const NotificationsPage = lazyWithRetry(() => import("./pages/NotificationsPage"));
+const GestorComprasPage = lazyWithRetry(() => import("./pages/GestorCompras"));
 const AdminTemasPage = lazyWithRetry(() => import("./pages/admin/AdminTemasPage"));
 const ColorDocumentationPage = lazyWithRetry(() => import("./pages/admin/ColorDocumentationPage"));
 const ForbiddenPage = lazyWithRetry(() => import("./pages/ForbiddenPage"));
+
 
 
 const App = () => {
@@ -178,9 +181,12 @@ const App = () => {
                             <Route path="/clientes" element={<ClientsPage />} />
                             <Route path="/clientes/:id" element={<ClientDetailPage />} />
                             <Route path="/tendencias" element={<TrendsPage />} />
+                            <Route path="/notificacoes" element={<NotificationsPage />} />
+                            <Route path="/gestor/compras" element={<GestorComprasPage />} />
 
                             {/* Error Fallback */}
                             <Route path="*" element={<div data-testid="page-not-found"><NotFound /></div>} />
+
                           </Route>
                         </Routes>
                       </RouteSuspense>

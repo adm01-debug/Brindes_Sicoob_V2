@@ -1,6 +1,3 @@
-/**
- * OrderFulfillmentManager — controle de fulfillment + tracking + transportadora.
- */
 import { useState } from "react";
 import { toast } from "sonner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Truck } from "lucide-react";
-import { useUpdateOrder, FULFILLMENT_LABELS, canTransitionTo, ORDER_STATUS_LABELS, type OrderRow } from "@/hooks/useOrders";
+import { useUpdateOrder, FULFILLMENT_LABELS, canTransitionTo, type OrderRow } from "@/hooks/useOrders";
 
 interface OrderFulfillmentManagerProps {
   order: OrderRow;
@@ -20,7 +17,11 @@ export function OrderFulfillmentManager({ order }: OrderFulfillmentManagerProps)
   const [tracking, setTracking] = useState(order.tracking_number ?? "");
   const [shippingType, setShippingType] = useState(order.shipping_type ?? "");
   const [carrier, setCarrier] = useState((order as any).shipping_carrier ?? "");
-  const [deliveryForecast, setDeliveryForecast] = useState((order as any).shipping_delivery_forecast ? new Date((order as any).shipping_delivery_forecast).toISOString().split('T')[0] : "");
+  const [deliveryForecast, setDeliveryForecast] = useState(
+    (order as any).shipping_delivery_forecast 
+      ? new Date((order as any).shipping_delivery_forecast).toISOString().split('T')[0] 
+      : ""
+  );
 
   const dirty =
     tracking !== (order.tracking_number ?? "") || 
@@ -121,3 +122,4 @@ export function OrderFulfillmentManager({ order }: OrderFulfillmentManagerProps)
     </Card>
   );
 }
+
