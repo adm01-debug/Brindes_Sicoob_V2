@@ -5,7 +5,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { MessageSquare, Send, User, Paperclip, Search, ChevronUp, ChevronDown, Filter } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
-import { useOrderComments } from "@/hooks/useOrderComments";
+import { useOrderComments } from "@/hooks/useOrderExtensions";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { ScrollArea } from "@/components/ui/scroll-area";
