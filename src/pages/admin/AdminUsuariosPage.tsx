@@ -145,6 +145,12 @@ export default function AdminUsuariosPage() {
                 )}
               </TabsTrigger>
             )}
+            {isAdmin && (
+              <TabsTrigger value="coupons" className="gap-2">
+                <Ticket className="h-4 w-4" />
+                Cupons
+              </TabsTrigger>
+            )}
             {isDev && (
               <TabsTrigger value="audit" className="gap-2">
                 <History className="h-4 w-4" />
