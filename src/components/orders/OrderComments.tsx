@@ -1,0 +1,110 @@
+import { useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { MessageSquare, Send, User, Paperclip } from "lucide-react";
+import { useOrderComments } from "@/hooks/useOrderComments";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Badge } from "@/components/ui/badge";
+
+interface OrderCommentsProps {
+  orderId: string;
+}
+
+export function OrderComments({ orderId }: OrderCommentsProps) {
+  const { comments, isLoading, addComment } = useOrderComments(orderId);
+  const [newComment, setNewComment] = useState("");
+  const [isInternal, setIsInternal] = useState(false);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newComment.trim()) return;
+    addComment.mutate({ content: newComment, isInternal });
+    setNewComment("");
+  };
+
+  if (isLoading) return <div className="h-32 flex items-center justify-center">Carregando comentários...</div>;
+
+  return (
+    <Card className="flex flex-col h-[500px]">
+      <CardHeader className="py-3">
+        <CardTitle className="text-base flex items-center gap-2">
+          <MessageSquare className="h-4 w-4 text-primary" /> Chat do Pedido
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="flex-1 flex flex-col gap-4 overflow-hidden pt-0">
+        <ScrollArea className="flex-1 pr-4">
+          <div className="space-y-4 py-2">
+            {comments?.map((comment) => (
+              <div key={comment.id} className={`flex flex-col ${comment.is_internal ? 'bg-amber-50 dark:bg-amber-950/20 p-2 rounded-lg border border-amber-100 dark:border-amber-900/30' : ''}`}>
+                <div className="flex items-center justify-between gap-2 mb-1">
+                  <div className="flex items-center gap-2">
+                    <div className="h-6 w-6 rounded-full bg-muted flex items-center justify-center">
+                      <User className="h-3 w-3" />
+                    </div>
+                    <span className="text-xs font-semibold">{comment.author_role.toUpperCase()}</span>
+                    {comment.is_internal && <Badge variant="outline" className="text-[10px] bg-amber-100 text-amber-800 border-amber-200">INTERNO</Badge>}
+                  </div>
+                  <span className="text-[10px] text-muted-foreground">
+                    {format(new Date(comment.created_at), "dd/MM HH:mm", { locale: ptBR })}
+                  </span>
+                </div>
+                <p className="text-sm whitespace-pre-wrap pl-8">{comment.content}</p>
+                {comment.attachments && (
+                  <div className="mt-2 pl-8 flex gap-2">
+                    {/* Simplified attachment view */}
+                    <span className="text-[10px] text-primary flex items-center gap-1 cursor-pointer hover:underline">
+                      <Paperclip className="h-3 w-3" /> Anexo
+                    </span>
+                  </div>
+                )}
+              </div>
+            ))}
+            {(!comments || comments.length === 0) && (
+              <p className="text-sm text-muted-foreground text-center py-8 italic">Nenhum comentário ainda.</p>
+            )}
+          </div>
+        </ScrollArea>
+
+        <form onSubmit={handleSubmit} className="space-y-2 mt-2">
+          <div className="flex items-center gap-2 mb-1">
+             <label className="text-[10px] flex items-center gap-1 cursor-pointer select-none">
+               <input 
+                 type="checkbox" 
+                 checked={isInternal} 
+                 onChange={(e) => setIsInternal(e.target.checked)}
+                 className="h-3 w-3"
+               />
+               Nota interna
+             </label>
+          </div>
+          <div className="relative">
+            <Textarea
+              placeholder="Digite sua mensagem..."
+              value={newComment}
+              onChange={(e) => setNewComment(e.target.value)}
+              className="min-h-[80px] resize-none pr-10 text-sm"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSubmit(e);
+                }
+              }}
+            />
+            <Button 
+              type="submit" 
+              size="icon" 
+              variant="ghost" 
+              className="absolute right-2 bottom-2 h-8 w-8 text-primary"
+              disabled={addComment.isPending || !newComment.trim()}
+            >
+              <Send className="h-4 w-4" />
+            </Button>
+          </div>
+        </form>
+      </CardContent>
+    </Card>
+  );
+}
