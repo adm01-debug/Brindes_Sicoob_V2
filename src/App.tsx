@@ -83,6 +83,8 @@ const GestorComprasPage = lazyWithRetry(() => import("./pages/GestorCompras"));
 const AdminTemasPage = lazyWithRetry(() => import("./pages/admin/AdminTemasPage"));
 const ColorDocumentationPage = lazyWithRetry(() => import("./pages/admin/ColorDocumentationPage"));
 const ForbiddenPage = lazyWithRetry(() => import("./pages/ForbiddenPage"));
+const OrderAuditPage = lazyWithRetry(() => import("./pages/OrderAuditPage"));
+const TestDashboard = lazyWithRetry(() => import("./pages/TestDashboard"));
 
 
 
