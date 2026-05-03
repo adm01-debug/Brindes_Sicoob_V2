@@ -15,8 +15,8 @@
  *      irmão `/sicoob/vendas` faz (usa ProtectedRoute → ForbiddenPage).
  *      → comportamento inconsistente; deveria padronizar em /403.
  *
- * Os testes ficam "soft" via test.fixme onde o gap está confirmado, para que
- * a suíte sinalize regressões assim que o gap for corrigido.
+ * Os testes validam o comportamento esperado de redirecionamento para /403 e visibilidade
+ * restrita na sidebar.
  */
 import { test, expect } from "../../fixtures/test-base";
 import { loginAs, logout } from "../../helpers/auth";
