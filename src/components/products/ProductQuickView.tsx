@@ -412,7 +412,7 @@ export const ProductQuickView = forwardRef<HTMLDivElement, ProductQuickViewProps
                         isInCompare && "bg-primary/10 border-primary/30 text-primary"
                       )}
                       onClick={handleCompare}
-                     aria-label="Comparar"><GitCompare className="h-5 w-5" />
+                     aria-label={isInCompare ? "Remover da comparação" : "Adicionar à comparação"}><GitCompare className="h-5 w-5" />
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>
