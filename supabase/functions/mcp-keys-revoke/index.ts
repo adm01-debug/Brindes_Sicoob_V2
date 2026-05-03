@@ -110,8 +110,9 @@ Deno.serve(async (req) => {
     });
     const { data: userData, error: userErr } = await userClient.auth.getUser();
     if (userErr || !userData.user) {
+      log.warn("unauthenticated_invalid_jwt");
       await auditFailure("denied", "mcp_key.revoke_denied", { reason: "invalid_jwt" });
-      return jsonResponse({ error: "unauthenticated" }, 401, requestId);
+      return log.respond(jsonResponse({ error: "unauthenticated" }, 401, requestId));
     }
     userId = userData.user.id;
 
