@@ -64,7 +64,7 @@ export const INDUSTRY_RECOMMENDATIONS: IndustryRecommendation[] = [
     aliases: ["construção", "construcao", "indústria construção", "engenharia", "imobiliária"],
     categories: ["Kits Ferramentas", "Capacetes", "Garrafas Resistentes", "Bonés"],
     rationale:
-      "Construtoras e imobiliárias valorizam itens robustos para obra e materiais para clientes finais.",
+      "Construtoras e imobiliárias valorizam itens robustos para obra e produtos para clientes finais.",
     suggestedProducts: [
       { name: "Kit Mini Ferramentas", category: "Ferramentas", priceFrom: 25, priceTo: 80, reason: "Brinde funcional para clientes" },
       { name: "Boné com Proteção UV", category: "Vestuário", priceFrom: 12, priceTo: 35, reason: "EPI promocional para canteiro" },
