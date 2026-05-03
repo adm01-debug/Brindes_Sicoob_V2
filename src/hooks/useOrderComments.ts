@@ -32,6 +32,16 @@ export function useOrderComments(orderId: string) {
     enabled: !!orderId,
   });
 
+  // Real-time subscription
+  import("@/hooks/useOrderComments").then(() => {
+    supabase
+      .channel(`order_comments:${orderId}`)
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'order_comments', filter: `order_id=eq.${orderId}` }, () => {
+        qc.invalidateQueries({ queryKey: ["order_comments", orderId] });
+      })
+      .subscribe();
+  });
+
   const addComment = useMutation({
     mutationFn: async ({ content, isInternal = false, attachments = null }: { content: string; isInternal?: boolean; attachments?: any }) => {
       const { error } = await supabase.from("order_comments").insert({
