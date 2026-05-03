@@ -5,6 +5,12 @@ import AdminCampanhasPage from '@/pages/admin/AdminCampanhasPage';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import React from 'react';
+import { BrowserRouter } from 'react-router-dom';
+
+const renderWithRouter = (ui: React.ReactElement) => {
+  return render(ui, { wrapper: BrowserRouter });
+};
+
 
 // Mock dependencies
 vi.mock('@/integrations/supabase/client', () => ({
