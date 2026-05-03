@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Package } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { ORDER_STATUS_LABELS, type OrderRow } from "@/hooks/useOrders";
+import { ORDER_STATUS_LABELS, type OrderRow } from "@/hooks";
 
 const statusColors: Record<string, string> = {
   pending: "bg-warning/20 text-warning border-warning/30",

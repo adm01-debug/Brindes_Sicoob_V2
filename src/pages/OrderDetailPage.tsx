@@ -21,7 +21,7 @@ import { OrderPilotWorkflow } from "@/components/orders/OrderPilotWorkflow";
 import { OrderAuditTimeline } from "@/components/orders/OrderAuditTimeline";
 import { OrderComments } from "@/components/orders/OrderComments";
 import { OrderSellerActions } from "@/components/orders/OrderSellerActions";
-import { ORDER_STATUS_LABELS } from "@/hooks/useOrders";
+import { ORDER_STATUS_LABELS } from "@/hooks";
 
 const statusConfig: Record<string, { label: string; color: string }> = {
   pending: { label: "Pendente", color: "bg-warning/20 text-warning border-warning/30" },

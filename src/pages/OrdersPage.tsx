@@ -6,7 +6,7 @@ import { Package, Search, Download, FileSpreadsheet, FileText } from "lucide-rea
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
-import { useOrdersList, ORDER_STATUS_LABELS } from "@/hooks/useOrders";
+import { useOrdersList, ORDER_STATUS_LABELS } from "@/hooks";
 import { OrderCard } from "@/components/orders/OrderCard";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useSalesScope } from "@/lib/auth/visibility-scope";

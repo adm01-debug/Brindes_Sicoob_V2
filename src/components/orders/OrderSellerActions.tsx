@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { useUpdateOrder, type OrderRow, ORDER_STATUS_LABELS } from "@/hooks/useOrders";
+import { useUpdateOrder, type OrderRow, ORDER_STATUS_LABELS } from "@/hooks";
 import { Play, Package, Truck, CheckCircle, Flag } from "lucide-react";
 import { toast } from "sonner";
 
