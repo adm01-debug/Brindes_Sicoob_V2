@@ -90,7 +90,7 @@ Deno.serve(async (req) => {
 
     // Outro vendedor "fantasma" — UUID fixo
     const otherSellerId = "00000000-0000-0000-0000-00000000dead";
-    const otherOrgId = "11111111-1111-1111-1111-111111111111";
+    const otherCoopId = "11111111-1111-1111-1111-111111111111";
     const otherPaId = "22222222-2222-2222-2222-222222222222";
 
     const results: ScenarioResult[] = [];
