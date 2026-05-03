@@ -45,6 +45,13 @@ test.describe('Order RBAC and Status Flow E2E', () => {
     // @ts-ignore
     expect(data[0]).toHaveProperty('Status');
     
+    // PDF Validation Example (if export type was PDF)
+    const pdfBuffer = fs.readFileSync(filePath.replace('.csv', '.pdf').replace('.xlsx', '.pdf'));
+    if (fs.existsSync(filePath.replace('.csv', '.pdf').replace('.xlsx', '.pdf'))) {
+      const pdfData = await pdf(pdfBuffer);
+      expect(pdfData.text).toContain('Relatório de Pedidos');
+    }
+    
     fs.unlinkSync(filePath);
   });
 
