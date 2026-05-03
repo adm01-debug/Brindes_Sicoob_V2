@@ -150,7 +150,7 @@ export default function FiltersPage() {
             <div className="flex items-center gap-3 flex-wrap">
               <div className="flex-shrink-0">
                 <h1 data-testid="page-title-produtos" className="font-display text-xl sm:text-2xl lg:text-3xl font-bold whitespace-nowrap">
-                   Catálogo de Materiais
+                   Catálogo de Produtos
                   <span className="text-muted-foreground font-normal text-sm sm:text-base ml-2 inline-flex items-center gap-1.5">
                     · <span className="tabular-nums">{state.isLoadingProducts && state.realProducts.length === 0 ? 'carregando...' : `${(state.activeFiltersCount > 0 ? state.filteredProducts.length : (state.totalEstimate ?? state.filteredProducts.length)).toLocaleString("pt-BR")}${!state.isFullyLoaded && state.activeFiltersCount === 0 ? '+' : ''} materiais`}</span>
                     {!state.isFullyLoaded && state.loadingProgress > 0 && state.loadingProgress < 100 && state.activeFiltersCount === 0 && (
