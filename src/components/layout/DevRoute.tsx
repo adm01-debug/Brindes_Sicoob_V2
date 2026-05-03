@@ -155,5 +155,7 @@ export const DevRoute = forwardRef<HTMLDivElement, DevRouteProps>(function DevRo
 
   // Retorno único: Outlet (Layout Route) ou children. Sem forwardRef:
   // Router não passa refs para `element={<DevRoute />}`.
-  return children ? <>{children}</> : <Outlet />;
-}
+  return children ? <div ref={ref}>{children}</div> : <div ref={ref}><Outlet /></div>;
+});
+
+DevRoute.displayName = 'DevRoute';
