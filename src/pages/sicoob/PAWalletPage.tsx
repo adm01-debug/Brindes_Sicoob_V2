@@ -255,7 +255,7 @@ export default function PAWalletPage() {
                             req.status === 'rejected' ? "bg-red-50 border-red-200 text-red-600" : 
                             "bg-amber-50 border-amber-200 text-amber-600"
                           )}>
-                            {req.status === 'approved' ? <CheckCircle 2 className="h-5 w-5" /> : 
+                            {req.status === 'approved' ? <CheckCircle2 className="h-5 w-5" /> : 
                              req.status === 'rejected' ? <X className="h-5 w-5" /> : 
                              <Clock className="h-5 w-5" />}
                           </div>
