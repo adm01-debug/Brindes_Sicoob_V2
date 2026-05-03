@@ -84,6 +84,9 @@ const EdgeFunctionLogsPanel = lazy(() =>
 const AppLogsTable = lazy(() =>
   import('@/components/admin/telemetry/AppLogsTable').then((m) => ({ default: m.AppLogsTable })),
 );
+const AppLogsTable = lazy(() =>
+  import('@/components/admin/telemetry/AppLogsTable').then((m) => ({ default: m.AppLogsTable })),
+);
 
 
 const getSeverityBadge = (severity: string) => {
