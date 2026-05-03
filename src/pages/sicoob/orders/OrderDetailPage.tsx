@@ -18,7 +18,8 @@ import {
   CreditCard,
   Image as ImageIcon,
   History,
-  Layout
+  Layout,
+  ArrowUpCircle
 } from "lucide-react";
 import { 
   Card, 
@@ -110,6 +111,7 @@ export default function OrderDetailPage() {
   const [rejectionReason, setRejectionReason] = useState("");
   const [isRequestDialogOpen, setIsRequestDialogOpen] = useState(false);
   const [isRejectDialogOpen, setIsRejectDialogOpen] = useState(false);
+  const [isEscalateDialogOpen, setIsEscalateDialogOpen] = useState(false);
   const [isAddItemDialogOpen, setIsAddItemDialogOpen] = useState(false);
   
   const [productSearch, setProductSearch] = useState("");
@@ -258,6 +260,24 @@ export default function OrderDetailPage() {
     }
   };
 
+  const handleEscalate = () => {
+    if (!requestReason.trim()) {
+      toast.error("Informe o motivo da escalação.");
+      return;
+    }
+
+    updateOrderStatusMutation.mutate({ 
+      orderId: id!, 
+      status: 'escalated_to_board', 
+      currentStatus: orderData?.status 
+    }, {
+      onSuccess: () => {
+        setIsEscalateDialogOpen(false);
+        setRequestReason("");
+      }
+    });
+  };
+
   const handleStatusUpdate = async (newStatus: any) => {
     if (!confirm(`Deseja realmente alterar o status do pedido para "${newStatus}"?`)) return;
     
@@ -349,6 +369,29 @@ export default function OrderDetailPage() {
                   onConfirm={handleReject}
                   confirmDisabled={rejectionReason.length < 10}
                 />
+
+                {orderData.status !== 'escalated_to_board' && (
+                  <>
+                    <Button variant="outline" className="border-amber-500 text-amber-600 hover:bg-amber-50" onClick={() => setIsEscalateDialogOpen(true)}>
+                      <ArrowUpCircle className="mr-2 h-4 w-4" />
+                      Escalar Diretoria
+                    </Button>
+
+                    <OrderActionDialog
+                      isOpen={isEscalateDialogOpen}
+                      onOpenChange={setIsEscalateDialogOpen}
+                      title="Escalar para Diretoria"
+                      description="Este pedido será enviado para aprovação da Alçada Superior (Diretoria)."
+                      placeholder="Justificativa para escalação..."
+                      confirmLabel="Confirmar Escalação"
+                      confirmVariant="default"
+                      value={requestReason}
+                      onValueChange={setRequestReason}
+                      onConfirm={handleEscalate}
+                      confirmDisabled={requestReason.length < 10}
+                    />
+                  </>
+                )}
 
                 <Button 
                   className="bg-success text-success-foreground hover:bg-success/90" 
