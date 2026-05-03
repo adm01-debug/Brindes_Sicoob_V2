@@ -19,15 +19,17 @@ Plataforma multi-tenant com separação lógica e visual via **Skins Factory**.
 - **SSOT (Single Source of Truth):** Banco de dados externo para dados de produtos e estoque. O banco local (Supabase) atua como cache e persistência de dados de aplicação (pedidos, orçamentos, perfis).
 - **Arquitetura Multi-DB:** Conexão com Supabase Local, Catálogo Externo e CRM DB.
 - **Multimodal:** Suporte a áudio, IA generativa e assistentes conversacionais.
+- **Master Index:** Toda a arquitetura está mapeada no [Master Module Index (MODULES.md)](docs/MODULES.md).
 
 ## 3. Perfis de Usuário e Governança
 | Papel | Escopo | Rotas Chave |
 |-------|--------|-------------|
-| **`gerente_pa`** | Operação de Postos de Atendimento Sicoob | `/dashboard-pa`, `/meus-pedidos` |
-| **`gestor_compras`** | Aprovação e gestão de verbas | `/gestor/*`, `/dashboard-gerencial` |
-| **`vendedor`** | Gestão de pedidos, logística e CRM | `/vendedor/*`, `/painel-kpis` |
+| **`gerente_pa`** | Operação de Postos de Atendimento Sicoob | `/sicoob/pedidos`, `/meus-pedidos` |
+| **`gestor_compras`** | Aprovação e gestão de verbas | `/orcamentos/dashboard`, `/dashboard-gerencial` |
+| **`vendedor`** | Gestão de pedidos, logística e CRM | `/orcamentos`, `/painel-kpis` |
 | **`admin`** | Gestão de usuários, cadastros de negócio e CMS | `/admin/usuarios`, `/admin/cadastros` |
 | **`dev`** | Operações técnicas, segurança e telemetria | `/admin/telemetria`, `/admin/seguranca`, `/admin/conexoes` |
+
 
 ## 4. Módulos de Destaque
 - **Comparação 10/10:** Score IA, radar de atributos, duel mode, share público, sparklines 30d.
