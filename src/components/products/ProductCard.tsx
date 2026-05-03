@@ -116,7 +116,7 @@ export const ProductCard = memo(forwardRef<HTMLElement, ProductCardProps>(functi
 
   const markBusy = () => { actionBusyRef.current = true; setTimeout(() => { actionBusyRef.current = false; }, 500); };
 
-  const handleFavorite = (e: React.MouseEvent) => {
+  const handleFavorite = useCallback((e: React.MouseEvent) => {
     e.stopPropagation(); markBusy(); setActionsOpen(false);
     if (isFavorited) {
       if (onToggleFavorite) {
@@ -124,9 +124,9 @@ export const ProductCard = memo(forwardRef<HTMLElement, ProductCardProps>(functi
         showUndoToast({ title: `"${product.name}" removido dos favoritos`, onUndo: () => onToggleFavorite(product.id) });
       }
     } else { setVariantPickerMode('favorite'); setVariantPickerOpen(true); }
-  };
+  }, [isFavorited, onToggleFavorite, product.id, product.name]);
 
-  const handleCompare = (e: React.MouseEvent) => {
+  const handleCompare = useCallback((e: React.MouseEvent) => {
     e.stopPropagation(); markBusy(); setActionsOpen(false);
     if (isInCompare) {
       if (onToggleCompare) {
@@ -134,9 +134,11 @@ export const ProductCard = memo(forwardRef<HTMLElement, ProductCardProps>(functi
         showUndoToast({ title: `"${product.name}" removido da comparação`, onUndo: () => onToggleCompare(product.id) });
       }
     } else { setVariantPickerMode('compare'); setVariantPickerOpen(true); }
-  };
+  }, [isInCompare, onToggleCompare, product.id, product.name]);
 
-  const formatPrice = (price: number) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(price);
+  const formatPrice = useCallback((price: number) => 
+    new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(price), 
+  []);
 
   const getStockStatusColor = (status: string) => {
     switch (status) { case 'in-stock': return 'in-stock'; case 'low-stock': return 'low-stock'; case 'out-of-stock': return 'out-of-stock'; default: return 'in-stock'; }
@@ -146,23 +148,27 @@ export const ProductCard = memo(forwardRef<HTMLElement, ProductCardProps>(functi
   };
 
   // Multi-variant carousel
-  const allMatchingVariants = resolveAllMatchingColors(product.colors, activeColorFilter);
+  const allMatchingVariants = useMemo(() => resolveAllMatchingColors(product.colors, activeColorFilter), [product.colors, activeColorFilter]);
   const hasMultipleVariants = allMatchingVariants.length > 1;
   const safeVariantIdx = hasMultipleVariants ? Math.min(activeVariantIdx, allMatchingVariants.length - 1) : 0;
   const currentVariant = hasMultipleVariants ? allMatchingVariants[safeVariantIdx] : null;
-  const matchedHighlightColor = currentVariant?.hex || resolveHighlightHex(product.colors, activeColorFilter, highlightColors);
+  
+  const matchedHighlightColor = useMemo(() => 
+    currentVariant?.hex || resolveHighlightHex(product.colors, activeColorFilter, highlightColors),
+  [currentVariant?.hex, product.colors, activeColorFilter, highlightColors]);
+  
   const hasHighlightedColor = !!matchedHighlightColor;
 
   const variantImage = currentVariant?.image;
-  const colorSpecificImage = variantImage || resolveColorImage(product, activeColorFilter);
+  const colorSpecificImage = useMemo(() => variantImage || resolveColorImage(product, activeColorFilter), [variantImage, product, activeColorFilter]);
   const rawImageUrl = colorSpecificImage || product.og_image_url || product.images[0] || null;
-  const cardImageUrl = rawImageUrl ? getCdnUrl(rawImageUrl, "card") : "/placeholder.svg";
-  const cardSrcSet = colorSpecificImage ? undefined : (rawImageUrl ? getSrcSet(rawImageUrl) : undefined);
+  const cardImageUrl = useMemo(() => rawImageUrl ? getCdnUrl(rawImageUrl, "card") : "/placeholder.svg", [rawImageUrl]);
+  const cardSrcSet = useMemo(() => colorSpecificImage ? undefined : (rawImageUrl ? getSrcSet(rawImageUrl) : undefined), [colorSpecificImage, rawImageUrl]);
   const activeColorName = currentVariant?.name || getActiveColorName(product, activeColorFilter);
 
   const imageBounds = useProductBounds(cardImageUrl !== "/placeholder.svg" ? cardImageUrl : null, { whiteThreshold: 230, margin: 0.01, maxSize: 384 });
   const isOversizedImage = imageBounds.detected && imageBounds.fractionX >= 0.86 && imageBounds.fractionY >= 0.86;
-  const computedImageScale = Number(((isOversizedImage ? 0.88 : 1) * (isHovered ? 1.03 : 1)).toFixed(3));
+  const computedImageScale = useMemo(() => Number(((isOversizedImage ? 0.88 : 1) * (isHovered ? 1.03 : 1)).toFixed(3)), [isOversizedImage, isHovered]);
 
   return (
     <article
