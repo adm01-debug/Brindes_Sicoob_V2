@@ -15,12 +15,12 @@ interface ProtectedRouteProps {
   requireDev?: boolean;
 }
 
-export function ProtectedRoute({
+export const ProtectedRoute = forwardRef<HTMLDivElement, ProtectedRouteProps>(function ProtectedRoute({
   children,
   requiredRole,
   requireAdmin = false,
   requireDev = false,
-}: ProtectedRouteProps) {
+}, ref) {
   const { user, isDev, isSupervisorOrAbove, isLoading, profile } = useAuth();
   const location = useLocation();
 
