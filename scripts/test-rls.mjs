@@ -19,7 +19,7 @@ async function testRLS() {
   // 1. Pegar dois usuários de organizações/PAs diferentes
   const { data: profiles, error: profileErr } = await adminClient
     .from('profiles')
-    .select('user_id, email, organization_id, pa_id')
+    .select('user_id, email, cooperativa_id, pa_id')
     .limit(10);
 
   if (profileErr || !profiles || profiles.length < 2) {
