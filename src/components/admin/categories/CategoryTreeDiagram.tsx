@@ -186,6 +186,21 @@ export function CategoryTreeDiagram({ categories, onEdit }: CategoryTreeDiagramP
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
+        {selectedNodeId && breadcrumbs.length > 0 && (
+          <div className="flex items-center gap-1 text-[10px] text-muted-foreground bg-muted/30 p-2 rounded-md border border-dashed">
+            {breadcrumbs.map((crumb, idx) => (
+              <React.Fragment key={crumb.id}>
+                <span 
+                  className="hover:text-primary cursor-pointer transition-colors font-medium"
+                  onClick={() => setSelectedNodeId(crumb.id)}
+                >
+                  {crumb.name}
+                </span>
+                {idx < breadcrumbs.length - 1 && <ChevronRightIcon className="h-3 w-3 opacity-50" />}
+              </React.Fragment>
+            ))}
+          </div>
+        )}
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input 
