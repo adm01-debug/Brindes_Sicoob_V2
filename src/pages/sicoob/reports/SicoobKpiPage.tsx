@@ -29,8 +29,8 @@ export default function SicoobKpiPage() {
       <div className="container mx-auto p-6 space-y-6 animate-fade-in">
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-bold font-display tracking-tight text-sicoob-green-dark">Analytics & KPIs</h1>
-            <p className="text-muted-foreground">Indicadores estratégicos de performance SICOOB.</p>
+            <h1 className="text-3xl font-bold font-display tracking-tight text-sicoob-green-dark">Business Intelligence SICOOB</h1>
+            <p className="text-muted-foreground italic">Insights baseados em dados para decisões estratégicas de Cooperativismo.</p>
           </div>
           <Button variant="outline" className="gap-2">
             <Download className="h-4 w-4" /> Exportar Dados
