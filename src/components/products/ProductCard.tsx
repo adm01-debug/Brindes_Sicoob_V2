@@ -172,8 +172,9 @@ export const ProductCard = memo(forwardRef<HTMLElement, ProductCardProps>(functi
       className={cn(
         "group relative overflow-hidden rounded-xl sm:rounded-2xl bg-card cursor-pointer card-lift",
         "transition-all duration-300 ease-out active:scale-[0.98] active:transition-transform active:duration-100 touch-manipulation",
-        product.featured && "ring-2 ring-brand/20 shadow-lg",
-        hasHighlightedColor ? "border-2" : "border-[1.5px] border-brand/20 hover:border-brand/50 hover:shadow-xl",
+        "focus-within:ring-2 focus-within:ring-brand focus-within:ring-offset-2 outline-none",
+        product.featured && "ring-2 ring-brand/30 shadow-lg",
+        hasHighlightedColor ? "border-2" : "border-[1.5px] border-border/60 hover:border-brand/50 hover:shadow-xl",
       )}
       style={hasHighlightedColor && matchedHighlightColor ? {
         borderColor: `${matchedHighlightColor}70`,
