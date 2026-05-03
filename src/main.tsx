@@ -21,6 +21,9 @@ installGlobalErrorHandlers();
 // Inject traceability headers
 injectRequestId();
 
+// Start Core Web Vitals monitoring
+reportWebVitals();
+
 const root = document.getElementById("root");
 
 if (!root) {
