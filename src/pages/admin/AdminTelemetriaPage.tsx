@@ -81,6 +81,12 @@ const BreakerStatusCard = lazy(() =>
 const EdgeFunctionLogsPanel = lazy(() =>
   import('@/components/admin/telemetry/EdgeFunctionLogsPanel').then((m) => ({ default: m.EdgeFunctionLogsPanel })),
 );
+const AppLogsTable = lazy(() =>
+  import('@/components/admin/telemetry/AppLogsTable').then((m) => ({ default: m.AppLogsTable })),
+);
+const AppLogsTable = lazy(() =>
+  import('@/components/admin/telemetry/AppLogsTable').then((m) => ({ default: m.AppLogsTable })),
+);
 
 
 const getSeverityBadge = (severity: string) => {
@@ -202,6 +208,10 @@ export default function AdminTelemetriaPage() {
         {/* Telemetria client-side ao vivo das chamadas às bridges (external/CRM) */}
         <Suspense fallback={<CardSkeleton height={260} label="Carregando telemetria das bridges" />}>
           <BridgesLiveCard />
+        </Suspense>
+
+        <Suspense fallback={<CardSkeleton height={520} label="Carregando logs do sistema" />}>
+          <AppLogsTable />
         </Suspense>
 
         {/* Logs ao vivo das edge functions com correlação por request_id */}

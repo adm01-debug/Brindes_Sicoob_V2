@@ -4992,11 +4992,13 @@ export type Database = {
           query_limit: number | null
           query_offset: number | null
           record_count: number | null
+          request_id: string | null
           retry_count: number
           rls_blocked_count: number | null
           rpc_name: string | null
           severity: string
           table_name: string | null
+          trace_id: string | null
           user_id: string | null
         }
         Insert: {
@@ -5015,11 +5017,13 @@ export type Database = {
           query_limit?: number | null
           query_offset?: number | null
           record_count?: number | null
+          request_id?: string | null
           retry_count?: number
           rls_blocked_count?: number | null
           rpc_name?: string | null
           severity?: string
           table_name?: string | null
+          trace_id?: string | null
           user_id?: string | null
         }
         Update: {
@@ -5038,11 +5042,13 @@ export type Database = {
           query_limit?: number | null
           query_offset?: number | null
           record_count?: number | null
+          request_id?: string | null
           retry_count?: number
           rls_blocked_count?: number | null
           rpc_name?: string | null
           severity?: string
           table_name?: string | null
+          trace_id?: string | null
           user_id?: string | null
         }
         Relationships: []

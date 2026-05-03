@@ -8,6 +8,7 @@ import { logger } from "@/lib/logger";
 import { selectCrmById } from "@/lib/crm-db";
 import type { ProposalTemplateData } from "@/components/pdf/ProposalHtmlTemplate";
 import type { Quote } from "@/hooks/useQuotes";
+import { bitrixCircuitBreaker } from "@/utils/resilience";
 
 interface SyncBitrixParams {
   quote: Quote;
@@ -88,13 +89,15 @@ export async function syncQuoteToBitrix({
     logger.warn("PDF generation failed:", pdfErr);
   }
 
-  const { data, error } = await supabase.functions.invoke("sync-quote-bitrix", {
-    body: {
-      quote, proposalData, pdfUrl: pdfStorageUrl, filename,
-      bitrixCompanyId: effectiveBitrixCompanyId, sellerEmail: userEmail,
-      shippingType: quote.shipping_type, shippingCost: quote.shipping_cost,
-    },
-  });
+  const { data, error } = await bitrixCircuitBreaker.execute(() => 
+    supabase.functions.invoke("sync-quote-bitrix", {
+      body: {
+        quote, proposalData, pdfUrl: pdfStorageUrl, filename,
+        bitrixCompanyId: effectiveBitrixCompanyId, sellerEmail: userEmail,
+        shippingType: quote.shipping_type, shippingCost: quote.shipping_cost,
+      },
+    })
+  );
 
   if (error || !data?.success) {
     const msg = data?.error || error?.message || "Erro desconhecido";
