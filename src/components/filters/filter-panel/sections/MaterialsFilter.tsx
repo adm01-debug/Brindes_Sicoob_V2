@@ -46,7 +46,7 @@ export function MaterialsFilter({
                 materialFilterState.selectedTypes.forEach(slug => toggleMaterialType(slug));
               }}
               className="text-[10px] text-muted-foreground hover:text-destructive transition-colors"
-              aria-label="Limpar todos os materiais selecionados"
+              aria-label="Limpar todos os produtos selecionados"
             >
               Limpar todos
             </button>
