@@ -6,19 +6,25 @@ import { Database, Activity, X, ChevronRight, ChevronDown } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useDevGate } from "@/hooks/useDevGate";
 
 export function APIInspector() {
+  const { isAllowed } = useDevGate();
   const [isOpen, setIsOpen] = useState(false);
   const [logs, setLogs] = useState<DiagnosticLog[]>([]);
   const [isMinimized, setIsMinimized] = useState(true);
 
   useEffect(() => {
+    if (!isAllowed) return;
     const unsubscribe = diagnostics.subscribe((log) => {
       setLogs(prev => [log, ...prev].slice(0, 50));
     });
     setLogs(diagnostics.getLogs().slice(0, 50));
     return unsubscribe;
-  }, []);
+  }, [isAllowed]);
+
+  // Restrito a usuários com papel `dev` (via SSOT DevInfraGate)
+  if (!isAllowed) return null;
 
   if (!isOpen) {
     return (
