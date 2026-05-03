@@ -98,9 +98,13 @@ export default function PAWalletPage() {
             <div className="space-y-2">
               <div className="flex justify-between text-sm font-medium">
                 <span>Progresso de Consumo</span>
-                <span>{spentPercent.toFixed(1)}%</span>
+                <span className={cn(spentPercent > 90 ? "text-red-600" : "text-sicoob-green")}>{spentPercent.toFixed(1)}%</span>
               </div>
-              <Progress value={spentPercent} className="h-3" />
+              <Progress 
+                value={spentPercent} 
+                className="h-3" 
+                indicatorClassName={spentPercent > 90 ? "bg-red-500" : "bg-sicoob-green"}
+              />
             </div>
 
             {spentPercent > 90 && (
