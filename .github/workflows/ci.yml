@@ -50,6 +50,11 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Build check (Development mode)
+        # Garante que erros de sintaxe ou imports quebrados em componentes
+        # como DiagnosticOverlay sejam capturados antes do merge.
+        run: npm run build:dev
+
       - name: Seller-scope checker (RLS defesa em profundidade)
         run: node scripts/check-seller-scope.mjs
 
