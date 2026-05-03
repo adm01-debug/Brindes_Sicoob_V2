@@ -89,7 +89,7 @@ export function AuthBrandingPanel() {
               Portal de Compras - <span className="text-primary">Sicoob</span>
             </h2>
             <p className="text-lg text-muted-foreground">
-              Tenha acesso ao catálogo oficial de materiais e brindes. Consulte estoque em tempo real e personalize seus pedidos com a identidade do sistema.
+              Tenha acesso ao catálogo oficial de produtos e brindes. Consulte estoque em tempo real e personalize seus pedidos com a identidade do sistema.
             </p>
           </div>
 
