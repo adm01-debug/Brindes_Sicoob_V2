@@ -1,15 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { MainLayout } from "@/components/layout/MainLayout";
 import { PageSEO } from "@/components/seo/PageSEO";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Layout, Image, Settings, Globe, Search, Plus, Pencil, Trash2 } from "lucide-react";
+import { Layout, Image, Settings, Globe, Search, Plus, Pencil, Trash2, ChevronLeft, ChevronRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export default function AdminCMSPage() {
   return (
@@ -58,15 +59,32 @@ export default function AdminCMSPage() {
 function BannersTab() {
   const [banners, setBanners] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
 
   const fetchBanners = async () => {
     setIsLoading(true);
-    const { data } = await supabase.from('cms_banners').select('*').order('sort_order', { ascending: true });
-    setBanners(data || []);
+    const { data, error } = await supabase.from('cms_banners').select('*').order('sort_order', { ascending: true });
+    if (error) {
+      toast.error("Erro ao carregar banners");
+    } else {
+      setBanners(data || []);
+    }
     setIsLoading(false);
   };
 
   useEffect(() => { fetchBanners(); }, []);
+
+  const filteredBanners = useMemo(() => {
+    return banners.filter(b => 
+      b.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      b.subtitle?.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [banners, searchTerm]);
+
+  const totalPages = Math.ceil(filteredBanners.length / pageSize);
+  const paginatedBanners = filteredBanners.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
   return (
     <Card>
@@ -74,23 +92,52 @@ function BannersTab() {
         <div><CardTitle>Banners Rotativos</CardTitle><CardDescription>Gerencie as imagens e links do carrossel principal</CardDescription></div>
         <Button className="gap-2"><Plus className="h-4 w-4" /> Novo Banner</Button>
       </CardHeader>
-      <CardContent>
+      <CardContent className="space-y-4">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input 
+            placeholder="Buscar banners..." 
+            value={searchTerm} 
+            onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }} 
+            className="pl-9" 
+          />
+        </div>
+
         <Table>
           <TableHeader><TableRow><TableHead>Imagem</TableHead><TableHead>Título</TableHead><TableHead>Posição</TableHead><TableHead>Status</TableHead><TableHead className="text-right">Ações</TableHead></TableRow></TableHeader>
           <TableBody>
             {isLoading ? <TableRow><TableCell colSpan={5} className="text-center py-8">Carregando...</TableCell></TableRow> :
-             banners.length === 0 ? <TableRow><TableCell colSpan={5} className="text-center py-8 text-muted-foreground">Nenhum banner cadastrado</TableCell></TableRow> :
-             banners.map(b => (
+             paginatedBanners.length === 0 ? <TableRow><TableCell colSpan={5} className="text-center py-8 text-muted-foreground">Nenhum banner encontrado</TableCell></TableRow> :
+             paginatedBanners.map(b => (
                <TableRow key={b.id}>
                  <TableCell><img src={b.image_url} className="w-16 h-8 object-cover rounded border" /></TableCell>
                  <TableCell className="font-medium">{b.title}</TableCell>
                  <TableCell>{b.position}</TableCell>
                  <TableCell><Badge variant={b.is_active ? "default" : "secondary"}>{b.is_active ? "Ativo" : "Inativo"}</Badge></TableCell>
-                 <TableCell className="text-right"><Button variant="ghost" size="icon"><Pencil className="h-4 w-4" /></Button></TableCell>
+                 <TableCell className="text-right">
+                   <div className="flex justify-end gap-2">
+                     <Button variant="ghost" size="icon"><Pencil className="h-4 w-4" /></Button>
+                     <Button variant="ghost" size="icon" className="text-destructive"><Trash2 className="h-4 w-4" /></Button>
+                   </div>
+                 </TableCell>
                </TableRow>
              ))}
           </TableBody>
         </Table>
+
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between border-t pt-4">
+            <p className="text-sm text-muted-foreground">Página {currentPage} de {totalPages}</p>
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}>
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages}>
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        )}
       </CardContent>
     </Card>
   );
