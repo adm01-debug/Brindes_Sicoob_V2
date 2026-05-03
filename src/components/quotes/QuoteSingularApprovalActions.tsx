@@ -36,6 +36,27 @@ export function QuoteSingularApprovalActions({ quoteId, status, quoteNumber, onA
 
   if (!canApprove || !isPending) return null;
 
+  const handleAdjust = async () => {
+    if (!notes.trim()) {
+      toast.error("Por favor, informe quais ajustes são necessários");
+      return;
+    }
+
+    setIsProcessing(true);
+    try {
+      // For adjustments, we might use 'rejected_singular' with specific notes or a new status if needed.
+      // Reusing rejected_singular as it sends it back to the PAC for editing.
+      const ok = await updateQuoteStatus(quoteId, "rejected_singular", `Ajustes solicitados: ${notes}`);
+      if (ok) {
+        toast.success("Solicitação de ajuste enviada ao PAC");
+        setAdjustDialogOpen(false);
+        onActionComplete?.();
+      }
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
   const handleApprove = async () => {
     setIsProcessing(true);
     try {
