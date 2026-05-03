@@ -28,6 +28,27 @@ export function OrderLogisticsTab({ orderId }: OrderLogisticsTabProps) {
     });
   };
 
+  const handlePhotoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setIsUploadingPhoto(true);
+      const publicUrl = await uploadFile(file, `delivery-photo-${Date.now()}.jpg`);
+      
+      updateLogistics.mutate({
+        delivery_photo_url: publicUrl,
+        status: 'delivered'
+      });
+      
+      toast.success("Foto de entrega enviada com sucesso");
+    } catch (error: any) {
+      toast.error("Erro no upload da foto: " + error.message);
+    } finally {
+      setIsUploadingPhoto(false);
+    }
+  };
+
   if (isLoading) return <div className="p-8 text-center">Carregando dados logísticos...</div>;
 
   return (
