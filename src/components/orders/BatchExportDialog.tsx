@@ -30,6 +30,7 @@ export function BatchExportDialog({ entityType, filters }: BatchExportDialogProp
   const [open, setOpen] = useState(false);
   const [frequency, setFrequency] = useState<'daily' | 'weekly' | 'monthly'>('daily');
   const [exportType, setExportType] = useState<'pdf' | 'excel'>('excel');
+  const [notifyByEmail, setNotifyByEmail] = useState(true);
 
   const entityJobs = jobs.filter(j => j.entity_type === entityType);
   const entityScheduled = scheduledExports.filter(s => s.entity_type === entityType);
