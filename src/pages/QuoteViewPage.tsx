@@ -20,6 +20,7 @@ import { toast } from "sonner";
 import { QuoteStatusTimeline } from "@/components/quotes/QuoteStatusTimeline";
 import { QuoteValidityBanner } from "@/components/quotes/QuoteValidityBanner";
 import { QuoteConvertToOrder } from "@/components/quotes/QuoteConvertToOrder";
+import { QuoteSingularApprovalActions } from "@/components/quotes/QuoteSingularApprovalActions";
 import { QuoteMobileActionBar } from "@/components/quotes/QuoteMobileActionBar";
 import { QuoteCommentsSection } from "@/components/quotes/QuoteCommentsSection";
 import { QuoteApprovalLinkCard } from "@/components/quotes/QuoteApprovalLinkCard";
