@@ -29,17 +29,18 @@ async function ensureUser(user: any) {
     throw error;
   }
 
-  // Ensure profile
+  // Ensure profile using correct column 'full_name' instead of 'display_name'
   await supabase.from("profiles").upsert({
     id: user.id,
     user_id: user.id,
     email: user.email,
-    display_name: `QA ${user.role}`,
+    full_name: `QA ${user.role}`,
     role: user.role,
     pa_id: user.pa_id || null,
     cooperativa_id: user.cooperativa_id || null
   }, { onConflict: "id" });
 }
+
 
 Deno.serve(async (req) => {
   const { scenario = "default" } = await req.json().catch(() => ({}));
