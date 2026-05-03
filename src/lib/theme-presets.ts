@@ -644,11 +644,22 @@ export const THEME_PRESETS: ThemePreset[] = [
     });
     const sicoobYellow = '44 100% 50%';
     const sicoobGreenAgua = '82 73% 41%';
+    // Destaque do sidebar (token "orange" no Sicoob) → Turquesa vivo #00AE9D
+    const sicoobTurquesa = '173 100% 34%';
+    const sicoobTurquesaHover = '173 100% 30%';
+    const sicoobTurquesaActive = '173 100% 26%';
+    const sicoobTurquesaGlow = '173 100% 42%';
     base.light.accent = sicoobYellow;
-    base.light.orange = sicoobYellow;
+    base.light.orange = sicoobTurquesa;
+    base.light['orange-hover'] = sicoobTurquesaHover;
+    base.light['orange-active'] = sicoobTurquesaActive;
+    base.light['orange-glow'] = sicoobTurquesaGlow;
     base.light.interactive = sicoobGreenAgua;
     base.dark.accent = sicoobYellow;
-    base.dark.orange = sicoobYellow;
+    base.dark.orange = sicoobTurquesa;
+    base.dark['orange-hover'] = sicoobTurquesaHover;
+    base.dark['orange-active'] = sicoobTurquesaActive;
+    base.dark['orange-glow'] = sicoobTurquesaGlow;
     base.dark.interactive = sicoobGreenAgua;
     return { ...base, category: 'classic' as const };
   })(),
