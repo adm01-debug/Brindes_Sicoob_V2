@@ -339,9 +339,15 @@ function CategoryFormDialog({ open, onOpenChange, category, onSave, categories }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent onOpenAutoFocus={(e) => {
+        // Prevent default to control focus manually if needed, 
+        // but Radix usually handles initial focus on first focusable element (Name input).
+      }}>
         <DialogHeader>
           <DialogTitle>{category ? 'Editar Categoria' : 'Nova Categoria'}</DialogTitle>
+          <DialogDescription>
+            {category ? 'Altere as informações da categoria selecionada.' : 'Preencha os campos abaixo para criar uma nova categoria.'}
+          </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
