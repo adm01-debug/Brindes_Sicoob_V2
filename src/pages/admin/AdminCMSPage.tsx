@@ -1,15 +1,19 @@
 
+
 import React, { useState, useEffect, useMemo } from 'react';
 import { MainLayout } from "@/components/layout/MainLayout";
 import { PageSEO } from "@/components/seo/PageSEO";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Layout, Image, Settings, Globe, Plus, Pencil, Trash2 } from "lucide-react";
+import { Layout, Image, Settings, Globe, Plus, Pencil, Trash2, Palette, Eye, Type, Link as LinkIcon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { AdminDataTable } from "@/components/admin/common/AdminDataTable";
 import { logAdminAction } from "@/utils/adminAudit";
 import * as XLSX from 'xlsx';
@@ -220,33 +224,242 @@ function SectionsTab() {
   );
 }
 
+
 function SeoTab() {
+  const [seoConfig, setSeoConfig] = useState({
+    site_title: 'Promo Gifts | Sicoob',
+    site_description: 'Plataforma oficial de brindes e materiais promocionais Sicoob.',
+    keywords: 'brindes, sicoob, promocional, cooperativismo',
+    og_image: '',
+    google_analytics_id: ''
+  });
+  const [isSaving, setIsSaving] = useState(false);
+
+  useEffect(() => {
+    const fetchSeo = async () => {
+      const { data } = await supabase.from('cms_config').select('*').eq('key', 'seo_global').single();
+      if (data?.value) setSeoConfig(data.value);
+    };
+    fetchSeo();
+  }, []);
+
   const handleSaveSeo = async () => {
-    toast.success("Configurações de SEO salvas!");
-    logAdminAction({
-      event_type: 'PUBLISH_CMS',
-      entity_type: 'cms_seo_config',
-      metadata: { action: 'update_global_seo' }
-    });
+    setIsSaving(true);
+    try {
+      const { error } = await supabase
+        .from('cms_config')
+        .upsert({ key: 'seo_global', value: seoConfig }, { onConflict: 'key' });
+      
+      if (error) throw error;
+
+      toast.success("Configurações de SEO salvas!");
+      await logAdminAction({
+        event_type: 'PUBLISH_CMS',
+        entity_type: 'cms_config',
+        metadata: { action: 'update_global_seo', config: seoConfig }
+      });
+    } catch (err) {
+      toast.error("Erro ao salvar SEO");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
-    <Card>
-      <CardHeader><CardTitle>SEO Meta Tags</CardTitle><CardDescription>Configure as tags de SEO globais do sistema</CardDescription></CardHeader>
-      <CardContent className="space-y-4">
-        <div className="grid gap-2"><label className="text-sm font-medium">Título Global</label><Input defaultValue="Sicoob Brindes" /></div>
-        <div className="grid gap-2"><label className="text-sm font-medium">Keywords</label><Input defaultValue="brindes, cooperativismo, sicoob" /></div>
-        <Button onClick={handleSaveSeo}>Salvar Configurações</Button>
-      </CardContent>
-    </Card>
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2"><Globe className="h-5 w-5" /> SEO Meta Tags</CardTitle>
+          <CardDescription>Configure como o sistema aparece nos buscadores e redes sociais</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid gap-2">
+            <Label htmlFor="site_title">Título do Site (Meta Title)</Label>
+            <Input 
+              id="site_title" 
+              value={seoConfig.site_title} 
+              onChange={e => setSeoConfig({...seoConfig, site_title: e.target.value})} 
+            />
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="site_desc">Descrição (Meta Description)</Label>
+            <Textarea 
+              id="site_desc" 
+              value={seoConfig.site_description} 
+              onChange={e => setSeoConfig({...seoConfig, site_description: e.target.value})} 
+            />
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="keywords">Palavras-chave (separadas por vírgula)</Label>
+            <Input 
+              id="keywords" 
+              value={seoConfig.keywords} 
+              onChange={e => setSeoConfig({...seoConfig, keywords: e.target.value})} 
+            />
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="og_image">URL da Imagem Social (Open Graph)</Label>
+            <Input 
+              id="og_image" 
+              placeholder="https://..." 
+              value={seoConfig.og_image} 
+              onChange={e => setSeoConfig({...seoConfig, og_image: e.target.value})} 
+            />
+          </div>
+          <Button onClick={handleSaveSeo} disabled={isSaving}>
+            {isSaving ? "Salvando..." : "Salvar Configurações"}
+          </Button>
+        </CardContent>
+      </Card>
+
+      <Card className="bg-muted/30">
+        <CardHeader>
+          <CardTitle className="text-sm font-medium flex items-center gap-2"><Eye className="h-4 w-4" /> Pré-visualização Google</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="p-4 bg-white rounded border shadow-sm space-y-1 max-w-[500px]">
+            <p className="text-[#1a0dab] text-xl hover:underline cursor-pointer truncate">{seoConfig.site_title}</p>
+            <p className="text-[#006621] text-sm truncate">{window.location.origin}</p>
+            <p className="text-[#4d5156] text-sm line-clamp-2">{seoConfig.site_description}</p>
+          </div>
+          <div className="mt-6 p-4 bg-white rounded border shadow-sm space-y-2">
+            <p className="text-xs font-bold uppercase text-muted-foreground mb-2 flex items-center gap-1"><LinkIcon className="h-3 w-3" /> Redes Sociais</p>
+            <div className="aspect-video bg-muted rounded flex items-center justify-center overflow-hidden border">
+              {seoConfig.og_image ? <img src={seoConfig.og_image} className="w-full h-full object-cover" alt="Preview" /> : <Globe className="h-12 w-12 opacity-10" />}
+            </div>
+            <p className="font-bold text-lg">{seoConfig.site_title}</p>
+            <p className="text-sm text-muted-foreground line-clamp-1">{seoConfig.site_description}</p>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
 }
 
 function VisualTab() {
+  const [theme, setTheme] = useState({
+    primary_color: '#003641',
+    accent_color: '#7fbb00',
+    border_radius: '0.5rem',
+    font_family: 'Outfit'
+  });
+  const [isSaving, setIsSaving] = useState(false);
+
+  useEffect(() => {
+    const fetchVisual = async () => {
+      const { data } = await supabase.from('cms_config').select('*').eq('key', 'visual_identity').single();
+      if (data?.value) setTheme(data.value);
+    };
+    fetchVisual();
+  }, []);
+
+  const handleSaveVisual = async () => {
+    setIsSaving(true);
+    try {
+      const { error } = await supabase
+        .from('cms_config')
+        .upsert({ key: 'visual_identity', value: theme }, { onConflict: 'key' });
+      
+      if (error) throw error;
+      toast.success("Identidade visual salva! Recarregue para aplicar.");
+    } catch (err) {
+      toast.error("Erro ao salvar visual");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   return (
-    <Card>
-      <CardHeader><CardTitle>Identidade Visual</CardTitle><CardDescription>Ajuste as cores e logotipos principais</CardDescription></CardHeader>
-      <CardContent className="text-center py-12 text-muted-foreground">Configurações de tema integradas ao ThemeContext</CardContent>
-    </Card>
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2"><Palette className="h-5 w-5" /> Estilo & Cores</CardTitle>
+          <CardDescription>Personalize as cores principais e tipografia do sistema</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>Cor Primária (Sicoob)</Label>
+              <div className="flex gap-2">
+                <Input type="color" value={theme.primary_color} onChange={e => setTheme({...theme, primary_color: e.target.value})} className="w-12 h-10 p-1" />
+                <Input value={theme.primary_color} onChange={e => setTheme({...theme, primary_color: e.target.value})} />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label>Cor de Destaque</Label>
+              <div className="flex gap-2">
+                <Input type="color" value={theme.accent_color} onChange={e => setTheme({...theme, accent_color: e.target.value})} className="w-12 h-10 p-1" />
+                <Input value={theme.accent_color} onChange={e => setTheme({...theme, accent_color: e.target.value})} />
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label>Arredondamento (Border Radius)</Label>
+            <Select value={theme.border_radius} onValueChange={v => setTheme({...theme, border_radius: v})}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="0rem">Quadrado (0)</SelectItem>
+                <SelectItem value="0.25rem">Sutil (4px)</SelectItem>
+                <SelectItem value="0.5rem">Padrão (8px)</SelectItem>
+                <SelectItem value="1rem">Arredondado (16px)</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label className="flex items-center gap-2"><Type className="h-4 w-4" /> Fonte Principal</Label>
+            <Select value={theme.font_family} onValueChange={v => setTheme({...theme, font_family: v})}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Outfit">Outfit (Padrão)</SelectItem>
+                <SelectItem value="Inter">Inter</SelectItem>
+                <SelectItem value="Roboto">Roboto</SelectItem>
+                <SelectItem value="Open Sans">Open Sans</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <Button onClick={handleSaveVisual} disabled={isSaving} className="w-full">
+            {isSaving ? "Salvando..." : "Salvar Identidade Visual"}
+          </Button>
+        </CardContent>
+      </Card>
+
+      <Card className="flex flex-col">
+        <CardHeader>
+          <CardTitle className="text-sm font-medium">Pré-visualização de Interface</CardTitle>
+        </CardHeader>
+        <CardContent className="flex-1 flex flex-col items-center justify-center p-8 bg-muted/20 rounded-b-xl border-t">
+          <div 
+            className="w-full max-w-sm p-6 bg-background shadow-xl space-y-4"
+            style={{ borderRadius: theme.border_radius, fontFamily: theme.font_family }}
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full" style={{ backgroundColor: theme.primary_color }} />
+              <div className="space-y-1 flex-1">
+                <div className="h-3 w-24 bg-muted rounded" />
+                <div className="h-2 w-16 bg-muted/50 rounded" />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <div className="h-4 w-full bg-muted rounded" />
+              <div className="h-4 w-3/4 bg-muted rounded" />
+            </div>
+            <Button 
+              className="w-full text-white" 
+              style={{ backgroundColor: theme.accent_color, borderRadius: theme.border_radius }}
+            >
+              Botão de Ação
+            </Button>
+            <div className="flex justify-between pt-4 border-t">
+              <div className="h-2 w-12 bg-muted rounded" />
+              <div className="h-2 w-12 bg-muted rounded" />
+            </div>
+          </div>
+          <p className="text-[10px] text-muted-foreground mt-4 italic">Esta é uma simulação de como os tokens serão aplicados.</p>
+        </CardContent>
+      </Card>
+    </div>
   );
 }

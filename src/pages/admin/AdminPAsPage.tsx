@@ -171,16 +171,46 @@ export default function AdminPAsPage() {
   );
 }
 
+
 function PAFormDialog({ open, onOpenChange, pa, onSave, singulares }: any) {
   const [formData, setFormData] = useState<any>({ nome: '', codigo: '', cooperativa_id: null, endereco: '', cidade: '', uf: '', is_active: true });
-  useEffect(() => { if (pa) setFormData(pa); else setFormData({ nome: '', codigo: '', cooperativa_id: singulares[0]?.id || null, endereco: '', cidade: '', uf: '', is_active: true }); }, [pa, open, singulares]);
+  const [isSaving, setIsSaving] = useState(false);
+
+  useEffect(() => { 
+    if (pa) setFormData(pa); 
+    else setFormData({ nome: '', codigo: '', cooperativa_id: singulares[0]?.id || null, endereco: '', cidade: '', uf: '', is_active: true }); 
+  }, [pa, open, singulares]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formData.nome || !formData.codigo || !formData.cooperativa_id) {
+      toast.error("Nome, código e singular são obrigatórios");
+      return;
+    }
+    setIsSaving(true);
+    try {
+      await onSave(formData);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px]">
-        <DialogHeader><DialogTitle>{pa ? 'Editar PA' : 'Novo PA'}</DialogTitle></DialogHeader>
-        <div className="grid gap-4 py-4">
-          <div className="grid grid-cols-4 items-center gap-4"><Label htmlFor="nome" className="text-right">Nome</Label><Input id="nome" className="col-span-3" value={formData.nome} onChange={(e) => setFormData({ ...formData, nome: e.target.value })} /></div>
-          <div className="grid grid-cols-4 items-center gap-4"><Label htmlFor="codigo" className="text-right">Código</Label><Input id="codigo" className="col-span-3" value={formData.codigo} onChange={(e) => setFormData({ ...formData, codigo: e.target.value })} /></div>
+        <DialogHeader>
+          <DialogTitle>{pa ? 'Editar PA' : 'Novo PA'}</DialogTitle>
+          <DialogDescription>Cadastre um novo Posto de Atendimento vinculado a uma singular.</DialogDescription>
+        </DialogHeader>
+        <form onSubmit={handleSubmit} className="grid gap-4 py-4">
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="nome" className="text-right">Nome</Label>
+            <Input id="nome" className="col-span-3" value={formData.nome} onChange={(e) => setFormData({ ...formData, nome: e.target.value })} required />
+          </div>
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="codigo" className="text-right">Código</Label>
+            <Input id="codigo" className="col-span-3" value={formData.codigo} onChange={(e) => setFormData({ ...formData, codigo: e.target.value })} required placeholder="Ex: 01" />
+          </div>
           <div className="grid grid-cols-4 items-center gap-4">
             <Label className="text-right">Singular</Label>
             <div className="col-span-3">
@@ -190,15 +220,36 @@ function PAFormDialog({ open, onOpenChange, pa, onSave, singulares }: any) {
               </Select>
             </div>
           </div>
-          <div className="grid grid-cols-4 items-center gap-4"><Label htmlFor="cidade" className="text-right">Cidade</Label><Input id="cidade" className="col-span-3" value={formData.cidade} onChange={(e) => setFormData({ ...formData, cidade: e.target.value })} /></div>
-          <div className="grid grid-cols-4 items-center gap-4"><Label htmlFor="uf" className="text-right">UF</Label><Input id="uf" className="col-span-3" value={formData.uf} onChange={(e) => setFormData({ ...formData, uf: e.target.value })} /></div>
-          <div className="grid grid-cols-4 items-center gap-4"><Label htmlFor="endereco" className="text-right">Endereço</Label><Input id="endereco" className="col-span-3" value={formData.endereco} onChange={(e) => setFormData({ ...formData, endereco: e.target.value })} /></div>
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="cidade" className="text-right">Cidade</Label>
+            <Input id="cidade" className="col-span-3" value={formData.cidade} onChange={(e) => setFormData({ ...formData, cidade: e.target.value })} />
+          </div>
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="uf" className="text-right">UF</Label>
+            <Input id="uf" maxLength={2} className="col-span-3" value={formData.uf} onChange={(e) => setFormData({ ...formData, uf: e.target.value.toUpperCase() })} />
+          </div>
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="endereco" className="text-right">Endereço</Label>
+            <Input id="endereco" className="col-span-3" value={formData.endereco} onChange={(e) => setFormData({ ...formData, endereco: e.target.value })} />
+          </div>
           <div className="grid grid-cols-4 items-center gap-4">
             <Label className="text-right">Ativo</Label>
-            <div className="col-span-3 flex items-center gap-2"><input type="checkbox" checked={formData.is_active} onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })} /><span className="text-sm">Habilitado</span></div>
+            <div className="col-span-3 flex items-center gap-2">
+              <input 
+                type="checkbox" 
+                id="pa_active"
+                className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                checked={formData.is_active} 
+                onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })} 
+              />
+              <Label htmlFor="pa_active" className="text-sm font-normal">Habilitado para pedidos</Label>
+            </div>
           </div>
-        </div>
-        <DialogFooter><Button variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button><Button onClick={() => onSave(formData)}>Salvar</Button></DialogFooter>
+          <DialogFooter className="pt-4">
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
+            <Button type="submit" disabled={isSaving}>{isSaving ? "Salvando..." : "Salvar"}</Button>
+          </DialogFooter>
+        </form>
       </DialogContent>
     </Dialog>
   );
