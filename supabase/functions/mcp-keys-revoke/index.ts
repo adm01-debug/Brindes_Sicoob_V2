@@ -8,6 +8,7 @@ import { getCorsHeaders } from "../_shared/cors.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.95.0";
 import { z } from "https://esm.sh/zod@3.23.8";
 import { getOrCreateRequestId, REQUEST_ID_HEADER } from "../_shared/request-id.ts";
+import { createStructuredLogger } from "../_shared/structured-logger.ts";
 import { writeAuditEntry, summarizePayload, extractRequestMeta } from "../_shared/audit-log.ts";
 import { recordMcpViolation, mapViolationReason } from "../_shared/mcp-violations.ts";
 import { castRpcResult } from "../_shared/supabase-client-adapter.ts";
@@ -37,14 +38,21 @@ function jsonResponse(body: unknown, status: number, requestId: string) {
 }
 
 Deno.serve(async (req) => {
+  const requestId = getOrCreateRequestId(req);
+  const log = createStructuredLogger({ fn: "mcp-keys-revoke", requestId, req });
+  
   corsHeaders = getCorsHeaders(req);
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
-  const requestId = getOrCreateRequestId(req);
+  
+  log.info("request_start");
   const startedAt = new Date().toISOString();
   const startedMs = Date.now();
   const { ip, ua } = extractRequestMeta(req);
 
-  if (req.method !== "POST") return jsonResponse({ error: "method_not_allowed" }, 405, requestId);
+  if (req.method !== "POST") {
+    log.warn("method_not_allowed", { method: req.method });
+    return log.respond(jsonResponse({ error: "method_not_allowed" }, 405, requestId));
+  }
 
   const admin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
     auth: { persistSession: false, autoRefreshToken: false },
@@ -92,8 +100,9 @@ Deno.serve(async (req) => {
     const authHeader = req.headers.get("Authorization") ?? "";
     const jwt = authHeader.replace(/^Bearer\s+/i, "");
     if (!jwt) {
+      log.warn("unauthenticated_missing_jwt");
       await auditFailure("denied", "mcp_key.revoke_denied", { reason: "unauthenticated" });
-      return jsonResponse({ error: "unauthenticated" }, 401, requestId);
+      return log.respond(jsonResponse({ error: "unauthenticated" }, 401, requestId));
     }
 
     const userClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
@@ -101,8 +110,9 @@ Deno.serve(async (req) => {
     });
     const { data: userData, error: userErr } = await userClient.auth.getUser();
     if (userErr || !userData.user) {
+      log.warn("unauthenticated_invalid_jwt");
       await auditFailure("denied", "mcp_key.revoke_denied", { reason: "invalid_jwt" });
-      return jsonResponse({ error: "unauthenticated" }, 401, requestId);
+      return log.respond(jsonResponse({ error: "unauthenticated" }, 401, requestId));
     }
     userId = userData.user.id;
 
@@ -110,23 +120,27 @@ Deno.serve(async (req) => {
       admin.rpc("is_dev", { _user_id: userId }),
     );
     if (roleErr) {
+      log.error("role_check_failed", { err: roleErr });
       await auditFailure("error", "mcp_key.revoke_error", { reason: "role_check_failed", detail: roleErr.message });
-      return jsonResponse({ error: "internal_error", detail: roleErr.message }, 500, requestId);
+      return log.respond(jsonResponse({ error: "internal_error", detail: roleErr.message }, 500, requestId));
     }
     if (!roleCheck) {
+      log.warn("forbidden_not_dev", { userId });
       await auditFailure("denied", "mcp_key.revoke_denied", { reason: "not_dev" });
-      return jsonResponse({ error: "forbidden", message: "Apenas desenvolvedores podem revogar chaves MCP." }, 403, requestId);
+      return log.respond(jsonResponse({ error: "forbidden", message: "Apenas desenvolvedores podem revogar chaves MCP." }, 403, requestId));
     }
 
     try { rawBody = await req.json(); } catch {
+      log.warn("invalid_json_body");
       await auditFailure("error", "mcp_key.revoke_error", { reason: "invalid_json" });
-      return jsonResponse({ error: "invalid_json" }, 400, requestId);
+      return log.respond(jsonResponse({ error: "invalid_json" }, 400, requestId));
     }
     const parsed = BodySchema.safeParse(rawBody);
     if (!parsed.success) {
       const fields = parsed.error.flatten().fieldErrors;
+      log.warn("validation_failed", { fields });
       await auditFailure("denied", "mcp_key.revoke_denied", { reason: "validation_failed", fields });
-      return jsonResponse({ error: "validation_failed", fields }, 422, requestId);
+      return log.respond(jsonResponse({ error: "validation_failed", fields }, 422, requestId));
     }
     const { key_id, reason, step_up_token } = parsed.data;
 
@@ -134,12 +148,13 @@ Deno.serve(async (req) => {
     // Revogação tem efeito imediato em todas as integrações; exigimos confirmação por
     // senha + OTP recente (validados em consume_step_up_token, que re-checa is_dev no consumo).
     if (!step_up_token) {
+      log.warn("step_up_token_missing", { key_id });
       await auditFailure("denied", "mcp_key.revoke_denied", { reason: "step_up_required" }, key_id);
-      return jsonResponse(
+      return log.respond(jsonResponse(
         { error: "step_up_required", message: "Confirme sua identidade (senha + código por e-mail) antes de revogar uma chave MCP." },
         403,
         requestId,
-      );
+      ));
     }
     const { data: stepUpOk, error: stepUpErr } = await castRpcResult<RpcEnvelope<boolean>>(
       userClient.rpc("consume_step_up_token", {
@@ -149,12 +164,13 @@ Deno.serve(async (req) => {
       }),
     );
     if (stepUpErr || !stepUpOk) {
+      log.warn("step_up_token_invalid", { key_id, err: stepUpErr });
       await auditFailure("denied", "mcp_key.revoke_denied", { reason: "step_up_invalid", detail: stepUpErr?.message, expected_action: "mcp_key_revoke" }, key_id);
-      return jsonResponse(
+      return log.respond(jsonResponse(
         { error: "step_up_invalid", message: "Verificação dupla expirou ou é inválida. Refaça a confirmação." },
         403,
         requestId,
-      );
+      ));
     }
 
     const { data: existing, error: fetchErr } = await admin
@@ -163,16 +179,19 @@ Deno.serve(async (req) => {
       .eq("id", key_id)
       .maybeSingle();
     if (fetchErr) {
+      log.error("fetch_key_failed", { key_id, err: fetchErr });
       await auditFailure("error", "mcp_key.revoke_error", { reason: "fetch_failed", detail: fetchErr.message }, key_id);
-      return jsonResponse({ error: "internal_error", detail: fetchErr.message }, 500, requestId);
+      return log.respond(jsonResponse({ error: "internal_error", detail: fetchErr.message }, 500, requestId));
     }
     if (!existing) {
+      log.warn("key_not_found", { key_id });
       await auditFailure("denied", "mcp_key.revoke_denied", { reason: "not_found" }, key_id);
-      return jsonResponse({ error: "not_found" }, 404, requestId);
+      return log.respond(jsonResponse({ error: "not_found" }, 404, requestId));
     }
     if (existing.revoked_at) {
+      log.warn("key_already_revoked", { key_id });
       await auditFailure("denied", "mcp_key.revoke_denied", { reason: "already_revoked" }, key_id);
-      return jsonResponse({ error: "already_revoked" }, 409, requestId);
+      return log.respond(jsonResponse({ error: "already_revoked" }, 409, requestId));
     }
 
     // postgrest-js 2.95+ removeu .then/.catch do RPC builder — usar try/catch.
@@ -189,8 +208,9 @@ Deno.serve(async (req) => {
       .update({ revoked_at: revokedAt })
       .eq("id", key_id);
     if (updErr) {
+      log.error("revoke_update_failed", { key_id, err: updErr });
       await auditFailure("error", "mcp_key.revoke_error", { reason: "update_failed", detail: updErr.message }, key_id);
-      return jsonResponse({ error: "update_failed", detail: updErr.message }, 500, requestId);
+      return log.respond(jsonResponse({ error: "update_failed", detail: updErr.message }, 500, requestId));
     }
 
     await writeAuditEntry(admin, {
@@ -217,10 +237,12 @@ Deno.serve(async (req) => {
       },
     });
 
-    return jsonResponse({ ok: true, id: existing.id, revoked_at: revokedAt }, 200, requestId);
+    log.info("key_revoked_success", { key_id });
+    return log.respond(jsonResponse({ ok: true, id: existing.id, revoked_at: revokedAt }, 200, requestId));
   } catch (err) {
     const detail = err instanceof Error ? err.message : String(err);
+    log.error("request_uncaught_error", { err });
     await auditFailure("error", "mcp_key.revoke_error", { reason: "uncaught", detail });
-    return jsonResponse({ error: "internal_error", detail }, 500, requestId);
+    return log.respond(jsonResponse({ error: "internal_error", detail }, 500, requestId));
   }
 });
