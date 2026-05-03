@@ -66,6 +66,7 @@ export function QuoteBuilderSummaryColumn({
   realSubtotal = 0, realDiscountPercent = 0,
   confirmItemPrice, confirmAllStalePrices,
 }: Props) {
+  const { isGerentePa } = useAuth();
   const [approvalDialogOpen, setApprovalDialogOpen] = useState(false);
   const [sellerNotes, setSellerNotes] = useState("");
   const [confirmAllOpen, setConfirmAllOpen] = useState(false);
