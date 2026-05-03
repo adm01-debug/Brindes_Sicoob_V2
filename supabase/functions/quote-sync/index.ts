@@ -100,21 +100,27 @@ interface PersonalizationData {
 }
 
 Deno.serve(async (req) => {
+  const requestId = getOrCreateRequestId(req);
+  const log = createStructuredLogger({ fn: 'quote-sync', requestId, req });
+
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: getCorsHeaders(req) });
   }
 
+  log.info('request_start');
   const corsHeaders = getCorsHeaders(req);
-
   const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
   try {
     // Validate body with Zod
     const parsed = await parseBodyWithSchema(req, RequestSchema, getCorsHeaders(req));
-    if ('error' in parsed) return parsed.error;
+    if ('error' in parsed) {
+      log.warn('validation_failed', { details: parsed.error });
+      return log.respond(parsed.error);
+    }
 
     const { action, data } = parsed.data;
-    console.log(`Quote sync action: ${action}`, data);
+    log.info('action_start', { action });
 
     switch (action) {
       case "sync_quote": {
