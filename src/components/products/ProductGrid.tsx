@@ -184,6 +184,9 @@ export function ProductGrid({
     <div 
       ref={containerRef}
       className="relative w-full overflow-hidden"
+      role="grid"
+      aria-label="Catálogo de produtos"
+      aria-busy={!isGridVisible}
     >
       <div
         style={{
