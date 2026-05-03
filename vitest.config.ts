@@ -11,7 +11,7 @@ export default defineConfig({
     },
     coverage: {
       provider: 'v8',
-      reporter: ['text', 'json', 'html', 'json-summary'],
+      reporter: ['text', 'json', 'html', 'json-summary', 'junit'],
       reportsDirectory: './coverage',
       include: [
         'src/hooks/useOrders.ts',
