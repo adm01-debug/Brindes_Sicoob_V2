@@ -30,13 +30,14 @@ interface LiveRegionProps {
   atomic?: boolean;
 }
 
-export function LiveRegion({ 
+export const LiveRegion = forwardRef<HTMLDivElement, LiveRegionProps>(({ 
   children, 
   politeness = "polite", 
   atomic = true 
-}: LiveRegionProps) {
+}, ref) => {
   return (
     <div 
+      ref={ref}
       role="status" 
       aria-live={politeness} 
       aria-atomic={atomic}
@@ -45,7 +46,9 @@ export function LiveRegion({
       {children}
     </div>
   );
-}
+});
+
+LiveRegion.displayName = 'LiveRegion';
 
 /**
  * Provides accessible loading announcements.
