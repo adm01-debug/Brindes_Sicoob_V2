@@ -1,8 +1,9 @@
-import { render, screen } from "@testing-library/react";
-import { describe, it, expect, vi } from "vitest";
-import ForbiddenPage from "../ForbiddenPage";
-import { MemoryRouter } from "react-router-dom";
 import React from "react";
+import { render, screen, fireEvent } from "@testing-library/react";
+import { describe, it, expect, vi } from "vitest";
+import ForbiddenPage from "./ForbiddenPage";
+import { MemoryRouter } from "react-router-dom";
+
 
 describe("ForbiddenPage", () => {
   it("renders access denied message and path", () => {
@@ -37,7 +38,8 @@ describe("ForbiddenPage", () => {
     );
 
     const backButton = screen.getByRole("button", { name: /Voltar/i });
-    backButton.click();
+    fireEvent.click(backButton);
+
     
     expect(backSpy).toHaveBeenCalled();
   });
