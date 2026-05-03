@@ -83,9 +83,11 @@ export function CategoriesManager() {
       setIsFormOpen(false);
       setEditingCategory(null);
       fetchCategories();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error saving category:", error);
-      toast.error("Erro ao salvar categoria");
+      toast.error(error.message || "Erro ao salvar categoria");
+    } finally {
+      setIsLoading(false);
     }
   };
 
