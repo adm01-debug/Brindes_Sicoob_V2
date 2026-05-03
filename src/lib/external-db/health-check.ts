@@ -14,6 +14,7 @@
  */
 import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/lib/logger';
+import { getRequestHeaders } from '@/lib/system/request-context';
 
 export type BridgeHealth = {
   ok: boolean;
@@ -43,7 +44,10 @@ export async function pingHealth(timeoutMs = 2500): Promise<BridgeHealth> {
   const t0 = performance.now();
   try {
     const { error } = await withTimeout(
-      supabase.functions.invoke('external-db-bridge', { body: { operation: 'ping' } }),
+      supabase.functions.invoke('external-db-bridge', { 
+        body: { operation: 'ping' },
+        headers: getRequestHeaders(),
+      }),
       timeoutMs,
       'health-check',
     );
