@@ -94,9 +94,29 @@ export const sicoobOrderService = {
 
     const { error } = await supabase
       .from("sicoob_orders")
-      .update({ status })
+      .update({ status, updated_at: new Date().toISOString() })
       .eq("id", orderId);
     if (error) throw error;
+
+    // Trigger notification
+    try {
+      const order = await this.getOrderById(orderId);
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      await supabase.functions.invoke('send-notification', {
+        body: {
+          user_id: order.created_by,
+          title: "Status do Pedido Sicoob Atualizado",
+          message: `Seu pedido #${orderId.slice(0, 8)} mudou para ${status}`,
+          metadata: { order_id: orderId, event_type: 'sicoob_order_status_change' },
+          action_url: `/sicoob/pedidos/${orderId}`
+        }
+      });
+
+      // Email fallback is handled inside send-notification/send-transactional-email
+    } catch (err) {
+      console.warn("Falha ao enviar notificação, mas pedido foi atualizado:", err);
+    }
   },
 
   async updateOrderTotal(orderId: string, total: number): Promise<void> {
