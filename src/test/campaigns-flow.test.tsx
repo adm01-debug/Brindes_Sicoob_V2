@@ -75,7 +75,7 @@ describe('Campaigns Flow - CRUD & Status', () => {
   });
 
   it('should open edit mode and update status', async () => {
-    render(<AdminCampanhasPage />);
+    renderWithRouter(<AdminCampanhasPage />);
     await waitFor(() => expect(screen.getByText('Campaign 1')).toBeDefined());
 
     // Click edit button
