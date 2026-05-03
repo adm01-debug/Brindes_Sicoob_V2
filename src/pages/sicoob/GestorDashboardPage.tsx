@@ -69,12 +69,12 @@ export default function GestorDashboardPage() {
           <Card className="border-[1.5px] md:col-span-2">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium">Consumo Global da Singular</CardTitle>
-              <div className="text-sm font-bold text-primary">{budgetProgress.toFixed(1)}%</div>
+              <div className="text-sm font-bold text-sicoob-green-dark">{budgetProgress.toFixed(1)}%</div>
             </CardHeader>
             <CardContent className="space-y-3">
-              <div className="text-2xl font-bold">{formatCurrency(stats?.totalSpentMonth || 0)} <span className="text-sm font-normal text-muted-foreground">/ {formatCurrency(stats?.monthlyBudget || 0)}</span></div>
+              <div className="text-2xl font-bold text-sicoob-green-dark">{formatCurrency(stats?.totalSpentMonth || 0)} <span className="text-sm font-normal text-muted-foreground">/ {formatCurrency(stats?.monthlyBudget || 0)}</span></div>
               <div className="w-full bg-muted rounded-full h-2">
-                <div className="bg-primary h-2 rounded-full" style={{ width: `${budgetProgress}%` }} />
+                <div className="bg-sicoob-green h-2 rounded-full" style={{ width: `${budgetProgress}%` }} />
               </div>
             </CardContent>
           </Card>
