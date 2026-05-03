@@ -174,7 +174,7 @@ export function GlobalSearchPalette() {
           )}
 
           {/* Search Results */}
-          {!s.isSearching && s.groupedResults && Object.entries(s.groupedResults).map(([type, items]) => {
+          {!s.isSearching && s.groupedResults && Object.entries(s.groupedResults).length > 0 && Object.entries(s.groupedResults).map(([type, items]) => {
             const config = typeConfig[type];
             if (!config) return null;
             const Icon = config.icon;
