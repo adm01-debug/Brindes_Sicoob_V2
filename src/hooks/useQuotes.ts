@@ -165,11 +165,11 @@ export function useQuotes() {
         updateData.approved_by = user?.id;
       }
 
-      // rls-allow: applySellerScope chamado dinamicamente; mutações por id com RLS
+      // rls-allow: lookup por id; RLS valida ownership
       const { error: updErr } = await supabase.from("quotes").update(updateData).eq("id", quoteId);
       if (updErr) throw new Error(updErr.message);
 
-      // Notification logic (asynchronous, don't block UI)
+      // Notification logic (asynchronous)
       const sendNotifications = async () => {
         try {
           if (status === 'pending_singular_approval') {
@@ -184,20 +184,22 @@ export function useQuotes() {
                 title: "Nova solicitação de PAC",
                 message: `O PAC enviou o orçamento ${quote?.quote_number} para aprovação.`,
                 type: 'info',
-                link: `/orcamentos/${quoteId}`
+                category: 'approval',
+                action_url: `/orcamentos/${quoteId}`
               }));
-              await supabase.from('notifications').insert(notifs);
+              await supabase.from('workspace_notifications').insert(notifs);
             }
           } else if (['approved_singular', 'rejected_singular'].includes(status)) {
             if (quote?.seller_id) {
-              await supabase.from('notifications').insert({
+              await supabase.from('workspace_notifications').insert({
                 user_id: quote.seller_id,
                 title: status === 'approved_singular' ? "Solicitação Aprovada" : "Solicitação Reprovada",
                 message: status === 'approved_singular' 
                   ? `Sua solicitação ${quote.quote_number} foi aprovada pela Singular.`
                   : `Sua solicitação ${quote.quote_number} foi devolvida para ajustes.`,
                 type: status === 'approved_singular' ? 'success' : 'warning',
-                link: `/orcamentos/${quoteId}`
+                category: 'quote',
+                action_url: `/orcamentos/${quoteId}`
               });
             }
           }
