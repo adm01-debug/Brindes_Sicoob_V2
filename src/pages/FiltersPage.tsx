@@ -152,7 +152,7 @@ export default function FiltersPage() {
                 <h1 data-testid="page-title-produtos" className="font-display text-xl sm:text-2xl lg:text-3xl font-bold whitespace-nowrap">
                    Catálogo de Produtos
                   <span className="text-muted-foreground font-normal text-sm sm:text-base ml-2 inline-flex items-center gap-1.5">
-                    · <span className="tabular-nums">{state.isLoadingProducts && state.realProducts.length === 0 ? 'carregando...' : `${(state.activeFiltersCount > 0 ? state.filteredProducts.length : (state.totalEstimate ?? state.filteredProducts.length)).toLocaleString("pt-BR")}${!state.isFullyLoaded && state.activeFiltersCount === 0 ? '+' : ''} materiais`}</span>
+                    · <span className="tabular-nums">{state.isLoadingProducts && state.realProducts.length === 0 ? 'carregando...' : `${(state.activeFiltersCount > 0 ? state.filteredProducts.length : (state.totalEstimate ?? state.filteredProducts.length)).toLocaleString("pt-BR")}${!state.isFullyLoaded && state.activeFiltersCount === 0 ? '+' : ''} produtos`}</span>
                     {!state.isFullyLoaded && state.loadingProgress > 0 && state.loadingProgress < 100 && state.activeFiltersCount === 0 && (
                       <span className="inline-flex items-center gap-1 ml-1">
                         <span className="h-1 w-12 bg-muted/50 rounded-full overflow-hidden inline-block align-middle">
