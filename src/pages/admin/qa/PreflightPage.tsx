@@ -193,7 +193,7 @@ export default function QaPreflightPage() {
               <Button variant="outline" className="justify-start gap-2 h-auto py-3 px-4" onClick={() => seedMutation.mutate('alcada-gestor')} disabled={isSeeding}>
                 <div className="flex flex-col items-start">
                   <span className="font-bold">Alçada Gestor</span>
-                  <span className="text-[10px] text-muted-foreground">Pedidos > R$ 5k</span>
+                  <span className="text-[10px] text-muted-foreground">Pedidos &gt; R$ 5k</span>
                 </div>
               </Button>
               <Button variant="outline" className="justify-start gap-2 h-auto py-3 px-4" onClick={() => seedMutation.mutate('rls-cross')} disabled={isSeeding}>
