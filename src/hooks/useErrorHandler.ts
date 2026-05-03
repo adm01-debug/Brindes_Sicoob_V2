@@ -88,12 +88,29 @@ export function useGlobalErrorCatcher() {
   useEffect(() => {
     const onUnhandled = (event: ErrorEvent) => {
       console.error('[GlobalError]', event.error);
-      toast.error('Erro inesperado. Tente recarregar a página.');
+      
+      // Dispatch custom event for critical error UI
+      window.dispatchEvent(new CustomEvent('app-critical-error', { 
+        detail: { 
+          message: event.message || 'Erro inesperado na aplicação.',
+          error: event.error,
+          type: 'runtime'
+        } 
+      }));
     };
 
     const onUnhandledRejection = (event: PromiseRejectionEvent) => {
       console.error('[UnhandledRejection]', event.reason);
-      toast.error('Erro inesperado. Tente recarregar a página.');
+      
+      const isCritical = event.reason?.status === 500 || event.reason?.message?.includes('500');
+
+      window.dispatchEvent(new CustomEvent('app-critical-error', { 
+        detail: { 
+          message: 'Falha crítica na comunicação com o servidor.',
+          error: event.reason,
+          type: isCritical ? 'server' : 'rejection'
+        } 
+      }));
     };
 
     window.addEventListener('error', onUnhandled);
