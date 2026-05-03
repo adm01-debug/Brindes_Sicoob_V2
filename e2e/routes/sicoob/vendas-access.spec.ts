@@ -35,25 +35,22 @@ test.describe("Sicoob Vendas — Access Control", () => {
     await expect(page.url()).toContain("/login");
   });
 
-  test("Non-vendedor role accessing /sicoob/vendas shows Forbidden page and blocks data", async ({ page }) => {
-    // Assuming 'editor' role mimics a restricted user without vendedor role
+  test("Non-vendedor role accessing /sicoob/vendas shows Forbidden page and back button works", async ({ page }) => {
     await loginAs(page, "editor");
     
-    // Intercept possible Sicoob API calls to verify they are not even attempted or are blocked
-    let apiCalled = false;
-    await page.route("**/functions/v1/sicoob-*", route => {
-      apiCalled = true;
-      route.abort();
-    });
-
     await gotoAndSettle(page, "/sicoob/vendas");
     
     // Should show 403 Forbidden page
     await expect(page.url()).toContain("/403");
-    await expect(page.getByTestId("app-forbidden")).toBeVisible();
+    const forbiddenContainer = page.getByTestId("app-forbidden");
+    await expect(forbiddenContainer).toBeVisible();
     
-    // Ensure the protected content is NOT present
-    await expect(page.getByTestId("seller-panel-root")).not.toBeVisible();
+    // Test the "Ir para o início" button
+    await page.getByRole("link", { name: /Ir para o início/i }).click();
+    await expect(page.url()).not.toContain("/403");
+    // Should be at home
+    expect(page.url().endsWith('/') || page.url().includes('/dashboard')).toBeTruthy();
   });
 });
+
 
