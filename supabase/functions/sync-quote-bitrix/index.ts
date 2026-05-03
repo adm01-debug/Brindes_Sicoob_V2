@@ -1,6 +1,8 @@
 import { getCorsHeaders } from '../_shared/cors.ts';
 import { z } from '../_shared/zod-validate.ts';
 import { fetchWithBreaker, CircuitOpenError, circuitOpenResponse } from '../_shared/external-fetch.ts';
+import { createStructuredLogger } from "../_shared/structured-logger.ts";
+import { getOrCreateRequestId } from "../_shared/request-id.ts";
 
 // Mapping: seller email → Bitrix24 numeric seller_id
 const SELLER_EMAIL_MAP: Record<string, number> = {
@@ -25,25 +27,31 @@ const SyncQuoteBitrixSchema = z.object({
 });
 
 Deno.serve(async (req) => {
+  const requestId = getOrCreateRequestId(req);
+  const log = createStructuredLogger({ fn: "sync-quote-bitrix", requestId, req });
+  
   const corsHeaders = getCorsHeaders(req);
-  // Handle CORS preflight
-  if (req.method === "OPTIONS") {
-    return new Response("ok", { headers: corsHeaders });
-  }
+  if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
+
+  log.info("request_start");
 
   try {
     let rawBody: unknown;
-    try { rawBody = await req.json(); } catch {
-      return new Response(JSON.stringify({ error: "Invalid request body" }), {
+    try { 
+      rawBody = await req.json(); 
+    } catch {
+      log.warn("invalid_json_body");
+      return log.respond(new Response(JSON.stringify({ error: "Invalid request body" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      }));
     }
 
     const parsed = SyncQuoteBitrixSchema.safeParse(rawBody);
     if (!parsed.success) {
-      return new Response(JSON.stringify({ error: "Validation failed", details: parsed.error.flatten().fieldErrors }), {
+      log.warn("validation_failed", { errors: parsed.error.flatten().fieldErrors });
+      return log.respond(new Response(JSON.stringify({ error: "Validation failed", details: parsed.error.flatten().fieldErrors }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      }));
     }
 
     const {
@@ -57,23 +65,23 @@ Deno.serve(async (req) => {
       shippingCost,
     } = parsed.data;
 
-    // ── 1. Validate webhook URL ──────────────────────────────────────────────
+    // ── 1. Validate secrets ──────────────────────────────────────────────
     const webhookUrl = Deno.env.get("N8N_QUOTE_WEBHOOK_URL");
     if (!webhookUrl) {
+      log.error("missing_webhook_url_secret");
       throw new Error("N8N_QUOTE_WEBHOOK_URL não configurado nos secrets");
     }
 
     // ── 2. Resolve seller_id ─────────────────────────────────────────────────
-    // Priority: email passed from frontend → undefined (n8n test mode uses default)
     const sellerId = sellerEmail ? SELLER_EMAIL_MAP[sellerEmail] : undefined;
     if (sellerEmail && sellerId === undefined) {
-      console.warn(`sellerEmail "${sellerEmail}" não encontrado no SELLER_EMAIL_MAP — orçamento enviado sem seller_id`);
+      log.warn("seller_not_found_in_map", { sellerEmail });
     }
 
-    // ── 3. Resolve company_id (Bitrix numeric) — OBRIGATÓRIO (Spec v3.2) ────
-    // bitrixCompanyId comes from companies.bitrix_id (string like "125240")
+    // ── 3. Resolve company_id ────────────────────────────────────────────────
     const companyId = bitrixCompanyId ? parseInt(bitrixCompanyId, 10) : null;
     if (!companyId || !Number.isFinite(companyId) || companyId <= 0) {
+      log.warn("invalid_company_id", { bitrixCompanyId });
       throw new Error("company_id (Bitrix) é obrigatório. Verifique se a empresa possui vínculo com o Bitrix24.");
     }
 
@@ -89,9 +97,10 @@ Deno.serve(async (req) => {
     const itemsValidos = rawItems.filter((item: any) => !!item.bitrix_product_id);
     const itemsExcluidos = rawItems.length - itemsValidos.length;
     if (itemsExcluidos > 0) {
-      console.warn(`${itemsExcluidos} item(ns) excluído(s) do payload por não ter bitrix_product_id`);
+      log.warn("items_excluded_no_bitrix_id", { count: itemsExcluidos });
     }
     if (itemsValidos.length === 0) {
+      log.warn("no_valid_items_to_sync");
       throw new Error("Nenhum produto da proposta possui ID no Bitrix24 (bitrix_product_id nulo em todos os itens). Aguarde a importação do catálogo.");
     }
 
@@ -99,21 +108,19 @@ Deno.serve(async (req) => {
       // Spec §6.2: offer_id = product_variants.bitrix_product_id (obrigatório)
       const offerId = Number(item.bitrix_product_id);
       if (!Number.isFinite(offerId) || offerId <= 0) {
-        console.warn(`Item ignorado: bitrix_product_id inválido ("${item.bitrix_product_id}") — produto: ${item.name || item.product_name}`);
+        log.warn("item_ignored_invalid_offer_id", { bitrix_product_id: item.bitrix_product_id, name: item.name });
         return null;
       }
 
-      // product_name = nome do produto + " - " + cor
       const baseName = item.name || item.product_name || "Produto";
       const colorSuffix = item.color ? ` - ${item.color}` : "";
       const productName = `${baseName}${colorSuffix}`;
 
-      // SKU = supplier_sku da variante
       const sku = item.supplier_sku || item.composedCode || item.sku || item.product_sku || "";
 
       const qty = Number(item.quantity ?? 1);
       if (!Number.isFinite(qty) || qty <= 0) {
-        console.warn(`Item ignorado: quantity inválida (${item.quantity}) — produto: ${baseName}`);
+        log.warn("item_ignored_invalid_quantity", { quantity: item.quantity, name: baseName });
         return null;
       }
 
@@ -192,6 +199,7 @@ Deno.serve(async (req) => {
     }).filter((p: any) => p !== null);
 
     if (products.length === 0) {
+      log.warn("all_items_rejected");
       throw new Error("Todos os itens foram rejeitados por dados inválidos (offer_id ou quantity). Verifique os dados dos produtos.");
     }
 
@@ -267,14 +275,13 @@ Deno.serve(async (req) => {
       payload.pdf = { filename, url: pdfUrl };
     }
 
-    // ── 7. Log (no sensitive content) ───────────────────────────────────────
-    console.log("Sending to n8n:", JSON.stringify({
-      ...payload,
-      pdf: payload.pdf ? { filename: (payload.pdf as any).filename, url: (payload.pdf as any).url } : undefined,
+    // ── 7. Log payload overview ──────────────────────────────────────────
+    log.info("payload_ready", {
+      title: payload.title,
       products_count: products.length,
-      seller_email_input: sellerEmail,
-      bitrix_company_id_input: bitrixCompanyId,
-    }));
+      has_pdf: !!payload.pdf,
+      company_id: companyId
+    });
 
     // ── 8. Call n8n webhook ──────────────────────────────────────────────────
     const response = await fetchWithBreaker("bitrix", webhookUrl, {
@@ -288,31 +295,32 @@ Deno.serve(async (req) => {
     if (contentType.includes("application/json")) {
       result = await response.json();
     } else {
-      // n8n sometimes returns plain text on error
       const text = await response.text();
       result = { raw: text };
     }
 
-    console.log("n8n response status:", response.status, "body:", JSON.stringify(result));
+    log.info("n8n_response", { status: response.status });
 
     if (!response.ok) {
       const errMsg = (result as any)?.error || (result as any)?.raw || `HTTP ${response.status}`;
+      log.error("n8n_failed", { error: errMsg, status: response.status });
       throw new Error(errMsg);
     }
 
-    return new Response(JSON.stringify({ success: true, result }), {
+    return log.respond(new Response(JSON.stringify({ success: true, result }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    }));
 
   } catch (error: unknown) {
     if (error instanceof CircuitOpenError) {
-      return circuitOpenResponse(error, corsHeaders);
+      log.warn("circuit_breaker_open");
+      return log.respond(circuitOpenResponse(error, corsHeaders));
     }
     const message = error instanceof Error ? error.message : String(error);
-    console.error("sync-quote-bitrix error:", message);
-    return new Response(
+    log.error("request_failed", { err: error });
+    return log.respond(new Response(
       JSON.stringify({ success: false, error: message }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+    ));
   }
 });
