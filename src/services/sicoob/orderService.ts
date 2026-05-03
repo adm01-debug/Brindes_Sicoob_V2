@@ -154,5 +154,27 @@ export const sicoobOrderService = {
       .update({ total_amount: total, updated_at: new Date().toISOString() })
       .eq("id", orderId);
     if (error) throw error;
+  },
+  
+  async approveOrdersBulk(orderIds: string[]): Promise<{ successes: string[], failures: { id: string, reason: string }[] }> {
+    const results = await Promise.allSettled(
+      orderIds.map(async (id) => {
+        await this.updateOrderStatus(id, 'confirmed');
+        return id;
+      })
+    );
+
+    const successes: string[] = [];
+    const failures: { id: string, reason: string }[] = [];
+
+    results.forEach((res, index) => {
+      if (res.status === 'fulfilled') {
+        successes.push(res.value);
+      } else {
+        failures.push({ id: orderIds[index], reason: res.reason?.message || "Erro desconhecido" });
+      }
+    });
+
+    return { successes, failures };
   }
 };
