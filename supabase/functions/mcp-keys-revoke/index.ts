@@ -125,8 +125,9 @@ Deno.serve(async (req) => {
       return log.respond(jsonResponse({ error: "internal_error", detail: roleErr.message }, 500, requestId));
     }
     if (!roleCheck) {
+      log.warn("forbidden_not_dev", { userId });
       await auditFailure("denied", "mcp_key.revoke_denied", { reason: "not_dev" });
-      return jsonResponse({ error: "forbidden", message: "Apenas desenvolvedores podem revogar chaves MCP." }, 403, requestId);
+      return log.respond(jsonResponse({ error: "forbidden", message: "Apenas desenvolvedores podem revogar chaves MCP." }, 403, requestId));
     }
 
     try { rawBody = await req.json(); } catch {
