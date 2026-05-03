@@ -16,15 +16,22 @@ const QA_USERS = [
 async function ensureUser(user: any) {
   console.log(`Garantindo usuário: ${user.email}`);
   
-  // Try to find user by email first
+  // Try to find user by email first using admin API
   const { data: { users }, error: listError } = await supabase.auth.admin.listUsers();
+  if (listError) throw listError;
+  
   const existingUser = users?.find(u => u.email === user.email);
 
   if (existingUser) {
-    console.log(`Usuário ${user.email} já existe. Atualizando...`);
-    await supabase.auth.admin.updateUserById(existingUser.id, { password: QA_PASSWORD });
-    user.id = existingUser.id; // Use existing ID for profile upsert
+    console.log(`Usuário ${user.email} já existe. Atualizando senha...`);
+    const { error: updateError } = await supabase.auth.admin.updateUserById(existingUser.id, { 
+      password: QA_PASSWORD,
+      user_metadata: { full_name: `QA ${user.role}` }
+    });
+    if (updateError) throw updateError;
+    user.id = existingUser.id;
   } else {
+    console.log(`Criando novo usuário ${user.email}...`);
     const { data: newUser, error: createError } = await supabase.auth.admin.createUser({
       email: user.email,
       password: QA_PASSWORD,
@@ -32,9 +39,13 @@ async function ensureUser(user: any) {
       user_metadata: { full_name: `QA ${user.role}` }
     });
 
-    if (createError) throw createError;
+    if (createError) {
+      console.error(`Erro ao criar ${user.email}:`, createError);
+      throw createError;
+    }
     if (newUser?.user) user.id = newUser.user.id;
   }
+
 
 
   // Ensure profile using correct column 'full_name' instead of 'display_name'
