@@ -40,7 +40,8 @@ export default function PAWalletPage() {
   const remaining = budget ? Number(budget.monthly_limit) - Number(budget.current_spent) : 0;
 
   return (
-    <div className="container mx-auto p-6 space-y-6 animate-fade-in">
+    <MainLayout>
+      <div className="container mx-auto p-6 space-y-6 animate-fade-in">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-display">Gestão de Verba</h1>
