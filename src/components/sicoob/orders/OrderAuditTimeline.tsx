@@ -125,6 +125,12 @@ export const OrderAuditTimeline = ({ orderId }: OrderAuditTimelineProps) => {
                     <span>{event.created_by_name || "Sistema"} {event.actor_role ? `(${event.actor_role})` : ""}</span>
                   </div>
                 )}
+                {event.event_type === 'status_change' && (
+                  <OrderHistoryDiff 
+                    oldValue={event.old_value?.fulfillment_status} 
+                    newValue={event.new_value?.fulfillment_status} 
+                  />
+                )}
                 {event.observations && (
                   <p className="text-xs text-muted-foreground italic mt-1 line-clamp-2">{event.observations}</p>
                 )}
