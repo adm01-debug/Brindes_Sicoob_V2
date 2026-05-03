@@ -65,8 +65,8 @@ export default function GestorConsolidatedOrdersPage() {
 
         <Card className="border-[1.5px]">
           <CardHeader>
-            <CardTitle>Histórico de Agregados</CardTitle>
-            <CardDescription>Lotes de pedidos enviados para produção por carteira.</CardDescription>
+            <CardTitle className="text-sicoob-green-dark font-bold">Histórico de Agregados</CardTitle>
+            <CardDescription className="italic">Lotes de pedidos enviados para produção por carteira de vendedor.</CardDescription>
           </CardHeader>
           <CardContent>
             <Table>
