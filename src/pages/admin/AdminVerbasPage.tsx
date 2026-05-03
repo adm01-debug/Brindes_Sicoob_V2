@@ -161,7 +161,9 @@ export default function AdminVerbasPage() {
               <div className="flex justify-between items-start">
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">Alertas de Limite</p>
-                  <h3 className="text-2xl font-bold mt-1 text-red-600">{budgets.filter(b => b.verba_consumida > b.verba_total * 0.9).length}</h3>
+                  <h3 className="text-2xl font-bold mt-1 text-red-600">
+                    {budgets.filter(b => (b.verba_consumida / b.verba_total) * 100 > alertConfig.criticalThreshold).length}
+                  </h3>
                 </div>
                 <div className="p-2 bg-red-500/10 rounded-lg text-red-600"><AlertTriangle className="h-5 w-5" /></div>
               </div>
