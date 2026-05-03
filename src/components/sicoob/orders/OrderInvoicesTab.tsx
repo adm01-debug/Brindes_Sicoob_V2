@@ -92,7 +92,7 @@ export function OrderInvoicesTab({ orderId }: OrderInvoicesTabProps) {
                 onChange={(e) => handleFileUpload(e, 'pdf')}
                 disabled={isUploading}
               />
-              <Button variant="outline" className="gap-2" disabled={isUploading}>
+              <Button variant="outline" className="gap-2" disabled={isUploading || !invoiceNumber.trim()}>
                 <FileText className="h-4 w-4" />
                 Upload PDF
               </Button>
