@@ -225,6 +225,20 @@ export default function AdminUsuariosPage() {
             </TabsContent>
           )}
 
+          {isAdmin && (
+            <TabsContent value="coupons">
+              <Card className="border-border/50">
+                <CardHeader>
+                  <CardTitle>Gerenciador de Cupons</CardTitle>
+                  <CardDescription>Crie e gerencie cupons de desconto para os pedidos</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <CouponManager />
+                </CardContent>
+              </Card>
+            </TabsContent>
+          )}
+
           {isDev && (
             <TabsContent value="audit">
               <RoleAuditLogPanel />
