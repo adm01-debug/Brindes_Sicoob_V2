@@ -149,35 +149,61 @@ Deno.serve(async (req) => {
           detail: error?.message,
         });
       }
-      // DELETE alheio
-      {
-        const { data, error } = await userClient
-          .from("quotes").delete().eq("id", foreignQuote.data.id).select("id");
-        const actual = classify(error, data);
-        push({
-          table: "quotes", op: "DELETE", scenario: "Não excluir orçamento de outro vendedor",
-          expected: "deny", actual,
-          passed: actual === "deny",
-          detail: error?.message,
-        });
-      // 3. CROSS-ORGANIZATION SELECT (deny esperado)
-      const foreignOrgQuote = await adminClient
-        .from("quotes")
-        .insert({
-          seller_id: otherSellerId,
-          organization_id: otherOrgId,
-          client_name: "[RLS-AUDIT] Org Alheia",
-          status: "draft",
-          subtotal: 0,
-          total: 0,
-        })
-        .select("id")
-        .single();
+    }
 
-      if (foreignOrgQuote.data) {
-        const { data, error } = await userClient
-          .from("quotes").select("id").eq("id", foreignOrgQuote.data.id).maybeSingle();
-        const actual = error ? "deny" : data ? "allow" : "deny";
+    // 3. CROSS-ORGANIZATION SELECT (deny esperado)
+    const foreignOrgQuote = await adminClient
+      .from("quotes")
+      .insert({
+        seller_id: otherSellerId,
+        organization_id: otherOrgId,
+        client_name: "[RLS-AUDIT] Org Alheia",
+        status: "draft",
+        subtotal: 0,
+        total: 0,
+      })
+      .select("id")
+      .single();
+
+    if (foreignOrgQuote.data) {
+      const { data, error } = await userClient
+        .from("quotes").select("id").eq("id", foreignOrgQuote.data.id).maybeSingle();
+      const actual = error ? "deny" : data ? "allow" : "deny";
+      push({
+        table: "quotes", op: "SELECT", scenario: "Não ler orçamento de outra organização",
+        expected: "deny", actual: actual as any,
+        passed: actual === "deny",
+        detail: data ? `vazou id=${data.id}` : error?.message,
+      });
+      await adminClient.from("quotes").delete().eq("id", foreignOrgQuote.data.id);
+    }
+
+    // 4. CROSS-PA SELECT (deny esperado se houver RLS por PA)
+    const foreignPaQuote = await adminClient
+      .from("quotes")
+      .insert({
+        seller_id: otherSellerId,
+        pa_id: otherPaId,
+        client_name: "[RLS-AUDIT] PA Alheio",
+        status: "draft",
+        subtotal: 0,
+        total: 0,
+      })
+      .select("id")
+      .single();
+
+    if (foreignPaQuote.data) {
+      const { data, error } = await userClient
+        .from("quotes").select("id").eq("id", foreignPaQuote.data.id).maybeSingle();
+      const actual = error ? "deny" : data ? "allow" : "deny";
+      push({
+        table: "quotes", op: "SELECT", scenario: "Não ler orçamento de outro PA",
+        expected: "deny", actual: actual as any,
+        passed: actual === "deny",
+        detail: data ? `vazou id=${data.id}` : error?.message,
+      });
+      await adminClient.from("quotes").delete().eq("id", foreignPaQuote.data.id);
+    }
         push({
           table: "quotes", op: "SELECT", scenario: "Não ler orçamento de outra organização",
           expected: "deny", actual: actual as any,
