@@ -180,7 +180,7 @@ const App = () => {
                             <Route path="/tendencias" element={<TrendsPage />} />
 
                             {/* Error Fallback */}
-                            <Route path="*" element={<NotFound />} />
+                            <Route path="*" element={<div data-testid="page-not-found"><NotFound /></div>} />
                           </Route>
                         </Routes>
                       </RouteSuspense>
