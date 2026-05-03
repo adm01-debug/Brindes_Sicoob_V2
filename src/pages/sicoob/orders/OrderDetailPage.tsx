@@ -601,7 +601,7 @@ export default function OrderDetailPage() {
               </TabsList>
 
               <TabsContent value="items" className="space-y-4 pt-4">
-                <Card>
+                <Card className="border-[1.5px]">
                    <CardHeader>
                      <CardTitle className="text-sm">Auditoria de Itens</CardTitle>
                    </CardHeader>
@@ -643,7 +643,14 @@ export default function OrderDetailPage() {
 
               {allowedTabs.includes("timeline") && (
                 <TabsContent value="timeline" className="pt-6">
-                  <OrderAuditTimeline orderId={id!} />
+                  <Card className="border-[1.5px]">
+                    <CardHeader>
+                      <CardTitle className="text-sm">Status Timeline</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <OrderAuditTimeline orderId={id!} />
+                    </CardContent>
+                  </Card>
                 </TabsContent>
               )}
             </Tabs>
