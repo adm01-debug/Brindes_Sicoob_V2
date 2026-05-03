@@ -65,23 +65,23 @@ Deno.serve(async (req) => {
       shippingCost,
     } = parsed.data;
 
-    // ── 1. Validate webhook URL ──────────────────────────────────────────────
+    // ── 1. Validate secrets ──────────────────────────────────────────────
     const webhookUrl = Deno.env.get("N8N_QUOTE_WEBHOOK_URL");
     if (!webhookUrl) {
+      log.error("missing_webhook_url_secret");
       throw new Error("N8N_QUOTE_WEBHOOK_URL não configurado nos secrets");
     }
 
     // ── 2. Resolve seller_id ─────────────────────────────────────────────────
-    // Priority: email passed from frontend → undefined (n8n test mode uses default)
     const sellerId = sellerEmail ? SELLER_EMAIL_MAP[sellerEmail] : undefined;
     if (sellerEmail && sellerId === undefined) {
-      console.warn(`sellerEmail "${sellerEmail}" não encontrado no SELLER_EMAIL_MAP — orçamento enviado sem seller_id`);
+      log.warn("seller_not_found_in_map", { sellerEmail });
     }
 
-    // ── 3. Resolve company_id (Bitrix numeric) — OBRIGATÓRIO (Spec v3.2) ────
-    // bitrixCompanyId comes from companies.bitrix_id (string like "125240")
+    // ── 3. Resolve company_id ────────────────────────────────────────────────
     const companyId = bitrixCompanyId ? parseInt(bitrixCompanyId, 10) : null;
     if (!companyId || !Number.isFinite(companyId) || companyId <= 0) {
+      log.warn("invalid_company_id", { bitrixCompanyId });
       throw new Error("company_id (Bitrix) é obrigatório. Verifique se a empresa possui vínculo com o Bitrix24.");
     }
 
