@@ -1,9 +1,10 @@
 import { getCorsHeaders } from "../_shared/cors.ts";
-/// <reference lib="deno.ns" />
-import { createClient } from "npm:@supabase/supabase-js@2.49.1";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.42.7";
 import { z } from "https://esm.sh/zod@3.23.8";
 import { parseBodyWithSchema } from "../_shared/zod-validate.ts";
 import { resolveCredential } from "../_shared/credentials.ts";
+import { createStructuredLogger } from "../_shared/structured-logger.ts";
+import { getOrCreateRequestId } from "../_shared/request-id.ts";
 
 const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
 const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
