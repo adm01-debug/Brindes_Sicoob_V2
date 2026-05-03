@@ -57,8 +57,8 @@ export default function GestorConsolidatedOrdersPage() {
                     <CardTitle className="text-sm font-medium">Entregues (Mês)</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <div className="text-2xl font-bold text-green-600">R$ 89.200,00</div>
-                    <p className="text-xs text-muted-foreground mt-1">Ciclo finalizado com sucesso</p>
+                    <div className="text-2xl font-bold text-sicoob-green">R$ 89.200,00</div>
+                    <p className="text-xs text-sicoob-green/70 mt-1 font-medium">Ciclo finalizado com sucesso</p>
                 </CardContent>
             </Card>
         </div>
