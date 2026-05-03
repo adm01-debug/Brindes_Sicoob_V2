@@ -140,46 +140,107 @@ export function TelemetryCharts({ rows, timeFilter }: TelemetryChartsProps) {
         </CardHeader>
         <CardContent>
           <ResponsiveContainer width="100%" height={220}>
-            <AreaChart data={timelineData}>
-              <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
-              <XAxis dataKey="time" tick={{ fontSize: 10 }} />
-              <YAxis tick={{ fontSize: 10 }} allowDecimals={false} />
-              <Tooltip
-                contentStyle={{ fontSize: 12, borderRadius: 8 }}
-                labelStyle={{ fontWeight: 600 }}
-              />
-              <Area type="monotone" dataKey="muitoLentas" name="Muito Lentas" stackId="1" stroke="hsl(var(--destructive))" fill="hsl(var(--destructive))" fillOpacity={0.4} />
-              <Area type="monotone" dataKey="lentas" name="Lentas" stackId="1" stroke="hsl(45, 93%, 47%)" fill="hsl(45, 93%, 47%)" fillOpacity={0.3} />
-              <Area type="monotone" dataKey="erros" name="Erros" stackId="1" stroke="hsl(0, 84%, 60%)" fill="hsl(0, 84%, 60%)" fillOpacity={0.3} />
-              <Legend wrapperStyle={{ fontSize: 11 }} />
-            </AreaChart>
-          </ResponsiveContainer>
-        </CardContent>
-      </Card>
+              <Area Chart data={timelineData}>
+                <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
+                <XAxis dataKey="time" tick={{ fontSize: 10 }} />
+                <YAxis tick={{ fontSize: 10 }} allowDecimals={false} />
+                <Tooltip
+                  contentStyle={{ fontSize: 12, borderRadius: 8, backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))' }}
+                  labelStyle={{ fontWeight: 600 }}
+                />
+                {selectedMetrics.muitoLentas && <Area type="monotone" dataKey="muitoLentas" name="Muito Lentas" stackId="1" stroke="hsl(var(--destructive))" fill="hsl(var(--destructive))" fillOpacity={0.4} />}
+                {selectedMetrics.lentas && <Area type="monotone" dataKey="lentas" name="Lentas" stackId="1" stroke="hsl(45, 93%, 47%)" fill="hsl(45, 93%, 47%)" fillOpacity={0.3} />}
+                {selectedMetrics.erros && <Area type="monotone" dataKey="erros" name="Erros" stackId="1" stroke="hsl(0, 84%, 60%)" fill="hsl(0, 84%, 60%)" fillOpacity={0.3} />}
+                <Legend wrapperStyle={{ fontSize: 11 }} />
+              </AreaChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
 
-      {/* Duração média ao longo do tempo */}
+        {/* Duração média ao longo do tempo */}
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm flex items-center gap-2">
+              <TrendingUp className="h-4 w-4" />
+              Latência (ms)
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={220}>
+              <AreaChart data={timelineData}>
+                <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
+                <XAxis dataKey="time" tick={{ fontSize: 10 }} />
+                <YAxis tick={{ fontSize: 10 }} />
+                <Tooltip
+                  contentStyle={{ fontSize: 12, borderRadius: 8, backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))' }}
+                  formatter={(value: number) => `${value}ms`}
+                />
+                {selectedMetrics.maxMs && <Area type="monotone" dataKey="maxMs" name="Máxima" stroke="hsl(var(--destructive))" fill="hsl(var(--destructive))" fillOpacity={0.15} />}
+                {selectedMetrics.mediaMs && <Area type="monotone" dataKey="mediaMs" name="Média" stroke="hsl(var(--primary))" fill="hsl(var(--primary))" fillOpacity={0.3} />}
+                <Legend wrapperStyle={{ fontSize: 11 }} />
+              </AreaChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Metrics Selector & Export */}
       <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm flex items-center gap-2">
-            <TrendingUp className="h-4 w-4" />
-            Duração Média / Máxima (ms)
-          </CardTitle>
+        <CardHeader className="py-3">
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="text-sm font-medium flex items-center gap-2">
+                <Filter className="h-4 w-4" /> Opções de Visualização
+              </CardTitle>
+            </div>
+            <Button variant="outline" size="sm" onClick={exportToCSV} className="gap-2">
+              <Download className="h-3.5 w-3.5" /> Exportar CSV
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
-          <ResponsiveContainer width="100%" height={220}>
-            <AreaChart data={timelineData}>
-              <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
-              <XAxis dataKey="time" tick={{ fontSize: 10 }} />
-              <YAxis tick={{ fontSize: 10 }} />
-              <Tooltip
-                contentStyle={{ fontSize: 12, borderRadius: 8 }}
-                formatter={(value: number) => `${value}ms`}
+          <div className="flex flex-wrap gap-6">
+            <div className="flex items-center space-x-2">
+              <Checkbox 
+                id="m-lentas" 
+                checked={selectedMetrics.lentas} 
+                onCheckedChange={(v) => setSelectedMetrics(prev => ({ ...prev, lentas: !!v }))} 
               />
-              <Area type="monotone" dataKey="maxMs" name="Máxima" stroke="hsl(var(--destructive))" fill="hsl(var(--destructive))" fillOpacity={0.15} />
-              <Area type="monotone" dataKey="mediaMs" name="Média" stroke="hsl(var(--primary))" fill="hsl(var(--primary))" fillOpacity={0.3} />
-              <Legend wrapperStyle={{ fontSize: 11 }} />
-            </AreaChart>
-          </ResponsiveContainer>
+              <Label htmlFor="m-lentas" className="text-xs">Lentas</Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Checkbox 
+                id="m-muito-lentas" 
+                checked={selectedMetrics.muitoLentas} 
+                onCheckedChange={(v) => setSelectedMetrics(prev => ({ ...prev, muitoLentas: !!v }))} 
+              />
+              <Label htmlFor="m-muito-lentas" className="text-xs">Muito Lentas</Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Checkbox 
+                id="m-erros" 
+                checked={selectedMetrics.erros} 
+                onCheckedChange={(v) => setSelectedMetrics(prev => ({ ...prev, erros: !!v }))} 
+              />
+              <Label htmlFor="m-erros" className="text-xs">Erros</Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Checkbox 
+                id="m-media" 
+                checked={selectedMetrics.mediaMs} 
+                onCheckedChange={(v) => setSelectedMetrics(prev => ({ ...prev, mediaMs: !!v }))} 
+              />
+              <Label htmlFor="m-media" className="text-xs">Duração Média</Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Checkbox 
+                id="m-max" 
+                checked={selectedMetrics.maxMs} 
+                onCheckedChange={(v) => setSelectedMetrics(prev => ({ ...prev, maxMs: !!v }))} 
+              />
+              <Label htmlFor="m-max" className="text-xs">Duração Máxima</Label>
+            </div>
+          </div>
         </CardContent>
       </Card>
 
