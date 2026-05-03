@@ -79,7 +79,7 @@ export function OrderInvoicesTab({ orderId }: OrderInvoicesTabProps) {
                 onChange={(e) => handleFileUpload(e, 'xml')}
                 disabled={isUploading}
               />
-              <Button variant="outline" className="gap-2" disabled={isUploading}>
+              <Button variant="outline" className="gap-2" disabled={isUploading || !invoiceNumber.trim()}>
                 <FileCode className="h-4 w-4" />
                 Upload XML
               </Button>
