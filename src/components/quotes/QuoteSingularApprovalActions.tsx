@@ -18,6 +18,7 @@ import { toast } from "sonner";
 interface Props {
   quoteId: string;
   status: string;
+  quoteNumber?: string;
   onActionComplete?: () => void;
 }
 
