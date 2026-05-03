@@ -62,7 +62,12 @@ export default function QuoteDetailPage() {
           </div>
         </header>
 
-        <QuoteSingularApprovalActions quoteId={quote.id} status={quote.status} onActionComplete={() => refetch()} />
+        <QuoteSingularApprovalActions 
+          quoteId={quote.id} 
+          status={quote.status} 
+          quoteNumber={quote.quote_number} 
+          onActionComplete={() => refetch()} 
+        />
 
         {isConverted && (
           <div className="flex items-start gap-3 rounded-lg border border-success/30 bg-success/5 px-4 py-3">
