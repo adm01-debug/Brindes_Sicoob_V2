@@ -2,7 +2,7 @@ import fs from 'fs';
 import path from 'path';
 
 const ROUTES_DIR = 'src/routes/config';
-const OUTPUT_FILE = 'docs/ROUTES_MAP.md';
+const OUTPUT_FILE = 'docs/ROUTES.md';
 
 const files = fs.readdirSync(ROUTES_DIR);
 let markdown = '# 🗺️ Mapa Automático de Rotas\n\n';

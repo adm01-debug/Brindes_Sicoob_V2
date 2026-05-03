@@ -4,19 +4,20 @@
 > Reflete o estado real da plataforma Promo Gifts (Catálogo B2B + Vertical Sicoob).
 
 ## 1. Resumo Executivo
-A **Promo Gifts** é uma plataforma B2B dual-mode (Catálogo Geral + Especialização Sicoob) de alta performance.
+A **Promo Gifts** é uma plataforma B2B dual-mode (Catálogo Geral + Especialização Sicoob) de alta performance. 
 
 **Números Reais:**
 - **~80+ páginas/rotas** (Públicas, Catálogo, App, Sicoob, Admin, Dev)
 - **150+ hooks customizados**
 - **600+ componentes** modulares
 - **~80 tabelas** no banco de dados com RLS estrito
-- **~40 Edge Functions** (IA, Integrações, Automações, Segurança)
+- **~90 Edge Functions** (IA, Integrações, Automações, Segurança)
 - **5 perfis de acesso** (`admin`, `vendedor`, `gestor_compras`, `gerente_pa`, `dev`)
 
 ## 2. Visão Geral do Sistema
 Plataforma multi-tenant com separação lógica e visual via **Skins Factory**. 
-- **SSOT:** Banco de dados externo para dados de produtos e estoque.
+- **SSOT (Single Source of Truth):** Banco de dados externo para dados de produtos e estoque. O banco local (Supabase) atua como cache e persistência de dados de aplicação (pedidos, orçamentos, perfis).
+- **Arquitetura Multi-DB:** Conexão com Supabase Local, Catálogo Externo e CRM DB.
 - **Multimodal:** Suporte a áudio, IA generativa e assistentes conversacionais.
 
 ## 3. Perfis de Usuário e Governança
@@ -25,30 +26,34 @@ Plataforma multi-tenant com separação lógica e visual via **Skins Factory**.
 | **`gerente_pa`** | Operação de Postos de Atendimento Sicoob | `/dashboard-pa`, `/meus-pedidos` |
 | **`gestor_compras`** | Aprovação e gestão de verbas | `/gestor/*`, `/dashboard-gerencial` |
 | **`vendedor`** | Gestão de pedidos, logística e CRM | `/vendedor/*`, `/painel-kpis` |
-| **`admin`** | Gestão de usuários, catálogo e CMS | `/admin/usuarios`, `/admin/cadastros` |
-| **`dev`** | Operações técnicas, segurança e telemetria | `/admin/telemetria`, `/admin/seguranca` |
+| **`admin`** | Gestão de usuários, cadastros de negócio e CMS | `/admin/usuarios`, `/admin/cadastros` |
+| **`dev`** | Operações técnicas, segurança e telemetria | `/admin/telemetria`, `/admin/seguranca`, `/admin/conexoes` |
 
-## 4. Módulos de Destaque (Não mapeados na v1)
-- **Comparação 10/10:** Score IA, radar de atributos, duel mode, share público.
-- **Coleções & Favoritos:** Paridade total, listas públicas, reações anônimas.
-- **Kit Maker:** Wizard de montagem de kits com motion design 10/10.
-- **Magic Up Advertising:** Geração automática de banners e criativos via IA.
-- **Quote Builder:** Precisão de 4 casas decimais, assinatura eletrônica, aprovação pública.
-- **CRM Bridge:** Integração bidirecional com Bitrix24 e SalesPro.
-- **MCP Security:** Gestão de chaves, auditoria de uso e auto-revogação por papel.
-- **App Health:** Telemetria em tempo real, health dashboard e monitoramento de latência.
+## 4. Módulos de Destaque
+- **Comparação 10/10:** Score IA, radar de atributos, duel mode, share público, sparklines 30d.
+- **Coleções & Favoritos:** Paridade total, listas públicas, reações anônimas, watcher de preços.
+- **Kit Maker:** Wizard de montagem de kits com motion design, sugestão de identidade visual via IA.
+- **Magic Up Advertising:** Geração automática de banners e criativos via IA, scoring de anúncios.
+- **Quote Builder:** Precisão de 4 casas decimais, assinatura eletrônica, aprovação pública, templates.
+- **CRM Bridge:** Integração bidirecional robusta com Bitrix24 e SalesPro via `crm-db-bridge`.
+- **MCP Security:** Gestão de chaves, auditoria de uso, auto-revogação por papel e diagnóstico de telemetria.
+- **App Health:** Telemetria em tempo real, health dashboard e monitoramento de latência de RPCs.
 
-## 5. Arquitetura de Segurança e Observabilidade
-- **RLS First:** Políticas em todas as tabelas, audit trail imutável.
+## 5. Lista de Edge Functions (~90)
+A plataforma conta com uma vasta camada de lógica serverless:
+- **IA/ML:** `ai-recommendations`, `bi-copilot`, `comparison-ai-advisor`, `generate-ad-image`, `generate-mockup`, `semantic-search`, `voice-agent`, `trends-insights`, `visual-search`.
+- **Integração/Sync:** `bitrix-sync`, `crm-db-bridge`, `external-db-bridge`, `product-webhook`, `quote-sync`, `sync-quote-bitrix`.
+- **Segurança/Governança:** `auth-integrity-check`, `block-ip-temporarily`, `mcp-keys-issue/revoke/rotate`, `rls-audit`, `validate-access`, `step-up-verify`, `ownership-audit/repair`.
+- **Comunicação:** `send-notification`, `send-digest`, `send-transactional-email`, `quote-followup-reminders`.
+- **Utilidades:** `cnpj-lookup`, `image-proxy`, `optimize-image`, `sitemap`, `process-queue`.
+- **Public Share:** `collections-public-react`, `comparisons-public-react`, `favorites-public-react`, `kit-public-view`, `quote-public-view`.
+- **Saúde/Dev:** `health-check`, `full-op-diagnostics`, `connection-tester`, `migration-health-check`.
+
+## 6. Arquitetura de Segurança e Observabilidade
+- **RLS First:** Políticas em todas as tabelas, audit trail imutável via triggers.
 - **MFA Enforcement:** Autorização baseada em AAL2 e step-up tokens.
-- **Observabilidade:** Logs estruturados, correlação via X-Request-Id, alertas Sentry via monitor cron.
-- **Anti-Scraping:** Detecção de bots, rate limiting agressivo e proteção contra hotlinking.
-
-## 6. Stack de IA (Lovable AI Gateway)
-- **Busca Semântica:** Embeddings para busca por similaridade.
-- **Recomendações:** Motor de sugestões baseado em perfil e histórico.
-- **Mockup IA:** Geração de provas digitais automáticas.
-- **Voice Agent:** Assistente de voz com priming de áudio e baixa latência.
+- **Observabilidade:** Logs estruturados JSON, correlação via `X-Request-Id`, alertas Sentry via monitor cron em rotas críticas.
+- **Anti-Scraping:** Detecção de bots, rate limiting agressivo (`rate-limit-check`) e proteção contra hotlinking.
 
 ---
 *Este inventário é a fonte de verdade para a governança do projeto.*
