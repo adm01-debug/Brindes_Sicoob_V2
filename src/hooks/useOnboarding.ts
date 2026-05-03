@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "sonner";
 
 export interface OnboardingStep {
   id: string;
@@ -189,19 +189,23 @@ export function useOnboarding() {
   const updateStep = useCallback(async (step: number) => {
     // Sempre atualiza o estado local primeiro — não pode travar por falha de DB
     setCurrentStep(step);
+    console.log(`[onboarding] Moving to step ${step}`, { onboardingId, step });
 
     if (!user || !onboardingId) return;
 
     try {
-      await supabase
+      const { error } = await supabase
         .from("user_onboarding")
         .update({
           current_step: step,
           completed_steps: ONBOARDING_STEPS.slice(0, step).map((s) => s.id),
         })
         .eq("id", onboardingId);
+
+      if (error) throw error;
     } catch (err) {
-      console.warn("[onboarding] failed to persist step", err);
+      console.error("[onboarding] failed to persist step", err);
+      toast.error("Erro ao salvar progresso do tour. Verifique sua conexão.");
     }
   }, [user, onboardingId]);
 
@@ -209,11 +213,12 @@ export function useOnboarding() {
   const completeTour = useCallback(async () => {
     setShowTour(false);
     setHasCompletedTour(true);
+    console.log("[onboarding] Completing tour", { onboardingId });
 
     if (!user || !onboardingId) return;
 
     try {
-      await supabase
+      const { error } = await supabase
         .from("user_onboarding")
         .update({
           has_completed_tour: true,
@@ -221,8 +226,11 @@ export function useOnboarding() {
           completed_steps: ONBOARDING_STEPS.map((s) => s.id),
         })
         .eq("id", onboardingId);
+
+      if (error) throw error;
     } catch (err) {
-      console.warn("[onboarding] failed to persist completion", err);
+      console.error("[onboarding] failed to persist completion", err);
+      toast.error("Erro ao salvar conclusão do tour.");
     }
   }, [user, onboardingId]);
 
@@ -230,19 +238,23 @@ export function useOnboarding() {
   const skipTour = useCallback(async () => {
     setShowTour(false);
     setHasCompletedTour(true);
+    console.log("[onboarding] Skipping tour", { onboardingId });
 
     if (!user || !onboardingId) return;
 
     try {
-      await supabase
+      const { error } = await supabase
         .from("user_onboarding")
         .update({
           has_completed_tour: true,
           completed_at: new Date().toISOString(),
         })
         .eq("id", onboardingId);
+
+      if (error) throw error;
     } catch (err) {
-      console.warn("[onboarding] failed to persist skip", err);
+      console.error("[onboarding] failed to persist skip", err);
+      toast.error("Erro ao pular o tour.");
     }
   }, [user, onboardingId]);
 

@@ -122,8 +122,19 @@ export const OnboardingTour = forwardRef<HTMLDivElement, any>(function Onboardin
   useEffect(() => {
     if (!showTour) return;
 
-    // Small delay to allow DOM to update
-    const timer = setTimeout(updatePositions, 100);
+    // Verificar se o elemento existe no DOM
+    const checkTarget = () => {
+      if (!currentStepData) return;
+      const target = document.querySelector(currentStepData.targetSelector);
+      
+      if (!target) {
+        console.warn(`[onboarding] Target not found: ${currentStepData.targetSelector}. Step: ${currentStep + 1}`);
+        // Se não encontrar o target em 3 segundos, o updatePositions já lida com o fallback (centralizado)
+      }
+      updatePositions();
+    };
+
+    const timer = setTimeout(checkTarget, 100);
 
     window.addEventListener("resize", updatePositions);
     window.addEventListener("scroll", updatePositions);
@@ -133,7 +144,7 @@ export const OnboardingTour = forwardRef<HTMLDivElement, any>(function Onboardin
       window.removeEventListener("resize", updatePositions);
       window.removeEventListener("scroll", updatePositions);
     };
-  }, [showTour, currentStep, updatePositions]);
+  }, [showTour, currentStep, currentStepData, updatePositions]);
 
   return (
     <div ref={ref}>
