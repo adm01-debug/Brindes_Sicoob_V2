@@ -1,13 +1,18 @@
-import React from "react";
+import React, { useState } from "react";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle2, XCircle, Loader2, AlertTriangle, RefreshCw } from "lucide-react";
+import { CheckCircle2, XCircle, Loader2, AlertTriangle, RefreshCw, Play, FileText, History } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 export default function QaPreflightPage() {
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const [isSeeding, setIsSeeding] = useState(false);
   const { data: preflight, isLoading, refetch, isRefetching } = useQuery({
     queryKey: ["qa-preflight"],
     queryFn: async () => {
@@ -25,6 +30,41 @@ export default function QaPreflightPage() {
       return data;
     },
     refetchInterval: 30000
+  });
+
+  const { data: runs } = useQuery({
+    queryKey: ["qa-recent-runs"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("qa_runs")
+        .select("*")
+        .order("started_at", { ascending: false })
+        .limit(5);
+      if (error) throw error;
+      return data;
+    }
+  });
+
+  const seedMutation = useMutation({
+    mutationFn: async (scenario: string) => {
+      setIsSeeding(true);
+      const { data, error } = await supabase.functions.invoke("sicoob-seed-qa", {
+        body: { scenario }
+      });
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (data) => {
+      toast.success("Seed executado com sucesso!");
+      queryClient.invalidateQueries({ queryKey: ["qa-recent-runs"] });
+      if (data?.runId) {
+        navigate(`/admin/qa/run/${data.runId}`);
+      }
+    },
+    onError: (err: any) => {
+      toast.error("Erro no seed: " + err.message);
+    },
+    onSettled: () => setIsSeeding(false)
   });
 
   const allOk = preflight && preflight.users && preflight.pas && preflight.budgets && preflight.coupons && preflight.orders && (!monitor?.blocks || monitor.blocks.length === 0);
@@ -130,6 +170,71 @@ export default function QaPreflightPage() {
               <Button className="w-full" variant={allOk ? "default" : "outline"} onClick={() => window.open('https://github.com', '_blank')}>
                 Ver Casos de Teste (DOD)
               </Button>
+            </CardContent>
+          </Card>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center gap-2">
+                <Play className="h-5 w-5 text-primary" />
+                Iniciar Cenários de QA
+              </CardTitle>
+              <CardDescription>Execute a massa de dados para testes específicos.</CardDescription>
+            </CardHeader>
+            <CardContent className="grid grid-cols-2 gap-3">
+              <Button variant="outline" className="justify-start gap-2 h-auto py-3 px-4" onClick={() => seedMutation.mutate('consolidacao')} disabled={isSeeding}>
+                <div className="flex flex-col items-start">
+                  <span className="font-bold">Consolidação</span>
+                  <span className="text-[10px] text-muted-foreground">Massa completa de PA/Postos</span>
+                </div>
+              </Button>
+              <Button variant="outline" className="justify-start gap-2 h-auto py-3 px-4" onClick={() => seedMutation.mutate('alcada-gestor')} disabled={isSeeding}>
+                <div className="flex flex-col items-start">
+                  <span className="font-bold">Alçada Gestor</span>
+                  <span className="text-[10px] text-muted-foreground">Pedidos > R$ 5k</span>
+                </div>
+              </Button>
+              <Button variant="outline" className="justify-start gap-2 h-auto py-3 px-4" onClick={() => seedMutation.mutate('rls-cross')} disabled={isSeeding}>
+                <div className="flex flex-col items-start">
+                  <span className="font-bold">RLS Cross</span>
+                  <span className="text-[10px] text-muted-foreground">Segregação de Cooperativas</span>
+                </div>
+              </Button>
+              <Button variant="outline" className="justify-start gap-2 h-auto py-3 px-4" onClick={() => seedMutation.mutate('piloto')} disabled={isSeeding}>
+                <div className="flex flex-col items-start">
+                  <span className="font-bold">Modo Piloto</span>
+                  <span className="text-[10px] text-muted-foreground">Campanhas controladas</span>
+                </div>
+              </Button>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center gap-2">
+                <History className="h-5 w-5" />
+                Execuções Recentes
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {runs?.map((run) => (
+                  <div key={run.id} className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 cursor-pointer" onClick={() => navigate(`/admin/qa/run/${run.id}`)}>
+                    <div>
+                      <div className="font-medium text-sm capitalize">{run.scenario.replace('-', ' ')}</div>
+                      <div className="text-[10px] text-muted-foreground">{new Date(run.started_at).toLocaleString()}</div>
+                    </div>
+                    <Badge variant={run.status === 'completed' ? 'success' : 'outline'}>
+                      {run.status}
+                    </Badge>
+                  </div>
+                ))}
+                <Button variant="ghost" className="w-full text-xs" onClick={() => navigate('/admin/qa/release-evidences')}>
+                  <FileText className="h-3 w-3 mr-2" /> Gerenciar Evidências de Release
+                </Button>
+              </div>
             </CardContent>
           </Card>
         </div>

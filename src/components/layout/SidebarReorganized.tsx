@@ -179,7 +179,9 @@ const navGroups: NavGroup[] = [
       { icon: Sparkles, label: "Prompts IA", href: "/admin/prompts-ia", devOnly: true },
       { icon: Workflow, label: "Workflows IA", href: "/admin/workflows", devOnly: true },
        { icon: ShieldCheck, label: "Auditoria RBAC", href: "/admin/rbac-rotas", devOnly: true },
-       { icon: ShieldAlert, label: "QA Pré-flight", href: "/sicoob/qa/preflight", devOnly: true },
+       { icon: ShieldAlert, label: "QA Pré-flight", href: "/admin/qa/preflight", devOnly: true },
+       { icon: FileText, label: "Evidências QA", href: "/admin/qa/release-evidences", devOnly: true },
+       { icon: ShieldCheck, label: "Auditoria RLS", href: "/admin/seguranca/rls", devOnly: true },
     ],
   },
 ];

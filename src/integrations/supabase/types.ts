@@ -4767,6 +4767,115 @@ export type Database = {
         }
         Relationships: []
       }
+      qa_release_evidences: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          file_name: string
+          file_type: string | null
+          file_url: string
+          id: string
+          release_id: string | null
+          uploaded_by: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          file_name: string
+          file_type?: string | null
+          file_url: string
+          id?: string
+          release_id?: string | null
+          uploaded_by?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          file_name?: string
+          file_type?: string | null
+          file_url?: string
+          id?: string
+          release_id?: string | null
+          uploaded_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "qa_release_evidences_release_id_fkey"
+            columns: ["release_id"]
+            isOneToOne: false
+            referencedRelation: "qa_releases"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      qa_releases: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          created_at: string | null
+          description: string | null
+          id: string
+          status: string | null
+          updated_at: string | null
+          version_tag: string
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          status?: string | null
+          updated_at?: string | null
+          version_tag: string
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          status?: string | null
+          updated_at?: string | null
+          version_tag?: string
+        }
+        Relationships: []
+      }
+      qa_run_steps: {
+        Row: {
+          created_at: string | null
+          id: string
+          observations: string | null
+          run_id: string | null
+          status: string
+          step_name: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          observations?: string | null
+          run_id?: string | null
+          status: string
+          step_name: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          observations?: string | null
+          run_id?: string | null
+          status?: string
+          step_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "qa_run_steps_run_id_fkey"
+            columns: ["run_id"]
+            isOneToOne: false
+            referencedRelation: "qa_runs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       qa_runs: {
         Row: {
           error: string | null
