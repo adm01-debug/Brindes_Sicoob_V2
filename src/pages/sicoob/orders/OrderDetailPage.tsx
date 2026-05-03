@@ -656,13 +656,13 @@ export default function OrderDetailPage() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
+                      <SelectItem value="draft">Rascunho</SelectItem>
                       <SelectItem value="pending">Pendente</SelectItem>
-                      <SelectItem value="in_production">Em Produção</SelectItem>
-                      <SelectItem value="in_separation">Em Separação</SelectItem>
-                      <SelectItem value="in_transit">Em Trânsito</SelectItem>
-                      <SelectItem value="delivered">Entregue</SelectItem>
+                      <SelectItem value="waiting_approval">Aguardando Aprovação</SelectItem>
+                      <SelectItem value="confirmed">Confirmado</SelectItem>
+                      <SelectItem value="logistic">Logística</SelectItem>
                       <SelectItem value="completed">Concluído</SelectItem>
-                      <SelectItem value="cancelled">Cancelado</SelectItem>
+                      <SelectItem value="rejected">Rejeitado</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
