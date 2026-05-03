@@ -23,25 +23,26 @@ function compareFunctions() {
   let obsoleteInInventory = [];
 
   realFunctions.forEach(fn => {
-    if (!inventoryContent.includes(fn)) {
+    // Regex mais precisa para buscar o nome da função entre backticks
+    const regex = new RegExp('`' + fn + '`');
+    if (!regex.test(inventoryContent)) {
       missingInInventory.push(fn);
     }
   });
 
   // Extrair lista de funções do inventário (sessão 5)
+  // Pegar apenas o que está entre backticks e parece ser uma função (sem espaços, sem barras)
   const inventoryFunctionsMatch = inventoryContent.match(/`([a-z0-9-]+)`/g) || [];
-  const inventoryFunctions = inventoryFunctionsMatch.map(f => f.replace(/`/g, ''));
+  const inventoryFunctions = [...new Set(inventoryFunctionsMatch.map(f => f.replace(/`/g, '')))];
 
   inventoryFunctions.forEach(fn => {
-    // Filtro simples para pegar apenas o que parece ser nome de função na seção 5
-    if (fn.includes('-') || fn.length > 3) {
-      if (!realFunctions.includes(fn) && !fn.includes('/') && !fn.includes('.')) {
-        // Ignorar termos comuns que não são funções
-        const blacklist = ['multi-tenant', 'multi-db', 'p0', 'p1', 'p2', 'v2', 'b2b'];
-        if (!blacklist.includes(fn)) {
-          obsoleteInInventory.push(fn);
-        }
-      }
+    // Regras para ignorar termos que não são funções
+    const blacklist = ['multi-tenant', 'multi-db', 'p0', 'p1', 'p2', 'v2', 'b2b', 'admin', 'vendedor', 'gerente_pa', 'gestor_compras', 'dev'];
+    if (blacklist.includes(fn)) return;
+    if (fn.includes('/') || fn.includes('.') || fn.length < 3) return;
+
+    if (!realFunctions.includes(fn)) {
+      obsoleteInInventory.push(fn);
     }
   });
 
@@ -52,12 +53,14 @@ function compareFunctions() {
     console.log(`\n⚠️ Funções no Repo mas NÃO no Inventário (${missingInInventory.length}):`);
     console.log(missingInInventory.join(', '));
   } else {
-    console.log('\n✅ Todas as funções do repositório estão documentadas.');
+    console.log('\n✅ Todas as funções do repositório estão documentadas no inventário.');
   }
 
   if (obsoleteInInventory.length > 0) {
     console.log(`\n⚠️ Funções no Inventário mas NÃO no Repo (${obsoleteInInventory.length}):`);
     console.log(obsoleteInInventory.join(', '));
+  } else {
+    console.log('✅ Nenhuma função obsoleta encontrada no inventário.');
   }
 
   // Gera um arquivo de relatório para o CI
@@ -65,13 +68,20 @@ function compareFunctions() {
 # Relatório de Divergência de Edge Functions
 Data: ${new Date().toISOString()}
 
-## No Repositório mas ausentes no Inventário:
-${missingInInventory.map(f => `- ${f}`).join('\n')}
+## Resumo
+- Total reais (repo): ${realFunctions.length}
+- Total documentadas: ${inventoryFunctions.length}
 
-## No Inventário mas ausentes no Repositório:
-${obsoleteInInventory.map(f => `- ${f}`).join('\n')}
+## No Repositório mas ausentes no Inventário:
+${missingInInventory.length > 0 ? missingInInventory.map(f => `- ${f}`).join('\n') : '- Nenhuma'}
+
+## No Inventário mas ausentes no Repositório (Obsoletas):
+${obsoleteInInventory.length > 0 ? obsoleteInInventory.map(f => `- ${f}`).join('\n') : '- Nenhuma'}
   `;
   fs.writeFileSync('docs/EDGE_FUNCTIONS_DRIFT.md', report);
+  
+  // Opcional: falhar o build se houver divergência
+  // if (missingInInventory.length > 0 || obsoleteInInventory.length > 0) process.exit(1);
 }
 
 compareFunctions();
