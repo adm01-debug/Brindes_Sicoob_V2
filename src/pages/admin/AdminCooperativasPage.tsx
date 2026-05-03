@@ -79,7 +79,7 @@ export default function AdminCooperativasPage() {
       <div className="w-full max-w-[1920px] mx-auto px-4 py-6 space-y-6">
         <div className="flex items-center gap-3">
           <div className="p-3 rounded-xl bg-primary/10">
-            <Handshake className="h-8 w-8 text-primary" />
+            <Users className="h-8 w-8 text-primary" />
           </div>
           <div>
             <h1 className="font-display text-3xl font-bold tracking-tight">Cooperativas Parceiras</h1>

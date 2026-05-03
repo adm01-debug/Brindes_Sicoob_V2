@@ -43,7 +43,6 @@ import {
   Bell,
   ClipboardCheck,
   Building,
-  Handshake,
   Megaphone,
   Mail,
   Wallet,
@@ -150,7 +149,7 @@ const navGroups: NavGroup[] = [
       { icon: Landmark, label: "Estrutura Sicoob", adminOnly: true, children: [
         { icon: Landmark, label: "Singulares", href: "/admin/singulares" },
         { icon: Building, label: "Postos de Atendimento", href: "/admin/pas" },
-        { icon: Handshake, label: "Parceiros", href: "/admin/cooperativas" },
+        { icon: Users, label: "Parceiros", href: "/admin/cooperativas" },
       ]},
       { icon: Megaphone, label: "Marketing", adminOnly: true, children: [
         { icon: Mail, label: "Newsletter", href: "/admin/newsletter" },
