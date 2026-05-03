@@ -109,7 +109,51 @@ export default function AdminCampanhasPage() {
     }
   };
 
-  const filtered = campaigns.filter(c => c.name.toLowerCase().includes(searchTerm.toLowerCase()));
+  const filtered = useMemo(() => {
+    return campaigns.filter(c => {
+      const matchesSearch = c.name.toLowerCase().includes(searchTerm.toLowerCase());
+      
+      let matchesDate = true;
+      if (filters.startDate || filters.endDate) {
+        const campaignStart = c.start_date ? new Date(c.start_date) : null;
+        if (campaignStart) {
+          if (filters.startDate && campaignStart < startOfDay(new Date(filters.startDate))) matchesDate = false;
+          if (filters.endDate && campaignStart > endOfDay(new Date(filters.endDate))) matchesDate = false;
+        } else if (filters.startDate || filters.endDate) {
+          matchesDate = false;
+        }
+      }
+      
+      return matchesSearch && matchesDate;
+    });
+  }, [campaigns, searchTerm, filters]);
+
+  const handleExport = (format: 'xlsx' | 'csv') => {
+    const data = filtered.map(c => ({
+      'Nome': c.name,
+      'Status': c.status,
+      'Orçamento': c.budget,
+      'Data Início': c.start_date ? format(new Date(c.start_date), 'dd/MM/yyyy') : '',
+      'Data Fim': c.end_date ? format(new Date(c.end_date), 'dd/MM/yyyy') : '',
+      'Público-Alvo': c.target_audience || ''
+    }));
+
+    if (format === 'xlsx') {
+      const worksheet = XLSX.utils.json_to_sheet(data);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Campanhas");
+      XLSX.writeFile(workbook, `campanhas_admin_${format(new Date(), 'yyyy-MM-dd')}.xlsx`);
+    } else {
+      const headers = Object.keys(data[0] || {}).join(",");
+      const csvContent = [headers, ...data.map(row => Object.values(row).join(","))].join("\n");
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = `campanhas_admin_${format(new Date(), 'yyyy-MM-dd')}.csv`;
+      link.click();
+    }
+    toast.success(`Relatório exportado em ${format.toUpperCase()}`);
+  };
 
   const getStatusBadge = (status: string) => {
     switch (status) {
