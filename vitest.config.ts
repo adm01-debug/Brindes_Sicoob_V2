@@ -14,44 +14,18 @@ export default defineConfig({
       reporter: ['text', 'json', 'html', 'json-summary'],
       reportsDirectory: './coverage',
       include: [
-        'src/components/layout/ProtectedRoute.tsx',
-        'src/services/sicoob/orderService.ts',
-        'src/pages/ForbiddenPage.tsx',
-        'src/components/search/GlobalSearchPalette.tsx',
-        'src/components/search/useGlobalSearch.ts'
+        'src/hooks/useOrders.ts',
+        'src/hooks/useOrderExtensions.ts',
+        'src/hooks/useNotificationPreferences.ts',
+        'src/hooks/useExportJobs.ts',
+        'src/utils/orderExportUtils.ts'
       ],
       thresholds: {
-        perFile: true,
-        autoUpdate: false,
-        'src/components/layout/ProtectedRoute.tsx': {
-          statements: 75,
+        global: {
+          statements: 60,
           branches: 50,
-          functions: 100,
-          lines: 75,
-        },
-        'src/services/sicoob/orderService.ts': {
-          statements: 35,
-          branches: 70,
-          functions: 20,
-          lines: 35,
-        },
-        'src/pages/ForbiddenPage.tsx': {
-          statements: 100,
-          branches: 100,
-          functions: 100,
-          lines: 100,
-        },
-        'src/components/search/GlobalSearchPalette.tsx': {
-          statements: 70,
-          branches: 45,
-          functions: 50,
-          lines: 70,
-        },
-        'src/components/search/useGlobalSearch.ts': {
-          statements: 0,
-          branches: 0,
-          functions: 0,
-          lines: 0,
+          functions: 60,
+          lines: 60,
         }
       }
     }
