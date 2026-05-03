@@ -50,15 +50,25 @@ import { useCatalogPrefetch } from '@/hooks/useCatalogPrefetch';
 import { loadThemeConfig, applyThemePreset, applyRadius } from '@/lib/theme-presets';
 import { ThemeInitializer } from '@/components/ThemeInitializer';
 
-const AppWithAuth = ({ children }: { children: ReactNode }) => {
-  useCatalogPrefetch();
-  return <>{children}</>;
-};
+import { forwardRef } from 'react';
 
-const RouteSuspense = ({ children }: { children: ReactNode }) => {
+const AppWithAuth = forwardRef<HTMLDivElement, { children: ReactNode }>(({ children }, ref) => {
+  useCatalogPrefetch();
+  return <div ref={ref}>{children}</div>;
+});
+
+AppWithAuth.displayName = 'AppWithAuth';
+
+const RouteSuspense = forwardRef<HTMLDivElement, { children: ReactNode }>(({ children }, ref) => {
   const { pathname } = useLocation();
-  return <Suspense fallback={getFallback(pathname)}>{children}</Suspense>;
-};
+  return (
+    <div ref={ref}>
+      <Suspense fallback={getFallback(pathname)}>{children}</Suspense>
+    </div>
+  );
+});
+
+RouteSuspense.displayName = 'RouteSuspense';
 
 const Index = lazyWithRetry(() => import("./pages/Index"));
 const CustomizableDashboard = lazyWithRetry(() => import("./pages/CustomizableDashboard"));
