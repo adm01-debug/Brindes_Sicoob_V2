@@ -126,7 +126,7 @@ export function GlobalSearchPalette() {
           )}
 
           {/* Intent chips */}
-          {s.searchIntent && !s.isSearching && s.results.length > 0 && (
+          {s.searchIntent && !s.isSearching && (s.results?.length ?? 0) > 0 && (
             <div className="flex flex-wrap items-center gap-2 px-4 py-3 mx-2 mt-3 rounded-xl border [border-color:hsl(var(--command-border))] [background:linear-gradient(90deg,hsl(var(--command-surface-raised)),hsl(var(--command-surface)))] animate-in fade-in-0 slide-in-from-top-1 duration-200">
               <div className="h-6 w-6 rounded-lg bg-primary/12 flex items-center justify-center"><Brain className="h-3.5 w-3.5 text-primary" /></div>
               <span className="text-[11px] font-semibold [color:hsl(var(--command-text-muted))]">Entendi:</span>
@@ -160,7 +160,7 @@ export function GlobalSearchPalette() {
           )}
 
           {/* Empty state — intelligent */}
-          {!s.isSearching && s.query.length >= 2 && s.results.length === 0 && (
+          {!s.isSearching && (s.query?.length ?? 0) >= 2 && (s.results?.length ?? 0) === 0 && (
             <EmptySearchState
               query={s.query}
               onAction={handleEmptyAction}
@@ -170,7 +170,7 @@ export function GlobalSearchPalette() {
           )}
 
           {/* Short query hint */}
-          {!s.isSearching && s.query.length >= 1 && s.query.length < 3 && (
+          {!s.isSearching && (s.query?.length ?? 0) >= 1 && (s.query?.length ?? 0) < 3 && (
             <div className="flex items-center justify-center gap-2.5 px-4 py-8 animate-in fade-in-0 duration-200">
               <div className="h-7 w-7 rounded-lg [background-color:hsl(var(--command-accent))] flex items-center justify-center">
                 <Search className="h-3.5 w-3.5 [color:hsl(var(--command-text-subtle))]" />
@@ -216,7 +216,7 @@ export function GlobalSearchPalette() {
           })}
 
           {/* Typing suggestions */}
-          {s.typingSuggestions.length > 0 && s.query.length >= 2 && s.query.length < 5 && !s.isSearching && (
+          {(s.typingSuggestions?.length ?? 0) > 0 && (s.query?.length ?? 0) >= 2 && (s.query?.length ?? 0) < 5 && !s.isSearching && (
             <CommandGroup heading="Sugestões" className="animate-in fade-in-0 duration-200">
               {s.typingSuggestions.map((suggestion, i) => (
                 <CommandItem
@@ -237,7 +237,7 @@ export function GlobalSearchPalette() {
           )}
 
           {/* IDLE STATE */}
-          {s.query.length < 2 && !s.isSearching && (
+          {(s.query?.length ?? 0) < 2 && !s.isSearching && (
             <GlobalSearchIdleState
               history={s.history}
               popularProducts={s.popularProducts}

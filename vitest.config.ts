@@ -42,10 +42,10 @@ export default defineConfig({
           lines: 100,
         },
         'src/components/search/GlobalSearchPalette.tsx': {
-          statements: 65,
-          branches: 55,
-          functions: 20,
-          lines: 65,
+          statements: 70,
+          branches: 45,
+          functions: 50,
+          lines: 70,
         },
         'src/components/search/useGlobalSearch.ts': {
           statements: 0,
