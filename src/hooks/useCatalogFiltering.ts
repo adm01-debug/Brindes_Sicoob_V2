@@ -55,13 +55,15 @@ export function useCatalogFiltering({
     }
 
     if (colorGroupSet.size > 0) {
+      const lowerGroupFilters = Array.from(colorGroupSet).map(s => s.toLowerCase());
       result = result.filter((p) =>
         p.colors?.some((c: Record<string, string>) => {
           const groupSlug = (c.groupSlug || '').toLowerCase().trim();
           const group = (c.group || '').toLowerCase().trim();
+          if (colorGroupSet.has(groupSlug) || colorGroupSet.has(group)) return true;
+          
           const name = (c.name || '').toLowerCase().trim();
-          return colorGroupSet.has(groupSlug) || colorGroupSet.has(group) || 
-                 Array.from(colorGroupSet).some(s => name.includes(s.toLowerCase()));
+          return lowerGroupFilters.some(s => name.includes(s));
         })
       );
     }
