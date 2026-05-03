@@ -349,6 +349,33 @@ export default function OrdersPage() {
           </div>
         </div>
 
+        {selectedOrderIds.length > 0 && (
+          <Card className="bg-sicoob-green/5 border-sicoob-green/30 animate-in slide-in-from-top-4 duration-300">
+            <CardContent className="py-3 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Badge variant="secondary" className="bg-sicoob-green text-white">
+                  {selectedOrderIds.length} selecionados
+                </Badge>
+                <span className="text-sm font-medium text-sicoob-green-dark">Ações em lote disponíveis</span>
+              </div>
+              <div className="flex gap-2">
+                <Button variant="ghost" size="sm" onClick={() => setSelectedOrderIds([])}>
+                  Cancelar
+                </Button>
+                <Button 
+                  size="sm" 
+                  className="bg-sicoob-green hover:bg-sicoob-green-dark"
+                  onClick={handleBulkApprove}
+                  disabled={isBulkApproving}
+                >
+                  {isBulkApproving ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <CheckCircle2 className="h-4 w-4 mr-2" />}
+                  Aprovar Selecionados
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         <div className="flex flex-col sm:flex-row gap-2">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
