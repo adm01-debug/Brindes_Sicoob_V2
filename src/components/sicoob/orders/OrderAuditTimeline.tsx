@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { OrderHistoryDiff } from "./OrderHistoryDiff";
+import { SLABadge } from "./SLABadge";
 
 
 interface OrderAuditTimelineProps {
@@ -109,15 +110,23 @@ export const OrderAuditTimeline = ({ orderId }: OrderAuditTimelineProps) => {
         <div className="relative space-y-4 before:absolute before:inset-0 before:ml-5 before:-translate-x-px before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-border/60 before:to-transparent">
           {auditEvents?.map((event, idx) => (
             <div key={event.id} className="relative flex items-start gap-4 pl-1">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border bg-white shadow-sm z-10">
-                {getEventIcon(event.event_type, event)}
+              <div className="flex flex-col items-center">
+                <div className={cn(
+                  "flex h-10 w-10 shrink-0 items-center justify-center rounded-full border bg-white shadow-sm z-10",
+                  event.event_type === 'status_change' && event.new_value?.sla_status === 'critical' && "border-destructive ring-2 ring-destructive/20"
+                )}>
+                  {getEventIcon(event.event_type, event)}
+                </div>
               </div>
-              <div className="flex flex-col gap-1 pt-1.5">
+              <div className="flex flex-col gap-1 pt-1.5 flex-1">
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-semibold">{getEventLabel(event)}</span>
                   <span className="text-xs text-muted-foreground">
                     {format(new Date(event.created_at), "dd/MM/yyyy HH:mm", { locale: ptBR })}
                   </span>
+                  {event.new_value?.sla_status && (
+                    <SLABadge status={event.new_value.sla_status} className="scale-75 origin-left" />
+                  )}
                 </div>
                 {(event.created_by_name || event.actor_role) && (
                   <div className="flex items-center gap-1 text-xs text-muted-foreground">
