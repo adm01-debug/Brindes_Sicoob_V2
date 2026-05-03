@@ -2,7 +2,8 @@
  * useGlobalSearch — Hook that encapsulates all search logic for GlobalSearchPalette.
  * (REFATORADO para SOLID/Clean Code)
  */
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useMemo, useRef, useState, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useSearch } from "@/hooks/useSearch";
 import { useContextualSuggestions } from "@/hooks/useContextualSuggestions";
