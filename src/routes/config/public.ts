@@ -1,14 +1,15 @@
 import { lazyWithRetry } from "@/lib/lazyWithRetry";
+import { defineRoute } from "@/lib/router-utils";
 
 export const publicRoutes = [
-  { path: "/login", component: lazyWithRetry(() => import("@/pages/Auth")) },
-  { path: "/reset-password", component: lazyWithRetry(() => import("@/pages/ResetPassword")) },
-  { path: "/approve/:token", component: lazyWithRetry(() => import("@/pages/PublicQuoteApprovalPage")) },
-  { path: "/proposta/:token", component: lazyWithRetry(() => import("@/pages/PublicQuoteApprovalPage")) },
-  { path: "/kit/:token", component: lazyWithRetry(() => import("@/pages/PublicKitViewPage")) },
-  { path: "/lista-publica/:token", component: lazyWithRetry(() => import("@/pages/PublicFavoriteListPage")) },
-  { path: "/colecao-publica/:token", component: lazyWithRetry(() => import("@/pages/PublicCollectionPage")) },
-  { path: "/comparar-publica/:token", component: lazyWithRetry(() => import("@/pages/PublicComparisonPage")) },
-  { path: "/dossie/:token", component: lazyWithRetry(() => import("@/pages/PublicDossierPage")) },
-  { path: "/auth/callback", component: lazyWithRetry(() => import("@/pages/SSOCallbackPage")) },
-];
+  defineRoute({ path: "/login", component: lazyWithRetry(() => import("@/pages/Auth")) }),
+  defineRoute({ path: "/reset-password", component: lazyWithRetry(() => import("@/pages/ResetPassword")) }),
+  defineRoute({ path: "/approve/:token", component: lazyWithRetry(() => import("@/pages/PublicQuoteApprovalPage")) }),
+  defineRoute({ path: "/proposta/:token", component: lazyWithRetry(() => import("@/pages/PublicQuoteApprovalPage")) }),
+  defineRoute({ path: "/kit/:token", component: lazyWithRetry(() => import("@/pages/PublicKitViewPage")) }),
+  defineRoute({ path: "/lista-publica/:token", component: lazyWithRetry(() => import("@/pages/PublicFavoriteListPage")) }),
+  defineRoute({ path: "/colecao-publica/:token", component: lazyWithRetry(() => import("@/pages/PublicCollectionPage")) }),
+  defineRoute({ path: "/comparar-publica/:token", component: lazyWithRetry(() => import("@/pages/PublicComparisonPage")) }),
+  defineRoute({ path: "/dossie/:token", component: lazyWithRetry(() => import("@/pages/PublicDossierPage")) }),
+  defineRoute({ path: "/auth/callback", component: lazyWithRetry(() => import("@/pages/SSOCallbackPage")) }),
+] as const;
