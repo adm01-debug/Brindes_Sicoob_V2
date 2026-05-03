@@ -148,5 +148,3 @@ export function ProductsProvider({ children }: { children: ReactNode }) {
   );
 }
 
-  return useContext(ProductsContext) ?? null;
-}
