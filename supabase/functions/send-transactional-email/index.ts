@@ -8,7 +8,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 
 interface EmailRequest {
-  event_type: "quote_sent" | "quote_approved" | "quote_rejected" | "order_created";
+  event_type: "quote_sent" | "quote_approved" | "quote_rejected" | "order_created" | "sicoob_order_status_change" | "sicoob_order_approval_request";
   recipient_email: string;
   recipient_name?: string;
   data: Record<string, unknown>;
