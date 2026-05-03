@@ -163,12 +163,12 @@ export default function OrdersPage() {
     try {
       const data = filteredOrders.map(o => ({
         "ID": o.id,
-        "PA": o.pa,
-        "Singular": o.singular,
+        "PA": (o as any).pa?.nome || o.pa_id,
+        "Singular": (o as any).cooperativa?.nome || o.cooperative_id,
         "Status": o.status,
-        "Total (R$)": o.total,
-        "Itens": o.items,
-        "Data": format(parseISO(o.date), "dd/MM/yyyy")
+        "Total (R$)": o.total_amount,
+        "Itens": "N/A",
+        "Data": format(parseISO(o.created_at), "dd/MM/yyyy")
       }));
 
       const worksheet = XLSX.utils.json_to_sheet(data);
