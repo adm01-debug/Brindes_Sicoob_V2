@@ -47,6 +47,7 @@ export function CategoriesManager() {
   }, []);
 
   const handleSave = async (formData: any) => {
+    setIsLoading(true);
     try {
       if (editingCategory) {
         const { error } = await supabase
