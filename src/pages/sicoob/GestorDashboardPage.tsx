@@ -110,9 +110,9 @@ export default function GestorDashboardPage() {
             </CardContent>
           </Card>
 
-          <Card className="border-[1.5px] bg-primary/5 border-primary/20">
+          <Card className="border-[1.5px] bg-sicoob-green/5 border-sicoob-green/20">
             <CardHeader>
-              <CardTitle className="text-primary">Ações Rápidas</CardTitle>
+              <CardTitle className="text-sicoob-green-dark">Ações Rápidas</CardTitle>
               <CardDescription>Ferramentas de gestão da Singular.</CardDescription>
             </CardHeader>
             <CardContent className="grid grid-cols-2 gap-4">
