@@ -38,14 +38,21 @@ function jsonResponse(body: unknown, status: number, requestId: string) {
 }
 
 Deno.serve(async (req) => {
+  const requestId = getOrCreateRequestId(req);
+  const log = createStructuredLogger({ fn: "mcp-keys-revoke", requestId, req });
+  
   corsHeaders = getCorsHeaders(req);
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
-  const requestId = getOrCreateRequestId(req);
+  
+  log.info("request_start");
   const startedAt = new Date().toISOString();
   const startedMs = Date.now();
   const { ip, ua } = extractRequestMeta(req);
 
-  if (req.method !== "POST") return jsonResponse({ error: "method_not_allowed" }, 405, requestId);
+  if (req.method !== "POST") {
+    log.warn("method_not_allowed", { method: req.method });
+    return log.respond(jsonResponse({ error: "method_not_allowed" }, 405, requestId));
+  }
 
   const admin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
     auth: { persistSession: false, autoRefreshToken: false },
