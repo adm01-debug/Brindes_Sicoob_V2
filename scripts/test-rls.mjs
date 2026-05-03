@@ -36,8 +36,8 @@ async function testRLS() {
     userB = profiles[1];
   }
 
-  console.log(`👤 Usuário A: ${userA.email} (Org: ${userA.organization_id}, PA: ${userA.pa_id})`);
-  console.log(`👤 Usuário B: ${userB.email} (Org: ${userB.organization_id}, PA: ${userB.pa_id})`);
+  console.log(`👤 Usuário A: ${userA.email} (Coop: ${userA.cooperativa_id}, PA: ${userA.pa_id})`);
+  console.log(`👤 Usuário B: ${userB.email} (Coop: ${userB.cooperativa_id}, PA: ${userB.pa_id})`);
 
   // 2. Criar um registro para Usuário B
   const { data: quoteB, error: quoteErr } = await adminClient
