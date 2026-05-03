@@ -116,15 +116,15 @@ export default function GestorDashboardPage() {
               <CardDescription>Ferramentas de gestão da Singular.</CardDescription>
             </CardHeader>
             <CardContent className="grid grid-cols-2 gap-4">
-              <Button variant="outline" className="h-auto py-4 flex-col gap-2" asChild>
+              <Button variant="outline" className="h-auto py-4 flex-col gap-2 hover:bg-sicoob-green/10 hover:border-sicoob-green/30" asChild>
                 <Link to="/admin/verbas">
-                  <Wallet className="h-5 w-5" />
+                  <Wallet className="h-5 w-5 text-sicoob-green" />
                   Gerir Verbas
                 </Link>
               </Button>
-              <Button variant="outline" className="h-auto py-4 flex-col gap-2" asChild>
+              <Button variant="outline" className="h-auto py-4 flex-col gap-2 hover:bg-sicoob-green/10 hover:border-sicoob-green/30" asChild>
                 <Link to="/gestor/agregados">
-                  <FileText className="h-5 w-5" />
+                  <FileText className="h-5 w-5 text-sicoob-green" />
                   Agregados
                 </Link>
               </Button>
