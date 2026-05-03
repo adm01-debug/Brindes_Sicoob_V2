@@ -70,14 +70,14 @@ export default function LogisticsReportPage() {
                     <p className="text-xs text-muted-foreground mt-1">Entregas sem ocorrência</p>
                 </CardContent>
             </Card>
-            <Card className="border-[1.5px] bg-primary/5 border-primary/20">
+            <Card className="border-[1.5px] bg-sicoob-green/5 border-sicoob-green/20">
                 <CardHeader className="flex flex-row items-center justify-between pb-2">
-                    <CardTitle className="text-sm font-medium text-primary">Comprovantes (POD)</CardTitle>
-                    <Camera className="h-4 w-4 text-primary" />
+                    <CardTitle className="text-sm font-medium text-sicoob-green-dark">Comprovantes (POD)</CardTitle>
+                    <Camera className="h-4 w-4 text-sicoob-green" />
                 </CardHeader>
                 <CardContent>
-                    <div className="text-2xl font-bold text-primary">128</div>
-                    <p className="text-xs text-primary/70 mt-1">Fotos de entrega anexadas</p>
+                    <div className="text-2xl font-bold text-sicoob-green-dark">128</div>
+                    <p className="text-xs text-sicoob-green/70 mt-1">Fotos de entrega anexadas</p>
                 </CardContent>
             </Card>
         </div>
