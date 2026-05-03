@@ -53,10 +53,10 @@ export const OrderAuditTimeline = ({ orderId }: OrderAuditTimelineProps) => {
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="mb-6 grid grid-cols-1 md:grid-cols-3 gap-4 p-4 border rounded-lg bg-muted/20">
+        <div className="mb-6 grid grid-cols-1 md:grid-cols-4 gap-4 p-4 border rounded-lg bg-muted/20">
           <div className="space-y-1">
             <label className="text-xs font-medium text-muted-foreground flex items-center gap-1">
-              <Filter className="h-3 w-3" /> Tipo de Evento
+              <Filter className="h-3 w-3" /> Tipo
             </label>
             <Select 
               value={filters.event_type} 
@@ -66,13 +66,23 @@ export const OrderAuditTimeline = ({ orderId }: OrderAuditTimelineProps) => {
                 <SelectValue placeholder="Todos" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Todos os eventos</SelectItem>
-                <SelectItem value="status_change">Mudança de Status</SelectItem>
+                <SelectItem value="all">Todos</SelectItem>
+                <SelectItem value="status_change">Status</SelectItem>
                 <SelectItem value="creation">Criação</SelectItem>
                 <SelectItem value="approval">Aprovação</SelectItem>
                 <SelectItem value="rejection">Rejeição</SelectItem>
+                <SelectItem value="comment">Comentário</SelectItem>
               </SelectContent>
             </Select>
+          </div>
+          <div className="space-y-1">
+            <label className="text-xs font-medium text-muted-foreground">Busca</label>
+            <Input 
+              placeholder="Filtrar por descrição..."
+              className="h-9" 
+              value={filters.search}
+              onChange={(e) => { setFilters(prev => ({ ...prev, search: e.target.value })); setPage(1); }}
+            />
           </div>
           <div className="space-y-1">
             <label className="text-xs font-medium text-muted-foreground">De</label>
