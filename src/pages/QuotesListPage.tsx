@@ -58,6 +58,10 @@ import { QuotesStatusChips } from "@/components/quotes/QuotesStatusChips";
 import { QuotesFunnelChart } from "@/components/quotes/QuotesFunnelChart";
 import { useQuoteFunnel } from "@/hooks/useQuoteFunnel";
 import { useQuoteViewedMap } from "@/hooks/useQuoteViewedMap";
+import { exportToExcel, exportToPDF, QUOTE_EXPORT_COLUMNS } from "@/utils/orderExportUtils";
+import { Download, FileSpreadsheet } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { cn } from "@/lib/utils";
 
 
 type SortOption = "newest" | "oldest" | "highest" | "lowest" | "expiring";
@@ -229,6 +233,39 @@ export function QuotesListPage() {
               </div>
             </FadeInView>
             <div className="flex gap-2">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline">
+                    <Download className="h-4 w-4 mr-2" />
+                    Exportar
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={() => {
+                    const data = filteredQuotes.map(q => ({
+                      ...q,
+                      status_label: q.status, // Need better labels
+                      total_formatted: (q.total || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }),
+                      valid_until_formatted: q.valid_until ? format(new Date(q.valid_until), 'dd/MM/yyyy') : '-'
+                    }));
+                    exportToExcel({ items: data, filename: 'orcamentos', columns: QUOTE_EXPORT_COLUMNS });
+                  }}>
+                    <FileSpreadsheet className="h-4 w-4 mr-2" /> Excel (.xlsx)
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => {
+                    const data = filteredQuotes.map(q => ({
+                      ...q,
+                      status_label: q.status,
+                      total_formatted: (q.total || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }),
+                      valid_until_formatted: q.valid_until ? format(new Date(q.valid_until), 'dd/MM/yyyy') : '-'
+                    }));
+                    exportToPDF({ items: data, filename: 'orcamentos', columns: QUOTE_EXPORT_COLUMNS });
+                  }}>
+                    <FileText className="h-4 w-4 mr-2" /> PDF (.pdf)
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button variant="outline" onClick={() => navigate("/orcamentos/templates")}>

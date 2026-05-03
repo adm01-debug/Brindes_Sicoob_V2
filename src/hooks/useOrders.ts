@@ -83,6 +83,8 @@ export function useOrderDetail(orderId?: string) {
 
 export function useUpdateOrder(orderId?: string, currentStatus?: string) {
   const qc = useQueryClient();
+  const { user } = useAuth();
+
   return useMutation({
     mutationFn: async (patch: Partial<OrderRow>) => {
       if (patch.status && currentStatus && !canTransitionTo(currentStatus, patch.status)) {
@@ -93,6 +95,7 @@ export function useUpdateOrder(orderId?: string, currentStatus?: string) {
         .from("orders")
         .update({ ...patch, updated_at: new Date().toISOString() })
         .eq("id", orderId!);
+        
       if (error) {
         await logRlsDenial(error, {
           table: "orders", op: "UPDATE",
@@ -101,6 +104,30 @@ export function useUpdateOrder(orderId?: string, currentStatus?: string) {
           policyHint: "orders_update_scope",
         });
         throw error;
+      }
+
+      // Log audit event if status changed
+      if (patch.status && patch.status !== currentStatus) {
+        await supabase.rpc('log_order_audit_event', {
+          p_order_id: orderId,
+          p_event_type: 'status_change',
+          p_description: `Status alterado de ${ORDER_STATUS_LABELS[currentStatus || ''] || currentStatus} para ${ORDER_STATUS_LABELS[patch.status] || patch.status}`,
+          p_metadata: { old_status: currentStatus, new_status: patch.status },
+          p_created_by_name: user?.email // Simple way to get a name
+        });
+
+        // Create notification
+        await supabase.from('notifications').insert({
+          user_id: user?.id, // Should ideally be the client/seller involved
+          title: "Status do Pedido Atualizado",
+          message: `O pedido #${orderId?.slice(0, 8)} mudou para ${ORDER_STATUS_LABELS[patch.status]}`,
+          type: 'info',
+          category: 'status',
+          source_system: 'compras',
+          source_entity_type: 'order',
+          source_entity_id: orderId,
+          action_url: `/pedidos/${orderId}`
+        });
       }
     },
     onSuccess: () => {

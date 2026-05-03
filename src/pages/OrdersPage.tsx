@@ -2,15 +2,19 @@ import { useState } from "react";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { PageSEO } from "@/components/seo/PageSEO";
 import { useAuth } from "@/contexts/AuthContext";
-import { Package, Search } from "lucide-react";
+import { Package, Search, Download, FileSpreadsheet, FileText } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
-import { useOrdersList } from "@/hooks/useOrders";
+import { useOrdersList, ORDER_STATUS_LABELS } from "@/hooks/useOrders";
 import { OrderCard } from "@/components/orders/OrderCard";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useSalesScope } from "@/lib/auth/visibility-scope";
 import { ScopeBadge } from "@/components/common/ScopeBadge";
+import { Button } from "@/components/ui/button";
+import { exportToExcel, exportToPDF, ORDER_EXPORT_COLUMNS } from "@/utils/orderExportUtils";
+import { format } from "date-fns";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 export default function OrdersPage() {
   const { user } = useAuth();
@@ -42,14 +46,50 @@ export default function OrdersPage() {
           <ScopeBadge />
         </div>
 
-        <div className="relative max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Buscar por número, cliente ou nota..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10"
-          />
+        <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
+          <div className="relative w-full max-w-md">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Buscar por número, cliente ou nota..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+          
+          <div className="flex items-center gap-2 w-full sm:w-auto">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm" className="gap-2">
+                  <Download className="h-4 w-4" /> Exportar
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => {
+                  const data = filtered.map(o => ({
+                    ...o,
+                    status_label: ORDER_STATUS_LABELS[o.status] || o.status,
+                    total_formatted: (o.total || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }),
+                    created_at_formatted: format(new Date(o.created_at), 'dd/MM/yyyy')
+                  }));
+                  exportToExcel({ items: data, filename: 'pedidos', columns: ORDER_EXPORT_COLUMNS });
+                }}>
+                  <FileSpreadsheet className="h-4 w-4 mr-2" /> Excel (.xlsx)
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => {
+                  const data = filtered.map(o => ({
+                    ...o,
+                    status_label: ORDER_STATUS_LABELS[o.status] || o.status,
+                    total_formatted: (o.total || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }),
+                    created_at_formatted: format(new Date(o.created_at), 'dd/MM/yyyy')
+                  }));
+                  exportToPDF({ items: data, filename: 'pedidos', columns: ORDER_EXPORT_COLUMNS });
+                }}>
+                  <FileText className="h-4 w-4 mr-2" /> PDF (.pdf)
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </div>
 
         {isLoading ? (

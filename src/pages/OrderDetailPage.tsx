@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { ArrowLeft, Building2, Mail, Package, Phone, Truck, User, CreditCard, Clock, MapPin, FileText } from "lucide-react";
+import { ArrowLeft, Building2, Mail, Package, Phone, User, CreditCard, Clock, FileText, Download } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { PageSEO } from "@/components/seo/PageSEO";
@@ -12,7 +12,6 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
@@ -20,6 +19,9 @@ import { OrderStatusTimeline } from "@/components/orders/OrderStatusTimeline";
 import { OrderFulfillmentManager } from "@/components/orders/OrderFulfillmentManager";
 import { OrderPilotWorkflow } from "@/components/orders/OrderPilotWorkflow";
 import { OrderAuditTimeline } from "@/components/orders/OrderAuditTimeline";
+import { OrderComments } from "@/components/orders/OrderComments";
+import { OrderSellerActions } from "@/components/orders/OrderSellerActions";
+import { ORDER_STATUS_LABELS } from "@/hooks/useOrders";
 
 const statusConfig: Record<string, { label: string; color: string }> = {
   pending: { label: "Pendente", color: "bg-warning/20 text-warning border-warning/30" },
@@ -161,9 +163,28 @@ export default function OrderDetailPage() {
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <Badge variant="outline" className={sc.color}>{sc.label}</Badge>
             <Badge variant="outline" className={fc.color}>{fc.label}</Badge>
+            <Button variant="outline" size="sm" className="gap-2" onClick={() => {
+              const data = {
+                items: items.map(it => ({
+                  ...it,
+                  total: (it.quantity || 0) * (it.unit_price || 0)
+                })),
+                filename: `pedido_${order.order_number}`,
+                columns: [
+                  { header: "Produto", key: "product_name" },
+                  { header: "SKU", key: "product_sku" },
+                  { header: "Qtd", key: "quantity" },
+                  { header: "Preço", key: "unit_price" },
+                  { header: "Subtotal", key: "total" },
+                ]
+              };
+              exportToPDF(data as any);
+            }}>
+              <Download className="h-4 w-4" /> PDF
+            </Button>
           </div>
         </div>
 
@@ -172,6 +193,9 @@ export default function OrderDetailPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">
+            {/* Seller Quick Actions */}
+            <OrderSellerActions order={order} />
+
             {/* Items */}
             <Card>
               <CardHeader>
@@ -249,6 +273,9 @@ export default function OrderDetailPage() {
 
             {/* Fluxo de Piloto */}
             <OrderPilotWorkflow orderId={order.id} />
+
+            {/* Chat/Comentários */}
+            <OrderComments orderId={order.id} />
 
             {/* Auditoria */}
             <OrderAuditTimeline orderId={order.id} />

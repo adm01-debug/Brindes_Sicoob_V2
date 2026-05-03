@@ -2691,6 +2691,90 @@ export type Database = {
         }
         Relationships: []
       }
+      notifications: {
+        Row: {
+          action_data: Json | null
+          action_label: string | null
+          action_url: string | null
+          category: string | null
+          channels: string[] | null
+          created_at: string | null
+          delivered_at: string | null
+          delivery_status: Json | null
+          expires_at: string | null
+          group_count: number | null
+          group_key: string | null
+          id: string
+          is_grouped: boolean | null
+          is_read: boolean | null
+          message: string
+          priority: number | null
+          read_at: string | null
+          scheduled_for: string | null
+          source_entity_id: string | null
+          source_entity_type: string | null
+          source_system: string
+          title: string
+          type: string
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action_data?: Json | null
+          action_label?: string | null
+          action_url?: string | null
+          category?: string | null
+          channels?: string[] | null
+          created_at?: string | null
+          delivered_at?: string | null
+          delivery_status?: Json | null
+          expires_at?: string | null
+          group_count?: number | null
+          group_key?: string | null
+          id?: string
+          is_grouped?: boolean | null
+          is_read?: boolean | null
+          message: string
+          priority?: number | null
+          read_at?: string | null
+          scheduled_for?: string | null
+          source_entity_id?: string | null
+          source_entity_type?: string | null
+          source_system: string
+          title: string
+          type?: string
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action_data?: Json | null
+          action_label?: string | null
+          action_url?: string | null
+          category?: string | null
+          channels?: string[] | null
+          created_at?: string | null
+          delivered_at?: string | null
+          delivery_status?: Json | null
+          expires_at?: string | null
+          group_count?: number | null
+          group_key?: string | null
+          id?: string
+          is_grouped?: boolean | null
+          is_read?: boolean | null
+          message?: string
+          priority?: number | null
+          read_at?: string | null
+          scheduled_for?: string | null
+          source_entity_id?: string | null
+          source_entity_type?: string | null
+          source_system?: string
+          title?: string
+          type?: string
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       optimization_queue: {
         Row: {
           category: string
@@ -2788,11 +2872,14 @@ export type Database = {
           actor_id: string | null
           actor_name: string | null
           actor_role: string | null
+          category: string | null
+          created_by_name: string | null
           description: string
           event_category: string
           event_type: string
           id: string
           metadata: Json | null
+          observations: string | null
           occurred_at: string
           order_id: string
         }
@@ -2800,11 +2887,14 @@ export type Database = {
           actor_id?: string | null
           actor_name?: string | null
           actor_role?: string | null
+          category?: string | null
+          created_by_name?: string | null
           description: string
           event_category: string
           event_type: string
           id?: string
           metadata?: Json | null
+          observations?: string | null
           occurred_at?: string
           order_id: string
         }
@@ -2812,11 +2902,14 @@ export type Database = {
           actor_id?: string | null
           actor_name?: string | null
           actor_role?: string | null
+          category?: string | null
+          created_by_name?: string | null
           description?: string
           event_category?: string
           event_type?: string
           id?: string
           metadata?: Json | null
+          observations?: string | null
           occurred_at?: string
           order_id?: string
         }
@@ -6651,6 +6744,19 @@ export type Database = {
           _request_id?: string
           _token_id?: string
           _user_agent?: string
+        }
+        Returns: string
+      }
+      log_order_audit_event: {
+        Args: {
+          p_category?: string
+          p_created_by?: string
+          p_created_by_name?: string
+          p_description: string
+          p_event_type: string
+          p_metadata?: Json
+          p_observations?: string
+          p_order_id: string
         }
         Returns: string
       }
