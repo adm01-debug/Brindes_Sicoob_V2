@@ -22,8 +22,19 @@ export async function convertQuoteToOrder({ quoteId, sellerId, organizationId }:
     // 1. Fetch the quote
     const quote = await quoteToOrderService.fetchQuote(quoteId);
 
-    if (quote.status !== "approved") {
-      throw new Error("Apenas orçamentos aprovados podem ser convertidos em pedidos");
+    const validStatuses = ["approved", "approved_singular"];
+    if (!validStatuses.includes(quote.status)) {
+      throw new Error("Apenas orçamentos aprovados pela Singular podem ser oficializados");
+    }
+
+    // New validation: check if items have price/stock
+    if (!quote.items?.length) {
+      throw new Error("O orçamento não possui itens para oficialização");
+    }
+
+    const hasIncompleteItems = quote.items.some((i: any) => !i.unit_price || i.unit_price <= 0);
+    if (hasIncompleteItems) {
+      throw new Error("Existem itens com preço zerado ou inválido. Por favor, revise o orçamento.");
     }
 
     // 2. Check if order already exists
