@@ -26,35 +26,72 @@ import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function PAWalletPage() {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
+  const queryClient = useQueryClient();
+  const [isRequestDialogOpen, setIsRequestDialogOpen] = React.useState(false);
+  const [requestedAmount, setRequestedAmount] = React.useState("");
+  const [requestReason, setRequestReason] = React.useState("");
   
   const { data: budget, isLoading } = useQuery({
     queryKey: ["pa-budget", user?.id],
     queryFn: async () => {
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("pa_id")
-        .eq("id", user?.id)
-        .single();
-        
       if (!profile?.pa_id) return null;
 
       const { data, error } = await supabase
         .from("pa_budgets")
         .select("*")
         .eq("pa_id", profile.pa_id)
-        .order("month_year", { ascending: false })
+        .order("ano", { ascending: false })
+        .order("mes", { ascending: false })
         .limit(1)
-        .single();
+        .maybeSingle();
         
       if (error) throw error;
       return data;
     },
-    enabled: !!user,
+    enabled: !!profile?.pa_id,
   });
 
-  const spentPercent = budget ? (Number(budget.current_spent) / Number(budget.monthly_limit)) * 100 : 0;
-  const remaining = budget ? Number(budget.monthly_limit) - Number(budget.current_spent) : 0;
+  const { data: requests } = useQuery({
+    queryKey: ["budget-requests", profile?.pa_id],
+    queryFn: async () => {
+      if (!profile?.pa_id) return [];
+      const { data, error } = await supabase
+        .from("budget_increase_requests")
+        .select("*")
+        .eq("pa_id", profile.pa_id)
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!profile?.pa_id,
+  });
+
+  const createRequest = useMutation({
+    mutationFn: async () => {
+      if (!profile?.pa_id) throw new Error("PA não identificado");
+      const { error } = await supabase.from("budget_increase_requests").insert({
+        pa_id: profile.pa_id,
+        requested_amount: Number(requestedAmount),
+        reason: requestReason,
+        status: 'pending'
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["budget-requests"] });
+      setIsRequestDialogOpen(false);
+      setRequestedAmount("");
+      setRequestReason("");
+      toast.success("Solicitação enviada com sucesso!");
+    },
+    onError: (err: any) => {
+      toast.error("Erro ao enviar solicitação: " + err.message);
+    }
+  });
+
+  const spentPercent = budget ? (Number(budget.verba_consumida) / Number(budget.verba_total)) * 100 : 0;
+  const remaining = budget ? Number(budget.verba_total) - Number(budget.verba_consumida) : 0;
 
   return (
     <MainLayout>
