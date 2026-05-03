@@ -65,3 +65,17 @@ jobs:
             exit 0
           fi
           deno test --allow-net --allow-env --allow-read supabase/functions/tests/sicoob-validation-constraints_test.ts
+
+  frontend-unit-coverage:
+    name: Frontend Coverage Gate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+      - run: npm ci
+      - name: Run Frontend Tests with Coverage
+        run: npm run test -- src/components/layout/ProtectedRoute.test.tsx src/services/sicoob/orderService.test.ts src/pages/ForbiddenPage.test.tsx
+
