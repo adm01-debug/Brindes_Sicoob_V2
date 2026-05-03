@@ -254,7 +254,7 @@ export default function OrdersPage() {
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Pedidos Sicoob</h1>
+            <h1 className="text-3xl font-bold tracking-tight text-sicoob-green-dark">Gestão de Pedidos</h1>
             <p className="text-muted-foreground">
               Acompanhe e gerencie as solicitações de compra dos PAs.
             </p>
