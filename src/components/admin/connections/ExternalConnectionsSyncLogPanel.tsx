@@ -56,7 +56,9 @@ function opBadge(op: string | null) {
   );
 }
 
-export function ExternalConnectionsSyncLogPanel() {
+import { forwardRef } from 'react';
+
+export const ExternalConnectionsSyncLogPanel = forwardRef<HTMLDivElement>((_props, ref) => {
   const [rows, setRows] = useState<SyncLogRow[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
