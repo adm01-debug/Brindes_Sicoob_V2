@@ -21,12 +21,11 @@ export const AuthDiagnosticsWidget = forwardRef<HTMLDivElement>((_props, ref) =>
   const [isMinimized, setIsMinimized] = useState(false);
 
   useEffect(() => {
-    // Só ativa se localStorage 'show_auth_diagnostics' for true ou for role dev
+    if (!isAllowed) return;
+
     const checkDev = () => {
-      const isDevMode = localStorage.getItem('show_auth_diagnostics') === 'true' || 
-                       localStorage.getItem('show_dev_infra_messages') === 'true';
-      setIsDev(isDevMode);
-      if (isDevMode) setIsOpen(true);
+      // O useDevGate já cuida do papel, aqui apenas decidimos abrir automaticamente
+      setIsOpen(true);
     };
     
     checkDev();
@@ -48,9 +47,9 @@ export const AuthDiagnosticsWidget = forwardRef<HTMLDivElement>((_props, ref) =>
       window.removeEventListener('auth_debug_update', loadLogs);
       window.removeEventListener('storage', loadLogs);
     };
-  }, []);
+  }, [isAllowed]);
 
-  if (!isDev || !isOpen) return null;
+  if (!isAllowed || !isOpen) return null;
 
   return (
     <div className="fixed bottom-4 right-4 z-[9999] max-w-md w-full animate-in slide-in-from-right-4">
