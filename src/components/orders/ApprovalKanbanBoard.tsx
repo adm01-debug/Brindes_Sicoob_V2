@@ -9,7 +9,7 @@ import {
   type DragStartEvent,
 } from "@dnd-kit/core";
 import { toast } from "sonner";
-import { useOrdersList, useUpdateOrder, ORDER_STATUS_LABELS, canTransitionTo, type OrderRow } from "@/hooks/useOrders";
+import { useOrdersList, useUpdateOrder, ORDER_STATUS_LABELS, canTransitionTo, type OrderRow } from "@/hooks";
 import { DroppableColumn } from "@/pages/sicoob/orders/OrdersKanbanPage";
 import { DraggableCard } from "@/pages/sicoob/orders/OrdersKanbanPage";
 import { useAuth } from "@/contexts/AuthContext";

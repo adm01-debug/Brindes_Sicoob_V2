@@ -2,7 +2,7 @@
  * OrderStatusTimeline — visualização horizontal do progresso do pedido.
  */
 import { Check, Circle, XCircle } from "lucide-react";
-import { ORDER_STATUS_FLOW, ORDER_STATUS_LABELS } from "@/hooks/useOrders";
+import { ORDER_STATUS_FLOW, ORDER_STATUS_LABELS } from "@/hooks";
 import { cn } from "@/lib/utils";
 
 interface OrderStatusTimelineProps {
