@@ -571,8 +571,32 @@ export default function OrdersPage() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {filteredOrders.map((order: any) => (
-              <Card key={order.id} className="hover:shadow-md transition-shadow cursor-pointer border-[1.5px]" onClick={() => navigate(`/sicoob/pedidos/${order.id}`)}>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <Card 
+                key={order.id} 
+                className={cn(
+                  "hover:shadow-md transition-shadow cursor-pointer border-[1.5px] relative group",
+                  selectedOrderIds.includes(order.id) ? "border-sicoob-green bg-sicoob-green/5 shadow-sm" : ""
+                )} 
+                onClick={() => navigate(`/sicoob/pedidos/${order.id}`)}
+              >
+                <div 
+                  className={cn(
+                    "absolute top-3 left-3 z-10 opacity-0 group-hover:opacity-100 transition-opacity",
+                    selectedOrderIds.includes(order.id) ? "opacity-100" : ""
+                  )}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    toggleSelectOrder(order.id);
+                  }}
+                >
+                  <div className={cn(
+                    "w-5 h-5 rounded border-2 flex items-center justify-center transition-colors",
+                    selectedOrderIds.includes(order.id) ? "bg-sicoob-green border-sicoob-green text-white" : "bg-white border-muted-foreground/30"
+                  )}>
+                    {selectedOrderIds.includes(order.id) && <CheckCircle2 className="h-3 w-3" />}
+                  </div>
+                </div>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 pl-10">
                   <CardTitle className="text-sm font-bold text-sicoob-green-dark">
                     Pedido #{order.order_number || order.id.slice(0, 8)}
                   </CardTitle>
