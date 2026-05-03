@@ -90,6 +90,7 @@ export function OrdersPage() {
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
+            <BatchExportDialog entityType="orders" filters={{ search: searchQuery }} />
           </div>
         </div>
 
