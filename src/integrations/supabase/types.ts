@@ -7438,6 +7438,15 @@ export type Database = {
         Args: { window_minutes?: number }
         Returns: Json
       }
+      get_query_telemetry_p95: {
+        Args: { window_minutes?: number }
+        Returns: {
+          avg_ms: number
+          count: number
+          operation: string
+          p95_ms: number
+        }[]
+      }
       get_quote_token_by_value: {
         Args: { _token: string }
         Returns: {
