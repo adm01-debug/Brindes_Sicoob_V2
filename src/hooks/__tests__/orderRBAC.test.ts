@@ -2,6 +2,8 @@ import { describe, it, expect, vi } from 'vitest';
 import { renderHook, waitFor } from '@testing-library/react';
 import { useOrdersList } from '../useOrders';
 import { supabase } from '@/integrations/supabase/client';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import React from 'react';
 
 // Mock Supabase
 vi.mock('@/integrations/supabase/client', () => ({
@@ -10,7 +12,6 @@ vi.mock('@/integrations/supabase/client', () => ({
       select: vi.fn(() => ({
         order: vi.fn(() => ({
           eq: vi.fn((column, value) => {
-            // Simulate data return based on filters
             if (column === 'seller_id' && value === 'seller-1') {
               return Promise.resolve({ data: [{ id: 'order-1', seller_id: 'seller-1' }], error: null });
             }
@@ -35,9 +36,19 @@ vi.mock('@/lib/security/rls-denial-logger', () => ({
   logRlsDenial: vi.fn()
 }));
 
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: { retry: false },
+  },
+});
+
+const wrapper = ({ children }: { children: React.ReactNode }) => (
+  <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+);
+
 describe('Order RBAC Visibility', () => {
   it('Vendedor should only see their own orders when scope is self', async () => {
-    const { result } = renderHook(() => useOrdersList('seller-1', 'self'));
+    const { result } = renderHook(() => useOrdersList('seller-1', 'self'), { wrapper });
     
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     
@@ -46,7 +57,6 @@ describe('Order RBAC Visibility', () => {
   });
 
   it('Gestor should see all team orders (mocked behavior)', async () => {
-    // Modify mock for gestor
     (supabase.from as any).mockImplementationOnce(() => ({
       select: vi.fn(() => ({
         order: vi.fn(() => Promise.resolve({ 
@@ -59,7 +69,7 @@ describe('Order RBAC Visibility', () => {
       }))
     }));
 
-    const { result } = renderHook(() => useOrdersList('gestor-1', 'team'));
+    const { result } = renderHook(() => useOrdersList('gestor-1', 'team'), { wrapper });
     
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     
