@@ -24,7 +24,26 @@ const statusIcons: Record<string, any> = {
   cancelado: XCircle,
 };
 
-export function OrderStatusTimeline({ status }: OrderStatusTimelineProps) {
+export function OrderStatusTimeline({ status, orderId }: OrderStatusTimelineProps) {
+  const { data: approvalHistory } = useQuery({
+    queryKey: ["order_approval_history_timeline", orderId],
+    queryFn: async () => {
+      if (!orderId) return [];
+      const { data, error } = await supabase
+        .from("order_approval_history")
+        .select(`
+          *,
+          approver:approver_id(full_name)
+        `)
+        .eq("order_id", orderId)
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!orderId
+  });
+
+  const latestApproval = approvalHistory?.[0];
   if (status === "cancelled") {
     return (
       <div className="flex items-center gap-3 rounded-xl border border-destructive/20 bg-destructive/5 p-4 text-sm text-destructive shadow-sm animate-in fade-in slide-in-from-top-2 duration-300">
