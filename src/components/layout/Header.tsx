@@ -27,6 +27,7 @@ import { DiscountApprovalHeaderBadge } from "@/components/admin/DiscountApproval
 
 import { GlobalSearchPalette } from "@/components/search/GlobalSearchPalette";
 import { CartHeaderButton } from "@/components/cart/CartHeaderButton";
+import { MiniCart } from "@/components/cart/MiniCart";
 import { useIsScrolled } from "@/hooks/useScroll";
 import { useCurrentSection } from "@/hooks/useCurrentSection";
 import { cn } from "@/lib/utils";
