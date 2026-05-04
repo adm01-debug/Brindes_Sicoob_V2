@@ -53,6 +53,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { SidebarBrandHeader } from "./sidebar/SidebarBrandHeader";
+import { OrganizationSwitcher } from "@/components/OrganizationSwitcher";
 
 import { SidebarNavGroup, type NavGroup } from "./sidebar/SidebarNavGroup";
 import { RestrictedRouteNotice } from "./sidebar/RestrictedRouteNotice";
