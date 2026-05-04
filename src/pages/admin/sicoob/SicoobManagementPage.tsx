@@ -58,6 +58,10 @@ const SicoobManagementPage = () => {
         <TabsContent value="users">
           <UserAssignmentTab />
         </TabsContent>
+
+        <TabsContent value="notifications">
+          <NotificationSettingsTab />
+        </TabsContent>
       </Tabs>
     </div>
   );
