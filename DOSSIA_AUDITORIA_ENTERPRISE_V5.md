@@ -1,8 +1,13 @@
 
 # 🛡️ DOSSIÊ DE AUDITORIA ENTERPRISE V5
 
-**Data de Geração:** 5/4/2026, 10:17:51 PM
-**Status Global:** 10/10 Compliance Verified
+---
+
+## 🕒 EVIDENCE GENESIS (AUTO-GENERATED)
+*   **Data de Geração:** 5/4/2026, 10:18:46 PM
+*   **Versão do Sistema:** 3.4.0-hardened
+*   **Commit Ref:** `4cd7dac14`
+*   **Status de Integridade:** 10/10 Compliance Verified
 
 ---
 
