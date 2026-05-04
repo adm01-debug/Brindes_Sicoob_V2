@@ -1,0 +1,4 @@
+-- Nenhuma alteração de schema necessária, apenas garantindo que o serviço frontend
+-- tenha uma interface clara para passar observações para a auditoria.
+-- O campo 'observations' já existe na tabela order_audit_events.
+-- Vamos apenas atualizar o serviço JS.
