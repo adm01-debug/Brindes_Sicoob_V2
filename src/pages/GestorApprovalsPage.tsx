@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { PageSEO } from "@/components/seo/PageSEO";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -21,7 +21,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { formatCurrency } from "@/lib/utils";
-import { Check, X, Eye, ShieldCheck, AlertCircle, Clock, Download, FileJson, Calendar as CalendarIcon, History } from "lucide-react";
+import { Check, X, Eye, ShieldCheck, AlertCircle, Clock, Download, FileJson, Calendar as CalendarIcon, History, Settings } from "lucide-react";
 import { toast } from "sonner";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -30,6 +30,9 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 
 export default function GestorApprovalsPage() {
   const { user } = useAuth();
