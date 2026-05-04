@@ -21,12 +21,18 @@ import { Progress } from "@/components/ui/progress";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 export function MiniCart() {
-  const { items, subtotal, totalItemsCount, removeItem, updateQuantity } = useCart();
+  const { items, subtotal, totalItemsCount, removeItem, updateQuantity, clearCart } = useCart();
   const { threshold, needsApproval } = useApprovalThreshold(items);
   
   const isOverThreshold = needsApproval(subtotal);
   const thresholdProgress = threshold > 0 ? Math.min((subtotal / threshold) * 100, 100) : 0;
   const remaining = Math.max(0, threshold - subtotal);
+
+  const handleReset = () => {
+    if (confirm("Deseja realmente redefinir o carrinho para o padrão (vazio)?")) {
+      clearCart.mutate();
+    }
+  };
 
   return (
     <Sheet>
