@@ -349,6 +349,42 @@ export function QuoteConsolidationPanel({
                 className="pl-9 h-9"
               />
             </div>
+            
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm" className="gap-2 h-9">
+                  <Save className="h-4 w-4" />
+                  Visões Salvas
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuLabel>Minhas Visões</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                {savedViews.length === 0 ? (
+                  <DropdownMenuItem disabled className="text-xs italic">Nenhuma visão salva</DropdownMenuItem>
+                ) : (
+                  savedViews.map(view => (
+                    <DropdownMenuItem key={view.id} onClick={() => loadView(view)} className="flex items-center justify-between">
+                      <span className="truncate">{view.name}</span>
+                      <Button variant="ghost" size="icon" className="h-5 w-5 text-muted-foreground hover:text-destructive" onClick={(e) => deleteView(view.id, e)}>
+                        <X className="h-3 w-3" />
+                      </Button>
+                    </DropdownMenuItem>
+                  ))
+                )}
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={saveCurrentView} className="text-primary font-medium">
+                  <Save className="h-3.5 w-3.5 mr-2" />
+                  Salvar Atual como...
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            <Button variant="outline" size="sm" className="gap-2 h-9" onClick={generateShareLink} title="Gerar link de compartilhamento">
+              <Share2 className="h-4 w-4" />
+              Compartilhar
+            </Button>
+
             <Button variant="outline" size="sm" className="gap-2 h-9" onClick={exportToCSV}>
               <Download className="h-4 w-4" />
               Exportar CSV
