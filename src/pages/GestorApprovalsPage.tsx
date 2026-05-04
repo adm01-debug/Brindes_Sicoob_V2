@@ -49,12 +49,21 @@ export default function GestorApprovalsPage() {
 
   const approveMutation = useMutation({
     mutationFn: async (orderId: string) => {
-      const { error } = await supabase
+      const order = pendingOrders?.find(o => o.id === orderId);
+      
+      const { error: updateError } = await supabase
         .from("orders")
         .update({ status: "aprovado_gestor" })
         .eq("id", orderId);
-      
-      if (error) throw error;
+      if (updateError) throw updateError;
+
+      await supabase.from("order_approval_history").insert({
+        order_id: orderId,
+        approver_id: user?.id,
+        decision: "approved",
+        subtotal_at_time: order?.total || 0,
+        reason: "Aprovação manual via painel de gestão."
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["pending_approvals_list"] });
@@ -64,12 +73,21 @@ export default function GestorApprovalsPage() {
 
   const rejectMutation = useMutation({
     mutationFn: async (orderId: string) => {
-      const { error } = await supabase
+      const order = pendingOrders?.find(o => o.id === orderId);
+      
+      const { error: updateError } = await supabase
         .from("orders")
         .update({ status: "cancelado" })
         .eq("id", orderId);
-      
-      if (error) throw error;
+      if (updateError) throw updateError;
+
+      await supabase.from("order_approval_history").insert({
+        order_id: orderId,
+        approver_id: user?.id,
+        decision: "rejected",
+        subtotal_at_time: order?.total || 0,
+        reason: "Pedido reprovado pelo gestor da Singular."
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["pending_approvals_list"] });
