@@ -167,7 +167,9 @@ export default function Auth() {
         title: "Bem-vindo!",
         description: "Login realizado com sucesso",
       });
-      navigate("/");
+      
+      // The useEffect for [user, role] will handle the automatic redirection
+      // once the AuthContext updates the role after signIn.
     } catch (error) {
       toast({
         variant: "destructive",
