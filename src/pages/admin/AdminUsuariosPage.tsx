@@ -7,7 +7,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Users, UserCog, Loader2, KeyRound, Plus, Search, Percent, ArrowUpCircle, History, Ticket, Lock } from "lucide-react";
+import { Users, UserCog, Loader2, KeyRound, Plus, Search, Percent, ArrowUpCircle, History, Ticket, Lock, Network, Settings } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -17,6 +17,7 @@ import { CouponManager } from "@/components/admin/CouponManager";
 import { AccessManagement } from "@/components/admin/users/AccessManagement";
 import { SicoobHierarchyTab } from "@/components/admin/users/SicoobHierarchyTab";
 import { usePasswordResetRequests } from "@/hooks/usePasswordResetRequests";
+import { SystemFeatureToggles } from "@/components/admin/SystemFeatureToggles";
 
 import { useUserManagement } from "@/components/admin/users/useUserManagement";
 import { UserStatsCards } from "@/components/admin/users/UserStatsCards";
