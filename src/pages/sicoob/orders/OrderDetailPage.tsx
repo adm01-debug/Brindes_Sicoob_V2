@@ -85,17 +85,10 @@ import { OrderTemplatesTab } from "@/components/sicoob/orders/OrderTemplatesTab"
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 
-const canTransitionTo = (current: string, next: string) => {
-  const transitions: Record<string, string[]> = {
-    pending: ["in_production", "cancelled"],
-    in_production: ["in_separation", "cancelled"],
-    in_separation: ["in_transit", "cancelled"],
-    in_transit: ["delivered", "cancelled"],
-    delivered: ["completed"],
-    completed: [],
-    cancelled: []
-  };
-  return transitions[current]?.includes(next) || current === next;
+import { OrderStatus, canSicoobTransitionTo, ORDER_STATUS_CONFIG } from "@/types/sicoob/orders";
+
+const canTransitionTo = (current: OrderStatus, next: OrderStatus) => {
+  return canSicoobTransitionTo(current, next);
 };
 
 export default function OrderDetailPage() {
@@ -278,13 +271,13 @@ export default function OrderDetailPage() {
     });
   };
 
-  const handleStatusUpdate = async (newStatus: any) => {
+  const handleStatusUpdate = async (newStatus: OrderStatus) => {
     if (!confirm(`Deseja realmente alterar o status do pedido para "${newStatus}"?`)) return;
     
     updateOrderStatusMutation.mutate({ 
       orderId: id!, 
       status: newStatus, 
-      currentStatus: orderData?.status 
+      currentStatus: orderData?.status as OrderStatus
     });
   };
 
@@ -700,19 +693,17 @@ export default function OrderDetailPage() {
                   <Label className="text-xs">Status do Workflow</Label>
                   <Select 
                     value={orderData.status || 'pending'} 
-                    onValueChange={handleStatusUpdate}
+                    onValueChange={(val) => handleStatusUpdate(val as OrderStatus)}
                   >
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="draft">Rascunho</SelectItem>
-                      <SelectItem value="pending">Pendente</SelectItem>
-                      <SelectItem value="waiting_approval">Aguardando Aprovação</SelectItem>
-                      <SelectItem value="confirmed">Confirmado</SelectItem>
-                      <SelectItem value="logistic">Logística</SelectItem>
-                      <SelectItem value="completed">Concluído</SelectItem>
-                      <SelectItem value="rejected">Rejeitado</SelectItem>
+                      {Object.entries(ORDER_STATUS_CONFIG).map(([value, config]) => (
+                        <SelectItem key={value} value={value} disabled={!canTransitionTo(orderData.status as OrderStatus, value as OrderStatus)}>
+                          {config.label}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
