@@ -155,6 +155,48 @@ export function QuoteConsolidationPanel({
     });
   };
 
+  const [activeTab, setActiveTab] = useState<'items' | 'history'>('items');
+  const [historyFilter, setHistoryFilter] = useState<{ type?: string; sku?: string }>({ type: undefined, sku: undefined });
+
+  // Simulação de log de mudanças para demonstração (em prod viria do quote_history filtrado)
+  const mockHistory: ChangeLogEntry[] = useMemo(() => {
+    const entries: ChangeLogEntry[] = [];
+    quotes.forEach(q => {
+      if (q.created_at) {
+        entries.push({
+          id: `created-${q.id}`,
+          date: q.created_at,
+          user: q.seller_id || "Sistema",
+          type: 'status',
+          description: `Orçamento #${q.quote_number} criado.`
+        });
+      }
+      q.items?.forEach(item => {
+        if (q.updated_at) {
+          entries.push({
+            id: `qty-${q.id}-${item.product_sku}`,
+            date: q.updated_at,
+            user: q.seller_id || "Sistema",
+            type: 'quantity',
+            sku: item.product_sku,
+            description: `Alteração de quantidade no item ${item.product_name}.`,
+            oldValue: "-",
+            newValue: `${item.quantity} un`
+          });
+        }
+      });
+    });
+    return entries.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  }, [quotes]);
+
+  const filteredHistory = useMemo(() => {
+    return mockHistory.filter(entry => {
+      const matchesType = !historyFilter.type || entry.type === historyFilter.type;
+      const matchesSku = !historyFilter.sku || entry.sku?.toLowerCase().includes(historyFilter.sku.toLowerCase());
+      return matchesType && matchesSku;
+    });
+  }, [mockHistory, historyFilter]);
+
   const toggleExpand = (key: string) => {
     setExpandedItems(prev => 
       prev.includes(key) ? prev.filter(k => k !== key) : [...prev, key]
