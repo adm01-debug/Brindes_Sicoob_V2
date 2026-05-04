@@ -354,8 +354,14 @@ export default function OrdersKanbanPage() {
               setOverColumn(null);
             }}
           >
-            <div className="flex gap-4 overflow-x-auto pb-4 flex-1 min-h-[600px]">
-              {COLUMNS.map((column) => {
+            <div className="flex gap-4 overflow-x-auto pb-4 flex-1 min-h-[600px] custom-scrollbar">
+              {isLoading ? (
+                <div className="flex gap-4 w-full">
+                  {[1, 2, 3, 4, 5].map(i => (
+                    <div key={i} className="min-w-[280px] w-[280px] bg-muted/10 rounded-xl h-[600px] animate-pulse" />
+                  ))}
+                </div>
+              ) : COLUMNS.map((column) => {
                 const columnOrders = orders.filter((o) => o.status === column.id);
                 const isOver = overColumn === column.id;
                 const isInvalid =
@@ -372,14 +378,14 @@ export default function OrdersKanbanPage() {
                     count={columnOrders.length}
                   >
                     {columnOrders.map((order) => {
-                      const allowedDestinations =
-                        ALLOWED_TRANSITIONS[order.status]?.filter((dest) =>
-                          canRoleMove(role, order.status, dest),
-                        ) ?? [];
-                      const canDrag = allowedDestinations.length > 0;
+                      // Check permissions per status
+                      const canDrag = isSupervisorOrAbove || 
+                        (isGerentePa && ['draft', 'pending'].includes(order.status));
+                      
                       const reason = !canDrag
-                        ? `${ROLE_LABEL[role]} não pode mover pedidos em "${column.title}".`
+                        ? "Você não tem permissão para mover pedidos neste status."
                         : undefined;
+
                       return (
                         <DraggableCard
                           key={order.id}
