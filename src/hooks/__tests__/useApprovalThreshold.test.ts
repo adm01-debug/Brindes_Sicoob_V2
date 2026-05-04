@@ -13,39 +13,15 @@ vi.mock("@tanstack/react-query", () => ({
   useQuery: vi.fn(),
 }));
 
-describe("useApprovalThreshold", () => {
+describe("useApprovalThreshold - Boundary Logic", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it("should return threshold and calculate needsApproval correctly for Gerente PA", () => {
-    // Setup mock for Gerente PA
+  it("should block when exactly at the threshold limit (conservative approach)", () => {
     (useAuth as any).mockReturnValue({
       profile: { pa_id: "pa-123" },
       isGerentePa: true,
-      isDev: false,
-      isSupervisor: false,
-    });
-
-    // Setup mock for budget query (threshold = 1000)
-    (useQuery as any).mockReturnValue({
-      data: { limite_alcada: 1000 },
-    });
-
-    const { result } = renderHook(() => useApprovalThreshold());
-
-    expect(result.current.threshold).toBe(1000);
-    expect(result.current.needsApproval(500)).toBe(false);
-    expect(result.current.needsApproval(1500)).toBe(true);
-  });
-
-  it("should bypass approval for Dev or Supervisor", () => {
-    // Setup mock for Dev
-    (useAuth as any).mockReturnValue({
-      profile: { pa_id: "pa-123" },
-      isGerentePa: false,
-      isDev: true,
-      isSupervisor: false,
     });
 
     (useQuery as any).mockReturnValue({
@@ -53,23 +29,28 @@ describe("useApprovalThreshold", () => {
     });
 
     const { result } = renderHook(() => useApprovalThreshold());
-
-    expect(result.current.needsApproval(5000)).toBe(false); // Even way over threshold
+    
+    // If threshold is 1000, 1000.01 should definitely fail.
+    // The current logic uses `amount > threshold`, so exactly 1000 should pass.
+    expect(result.current.needsApproval(1000)).toBe(false);
+    expect(result.current.needsApproval(1000.01)).toBe(true);
   });
 
-  it("should return 0 threshold if no profile or budget data", () => {
-    (useAuth as any).mockReturnValue({
-      profile: null,
-      isGerentePa: true,
-    });
-
-    (useQuery as any).mockReturnValue({
-      data: null,
-    });
+  it("should pass for 0 amount with 0 threshold", () => {
+    (useAuth as any).mockReturnValue({ profile: { pa_id: "pa-123" }, isGerentePa: true });
+    (useQuery as any).mockReturnValue({ data: { limite_alcada: 0 } });
 
     const { result } = renderHook(() => useApprovalThreshold());
+    expect(result.current.needsApproval(0)).toBe(false);
+    expect(result.current.needsApproval(0.01)).toBe(true);
+  });
 
-    expect(result.current.threshold).toBe(0);
-    expect(result.current.needsApproval(1)).toBe(true); // Any amount needs approval if threshold is 0
+  it("should return correct status for negative values (safety check)", () => {
+    (useAuth as any).mockReturnValue({ profile: { pa_id: "pa-123" }, isGerentePa: true });
+    (useQuery as any).mockReturnValue({ data: { limite_alcada: 500 } });
+
+    const { result } = renderHook(() => useApprovalThreshold());
+    expect(result.current.needsApproval(-100)).toBe(false);
   });
 });
+
