@@ -693,7 +693,7 @@ export default function OrderDetailPage() {
                   <Label className="text-xs">Status do Workflow</Label>
                   <Select 
                     value={orderData.status || 'pending'} 
-                    onValueChange={handleStatusUpdate}
+                    onValueChange={(val) => handleStatusUpdate(val as OrderStatus)}
                   >
                     <SelectTrigger>
                       <SelectValue />
