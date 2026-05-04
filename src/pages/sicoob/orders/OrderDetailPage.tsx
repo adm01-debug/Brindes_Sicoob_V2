@@ -699,13 +699,11 @@ export default function OrderDetailPage() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="draft">Rascunho</SelectItem>
-                      <SelectItem value="pending">Pendente</SelectItem>
-                      <SelectItem value="waiting_approval">Aguardando Aprovação</SelectItem>
-                      <SelectItem value="confirmed">Confirmado</SelectItem>
-                      <SelectItem value="logistic">Logística</SelectItem>
-                      <SelectItem value="completed">Concluído</SelectItem>
-                      <SelectItem value="rejected">Rejeitado</SelectItem>
+                      {Object.entries(ORDER_STATUS_CONFIG).map(([value, config]) => (
+                        <SelectItem key={value} value={value} disabled={!canTransitionTo(orderData.status as OrderStatus, value as OrderStatus)}>
+                          {config.label}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
