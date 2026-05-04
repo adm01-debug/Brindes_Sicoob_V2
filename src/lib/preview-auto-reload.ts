@@ -28,7 +28,7 @@ export function setupPreviewAutoReload() {
   });
 
   // Forçar limpeza agressiva se detectarmos falha de handshake no bridge
-  if (window.location.search.includes("error=412")) {
+  if (window.location.search.includes("error=412") || window.location.search.includes("precondition_failed")) {
      logger.warn("[preview-reload] Detectado erro 412 na URL, limpando armazenamento...");
      sessionStorage.clear();
      // Remove cache-bust para evitar loop infinito na URL se o hard reload falhar
