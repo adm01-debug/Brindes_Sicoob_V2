@@ -81,9 +81,9 @@ export function QuoteCard({ quote, onClick, className }: QuoteCardProps) {
           </div>
         </div>
 
-        {isGerentePa && quote.status === 'approved' && (
+        {isGerentePa && (quote.status === 'approved' || quote.status === 'converted') && (
           <div className="pt-2 border-t border-border/40" onClick={e => e.stopPropagation()}>
-            <OneClickReorder orderId={quote.id} className="w-full h-8 text-[11px]" />
+            <OneClickReorderQuote quoteId={quote.id} className="w-full h-8 text-[11px]" />
           </div>
         )}
       </CardContent>
