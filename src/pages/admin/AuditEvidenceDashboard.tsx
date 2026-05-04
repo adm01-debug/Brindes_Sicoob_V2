@@ -13,7 +13,8 @@ const EVIDENCES = [
     path: "supabase/migrations/20250103_02_rls_organizations.sql",
     snippet: 'CREATE POLICY "org_members_view_quotes" ... USING (public.user_is_org_member(organization_id));',
     status: "Verified",
-    priority: "P0"
+    priority: "P0",
+    acceptance: "Zero acesso cross-org em testes automatizados"
   },
   {
     feature: "Precisão Financeira 4 Casas",
@@ -21,7 +22,8 @@ const EVIDENCES = [
     path: "supabase/migrations/20260502174252_a88e3c13-46b8-4ce4-b1b8-c8500d390f3d.sql",
     snippet: "unit_price numeric(14,4)",
     status: "Verified",
-    priority: "P0"
+    priority: "P0",
+    acceptance: "Cálculos batem com 4 decimais em orçamentos > 1MM"
   },
   {
     feature: "Fallback de IA (Redundância)",
@@ -29,7 +31,8 @@ const EVIDENCES = [
     path: "supabase/functions/_shared/ai-usage.ts",
     snippet: "export async function callAiWithFallback(...)",
     status: "Verified",
-    priority: "P1"
+    priority: "P1",
+    acceptance: "Switch automático em < 5s após erro 5xx"
   },
   {
     feature: "Acessibilidade WCAG Admin",
@@ -37,7 +40,17 @@ const EVIDENCES = [
     path: "src/pages/admin/AdminVerbasPage.tsx",
     snippet: 'role="progressbar" aria-valuenow={percent}',
     status: "Verified",
-    priority: "P1"
+    priority: "P1",
+    acceptance: "Score Lighthouse Accessibility > 95"
+  },
+  {
+    feature: "Audit Trail Imutável",
+    category: "Governança",
+    path: "supabase/migrations/20250103_05_rls_remaining.sql",
+    snippet: 'ALTER TABLE public.audit_log ENABLE ROW LEVEL SECURITY;',
+    status: "Verified",
+    priority: "P0",
+    acceptance: "Logs não podem ser editados/deletados por usuários"
   }
 ];
 
@@ -104,8 +117,8 @@ export default function AuditEvidenceDashboard() {
                 <TableRow>
                   <TableHead>Funcionalidade</TableHead>
                   <TableHead>Prioridade</TableHead>
-                  <TableHead>Path de Código</TableHead>
-                  <TableHead>Trecho de Evidência</TableHead>
+                  <TableHead>Critério de Aceite</TableHead>
+                  <TableHead>Evidência (Código/Link)</TableHead>
                   <TableHead className="text-right">Status</TableHead>
                 </TableRow>
               </TableHeader>
@@ -123,16 +136,19 @@ export default function AuditEvidenceDashboard() {
                         {ev.priority}
                       </Badge>
                     </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2 text-xs font-mono text-muted-foreground">
-                        <FileCode className="h-3 w-3" />
-                        {ev.path}
-                      </div>
+                    <TableCell className="text-xs max-w-[200px]">
+                      {ev.acceptance}
                     </TableCell>
                     <TableCell>
-                      <code className="text-[10px] bg-muted p-1 rounded block max-w-[300px] truncate">
-                        {ev.snippet}
-                      </code>
+                      <div className="flex flex-col gap-1">
+                        <div className="flex items-center gap-2 text-[10px] font-mono text-muted-foreground">
+                          <FileCode className="h-3 w-3" />
+                          {ev.path}
+                        </div>
+                        <code className="text-[9px] bg-muted p-1 rounded block max-w-[250px] truncate">
+                          {ev.snippet}
+                        </code>
+                      </div>
                     </TableCell>
                     <TableCell className="text-right">
                       <Badge variant="secondary" className="bg-green-100 text-green-800 border-green-200">
