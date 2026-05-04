@@ -18,7 +18,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { formatCurrency } from "@/utils/formatters";
 import { Quote, QuoteItem } from "@/hooks/quotes/quoteTypes";
-import { Package, Hash, Layers, PieChart, FileText, Search, Filter, ChevronDown, ChevronRight, ArrowUpDown, Download, History, Share2, Save, X } from "lucide-react";
+import { Package, Hash, Layers, PieChart, FileText, Search, Filter, ChevronDown, ChevronRight, ArrowUpDown, Download, History, Share2, Save, X, Calendar, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { toast } from "sonner";
@@ -30,12 +30,25 @@ import {
   DropdownMenuSeparator, 
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
 
 interface SavedView {
   id: string;
   name: string;
   searchTerm: string;
   sortConfig: { key: string; direction: 'asc' | 'desc' } | null;
+}
+
+interface ChangeLogEntry {
+  id: string;
+  date: string;
+  user: string;
+  type: 'price' | 'quantity' | 'status' | 'personalization';
+  sku?: string;
+  description: string;
+  oldValue?: string;
+  newValue?: string;
 }
 import { 
   Card, 
