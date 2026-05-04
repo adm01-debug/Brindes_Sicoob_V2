@@ -683,8 +683,47 @@ export default function OrderDetailPage() {
                 <OrderCommentsTab orderId={id!} />
               </TabsContent>
 
-              <TabsContent value="items" className="space-y-4 pt-4">
-                <Card className="border-[1.5px]">
+                <TabsContent value="items" className="space-y-4 pt-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <Card className="border-[1.5px] bg-sicoob-green/5 border-sicoob-green/20">
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-xs font-bold uppercase tracking-wider text-sicoob-green-dark">Integridade do Pedido</CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-2">
+                        <div className="flex justify-between items-center text-sm">
+                          <span className="text-muted-foreground">Itens Auditados</span>
+                          <Badge variant="outline" className="text-sicoob-green-dark border-sicoob-green/30">
+                            {orderItems?.length || 0} Itens
+                          </Badge>
+                        </div>
+                        <div className="flex justify-between items-center text-sm">
+                          <span className="text-muted-foreground">Última Modificação</span>
+                          <span className="font-medium">{orderData?.updated_at ? new Date(orderData.updated_at).toLocaleDateString('pt-BR') : '---'}</span>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    <Card className="border-[1.5px] bg-amber-50/50 border-amber-200/50">
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-xs font-bold uppercase tracking-wider text-amber-700">Fluxo BPMN</CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-2">
+                        <div className="flex justify-between items-center text-sm">
+                          <span className="text-muted-foreground">Alçada Atual</span>
+                          <span className="font-bold text-amber-700">R$ {threshold.toLocaleString('pt-BR')}</span>
+                        </div>
+                        <div className="flex justify-between items-center text-sm">
+                          <span className="text-muted-foreground">Requer Aprovação</span>
+                          <Badge variant={isOverThreshold ? "warning" : "success"} className="h-5">
+                            {isOverThreshold ? "Sim" : "Não"}
+                          </Badge>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+
+                  <Card className="border-[1.5px]">
+
                    <CardHeader>
                      <CardTitle className="text-sm">Auditoria de Itens</CardTitle>
                    </CardHeader>
