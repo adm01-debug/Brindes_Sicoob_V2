@@ -372,7 +372,7 @@ export default function OrderDetailPage() {
 
                 {orderData.status !== 'escalated_to_board' && (
                   <>
-                    <Button variant="outline" className="border-amber-500 text-amber-600 hover:bg-amber-50" onClick={() => setIsEscalateDialogOpen(true)}>
+                    <Button variant="outline" className="border-status-production/50 text-status-production hover:bg-status-production/10" onClick={() => setIsEscalateDialogOpen(true)}>
                       <ArrowUpCircle className="mr-2 h-4 w-4" />
                       Escalar Diretoria
                     </Button>

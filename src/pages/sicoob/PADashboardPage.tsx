@@ -69,7 +69,7 @@ export default function PADashboardPage() {
           <Card className="border-[1.5px]">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium">Pedidos Ativos</CardTitle>
-              <Package className="h-4 w-4 text-blue-500" />
+              <Package className="h-4 w-4 text-status-transit" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{stats?.activeOrders}</div>
@@ -80,10 +80,10 @@ export default function PADashboardPage() {
           <Card className="border-[1.5px]">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium">Aguardando Singular</CardTitle>
-              <Clock className="h-4 w-4 text-amber-500" />
+              <Clock className="h-4 w-4 text-status-production" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-amber-600">{stats?.pendingApproval}</div>
+              <div className="text-2xl font-bold text-status-production">{stats?.pendingApproval}</div>
               <p className="text-xs text-muted-foreground mt-1">Pedidos em análise financeira</p>
             </CardContent>
           </Card>
@@ -175,8 +175,8 @@ export default function PADashboardPage() {
               </Button>
               <Button variant="outline" className="w-full justify-start gap-3 h-12" asChild>
                 <Link to="/relatorios/sicoob">
-                  <div className="w-6 h-6 rounded-full bg-blue-500/10 flex items-center justify-center">
-                    <Search className="h-3 w-3 text-blue-500" />
+                  <div className="w-6 h-6 rounded-full bg-status-transit/10 flex items-center justify-center">
+                    <Search className="h-3 w-3 text-status-transit" />
                   </div>
                   <span className="text-sm font-medium">Extrato Detalhado de Verba</span>
                 </Link>

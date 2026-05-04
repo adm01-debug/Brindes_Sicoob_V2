@@ -19,13 +19,13 @@ export const OrderHistoryDiff: React.FC<OrderHistoryDiffProps> = ({ oldValue, ne
     <div className="mt-2 grid grid-cols-2 gap-2 text-[10px] font-mono p-2 bg-muted/40 rounded border border-border/40">
       <div className="space-y-1">
         <span className="text-muted-foreground uppercase tracking-wider block">Antes</span>
-        <div className="bg-red-50 text-red-700 p-1.5 rounded line-through decoration-red-300 decoration-2">
+        <div className="bg-destructive/10 text-destructive p-1.5 rounded line-through decoration-destructive/30 decoration-2">
           {renderValue(oldValue)}
         </div>
       </div>
       <div className="space-y-1">
         <span className="text-muted-foreground uppercase tracking-wider block">Depois</span>
-        <div className="bg-green-50 text-green-700 p-1.5 rounded font-bold">
+        <div className="bg-status-delivered/10 text-status-delivered p-1.5 rounded font-bold">
           {renderValue(newValue)}
         </div>
       </div>
