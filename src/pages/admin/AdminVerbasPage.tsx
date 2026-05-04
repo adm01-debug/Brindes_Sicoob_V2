@@ -262,6 +262,8 @@ export default function AdminVerbasPage() {
               </CardContent>
             </Card>
           </TabsContent>
+
+          <TabsContent value="audit">
             <Card>
               <CardHeader>
                 <CardTitle>Histórico de Orçamentos</CardTitle>
