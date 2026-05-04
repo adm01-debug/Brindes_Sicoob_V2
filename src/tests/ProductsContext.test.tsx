@@ -111,9 +111,7 @@ describe("ProductsContext", () => {
       </ProductsProvider>
     );
 
-    await act(async () => {
-      vi.advanceTimersByTime(100);
-    });
+    await new Promise(resolve => setTimeout(resolve, 100));
 
     await waitFor(() => {
       expect(fetchPromobrindProducts).toHaveBeenCalledTimes(1);
