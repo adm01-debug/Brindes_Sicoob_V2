@@ -123,10 +123,10 @@ export default function PAWalletPage() {
           <Card className="border-[1.5px] shadow-sm">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium">Consumido</CardTitle>
-              <TrendingUp className="h-4 w-4 text-red-500" />
+              <TrendingUp className="h-4 w-4 text-destructive" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-red-600">{formatCurrency(budget?.current_spent || 0)}</div>
+              <div className="text-2xl font-bold text-destructive">{formatCurrency(budget?.current_spent || 0)}</div>
               <p className="text-xs text-muted-foreground mt-1">{spentPercent.toFixed(1)}% do limite utilizado</p>
             </CardContent>
           </Card>
@@ -211,17 +211,17 @@ export default function PAWalletPage() {
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm font-medium">
                     <span>Progresso de Consumo</span>
-                    <span className={cn(spentPercent > 90 ? "text-red-600" : "text-sicoob-green")}>{spentPercent.toFixed(1)}%</span>
+                    <span className={cn(spentPercent > 90 ? "text-destructive" : "text-sicoob-green")}>{spentPercent.toFixed(1)}%</span>
                   </div>
                   <Progress 
                     value={spentPercent} 
                     className="h-3" 
-                    indicatorClassName={spentPercent > 90 ? "bg-red-500" : "bg-sicoob-green"}
+                    indicatorClassName={spentPercent > 90 ? "bg-destructive" : "bg-sicoob-green"}
                   />
                 </div>
 
                 {spentPercent > 90 && (
-                  <Alert variant="destructive" className="bg-red-50 border-red-200 text-red-800">
+                  <Alert variant="destructive" className="bg-destructive/5 border-destructive/20 text-destructive">
                     <AlertCircle className="h-4 w-4" />
                     <AlertTitle>Limite Crítico</AlertTitle>
                     <AlertDescription>
@@ -251,9 +251,9 @@ export default function PAWalletPage() {
                         <div className="flex items-center gap-4">
                           <div className={cn(
                             "w-10 h-10 rounded-full flex items-center justify-center border",
-                            req.status === 'approved' ? "bg-green-50 border-green-200 text-green-600" : 
-                            req.status === 'rejected' ? "bg-red-50 border-red-200 text-red-600" : 
-                            "bg-amber-50 border-amber-200 text-amber-600"
+                            req.status === 'approved' ? "bg-status-delivered/10 border-status-delivered/20 text-status-delivered" : 
+                            req.status === 'rejected' ? "bg-destructive/10 border-destructive/20 text-destructive" : 
+                            "bg-status-production/10 border-status-production/20 text-status-production"
                           )}>
                             {req.status === 'approved' ? <CheckCircle2 className="h-5 w-5" /> : 
                              req.status === 'rejected' ? <X className="h-5 w-5" /> : 

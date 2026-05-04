@@ -109,9 +109,9 @@ export default function GestorAuditPage() {
                             variant="outline" 
                             className={
                               log.action === 'approve' 
-                                ? "bg-green-50 text-green-700 border-green-200 gap-1" 
+                                ? "bg-status-delivered/10 text-status-delivered border-status-delivered/20 gap-1" 
                                 : log.action === 'reject' 
-                                  ? "bg-red-50 text-red-700 border-red-200 gap-1"
+                                  ? "bg-destructive/10 text-destructive border-destructive/20 gap-1"
                                   : "gap-1"
                             }
                           >
