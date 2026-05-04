@@ -264,8 +264,9 @@ export async function fetchAndProcessStockData(): Promise<{
             ...variants[0],
             currentStock: productLevelStock,
             availableStock: calculateAvailableStock(productLevelStock, variants[0].reservedStock),
-            status: calculateStockStatus(productLevelStock, minStock),
-            daysUntilStockout: calculateDaysUntilStockout(productLevelStock),
+            const daysUntilStockout = calculateDaysUntilStockout(productLevelStock);
+            status: calculateStockStatus(productLevelStock, minStock, undefined, 0, daysUntilStockout),
+            daysUntilStockout,
           };
         } else {
           const availableStock = calculateAvailableStock(productLevelStock, 0);
