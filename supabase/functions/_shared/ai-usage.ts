@@ -210,6 +210,46 @@ export async function callAiWithTracking(options: {
 }
 
 /**
+ * Wraps callAiWithTracking with a list of fallback models.
+ * If the primary model fails (e.g. 503, 500, or capacity issues), it tries the next one.
+ */
+export async function callAiWithFallback(options: {
+  userId: string;
+  functionName: string;
+  models: string[];
+  requestBody: Record<string, unknown>;
+  apiKey: string;
+}): Promise<Response> {
+  const { userId, functionName, models, requestBody, apiKey } = options;
+  let lastError: Error | null = null;
+
+  for (const model of models) {
+    try {
+      const response = await callAiWithTracking({
+        userId,
+        functionName,
+        model,
+        requestBody,
+        apiKey,
+      });
+
+      // If response is OK or if it's a quota/auth error, we return (don't retry on user errors)
+      if (response.ok || response.status === 429 || response.status === 402 || response.status === 401) {
+        return response;
+      }
+      
+      console.warn(`[ai-usage] Model ${model} failed with status ${response.status}. Trying fallback...`);
+    } catch (error) {
+      console.error(`[ai-usage] Model ${model} threw error:`, error.message);
+      lastError = error;
+      if (error instanceof QuotaExceededError) throw error; // Quota is per user, not per model
+    }
+  }
+
+  throw lastError || new Error("All AI models failed");
+}
+
+/**
  * Update an existing AI usage log entry with actual results.
  */
 async function updateAiLog(logId: string | undefined, params: {
