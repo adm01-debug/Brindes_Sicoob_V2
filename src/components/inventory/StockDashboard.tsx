@@ -317,6 +317,9 @@ export function StockDashboard() {
             colorGroups={availableColorGroups}
             totalProducts={allProductStocks.length}
             filteredCount={productStocks.length}
+            alertTypes={availableAlertTypes}
+            currentAlertFilter={alertTypeFilter}
+            onUpdateAlertFilter={setAlertTypeFilter}
           />
         </CardContent>
       </Card>
