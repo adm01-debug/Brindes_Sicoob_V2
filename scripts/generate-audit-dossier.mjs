@@ -13,6 +13,7 @@ if (!supabaseUrl || !supabaseKey) {
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 async function getGitInfo(path) {
+  if (!path) return "N/A | N/A | N/A";
   try {
     const log = execSync(`git log -1 --format="%h | %an | %ad" -- ${path}`).toString().trim();
     return log || "N/A | N/A | N/A";
@@ -24,11 +25,20 @@ async function getGitInfo(path) {
 async function generateDossier() {
   console.log('📑 Gerando Dossiê de Auditoria Enterprise V5...');
 
-  const { data: rlsTables } = await supabase.rpc('check_tables_rls');
+  let rlsTables = [];
+  try {
+    const { data } = await supabase.rpc('check_tables_rls');
+    rlsTables = data || [];
+  } catch (e) {
+    console.warn('RPC check_tables_rls failed, using fallback empty list');
+  }
   
   let rlsSection = '| Tabela | RLS Habilitado | Último Commit (ID/Autor/Data) |\n| :--- | :--- | :--- |\n';
-  for (const table of (rlsTables || [])) {
-    const migrationFile = execSync(`grep -l "ALTER TABLE public.${table.relname} ENABLE ROW LEVEL SECURITY" supabase/migrations/*.sql | head -1`).toString().trim();
+  for (const table of rlsTables) {
+    let migrationFile = "";
+    try {
+      migrationFile = execSync(`grep -l "ALTER TABLE public.${table.relname} ENABLE ROW LEVEL SECURITY" supabase/migrations/*.sql | head -1`).toString().trim();
+    } catch { /* ignore */ }
     const gitInfo = await getGitInfo(migrationFile);
     rlsSection += `| ${table.relname} | ${table.relrowsecurity ? '✅' : '❌'} | ${gitInfo} |\n`;
   }
@@ -50,8 +60,8 @@ Este dossiê é gerado automaticamente via pipeline de CI para garantir a integr
 | Categoria | Base Legal | Controle Auditável | Prioridade | Status |
 | :--- | :--- | :--- | :--- | :--- |
 | **Acesso** | Consentimento | RLS por Cooperativa (Multi-tenant) | P0 | ✅ Ativo |
-| **Minimização** | Necessidade | Limitação de colunas em views `public` | P1 | ✅ Ativo |
-| **Retenção** | Obrigação Legal | Workflow de Cold Storage (`audit_log_archive`) | P1 | ✅ Ativo |
+| **Minimização** | Necessidade | Limitação de colunas em views public | P1 | ✅ Ativo |
+| **Retenção** | Obrigação Legal | Workflow de Cold Storage (audit_log_archive) | P1 | ✅ Ativo |
 | **Integridade** | Execução de Contrato | Precisão financeira 4 casas decimais | P0 | ✅ Ativo |
 
 ---
