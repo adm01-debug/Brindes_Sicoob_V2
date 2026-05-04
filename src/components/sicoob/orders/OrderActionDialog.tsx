@@ -48,6 +48,7 @@ export const OrderActionDialog = ({
             placeholder={placeholder} 
             value={value}
             onChange={(e) => onValueChange(e.target.value)}
+            className="min-h-[120px] focus-visible:ring-sicoob-green border-muted-foreground/20"
           />
         </div>
         <DialogFooter>
