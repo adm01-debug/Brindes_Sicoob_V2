@@ -251,8 +251,8 @@ export default function AdminVerbasPage() {
               <CardHeader className="flex flex-row items-center justify-between">
                 <div><CardTitle>Limites por PA</CardTitle><CardDescription>Gerencie as verbas mensais e limites de alçada</CardDescription></div>
                 <div className="flex gap-2">
-                  <Button variant="outline" onClick={exportBudgets} className="gap-2"><Download className="h-4 w-4" /> Exportar</Button>
-                  <Button onClick={() => { setEditingBudget(null); setIsFormOpen(true); }} className="gap-2"><Plus className="h-4 w-4" /> Nova Verba</Button>
+                  <Button variant="outline" onClick={exportBudgets} className="gap-2" aria-label="Exportar verbas para Excel"><Download className="h-4 w-4" /> Exportar</Button>
+                  <Button onClick={() => { setEditingBudget(null); setIsFormOpen(true); }} className="gap-2" aria-label="Criar nova verba mensal"><Plus className="h-4 w-4" /> Nova Verba</Button>
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
