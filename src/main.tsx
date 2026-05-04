@@ -5,6 +5,7 @@ import { registerServiceWorker } from "@/lib/sw-register";
 import { installGlobalErrorHandlers } from "@/lib/error-reporter";
 import { initSentry } from "@/lib/sentry";
 import EnhancedErrorBoundary from "@/components/errors/EnhancedErrorBoundary";
+import { Http412Inspector } from "@/components/debug/Http412Inspector";
 import "@/lib/diagnostics"; // Initialize diagnostics early
 import { setupPreviewAutoReload } from "@/lib/preview-auto-reload";
 import { installHttp412Interceptor } from "@/lib/http-412-logger";
