@@ -81,38 +81,109 @@ export function AppHealthDashboard() {
       data-testid="app-health-dashboard"
       className="space-y-3 sm:space-y-4 border border-border/60 rounded-xl p-3 sm:p-4 bg-card/40"
     >
-      {/* Header da seção */}
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <div className="flex items-center gap-2">
-          <Activity className="h-5 w-5 text-primary" />
-          <div>
-            <h2 className="font-display text-lg font-bold leading-tight">Saúde da Aplicação</h2>
-            <p className="text-[11px] text-muted-foreground">
-              KPIs de 4xx/5xx por rota, falha de webhooks e latência por edge function
-              (correlacionados por <code className="text-[10px]">X-Request-Id</code>).
-            </p>
+      {/* Dashboard de Saúde Sicoob OND-018 */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <Card className="lg:col-span-2 border-border/40 bg-gradient-to-br from-card to-muted/20 overflow-hidden relative">
+          <div className="absolute -right-12 -top-12 opacity-5 rotate-12">
+            <Heart className="h-48 w-48 text-sicoob-green" />
           </div>
-        </div>
-        <div className="flex items-center gap-2">
-          <ToggleGroup
-            type="single"
-            value={String(windowMinutes)}
-            onValueChange={(v) => v && setWindowMinutes(Number(v) as HealthWindow)}
-            size="sm"
-          >
-            {WINDOW_OPTIONS.map((opt) => (
-              <ToggleGroupItem key={opt.value} value={String(opt.value)} className="text-xs h-7 px-2">
-                {opt.label}
-              </ToggleGroupItem>
-            ))}
-          </ToggleGroup>
-          <Button variant="outline" size="sm" onClick={() => refetch()} disabled={isFetching}>
-            Atualizar
-          </Button>
-        </div>
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <div className="space-y-1">
+                <CardTitle className="text-xl font-display font-bold flex items-center gap-2">
+                  <Activity className="h-5 w-5 text-sicoob-green" />
+                  Ecossistema Sicoob Live
+                </CardTitle>
+                <CardDescription className="text-xs">Diagnóstico sistêmico em tempo real [OND-018-HEALTH]</CardDescription>
+              </div>
+              <Badge variant="outline" className={cn(
+                "h-6 px-3 gap-1.5 font-bold animate-in fade-in zoom-in duration-500",
+                localHealth.status === 'healthy' ? "bg-sicoob-green/10 text-sicoob-green border-sicoob-green/20" :
+                localHealth.status === 'degraded' ? "bg-amber-100 text-amber-700 border-amber-200" :
+                "bg-destructive/10 text-destructive border-destructive/20"
+              )}>
+                <div className={cn("h-2 w-2 rounded-full", 
+                  localHealth.status === 'healthy' ? "bg-sicoob-green animate-pulse" :
+                  localHealth.status === 'degraded' ? "bg-amber-500 animate-pulse" : "bg-destructive animate-ping"
+                )} />
+                {localHealth.status.toUpperCase()}
+              </Badge>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-3 gap-4">
+              <div className="space-y-1">
+                <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">Latência Média</p>
+                <p className="text-2xl font-display font-bold tabular-nums">{localHealth.latency}ms</p>
+                <div className="h-1 w-full bg-muted rounded-full overflow-hidden">
+                  <motion.div 
+                    initial={{ width: 0 }}
+                    animate={{ width: `${Math.min((localHealth.latency / 1000) * 100, 100)}%` }}
+                    className={cn("h-full", localHealth.latency > 500 ? "bg-amber-500" : "bg-sicoob-green")} 
+                  />
+                </div>
+              </div>
+              <div className="space-y-1">
+                <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">Taxa de Erro</p>
+                <p className="text-2xl font-display font-bold tabular-nums">{localHealth.errorRate}%</p>
+                <div className="h-1 w-full bg-muted rounded-full overflow-hidden">
+                  <motion.div 
+                    initial={{ width: 0 }}
+                    animate={{ width: `${Math.min(localHealth.errorRate * 5, 100)}%` }}
+                    className={cn("h-full", localHealth.errorRate > 5 ? "bg-destructive" : "bg-sicoob-green")} 
+                  />
+                </div>
+              </div>
+              <div className="space-y-1">
+                <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">Uptime Sessão</p>
+                <p className="text-2xl font-display font-bold tabular-nums">{Math.floor(localHealth.uptime / 60)}m {Math.floor(localHealth.uptime % 60)}s</p>
+                <p className="text-[9px] text-muted-foreground italic">Desde o carregamento inicial</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-border/40 flex flex-col justify-between p-4">
+          <div className="space-y-3">
+            <h3 className="text-xs font-bold uppercase text-muted-foreground flex items-center gap-2">
+              <ShieldCheck className="h-3.5 w-3.5 text-sicoob-green" />
+              Selo de Integridade OND-018
+            </h3>
+            <div className="p-3 rounded-lg bg-sicoob-green/5 border border-sicoob-green/10 flex items-start gap-3">
+              <Zap className="h-4 w-4 text-sicoob-green shrink-0 mt-0.5" />
+              <div>
+                <p className="text-[11px] font-bold text-sicoob-green-dark">Otimizações Ativas</p>
+                <p className="text-[10px] text-muted-foreground leading-tight">Interceptação de Fetch, Cache Inteligente e Validação BPMN em conformidade.</p>
+              </div>
+            </div>
+          </div>
+          <div className="pt-3 border-t border-border/40 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <ToggleGroup
+                type="single"
+                value={String(windowMinutes)}
+                onValueChange={(v) => v && setWindowMinutes(Number(v) as HealthWindow)}
+                size="sm"
+                className="scale-90"
+              >
+                {WINDOW_OPTIONS.map((opt) => (
+                  <ToggleGroupItem key={opt.value} value={String(opt.value)} className="text-xs h-7 px-2">
+                    {opt.label}
+                  </ToggleGroupItem>
+                ))}
+              </ToggleGroup>
+            </div>
+            <Button variant="ghost" size="sm" className="h-8 text-xs font-bold text-sicoob-green" onClick={() => refetch()} disabled={isFetching}>
+              <RefreshCw className={cn("h-3 w-3 mr-1.5", isFetching && "animate-spin")} />
+              Sync
+            </Button>
+          </div>
+        </Card>
       </div>
 
-      {/* KPI cards */}
+      <Separator className="bg-border/40" />
+
+      {/* KPI cards originais com estilo Sicoob */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {isLoading || !kpis ? (
           Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-24 w-full" />)
