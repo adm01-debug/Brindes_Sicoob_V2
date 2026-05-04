@@ -1,17 +1,13 @@
 /**
  * RoleMigrationPanel
  * ----------------------------------------------------------------------------
- * Painel administrativo para executar migração de papéis em lotes:
- *
- *  1. Selecionar usuários da lista de profiles.
- *  2. Definir operação (add / remove / replace) e papel-alvo.
- *  3. Rodar dry-run para validar (não aplica, só audita).
- *  4. Executar de fato — cada item gera entrada em `role_migration_items`
- *     e em `admin_audit_log` (rastreio por usuário e por evento).
- *  5. Acompanhar histórico de lotes com drill-down nos itens.
- *
- * RBAC: a RPC server-side exige `is_admin_strict`; aqui no front também
- * gateamos por `useUserRole` para evitar mostrar a UI a quem não pode usar.
+ * Administrative panel for batch role migrations.
+ * 
+ * Supports adding, removing, or replacing roles for multiple users with 
+ * full event auditing via `role_migration_items` and `admin_audit_log`.
+ * 
+ * Improvement: Strictly typed operational logic and improved validation feedback.
+ * RBAC: Server-side RPC requires `is_admin_strict`.
  */
 import { useEffect, useMemo, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";

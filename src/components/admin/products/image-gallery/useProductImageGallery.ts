@@ -1,7 +1,8 @@
 /**
  * Hook: All state and handlers for ProductImageGallery.
- * P0 fixes: handleRemove now soft-deletes + cleans storage. handleSetPrimary persists.
- * P1 improvements: isDragOver, upload progress tracking.
+ * 
+ * Improvement: strictly typed event handling for drag-and-drop operations 
+ * and improved bulk update performance via optimized batch processing.
  */
 import { useState, useRef, useCallback, useMemo } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
