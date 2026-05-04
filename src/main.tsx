@@ -6,6 +6,7 @@ import { installGlobalErrorHandlers } from "@/lib/error-reporter";
 import { initSentry } from "@/lib/sentry";
 import EnhancedErrorBoundary from "@/components/errors/EnhancedErrorBoundary";
 import "@/lib/diagnostics"; // Initialize diagnostics early
+import { setupPreviewAutoReload } from "@/lib/preview-auto-reload";
 import { injectRequestId } from "@/lib/request-id-injection";
 import { reportWebVitals } from "@/lib/telemetry/webVitals";
 import App from "./App.tsx";
@@ -23,6 +24,9 @@ injectRequestId();
 
 // Start Core Web Vitals monitoring
 reportWebVitals();
+
+// Inicializa auto-reload para erros de pré-condição (412) no preview
+setupPreviewAutoReload();
 
 const root = document.getElementById("root");
 
