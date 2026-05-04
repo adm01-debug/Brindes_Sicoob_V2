@@ -45,6 +45,16 @@ interface MainLayoutProps {
 export function MainLayout({ children }: MainLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const queryClient = useQueryClient();
+
+  const handleRefresh = useCallback(async () => {
+    // Invalidate all queries to trigger global refetch
+    await queryClient.refetchQueries();
+    // Small delay for UX feel
+    await new Promise(resolve => setTimeout(resolve, 300));
+  }, [queryClient]);
+
+  const { pullDistance, isRefreshing } = usePullToRefresh(handleRefresh);
   const location = useLocation();
   const isMockupGenerator = location.pathname === "/mockup-generator";
   const isHome = location.pathname === "/";
