@@ -27,7 +27,7 @@ import { InlineColorGroupFilter } from "@/components/filters/InlineColorGroupFil
 import { ExternalCategoryFilter } from "@/components/filters/ExternalCategoryFilter";
 import { DebouncedPriceInput } from "@/components/filters/DebouncedPriceInput";
 import { FilterSection } from "@/components/filters/filter-panel/FilterSection";
-import type { StockFilters, StockStatus } from "@/types/stock";
+import type { StockFilters, StockStatus, StockAlertType } from "@/types/stock";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface FilterOption {
