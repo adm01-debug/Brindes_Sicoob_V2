@@ -253,10 +253,11 @@ export function useVariantStock() {
     isLoading, isFetching, loadingProgress,
     productStocks: filteredProducts, allProductStocks: productStocks,
     summary, alerts, criticalAlerts, futureStock, filters, allColors,
-    availableCategories, availableSuppliers, availableColorGroups,
+    availableCategories, availableSuppliers, availableColorGroups, availableAlertTypes,
     fetchStockData, updateFilter, resetFilters, dismissAlert,
     dismissAllAlerts, dismissAlertsBySeverity, setFilters,
     getProductStock, getColorStock,
+    alertTypeFilter, setAlertTypeFilter,
   };
 }
 
