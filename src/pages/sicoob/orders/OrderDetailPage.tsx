@@ -271,13 +271,13 @@ export default function OrderDetailPage() {
     });
   };
 
-  const handleStatusUpdate = async (newStatus: any) => {
+  const handleStatusUpdate = async (newStatus: OrderStatus) => {
     if (!confirm(`Deseja realmente alterar o status do pedido para "${newStatus}"?`)) return;
     
     updateOrderStatusMutation.mutate({ 
       orderId: id!, 
       status: newStatus, 
-      currentStatus: orderData?.status 
+      currentStatus: orderData?.status as OrderStatus
     });
   };
 
