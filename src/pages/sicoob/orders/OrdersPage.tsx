@@ -267,6 +267,19 @@ export default function OrdersPage() {
     }
   };
 
+  const handleReorder = async (orderId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    try {
+      const newQuoteId = await sicoobOrderService.reorderOrder(orderId);
+      toast.success("Pedido duplicado!", {
+        description: "Um novo orçamento (rascunho) foi criado com os mesmos itens para revisão."
+      });
+      navigate(`/orcamentos/${newQuoteId}/editar`);
+    } catch (error: any) {
+      toast.error("Erro ao reordenar: " + error.message);
+    }
+  };
+
   const toggleSelectOrder = (id: string) => {
     setSelectedOrderIds(prev => 
       prev.includes(id) ? prev.filter(oid => oid !== id) : [...prev, id]
