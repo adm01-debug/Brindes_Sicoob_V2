@@ -80,58 +80,118 @@ export function CouponManager() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <div className="relative flex-1 max-w-sm">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input placeholder="Buscar por código..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-9" />
+    <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+      <div className="flex items-center justify-between">
+        <TabsList>
+          <TabsTrigger value="list" className="gap-2">
+            <Ticket className="h-4 w-4" /> Cupons Ativos
+          </TabsTrigger>
+          <TabsTrigger value="history" className="gap-2">
+            <History className="h-4 w-4" /> Histórico de Uso
+          </TabsTrigger>
+        </TabsList>
+        <div className="flex items-center gap-3">
+          <div className="relative w-64">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input placeholder="Buscar por código..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-9 h-9" />
+          </div>
+          <Button onClick={() => { setEditingCoupon(null); setIsFormOpen(true); }} className="gap-2 h-9">
+            <Plus className="h-4 w-4" /> Novo Cupom
+          </Button>
         </div>
-        <Button onClick={() => { setEditingCoupon(null); setIsFormOpen(true); }} className="gap-2">
-          <Plus className="h-4 w-4" /> Novo Cupom
-        </Button>
       </div>
 
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Código</TableHead>
-              <TableHead>Desconto</TableHead>
-              <TableHead>Vencimento</TableHead>
-              <TableHead>Uso</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="text-right">Ações</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {isLoading ? (
-              <TableRow><TableCell colSpan={6} className="text-center py-8">Carregando...</TableCell></TableRow>
-            ) : filtered.length === 0 ? (
-              <TableRow><TableCell colSpan={6} className="text-center py-8 text-muted-foreground">Nenhum cupom encontrado</TableCell></TableRow>
-            ) : (
-              filtered.map((c) => (
-                <TableRow key={c.id}>
-                  <TableCell className="font-mono font-bold text-primary">{c.code}</TableCell>
-                  <TableCell>
-                    {c.discount_type === 'percentage' ? `${c.discount_value}%` : `R$ ${c.discount_value.toLocaleString()}`}
-                  </TableCell>
-                  <TableCell>
-                    {c.expires_at ? new Date(c.expires_at).toLocaleDateString() : "Sem expiração"}
-                  </TableCell>
-                  <TableCell>
-                    {c.usage_count} / {c.usage_limit || "∞"}
-                  </TableCell>
-                  <TableCell><Badge variant={c.is_active ? "default" : "secondary"}>{c.is_active ? "Ativo" : "Inativo"}</Badge></TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex justify-end gap-2">
-                      <Button variant="ghost" size="icon" onClick={() => { setEditingCoupon(c); setIsFormOpen(true); }}><Pencil className="h-4 w-4" /></Button>
-                      <Button variant="ghost" size="icon" className="text-destructive" onClick={() => handleDelete(c.id)}><Trash2 className="h-4 w-4" /></Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </div>
+      <TabsContent value="list" className="mt-0">
+        <div className="rounded-md border bg-card">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Código</TableHead>
+                <TableHead>Desconto</TableHead>
+                <TableHead>Vencimento</TableHead>
+                <TableHead>Uso</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead className="text-right">Ações</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {isLoading ? (
+                <TableRow><TableCell colSpan={6} className="text-center py-8">Carregando...</TableCell></TableRow>
+              ) : filtered.length === 0 ? (
+                <TableRow><TableCell colSpan={6} className="text-center py-8 text-muted-foreground">Nenhum cupom encontrado</TableCell></TableRow>
+              ) : (
+                filtered.map((c) => (
+                  <TableRow key={c.id}>
+                    <TableCell className="font-mono font-bold text-primary">{c.code}</TableCell>
+                    <TableCell>
+                      {c.discount_type === 'percentage' ? `${c.discount_value}%` : `R$ ${c.discount_value.toLocaleString()}`}
+                    </TableCell>
+                    <TableCell>
+                      {c.expires_at ? new Date(c.expires_at).toLocaleDateString() : "Sem expiração"}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex flex-col gap-1">
+                        <span className="text-xs font-medium">{c.usage_count} / {c.usage_limit || "∞"}</span>
+                        <div className="w-20 h-1.5 bg-muted rounded-full overflow-hidden">
+                          <div 
+                            className="h-full bg-primary transition-all" 
+                            style={{ width: `${c.usage_limit ? Math.min((c.usage_count / c.usage_limit) * 100, 100) : 0}%` }}
+                          />
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell><Badge variant={c.is_active ? "default" : "secondary"}>{c.is_active ? "Ativo" : "Inativo"}</Badge></TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex justify-end gap-1">
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          className="h-8 w-8 text-muted-foreground"
+                          title="Duplicar"
+                          onClick={() => duplicateEntity.mutate(c.id)}
+                          disabled={duplicateEntity.isPending}
+                        >
+                          <Copy className="h-4 w-4" />
+                        </Button>
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          className="h-8 w-8"
+                          onClick={() => { setEditingCoupon(c); setIsFormOpen(true); }}
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          className="h-8 w-8 text-destructive" 
+                          onClick={() => handleDelete(c.id)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </div>
+      </TabsContent>
+
+      <TabsContent value="history" className="mt-0">
+        <div className="rounded-md border bg-card p-12 text-center space-y-3">
+          <div className="w-12 h-12 bg-muted rounded-full flex items-center justify-center mx-auto">
+            <History className="h-6 w-6 text-muted-foreground" />
+          </div>
+          <div>
+            <h3 className="font-medium">Histórico de Uso</h3>
+            <p className="text-sm text-muted-foreground max-w-xs mx-auto">
+              Em breve você poderá visualizar aqui o histórico detalhado de cada utilização dos cupons.
+            </p>
+          </div>
+        </div>
+      </TabsContent>
 
       <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
         <DialogContent className="sm:max-w-[500px]">
