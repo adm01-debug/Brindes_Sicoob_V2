@@ -11,6 +11,7 @@ export function setupPreviewAutoReload() {
   // Interceptar erros não tratados de carregamento de recursos
   window.addEventListener("error", (event) => {
     const error = event.error || event.message;
+    // Se o erro for de chunk ou contiver 412, tentamos o recovery
     if (isChunkLoadError(error) || String(error).includes("412")) {
       logger.warn("[preview-reload] Erro detectado no window.error", { error });
       attemptChunkRecovery(error);
@@ -26,13 +27,15 @@ export function setupPreviewAutoReload() {
     }
   });
 
-  // Monitorar mudanças de visibilidade (re-validar quando o usuário volta para a aba)
-  document.addEventListener("visibilitychange", () => {
-    if (document.visibilityState === "visible") {
-      // Se houver algum indicativo de 412 no console ou estado, podemos forçar aqui
-      // mas por enquanto confiamos nos interceptadores de erro
-    }
-  });
+  // Forçar limpeza agressiva se detectarmos falha de handshake no bridge
+  if (window.location.search.includes("error=412")) {
+     logger.warn("[preview-reload] Detectado erro 412 na URL, limpando armazenamento...");
+     sessionStorage.clear();
+     // Remove cache-bust para evitar loop infinito na URL se o hard reload falhar
+     const cleanUrl = new URL(window.location.href);
+     cleanUrl.searchParams.delete("error");
+     window.history.replaceState({}, "", cleanUrl.toString());
+  }
 
   logger.info("[preview-reload] Sistema de auto-reload para Erro 412 inicializado.");
 }
