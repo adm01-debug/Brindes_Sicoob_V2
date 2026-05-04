@@ -574,11 +574,18 @@ export default function OrdersPage() {
               <Card 
                 key={order.id} 
                 className={cn(
-                  "hover:shadow-md transition-shadow cursor-pointer border-[1.5px] relative group",
-                  selectedOrderIds.includes(order.id) ? "border-sicoob-green bg-sicoob-green/5 shadow-sm" : ""
+                  "hover:shadow-lg transition-all duration-300 cursor-pointer border-[1.5px] relative group overflow-hidden",
+                  selectedOrderIds.includes(order.id) ? "border-sicoob-green bg-sicoob-green/5 shadow-sm" : "hover:border-sicoob-green/40 hover:-translate-y-1"
                 )} 
                 onClick={() => navigate(`/sicoob/pedidos/${order.id}`)}
               >
+                {/* Indicador visual de prioridade no topo do card */}
+                {order.sla_status === 'critical' && (
+                  <div className="absolute top-0 left-0 w-full h-1 bg-destructive animate-pulse" />
+                )}
+                {order.status === 'escalated_to_board' && (
+                  <div className="absolute top-0 left-0 w-full h-1 bg-amber-500" />
+                )}
                 <div 
                   className={cn(
                     "absolute top-3 left-3 z-10 opacity-0 group-hover:opacity-100 transition-opacity",
