@@ -34,6 +34,11 @@ import { ptBR } from "date-fns/locale";
 export default function GestorApprovalsPage() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const [activeTab, setActiveTab] = useState("pending");
+  const [dateRange, setDateRange] = useState<{ from: Date | undefined; to: Date | undefined }>({
+    from: undefined,
+    to: undefined
+  });
 
   const { data: pendingOrders, isLoading } = useQuery({
     queryKey: ["pending_approvals_list"],
@@ -51,6 +56,62 @@ export default function GestorApprovalsPage() {
       return data;
     }
   });
+
+  const { data: approvalHistory, isLoading: isLoadingHistory } = useQuery({
+    queryKey: ["approval_history_list", dateRange],
+    queryFn: async () => {
+      let query = supabase
+        .from("order_approval_history")
+        .select(`
+          *,
+          order:order_id(order_number, client_name, client_company),
+          approver:approver_id(full_name, email)
+        `)
+        .order("created_at", { ascending: false });
+
+      if (dateRange.from) {
+        query = query.gte("created_at", dateRange.from.toISOString());
+      }
+      if (dateRange.to) {
+        query = query.lte("created_at", dateRange.to.toISOString());
+      }
+      
+      const { data, error } = await query;
+      if (error) throw error;
+      return data;
+    }
+  });
+
+  const exportToCSV = () => {
+    if (!approvalHistory || approvalHistory.length === 0) {
+      toast.error("Nenhum dado para exportar.");
+      return;
+    }
+
+    const headers = ["ID Pedido", "Data", "Decisão", "Subtotal", "Limite na Época", "Aprovador", "Motivo"];
+    const rows = approvalHistory.map(h => [
+      h.order?.order_number || h.order_id,
+      format(new Date(h.created_at), "dd/MM/yyyy HH:mm"),
+      h.decision === 'approved' ? 'Aprovado' : 'Reprovado',
+      h.subtotal_at_time,
+      h.threshold_at_time || "N/A",
+      h.approver?.full_name || h.approver?.email || "N/A",
+      h.reason || ""
+    ]);
+
+    const csvContent = [
+      headers.join(","),
+      ...rows.map(row => row.join(","))
+    ].join("\n");
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.setAttribute("href", url);
+    link.setAttribute("download", `historico_alçadas_${format(new Date(), "yyyy-MM-dd")}.csv`);
+    link.click();
+    toast.success("Histórico exportado com sucesso!");
+  };
 
   const approveMutation = useMutation({
     mutationFn: async (orderId: string) => {
