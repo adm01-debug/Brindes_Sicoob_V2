@@ -271,6 +271,9 @@ export default function AdminUsuariosPage() {
           <TabsContent value="sicoob-hierarchy">
             <SicoobHierarchyTab />
           </TabsContent>
+          <TabsContent value="system-config">
+            <SystemFeatureToggles />
+          </TabsContent>
         </Tabs>
 
         {/* Dialogs */}
