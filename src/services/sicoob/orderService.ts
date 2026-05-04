@@ -235,5 +235,45 @@ export const sicoobOrderService = {
     });
 
     return { successes, failures };
+  },
+
+  async reorderOrder(orderId: string): Promise<string> {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error("Usuário não autenticado");
+
+    const order = await this.getOrderById(orderId);
+    const items = await this.getOrderItems(orderId);
+
+    const { data: profile } = await supabase.from("profiles").select("organization_id").eq("id", user.id).single();
+
+    // Create a new quote from this sicoob order
+    const { data: newQuote, error: qErr } = await supabase.from("quotes").insert({
+      client_id: order.pa_id,
+      client_name: (order as any).pa?.nome || order.pa_id,
+      status: 'draft',
+      notes: `Recompra do pedido Sicoob #${order.order_number || order.id.slice(0, 8)}`,
+      singular_id: order.cooperative_id,
+      organization_id: profile?.organization_id || order.pa_id,
+      total: order.total_amount,
+      subtotal: order.total_amount,
+    }).select("id").single();
+
+    if (qErr) throw qErr;
+
+    if (items.length > 0) {
+      const quoteItems = items.map(it => ({
+        quote_id: newQuote.id,
+        product_id: it.product_id,
+        product_sku: it.product_sku,
+        product_name: it.product_name,
+        product_image_url: it.product_image_url,
+        quantity: it.quantity,
+        unit_price: it.unit_price,
+      }));
+      const { error: iErr } = await supabase.from("quote_items").insert(quoteItems);
+      if (iErr) throw iErr;
+    }
+
+    return newQuote.id;
   }
 };
