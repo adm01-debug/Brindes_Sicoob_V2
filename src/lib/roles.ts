@@ -1,13 +1,33 @@
 /**
  * Configuração canônica de roles para a UI.
  *
- * Hierarquia oficial: dev > supervisor > vendedor (=agente no UI).
- * 'admin' e 'manager' são aliases legados — exibidos como Supervisor.
+ * Hierarquia oficial SICOOB: dev > gestor_compras > comprador_singular > gerente_pa > comprador_pac > agente.
+ * 'vendedor' e 'supervisor' são mapeados conforme o contexto.
  */
 import type { LucideIcon } from "lucide-react";
-import { Code2, ShieldCheck, User, Landmark, Building2, Briefcase } from "lucide-react";
+import { 
+  Code2, 
+  ShieldCheck, 
+  User, 
+  Landmark, 
+  Building2, 
+  Briefcase,
+  ShoppingCart,
+  ShieldAlert,
+  Users
+} from "lucide-react";
 
-export type AppRole = "dev" | "supervisor" | "vendedor" | "admin" | "manager" | "gestor_singular" | "gestor_pa";
+export type AppRole = 
+  | "dev" 
+  | "gestor_compras" 
+  | "comprador_singular" 
+  | "gerente_pa" 
+  | "comprador_pac" 
+  | "agente"
+  | "vendedor" 
+  | "supervisor" 
+  | "admin" 
+  | "manager";
 
 export type RoleVisual = {
   /** Rótulo exibido ao usuário (sempre em português). */
@@ -22,13 +42,55 @@ export type RoleVisual = {
   description: string;
 };
 
-export const ROLE_VISUAL: Record<AppRole, RoleVisual> = {
+export const ROLE_VISUAL: Record<string, RoleVisual> = {
   dev: {
-    label: "Dev",
+    label: "Desenvolvedor",
     Icon: Code2,
     variant: "default",
     className: "bg-reward text-reward-foreground border-reward",
     description: "Acesso técnico total: integrações, chaves MCP e auditoria.",
+  },
+  gestor_compras: {
+    label: "Gestor de Compras",
+    Icon: ShieldAlert,
+    variant: "default",
+    className: "bg-sicoob-green text-white border-sicoob-green",
+    description: "Gestão estratégica centralizada de compras e fornecedores.",
+  },
+  comprador_singular: {
+    label: "Gestor Singular",
+    Icon: Landmark,
+    variant: "default",
+    className: "bg-sicoob-green text-white border-sicoob-green",
+    description: "Gestão estratégica da Cooperativa Singular.",
+  },
+  gerente_pa: {
+    label: "Gerente PA",
+    Icon: Building2,
+    variant: "secondary",
+    className: "bg-sicoob-green-light/20 text-sicoob-green-dark border-sicoob-green-light/30",
+    description: "Gestão operacional do Ponto de Atendimento.",
+  },
+  comprador_pac: {
+    label: "Comprador PAC",
+    Icon: ShoppingCart,
+    variant: "outline",
+    className: "border-primary/30 text-primary bg-primary/5",
+    description: "Responsável por compras e orçamentos do PA.",
+  },
+  agente: {
+    label: "Agente",
+    Icon: User,
+    variant: "secondary",
+    className: "bg-secondary/15 text-secondary border-secondary/20",
+    description: "Cria orçamentos e atende clientes dentro de sua alçada.",
+  },
+  vendedor: {
+    label: "Vendedor",
+    Icon: Users,
+    variant: "secondary",
+    className: "bg-secondary/15 text-secondary border-secondary/20",
+    description: "Vendedor focado em atendimento comercial.",
   },
   supervisor: {
     label: "Supervisor",
@@ -36,28 +98,6 @@ export const ROLE_VISUAL: Record<AppRole, RoleVisual> = {
     variant: "default",
     className: "bg-primary text-primary-foreground border-primary",
     description: "Aprova orçamentos e descontos, gerencia equipe e operação.",
-  },
-  vendedor: {
-    label: "Agente",
-    Icon: User,
-    variant: "secondary",
-    className: "bg-secondary/15 text-secondary border-secondary/20",
-    description: "Cria orçamentos e atende clientes dentro de sua alçada.",
-  },
-  // ── SICOOB Specific Roles ──
-  gestor_singular: {
-    label: "Gestor Singular",
-    Icon: Landmark,
-    variant: "default",
-    className: "bg-sicoob-green text-white border-sicoob-green",
-    description: "Gestão estratégica da Cooperativa Singular.",
-  },
-  gestor_pa: {
-    label: "Gestor PA",
-    Icon: Building2,
-    variant: "secondary",
-    className: "bg-sicoob-green-light/20 text-sicoob-green-dark border-sicoob-green-light/30",
-    description: "Gestão operacional do Ponto de Atendimento.",
   },
   // ── Aliases legados ──
   admin: {
@@ -79,11 +119,12 @@ export const ROLE_VISUAL: Record<AppRole, RoleVisual> = {
 /** Retorna o rótulo amigável de uma role (com fallback seguro). */
 export function getRoleLabel(role: string | null | undefined): string {
   if (!role) return "Agente";
-  return ROLE_VISUAL[role as AppRole]?.label ?? "Agente";
+  return ROLE_VISUAL[role]?.label ?? "Agente";
 }
 
 /** Retorna a configuração visual completa (com fallback para Agente). */
 export function getRoleVisual(role: string | null | undefined): RoleVisual {
-  if (!role) return ROLE_VISUAL.vendedor;
-  return ROLE_VISUAL[role as AppRole] ?? ROLE_VISUAL.vendedor;
+  const visual = role ? ROLE_VISUAL[role] : undefined;
+  if (!visual) return ROLE_VISUAL.agente;
+  return visual;
 }
