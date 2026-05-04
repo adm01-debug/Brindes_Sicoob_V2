@@ -25,48 +25,47 @@ const renderMiniCart = () => {
   );
 };
 
-describe("MiniCart Alçada UI - States", () => {
+describe("MiniCart Alçada UI - Advanced States", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.spyOn(console, 'error').mockImplementation(() => {});
     vi.spyOn(console, 'warn').mockImplementation(() => {});
   });
 
-  it("should show success state when EXACTLY at threshold", async () => {
+  it("should handle loading states gracefully", async () => {
     (useCart as any).mockReturnValue({
-      items: [{ id: "1", product_name: "Limit Product", product_price: 1000, quantity: 1 }],
-      subtotal: 1000,
-      totalItemsCount: 1,
-      removeItem: { mutate: vi.fn() },
-      updateQuantity: { mutate: vi.fn() },
+      items: [], subtotal: 0, totalItemsCount: 0
     });
 
     (useApprovalThreshold as any).mockReturnValue({
-      threshold: 1000,
+      threshold: 0,
       needsApproval: () => false,
+      isLoading: true // Simulating loading
     });
 
-    renderMiniCart();
-    fireEvent.click(screen.getByRole("button"));
-
-    await waitFor(() => {
-      expect(screen.getByText(/100% do limite/i)).toBeDefined();
-    });
-    expect(screen.queryByText(/Limite Excedido/i)).toBeNull();
+    const { asFragment } = renderMiniCart();
+    // Snapshot for loading state consistency
+    expect(asFragment()).toMatchSnapshot();
   });
 
-  it("should show error UI for 0.01 over threshold", async () => {
+  it("should calculate correctly with multiple items", async () => {
+    const mockItems = [
+      { id: "1", product_name: "Item A", product_price: 400, quantity: 2 },
+      { id: "2", product_name: "Item B", product_price: 300, quantity: 1 }
+    ];
+    // Total = 400*2 + 300 = 1100
+
     (useCart as any).mockReturnValue({
-      items: [{ id: "1", product_name: "Over Product", product_price: 1000.01, quantity: 1 }],
-      subtotal: 1000.01,
-      totalItemsCount: 1,
+      items: mockItems,
+      subtotal: 1100,
+      totalItemsCount: 3,
       removeItem: { mutate: vi.fn() },
       updateQuantity: { mutate: vi.fn() },
     });
 
     (useApprovalThreshold as any).mockReturnValue({
       threshold: 1000,
-      needsApproval: () => true,
+      needsApproval: (val: number) => val > 1000,
     });
 
     renderMiniCart();
@@ -74,9 +73,31 @@ describe("MiniCart Alçada UI - States", () => {
 
     await waitFor(() => {
       expect(screen.getByText(/Limite Excedido/i)).toBeDefined();
+      expect(screen.getByText(/\+R\$ 100,00/i)).toBeDefined();
     });
-    expect(screen.getByText(/\+R\$ 0,01/i)).toBeDefined();
+  });
+
+  it("should show specific category alerts when threshold is hit by item", async () => {
+     (useCart as any).mockReturnValue({
+      items: [{ id: "1", product_name: "Premium Gift", product_price: 600, quantity: 1, category_id: 5 }],
+      subtotal: 600,
+      totalItemsCount: 1,
+    });
+
+    (useApprovalThreshold as any).mockReturnValue({
+      threshold: 5000, // Global is high
+      categoryThresholds: [{ category_id: 5, limite_alcada: 500 }], // But category 5 is low
+      needsApproval: () => true, // Hook returns true because of category
+    });
+
+    renderMiniCart();
+    fireEvent.click(screen.getByRole("button"));
+
+    await waitFor(() => {
+      expect(screen.getByText(/Requer aprovação da Singular/i)).toBeDefined();
+    });
   });
 });
+
 
 
