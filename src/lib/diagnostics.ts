@@ -163,6 +163,6 @@ class DiagnosticsManager {
 
 export const diagnostics = new DiagnosticsManager();
 // Skip fetch interceptor during development/preview to avoid possible side effects with the bridge
-if (import.meta.env.PROD) {
+if (import.meta.env.PROD && !import.meta.env.VITE_LOVABLE_PREVIEW) {
   diagnostics.setupFetchInterceptor();
 }
