@@ -25,6 +25,9 @@ export default function AdminVerbasPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingBudget, setEditingBudget] = useState<any>(null);
+  const [isCategoryFormOpen, setIsCategoryFormOpen] = useState(false);
+  const [newCategoryThreshold, setNewCategoryThreshold] = useState({ pa_id: '', category_id: '', limite_alcada: 0 });
+
   
   // Budget alert settings
   const [alertConfig, setAlertConfig] = useState({
