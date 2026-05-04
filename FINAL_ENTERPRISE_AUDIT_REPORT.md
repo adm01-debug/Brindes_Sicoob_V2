@@ -29,14 +29,16 @@ Este dossiê consolida a auditoria fim-a-fim do ecossistema **PromoGifts Sicoob*
 
 ## 3. CHECKLIST AUDITÁVEL (CONFORMIDADE)
 
-| Item | Critério de Aceitação | Prioridade | Status |
+| Item | Critério de Aceitação Objetivo | Prioridade | Status |
 | :--- | :--- | :--- | :--- |
-| **Multi-Tenancy** | Separação física de dados por cooperativa via RLS. | P1 | ✅ Implementado |
-| **Alçadas Sicoob** | Workflow de aprovação PA -> Singular -> Central. | P1 | ✅ Implementado |
-| **Auditoria** | Log imutável de todas as ações administrativas. | P2 | ✅ Implementado |
-| **Resiliência AI** | Fallback automático para evitar downtime comercial. | P2 | ✅ Implementado |
-| **Acessibilidade** | Score WCAG > 90% em componentes de fluxo crítico. | P3 | ✅ Implementado |
-| **Blockchain Log** | Assinatura digital de logs via Ledger externo. | P4 | 📅 Planejado |
+| **Multi-Tenancy** | Bloqueio de 100% de acesso cross-org em `quotes` e `orders` validado via script. | P0 | ✅ Implementado |
+| **Alçadas Sicoob** | Logs de auditoria gerados para cada aprovação/reprovação com timestamp imutável. | P0 | ✅ Implementado |
+| **Hardening de BD** | RPC `check_tables_rls` retorna 0 tabelas sem Row Level Security em `public`. | P0 | ✅ Implementado |
+| **Integridade 4-Dec** | Tabelas de precificação usam `NUMERIC(14,4)` ou superior. | P1 | ✅ Implementado |
+| **Resiliência AI** | Latência de fallback < 5s em caso de indisponibilidade do provedor principal. | P1 | ✅ Implementado |
+| **Acessibilidade** | Contraste AA (4.5:1) e semântica ARIA em todos os inputs de orçamento. | P1 | ✅ Implementado |
+| **Cold Storage** | Job de arquivamento move registros > 24 meses sem perda de relacionamentos. | P2 | ✅ Implementado |
+| **Blockchain Log** | Assinatura digital de logs via Ledger externo (Immutable Audit Trail). | P3 | 📅 Planejado |
 
 ---
 
