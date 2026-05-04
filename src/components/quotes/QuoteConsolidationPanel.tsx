@@ -233,44 +233,92 @@ export function QuoteConsolidationPanel({
             <Table>
               <TableHeader>
                 <TableRow className="bg-muted/50">
-                  <TableHead>Produto / SKU</TableHead>
-                  <TableHead className="text-center">Qtd Total</TableHead>
-                  <TableHead className="text-center">Preço Médio</TableHead>
-                  <TableHead className="text-center">Total</TableHead>
+                  <TableHead className="w-10"></TableHead>
+                  <TableHead className="cursor-pointer hover:text-primary transition-colors" onClick={() => handleSort('product_name')}>
+                    <div className="flex items-center gap-2">Produto / SKU <ArrowUpDown className="h-3 w-3" /></div>
+                  </TableHead>
+                  <TableHead className="text-center cursor-pointer hover:text-primary transition-colors" onClick={() => handleSort('total_quantity')}>
+                    <div className="flex items-center justify-center gap-2">Qtd Total <ArrowUpDown className="h-3 w-3" /></div>
+                  </TableHead>
+                  <TableHead className="text-center cursor-pointer hover:text-primary transition-colors" onClick={() => handleSort('average_price')}>
+                    <div className="flex items-center justify-center gap-2">Preço Médio <ArrowUpDown className="h-3 w-3" /></div>
+                  </TableHead>
+                  <TableHead className="text-center cursor-pointer hover:text-primary transition-colors" onClick={() => handleSort('total_value')}>
+                    <div className="flex items-center justify-center gap-2">Total <ArrowUpDown className="h-3 w-3" /></div>
+                  </TableHead>
                   <TableHead className="text-right">Origens</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {consolidatedData.items.map((item, index) => (
-                  <TableRow key={index} className="hover:bg-muted/30">
-                    <TableCell>
-                      <div className="flex flex-col">
-                        <span className="font-medium text-sm">{item.product_name}</span>
-                        {item.product_sku && (
-                          <span className="text-[10px] font-mono text-muted-foreground">SKU: {item.product_sku}</span>
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-center font-semibold">
-                      {item.total_quantity}
-                    </TableCell>
-                    <TableCell className="text-center text-sm">
-                      {formatCurrency(item.average_price)}
-                    </TableCell>
-                    <TableCell className="text-center font-bold text-primary">
-                      {formatCurrency(item.total_value)}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex flex-wrap justify-end gap-1">
-                        {item.sources.map((source, sIdx) => (
-                          <Badge key={sIdx} variant="outline" className="text-[9px] h-4 px-1 bg-muted/20">
-                            #{source}
+                {consolidatedData.items.map((item) => {
+                  const key = item.product_sku || item.product_name;
+                  const isExpanded = expandedItems.includes(key);
+                  
+                  const itemSources = quotes.filter(q => 
+                    q.items?.some(i => (i.product_sku || i.product_name) === key)
+                  ).map(q => ({
+                    number: q.quote_number,
+                    qty: q.items?.find(i => (i.product_sku || i.product_name) === key)?.quantity || 0,
+                    price: q.items?.find(i => (i.product_sku || i.product_name) === key)?.unit_price || 0,
+                    client: q.client_name || q.client_company
+                  }));
+
+                  return (
+                    <React.Fragment key={key}>
+                      <TableRow className="hover:bg-muted/30 cursor-pointer" onClick={() => toggleExpand(key)}>
+                        <TableCell>
+                          {isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex flex-col">
+                            <span className="font-medium text-sm">{item.product_name}</span>
+                            {item.product_sku && (
+                              <span className="text-[10px] font-mono text-muted-foreground">SKU: {item.product_sku}</span>
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-center font-semibold">
+                          {item.total_quantity}
+                        </TableCell>
+                        <TableCell className="text-center text-sm">
+                          {formatCurrency(item.average_price)}
+                        </TableCell>
+                        <TableCell className="text-center font-bold text-primary">
+                          {formatCurrency(item.total_value)}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <Badge variant="secondary" className="text-[9px] h-4 px-1">
+                            {item.sources.length} orçamentos
                           </Badge>
-                        ))}
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                        </TableCell>
+                      </TableRow>
+                      {isExpanded && (
+                        <TableRow className="bg-muted/10 border-l-2 border-l-primary/50">
+                          <TableCell colSpan={6} className="p-0">
+                            <div className="p-4 space-y-3 animate-in fade-in slide-in-from-top-1 duration-200">
+                              <h4 className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest px-2">Detalhamento por Origem</h4>
+                              <div className="grid grid-cols-1 gap-2">
+                                {itemSources.map((source, sIdx) => (
+                                  <div key={sIdx} className="flex items-center justify-between text-xs p-2 rounded bg-background border border-border/40">
+                                    <div className="flex flex-col gap-0.5">
+                                      <span className="font-semibold text-primary">#{source.number}</span>
+                                      <span className="text-[10px] text-muted-foreground">{source.client}</span>
+                                    </div>
+                                    <div className="flex gap-6 text-[11px]">
+                                      <span>Qtd: <strong>{source.qty}</strong></span>
+                                      <span>Preço: <strong>{formatCurrency(source.price)}</strong></span>
+                                      <span>Total: <strong>{formatCurrency(source.qty * source.price)}</strong></span>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </React.Fragment>
+                  );
+                })}
               </TableBody>
             </Table>
           </div>
