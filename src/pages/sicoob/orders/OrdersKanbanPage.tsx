@@ -1,8 +1,10 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useCallback, useRef } from "react";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { PageSEO } from "@/components/seo/PageSEO";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import useLocalStorageState from "use-local-storage-state";
 import {
   Select,
   SelectContent,
@@ -16,11 +18,22 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { ArrowLeft, LayoutGrid, List, Plus, Lock, GripVertical, AlertTriangle } from "lucide-react";
+import { 
+  ArrowLeft, 
+  LayoutGrid, 
+  List, 
+  Plus, 
+  Lock, 
+  GripVertical, 
+  AlertTriangle, 
+  Search, 
+  Filter,
+  RefreshCw,
+  Zap
+} from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
-import { useSicoobOrders } from "@/hooks/sicoob/useSicoobOrder"; // Assuming this exists based on common pattern
 import { sicoobOrderService } from "@/services/sicoob/orderService";
 import { OrderStatus, ORDER_STATUS_CONFIG, ORDER_STATUS_OPTIONS, canSicoobTransitionTo } from "@/types/sicoob/orders";
 import {
@@ -33,8 +46,12 @@ import {
   DragOverlay,
   type DragEndEvent,
   type DragStartEvent,
+  defaultDropAnimationSideEffects,
+  type DropAnimation,
 } from "@dnd-kit/core";
 import { cn } from "@/lib/utils";
+import { Input } from "@/components/ui/input";
+import { motion, AnimatePresence } from "framer-motion";
 
 // ---------- Domain types ----------
 type SicoobRole = "comprador" | "supervisor" | "gestor" | "logistica";
