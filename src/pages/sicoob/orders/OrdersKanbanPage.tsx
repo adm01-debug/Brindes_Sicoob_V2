@@ -218,10 +218,29 @@ export function DroppableColumn({ column, isOver, invalidTarget, children, count
 // ---------- Page ----------
 export default function OrdersKanbanPage() {
   const navigate = useNavigate();
-  const [orders, setOrders] = useState<OrderCard[]>(INITIAL_ORDERS);
-  const [role, setRole] = useState<SicoobRole>("gestor");
+  const { profile, isSupervisorOrAbove, isGerentePa } = useAuth();
+  const [orders, setOrders] = useState<OrderCard[]>([]);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [overColumn, setOverColumn] = useState<StatusId | null>(null);
+
+  // Fetch real orders
+  const { data: realOrders, isLoading } = useQuery({
+    queryKey: ["sicoob_orders_list_kanban"],
+    queryFn: () => sicoobOrderService.listOrders()
+  });
+
+  useEffect(() => {
+    if (realOrders) {
+      setOrders(realOrders.map(o => ({
+        id: o.id,
+        order_number: o.order_number,
+        pa: o.pa?.nome || "PA Não Identificado",
+        status: o.status,
+        total: o.total_amount,
+        sla_status: o.sla_status
+      })));
+    }
+  }, [realOrders]);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
@@ -235,17 +254,16 @@ export default function OrdersKanbanPage() {
   const invalidOver = useMemo(() => {
     if (!activeOrder || !overColumn) return false;
     if (activeOrder.status === overColumn) return false;
-    return (
-      !isTransitionAllowed(activeOrder.status, overColumn) ||
-      !canRoleMove(role, activeOrder.status, overColumn)
-    );
-  }, [activeOrder, overColumn, role]);
+    
+    // Check BPMN transition rules from common service
+    return !canSicoobTransitionTo(activeOrder.status, overColumn);
+  }, [activeOrder, overColumn]);
 
   const handleDragStart = (e: DragStartEvent) => {
     setActiveId(String(e.active.id));
   };
 
-  const handleDragEnd = (e: DragEndEvent) => {
+  const handleDragEnd = async (e: DragEndEvent) => {
     const orderId = String(e.active.id);
     const targetCol = e.over ? (String(e.over.id) as StatusId) : null;
     setActiveId(null);
@@ -256,37 +274,45 @@ export default function OrdersKanbanPage() {
     if (!order) return;
     if (order.status === targetCol) return;
 
-    if (!isTransitionAllowed(order.status, targetCol)) {
-      const fromLabel = COLUMNS.find((c) => c.id === order.status)?.title;
-      const toLabel = COLUMNS.find((c) => c.id === targetCol)?.title;
-      toast.error("Transição inválida", {
-        description: `Não é permitido mover de "${fromLabel}" para "${toLabel}".`,
+    if (!canSicoobTransitionTo(order.status, targetCol)) {
+      toast.error("Transição BPMN Inválida", {
+        description: `O status "${ORDER_STATUS_CONFIG[order.status].label}" não pode avançar diretamente para "${ORDER_STATUS_CONFIG[targetCol].label}".`,
       });
       return;
     }
 
-    if (!canRoleMove(role, order.status, targetCol)) {
-      toast.error("Sem permissão", {
-        description: `Seu papel (${ROLE_LABEL[role]}) não pode executar esta transição.`,
-      });
-      return;
-    }
+    try {
+      // Optimistic update
+      setOrders((prev) =>
+        prev.map((o) => (o.id === orderId ? { ...o, status: targetCol } : o)),
+      );
 
-    setOrders((prev) =>
-      prev.map((o) => (o.id === orderId ? { ...o, status: targetCol } : o)),
-    );
-    toast.success("Status atualizado", {
-      description: `Pedido #${orderId} movido para "${
-        COLUMNS.find((c) => c.id === targetCol)?.title
-      }".`,
-    });
+      await sicoobOrderService.updateOrderStatus(orderId, targetCol, order.status, "Movido via Kanban");
+      
+      toast.success("Status Atualizado", {
+        description: `Pedido #${order.order_number || orderId.slice(0, 8)} movido para "${ORDER_STATUS_CONFIG[targetCol].label}".`,
+      });
+    } catch (err: any) {
+      // Rollback on error
+      if (realOrders) {
+         setOrders(realOrders.map(o => ({
+          id: o.id,
+          order_number: o.order_number,
+          pa: o.pa?.nome || "PA Não Identificado",
+          status: o.status,
+          total: o.total_amount,
+          sla_status: o.sla_status
+        })));
+      }
+      toast.error("Falha na transição", { description: err.message });
+    }
   };
 
   return (
     <MainLayout>
       <PageSEO
-        title="Kanban de Pedidos Sicoob"
-        description="Gestão visual de pedidos Sicoob."
+        title="Fluxo Kanban Sicoob"
+        description="Gestão visual do funil de pedidos Sicoob."
         path="/sicoob/pedidos/kanban"
         noIndex
       />
@@ -299,38 +325,19 @@ export default function OrdersKanbanPage() {
                 <ArrowLeft className="h-5 w-5" />
               </Button>
               <div>
-                <h1 className="text-2xl font-bold text-sicoob-green-dark">Fluxo de Pedidos</h1>
+                <h1 className="text-2xl font-bold text-sicoob-green-dark">Painel de Fluxo (Kanban)</h1>
                 <p className="text-sm text-muted-foreground italic">
-                  Gestão visual do funil SICOOB. Arraste para avançar no processo.
+                  Acompanhamento visual do status de produção e logística.
                 </p>
               </div>
             </div>
 
             <div className="flex items-center gap-2">
-              <div className="flex items-center gap-2 mr-2">
-                <span className="text-xs text-muted-foreground">Papel:</span>
-                <Select value={role} onValueChange={(v) => setRole(v as SicoobRole)}>
-                  <SelectTrigger className="w-[140px] h-9">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {(Object.keys(ROLE_LABEL) as SicoobRole[]).map((r) => (
-                      <SelectItem key={r} value={r}>
-                        {ROLE_LABEL[r]}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
               <Button variant="outline" size="sm" onClick={() => navigate("/sicoob/pedidos")}>
                 <List className="h-4 w-4 mr-2" />
                 Lista
               </Button>
-              <Button variant="secondary" size="sm" disabled>
-                <LayoutGrid className="h-4 w-4 mr-2" />
-                Kanban
-              </Button>
-              <Button size="sm">
+              <Button size="sm" onClick={() => navigate("/sicoob/pedidos/novo")}>
                 <Plus className="h-4 w-4 mr-2" />
                 Novo Pedido
               </Button>
