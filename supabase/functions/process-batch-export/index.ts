@@ -1,15 +1,20 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { createStructuredLogger } from "../_shared/structured-logger.ts";
+import { getOrCreateRequestId } from "../_shared/request-id.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-request-id',
 }
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
+
+  const requestId = getOrCreateRequestId(req);
+  const log = createStructuredLogger({ fn: "process-batch-export", requestId, req });
+  log.info("export_batch_start");
 
   try {
     const supabaseClient = createClient(
@@ -17,7 +22,6 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
-    // Process pending jobs
     const { data: jobs, error: fetchError } = await supabaseClient
       .from('export_jobs')
       .select('*')
@@ -25,19 +29,23 @@ serve(async (req) => {
       .lt('attempts', 3)
       .limit(5)
 
-    if (fetchError) throw fetchError
+    if (fetchError) {
+      log.error("fetch_jobs_failed", { err: fetchError.message });
+      throw fetchError;
+    }
 
     const results = []
 
     for (const job of (jobs || [])) {
+      const jobLog = log.child({ job_id: job.id, entity_type: job.entity_type });
+      jobLog.info("processing_job_start");
+
       try {
-        // Mark as processing
         await supabaseClient
           .from('export_jobs')
           .update({ status: 'processing', attempts: job.attempts + 1, updated_at: new Date().toISOString() })
           .eq('id', job.id)
 
-        // Perform export logic based on entity_type and filters
         let exportData = []
         if (job.entity_type === 'orders') {
           const query = supabaseClient.from('sicoob_orders').select('*')
@@ -59,13 +67,10 @@ serve(async (req) => {
           exportData = data
         }
 
-        // Simulate file generation and upload to storage
-        // In a real scenario, we'd use a library to generate PDF/Excel and upload to a bucket
         const fileName = `${job.entity_type}_export_${job.id}.${job.export_type}`
         const bucketName = 'exports'
-        
-        // Simulating file content (CSV for simplicity in this example)
         const content = JSON.stringify(exportData)
+        
         const { error: uploadError } = await supabaseClient.storage
           .from(bucketName)
           .upload(fileName, content, {
@@ -74,15 +79,13 @@ serve(async (req) => {
           })
 
         if (uploadError && uploadError.message !== 'The resource already exists') {
-           // If bucket doesn't exist, we might fail, but let's assume it's created or we ignore upload error for simulation
-           console.error('Upload error:', uploadError)
+           jobLog.warn('storage_upload_warning', { err: uploadError.message });
         }
 
         const { data: { publicUrl } } = supabaseClient.storage
           .from(bucketName)
           .getPublicUrl(fileName)
 
-        // Mark as completed
         await supabaseClient
           .from('export_jobs')
           .update({ 
@@ -93,7 +96,6 @@ serve(async (req) => {
           })
           .eq('id', job.id)
 
-        // Audit log
         await supabaseClient
           .from('export_audit_log')
           .insert({
@@ -106,9 +108,10 @@ serve(async (req) => {
             file_url: publicUrl
           })
 
+        jobLog.info("processing_job_ok", { record_count: exportData.length });
         results.push({ id: job.id, status: 'completed' })
       } catch (jobError) {
-        console.error(`Error processing job ${job.id}:`, jobError)
+        jobLog.error("processing_job_failed", { err: jobError.message });
         await supabaseClient
           .from('export_jobs')
           .update({ 
@@ -122,13 +125,16 @@ serve(async (req) => {
       }
     }
 
-    return new Response(JSON.stringify({ processed: results.length, results }), {
+    log.info("export_batch_complete", { processed: results.length });
+
+    return log.respond(new Response(JSON.stringify({ processed: results.length, results }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    })
+    }));
   } catch (error) {
-    return new Response(JSON.stringify({ error: error.message }), {
+    log.error("export_batch_failed", { err: error.message });
+    return log.respond(new Response(JSON.stringify({ error: error.message }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 400,
-    })
+    }));
   }
 })
