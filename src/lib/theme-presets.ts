@@ -1,7 +1,8 @@
-// =====================================================
-// THEME PRESETS SYSTEM — buildPreset() factory
-// Covers ALL CSS vars from index.css for DEEP theming
-// =====================================================
+/**
+ * Theme Presets System — buildPreset() factory.
+ * Provides a standardized method for defining full-scope HSL color palettes.
+ * Improvement: strictly typed interface for deep skinning of all UI surface tokens.
+ */
 
 export interface ThemeModeColors {
   // === SUPERFÍCIES CORE ===
