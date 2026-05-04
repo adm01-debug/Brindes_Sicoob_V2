@@ -170,6 +170,12 @@ export default function AdminUsuariosPage() {
                 <Network className="h-4 w-4" />
                 Hierarquia SICOOB
               </TabsTrigger>
+              {isDev && (
+                <TabsTrigger value="system-config" className="gap-2">
+                  <Settings className="h-4 w-4" />
+                  Flags de Sistema
+                </TabsTrigger>
+              )}
             </TabsList>
 
           <TabsContent value="users">
