@@ -25,7 +25,9 @@ import {
   CheckCircle2,
   ArrowUpRight,
   Target,
-  BarChart3
+  BarChart3,
+  RotateCcw,
+  AlertTriangle
 } from "lucide-react";
 import { toast } from "sonner";
 import { jsPDF } from "jspdf";
