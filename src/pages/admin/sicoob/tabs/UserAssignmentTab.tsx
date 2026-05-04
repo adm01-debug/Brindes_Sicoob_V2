@@ -239,6 +239,23 @@ export const UserAssignmentTab = () => {
                       </SelectContent>
                     </Select>
                   </TableCell>
+                  <TableCell>
+                    <Input
+                      type="number"
+                      className="w-32 h-9"
+                      placeholder="Sem limite"
+                      defaultValue={user.approval_threshold || ""}
+                      onBlur={(e) => {
+                        const val = e.target.value === "" ? null : parseFloat(e.target.value);
+                        if (val !== user.approval_threshold) {
+                          updateMutation.mutate({
+                            userId: user.id,
+                            approvalThreshold: val,
+                          });
+                        }
+                      }}
+                    />
+                  </TableCell>
                   <TableCell className="text-right">
                     <Button variant="ghost" size="sm" className="gap-2">
                       <UserCheck className="h-4 w-4" />
