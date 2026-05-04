@@ -334,6 +334,35 @@ export default function GestorApprovalsPage() {
               </CardContent>
             </Card>
           </TabsContent>
+          <TabsContent value="config" className="mt-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Canais de Notificação</CardTitle>
+                <CardDescription>Escolha onde deseja ser alertado sobre pedidos que aguardam sua aprovação.</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label>Alertas via E-mail</Label>
+                    <p className="text-xs text-muted-foreground">Receba um e-mail imediato quando um pedido exceder a alçada.</p>
+                  </div>
+                  <Switch defaultChecked />
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label>Integração com Slack</Label>
+                    <p className="text-xs text-muted-foreground">Envie alertas automáticos para um canal do Slack.</p>
+                  </div>
+                  <Switch />
+                </div>
+                <div className="space-y-2 pt-2 border-t">
+                  <Label className="text-xs">Webhook URL (Slack)</Label>
+                  <Input placeholder="https://hooks.slack.com/services/..." className="text-xs h-9" />
+                  <p className="text-[10px] text-muted-foreground italic">Use webhooks de entrada para disparar mensagens em canais específicos.</p>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
         </Tabs>
       </div>
     </MainLayout>
