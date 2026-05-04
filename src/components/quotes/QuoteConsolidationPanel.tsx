@@ -51,6 +51,12 @@ export function QuoteConsolidationPanel({
 
     quotes.forEach(quote => {
       quote.items?.forEach((item: QuoteItem) => {
+        const matchesSearch = 
+          item.product_name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+          (item.product_sku && item.product_sku.toLowerCase().includes(searchTerm.toLowerCase()));
+
+        if (!matchesSearch) return;
+
         const key = item.product_sku || item.product_id || item.product_name;
         const existing = itemsMap.get(key);
         
@@ -89,7 +95,7 @@ export function QuoteConsolidationPanel({
       totalItems,
       quotesCount: quotes.length
     };
-  }, [quotes]);
+  }, [quotes, searchTerm]);
 
   if (!consolidatedData || quotes.length === 0) {
     return (
