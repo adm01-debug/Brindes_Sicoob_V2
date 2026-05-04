@@ -153,12 +153,34 @@ export function useQuotes() {
     }
   };
 
-  const reorderQuote = async (quoteId: string) => {
+  const reorderQuote = async (quoteId: string, itemIds?: string[]) => {
     if (!user) return null;
     setIsLoading(true);
     try {
-      const newQuote = await QuoteService.reorder(quoteId, user.id, orgId);
-      toast.success("Orçamento duplicado para recompra!", {
+      let newQuote;
+      if (itemIds && itemIds.length > 0) {
+        // Lógica de duplicação parcial
+        const original = await QuoteService.getById(quoteId);
+        if (!original) throw new Error("Orçamento não encontrado");
+        
+        const selectedItems = (original.items || []).filter(item => item.id && itemIds.includes(item.id));
+        newQuote = await QuoteService.create({
+          quote: { 
+            client_id: original.client_id, 
+            client_name: original.client_name,
+            client_company: original.client_company,
+            status: 'draft',
+            notes: `Itens duplicados do orçamento #${original.quote_number}`
+          },
+          items: selectedItems,
+          userId: user.id,
+          orgId
+        });
+      } else {
+        newQuote = await QuoteService.reorder(quoteId, user.id, orgId);
+      }
+      
+      toast.success("Orçamento duplicado!", {
         description: `Novo orçamento #${newQuote.quote_number} criado como rascunho.`
       });
       fetchQuotes();
