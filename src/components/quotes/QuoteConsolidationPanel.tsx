@@ -69,12 +69,27 @@ export function QuoteConsolidationPanel({
   title = "Consolidação de Orçamentos", 
   description = "Visão unificada de múltiplos orçamentos para análise de compra."
 }: QuoteConsolidationPanelProps) {
-  const [searchTerm, setSearchTerm] = useState(() => localStorage.getItem('quote_consolidation_search') || "");
+  const [searchTerm, setSearchTerm] = useState(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get('q_search') || localStorage.getItem('quote_consolidation_search') || "";
+  });
+  
   const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' } | null>(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlSort = urlParams.get('q_sort');
+    if (urlSort) {
+      try { return JSON.parse(atob(urlSort)); } catch (e) { console.error(e); }
+    }
+    
     const saved = localStorage.getItem('quote_consolidation_sort');
     return saved ? JSON.parse(saved) : { key: 'total_value', direction: 'desc' };
   });
+
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
+  const [savedViews, setSavedViews] = useState<SavedView[]>(() => {
+    const saved = localStorage.getItem('quote_consolidation_views');
+    return saved ? JSON.parse(saved) : [];
+  });
 
   useEffect(() => {
     localStorage.setItem('quote_consolidation_search', searchTerm);
@@ -83,6 +98,49 @@ export function QuoteConsolidationPanel({
   useEffect(() => {
     localStorage.setItem('quote_consolidation_sort', JSON.stringify(sortConfig));
   }, [sortConfig]);
+
+  const saveCurrentView = () => {
+    const name = prompt("Nome para esta visão:");
+    if (!name) return;
+
+    const newView: SavedView = {
+      id: crypto.randomUUID(),
+      name,
+      searchTerm,
+      sortConfig
+    };
+
+    const updated = [...savedViews, newView];
+    setSavedViews(updated);
+    localStorage.setItem('quote_consolidation_views', JSON.stringify(updated));
+    toast.success("Visão salva!");
+  };
+
+  const loadView = (view: SavedView) => {
+    setSearchTerm(view.searchTerm);
+    setSortConfig(view.sortConfig);
+    toast.info(`Visão "${view.name}" carregada`);
+  };
+
+  const deleteView = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const updated = savedViews.filter(v => v.id !== id);
+    setSavedViews(updated);
+    localStorage.setItem('quote_consolidation_views', JSON.stringify(updated));
+    toast.success("Visão removida");
+  };
+
+  const generateShareLink = () => {
+    const params = new URLSearchParams(window.location.search);
+    params.set('q_search', searchTerm);
+    if (sortConfig) params.set('q_sort', btoa(JSON.stringify(sortConfig)));
+    
+    const url = `${window.location.origin}${window.location.pathname}?${params.toString()}`;
+    navigator.clipboard.writeText(url);
+    toast.success("Link de compartilhamento copiado!", {
+      description: "Os filtros e ordenação atuais foram codificados na URL."
+    });
+  };
 
   const toggleExpand = (key: string) => {
     setExpandedItems(prev => 
