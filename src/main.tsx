@@ -5,10 +5,8 @@ import { registerServiceWorker } from "@/lib/sw-register";
 import { installGlobalErrorHandlers } from "@/lib/error-reporter";
 import { initSentry } from "@/lib/sentry";
 import EnhancedErrorBoundary from "@/components/errors/EnhancedErrorBoundary";
-import { Http412Inspector } from "@/components/debug/Http412Inspector";
 import "@/lib/diagnostics"; // Initialize diagnostics early
 import { setupPreviewAutoReload } from "@/lib/preview-auto-reload";
-import { installHttp412Interceptor } from "@/lib/http-412-logger";
 import { injectRequestId } from "@/lib/request-id-injection";
 import { reportWebVitals } from "@/lib/telemetry/webVitals";
 import App from "./App.tsx";
@@ -26,9 +24,6 @@ injectRequestId();
 
 // Start Core Web Vitals monitoring
 reportWebVitals();
-
-// Captura HTTP 412/428 (Precondition Failed) e expõe na UI via Http412Inspector
-installHttp412Interceptor();
 
 // Inicializa auto-reload para erros de pré-condição (412) no preview
 setupPreviewAutoReload();
@@ -48,7 +43,6 @@ createRoot(root).render(
     <HelmetProvider>
       <EnhancedErrorBoundary>
         <App />
-        <Http412Inspector />
       </EnhancedErrorBoundary>
     </HelmetProvider>
   </Fragment>
