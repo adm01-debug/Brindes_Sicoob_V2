@@ -246,7 +246,22 @@ export default function AdminVerbasPage() {
             </Card>
           </TabsContent>
 
-          <TabsContent value="history">
+          <TabsContent value="categories">
+            <Card>
+              <CardHeader>
+                <CardTitle>Limites por Categoria (Override)</CardTitle>
+                <CardDescription>Defina alçadas específicas para categorias de produtos por PA.</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="rounded-md border p-8 text-center text-muted-foreground">
+                    <AlertTriangle className="h-10 w-10 mx-auto mb-3 opacity-20" />
+                    <p>Módulo de limites por categoria está sendo carregado...</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
             <Card>
               <CardHeader>
                 <CardTitle>Histórico de Orçamentos</CardTitle>
