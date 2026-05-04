@@ -251,8 +251,8 @@ export default function AdminVerbasPage() {
               <CardHeader className="flex flex-row items-center justify-between">
                 <div><CardTitle>Limites por PA</CardTitle><CardDescription>Gerencie as verbas mensais e limites de alçada</CardDescription></div>
                 <div className="flex gap-2">
-                  <Button variant="outline" onClick={exportBudgets} className="gap-2"><Download className="h-4 w-4" /> Exportar</Button>
-                  <Button onClick={() => { setEditingBudget(null); setIsFormOpen(true); }} className="gap-2"><Plus className="h-4 w-4" /> Nova Verba</Button>
+                  <Button variant="outline" onClick={exportBudgets} className="gap-2" aria-label="Exportar verbas para Excel"><Download className="h-4 w-4" /> Exportar</Button>
+                  <Button onClick={() => { setEditingBudget(null); setIsFormOpen(true); }} className="gap-2" aria-label="Criar nova verba mensal"><Plus className="h-4 w-4" /> Nova Verba</Button>
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -290,7 +290,14 @@ export default function AdminVerbasPage() {
                                     </span>
                                     <span className="text-muted-foreground">{percent.toFixed(1)}%</span>
                                   </div>
-                                  <div className="w-full h-2 bg-muted rounded-full overflow-hidden border border-border/20">
+                                  <div 
+                                    className="w-full h-2 bg-muted rounded-full overflow-hidden border border-border/20"
+                                    role="progressbar"
+                                    aria-valuenow={percent}
+                                    aria-valuemin={0}
+                                    aria-valuemax={100}
+                                    aria-label={`Consumo de verba: ${percent.toFixed(1)}%`}
+                                  >
                                     <div 
                                       className={`h-full transition-all duration-500 ${percent > alertConfig.criticalThreshold ? "bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.4)]" : percent > alertConfig.warningThreshold ? "bg-yellow-500" : "bg-green-500"}`} 
                                       style={{ width: `${Math.min(100, percent)}%` }} 
@@ -300,7 +307,7 @@ export default function AdminVerbasPage() {
                               </TableCell>
                               <TableCell>R$ {b.limite_alcada?.toLocaleString() || "-"}</TableCell>
                               <TableCell className="text-right">
-                                <Button variant="ghost" size="icon" onClick={() => { setEditingBudget(b); setIsFormOpen(true); }}><Pencil className="h-4 w-4" /></Button>
+                                <Button variant="ghost" size="icon" onClick={() => { setEditingBudget(b); setIsFormOpen(true); }} aria-label={`Editar verba de ${b.postos_atendimento?.nome}`}><Pencil className="h-4 w-4" /></Button>
                               </TableCell>
                             </TableRow>
                           );
