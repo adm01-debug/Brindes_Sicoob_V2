@@ -39,7 +39,6 @@ import { cn } from "@/lib/utils";
 // ---------- Domain types ----------
 type SicoobRole = "comprador" | "supervisor" | "gestor" | "logistica";
 
-type StatusId =
 type StatusId = OrderStatus;
 
 interface ColumnDef {
