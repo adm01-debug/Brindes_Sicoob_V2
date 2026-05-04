@@ -394,6 +394,9 @@ export const SidebarReorganized = React.forwardRef<HTMLElement, SidebarProps>(
           {/* Brand Header */}
           <SidebarBrandHeader isCollapsed={isCollapsed} />
 
+          {/* Organization Switcher */}
+          <OrganizationSwitcher isCollapsed={isCollapsed} />
+
 
           {/* Collapse controls (desktop) */}
           <div className="hidden lg:flex items-center justify-between px-2 mb-1">
