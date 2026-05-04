@@ -1,12 +1,17 @@
 /**
  * OrderStatusTimeline — visualização horizontal do progresso do pedido.
  */
-import { Check, Circle, XCircle, Clock, Package, Truck, CheckCircle2, ShieldCheck } from "lucide-react";
+import { Check, Circle, XCircle, Clock, Package, Truck, CheckCircle2, ShieldCheck, History, Info } from "lucide-react";
 import { ORDER_STATUS_FLOW, ORDER_STATUS_LABELS } from "@/hooks";
 import { cn } from "@/lib/utils";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { format } from "date-fns";
 
 interface OrderStatusTimelineProps {
   status: string;
+  orderId?: string;
 }
 
 const statusIcons: Record<string, any> = {
@@ -19,7 +24,26 @@ const statusIcons: Record<string, any> = {
   cancelado: XCircle,
 };
 
-export function OrderStatusTimeline({ status }: OrderStatusTimelineProps) {
+export function OrderStatusTimeline({ status, orderId }: OrderStatusTimelineProps) {
+  const { data: approvalHistory } = useQuery({
+    queryKey: ["order_approval_history_timeline", orderId],
+    queryFn: async () => {
+      if (!orderId) return [];
+      const { data, error } = await supabase
+        .from("order_approval_history")
+        .select(`
+          *,
+          approver:approver_id(full_name)
+        `)
+        .eq("order_id", orderId)
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!orderId
+  });
+
+  const latestApproval = approvalHistory?.[0];
   if (status === "cancelled") {
     return (
       <div className="flex items-center gap-3 rounded-xl border border-destructive/20 bg-destructive/5 p-4 text-sm text-destructive shadow-sm animate-in fade-in slide-in-from-top-2 duration-300">
@@ -39,9 +63,37 @@ export function OrderStatusTimeline({ status }: OrderStatusTimelineProps) {
       <div className="flex items-center justify-between mb-8">
         <div className="flex flex-col">
           <span className="font-semibold uppercase tracking-wider text-[10px] text-muted-foreground">Progresso do Pedido</span>
-          <h3 className="font-bold text-lg text-foreground capitalize">
-            {ORDER_STATUS_LABELS[status] || status.replace('_', ' ')}
-          </h3>
+          <div className="flex items-center gap-2">
+            <h3 className="font-bold text-lg text-foreground capitalize">
+              {ORDER_STATUS_LABELS[status] || status.replace('_', ' ')}
+            </h3>
+            {latestApproval && (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className={cn(
+                      "flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase",
+                      latestApproval.decision === 'approved' ? "bg-success/10 text-success border border-success/20" : "bg-destructive/10 text-destructive border border-destructive/20"
+                    )}>
+                      <History className="h-3 w-3" />
+                      Decisão de Alçada
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent className="p-3 max-w-[300px] space-y-2">
+                    <p className="font-bold border-b pb-1">Detalhes da Decisão</p>
+                    <div className="space-y-1 text-xs">
+                      <p><strong>Resultado:</strong> {latestApproval.decision === 'approved' ? 'Aprovado' : 'Reprovado'}</p>
+                      <p><strong>Aprovador:</strong> {latestApproval.approver?.full_name || 'Sistema'}</p>
+                      <p><strong>Data:</strong> {format(new Date(latestApproval.created_at), "dd/MM/yyyy HH:mm")}</p>
+                      {latestApproval.reason && (
+                        <p className="text-muted-foreground italic mt-1">"{latestApproval.reason}"</p>
+                      )}
+                    </div>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            )}
+          </div>
         </div>
         <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
           {(() => {

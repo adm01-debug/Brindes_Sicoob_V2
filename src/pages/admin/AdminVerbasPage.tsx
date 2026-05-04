@@ -13,7 +13,8 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useQuery } from "@tanstack/react-query";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
 import * as XLSX from 'xlsx';
 
@@ -174,6 +175,7 @@ export default function AdminVerbasPage() {
         <Tabs defaultValue="limits" className="w-full">
           <TabsList className="mb-4">
             <TabsTrigger value="limits" className="gap-2"><Wallet className="h-4 w-4" /> Limites por PA</TabsTrigger>
+            <TabsTrigger value="categories" className="gap-2"><Plus className="h-4 w-4" /> Por Categoria</TabsTrigger>
             <TabsTrigger value="history" className="gap-2"><History className="h-4 w-4" /> Histórico de Alterações</TabsTrigger>
           </TabsList>
 
@@ -244,7 +246,22 @@ export default function AdminVerbasPage() {
             </Card>
           </TabsContent>
 
-          <TabsContent value="history">
+          <TabsContent value="categories">
+            <Card>
+              <CardHeader>
+                <CardTitle>Limites por Categoria (Override)</CardTitle>
+                <CardDescription>Defina alçadas específicas para categorias de produtos por PA.</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="rounded-md border p-8 text-center text-muted-foreground">
+                    <AlertTriangle className="h-10 w-10 mx-auto mb-3 opacity-20" />
+                    <p>Módulo de limites por categoria está sendo carregado...</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
             <Card>
               <CardHeader>
                 <CardTitle>Histórico de Orçamentos</CardTitle>

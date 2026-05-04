@@ -2,8 +2,8 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 
-export const useApprovalThreshold = () => {
-  const { profile, isGestorCompras, isGerentePa, isVendedor, isDev, isSupervisor } = useAuth();
+export const useApprovalThreshold = (items?: any[]) => {
+  const { profile, isGestorCompras, isDev, isSupervisor } = useAuth();
 
   const { data: budget } = useQuery({
     queryKey: ["pa_approval_threshold", profile?.pa_id],
@@ -23,20 +23,43 @@ export const useApprovalThreshold = () => {
     enabled: !!profile?.pa_id,
   });
 
-  const needsApproval = (amount: number) => {
-    // Dev e Supervisor não precisam de aprovação (alcada infinita)
-    if (isDev || isSupervisor) return false;
+  const { data: categoryThresholds } = useQuery({
+    queryKey: ["pa_category_thresholds", profile?.pa_id],
+    queryFn: async () => {
+      if (!profile?.pa_id) return [];
+      const { data, error } = await supabase
+        .from("pa_category_thresholds")
+        .select("*")
+        .eq("pa_id", profile.pa_id);
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!profile?.pa_id,
+  });
 
-    // Gestor de Compras da Singular geralmente tem alçada maior ou total, 
-    // mas aqui seguimos a regra do PA se ele estiver atuando em um contexto de PA.
+  const needsApproval = (amount: number, currentItems?: any[]) => {
+    if (isDev || isSupervisor) return false;
     if (isGestorCompras && !profile?.pa_id) return false;
 
-    const threshold = budget?.limite_alcada || 0;
-    return amount > threshold;
+    // 1. Check Global Threshold
+    const globalThreshold = budget?.limite_alcada || 0;
+    if (amount > globalThreshold) return true;
+
+    // 2. Check Category-specific Thresholds
+    const itemsToCheck = currentItems || items || [];
+    for (const item of itemsToCheck) {
+      const catThreshold = categoryThresholds?.find(t => t.category_id === item.category_id);
+      if (catThreshold && (item.unit_price * item.quantity) > catThreshold.limite_alcada) {
+        return true;
+      }
+    }
+
+    return false;
   };
 
   return {
     threshold: budget?.limite_alcada || 0,
+    categoryThresholds,
     needsApproval,
   };
 };
