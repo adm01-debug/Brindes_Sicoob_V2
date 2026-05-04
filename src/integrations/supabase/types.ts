@@ -7748,6 +7748,14 @@ export type Database = {
           tablename: string
         }[]
       }
+      check_tables_rls: {
+        Args: never
+        Returns: {
+          relname: string
+          relrowsecurity: boolean
+          schemaname: string
+        }[]
+      }
       check_telemetry_regression: { Args: never; Returns: Json }
       claim_next_optimization: {
         Args: never
