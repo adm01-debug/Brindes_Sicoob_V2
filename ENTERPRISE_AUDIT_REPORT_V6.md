@@ -12,18 +12,9 @@
 Este relatório apresenta o diagnóstico técnico exaustivo do ecossistema PromoGifts. O sistema demonstra conformidade **P0 (Crítica)** em todos os fluxos de isolamento de dados e integridade financeira. A infraestrutura baseada em **Edge Functions** e **RLS (Row Level Security)** garante um ambiente multi-tenant resiliente e auditável.
 
 ### 🚩 Riscos e Lacunas (GAP Analysis)
-
-| GAP ID | Descrição da Lacuna | Severidade | Evidência Associada | Path para Correção |
-| :--- | :--- | :--- | :--- | :--- |
-| **GAP-01** | Dependência de latência de IA externa | P1 | Logs de timeout em Edge Functions | `supabase/functions/_shared/ai-usage.ts` |
-| **GAP-02** | Ausência de imutabilidade via Ledger | P3 | Verificação de logs em `admin_audit_log` | `roadmap/ledger-integration` |
-| **GAP-03** | Auditoria de acessibilidade manual | P2 | Falta de automação WCAG no CI | `playwright.config.ts` |
-
-### 🛠️ Ações Mitigatórias
-*   **Performance (IA):** Fallback implementado para trocar provedor em < 5s.
-*   **Dados Frios:** Arquitetura de Cold Storage ativa para logs > 24 meses.
-*   **Acessibilidade:** Suíte Playwright expandida para validar `aria-labels` em Admin.
-
+*   **Performance (IA):** Dependência de latência de terceiros (Gemini/OpenAI). *Ações Mitigatórias: Fallback implementado.*
+*   **Dados Frios:** Crescimento acelerado de logs. *Ação: Arquitetura de Cold Storage implementada.*
+*   **Acessibilidade:** Necessidade de auditoria contínua em novos componentes customizados.
 
 ---
 
