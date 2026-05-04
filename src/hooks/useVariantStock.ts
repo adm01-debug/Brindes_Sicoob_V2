@@ -16,6 +16,7 @@ import { fetchAndProcessStockData } from './stock/stockFetcher';
 export function useVariantStock() {
   const [filters, setFilters] = useState<StockFilters>(defaultStockFilters);
   const [dismissedAlerts, setDismissedAlerts] = useState<Set<string>>(new Set());
+  const [alertTypeFilter, setAlertTypeFilter] = useState<StockAlertType | 'all'>('all');
   const queryClient = useQueryClient();
 
   const { data, isLoading, isFetching } = useQuery({
