@@ -196,13 +196,8 @@ export function useProductsManager() {
   }, [pageSize, searchTerm]);
 
   const displayedProducts = useMemo(() => {
-    let filtered = products;
-    const { price_min, price_max, is_kit } = advancedFilters;
-    if (price_min !== undefined && price_min > 0) filtered = filtered.filter(p => p.price >= price_min);
-    if (price_max !== undefined && price_max > 0) filtered = filtered.filter(p => p.price <= price_max);
-    if (is_kit) filtered = filtered.filter(p => p.is_kit);
-    return filtered;
-  }, [products, advancedFilters.price_min, advancedFilters.price_max, advancedFilters.is_kit]);
+    return products;
+  }, [products]);
 
   const handlePageChange = (page: number) => { setCurrentPage(page); setSelectedIds(new Set()); fetchProducts(page, pageSize, searchTerm); };
   const handlePageSizeChange = (newSize: string) => { const size = parseInt(newSize, 10); setPageSize(size); setCurrentPage(1); fetchProducts(1, size, searchTerm); };
