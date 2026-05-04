@@ -79,9 +79,8 @@ export function CouponManager() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-    <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-      <div className="flex items-center justify-between">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+        <div className="flex items-center justify-between">
         <TabsList>
           <TabsTrigger value="list" className="gap-2">
             <Ticket className="h-4 w-4" /> Cupons Ativos
@@ -214,6 +213,7 @@ export function CouponManager() {
           <DialogFooter><Button variant="outline" onClick={() => setIsFormOpen(false)}>Cancelar</Button><Button onClick={() => handleSave(editingCoupon)}>Salvar</Button></DialogFooter>
         </DialogContent>
       </Dialog>
-    </Tabs>
+      </Tabs>
+    </div>
   );
 }
