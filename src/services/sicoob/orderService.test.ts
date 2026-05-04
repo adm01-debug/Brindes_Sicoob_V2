@@ -97,5 +97,40 @@ describe("sicoobOrderService", () => {
     await expect(sicoobOrderService.updateOrderStatus("order_1", "confirmed"))
       .rejects.toThrow("Usuário não autenticado");
   });
+  it("correctly simulates E2E flow from pending to delivered", async () => {
+    (supabase.auth.getUser as any).mockResolvedValue({ data: { user: { id: "mgr_123", email: "manager@sicoob.com" } }, error: null });
+    
+    const insertMock = vi.fn().mockResolvedValue({ error: null });
+    const updateMock = vi.fn().mockReturnValue({ eq: vi.fn().mockResolvedValue({ error: null }) });
+    const selectMock = {
+      eq: vi.fn().mockReturnThis(),
+      single: vi.fn().mockResolvedValue({ data: { created_by: "pa_user_456" }, error: null })
+    };
+
+    vi.spyOn(supabase, "from").mockImplementation((table) => {
+      if (table === "sicoob_orders") return { update: updateMock, select: vi.fn().mockReturnValue(selectMock) } as any;
+      if (table === "order_audit_events") return { insert: insertMock } as any;
+      if (table === "notifications") return { insert: insertMock } as any;
+      return { select: vi.fn().mockReturnThis(), eq: vi.fn().mockReturnThis(), single: vi.fn() } as any;
+    });
+
+    // 1. Pending -> Waiting Approval (Simulating exceed budget)
+    await sicoobOrderService.updateOrderStatus("order_1", "waiting_approval", "pending", "Excedeu orçamento");
+    expect(updateMock).toHaveBeenCalledWith(expect.objectContaining({ status: "waiting_approval" }));
+    
+    // 2. Waiting Approval -> Confirmed (Manager approval)
+    await sicoobOrderService.updateOrderStatus("order_1", "confirmed", "waiting_approval", "Aprovado por gestor");
+    expect(updateMock).toHaveBeenCalledWith(expect.objectContaining({ status: "confirmed" }));
+
+    // 3. Confirmed -> Logistic (Instead of in_production)
+    await sicoobOrderService.updateOrderStatus("order_1", "logistic", "confirmed");
+    expect(updateMock).toHaveBeenCalledWith(expect.objectContaining({ status: "logistic" }));
+
+    // 4. Logistic -> Completed
+    await sicoobOrderService.updateOrderStatus("order_1", "completed", "logistic");
+    expect(updateMock).toHaveBeenCalledWith(expect.objectContaining({ status: "completed" }));
+
+    expect(insertMock).toHaveBeenCalledTimes(8); // 4 status changes * (1 audit + 1 notification)
+  });
 });
 
