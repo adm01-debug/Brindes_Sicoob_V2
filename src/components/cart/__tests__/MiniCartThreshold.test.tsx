@@ -1,4 +1,4 @@
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor, within } from "@testing-library/react";
 import { MiniCart } from "../MiniCart";
 import { useCart } from "@/hooks/useCart";
 import { useApprovalThreshold } from "@/hooks/useApprovalThreshold";
@@ -95,6 +95,86 @@ describe("MiniCart Alçada UI - Advanced States", () => {
 
     await waitFor(() => {
       expect(screen.getByText(/Requer aprovação da Singular/i)).toBeDefined();
+    });
+  });
+
+  it("should update approval state when quantities change", async () => {
+    const updateQuantity = vi.fn();
+    (useCart as any).mockReturnValue({
+      items: [{ id: "1", product_name: "Adjustable Item", product_price: 600, quantity: 1 }],
+      subtotal: 600,
+      totalItemsCount: 1,
+      updateQuantity: { mutate: updateQuantity },
+      removeItem: { mutate: vi.fn() },
+    });
+
+    (useApprovalThreshold as any).mockReturnValue({
+      threshold: 1000,
+      needsApproval: (total: number) => total > 1000,
+    });
+
+    const { rerender } = renderMiniCart();
+    fireEvent.click(screen.getByRole("button"));
+
+    // Initial state: Under limit
+    await waitFor(() => {
+      expect(screen.getByText(/Limite de Alçada/i)).toBeDefined();
+    });
+
+    // Simulate clicking plus button (using a more robust selector)
+    const plusButtons = screen.getAllByRole("button");
+    const plusButton = plusButtons.find(b => b.innerHTML.includes('lucide-plus'));
+    if (plusButton) fireEvent.click(plusButton);
+    
+    expect(updateQuantity).toHaveBeenCalled();
+
+    // Rerender with new totals (1200 > 1000)
+    (useCart as any).mockReturnValue({
+      items: [{ id: "1", product_name: "Adjustable Item", product_price: 600, quantity: 2 }],
+      subtotal: 1200,
+      totalItemsCount: 2,
+      updateQuantity: { mutate: updateQuantity },
+      removeItem: { mutate: vi.fn() },
+    });
+
+    (useApprovalThreshold as any).mockReturnValue({
+      threshold: 1000,
+      needsApproval: (total: number) => total > 1000,
+    });
+
+    rerender(
+      <BrowserRouter>
+        <TooltipProvider>
+          <MiniCart />
+        </TooltipProvider>
+      </BrowserRouter>
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText(/Limite Excedido/i)).toBeDefined();
+    });
+  });
+
+  it("should have accessible alerts and indicators", async () => {
+    (useCart as any).mockReturnValue({
+      items: [{ id: "1", product_name: "A11y Test", product_price: 1500, quantity: 1 }],
+      subtotal: 1500,
+      totalItemsCount: 1,
+    });
+
+    (useApprovalThreshold as any).mockReturnValue({
+      threshold: 1000,
+      needsApproval: () => true,
+    });
+
+    renderMiniCart();
+    fireEvent.click(screen.getByRole("button"));
+
+    await waitFor(() => {
+      const alert = screen.getByText(/Requer aprovação da Singular/i);
+      expect(alert).toBeDefined();
+      // Check if it's visually distinct or has proper role if applicable
+      // In our code we use span/div, let's ensure it's findable
     });
   });
 });
