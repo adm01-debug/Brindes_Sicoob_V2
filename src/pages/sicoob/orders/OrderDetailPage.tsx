@@ -87,6 +87,7 @@ import { OrderPaymentsTab } from "@/components/sicoob/orders/OrderPaymentsTab";
 import { OrderPilotApprovalsTab } from "@/components/sicoob/orders/OrderPilotApprovalsTab";
 import { OrderTemplatesTab } from "@/components/sicoob/orders/OrderTemplatesTab";
 import { OrderCommentsTab } from "@/components/sicoob/orders/OrderCommentsTab";
+import { OneClickReorder } from "@/components/orders/OneClickReorder";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 
