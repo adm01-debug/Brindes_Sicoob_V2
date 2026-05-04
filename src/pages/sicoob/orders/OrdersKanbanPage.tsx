@@ -118,36 +118,56 @@ export function DraggableCard({ order, onClick, canDrag, reasonBlocked }: Dragga
     <div
       ref={setNodeRef}
       className={cn(
-        "bg-card p-3 rounded-md shadow-sm border border-border transition-colors group",
-        canDrag ? "hover:border-primary/50 cursor-grab active:cursor-grabbing" : "cursor-pointer opacity-90",
+        "bg-card p-3 rounded-md shadow-sm border-[1.5px] transition-all group relative overflow-hidden",
+        canDrag ? "hover:border-sicoob-green/50 cursor-grab active:cursor-grabbing hover:shadow-md" : "cursor-pointer opacity-90",
         isDragging && "opacity-40",
+        order.sla_status === 'critical' && "border-destructive/40"
       )}
       onClick={onClick}
     >
+      {order.sla_status === 'critical' && (
+        <div className="absolute top-0 left-0 w-full h-1 bg-destructive animate-pulse" />
+      )}
+      
       <div className="flex justify-between items-start mb-2 gap-2">
-        <span className="text-xs font-mono font-bold">#{order.id}</span>
-        <div className="flex items-center gap-2">
-          <span className="text-xs font-bold text-primary">
-            R$ {order.total.toFixed(2)}
-          </span>
+        <span className="text-[10px] font-mono font-bold text-muted-foreground">
+          #{order.order_number || order.id.slice(0, 8)}
+        </span>
+        <div className="flex items-center gap-1.5">
           {canDrag ? (
-            <button
-              type="button"
+            <div
               {...attributes}
               {...listeners}
-              onClick={(e) => e.stopPropagation()}
-              className="text-muted-foreground hover:text-foreground opacity-0 group-hover:opacity-100 transition-opacity"
-              aria-label="Arrastar pedido"
+              className="text-muted-foreground hover:text-sicoob-green opacity-0 group-hover:opacity-100 transition-opacity cursor-grab"
             >
               <GripVertical className="h-3.5 w-3.5" />
-            </button>
+            </div>
           ) : (
-            <Lock className="h-3 w-3 text-muted-foreground" aria-label="Sem permissão" />
+            <Lock className="h-3 w-3 text-muted-foreground/50" />
           )}
         </div>
       </div>
-      <p className="text-sm font-medium truncate">{order.pa}</p>
-      <p className="text-xs text-muted-foreground">{order.items} itens</p>
+      
+      <p className="text-sm font-bold text-sicoob-green-dark truncate mb-1">{order.pa}</p>
+      
+      <div className="flex items-center justify-between mt-2">
+        <span className="text-xs font-bold text-foreground">
+          R$ {order.total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+        </span>
+        {order.sla_status && (
+          <Badge 
+            variant="outline" 
+            className={cn(
+              "h-4 text-[8px] font-bold px-1",
+              order.sla_status === 'critical' ? "bg-destructive/10 text-destructive border-destructive/20" :
+              order.sla_status === 'warning' ? "bg-amber-500/10 text-amber-600 border-amber-500/20" :
+              "bg-success/10 text-success border-success/20"
+            )}
+          >
+            {order.sla_status === 'critical' ? '!' : 'OK'}
+          </Badge>
+        )}
+      </div>
     </div>
   );
 
@@ -156,9 +176,9 @@ export function DraggableCard({ order, onClick, canDrag, reasonBlocked }: Dragga
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <span className="inline-flex w-full">{card}</span>
+        <div className="w-full">{card}</div>
       </TooltipTrigger>
-      <TooltipContent side="right">{reasonBlocked}</TooltipContent>
+      <TooltipContent side="right" className="text-xs">{reasonBlocked}</TooltipContent>
     </Tooltip>
   );
 }
