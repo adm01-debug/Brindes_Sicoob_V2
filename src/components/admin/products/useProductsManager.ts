@@ -83,6 +83,9 @@ export function useProductsManager() {
       const serverFilters: Record<string, unknown> = {};
       if (activeFilters.category_id) serverFilters.category_id = activeFilters.category_id;
       if (activeFilters.supplier_id) serverFilters.supplier_id = activeFilters.supplier_id;
+      if (activeFilters.price_min && activeFilters.price_min > 0) serverFilters.price_min = activeFilters.price_min;
+      if (activeFilters.price_max && activeFilters.price_max > 0) serverFilters.price_max = activeFilters.price_max;
+      if (activeFilters.is_kit) serverFilters.is_kit = true;
       if (activeFilters.is_active !== undefined && activeFilters.is_active !== 'all') {
         serverFilters.is_active = activeFilters.is_active;
         serverFilters.active = activeFilters.is_active;
