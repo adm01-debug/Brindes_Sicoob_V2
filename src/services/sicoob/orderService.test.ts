@@ -66,9 +66,9 @@ describe("sicoobOrderService", () => {
       return { select: vi.fn().mockReturnThis(), eq: vi.fn().mockReturnThis(), single: vi.fn() } as any;
     });
 
-    await sicoobOrderService.updateOrderStatus("order_1", "confirmed", "pending", "Aprovação via teste");
+    await sicoobOrderService.updateOrderStatus("order_1", "waiting_approval", "pending", "Aprovação via teste");
 
-    expect(updateMock).toHaveBeenCalledWith(expect.objectContaining({ status: "confirmed" }));
+    expect(updateMock).toHaveBeenCalledWith(expect.objectContaining({ status: "waiting_approval" }));
     expect(insertMock).toHaveBeenCalledWith(expect.objectContaining({ 
       order_id: "order_1",
       event_type: "status_change",
