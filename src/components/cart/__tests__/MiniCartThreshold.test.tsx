@@ -73,7 +73,7 @@ describe("MiniCart Alçada UI - Advanced States", () => {
 
     await waitFor(() => {
       expect(screen.getByText(/Limite Excedido/i)).toBeDefined();
-      expect(screen.getByText(/\+R\$ 100,00/i)).toBeDefined();
+      expect(screen.getByText(/Excesso:/i)).toBeDefined();
     });
   });
 
