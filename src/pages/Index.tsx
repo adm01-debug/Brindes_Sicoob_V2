@@ -10,6 +10,7 @@ import { CatalogToolbar } from "@/components/catalog/CatalogToolbar";
 import { CatalogActiveFilters } from "@/components/catalog/CatalogActiveFilters";
 import { CatalogContent } from "@/components/catalog/CatalogContent";
 import { useCatalogState } from "@/hooks/useCatalogState";
+import { BannerCarousel } from "@/components/cms/BannerCarousel";
 import type { ExternalVariantStock } from "@/hooks/useExternalVariantStock";
 
 export default function Index() {
