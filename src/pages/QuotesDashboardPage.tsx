@@ -197,3 +197,5 @@ export function QuotesDashboardPage() {
     </MainLayout>
   );
 }
+
+export default QuotesDashboardPage;

@@ -494,3 +494,5 @@ export function QuotesListPage() {
     </MainLayout>
   );
 }
+
+export default QuotesListPage;
