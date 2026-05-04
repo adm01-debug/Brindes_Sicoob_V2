@@ -108,11 +108,17 @@ export default defineConfig(({ mode }) => ({
   server: {
     port: 8080,
     host: "::",
+    headers: {
+      'Cache-Control': 'no-store',
+    },
   },
   
   preview: {
     port: 4173,
     host: true,
+    headers: {
+      'Cache-Control': 'no-store',
+    },
   },
   
   optimizeDeps: {

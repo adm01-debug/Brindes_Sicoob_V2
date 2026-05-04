@@ -93,7 +93,8 @@ export function isChunkLoadError(error: unknown): boolean {
     message.includes("ChunkLoadError") ||
     message.includes("Importing a module script failed") ||
     message.includes("Unable to preload CSS") ||
-    /\b(412|502|503|504)\b/.test(message)
+    /\b(412|502|503|504)\b/.test(message) ||
+    message.includes("Precondition Failed")
   );
 }
 
