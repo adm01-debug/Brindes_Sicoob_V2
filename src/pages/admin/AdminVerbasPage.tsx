@@ -290,7 +290,14 @@ export default function AdminVerbasPage() {
                                     </span>
                                     <span className="text-muted-foreground">{percent.toFixed(1)}%</span>
                                   </div>
-                                  <div className="w-full h-2 bg-muted rounded-full overflow-hidden border border-border/20">
+                                  <div 
+                                    className="w-full h-2 bg-muted rounded-full overflow-hidden border border-border/20"
+                                    role="progressbar"
+                                    aria-valuenow={percent}
+                                    aria-valuemin={0}
+                                    aria-valuemax={100}
+                                    aria-label={`Consumo de verba: ${percent.toFixed(1)}%`}
+                                  >
                                     <div 
                                       className={`h-full transition-all duration-500 ${percent > alertConfig.criticalThreshold ? "bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.4)]" : percent > alertConfig.warningThreshold ? "bg-yellow-500" : "bg-green-500"}`} 
                                       style={{ width: `${Math.min(100, percent)}%` }} 
