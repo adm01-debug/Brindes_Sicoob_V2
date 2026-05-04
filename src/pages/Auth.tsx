@@ -30,9 +30,11 @@ import { diagnostics } from "@/lib/diagnostics";
 export default function Auth() {
 
   const navigate = useNavigate();
+  const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
   const { toast } = useToast();
-  const { user, isLoading: authLoading, signIn, signOut } = useAuth();
+  const { user, isLoading: authLoading, signIn, signOut, role } = useAuth();
+  const { getDefaultRouteByRole } = await import("@/lib/auth/auth-utils");
   const { validateIPForAuthenticatedUser, logLoginAttempt, fetchCurrentIP } = useIPValidation();
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
