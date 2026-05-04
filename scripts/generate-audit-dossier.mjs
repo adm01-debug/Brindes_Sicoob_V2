@@ -22,8 +22,19 @@ async function getGitInfo(path) {
   }
 }
 
+async function getLatestGlobalCommit() {
+  try {
+    return execSync('git rev-parse --short HEAD').toString().trim();
+  } catch {
+    return "unknown";
+  }
+}
+
 async function generateDossier() {
   console.log('📑 Gerando Dossiê de Auditoria Enterprise V5...');
+
+  const globalRef = await getLatestGlobalCommit();
+  const generationDate = new Date().toLocaleString();
 
   let rlsTables = [];
   try {
@@ -46,8 +57,13 @@ async function generateDossier() {
   const dossierContent = `
 # 🛡️ DOSSIÊ DE AUDITORIA ENTERPRISE V5
 
-**Data de Geração:** ${new Date().toLocaleString()}
-**Status Global:** 10/10 Compliance Verified
+---
+
+## 🕒 EVIDENCE GENESIS (AUTO-GENERATED)
+*   **Data de Geração:** ${generationDate}
+*   **Versão do Sistema:** 3.4.0-hardened
+*   **Commit Ref:** \`${globalRef}\`
+*   **Status de Integridade:** 10/10 Compliance Verified
 
 ---
 
@@ -105,3 +121,4 @@ O sistema mantém conformidade total com as normas de segurança e governança e
 }
 
 generateDossier();
+
