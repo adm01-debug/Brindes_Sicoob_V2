@@ -273,12 +273,25 @@ export default function OrderDetailPage() {
   };
 
   const handleStatusUpdate = async (newStatus: OrderStatus) => {
-    if (!confirm(`Deseja realmente alterar o status do pedido para "${newStatus}"?`)) return;
+    const statusLabels: Record<OrderStatus, string> = {
+      draft: "Rascunho",
+      pending: "Pendente",
+      waiting_approval: "Aguardando Aprovação",
+      escalated_to_board: "Escalado para Diretoria",
+      confirmed: "Confirmado",
+      logistic: "Logística",
+      rejected: "Rejeitado",
+      completed: "Concluído",
+      cancelled: "Cancelado"
+    };
+
+    if (!confirm(`Deseja realmente alterar o status do pedido para "${statusLabels[newStatus]}"?`)) return;
     
     updateOrderStatusMutation.mutate({ 
       orderId: id!, 
       status: newStatus, 
-      currentStatus: orderData?.status as OrderStatus
+      currentStatus: orderData?.status as OrderStatus,
+      observations: `Alteração manual de status para ${statusLabels[newStatus]}`
     });
   };
 
@@ -356,7 +369,12 @@ export default function OrderDetailPage() {
 
             {activeRequest && canApprove ? (
               <>
-                <Button variant="outline" className="text-destructive" onClick={() => setIsRejectDialogOpen(true)}>
+                <Button 
+                  variant="outline" 
+                  className="text-destructive border-destructive/30 hover:bg-destructive/10" 
+                  onClick={() => setIsRejectDialogOpen(true)}
+                >
+                  <X className="mr-2 h-4 w-4" />
                   Rejeitar
                 </Button>
 
@@ -364,8 +382,8 @@ export default function OrderDetailPage() {
                   isOpen={isRejectDialogOpen}
                   onOpenChange={setIsRejectDialogOpen}
                   title="Rejeitar Pedido"
-                  description="Informe o motivo da rejeição deste pedido."
-                  placeholder="Motivo da rejeição..."
+                  description="Informe o motivo detalhado da rejeição para que o PA possa corrigir o pedido."
+                  placeholder="Motivo da rejeição (mínimo 10 caracteres)..."
                   confirmLabel="Confirmar Rejeição"
                   confirmVariant="destructive"
                   value={rejectionReason}
@@ -376,7 +394,11 @@ export default function OrderDetailPage() {
 
                 {orderData.status !== 'escalated_to_board' && (
                   <>
-                    <Button variant="outline" className="border-status-production/50 text-status-production hover:bg-status-production/10" onClick={() => setIsEscalateDialogOpen(true)}>
+                    <Button 
+                      variant="outline" 
+                      className="border-amber-200 text-amber-700 hover:bg-amber-50" 
+                      onClick={() => setIsEscalateDialogOpen(true)}
+                    >
                       <ArrowUpCircle className="mr-2 h-4 w-4" />
                       Escalar Diretoria
                     </Button>
@@ -385,8 +407,8 @@ export default function OrderDetailPage() {
                       isOpen={isEscalateDialogOpen}
                       onOpenChange={setIsEscalateDialogOpen}
                       title="Escalar para Diretoria"
-                      description="Este pedido será enviado para aprovação da Alçada Superior (Diretoria)."
-                      placeholder="Justificativa para escalação..."
+                      description="Este pedido será enviado para a fila de aprovação da Alçada Superior (Board)."
+                      placeholder="Justificativa técnica para escalação..."
                       confirmLabel="Confirmar Escalação"
                       confirmVariant="default"
                       value={requestReason}
@@ -398,7 +420,7 @@ export default function OrderDetailPage() {
                 )}
 
                 <Button 
-                  className="bg-success text-success-foreground hover:bg-success/90" 
+                  className="bg-sicoob-green hover:bg-sicoob-green-dark text-white" 
                   onClick={handleApprove}
                 >
                   <CheckCircle className="mr-2 h-4 w-4" />
@@ -407,7 +429,11 @@ export default function OrderDetailPage() {
               </>
             ) : orderData.status === 'pending' && isOverThreshold && !activeRequest ? (
               <>
-                <Button className="bg-warning text-warning-foreground hover:bg-warning/90" onClick={() => setIsRequestDialogOpen(true)}>
+                <Button 
+                  className="bg-amber-500 hover:bg-amber-600 text-white animate-pulse" 
+                  onClick={() => setIsRequestDialogOpen(true)}
+                >
+                  <AlertTriangle className="mr-2 h-4 w-4" />
                   Solicitar Aprovação
                 </Button>
 
@@ -415,8 +441,8 @@ export default function OrderDetailPage() {
                   isOpen={isRequestDialogOpen}
                   onOpenChange={setIsRequestDialogOpen}
                   title="Solicitar Aprovação de Alçada"
-                  description={`Este pedido de R$ ${orderTotal.toLocaleString('pt-BR')} excede sua alçada de R$ ${threshold.toLocaleString('pt-BR')}. Justifique a necessidade deste pedido:`}
-                  placeholder="Ex: Reposição urgente de material promocional..."
+                  description={`Este pedido de R$ ${orderTotal.toLocaleString('pt-BR')} excede a alçada configurada de R$ ${threshold.toLocaleString('pt-BR')}.`}
+                  placeholder="Justifique a necessidade deste investimento (Ex: Campanha XPTO)..."
                   confirmLabel="Enviar Solicitação"
                   confirmVariant="default"
                   value={requestReason}
@@ -425,6 +451,14 @@ export default function OrderDetailPage() {
                   confirmDisabled={requestReason.length < 10}
                 />
               </>
+            ) : orderData.status === 'pending' && !isOverThreshold ? (
+               <Button 
+                className="bg-sicoob-green hover:bg-sicoob-green-dark text-white" 
+                onClick={handleApprove}
+              >
+                <CheckCircle className="mr-2 h-4 w-4" />
+                Aprovar (Auto-Alçada)
+              </Button>
             ) : null}
           </div>
         </div>
@@ -649,8 +683,47 @@ export default function OrderDetailPage() {
                 <OrderCommentsTab orderId={id!} />
               </TabsContent>
 
-              <TabsContent value="items" className="space-y-4 pt-4">
-                <Card className="border-[1.5px]">
+                <TabsContent value="items" className="space-y-4 pt-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <Card className="border-[1.5px] bg-sicoob-green/5 border-sicoob-green/20">
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-xs font-bold uppercase tracking-wider text-sicoob-green-dark">Integridade do Pedido</CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-2">
+                        <div className="flex justify-between items-center text-sm">
+                          <span className="text-muted-foreground">Itens Auditados</span>
+                          <Badge variant="outline" className="text-sicoob-green-dark border-sicoob-green/30">
+                            {orderItems?.length || 0} Itens
+                          </Badge>
+                        </div>
+                        <div className="flex justify-between items-center text-sm">
+                          <span className="text-muted-foreground">Última Modificação</span>
+                          <span className="font-medium">{orderData?.updated_at ? new Date(orderData.updated_at).toLocaleDateString('pt-BR') : '---'}</span>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    <Card className="border-[1.5px] bg-amber-50/50 border-amber-200/50">
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-xs font-bold uppercase tracking-wider text-amber-700">Fluxo BPMN</CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-2">
+                        <div className="flex justify-between items-center text-sm">
+                          <span className="text-muted-foreground">Alçada Atual</span>
+                          <span className="font-bold text-amber-700">R$ {threshold.toLocaleString('pt-BR')}</span>
+                        </div>
+                        <div className="flex justify-between items-center text-sm">
+                          <span className="text-muted-foreground">Requer Aprovação</span>
+                          <Badge variant={isOverThreshold ? "warning" : "success"} className="h-5">
+                            {isOverThreshold ? "Sim" : "Não"}
+                          </Badge>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+
+                  <Card className="border-[1.5px]">
+
                    <CardHeader>
                      <CardTitle className="text-sm">Auditoria de Itens</CardTitle>
                    </CardHeader>
