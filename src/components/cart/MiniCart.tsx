@@ -9,12 +9,16 @@ import {
   SheetTrigger,
   SheetFooter
 } from "@/components/ui/sheet";
-import { ShoppingCart, Trash2, Plus, Minus } from "lucide-react";
+import { ShoppingCart, Trash2, Plus, Minus, ShieldCheck, AlertCircle, Info } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { formatCurrency } from "@/lib/utils";
 import { Link } from "react-router-dom";
 import { CouponInput } from "./CouponInput";
+import { useApprovalThreshold } from "@/hooks/useApprovalThreshold";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 export function MiniCart() {
   const { items, subtotal, totalItemsCount, removeItem, updateQuantity } = useCart();
