@@ -67,6 +67,69 @@ export class QuoteService {
     if (error) throw error;
   }
 
+  static async reorder(quoteId: string, userId: string, orgId: string | null): Promise<Quote> {
+    const original = await this.getById(quoteId);
+    if (!original) throw new Error("Orçamento original não encontrado");
+
+    // Clean sensitive/metadata for the new quote
+    const { 
+      id, created_at, updated_at, quote_number, status, 
+      total, subtotal, discount_amount, converted_at,
+      ...cleanQuote 
+    } = original as any;
+    
+    const newQuote: Partial<Quote> = {
+      ...cleanQuote,
+      status: 'draft',
+      notes: `Recompra do orçamento #${original.quote_number}. ${original.notes || ''}`,
+    };
+
+    return this.create({
+      quote: newQuote,
+      items: original.items || [],
+      userId,
+      orgId
+    });
+  }
+
+  static async reorderFromOrder(orderId: string, userId: string, orgId: string | null): Promise<Quote> {
+    const { data: order, error: orderErr } = await supabase.from("orders").select("*").eq("id", orderId).single();
+    if (orderErr) throw orderErr;
+    
+    const { data: items, error: itemsErr } = await supabase.from("order_items").select("*").eq("order_id", orderId);
+    if (itemsErr) throw itemsErr;
+
+    const newQuote: Partial<Quote> = {
+      client_id: order.client_id,
+      client_name: order.client_name,
+      client_email: order.client_email,
+      client_phone: order.client_phone,
+      client_company: order.client_company,
+      payment_terms: order.payment_terms,
+      delivery_time: order.delivery_time,
+      shipping_type: order.shipping_type,
+      notes: `Recompra do pedido #${order.order_number}.`,
+      status: 'draft'
+    };
+
+    const quoteItems: QuoteItem[] = (items || []).map(item => ({
+      product_id: item.product_id,
+      product_sku: item.product_sku,
+      product_name: item.product_name,
+      product_image_url: item.product_image_url,
+      quantity: item.quantity,
+      unit_price: item.unit_price,
+      personalizations: []
+    }));
+
+    return this.create({
+      quote: newQuote,
+      items: quoteItems,
+      userId,
+      orgId
+    });
+  }
+
   private static async insertItemsWithPersonalizations(items: QuoteItem[], quoteId: string) {
     const itemsPayload = buildItemsInsertPayload(items, quoteId);
     const { data: insertedItems, error: itemsErr } = await supabase.from("quote_items").insert(itemsPayload).select("*");
