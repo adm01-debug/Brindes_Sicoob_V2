@@ -361,15 +361,20 @@ export default function OrderDetailPage() {
             <p className="text-sm text-muted-foreground">Criado em {new Date(orderData.created_at).toLocaleString('pt-BR')}</p>
           </div>
           <div className="ml-auto flex gap-2">
-            <Button 
-              variant="outline" 
-              size="sm" 
-              className="gap-2 text-xs h-9"
-              onClick={() => toast.info("Exportando relatório de conformidade...")}
-            >
-              <FileText className="h-3.5 w-3.5" />
-              Exportar Auditoria
-            </Button>
+            <div className="flex flex-col gap-1">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="gap-2 text-xs h-9 border-sicoob-green/30 text-sicoob-green-dark hover:bg-sicoob-green/5"
+                onClick={() => toast.info("Exportando relatório de conformidade BPMN...")}
+              >
+                <ShieldCheck className="h-3.5 w-3.5" />
+                Dossiê de Conformidade
+              </Button>
+              <div className="flex items-center justify-center gap-1.5 text-[8px] uppercase tracking-tighter text-muted-foreground font-bold">
+                <Fingerprint className="h-2 w-2" /> Certificado Digital Sicoob
+              </div>
+            </div>
 
             {activeRequest && canApprove ? (
               <>
