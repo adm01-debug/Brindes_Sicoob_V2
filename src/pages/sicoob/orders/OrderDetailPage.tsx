@@ -671,7 +671,7 @@ export default function OrderDetailPage() {
                 {allowedTabs.includes("approvals") && (
                   <TabsTrigger value="pilots" className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none bg-transparent px-0 pb-2 h-auto">
                     <ImageIcon className="h-4 w-4 mr-2" />
-                    Aprovações
+                    Aprovações de Piloto
                   </TabsTrigger>
                 )}
                 {allowedTabs.includes("templates") && (
