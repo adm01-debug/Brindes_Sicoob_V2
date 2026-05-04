@@ -163,6 +163,19 @@ Deno.serve(async (req) => {
       if (profileError) throw profileError;
     }
 
+    // 4. Garantir Orçamento Mensal para PA de Teste
+    const { error: budgetError } = await supabase
+      .from("pa_budgets")
+      .upsert({
+        pa_id: "00000000-0000-0000-0000-000000000003",
+        ano: new Date().getFullYear(),
+        mes: new Date().getMonth() + 1,
+        verba_total: 50000.0,
+        verba_consumida: 0.0,
+        limite_alcada: 10000.0
+      }, { onConflict: 'pa_id,ano,mes' });
+    if (budgetError) throw budgetError;
+
     // Registrar log de auditoria
     await supabase.from("admin_audit_log").insert({
       action: "sicoob_seed_operation",
