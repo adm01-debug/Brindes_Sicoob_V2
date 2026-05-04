@@ -82,6 +82,7 @@ import { OrderInvoicesTab } from "@/components/sicoob/orders/OrderInvoicesTab";
 import { OrderPaymentsTab } from "@/components/sicoob/orders/OrderPaymentsTab";
 import { OrderPilotApprovalsTab } from "@/components/sicoob/orders/OrderPilotApprovalsTab";
 import { OrderTemplatesTab } from "@/components/sicoob/orders/OrderTemplatesTab";
+import { OrderCommentsTab } from "@/components/sicoob/orders/OrderCommentsTab";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -295,7 +296,7 @@ export default function OrderDetailPage() {
   
   // Controle de permissões por aba
   const allowedTabs = useMemo(() => {
-    const tabs = ["status", "logistics", "invoices", "timeline"];
+    const tabs = ["status", "logistics", "invoices", "timeline", "comments"];
     if (isSupervisorOrAbove) {
       tabs.push("payments", "approvals", "templates");
     }
@@ -590,6 +591,12 @@ export default function OrderDetailPage() {
                   <Package className="h-4 w-4 mr-2" />
                   Itens
                 </TabsTrigger>
+                {allowedTabs.includes("comments") && (
+                  <TabsTrigger value="comments" className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none bg-transparent px-0 pb-2 h-auto">
+                    <MessageSquare className="h-4 w-4 mr-2" />
+                    Comentários
+                  </TabsTrigger>
+                )}
                 {allowedTabs.includes("logistics") && (
                   <TabsTrigger value="logistics" className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none bg-transparent px-0 pb-2 h-auto">
                     <Truck className="h-4 w-4 mr-2" />
@@ -628,7 +635,10 @@ export default function OrderDetailPage() {
                 )}
               </TabsList>
 
-              <TabsContent value="items" className="space-y-4 pt-4">
+              <TabsContent value="comments" className="pt-6">
+                <OrderCommentsTab orderId={id!} />
+              </TabsContent>
+
                 <Card className="border-[1.5px]">
                    <CardHeader>
                      <CardTitle className="text-sm">Auditoria de Itens</CardTitle>
