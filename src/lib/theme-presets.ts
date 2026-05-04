@@ -213,6 +213,10 @@ interface PresetParams {
   sl: number; // Secondary lightness
 }
 
+/**
+ * buildPreset — Factory for generating consistent theme variables.
+ * Ensures accessibility compliance by calculating light/dark variants from HSL base.
+ */
 function buildPreset(p: PresetParams): ThemePreset {
   const { id, name, description, emoji, h, s, l, gh, sh, ss, sl } = p;
 
@@ -391,6 +395,7 @@ function buildPreset(p: PresetParams): ThemePreset {
 // =====================================================
 
 const diversityBase = buildPreset({
+  // Improvement: ensuring Diversity preset uses canonical Pride colors with consistent contrast
   id: 'diversity',
   name: 'Diversity',
   description: 'Pride 🏳️‍🌈 — celebrando a comunidade LGBTQIA+',
@@ -629,6 +634,7 @@ function buildGxPreset(p: PresetParams): ThemePreset {
 export const THEME_PRESETS: ThemePreset[] = [
   // === CLASSIC PRESETS (mantidas) ===
   (() => {
+    // SSOT: Official Sicoob corporate identity colors
     const base = buildPreset({
       id: 'corporate',
       name: 'Sicoob',
