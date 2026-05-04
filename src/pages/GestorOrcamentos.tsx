@@ -7,7 +7,9 @@ import { QuotesDashboardPage } from "./QuotesDashboardPage";
 import { ClipboardCheck, LayoutGrid, BarChart3, Layers } from "lucide-react";
 import { QuoteKanbanBoard } from "@/components/quotes/QuoteKanbanBoard";
 import { OrderConsolidationPanel } from "@/components/orders/OrderConsolidationPanel";
+import { QuoteConsolidationPanel } from "@/components/quotes/QuoteConsolidationPanel";
 import { useAuth } from "@/contexts/AuthContext";
+import { useQuotes } from "@/hooks/useQuotes";
 
 /**
  * GestorOrcamentos — Painel central do Gestor de Compras (Singular).
