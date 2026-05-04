@@ -28,10 +28,20 @@ describe("QuoteService — Melhorias Recompra", () => {
       selects: {
         quotes: MOCK_QUOTE,
         quote_items: MOCK_QUOTE.items,
-        quote_item_personalizations: []
+        quote_item_personalizations: [],
+        personalization_techniques: []
       }
     });
-    vi.doMock("@/integrations/supabase/client", () => ({ supabase: mock.client }));
+    vi.doMock("@/integrations/supabase/client", () => ({ 
+      supabase: {
+        ...mock.client,
+        auth: {
+          ...mock.client.auth,
+          getSession: vi.fn(async () => ({ data: { session: null }, error: null })),
+          getUser: vi.fn(async () => ({ data: { user: { id: USER_ID } }, error: null }))
+        }
+      }
+    }));
     vi.mock("@/lib/auth/apply-seller-scope", () => ({ applySellerScope: (q: any) => q }));
   });
 
