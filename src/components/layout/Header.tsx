@@ -19,6 +19,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { useOnboardingContext } from "@/contexts/OnboardingContext";
 import { useOrganization } from "@/contexts/OrganizationContext";
+import { usePWAInstall } from "@/hooks/usePWAInstall";
 
 import { StockAlertsIndicator } from "@/components/inventory/StockAlertsIndicator";
 import { NotificationBell } from "@/components/notifications/NotificationDrawer";
