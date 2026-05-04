@@ -6,7 +6,17 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { HelmetProvider } from "react-helmet-async";
 
-// Mock do contexto de autenticação e onboarding
+// Mock total do MainLayout para evitar dependências de contexto complexas
+vi.mock("@/components/layout/MainLayout", () => ({
+  MainLayout: ({ children }: { children: React.ReactNode }) => <div data-testid="main-layout">{children}</div>,
+}));
+
+// Mock do PageSEO
+vi.mock("@/components/seo/PageSEO", () => ({
+  PageSEO: () => null,
+}));
+
+// Mock do contexto de autenticação
 vi.mock("@/contexts/AuthContext", () => ({
   useAuth: () => ({
     user: { id: "test-user" },
@@ -15,21 +25,6 @@ vi.mock("@/contexts/AuthContext", () => ({
     isSupervisorOrAbove: true,
   }),
   AuthProvider: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-}));
-
-vi.mock("@/hooks/useOnboarding", () => ({
-  useOnboarding: () => ({
-    startTour: vi.fn(),
-    isActive: false,
-  }),
-}));
-
-vi.mock("@/hooks/useDevGate", () => ({
-  useDevGate: () => ({
-    isDev: true,
-    canAccess: () => true,
-    flags: [],
-  }),
 }));
 
 // Mock do Supabase
