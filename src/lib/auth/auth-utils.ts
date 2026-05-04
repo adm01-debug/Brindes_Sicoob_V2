@@ -50,3 +50,27 @@ export function getHighestRole(roles: AppRole[]): AppRole | null {
 export function isSupervisorOrAbove(roles: AppRole[]): boolean {
   return roles.some((r) => ["dev", "gestor_compras", "supervisor", "admin", "manager"].includes(r));
 }
+
+/**
+ * Retorna a rota padrão para redirecionamento após login baseado no papel.
+ */
+export function getDefaultRouteByRole(role: AppRole | null): string {
+  if (!role) return "/";
+
+  switch (role) {
+    case "dev":
+    case "admin":
+    case "supervisor":
+      return "/admin/telemetria";
+    case "gestor_compras":
+    case "comprador_singular":
+      return "/gestor/orcamentos";
+    case "gerente_pa":
+    case "comprador_pac":
+      return "/sicoob/painel-pa";
+    case "vendedor":
+      return "/sicoob/vendas";
+    default:
+      return "/";
+  }
+}
