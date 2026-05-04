@@ -97,5 +97,48 @@ describe("sicoobOrderService", () => {
     await expect(sicoobOrderService.updateOrderStatus("order_1", "confirmed"))
       .rejects.toThrow("Usuário não autenticado");
   });
+  it("correctly simulates E2E flow from pending to delivered", async () => {
+    (supabase.auth.getUser as any).mockResolvedValue({ data: { user: { id: "mgr_123", email: "manager@sicoob.com" } }, error: null });
+    
+    const insertMock = vi.fn().mockResolvedValue({ error: null });
+    const updateMock = vi.fn().mockReturnValue({ eq: vi.fn().mockResolvedValue({ error: null }) });
+    const selectMock = {
+      eq: vi.fn().mockReturnThis(),
+      single: vi.fn().mockResolvedValue({ data: { created_by: "pa_user_456" }, error: null })
+    };
+
+    vi.spyOn(supabase, "from").mockImplementation((table) => {
+      if (table === "sicoob_orders") return { update: updateMock, select: vi.fn().mockReturnValue(selectMock) } as any;
+      if (table === "order_audit_events") return { insert: insertMock } as any;
+      if (table === "notifications") return { insert: insertMock } as any;
+      return { select: vi.fn().mockReturnThis(), eq: vi.fn().mockReturnThis(), single: vi.fn() } as any;
+    });
+
+    // 1. Pending -> Waiting Approval (Simulating exceed budget)
+    await sicoobOrderService.updateOrderStatus("order_1", "waiting_approval", "pending", "Excedeu orçamento");
+    expect(updateMock).toHaveBeenCalledWith(expect.objectContaining({ status: "waiting_approval" }));
+    
+    // 2. Waiting Approval -> Confirmed (Manager approval)
+    await sicoobOrderService.updateOrderStatus("order_1", "confirmed", "waiting_approval", "Aprovado por gestor");
+    expect(updateMock).toHaveBeenCalledWith(expect.objectContaining({ status: "confirmed" }));
+
+    // 3. Confirmed -> In Production
+    await sicoobOrderService.updateOrderStatus("order_1", "in_production", "confirmed");
+    expect(updateMock).toHaveBeenCalledWith(expect.objectContaining({ status: "in_production" }));
+
+    // 4. In Production -> In Separation
+    await sicoobOrderService.updateOrderStatus("order_1", "in_separation", "in_production");
+    expect(updateMock).toHaveBeenCalledWith(expect.objectContaining({ status: "in_separation" }));
+
+    // 5. In Separation -> In Transit
+    await sicoobOrderService.updateOrderStatus("order_1", "in_transit", "in_separation");
+    expect(updateMock).toHaveBeenCalledWith(expect.objectContaining({ status: "in_transit" }));
+
+    // 6. In Transit -> Delivered
+    await sicoobOrderService.updateOrderStatus("order_1", "delivered", "in_transit");
+    expect(updateMock).toHaveBeenCalledWith(expect.objectContaining({ status: "delivered" }));
+
+    expect(insertMock).toHaveBeenCalledTimes(12); // 6 status changes * (1 audit + 1 notification)
+  });
 });
 
