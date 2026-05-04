@@ -84,12 +84,21 @@ export default function Auth() {
     loadIPInfo();
   }, []);
 
-  // Redirect if already logged in
+  // Redirect if already logged in - using role-based routing
   useEffect(() => {
-    if (user && !authLoading) {
-      navigate("/");
+    if (user && !authLoading && role) {
+      const redirectPath = searchParams.get("redirect") || "/";
+      
+      // If it's just the root or empty, apply role-based default
+      if (redirectPath === "/" || redirectPath === "") {
+        import("@/lib/auth/auth-utils").then(({ getDefaultRouteByRole }) => {
+          navigate(getDefaultRouteByRole(role));
+        });
+      } else {
+        navigate(redirectPath);
+      }
     }
-  }, [user, authLoading, navigate]);
+  }, [user, authLoading, navigate, role, searchParams]);
 
   const loginForm = useForm<LoginForm>({
     resolver: zodResolver(loginSchema),
