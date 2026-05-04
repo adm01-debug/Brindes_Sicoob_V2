@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Building2, Landmark, Wallet, Users } from "lucide-react";
+import { Building2, Landmark, Wallet, Users, BellRing } from "lucide-react";
 import { CooperativasTab } from "./tabs/CooperativasTab";
 import { PAsTab } from "./tabs/PAsTab";
 import { BudgetsTab } from "./tabs/BudgetsTab";
 import { UserAssignmentTab } from "./tabs/UserAssignmentTab";
+import { NotificationSettingsTab } from "./tabs/NotificationSettingsTab";
 
 const SicoobManagementPage = () => {
   return (
@@ -18,7 +19,7 @@ const SicoobManagementPage = () => {
       </div>
 
       <Tabs defaultValue="cooperativas" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-4 lg:w-[600px]">
+        <TabsList className="grid w-full grid-cols-5 lg:w-[750px]">
           <TabsTrigger value="cooperativas" className="flex items-center gap-2">
             <Landmark className="h-4 w-4" />
             <span>Singulares</span>
@@ -35,7 +36,12 @@ const SicoobManagementPage = () => {
             <Users className="h-4 w-4" />
             <span>Vínculos</span>
           </TabsTrigger>
+          <TabsTrigger value="notifications" className="flex items-center gap-2">
+            <BellRing className="h-4 w-4" />
+            <span>Alertas</span>
+          </TabsTrigger>
         </TabsList>
+
 
         <TabsContent value="cooperativas">
           <CooperativasTab />
@@ -51,6 +57,10 @@ const SicoobManagementPage = () => {
 
         <TabsContent value="users">
           <UserAssignmentTab />
+        </TabsContent>
+
+        <TabsContent value="notifications">
+          <NotificationSettingsTab />
         </TabsContent>
       </Tabs>
     </div>

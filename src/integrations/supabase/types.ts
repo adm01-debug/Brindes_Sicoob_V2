@@ -4542,6 +4542,44 @@ export type Database = {
           },
         ]
       }
+      pa_notification_settings: {
+        Row: {
+          channel: string
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          pa_id: string
+          recipient_email: string | null
+          webhook_url: string | null
+        }
+        Insert: {
+          channel: string
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          pa_id: string
+          recipient_email?: string | null
+          webhook_url?: string | null
+        }
+        Update: {
+          channel?: string
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          pa_id?: string
+          recipient_email?: string | null
+          webhook_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pa_notification_settings_pa_id_fkey"
+            columns: ["pa_id"]
+            isOneToOne: false
+            referencedRelation: "postos_atendimento"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       pa_singularidades: {
         Row: {
           code: string | null

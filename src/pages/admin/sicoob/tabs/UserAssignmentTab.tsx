@@ -46,6 +46,7 @@ export const UserAssignmentTab = () => {
           role,
           cooperativa_id,
           pa_id,
+          approval_threshold,
           cooperativa:cooperativas(name, code),
           pa:postos_atendimento(name, code)
         `)
@@ -79,16 +80,19 @@ export const UserAssignmentTab = () => {
       cooperativaId,
       paId,
       role,
+      approvalThreshold,
     }: {
       userId: string;
       cooperativaId?: string | null;
       paId?: string | null;
       role?: string;
+      approvalThreshold?: number | null;
     }) => {
       const updates: any = {};
       if (cooperativaId !== undefined) updates.cooperativa_id = cooperativaId;
       if (paId !== undefined) updates.pa_id = paId;
       if (role !== undefined) updates.role = role;
+      if (approvalThreshold !== undefined) updates.approval_threshold = approvalThreshold;
 
       const { error } = await supabase
         .from("profiles")
@@ -137,6 +141,7 @@ export const UserAssignmentTab = () => {
               <TableHead>Papel Atual</TableHead>
               <TableHead>Singular</TableHead>
               <TableHead>PA</TableHead>
+              <TableHead>Alçada Individual (R$)</TableHead>
               <TableHead className="text-right">Ações</TableHead>
             </TableRow>
           </TableHeader>
@@ -233,6 +238,23 @@ export const UserAssignmentTab = () => {
                         ))}
                       </SelectContent>
                     </Select>
+                  </TableCell>
+                  <TableCell>
+                    <Input
+                      type="number"
+                      className="w-32 h-9"
+                      placeholder="Sem limite"
+                      defaultValue={user.approval_threshold || ""}
+                      onBlur={(e) => {
+                        const val = e.target.value === "" ? null : parseFloat(e.target.value);
+                        if (val !== user.approval_threshold) {
+                          updateMutation.mutate({
+                            userId: user.id,
+                            approvalThreshold: val,
+                          });
+                        }
+                      }}
+                    />
                   </TableCell>
                   <TableCell className="text-right">
                     <Button variant="ghost" size="sm" className="gap-2">

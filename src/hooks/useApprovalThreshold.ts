@@ -41,8 +41,8 @@ export const useApprovalThreshold = (items?: any[]) => {
     if (isDev || isSupervisor) return false;
     if (isGestorCompras && !profile?.pa_id) return false;
 
-    // 1. Check Global Threshold
-    const globalThreshold = budget?.limite_alcada || 0;
+    // 1. Check Manager/Individual Threshold (SSOT: profile.approval_threshold overrides budget)
+    const globalThreshold = profile?.approval_threshold || budget?.limite_alcada || 0;
     if (amount > globalThreshold) return true;
 
     // 2. Check Category-specific Thresholds

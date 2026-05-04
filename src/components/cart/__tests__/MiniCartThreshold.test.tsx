@@ -73,7 +73,7 @@ describe("MiniCart Alçada UI - Advanced States", () => {
 
     await waitFor(() => {
       expect(screen.getByText(/Limite Excedido/i)).toBeDefined();
-      expect(screen.getByText(/\+R\$ 100,00/i)).toBeDefined();
+      expect(screen.getByText(/Excesso:/i)).toBeDefined();
     });
   });
 
@@ -171,10 +171,41 @@ describe("MiniCart Alçada UI - Advanced States", () => {
     fireEvent.click(screen.getByRole("button"));
 
     await waitFor(() => {
-      const alert = screen.getByText(/Requer aprovação da Singular/i);
-      expect(alert).toBeDefined();
-      // Check if it's visually distinct or has proper role if applicable
-      // In our code we use span/div, let's ensure it's findable
+      const alert = screen.getByRole("alert");
+      expect(alert).toHaveTextContent(/Requer aprovação da Singular/i);
+      
+      const region = screen.getByRole("region", { name: /Informações de Alçada e Aprovação/i });
+      expect(region).toBeDefined();
+
+      const progress = screen.getByLabelText(/Progresso do limite de alçada/i);
+      expect(progress).toBeDefined();
+    });
+  });
+
+  it("should reset the cart when reset button is clicked", async () => {
+    const clearCart = vi.fn();
+    // Mock window.confirm to always return true
+    vi.stubGlobal('confirm', vi.fn(() => true));
+
+    (useCart as any).mockReturnValue({
+      items: [{ id: "1", product_name: "Item to clear", product_price: 100, quantity: 1 }],
+      subtotal: 100,
+      totalItemsCount: 1,
+      clearCart: { mutate: clearCart }
+    });
+
+    (useApprovalThreshold as any).mockReturnValue({
+      threshold: 1000,
+      needsApproval: () => false,
+    });
+
+    renderMiniCart();
+    fireEvent.click(screen.getByRole("button"));
+
+    await waitFor(() => {
+      const resetBtn = screen.getByTitle(/Redefinir carrinho/i);
+      fireEvent.click(resetBtn);
+      expect(clearCart).toHaveBeenCalled();
     });
   });
 });

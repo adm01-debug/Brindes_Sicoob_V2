@@ -12,4 +12,5 @@ export const quoteRoutes = [
   defineRoute({ path: "/orcamentos/novo", component: lazyWithRetry(() => import("@/pages/QuoteBuilderPage")) }),
   defineRoute({ path: "/orcamentos/:id/editar", component: lazyWithRetry(() => import("@/pages/QuoteBuilderPage")) }),
   defineRoute({ path: "/orcamentos/:id", component: lazyWithRetry(() => import("@/pages/QuoteViewPage")) }),
+  defineRoute({ path: "/orcamentos/historico-aprovacoes", component: lazyWithRetry(() => import("@/pages/quotes/QuoteApprovalHistoryPage")) }),
 ] as const;

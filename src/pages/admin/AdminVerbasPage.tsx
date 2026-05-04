@@ -25,6 +25,9 @@ export default function AdminVerbasPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingBudget, setEditingBudget] = useState<any>(null);
+  const [isCategoryFormOpen, setIsCategoryFormOpen] = useState(false);
+  const [newCategoryThreshold, setNewCategoryThreshold] = useState({ pa_id: '', category_id: '', limite_alcada: 0 });
+
   
   // Budget alert settings
   const [alertConfig, setAlertConfig] = useState({
@@ -32,6 +35,34 @@ export default function AdminVerbasPage() {
     criticalThreshold: 90  // 90%
   });
 
+  const [categoryThresholds, setCategoryThresholds] = useState<any[]>([]);
+  const [categories, setCategories] = useState<any[]>([]);
+
+  const fetchCategoryData = async () => {
+    const { data: ctData } = await supabase
+      .from('pa_category_thresholds')
+      .select('*, postos_atendimento(nome)')
+      .order('pa_id');
+    setCategoryThresholds(ctData || []);
+
+    const { data: cData } = await supabase
+      .from('product_categories')
+      .select('id, name')
+      .order('name');
+    setCategories(cData || []);
+  };
+
+  const exportAuditToCSV = () => {
+    const ws = XLSX.utils.json_to_sheet(auditLogs.map(log => ({
+      Data: format(new Date(log.created_at), 'dd/MM/yyyy HH:mm'),
+      Evento: log.event_type,
+      Usuario: log.metadata?.user_email || 'Sistema',
+      Detalhes: JSON.stringify(log.payload)
+    })));
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Histórico");
+    XLSX.writeFile(wb, `auditoria_verbas_${new Date().toISOString().split('T')[0]}.xlsx`);
+  };
 
   const { data: auditLogs = [] } = useQuery({
     queryKey: ['admin-budgets-audit'],
@@ -95,6 +126,42 @@ export default function AdminVerbasPage() {
     } catch (error) {
       console.error("Error saving budget:", error);
       toast.error("Erro ao salvar verba");
+    }
+  };
+
+  const handleSaveCategoryThreshold = async () => {
+    try {
+      if (!newCategoryThreshold.pa_id || !newCategoryThreshold.category_id) {
+        toast.error("Preencha todos os campos");
+        return;
+      }
+      const { error } = await supabase
+        .from('pa_category_thresholds')
+        .insert({
+          pa_id: newCategoryThreshold.pa_id,
+          category_id: parseInt(newCategoryThreshold.category_id),
+          limite_alcada: newCategoryThreshold.limite_alcada
+        });
+      if (error) throw error;
+      toast.success("Limite por categoria salvo!");
+      setIsCategoryFormOpen(false);
+      fetchCategoryData();
+    } catch (error) {
+      console.error(error);
+      toast.error("Erro ao salvar limite");
+    }
+  };
+
+  const handleDeleteCategoryThreshold = async (id: string) => {
+    if (!confirm("Remover este limite específico?")) return;
+    try {
+      const { error } = await supabase.from('pa_category_thresholds').delete().eq('id', id);
+      if (error) throw error;
+      toast.success("Limite removido");
+      fetchCategoryData();
+    } catch (error) {
+      console.error(error);
+      toast.error("Erro ao remover");
     }
   };
 
@@ -248,16 +315,49 @@ export default function AdminVerbasPage() {
 
           <TabsContent value="categories">
             <Card>
-              <CardHeader>
-                <CardTitle>Limites por Categoria (Override)</CardTitle>
-                <CardDescription>Defina alçadas específicas para categorias de produtos por PA.</CardDescription>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0">
+                <div>
+                  <CardTitle>Limites por Categoria (Override)</CardTitle>
+                  <CardDescription>Defina alçadas específicas para categorias de produtos por PA.</CardDescription>
+                </div>
+                <Button size="sm" className="gap-2" onClick={() => setIsCategoryFormOpen(true)}>
+                  <Plus className="h-4 w-4" /> Novo Limite
+                </Button>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  <div className="rounded-md border p-8 text-center text-muted-foreground">
-                    <AlertTriangle className="h-10 w-10 mx-auto mb-3 opacity-20" />
-                    <p>Módulo de limites por categoria está sendo carregado...</p>
-                  </div>
+                <div className="rounded-md border">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>PA</TableHead>
+                        <TableHead>Categoria</TableHead>
+                        <TableHead>Limite Alçada</TableHead>
+                        <TableHead className="text-right">Ações</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {categoryThresholds.length === 0 ? (
+                        <TableRow><TableCell colSpan={4} className="text-center py-8 text-muted-foreground">Nenhum limite específico cadastrado</TableCell></TableRow>
+                      ) : (
+                        categoryThresholds.map((ct) => (
+                          <TableRow key={ct.id}>
+                            <TableCell>{ct.postos_atendimento?.nome}</TableCell>
+                            <TableCell>
+                              <Badge variant="outline">
+                                {categories.find(c => c.id === ct.category_id)?.name || ct.category_id}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="font-bold text-primary">R$ {ct.limite_alcada.toLocaleString()}</TableCell>
+                            <TableCell className="text-right">
+                              <Button variant="ghost" size="icon" onClick={() => handleDeleteCategoryThreshold(ct.id)}>
+                                <Trash2 className="h-4 w-4 text-destructive" />
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      )}
+                    </TableBody>
+                  </Table>
                 </div>
               </CardContent>
             </Card>
@@ -270,6 +370,14 @@ export default function AdminVerbasPage() {
                 <CardDescription>Últimas 50 ações realizadas no módulo de verbas</CardDescription>
               </CardHeader>
               <CardContent>
+                <div className="flex justify-end gap-2 mb-4">
+                  <Button variant="outline" size="sm" onClick={() => exportAuditToCSV()} className="gap-2">
+                    <Download className="h-4 w-4" /> CSV
+                  </Button>
+                  <Button variant="outline" size="sm" onClick={() => window.print()} className="gap-2">
+                    <FileText className="h-4 w-4" /> PDF (Imprimir)
+                  </Button>
+                </div>
                 <div className="rounded-md border">
                   <Table>
                     <TableHeader>
@@ -303,6 +411,54 @@ export default function AdminVerbasPage() {
       </div>
 
       <BudgetFormDialog open={isFormOpen} onOpenChange={setIsFormOpen} budget={editingBudget} onSave={handleSave} pas={pas} />
+
+      <Dialog open={isCategoryFormOpen} onOpenChange={setIsCategoryFormOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Novo Limite por Categoria</DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label>Posto de Atendimento</Label>
+              <Select onValueChange={(v) => setNewCategoryThreshold(prev => ({ ...prev, pa_id: v }))}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione o PA" />
+                </SelectTrigger>
+                <SelectContent>
+                  {pas.map(p => (
+                    <SelectItem key={p.id} value={p.id}>{p.nome}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid gap-2">
+              <Label>Categoria</Label>
+              <Select onValueChange={(v) => setNewCategoryThreshold(prev => ({ ...prev, category_id: v }))}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione a Categoria" />
+                </SelectTrigger>
+                <SelectContent>
+                  {categories.map(c => (
+                    <SelectItem key={c.id} value={String(c.id)}>{c.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid gap-2">
+              <Label>Limite de Alçada (R$)</Label>
+              <Input 
+                type="number" 
+                value={newCategoryThreshold.limite_alcada} 
+                onChange={(e) => setNewCategoryThreshold(prev => ({ ...prev, limite_alcada: parseFloat(e.target.value) }))} 
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsCategoryFormOpen(false)}>Cancelar</Button>
+            <Button onClick={handleSaveCategoryThreshold}>Salvar</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </MainLayout>
   );
 }

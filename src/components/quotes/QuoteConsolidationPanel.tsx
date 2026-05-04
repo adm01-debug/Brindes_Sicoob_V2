@@ -50,26 +50,6 @@ interface ChangeLogEntry {
   oldValue?: string;
   newValue?: string;
 }
-import { 
-  Card, 
-  CardContent, 
-  CardDescription, 
-  CardHeader, 
-  CardTitle 
-} from "@/components/ui/card";
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
-} from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { formatCurrency } from "@/utils/formatters";
-import { Quote, QuoteItem } from "@/hooks/quotes/quoteTypes";
-import { Package, Hash, Layers, PieChart, FileText, Search, Filter } from "lucide-react";
 
 interface QuoteConsolidationPanelProps {
   quotes: Quote[];
