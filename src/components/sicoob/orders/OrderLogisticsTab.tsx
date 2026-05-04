@@ -117,10 +117,16 @@ export function OrderLogisticsTab({ orderId }: OrderLogisticsTabProps) {
             </div>
           </div>
           <Button 
+            className="bg-sicoob-green hover:bg-sicoob-green-dark text-white"
             onClick={handleUpdateTracking} 
             disabled={updateLogistics.isPending || !trackingCode.trim() || !carrier.trim()}
           >
-            {updateLogistics.isPending ? "Salvando..." : "Salvar Informações"}
+            {updateLogistics.isPending ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Salvando...
+              </>
+            ) : "Confirmar Rastreio"}
           </Button>
         </CardContent>
       </Card>

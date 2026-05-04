@@ -120,11 +120,15 @@ export function OrderInvoicesTab({ orderId }: OrderInvoicesTabProps) {
             <Card key={invoice.id}>
               <CardContent className="flex items-center justify-between py-4">
                 <div className="flex items-center gap-4">
-                  <div className="p-2 bg-primary/10 rounded">
-                    {invoice.file_type === 'xml' ? <FileCode className="h-6 w-6 text-primary" /> : <FileText className="h-6 w-6 text-primary" />}
+                  <div className="p-2 bg-sicoob-green/10 rounded">
+                    {invoice.file_type === 'xml' ? (
+                      <FileCode className="h-6 w-6 text-sicoob-green" />
+                    ) : (
+                      <FileText className="h-6 w-6 text-sicoob-green" />
+                    )}
                   </div>
                   <div>
-                    <p className="font-medium">NF #{invoice.invoice_number}</p>
+                    <p className="font-bold text-sicoob-green-dark">NF #{invoice.invoice_number}</p>
                     <p className="text-xs text-muted-foreground">
                       {invoice.file_type.toUpperCase()} • Enviado em {new Date(invoice.created_at).toLocaleDateString('pt-BR')}
                     </p>
