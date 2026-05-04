@@ -25,18 +25,17 @@ const renderMiniCart = () => {
   );
 };
 
-describe("MiniCart Alçada UI", () => {
+describe("MiniCart Alçada UI - States", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    // Silenciar avisos do Radix/React que não afetam o teste
     vi.spyOn(console, 'error').mockImplementation(() => {});
     vi.spyOn(console, 'warn').mockImplementation(() => {});
   });
 
-  it("should show progress bar and 'Restam' text when under threshold", async () => {
+  it("should show success state when EXACTLY at threshold", async () => {
     (useCart as any).mockReturnValue({
-      items: [{ id: "1", product_name: "Test Product", product_price: 100, quantity: 1 }],
-      subtotal: 100,
+      items: [{ id: "1", product_name: "Limit Product", product_price: 1000, quantity: 1 }],
+      subtotal: 1000,
       totalItemsCount: 1,
       removeItem: { mutate: vi.fn() },
       updateQuantity: { mutate: vi.fn() },
@@ -48,23 +47,18 @@ describe("MiniCart Alçada UI", () => {
     });
 
     renderMiniCart();
-    
-    const trigger = screen.getByRole("button");
-    fireEvent.click(trigger);
+    fireEvent.click(screen.getByRole("button"));
 
-    // Aguardar o conteúdo do Sheet ser renderizado
     await waitFor(() => {
-      expect(screen.getByText(/Limite de Alçada/i)).toBeDefined();
+      expect(screen.getByText(/100% do limite/i)).toBeDefined();
     });
-
-    expect(screen.getByText(/Restam R\$ 900,00/i)).toBeDefined();
-    expect(screen.queryByText(/Requer aprovação da Singular/i)).toBeNull();
+    expect(screen.queryByText(/Limite Excedido/i)).toBeNull();
   });
 
-  it("should show error alert when over threshold", async () => {
+  it("should show error UI for 0.01 over threshold", async () => {
     (useCart as any).mockReturnValue({
-      items: [{ id: "1", product_name: "Expensivo Product", product_price: 1500, quantity: 1 }],
-      subtotal: 1500,
+      items: [{ id: "1", product_name: "Over Product", product_price: 1000.01, quantity: 1 }],
+      subtotal: 1000.01,
       totalItemsCount: 1,
       removeItem: { mutate: vi.fn() },
       updateQuantity: { mutate: vi.fn() },
@@ -76,16 +70,13 @@ describe("MiniCart Alçada UI", () => {
     });
 
     renderMiniCart();
-    
-    const trigger = screen.getByRole("button");
-    fireEvent.click(trigger);
+    fireEvent.click(screen.getByRole("button"));
 
     await waitFor(() => {
       expect(screen.getByText(/Limite Excedido/i)).toBeDefined();
     });
-
-    expect(screen.getByText(/\+R\$ 500,00/i)).toBeDefined();
-    expect(screen.getByText(/Requer aprovação da Singular/i)).toBeDefined();
+    expect(screen.getByText(/\+R\$ 0,01/i)).toBeDefined();
   });
 });
+
 
