@@ -213,6 +213,7 @@ export function CouponManager() {
           <DialogFooter><Button variant="outline" onClick={() => setIsFormOpen(false)}>Cancelar</Button><Button onClick={() => handleSave(editingCoupon)}>Salvar</Button></DialogFooter>
         </DialogContent>
       </Dialog>
-    </Tabs>
+      </Tabs>
+    </div>
   );
 }
