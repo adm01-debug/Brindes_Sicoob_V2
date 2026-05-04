@@ -204,7 +204,14 @@ export function NotificationPreferences() {
             </p>
           </div>
         </div>
-      </CardContent>
-    </Card>
-  );
+          </CardContent>
+        </Card>
+      </TabsContent>
+
+      <TabsContent value="omnichannel">
+        <NotificationOmnichannelPanel />
+      </TabsContent>
+    </Tabs>
+  </div>
+);
 }
