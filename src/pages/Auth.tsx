@@ -33,8 +33,7 @@ export default function Auth() {
   const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
   const { toast } = useToast();
-  const { user, isLoading: authLoading, signIn, signOut, role } = useAuth();
-  const { getDefaultRouteByRole } = await import("@/lib/auth/auth-utils");
+  const { user, isLoading: authLoading, signIn, signOut, role, isAuthenticated } = useAuth();
   const { validateIPForAuthenticatedUser, logLoginAttempt, fetchCurrentIP } = useIPValidation();
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
