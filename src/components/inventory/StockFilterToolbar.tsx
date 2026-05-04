@@ -62,7 +62,7 @@ const STATUS_OPTIONS: { value: StockStatus | 'all'; label: string; icon: React.R
 export function StockFilterToolbar({
   filters, onUpdateFilter, onResetFilters,
   categories, suppliers, colors, colorGroups,
-  totalProducts, filteredCount,
+  totalProducts, filteredCount, alertTypes, onUpdateAlertFilter, currentAlertFilter,
 }: StockFilterToolbarProps) {
   const [localSearch, setLocalSearch] = useState(filters.search);
   const [quantityInput, setQuantityInput] = useState(filters.minQuantityNeeded?.toString() || '');
