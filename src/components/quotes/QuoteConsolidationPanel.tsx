@@ -54,9 +54,56 @@ export function QuoteConsolidationPanel({
   title = "Consolidação de Orçamentos", 
   description = "Visão unificada de múltiplos orçamentos para análise de compra."
 }: QuoteConsolidationPanelProps) {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' } | null>({ key: 'total_value', direction: 'desc' });
+  const [searchTerm, setSearchTerm] = useState(() => localStorage.getItem('quote_consolidation_search') || "");
+  const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' } | null>(() => {
+    const saved = localStorage.getItem('quote_consolidation_sort');
+    return saved ? JSON.parse(saved) : { key: 'total_value', direction: 'desc' };
+  });
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
+
+  useEffect(() => {
+    localStorage.setItem('quote_consolidation_search', searchTerm);
+  }, [searchTerm]);
+
+  useEffect(() => {
+    localStorage.setItem('quote_consolidation_sort', JSON.stringify(sortConfig));
+  }, [sortConfig]);
+
+  const toggleExpand = (key: string) => {
+    setExpandedItems(prev => 
+      prev.includes(key) ? prev.filter(k => k !== key) : [...prev, key]
+    );
+  };
+
+  const exportToCSV = () => {
+    if (!consolidatedData) return;
+    
+    const headers = ["Produto", "SKU", "Qtd Total", "Preço Médio", "Total", "Nº Orçamentos"];
+    const rows = consolidatedData.items.map(item => [
+      item.product_name,
+      item.product_sku || "",
+      item.total_quantity,
+      item.average_price.toFixed(2),
+      item.total_value.toFixed(2),
+      item.sources.length
+    ]);
+
+    const csvContent = [
+      headers.join(","),
+      ...rows.map(row => row.join(","))
+    ].join("\n");
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.setAttribute("href", url);
+    link.setAttribute("download", `consolidacao_compras_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    toast.success("Exportação concluída!");
+  };
 
   const toggleExpand = (key: string) => {
     setExpandedItems(prev => 
