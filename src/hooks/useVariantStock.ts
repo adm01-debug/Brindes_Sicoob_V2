@@ -151,6 +151,8 @@ export function useVariantStock() {
     if (filters.showOnlyWithAlerts || (alertTypeFilter !== 'all')) {
       items = items.filter(p => activeAlertProductIds.has(p.productId));
     }
+
+    if (filters.status) {
       items = items.filter(p => {
         if (p.overallStatus === filters.status) return true;
         // "low_stock" filter should also include "critical" products
