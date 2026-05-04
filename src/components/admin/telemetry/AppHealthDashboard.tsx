@@ -1,11 +1,11 @@
-import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useState, useEffect } from 'react';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
-import { Activity, AlertTriangle, Gauge, Search, Webhook, Zap, Timer, Database } from 'lucide-react';
+import { Activity, AlertTriangle, Gauge, Search, Webhook, Zap, Timer, Database, ShieldCheck, Heart, LayoutGrid, Clock } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
   useAppHealth,
@@ -15,16 +15,8 @@ import {
 } from '@/pages/admin/telemetry/useAppHealth';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
-
-// ============================================================================
-// AppHealthDashboard — KPIs de saúde da plataforma
-// ----------------------------------------------------------------------------
-// • 4 KPI cards (req/min, %4xx, %5xx, p95/p99)
-// • Top rotas por erro
-// • Webhooks por source × direction (taxa de falha)
-// • Edge functions por latência (p50/p95/p99)
-// • Lookup por X-Request-Id → timeline cross-camada
-// ============================================================================
+import { diagnostics, type AppHealthStatus } from '@/lib/diagnostics';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const WINDOW_OPTIONS: { value: HealthWindow; label: string }[] = [
   { value: 15, label: '15min' },
