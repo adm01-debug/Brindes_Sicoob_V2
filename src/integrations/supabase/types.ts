@@ -2806,6 +2806,33 @@ export type Database = {
           },
         ]
       }
+      manager_notification_config: {
+        Row: {
+          created_at: string | null
+          email_enabled: boolean | null
+          id: string
+          slack_enabled: boolean | null
+          slack_webhook_url: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          email_enabled?: boolean | null
+          id?: string
+          slack_enabled?: boolean | null
+          slack_webhook_url?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          email_enabled?: boolean | null
+          id?: string
+          slack_enabled?: boolean | null
+          slack_webhook_url?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       mcp_access_violations: {
         Row: {
           created_at: string
@@ -4476,6 +4503,38 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "pa_budgets_pa_id_fkey"
+            columns: ["pa_id"]
+            isOneToOne: false
+            referencedRelation: "postos_atendimento"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pa_category_thresholds: {
+        Row: {
+          category_id: number | null
+          created_at: string | null
+          id: string
+          limite_alcada: number
+          pa_id: string | null
+        }
+        Insert: {
+          category_id?: number | null
+          created_at?: string | null
+          id?: string
+          limite_alcada: number
+          pa_id?: string | null
+        }
+        Update: {
+          category_id?: number | null
+          created_at?: string | null
+          id?: string
+          limite_alcada?: number
+          pa_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pa_category_thresholds_pa_id_fkey"
             columns: ["pa_id"]
             isOneToOne: false
             referencedRelation: "postos_atendimento"
