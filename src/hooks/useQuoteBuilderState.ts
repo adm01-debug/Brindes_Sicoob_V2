@@ -202,6 +202,36 @@ export function useQuoteBuilderState() {
       }
     }
 
+    // Budget threshold check for Sicoob PA users (PAC workflow)
+    if (status !== "draft" && (isGerentePa || userRoles?.includes("comprador_pac"))) {
+      const { data: budget } = await supabase
+        .from('pa_budgets')
+        .select('*')
+        .eq('pa_id', clientId)
+        .eq('ano', new Date().getFullYear())
+        .eq('mes', new Date().getMonth() + 1)
+        .maybeSingle();
+      
+      if (budget) {
+        // 1. Check Alçada (transaction limit)
+        if (budget.limite_alcada > 0 && totals.total > budget.limite_alcada) {
+          toast.error("Limite de alçada excedido!", {
+            description: `Este pedido (R$ ${totals.total.toLocaleString()}) supera seu limite de R$ ${budget.limite_alcada.toLocaleString()}.`
+          });
+          return;
+        }
+        
+        // 2. Check remaining monthly budget
+        const remaining = budget.verba_total - (budget.verba_consumida || 0);
+        if (budget.verba_total > 0 && totals.total > remaining) {
+          toast.error("Verba insuficiente!", {
+            description: `Você possui apenas R$ ${remaining.toLocaleString()} de verba disponível este mês.`
+          });
+          return;
+        }
+      }
+    }
+
     // PAC workflow: force status to pending_singular_approval if user is Gerente PA and status is not draft
     let finalStatus = status;
     if (status === "pending" && (user?.isGerentePa || userRoles?.includes("comprador_pac"))) {
