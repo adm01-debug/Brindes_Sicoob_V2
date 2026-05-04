@@ -1,35 +1,19 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.42.7"
+import { createStructuredLogger } from "../_shared/structured-logger.ts";
+import { getOrCreateRequestId } from "../_shared/request-id.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-request-id',
 }
 
-interface LogContext {
-  requestId?: string;
-  service?: string;
-  operation?: string;
-  [key: string]: any;
-}
-
-const logStructured = (level: 'info' | 'error' | 'warn', message: string, context: LogContext) => {
-  const logEntry = {
-    timestamp: new Date().toISOString(),
-    level,
-    message,
-    ...context,
-  };
-  console.log(JSON.stringify(logEntry));
-};
-
 Deno.serve(async (req) => {
-  const requestId = req.headers.get('x-request-id') || crypto.randomUUID();
-  
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
 
-  const ctx: LogContext = { requestId, service: 'system-healthcheck' };
+  const requestId = getOrCreateRequestId(req);
+  const log = createStructuredLogger({ fn: "system-healthcheck", requestId, req });
 
   try {
     const supabaseClient = createClient(
@@ -37,11 +21,11 @@ Deno.serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
-    logStructured('info', 'Starting health check', ctx);
+    log.info('health_check_start');
 
     const health: any = {
       timestamp: new Date().toISOString(),
-      requestId,
+      request_id: requestId,
       services: {
         database: { status: 'unknown' },
         auth: { status: 'unknown' },
@@ -62,7 +46,7 @@ Deno.serve(async (req) => {
     
     if (dbError) {
       health.services.database.error = dbError.message;
-      logStructured('error', 'Database health check failed', { ...ctx, error: dbError.message, latency: health.services.database.latency });
+      log.error('database_check_failed', { err: dbError.message, latency: health.services.database.latency });
     }
 
     // 2. Check Auth
@@ -81,7 +65,7 @@ Deno.serve(async (req) => {
       } catch (e) {
         health.services.bridge_external.status = 'unhealthy'
         health.services.bridge_external.error = e.message
-        logStructured('warn', 'External DB bridge check failed', { ...ctx, error: e.message });
+        log.warn('external_bridge_check_failed', { err: e.message });
       }
     } else {
       health.services.bridge_external.status = 'skipped'
@@ -100,7 +84,7 @@ Deno.serve(async (req) => {
       } catch (e) {
         health.services.bridge_crm.status = 'unhealthy'
         health.services.bridge_crm.error = e.message
-        logStructured('warn', 'CRM bridge check failed', { ...ctx, error: e.message });
+        log.warn('crm_bridge_check_failed', { err: e.message });
       }
     } else {
       health.services.bridge_crm.status = 'skipped'
@@ -113,18 +97,18 @@ Deno.serve(async (req) => {
     
     health.status = allHealthy ? 'healthy' : (allCriticalHealthy ? 'degraded' : 'down');
 
-    logStructured('info', 'Health check completed', { ...ctx, status: health.status });
+    log.info('health_check_complete', { status: health.status });
 
-    return new Response(JSON.stringify(health), {
+    return log.respond(new Response(JSON.stringify(health), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200
-    })
+    }));
 
   } catch (error) {
-    logStructured('error', 'Critical error in health check function', { ...ctx, error: error.message });
-    return new Response(JSON.stringify({ error: error.message, requestId }), {
+    log.error('health_check_critical_error', { err: error.message });
+    return log.respond(new Response(JSON.stringify({ error: error.message, request_id: requestId }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 500
-    })
+    }));
   }
 })

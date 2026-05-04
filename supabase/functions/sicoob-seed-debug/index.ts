@@ -1,6 +1,12 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createStructuredLogger } from "../_shared/structured-logger.ts";
+import { getOrCreateRequestId } from "../_shared/request-id.ts";
 
-Deno.serve(async () => {
+Deno.serve(async (req) => {
+  const requestId = getOrCreateRequestId(req);
+  const log = createStructuredLogger({ fn: "sicoob-seed-debug", requestId, req });
+  log.info("debug_start");
+
   const url = Deno.env.get("SUPABASE_URL") ?? "";
   const key = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
   const anonKey = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
@@ -12,7 +18,6 @@ Deno.serve(async () => {
   let projectRefFromUrl = "";
   try { projectRefFromUrl = new URL(url).host.split(".")[0]; } catch { /**/ }
 
-  // Decode JWT payload (sem verificar assinatura) só pra inspeção
   let jwtRef = "";
   try {
     const payload = JSON.parse(atob(key.split(".")[1] ?? ""));
@@ -22,7 +27,13 @@ Deno.serve(async () => {
   const { data, error } = await supabase.auth.admin.listUsers({ page: 1, perPage: 200 });
   const emails = (data?.users ?? []).map((u) => u.email).filter(Boolean);
 
-  return new Response(JSON.stringify({
+  if (error) {
+    log.error("list_users_failed", { err: error.message });
+  } else {
+    log.info("debug_completed", { user_count: data?.users?.length });
+  }
+
+  return log.respond(new Response(JSON.stringify({
     SUPABASE_URL: url,
     project_ref_from_url: projectRefFromUrl,
     service_key_ref: jwtRef,
@@ -34,5 +45,5 @@ Deno.serve(async () => {
     sample_emails: emails.slice(0, 20),
   }, null, 2), {
     headers: { "Content-Type": "application/json" },
-  });
+  }));
 });

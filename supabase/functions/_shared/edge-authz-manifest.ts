@@ -56,9 +56,12 @@ export const EDGE_AUTHZ_MANIFEST: Record<string, AuthzEntry> = {
   "image-proxy": { category: "public", rationale: "Proxy de imagens (anti-hotlink CDN externos)" },
   "cnpj-lookup": { category: "public", rationale: "Lookup CNPJ via API pública" },
   "health-check": { category: "public", rationale: "Health endpoint para uptime monitors" },
+  "system-healthcheck": { category: "public", rationale: "Health check global do sistema" },
+  "migration-health-check": { category: "public", rationale: "Verificação de integridade pós-migração" },
   "get-visitor-info": { category: "public", rationale: "Geo/IP do visitante para anti-fraude" },
   "verify-email": { category: "public", rationale: "Verificação de email no signup público" },
   "log-login-attempt": { category: "public", rationale: "Telemetria de login (anti-bruteforce)" },
+  "auth-integrity-check": { category: "public", rationale: "Verificação de existência de usuários de teste (login rápido)" },
   "rate-limit-check": { category: "public", rationale: "Rate-limit consult anonymous" },
   "commemorative-dates": { category: "public", rationale: "Calendário público" },
   "categories-api": { category: "public", rationale: "Catálogo de categorias público" },
@@ -83,6 +86,8 @@ export const EDGE_AUTHZ_MANIFEST: Record<string, AuthzEntry> = {
   "comparison-price-watcher": { category: "service", rationale: "pg_cron — price drop watcher" },
   "process-queue": { category: "service", rationale: "pg_cron — fila de jobs" },
   "process-scheduled-reports": { category: "service", rationale: "pg_cron — relatórios" },
+  "monthly-health-report": { category: "service", rationale: "pg_cron — relatório mensal de saúde" },
+  "process-batch-export": { category: "service", rationale: "pg_cron — processamento de exportações em lote" },
   "send-scheduled-reports": { category: "service", rationale: "pg_cron — envio batch" },
   "send-digest": { category: "service", rationale: "pg_cron — digest semanal" },
   "quote-followup-reminders": { category: "service", rationale: "pg_cron — followup orçamentos" },
@@ -124,6 +129,7 @@ export const EDGE_AUTHZ_MANIFEST: Record<string, AuthzEntry> = {
   "manage-users": { category: "supervisor", rationale: "Gestão de usuários via has_role inline", enforcedBy: "custom" },
   "block-ip-temporarily": { category: "supervisor", rationale: "Bloqueio de IP — has_role inline", enforcedBy: "custom" },
   "ownership-repair": { category: "supervisor", rationale: "Reparo de órfãos — has_role inline + dry-run", enforcedBy: "custom" },
+  "error-monitor": { category: "supervisor", rationale: "Monitoramento de erros e alertas de sistema", enforcedBy: "custom" },
 
   // ---------------- Dev-only ----------------
   "secrets-manager": { category: "dev", rationale: "is_dev() inline check", enforcedBy: "custom" },
@@ -141,6 +147,12 @@ export const EDGE_AUTHZ_MANIFEST: Record<string, AuthzEntry> = {
   "mcp-keys-revoke": { category: "dev", rationale: "MCP keys — has_role(dev) inline", enforcedBy: "custom" },
   "mcp-keys-rotate": { category: "dev", rationale: "MCP keys — has_role(dev) + step-up token", enforcedBy: "custom" },
   "mcp-keys-update": { category: "dev", rationale: "MCP keys — has_role(dev) inline", enforcedBy: "custom" },
+  "e2e-auth-test": { category: "dev", rationale: "Teste de fluxo auth em CI", enforcedBy: "custom" },
+  "get-app-logs": { category: "dev", rationale: "Acesso a logs estruturados via console dev", enforcedBy: "custom" },
+  "qa-block-monitor": { category: "dev", rationale: "Monitor de bloqueios em ambiente QA", enforcedBy: "custom" },
+  "sicoob-seed": { category: "dev", rationale: "Seed do módulo Sicoob (Service Role)", enforcedBy: "custom" },
+  "sicoob-seed-qa": { category: "dev", rationale: "Seed QA do módulo Sicoob", enforcedBy: "custom" },
+  "sicoob-seed-debug": { category: "dev", rationale: "Debug de seed do módulo Sicoob", enforcedBy: "custom" },
 
   // ---------------- Scoped (auth custom) ----------------
   "mcp-server": { category: "scoped", rationale: "Token MCP com escopos read/write/admin", enforcedBy: "custom" },

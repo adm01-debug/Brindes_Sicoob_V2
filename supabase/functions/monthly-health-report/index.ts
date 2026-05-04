@@ -1,15 +1,20 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.42.7"
+import { createStructuredLogger } from "../_shared/structured-logger.ts";
+import { getOrCreateRequestId } from "../_shared/request-id.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-request-id',
 }
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
+
+  const requestId = getOrCreateRequestId(req);
+  const log = createStructuredLogger({ fn: "monthly-health-report", requestId, req });
+  log.info("report_generation_start");
 
   try {
     const supabaseClient = createClient(
@@ -20,7 +25,6 @@ serve(async (req) => {
     const now = new Date();
     const firstDay = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
 
-    // Stats for the month
     const { data: errorStats } = await supabaseClient
       .from('telemetry_query_performance')
       .select('severity')
@@ -29,7 +33,6 @@ serve(async (req) => {
     const errorCount = errorStats?.filter(s => s.severity === 'error').length || 0;
     const slowCount = errorStats?.filter(s => s.severity === 'slow' || s.severity === 'very_slow').length || 0;
 
-    // SLA performance for Sicoob
     const { data: slaStats } = await supabaseClient
       .from('sicoob_orders')
       .select('sla_status')
@@ -53,15 +56,17 @@ serve(async (req) => {
       status: errorCount > 50 ? 'Critical' : errorCount > 10 ? 'Degraded' : 'Healthy'
     };
 
-    // In a real scenario, this would send an email or store in a 'reports' table
-    return new Response(JSON.stringify(report), {
+    log.info("report_generated", { status: report.status, orders: slaStats?.length });
+
+    return log.respond(new Response(JSON.stringify(report), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-    })
+    }));
 
   } catch (error) {
-    return new Response(JSON.stringify({ error: error.message }), {
+    log.error("report_generation_failed", { err: error.message });
+    return log.respond(new Response(JSON.stringify({ error: error.message }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 500
-    })
+    }));
   }
 })

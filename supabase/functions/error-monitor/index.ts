@@ -1,15 +1,20 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.42.7"
+import { createStructuredLogger } from "../_shared/structured-logger.ts";
+import { getOrCreateRequestId } from "../_shared/request-id.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-request-id',
 }
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
+
+  const requestId = getOrCreateRequestId(req);
+  const log = createStructuredLogger({ fn: "error-monitor", requestId, req });
+  log.info("monitor_start");
 
   try {
     const supabaseClient = createClient(
@@ -20,18 +25,23 @@ serve(async (req) => {
     const now = new Date();
     const fiveMinutesAgo = new Date(now.getTime() - 5 * 60 * 1000).toISOString();
 
-    // Query telemetry for recent errors
-    const { data: recentErrors, error: telError } = await supabaseClient
+    const { count: errorCount, error: telError } = await supabaseClient
       .from('telemetry_query_performance')
-      .select('count', { count: 'exact', head: true })
+      .select('*', { count: 'exact', head: true })
       .eq('severity', 'error')
       .gte('created_at', fiveMinutesAgo);
 
-    const errorCount = recentErrors || 0;
-    const threshold = 10; // 10 errors in 5 minutes
+    if (telError) {
+      log.error("telemetry_query_failed", { err: telError.message });
+      throw telError;
+    }
 
-    if (errorCount >= threshold) {
-      // Send alert to admin via workspace_notifications
+    const currentCount = errorCount || 0;
+    const threshold = 10; 
+
+    if (currentCount >= threshold) {
+      log.warn("threshold_exceeded", { count: currentCount, threshold });
+
       const { data: admins } = await supabaseClient
         .from('user_roles')
         .select('user_id')
@@ -44,26 +54,30 @@ serve(async (req) => {
             .insert({
               user_id: admin.user_id,
               title: '🚨 Alerta de Erro Crítico',
-              content: `Detectamos ${errorCount} erros nos últimos 5 minutos. Verifique o dashboard de telemetria imediatamente.`,
+              content: `Detectamos ${currentCount} erros nos últimos 5 minutos. Verifique o dashboard de telemetria imediatamente.`,
               type: 'system',
-              metadata: { errorCount, period: '5m' }
+              metadata: { errorCount: currentCount, period: '5m' }
             });
         }
+        log.info("alerts_sent", { admin_count: admins.length });
       }
       
-      return new Response(JSON.stringify({ status: 'alert_sent', errorCount }), {
+      return log.respond(new Response(JSON.stringify({ status: 'alert_sent', errorCount: currentCount }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      })
+      }));
     }
 
-    return new Response(JSON.stringify({ status: 'ok', errorCount }), {
+    log.info("monitor_ok", { errorCount: currentCount });
+
+    return log.respond(new Response(JSON.stringify({ status: 'ok', errorCount: currentCount }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-    })
+    }));
 
   } catch (error) {
-    return new Response(JSON.stringify({ error: error.message }), {
+    log.error("monitor_failed", { err: error.message });
+    return log.respond(new Response(JSON.stringify({ error: error.message }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 500
-    })
+    }));
   }
 })
