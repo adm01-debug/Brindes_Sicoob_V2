@@ -195,8 +195,7 @@ export function useVariantStock() {
     }
 
     if (filters.showOnlyWithAlerts) {
-      const ids = new Set(alerts.map(a => a.productId));
-      items = items.filter(p => ids.has(p.productId));
+      // items = items.filter(p => ids.has(p.productId)); // Já filtrado acima se alertTypeFilter != 'all'
     }
 
     const dir = filters.sortDirection === 'asc' ? 1 : -1;
