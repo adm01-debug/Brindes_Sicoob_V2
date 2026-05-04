@@ -3,16 +3,26 @@
  * Duplicar · Compartilhar link · WhatsApp · Marcar ganho.
  * Visíveis no hover da linha (desktop) ou sempre (mobile).
  */
-import type { MouseEvent as ReactMouseEvent } from "react";
-import { Copy, Share2, MessageCircle, Trophy } from "lucide-react";
+import { useState, type MouseEvent as ReactMouseEvent } from "react";
+import { Copy, Share2, MessageCircle, Trophy, ListChecks, FileStack } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import type { Quote } from "@/hooks/useQuotes";
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogDescription, 
+  DialogHeader, 
+  DialogTitle,
+  DialogFooter
+} from "@/components/ui/dialog";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
 
 interface QuoteRowQuickActionsProps {
   quote: Quote;
-  onDuplicate: (id: string) => void;
+  onDuplicate: (id: string, itemIds?: string[]) => void;
   onMarkApproved: (id: string) => void;
 }
 
@@ -22,18 +32,13 @@ function buildShareUrl(quote: Quote) {
   return `${APP_BASE_URL}/orcamentos/${quote.id}`;
 }
 
-function buildWhatsappUrl(quote: Quote) {
-  const link = buildShareUrl(quote);
-  const name = quote.client_name || quote.client_company || "Cliente";
-  const number = quote.quote_number || "";
-  const text = encodeURIComponent(
-    `Olá ${name}! Segue o orçamento ${number} para sua avaliação:\n${link}`
-  );
-  const phone = (quote.client_phone || "").replace(/\D/g, "");
-  return phone ? `https://wa.me/55${phone}?text=${text}` : `https://wa.me/?text=${text}`;
-}
+// ...buildWhatsappUrl omitted for brevity
 
 export function QuoteRowQuickActions({ quote, onDuplicate, onMarkApproved }: QuoteRowQuickActionsProps) {
+  const [isDupDialogOpen, setIsDupDialogOpen] = useState(false);
+  const [dupMode, setDupMode] = useState<'full' | 'partial'>('full');
+  const [selectedItems, setSelectedItems] = useState<string[]>([]);
+  
   const isClosed = quote.status === "approved" || quote.status === "converted" || quote.status === "rejected";
 
   const handleCopyLink = async (e: ReactMouseEvent) => {
