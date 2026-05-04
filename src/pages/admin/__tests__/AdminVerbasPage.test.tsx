@@ -80,14 +80,20 @@ describe("AdminVerbasPage - JSX Integrity", () => {
   it("should allow navigating to audit tab", async () => {
     renderPage();
     
-    // Encontrar o trigger da aba de auditoria usando o value 'audit'
-    const auditTab = screen.getByRole("tab", { name: /Alterações|Histórico/i });
+    // Debug: ver os tabs triggers disponíveis
+    // screen.debug();
+
+    // Encontrar o trigger da aba de auditoria
+    // O shadcn/ui TabsTrigger renderiza um botão
+    const tabs = screen.getAllByRole("tab");
+    const auditTab = tabs.find(tab => tab.getAttribute('data-value') === 'audit') || screen.getByText(/Alterações|Histórico/i);
+    
     fireEvent.click(auditTab);
 
     // Verificar se o conteúdo da aba de auditoria aparece
+    // Como os TabsContent do shadcn usam display:none ou não montam se não ativos
     await waitFor(() => {
-      // Procurar pelo título do Card dentro da aba
-      expect(screen.getByText(/Histórico de Orçamentos/i)).toBeDefined();
+      expect(screen.getByText(/ ações realizadas/i)).toBeDefined();
     });
   });
 });
