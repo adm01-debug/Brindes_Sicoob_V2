@@ -35,12 +35,18 @@ export const useUpdateSicoobOrderStatus = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: async ({ orderId, status, currentStatus }: { orderId: string, status: string, currentStatus?: string }) => {
-      return sicoobOrderService.updateOrderStatus(orderId, status, currentStatus);
+    mutationFn: async ({ orderId, status, currentStatus, observations }: { 
+      orderId: string, 
+      status: string, 
+      currentStatus?: string,
+      observations?: string
+    }) => {
+      return sicoobOrderService.updateOrderStatus(orderId, status, currentStatus, observations);
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["sicoob_order", variables.orderId] });
       queryClient.invalidateQueries({ queryKey: ["sicoob_orders_list"] });
+      queryClient.invalidateQueries({ queryKey: ["order_audit", variables.orderId] });
       toast.success("Status do pedido atualizado com sucesso!");
     },
     onError: (err: any) => {

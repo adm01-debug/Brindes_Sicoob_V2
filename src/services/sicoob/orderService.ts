@@ -108,21 +108,42 @@ export const sicoobOrderService = {
     return data as unknown as SicoobOrderItemLog[];
   },
 
-  async updateOrderStatus(orderId: string, status: string, currentStatus?: string): Promise<void> {
+  async updateOrderStatus(orderId: string, status: string, currentStatus?: string, observations?: string): Promise<void> {
     if (currentStatus && !canSicoobTransitionTo(currentStatus as OrderStatus, status as OrderStatus)) {
       throw new Error(`Transição de status inválida: de ${currentStatus} para ${status}`);
     }
 
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error("Usuário não autenticado");
+
     const { error } = await supabase
       .from("sicoob_orders")
-      .update({ status, updated_at: new Date().toISOString() })
+      .update({ 
+        status, 
+        updated_at: new Date().toISOString(),
+        ...(status === 'confirmed' ? { approved_by: user.id, approved_at: new Date().toISOString() } : {})
+      })
       .eq("id", orderId);
     if (error) throw error;
 
-    // Trigger notification and registration
+    // Registrar evento de auditoria se houver observações ou mudança de status
+    try {
+      await supabase.from('order_audit_events').insert({
+        order_id: orderId,
+        event_type: 'status_change',
+        old_value: { fulfillment_status: currentStatus },
+        new_value: { fulfillment_status: status },
+        observations: observations,
+        created_by: user.id,
+        actor_role: 'system_action' // Isso pode ser dinâmico dependendo do perfil
+      });
+    } catch (auditErr) {
+      console.warn("Falha ao registrar auditoria:", auditErr);
+    }
+
+    // Gatilho de notificação e registro
     try {
       const order = await this.getOrderById(orderId);
-      const { data: { user } } = await supabase.auth.getUser();
       
       // Call standard transactional email function if exists
       try {
