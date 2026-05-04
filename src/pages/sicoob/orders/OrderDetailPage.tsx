@@ -82,6 +82,7 @@ import { OrderInvoicesTab } from "@/components/sicoob/orders/OrderInvoicesTab";
 import { OrderPaymentsTab } from "@/components/sicoob/orders/OrderPaymentsTab";
 import { OrderPilotApprovalsTab } from "@/components/sicoob/orders/OrderPilotApprovalsTab";
 import { OrderTemplatesTab } from "@/components/sicoob/orders/OrderTemplatesTab";
+import { OrderCommentsTab } from "@/components/sicoob/orders/OrderCommentsTab";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -295,7 +296,7 @@ export default function OrderDetailPage() {
   
   // Controle de permissões por aba
   const allowedTabs = useMemo(() => {
-    const tabs = ["status", "logistics", "invoices", "timeline"];
+    const tabs = ["status", "logistics", "invoices", "timeline", "comments"];
     if (isSupervisorOrAbove) {
       tabs.push("payments", "approvals", "templates");
     }
@@ -343,6 +344,16 @@ export default function OrderDetailPage() {
             <p className="text-sm text-muted-foreground">Criado em {new Date(orderData.created_at).toLocaleString('pt-BR')}</p>
           </div>
           <div className="ml-auto flex gap-2">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="gap-2 text-xs h-9"
+              onClick={() => toast.info("Exportando relatório de conformidade...")}
+            >
+              <FileText className="h-3.5 w-3.5" />
+              Exportar Auditoria
+            </Button>
+
             {activeRequest && canApprove ? (
               <>
                 <Button variant="outline" className="text-destructive" onClick={() => setIsRejectDialogOpen(true)}>
@@ -590,6 +601,12 @@ export default function OrderDetailPage() {
                   <Package className="h-4 w-4 mr-2" />
                   Itens
                 </TabsTrigger>
+                {allowedTabs.includes("comments") && (
+                  <TabsTrigger value="comments" className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none bg-transparent px-0 pb-2 h-auto">
+                    <MessageSquare className="h-4 w-4 mr-2" />
+                    Comentários
+                  </TabsTrigger>
+                )}
                 {allowedTabs.includes("logistics") && (
                   <TabsTrigger value="logistics" className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none bg-transparent px-0 pb-2 h-auto">
                     <Truck className="h-4 w-4 mr-2" />
@@ -628,7 +645,10 @@ export default function OrderDetailPage() {
                 )}
               </TabsList>
 
-              <TabsContent value="items" className="space-y-4 pt-4">
+              <TabsContent value="comments" className="pt-6">
+                <OrderCommentsTab orderId={id!} />
+              </TabsContent>
+
                 <Card className="border-[1.5px]">
                    <CardHeader>
                      <CardTitle className="text-sm">Auditoria de Itens</CardTitle>
@@ -729,9 +749,21 @@ export default function OrderDetailPage() {
                   <div className="w-full h-2.5 bg-secondary rounded-full overflow-hidden relative">
                     <div 
                       className={`h-full transition-all duration-500 ${isOverBudget ? 'bg-destructive' : 'bg-success'}`} 
-                      style={{ width: `${Math.min((orderTotal / Math.max(remainingBudget, 1)) * 100, 100)}%` }} 
+                      style={{ width: `${Math.min((orderTotal / Math.max(budget, 1)) * 100, 100)}%` }} 
+                    />
+                    {/* Indicador visual do impacto deste pedido específico */}
+                    <div 
+                      className="absolute top-0 h-full bg-primary/30 animate-pulse"
+                      style={{ 
+                        left: `${Math.min(((remainingBudget - orderTotal) / Math.max(budget, 1)) * 100, 100)}%`,
+                        width: `${Math.min((orderTotal / Math.max(budget, 1)) * 100, 100)}%` 
+                      }}
                     />
                   </div>
+                  <p className="text-[10px] text-muted-foreground flex justify-between">
+                    <span>Impacto do Pedido: R$ {orderTotal.toLocaleString('pt-BR')}</span>
+                    <span>Total Verba: R$ {budget.toLocaleString('pt-BR')}</span>
+                  </p>
                 </div>
 
                 {isOverBudget && (

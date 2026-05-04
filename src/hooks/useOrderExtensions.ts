@@ -249,7 +249,7 @@ export const useOrderComments = (orderId?: string, filters?: { search?: string }
         .from("order_comments")
         .select(`
           *,
-          user:profiles(full_name, avatar_url)
+          author:profiles!order_comments_author_id_fkey(full_name, avatar_url)
         `, { count: 'exact' })
         .eq("order_id", orderId!)
         .order("created_at", { ascending: false });
@@ -274,7 +274,7 @@ export const useOrderComments = (orderId?: string, filters?: { search?: string }
         .from("order_comments")
         .insert({
           order_id: orderId,
-          user_id: user.id,
+          author_id: user.id,
           content,
           is_internal: isInternal,
           attachments
