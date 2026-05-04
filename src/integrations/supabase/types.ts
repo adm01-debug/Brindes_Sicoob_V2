@@ -539,6 +539,27 @@ export type Database = {
         }
         Relationships: []
       }
+      cms_config: {
+        Row: {
+          created_at: string
+          key: string
+          updated_at: string
+          value: Json
+        }
+        Insert: {
+          created_at?: string
+          key: string
+          updated_at?: string
+          value?: Json
+        }
+        Update: {
+          created_at?: string
+          key?: string
+          updated_at?: string
+          value?: Json
+        }
+        Relationships: []
+      }
       cms_sections: {
         Row: {
           content: Json | null
