@@ -9,7 +9,7 @@ import {
   SheetTrigger,
   SheetFooter
 } from "@/components/ui/sheet";
-import { ShoppingCart, Trash2, Plus, Minus, ShieldCheck, AlertCircle, Info } from "lucide-react";
+import { ShoppingCart, Trash2, Plus, Minus, ShieldCheck, AlertCircle, Info, RefreshCw } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { formatCurrency } from "@/lib/utils";
