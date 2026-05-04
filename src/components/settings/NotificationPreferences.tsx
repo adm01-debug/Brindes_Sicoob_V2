@@ -2,14 +2,17 @@ import { useNotificationPreferences } from "@/hooks/useNotificationPreferences";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Mail, Bell, MessageSquare, Loader2, Moon, Clock, Inbox, ShieldCheck } from "lucide-react";
+import { Mail, Bell, MessageSquare, Loader2, Moon, Clock, Inbox, ShieldCheck, Settings2 } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { NotificationOmnichannelPanel } from "./NotificationOmnichannelPanel";
 
 export function NotificationPreferences() {
   const { preferences, isLoading, updatePreferences } = useNotificationPreferences();
+  const [activeView, setActiveView] = React.useState("preferences");
 
   if (isLoading) {
     return (
