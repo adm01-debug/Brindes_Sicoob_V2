@@ -649,6 +649,7 @@ export default function OrderDetailPage() {
                 <OrderCommentsTab orderId={id!} />
               </TabsContent>
 
+              <TabsContent value="items" className="space-y-4 pt-4">
                 <Card className="border-[1.5px]">
                    <CardHeader>
                      <CardTitle className="text-sm">Auditoria de Itens</CardTitle>
