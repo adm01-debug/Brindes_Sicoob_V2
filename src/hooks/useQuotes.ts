@@ -153,13 +153,40 @@ export function useQuotes() {
     }
   };
 
-  const duplicateQuote = async (quoteId: string) => {
-    const original = await fetchQuote(quoteId);
-    if (!original) return null;
-    
-    // Simplification for the example, cloning items
-    const items = original.items?.map(it => ({ ...it, id: undefined })) || [];
-    return createQuote({ ...original, id: undefined, quote_number: undefined, status: 'draft' }, items);
+  const reorderQuote = async (quoteId: string) => {
+    if (!user) return null;
+    setIsLoading(true);
+    try {
+      const newQuote = await QuoteService.reorder(quoteId, user.id, orgId);
+      toast.success("Orçamento duplicado para recompra!", {
+        description: `Novo orçamento #${newQuote.quote_number} criado como rascunho.`
+      });
+      fetchQuotes();
+      return newQuote;
+    } catch (err: any) {
+      toast.error("Erro ao reordenar orçamento");
+      return null;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const reorderFromOrder = async (orderId: string) => {
+    if (!user) return null;
+    setIsLoading(true);
+    try {
+      const newQuote = await QuoteService.reorderFromOrder(orderId, user.id, orgId);
+      toast.success("Pedido convertido em orçamento para recompra!", {
+        description: `Novo orçamento #${newQuote.quote_number} criado como rascunho.`
+      });
+      fetchQuotes();
+      return newQuote;
+    } catch (err: any) {
+      toast.error("Erro ao converter pedido");
+      return null;
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const syncQuoteToBitrix = async (quoteId: string) => {
