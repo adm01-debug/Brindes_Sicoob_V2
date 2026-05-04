@@ -107,6 +107,35 @@ export default function OrdersPage() {
     }
   });
 
+  const allOrdersForStats = useQuery({
+    queryKey: ["sicoob_orders_all_stats"],
+    queryFn: () => sicoobOrderService.listOrders()
+  });
+
+  const stats = useMemo(() => {
+    if (!allOrdersForStats.data) return null;
+    
+    const orders = allOrdersForStats.data;
+    const totalRevenue = orders.reduce((acc, o) => acc + (o.total_amount || 0), 0);
+    const avgTicket = orders.length > 0 ? totalRevenue / orders.length : 0;
+    
+    const statusCounts = orders.reduce((acc, o) => {
+      acc[o.status] = (acc[o.status] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+
+    const criticalSla = orders.filter(o => o.sla_status === 'critical').length;
+    
+    // Simple growth calc (comparing with previous 30 days would be ideal, here we mock it for UI)
+    return {
+      totalRevenue,
+      avgTicket,
+      totalCount: orders.length,
+      criticalSla,
+      statusCounts
+    };
+  }, [allOrdersForStats.data]);
+
   const filteredOrders = ordersData?.orders || [];
   const totalOrders = ordersData?.total || 0;
   const totalPages = Math.ceil(totalOrders / pageSize);
