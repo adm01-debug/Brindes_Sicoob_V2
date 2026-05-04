@@ -198,17 +198,17 @@ export function DroppableColumn({ column, isOver, invalidTarget, children, count
     <div
       ref={setNodeRef}
       className={cn(
-        "min-w-[300px] w-[300px] rounded-lg p-3 flex flex-col gap-3 transition-colors border-2 border-transparent",
-        "bg-muted/30",
-        isOver && !invalidTarget && "border-primary/60 bg-primary/5",
-        isOver && invalidTarget && "border-destructive/60 bg-destructive/5",
+        "min-w-[280px] w-[280px] rounded-xl p-3 flex flex-col gap-3 transition-all border-2 border-transparent",
+        "bg-muted/20 backdrop-blur-sm",
+        isOver && !invalidTarget && "border-sicoob-green/40 bg-sicoob-green/5 shadow-inner",
+        isOver && invalidTarget && "border-destructive/40 bg-destructive/5 shadow-inner",
       )}
     >
-      <div className="flex items-center justify-between px-1">
-        <h3 className="font-semibold text-sm">{column.title}</h3>
-        <Badge variant="secondary">{count}</Badge>
+      <div className="flex items-center justify-between px-1 mb-1">
+        <h3 className="font-bold text-xs uppercase tracking-wider text-muted-foreground">{column.title}</h3>
+        <Badge variant="secondary" className="h-5 text-[10px] font-bold bg-background border">{count}</Badge>
       </div>
-      <div className="flex flex-col gap-2 overflow-y-auto min-h-[40px]">
+      <div className="flex flex-col gap-3 overflow-y-auto min-h-[100px] pr-1 custom-scrollbar">
         {children}
       </div>
     </div>
