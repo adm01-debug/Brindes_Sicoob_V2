@@ -6774,18 +6774,27 @@ export type Database = {
       }
       system_settings: {
         Row: {
+          created_at: string | null
+          description: string | null
+          id: string | null
           key: string
           updated_at: string
           updated_by: string | null
           value: Json
         }
         Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: string | null
           key: string
           updated_at?: string
           updated_by?: string | null
           value: Json
         }
         Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: string | null
           key?: string
           updated_at?: string
           updated_by?: string | null
