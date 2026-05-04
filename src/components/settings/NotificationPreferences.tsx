@@ -2,14 +2,17 @@ import { useNotificationPreferences } from "@/hooks/useNotificationPreferences";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Mail, Bell, MessageSquare, Loader2, Moon, Clock, Inbox, ShieldCheck } from "lucide-react";
+import { Mail, Bell, MessageSquare, Loader2, Moon, Clock, Inbox, ShieldCheck, Settings2 } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { NotificationOmnichannelPanel } from "./NotificationOmnichannelPanel";
 
 export function NotificationPreferences() {
   const { preferences, isLoading, updatePreferences } = useNotificationPreferences();
+  const [activeView, setActiveView] = React.useState("preferences");
 
   if (isLoading) {
     return (
@@ -20,14 +23,29 @@ export function NotificationPreferences() {
   }
 
   return (
-    <Card className="w-full">
-      <CardHeader>
-        <CardTitle className="text-xl">Preferências de Notificação</CardTitle>
-        <CardDescription>
-          Escolha como você deseja ser alertado sobre pedidos e orçamentos.
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-6">
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-bold tracking-tight">Notificações</h2>
+          <p className="text-muted-foreground">Gerencie como você recebe alertas e resumos.</p>
+        </div>
+      </div>
+
+      <Tabs value={activeView} onValueChange={setActiveView} className="w-full">
+        <TabsList className="mb-4">
+          <TabsTrigger value="preferences" className="gap-2"><Settings2 className="h-4 w-4" /> Preferências</TabsTrigger>
+          <TabsTrigger value="omnichannel" className="gap-2"><Inbox className="h-4 w-4" /> Painel Omnichannel</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="preferences" className="space-y-6">
+          <Card className="w-full">
+            <CardHeader>
+              <CardTitle className="text-xl">Configurações de Canais</CardTitle>
+              <CardDescription>
+                Escolha como você deseja ser alertado sobre pedidos e orçamentos.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
         <div className="flex items-center justify-between space-x-4">
           <div className="flex items-center space-x-4">
             <Mail className="h-5 w-5 text-muted-foreground" />
@@ -186,7 +204,14 @@ export function NotificationPreferences() {
             </p>
           </div>
         </div>
-      </CardContent>
-    </Card>
-  );
+          </CardContent>
+        </Card>
+      </TabsContent>
+
+      <TabsContent value="omnichannel">
+        <NotificationOmnichannelPanel />
+      </TabsContent>
+    </Tabs>
+  </div>
+);
 }
