@@ -48,6 +48,7 @@ createRoot(root).render(
     <HelmetProvider>
       <EnhancedErrorBoundary>
         <App />
+        <Http412Inspector />
       </EnhancedErrorBoundary>
     </HelmetProvider>
   </Fragment>
