@@ -11,6 +11,7 @@ import { format } from "date-fns";
 
 interface OrderStatusTimelineProps {
   status: string;
+  orderId?: string;
 }
 
 const statusIcons: Record<string, any> = {
