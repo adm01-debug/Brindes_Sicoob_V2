@@ -3,6 +3,7 @@ import { PageSEO } from "@/components/seo/PageSEO";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { GoalTracker } from "@/components/admin/GoalTracker";
 import { OrdersHeatmap } from "@/components/admin/OrdersHeatmap";
+import { ConversionFunnel } from "@/components/intelligence/ConversionFunnel";
 import { QuotesFunnelChart } from "@/components/quotes/QuotesFunnelChart";
 import { useQuotes } from "@/hooks/useQuotes";
 import { useQuoteFunnel } from "@/hooks/useQuoteFunnel";
@@ -91,6 +92,7 @@ export default function AdminBusinessDashboardPage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-6">
+            <ConversionFunnel days={30} />
             <QuotesFunnelChart data={funnelData} />
             <OrdersHeatmap />
           </div>

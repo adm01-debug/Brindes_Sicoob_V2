@@ -109,7 +109,7 @@ const ROLE_LABEL: Record<SicoobRole, string> = {
 };
 
 function isTransitionAllowed(from: StatusId, to: StatusId): boolean {
-  return ALLOWED_TRANSITIONS[from]?.includes(to) ?? false;
+  return canSicoobTransitionTo(from, to);
 }
 
 function canRoleMove(role: SicoobRole, from: StatusId, to: StatusId): boolean {
