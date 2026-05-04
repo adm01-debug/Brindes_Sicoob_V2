@@ -63,8 +63,28 @@ export default function GestorOrcamentos() {
              <QuoteKanbanBoard />
           </TabsContent>
 
-          <TabsContent value="consolidation" className="mt-6">
-             <OrderConsolidationPanel singularId={profile?.cooperativa_id || null} />
+          <TabsContent value="consolidation" className="mt-6 space-y-8">
+             <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
+               <div className="space-y-4">
+                 <h3 className="text-lg font-semibold flex items-center gap-2">
+                   <Layers className="h-5 w-5 text-primary" />
+                   Consolidação de Orçamentos (Singular)
+                 </h3>
+                 <QuoteConsolidationPanel 
+                   quotes={pendingQuotes} 
+                   title="Visão de Compra Centralizada"
+                   description="Mapeamento de demanda de todos os PACs para negociação em volume."
+                 />
+               </div>
+               
+               <div className="space-y-4">
+                 <h3 className="text-lg font-semibold flex items-center gap-2">
+                   <ClipboardCheck className="h-5 w-5 text-primary" />
+                   Consolidação de Pedidos (Execução)
+                 </h3>
+                 <OrderConsolidationPanel singularId={profile?.cooperativa_id || null} />
+               </div>
+             </div>
           </TabsContent>
 
           <TabsContent value="metrics" className="mt-6">
