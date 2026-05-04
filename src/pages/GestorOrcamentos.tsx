@@ -18,6 +18,12 @@ import { useQuotes } from "@/hooks/useQuotes";
 export default function GestorOrcamentos() {
   const [activeTab, setActiveTab] = useState("requests");
   const { profile } = useAuth();
+  const { quotes } = useQuotes();
+
+  // Orçamentos aguardando aprovação ou já aprovados que podem ser consolidados
+  const pendingQuotes = quotes.filter(q => 
+    ["pending_singular_approval", "approved_singular"].includes(q.status)
+  );
 
   return (
     <MainLayout>
