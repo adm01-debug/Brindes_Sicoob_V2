@@ -1,89 +1,112 @@
+/**
+ * OrdersHeatmap — matriz 7 (dias) × 24 (horas) de atividade de PEDIDOS.
+ */
 import { useQuery } from "@tanstack/react-query";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Activity } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Clock } from "lucide-react";
+import { subDays } from "date-fns";
 import { cn } from "@/lib/utils";
 
-const DAYS = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
-const HOURS = Array.from({ length: 24 }, (_, i) => i);
+const DAYS_PT = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
 
 export function OrdersHeatmap() {
-  const { data: heatmapData } = useQuery({
-    queryKey: ["admin_orders_heatmap"],
+  const days = 90; // Período maior para heatmap de pedidos
+  const since = subDays(new Date(), days).toISOString();
+
+  const { data, isLoading } = useQuery({
+    queryKey: ["orders-heatmap", days],
     queryFn: async () => {
       const { data: orders } = await supabase
         .from("orders")
         .select("created_at")
-        .gte("created_at", new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()); // Last 30 days
+        .gte("created_at", since);
 
-      const matrix = Array.from({ length: 7 }, () => Array(24).fill(0));
-      
-      orders?.forEach(order => {
-        const date = new Date(order.created_at);
-        const day = date.getDay();
-        const hour = date.getHours();
-        matrix[day][hour]++;
+      const matrix: number[][] = Array.from({ length: 7 }, () => Array(24).fill(0));
+      orders?.forEach(r => {
+        const d = new Date(r.created_at);
+        matrix[d.getDay()][d.getHours()] += 1;
       });
-
-      return matrix;
-    }
+      
+      const flat = matrix.flat();
+      const max = Math.max(...flat, 1);
+      return { matrix, max };
+    },
   });
-
-  if (!heatmapData) return null;
-
-  const maxVal = Math.max(1, ...heatmapData.flat());
 
   return (
     <Card className="border-border/50">
-      <CardHeader className="pb-2">
-        <CardTitle className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-          <Clock className="h-3 w-3" /> Heatmap de Pedidos (30 dias)
+      <CardHeader className="pb-3">
+        <CardTitle className="flex items-center gap-2 text-base font-bold">
+          <Activity className="h-5 w-5 text-primary" />
+          Mapa de Calor de Pedidos
         </CardTitle>
+        <CardDescription className="text-xs">
+          Concentração de pedidos por dia da semana × hora (últimos {days} dias)
+        </CardDescription>
       </CardHeader>
-      <CardContent className="p-3">
-        <TooltipProvider>
-          <div className="flex flex-col gap-[2px]">
-            <div className="flex gap-[2px] ml-6 mb-1">
-              {[0, 6, 12, 18, 23].map(h => (
-                <span key={h} className="text-[8px] text-muted-foreground w-[10px] text-center" style={{ marginLeft: h === 0 ? 0 : `${(h * 12) - (idx_prev * 12)}px` }}>
-                  {h}h
-                </span>
-              ))}
-            </div>
-            {heatmapData.map((dayRow, dayIdx) => (
-              <div key={dayIdx} className="flex gap-[2px] items-center">
-                <span className="text-[9px] text-muted-foreground w-6 font-medium">{DAYS[dayIdx]}</span>
-                <div className="flex gap-[1px]">
-                  {dayRow.map((count, hourIdx) => {
-                    const intensity = count / maxVal;
+      <CardContent>
+        {isLoading ? (
+          <Skeleton className="h-[220px] w-full" />
+        ) : !data || data.max === 0 ? (
+          <div className="h-[200px] flex items-center justify-center text-muted-foreground text-sm">
+            Sem dados suficientes para o mapa de calor de pedidos
+          </div>
+        ) : (
+          <div className="overflow-x-auto pb-2">
+            <div className="inline-block min-w-full">
+              {/* Header: horas */}
+              <div className="flex gap-px text-[9px] text-muted-foreground pl-9 mb-1">
+                {Array.from({ length: 24 }).map((_, h) => (
+                  <div key={h} className="w-5 text-center">
+                    {h % 3 === 0 ? h : ""}
+                  </div>
+                ))}
+              </div>
+              {data.matrix.map((row, day) => (
+                <div key={day} className="flex gap-px items-center mt-px">
+                  <div className="w-9 text-[10px] text-muted-foreground font-bold">
+                    {DAYS_PT[day]}
+                  </div>
+                  {row.map((count, hour) => {
+                    const intensity = count / data.max;
                     return (
-                      <Tooltip key={hourIdx}>
-                        <TooltipTrigger asChild>
-                          <div 
-                            className={cn(
-                              "w-[10px] h-[10px] rounded-[1px] transition-colors",
-                              count === 0 ? "bg-muted/30" : 
-                              intensity < 0.3 ? "bg-primary/20" :
-                              intensity < 0.6 ? "bg-primary/50" :
-                              "bg-primary"
-                            )}
-                          />
-                        </TooltipTrigger>
-                        <TooltipContent side="top" className="text-[10px] p-2">
-                          {DAYS[dayIdx]}, {hourIdx}h: {count} pedido{count !== 1 ? 's' : ''}
-                        </TooltipContent>
-                      </Tooltip>
+                      <div
+                        key={hour}
+                        className={cn(
+                          "w-5 h-5 rounded-sm transition-transform hover:scale-125 cursor-help",
+                          count === 0 && "bg-muted/30",
+                        )}
+                        style={
+                          count > 0
+                            ? {
+                                backgroundColor: `hsl(var(--primary) / ${0.15 + intensity * 0.85})`,
+                              }
+                            : undefined
+                        }
+                        title={`${DAYS_PT[day]} ${hour}h — ${count} pedidos`}
+                      />
                     );
                   })}
                 </div>
+              ))}
+              {/* Legenda */}
+              <div className="flex items-center gap-2 mt-4 text-[10px] text-muted-foreground pl-9">
+                <span className="font-medium">menor volume</span>
+                {[0.15, 0.35, 0.55, 0.75, 1].map((i) => (
+                  <div
+                    key={i}
+                    className="w-4 h-2.5 rounded-sm"
+                    style={{ backgroundColor: `hsl(var(--primary) / ${i})` }}
+                  />
+                ))}
+                <span className="font-medium">maior volume</span>
               </div>
-            ))}
+            </div>
           </div>
-        </TooltipProvider>
+        )}
       </CardContent>
     </Card>
   );
 }
-
-const idx_prev = 0; // Simplified for the inline calculation fix
