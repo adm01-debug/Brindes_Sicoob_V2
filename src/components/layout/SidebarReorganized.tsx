@@ -53,6 +53,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { SidebarBrandHeader } from "./sidebar/SidebarBrandHeader";
+import { OrganizationSwitcher } from "@/components/OrganizationSwitcher";
 
 import { SidebarNavGroup, type NavGroup } from "./sidebar/SidebarNavGroup";
 import { RestrictedRouteNotice } from "./sidebar/RestrictedRouteNotice";
@@ -393,6 +394,9 @@ export const SidebarReorganized = React.forwardRef<HTMLElement, SidebarProps>(
         <div className={cn("flex flex-col h-full pt-16 lg:pt-0 min-h-0", isCollapsed && "overflow-visible")}>
           {/* Brand Header */}
           <SidebarBrandHeader isCollapsed={isCollapsed} />
+
+          {/* Organization Switcher */}
+          <OrganizationSwitcher isCollapsed={isCollapsed} />
 
 
           {/* Collapse controls (desktop) */}
