@@ -7,7 +7,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Users, UserCog, Loader2, KeyRound, Plus, Search, Percent, ArrowUpCircle, History, Ticket, Lock } from "lucide-react";
+import { Users, UserCog, Loader2, KeyRound, Plus, Search, Percent, ArrowUpCircle, History, Ticket, Lock, Network, Settings } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -17,6 +17,7 @@ import { CouponManager } from "@/components/admin/CouponManager";
 import { AccessManagement } from "@/components/admin/users/AccessManagement";
 import { SicoobHierarchyTab } from "@/components/admin/users/SicoobHierarchyTab";
 import { usePasswordResetRequests } from "@/hooks/usePasswordResetRequests";
+import { SystemFeatureToggles } from "@/components/admin/SystemFeatureToggles";
 
 import { useUserManagement } from "@/components/admin/users/useUserManagement";
 import { UserStatsCards } from "@/components/admin/users/UserStatsCards";
@@ -30,7 +31,7 @@ import { RoleAuditLogPanel } from "@/components/admin/users/RoleAuditLogPanel";
 import { DevAccessAuditAlert } from "@/components/admin/DevAccessAuditAlert";
 import { type UserWithRole } from "@/components/admin/users/types";
 
-const VALID_TABS = ["users", "password-reset", "discounts", "coupons", "access", "audit", "sicoob-hierarchy"] as const;
+const VALID_TABS = ["users", "password-reset", "discounts", "coupons", "access", "audit", "sicoob-hierarchy", "system-config"] as const;
 type TabValue = (typeof VALID_TABS)[number];
 
 export default function AdminUsuariosPage() {
@@ -169,6 +170,12 @@ export default function AdminUsuariosPage() {
                 <Network className="h-4 w-4" />
                 Hierarquia SICOOB
               </TabsTrigger>
+              {isDev && (
+                <TabsTrigger value="system-config" className="gap-2">
+                  <Settings className="h-4 w-4" />
+                  Flags de Sistema
+                </TabsTrigger>
+              )}
             </TabsList>
 
           <TabsContent value="users">
@@ -263,6 +270,9 @@ export default function AdminUsuariosPage() {
           )}
           <TabsContent value="sicoob-hierarchy">
             <SicoobHierarchyTab />
+          </TabsContent>
+          <TabsContent value="system-config">
+            <SystemFeatureToggles />
           </TabsContent>
         </Tabs>
 

@@ -11,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { ShieldCheck, Fingerprint, Lock, CheckCircle2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
+import { QuickReplySelector } from "@/components/orders/QuickReplySelector";
 
 interface OrderActionDialogProps {
   isOpen: boolean;
@@ -69,6 +70,10 @@ export const OrderActionDialog = ({
               value={value}
               onChange={(e) => onValueChange(e.target.value)}
               className="min-h-[120px] focus-visible:ring-sicoob-green/30 border-border/60 bg-muted/5 rounded-xl resize-none text-sm"
+            />
+            <QuickReplySelector 
+              onSelect={(reply) => onValueChange(value ? `${value}\n${reply}` : reply)} 
+              className="mt-2"
             />
           </div>
 
