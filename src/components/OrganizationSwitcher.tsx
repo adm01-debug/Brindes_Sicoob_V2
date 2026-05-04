@@ -27,7 +27,47 @@ interface OrganizationSwitcherProps {
 }
 
 export function OrganizationSwitcher({ isCollapsed = false }: OrganizationSwitcherProps) {
-  const { organizations, currentOrg, switchOrganization, isLoading } = useOrganization();
+  const { organizations, currentOrg, switchOrganization, createOrganization, isLoading } = useOrganization();
+  const { toast } = useToast();
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [newOrgName, setNewOrgName] = useState("");
+  const [isCreating, setIsCreating] = useState(false);
+
+  const handleCreateOrg = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newOrgName.trim()) return;
+
+    setIsCreating(true);
+    try {
+      // Gera um slug simples a partir do nome
+      const slug = newOrgName
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/(^-|-$)/g, "");
+
+      const org = await createOrganization(newOrgName, slug);
+      if (org) {
+        toast({
+          title: "Organização criada!",
+          description: `Você agora está na organização ${newOrgName}.`,
+        });
+        setIsDialogOpen(false);
+        setNewOrgName("");
+      } else {
+        throw new Error("Erro ao criar organização");
+      }
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Erro ao criar organização",
+        description: "Ocorreu um problema. Tente novamente.",
+      });
+    } finally {
+      setIsCreating(false);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -36,9 +76,6 @@ export function OrganizationSwitcher({ isCollapsed = false }: OrganizationSwitch
       </div>
     );
   }
-
-  // Se o usuário não tem organizações, não mostra o switcher
-  if (organizations.length === 0) return null;
 
   return (
     <div className={cn("px-4 mb-4", isCollapsed && "px-2")}>
@@ -84,34 +121,83 @@ export function OrganizationSwitcher({ isCollapsed = false }: OrganizationSwitch
           </DropdownMenuLabel>
           <DropdownMenuSeparator className="bg-sidebar-border/50" />
           <div className="max-h-[300px] overflow-y-auto">
-            {organizations.map((org) => (
-              <DropdownMenuItem
-                key={org.id}
-                onClick={() => switchOrganization(org.id)}
-                className="flex items-center gap-2 cursor-pointer focus:bg-sidebar-accent"
-              >
-                <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-primary/10 text-primary text-[10px] font-bold">
-                  {org.name.substring(0, 1)}
-                </div>
-                <span className={cn(
-                  "flex-1 truncate text-xs",
-                  currentOrg?.id === org.id ? "font-bold text-primary" : "text-sidebar-foreground"
-                )}>
-                  {org.name}
-                </span>
-                {currentOrg?.id === org.id && (
-                  <Check className="h-3 w-3 text-primary" />
-                )}
-              </DropdownMenuItem>
-            ))}
+            {organizations.length > 0 ? (
+              organizations.map((org) => (
+                <DropdownMenuItem
+                  key={org.id}
+                  onClick={() => switchOrganization(org.id)}
+                  className="flex items-center gap-2 cursor-pointer focus:bg-sidebar-accent"
+                >
+                  <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-primary/10 text-primary text-[10px] font-bold">
+                    {org.name.substring(0, 1)}
+                  </div>
+                  <span className={cn(
+                    "flex-1 truncate text-xs",
+                    currentOrg?.id === org.id ? "font-bold text-primary" : "text-sidebar-foreground"
+                  )}>
+                    {org.name}
+                  </span>
+                  {currentOrg?.id === org.id && (
+                    <Check className="h-3 w-3 text-primary" />
+                  )}
+                </DropdownMenuItem>
+              ))
+            ) : (
+              <div className="px-2 py-4 text-center text-[11px] text-muted-foreground italic">
+                Nenhuma organização encontrada
+              </div>
+            )}
           </div>
           <DropdownMenuSeparator className="bg-sidebar-border/50" />
-          <DropdownMenuItem className="flex items-center gap-2 cursor-pointer focus:bg-sidebar-accent text-primary">
+          <DropdownMenuItem 
+            className="flex items-center gap-2 cursor-pointer focus:bg-sidebar-accent text-primary"
+            onClick={() => setIsDialogOpen(true)}
+          >
             <Plus className="h-3 w-3" />
             <span className="text-xs font-medium">Nova Organização</span>
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
+
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Criar Organização</DialogTitle>
+            <DialogDescription>
+              Crie uma nova organização para gerenciar seus produtos e orçamentos.
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleCreateOrg}>
+            <div className="grid gap-4 py-4">
+              <div className="grid gap-2">
+                <label htmlFor="name" className="text-sm font-medium">Nome da Organização</label>
+                <Input
+                  id="name"
+                  value={newOrgName}
+                  onChange={(e) => setNewOrgName(e.target.value)}
+                  placeholder="Ex: Minha Loja Store"
+                  autoFocus
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)} disabled={isCreating}>
+                Cancelar
+              </Button>
+              <Button type="submit" disabled={isCreating || !newOrgName.trim()}>
+                {isCreating ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Criando...
+                  </>
+                ) : (
+                  "Criar Organização"
+                )}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
