@@ -369,7 +369,12 @@ export default function OrderDetailPage() {
 
             {activeRequest && canApprove ? (
               <>
-                <Button variant="outline" className="text-destructive" onClick={() => setIsRejectDialogOpen(true)}>
+                <Button 
+                  variant="outline" 
+                  className="text-destructive border-destructive/30 hover:bg-destructive/10" 
+                  onClick={() => setIsRejectDialogOpen(true)}
+                >
+                  <X className="mr-2 h-4 w-4" />
                   Rejeitar
                 </Button>
 
@@ -377,8 +382,8 @@ export default function OrderDetailPage() {
                   isOpen={isRejectDialogOpen}
                   onOpenChange={setIsRejectDialogOpen}
                   title="Rejeitar Pedido"
-                  description="Informe o motivo da rejeição deste pedido."
-                  placeholder="Motivo da rejeição..."
+                  description="Informe o motivo detalhado da rejeição para que o PA possa corrigir o pedido."
+                  placeholder="Motivo da rejeição (mínimo 10 caracteres)..."
                   confirmLabel="Confirmar Rejeição"
                   confirmVariant="destructive"
                   value={rejectionReason}
@@ -389,7 +394,11 @@ export default function OrderDetailPage() {
 
                 {orderData.status !== 'escalated_to_board' && (
                   <>
-                    <Button variant="outline" className="border-status-production/50 text-status-production hover:bg-status-production/10" onClick={() => setIsEscalateDialogOpen(true)}>
+                    <Button 
+                      variant="outline" 
+                      className="border-amber-200 text-amber-700 hover:bg-amber-50" 
+                      onClick={() => setIsEscalateDialogOpen(true)}
+                    >
                       <ArrowUpCircle className="mr-2 h-4 w-4" />
                       Escalar Diretoria
                     </Button>
@@ -398,8 +407,8 @@ export default function OrderDetailPage() {
                       isOpen={isEscalateDialogOpen}
                       onOpenChange={setIsEscalateDialogOpen}
                       title="Escalar para Diretoria"
-                      description="Este pedido será enviado para aprovação da Alçada Superior (Diretoria)."
-                      placeholder="Justificativa para escalação..."
+                      description="Este pedido será enviado para a fila de aprovação da Alçada Superior (Board)."
+                      placeholder="Justificativa técnica para escalação..."
                       confirmLabel="Confirmar Escalação"
                       confirmVariant="default"
                       value={requestReason}
@@ -411,7 +420,7 @@ export default function OrderDetailPage() {
                 )}
 
                 <Button 
-                  className="bg-success text-success-foreground hover:bg-success/90" 
+                  className="bg-sicoob-green hover:bg-sicoob-green-dark text-white" 
                   onClick={handleApprove}
                 >
                   <CheckCircle className="mr-2 h-4 w-4" />
@@ -420,7 +429,11 @@ export default function OrderDetailPage() {
               </>
             ) : orderData.status === 'pending' && isOverThreshold && !activeRequest ? (
               <>
-                <Button className="bg-warning text-warning-foreground hover:bg-warning/90" onClick={() => setIsRequestDialogOpen(true)}>
+                <Button 
+                  className="bg-amber-500 hover:bg-amber-600 text-white animate-pulse" 
+                  onClick={() => setIsRequestDialogOpen(true)}
+                >
+                  <AlertTriangle className="mr-2 h-4 w-4" />
                   Solicitar Aprovação
                 </Button>
 
@@ -428,8 +441,8 @@ export default function OrderDetailPage() {
                   isOpen={isRequestDialogOpen}
                   onOpenChange={setIsRequestDialogOpen}
                   title="Solicitar Aprovação de Alçada"
-                  description={`Este pedido de R$ ${orderTotal.toLocaleString('pt-BR')} excede sua alçada de R$ ${threshold.toLocaleString('pt-BR')}. Justifique a necessidade deste pedido:`}
-                  placeholder="Ex: Reposição urgente de material promocional..."
+                  description={`Este pedido de R$ ${orderTotal.toLocaleString('pt-BR')} excede a alçada configurada de R$ ${threshold.toLocaleString('pt-BR')}.`}
+                  placeholder="Justifique a necessidade deste investimento (Ex: Campanha XPTO)..."
                   confirmLabel="Enviar Solicitação"
                   confirmVariant="default"
                   value={requestReason}
@@ -438,6 +451,14 @@ export default function OrderDetailPage() {
                   confirmDisabled={requestReason.length < 10}
                 />
               </>
+            ) : orderData.status === 'pending' && !isOverThreshold ? (
+               <Button 
+                className="bg-sicoob-green hover:bg-sicoob-green-dark text-white" 
+                onClick={handleApprove}
+              >
+                <CheckCircle className="mr-2 h-4 w-4" />
+                Aprovar (Auto-Alçada)
+              </Button>
             ) : null}
           </div>
         </div>
