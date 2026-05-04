@@ -129,6 +129,42 @@ export default function AdminVerbasPage() {
     }
   };
 
+  const handleSaveCategoryThreshold = async () => {
+    try {
+      if (!newCategoryThreshold.pa_id || !newCategoryThreshold.category_id) {
+        toast.error("Preencha todos os campos");
+        return;
+      }
+      const { error } = await supabase
+        .from('pa_category_thresholds')
+        .insert({
+          pa_id: newCategoryThreshold.pa_id,
+          category_id: parseInt(newCategoryThreshold.category_id),
+          limite_alcada: newCategoryThreshold.limite_alcada
+        });
+      if (error) throw error;
+      toast.success("Limite por categoria salvo!");
+      setIsCategoryFormOpen(false);
+      fetchCategoryData();
+    } catch (error) {
+      console.error(error);
+      toast.error("Erro ao salvar limite");
+    }
+  };
+
+  const handleDeleteCategoryThreshold = async (id: string) => {
+    if (!confirm("Remover este limite específico?")) return;
+    try {
+      const { error } = await supabase.from('pa_category_thresholds').delete().eq('id', id);
+      if (error) throw error;
+      toast.success("Limite removido");
+      fetchCategoryData();
+    } catch (error) {
+      console.error(error);
+      toast.error("Erro ao remover");
+    }
+  };
+
   const exportBudgets = () => {
     const data = budgets.map(b => ({
       'PA': b.postos_atendimento?.nome,
