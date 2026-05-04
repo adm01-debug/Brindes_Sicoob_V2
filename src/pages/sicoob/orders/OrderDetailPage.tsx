@@ -85,17 +85,10 @@ import { OrderTemplatesTab } from "@/components/sicoob/orders/OrderTemplatesTab"
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 
-const canTransitionTo = (current: string, next: string) => {
-  const transitions: Record<string, string[]> = {
-    pending: ["in_production", "cancelled"],
-    in_production: ["in_separation", "cancelled"],
-    in_separation: ["in_transit", "cancelled"],
-    in_transit: ["delivered", "cancelled"],
-    delivered: ["completed"],
-    completed: [],
-    cancelled: []
-  };
-  return transitions[current]?.includes(next) || current === next;
+import { OrderStatus, canSicoobTransitionTo } from "@/types/sicoob/orders";
+
+const canTransitionTo = (current: OrderStatus, next: OrderStatus) => {
+  return canSicoobTransitionTo(current, next);
 };
 
 export default function OrderDetailPage() {
