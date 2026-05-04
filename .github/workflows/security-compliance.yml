@@ -1,31 +1,38 @@
-name: Enterprise Audit & Compliance
+name: Enterprise Compliance & Audit Reporting
 
 on:
   push:
     branches: [ main, master ]
   schedule:
-    - cron: '0 0 * * 0' # Every Sunday at midnight
-  workflow_dispatch: # Allow manual trigger
+    - cron: '0 0 * * 0' # Weekly scan every Sunday
+  workflow_dispatch:
 
 jobs:
-  audit-compliance:
+  compliance-audit:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0 # Needed for git log info in the dossier
-      
+          fetch-depth: 0
+
       - name: Setup Bun
         uses: oven-sh/setup-bun@v1
         with:
           bun-version: latest
 
-      - name: Run RLS & Schema Scan
+      - name: Database RLS Scan
         env:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: |
-          bun scripts/scan-rls-security.mjs > rls-compliance-report.txt
+          bun scripts/scan-rls-security.mjs > reports/rls-status.txt
+
+      - name: Cross-Organization Access Test
+        env:
+          SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          bun scripts/test-rls.mjs > reports/rls-cross-check.txt
 
       - name: Generate Audit Dossier V5
         env:
@@ -34,19 +41,19 @@ jobs:
         run: |
           bun scripts/generate-audit-dossier.mjs
 
-      - name: Run Audit E2E Tests
-        env:
-          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
-          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+      - name: Generate PDF Report
         run: |
-          # Only run if we have a test URL or mock env
-          # npx playwright test e2e/audit-validation.spec.ts
+          # If a markdown-to-pdf tool was available, we would run it here. 
+          # For now we ensure the .md is clean and artifact-ready.
+          cp DOSSIA_AUDITORIA_ENTERPRISE_V5.md reports/dossier-v5.md
 
-      - name: Upload Enterprise Audit Dossier
+      - name: Upload Compliance Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: enterprise-audit-dossier-v5
+          name: enterprise-compliance-bundle
           path: |
+            reports/
             DOSSIA_AUDITORIA_ENTERPRISE_V5.md
-            rls-compliance-report.txt
+            FINAL_ENTERPRISE_AUDIT_REPORT.md
+
 
