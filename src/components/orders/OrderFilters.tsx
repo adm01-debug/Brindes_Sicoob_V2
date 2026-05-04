@@ -18,6 +18,7 @@ import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Badge } from '@/components/ui/badge';
+import { Label } from '@/components/ui/label';
 
 export interface OrderFilterValues {
   search: string;
@@ -68,77 +69,104 @@ export function OrderFilters({ onFiltersChange }: OrderFiltersProps) {
   ].filter(Boolean).length;
 
   return (
-    <div className="flex flex-col gap-4 mb-6">
-      <div className="flex flex-wrap items-center gap-4">
-        <div className="relative flex-1 min-w-[300px]">
-          <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input 
-            placeholder="Buscar por número, cliente ou empresa..." 
-            className="pl-9"
-            value={filters.search}
-            onChange={(e) => updateFilters({ search: e.target.value })}
-            data-testid="order-search-input"
-          />
+    <div className="flex flex-col gap-4">
+      <div className="flex flex-col md:flex-row md:items-end gap-4">
+        {/* Busca */}
+        <div className="flex-1 space-y-1.5">
+          <Label htmlFor="search" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground ml-1">
+            Pesquisar
+          </Label>
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input 
+              id="search"
+              placeholder="Buscar por número ou cliente..." 
+              className="pl-9 h-11 bg-background/50 border-muted-foreground/20 focus:border-primary/50 transition-all"
+              value={filters.search}
+              onChange={(e) => updateFilters({ search: e.target.value })}
+            />
+          </div>
         </div>
         
-        <Select 
-          value={filters.status} 
-          onValueChange={(val) => updateFilters({ status: val })}
-        >
-          <SelectTrigger className="w-[200px]" data-testid="order-status-filter">
-            <SelectValue placeholder="Filtrar por Status" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Todos os Status</SelectItem>
-            <SelectItem value="rascunho">Rascunho</SelectItem>
-            <SelectItem value="enviado_gestor">Pendente Aprovação</SelectItem>
-            <SelectItem value="aprovado_gestor">Aprovado</SelectItem>
-            <SelectItem value="em_producao">Em Produção</SelectItem>
-            <SelectItem value="concluido">Concluído</SelectItem>
-          </SelectContent>
-        </Select>
+        {/* Status */}
+        <div className="w-full md:w-56 space-y-1.5">
+          <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground ml-1">
+            Status
+          </Label>
+          <Select 
+            value={filters.status} 
+            onValueChange={(val) => updateFilters({ status: val })}
+          >
+            <SelectTrigger className="h-11 bg-background/50 border-muted-foreground/20">
+              <SelectValue placeholder="Todos os Status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todos os Status</SelectItem>
+              <SelectItem value="rascunho">Rascunho</SelectItem>
+              <SelectItem value="enviado_gestor">Pendente Aprovação</SelectItem>
+              <SelectItem value="aprovado_gestor">Aprovado</SelectItem>
+              <SelectItem value="em_producao">Em Produção</SelectItem>
+              <SelectItem value="concluido">Concluído</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
 
+        {/* Data Inicial */}
+        <div className="w-full md:w-44 space-y-1.5">
+          <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground ml-1">
+            Data Inicial
+          </Label>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" className="w-full justify-start h-11 bg-background/50 border-muted-foreground/20 text-left font-normal px-3">
+                <Calendar className="mr-2 h-4 w-4 text-muted-foreground" />
+                {filters.dateRange?.from ? format(filters.dateRange.from, "dd/MM/yyyy") : <span className="text-muted-foreground">__/__/____</span>}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <CalendarComponent
+                mode="single"
+                selected={filters.dateRange?.from}
+                onSelect={(date) => updateFilters({ dateRange: { ...filters.dateRange, from: date, to: filters.dateRange?.to } })}
+                locale={ptBR}
+                initialFocus
+              />
+            </PopoverContent>
+          </Popover>
+        </div>
+
+        {/* Data Final */}
+        <div className="w-full md:w-44 space-y-1.5">
+          <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground ml-1">
+            Data Final
+          </Label>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" className="w-full justify-start h-11 bg-background/50 border-muted-foreground/20 text-left font-normal px-3">
+                <Calendar className="mr-2 h-4 w-4 text-muted-foreground" />
+                {filters.dateRange?.to ? format(filters.dateRange.to, "dd/MM/yyyy") : <span className="text-muted-foreground">__/__/____</span>}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <CalendarComponent
+                mode="single"
+                selected={filters.dateRange?.to}
+                onSelect={(date) => updateFilters({ dateRange: { ...filters.dateRange, from: filters.dateRange?.from, to: date } })}
+                locale={ptBR}
+                initialFocus
+              />
+            </PopoverContent>
+          </Popover>
+        </div>
+
+        {/* Botão de Filtros */}
         <Popover>
           <PopoverTrigger asChild>
-            <Button variant="outline" className="gap-2" data-testid="order-date-filter">
-              <Calendar className="h-4 w-4" />
-              {filters.dateRange?.from ? (
-                filters.dateRange.to ? (
-                  <>
-                    {format(filters.dateRange.from, "dd/MM", { locale: ptBR })} - {format(filters.dateRange.to, "dd/MM", { locale: ptBR })}
-                  </>
-                ) : (
-                  format(filters.dateRange.from, "dd/MM", { locale: ptBR })
-                )
-              ) : (
-                "Período"
-              )}
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-auto p-0" align="end">
-            <CalendarComponent
-              initialFocus
-              mode="range"
-              defaultMonth={filters.dateRange?.from}
-              selected={{
-                from: filters.dateRange?.from,
-                to: filters.dateRange?.to
-              }}
-              onSelect={(range) => updateFilters({ 
-                dateRange: { from: range?.from, to: range?.to } 
-              })}
-              locale={ptBR}
-            />
-          </PopoverContent>
-        </Popover>
-        
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button variant="ghost" size="sm" className="gap-2" data-testid="more-filters-btn">
+            <Button variant="outline" className="h-11 px-4 gap-2 border-primary/20 hover:bg-primary/5 text-primary">
               <Filter className="h-4 w-4" />
-              Mais Filtros
+              Filtros
               {activeFiltersCount > 0 && (
-                <Badge variant="secondary" className="ml-1 px-1 h-5 min-w-5 justify-center">
+                <Badge className="ml-1 h-5 w-5 p-0 flex items-center justify-center bg-primary text-primary-foreground">
                   {activeFiltersCount}
                 </Badge>
               )}
@@ -152,33 +180,37 @@ export function OrderFilters({ onFiltersChange }: OrderFiltersProps) {
                   placeholder="Nome da empresa..." 
                   value={filters.clientCompany}
                   onChange={(e) => updateFilters({ clientCompany: e.target.value })}
-                  data-testid="company-filter-input"
                 />
               </div>
               
-              <Button 
-                variant="outline" 
-                className="w-full text-xs h-8" 
-                onClick={clearFilters}
-              >
-                Limpar Filtros
-              </Button>
+              <div className="flex gap-2">
+                <Button 
+                  variant="outline" 
+                  className="flex-1" 
+                  onClick={clearFilters}
+                >
+                  Limpar
+                </Button>
+                <Button className="flex-1">Aplicar</Button>
+              </div>
             </div>
           </PopoverContent>
         </Popover>
+      </div>
 
-        {activeFiltersCount > 0 && (
+      {activeFiltersCount > 0 && (
+        <div className="flex items-center gap-2">
           <Button 
             variant="ghost" 
             size="sm" 
-            className="text-muted-foreground h-8 px-2"
+            className="text-xs text-muted-foreground hover:text-destructive h-7 px-2"
             onClick={clearFilters}
           >
             <X className="h-3 w-3 mr-1" />
-            Limpar
+            Remover todos os filtros
           </Button>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 }

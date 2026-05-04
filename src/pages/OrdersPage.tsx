@@ -2,10 +2,10 @@ import { useState } from "react";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { PageSEO } from "@/components/seo/PageSEO";
 import { useAuth } from "@/contexts/AuthContext";
-import { Package, Download, FileSpreadsheet, FileText } from "lucide-react";
+import { Package, Download, FileSpreadsheet, FileText, ShoppingBag } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
-import { useOrdersList, ORDER_STATUS_LABELS, OrderRow } from "@/hooks/useOrders";
+import { useOrdersList, ORDER_STATUS_LABELS } from "@/hooks/useOrders";
 import { OrderCard } from "@/components/orders/OrderCard";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useSalesScope } from "@/lib/auth/visibility-scope";
@@ -16,6 +16,8 @@ import { format } from "date-fns";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { BatchExportDialog } from "@/components/orders/BatchExportDialog";
 import { OrderFilters, OrderFilterValues } from "@/components/orders/OrderFilters";
+import { OrderStatsBar } from "@/components/orders/OrderStatsBar";
+import { PersistentBreadcrumbs } from "@/components/common/PersistentBreadcrumbs";
 
 export function OrdersPage() {
   const { user } = useAuth();
@@ -53,39 +55,53 @@ export function OrdersPage() {
 
   return (
     <MainLayout>
-      <PageSEO title="Gestão de Pedidos" description="Acompanhe e gerencie todos os seus pedidos em um só lugar." path="/pedidos" />
+      <PageSEO title="Meus Pedidos" description="Acompanhe e gerencie todos os seus pedidos em um só lugar." path="/pedidos" />
       
-      <div className="w-full max-w-[1920px] mx-auto px-3 sm:px-4 lg:px-6 xl:px-8 py-3 sm:py-4 space-y-4 pb-24 md:pb-6 animate-fade-in">
+      <div className="w-full max-w-[1920px] mx-auto px-3 sm:px-4 lg:px-6 xl:px-8 py-3 sm:py-4 space-y-6 pb-24 md:pb-6 animate-fade-in">
         
-        <div className="flex items-start justify-between gap-3 flex-wrap">
-          <div>
-            <h1 data-testid="page-title-pedidos" className="text-2xl font-bold font-display text-foreground flex items-center gap-2">
-              <Package className="h-6 w-6 text-primary" /> Gestão de Pedidos
-            </h1>
-            <p className="text-muted-foreground text-sm mt-1">Acompanhe e gerencie seus pedidos</p>
+        <div className="space-y-1">
+          <PersistentBreadcrumbs />
+          <div className="flex items-start justify-between gap-3 flex-wrap">
+            <div>
+              <h1 data-testid="page-title-pedidos" className="text-2xl font-bold font-display text-foreground flex items-center gap-2">
+                Meus Pedidos
+              </h1>
+              <p className="text-muted-foreground text-sm">Gerencie e acompanhe o status das suas solicitações</p>
+            </div>
+            <div className="flex items-center gap-2">
+              <ScopeBadge />
+            </div>
           </div>
-          <ScopeBadge />
         </div>
 
-        <OrderFilters onFiltersChange={setFilterValues} />
-        
-        <div className="flex items-center justify-end mb-4 gap-2">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="gap-2">
-                <Download className="h-4 w-4" /> Exportar
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => handleExport('excel')}>
-                <FileSpreadsheet className="h-4 w-4 mr-2" /> Excel (.xlsx)
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleExport('pdf')}>
-                <FileText className="h-4 w-4 mr-2" /> PDF (.pdf)
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-          <BatchExportDialog entityType="orders" filters={filterValues} />
+        <OrderStatsBar />
+
+        <div className="bg-card rounded-xl border p-4 shadow-sm space-y-4">
+          <OrderFilters onFiltersChange={setFilterValues} />
+          
+          <div className="flex items-center justify-between gap-2 border-t pt-4">
+            <p className="text-sm text-muted-foreground">
+              Mostrando <span className="font-medium text-foreground">{orders.length}</span> pedidos
+            </p>
+            <div className="flex items-center gap-2">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm" className="gap-2">
+                    <Download className="h-4 w-4" /> Exportar
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={() => handleExport('excel')}>
+                    <FileSpreadsheet className="h-4 w-4 mr-2" /> Excel (.xlsx)
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleExport('pdf')}>
+                    <FileText className="h-4 w-4 mr-2" /> PDF (.pdf)
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              <BatchExportDialog entityType="orders" filters={filterValues} />
+            </div>
+          </div>
         </div>
 
         {isLoading ? (
@@ -107,16 +123,28 @@ export function OrdersPage() {
 }
 
 function OrdersEmptyState({ search }: { search?: string }) {
+  const navigate = useNavigate();
+  
   return (
-    <Card>
+    <Card className="border-dashed border-2 bg-muted/30">
       <CardContent className="flex flex-col items-center justify-center py-16 text-center">
-        <Package className="h-12 w-12 text-muted-foreground/50 mb-4" />
-        <h3 className="font-display text-lg font-medium text-foreground mb-1">
-          {search ? "Nenhum pedido encontrado" : "Nenhum pedido ainda"}
+        <div className="h-20 w-20 rounded-full bg-primary/5 flex items-center justify-center mb-6">
+          <Package className="h-10 w-10 text-primary/40" />
+        </div>
+        <h3 className="font-display text-xl font-semibold text-foreground mb-2">
+          {search ? "Nenhum pedido encontrado" : "Você ainda não tem pedidos"}
         </h3>
-        <p className="text-muted-foreground text-sm">
-          {search ? "Tente buscar com outros termos" : "Seus pedidos aparecerão aqui quando criados"}
+        <p className="text-muted-foreground text-sm max-w-xs mb-8">
+          {search 
+            ? "Tente ajustar seus filtros para encontrar o que procura." 
+            : "Inicie suas compras explorando nosso catálogo completo de produtos."}
         </p>
+        {!search && (
+          <Button onClick={() => navigate('/catalogo')} className="gap-2">
+            <ShoppingBag className="h-4 w-4" />
+            Explorar Catálogo
+          </Button>
+        )}
       </CardContent>
     </Card>
   );
