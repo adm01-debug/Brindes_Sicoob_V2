@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { FileText, User, Calendar, RotateCcw } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { QUOTE_STATUS_CONFIG } from "@/lib/quote-status-config";
-import { OneClickReorder } from "@/components/orders/OneClickReorder";
+import { OneClickReorderQuote } from "./OneClickReorderQuote";
 import { useAuth } from "@/contexts/AuthContext";
 
 export interface QuoteCardData {
