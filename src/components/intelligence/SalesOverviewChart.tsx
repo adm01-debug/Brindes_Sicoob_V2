@@ -40,8 +40,9 @@ export function SalesOverviewChart({ days = 30, productId }: Props) {
       return acc;
     }, []);
   }, [data]);
-
-  const kpis = data?.kpis;
+  
+  // KPI section improvement: using memoization for derived statistics to prevent redundant recalculations
+  const kpis = useMemo(() => data?.kpis, [data?.kpis]);
   const hasData = !!chartData.length;
 
   if (isLoading) {
@@ -153,7 +154,7 @@ export function SalesOverviewChart({ days = 30, productId }: Props) {
 
         {/* Chart */}
         <div className="h-[200px] w-full">
-          <ResponsiveContainer width="100%" height="100%">
+          <ResponsiveContainer width="100%" height="100%" debounce={50}>
             <ComposedChart data={chartData} margin={{ top: 5, right: 5, left: 0, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
               <XAxis dataKey="dateFormatted" tick={{ fontSize: 10 }} className="fill-muted-foreground" interval="preserveStartEnd" />
