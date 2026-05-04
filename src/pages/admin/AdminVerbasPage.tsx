@@ -307,7 +307,7 @@ export default function AdminVerbasPage() {
                               </TableCell>
                               <TableCell>R$ {b.limite_alcada?.toLocaleString() || "-"}</TableCell>
                               <TableCell className="text-right">
-                                <Button variant="ghost" size="icon" onClick={() => { setEditingBudget(b); setIsFormOpen(true); }}><Pencil className="h-4 w-4" /></Button>
+                                <Button variant="ghost" size="icon" onClick={() => { setEditingBudget(b); setIsFormOpen(true); }} aria-label={`Editar verba de ${b.postos_atendimento?.nome}`}><Pencil className="h-4 w-4" /></Button>
                               </TableCell>
                             </TableRow>
                           );
