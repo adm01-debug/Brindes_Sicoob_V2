@@ -1,4 +1,11 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createStructuredLogger } from "../_shared/structured-logger.ts";
+import { getOrCreateRequestId } from "../_shared/request-id.ts";
+
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-request-id",
+};
 
 const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
 const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -13,17 +20,15 @@ const QA_USERS = [
   { id: "00000000-0000-0000-0000-0000000000a4", email: "qa+admin@sicoob.test", role: "admin" },
 ];
 
-async function ensureUser(user: any) {
-  console.log(`Garantindo usuário: ${user.email}`);
+async function ensureUser(user: any, log: any) {
+  log.debug("ensuring_qa_user", { email: user.email });
   
-  // Try to find user by email first using admin API
   const { data: { users }, error: listError } = await supabase.auth.admin.listUsers();
   if (listError) throw listError;
   
   const existingUser = users?.find(u => u.email === user.email);
 
   if (existingUser) {
-    console.log(`Usuário ${user.email} já existe. Atualizando senha...`);
     const { error: updateError } = await supabase.auth.admin.updateUserById(existingUser.id, { 
       password: QA_PASSWORD,
       user_metadata: { full_name: `QA ${user.role}` }
@@ -31,7 +36,6 @@ async function ensureUser(user: any) {
     if (updateError) throw updateError;
     user.id = existingUser.id;
   } else {
-    console.log(`Criando novo usuário ${user.email}...`);
     const { data: newUser, error: createError } = await supabase.auth.admin.createUser({
       email: user.email,
       password: QA_PASSWORD,
@@ -39,16 +43,10 @@ async function ensureUser(user: any) {
       user_metadata: { full_name: `QA ${user.role}` }
     });
 
-    if (createError) {
-      console.error(`Erro ao criar ${user.email}:`, createError);
-      throw createError;
-    }
+    if (createError) throw createError;
     if (newUser?.user) user.id = newUser.user.id;
   }
 
-
-
-  // Ensure profile using correct column 'full_name' instead of 'display_name'
   await supabase.from("profiles").upsert({
     id: user.id,
     user_id: user.id,
@@ -60,11 +58,17 @@ async function ensureUser(user: any) {
   }, { onConflict: "id" });
 }
 
-
 Deno.serve(async (req) => {
+  if (req.method === "OPTIONS") {
+    return new Response("ok", { headers: corsHeaders });
+  }
+
+  const requestId = getOrCreateRequestId(req);
+  const log = createStructuredLogger({ fn: "sicoob-seed-qa", requestId, req });
+
   const { scenario = "default" } = await req.json().catch(() => ({}));
+  log.info("seed_qa_start", { scenario });
   
-  // 1. Create QA Run record
   const { data: run, error: runError } = await supabase
     .from("qa_runs")
     .insert({
@@ -76,28 +80,27 @@ Deno.serve(async (req) => {
     .select()
     .single();
 
-  if (runError) return new Response(JSON.stringify({ error: runError.message }), { status: 500 });
+  if (runError) {
+    log.error("qa_run_creation_failed", { err: runError });
+    return log.respond(new Response(JSON.stringify({ error: runError.message }), { status: 500 }));
+  }
 
   const report: any = { runId: run.id, scenario, created: [], errors: [], details: [] };
 
   try {
-    // 2. Base infrastructure
     await supabase.from("cooperativas").upsert({ id: "00000000-0000-0000-0000-0000000000c1", nome: "SING-QA-001", codigo: "QA01" });
     await supabase.from("postos_atendimento").upsert({ id: "00000000-0000-0000-0000-0000000000b1", nome: "PA-QA-001", codigo: "PA01", cooperativa_id: "00000000-0000-0000-0000-0000000000c1" });
     await supabase.from("pa_budgets").upsert({ pa_id: "00000000-0000-0000-0000-0000000000b1", verba_total: 50000, verba_consumida: 0, limite_alcada: 5000 }, { onConflict: "pa_id" });
 
-    // 3. Ensure users
     for (const user of QA_USERS) {
-      await ensureUser(user);
+      await ensureUser(user, log);
       report.created.push(user.email);
     }
 
-    // 4. Scenario logic and Step creation
     const steps = [];
     
     if (scenario === "consolidacao") {
       steps.push("Validar listagem de PAs", "Validar totalizadores de orçamento");
-      // Seed data specific for consolidation tests
       await supabase.from("postos_atendimento").upsert([
         { id: "00000000-0000-0000-0000-0000000000b2", nome: "PA-QA-002", codigo: "PA02", cooperativa_id: "00000000-0000-0000-0000-0000000000c1" }
       ]);
@@ -107,7 +110,6 @@ Deno.serve(async (req) => {
       report.details.push("Created additional PA for consolidation validation");
     } else if (scenario === "alcada-gestor") {
       steps.push("Submeter pedido > R$ 5.000", "Verificar status 'Aguardando Aprovação'", "Aprovar via Gestor de Compras");
-      // Seed a pending order using sicoob_orders table
       await supabase.from("sicoob_orders").insert({
         id: "00000000-0000-0000-0000-0000000000d1",
         pa_id: "00000000-0000-0000-0000-0000000000b1",
@@ -119,13 +121,11 @@ Deno.serve(async (req) => {
       report.details.push("Created pending order R$ 7.500 in sicoob_orders for approval flow testing");
     } else if (scenario === "rls-cross") {
       steps.push("Tentar acessar PA de outra Singular", "Verificar erro 403 / Lista vazia");
-      // Seed a PA in another cooperative
       await supabase.from("cooperativas").upsert({ id: "00000000-0000-0000-0000-0000000000c2", nome: "SING-QA-OUTRA", codigo: "QA02" });
       await supabase.from("postos_atendimento").upsert({ id: "00000000-0000-0000-0000-0000000000b3", nome: "PA-LONGE", codigo: "PA99", cooperativa_id: "00000000-0000-0000-0000-0000000000c2" });
       report.details.push("Created external cooperative for RLS cross-check");
     } else if (scenario === "piloto") {
       steps.push("Validar badge 'MODO PILOTO' no pedido", "Verificar aprovação automática conforme regra piloto");
-      // Mark singular as piloto
       await supabase.from("cooperativas").update({ 
         metadata: { is_piloto: true, piloto_config: { auto_approve_under: 1000 } } 
       }).eq("id", "00000000-0000-0000-0000-0000000000c1");
@@ -137,21 +137,27 @@ Deno.serve(async (req) => {
       await supabase.from("qa_run_steps").insert(stepInserts);
     }
 
-    // 5. Update Run to completed
     await supabase.from("qa_runs").update({ 
       status: 'completed', 
       finished_at: new Date().toISOString() 
     }).eq("id", run.id);
 
-    return new Response(JSON.stringify(report), { headers: { "Content-Type": "application/json" } });
+    log.info("seed_qa_success", { runId: run.id });
+
+    return log.respond(new Response(JSON.stringify(report), { 
+      headers: { ...corsHeaders, "Content-Type": "application/json" } 
+    }));
   } catch (err) {
-    console.error("Seed error:", err);
+    log.error("seed_qa_failed", { err: err.message, runId: run.id });
     await supabase.from("qa_runs").update({ 
       status: 'failed', 
       error: err.message,
       finished_at: new Date().toISOString() 
     }).eq("id", run.id);
     
-    return new Response(JSON.stringify({ error: err.message, runId: run.id }), { status: 500 });
+    return log.respond(new Response(JSON.stringify({ error: err.message, runId: run.id }), { 
+      status: 500,
+      headers: { ...corsHeaders, "Content-Type": "application/json" }
+    }));
   }
 });
