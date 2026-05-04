@@ -339,12 +339,109 @@ export default function OrdersPage() {
     <MainLayout>
       <PageSEO title="Pedidos Sicoob" description="Gerenciamento de pedidos do ecossistema Sicoob." path="/sicoob/pedidos" noIndex />
 
-      <div className="space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="space-y-6 max-w-[1920px] mx-auto w-full">
+        {/* Advanced BI/Stats Section */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+            <Card className="bg-gradient-to-br from-sicoob-green/10 to-transparent border-sicoob-green/20 overflow-hidden relative group">
+              <div className="absolute -right-4 -bottom-4 opacity-10 group-hover:scale-110 transition-transform">
+                <DollarSign className="h-24 w-24 text-sicoob-green" />
+              </div>
+              <CardHeader className="pb-2">
+                <CardDescription className="text-[10px] uppercase font-bold tracking-wider text-sicoob-green flex items-center gap-1">
+                  <BarChart3 className="h-3 w-3" /> Volume Transacionado
+                </CardDescription>
+                <CardTitle className="text-2xl font-display font-bold">
+                  R$ {stats?.totalRevenue.toLocaleString('pt-BR', { maximumFractionDigits: 0 }) || '0'}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center gap-1 text-[10px] text-sicoob-green font-bold">
+                  <TrendingUp className="h-3 w-3" /> +12.5% <span className="text-muted-foreground font-normal ml-1">vs mês anterior</span>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
+            <Card className="border-border/40 overflow-hidden relative group">
+              <CardHeader className="pb-2">
+                <CardDescription className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground flex items-center gap-1">
+                  <Target className="h-3 w-3" /> Ticket Médio
+                </CardDescription>
+                <CardTitle className="text-2xl font-display font-bold">
+                  R$ {stats?.avgTicket.toLocaleString('pt-BR', { maximumFractionDigits: 0 }) || '0'}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center gap-1 text-[10px] text-amber-600 font-bold">
+                  <TrendingDown className="h-3 w-3" /> -2.1% <span className="text-muted-foreground font-normal ml-1">vs média histórica</span>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
+            <Card className="border-border/40 overflow-hidden relative group">
+              <CardHeader className="pb-2">
+                <CardDescription className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground flex items-center gap-1">
+                  <ShoppingCart className="h-3 w-3" /> Total de Pedidos
+                </CardDescription>
+                <CardTitle className="text-2xl font-display font-bold">
+                  {stats?.totalCount || '0'} <span className="text-xs font-normal text-muted-foreground">unid.</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center gap-1 text-[10px] text-sicoob-green font-bold">
+                  <TrendingUp className="h-3 w-3" /> +5 <span className="text-muted-foreground font-normal ml-1">pedidos hoje</span>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
+            <Card className={cn(
+              "border-border/40 overflow-hidden relative group transition-colors",
+              (stats?.criticalSla || 0) > 0 ? "bg-destructive/5 border-destructive/20" : ""
+            )}>
+              <CardHeader className="pb-2">
+                <CardDescription className={cn(
+                  "text-[10px] uppercase font-bold tracking-wider flex items-center gap-1",
+                  (stats?.criticalSla || 0) > 0 ? "text-destructive" : "text-muted-foreground"
+                )}>
+                  <Clock className="h-3 w-3" /> Alertas de SLA
+                </CardDescription>
+                <CardTitle className={cn(
+                  "text-2xl font-display font-bold",
+                  (stats?.criticalSla || 0) > 0 ? "text-destructive" : ""
+                )}>
+                  {stats?.criticalSla || '0'}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center gap-1 text-[10px] font-bold">
+                  {(stats?.criticalSla || 0) > 0 ? (
+                    <>
+                      <AlertTriangle className="h-3 w-3 text-destructive" />
+                      <span className="text-destructive">Ações urgentes requeridas</span>
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle2 className="h-3 w-3 text-sicoob-green" />
+                      <span className="text-sicoob-green">Todos SLAs em conformidade</span>
+                    </>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        </div>
+
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-4 border-t border-border/40">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight text-sicoob-green-dark">Gestão de Pedidos</h1>
-            <p className="text-muted-foreground italic">
-              Acompanhamento centralizado de solicitações e fluxo de abastecimento SICOOB.
+            <h1 className="text-2xl font-display font-bold text-sicoob-green-dark">Gestão de Pedidos</h1>
+            <p className="text-xs text-muted-foreground">
+              Acompanhamento centralizado e inteligência de dados para o fluxo SICOOB.
             </p>
           </div>
 
