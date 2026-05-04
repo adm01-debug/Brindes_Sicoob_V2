@@ -117,8 +117,8 @@ export default function AuditEvidenceDashboard() {
                 <TableRow>
                   <TableHead>Funcionalidade</TableHead>
                   <TableHead>Prioridade</TableHead>
-                  <TableHead>Path de Código</TableHead>
-                  <TableHead>Trecho de Evidência</TableHead>
+                  <TableHead>Critério de Aceite</TableHead>
+                  <TableHead>Evidência (Código/Link)</TableHead>
                   <TableHead className="text-right">Status</TableHead>
                 </TableRow>
               </TableHeader>
@@ -136,16 +136,19 @@ export default function AuditEvidenceDashboard() {
                         {ev.priority}
                       </Badge>
                     </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2 text-xs font-mono text-muted-foreground">
-                        <FileCode className="h-3 w-3" />
-                        {ev.path}
-                      </div>
+                    <TableCell className="text-xs max-w-[200px]">
+                      {ev.acceptance}
                     </TableCell>
                     <TableCell>
-                      <code className="text-[10px] bg-muted p-1 rounded block max-w-[300px] truncate">
-                        {ev.snippet}
-                      </code>
+                      <div className="flex flex-col gap-1">
+                        <div className="flex items-center gap-2 text-[10px] font-mono text-muted-foreground">
+                          <FileCode className="h-3 w-3" />
+                          {ev.path}
+                        </div>
+                        <code className="text-[9px] bg-muted p-1 rounded block max-w-[250px] truncate">
+                          {ev.snippet}
+                        </code>
+                      </div>
                     </TableCell>
                     <TableCell className="text-right">
                       <Badge variant="secondary" className="bg-green-100 text-green-800 border-green-200">
