@@ -3178,6 +3178,102 @@ export type Database = {
         }
         Relationships: []
       }
+      notification_channels: {
+        Row: {
+          config: Json | null
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+          provider_name: string
+        }
+        Insert: {
+          config?: Json | null
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          provider_name: string
+        }
+        Update: {
+          config?: Json | null
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          provider_name?: string
+        }
+        Relationships: []
+      }
+      notification_digests: {
+        Row: {
+          content_data: Json
+          created_at: string | null
+          error_log: string | null
+          id: string
+          scheduled_for: string
+          sent_at: string | null
+          status: string | null
+          subject: string | null
+          user_id: string | null
+        }
+        Insert: {
+          content_data: Json
+          created_at?: string | null
+          error_log?: string | null
+          id?: string
+          scheduled_for: string
+          sent_at?: string | null
+          status?: string | null
+          subject?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          content_data?: Json
+          created_at?: string | null
+          error_log?: string | null
+          id?: string
+          scheduled_for?: string
+          sent_at?: string | null
+          status?: string | null
+          subject?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      notification_logs: {
+        Row: {
+          channel: string
+          created_at: string | null
+          error_code: string | null
+          execution_time_ms: number | null
+          id: string
+          provider_response: Json | null
+          status: string
+          user_id: string | null
+        }
+        Insert: {
+          channel: string
+          created_at?: string | null
+          error_code?: string | null
+          execution_time_ms?: number | null
+          id?: string
+          provider_response?: Json | null
+          status: string
+          user_id?: string | null
+        }
+        Update: {
+          channel?: string
+          created_at?: string | null
+          error_code?: string | null
+          execution_time_ms?: number | null
+          id?: string
+          provider_response?: Json | null
+          status?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       notification_preferences: {
         Row: {
           channel_priorities: Json | null
@@ -6130,6 +6226,48 @@ export type Database = {
           next_run_at?: string | null
           updated_at?: string | null
           user_id?: string
+        }
+        Relationships: []
+      }
+      scheduled_notifications: {
+        Row: {
+          channel: string
+          created_at: string | null
+          error_message: string | null
+          id: string
+          last_attempt: string | null
+          payload: Json
+          retry_count: number | null
+          scheduled_for: string
+          status: string | null
+          template_id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          channel: string
+          created_at?: string | null
+          error_message?: string | null
+          id?: string
+          last_attempt?: string | null
+          payload: Json
+          retry_count?: number | null
+          scheduled_for: string
+          status?: string | null
+          template_id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          channel?: string
+          created_at?: string | null
+          error_message?: string | null
+          id?: string
+          last_attempt?: string | null
+          payload?: Json
+          retry_count?: number | null
+          scheduled_for?: string
+          status?: string | null
+          template_id?: string | null
+          user_id?: string | null
         }
         Relationships: []
       }
