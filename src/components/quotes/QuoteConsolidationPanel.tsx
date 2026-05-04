@@ -18,6 +18,28 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { formatCurrency } from "@/utils/formatters";
 import { Quote, QuoteItem } from "@/hooks/quotes/quoteTypes";
+import { Package, Hash, Layers, PieChart, FileText, Search, Filter, ChevronDown, ChevronRight, ArrowUpDown } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { 
+  Card, 
+  CardContent, 
+  CardDescription, 
+  CardHeader, 
+  CardTitle 
+} from "@/components/ui/card";
+import { 
+  Table, 
+  TableBody, 
+  TableCell, 
+  TableHead, 
+  TableHeader, 
+  TableRow 
+} from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { formatCurrency } from "@/utils/formatters";
+import { Quote, QuoteItem } from "@/hooks/quotes/quoteTypes";
 import { Package, Hash, Layers, PieChart, FileText, Search, Filter } from "lucide-react";
 
 interface QuoteConsolidationPanelProps {
@@ -32,6 +54,21 @@ export function QuoteConsolidationPanel({
   description = "Visão unificada de múltiplos orçamentos para análise de compra."
 }: QuoteConsolidationPanelProps) {
   const [searchTerm, setSearchTerm] = useState("");
+  const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' } | null>({ key: 'total_value', direction: 'desc' });
+  const [expandedItems, setExpandedItems] = useState<string[]>([]);
+
+  const toggleExpand = (key: string) => {
+    setExpandedItems(prev => 
+      prev.includes(key) ? prev.filter(k => k !== key) : [...prev, key]
+    );
+  };
+
+  const handleSort = (key: string) => {
+    setSortConfig(prev => ({
+      key,
+      direction: prev?.key === key && prev.direction === 'asc' ? 'desc' : 'asc'
+    }));
+  };
   
   const consolidatedData = useMemo(() => {
     if (!quotes || quotes.length === 0) return null;
@@ -89,13 +126,28 @@ export function QuoteConsolidationPanel({
       });
     });
 
+    const items = Array.from(itemsMap.values()).filter(item => {
+      return item.product_name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+             (item.product_sku && item.product_sku.toLowerCase().includes(searchTerm.toLowerCase()));
+    });
+
+    if (sortConfig) {
+      items.sort((a: any, b: any) => {
+        const aVal = a[sortConfig.key];
+        const bVal = b[sortConfig.key];
+        if (aVal < bVal) return sortConfig.direction === 'asc' ? -1 : 1;
+        if (aVal > bVal) return sortConfig.direction === 'asc' ? 1 : -1;
+        return 0;
+      });
+    }
+
     return {
-      items: Array.from(itemsMap.values()).sort((a, b) => b.total_value - a.total_value),
+      items,
       totalGlobal,
       totalItems,
       quotesCount: quotes.length
     };
-  }, [quotes, searchTerm]);
+  }, [quotes, searchTerm, sortConfig]);
 
   if (!consolidatedData || quotes.length === 0) {
     return (
