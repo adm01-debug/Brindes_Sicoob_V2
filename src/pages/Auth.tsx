@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { PageSEO } from "@/components/seo/PageSEO";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -30,9 +30,10 @@ import { diagnostics } from "@/lib/diagnostics";
 export default function Auth() {
 
   const navigate = useNavigate();
+  const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
   const { toast } = useToast();
-  const { user, isLoading: authLoading, signIn, signOut } = useAuth();
+  const { user, isLoading: authLoading, signIn, signOut, role, isAuthenticated, roles } = useAuth();
   const { validateIPForAuthenticatedUser, logLoginAttempt, fetchCurrentIP } = useIPValidation();
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -83,12 +84,21 @@ export default function Auth() {
     loadIPInfo();
   }, []);
 
-  // Redirect if already logged in
+  // Redirect if already logged in - using role-based routing
   useEffect(() => {
-    if (user && !authLoading) {
-      navigate("/");
+    if (user && !authLoading && role) {
+      const redirectPath = searchParams.get("redirect") || "/";
+      
+      // If it's just the root or empty, apply role-based default
+      if (redirectPath === "/" || redirectPath === "") {
+        import("@/lib/auth/auth-utils").then(({ getDefaultRouteByRole }) => {
+          navigate(getDefaultRouteByRole(role));
+        });
+      } else {
+        navigate(redirectPath);
+      }
     }
-  }, [user, authLoading, navigate]);
+  }, [user, authLoading, navigate, role, searchParams]);
 
   const loginForm = useForm<LoginForm>({
     resolver: zodResolver(loginSchema),
@@ -157,7 +167,9 @@ export default function Auth() {
         title: "Bem-vindo!",
         description: "Login realizado com sucesso",
       });
-      navigate("/");
+      
+      // The useEffect for [user, role] will handle the automatic redirection
+      // once the AuthContext updates the role after signIn.
     } catch (error) {
       toast({
         variant: "destructive",
