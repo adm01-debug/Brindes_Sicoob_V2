@@ -171,6 +171,7 @@ export function Header({ onMenuToggle, searchQuery, onSearchChange }: HeaderProp
           {/* ── Cluster 1: Transacional (carrinho, notificações, alertas) ── */}
           <div className="flex items-center gap-0.5">
             <CartHeaderButton />
+            <MiniCart />
             <DiscountApprovalHeaderBadge />
             <NotificationBell />
             <div className="hidden md:block">
