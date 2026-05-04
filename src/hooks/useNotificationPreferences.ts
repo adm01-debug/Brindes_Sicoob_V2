@@ -8,6 +8,12 @@ export interface NotificationPreferences {
   push_enabled: boolean;
   whatsapp_enabled: boolean;
   events_config: any;
+  dnd_enabled: boolean;
+  dnd_start: string;
+  dnd_end: string;
+  digest_enabled: boolean;
+  digest_frequency: 'daily' | 'weekly';
+  channel_priorities: Record<string, number>;
 }
 
 export function useNotificationPreferences() {
@@ -36,6 +42,12 @@ export function useNotificationPreferences() {
             email_enabled: true,
             push_enabled: true,
             whatsapp_enabled: false,
+            dnd_enabled: false,
+            dnd_start: '22:00:00',
+            dnd_end: '08:00:00',
+            digest_enabled: false,
+            digest_frequency: 'daily',
+            channel_priorities: { email: 1, push: 2, whatsapp: 3 },
             events_config: {
               order_status_change: true,
               new_order: true,
