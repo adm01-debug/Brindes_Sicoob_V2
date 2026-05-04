@@ -12,7 +12,7 @@ export function setupPreviewAutoReload() {
   window.addEventListener("error", (event) => {
     const error = event.error || event.message;
     // Se o erro for de chunk ou contiver 412, tentamos o recovery
-    if (isChunkLoadError(error) || String(error).includes("412")) {
+    if (isChunkLoadError(error) || String(error).includes("412") || String(error).includes("Precondition Failed")) {
       logger.warn("[preview-reload] Erro detectado no window.error", { error });
       attemptChunkRecovery(error);
     }
