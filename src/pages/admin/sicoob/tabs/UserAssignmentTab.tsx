@@ -46,6 +46,7 @@ export const UserAssignmentTab = () => {
           role,
           cooperativa_id,
           pa_id,
+          approval_threshold,
           cooperativa:cooperativas(name, code),
           pa:postos_atendimento(name, code)
         `)
