@@ -47,11 +47,23 @@ export function MiniCart() {
         </Button>
       </SheetTrigger>
       <SheetContent className="flex flex-col w-full sm:max-w-md">
-        <SheetHeader>
+        <SheetHeader className="flex flex-row items-center justify-between space-y-0">
           <SheetTitle className="flex items-center gap-2">
             <ShoppingCart className="h-5 w-5" />
             Seu Carrinho ({totalItemsCount})
           </SheetTitle>
+          {items.length > 0 && (
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={handleReset} 
+              className="text-[10px] uppercase font-bold text-muted-foreground hover:text-destructive h-7 px-2 gap-1"
+              title="Redefinir carrinho"
+            >
+              <RefreshCw className="h-3 w-3" />
+              Redefinir
+            </Button>
+          )}
         </SheetHeader>
 
         <div className="flex-1 overflow-hidden mt-4">
