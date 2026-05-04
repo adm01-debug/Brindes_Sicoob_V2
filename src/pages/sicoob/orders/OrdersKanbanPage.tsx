@@ -37,8 +37,10 @@ type SicoobRole = "comprador" | "supervisor" | "gestor" | "logistica";
 
 type StatusId =
   | "draft"
-  | "sent_to_manager"
-  | "manager_approved"
+  | "pending"
+  | "waiting_approval"
+  | "escalated_to_board"
+  | "confirmed"
   | "logistic"
   | "completed";
 
