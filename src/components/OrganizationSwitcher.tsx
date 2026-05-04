@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useOrganization } from "@/contexts/OrganizationContext";
 import {
   DropdownMenu,
@@ -8,9 +8,19 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Building, Check, ChevronsUpDown, Plus } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Building, Check, ChevronsUpDown, Plus, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useToast } from "@/hooks/use-toast";
 
 interface OrganizationSwitcherProps {
   isCollapsed?: boolean;
