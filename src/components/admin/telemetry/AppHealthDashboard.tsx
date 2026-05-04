@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
-import { Activity, AlertTriangle, Gauge, Search, Webhook, Zap, Timer, Database, ShieldCheck, Heart, LayoutGrid, Clock } from 'lucide-react';
+import { Activity, AlertTriangle, Gauge, Search, Webhook, Zap, Timer, Database, ShieldCheck, Heart, LayoutGrid, Clock, RefreshCw } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
   useAppHealth,
@@ -17,6 +17,7 @@ import { format } from 'date-fns';
 import { toast } from 'sonner';
 import { diagnostics, type AppHealthStatus } from '@/lib/diagnostics';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Separator } from '@/components/ui/separator';
 
 const WINDOW_OPTIONS: { value: HealthWindow; label: string }[] = [
   { value: 15, label: '15min' },
