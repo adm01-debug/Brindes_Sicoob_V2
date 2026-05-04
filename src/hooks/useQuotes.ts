@@ -228,7 +228,7 @@ export function useQuotes() {
   return {
     quotes, techniques, isLoading, error,
     fetchQuotes, fetchQuote, createQuote, updateQuote, updateQuoteStatus,
-    deleteQuote, duplicateQuote, syncQuoteToBitrix,
+    deleteQuote, reorderQuote, reorderFromOrder, syncQuoteToBitrix,
     logQuoteHistory: (id: string, action: string, desc: string, opts: any) => 
       QuoteService.logHistory({ quoteId: id, userId: user?.id || "", action, description: desc, ...opts })
   };
