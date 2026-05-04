@@ -3,18 +3,19 @@
  */
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Package } from "lucide-react";
+import { Package, Calendar, User, ArrowRight, TrendingUp } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { ORDER_STATUS_LABELS, type OrderRow } from "@/hooks";
+import { cn } from "@/lib/utils";
 
 const statusColors: Record<string, string> = {
-  pending: "bg-warning/20 text-warning border-warning/30",
-  confirmed: "bg-primary/20 text-primary border-primary/30",
-  in_production: "bg-primary/15 text-primary/80 border-primary/25",
-  shipped: "bg-primary/10 text-primary/70 border-primary/20",
-  delivered: "bg-primary/20 text-primary border-primary/30",
-  cancelled: "bg-destructive/20 text-destructive border-destructive/30",
+  rascunho: "bg-slate-100 text-slate-600 border-slate-200",
+  enviado_gestor: "bg-amber-100 text-amber-700 border-amber-200",
+  aprovado_gestor: "bg-blue-100 text-blue-700 border-blue-200",
+  em_producao: "bg-indigo-100 text-indigo-700 border-indigo-200",
+  concluido: "bg-emerald-100 text-emerald-700 border-emerald-200",
+  cancelado: "bg-destructive/10 text-destructive border-destructive/20",
 };
 
 interface OrderCardProps {
@@ -23,6 +24,9 @@ interface OrderCardProps {
 }
 
 export function OrderCard({ order, onClick }: OrderCardProps) {
+  const statusLabel = ORDER_STATUS_LABELS[order.status] || order.status.replace('_', ' ');
+  const statusColorClass = statusColors[order.status] || "bg-muted text-muted-foreground border-border";
+
   return (
     <Card
       data-testid="order-card"
@@ -36,36 +40,73 @@ export function OrderCard({ order, onClick }: OrderCardProps) {
           onClick();
         }
       }}
-      className="hover:border-primary/30 transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
+      className={cn(
+        "group relative overflow-hidden border-border/50 hover:border-primary/50 transition-all duration-300",
+        "hover:shadow-md active:scale-[0.995] cursor-pointer"
+      )}
     >
-      <CardContent className="p-4 flex items-center justify-between gap-3">
-        <div className="flex items-center gap-4 min-w-0">
-          <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-            <Package className="h-5 w-5 text-primary" />
-          </div>
-          <div className="min-w-0">
-            <p className="font-medium text-foreground truncate">#{order.order_number}</p>
-            <p className="text-xs text-muted-foreground truncate">
-              {format(new Date(order.created_at), "dd MMM yyyy", { locale: ptBR })}
-              {order.client_name && ` · ${order.client_name}`}
-            </p>
-          </div>
-        </div>
+      {/* Visual Accent */}
+      <div className={cn(
+        "absolute left-0 top-0 bottom-0 w-1 transition-all duration-300 group-hover:w-1.5",
+        order.status === 'concluido' ? 'bg-emerald-500' : 
+        order.status === 'cancelado' ? 'bg-destructive' : 
+        'bg-primary'
+      )} />
 
-        <div className="flex items-center gap-3 flex-shrink-0">
-          {order.tracking_number && (
-            <span className="text-xs text-muted-foreground hidden md:block">
-              Rastreio: {order.tracking_number}
-            </span>
-          )}
-          <Badge variant="outline" className={statusColors[order.status] || ""}>
-            {ORDER_STATUS_LABELS[order.status] || order.status}
-          </Badge>
-          {order.total != null && (
-            <span className="font-medium text-foreground min-w-[80px] text-right text-sm">
-              {new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(order.total)}
-            </span>
-          )}
+      <CardContent className="p-0">
+        <div className="p-4 md:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-start gap-4 min-w-0">
+            <div className="h-12 w-12 rounded-xl bg-primary/5 flex items-center justify-center flex-shrink-0 group-hover:bg-primary/10 transition-colors border border-primary/10">
+              <Package className="h-6 w-6 text-primary" />
+            </div>
+            
+            <div className="space-y-1 min-w-0">
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground/80">Pedido</span>
+                <p className="font-bold text-lg text-foreground truncate">#{order.order_number}</p>
+              </div>
+              
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
+                <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                  <Calendar className="h-3.5 w-3.5" />
+                  {format(new Date(order.created_at), "dd 'de' MMM, yyyy", { locale: ptBR })}
+                </div>
+                {order.client_name && (
+                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                    <User className="h-3.5 w-3.5" />
+                    <span className="truncate max-w-[150px]">{order.client_name}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between sm:justify-end gap-6 flex-shrink-0 pt-4 sm:pt-0 border-t sm:border-0 border-border/50">
+            <div className="flex flex-col items-start sm:items-end gap-1.5">
+              <Badge variant="outline" className={cn("px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider", statusColorClass)}>
+                {statusLabel}
+              </Badge>
+              {order.tracking_number && (
+                <span className="text-[10px] text-muted-foreground font-medium flex items-center gap-1">
+                  <TrendingUp className="h-3 w-3" />
+                  {order.tracking_number}
+                </span>
+              )}
+            </div>
+
+            <div className="flex items-center gap-4">
+              <div className="text-right">
+                <p className="text-xs text-muted-foreground font-medium uppercase tracking-tighter">Valor Total</p>
+                <p className="font-bold text-lg text-foreground whitespace-nowrap">
+                  {new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(order.total || 0)}
+                </p>
+              </div>
+              
+              <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all transform translate-x-2 group-hover:translate-x-0 hidden md:flex">
+                <ArrowRight className="h-4 w-4 text-muted-foreground" />
+              </div>
+            </div>
+          </div>
         </div>
       </CardContent>
     </Card>
