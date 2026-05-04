@@ -79,5 +79,3 @@ describe("Budget Enforcement Logic", () => {
     expect(total > remaining).toBe(true);
   });
 });
-
-});
