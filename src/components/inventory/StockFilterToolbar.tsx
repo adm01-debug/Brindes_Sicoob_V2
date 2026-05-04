@@ -256,6 +256,36 @@ export function StockFilterToolbar({
                 </Select>
               </FilterSection>
 
+              {/* FilterSection: Alertas */}
+              {alertTypes && alertTypes.length > 0 && (
+                <FilterSection
+                  id="tipos_alertas"
+                  title="Tipos de Alerta"
+                  icon={<AlertTriangle className="h-4 w-4" />}
+                  openSections={openSections}
+                  onToggle={toggleSection}
+                  activeCount={currentAlertFilter && currentAlertFilter !== 'all' ? 1 : 0}
+                  activeSummary={currentAlertFilter !== 'all' ? currentAlertFilter : undefined}
+                >
+                  <Select
+                    value={currentAlertFilter || 'all'}
+                    onValueChange={(v) => onUpdateAlertFilter?.(v as StockAlertType | 'all')}
+                  >
+                    <SelectTrigger className="h-8 text-xs">
+                      <SelectValue placeholder="Filtrar por tipo de alerta" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all" className="text-xs">Todos os alertas</SelectItem>
+                      {alertTypes.map(t => (
+                        <SelectItem key={t.name} value={t.name} className="text-xs capitalize">
+                          {t.name.replace(/_/g, ' ')} ({t.count})
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </FilterSection>
+              )}
+
               {/* Alerts toggle */}
               <div className="flex items-center justify-between px-3 py-2.5 border-t border-border/40">
                 <Label className="text-xs flex items-center gap-1.5 cursor-pointer">
