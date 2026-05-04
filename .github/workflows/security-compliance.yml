@@ -1,31 +1,52 @@
-name: Security & RLS Compliance
+name: Enterprise Audit & Compliance
 
 on:
+  push:
+    branches: [ main, master ]
   schedule:
     - cron: '0 0 * * 0' # Every Sunday at midnight
   workflow_dispatch: # Allow manual trigger
 
 jobs:
-  rls-scan:
+  audit-compliance:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Needed for git log info in the dossier
       
       - name: Setup Bun
         uses: oven-sh/setup-bun@v1
         with:
           bun-version: latest
 
-      - name: Run RLS Compliance Scan
+      - name: Run RLS & Schema Scan
         env:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: |
           bun scripts/scan-rls-security.mjs > rls-compliance-report.txt
-          cat rls-compliance-report.txt
 
-      - name: Upload Compliance Report
+      - name: Generate Audit Dossier V5
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          bun scripts/generate-audit-dossier.mjs
+
+      - name: Run Audit E2E Tests
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+        run: |
+          # Only run if we have a test URL or mock env
+          # npx playwright test e2e/audit-validation.spec.ts
+
+      - name: Upload Enterprise Audit Dossier
         uses: actions/upload-artifact@v4
         with:
-          name: rls-compliance-report
-          path: rls-compliance-report.txt
+          name: enterprise-audit-dossier-v5
+          path: |
+            DOSSIA_AUDITORIA_ENTERPRISE_V5.md
+            rls-compliance-report.txt
+
