@@ -574,11 +574,18 @@ export default function OrdersPage() {
               <Card 
                 key={order.id} 
                 className={cn(
-                  "hover:shadow-md transition-shadow cursor-pointer border-[1.5px] relative group",
-                  selectedOrderIds.includes(order.id) ? "border-sicoob-green bg-sicoob-green/5 shadow-sm" : ""
+                  "hover:shadow-lg transition-all duration-300 cursor-pointer border-[1.5px] relative group overflow-hidden",
+                  selectedOrderIds.includes(order.id) ? "border-sicoob-green bg-sicoob-green/5 shadow-sm" : "hover:border-sicoob-green/40 hover:-translate-y-1"
                 )} 
                 onClick={() => navigate(`/sicoob/pedidos/${order.id}`)}
               >
+                {/* Indicador visual de prioridade no topo do card */}
+                {order.sla_status === 'critical' && (
+                  <div className="absolute top-0 left-0 w-full h-1 bg-destructive animate-pulse" />
+                )}
+                {order.status === 'escalated_to_board' && (
+                  <div className="absolute top-0 left-0 w-full h-1 bg-amber-500" />
+                )}
                 <div 
                   className={cn(
                     "absolute top-3 left-3 z-10 opacity-0 group-hover:opacity-100 transition-opacity",
@@ -597,16 +604,38 @@ export default function OrdersPage() {
                   </div>
                 </div>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 pl-10">
-                  <CardTitle className="text-sm font-bold text-sicoob-green-dark">
+                  <CardTitle className="text-sm font-bold text-sicoob-green-dark group-hover:text-sicoob-green transition-colors">
                     Pedido #{order.order_number || order.id.slice(0, 8)}
                   </CardTitle>
                   <OrderStatusBadge status={order.status} />
                 </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">R$ {order.total_amount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</div>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {order.pa?.nome || "PA Não Identificado"} • {order.cooperativa?.nome || "Singular"}
-                  </p>
+                <CardContent className="space-y-4">
+                  <div>
+                    <div className="text-2xl font-bold text-foreground">R$ {order.total_amount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</div>
+                    <p className="text-[10px] text-muted-foreground mt-1 uppercase tracking-wider font-semibold">
+                      {order.pa?.nome || "PA Não Identificado"}
+                    </p>
+                    <p className="text-[10px] text-muted-foreground uppercase tracking-wider">
+                      {order.cooperativa?.nome || "Singular"}
+                    </p>
+                  </div>
+                  
+                  {order.sla_status && (
+                    <div className="flex items-center gap-2 pt-2 border-t border-border/40">
+                      <span className="text-[10px] font-bold text-muted-foreground uppercase">SLA:</span>
+                      <Badge 
+                        variant="outline" 
+                        className={cn(
+                          "h-5 text-[9px] font-bold px-1.5",
+                          order.sla_status === 'critical' ? "bg-destructive/10 text-destructive border-destructive/20" :
+                          order.sla_status === 'warning' ? "bg-amber-500/10 text-amber-600 border-amber-500/20" :
+                          "bg-success/10 text-success border-success/20"
+                        )}
+                      >
+                        {order.sla_status === 'critical' ? 'CRÍTICO' : order.sla_status === 'warning' ? 'ATENÇÃO' : 'NORMAL'}
+                      </Badge>
+                    </div>
+                  )}
                 </CardContent>
                 <CardFooter className="text-[10px] uppercase font-bold text-muted-foreground pt-0">
                   Criado em {format(parseISO(order.created_at), "dd/MM/yyyy", { locale: ptBR })}
