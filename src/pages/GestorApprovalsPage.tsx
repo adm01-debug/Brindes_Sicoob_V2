@@ -178,12 +178,15 @@ export default function GestorApprovalsPage() {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-2 max-w-md">
+          <TabsList className="grid w-full grid-cols-3 max-w-lg">
             <TabsTrigger value="pending" className="gap-2">
               <Clock className="h-4 w-4" /> Pendentes
             </TabsTrigger>
             <TabsTrigger value="history" className="gap-2">
-              <History className="h-4 w-4" /> Histórico / Auditoria
+              <History className="h-4 w-4" /> Auditoria
+            </TabsTrigger>
+            <TabsTrigger value="config" className="gap-2">
+              <Settings className="h-4 w-4" /> Canais
             </TabsTrigger>
           </TabsList>
 
