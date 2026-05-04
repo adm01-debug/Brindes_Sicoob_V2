@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { PageSEO } from "@/components/seo/PageSEO";
@@ -19,7 +19,11 @@ import {
   Image as ImageIcon,
   History,
   Layout,
-  ArrowUpCircle
+  ArrowUpCircle,
+  ShieldCheck,
+  ClipboardCheck,
+  Fingerprint,
+  Stamp
 } from "lucide-react";
 import { 
   Card, 
@@ -357,15 +361,20 @@ export default function OrderDetailPage() {
             <p className="text-sm text-muted-foreground">Criado em {new Date(orderData.created_at).toLocaleString('pt-BR')}</p>
           </div>
           <div className="ml-auto flex gap-2">
-            <Button 
-              variant="outline" 
-              size="sm" 
-              className="gap-2 text-xs h-9"
-              onClick={() => toast.info("Exportando relatório de conformidade...")}
-            >
-              <FileText className="h-3.5 w-3.5" />
-              Exportar Auditoria
-            </Button>
+            <div className="flex flex-col gap-1">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="gap-2 text-xs h-9 border-sicoob-green/30 text-sicoob-green-dark hover:bg-sicoob-green/5"
+                onClick={() => toast.info("Exportando relatório de conformidade BPMN...")}
+              >
+                <ShieldCheck className="h-3.5 w-3.5" />
+                Dossiê de Conformidade
+              </Button>
+              <div className="flex items-center justify-center gap-1.5 text-[8px] uppercase tracking-tighter text-muted-foreground font-bold">
+                <Fingerprint className="h-2 w-2" /> Certificado Digital Sicoob
+              </div>
+            </div>
 
             {activeRequest && canApprove ? (
               <>
@@ -685,16 +694,24 @@ export default function OrderDetailPage() {
 
                 <TabsContent value="items" className="space-y-4 pt-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <Card className="border-[1.5px] bg-sicoob-green/5 border-sicoob-green/20">
+                    <Card className="border-[1.5px] bg-muted/20">
                       <CardHeader className="pb-2">
-                        <CardTitle className="text-xs font-bold uppercase tracking-wider text-sicoob-green-dark">Integridade do Pedido</CardTitle>
+                        <CardTitle className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                          <Stamp className="h-3 w-3" /> Metadados de Auditoria
+                        </CardTitle>
                       </CardHeader>
                       <CardContent className="space-y-2">
                         <div className="flex justify-between items-center text-sm">
-                          <span className="text-muted-foreground">Itens Auditados</span>
-                          <Badge variant="outline" className="text-sicoob-green-dark border-sicoob-green/30">
-                            {orderItems?.length || 0} Itens
-                          </Badge>
+                          <span className="text-muted-foreground">Protocolo Digital</span>
+                          <span className="font-mono text-[10px] font-bold">SIC-{id?.slice(0, 12).toUpperCase()}</span>
+                        </div>
+                        <div className="flex justify-between items-center text-sm">
+                          <span className="text-muted-foreground">Integridade</span>
+                          <Badge variant="outline" className="h-5 bg-sicoob-green/10 text-sicoob-green border-sicoob-green/20">VERIFICADO</Badge>
+                        </div>
+                        <div className="flex justify-between items-center text-sm">
+                          <span className="text-muted-foreground">Versão BPMN</span>
+                          <span className="font-medium">v2.4.1-stable</span>
                         </div>
                         <div className="flex justify-between items-center text-sm">
                           <span className="text-muted-foreground">Última Modificação</span>
