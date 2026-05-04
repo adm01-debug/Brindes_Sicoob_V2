@@ -140,6 +140,7 @@ export const UserAssignmentTab = () => {
               <TableHead>Papel Atual</TableHead>
               <TableHead>Singular</TableHead>
               <TableHead>PA</TableHead>
+              <TableHead>Alçada Individual (R$)</TableHead>
               <TableHead className="text-right">Ações</TableHead>
             </TableRow>
           </TableHeader>
