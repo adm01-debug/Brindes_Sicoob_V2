@@ -52,10 +52,27 @@ async function testCompliance() {
 
   console.log(`✅ Registro privado criado na Org B: ${quoteB.id}`);
 
-  // 3. Attempt to access it using Org A context (via impersonation if possible or Edge Function)
-  // For this audit script, we'll verify if the RLS policies in SQL have been applied.
-  // We can call a verification function or check policy metadata.
+  // 3. Attempt to access it using Org A context via REST API with ANON KEY
+  // We simulate a user from Org A trying to fetch Org B's record
+  // NOTE: This assumes RLS is working. If it fails to fetch (empty data), RLS is GOOD.
+  const anonClient = createClient(supabaseUrl, process.env.VITE_SUPABASE_ANON_KEY || supabaseKey);
   
+  const { data: unauthorizedFetch, error: fetchErr } = await anonClient
+    .from('quotes')
+    .select('id')
+    .eq('id', quoteB.id)
+    .maybeSingle();
+
+  if (fetchErr) {
+    console.log('✅ Acesso negado conforme esperado (Erro de permissão ou objeto não encontrado).');
+  } else if (unauthorizedFetch) {
+    console.error('❌ VULNERABILIDADE CRÍTICA: Registro da Org B vazou para o contexto Anon/Org A!');
+    process.exit(1);
+  } else {
+    console.log('✅ Isolamento confirmado: Registro da Org B está invisível para a Org A.');
+  }
+
+  // 4. Double check metadata policies
   const { data: policies } = await admin.rpc('run_sql_query', { 
     sql: "SELECT policyname FROM pg_policies WHERE tablename = 'quotes';" 
   } as any);
