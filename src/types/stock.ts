@@ -343,12 +343,19 @@ export function calculateStockStatus(
   current: number, 
   min: number, 
   max?: number,
-  inTransit?: number
+  inTransit?: number,
+  daysUntilStockout?: number
 ): StockStatus {
   if (current <= 0) {
     if (inTransit && inTransit > 0) return 'incoming';
     return 'out_of_stock';
   }
+  
+  // Status preditivo: se esgotamento em < 7 dias, tratar como crítico
+  if (daysUntilStockout !== undefined && daysUntilStockout < 7) return 'critical';
+  // Se esgotamento em < 15 dias, tratar como baixo estoque
+  if (daysUntilStockout !== undefined && daysUntilStockout < 15) return 'low_stock';
+
   if (current <= min * 0.25) return 'critical';
   if (current <= min) return 'low_stock';
   if (max && current > max * 1.5) return 'overstocked';

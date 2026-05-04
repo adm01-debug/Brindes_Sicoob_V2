@@ -53,12 +53,22 @@ export function generateStockAlerts(products: ProductStockSummary[]): StockAlert
       
       if (variant.daysUntilStockout !== undefined && variant.daysUntilStockout <= 7 && variant.status !== 'out_of_stock') {
         alerts.push({
-          id: `alert-${variant.id}-predict`,
+          id: `alert-${variant.id}-predict-critical`,
+          type: 'stockout_predicted',
+          severity: 'error',
+          title: 'Esgotamento Iminente',
+          message: `${variant.colorName || 'Variação'} deve esgotar em ${variant.daysUntilStockout} dias!`,
+          suggestedAction: 'Fazer pedido IMEDIATAMENTE',
+          ...baseAlert,
+        });
+      } else if (variant.daysUntilStockout !== undefined && variant.daysUntilStockout <= 15 && variant.status !== 'out_of_stock') {
+        alerts.push({
+          id: `alert-${variant.id}-predict-warning`,
           type: 'stockout_predicted',
           severity: 'warning',
-          title: 'Esgotamento Previsto',
+          title: 'Esgotamento Próximo',
           message: `${variant.colorName || 'Variação'} deve esgotar em ${variant.daysUntilStockout} dias`,
-          suggestedAction: 'Antecipar pedido de reposição',
+          suggestedAction: 'Planejar reposição',
           ...baseAlert,
         });
       }

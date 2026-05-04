@@ -40,12 +40,12 @@ export const usePaBudget = (paId?: string) => {
 
   const getRemainingBudget = () => {
     if (!budget) return 0;
-    return budget.verba_total - budget.verba_consumida;
+    return budget.verba_total - (budget.verba_consumida || 0);
   };
 
-  const isOverBudget = (amount: number) => {
-    const remaining = getRemainingBudget();
-    return amount > remaining;
+  const getConsumptionPercentage = () => {
+    if (!budget || budget.verba_total <= 0) return 0;
+    return ((budget.verba_consumida || 0) / budget.verba_total) * 100;
   };
 
   return {
@@ -54,6 +54,8 @@ export const usePaBudget = (paId?: string) => {
     error,
     refetch,
     remainingBudget: getRemainingBudget(),
-    isOverBudget,
+    consumptionPercentage: getConsumptionPercentage(),
+    isOverBudget: (amount: number) => amount > getRemainingBudget(),
+    isOverThreshold: (amount: number) => budget ? amount > budget.limite_alcada : false,
   };
 };

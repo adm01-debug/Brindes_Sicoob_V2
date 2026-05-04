@@ -238,7 +238,8 @@ export async function fetchAndProcessStockData(): Promise<{
         }
 
         const availableStock = calculateAvailableStock(currentStock, reservedStock);
-        const status = calculateStockStatus(currentStock, minStock, undefined, inTransitStock);
+        const daysUntilStockout = calculateDaysUntilStockout(availableStock);
+        const status = calculateStockStatus(currentStock, minStock, undefined, inTransitStock, daysUntilStockout);
 
         variants.push({
           id: pv.id, productId: product.id, variantId: pv.id,
@@ -263,8 +264,9 @@ export async function fetchAndProcessStockData(): Promise<{
             ...variants[0],
             currentStock: productLevelStock,
             availableStock: calculateAvailableStock(productLevelStock, variants[0].reservedStock),
-            status: calculateStockStatus(productLevelStock, minStock),
-            daysUntilStockout: calculateDaysUntilStockout(productLevelStock),
+            const daysUntilStockout = calculateDaysUntilStockout(productLevelStock);
+            status: calculateStockStatus(productLevelStock, minStock, undefined, 0, daysUntilStockout),
+            daysUntilStockout,
           };
         } else {
           const availableStock = calculateAvailableStock(productLevelStock, 0);
@@ -273,7 +275,7 @@ export async function fetchAndProcessStockData(): Promise<{
             variantId: `${product.id}::product_total`, variantSku: product.sku || 'PROD',
             colorName: 'Total do Produto', currentStock: productLevelStock, minStock,
             reservedStock: 0, inTransitStock: 0, availableStock,
-            status: calculateStockStatus(productLevelStock, minStock),
+            status: calculateStockStatus(productLevelStock, minStock, undefined, 0, calculateDaysUntilStockout(availableStock)),
             daysUntilStockout: calculateDaysUntilStockout(availableStock),
             updatedAt: product.updated_at || new Date().toISOString(),
           });
@@ -287,7 +289,7 @@ export async function fetchAndProcessStockData(): Promise<{
         id: product.id, productId: product.id, variantId: product.id,
         variantSku: product.sku || 'PROD', colorName: 'Padrão',
         currentStock, minStock, reservedStock: 0, inTransitStock: 0, availableStock,
-        status: calculateStockStatus(currentStock, minStock),
+        status: calculateStockStatus(currentStock, minStock, undefined, 0, calculateDaysUntilStockout(availableStock)),
         daysUntilStockout: calculateDaysUntilStockout(availableStock),
         updatedAt: product.updated_at || new Date().toISOString(),
       });

@@ -16,6 +16,7 @@ import { fetchAndProcessStockData } from './stock/stockFetcher';
 export function useVariantStock() {
   const [filters, setFilters] = useState<StockFilters>(defaultStockFilters);
   const [dismissedAlerts, setDismissedAlerts] = useState<Set<string>>(new Set());
+  const [alertTypeFilter, setAlertTypeFilter] = useState<StockAlertType | 'all'>('all');
   const queryClient = useQueryClient();
 
   const { data, isLoading, isFetching } = useQuery({
@@ -129,10 +130,27 @@ export function useVariantStock() {
       .sort((a, b) => b.count - a.count);
   }, [productStocks]);
 
+  const availableAlertTypes = useMemo(() => {
+    const map = new Map<string, number>();
+    rawAlerts.forEach(a => {
+      map.set(a.type, (map.get(a.type) || 0) + 1);
+    });
+    return Array.from(map.entries())
+      .map(([name, count]) => ({ name, count }))
+      .sort((a, b) => b.count - a.count);
+  }, [rawAlerts]);
+
   const filteredProducts = useMemo(() => {
     let items = [...productStocks];
 
-    if (filters.status !== 'all') {
+    const activeAlerts = alertTypeFilter === 'all' 
+      ? alerts 
+      : alerts.filter(a => a.type === alertTypeFilter);
+    const activeAlertProductIds = new Set(activeAlerts.map(a => a.productId));
+
+    if (filters.showOnlyWithAlerts || (alertTypeFilter !== 'all')) {
+      items = items.filter(p => activeAlertProductIds.has(p.productId));
+    }
       items = items.filter(p => {
         if (p.overallStatus === filters.status) return true;
         // "low_stock" filter should also include "critical" products
@@ -177,8 +195,7 @@ export function useVariantStock() {
     }
 
     if (filters.showOnlyWithAlerts) {
-      const ids = new Set(alerts.map(a => a.productId));
-      items = items.filter(p => ids.has(p.productId));
+      // items = items.filter(p => ids.has(p.productId)); // Já filtrado acima se alertTypeFilter != 'all'
     }
 
     const dir = filters.sortDirection === 'asc' ? 1 : -1;
@@ -236,10 +253,11 @@ export function useVariantStock() {
     isLoading, isFetching, loadingProgress,
     productStocks: filteredProducts, allProductStocks: productStocks,
     summary, alerts, criticalAlerts, futureStock, filters, allColors,
-    availableCategories, availableSuppliers, availableColorGroups,
+    availableCategories, availableSuppliers, availableColorGroups, availableAlertTypes,
     fetchStockData, updateFilter, resetFilters, dismissAlert,
     dismissAllAlerts, dismissAlertsBySeverity, setFilters,
     getProductStock, getColorStock,
+    alertTypeFilter, setAlertTypeFilter,
   };
 }
 
