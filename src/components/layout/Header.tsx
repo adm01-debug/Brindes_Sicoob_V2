@@ -1,5 +1,5 @@
 import { useEffect, type CSSProperties } from "react";
-import { User, Menu, Sun, Moon, Heart, GitCompare, Search, LogOut, Settings, HelpCircle, Shield, MoreHorizontal, Palette, RotateCcw } from "lucide-react";
+import { User, Menu, Sun, Moon, Heart, GitCompare, Search, LogOut, Settings, HelpCircle, Shield, MoreHorizontal, Palette, RotateCcw, Smartphone } from "lucide-react";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -19,6 +19,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { useOnboardingContext } from "@/contexts/OnboardingContext";
 import { useOrganization } from "@/contexts/OrganizationContext";
+import { usePWAInstall } from "@/hooks/usePWAInstall";
 
 import { StockAlertsIndicator } from "@/components/inventory/StockAlertsIndicator";
 import { NotificationBell } from "@/components/notifications/NotificationDrawer";
@@ -48,6 +49,7 @@ export function Header({ onMenuToggle, searchQuery, onSearchChange }: HeaderProp
   const { currentOrg } = useOrganization();
   const currentSection = useCurrentSection();
   const { restartTour, hasCompletedTour, isLoading: onboardingLoading } = useOnboardingContext();
+  const { isInstallable } = usePWAInstall();
 
   const isScrolled = useIsScrolled(20);
 
@@ -272,6 +274,12 @@ export function Header({ onMenuToggle, searchQuery, onSearchChange }: HeaderProp
                   {actualTheme === "dark" ? <Sun className="h-4 w-4 mr-2" /> : <Moon className="h-4 w-4 mr-2" />}
                   {actualTheme === "dark" ? "Modo Claro" : "Modo Escuro"}
                 </DropdownMenuItem>
+                {isInstallable && (
+                  <DropdownMenuItem onClick={() => navigate("/instalar")} className="cursor-pointer text-primary font-bold">
+                    <Smartphone className="h-4 w-4 mr-2" />
+                    Instalar App
+                  </DropdownMenuItem>
+                )}
               </DropdownMenuContent>
             </DropdownMenu>
           </div>

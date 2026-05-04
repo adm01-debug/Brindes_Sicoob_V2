@@ -12,4 +12,5 @@ export const publicRoutes = [
   defineRoute({ path: "/comparar-publica/:token", component: lazyWithRetry(() => import("@/pages/PublicComparisonPage")) }),
   defineRoute({ path: "/dossie/:token", component: lazyWithRetry(() => import("@/pages/PublicDossierPage")) }),
   defineRoute({ path: "/auth/callback", component: lazyWithRetry(() => import("@/pages/SSOCallbackPage")) }),
+  defineRoute({ path: "/instalar", component: lazyWithRetry(() => import("@/pages/PWAInstallPage")) }),
 ] as const;

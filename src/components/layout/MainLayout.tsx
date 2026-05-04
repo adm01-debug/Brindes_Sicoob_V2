@@ -1,4 +1,7 @@
-import { useState, Suspense, useEffect, useRef } from "react";
+import { useState, Suspense, useEffect, useRef, useCallback } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import { PullToRefreshIndicator } from "@/components/mobile/PullToRefreshIndicator";
+import { usePullToRefresh } from "@/hooks/usePullToRefresh";
 import { useLocation } from "react-router-dom";
 import { useScrollLockFix } from "@/hooks/useScrollLockFix";
 import { useGlobalShortcuts } from "@/hooks/useGlobalShortcuts";
@@ -42,6 +45,16 @@ interface MainLayoutProps {
 export function MainLayout({ children }: MainLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const queryClient = useQueryClient();
+
+  const handleRefresh = useCallback(async () => {
+    // Invalidate all queries to trigger global refetch
+    await queryClient.refetchQueries();
+    // Small delay for UX feel
+    await new Promise(resolve => setTimeout(resolve, 300));
+  }, [queryClient]);
+
+  const { pullDistance, isRefreshing } = usePullToRefresh(handleRefresh);
   const location = useLocation();
   const isMockupGenerator = location.pathname === "/mockup-generator";
   const isHome = location.pathname === "/";
@@ -79,7 +92,8 @@ export function MainLayout({ children }: MainLayoutProps) {
   }, [location.pathname]);
 
   const layoutContent = (
-    <div className="min-h-screen bg-background ambient-glow print:min-h-0" role="document">
+    <div className="min-h-screen bg-background ambient-glow print:min-h-0 relative" role="document">
+      <PullToRefreshIndicator pullDistance={pullDistance} isRefreshing={isRefreshing} />
       
       <div className="print:hidden">
         <Suspense fallback={null}>
