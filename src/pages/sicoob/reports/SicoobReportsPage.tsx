@@ -235,7 +235,7 @@ export default function SicoobReportsPage() {
               <div className="text-2xl font-bold">
                 {formatCurrency(ordersInRange?.length ? totalSpent / ordersInRange.length : 0)}
               </div>
-              <p className="text-xs text-muted-foreground mt-1 text-blue-600/80 font-medium">Por pedido consolidado</p>
+              <p className="text-xs text-muted-foreground mt-1 text-status-transit/80 font-medium">Por pedido consolidado</p>
             </CardContent>
           </Card>
           <Card className="border-[1.5px]">
@@ -318,7 +318,7 @@ export default function SicoobReportsPage() {
                        </div>
                        <div className="space-y-1">
                          <span className="text-[10px] uppercase font-bold text-muted-foreground">Consumo</span>
-                         <div className="font-bold text-sm text-red-600">{formatCurrency(bh.verba_consumida)}</div>
+                         <div className="font-bold text-sm text-destructive">{formatCurrency(bh.verba_consumida)}</div>
                        </div>
                      </div>
                   </CardContent>

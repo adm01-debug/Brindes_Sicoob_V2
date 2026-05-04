@@ -53,10 +53,10 @@ export default function LogisticsReportPage() {
             <Card className="border-[1.5px]">
                 <CardHeader className="flex flex-row items-center justify-between pb-2">
                     <CardTitle className="text-sm font-medium">Em Trânsito</CardTitle>
-                    <Clock className="h-4 w-4 text-blue-500" />
+                    <Clock className="h-4 w-4 text-status-production" />
                 </CardHeader>
                 <CardContent>
-                    <div className="text-2xl font-bold text-blue-600">8</div>
+                    <div className="text-2xl font-bold text-status-production">8</div>
                     <p className="text-xs text-muted-foreground mt-1">Pedidos com tracking ativo</p>
                 </CardContent>
             </Card>

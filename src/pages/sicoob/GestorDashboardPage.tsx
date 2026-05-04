@@ -131,11 +131,11 @@ export default function GestorDashboardPage() {
           <Card className="border-[1.5px]">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium">Aprovações Pendentes</CardTitle>
-              <Clock className="h-4 w-4 text-amber-500" />
+              <Clock className="h-4 w-4 text-status-production" />
             </CardHeader>
             <CardContent>
-              {isLoading ? <Skeleton className="h-8 w-20" /> : <div className="text-2xl font-bold text-amber-600">{stats?.pendingApprovals}</div>}
-              <p className="text-xs text-muted-foreground mt-1 text-amber-600/80 font-medium">Requerem sua atenção</p>
+              {isLoading ? <Skeleton className="h-8 w-20" /> : <div className="text-2xl font-bold text-status-production">{stats?.pendingApprovals}</div>}
+              <p className="text-xs text-muted-foreground mt-1 text-status-production/80 font-medium">Requerem sua atenção</p>
             </CardContent>
           </Card>
 
@@ -179,8 +179,8 @@ export default function GestorDashboardPage() {
                   stats?.recentOrders.map((order) => (
                     <div key={order.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/30 border border-border/40 hover:bg-muted/50 transition-colors">
                       <div className="flex items-center gap-3">
-                        <div className={`p-2 rounded-full ${order.status === 'pending' ? 'bg-amber-100' : order.status === 'approved' ? 'bg-green-100' : 'bg-red-100'}`}>
-                          {order.status === 'pending' ? <Clock className="h-4 w-4 text-amber-600" /> : order.status === 'approved' ? <CheckCircle2 className="h-4 w-4 text-green-600" /> : <TrendingUp className="h-4 w-4 text-red-600" />}
+                        <div className={`p-2 rounded-full ${order.status === 'pending' ? 'bg-status-production/10' : order.status === 'approved' ? 'bg-status-delivered/10' : 'bg-destructive/10'}`}>
+                          {order.status === 'pending' ? <Clock className="h-4 w-4 text-status-production" /> : order.status === 'approved' ? <CheckCircle2 className="h-4 w-4 text-status-delivered" /> : <TrendingUp className="h-4 w-4 text-destructive" />}
                         </div>
                         <div>
                           <div className="font-medium text-sm">{order.pa}</div>

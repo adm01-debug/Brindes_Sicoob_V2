@@ -50,11 +50,11 @@ export default function SellerDashboardPage() {
           <Card className="border-[1.5px]">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium">Pedidos em Aberto</CardTitle>
-              <ShoppingBag className="h-4 w-4 text-blue-500" />
+              <ShoppingBag className="h-4 w-4 text-status-transit" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-blue-600">{stats?.activeOrders}</div>
-              <p className="text-xs text-muted-foreground mt-1 text-blue-600/80 font-medium">Em produção ou trânsito</p>
+              <div className="text-2xl font-bold text-status-transit">{stats?.activeOrders}</div>
+              <p className="text-xs text-muted-foreground mt-1 text-status-transit/80 font-medium">Em produção ou trânsito</p>
             </CardContent>
           </Card>
 
@@ -100,7 +100,7 @@ export default function SellerDashboardPage() {
                         </div>
                       </div>
                       <div className="flex items-center gap-4">
-                        <div className={`text-sm font-medium ${client.grow.startsWith('+') ? 'text-green-600' : 'text-red-600'}`}>
+                        <div className={`text-sm font-medium ${client.grow.startsWith('+') ? 'text-status-delivered' : 'text-destructive'}`}>
                           {client.grow}
                         </div>
                         <Button variant="ghost" size="icon" asChild>

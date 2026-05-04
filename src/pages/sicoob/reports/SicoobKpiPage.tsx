@@ -110,7 +110,7 @@ export default function SicoobKpiPage() {
           <Card className="border-[1.5px]">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium">Volume Total</CardTitle>
-              <Target className="h-4 w-4 text-blue-500" />
+              <Target className="h-4 w-4 text-status-transit" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{formatCurrency(stats?.totalVolume || 0)}</div>
@@ -120,7 +120,7 @@ export default function SicoobKpiPage() {
           <Card className="border-[1.5px]">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium">Qtd. Pedidos</CardTitle>
-              <Clock className="h-4 w-4 text-amber-500" />
+              <Clock className="h-4 w-4 text-status-production" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{stats?.orderCount || 0}</div>
@@ -130,11 +130,11 @@ export default function SicoobKpiPage() {
           <Card className="border-[1.5px]">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium">Itens em Falta</CardTitle>
-              <AlertTriangle className="h-4 w-4 text-red-500" />
+              <AlertTriangle className="h-4 w-4 text-destructive" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-red-600">3</div>
-              <p className="text-xs text-red-600/80 mt-1 font-medium">Requer reposição</p>
+              <div className="text-2xl font-bold text-destructive">3</div>
+              <p className="text-xs text-destructive/80 mt-1 font-medium">Requer reposição</p>
             </CardContent>
           </Card>
         </div>

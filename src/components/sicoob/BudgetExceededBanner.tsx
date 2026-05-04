@@ -19,7 +19,7 @@ export const BudgetExceededBanner: React.FC<BudgetExceededBannerProps> = ({ curr
   if (!isExceeded) return null;
 
   return (
-    <Alert variant="destructive" className="bg-red-50 border-red-200 text-red-800 animate-in fade-in slide-in-from-top-4 duration-300" data-testid="budget-exceeded-banner">
+    <Alert variant="destructive" className="bg-destructive/5 border-destructive/20 text-destructive animate-in fade-in slide-in-from-top-4 duration-300" data-testid="budget-exceeded-banner">
       <AlertCircle className="h-4 w-4" />
       <AlertTitle className="font-bold">Verba Estourada</AlertTitle>
       <AlertDescription>

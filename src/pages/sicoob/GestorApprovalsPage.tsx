@@ -124,7 +124,7 @@ export default function GestorApprovalsPage() {
         <Card className="border-[1.5px]">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Clock className="h-5 w-5 text-amber-500" />
+              <Clock className="h-5 w-5 text-status-production" />
               Solicitações Pendentes
             </CardTitle>
             <CardDescription>
@@ -175,7 +175,7 @@ export default function GestorApprovalsPage() {
                             {req.request_reason}
                           </TableCell>
                           <TableCell>
-                            <Badge variant="outline" className="text-red-600 bg-red-50 border-red-200 gap-1">
+                            <Badge variant="outline" className="text-destructive bg-destructive/5 border-destructive/20 gap-1">
                               <AlertTriangle className="h-3 w-3" />
                               {formatCurrency(excess)}
                             </Badge>
@@ -190,7 +190,7 @@ export default function GestorApprovalsPage() {
                               <Button 
                                 variant="outline" 
                                 size="sm" 
-                                className="text-red-600 hover:bg-red-50 hover:text-red-700 border-red-200"
+                                className="text-destructive hover:bg-destructive/10 hover:text-destructive border-destructive/20"
                                 onClick={() => handleReject(req.id, req.order_id)}
                                 disabled={approveMutation.isPending || rejectMutation.isPending}
                               >
