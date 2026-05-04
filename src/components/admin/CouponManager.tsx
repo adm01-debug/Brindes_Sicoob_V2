@@ -3,7 +3,9 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Plus, Search, Pencil, Trash2, Ticket, Percent, DollarSign, Calendar } from "lucide-react";
+import { Plus, Search, Pencil, Trash2, Ticket, Percent, DollarSign, Calendar, Copy, History } from "lucide-react";
+import { useDuplicateEntity } from "@/hooks/useDuplicateEntity";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
@@ -17,6 +19,9 @@ export function CouponManager() {
   const [searchTerm, setSearchTerm] = useState("");
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingCoupon, setEditingCoupon] = useState<any>(null);
+  const [activeTab, setActiveTab] = useState("list");
+  
+  const duplicateEntity = useDuplicateEntity("coupons", ["coupons_list"]);
 
   const fetchCoupons = async () => {
     setIsLoading(true);
@@ -149,6 +154,6 @@ export function CouponManager() {
           <DialogFooter><Button variant="outline" onClick={() => setIsFormOpen(false)}>Cancelar</Button><Button onClick={() => handleSave(editingCoupon)}>Salvar</Button></DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </Tabs>
   );
 }
