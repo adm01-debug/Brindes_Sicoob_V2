@@ -1,61 +1,65 @@
 import { useState } from "react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
-import { useUpdateOrder } from "@/hooks/useOrders";
-import { toast } from "sonner";
-import { AlertCircle } from "lucide-react";
+import { MessageSquare, RotateCcw } from "lucide-react";
+import { QuickReplySelector } from "./QuickReplySelector";
 
-interface RevisionRequestProps {
+interface Props {
   orderId: string;
-  isOpen: boolean;
-  onClose: () => void;
+  onSend: (notes: string) => Promise<void>;
+  trigger?: React.ReactNode;
 }
 
-export function RevisionRequest({ orderId, isOpen, onClose }: RevisionRequestProps) {
-  const [reason, setReason] = useState("");
-  const updateOrder = useUpdateOrder(orderId, "enviado_gestor");
+export function RevisionRequest({ orderId, onSend, trigger }: Props) {
+  const [notes, setNotes] = useState("");
+  const [isOpen, setIsOpen] = useState(false);
+  const [isSending, setIsSending] = useState(false);
 
-  const handleSubmit = () => {
-    if (!reason.trim()) {
-      toast.error("Por favor, informe o motivo da revisão.");
-      return;
+  const handleSend = async () => {
+    if (!notes.trim()) return;
+    setIsSending(true);
+    try {
+      await onSend(notes);
+      setIsOpen(false);
+      setNotes("");
+    } finally {
+      setIsSending(false);
     }
-
-    updateOrder.mutate({ 
-      status: "rascunho",
-      internal_notes: `Solicitação de Revisão: ${reason}`
-    } as any, {
-      onSuccess: () => {
-        toast.success("Solicitação de revisão enviada.");
-        onClose();
-      }
-    });
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent>
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+      <DialogTrigger asChild>
+        {trigger || (
+          <Button variant="outline" size="sm" className="gap-2">
+            <RotateCcw className="h-4 w-4" /> Solicitar Revisão
+          </Button>
+        )}
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <AlertCircle className="h-5 w-5 text-warning" /> Solicitar Revisão
+            <MessageSquare className="h-5 w-5 text-primary" />
+            Solicitar Revisão do Pedido
           </DialogTitle>
-          <DialogDescription>
-            O pedido voltará para o status "Rascunho" para que o Gerente PA realize os ajustes necessários.
-          </DialogDescription>
         </DialogHeader>
-        <div className="py-4">
+        
+        <div className="space-y-4 py-4">
           <Textarea 
-            placeholder="Descreva o que precisa ser ajustado..."
-            value={reason}
-            onChange={(e) => setReason(e.target.value)}
+            placeholder="Descreva as alterações necessárias..." 
             className="min-h-[120px]"
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
           />
+          
+          <QuickReplySelector onSelect={(reply) => setNotes(prev => prev ? `${prev} ${reply}` : reply)} />
         </div>
+
         <DialogFooter>
-          <Button variant="outline" onClick={onClose}>Cancelar</Button>
-          <Button onClick={handleSubmit} disabled={updateOrder.isPending}>
-            Enviar para Revisão
+          <Button variant="outline" onClick={() => setIsOpen(false)}>Cancelar</Button>
+          <Button onClick={handleSend} disabled={isSending || !notes.trim()}>
+            {isSending ? "Enviando..." : "Enviar Solicitação"}
           </Button>
         </DialogFooter>
       </DialogContent>
