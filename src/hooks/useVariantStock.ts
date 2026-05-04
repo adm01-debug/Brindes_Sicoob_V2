@@ -130,10 +130,27 @@ export function useVariantStock() {
       .sort((a, b) => b.count - a.count);
   }, [productStocks]);
 
+  const availableAlertTypes = useMemo(() => {
+    const map = new Map<string, number>();
+    rawAlerts.forEach(a => {
+      map.set(a.type, (map.get(a.type) || 0) + 1);
+    });
+    return Array.from(map.entries())
+      .map(([name, count]) => ({ name, count }))
+      .sort((a, b) => b.count - a.count);
+  }, [rawAlerts]);
+
   const filteredProducts = useMemo(() => {
     let items = [...productStocks];
 
-    if (filters.status !== 'all') {
+    const activeAlerts = alertTypeFilter === 'all' 
+      ? alerts 
+      : alerts.filter(a => a.type === alertTypeFilter);
+    const activeAlertProductIds = new Set(activeAlerts.map(a => a.productId));
+
+    if (filters.showOnlyWithAlerts || (alertTypeFilter !== 'all')) {
+      items = items.filter(p => activeAlertProductIds.has(p.productId));
+    }
       items = items.filter(p => {
         if (p.overallStatus === filters.status) return true;
         // "low_stock" filter should also include "critical" products
