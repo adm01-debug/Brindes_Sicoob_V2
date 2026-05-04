@@ -243,7 +243,7 @@ export default function AdminVerbasPage() {
           <TabsList className="mb-4">
             <TabsTrigger value="limits" className="gap-2"><Wallet className="h-4 w-4" /> Limites por PA</TabsTrigger>
             <TabsTrigger value="categories" className="gap-2"><Plus className="h-4 w-4" /> Por Categoria</TabsTrigger>
-            <TabsTrigger value="history" className="gap-2"><History className="h-4 w-4" /> Histórico de Alterações</TabsTrigger>
+            <TabsTrigger value="audit" className="gap-2"><History className="h-4 w-4" /> Histórico de Alterações</TabsTrigger>
           </TabsList>
 
           <TabsContent value="limits">
