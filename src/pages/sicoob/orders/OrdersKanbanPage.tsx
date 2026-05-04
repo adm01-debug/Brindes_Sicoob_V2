@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { PageSEO } from "@/components/seo/PageSEO";
 import { Button } from "@/components/ui/button";
@@ -16,9 +16,13 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { ArrowLeft, LayoutGrid, List, Plus, Lock, GripVertical } from "lucide-react";
+import { ArrowLeft, LayoutGrid, List, Plus, Lock, GripVertical, AlertTriangle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
+import { useSicoobOrders } from "@/hooks/sicoob/useSicoobOrder"; // Assuming this exists based on common pattern
+import { sicoobOrderService } from "@/services/sicoob/orderService";
+import { OrderStatus, ORDER_STATUS_CONFIG, ORDER_STATUS_OPTIONS, canSicoobTransitionTo } from "@/types/sicoob/orders";
 import {
   DndContext,
   PointerSensor,
