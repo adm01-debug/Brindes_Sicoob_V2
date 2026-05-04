@@ -86,26 +86,49 @@ export const ProductCardImage = memo(function ProductCardImage({
         el._swipeX = undefined;
       } : undefined}
     >
-      {/* Image */}
-      <img
-        src={cardImageUrl}
-        srcSet={cardSrcSet}
-        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 400px"
-        alt={activeColorName ? `${product.name} - ${activeColorName}` : product.name}
-        title={activeColorName ? `${product.name} - ${activeColorName}` : product.name}
-        className={cn(
-          "w-full h-full object-contain ease-out",
-          hasMultipleVariants ? "transition-all duration-300" : "transition-all duration-700",
-          imageLoaded ? "opacity-100 blur-0 scale-100" : "opacity-40 blur-sm scale-[1.02]"
+      <div className="relative w-full h-full">
+        {/* Placeholder/Loading State */}
+        {!imageLoaded && (
+          <div className="absolute inset-0 flex items-center justify-center bg-muted/20 animate-pulse">
+            <Package className="h-8 w-8 text-muted-foreground/20" />
+          </div>
         )}
-        style={imageLoaded ? { transform: `scale(${computedImageScale})` } : undefined}
-        loading="lazy"
-        onLoad={onImageLoad}
-        onError={(e) => {
-          const img = e.currentTarget;
-          if (!img.dataset.fallback) { img.dataset.fallback = '1'; img.srcset = ''; img.src = product.images[0] || '/placeholder.svg'; }
-        }}
-      />
+        
+        <img
+          src={cardImageUrl}
+          srcSet={cardSrcSet}
+          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 400px"
+          alt={activeColorName ? `${product.name} - ${activeColorName}` : product.name}
+          title={activeColorName ? `${product.name} - ${activeColorName}` : product.name}
+          className={cn(
+            "w-full h-full object-contain ease-out transition-all duration-300",
+            imageLoaded ? "opacity-100 blur-0 scale-100" : "opacity-0 blur-sm scale-[1.05]"
+          )}
+          style={imageLoaded ? { transform: `scale(${computedImageScale})` } : undefined}
+          loading="lazy"
+          onLoad={() => {
+            onImageLoad();
+            // Ref: OND-014-IMG - Auditoria visual de carregamento
+            if (window.location.search.includes('debug-img')) {
+              console.log(`[IMG_SUCCESS] ${product.name} loaded from ${cardImageUrl}`);
+            }
+          }}
+          onError={(e) => {
+            const img = e.currentTarget;
+            if (!img.dataset.fallback) { 
+              img.dataset.fallback = '1'; 
+              img.srcset = ''; 
+              // Hierarchy: specific variant image -> first product image -> placeholder
+              img.src = product.images[0] || '/placeholder.svg'; 
+              console.warn(`[IMG_FALLBACK] Retrying ${product.name} with original source`);
+            } else if (img.dataset.fallback === '1') {
+              img.dataset.fallback = '2';
+              img.src = '/placeholder.svg';
+              console.error(`[IMG_FAILURE] Final placeholder for ${product.name}`);
+            }
+          }}
+        />
+      </div>
 
       {/* Active color badge (mobile) */}
       {activeColorName && colorSpecificImage && (
