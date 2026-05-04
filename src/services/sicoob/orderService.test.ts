@@ -122,23 +122,15 @@ describe("sicoobOrderService", () => {
     await sicoobOrderService.updateOrderStatus("order_1", "confirmed", "waiting_approval", "Aprovado por gestor");
     expect(updateMock).toHaveBeenCalledWith(expect.objectContaining({ status: "confirmed" }));
 
-    // 3. Confirmed -> In Production
-    await sicoobOrderService.updateOrderStatus("order_1", "in_production", "confirmed");
-    expect(updateMock).toHaveBeenCalledWith(expect.objectContaining({ status: "in_production" }));
+    // 3. Confirmed -> Logistic (Instead of in_production)
+    await sicoobOrderService.updateOrderStatus("order_1", "logistic", "confirmed");
+    expect(updateMock).toHaveBeenCalledWith(expect.objectContaining({ status: "logistic" }));
 
-    // 4. In Production -> In Separation
-    await sicoobOrderService.updateOrderStatus("order_1", "in_separation", "in_production");
-    expect(updateMock).toHaveBeenCalledWith(expect.objectContaining({ status: "in_separation" }));
+    // 4. Logistic -> Completed
+    await sicoobOrderService.updateOrderStatus("order_1", "completed", "logistic");
+    expect(updateMock).toHaveBeenCalledWith(expect.objectContaining({ status: "completed" }));
 
-    // 5. In Separation -> In Transit
-    await sicoobOrderService.updateOrderStatus("order_1", "in_transit", "in_separation");
-    expect(updateMock).toHaveBeenCalledWith(expect.objectContaining({ status: "in_transit" }));
-
-    // 6. In Transit -> Delivered
-    await sicoobOrderService.updateOrderStatus("order_1", "delivered", "in_transit");
-    expect(updateMock).toHaveBeenCalledWith(expect.objectContaining({ status: "delivered" }));
-
-    expect(insertMock).toHaveBeenCalledTimes(12); // 6 status changes * (1 audit + 1 notification)
+    expect(insertMock).toHaveBeenCalledTimes(8); // 4 status changes * (1 audit + 1 notification)
   });
 });
 
