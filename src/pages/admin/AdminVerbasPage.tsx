@@ -276,16 +276,49 @@ export default function AdminVerbasPage() {
 
           <TabsContent value="categories">
             <Card>
-              <CardHeader>
-                <CardTitle>Limites por Categoria (Override)</CardTitle>
-                <CardDescription>Defina alçadas específicas para categorias de produtos por PA.</CardDescription>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0">
+                <div>
+                  <CardTitle>Limites por Categoria (Override)</CardTitle>
+                  <CardDescription>Defina alçadas específicas para categorias de produtos por PA.</CardDescription>
+                </div>
+                <Button size="sm" className="gap-2" onClick={() => setIsCategoryFormOpen(true)}>
+                  <Plus className="h-4 w-4" /> Novo Limite
+                </Button>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  <div className="rounded-md border p-8 text-center text-muted-foreground">
-                    <AlertTriangle className="h-10 w-10 mx-auto mb-3 opacity-20" />
-                    <p>Módulo de limites por categoria está sendo carregado...</p>
-                  </div>
+                <div className="rounded-md border">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>PA</TableHead>
+                        <TableHead>Categoria</TableHead>
+                        <TableHead>Limite Alçada</TableHead>
+                        <TableHead className="text-right">Ações</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {categoryThresholds.length === 0 ? (
+                        <TableRow><TableCell colSpan={4} className="text-center py-8 text-muted-foreground">Nenhum limite específico cadastrado</TableCell></TableRow>
+                      ) : (
+                        categoryThresholds.map((ct) => (
+                          <TableRow key={ct.id}>
+                            <TableCell>{ct.postos_atendimento?.nome}</TableCell>
+                            <TableCell>
+                              <Badge variant="outline">
+                                {categories.find(c => c.id === ct.category_id)?.name || ct.category_id}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="font-bold text-primary">R$ {ct.limite_alcada.toLocaleString()}</TableCell>
+                            <TableCell className="text-right">
+                              <Button variant="ghost" size="icon" onClick={() => handleDeleteCategoryThreshold(ct.id)}>
+                                <Trash2 className="h-4 w-4 text-destructive" />
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      )}
+                    </TableBody>
+                  </Table>
                 </div>
               </CardContent>
             </Card>
