@@ -30,6 +30,7 @@ export function deriveSeverity(p: ProductStockSummary): RiskSeverity {
   if (p.overallStatus === 'incoming') return 'warning';
   if (p.overallStatus === 'out_of_stock' || p.overallStatus === 'critical') return 'critical';
   // #15 fix: guard against Infinity — only trigger if finite AND below threshold
+  // #16 logic: align predictive thresholds with calculateStockStatus
   if (p.daysUntilFullStockout != null && Number.isFinite(p.daysUntilFullStockout) && p.daysUntilFullStockout < 7) return 'critical';
   if (p.overallStatus === 'low_stock') return 'warning';
   if (p.daysUntilFullStockout != null && Number.isFinite(p.daysUntilFullStockout) && p.daysUntilFullStockout < 15) return 'warning';
