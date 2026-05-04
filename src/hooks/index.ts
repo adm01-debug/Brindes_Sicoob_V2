@@ -8,3 +8,4 @@ export * from './useSmartAlerts';
 export * from './useApprovalThreshold';
 export * from './usePendingQuotesCount';
 export * from './useQuotes';
+export * from './useCart';
