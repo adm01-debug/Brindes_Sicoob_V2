@@ -289,7 +289,7 @@ export async function fetchAndProcessStockData(): Promise<{
         id: product.id, productId: product.id, variantId: product.id,
         variantSku: product.sku || 'PROD', colorName: 'Padrão',
         currentStock, minStock, reservedStock: 0, inTransitStock: 0, availableStock,
-        status: calculateStockStatus(currentStock, minStock),
+        status: calculateStockStatus(currentStock, minStock, undefined, 0, calculateDaysUntilStockout(availableStock)),
         daysUntilStockout: calculateDaysUntilStockout(availableStock),
         updatedAt: product.updated_at || new Date().toISOString(),
       });
