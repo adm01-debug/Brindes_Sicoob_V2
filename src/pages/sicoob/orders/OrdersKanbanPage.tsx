@@ -40,13 +40,7 @@ import { cn } from "@/lib/utils";
 type SicoobRole = "comprador" | "supervisor" | "gestor" | "logistica";
 
 type StatusId =
-  | "draft"
-  | "pending"
-  | "waiting_approval"
-  | "escalated_to_board"
-  | "confirmed"
-  | "logistic"
-  | "completed";
+type StatusId = OrderStatus;
 
 interface ColumnDef {
   id: StatusId;
@@ -55,36 +49,20 @@ interface ColumnDef {
 
 interface OrderCard {
   id: string;
+  order_number: string;
   pa: string;
   status: StatusId;
   total: number;
-  items: number;
+  sla_status?: 'normal' | 'warning' | 'critical';
 }
 
-// ---------- Mock data ----------
-const COLUMNS: ColumnDef[] = [
-  { id: "draft", title: "Rascunho" },
-  { id: "sent_to_manager", title: "Enviado ao Gestor" },
-  { id: "manager_approved", title: "Aprovado Gestor" },
-  { id: "logistic", title: "Logística/Envio" },
-  { id: "completed", title: "Finalizado" },
-];
+const COLUMNS: ColumnDef[] = ORDER_STATUS_OPTIONS.map(status => ({
+  id: status,
+  title: ORDER_STATUS_CONFIG[status].label
+}));
 
-const INITIAL_ORDERS: OrderCard[] = [
-  { id: "1", pa: "PA Centro", status: "draft", total: 1250.5, items: 4 },
-  { id: "2", pa: "PA Sul", status: "sent_to_manager", total: 3400.0, items: 12 },
-  { id: "4", pa: "PA Oeste", status: "sent_to_manager", total: 500.0, items: 1 },
-];
-
-// ---------- Transition rules ----------
-// Permitido por status atual -> destinos válidos
-const ALLOWED_TRANSITIONS: Record<StatusId, StatusId[]> = {
-  draft: ["sent_to_manager"],
-  sent_to_manager: ["manager_approved", "draft"],
-  manager_approved: ["logistic"],
-  logistic: ["completed"],
-  completed: [],
-};
+// Real orders will be fetched via hook
+const INITIAL_ORDERS: OrderCard[] = [];
 
 // Permissão por role para executar a transição (from -> to)
 const ROLE_PERMISSIONS: Record<
