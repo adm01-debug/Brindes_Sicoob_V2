@@ -23,7 +23,8 @@ import {
   ShieldCheck,
   ClipboardCheck,
   Fingerprint,
-  Stamp
+  Stamp,
+  X
 } from "lucide-react";
 import { 
   Card, 
