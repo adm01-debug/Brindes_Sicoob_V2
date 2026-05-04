@@ -5,6 +5,23 @@ import { BrowserRouter } from "react-router-dom";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
+// Mock do contexto de autenticação e onboarding
+vi.mock("@/contexts/AuthContext", () => ({
+  useAuth: () => ({
+    user: { id: "test-user" },
+    profile: { id: "test-profile", role: "admin" },
+    isAdmin: true,
+  }),
+  AuthProvider: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+}));
+
+vi.mock("@/hooks/useOnboarding", () => ({
+  useOnboarding: () => ({
+    startTour: vi.fn(),
+    isActive: false,
+  }),
+}));
+
 // Mock do Supabase
 vi.mock("@/integrations/supabase/client", () => ({
   supabase: {
