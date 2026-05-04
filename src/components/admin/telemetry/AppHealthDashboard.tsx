@@ -43,6 +43,14 @@ export function AppHealthDashboard() {
   const [lookupResult, setLookupResult] = useState<RequestIdLookup | null>(null);
   const [lookupLoading, setLookupLoading] = useState(false);
   const { data, slowQueries, isLoadingSlow, isLoading, isFetching, refetch } = useAppHealth(windowMinutes);
+  const [localHealth, setLocalHealth] = useState<AppHealthStatus>(diagnostics.getHealthStatus());
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setLocalHealth(diagnostics.getHealthStatus());
+    }, 5000);
+    return () => clearInterval(timer);
+  }, []);
 
   const handleLookup = async () => {
     const id = requestIdQuery.trim();
@@ -64,6 +72,8 @@ export function AppHealthDashboard() {
   const kpis = data?.kpis;
   const tone4xx = statusTone(kpis?.pct_4xx ?? 0, 5, 15);
   const tone5xx = statusTone(kpis?.pct_5xx ?? 0, 1, 5);
+  
+  const healthTone = localHealth.status === 'healthy' ? 'success' : localHealth.status === 'degraded' ? 'warning' : 'destructive';
 
   return (
     <section
