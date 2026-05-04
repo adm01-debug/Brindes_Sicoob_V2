@@ -411,6 +411,54 @@ export default function AdminVerbasPage() {
       </div>
 
       <BudgetFormDialog open={isFormOpen} onOpenChange={setIsFormOpen} budget={editingBudget} onSave={handleSave} pas={pas} />
+
+      <Dialog open={isCategoryFormOpen} onOpenChange={setIsCategoryFormOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Novo Limite por Categoria</DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label>Posto de Atendimento</Label>
+              <Select onValueChange={(v) => setNewCategoryThreshold(prev => ({ ...prev, pa_id: v }))}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione o PA" />
+                </SelectTrigger>
+                <SelectContent>
+                  {pas.map(p => (
+                    <SelectItem key={p.id} value={p.id}>{p.nome}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid gap-2">
+              <Label>Categoria</Label>
+              <Select onValueChange={(v) => setNewCategoryThreshold(prev => ({ ...prev, category_id: v }))}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione a Categoria" />
+                </SelectTrigger>
+                <SelectContent>
+                  {categories.map(c => (
+                    <SelectItem key={c.id} value={String(c.id)}>{c.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid gap-2">
+              <Label>Limite de Alçada (R$)</Label>
+              <Input 
+                type="number" 
+                value={newCategoryThreshold.limite_alcada} 
+                onChange={(e) => setNewCategoryThreshold(prev => ({ ...prev, limite_alcada: parseFloat(e.target.value) }))} 
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsCategoryFormOpen(false)}>Cancelar</Button>
+            <Button onClick={handleSaveCategoryThreshold}>Salvar</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </MainLayout>
   );
 }
