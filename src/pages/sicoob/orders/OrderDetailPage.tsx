@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { PageSEO } from "@/components/seo/PageSEO";
@@ -19,7 +19,11 @@ import {
   Image as ImageIcon,
   History,
   Layout,
-  ArrowUpCircle
+  ArrowUpCircle,
+  ShieldCheck,
+  ClipboardCheck,
+  Fingerprint,
+  Stamp
 } from "lucide-react";
 import { 
   Card, 
