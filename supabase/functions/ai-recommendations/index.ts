@@ -158,12 +158,12 @@ ${products.map(p => `- ID: ${p.id} | ${p.name} | Categoria: ${p.category}${p.tag
 
 Com base no perfil do cliente, recomende os produtos mais adequados.`;
 
-    const model = "google/gemini-2.5-flash";
+    const models = ["google/gemini-2.5-flash", "google/gemini-2.0-flash", "openai/gpt-4o-mini"];
 
-    const response = await callAiWithTracking({
+    const response = await callAiWithFallback({
       userId: user.id,
       functionName: "ai-recommendations",
-      model,
+      models,
       apiKey: LOVABLE_API_KEY,
       requestBody: {
         messages: [
