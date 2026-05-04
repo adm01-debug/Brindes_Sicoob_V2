@@ -49,6 +49,7 @@ export function Header({ onMenuToggle, searchQuery, onSearchChange }: HeaderProp
   const { currentOrg } = useOrganization();
   const currentSection = useCurrentSection();
   const { restartTour, hasCompletedTour, isLoading: onboardingLoading } = useOnboardingContext();
+  const { isInstallable } = usePWAInstall();
 
   const isScrolled = useIsScrolled(20);
 
