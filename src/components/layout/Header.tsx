@@ -274,6 +274,12 @@ export function Header({ onMenuToggle, searchQuery, onSearchChange }: HeaderProp
                   {actualTheme === "dark" ? <Sun className="h-4 w-4 mr-2" /> : <Moon className="h-4 w-4 mr-2" />}
                   {actualTheme === "dark" ? "Modo Claro" : "Modo Escuro"}
                 </DropdownMenuItem>
+                {isInstallable && (
+                  <DropdownMenuItem onClick={() => navigate("/instalar")} className="cursor-pointer text-primary font-bold">
+                    <Smartphone className="h-4 w-4 mr-2" />
+                    Instalar App
+                  </DropdownMenuItem>
+                )}
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
