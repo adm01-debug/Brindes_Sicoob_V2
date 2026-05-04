@@ -72,65 +72,68 @@ export function QuickTestLogin() {
     checkIntegrity();
   }, []);
 
-  const runSeed = async () => {
+  const runSeed = async (silent = false): Promise<boolean> => {
     setIsSeeding(true);
     try {
       const { data, error } = await supabase.functions.invoke("sicoob-seed", { method: "POST" });
       if (error) throw error;
-      toast({
-        title: "Seed realizado com sucesso!",
-        description: `Ambiente sincronizado. Órfãos removidos: ${data.report.orphans_removed.length}`,
-      });
+      if (!silent) {
+        toast({
+          title: "Seed realizado com sucesso!",
+          description: `Ambiente sincronizado. Órfãos removidos: ${data?.report?.orphans_removed?.length ?? 0}`,
+        });
+      }
       await checkIntegrity();
-    } catch (err) {
+      return true;
+    } catch (err: any) {
       toast({
         variant: "destructive",
         title: "Falha no seed",
-        description: err.message,
+        description: err?.message || "Erro desconhecido",
       });
+      return false;
     } finally {
       setIsSeeding(false);
     }
   };
 
-  const handleQuickLogin = async (email: string) => {
-    // Revalidamos a integridade localmente antes de permitir o clique, 
-    // mas o status já deve estar mapeado no integrityStatus
-    const status = integrityStatus[email];
-    
-    if (status && !status.isValid) {
+  const attemptSignIn = async (email: string) => {
+    const { error } = await signIn(email, TEST_PASSWORD);
+    if (error) {
       toast({
         variant: "destructive",
-        title: "Usuário Inconsistente",
-        description: `Este perfil (${email}) está corrompido: ${status.reason}. Clique em "Corrigir Agora" para reparar.`,
+        title: "Erro no login rápido",
+        description: "Falha na autenticação após reparo. Verifique as credenciais de teste.",
       });
-      return;
+      return false;
     }
+    toast({
+      title: "Login realizado!",
+      description: `Autenticado como ${email}`,
+    });
+    return true;
+  };
 
-    if (!status && !isValidating) {
-      toast({
-        variant: "destructive",
-        title: "Usuário Não Encontrado",
-        description: "Este usuário não parece existir. Rode o seed.",
-      });
-      return;
-    }
+  const handleQuickLogin = async (email: string) => {
+    const status = integrityStatus[email];
+    const needsSeed = !status || !status.isValid;
 
     setLoadingEmail(email);
     try {
-      const { error } = await signIn(email, TEST_PASSWORD);
-      if (error) {
+      // Se o usuário não existe ou está corrompido, roda o seed automaticamente
+      // e tenta o login em seguida — sem dead-end na UI.
+      if (needsSeed) {
         toast({
-          variant: "destructive",
-          title: "Erro no login rápido",
-          description: "Falha na autenticação. Tente rodar o Seed.",
+          title: "Preparando ambiente…",
+          description: status?.reason
+            ? `Reparando perfil (${status.reason})…`
+            : "Criando usuários de teste antes de entrar…",
         });
-      } else {
-        toast({
-          title: "Login realizado!",
-          description: `Autenticado como ${email}`,
-        });
+        const ok = await runSeed(true);
+        if (!ok) return;
       }
+
+      await attemptSignIn(email);
     } catch (err) {
       console.error(err);
     } finally {
@@ -194,7 +197,7 @@ export function QuickTestLogin() {
               size="sm"
               className={`h-auto py-2 justify-start gap-3 bg-card hover:bg-accent transition-all group ${isInvalid ? 'opacity-60 border-destructive/30' : ''}`}
               onClick={() => handleQuickLogin(testUser.email)}
-              disabled={!!loadingEmail || isSeeding || (isInvalid && !isValidating)}
+              disabled={!!loadingEmail || isSeeding}
             >
               <div className={`p-1.5 rounded-lg transition-colors ${isInvalid ? 'bg-destructive/10 text-destructive' : 'bg-primary/10 text-primary group-hover:bg-primary/20'}`}>
                 <Icon className="h-4 w-4" />
