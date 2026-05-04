@@ -157,7 +157,7 @@ html[data-scroll-locked] body {
     --input: 190 30% 15% / 0.08;
     --ring: 175 100% 34%;
 
-    --radius: 1rem;
+    --radius: 0.85rem;
 
     /* ===== ELEVAÇÃO ===== */
     --elevated: 0 0% 100%;
@@ -481,7 +481,7 @@ html[data-scroll-locked] body {
     scroll-behavior: smooth;
     /* Garante que âncoras (#id) e scrollIntoView fiquem abaixo do Header sticky.
        --header-h é propagada dinamicamente pelo Header.tsx (48–56px). */
-    scroll-padding-top: var(--header-h, 56px);
+    scroll-padding-top: calc(var(--header-h, 56px) + 1rem);
   }
 
   body {
