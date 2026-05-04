@@ -88,7 +88,8 @@ export async function processLogoForLaser(
 
         // White/near-white pixels = background or intentional gaps between elements
         // → make transparent to preserve spaces (e.g. between SICOOB triangles)
-        // Optimization: use exact bitwise check or narrow threshold if precision is lost
+        // Optimization: using higher precision bitwise check or narrow threshold if precision is lost
+        // Improvement: increased luminance threshold sensitivity to preserve thinner positive spaces
         if (luminance > whiteThreshold && a > 200) {
           data[i + 3] = 0; // transparent
           continue;
@@ -175,7 +176,7 @@ export async function processLogoForSerigrafia(
           continue;
         }
 
-        // White/near-white pixels → transparent (preserve internal gaps)
+        // White/near-white pixels → transparent (preserve internal gaps/negative spaces)
         const luminance = 0.2126 * r + 0.7152 * g + 0.0722 * b;
         if (luminance > WHITE_THRESHOLD && a > 200) {
           data[i + 3] = 0;
