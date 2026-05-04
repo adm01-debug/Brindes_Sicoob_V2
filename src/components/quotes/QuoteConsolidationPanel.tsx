@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import { 
   Card, 
   CardContent, 
@@ -15,9 +15,10 @@ import {
   TableRow 
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import { formatCurrency } from "@/utils/formatters";
 import { Quote, QuoteItem } from "@/hooks/quotes/quoteTypes";
-import { Package, Hash, Layers, PieChart, FileText } from "lucide-react";
+import { Package, Hash, Layers, PieChart, FileText, Search, Filter } from "lucide-react";
 
 interface QuoteConsolidationPanelProps {
   quotes: Quote[];
@@ -30,6 +31,7 @@ export function QuoteConsolidationPanel({
   title = "Consolidação de Orçamentos", 
   description = "Visão unificada de múltiplos orçamentos para análise de compra."
 }: QuoteConsolidationPanelProps) {
+  const [searchTerm, setSearchTerm] = useState("");
   
   const consolidatedData = useMemo(() => {
     if (!quotes || quotes.length === 0) return null;
@@ -49,6 +51,12 @@ export function QuoteConsolidationPanel({
 
     quotes.forEach(quote => {
       quote.items?.forEach((item: QuoteItem) => {
+        const matchesSearch = 
+          item.product_name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+          (item.product_sku && item.product_sku.toLowerCase().includes(searchTerm.toLowerCase()));
+
+        if (!matchesSearch) return;
+
         const key = item.product_sku || item.product_id || item.product_name;
         const existing = itemsMap.get(key);
         
@@ -87,7 +95,7 @@ export function QuoteConsolidationPanel({
       totalItems,
       quotesCount: quotes.length
     };
-  }, [quotes]);
+  }, [quotes, searchTerm]);
 
   if (!consolidatedData || quotes.length === 0) {
     return (
@@ -153,9 +161,20 @@ export function QuoteConsolidationPanel({
       </div>
 
       <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">{title}</CardTitle>
-          <CardDescription>{description}</CardDescription>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0">
+          <div>
+            <CardTitle className="text-lg">{title}</CardTitle>
+            <CardDescription>{description}</CardDescription>
+          </div>
+          <div className="relative w-72">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input 
+              placeholder="Filtrar por Produto ou SKU..." 
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-9 h-9"
+            />
+          </div>
         </CardHeader>
         <CardContent>
           <div className="rounded-md border">
