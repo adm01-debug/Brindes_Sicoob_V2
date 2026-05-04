@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import { 
   Card, 
   CardContent, 
@@ -15,9 +15,10 @@ import {
   TableRow 
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import { formatCurrency } from "@/utils/formatters";
 import { Quote, QuoteItem } from "@/hooks/quotes/quoteTypes";
-import { Package, Hash, Layers, PieChart, FileText } from "lucide-react";
+import { Package, Hash, Layers, PieChart, FileText, Search, Filter } from "lucide-react";
 
 interface QuoteConsolidationPanelProps {
   quotes: Quote[];
@@ -30,6 +31,7 @@ export function QuoteConsolidationPanel({
   title = "Consolidação de Orçamentos", 
   description = "Visão unificada de múltiplos orçamentos para análise de compra."
 }: QuoteConsolidationPanelProps) {
+  const [searchTerm, setSearchTerm] = useState("");
   
   const consolidatedData = useMemo(() => {
     if (!quotes || quotes.length === 0) return null;
