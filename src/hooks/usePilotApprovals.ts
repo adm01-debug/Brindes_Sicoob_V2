@@ -5,10 +5,16 @@ import { toast } from "sonner";
 export interface PilotApproval {
   id: string;
   order_id: string;
+  order_item_id: string | null;
   status: 'pending' | 'approved' | 'rejected' | 'revision';
-  photo_url: string | null;
-  comments: string | null;
+  mockup_url: string | null;
+  mockup_thumbnail_url: string | null;
+  reviewer_name: string | null;
+  reviewer_notes: string | null;
+  reviewed_at: string | null;
+  revision_round: number;
   created_at: string;
+  updated_at: string;
 }
 
 export function usePilotApprovals(orderId: string) {
@@ -30,10 +36,15 @@ export function usePilotApprovals(orderId: string) {
   });
 
   const createApproval = useMutation({
-    mutationFn: async (payload: Omit<PilotApproval, "id" | "created_at">) => {
+    mutationFn: async (payload: Partial<PilotApproval>) => {
       const { data, error } = await supabase
         .from("order_pilot_approvals")
-        .insert(payload)
+        .insert({
+          ...payload,
+          order_id: orderId,
+          status: payload.status || 'pending',
+          revision_round: payload.revision_round || 1
+        })
         .select()
         .single();
       
@@ -47,10 +58,17 @@ export function usePilotApprovals(orderId: string) {
   });
 
   const updateStatus = useMutation({
-    mutationFn: async ({ id, status, comments }: { id: string, status: string, comments?: string }) => {
+    mutationFn: async ({ id, status, notes }: { id: string, status: string, notes?: string }) => {
+      const { data: { user } } = await supabase.auth.getUser();
       const { error } = await supabase
         .from("order_pilot_approvals")
-        .update({ status, comments, updated_at: new Date().toISOString() })
+        .update({ 
+          status, 
+          reviewer_notes: notes, 
+          reviewer_name: user?.email || 'Reviewer',
+          reviewed_at: new Date().toISOString(),
+          updated_at: new Date().toISOString() 
+        })
         .eq("id", id);
       
       if (error) throw error;
@@ -61,5 +79,11 @@ export function usePilotApprovals(orderId: string) {
     },
   });
 
-  return { ...query, createApproval, updateStatus };
+  return { 
+    approvals: query.data || [],
+    isLoading: query.isLoading,
+    error: query.error,
+    createApproval, 
+    updateStatus 
+  };
 }
