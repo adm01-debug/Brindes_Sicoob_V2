@@ -79,16 +79,19 @@ export const UserAssignmentTab = () => {
       cooperativaId,
       paId,
       role,
+      approvalThreshold,
     }: {
       userId: string;
       cooperativaId?: string | null;
       paId?: string | null;
       role?: string;
+      approvalThreshold?: number | null;
     }) => {
       const updates: any = {};
       if (cooperativaId !== undefined) updates.cooperativa_id = cooperativaId;
       if (paId !== undefined) updates.pa_id = paId;
       if (role !== undefined) updates.role = role;
+      if (approvalThreshold !== undefined) updates.approval_threshold = approvalThreshold;
 
       const { error } = await supabase
         .from("profiles")
