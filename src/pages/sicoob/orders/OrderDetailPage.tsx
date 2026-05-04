@@ -344,6 +344,16 @@ export default function OrderDetailPage() {
             <p className="text-sm text-muted-foreground">Criado em {new Date(orderData.created_at).toLocaleString('pt-BR')}</p>
           </div>
           <div className="ml-auto flex gap-2">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="gap-2 text-xs h-9"
+              onClick={() => toast.info("Exportando relatório de conformidade...")}
+            >
+              <FileText className="h-3.5 w-3.5" />
+              Exportar Auditoria
+            </Button>
+
             {activeRequest && canApprove ? (
               <>
                 <Button variant="outline" className="text-destructive" onClick={() => setIsRejectDialogOpen(true)}>
