@@ -604,7 +604,7 @@ export default function OrdersPage() {
                   </div>
                 </div>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 pl-10">
-                  <CardTitle className="text-sm font-bold text-sicoob-green-dark">
+                  <CardTitle className="text-sm font-bold text-sicoob-green-dark group-hover:text-sicoob-green transition-colors">
                     Pedido #{order.order_number || order.id.slice(0, 8)}
                   </CardTitle>
                   <OrderStatusBadge status={order.status} />
