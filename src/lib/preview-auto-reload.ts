@@ -34,6 +34,7 @@ export function setupPreviewAutoReload() {
      // Remove cache-bust para evitar loop infinito na URL se o hard reload falhar
      const cleanUrl = new URL(window.location.href);
      cleanUrl.searchParams.delete("error");
+     cleanUrl.searchParams.delete("precondition_failed");
      window.history.replaceState({}, "", cleanUrl.toString());
   }
 
