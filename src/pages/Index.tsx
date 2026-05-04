@@ -10,6 +10,7 @@ import { CatalogToolbar } from "@/components/catalog/CatalogToolbar";
 import { CatalogActiveFilters } from "@/components/catalog/CatalogActiveFilters";
 import { CatalogContent } from "@/components/catalog/CatalogContent";
 import { useCatalogState } from "@/hooks/useCatalogState";
+import { BannerCarousel } from "@/components/cms/BannerCarousel";
 import type { ExternalVariantStock } from "@/hooks/useExternalVariantStock";
 
 export default function Index() {
@@ -36,6 +37,9 @@ export default function Index() {
       <div>
         <div className="flex-1 min-w-0">
           <div className="space-y-4 p-4 sm:p-6 animate-fade-in">
+            {/* CMS Banners */}
+            <BannerCarousel />
+
             {/* Header: Title + Search */}
             <CatalogHeader
               shouldShowCatalogSkeleton={catalog.shouldShowCatalogSkeleton}
