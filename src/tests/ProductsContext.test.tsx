@@ -7,7 +7,9 @@ import { fetchPromobrindProducts } from "@/lib/external-db";
 // Mock the API
 vi.mock("@/lib/external-db", () => ({
   fetchPromobrindProducts: vi.fn(),
-  getProductImageUrl: vi.fn((sku) => `https://image.com/${sku}.jpg`),
+  getProductImageUrl: vi.fn((p) => p.image_url || `https://image.com/${p.sku}.jpg`),
+  getProductPrice: vi.fn((p) => p.price || 0),
+  getProductStock: vi.fn((p) => p.stock || 0),
 }));
 
 // Helper component to test context
