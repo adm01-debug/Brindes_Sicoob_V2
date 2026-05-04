@@ -3180,6 +3180,12 @@ export type Database = {
       }
       notification_preferences: {
         Row: {
+          channel_priorities: Json | null
+          digest_enabled: boolean | null
+          digest_frequency: string | null
+          dnd_enabled: boolean | null
+          dnd_end: string | null
+          dnd_start: string | null
           email_enabled: boolean | null
           events_config: Json | null
           push_enabled: boolean | null
@@ -3187,6 +3193,12 @@ export type Database = {
           whatsapp_enabled: boolean | null
         }
         Insert: {
+          channel_priorities?: Json | null
+          digest_enabled?: boolean | null
+          digest_frequency?: string | null
+          dnd_enabled?: boolean | null
+          dnd_end?: string | null
+          dnd_start?: string | null
           email_enabled?: boolean | null
           events_config?: Json | null
           push_enabled?: boolean | null
@@ -3194,6 +3206,12 @@ export type Database = {
           whatsapp_enabled?: boolean | null
         }
         Update: {
+          channel_priorities?: Json | null
+          digest_enabled?: boolean | null
+          digest_frequency?: string | null
+          dnd_enabled?: boolean | null
+          dnd_end?: string | null
+          dnd_start?: string | null
           email_enabled?: boolean | null
           events_config?: Json | null
           push_enabled?: boolean | null
