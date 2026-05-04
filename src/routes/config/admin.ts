@@ -2,6 +2,7 @@ import { lazyWithRetry } from "@/lib/lazyWithRetry";
 import { defineRoute } from "@/lib/router-utils";
 
 export const adminRoutes = [
+  defineRoute({ path: "/admin", component: lazyWithRetry(() => import("@/pages/admin/AdminBusinessDashboardPage")) }),
   defineRoute({ path: "/admin/usuarios", component: lazyWithRetry(() => import("@/pages/admin/AdminUsuariosPage")) }),
   defineRoute({ path: "/admin/usuarios/promover", component: lazyWithRetry(() => import("@/pages/admin/AdminPromoverUsuarioPage")) }),
   defineRoute({ path: "/admin/limites-desconto", component: lazyWithRetry(() => import("@/pages/admin/SellerDiscountLimitsAdminPage")) }),

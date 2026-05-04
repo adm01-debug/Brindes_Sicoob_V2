@@ -1,54 +1,40 @@
 import { Button } from "@/components/ui/button";
-import { Command, CommandGroup, CommandItem, CommandList } from "@/components/ui/command";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { MessageSquare, ChevronDown } from "lucide-react";
-import { useState } from "react";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 const QUICK_REPLIES = [
-  "Aprovado conforme solicitado.",
-  "Solicito revisão nas quantidades.",
-  "Aguardando confirmação de estoque.",
-  "Frete precisa ser renegociado.",
-  "Item X indisponível, favor substituir.",
-  "Aprovado parcialmente."
+  "Favor revisar a quantidade de itens.",
+  "Valor unitário acima do esperado para esta categoria.",
+  "PA sem verba suficiente para este pedido este mês.",
+  "Brinde em desacordo com as diretrizes de marca.",
+  "Aprovado. Favor prosseguir com o faturamento.",
+  "Favor solicitar nova cotação com outro fornecedor.",
+  "Urgente: favor priorizar a entrega deste item."
 ];
 
-interface QuickReplySelectorProps {
+interface Props {
   onSelect: (reply: string) => void;
+  className?: string;
 }
 
-export function QuickReplySelector({ onSelect }: QuickReplySelectorProps) {
-  const [open, setOpen] = useState(false);
-
+export function QuickReplySelector({ onSelect, className }: Props) {
   return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <Button variant="outline" size="sm" className="gap-2 h-8 text-xs">
-          <MessageSquare className="h-3.5 w-3.5" />
-          Respostas Rápidas
-          <ChevronDown className="h-3.5 w-3.5 opacity-50" />
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className="p-0 w-[240px]" align="start">
-        <Command>
-          <CommandList>
-            <CommandGroup heading="Sugestões">
-              {QUICK_REPLIES.map((reply) => (
-                <CommandItem
-                  key={reply}
-                  onSelect={() => {
-                    onSelect(reply);
-                    setOpen(false);
-                  }}
-                  className="text-xs"
-                >
-                  {reply}
-                </CommandItem>
-              ))}
-            </CommandGroup>
-          </CommandList>
-        </Command>
-      </PopoverContent>
-    </Popover>
+    <div className={className}>
+      <p className="text-[10px] uppercase font-bold text-muted-foreground mb-2 px-1">Respostas Rápidas</p>
+      <ScrollArea className="h-32">
+        <div className="flex flex-wrap gap-1.5 p-1">
+          {QUICK_REPLIES.map((reply, idx) => (
+            <Button 
+              key={idx} 
+              variant="outline" 
+              size="sm" 
+              className="h-7 text-[10px] px-2 py-0"
+              onClick={() => onSelect(reply)}
+            >
+              {reply}
+            </Button>
+          ))}
+        </div>
+      </ScrollArea>
+    </div>
   );
 }

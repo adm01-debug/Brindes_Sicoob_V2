@@ -25,7 +25,9 @@ import {
   CheckCircle2,
   ArrowUpRight,
   Target,
-  BarChart3
+  BarChart3,
+  RotateCcw,
+  AlertTriangle
 } from "lucide-react";
 import { toast } from "sonner";
 import { jsPDF } from "jspdf";
@@ -264,6 +266,19 @@ export default function OrdersPage() {
       toast.error("Erro na aprovação em lote: " + error.message);
     } finally {
       setIsExportingBulk(false);
+    }
+  };
+
+  const handleReorder = async (orderId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    try {
+      const newQuoteId = await sicoobOrderService.reorderOrder(orderId);
+      toast.success("Pedido duplicado!", {
+        description: "Um novo orçamento (rascunho) foi criado com os mesmos itens para revisão."
+      });
+      navigate(`/orcamentos/${newQuoteId}/editar`);
+    } catch (error: any) {
+      toast.error("Erro ao reordenar: " + error.message);
     }
   };
 
@@ -775,9 +790,24 @@ export default function OrdersPage() {
                     </div>
                   )}
                 </CardContent>
-                <CardFooter className="text-[10px] uppercase font-bold text-muted-foreground pt-0">
-                  Criado em {format(parseISO(order.created_at), "dd/MM/yyyy", { locale: ptBR })}
-                  <ArrowRight className="h-3 w-3 ml-auto text-sicoob-green" />
+                <CardFooter className="flex items-center justify-between pt-0 gap-2">
+                  <div className="text-[10px] uppercase font-bold text-muted-foreground">
+                    Criado em {format(parseISO(order.created_at), "dd/MM/yyyy", { locale: ptBR })}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {order.status === 'completed' && (
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="h-7 text-[10px] uppercase font-bold text-sicoob-green hover:text-sicoob-green-dark px-2"
+                        onClick={(e) => handleReorder(order.id, e)}
+                      >
+                        <RotateCcw className="h-3.5 w-3.5 mr-1" />
+                        Comprar Novamente
+                      </Button>
+                    )}
+                    <ArrowRight className="h-3.5 w-3.5 text-sicoob-green group-hover:translate-x-1 transition-transform" />
+                  </div>
                 </CardFooter>
               </Card>
             ))}
