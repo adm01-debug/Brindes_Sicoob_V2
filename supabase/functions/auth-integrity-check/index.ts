@@ -1,14 +1,19 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createStructuredLogger } from "../_shared/structured-logger.ts";
+import { getOrCreateRequestId } from "../_shared/request-id.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-request-id",
 };
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
   }
+
+  const requestId = getOrCreateRequestId(req);
+  const log = createStructuredLogger({ fn: "auth-integrity-check", requestId, req });
 
   try {
     const { emails } = await req.json();
@@ -20,17 +25,14 @@ Deno.serve(async (req) => {
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Verifica integridade: existe no auth.users E no auth.identities?
-    // Agora usamos a RPC segura get_test_auth_integrity que consulta o banco diretamente
+    log.info("check_started", { emails_count: emails.length });
     
     const { data: integrityData, error: rpcError } = await supabase.rpc("get_test_auth_integrity", {
       test_emails: emails
     });
 
-    console.log("Integrity data from RPC:", JSON.stringify(integrityData));
-
     if (rpcError) {
-      console.error("RPC Error details:", rpcError);
+      log.error("rpc_failed", { err: rpcError });
       throw rpcError;
     }
 
@@ -46,14 +48,17 @@ Deno.serve(async (req) => {
       }
     });
 
-    return new Response(JSON.stringify(results), {
+    log.info("check_ok", { results_count: Object.keys(results).length });
+
+    return log.respond(new Response(JSON.stringify(results), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
-    });
+    }));
   } catch (err) {
-    return new Response(JSON.stringify({ error: err.message }), {
+    log.error("check_failed", { err: err.message });
+    return log.respond(new Response(JSON.stringify({ error: err.message }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 400,
-    });
+    }));
   }
 });
