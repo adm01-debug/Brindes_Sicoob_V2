@@ -85,7 +85,7 @@ import { OrderTemplatesTab } from "@/components/sicoob/orders/OrderTemplatesTab"
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 
-import { OrderStatus, canSicoobTransitionTo } from "@/types/sicoob/orders";
+import { OrderStatus, canSicoobTransitionTo, ORDER_STATUS_CONFIG } from "@/types/sicoob/orders";
 
 const canTransitionTo = (current: OrderStatus, next: OrderStatus) => {
   return canSicoobTransitionTo(current, next);
