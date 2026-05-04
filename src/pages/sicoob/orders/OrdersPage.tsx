@@ -602,11 +602,33 @@ export default function OrdersPage() {
                   </CardTitle>
                   <OrderStatusBadge status={order.status} />
                 </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">R$ {order.total_amount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</div>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {order.pa?.nome || "PA Não Identificado"} • {order.cooperativa?.nome || "Singular"}
-                  </p>
+                <CardContent className="space-y-4">
+                  <div>
+                    <div className="text-2xl font-bold text-foreground">R$ {order.total_amount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</div>
+                    <p className="text-[10px] text-muted-foreground mt-1 uppercase tracking-wider font-semibold">
+                      {order.pa?.nome || "PA Não Identificado"}
+                    </p>
+                    <p className="text-[10px] text-muted-foreground uppercase tracking-wider">
+                      {order.cooperativa?.nome || "Singular"}
+                    </p>
+                  </div>
+                  
+                  {order.sla_status && (
+                    <div className="flex items-center gap-2 pt-2 border-t border-border/40">
+                      <span className="text-[10px] font-bold text-muted-foreground uppercase">SLA:</span>
+                      <Badge 
+                        variant="outline" 
+                        className={cn(
+                          "h-5 text-[9px] font-bold px-1.5",
+                          order.sla_status === 'critical' ? "bg-destructive/10 text-destructive border-destructive/20" :
+                          order.sla_status === 'warning' ? "bg-amber-500/10 text-amber-600 border-amber-500/20" :
+                          "bg-success/10 text-success border-success/20"
+                        )}
+                      >
+                        {order.sla_status === 'critical' ? 'CRÍTICO' : order.sla_status === 'warning' ? 'ATENÇÃO' : 'NORMAL'}
+                      </Badge>
+                    </div>
+                  )}
                 </CardContent>
                 <CardFooter className="text-[10px] uppercase font-bold text-muted-foreground pt-0">
                   Criado em {format(parseISO(order.created_at), "dd/MM/yyyy", { locale: ptBR })}
