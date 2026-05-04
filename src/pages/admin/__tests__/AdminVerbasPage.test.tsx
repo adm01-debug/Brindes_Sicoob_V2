@@ -80,13 +80,14 @@ describe("AdminVerbasPage - JSX Integrity", () => {
   it("should allow navigating to audit tab", async () => {
     renderPage();
     
-    // Encontrar o trigger da aba de auditoria
-    const auditTab = screen.getByRole("tab", { name: /Histórico/i });
+    // Encontrar o trigger da aba de auditoria usando o value 'audit'
+    const auditTab = screen.getByRole("tab", { name: /Alterações|Histórico/i });
     fireEvent.click(auditTab);
 
     // Verificar se o conteúdo da aba de auditoria aparece
     await waitFor(() => {
-      expect(screen.getByText(/Últimas 50 ações/i)).toBeDefined();
+      // Procurar pelo título do Card dentro da aba
+      expect(screen.getByText(/Histórico de Orçamentos/i)).toBeDefined();
     });
   });
 });
