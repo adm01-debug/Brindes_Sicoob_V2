@@ -22,6 +22,11 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 
 export function MiniCart() {
   const { items, subtotal, totalItemsCount, removeItem, updateQuantity } = useCart();
+  const { threshold, needsApproval } = useApprovalThreshold();
+  
+  const isOverThreshold = needsApproval(subtotal);
+  const thresholdProgress = threshold > 0 ? Math.min((subtotal / threshold) * 100, 100) : 0;
+  const remaining = Math.max(0, threshold - subtotal);
 
   return (
     <Sheet>
