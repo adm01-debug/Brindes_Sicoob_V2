@@ -361,6 +361,8 @@ export default function OrderDetailPage() {
             <p className="text-sm text-muted-foreground">Criado em {new Date(orderData.created_at).toLocaleString('pt-BR')}</p>
           </div>
           <div className="ml-auto flex gap-2">
+            <OneClickReorder orderId={id!} variant="outline" className="h-9 border-sicoob-green/30 text-sicoob-green-dark hover:bg-sicoob-green/5" />
+            
             <div className="flex flex-col gap-1">
               <Button 
                 variant="outline" 
