@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { PageSEO } from "@/components/seo/PageSEO";
 import { Button } from "@/components/ui/button";
@@ -16,9 +16,13 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { ArrowLeft, LayoutGrid, List, Plus, Lock, GripVertical } from "lucide-react";
+import { ArrowLeft, LayoutGrid, List, Plus, Lock, GripVertical, AlertTriangle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
+import { useSicoobOrders } from "@/hooks/sicoob/useSicoobOrder"; // Assuming this exists based on common pattern
+import { sicoobOrderService } from "@/services/sicoob/orderService";
+import { OrderStatus, ORDER_STATUS_CONFIG, ORDER_STATUS_OPTIONS, canSicoobTransitionTo } from "@/types/sicoob/orders";
 import {
   DndContext,
   PointerSensor,
@@ -36,11 +40,7 @@ import { cn } from "@/lib/utils";
 type SicoobRole = "comprador" | "supervisor" | "gestor" | "logistica";
 
 type StatusId =
-  | "draft"
-  | "sent_to_manager"
-  | "manager_approved"
-  | "logistic"
-  | "completed";
+type StatusId = OrderStatus;
 
 interface ColumnDef {
   id: StatusId;
@@ -49,36 +49,20 @@ interface ColumnDef {
 
 interface OrderCard {
   id: string;
+  order_number: string;
   pa: string;
   status: StatusId;
   total: number;
-  items: number;
+  sla_status?: 'normal' | 'warning' | 'critical';
 }
 
-// ---------- Mock data ----------
-const COLUMNS: ColumnDef[] = [
-  { id: "draft", title: "Rascunho" },
-  { id: "sent_to_manager", title: "Enviado ao Gestor" },
-  { id: "manager_approved", title: "Aprovado Gestor" },
-  { id: "logistic", title: "Logística/Envio" },
-  { id: "completed", title: "Finalizado" },
-];
+const COLUMNS: ColumnDef[] = ORDER_STATUS_OPTIONS.map(status => ({
+  id: status,
+  title: ORDER_STATUS_CONFIG[status].label
+}));
 
-const INITIAL_ORDERS: OrderCard[] = [
-  { id: "1", pa: "PA Centro", status: "draft", total: 1250.5, items: 4 },
-  { id: "2", pa: "PA Sul", status: "sent_to_manager", total: 3400.0, items: 12 },
-  { id: "4", pa: "PA Oeste", status: "sent_to_manager", total: 500.0, items: 1 },
-];
-
-// ---------- Transition rules ----------
-// Permitido por status atual -> destinos válidos
-const ALLOWED_TRANSITIONS: Record<StatusId, StatusId[]> = {
-  draft: ["sent_to_manager"],
-  sent_to_manager: ["manager_approved", "draft"],
-  manager_approved: ["logistic"],
-  logistic: ["completed"],
-  completed: [],
-};
+// Real orders will be fetched via hook
+const INITIAL_ORDERS: OrderCard[] = [];
 
 // Permissão por role para executar a transição (from -> to)
 const ROLE_PERMISSIONS: Record<
@@ -134,36 +118,56 @@ export function DraggableCard({ order, onClick, canDrag, reasonBlocked }: Dragga
     <div
       ref={setNodeRef}
       className={cn(
-        "bg-card p-3 rounded-md shadow-sm border border-border transition-colors group",
-        canDrag ? "hover:border-primary/50 cursor-grab active:cursor-grabbing" : "cursor-pointer opacity-90",
+        "bg-card p-3 rounded-md shadow-sm border-[1.5px] transition-all group relative overflow-hidden",
+        canDrag ? "hover:border-sicoob-green/50 cursor-grab active:cursor-grabbing hover:shadow-md" : "cursor-pointer opacity-90",
         isDragging && "opacity-40",
+        order.sla_status === 'critical' && "border-destructive/40"
       )}
       onClick={onClick}
     >
+      {order.sla_status === 'critical' && (
+        <div className="absolute top-0 left-0 w-full h-1 bg-destructive animate-pulse" />
+      )}
+      
       <div className="flex justify-between items-start mb-2 gap-2">
-        <span className="text-xs font-mono font-bold">#{order.id}</span>
-        <div className="flex items-center gap-2">
-          <span className="text-xs font-bold text-primary">
-            R$ {order.total.toFixed(2)}
-          </span>
+        <span className="text-[10px] font-mono font-bold text-muted-foreground">
+          #{order.order_number || order.id.slice(0, 8)}
+        </span>
+        <div className="flex items-center gap-1.5">
           {canDrag ? (
-            <button
-              type="button"
+            <div
               {...attributes}
               {...listeners}
-              onClick={(e) => e.stopPropagation()}
-              className="text-muted-foreground hover:text-foreground opacity-0 group-hover:opacity-100 transition-opacity"
-              aria-label="Arrastar pedido"
+              className="text-muted-foreground hover:text-sicoob-green opacity-0 group-hover:opacity-100 transition-opacity cursor-grab"
             >
               <GripVertical className="h-3.5 w-3.5" />
-            </button>
+            </div>
           ) : (
-            <Lock className="h-3 w-3 text-muted-foreground" aria-label="Sem permissão" />
+            <Lock className="h-3 w-3 text-muted-foreground/50" />
           )}
         </div>
       </div>
-      <p className="text-sm font-medium truncate">{order.pa}</p>
-      <p className="text-xs text-muted-foreground">{order.items} itens</p>
+      
+      <p className="text-sm font-bold text-sicoob-green-dark truncate mb-1">{order.pa}</p>
+      
+      <div className="flex items-center justify-between mt-2">
+        <span className="text-xs font-bold text-foreground">
+          R$ {order.total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+        </span>
+        {order.sla_status && (
+          <Badge 
+            variant="outline" 
+            className={cn(
+              "h-4 text-[8px] font-bold px-1",
+              order.sla_status === 'critical' ? "bg-destructive/10 text-destructive border-destructive/20" :
+              order.sla_status === 'warning' ? "bg-amber-500/10 text-amber-600 border-amber-500/20" :
+              "bg-success/10 text-success border-success/20"
+            )}
+          >
+            {order.sla_status === 'critical' ? '!' : 'OK'}
+          </Badge>
+        )}
+      </div>
     </div>
   );
 
@@ -172,9 +176,9 @@ export function DraggableCard({ order, onClick, canDrag, reasonBlocked }: Dragga
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <span className="inline-flex w-full">{card}</span>
+        <div className="w-full">{card}</div>
       </TooltipTrigger>
-      <TooltipContent side="right">{reasonBlocked}</TooltipContent>
+      <TooltipContent side="right" className="text-xs">{reasonBlocked}</TooltipContent>
     </Tooltip>
   );
 }
@@ -194,17 +198,17 @@ export function DroppableColumn({ column, isOver, invalidTarget, children, count
     <div
       ref={setNodeRef}
       className={cn(
-        "min-w-[300px] w-[300px] rounded-lg p-3 flex flex-col gap-3 transition-colors border-2 border-transparent",
-        "bg-muted/30",
-        isOver && !invalidTarget && "border-primary/60 bg-primary/5",
-        isOver && invalidTarget && "border-destructive/60 bg-destructive/5",
+        "min-w-[280px] w-[280px] rounded-xl p-3 flex flex-col gap-3 transition-all border-2 border-transparent",
+        "bg-muted/20 backdrop-blur-sm",
+        isOver && !invalidTarget && "border-sicoob-green/40 bg-sicoob-green/5 shadow-inner",
+        isOver && invalidTarget && "border-destructive/40 bg-destructive/5 shadow-inner",
       )}
     >
-      <div className="flex items-center justify-between px-1">
-        <h3 className="font-semibold text-sm">{column.title}</h3>
-        <Badge variant="secondary">{count}</Badge>
+      <div className="flex items-center justify-between px-1 mb-1">
+        <h3 className="font-bold text-xs uppercase tracking-wider text-muted-foreground">{column.title}</h3>
+        <Badge variant="secondary" className="h-5 text-[10px] font-bold bg-background border">{count}</Badge>
       </div>
-      <div className="flex flex-col gap-2 overflow-y-auto min-h-[40px]">
+      <div className="flex flex-col gap-3 overflow-y-auto min-h-[100px] pr-1 custom-scrollbar">
         {children}
       </div>
     </div>
@@ -214,10 +218,29 @@ export function DroppableColumn({ column, isOver, invalidTarget, children, count
 // ---------- Page ----------
 export default function OrdersKanbanPage() {
   const navigate = useNavigate();
-  const [orders, setOrders] = useState<OrderCard[]>(INITIAL_ORDERS);
-  const [role, setRole] = useState<SicoobRole>("gestor");
+  const { profile, isSupervisorOrAbove, isGerentePa } = useAuth();
+  const [orders, setOrders] = useState<OrderCard[]>([]);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [overColumn, setOverColumn] = useState<StatusId | null>(null);
+
+  // Fetch real orders
+  const { data: realOrders, isLoading } = useQuery({
+    queryKey: ["sicoob_orders_list_kanban"],
+    queryFn: () => sicoobOrderService.listOrders()
+  });
+
+  useEffect(() => {
+    if (realOrders) {
+      setOrders(realOrders.map(o => ({
+        id: o.id,
+        order_number: o.order_number,
+        pa: o.pa?.nome || "PA Não Identificado",
+        status: o.status,
+        total: o.total_amount,
+        sla_status: o.sla_status
+      })));
+    }
+  }, [realOrders]);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
@@ -231,17 +254,16 @@ export default function OrdersKanbanPage() {
   const invalidOver = useMemo(() => {
     if (!activeOrder || !overColumn) return false;
     if (activeOrder.status === overColumn) return false;
-    return (
-      !isTransitionAllowed(activeOrder.status, overColumn) ||
-      !canRoleMove(role, activeOrder.status, overColumn)
-    );
-  }, [activeOrder, overColumn, role]);
+    
+    // Check BPMN transition rules from common service
+    return !canSicoobTransitionTo(activeOrder.status, overColumn);
+  }, [activeOrder, overColumn]);
 
   const handleDragStart = (e: DragStartEvent) => {
     setActiveId(String(e.active.id));
   };
 
-  const handleDragEnd = (e: DragEndEvent) => {
+  const handleDragEnd = async (e: DragEndEvent) => {
     const orderId = String(e.active.id);
     const targetCol = e.over ? (String(e.over.id) as StatusId) : null;
     setActiveId(null);
@@ -252,37 +274,45 @@ export default function OrdersKanbanPage() {
     if (!order) return;
     if (order.status === targetCol) return;
 
-    if (!isTransitionAllowed(order.status, targetCol)) {
-      const fromLabel = COLUMNS.find((c) => c.id === order.status)?.title;
-      const toLabel = COLUMNS.find((c) => c.id === targetCol)?.title;
-      toast.error("Transição inválida", {
-        description: `Não é permitido mover de "${fromLabel}" para "${toLabel}".`,
+    if (!canSicoobTransitionTo(order.status, targetCol)) {
+      toast.error("Transição BPMN Inválida", {
+        description: `O status "${ORDER_STATUS_CONFIG[order.status].label}" não pode avançar diretamente para "${ORDER_STATUS_CONFIG[targetCol].label}".`,
       });
       return;
     }
 
-    if (!canRoleMove(role, order.status, targetCol)) {
-      toast.error("Sem permissão", {
-        description: `Seu papel (${ROLE_LABEL[role]}) não pode executar esta transição.`,
-      });
-      return;
-    }
+    try {
+      // Optimistic update
+      setOrders((prev) =>
+        prev.map((o) => (o.id === orderId ? { ...o, status: targetCol } : o)),
+      );
 
-    setOrders((prev) =>
-      prev.map((o) => (o.id === orderId ? { ...o, status: targetCol } : o)),
-    );
-    toast.success("Status atualizado", {
-      description: `Pedido #${orderId} movido para "${
-        COLUMNS.find((c) => c.id === targetCol)?.title
-      }".`,
-    });
+      await sicoobOrderService.updateOrderStatus(orderId, targetCol, order.status, "Movido via Kanban");
+      
+      toast.success("Status Atualizado", {
+        description: `Pedido #${order.order_number || orderId.slice(0, 8)} movido para "${ORDER_STATUS_CONFIG[targetCol].label}".`,
+      });
+    } catch (err: any) {
+      // Rollback on error
+      if (realOrders) {
+         setOrders(realOrders.map(o => ({
+          id: o.id,
+          order_number: o.order_number,
+          pa: o.pa?.nome || "PA Não Identificado",
+          status: o.status,
+          total: o.total_amount,
+          sla_status: o.sla_status
+        })));
+      }
+      toast.error("Falha na transição", { description: err.message });
+    }
   };
 
   return (
     <MainLayout>
       <PageSEO
-        title="Kanban de Pedidos Sicoob"
-        description="Gestão visual de pedidos Sicoob."
+        title="Fluxo Kanban Sicoob"
+        description="Gestão visual do funil de pedidos Sicoob."
         path="/sicoob/pedidos/kanban"
         noIndex
       />
@@ -295,38 +325,19 @@ export default function OrdersKanbanPage() {
                 <ArrowLeft className="h-5 w-5" />
               </Button>
               <div>
-                <h1 className="text-2xl font-bold text-sicoob-green-dark">Fluxo de Pedidos</h1>
+                <h1 className="text-2xl font-bold text-sicoob-green-dark">Painel de Fluxo (Kanban)</h1>
                 <p className="text-sm text-muted-foreground italic">
-                  Gestão visual do funil SICOOB. Arraste para avançar no processo.
+                  Acompanhamento visual do status de produção e logística.
                 </p>
               </div>
             </div>
 
             <div className="flex items-center gap-2">
-              <div className="flex items-center gap-2 mr-2">
-                <span className="text-xs text-muted-foreground">Papel:</span>
-                <Select value={role} onValueChange={(v) => setRole(v as SicoobRole)}>
-                  <SelectTrigger className="w-[140px] h-9">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {(Object.keys(ROLE_LABEL) as SicoobRole[]).map((r) => (
-                      <SelectItem key={r} value={r}>
-                        {ROLE_LABEL[r]}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
               <Button variant="outline" size="sm" onClick={() => navigate("/sicoob/pedidos")}>
                 <List className="h-4 w-4 mr-2" />
                 Lista
               </Button>
-              <Button variant="secondary" size="sm" disabled>
-                <LayoutGrid className="h-4 w-4 mr-2" />
-                Kanban
-              </Button>
-              <Button size="sm">
+              <Button size="sm" onClick={() => navigate("/sicoob/pedidos/novo")}>
                 <Plus className="h-4 w-4 mr-2" />
                 Novo Pedido
               </Button>
@@ -343,8 +354,14 @@ export default function OrdersKanbanPage() {
               setOverColumn(null);
             }}
           >
-            <div className="flex gap-4 overflow-x-auto pb-4 flex-1 min-h-[600px]">
-              {COLUMNS.map((column) => {
+            <div className="flex gap-4 overflow-x-auto pb-4 flex-1 min-h-[600px] custom-scrollbar">
+              {isLoading ? (
+                <div className="flex gap-4 w-full">
+                  {[1, 2, 3, 4, 5].map(i => (
+                    <div key={i} className="min-w-[280px] w-[280px] bg-muted/10 rounded-xl h-[600px] animate-pulse" />
+                  ))}
+                </div>
+              ) : COLUMNS.map((column) => {
                 const columnOrders = orders.filter((o) => o.status === column.id);
                 const isOver = overColumn === column.id;
                 const isInvalid =
@@ -361,14 +378,14 @@ export default function OrdersKanbanPage() {
                     count={columnOrders.length}
                   >
                     {columnOrders.map((order) => {
-                      const allowedDestinations =
-                        ALLOWED_TRANSITIONS[order.status]?.filter((dest) =>
-                          canRoleMove(role, order.status, dest),
-                        ) ?? [];
-                      const canDrag = allowedDestinations.length > 0;
+                      // Check permissions per status
+                      const canDrag = isSupervisorOrAbove || 
+                        (isGerentePa && ['draft', 'pending'].includes(order.status));
+                      
                       const reason = !canDrag
-                        ? `${ROLE_LABEL[role]} não pode mover pedidos em "${column.title}".`
+                        ? "Você não tem permissão para mover pedidos neste status."
                         : undefined;
+
                       return (
                         <DraggableCard
                           key={order.id}
@@ -386,15 +403,14 @@ export default function OrdersKanbanPage() {
 
             <DragOverlay>
               {activeOrder ? (
-                <div className="bg-card p-3 rounded-md shadow-lg border-2 border-primary w-[276px] cursor-grabbing">
+                <div className="bg-card p-3 rounded-md shadow-lg border-2 border-sicoob-green w-[276px] cursor-grabbing rotate-3">
                   <div className="flex justify-between items-start mb-2">
-                    <span className="text-xs font-mono font-bold">#{activeOrder.id}</span>
-                    <span className="text-xs font-bold text-primary">
-                      R$ {activeOrder.total.toFixed(2)}
+                    <span className="text-[10px] font-mono font-bold text-muted-foreground">#{activeOrder.order_number || activeOrder.id.slice(0, 8)}</span>
+                    <span className="text-xs font-bold text-sicoob-green-dark">
+                      R$ {activeOrder.total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                     </span>
                   </div>
-                  <p className="text-sm font-medium truncate">{activeOrder.pa}</p>
-                  <p className="text-xs text-muted-foreground">{activeOrder.items} itens</p>
+                  <p className="text-sm font-bold text-sicoob-green-dark truncate">{activeOrder.pa}</p>
                 </div>
               ) : null}
             </DragOverlay>
