@@ -1,19 +1,11 @@
 /**
- * Mascaramento defensivo client-side para evitar que pedaços sensíveis
- * (URL do Supabase, anon key, service role key, tokens em geral) apareçam
- * em qualquer painel da UI — incluindo previews de respostas que possam
- * conter listas de produtos.
+ * Defensive client-side masking system.
  *
- * Princípios de consistência:
- *  - Largura fixa: TODO valor mascarado é renderizado como `••••XXXX`
- *    (4 bullets + 4 caracteres do sufixo real), garantindo alinhamento
- *    visual e impedindo inferências de tamanho.
- *  - Caracteres uniformes: usamos sempre o bullet U+2022 ("•") como filler.
- *    Nunca asteriscos misturados, nunca padding variável.
- *  - Cobertura ampla: mascara JWTs (eyJ…), URLs supabase.co, query params
- *    sensíveis (apikey, token, auth, key, access_token) e campos JSON
- *    sensíveis (authorization, apikey, token, password, secret, etc.).
- *  - Idempotente: aplicar duas vezes não introduz ruído extra.
+ * Prevents sensitive credentials (Supabase URLs, anon keys, tokens) from appearing 
+ * in the UI panels, protecting developer information during demonstrations or previews.
+ *
+ * Improvement: refined patterns for broader coverage of authentication tokens 
+ * and stricter idempotent masking rules.
  */
 
 const BULLET = "\u2022";
