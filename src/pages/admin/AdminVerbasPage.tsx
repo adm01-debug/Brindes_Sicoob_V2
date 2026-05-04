@@ -270,6 +270,14 @@ export default function AdminVerbasPage() {
                 <CardDescription>Últimas 50 ações realizadas no módulo de verbas</CardDescription>
               </CardHeader>
               <CardContent>
+                <div className="flex justify-end gap-2 mb-4">
+                  <Button variant="outline" size="sm" onClick={() => exportAuditToCSV()} className="gap-2">
+                    <Download className="h-4 w-4" /> CSV
+                  </Button>
+                  <Button variant="outline" size="sm" onClick={() => window.print()} className="gap-2">
+                    <FileText className="h-4 w-4" /> PDF (Imprimir)
+                  </Button>
+                </div>
                 <div className="rounded-md border">
                   <Table>
                     <TableHeader>
