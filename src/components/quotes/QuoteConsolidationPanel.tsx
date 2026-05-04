@@ -233,11 +233,6 @@ export function QuoteConsolidationPanel({
     toast.success("Exportação concluída!");
   };
 
-  const toggleExpand = (key: string) => {
-    setExpandedItems(prev => 
-      prev.includes(key) ? prev.filter(k => k !== key) : [...prev, key]
-    );
-  };
 
   const handleSort = (key: string) => {
     setSortConfig(prev => ({
