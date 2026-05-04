@@ -40,6 +40,8 @@ jobs:
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: |
           bun scripts/generate-audit-dossier.mjs
+          bun scripts/validate-audit-links.mjs
+          bun scripts/test-audit-scripts.mjs
 
       - name: Generate PDF Report
         run: |
