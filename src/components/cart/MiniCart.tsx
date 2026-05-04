@@ -9,15 +9,24 @@ import {
   SheetTrigger,
   SheetFooter
 } from "@/components/ui/sheet";
-import { ShoppingCart, Trash2, Plus, Minus } from "lucide-react";
+import { ShoppingCart, Trash2, Plus, Minus, ShieldCheck, AlertCircle, Info } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { formatCurrency } from "@/lib/utils";
 import { Link } from "react-router-dom";
 import { CouponInput } from "./CouponInput";
+import { useApprovalThreshold } from "@/hooks/useApprovalThreshold";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 export function MiniCart() {
   const { items, subtotal, totalItemsCount, removeItem, updateQuantity } = useCart();
+  const { threshold, needsApproval } = useApprovalThreshold();
+  
+  const isOverThreshold = needsApproval(subtotal);
+  const thresholdProgress = threshold > 0 ? Math.min((subtotal / threshold) * 100, 100) : 0;
+  const remaining = Math.max(0, threshold - subtotal);
 
   return (
     <Sheet>
@@ -119,7 +128,50 @@ export function MiniCart() {
         </div>
 
         {items.length > 0 && (
-          <div className="mt-auto pt-6 space-y-4">
+          <div className="mt-auto pt-4 space-y-4">
+            {threshold > 0 && (
+              <div className="space-y-2 p-3 rounded-lg bg-muted/30 border border-border/50">
+                <div className="flex items-center justify-between mb-1">
+                  <div className="flex items-center gap-1.5">
+                    <ShieldCheck className={isOverThreshold ? "h-4 w-4 text-destructive" : "h-4 w-4 text-primary"} />
+                    <span className="text-xs font-semibold uppercase tracking-wider">Limite de Alçada</span>
+                  </div>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Info className="h-3.5 w-3.5 text-muted-foreground cursor-help" />
+                      </TooltipTrigger>
+                      <TooltipContent className="max-w-[200px] text-xs">
+                        {isOverThreshold 
+                          ? "Este pedido excede sua alçada e exigirá aprovação do Gestor da Singular."
+                          : `Você pode aprovar pedidos de até ${formatCurrency(threshold)} automaticamente.`}
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
+
+                <Progress value={thresholdProgress} className="h-1.5" />
+                
+                <div className="flex items-center justify-between text-[10px]">
+                  <span className={isOverThreshold ? "text-destructive font-medium" : "text-muted-foreground"}>
+                    {isOverThreshold ? "Limite Excedido" : `${thresholdProgress.toFixed(0)}% do limite`}
+                  </span>
+                  <span className="font-medium">
+                    {isOverThreshold 
+                      ? `+${formatCurrency(subtotal - threshold)}`
+                      : `Restam ${formatCurrency(remaining)}`}
+                  </span>
+                </div>
+
+                {isOverThreshold && (
+                  <div className="flex items-center gap-1.5 mt-2 text-[10px] text-destructive bg-destructive/5 p-1.5 rounded border border-destructive/10 animate-pulse">
+                    <AlertCircle className="h-3 w-3" />
+                    <span>Requer aprovação da Singular</span>
+                  </div>
+                )}
+              </div>
+            )}
+
             <Separator />
             <CouponInput />
             <div className="space-y-1.5">
