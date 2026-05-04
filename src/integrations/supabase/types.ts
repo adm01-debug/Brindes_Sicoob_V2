@@ -392,6 +392,51 @@ export type Database = {
         }
         Relationships: []
       }
+      cart_items: {
+        Row: {
+          color_hex: string | null
+          color_name: string | null
+          created_at: string
+          id: string
+          metadata: Json | null
+          product_id: string
+          product_image_url: string | null
+          product_name: string
+          product_price: number
+          quantity: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          color_hex?: string | null
+          color_name?: string | null
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          product_id: string
+          product_image_url?: string | null
+          product_name: string
+          product_price: number
+          quantity?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          color_hex?: string | null
+          color_name?: string | null
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          product_id?: string
+          product_image_url?: string | null
+          product_name?: string
+          product_price?: number
+          quantity?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       cart_templates: {
         Row: {
           created_at: string
