@@ -74,6 +74,28 @@ describe("sicoobOrderService", () => {
       event_type: "status_change",
       observations: "Aprovação via teste"
     }));
+
+    // Verificar se a notificação foi disparada para o dono do pedido
+    expect(insertMock).toHaveBeenCalledWith(expect.objectContaining({
+      user_id: "owner_456",
+      title: "Status do Pedido Sicoob Atualizado",
+      category: "status"
+    }));
+  });
+
+  it("returns a friendly error message for invalid status transitions", async () => {
+    (supabase.auth.getUser as any).mockResolvedValue({ data: { user: { id: "123" } }, error: null });
+    
+    // Tentativa de pular de 'pending' direto para 'completed' (inválido segundo SICOOB_VALID_TRANSITIONS)
+    await expect(sicoobOrderService.updateOrderStatus("order_1", "completed", "pending"))
+      .rejects.toThrow("Transição de status inválida: de pending para completed");
+  });
+
+  it("throws authentication error with clear message", async () => {
+    (supabase.auth.getUser as any).mockResolvedValue({ data: { user: null }, error: null });
+    
+    await expect(sicoobOrderService.updateOrderStatus("order_1", "confirmed"))
+      .rejects.toThrow("Usuário não autenticado");
   });
 });
 
