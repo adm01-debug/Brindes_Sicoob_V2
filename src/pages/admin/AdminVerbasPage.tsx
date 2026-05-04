@@ -32,6 +32,34 @@ export default function AdminVerbasPage() {
     criticalThreshold: 90  // 90%
   });
 
+  const [categoryThresholds, setCategoryThresholds] = useState<any[]>([]);
+  const [categories, setCategories] = useState<any[]>([]);
+
+  const fetchCategoryData = async () => {
+    const { data: ctData } = await supabase
+      .from('pa_category_thresholds')
+      .select('*, postos_atendimento(nome)')
+      .order('pa_id');
+    setCategoryThresholds(ctData || []);
+
+    const { data: cData } = await supabase
+      .from('product_categories')
+      .select('id, name')
+      .order('name');
+    setCategories(cData || []);
+  };
+
+  const exportAuditToCSV = () => {
+    const ws = XLSX.utils.json_to_sheet(auditLogs.map(log => ({
+      Data: format(new Date(log.created_at), 'dd/MM/yyyy HH:mm'),
+      Evento: log.event_type,
+      Usuario: log.metadata?.user_email || 'Sistema',
+      Detalhes: JSON.stringify(log.payload)
+    })));
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Histórico");
+    XLSX.writeFile(wb, `auditoria_verbas_${new Date().toISOString().split('T')[0]}.xlsx`);
+  };
 
   const { data: auditLogs = [] } = useQuery({
     queryKey: ['admin-budgets-audit'],
