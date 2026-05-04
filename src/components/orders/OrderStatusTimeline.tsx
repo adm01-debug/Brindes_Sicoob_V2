@@ -1,9 +1,13 @@
 /**
  * OrderStatusTimeline — visualização horizontal do progresso do pedido.
  */
-import { Check, Circle, XCircle, Clock, Package, Truck, CheckCircle2, ShieldCheck } from "lucide-react";
+import { Check, Circle, XCircle, Clock, Package, Truck, CheckCircle2, ShieldCheck, History, Info } from "lucide-react";
 import { ORDER_STATUS_FLOW, ORDER_STATUS_LABELS } from "@/hooks";
 import { cn } from "@/lib/utils";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { format } from "date-fns";
 
 interface OrderStatusTimelineProps {
   status: string;
