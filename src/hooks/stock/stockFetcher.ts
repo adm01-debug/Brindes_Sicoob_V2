@@ -275,7 +275,7 @@ export async function fetchAndProcessStockData(): Promise<{
             variantId: `${product.id}::product_total`, variantSku: product.sku || 'PROD',
             colorName: 'Total do Produto', currentStock: productLevelStock, minStock,
             reservedStock: 0, inTransitStock: 0, availableStock,
-            status: calculateStockStatus(productLevelStock, minStock),
+            status: calculateStockStatus(productLevelStock, minStock, undefined, 0, calculateDaysUntilStockout(availableStock)),
             daysUntilStockout: calculateDaysUntilStockout(availableStock),
             updatedAt: product.updated_at || new Date().toISOString(),
           });
