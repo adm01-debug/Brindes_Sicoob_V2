@@ -197,7 +197,7 @@ export function QuickTestLogin() {
               size="sm"
               className={`h-auto py-2 justify-start gap-3 bg-card hover:bg-accent transition-all group ${isInvalid ? 'opacity-60 border-destructive/30' : ''}`}
               onClick={() => handleQuickLogin(testUser.email)}
-              disabled={!!loadingEmail || isSeeding || (isInvalid && !isValidating)}
+              disabled={!!loadingEmail || isSeeding}
             >
               <div className={`p-1.5 rounded-lg transition-colors ${isInvalid ? 'bg-destructive/10 text-destructive' : 'bg-primary/10 text-primary group-hover:bg-primary/20'}`}>
                 <Icon className="h-4 w-4" />
