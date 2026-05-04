@@ -912,6 +912,7 @@ export type Database = {
       }
       cooperativas: {
         Row: {
+          alcada_superior_threshold: number | null
           cidade: string | null
           cnpj: string | null
           codigo: string
@@ -923,6 +924,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          alcada_superior_threshold?: number | null
           cidade?: string | null
           cnpj?: string | null
           codigo: string
@@ -934,6 +936,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          alcada_superior_threshold?: number | null
           cidade?: string | null
           cnpj?: string | null
           codigo?: string
