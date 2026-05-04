@@ -403,15 +403,14 @@ export default function OrdersKanbanPage() {
 
             <DragOverlay>
               {activeOrder ? (
-                <div className="bg-card p-3 rounded-md shadow-lg border-2 border-primary w-[276px] cursor-grabbing">
+                <div className="bg-card p-3 rounded-md shadow-lg border-2 border-sicoob-green w-[276px] cursor-grabbing rotate-3">
                   <div className="flex justify-between items-start mb-2">
-                    <span className="text-xs font-mono font-bold">#{activeOrder.id}</span>
-                    <span className="text-xs font-bold text-primary">
-                      R$ {activeOrder.total.toFixed(2)}
+                    <span className="text-[10px] font-mono font-bold text-muted-foreground">#{activeOrder.order_number || activeOrder.id.slice(0, 8)}</span>
+                    <span className="text-xs font-bold text-sicoob-green-dark">
+                      R$ {activeOrder.total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                     </span>
                   </div>
-                  <p className="text-sm font-medium truncate">{activeOrder.pa}</p>
-                  <p className="text-xs text-muted-foreground">{activeOrder.items} itens</p>
+                  <p className="text-sm font-bold text-sicoob-green-dark truncate">{activeOrder.pa}</p>
                 </div>
               ) : null}
             </DragOverlay>
