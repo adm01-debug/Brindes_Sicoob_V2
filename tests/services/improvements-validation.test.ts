@@ -120,11 +120,10 @@ describe("useQuoteBuilderState — Validação de Verba (PAC)", () => {
 
   it("bloqueia salvamento se o pedido exceder o limite de alçada", async () => {
     const { useQuoteBuilderState } = await import("@/hooks/useQuoteBuilderState");
-    const { renderHook } = await import("@testing-library/react");
+    const { renderHook, act } = await import("@testing-library/react");
     const { toast } = await import("sonner");
     const toastSpy = vi.spyOn(toast, "error");
 
-    // Manually mocking calculateQuoteTotals for this specific test
     vi.mock("@/utils/quote-calculations", () => ({
       calculateQuoteTotals: () => ({ total: 1500, subtotal: 1500, markup: 0 }),
       formatCurrency: (v: number) => `R$ ${v}`,
@@ -134,20 +133,28 @@ describe("useQuoteBuilderState — Validação de Verba (PAC)", () => {
 
     const { result } = renderHook(() => useQuoteBuilderState());
     
-    // Set PA and try to save
-    result.current.setClientId("pa-1");
-    await result.current.handleSaveQuote("pending");
+    await act(async () => {
+      result.current.setClientId("pa-1");
+      result.current.setContactId("c1");
+      result.current.setPaymentTerms("21_dias");
+      result.current.setDeliveryTime("14_dias");
+      result.current.setShippingType("cif");
+      result.current.setItems([{ product_id: "p1", quantity: 1, unit_price: 1500 } as any]);
+    });
+
+    await act(async () => {
+      await result.current.handleSaveQuote("pending");
+    });
 
     expect(toastSpy).toHaveBeenCalledWith(expect.stringContaining("Limite de alçada excedido"), expect.anything());
   });
 
   it("bloqueia salvamento se o pedido exceder a verba mensal restante", async () => {
     const { useQuoteBuilderState } = await import("@/hooks/useQuoteBuilderState");
-    const { renderHook } = await import("@testing-library/react");
+    const { renderHook, act } = await import("@testing-library/react");
     const { toast } = await import("sonner");
     const toastSpy = vi.spyOn(toast, "error");
 
-    // total 600 fits alçada (1000) but exceeds remaining budget (5000 - 4500 = 500)
     vi.mock("@/utils/quote-calculations", () => ({
       calculateQuoteTotals: () => ({ total: 600, subtotal: 600, markup: 0 }),
       formatCurrency: (v: number) => `R$ ${v}`,
@@ -157,8 +164,18 @@ describe("useQuoteBuilderState — Validação de Verba (PAC)", () => {
 
     const { result } = renderHook(() => useQuoteBuilderState());
     
-    result.current.setClientId("pa-1");
-    await result.current.handleSaveQuote("pending");
+    await act(async () => {
+      result.current.setClientId("pa-1");
+      result.current.setContactId("c1");
+      result.current.setPaymentTerms("21_dias");
+      result.current.setDeliveryTime("14_dias");
+      result.current.setShippingType("cif");
+      result.current.setItems([{ product_id: "p1", quantity: 1, unit_price: 600 } as any]);
+    });
+
+    await act(async () => {
+      await result.current.handleSaveQuote("pending");
+    });
 
     expect(toastSpy).toHaveBeenCalledWith(expect.stringContaining("Verba insuficiente"), expect.anything());
   });
