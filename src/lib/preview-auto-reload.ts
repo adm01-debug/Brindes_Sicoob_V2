@@ -21,7 +21,7 @@ export function setupPreviewAutoReload() {
   // Interceptar rejeições de promessas (comum em import() dinâmico)
   window.addEventListener("unhandledrejection", (event) => {
     const error = event.reason;
-    if (isChunkLoadError(error) || String(error).includes("412")) {
+    if (isChunkLoadError(error) || String(error).includes("412") || String(error).includes("Precondition Failed")) {
       logger.warn("[preview-reload] Rejeição detectada", { error });
       attemptChunkRecovery(error);
     }
