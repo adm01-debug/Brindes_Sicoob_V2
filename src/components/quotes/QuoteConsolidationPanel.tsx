@@ -18,7 +18,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { formatCurrency } from "@/utils/formatters";
 import { Quote, QuoteItem } from "@/hooks/quotes/quoteTypes";
-import { Package, Hash, Layers, PieChart, FileText, Search, Filter, ChevronDown, ChevronRight, ArrowUpDown, Download, History, Share2, Save, X, Calendar, Clock } from "lucide-react";
+import { Package, Hash, Layers, PieChart, FileText, Search, Filter, ChevronDown, ChevronRight, ArrowUpDown, Download, History, Share2, Save, X, Calendar, Clock, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { toast } from "sonner";
@@ -233,11 +233,6 @@ export function QuoteConsolidationPanel({
     toast.success("Exportação concluída!");
   };
 
-  const toggleExpand = (key: string) => {
-    setExpandedItems(prev => 
-      prev.includes(key) ? prev.filter(k => k !== key) : [...prev, key]
-    );
-  };
 
   const handleSort = (key: string) => {
     setSortConfig(prev => ({
@@ -404,8 +399,21 @@ export function QuoteConsolidationPanel({
               <CardTitle className="text-lg">{title}</CardTitle>
               <CardDescription>{description}</CardDescription>
             </div>
-            <div className="flex items-center gap-3">
-              <div className="relative w-64">
+          <div className="flex items-center gap-3">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="h-9 px-2 text-muted-foreground hover:text-foreground"
+              onClick={() => {
+                setSearchTerm("");
+                setSortConfig({ key: 'total_value', direction: 'desc' });
+                toast.info("Filtros redefinidos");
+              }}
+              title="Redefinir filtros"
+            >
+              <RefreshCw className="h-4 w-4" />
+            </Button>
+            <div className="relative w-64">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input 
                   placeholder="Filtrar por Produto ou SKU..." 
