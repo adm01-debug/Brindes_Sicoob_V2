@@ -36,8 +36,9 @@ export function StockDashboard() {
   const {
     isLoading, isFetching, loadingProgress, productStocks, allProductStocks,
     summary, alerts, criticalAlerts, filters, futureStock, allColors,
-    availableCategories, availableSuppliers, availableColorGroups,
+    availableCategories, availableSuppliers, availableColorGroups, availableAlertTypes,
     fetchStockData, updateFilter, resetFilters, dismissAlert, dismissAlertsBySeverity,
+    alertTypeFilter, setAlertTypeFilter,
   } = useVariantStock();
 
   // Track last refresh time
