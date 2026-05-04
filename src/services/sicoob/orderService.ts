@@ -63,6 +63,9 @@ export const sicoobOrderService = {
   },
 
   async getOrderById(id: string): Promise<SicoobOrder> {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error("Usuário não autenticado");
+
     const { data, error } = await supabase
       .from("sicoob_orders")
       .select("*")
@@ -74,6 +77,9 @@ export const sicoobOrderService = {
 
 
   async getOrderItems(orderId: string): Promise<SicoobOrderItem[]> {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error("Usuário não autenticado");
+
     const { data, error } = await supabase
       .from("sicoob_order_items")
       .select("*")
@@ -83,6 +89,9 @@ export const sicoobOrderService = {
   },
 
   async getItemLogs(orderId: string): Promise<SicoobOrderItemLog[]> {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error("Usuário não autenticado");
+
     const { data, error } = await supabase
       .from("sicoob_order_item_logs")
       .select(`
@@ -149,6 +158,9 @@ export const sicoobOrderService = {
   },
 
   async updateOrderTotal(orderId: string, total: number): Promise<void> {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error("Usuário não autenticado");
+
     const { error } = await supabase
       .from("sicoob_orders")
       .update({ total_amount: total, updated_at: new Date().toISOString() })
