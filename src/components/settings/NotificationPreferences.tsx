@@ -23,14 +23,29 @@ export function NotificationPreferences() {
   }
 
   return (
-    <Card className="w-full">
-      <CardHeader>
-        <CardTitle className="text-xl">Preferências de Notificação</CardTitle>
-        <CardDescription>
-          Escolha como você deseja ser alertado sobre pedidos e orçamentos.
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-6">
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-bold tracking-tight">Notificações</h2>
+          <p className="text-muted-foreground">Gerencie como você recebe alertas e resumos.</p>
+        </div>
+      </div>
+
+      <Tabs value={activeView} onValueChange={setActiveView} className="w-full">
+        <TabsList className="mb-4">
+          <TabsTrigger value="preferences" className="gap-2"><Settings2 className="h-4 w-4" /> Preferências</TabsTrigger>
+          <TabsTrigger value="omnichannel" className="gap-2"><Inbox className="h-4 w-4" /> Painel Omnichannel</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="preferences" className="space-y-6">
+          <Card className="w-full">
+            <CardHeader>
+              <CardTitle className="text-xl">Configurações de Canais</CardTitle>
+              <CardDescription>
+                Escolha como você deseja ser alertado sobre pedidos e orçamentos.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
         <div className="flex items-center justify-between space-x-4">
           <div className="flex items-center space-x-4">
             <Mail className="h-5 w-5 text-muted-foreground" />
