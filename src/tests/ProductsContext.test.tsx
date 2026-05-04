@@ -73,10 +73,9 @@ describe("ProductsContext", () => {
     // Initial state: not found, but it should trigger a fetch
     expect(screen.getByTestId("product-name").textContent).toBe("not found");
 
-    // Advance timers for the batching window (50ms)
-    await act(async () => {
-      vi.advanceTimersByTime(100);
-    });
+    // No need to advance timers manually if using real timers
+    // but we might need to wait for the batch window (50ms) + fetch time
+    await new Promise(resolve => setTimeout(resolve, 100));
 
     await waitFor(() => {
       expect(fetchPromobrindProducts).toHaveBeenCalledWith(expect.objectContaining({
