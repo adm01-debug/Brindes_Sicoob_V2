@@ -8,6 +8,7 @@ import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useNavigate } from "react-router-dom";
 import { NotificationPreferences } from "@/components/settings/NotificationPreferences";
+import { OrderEventAlerts } from "@/components/settings/OrderEventAlerts";
 import { Settings } from "lucide-react";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 
@@ -32,8 +33,11 @@ export default function NotificationsPage() {
                   <Settings className="h-4 w-4" /> Preferências
                 </Button>
               </DialogTrigger>
-              <DialogContent className="sm:max-w-[500px]">
-                <NotificationPreferences />
+              <DialogContent className="sm:max-w-[600px] max-h-[85vh] overflow-y-auto">
+                <div className="space-y-6">
+                  <NotificationPreferences />
+                  <OrderEventAlerts />
+                </div>
               </DialogContent>
             </Dialog>
             <Button variant="outline" size="sm" onClick={() => markAllAsRead()}>
