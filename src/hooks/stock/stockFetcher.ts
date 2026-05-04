@@ -238,7 +238,8 @@ export async function fetchAndProcessStockData(): Promise<{
         }
 
         const availableStock = calculateAvailableStock(currentStock, reservedStock);
-        const status = calculateStockStatus(currentStock, minStock, undefined, inTransitStock);
+        const daysUntilStockout = calculateDaysUntilStockout(availableStock);
+        const status = calculateStockStatus(currentStock, minStock, undefined, inTransitStock, daysUntilStockout);
 
         variants.push({
           id: pv.id, productId: product.id, variantId: pv.id,
