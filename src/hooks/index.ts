@@ -9,3 +9,4 @@ export * from './useApprovalThreshold';
 export * from './usePendingQuotesCount';
 export * from './useQuotes';
 export * from './useCart';
+export * from './useDuplicateEntity';
