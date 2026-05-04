@@ -86,6 +86,7 @@ const ColorDocumentationPage = lazyWithRetry(() => import("./pages/admin/ColorDo
 const ForbiddenPage = lazyWithRetry(() => import("./pages/ForbiddenPage"));
 const OrderAuditPage = lazyWithRetry(() => import("./pages/OrderAuditPage"));
 const TestDashboard = lazyWithRetry(() => import("./pages/TestDashboard"));
+const GestorApprovalsPage = lazyWithRetry(() => import("./pages/GestorApprovalsPage"));
 
 
 
@@ -180,6 +181,7 @@ const App = () => {
                             <Route path="/tendencias" element={<TrendsPage />} />
                             <Route path="/notificacoes" element={<NotificationsPage />} />
                             <Route path="/gestor/compras" element={<GestorComprasPage />} />
+                            <Route path="/gestor/aprovacoes" element={<GestorApprovalsPage />} />
                             <Route path="/pedidos/:id/auditoria" element={<OrderAuditPage />} />
                             <Route path="/admin/saude-testes" element={<TestDashboard />} />
 

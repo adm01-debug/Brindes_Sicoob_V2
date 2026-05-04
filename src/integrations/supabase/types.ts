@@ -3492,6 +3492,47 @@ export type Database = {
           },
         ]
       }
+      order_approval_history: {
+        Row: {
+          approver_id: string | null
+          created_at: string | null
+          decision: string
+          id: string
+          order_id: string | null
+          reason: string | null
+          subtotal_at_time: number | null
+          threshold_at_time: number | null
+        }
+        Insert: {
+          approver_id?: string | null
+          created_at?: string | null
+          decision: string
+          id?: string
+          order_id?: string | null
+          reason?: string | null
+          subtotal_at_time?: number | null
+          threshold_at_time?: number | null
+        }
+        Update: {
+          approver_id?: string | null
+          created_at?: string | null
+          decision?: string
+          id?: string
+          order_id?: string | null
+          reason?: string | null
+          subtotal_at_time?: number | null
+          threshold_at_time?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_approval_history_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       order_audit_events: {
         Row: {
           actor_id: string | null

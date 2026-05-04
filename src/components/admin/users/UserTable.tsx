@@ -4,7 +4,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Loader2, Pencil, Trash2, ArrowUpCircle } from "lucide-react";
+import { Loader2, Pencil, Trash2, ArrowUpCircle, Copy } from "lucide-react";
+import { useDuplicateEntity } from "@/hooks/useDuplicateEntity";
 import { RoleBadge } from "@/components/RoleBadge";
 import { type UserWithRole } from "./types";
 
@@ -20,6 +21,8 @@ interface UserTableProps {
 }
 
 export function UserTable({ users, currentUserId, updatingUserId, onEditUser, onChangeRole, onDeleteUser, onPromoteUser }: UserTableProps) {
+  const duplicate = useDuplicateEntity("profiles", ["users_list"]);
+
   return (
     <Table>
       <TableHeader>
@@ -65,7 +68,17 @@ export function UserTable({ users, currentUserId, updatingUserId, onEditUser, on
                 {new Date(userItem.created_at).toLocaleDateString("pt-BR")}
               </TableCell>
               <TableCell className="text-right">
-                <div className="flex items-center justify-end gap-2">
+                <div className="flex items-center justify-end gap-1">
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className="h-8 w-8 text-muted-foreground"
+                    title="Duplicar usuário"
+                    onClick={() => duplicate.mutate(userItem.id)}
+                    disabled={duplicate.isPending}
+                  >
+                    <Copy className="h-4 w-4" />
+                  </Button>
                   <Button variant="ghost" size="icon" aria-label="Editar" className="h-8 w-8" onClick={() => onEditUser(userItem)} title="Editar usuário">
                     <Pencil className="h-4 w-4" />
                   </Button>
