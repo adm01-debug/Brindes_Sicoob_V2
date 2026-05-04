@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Building2, Landmark, Wallet, Users } from "lucide-react";
+import { Building2, Landmark, Wallet, Users, BellRing } from "lucide-react";
 import { CooperativasTab } from "./tabs/CooperativasTab";
 import { PAsTab } from "./tabs/PAsTab";
 import { BudgetsTab } from "./tabs/BudgetsTab";
 import { UserAssignmentTab } from "./tabs/UserAssignmentTab";
+import { NotificationSettingsTab } from "./tabs/NotificationSettingsTab";
 
 const SicoobManagementPage = () => {
   return (
