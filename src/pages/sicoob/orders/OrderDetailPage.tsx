@@ -739,9 +739,21 @@ export default function OrderDetailPage() {
                   <div className="w-full h-2.5 bg-secondary rounded-full overflow-hidden relative">
                     <div 
                       className={`h-full transition-all duration-500 ${isOverBudget ? 'bg-destructive' : 'bg-success'}`} 
-                      style={{ width: `${Math.min((orderTotal / Math.max(remainingBudget, 1)) * 100, 100)}%` }} 
+                      style={{ width: `${Math.min((orderTotal / Math.max(budget, 1)) * 100, 100)}%` }} 
+                    />
+                    {/* Indicador visual do impacto deste pedido específico */}
+                    <div 
+                      className="absolute top-0 h-full bg-primary/30 animate-pulse"
+                      style={{ 
+                        left: `${Math.min(((remainingBudget - orderTotal) / Math.max(budget, 1)) * 100, 100)}%`,
+                        width: `${Math.min((orderTotal / Math.max(budget, 1)) * 100, 100)}%` 
+                      }}
                     />
                   </div>
+                  <p className="text-[10px] text-muted-foreground flex justify-between">
+                    <span>Impacto do Pedido: R$ {orderTotal.toLocaleString('pt-BR')}</span>
+                    <span>Total Verba: R$ {budget.toLocaleString('pt-BR')}</span>
+                  </p>
                 </div>
 
                 {isOverBudget && (
