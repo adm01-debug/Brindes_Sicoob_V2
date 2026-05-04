@@ -33,7 +33,6 @@ const TestComponent = ({ productId }: { productId?: string }) => {
 describe("ProductsContext", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.useFakeTimers();
   });
 
   it("should provide empty state initially", () => {
