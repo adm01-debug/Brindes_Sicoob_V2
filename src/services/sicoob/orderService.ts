@@ -51,11 +51,37 @@ export const sicoobOrderService = {
     let results = data as SicoobOrder[];
     
     if (filters?.search) {
-      const term = filters.search.toLowerCase();
+      const term = filters.search.toLowerCase().trim();
+      
+      // Busca inteligente: 
+      // 1. Se o termo tem formato de UUID ou ID curto
+      // 2. Se o termo corresponde a nomes de PA ou Cooperativa (já inclusos no query)
+      // 3. Se o termo corresponde a notas ou códigos de rastreio
+      // 4. Se o termo corresponde a um status amigável (ex: "pendente")
+      
+      const statusMap: Record<string, string[]> = {
+        "pendente": ["pending", "waiting_approval"],
+        "rascunho": ["draft"],
+        "aprovado": ["confirmed"],
+        "cancelado": ["cancelled"],
+        "logistica": ["logistic"],
+        "concluido": ["completed"],
+        "alçada": ["waiting_approval", "escalated_to_board"],
+        "diretoria": ["escalated_to_board"]
+      };
+
+      const matchedStatuses = Object.entries(statusMap)
+        .filter(([key]) => key.includes(term))
+        .flatMap(([_, values]) => values);
+
       results = results.filter(o => 
         o.id.toLowerCase().includes(term) || 
+        o.order_number?.toLowerCase().includes(term) ||
         o.notes?.toLowerCase().includes(term) ||
-        o.tracking_code?.toLowerCase().includes(term)
+        o.tracking_code?.toLowerCase().includes(term) ||
+        (o as any).pa?.nome?.toLowerCase().includes(term) ||
+        (o as any).cooperativa?.nome?.toLowerCase().includes(term) ||
+        matchedStatuses.includes(o.status)
       );
     }
     
