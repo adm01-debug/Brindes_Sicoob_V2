@@ -33,7 +33,7 @@ export default function Auth() {
   const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
   const { toast } = useToast();
-  const { user, isLoading: authLoading, signIn, signOut, role, isAuthenticated } = useAuth();
+  const { user, isLoading: authLoading, signIn, signOut, role, isAuthenticated, roles } = useAuth();
   const { validateIPForAuthenticatedUser, logLoginAttempt, fetchCurrentIP } = useIPValidation();
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
