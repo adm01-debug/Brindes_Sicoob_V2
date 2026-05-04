@@ -1,4 +1,11 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createStructuredLogger } from "../_shared/structured-logger.ts";
+import { getOrCreateRequestId } from "../_shared/request-id.ts";
+
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-request-id",
+};
 
 const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
 const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -42,29 +49,28 @@ const TEST_USERS_CONFIG = [
   }
 ];
 
-async function cleanupOrphans() {
-  console.log("Detectando e removendo usuários órfãos usando RPC SQL...");
+async function cleanupOrphans(log: any) {
+  log.info("detecting_orphans", { method: "rpc" });
   
   const testIds = TEST_USERS_CONFIG.map(u => u.id);
   
-  // Chama a nova RPC de limpeza que já lida com FKs e schema auth
   const { data: cleaned, error: rpcError } = await supabase.rpc("cleanup_test_auth_orphans", {
     test_ids: testIds
   });
 
   if (rpcError) {
-    console.error("Erro ao limpar órfãos via RPC:", rpcError);
+    log.error("cleanup_failed", { err: rpcError });
     throw rpcError;
   }
 
-  const report = { removed: (cleaned || []).map((c: any) => c.email || c.deleted_id) };
-  console.log(`Limpeza concluída. Removidos: ${report.removed.length}`);
+  const removed = (cleaned || []).map((c: any) => c.email || c.deleted_id);
+  log.info("cleanup_done", { removed_count: removed.length });
   
-  return report;
+  return { removed };
 }
 
-async function ensureTestUser(user: (typeof TEST_USERS_CONFIG)[number], stats: any) {
-  console.log(`Garantindo usuário de teste: ${user.email}`);
+async function ensureTestUser(user: (typeof TEST_USERS_CONFIG)[number], stats: any, log: any) {
+  log.debug("ensuring_user", { email: user.email });
 
   const { data: created, error: createError } = await supabase.auth.admin.createUser({
     id: user.id,
@@ -83,11 +89,13 @@ async function ensureTestUser(user: (typeof TEST_USERS_CONFIG)[number], stats: a
        });
        if (updateError) {
          stats.failures.push({ email: user.email, error: updateError.message });
+         log.error("user_update_failed", { email: user.email, err: updateError });
          throw updateError;
        }
        stats.updated.push(user.email);
     } else {
       stats.failures.push({ email: user.email, error: createError.message });
+      log.error("user_create_failed", { email: user.email, err: createError });
       throw createError;
     }
   } else {
@@ -96,6 +104,14 @@ async function ensureTestUser(user: (typeof TEST_USERS_CONFIG)[number], stats: a
 }
 
 Deno.serve(async (req) => {
+  if (req.method === "OPTIONS") {
+    return new Response("ok", { headers: corsHeaders });
+  }
+
+  const requestId = getOrCreateRequestId(req);
+  const log = createStructuredLogger({ fn: "sicoob-seed", requestId, req });
+  log.info("seed_start");
+
   const stats = {
     orphans_removed: [] as string[],
     recreated: [] as string[],
@@ -104,10 +120,8 @@ Deno.serve(async (req) => {
   };
 
   try {
-    console.log("Iniciando seed inteligente do módulo Sicoob...");
-
     // 0. Auto-correção: Limpar órfãos
-    const cleanupReport = await cleanupOrphans();
+    const cleanupReport = await cleanupOrphans(log);
     stats.orphans_removed = cleanupReport.removed;
 
     // 1. Criar/Atualizar Cooperativas
@@ -129,7 +143,7 @@ Deno.serve(async (req) => {
 
     // 3. Usuários de Teste
     for (const user of TEST_USERS_CONFIG) {
-      await ensureTestUser(user, stats);
+      await ensureTestUser(user, stats, log);
 
       // Limpa profiles duplicados por email
       await supabase.from("profiles").delete().eq("email", user.email).neq("user_id", user.id);
@@ -149,27 +163,29 @@ Deno.serve(async (req) => {
       if (profileError) throw profileError;
     }
 
-    // Registrar log de auditoria com metadados consistentes
+    // Registrar log de auditoria
     await supabase.from("admin_audit_log").insert({
       action: "sicoob_seed_operation",
       details: stats,
-      ip_address: "127.0.0.1", // Fallback para seed
+      ip_address: req.headers.get("x-real-ip") || "127.0.0.1",
       entity_type: "system_seed"
     });
 
-    return new Response(JSON.stringify({ 
+    log.info("seed_success", { stats });
+
+    return log.respond(new Response(JSON.stringify({ 
       message: "Seed finalizado com sucesso",
       report: stats,
       config_source: Deno.env.get("SICOOB_TEST_USER_PASSWORD") ? "env_vars" : "default_values"
     }), {
-      headers: { "Content-Type": "application/json" },
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
-    });
+    }));
   } catch (err) {
-    console.error("Erro no seed:", err);
-    return new Response(JSON.stringify({ error: err.message, partial_report: stats }), {
-      headers: { "Content-Type": "application/json" },
+    log.error("seed_failed", { err });
+    return log.respond(new Response(JSON.stringify({ error: err.message, partial_report: stats }), {
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,
-    });
+    }));
   }
 });
