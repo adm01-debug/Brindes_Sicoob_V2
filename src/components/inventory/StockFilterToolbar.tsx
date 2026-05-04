@@ -45,6 +45,9 @@ interface StockFilterToolbarProps {
   colorGroups: FilterOption[];
   totalProducts: number;
   filteredCount: number;
+  alertTypes?: FilterOption[];
+  onUpdateAlertFilter?: (type: StockAlertType | 'all') => void;
+  currentAlertFilter?: StockAlertType | 'all';
 }
 
 const STATUS_OPTIONS: { value: StockStatus | 'all'; label: string; icon: React.ReactNode; color: string }[] = [
