@@ -406,7 +406,7 @@ export default function OrdersPage() {
               </CardHeader>
               <CardContent>
                 <div className="text-3xl font-display font-bold text-white mb-2 group-hover:text-indigo-400 transition-colors">
-                  R$ {(stats?.totalRevenue ? stats.totalRevenue * 1.4 : 75000).toLocaleString('pt-BR', { maximumFractionDigits: 0 })}
+                  R$ {((stats?.totalRevenueReal || 0) * 1.4 + 25000).toLocaleString('pt-BR', { maximumFractionDigits: 0 })}
                 </div>
                 <div className="h-[60px] w-full flex items-end gap-1 px-1">
                    {[30, 45, 25, 60, 80, 55, 90, 70, 40, 65, 85, 100].map((h, i) => (
