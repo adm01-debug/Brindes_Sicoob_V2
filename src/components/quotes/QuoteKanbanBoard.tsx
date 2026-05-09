@@ -384,6 +384,24 @@ function QuoteCard({
                   Alta Alçada
                 </Badge>
               )}
+              {isSupervisorOrAbove && (
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Badge variant="outline" className={cn("h-4 px-1 text-[8px] border", getMarginColor(margin))}>
+                        {margin > 0 ? <TrendingUp className="h-2 w-2 mr-0.5" /> : <TrendingDown className="h-2 w-2 mr-0.5" />}
+                        {margin.toFixed(1)}%
+                      </Badge>
+                    </TooltipTrigger>
+                    <TooltipContent side="top" className="text-[10px] p-2">
+                      <p className="font-bold">Rentabilidade Estimada</p>
+                      <p>Valor: {formatCurrency(totalValue)}</p>
+                      <p>Custo: {formatCurrency(totalCost)}</p>
+                      <p>Lucro: {formatCurrency(totalValue - totalCost)}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              )}
               {hasStockIssue && (
                 <Badge variant="destructive" className="h-4 px-1 text-[8px] animate-pulse">
                   <PackageX className="h-2 w-2 mr-1" />
