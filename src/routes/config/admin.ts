@@ -31,4 +31,5 @@ export const adminRoutes = [
   defineRoute({ path: "/admin/qa/run/:id", component: lazyWithRetry(() => import("@/pages/admin/qa/QARunDetailPage")) }),
   defineRoute({ path: "/admin/seguranca/rls", component: lazyWithRetry(() => import("@/pages/admin/RLSAuditPage")) }),
   defineRoute({ path: "/admin/auditoria/evidencias", component: lazyWithRetry(() => import("@/pages/admin/AuditEvidenceDashboard")) }),
+  defineRoute({ path: "/admin/auditoria/enterprise", component: lazyWithRetry(() => import("@/pages/admin/AuditEnterprisePage")) }),
 ] as const;
