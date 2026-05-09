@@ -23,7 +23,8 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { GripVertical, Package, Trash2, ChevronDown, ChevronUp, Palette, AlertTriangle } from "lucide-react";
+import { GripVertical, Package, Trash2, ChevronDown, ChevronUp, Palette, AlertTriangle, Layers, LayersSelect } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -34,21 +35,21 @@ import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface QuoteItem {
-  id: string;
+  id?: string;
   product_id: string;
   product_name: string;
-  product_sku: string;
+  product_sku?: string;
   product_image_url?: string;
   quantity: number;
   unit_price: number;
   color_name?: string;
   color_hex?: string;
-  /** ISO timestamp da última atualização do preço (catálogo externo). */
   price_updated_at?: string | null;
-  /** Janela em dias para alertar preço defasado (default 60). */
   price_freshness_threshold_days?: number | null;
   stock_available?: number | null;
   personalizations?: any[];
+  kit_group_id?: string | null;
+  kit_name?: string | null;
 }
 
 interface DraggableQuoteItemsProps {
@@ -61,6 +62,9 @@ interface DraggableQuoteItemsProps {
   expandedItems?: Set<number>;
   renderPersonalization?: (item: QuoteItem, index: number) => React.ReactNode;
   formatCurrency: (value: number) => string;
+  selectedIndexes?: Set<number>;
+  onToggleSelection?: (index: number) => void;
+  onUngroup?: (groupId: string) => void;
 }
 
 interface SortableItemProps {
@@ -73,6 +77,8 @@ interface SortableItemProps {
   onTogglePersonalization?: () => void;
   renderPersonalization?: () => React.ReactNode;
   formatCurrency: (value: number) => string;
+  isSelected?: boolean;
+  onToggleSelection?: () => void;
 }
 
 function SortableItem({
@@ -85,6 +91,8 @@ function SortableItem({
   onTogglePersonalization,
   renderPersonalization,
   formatCurrency,
+  isSelected,
+  onToggleSelection,
 }: SortableItemProps) {
   const {
     attributes,
@@ -300,6 +308,9 @@ export function DraggableQuoteItems({
   expandedItems = new Set(),
   renderPersonalization,
   formatCurrency,
+  selectedIndexes = new Set(),
+  onToggleSelection,
+  onUngroup,
 }: DraggableQuoteItemsProps) {
   const [activeId, setActiveId] = useState<string | null>(null);
   
