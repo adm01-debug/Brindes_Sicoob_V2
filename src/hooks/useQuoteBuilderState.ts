@@ -308,6 +308,23 @@ export function useQuoteBuilderState() {
       const ts = new Date().toISOString();
       setItems(prev => prev.map((item, idx) => idx === index ? { ...item, price_confirmed_at: ts } : item));
     },
-    applyTemplate, handleSaveQuote, canEdit,
+    applyTemplate, handleSaveQuote, canEdit, getTemplateItems: () => items.map(i => ({
+      productId: i.product_id,
+      productName: i.product_name,
+      productSku: i.product_sku || "",
+      productImageUrl: i.product_image_url || "",
+      quantity: i.quantity,
+      unitPrice: i.unit_price,
+      colorName: i.color_name,
+      colorHex: i.color_hex,
+      personalizations: i.personalizations?.map(p => ({
+        techniqueId: p.technique_id,
+        techniqueName: p.technique_name || "",
+        colorsCount: p.colors_count,
+        positionsCount: p.positions_count,
+        unitCost: p.unit_cost,
+        setupCost: p.setup_cost,
+      }))
+    })),
   };
 }
