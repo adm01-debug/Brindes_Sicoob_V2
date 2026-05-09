@@ -147,6 +147,7 @@ interface KanbanColumnProps {
   status: KanbanStatus;
   quotes: Quote[];
   onQuoteClick: (id: string) => void;
+  isReadOnly?: boolean;
 }
 
 function KanbanColumn({ status, quotes, onQuoteClick }: KanbanColumnProps) {
