@@ -106,23 +106,18 @@ export default function QuoteBuilderPage() {
           <div className="flex items-center gap-2">
             {!s.isEditMode && (
               <QuoteTemplateSelector
-                onSelectTemplate={s.applyTemplate}
-                trigger={
-                  <Button variant="outline">
-                    <BookTemplate className="h-4 w-4 mr-2" />
-                    Usar Template
-                    {s.templates.length > 0 && <Badge variant="secondary" className="ml-2">{s.templates.length}</Badge>}
-                  </Button>
-                }
+                onSelect={s.applyTemplate}
               />
             )}
             {s.items.length > 0 && (
               <SaveAsTemplateButton
-                items={s.getTemplateItems()}
-                discountPercent={s.discountType === "percent" ? s.discountValue : 0}
-                discountAmount={s.discountType === "amount" ? s.discountValue : 0}
-                notes={s.notes}
-                internalNotes={s.internalNotes}
+                quoteData={{
+                  items: s.getTemplateItems(),
+                  discount_percent: s.discountType === "percent" ? s.discountValue : 0,
+                  notes: s.notes,
+                  payment_terms: s.payment_terms,
+                  delivery_time: s.delivery_time
+                }}
               />
             )}
           </div>
