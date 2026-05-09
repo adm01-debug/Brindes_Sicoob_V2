@@ -118,12 +118,16 @@ export function useQuotesDashboard() {
 
     const monthlyGroups = filtered.reduce((a, q) => {
       const m = format(new Date(q.created_at), "MMM", { locale: ptBR });
-      if (!a[m]) a[m] = { month: m, total: 0, approved: 0, rejected: 0, value: 0 };
+      if (!a[m]) a[m] = { month: m, total: 0, approved: 0, rejected: 0, value: 0, profit: 0 };
       a[m].total++;
-      if (q.status === "approved") { a[m].approved++; a[m].value += q.total || 0; }
+      if (q.status === "approved") {
+        a[m].approved++;
+        a[m].value += q.total || 0;
+        a[m].profit += (q.total || 0) - (q.total_cost || (q.real_subtotal ? q.real_subtotal * 0.7 : 0));
+      }
       if (q.status === "rejected") a[m].rejected++;
       return a;
-    }, {} as Record<string, { month: string; total: number; approved: number; rejected: number; value: number }>);
+    }, {} as Record<string, { month: string; total: number; approved: number; rejected: number; value: number; profit: number }>);
 
     const conversionFunnel = [
       { stage: "Criados", count: totalQuotes, fill: "hsl(var(--primary))" },
