@@ -32,6 +32,9 @@ export function calculateQuoteTotals(quote: Partial<Quote>, items: QuoteItem[]) 
     ? Math.round(realSubtotal * (1 + markup / 100) * 100) / 100
     : realSubtotal;
 
+  // Custo REAL (usado para calcular margem bruta correta)
+  const realTotalCost = totalCost;
+
   // Desconto APARENTE aplicado sobre subtotal apresentado
   const discountAmount = quote.discount_percent
     ? subtotal * (quote.discount_percent / 100)
