@@ -62,9 +62,12 @@ export function QuoteKanbanBoard({
   selectedIds,
   onToggleSelection
 }: QuoteKanbanBoardProps) {
-  const { updateQuoteStatus, isLoading } = useQuotes();
+  const { updateQuoteStatus, isLoading: quotesLoading } = useQuotes();
   const { isSupervisorOrAbove } = useRBAC();
   const navigate = useNavigate();
+
+  const quoteIdsForStock = useMemo(() => initialQuotes.map(q => q.id!).filter(Boolean), [initialQuotes]);
+  const { data: stockIssues } = useQuotesStockStatus(quoteIdsForStock);
   
   const [activeId, setActiveId] = useState<string | null>(null);
   const [activeQuote, setActiveQuote] = useState<Quote | null>(null);
