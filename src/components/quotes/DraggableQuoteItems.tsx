@@ -214,6 +214,20 @@ function SortableItem({
                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => onUpdateQuantity(parseInt(e.target.value) || 1)}
                     className="w-20 h-8 text-sm"
                   />
+                  {item.stock_available !== null && item.stock_available !== undefined && item.quantity > item.stock_available && (
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div className="flex items-center justify-center p-1 rounded-full bg-destructive/10 text-destructive animate-pulse">
+                            <AlertTriangle className="h-3.5 w-3.5" />
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p className="text-xs">Estoque insuficiente: {item.stock_available} disponíveis</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  )}
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="text-xs text-muted-foreground">Preço:</span>
