@@ -255,7 +255,7 @@ function SortableQuoteCard({ quote, onClick, disabled }: { quote: Quote; onClick
   );
 }
 
-function QuoteCard({ quote, isOverlay, onClick, attributes, listeners }: QuoteCardProps & { attributes?: any; listeners?: any }) {
+function QuoteCard({ quote, isOverlay, onClick, attributes, listeners, disabled }: QuoteCardProps & { attributes?: any; listeners?: any }) {
   const isHighValue = (quote.total || 0) > 5000;
 
   return (
