@@ -955,4 +955,3 @@ export default function OrdersPage() {
     </MainLayout>
   );
 }
-}
