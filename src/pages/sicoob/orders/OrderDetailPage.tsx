@@ -926,7 +926,6 @@ export default function OrderDetailPage() {
           </div>
         </div>
       </div>
-    </div>
     </MainLayout>
   );
 }
