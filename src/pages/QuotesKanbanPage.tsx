@@ -33,9 +33,16 @@ interface Client {
 
 export default function QuotesKanbanPage() {
   const navigate = useNavigate();
-  const { quotes, isLoading } = useQuotes();
+  const { quotes, isLoading, fetchQuotes } = useQuotes();
   const [selectedClientId, setSelectedClientId] = useState<string>("all");
   const [clients, setClients] = useState<Client[]>([]);
+  const [selectedQuoteIds, setSelectedQuoteIds] = useState<string[]>([]);
+
+  const toggleQuoteSelection = (id: string) => {
+    setSelectedQuoteIds((prev) =>
+      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]
+    );
+  };
 
   // Fetch clients for filter
   useEffect(() => {
