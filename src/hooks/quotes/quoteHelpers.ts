@@ -68,6 +68,7 @@ export function buildInsertPayload(
     discount_percent: quote.discount_percent || 0,
     discount_amount: totals.discountAmount,
     total: totals.total,
+    total_cost: totals.totalCost,
     negotiation_markup_percent: quote.negotiation_markup_percent || 0,
     payment_terms: quote.payment_terms || null,
     delivery_time: quote.delivery_time || null,
