@@ -185,7 +185,18 @@ export default function QuotesKanbanPage() {
         )}
 
         {/* Kanban Board */}
-        <QuoteKanbanBoard quotes={filteredQuotes} />
+        <QuoteKanbanBoard 
+          quotes={filteredQuotes} 
+          selectedIds={selectedQuoteIds}
+          onToggleSelection={toggleQuoteSelection}
+        />
+
+        {/* Bulk Actions Toolbar */}
+        <QuoteBulkActionsToolbar 
+          selectedIds={selectedQuoteIds}
+          onClearSelection={() => setSelectedQuoteIds([])}
+          onActionComplete={fetchQuotes}
+        />
 
         {/* Legend */}
         <div className="flex flex-wrap gap-4 text-xs text-muted-foreground bg-card/50 p-4 rounded-xl border border-border/40">
