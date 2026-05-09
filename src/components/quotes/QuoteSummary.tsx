@@ -29,10 +29,13 @@ export function QuoteSummary({
   discountType,
   shippingCost,
   total,
+  profit,
+  marginPercent,
   paymentTerms,
   deliveryTime,
   validUntil,
   className,
+  isInternal = false,
 }: QuoteSummaryProps) {
   const formatCurrency = (val: number) => 
     new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val);
