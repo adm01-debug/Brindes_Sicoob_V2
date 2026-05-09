@@ -67,6 +67,7 @@ export function QuoteBuilderSummaryColumn({
   maxDiscountPercent, isDiscountExceeded,
   negotiationMarkup = 0, setNegotiationMarkup,
   realSubtotal = 0, realDiscountPercent = 0,
+  profit = 0, marginPercent = 0,
   confirmItemPrice, confirmAllStalePrices,
 }: Props) {
   const { isGerentePa } = useAuth();
