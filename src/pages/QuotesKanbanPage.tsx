@@ -187,7 +187,7 @@ export default function QuotesKanbanPage() {
           </div>
           <div className="flex items-center gap-2">
             <div className="w-3 h-3 rounded bg-amber-500/20 border border-amber-500/40" />
-            <span>Pendente: Aguardando aprovação de alçada ou Singular</span>
+            <span>Pendente: Aguardando aprovação ou em processamento</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="w-3 h-3 rounded bg-blue-500/20 border border-blue-500/40" />
