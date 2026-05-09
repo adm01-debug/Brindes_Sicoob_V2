@@ -11,7 +11,7 @@ export interface QuoteHistoryEntry {
   old_value?: string | null;
   new_value?: string | null;
   description: string;
-  metadata?: Record<string, unknown>;
+  metadata?: Record<string, any>;
   created_at: string;
 }
 
@@ -53,19 +53,30 @@ export function useQuoteHistory() {
       metadata?: Record<string, any>;
     }
   ): Promise<boolean> => {
-    if (!user) return false;
-
+    // Audit logs are special: we want to capture UA/IP automatically via RPC if possible
+    // or manually here if the RPC doesn't handle all metadata.
+    
     try {
-      await supabase.from("quote_history").insert({
+      // Collect current browser info
+      const auditMetadata = {
+        ...(options?.metadata || {}),
+        user_agent: navigator.userAgent,
+        screen_resolution: `${window.screen.width}x${window.screen.height}`,
+        language: navigator.language
+      };
+
+      const { error } = await supabase.from("quote_history").insert({
         quote_id: quoteId,
-        user_id: user.id,
+        user_id: user?.id || null,
         action,
         description,
         field_changed: options?.fieldChanged || null,
         old_value: options?.oldValue || null,
         new_value: options?.newValue || null,
-        metadata: options?.metadata || {},
+        metadata: auditMetadata,
       } as Record<string, unknown>);
+
+      if (error) throw error;
       return true;
     } catch (err) {
       console.error("Error adding history entry:", err);
@@ -80,7 +91,7 @@ export function useQuoteHistory() {
     const description = changes.length > 0
       ? `Orçamento atualizado: ${changes.join(", ")}`
       : "Orçamento atualizado";
-    return addHistoryEntry(quoteId, "updated", description);
+    return addHistoryEntry(quoteId, "updated", description, { metadata: { changes } });
   };
 
   const logStatusChanged = async (quoteId: string, oldStatus: string, newStatus: string) => {
@@ -106,6 +117,9 @@ export function useQuoteHistory() {
   const logDuplicated = async (quoteId: string, originalQuoteNumber: string) =>
     addHistoryEntry(quoteId, "created", `Orçamento duplicado a partir de ${originalQuoteNumber}`);
 
+  const logPdfGenerated = async (quoteId: string, options: any) =>
+    addHistoryEntry(quoteId, "pdf_generated", "Nova versão do PDF gerada", { metadata: { pdf_options: options } });
+
   return {
     history,
     isLoading,
@@ -118,5 +132,6 @@ export function useQuoteHistory() {
     logItemRemoved,
     logItemUpdated,
     logDuplicated,
+    logPdfGenerated,
   };
 }
