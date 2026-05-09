@@ -366,6 +366,7 @@ export default function OrderDetailPage() {
             </AlertDescription>
           </Alert>
         )}
+      </div>
 
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="icon" onClick={() => navigate("/sicoob/pedidos")}>
