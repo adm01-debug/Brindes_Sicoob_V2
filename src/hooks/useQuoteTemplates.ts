@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { fetchPromobrindProductById } from "@/lib/external-db";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import type { Tables, TablesInsert, TablesUpdate } from "@/integrations/supabase/types";
@@ -342,6 +343,26 @@ export function useQuoteTemplates() {
     }
   }, [user, isAdmin, allTemplates, sellers, toast, fetchAllTemplates]);
 
+  const validateTemplateItems = useCallback(async (items: QuoteTemplateItem[]) => {
+    const results = await Promise.all(
+      items.map(async (item) => {
+        if (!item.productId) return { ...item, isValid: true }; // Se não tem ID, assume fixo
+        try {
+          const product = await fetchPromobrindProductById(item.productId);
+          return {
+            ...item,
+            isValid: !!product,
+            currentPrice: product?.price_sale || product?.price_default || item.unitPrice
+          };
+        } catch (err) {
+          console.error(`Error validating product ${item.productId}:`, err);
+          return { ...item, isValid: false };
+        }
+      })
+    );
+    return results;
+  }, []);
+
   useEffect(() => {
     fetchTemplates();
   }, [fetchTemplates]);
@@ -369,5 +390,6 @@ export function useQuoteTemplates() {
     setDefaultTemplate,
     duplicateTemplate,
     cloneTemplateToSeller,
+    validateTemplateItems,
   };
 }
