@@ -49,12 +49,71 @@ export class QuoteService {
     return inserted as unknown as Quote;
   }
 
-  static async update(params: { quoteId: string, quote: Partial<Quote>, items: QuoteItem[] }): Promise<Quote> {
+  static async update(params: { 
+    quoteId: string, 
+    quote: Partial<Quote>, 
+    items: QuoteItem[],
+    userId: string 
+  }): Promise<Quote> {
+    const oldQuote = await this.getById(params.quoteId);
+    if (!oldQuote) throw new Error("Orçamento não encontrado para atualização");
+
     const totals = calculateQuoteTotals(params.quote, params.items);
     const updatePayload = buildUpdatePayload(params.quote, totals);
     
     const { data: updated, error: updErr } = await supabase.from("quotes").update(updatePayload).eq("id", params.quoteId).select("*").single();
     if (updErr) throw updErr;
+
+    // Granular Audit Logging
+    const changes: string[] = [];
+    
+    // 1. Header Changes
+    if (params.quote.discount_percent !== undefined && params.quote.discount_percent !== oldQuote.discount_percent) {
+      changes.push(`Desconto alterado de ${oldQuote.discount_percent}% para ${params.quote.discount_percent}%`);
+    }
+    if (params.quote.negotiation_markup_percent !== undefined && params.quote.negotiation_markup_percent !== oldQuote.negotiation_markup_percent) {
+      changes.push(`Markup alterado de ${oldQuote.negotiation_markup_percent}% para ${params.quote.negotiation_markup_percent}%`);
+    }
+    if (params.quote.status !== undefined && params.quote.status !== oldQuote.status) {
+      changes.push(`Status alterado de ${oldQuote.status} para ${params.quote.status}`);
+    }
+
+    // 2. Item Changes
+    const oldItems = oldQuote.items || [];
+    const newItems = params.items;
+
+    // Detect deleted items
+    oldItems.forEach(oldItem => {
+      const stillExists = newItems.some(newItem => newItem.product_id === oldItem.product_id && newItem.color_name === oldItem.color_name);
+      if (!stillExists) {
+        changes.push(`Item removido: ${oldItem.product_name}`);
+      }
+    });
+
+    // Detect added/modified items
+    newItems.forEach(newItem => {
+      const oldItem = oldItems.find(oi => oi.product_id === newItem.product_id && oi.color_name === newItem.color_name);
+      if (!oldItem) {
+        changes.push(`Item adicionado: ${newItem.product_name} (${newItem.quantity}x)`);
+      } else {
+        if (newItem.quantity !== oldItem.quantity) {
+          changes.push(`Quantidade de ${newItem.product_name} alterada: ${oldItem.quantity} -> ${newItem.quantity}`);
+        }
+        if (newItem.unit_price !== oldItem.unit_price) {
+          changes.push(`Preço unitário de ${newItem.product_name} alterado: R$${oldItem.unit_price} -> R$${newItem.unit_price}`);
+        }
+      }
+    });
+
+    // Log each change to history
+    for (const change of changes) {
+      await this.logHistory({
+        quoteId: params.quoteId,
+        userId: params.userId,
+        action: "updated",
+        description: change
+      });
+    }
 
     await supabase.from("quote_items").delete().eq("quote_id", params.quoteId);
     await this.insertItemsWithPersonalizations(params.items, params.quoteId);

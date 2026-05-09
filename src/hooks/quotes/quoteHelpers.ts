@@ -138,13 +138,13 @@ export function buildPersonalizationsInsertPayload(
 
 export const STATUS_LABELS: Record<string, string> = {
   draft: "Rascunho", 
-  pending: "Pendente", 
-  sent: "Enviado",
+  pending: "Enviado", 
+  sent: "Em análise",
   approved: "Aprovado", 
-  rejected: "Rejeitado", 
+  rejected: "Recusado", 
   expired: "Expirado",
-  pending_approval: "Aguardando Alçada",
+  pending_approval: "Alçada Admin",
   pending_singular_approval: "Pendente Singular",
-  approved_singular: "Aprovado pela Singular",
-  rejected_singular: "Rejeitado pela Singular"
+  approved_singular: "Aprovado Singular",
+  rejected_singular: "Reprovado Singular"
 };

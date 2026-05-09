@@ -16,17 +16,20 @@ import { type ProposalTemplateData } from "@/components/pdf/ProposalHtmlTemplate
 import { PropostaComercialTailwind } from "@/components/pdf/PropostaComercialTailwind";
 import { generateProposalPDFv2, downloadPDF } from "@/utils/proposalPdfReactGenerator";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 type Stage = "preview" | "generating" | "ready";
 
 interface PdfGenerationDialogProps {
   proposalData: ProposalTemplateData | null;
+  quoteId?: string;
   quoteNumber?: string;
   quoteStatus?: string;
   clientPhone?: string;
   approvalLink?: string | null;
   onWhatsApp?: () => void;
   onShareLink?: () => void;
+  onStatusUpdate?: (newStatus: string, pdfUrl: string) => void;
   trigger?: React.ReactNode;
 }
 
@@ -38,12 +41,14 @@ const PROGRESS_STEPS = [
 
 export function PdfGenerationDialog({
   proposalData,
+  quoteId,
   quoteNumber,
   quoteStatus,
   clientPhone,
   approvalLink,
   onWhatsApp,
   onShareLink,
+  onStatusUpdate,
   trigger,
 }: PdfGenerationDialogProps) {
   const [open, setOpen] = useState(false);
@@ -52,6 +57,7 @@ export function PdfGenerationDialog({
   const [progressLabel, setProgressLabel] = useState("");
   const [pdfBlob, setPdfBlob] = useState<Blob | null>(null);
   const [pdfVersion, setPdfVersion] = useState(1);
+  const [isFinalizing, setIsFinalizing] = useState(false);
   const blobUrlRef = useRef<string | null>(null);
 
   const isDraft = quoteStatus === "draft";
@@ -119,6 +125,46 @@ export function PdfGenerationDialog({
       win.addEventListener("load", () => {
         win.print();
       });
+    }
+  };
+  
+  const handleApproveAndSave = async () => {
+    if (!pdfBlob || !quoteId) return;
+    
+    setIsFinalizing(true);
+    try {
+      const fileName = `${quoteNumber || quoteId}_v${pdfVersion}_signed.pdf`;
+      const filePath = `signed/${fileName}`;
+      
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from("proposals")
+        .upload(filePath, pdfBlob, { upsert: true });
+        
+      if (uploadError) throw uploadError;
+      
+      const { data: { publicUrl } } = supabase.storage
+        .from("proposals")
+        .getPublicUrl(filePath);
+        
+      const { error: updateError } = await supabase
+        .from("quotes")
+        .update({ 
+          status: "approved", 
+          approved_pdf_url: publicUrl,
+          updated_at: new Date().toISOString()
+        } as any)
+        .eq("id", quoteId);
+        
+      if (updateError) throw updateError;
+      
+      toast.success("Orçamento aprovado e PDF assinado salvo!");
+      onStatusUpdate?.("approved", publicUrl);
+      setOpen(false);
+    } catch (error) {
+      console.error("Error finalizing quote:", error);
+      toast.error("Erro ao finalizar orçamento");
+    } finally {
+      setIsFinalizing(false);
     }
   };
 
@@ -251,13 +297,23 @@ export function PdfGenerationDialog({
               </div>
 
               {/* Action Grid */}
-              <div className="flex justify-center w-full max-w-lg">
+              <div className="flex flex-col sm:flex-row gap-4 justify-center w-full max-w-lg">
                 <ActionButton
                   icon={<Download className="h-5 w-5" />}
                   label="Baixar"
                   onClick={handleDownload}
-                  variant="primary"
+                  variant="default"
                 />
+                
+                {quoteId && quoteStatus !== "approved" && (
+                  <ActionButton
+                    icon={isFinalizing ? <Loader2 className="h-5 w-5 animate-spin" /> : <Check className="h-5 w-5" />}
+                    label={isFinalizing ? "Salvando..." : "Aprovar e Salvar Assinado"}
+                    onClick={handleApproveAndSave}
+                    variant="primary"
+                    disabled={isFinalizing}
+                  />
+                )}
               </div>
 
               <Separator className="w-full max-w-lg" />

@@ -19,36 +19,10 @@ export interface QuoteStatusConfig {
 
 export const QUOTE_STATUS_CONFIG: Record<string, QuoteStatusConfig> = {
   draft: {
-    label: "Em rascunho",
+    label: "Rascunho",
     color: "hsl(var(--muted-foreground))",
     badgeVariant: "secondary",
     badgeClassName: "bg-warning/10 text-warning border-warning/40 border-dashed",
-  },
-  pending_approval: {
-    label: "Alçada Admin",
-    color: "hsl(38, 92%, 50%)",
-    badgeVariant: "outline",
-    badgeClassName: "bg-amber-500/15 text-amber-600 border-amber-500/30",
-    icon: "shield",
-  },
-  pending_singular_approval: {
-    label: "Em análise Singular",
-    color: "hsl(142, 71%, 45%)",
-    badgeVariant: "outline",
-    badgeClassName: "bg-emerald-500/15 text-emerald-600 border-emerald-500/30",
-    icon: "clipboard-check",
-  },
-  approved_singular: {
-    label: "Aprovado Singular",
-    color: "hsl(142, 71%, 45%)",
-    badgeVariant: "default",
-    badgeClassName: "bg-emerald-600/15 text-emerald-700 border-emerald-600/30",
-  },
-  rejected_singular: {
-    label: "Reprovado Singular",
-    color: "hsl(var(--destructive))",
-    badgeVariant: "destructive",
-    badgeClassName: "bg-destructive/15 text-destructive border-destructive/30",
   },
   pending: {
     label: "Enviado",
@@ -69,17 +43,43 @@ export const QUOTE_STATUS_CONFIG: Record<string, QuoteStatusConfig> = {
     badgeVariant: "default",
     badgeClassName: "bg-success/15 text-success border-success/30",
   },
+  rejected: {
+    label: "Recusado",
+    color: "hsl(var(--destructive))",
+    badgeVariant: "destructive",
+    badgeClassName: "bg-destructive/15 text-destructive border-destructive/30",
+  },
+  pending_approval: {
+    label: "Alçada Admin",
+    color: "hsl(38, 92%, 50%)",
+    badgeVariant: "outline",
+    badgeClassName: "bg-amber-500/15 text-amber-600 border-amber-500/30",
+    icon: "shield",
+  },
+  pending_singular_approval: {
+    label: "Pendente Singular",
+    color: "hsl(142, 71%, 45%)",
+    badgeVariant: "outline",
+    badgeClassName: "bg-emerald-500/15 text-emerald-600 border-emerald-500/30",
+    icon: "clipboard-check",
+  },
+  approved_singular: {
+    label: "Aprovado Singular",
+    color: "hsl(142, 71%, 45%)",
+    badgeVariant: "default",
+    badgeClassName: "bg-emerald-600/15 text-emerald-700 border-emerald-600/30",
+  },
+  rejected_singular: {
+    label: "Reprovado Singular",
+    color: "hsl(var(--destructive))",
+    badgeVariant: "destructive",
+    badgeClassName: "bg-destructive/15 text-destructive border-destructive/30",
+  },
   converted: {
     label: "Oficializado",
     color: "hsl(var(--success))",
     badgeVariant: "default",
     badgeClassName: "bg-success/15 text-success border-success/30",
-  },
-  rejected: {
-    label: "Reprovado",
-    color: "hsl(var(--destructive))",
-    badgeVariant: "destructive",
-    badgeClassName: "bg-destructive/15 text-destructive border-destructive/30",
   },
   expired: {
     label: "Expirado",
