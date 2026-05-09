@@ -60,7 +60,7 @@ export default function QuoteBuilderPage() {
 
       <QuoteAutoSave
         quoteId={s.quoteId}
-        data={{ clientId: s.clientId, validUntil: s.validUntil, discountType: s.discountType, discountValue: s.discountValue, notes: s.notes, internalNotes: s.internalNotes, items: s.items }}
+        data={{ clientId: s.clientId, validUntil: s.validUntil, discountType: s.discountType, discountValue: s.discountValue, notes: s.notes, internalNotes: s.internalNotes, items: s.items, tags: s.tags }}
         onRestore={(data) => {
           s.setClientId(data.clientId || "");
           s.setValidUntil(data.validUntil || format(addDays(new Date(), 30), "yyyy-MM-dd"));
@@ -69,6 +69,7 @@ export default function QuoteBuilderPage() {
           s.setNotes(data.notes || "");
           s.setInternalNotes(data.internalNotes || "");
           s.setItems(data.items || []);
+          s.setTags(data.tags || []);
           toast.success("Rascunho restaurado!");
         }}
         className="fixed top-20 right-4 z-40"
