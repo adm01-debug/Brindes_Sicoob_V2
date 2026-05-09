@@ -28,6 +28,7 @@ export interface QuoteItem {
   product_image_url?: string;
   quantity: number;
   unit_price: number;
+  unit_cost?: number;
   subtotal?: number;
   color_name?: string;
   color_hex?: string;
@@ -38,6 +39,7 @@ export interface QuoteItem {
   kit_name?: string | null;
   size_code?: string | null;
   gender?: string | null;
+  stock_available?: number | null;
   /** ISO timestamp da última atualização do preço no catálogo externo (SSOT). Usado pelo badge "preço pode estar defasado". */
   price_updated_at?: string | null;
   /** Janela (em dias) configurada por produto para alertar preço defasado. Default 60. */

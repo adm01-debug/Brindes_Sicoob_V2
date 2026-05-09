@@ -11,10 +11,13 @@ interface QuoteSummaryProps {
   discountType: 'percent' | 'amount';
   shippingCost: number;
   total: number;
+  profit?: number;
+  marginPercent?: number;
   paymentTerms?: string;
   deliveryTime?: string;
   validUntil?: string;
   className?: string;
+  isInternal?: boolean;
 }
 
 /**
@@ -26,10 +29,13 @@ export function QuoteSummary({
   discountType,
   shippingCost,
   total,
+  profit,
+  marginPercent,
   paymentTerms,
   deliveryTime,
   validUntil,
   className,
+  isInternal = false,
 }: QuoteSummaryProps) {
   const formatCurrency = (val: number) => 
     new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val);
@@ -79,6 +85,22 @@ export function QuoteSummary({
               {formatCurrency(total)}
             </span>
           </div>
+
+          {isInternal && marginPercent !== undefined && (
+            <div className={cn(
+              "mt-3 p-2 rounded-lg border border-dashed flex items-center justify-between text-xs font-semibold",
+              marginPercent > 30 ? "bg-success/5 border-success/30 text-success" : 
+              marginPercent > 15 ? "bg-warning/5 border-warning/30 text-warning" : 
+              "bg-destructive/5 border-destructive/30 text-destructive"
+            )}>
+              <span className="flex items-center gap-1">
+                Rentabilidade
+              </span>
+              <span className="tabular-nums">
+                {profit && formatCurrency(profit)} ({marginPercent.toFixed(1)}%)
+              </span>
+            </div>
+          )}
         </div>
 
         {/* Condições Rápidas */}

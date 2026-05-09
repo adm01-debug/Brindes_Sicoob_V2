@@ -23,12 +23,13 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { GripVertical, Package, Trash2, ChevronDown, ChevronUp, Palette } from "lucide-react";
+import { GripVertical, Package, Trash2, ChevronDown, ChevronUp, Palette, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { PriceFreshnessBadge } from "@/components/products/PriceFreshnessBadge";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -46,6 +47,7 @@ interface QuoteItem {
   price_updated_at?: string | null;
   /** Janela em dias para alertar preço defasado (default 60). */
   price_freshness_threshold_days?: number | null;
+  stock_available?: number | null;
   personalizations?: any[];
 }
 
@@ -213,6 +215,20 @@ function SortableItem({
                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => onUpdateQuantity(parseInt(e.target.value) || 1)}
                     className="w-20 h-8 text-sm"
                   />
+                  {item.stock_available !== null && item.stock_available !== undefined && item.quantity > item.stock_available && (
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div className="flex items-center justify-center p-1 rounded-full bg-destructive/10 text-destructive animate-pulse">
+                            <AlertTriangle className="h-3.5 w-3.5" />
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p className="text-xs">Estoque insuficiente: {item.stock_available} disponíveis</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  )}
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="text-xs text-muted-foreground">Preço:</span>

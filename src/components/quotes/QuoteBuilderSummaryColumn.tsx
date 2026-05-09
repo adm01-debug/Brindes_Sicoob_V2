@@ -50,6 +50,8 @@ interface Props {
   setNegotiationMarkup?: (v: number) => void;
   realSubtotal?: number;
   realDiscountPercent?: number;
+  profit?: number;
+  marginPercent?: number;
   /** Marca um item como "preço confirmado com fornecedor" — suprime alerta stale. */
   confirmItemPrice?: (index: number) => void;
   /** Marca todos os itens com preço aging/stale como confirmados. */
@@ -65,6 +67,7 @@ export function QuoteBuilderSummaryColumn({
   maxDiscountPercent, isDiscountExceeded,
   negotiationMarkup = 0, setNegotiationMarkup,
   realSubtotal = 0, realDiscountPercent = 0,
+  profit = 0, marginPercent = 0,
   confirmItemPrice, confirmAllStalePrices,
 }: Props) {
   const { isGerentePa } = useAuth();
@@ -359,6 +362,9 @@ export function QuoteBuilderSummaryColumn({
               discountType={discountType}
               shippingCost={0}
               total={total}
+              profit={profit}
+              marginPercent={marginPercent}
+              isInternal={true}
               className="border-none bg-transparent shadow-none p-0 mb-4"
             />
 

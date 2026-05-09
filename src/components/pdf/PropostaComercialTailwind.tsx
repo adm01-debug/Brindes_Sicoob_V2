@@ -7,6 +7,7 @@ import { ProposalTotals } from "./proposal/ProposalTotals";
 import { ProposalNotes } from "./proposal/ProposalNotes";
 import { ProposalSellerSignature } from "./proposal/ProposalSellerSignature";
 import { ProposalFooter } from "./proposal/ProposalFooter";
+import { ProposalClientSignature } from "./proposal/ProposalClientSignature";
 
 /* Compact client bar for continuation pages */
 function ProposalClientBarCompact({ data }: { data: ProposalTemplateData }) {
@@ -167,7 +168,10 @@ export const PropostaComercialTailwind = forwardRef<HTMLDivElement, { data: Prop
                 {isLast && (
                   <>
                     <ProposalTotals data={data} />
-                    <ProposalSellerSignature data={data} />
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
+                      <ProposalSellerSignature data={data} />
+                      <ProposalClientSignature data={data} />
+                    </div>
                   </>
                 )}
 
