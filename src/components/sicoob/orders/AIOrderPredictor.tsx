@@ -25,13 +25,13 @@ export function AIOrderPredictor() {
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: i * 0.1 }}
           >
-            <Card className="hover:border-purple-200 cursor-pointer group transition-all bg-gradient-to-br from-white to-purple-50/30">
+            <Card className="hover:border-sicoob-green/50 cursor-pointer group transition-all bg-gradient-to-br from-white to-sicoob-green/5">
               <CardContent className="p-4">
                 <div className="flex justify-between items-start mb-3">
-                  <div className="p-2 rounded-lg bg-purple-100/50">
-                    <Package className="h-4 w-4 text-purple-600" />
+                  <div className="p-2 rounded-lg bg-sicoob-green/10">
+                    <Package className="h-4 w-4 text-sicoob-green-dark" />
                   </div>
-                  <div className="text-[10px] font-bold text-purple-600 bg-purple-50 px-1.5 py-0.5 rounded border border-purple-100">
+                  <div className="text-[10px] font-bold text-sicoob-green-dark bg-sicoob-green/20 px-1.5 py-0.5 rounded border border-sicoob-green/30">
                     {s.prob} confiança
                   </div>
                 </div>
