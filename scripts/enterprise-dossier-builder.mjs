@@ -90,21 +90,32 @@ async function getCoverageMetrics() {
 }
 
 async function buildDossier() {
-    console.log('🚀 Iniciando Enterprise Dossier Builder v10.2 (Gold Standard - Automated Validation)...');
+    const env = process.env.AUDIT_ENV || 'prod';
+    const envUrls = {
+        prod: "https://github.com/promo-gifts/app",
+        staging: "https://github.com/promo-gifts/app/tree/staging",
+        dev: "https://github.com/promo-gifts/app/tree/dev"
+    };
+    const currentRepoUrl = envUrls[env] || envUrls.prod;
+
+    console.log(`🚀 Iniciando Enterprise Dossier Builder v10.3 [Ambiente: ${env}]...`);
     
     const commitHash = execSync('git rev-parse --short HEAD').toString().trim();
     const rlsTables = await getRlsCoverage();
     const metrics = await getCoverageMetrics();
     
+    const failedLinks = [];
+
     let rlsReport = "### 🔒 Relatório de Cobertura RLS por Tabela e Rota\n\n| Tabela | Status | Verificação | Link de Migração | Última Alteração | Link Válido |\n| :--- | :--- | :--- | :--- | :--- | :--- |\n";
     
     for (const table of rlsTables) {
         const status = table.relrowsecurity ? "✅ PASSED" : "❌ FAILED";
         const file = execSync(`grep -l "ENABLE ROW LEVEL SECURITY" supabase/migrations/*.sql | head -1`).toString().trim() || "supabase/migrations";
         const info = await getFileInfo(file);
-        const link = `${repoUrl}/blob/${info.hash}/${file}`;
-        const isValid = await validateLink(link);
-        rlsReport += `| ${table.relname} | ${status} | Row Isolation | [Ver Migração](${link}) | ${info.date} por ${info.author} | ${isValid ? '🟢' : '🔴'} |\n`;
+        const link = `${currentRepoUrl}/blob/${info.hash}/${file}`;
+        const validation = await validateLink(link);
+        if (!validation.ok) failedLinks.push({ item: table.relname, url: link, error: validation.error });
+        rlsReport += `| ${table.relname} | ${status} | Row Isolation | [Ver Migração](${link}) | ${info.date} por ${info.author} | ${validation.ok ? '🟢' : `🔴 <span title="${validation.error}">?</span>`} |\n`;
     }
 
     const gaps = [
@@ -115,20 +126,29 @@ async function buildDossier() {
     let gapsReport = "### ⚠️ Lacunas Quantificadas (Audit Gaps)\n\n| Item | Severidade | Caminho do Arquivo | Status | Evidência Relacionada |\n| :--- | :--- | :--- | :--- | :--- |\n";
     for (const gap of gaps) {
         const info = await getFileInfo(gap.path);
-        gapsReport += `| ${gap.item} | **${gap.severity}** | \`${gap.path}\` | ${gap.status} | [Link](${repoUrl}/tree/${info.hash}/${gap.path}) |\n`;
+        gapsReport += `| ${gap.item} | **${gap.severity}** | \`${gap.path}\` | ${gap.status} | [Link](${currentRepoUrl}/tree/${info.hash}/${gap.path}) |\n`;
     }
 
     const checklistItems = [
-        { module: "Segurança", item: "RLS Multi-tenant", status: "✅ Implementado", evidence: `${repoUrl}/commit/${commitHash}`, validated: "Sim" },
-        { module: "Financeiro", item: "Precisão 4-Dec", status: "✅ Implementado", evidence: `${repoUrl}/blob/${commitHash}/supabase/migrations/20260502174252_a88e3c13-46b8-4ce4-b1b8-c8500d390f3d.sql`, validated: "Sim" },
-        { module: "UX", item: "WCAG Compliance", status: "✅ Implementado", evidence: `${repoUrl}/blob/${commitHash}/src/pages/admin/AdminVerbasPage.tsx`, validated: "Sim" },
-        { module: "Governança", item: "Blockchain Log", status: "⏳ A implementar", evidence: `${repoUrl}/tree/main/roadmap`, validated: "-" }
+        { module: "Segurança", item: "RLS Multi-tenant", status: "✅ Implementado", evidence: `${currentRepoUrl}/commit/${commitHash}`, validated: "Sim" },
+        { module: "Financeiro", item: "Precisão 4-Dec", status: "✅ Implementado", evidence: `${currentRepoUrl}/blob/${commitHash}/supabase/migrations/20260502174252_a88e3c13-46b8-4ce4-b1b8-c8500d390f3d.sql`, validated: "Sim" },
+        { module: "UX", item: "WCAG Compliance", status: "✅ Implementado", evidence: `${currentRepoUrl}/blob/${commitHash}/src/pages/admin/AdminVerbasPage.tsx`, validated: "Sim" },
+        { module: "Governança", item: "Blockchain Log", status: "⏳ A implementar", evidence: `${currentRepoUrl}/tree/main/roadmap`, validated: "-" }
     ];
 
     let checklist = "### 📑 Checklist Auditável de Conformidade\n\n| Módulo | Item | Status | Evidência (Link/Commit) | Validado | Link Ativo |\n| :--- | :--- | :--- | :--- | :--- | :--- |\n";
     for (const item of checklistItems) {
-        const isEvidenceValid = await validateLink(item.evidence);
-        checklist += `| **${item.module}** | ${item.item} | ${item.status} | [Ver Evidência](${item.evidence}) | ${item.validated} | ${isEvidenceValid ? '🟢' : '🔴'} |\n`;
+        const validation = await validateLink(item.evidence);
+        if (!validation.ok) failedLinks.push({ item: item.item, url: item.evidence, error: validation.error });
+        checklist += `| **${item.module}** | ${item.item} | ${item.status} | [Ver Evidência](${item.evidence}) | ${item.validated} | ${validation.ok ? '🟢' : `🔴 <span title="${validation.error}">?</span>`} |\n`;
+    }
+
+    let failureSection = "";
+    if (failedLinks.length > 0) {
+        failureSection = "\n<a name=\"failed-links\"></a>\n### 🔴 Evidências com Falha de Validação\n\n| Item | URL | Causa da Falha |\n| :--- | :--- | :--- |\n";
+        failedLinks.forEach(f => {
+            failureSection += `| ${f.item} | \`${f.url}\` | ${f.error} |\n`;
+        });
     }
 
     const finalContent = `
