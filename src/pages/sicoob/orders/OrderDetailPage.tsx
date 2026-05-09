@@ -345,7 +345,8 @@ export default function OrderDetailPage() {
     <MainLayout>
       <PageSEO title={`Pedido #${orderData?.order_number || id} - Sicoob`} description="Detalhes do pedido Sicoob." path={`/sicoob/pedidos/${id}`} noIndex />
       <div className="space-y-6">
-        {activeRequest && (
+        <div>
+          {activeRequest && (
           <Alert className="bg-warning/10 border-warning/20">
             <AlertTriangle className="h-5 w-5 text-warning" />
             <AlertTitle className="text-warning">Solicitação de Aprovação Pendente</AlertTitle>
