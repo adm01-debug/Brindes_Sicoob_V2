@@ -57,6 +57,7 @@ export function PdfGenerationDialog({
   trigger,
 }: PdfGenerationDialogProps) {
   const { profile } = useAuth();
+  const { logPdfGenerated, logStatusChanged } = useQuoteHistory();
   const [open, setOpen] = useState(false);
   const [stage, setStage] = useState<Stage>("preview");
   const [progress, setProgress] = useState(0);
