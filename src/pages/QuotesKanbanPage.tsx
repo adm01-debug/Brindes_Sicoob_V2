@@ -65,17 +65,27 @@ export default function QuotesKanbanPage() {
     );
   };
 
-  // Fetch clients for filter
+  // Fetch clients & sellers for filter
   useEffect(() => {
-    const fetchClients = async () => {
-      const { data } = await supabase
+    const fetchData = async () => {
+      // Fetch Clients
+      const { data: clientsData } = await supabase
         .from("bitrix_clients")
         .select("id, name")
         .order("name");
-      setClients(data || []);
+      setClients(clientsData || []);
+
+      // Fetch Sellers if supervisor
+      if (isSupervisorOrAbove) {
+        const { data: profilesData } = await supabase
+          .from("profiles")
+          .select("id, full_name")
+          .order("full_name");
+        setSellers(profilesData?.map(p => ({ id: p.id, name: p.full_name || "Sem Nome" })) || []);
+      }
     };
-    fetchClients();
-  }, []);
+    fetchData();
+  }, [isSupervisorOrAbove]);
 
   // Get unique clients from quotes
   const quotesClients = useMemo(() => {
