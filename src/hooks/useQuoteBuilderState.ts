@@ -139,6 +139,7 @@ export function useQuoteBuilderState() {
           bitrix_product_id: variant?.bitrix_product_id ?? null,
           price_updated_at: product.priceUpdatedAt ?? null,
           price_freshness_threshold_days: product.priceFreshnessThresholdDays ?? null,
+          stock_available: variant?.stock ?? product.stock ?? null,
           personalizations: [],
         }];
         setActiveItemIndex(newItems.length - 1);
