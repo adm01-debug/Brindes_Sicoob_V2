@@ -271,6 +271,7 @@ interface QuoteCardProps {
   disabled?: boolean;
   isSelected?: boolean;
   onToggleSelection?: (id: string) => void;
+  hasStockIssue?: boolean;
 }
 
 function SortableQuoteCard({ 
@@ -278,13 +279,15 @@ function SortableQuoteCard({
   onClick, 
   disabled, 
   isSelected, 
-  onToggleSelection 
+  onToggleSelection,
+  hasStockIssue
 }: { 
   quote: Quote; 
   onClick: () => void; 
   disabled?: boolean;
   isSelected?: boolean;
   onToggleSelection: (id: string) => void;
+  hasStockIssue?: boolean;
 }) {
   const {
     attributes,
