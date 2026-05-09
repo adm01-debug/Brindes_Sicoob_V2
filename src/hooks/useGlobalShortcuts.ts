@@ -37,6 +37,20 @@ export function useGlobalShortcuts(handlers?: ShortcutHandlers) {
         target.tagName === "TEXTAREA" ||
         target.isContentEditable;
 
+      // Alt shortcuts (Navigation)
+      if (e.altKey && !isInput) {
+        if (e.key === "g" || e.key === "G") {
+          e.preventDefault();
+          navigate("/sicoob/pedidos");
+          return;
+        }
+        if (e.key === "v" || e.key === "V") {
+          e.preventDefault();
+          navigate("/sicoob/pedidos/kanban");
+          return;
+        }
+      }
+
       // G then K (within 800ms) → open kit library — no modifier, ignored in inputs
       if (!isMod && !e.altKey && !e.shiftKey && !isInput) {
         if (e.key === "g" || e.key === "G") {
