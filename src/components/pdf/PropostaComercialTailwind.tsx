@@ -140,8 +140,8 @@ export const PropostaComercialTailwind = forwardRef<HTMLDivElement, {
                 pageBreakAfter: isLast ? "auto" : "always",
               }}
             >
-              {/* Watermark for drafts */}
-              {isDraft && (
+              {/* Watermark for drafts or expired */}
+              {(isDraft || data.status === "expired") && (
                 <div style={{
                   position: "absolute",
                   top: "50%",
@@ -149,14 +149,14 @@ export const PropostaComercialTailwind = forwardRef<HTMLDivElement, {
                   transform: "translate(-50%, -50%) rotate(-35deg)",
                   fontSize: "80px",
                   fontWeight: 900,
-                  color: "rgba(200, 0, 0, 0.07)",
+                  color: data.status === "expired" ? "rgba(255, 0, 0, 0.09)" : "rgba(200, 0, 0, 0.07)",
                   letterSpacing: "0.3em",
                   textTransform: "uppercase",
                   pointerEvents: "none",
                   zIndex: 5,
                   userSelect: "none",
                 }}>
-                  RASCUNHO
+                  {data.status === "expired" ? "EXPIRADO" : "RASCUNHO"}
                 </div>
               )}
               <ProposalHeader data={data} isContinuation={!isFirst} />
