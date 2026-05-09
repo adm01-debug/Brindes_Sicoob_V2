@@ -76,7 +76,7 @@ export function useQuoteBuilderState() {
       setQuoteNumber, setCurrentStatus, setContactInfo, setCompanyInfo,
       setDiscountType, setDiscountValue, setNegotiationMarkup, setPaymentTerms,
       setShippingType, setShippingCost, setDeliveryMode, setDeliveryDate,
-      setDeliveryTime, setItems, setLoadingQuote, setActiveItemIndex, setExpandedItems
+      setDeliveryTime, setItems, setTags, setLoadingQuote, setActiveItemIndex, setExpandedItems
     }
   });
 
