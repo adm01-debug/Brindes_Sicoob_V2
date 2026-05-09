@@ -372,7 +372,12 @@ export default function OrdersPage() {
         <AIOrderPredictor />
 
         {/* Advanced BI/Stats Section */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-4 relative">
+          <div className="absolute -top-12 right-0 flex items-center gap-2">
+             <Badge variant="outline" className="bg-sicoob-green/5 text-sicoob-green border-sicoob-green/20 text-[10px] animate-pulse">
+               Live BI Active
+             </Badge>
+          </div>
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
             <Card className="bg-gradient-to-br from-sicoob-green/10 to-transparent border-sicoob-green/20 overflow-hidden relative group">
               <div className="absolute -right-4 -bottom-4 opacity-10 group-hover:scale-110 transition-transform">
@@ -471,7 +476,11 @@ export default function OrdersPage() {
           </motion.div>
         </div>
 
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-4 border-t border-border/40">
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-4 border-t border-border/40"
+        >
           <div>
             <h1 className="text-2xl font-display font-bold text-sicoob-green-dark">Gestão de Pedidos</h1>
             <p className="text-xs text-muted-foreground">

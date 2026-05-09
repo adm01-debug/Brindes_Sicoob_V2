@@ -426,7 +426,7 @@ export default function OrdersKanbanPage() {
               setOverColumn(null);
             }}
           >
-            <div className="flex gap-4 overflow-x-auto pb-6 flex-1 min-h-[calc(100vh-280px)] custom-scrollbar px-1">
+            <div className="flex gap-4 overflow-x-auto pb-6 flex-1 min-h-[calc(100vh-280px)] custom-scrollbar px-1 snap-x snap-mandatory lg:snap-none">
               <AnimatePresence mode="popLayout">
                 {isLoading ? (
                   <div className="flex gap-4 w-full">
@@ -449,6 +449,7 @@ export default function OrdersKanbanPage() {
                       animate={{ opacity: 1, x: 0 }}
                       exit={{ opacity: 0, scale: 0.95 }}
                       transition={{ duration: 0.2 }}
+                      className="snap-center"
                     >
                       <DroppableColumn
                         column={column}
