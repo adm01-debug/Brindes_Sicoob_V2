@@ -35,13 +35,13 @@ export function AIOrderPredictor() {
                     {s.prob} confiança
                   </div>
                 </div>
-                <h4 className="text-sm font-bold text-slate-800 mb-1">{s.name}</h4>
+                <h4 className="text-sm font-bold text-sicoob-green-dark mb-1">{s.name}</h4>
                 <p className="text-[10px] text-muted-foreground flex items-center gap-1 mb-1">
                   <History className="h-3 w-3" /> {s.reason}
                 </p>
-                <p className="text-[9px] text-indigo-600 font-semibold mb-4">{s.detail}</p>
-                <Button variant="ghost" size="sm" className="w-full h-8 text-[10px] font-bold group-hover:bg-purple-600 group-hover:text-white border border-purple-100">
-                  Importar Estrutura <ArrowRight className="ml-1 h-3 w-3" />
+                <p className="text-[9px] text-sicoob-green font-semibold mb-4">{s.detail}</p>
+                <Button variant="ghost" size="sm" className="w-full h-8 text-[10px] font-bold group-hover:bg-sicoob-green group-hover:text-white border border-sicoob-green/10">
+                  Gerar Pedido Preditivo <ArrowRight className="ml-1 h-3 w-3" />
                 </Button>
               </CardContent>
             </Card>
