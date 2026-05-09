@@ -243,6 +243,8 @@ function KanbanColumn({
                    quote={quote}
                    onClick={() => onQuoteClick(quote.id!)}
                    disabled={isReadOnly}
+                   isSelected={selectedIds.includes(quote.id!)}
+                   onToggleSelection={onToggleSelection}
                  />
               ))
             )}
