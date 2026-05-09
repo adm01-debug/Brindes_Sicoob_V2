@@ -951,6 +951,7 @@ export default function OrdersPage() {
             </Button>
           </div>
         )}
+        </div>
       </div>
     </MainLayout>
   );
