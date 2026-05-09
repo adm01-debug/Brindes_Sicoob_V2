@@ -1,108 +1,79 @@
-import { useState, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
+import { Quote } from "./quotes/quoteTypes";
 import { toast } from "sonner";
 
-export interface ApprovalToken {
-  id: string;
-  quote_id: string;
-  token: string;
-  seller_id: string;
-  client_name: string | null;
-  client_email: string | null;
-  status: string;
-  expires_at: string | null;
-  viewed_at: string | null;
-  responded_at: string | null;
-  response: string | null;
-  response_notes: string | null;
-  created_at: string;
-}
+export function useQuoteApproval(token: string) {
+  const [quote, setQuote] = useState<Quote | null>(null);
+  const [approvalData, setApprovalData] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-export function useQuoteApproval() {
-  const { user } = useAuth();
-  const [isLoading, setIsLoading] = useState(false);
-
-  const generateApprovalLink = useCallback(async (
-    quoteId: string,
-    clientName?: string,
-    clientEmail?: string
-  ): Promise<{ token: ApprovalToken; link: string } | null> => {
-    if (!user) {
-      toast.error("Usuário não autenticado");
-      return null;
-    }
-
+  const fetchApprovalData = async () => {
+    if (!token) return;
     setIsLoading(true);
     try {
-      const expiresAt = new Date();
-      expiresAt.setHours(expiresAt.getHours() + 48); // 48h TTL para segurança
+      // Usar a edge function para validar o token e retornar os dados do orçamento
+      // Isso garante segurança (não expõe RLS do orçamento para o público sem token válido)
+      const { data, error: fnError } = await supabase.functions.invoke("quote-approval", {
+        body: { action: "get_data", token },
+      });
 
-      const { data, error } = await supabase
-        .from("quote_approval_tokens")
-        .insert({
-          quote_id: quoteId,
-          seller_id: user.id,
-          client_name: clientName || null,
-          client_email: clientEmail || null,
-          expires_at: expiresAt.toISOString(),
-        })
-        .select()
-        .single();
+      if (fnError) throw fnError;
 
-      if (error) throw error;
-
-      const link = `${window.location.origin}/proposta/${data.token}`;
-      toast.success("Link de aprovação gerado!");
-      return { token: data as ApprovalToken, link };
-    } catch (err) {
-      console.error("Error generating approval link:", err);
-      toast.error("Erro ao gerar link de aprovação");
-      return null;
+      setQuote(data.quote);
+      setApprovalData(data.approval);
+      
+      // Registrar visualização
+      if (data.approval.status === 'pending') {
+        await supabase.from('quote_approval_tokens')
+          .update({ viewed_at: new Date().toISOString() })
+          .eq('token', token);
+      }
+    } catch (err: any) {
+      setError(err.message || "Erro ao carregar orçamento");
+      console.error("Erro ao carregar aprovação:", err);
     } finally {
       setIsLoading(false);
     }
-  }, [user]);
+  };
 
-  const getApprovalStatus = useCallback(async (quoteId: string): Promise<ApprovalToken | null> => {
+  const respondToQuote = async (status: 'approved' | 'rejected', notes?: string, signerData?: any) => {
+    setIsLoading(true);
     try {
-      const { data, error } = await supabase
-        .from("quote_approval_tokens")
-        .select("*")
-        .eq("quote_id", quoteId)
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .maybeSingle();
+      const { error: fnError } = await supabase.functions.invoke("quote-approval", {
+        body: { 
+          action: "respond", 
+          token, 
+          status, 
+          notes,
+          signer: signerData 
+        },
+      });
 
-      if (error) throw error;
-      return data as ApprovalToken | null;
-    } catch (err) {
-      console.error("Error fetching approval status:", err);
-      return null;
-    }
-  }, []);
+      if (fnError) throw fnError;
 
-  const revokeToken = useCallback(async (tokenId: string): Promise<boolean> => {
-    try {
-      const { error } = await supabase
-        .from("quote_approval_tokens")
-        .update({ status: "revoked" })
-        .eq("id", tokenId);
-
-      if (error) throw error;
-      toast.success("Link revogado");
+      toast.success(status === 'approved' ? "Orçamento aprovado com sucesso!" : "Resposta enviada.");
+      await fetchApprovalData();
       return true;
-    } catch (err) {
-      console.error("Error revoking token:", err);
-      toast.error("Erro ao revogar link");
+    } catch (err: any) {
+      toast.error("Erro ao enviar resposta");
       return false;
+    } finally {
+      setIsLoading(false);
     }
-  }, []);
+  };
+
+  useEffect(() => {
+    fetchApprovalData();
+  }, [token]);
 
   return {
-    generateApprovalLink,
-    getApprovalStatus,
-    revokeToken,
+    quote,
+    approvalData,
     isLoading,
+    error,
+    respondToQuote,
+    refresh: fetchApprovalData
   };
 }
