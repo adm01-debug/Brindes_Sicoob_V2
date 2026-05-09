@@ -18,7 +18,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar";
 import {
   FileText, Plus, Save, Send, Package, Loader2, BookTemplate, ArrowLeft,
-  Edit, AlertTriangle, Calendar as CalendarIcon,
+  Edit, AlertTriangle, Calendar as CalendarIcon, Lock
 } from "lucide-react";
 import { toast } from "sonner";
 import { Sparkles, ExternalLink } from "lucide-react";
