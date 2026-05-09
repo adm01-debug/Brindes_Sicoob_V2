@@ -56,6 +56,22 @@ function DiffBadge({ oldVal, newVal, format: fmt }: { oldVal: number; newVal: nu
   return <Badge className="bg-destructive/15 text-destructive border-destructive/20"><TrendingDown className="h-3 w-3 mr-1" />-{formatted}</Badge>;
 }
 
+function ComparisonRow({ label, valA, valB }: { label: string; valA: any; valB: any }) {
+  const hasChanged = valA !== valB;
+  return (
+    <div className={cn("grid grid-cols-12 gap-2 text-xs py-2 border-b last:border-0", hasChanged ? "bg-amber-500/5" : "")}>
+      <div className="col-span-2 font-medium text-muted-foreground">{label}</div>
+      <div className="col-span-5 text-muted-foreground break-words">{valA || "—"}</div>
+      <div className="col-span-5 font-medium break-words">
+        {valB || "—"}
+        {hasChanged && <Badge variant="outline" className="ml-2 h-4 text-[9px] border-amber-500/30 text-amber-600">Alterado</Badge>}
+      </div>
+    </div>
+  );
+}
+
+import { cn } from "@/lib/utils";
+
 export function QuoteVersionCompare({ open, onOpenChange, versions, currentQuoteId }: QuoteVersionCompareProps) {
   const [leftId, setLeftId] = useState<string>("");
   const [rightId, setRightId] = useState<string>("");
@@ -176,6 +192,32 @@ export function QuoteVersionCompare({ open, onOpenChange, versions, currentQuote
                 </Card>
               ))}
             </div>
+            
+            {/* Metadata Comparison */}
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm">Condições e Termos</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  <ComparisonRow 
+                    label="Pagamento" 
+                    valA={leftDetail.payment_terms} 
+                    valB={rightDetail.payment_terms} 
+                  />
+                  <ComparisonRow 
+                    label="Entrega" 
+                    valA={leftDetail.delivery_time} 
+                    valB={rightDetail.delivery_time} 
+                  />
+                  <ComparisonRow 
+                    label="Observações" 
+                    valA={leftDetail.notes} 
+                    valB={rightDetail.notes} 
+                  />
+                </div>
+              </CardContent>
+            </Card>
 
             {/* Differences summary */}
             <Card className="bg-muted/30">
