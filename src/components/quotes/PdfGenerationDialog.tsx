@@ -138,7 +138,7 @@ export function PdfGenerationDialog({
       await new Promise((r) => setTimeout(r, 200));
       setProgress(50);
 
-      const blob = await generateProposalPDFv2(proposalData, pdfOptions);
+      const blob = await generateProposalPDFv2(proposalDataWithMeta as any, pdfOptions);
 
       // Step 3: Finalizando
       setProgress(PROGRESS_STEPS[1].pct);
