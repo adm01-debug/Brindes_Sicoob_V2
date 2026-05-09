@@ -322,6 +322,17 @@ export default function OrdersPage() {
     }
   };
 
+  const handleDuplicate = async (orderId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    try {
+      const newId = await sicoobOrderService.duplicateSicoobOrder(orderId);
+      toast.success("Pedido duplicado como Rascunho!");
+      navigate(`/sicoob/pedidos/${newId}`);
+    } catch (err: any) {
+      toast.error("Erro ao duplicar pedido", { description: err.message });
+    }
+  };
+
   const toggleSelectOrder = (id: string) => {
     setSelectedOrderIds(prev => 
       prev.includes(id) ? prev.filter(oid => oid !== id) : [...prev, id]
