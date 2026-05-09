@@ -50,10 +50,14 @@ interface Props {
   items: ProposalItem[];
   showHeader?: boolean;
   startIndex?: number;
+  options?: {
+    hidePrices?: boolean;
+    hidePhotos?: boolean;
+  };
 }
 
-export function ProposalProductTable({ items, showHeader = true, startIndex = 0 }: Props) {
-  const hasAnyImage = items.some((item) => !!item.imageUrl);
+export function ProposalProductTable({ items, showHeader = true, startIndex = 0, options = {} }: Props) {
+  const hasAnyImage = !options.hidePhotos && items.some((item) => !!item.imageUrl);
 
   // Group items by kit_group_id
   const groups: { kitName: string | null; items: { item: ProposalItem; globalIdx: number }[] }[] = [];
@@ -78,7 +82,12 @@ export function ProposalProductTable({ items, showHeader = true, startIndex = 0 
             )}
             <th style={{ ...thBase, textAlign: "left", borderRadius: hasAnyImage ? "0" : "6px 0 0 0" }}>Descrição do Produto</th>
             <th style={{ ...thBase, textAlign: "center", width: "52px" }}>Qtd.</th>
-            <th style={{ ...thBase, textAlign: "right", width: "90px", borderRadius: "0 6px 0 0" }}>Unitário</th>
+            {!options.hidePrices && (
+              <th style={{ ...thBase, textAlign: "right", width: "90px", borderRadius: "0 6px 0 0" }}>Unitário</th>
+            )}
+            {options.hidePrices && (
+              <th style={{ ...thBase, textAlign: "right", width: "20px", borderRadius: "0 6px 0 0" }}></th>
+            )}
           </tr>
         </thead>
       )}
@@ -207,11 +216,15 @@ export function ProposalProductTable({ items, showHeader = true, startIndex = 0 
                     {item.quantity}
                   </td>
                   <td style={{ padding: "8px 8px", textAlign: "right", verticalAlign: "middle", fontVariantNumeric: "tabular-nums" }}>
-                    <span style={{ fontSize: "13px", fontWeight: 600, color: "#333" }}>{fmt(allInUnitPrice)}</span>
-                    {itemDiscount > 0 && (
-                      <span style={{ display: "block", fontSize: "10px", color: "#e53935", marginTop: "2px", fontWeight: 600 }}>
-                        -{fmt(itemDiscount)}
-                      </span>
+                    {!options.hidePrices && (
+                      <>
+                        <span style={{ fontSize: "13px", fontWeight: 600, color: "#333" }}>{fmt(allInUnitPrice)}</span>
+                        {itemDiscount > 0 && (
+                          <span style={{ display: "block", fontSize: "10px", color: "#e53935", marginTop: "2px", fontWeight: 600 }}>
+                            -{fmt(itemDiscount)}
+                          </span>
+                        )}
+                      </>
                     )}
                   </td>
                 </tr>
