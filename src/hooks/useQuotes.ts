@@ -16,6 +16,7 @@ import { useRBAC } from "@/hooks/useRBAC";
 
 export function useQuotes() {
   const { user, isGestorCompras, isDev } = useAuth();
+  const { isSupervisorOrAbove } = useRBAC();
   const { currentOrg } = useOrganization();
   const scope = useSalesScope();
   
