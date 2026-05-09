@@ -84,12 +84,19 @@ export default function QuoteBuilderPage() {
               <ArrowLeft className="h-5 w-5" />
             </Button>
             <div>
-              <h1 data-testid="page-title-orcamento-novo" className="font-display text-2xl font-bold text-foreground flex items-center gap-3">
-                <div className="p-2 rounded-xl bg-gradient-to-br from-primary/20 to-primary/10">
-                  {s.isEditMode ? <Edit className="h-6 w-6 text-primary" /> : <FileText className="h-6 w-6 text-primary" />}
-                </div>
-                {s.isEditMode ? "Editar Orçamento" : "Novo Orçamento"}
-              </h1>
+              <div className="flex items-center gap-2">
+                <h1 data-testid="page-title-orcamento-novo" className="font-display text-2xl font-bold text-foreground flex items-center gap-3">
+                  <div className="p-2 rounded-xl bg-gradient-to-br from-primary/20 to-primary/10">
+                    {s.isEditMode ? <Edit className="h-6 w-6 text-primary" /> : <FileText className="h-6 w-6 text-primary" />}
+                  </div>
+                  {s.isEditMode ? "Editar Orçamento" : "Novo Orçamento"}
+                </h1>
+                {!s.canEdit && (
+                  <Badge variant="outline" className="gap-1 bg-muted/50">
+                    <Lock className="h-3 w-3" /> Somente Leitura
+                  </Badge>
+                )}
+              </div>
               <p className="text-muted-foreground mt-1">
                 {s.isEditMode && s.quoteNumber ? <>Editando: <strong>{s.quoteNumber}</strong></> : "Crie um orçamento com produtos e personalizações"}
               </p>
