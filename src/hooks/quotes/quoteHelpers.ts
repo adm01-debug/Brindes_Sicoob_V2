@@ -53,7 +53,7 @@ export function buildInsertPayload(
   quote: Partial<Quote>,
   userId: string,
   orgId: string | null,
-  totals: { subtotal: number; discountAmount: number; total: number }
+  totals: { subtotal: number; discountAmount: number; total: number; totalCost: number }
 ): TablesInsert<"quotes"> {
   return {
     client_id: quote.client_id || null,
