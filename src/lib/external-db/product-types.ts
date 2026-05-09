@@ -7,6 +7,7 @@ export interface PromobrindProduct {
   name: string;
   sku: string;
   sale_price?: number | null;
+  cost_price?: number | null;
   /** @deprecated Use sale_price */
   base_price?: number | null;
   image_url: string | null;
