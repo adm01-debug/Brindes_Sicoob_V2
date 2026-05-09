@@ -398,7 +398,7 @@ export default function QuoteBuilderPage() {
       </div>
 
       {/* Product Search Dialog */}
-      <QuoteBuilderProductSearch
+      <QuoteProductSelector
         open={s.productSearchOpen}
         onOpenChange={s.setProductSearchOpen}
         productSearch={s.productSearch}
