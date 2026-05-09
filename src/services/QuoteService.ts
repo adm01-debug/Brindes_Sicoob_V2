@@ -214,6 +214,14 @@ export class QuoteService {
     newValue?: string;
     metadata?: any;
   }) {
+    // Captura IP e UA do lado do cliente se não for fornecido
+    const clientMetadata = {
+      ip: params.metadata?.ip || 'client',
+      user_agent: params.metadata?.user_agent || (typeof navigator !== 'undefined' ? navigator.userAgent : 'unknown'),
+      timestamp: new Date().toISOString(),
+      ...(params.metadata || {})
+    };
+
     await supabase.from("quote_history").insert({
       quote_id: params.quoteId,
       user_id: params.userId,
@@ -222,7 +230,7 @@ export class QuoteService {
       field_changed: params.fieldChanged || null,
       old_value: params.oldValue || null,
       new_value: params.newValue || null,
-      metadata: params.metadata || {},
+      metadata: clientMetadata,
     });
   }
 }
