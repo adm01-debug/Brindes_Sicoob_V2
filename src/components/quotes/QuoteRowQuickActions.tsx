@@ -197,7 +197,7 @@ export function QuoteRowQuickActions({ quote, onDuplicate, onMarkApproved, isSup
         <TooltipContent side="top">Enviar por WhatsApp</TooltipContent>
       </Tooltip>
 
-      {!isClosed && (
+      {!isClosed && isSupervisor && (
         <Tooltip>
           <TooltipTrigger asChild>
             <Button
