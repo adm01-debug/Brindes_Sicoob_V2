@@ -5909,6 +5909,7 @@ export type Database = {
         Row: {
           category: string | null
           created_at: string
+          created_by: string | null
           delivery_time: string | null
           description: string | null
           discount_amount: number | null
@@ -5916,6 +5917,7 @@ export type Database = {
           id: string
           internal_notes: string | null
           is_default: boolean | null
+          is_public: boolean | null
           items_data: Json | null
           name: string
           notes: string | null
@@ -5928,6 +5930,7 @@ export type Database = {
         Insert: {
           category?: string | null
           created_at?: string
+          created_by?: string | null
           delivery_time?: string | null
           description?: string | null
           discount_amount?: number | null
@@ -5935,6 +5938,7 @@ export type Database = {
           id?: string
           internal_notes?: string | null
           is_default?: boolean | null
+          is_public?: boolean | null
           items_data?: Json | null
           name: string
           notes?: string | null
@@ -5947,6 +5951,7 @@ export type Database = {
         Update: {
           category?: string | null
           created_at?: string
+          created_by?: string | null
           delivery_time?: string | null
           description?: string | null
           discount_amount?: number | null
@@ -5954,6 +5959,7 @@ export type Database = {
           id?: string
           internal_notes?: string | null
           is_default?: boolean | null
+          is_public?: boolean | null
           items_data?: Json | null
           name?: string
           notes?: string | null

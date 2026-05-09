@@ -5,15 +5,16 @@ import { toast } from "sonner";
 export interface QuoteTemplate {
   id: string;
   name: string;
-  description: string;
-  items: any[];
-  discount_percent: number;
-  shipping_type: string;
-  shipping_cost: number;
-  payment_terms: string;
-  delivery_time: string;
+  description: string | null;
+  items_data: any[] | null;
+  discount_percent: number | null;
+  payment_terms: string | null;
+  delivery_time: string | null;
   is_public: boolean;
-  created_by: string;
+  is_default: boolean;
+  created_by: string | null;
+  seller_id: string | null;
+  notes: string | null;
 }
 
 export function useQuoteTemplates() {
@@ -29,7 +30,7 @@ export function useQuoteTemplates() {
         .order("name", { ascending: true });
 
       if (error) throw error;
-      setTemplates(data || []);
+      setTemplates(data as QuoteTemplate[] || []);
     } catch (err) {
       console.error("Error fetching templates:", err);
       toast.error("Erro ao carregar templates");
@@ -45,7 +46,11 @@ export function useQuoteTemplates() {
 
       const { data, error } = await supabase
         .from("quote_templates")
-        .insert({ ...template, created_by: user.id })
+        .insert({ 
+          ...template, 
+          created_by: user.id,
+          seller_id: user.id 
+        })
         .select()
         .single();
 
