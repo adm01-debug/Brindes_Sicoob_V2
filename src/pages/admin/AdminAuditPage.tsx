@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { MainLayout } from "@/components/layout/MainLayout";
 import { PageSEO } from "@/components/seo/PageSEO";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { History, Search, Filter, FileDown, User, Activity, Calendar } from "lucide-react";
+import { History, Search, Filter, FileDown, User, Activity, Calendar, ShieldCheck } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -17,6 +18,7 @@ import { ptBR } from "date-fns/locale";
 import * as XLSX from 'xlsx';
 
 export default function AdminAuditPage() {
+  const navigate = useNavigate();
   const [logs, setLogs] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [totalCount, setTotalCount] = useState(0);
@@ -205,9 +207,14 @@ export default function AdminAuditPage() {
               <p className="text-muted-foreground">Monitore quem, quando e o que foi alterado no painel administrativo</p>
             </div>
           </div>
-          <Button onClick={handleExport} className="gap-2">
-            <FileDown className="h-4 w-4" /> Exportar Relatório
-          </Button>
+          <div className="flex gap-2">
+            <Button onClick={() => navigate('/admin/auditoria/enterprise')} variant="outline" className="gap-2 border-blue-200 hover:bg-blue-50 text-blue-700">
+              <ShieldCheck className="h-4 w-4" /> Dossier Enterprise
+            </Button>
+            <Button onClick={handleExport} className="gap-2">
+              <FileDown className="h-4 w-4" /> Exportar Relatório
+            </Button>
+          </div>
         </div>
 
         <Card>
