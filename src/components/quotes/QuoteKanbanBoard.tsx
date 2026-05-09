@@ -245,7 +245,7 @@ function KanbanColumn({
                 <p className="text-[11px]">Arraste aqui</p>
               </div>
             ) : (
-              quotes.map((quote) => (
+               quotes.map((quote) => (
                 <SortableQuoteCard
                   key={quote.id}
                    quote={quote}
@@ -253,6 +253,7 @@ function KanbanColumn({
                    disabled={isReadOnly}
                    isSelected={selectedIds.includes(quote.id!)}
                    onToggleSelection={onToggleSelection}
+                   hasStockIssue={stockIssues[quote.id!]}
                  />
               ))
             )}
