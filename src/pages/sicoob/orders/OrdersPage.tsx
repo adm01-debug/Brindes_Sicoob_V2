@@ -601,7 +601,7 @@ export default function OrdersPage() {
               </Button>
             )}
           </div>
-        </div>
+        </motion.div>
 
         {selectedOrderIds.length > 0 && (
           <Card className="bg-sicoob-green/5 border-sicoob-green/30 animate-in slide-in-from-top-4 duration-300">
