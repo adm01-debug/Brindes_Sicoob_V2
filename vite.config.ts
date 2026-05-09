@@ -100,6 +100,10 @@ export default defineConfig(({ mode }) => ({
           if (id.includes('node_modules/@dnd-kit/')) {
             return 'dnd-vendor';
           }
+          // Markdown / Audit libs
+          if (id.includes('node_modules/react-markdown/') || id.includes('node_modules/remark-gfm/')) {
+            return 'audit-vendor';
+          }
         },
       },
     },

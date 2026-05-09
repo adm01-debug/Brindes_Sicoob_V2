@@ -108,7 +108,7 @@ const AuditEnterprisePage = () => {
             </div>
             <div className="flex items-center gap-2 bg-white px-3 py-1 rounded-full border shadow-sm">
               <GitCommit className="h-4 w-4 text-slate-400" />
-              <span className="text-xs font-mono font-semibold">VER: 10.1.0-GOLD</span>
+              <span className="text-xs font-mono font-semibold">VER: 10.2.0-GOLD-AUTOVALIDATED</span>
             </div>
           </div>
         </CardHeader>
