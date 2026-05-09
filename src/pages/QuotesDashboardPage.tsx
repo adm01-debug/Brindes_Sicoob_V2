@@ -155,6 +155,7 @@ export function QuotesDashboardPage() {
                     <ChartTooltip content={<ChartTooltipContent />} />
                     <Bar dataKey="total" name="Total" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
                     <Bar dataKey="approved" name="Aprovados" fill="hsl(var(--success))" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="profit" name="Lucro Bruto" fill="hsl(var(--info))" radius={[4, 4, 0, 0]} />
                     <Bar dataKey="rejected" name="Rejeitados" fill="hsl(var(--destructive))" radius={[4, 4, 0, 0]} />
                     <Legend />
                   </BarChart>
