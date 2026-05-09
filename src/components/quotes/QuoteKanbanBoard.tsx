@@ -150,7 +150,7 @@ interface KanbanColumnProps {
   isReadOnly?: boolean;
 }
 
-function KanbanColumn({ status, quotes, onQuoteClick }: KanbanColumnProps) {
+function KanbanColumn({ status, quotes, onQuoteClick, isReadOnly = false }: KanbanColumnProps) {
   const config = QUOTE_STATUS_CONFIG[status];
   const quoteIds = useMemo(() => quotes.map((q) => q.id!), [quotes]);
 
