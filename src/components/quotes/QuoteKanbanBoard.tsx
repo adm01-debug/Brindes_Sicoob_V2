@@ -250,7 +250,7 @@ function SortableQuoteCard({ quote, onClick, disabled }: { quote: Quote; onClick
 
   return (
     <div ref={setNodeRef} style={style}>
-      <QuoteCard quote={quote} onClick={onClick} attributes={attributes} listeners={listeners} />
+      <QuoteCard quote={quote} onClick={onClick} attributes={attributes} listeners={listeners} disabled={disabled} />
     </div>
   );
 }
