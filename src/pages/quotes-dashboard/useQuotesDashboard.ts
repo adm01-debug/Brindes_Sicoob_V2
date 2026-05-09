@@ -168,6 +168,8 @@ export function useQuotesDashboard() {
         ["Valor Total Orçado", formatCurrency(metrics.totalValue)],
         ["Valor Total Aprovado", formatCurrency(metrics.approvedValue)],
         ["Ticket Médio", formatCurrency(metrics.averageValue)],
+        ["Lucro Bruto Total", formatCurrency(metrics.totalProfit)],
+        ["Margem Média", `${metrics.averageMargin.toFixed(1)}%`],
       ],
       theme: "grid", headStyles: { fillColor: [245, 158, 11] }, styles: { fontSize: 10 },
     });
