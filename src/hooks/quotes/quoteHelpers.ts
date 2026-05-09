@@ -82,7 +82,7 @@ export function buildInsertPayload(
 
 export function buildUpdatePayload(
   quote: Partial<Quote>,
-  totals: { subtotal: number; discountAmount: number; total: number }
+  totals: { subtotal: number; discountAmount: number; total: number; totalCost: number }
 ): TablesUpdate<"quotes"> {
   return {
     client_id: quote.client_id || null,
@@ -95,6 +95,7 @@ export function buildUpdatePayload(
     discount_percent: quote.discount_percent || 0,
     discount_amount: totals.discountAmount,
     total: totals.total,
+    total_cost: totals.totalCost,
     negotiation_markup_percent: quote.negotiation_markup_percent || 0,
     payment_terms: quote.payment_terms || null,
     delivery_time: quote.delivery_time || null,
