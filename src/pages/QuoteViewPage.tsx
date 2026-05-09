@@ -198,6 +198,19 @@ export default function QuoteViewPage() {
           <QuoteValidityBanner validUntil={quote.valid_until} status={quote.status} pdfUrl={quote.approved_pdf_url} onDownloadPdf={handleDownloadPDF} />
         </div>
         
+        {/* Next Action Banner */}
+        <QuoteNextActionBanner 
+          quoteId={id!} 
+          status={quote.status} 
+          onAction={(action) => {
+            if (action === "share_link") handleShareLink();
+            if (action === "view_history") {
+              const historyTrigger = document.querySelector('[aria-label="Mais opções"]') as HTMLElement;
+              historyTrigger?.click();
+            }
+          }}
+        />
+
         {/* Singular Approval Actions */}
         {id && quote && <QuoteApprovalNotes notes={quote.rejection_notes} status={quote.status} />}
         
