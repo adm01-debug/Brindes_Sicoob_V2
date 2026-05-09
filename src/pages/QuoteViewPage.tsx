@@ -247,13 +247,31 @@ export default function QuoteViewPage() {
         <Card className="print:hidden">
           <Separator />
           <CardContent className="pt-6 space-y-6">
-            <QuoteClientInfo
-              clientCompany={quote.client_company}
-              clientName={quote.client_name}
-              clientEmail={quote.client_email}
-              clientPhone={quote.client_phone}
-              clientCnpj={clientCnpj}
-            />
+            <div className="flex flex-col md:flex-row gap-6 justify-between items-start">
+              <QuoteClientInfo
+                clientCompany={quote.client_company}
+                clientName={quote.client_name}
+                clientEmail={quote.client_email}
+                clientPhone={quote.client_phone}
+                clientCnpj={clientCnpj}
+              />
+              <div className="w-full md:w-48 space-y-2">
+                <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Etiquetas</h4>
+                <TagManager 
+                  tags={quote.tags || []} 
+                  readonly 
+                  onChange={() => {}} 
+                />
+                <QuoteWhatsAppShare 
+                  quoteNumber={quote.quote_number}
+                  total={quote.total}
+                  clientPhone={quote.client_phone}
+                  validUntil={quote.valid_until}
+                  approvalLink={approvalLink}
+                  className="w-full"
+                />
+              </div>
+            </div>
             <Separator />
             <QuoteItemsTable items={quote.items || []} />
             <QuoteTotalsSummary
