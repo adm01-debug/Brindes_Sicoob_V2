@@ -36,14 +36,9 @@ import {
   PackageX,
   TrendingUp,
   TrendingDown,
-  Info
+  Info,
+  Eye
 } from "lucide-react";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { Quote, QuoteItem } from "@/hooks/quotes/quoteTypes";
@@ -51,6 +46,12 @@ import { useRBAC } from "@/hooks/useRBAC";
 import confetti from "canvas-confetti";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useQuotesStockStatus } from "@/hooks/quote/useQuotesStockStatus";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import {
   Sheet,
   SheetContent,
@@ -189,6 +190,83 @@ export function QuoteKanbanBoard({
           <QuoteCard quote={activeQuote} isOverlay />
         ) : null}
       </DragOverlay>
+
+      {/* Quick View Sheet */}
+      <Sheet open={!!quickViewQuote} onOpenChange={(open) => !open && setQuickViewQuote(null)}>
+        <SheetContent className="sm:max-w-md overflow-y-auto">
+          <SheetHeader className="mb-6">
+            <div className="flex items-center justify-between">
+              <SheetTitle className="text-xl font-bold">
+                #{quickViewQuote?.quote_number}
+              </SheetTitle>
+              <Badge variant="secondary">
+                {quickViewQuote && QUOTE_STATUS_CONFIG[quickViewQuote.status]?.label}
+              </Badge>
+            </div>
+            <SheetDescription className="flex flex-col gap-1">
+              <span className="font-medium text-foreground">
+                {quickViewQuote?.client_company || quickViewQuote?.client_name || "Sem cliente"}
+              </span>
+              <span className="text-xs">
+                Criado em: {quickViewQuote?.created_at && new Date(quickViewQuote.created_at).toLocaleDateString()}
+              </span>
+            </SheetDescription>
+          </SheetHeader>
+
+          <div className="space-y-6">
+            <div className="space-y-4">
+              <h4 className="text-sm font-semibold flex items-center gap-2">
+                <Info className="h-4 w-4" /> Resumo dos Itens
+              </h4>
+              <div className="space-y-3">
+                {quickViewQuote?.items?.map((item, idx) => (
+                  <div key={idx} className="flex gap-3 text-sm p-3 rounded-lg border bg-muted/30">
+                    <div className="h-10 w-10 rounded bg-background border flex items-center justify-center shrink-0">
+                      {item.product_image_url ? (
+                        <img src={item.product_image_url} alt={item.product_name} className="h-full w-full object-contain" />
+                      ) : (
+                        <PackageX className="h-5 w-5 text-muted-foreground" />
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium truncate">{item.product_name}</p>
+                      <div className="flex justify-between text-xs text-muted-foreground mt-1">
+                        <span>{item.quantity} un.</span>
+                        <span>{formatCurrency(item.unit_price)} / un.</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <Separator />
+
+            <div className="space-y-3">
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">Subtotal</span>
+                <span>{formatCurrency(quickViewQuote?.subtotal || 0)}</span>
+              </div>
+              {quickViewQuote?.discount_amount && quickViewQuote.discount_amount > 0 && (
+                <div className="flex justify-between text-sm text-destructive">
+                  <span>Desconto ({quickViewQuote.discount_percent}%)</span>
+                  <span>-{formatCurrency(quickViewQuote.discount_amount)}</span>
+                </div>
+              )}
+              <div className="flex justify-between font-bold text-lg pt-2 border-t">
+                <span>Total</span>
+                <span className="text-primary">{formatCurrency(quickViewQuote?.total || 0)}</span>
+              </div>
+            </div>
+
+            <div className="flex gap-2 pt-4">
+              <Button className="flex-1" onClick={() => navigate(`/orcamentos/${quickViewQuote?.id}`)}>
+                Ver Detalhes Completos
+              </Button>
+            </div>
+          </div>
+        </SheetContent>
+      </Sheet>
     </DndContext>
   );
 }
@@ -260,7 +338,7 @@ function KanbanColumn({
                 <p className="text-[11px]">Arraste aqui</p>
               </div>
             ) : (
-               quotes.map((quote) => (
+              quotes.map((quote) => (
                 <SortableQuoteCard
                   key={quote.id}
                    quote={quote}
@@ -284,6 +362,7 @@ interface QuoteCardProps {
   quote: Quote;
   isOverlay?: boolean;
   onClick?: () => void;
+  onQuickView?: () => void;
   disabled?: boolean;
   isSelected?: boolean;
   onToggleSelection?: (id: string) => void;
@@ -293,6 +372,7 @@ interface QuoteCardProps {
 function SortableQuoteCard({ 
   quote, 
   onClick, 
+  onQuickView,
   disabled, 
   isSelected, 
   onToggleSelection,
@@ -300,6 +380,7 @@ function SortableQuoteCard({
 }: { 
   quote: Quote; 
   onClick: () => void; 
+  onQuickView: () => void;
   disabled?: boolean;
   isSelected?: boolean;
   onToggleSelection: (id: string) => void;
@@ -337,6 +418,7 @@ function SortableQuoteCard({
       <QuoteCard 
         quote={quote} 
         onClick={onClick} 
+        onQuickView={onQuickView}
         attributes={attributes} 
         listeners={listeners} 
         disabled={disabled} 
@@ -352,6 +434,7 @@ function QuoteCard({
   quote, 
   isOverlay, 
   onClick, 
+  onQuickView,
   attributes, 
   listeners, 
   disabled, 
@@ -452,7 +535,20 @@ function QuoteCard({
           <Badge variant="secondary" className="text-[10px] h-5 tabular-nums font-bold text-primary">
             {formatCurrency(quote.total || 0)}
           </Badge>
-          <div className="flex items-center gap-1.5 min-w-0">
+          <div className="flex items-center gap-2 min-w-0">
+            {onQuickView && (
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onQuickView();
+                }}
+              >
+                <Eye className="h-3 w-3" />
+              </Button>
+            )}
             <span className="text-[9px] text-muted-foreground truncate">
               {quote.updated_at ? new Date(quote.updated_at).toLocaleDateString() : "Recente"}
             </span>
