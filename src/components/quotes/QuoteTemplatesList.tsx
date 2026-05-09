@@ -36,7 +36,8 @@ import {
   UserPlus,
   Download,
   Tags,
-  Filter
+  Filter,
+  Eye
 } from "lucide-react";
 import { type QuoteTemplate, useQuoteTemplates } from "@/hooks/useQuoteTemplates";
 import { QuoteTemplatePreview } from "./QuoteTemplatePreview";
@@ -455,8 +456,8 @@ export function QuoteTemplatesList({
           {previewTemplate && (
             <QuoteTemplatePreview data={previewTemplate as any} />
           )}
-          <DialogFooter>
-            <Button onClick={() => setPreviewTemplate(null)}>Fechar</Button>
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={() => setPreviewTemplate(null)}>Fechar</Button>
             {onApplyTemplate && (
               <Button 
                 onClick={() => {
