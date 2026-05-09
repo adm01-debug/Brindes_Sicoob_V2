@@ -33,6 +33,8 @@ import { toast } from "sonner";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 import * as XLSX from "xlsx";
+import { Sparkline } from "@/components/ui/sparkline";
+import { AIOrderPredictor } from "@/components/sicoob/orders/AIOrderPredictor";
 import { Input } from "@/components/ui/input";
 import {
   Card,
@@ -193,22 +195,33 @@ export default function OrdersPage() {
       }
 
       const doc = new jsPDF();
-      doc.text("Relatório de Pedidos Sicoob", 14, 15);
       
+      // Estilo Enterprise
+      doc.setFillColor(46, 176, 134); // Sicoob Green
+      doc.rect(0, 0, 210, 40, 'F');
+      
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(22);
+      doc.text("PROMAGIFTS SICOOB", 14, 20);
+      doc.setFontSize(10);
+      doc.text("Relatório Consolidado de Governança e Pedidos", 14, 30);
+      doc.text(`Gerado em: ${new Date().toLocaleString('pt-BR')}`, 14, 35);
+
       const tableData = filteredOrders.map(o => [
-        o.id,
+        o.order_number || o.id.slice(0, 8),
         (o as any).pa?.nome || o.pa_id,
         (o as any).cooperativa?.nome || o.cooperative_id,
-        o.status,
+        o.status.toUpperCase(),
         `R$ ${o.total_amount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`,
-        "N/A",
         format(parseISO(o.created_at), "dd/MM/yyyy")
       ]);
 
       autoTable(doc, {
-        startY: 20,
-        head: [["ID", "PA", "Singular", "Status", "Total", "Itens", "Data"]],
+        startY: 50,
+        head: [["PEDIDO", "PONTO DE ATENDIMENTO", "SINGULAR", "STATUS", "TOTAL", "DATA"]],
         body: tableData,
+        headStyles: { fillColor: [46, 176, 134] },
+        alternateRowStyles: { fillColor: [245, 247, 250] },
       });
 
       doc.save(`pedidos_sicoob_${format(new Date(), 'yyyy-MM-dd')}.pdf`);
@@ -355,8 +368,11 @@ export default function OrdersPage() {
       <PageSEO title="Pedidos Sicoob" description="Gerenciamento de pedidos do ecossistema Sicoob." path="/sicoob/pedidos" noIndex />
 
       <div className="space-y-6 max-w-[1920px] mx-auto w-full">
+        {/* Predictive AI Suggestions */}
+        <AIOrderPredictor />
+
         {/* Advanced BI/Stats Section */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-4">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
             <Card className="bg-gradient-to-br from-sicoob-green/10 to-transparent border-sicoob-green/20 overflow-hidden relative group">
               <div className="absolute -right-4 -bottom-4 opacity-10 group-hover:scale-110 transition-transform">
@@ -371,8 +387,11 @@ export default function OrdersPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="flex items-center gap-1 text-[10px] text-sicoob-green font-bold">
+                <div className="flex items-center gap-2 text-[10px] text-sicoob-green font-bold mt-2">
                   <TrendingUp className="h-3 w-3" /> +12.5% <span className="text-muted-foreground font-normal ml-1">vs mês anterior</span>
+                  <div className="ml-auto opacity-60">
+                    <Sparkline data={[10, 25, 45, 30, 55, 70, 65]} height={15} width={40} />
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -764,7 +783,10 @@ export default function OrdersPage() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div>
-                    <div className="text-2xl font-bold text-foreground">R$ {order.total_amount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</div>
+                    <div className="flex items-center justify-between">
+                      <div className="text-2xl font-bold text-foreground">R$ {order.total_amount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</div>
+                      <Sparkline data={[50, 40, 60, 45, 70, 55, 65]} height={15} width={40} />
+                    </div>
                     <p className="text-[10px] text-muted-foreground mt-1 uppercase tracking-wider font-semibold">
                       {order.pa?.nome || "PA Não Identificado"}
                     </p>
