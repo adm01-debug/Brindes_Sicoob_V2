@@ -221,6 +221,10 @@ export function PdfGenerationDialog({
         .eq("id", quoteId);
         
       if (updateError) throw updateError;
+
+      if (quoteId) {
+        logStatusChanged(quoteId, quoteStatus || "pending", "approved");
+      }
       
       toast.success("Orçamento aprovado e PDF assinado salvo!");
       onStatusUpdate?.("approved", publicUrl);
