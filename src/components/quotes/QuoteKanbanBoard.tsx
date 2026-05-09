@@ -158,6 +158,7 @@ export function QuoteKanbanBoard({
             isReadOnly={['approved', 'rejected'].includes(status) && !isSupervisorOrAbove}
             selectedIds={selectedIds}
             onToggleSelection={onToggleSelection}
+            stockIssues={stockIssues || {}}
           />
         ))}
       </div>
