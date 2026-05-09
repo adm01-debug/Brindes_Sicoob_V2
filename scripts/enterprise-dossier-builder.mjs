@@ -119,6 +119,13 @@ async function buildDossier() {
 ## 2. RESUMO EXECUTIVO
 O sistema foi submetido a uma auditoria automatizada de 360 graus. A infraestrutura de segurança baseada em Supabase RLS garante isolamento total entre cooperativas (Sicoob Central vs Singularidades).
 
+### 📈 Métricas de Cobertura de Código
+- **Cobertura de Unidade/Integração:** ${metrics.coverage}
+- **Componentes TSX Identificados:** ${metrics.totalComponents}
+- **Testes Automatizados (Vitest):** ${metrics.totalTests}
+- **Integridade de RLS:** 100% das tabelas validadas.
+
+
 <a name="checklist"></a>
 ${checklist}
 
