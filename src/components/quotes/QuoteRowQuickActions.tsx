@@ -24,6 +24,7 @@ interface QuoteRowQuickActionsProps {
   quote: Quote;
   onDuplicate: (id: string, itemIds?: string[]) => void;
   onMarkApproved: (id: string) => void;
+  isSupervisor?: boolean;
 }
 
 const APP_BASE_URL = typeof window !== "undefined" ? window.location.origin : "";
