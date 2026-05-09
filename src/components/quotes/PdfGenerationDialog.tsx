@@ -127,6 +127,46 @@ export function PdfGenerationDialog({
       });
     }
   };
+  
+  const handleApproveAndSave = async () => {
+    if (!pdfBlob || !quoteId) return;
+    
+    setIsFinalizing(true);
+    try {
+      const fileName = `${quoteNumber || quoteId}_v${pdfVersion}_signed.pdf`;
+      const filePath = `signed/${fileName}`;
+      
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from("proposals")
+        .upload(filePath, pdfBlob, { upsert: true });
+        
+      if (uploadError) throw uploadError;
+      
+      const { data: { publicUrl } } = supabase.storage
+        .from("proposals")
+        .getPublicUrl(filePath);
+        
+      const { error: updateError } = await supabase
+        .from("quotes")
+        .update({ 
+          status: "approved", 
+          approved_pdf_url: publicUrl,
+          updated_at: new Date().toISOString()
+        } as any)
+        .eq("id", quoteId);
+        
+      if (updateError) throw updateError;
+      
+      toast.success("Orçamento aprovado e PDF assinado salvo!");
+      onStatusUpdate?.("approved", publicUrl);
+      setOpen(false);
+    } catch (error) {
+      console.error("Error finalizing quote:", error);
+      toast.error("Erro ao finalizar orçamento");
+    } finally {
+      setIsFinalizing(false);
+    }
+  };
 
   const handleOpenChange = (newOpen: boolean) => {
     setOpen(newOpen);
