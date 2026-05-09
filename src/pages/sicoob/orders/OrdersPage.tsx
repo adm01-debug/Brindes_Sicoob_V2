@@ -84,6 +84,13 @@ export default function OrdersPage() {
   const [selectedOrderIds, setSelectedOrderIds] = useState<string[]>([]);
   const [isBulkApproving, setIsExportingBulk] = useState(false);
 
+  useGlobalShortcuts({
+    onSearchFocus: () => {
+      const searchInput = document.querySelector<HTMLInputElement>('input[placeholder*="Buscar"]');
+      searchInput?.focus();
+    }
+  });
+
   const [searchTerm, setSearchTerm] = useState(searchParams.get("search") || "");
   const [statusFilter, setStatusFilter] = useState<string>(searchParams.get("status") || "all");
   const [paFilter, setPaFilter] = useState<string>(searchParams.get("pa") || "all");
