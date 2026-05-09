@@ -13,8 +13,8 @@ export function AIOrderPredictor() {
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-2 px-1">
-        <Sparkles className="h-4 w-4 text-purple-500 animate-pulse" />
-        <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Sugestões Preditivas (IA)</h3>
+        <Sparkles className="h-4 w-4 text-sicoob-green animate-pulse" />
+        <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Promo Gifts Intelligence Sugere:</h3>
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
