@@ -27,7 +27,8 @@ import {
   Target,
   BarChart3,
   RotateCcw,
-  AlertTriangle
+  AlertTriangle,
+  History
 } from "lucide-react";
 import { toast } from "sonner";
 import { jsPDF } from "jspdf";
