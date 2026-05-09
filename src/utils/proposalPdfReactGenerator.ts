@@ -14,7 +14,12 @@ import { PropostaComercialTailwind } from "@/components/pdf/PropostaComercialTai
 import { processLogoTransparent } from "@/components/pdf/proposal/LogoWithTransparentBg";
 
 
-export async function generateProposalPDFv2(data: ProposalTemplateData, options?: { isDraft?: boolean }): Promise<Blob> {
+export async function generateProposalPDFv2(data: ProposalTemplateData, options?: { 
+  isDraft?: boolean;
+  hidePrices?: boolean;
+  hidePhotos?: boolean;
+  hideTotals?: boolean;
+}): Promise<Blob> {
   const [jsPDF, html2canvas] = await Promise.all([getJsPDF(), getHtml2Canvas()]);
 
   // ① Pre-process logo BEFORE React renders — guarantees cache is warm
@@ -32,7 +37,16 @@ export async function generateProposalPDFv2(data: ProposalTemplateData, options?
     const templateRef = React.createRef<HTMLDivElement>();
     
     root.render(
-      React.createElement(PropostaComercialTailwind, { data, ref: templateRef, isDraft: options?.isDraft || false })
+      React.createElement(PropostaComercialTailwind, { 
+        data, 
+        ref: templateRef, 
+        isDraft: options?.isDraft || false,
+        options: {
+          hidePrices: options?.hidePrices,
+          hidePhotos: options?.hidePhotos,
+          hideTotals: options?.hideTotals,
+        }
+      })
     );
 
     // Poll until React renders (max 2s) instead of fixed 3s wait

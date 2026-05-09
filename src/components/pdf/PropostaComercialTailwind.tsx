@@ -100,8 +100,16 @@ function paginateItems(items: ProposalItem[]) {
   return pages;
 }
 
-export const PropostaComercialTailwind = forwardRef<HTMLDivElement, { data: ProposalTemplateData; isDraft?: boolean }>(
-  ({ data, isDraft = false }, ref) => {
+export const PropostaComercialTailwind = forwardRef<HTMLDivElement, { 
+  data: ProposalTemplateData; 
+  isDraft?: boolean;
+  options?: {
+    hidePrices?: boolean;
+    hidePhotos?: boolean;
+    hideTotals?: boolean;
+  }
+}>(
+  ({ data, isDraft = false, options = {} }, ref) => {
     const pages = paginateItems(data.items);
     const totalPages = pages.length;
     let itemIndex = 0;
@@ -132,8 +140,8 @@ export const PropostaComercialTailwind = forwardRef<HTMLDivElement, { data: Prop
                 pageBreakAfter: isLast ? "auto" : "always",
               }}
             >
-              {/* Watermark for drafts */}
-              {isDraft && (
+              {/* Watermark for drafts or expired */}
+              {(isDraft || data.status === "expired") && (
                 <div style={{
                   position: "absolute",
                   top: "50%",
@@ -141,14 +149,14 @@ export const PropostaComercialTailwind = forwardRef<HTMLDivElement, { data: Prop
                   transform: "translate(-50%, -50%) rotate(-35deg)",
                   fontSize: "80px",
                   fontWeight: 900,
-                  color: "rgba(200, 0, 0, 0.07)",
+                  color: data.status === "expired" ? "rgba(255, 0, 0, 0.09)" : "rgba(200, 0, 0, 0.07)",
                   letterSpacing: "0.3em",
                   textTransform: "uppercase",
                   pointerEvents: "none",
                   zIndex: 5,
                   userSelect: "none",
                 }}>
-                  RASCUNHO
+                  {data.status === "expired" ? "EXPIRADO" : "RASCUNHO"}
                 </div>
               )}
               <ProposalHeader data={data} isContinuation={!isFirst} />
@@ -162,10 +170,11 @@ export const PropostaComercialTailwind = forwardRef<HTMLDivElement, { data: Prop
                     items={pageItems}
                     showHeader={true}
                     startIndex={startIdx}
+                    options={options}
                   />
                 )}
 
-                {isLast && (
+                {isLast && !options.hideTotals && (
                   <>
                     <ProposalTotals data={data} />
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
