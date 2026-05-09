@@ -167,6 +167,7 @@ export function QuoteKanbanBoard({
             status={status}
             quotes={columns[status]}
             onQuoteClick={(id) => navigate(`/orcamentos/${id}`)}
+            onQuickView={(quote) => setQuickViewQuote(quote)}
             isReadOnly={['approved', 'rejected'].includes(status) && !isSupervisorOrAbove}
             selectedIds={selectedIds}
             onToggleSelection={onToggleSelection}
