@@ -494,6 +494,12 @@ function QuoteCard({
                   Alta Alçada
                 </Badge>
               )}
+              {isPendingResponse && (
+                <Badge variant="outline" className="h-4 px-1 text-[8px] bg-destructive/10 text-destructive border-destructive/20 animate-pulse">
+                  <Clock className="h-2 w-2 mr-1" />
+                  Follow-up Pendente
+                </Badge>
+              )}
               {isSupervisorOrAbove && (
                 <TooltipProvider>
                   <Tooltip>
