@@ -345,6 +345,17 @@ export function QuoteBuilderSummaryColumn({
                   </div>
                 </div>
               )}
+              {marginPercent > 0 && marginPercent < 20 && (
+                <div className="mt-2 p-2 rounded-lg bg-primary/5 border border-primary/20 flex items-start gap-2">
+                  <Sparkles className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-[10px] font-bold text-primary uppercase">Dica de Performance</p>
+                    <p className="text-[11px] text-muted-foreground mt-0.5 leading-tight">
+                      Sua margem está em {marginPercent.toFixed(1)}%. Tente reduzir o desconto ou aumentar o markup em 3% para atingir a meta de rentabilidade.
+                    </p>
+                  </div>
+                </div>
+              )}
               {discountAmount > 0 && !isDiscountExceeded && (
                 <div className="flex justify-between text-xs text-destructive">
                   <span>Desconto aplicado</span>
