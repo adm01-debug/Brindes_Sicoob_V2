@@ -68,7 +68,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { OrderStatusBadge } from "@/components/sicoob/orders/OrderStatusBadge";
 import { OrderStatus, ORDER_STATUS_OPTIONS } from "@/types/sicoob/orders";
 import { sicoobOrderService } from "@/services/sicoob/orderService";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { motion } from "framer-motion";
 
