@@ -56,19 +56,21 @@ async function getCoverageMetrics() {
 }
 
 async function buildDossier() {
-    console.log('🚀 Iniciando Enterprise Dossier Builder v10.1 (Gold Standard)...');
+    console.log('🚀 Iniciando Enterprise Dossier Builder v10.2 (Gold Standard - Automated Validation)...');
     
     const commitHash = execSync('git rev-parse --short HEAD').toString().trim();
     const rlsTables = await getRlsCoverage();
+    const metrics = await getCoverageMetrics();
     
-    let rlsReport = "### 🔒 Relatório de Cobertura RLS por Tabela e Rota\n\n| Tabela | Status | Verificação | Link de Migração | Última Alteração |\n| :--- | :--- | :--- | :--- | :--- |\n";
+    let rlsReport = "### 🔒 Relatório de Cobertura RLS por Tabela e Rota\n\n| Tabela | Status | Verificação | Link de Migração | Última Alteração | Link Válido |\n| :--- | :--- | :--- | :--- | :--- | :--- |\n";
     
     for (const table of rlsTables) {
         const status = table.relrowsecurity ? "✅ PASSED" : "❌ FAILED";
         const file = execSync(`grep -l "ENABLE ROW LEVEL SECURITY" supabase/migrations/*.sql | head -1`).toString().trim() || "supabase/migrations";
         const info = await getFileInfo(file);
         const link = `${repoUrl}/blob/${info.hash}/${file}`;
-        rlsReport += `| ${table.relname} | ${status} | Row Isolation | [Ver Migração](${link}) | ${info.date} por ${info.author} |\n`;
+        const isValid = await validateLink(link);
+        rlsReport += `| ${table.relname} | ${status} | Row Isolation | [Ver Migração](${link}) | ${info.date} por ${info.author} | ${isValid ? '🟢' : '🔴'} |\n`;
     }
 
     const gaps = [
@@ -82,16 +84,18 @@ async function buildDossier() {
         gapsReport += `| ${gap.item} | **${gap.severity}** | \`${gap.path}\` | ${gap.status} | [Link](${repoUrl}/tree/${info.hash}/${gap.path}) |\n`;
     }
 
-    const checklist = `
-### 📑 Checklist Auditável de Conformidade
+    const checklistItems = [
+        { module: "Segurança", item: "RLS Multi-tenant", status: "✅ Implementado", evidence: `${repoUrl}/commit/${commitHash}`, validated: "Sim" },
+        { module: "Financeiro", item: "Precisão 4-Dec", status: "✅ Implementado", evidence: `${repoUrl}/blob/${commitHash}/supabase/migrations/20260502174252_a88e3c13-46b8-4ce4-b1b8-c8500d390f3d.sql`, validated: "Sim" },
+        { module: "UX", item: "WCAG Compliance", status: "✅ Implementado", evidence: `${repoUrl}/blob/${commitHash}/src/pages/admin/AdminVerbasPage.tsx`, validated: "Sim" },
+        { module: "Governança", item: "Blockchain Log", status: "⏳ A implementar", evidence: `${repoUrl}/tree/main/roadmap`, validated: "-" }
+    ];
 
-| Módulo | Item | Status | Evidência (Link/Commit) | Validado |
-| :--- | :--- | :--- | :--- | :--- |
-| **Segurança** | RLS Multi-tenant | ✅ Implementado | [Commit ${commitHash}](${repoUrl}/commit/${commitHash}) | Sim |
-| **Financeiro** | Precisão 4-Dec | ✅ Implementado | [Migração SQL](${repoUrl}/blob/${commitHash}/supabase/migrations/20260502174252_a88e3c13-46b8-4ce4-b1b8-c8500d390f3d.sql) | Sim |
-| **UX** | WCAG Compliance | ✅ Implementado | [Page Evidence](${repoUrl}/blob/${commitHash}/src/pages/admin/AdminVerbasPage.tsx) | Sim |
-| **Governança** | Blockchain Log | ⏳ A implementar | [Roadmap 2026](${repoUrl}/tree/main/roadmap) | - |
-`;
+    let checklist = "### 📑 Checklist Auditável de Conformidade\n\n| Módulo | Item | Status | Evidência (Link/Commit) | Validado | Link Ativo |\n| :--- | :--- | :--- | :--- | :--- | :--- |\n";
+    for (const item of checklistItems) {
+        const isEvidenceValid = await validateLink(item.evidence);
+        checklist += `| **${item.module}** | ${item.item} | ${item.status} | [Ver Evidência](${item.evidence}) | ${item.validated} | ${isEvidenceValid ? '🟢' : '🔴'} |\n`;
+    }
 
     const finalContent = `
 # 🛡️ DOSSIÊ DE AUDITORIA ENTERPRISE - PROMAGIFTS SICOOB
