@@ -41,10 +41,13 @@ export function QuoteNextActionBanner({
         };
       case "pending":
       case "pending_approval":
+      case "pending_singular_approval":
         return {
           icon: <Clock className="h-5 w-5 text-warning" />,
-          title: "Aguardando Aprovação Interna",
-          description: "Este orçamento possui descontos acima do seu limite e aguarda revisão do gestor.",
+          title: "Aguardando Aprovação",
+          description: status === "pending_singular_approval" 
+            ? "Este orçamento aguarda validação do comprador da Singular."
+            : "Este orçamento possui descontos acima do seu limite e aguarda revisão do gestor.",
           buttonLabel: "Ver Histórico",
           action: () => onAction?.("view_history"),
           variant: "warning"
@@ -62,17 +65,20 @@ export function QuoteNextActionBanner({
       case "approved_singular":
         return {
           icon: <CheckCircle2 className="h-5 w-5 text-success" />,
-          title: "Pronto para Conversão",
-          description: "O orçamento foi aprovado! Converta agora em um pedido para iniciar a produção.",
+          title: "Orçamento Aprovado",
+          description: "A proposta foi aprovada! Converta agora em um pedido para iniciar a produção.",
           buttonLabel: "Converter em Pedido",
           action: () => onAction?.("convert_to_order"),
           variant: "success"
         };
       case "rejected":
+      case "rejected_singular":
         return {
           icon: <AlertTriangle className="h-5 w-5 text-destructive" />,
-          title: "Orçamento Rejeitado",
-          description: "Revise os motivos da rejeição e faça os ajustes necessários para reenviar.",
+          title: "Orçamento Reprovado",
+          description: status === "rejected_singular"
+            ? "O comprador da Singular solicitou ajustes neste orçamento."
+            : "Revise os motivos da recusa e faça os ajustes necessários para reenviar.",
           buttonLabel: "Ajustar e Reenviar",
           action: () => navigate(`/orcamentos/${quoteId}/editar`),
           variant: "destructive"
