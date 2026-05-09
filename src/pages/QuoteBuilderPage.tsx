@@ -21,7 +21,6 @@ import {
   FileText, Plus, Save, Send, Package, Loader2, BookTemplate, ArrowLeft,
   Edit, AlertTriangle, Calendar as CalendarIcon, Lock, Layers, X
 } from "lucide-react";
-} from "lucide-react";
 import { toast } from "sonner";
 import { Sparkles, ExternalLink } from "lucide-react";
 import { format, addDays } from "date-fns";
