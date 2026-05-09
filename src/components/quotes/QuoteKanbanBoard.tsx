@@ -83,6 +83,7 @@ export function QuoteKanbanBoard({
   
   const [activeId, setActiveId] = useState<string | null>(null);
   const [activeQuote, setActiveQuote] = useState<Quote | null>(null);
+  const [quickViewQuote, setQuickViewQuote] = useState<Quote | null>(null);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
