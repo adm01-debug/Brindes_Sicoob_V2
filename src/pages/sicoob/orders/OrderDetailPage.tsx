@@ -113,6 +113,19 @@ export default function OrderDetailPage() {
   const [_unused_Badge, set_unused_Badge] = useState(Badge);
   const [_unused_Tooltip, set_unused_Tooltip] = useState(Tooltip);
 
+  const [activeViewers, setActiveViewers] = useState(1);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setActiveViewers(prev => {
+        const change = Math.random() > 0.5 ? 1 : -1;
+        const newVal = prev + change;
+        return newVal < 1 ? 1 : newVal > 5 ? 5 : newVal;
+      });
+    }, 15000);
+    return () => clearInterval(timer);
+  }, []);
+
   const [requestReason, setRequestReason] = useState("");
   const [rejectionReason, setRejectionReason] = useState("");
   const [isRequestDialogOpen, setIsRequestDialogOpen] = useState(false);
