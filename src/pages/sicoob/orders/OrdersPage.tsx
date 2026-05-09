@@ -854,6 +854,9 @@ export default function OrdersPage() {
                 {order.status === 'escalated_to_board' && (
                   <div className="absolute top-0 left-0 w-full h-1 bg-amber-500" />
                 )}
+                <div className="absolute top-2 right-2">
+                  <Badge variant="outline" className="text-[8px] bg-background/80 backdrop-blur-sm border-indigo-100 font-mono">#{order.id.slice(0, 6)}</Badge>
+                </div>
                 <div 
                   className={cn(
                     "absolute top-3 left-3 z-10 opacity-0 group-hover:opacity-100 transition-opacity",
