@@ -108,7 +108,7 @@ export default function OrdersPage() {
   // Real-time synchronization
   useEffect(() => {
     const channel = supabase
-      .channel('schema-db-changes')
+      .channel('schema-db-changes-v10')
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'sicoob_orders' },
