@@ -36,6 +36,7 @@ import { QuoteBuilderProductSearch } from "@/components/quotes/QuoteBuilderProdu
 import { useQuoteBuilderState } from "@/hooks/useQuoteBuilderState";
 import { useUnsavedChangesGuard } from "@/hooks/useUnsavedChangesGuard";
 import { UnsavedChangesDialog } from "@/components/common/UnsavedChangesDialog";
+import { TagManager } from "@/components/quotes/TagManager";
 
 export default function QuoteBuilderPage() {
   const s = useQuoteBuilderState();
