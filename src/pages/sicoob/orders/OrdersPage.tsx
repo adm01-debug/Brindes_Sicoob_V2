@@ -486,6 +486,17 @@ export default function OrdersPage() {
                     </>
                   )}
                 </div>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="w-full mt-2 h-7 text-[10px] font-bold border border-transparent hover:border-border"
+                  onClick={() => {
+                    setStatusFilter("pending");
+                    toast.info("Filtrando por pedidos com SLA Crítico");
+                  }}
+                >
+                  Ver Urgências <ArrowRight className="ml-1 h-3 w-3" />
+                </Button>
               </CardContent>
             </Card>
           </motion.div>
