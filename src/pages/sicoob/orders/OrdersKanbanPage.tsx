@@ -131,6 +131,10 @@ export function DraggableCard({ order, onClick, canDrag, reasonBlocked }: Dragga
     disabled: !canDrag,
   });
 
+  const handlePointerDown = () => {
+    if (canDrag && 'vibrate' in navigator) navigator.vibrate(5);
+  };
+
   const card = (
     <div
       ref={setNodeRef}
