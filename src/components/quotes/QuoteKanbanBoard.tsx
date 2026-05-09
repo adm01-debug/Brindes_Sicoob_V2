@@ -217,6 +217,7 @@ interface QuoteCardProps {
   quote: Quote;
   isOverlay?: boolean;
   onClick?: () => void;
+  disabled?: boolean;
 }
 
 function SortableQuoteCard({ quote, onClick }: { quote: Quote; onClick: () => void }) {
