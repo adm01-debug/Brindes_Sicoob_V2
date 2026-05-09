@@ -87,6 +87,9 @@ export function useQuotes() {
     // Permission check for status transitions
     const isRestrictedTransition = ['approved', 'rejected', 'approved_singular', 'rejected_singular'].includes(status);
     
+    // Check for "approved" specifically to set approved_by/at correctly
+    const isApprovalDecision = ['approved', 'approved_singular'].includes(status);
+    
     // Check if transition is to one of the final/manager states
     if (isRestrictedTransition && !isSupervisorOrAbove) {
       toast.error("Apenas supervisores podem aprovar ou rejeitar orçamentos");
