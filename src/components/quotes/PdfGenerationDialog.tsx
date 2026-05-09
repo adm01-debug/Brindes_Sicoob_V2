@@ -156,6 +156,11 @@ export function PdfGenerationDialog({
       setPdfBlob(blob);
       blobUrlRef.current = URL.createObjectURL(blob);
       setStage("ready");
+      
+      if (quoteId) {
+        logPdfGenerated(quoteId, pdfOptions);
+      }
+      
       toast.success("PDF gerado com sucesso!");
     } catch (error) {
       console.error("Error generating PDF:", error);
