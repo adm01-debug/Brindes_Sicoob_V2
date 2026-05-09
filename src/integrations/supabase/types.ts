@@ -5863,6 +5863,7 @@ export type Database = {
       }
       quote_templates: {
         Row: {
+          category: string | null
           created_at: string
           delivery_time: string | null
           description: string | null
@@ -5881,6 +5882,7 @@ export type Database = {
           validity_days: number | null
         }
         Insert: {
+          category?: string | null
           created_at?: string
           delivery_time?: string | null
           description?: string | null
@@ -5899,6 +5901,7 @@ export type Database = {
           validity_days?: number | null
         }
         Update: {
+          category?: string | null
           created_at?: string
           delivery_time?: string | null
           description?: string | null
