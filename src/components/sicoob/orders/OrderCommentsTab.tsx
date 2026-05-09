@@ -49,12 +49,23 @@ export const OrderCommentsTab = ({ orderId }: OrderCommentsTabProps) => {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
-            <Textarea
-              placeholder="Escreva uma mensagem ou observação..."
-              value={newComment}
-              onChange={(e) => setNewComment(e.target.value)}
-              className="min-h-[100px] resize-none border-muted-foreground/20 focus-visible:ring-sicoob-green"
-            />
+            <div className="relative">
+              <Textarea
+                placeholder="Escreva uma mensagem... Use @ para mencionar gestores."
+                value={newComment}
+                onChange={(e) => setNewComment(e.target.value)}
+                className="min-h-[100px] resize-none border-muted-foreground/20 focus-visible:ring-sicoob-green pr-12"
+              />
+              {newComment.includes("@") && (
+                <div className="absolute bottom-full left-0 w-48 bg-white border rounded-md shadow-lg z-50 mb-1 p-1">
+                  <p className="text-[9px] font-bold text-muted-foreground px-2 py-1 uppercase">Mencionar Gestor</p>
+                  <Button variant="ghost" size="sm" className="w-full justify-start h-8 text-xs gap-2" onClick={() => setNewComment(newComment.split("@")[0] + "@Admin Central ")}>
+                    <Avatar className="h-5 w-5"><AvatarFallback className="text-[8px]">AC</AvatarFallback></Avatar>
+                    Admin Central
+                  </Button>
+                </div>
+              )}
+            </div>
             <div className="flex items-center justify-between">
               {isSupervisorOrAbove ? (
                 <div className="flex items-center space-x-2">
