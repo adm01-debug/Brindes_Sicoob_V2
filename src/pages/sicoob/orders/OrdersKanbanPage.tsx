@@ -325,25 +325,16 @@ export default function OrdersKanbanPage() {
       return;
     }
 
-    // Optimistic Update
-    const previousOrders = [...orders];
-    setOrders((prev) =>
-      prev.map((o) => (o.id === orderId ? { ...o, status: targetCol } : o)),
-    );
-
+    // A lógica de otimismo agora é centralizada no hook
     try {
-      await sicoobOrderService.updateOrderStatus(orderId, targetCol, activeOrder.status, "Movido via Kanban Intelligence");
-      
-      // Invalidate query to sync with server
-      queryClient.invalidateQueries({ queryKey: ["sicoob_orders_list_kanban"] });
-      
-      toast.success("Movimentação Concluída", {
-        icon: <Zap className="h-4 w-4 text-sicoob-green" />,
-        description: `Pedido #${activeOrder.order_number} agora em "${ORDER_STATUS_CONFIG[targetCol].label}".`,
+      await updateStatus({
+        orderId,
+        newStatus: targetCol,
+        oldStatus: activeOrder.status,
+        observations: "Movido via Kanban Excellence"
       });
     } catch (err: any) {
-      setOrders(previousOrders); // Rollback
-      toast.error("Erro na Sincronização", { description: err.message });
+      // O hook já trata o rollback
     }
   };
 
