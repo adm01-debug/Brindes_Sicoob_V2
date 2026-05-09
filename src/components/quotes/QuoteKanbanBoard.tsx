@@ -260,9 +260,23 @@ interface QuoteCardProps {
   isOverlay?: boolean;
   onClick?: () => void;
   disabled?: boolean;
+  isSelected?: boolean;
+  onToggleSelection?: (id: string) => void;
 }
 
-function SortableQuoteCard({ quote, onClick, disabled }: { quote: Quote; onClick: () => void; disabled?: boolean }) {
+function SortableQuoteCard({ 
+  quote, 
+  onClick, 
+  disabled, 
+  isSelected, 
+  onToggleSelection 
+}: { 
+  quote: Quote; 
+  onClick: () => void; 
+  disabled?: boolean;
+  isSelected?: boolean;
+  onToggleSelection: (id: string) => void;
+}) {
   const {
     attributes,
     listeners,
