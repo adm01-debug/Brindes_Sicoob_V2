@@ -139,6 +139,7 @@ export function useQuotesDashboard() {
     return {
       totalQuotes, totalValue, approvedValue, approvalRate, rejectionRate,
       averageResponseTime, averageValue: totalQuotes > 0 ? totalValue / totalQuotes : 0,
+      totalProfit, averageMargin,
       pendingQuotes: pending.length, statusDistribution,
       monthlyData: Object.values(monthlyGroups), conversionFunnel,
     };
