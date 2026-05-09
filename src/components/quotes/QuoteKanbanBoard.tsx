@@ -33,15 +33,33 @@ import {
   GripVertical, 
   AlertTriangle, 
   Lock,
-  PackageX
+  PackageX,
+  TrendingUp,
+  TrendingDown,
+  Info,
+  Eye
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { Quote } from "@/hooks/quotes/quoteTypes";
+import { Quote, QuoteItem } from "@/hooks/quotes/quoteTypes";
 import { useRBAC } from "@/hooks/useRBAC";
 import confetti from "canvas-confetti";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useQuotesStockStatus } from "@/hooks/quote/useQuotesStockStatus";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+} from "@/components/ui/sheet";
+import { Separator } from "@/components/ui/separator";
 
 const KANBAN_STATUSES = ["draft", "pending", "sent", "approved", "rejected"] as const;
 type KanbanStatus = (typeof KANBAN_STATUSES)[number];
@@ -66,6 +84,7 @@ export function QuoteKanbanBoard({
   
   const [activeId, setActiveId] = useState<string | null>(null);
   const [activeQuote, setActiveQuote] = useState<Quote | null>(null);
+  const [quickViewQuote, setQuickViewQuote] = useState<Quote | null>(null);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -149,6 +168,7 @@ export function QuoteKanbanBoard({
             status={status}
             quotes={columns[status]}
             onQuoteClick={(id) => navigate(`/orcamentos/${id}`)}
+            onQuickView={(quote) => setQuickViewQuote(quote)}
             isReadOnly={['approved', 'rejected'].includes(status) && !isSupervisorOrAbove}
             selectedIds={selectedIds}
             onToggleSelection={onToggleSelection}
@@ -170,6 +190,83 @@ export function QuoteKanbanBoard({
           <QuoteCard quote={activeQuote} isOverlay />
         ) : null}
       </DragOverlay>
+
+      {/* Quick View Sheet */}
+      <Sheet open={!!quickViewQuote} onOpenChange={(open) => !open && setQuickViewQuote(null)}>
+        <SheetContent className="sm:max-w-md overflow-y-auto">
+          <SheetHeader className="mb-6">
+            <div className="flex items-center justify-between">
+              <SheetTitle className="text-xl font-bold">
+                #{quickViewQuote?.quote_number}
+              </SheetTitle>
+              <Badge variant="secondary">
+                {quickViewQuote && QUOTE_STATUS_CONFIG[quickViewQuote.status]?.label}
+              </Badge>
+            </div>
+            <SheetDescription className="flex flex-col gap-1">
+              <span className="font-medium text-foreground">
+                {quickViewQuote?.client_company || quickViewQuote?.client_name || "Sem cliente"}
+              </span>
+              <span className="text-xs">
+                Criado em: {quickViewQuote?.created_at && new Date(quickViewQuote.created_at).toLocaleDateString()}
+              </span>
+            </SheetDescription>
+          </SheetHeader>
+
+          <div className="space-y-6">
+            <div className="space-y-4">
+              <h4 className="text-sm font-semibold flex items-center gap-2">
+                <Info className="h-4 w-4" /> Resumo dos Itens
+              </h4>
+              <div className="space-y-3">
+                {quickViewQuote?.items?.map((item, idx) => (
+                  <div key={idx} className="flex gap-3 text-sm p-3 rounded-lg border bg-muted/30">
+                    <div className="h-10 w-10 rounded bg-background border flex items-center justify-center shrink-0">
+                      {item.product_image_url ? (
+                        <img src={item.product_image_url} alt={item.product_name} className="h-full w-full object-contain" />
+                      ) : (
+                        <PackageX className="h-5 w-5 text-muted-foreground" />
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium truncate">{item.product_name}</p>
+                      <div className="flex justify-between text-xs text-muted-foreground mt-1">
+                        <span>{item.quantity} un.</span>
+                        <span>{formatCurrency(item.unit_price)} / un.</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <Separator />
+
+            <div className="space-y-3">
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">Subtotal</span>
+                <span>{formatCurrency(quickViewQuote?.subtotal || 0)}</span>
+              </div>
+              {quickViewQuote?.discount_amount && quickViewQuote.discount_amount > 0 && (
+                <div className="flex justify-between text-sm text-destructive">
+                  <span>Desconto ({quickViewQuote.discount_percent}%)</span>
+                  <span>-{formatCurrency(quickViewQuote.discount_amount)}</span>
+                </div>
+              )}
+              <div className="flex justify-between font-bold text-lg pt-2 border-t">
+                <span>Total</span>
+                <span className="text-primary">{formatCurrency(quickViewQuote?.total || 0)}</span>
+              </div>
+            </div>
+
+            <div className="flex gap-2 pt-4">
+              <Button className="flex-1" onClick={() => navigate(`/orcamentos/${quickViewQuote?.id}`)}>
+                Ver Detalhes Completos
+              </Button>
+            </div>
+          </div>
+        </SheetContent>
+      </Sheet>
     </DndContext>
   );
 }
@@ -178,6 +275,7 @@ interface KanbanColumnProps {
   status: KanbanStatus;
   quotes: Quote[];
   onQuoteClick: (id: string) => void;
+  onQuickView: (quote: Quote) => void;
   isReadOnly?: boolean;
   selectedIds: string[];
   onToggleSelection: (id: string) => void;
@@ -188,6 +286,7 @@ function KanbanColumn({
   status, 
   quotes, 
   onQuoteClick, 
+  onQuickView,
   isReadOnly = false,
   selectedIds,
   onToggleSelection,
@@ -244,6 +343,7 @@ function KanbanColumn({
                   key={quote.id}
                    quote={quote}
                    onClick={() => onQuoteClick(quote.id!)}
+                   onQuickView={() => onQuickView(quote)}
                    disabled={isReadOnly}
                    isSelected={selectedIds.includes(quote.id!)}
                    onToggleSelection={onToggleSelection}
@@ -262,6 +362,7 @@ interface QuoteCardProps {
   quote: Quote;
   isOverlay?: boolean;
   onClick?: () => void;
+  onQuickView?: () => void;
   disabled?: boolean;
   isSelected?: boolean;
   onToggleSelection?: (id: string) => void;
@@ -271,6 +372,7 @@ interface QuoteCardProps {
 function SortableQuoteCard({ 
   quote, 
   onClick, 
+  onQuickView,
   disabled, 
   isSelected, 
   onToggleSelection,
@@ -278,6 +380,7 @@ function SortableQuoteCard({
 }: { 
   quote: Quote; 
   onClick: () => void; 
+  onQuickView: () => void;
   disabled?: boolean;
   isSelected?: boolean;
   onToggleSelection: (id: string) => void;
@@ -315,6 +418,7 @@ function SortableQuoteCard({
       <QuoteCard 
         quote={quote} 
         onClick={onClick} 
+        onQuickView={onQuickView}
         attributes={attributes} 
         listeners={listeners} 
         disabled={disabled} 
@@ -330,6 +434,7 @@ function QuoteCard({
   quote, 
   isOverlay, 
   onClick, 
+  onQuickView,
   attributes, 
   listeners, 
   disabled, 
@@ -337,7 +442,19 @@ function QuoteCard({
   onToggleSelection,
   hasStockIssue 
 }: QuoteCardProps & { attributes?: any; listeners?: any }) {
+  const { isSupervisorOrAbove } = useRBAC();
   const isHighValue = (quote.total || 0) > 5000;
+  
+  // Margem Bruta Estimada
+  const totalCost = quote.total_cost || 0;
+  const totalValue = quote.total || 0;
+  const margin = totalValue > 0 ? ((totalValue - totalCost) / totalValue) * 100 : 0;
+  
+  const getMarginColor = (m: number) => {
+    if (m >= 30) return "text-emerald-500 bg-emerald-500/10 border-emerald-500/20";
+    if (m >= 15) return "text-amber-500 bg-amber-500/10 border-amber-500/20";
+    return "text-destructive bg-destructive/10 border-destructive/20";
+  };
 
   return (
     <Card
@@ -372,6 +489,24 @@ function QuoteCard({
                   Alta Alçada
                 </Badge>
               )}
+              {isSupervisorOrAbove && (
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Badge variant="outline" className={cn("h-4 px-1 text-[8px] border", getMarginColor(margin))}>
+                        {margin > 0 ? <TrendingUp className="h-2 w-2 mr-0.5" /> : <TrendingDown className="h-2 w-2 mr-0.5" />}
+                        {margin.toFixed(1)}%
+                      </Badge>
+                    </TooltipTrigger>
+                    <TooltipContent side="top" className="text-[10px] p-2">
+                      <p className="font-bold">Rentabilidade Estimada</p>
+                      <p>Valor: {formatCurrency(totalValue)}</p>
+                      <p>Custo: {formatCurrency(totalCost)}</p>
+                      <p>Lucro: {formatCurrency(totalValue - totalCost)}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              )}
               {hasStockIssue && (
                 <Badge variant="destructive" className="h-4 px-1 text-[8px] animate-pulse">
                   <PackageX className="h-2 w-2 mr-1" />
@@ -400,7 +535,20 @@ function QuoteCard({
           <Badge variant="secondary" className="text-[10px] h-5 tabular-nums font-bold text-primary">
             {formatCurrency(quote.total || 0)}
           </Badge>
-          <div className="flex items-center gap-1.5 min-w-0">
+          <div className="flex items-center gap-2 min-w-0">
+            {onQuickView && (
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onQuickView();
+                }}
+              >
+                <Eye className="h-3 w-3" />
+              </Button>
+            )}
             <span className="text-[9px] text-muted-foreground truncate">
               {quote.updated_at ? new Date(quote.updated_at).toLocaleDateString() : "Recente"}
             </span>
