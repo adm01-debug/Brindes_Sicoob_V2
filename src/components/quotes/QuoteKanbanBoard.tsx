@@ -324,8 +324,9 @@ function KanbanColumn({
             <Lock className="h-3 w-3 text-muted-foreground" />
           )}
         </div>
-        <p className="text-[10px] text-muted-foreground mt-1 truncate">
-          Total: {formatCurrency(quotes.reduce((s, i) => s + (i.total || 0), 0))}
+        <p className="text-[10px] text-muted-foreground mt-1 flex justify-between items-center">
+          <span>Total: {formatCurrency(quotes.reduce((s, i) => s + (i.total || 0), 0))}</span>
+          <span className="opacity-70">{quotes.length} cards</span>
         </p>
       </div>
 
