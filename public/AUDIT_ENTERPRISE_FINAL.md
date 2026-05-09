@@ -1,8 +1,8 @@
 
 # 🛡️ DOSSIÊ DE AUDITORIA ENTERPRISE - PROMAGIFTS SICOOB
-**ID da Auditoria:** `AUDIT-890ebdb88-1778326892995`
-**Ref de Versão:** [890ebdb88](https://github.com/promo-gifts/app/commit/890ebdb88)
-**Data de Geração:** 09/05/2026, 11:41:32
+**ID da Auditoria:** `AUDIT-e3392dc9c-1778326989643`
+**Ref de Versão:** [e3392dc9c](https://github.com/promo-gifts/app/commit/e3392dc9c)
+**Data de Geração:** 09/05/2026, 11:43:09
 **Responsável:** Lovable Enterprise Engine
 
 ---
@@ -26,9 +26,9 @@ O sistema foi submetido a uma auditoria automatizada de 360 graus. A infraestrut
 
 | Módulo | Item | Status | Evidência (Link/Commit) | Validado |
 | :--- | :--- | :--- | :--- | :--- |
-| **Segurança** | RLS Multi-tenant | ✅ Implementado | [Commit 890ebdb88](https://github.com/promo-gifts/app/commit/890ebdb88) | Sim |
-| **Financeiro** | Precisão 4-Dec | ✅ Implementado | [Migração SQL](https://github.com/promo-gifts/app/blob/890ebdb88/supabase/migrations/20260502174252_a88e3c13-46b8-4ce4-b1b8-c8500d390f3d.sql) | Sim |
-| **UX** | WCAG Compliance | ✅ Implementado | [Page Evidence](https://github.com/promo-gifts/app/blob/890ebdb88/src/pages/admin/AdminVerbasPage.tsx) | Sim |
+| **Segurança** | RLS Multi-tenant | ✅ Implementado | [Commit e3392dc9c](https://github.com/promo-gifts/app/commit/e3392dc9c) | Sim |
+| **Financeiro** | Precisão 4-Dec | ✅ Implementado | [Migração SQL](https://github.com/promo-gifts/app/blob/e3392dc9c/supabase/migrations/20260502174252_a88e3c13-46b8-4ce4-b1b8-c8500d390f3d.sql) | Sim |
+| **UX** | WCAG Compliance | ✅ Implementado | [Page Evidence](https://github.com/promo-gifts/app/blob/e3392dc9c/src/pages/admin/AdminVerbasPage.tsx) | Sim |
 | **Governança** | Blockchain Log | ⏳ A implementar | [Roadmap 2026](https://github.com/promo-gifts/app/tree/main/roadmap) | - |
 
 
@@ -223,9 +223,9 @@ O sistema foi submetido a uma auditoria automatizada de 360 graus. A infraestrut
 ## 5. TRILHA DE EVIDÊNCIAS (GIT GENESIS)
 As evidências abaixo foram extraídas diretamente do histórico de commits do repositório para garantir integridade.
 
-- **Último Deploy:** 890ebdb88
+- **Último Deploy:** e3392dc9c
 - **Ambiente:** Lovable Cloud Production
 - **Integridade da Auditoria:** Verified by Lovable SHA-256
 
 ---
-*Relatório gerado automaticamente em 2026-05-09T11:41:33.019Z. Confidencial e Intransferível.*
+*Relatório gerado automaticamente em 2026-05-09T11:43:09.658Z. Confidencial e Intransferível.*
