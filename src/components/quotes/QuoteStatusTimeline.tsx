@@ -50,21 +50,26 @@ export function QuoteStatusTimeline({
   isSyncing = false,
 }: QuoteStatusTimelineProps) {
   const isPendingApproval = status === "pending_approval";
+  const isPendingSingular = status === "pending_singular_approval";
+  
   // Compute current index based on filtered steps
-  const activeSteps = isPendingApproval ? steps : steps.filter(s => s.key !== "pending_approval");
+  const activeSteps = (isPendingApproval || isPendingSingular) 
+    ? steps 
+    : steps.filter(s => s.key !== "pending_approval" && s.key !== "pending_singular_approval");
+    
   const stepIdx = activeSteps.findIndex(s => s.key === status);
   const baseIdx = stepIdx >= 0 ? stepIdx : (statusOrder[status] != null ? Math.min(statusOrder[status], activeSteps.length) : 0);
   const syncIdx = activeSteps.findIndex(s => s.key === "syncing");
   const currentIdx = isSyncing && syncIdx >= 0 ? syncIdx : baseIdx;
 
-  const isRejected = status === "rejected";
+  const isRejected = status === "rejected" || status === "rejected_singular";
   const isExpired  = status === "expired";
   const isFinalNegative = isRejected || isExpired;
 
-  // Filter out pending_approval step if not relevant to this quote
-  const relevantSteps = isPendingApproval || status === "pending_approval"
+  // Filter out approval steps if not relevant to this quote
+  const relevantSteps = (isPendingApproval || isPendingSingular || statusOrder[status] > 0)
     ? steps
-    : steps.filter(s => s.key !== "pending_approval");
+    : steps.filter(s => s.key !== "pending_approval" && s.key !== "pending_singular_approval");
 
   const displaySteps = relevantSteps.map((step, idx) => {
     if (idx === relevantSteps.length - 1 && isRejected) {
