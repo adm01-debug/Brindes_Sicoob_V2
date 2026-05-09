@@ -49,6 +49,8 @@ import { supabase } from "@/integrations/supabase/client";
 const KANBAN_STATUSES = ["draft", "pending", "sent", "approved", "rejected"] as const;
 type KanbanStatus = (typeof KANBAN_STATUSES)[number];
 
+import { useQuotesStockStatus } from "@/hooks/quote/useQuotesStockStatus";
+
 interface QuoteKanbanBoardProps {
   quotes: Quote[];
   selectedIds: string[];
