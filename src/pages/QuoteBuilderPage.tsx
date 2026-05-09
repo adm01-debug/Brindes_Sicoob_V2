@@ -27,12 +27,13 @@ import { format, addDays } from "date-fns";
 import { QuoteTemplateSelector } from "@/components/quotes/QuoteTemplateSelector";
 import { SaveAsTemplateButton } from "@/components/quotes/SaveAsTemplateButton";
 import { QuoteProductCustomization } from "@/components/quotes/QuoteProductCustomization";
-import { CompanyContactSelector } from "@/components/quotes/CompanyContactSelector";
+import { QuoteClientSelector } from "@/components/quotes/QuoteClientSelector";
+import { QuoteProductSelector } from "@/components/quotes/QuoteProductSelector";
+import { QuoteItemsList } from "@/components/quotes/QuoteItemsList";
+import { QuoteSummary } from "@/components/quotes/QuoteSummary";
 import { QuoteAutoSave } from "@/components/quotes/QuoteAutoSave";
-import { DraggableQuoteItems } from "@/components/quotes/DraggableQuoteItems";
 import { QuoteBuilderStepper } from "@/components/quotes/QuoteBuilderStepper";
 import { QuoteBuilderSummaryColumn } from "@/components/quotes/QuoteBuilderSummaryColumn";
-import { QuoteBuilderProductSearch } from "@/components/quotes/QuoteBuilderProductSearch";
 import { useQuoteBuilderState } from "@/hooks/useQuoteBuilderState";
 import { useUnsavedChangesGuard } from "@/hooks/useUnsavedChangesGuard";
 import { UnsavedChangesDialog } from "@/components/common/UnsavedChangesDialog";
@@ -157,10 +158,13 @@ export default function QuoteBuilderPage() {
             <div className="sticky top-24 space-y-3 overflow-y-auto max-h-[calc(100vh-7rem)] pr-1">
               {/* Empresa + Contato */}
               <div className={cn("rounded-2xl border bg-card p-4 space-y-4", (s.validationErrors.includes("empresa") || s.validationErrors.includes("contato")) ? "border-destructive/50" : "border-border/50")}>
-                <CompanyContactSelector
-                  companyId={s.clientId} contactId={s.contactId}
-                  onCompanyChange={s.setClientId} onContactChange={s.setContactId}
-                  onCompanyInfoChange={s.setCompanyInfo} onContactInfoChange={s.setContactInfo}
+                <QuoteClientSelector
+                  clientId={s.clientId}
+                  contactId={s.contactId}
+                  onClientChange={s.setClientId}
+                  onContactChange={s.setContactId}
+                  onClientInfoChange={s.setCompanyInfo}
+                  onContactInfoChange={s.setContactInfo}
                 />
                 {(s.validationErrors.includes("empresa") || s.validationErrors.includes("contato")) && (
                   <p className="text-xs text-destructive flex items-center gap-1">
@@ -394,7 +398,7 @@ export default function QuoteBuilderPage() {
       </div>
 
       {/* Product Search Dialog */}
-      <QuoteBuilderProductSearch
+      <QuoteProductSelector
         open={s.productSearchOpen}
         onOpenChange={s.setProductSearchOpen}
         productSearch={s.productSearch}
