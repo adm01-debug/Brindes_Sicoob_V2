@@ -12,11 +12,12 @@ interface QuoteStatusTimelineProps {
 }
 
 const steps = [
-  { key: "draft",              label: "Rascunho",              icon: FileText },
-  { key: "pending_approval",   label: "Aprovação Desconto",    icon: Shield },
-  { key: "pending",            label: "Pendente",              icon: Clock },
-  { key: "syncing",            label: "Sincronizando",         icon: RefreshCw },
-  { key: "sent",               label: "Enviado",               icon: Send },
+  { key: "draft",                    label: "Rascunho",              icon: FileText },
+  { key: "pending_approval",         label: "Alçada Admin",          icon: Shield },
+  { key: "pending_singular_approval", label: "Análise Singular",      icon: Shield },
+  { key: "pending",                  label: "Pendente",              icon: Clock },
+  { key: "syncing",                  label: "Sincronizando",         icon: RefreshCw },
+  { key: "sent",                     label: "Enviado",               icon: Send },
 ];
 
 const statusOrder: Record<string, number> = {
