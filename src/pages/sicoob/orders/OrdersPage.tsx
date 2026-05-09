@@ -608,6 +608,14 @@ export default function OrdersPage() {
                   Cancelar
                 </Button>
                 <Button 
+                  variant="outline"
+                  size="sm"
+                  className="gap-2 border-indigo-200 text-indigo-700 hover:bg-indigo-50"
+                  onClick={() => toast.success(`Alertas enviados para ${selectedOrderIds.length} pedidos`)}
+                >
+                  <Clock className="h-4 w-4" /> Notificar SLA
+                </Button>
+                <Button 
                   size="sm" 
                   className="bg-sicoob-green hover:bg-sicoob-green-dark"
                   onClick={handleBulkApprove}
