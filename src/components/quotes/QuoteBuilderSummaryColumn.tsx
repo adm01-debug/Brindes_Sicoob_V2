@@ -223,21 +223,50 @@ export function QuoteBuilderSummaryColumn({
                   </button>
                 </div>
               ) : visibleItems.map(({ it: item, idx }) => {
+                const prevItem = idx > 0 ? items[idx - 1] : null;
+                const showGroupHeader = item.kit_group_id && (!prevItem || prevItem.kit_group_id !== item.kit_group_id);
                 const persTotal = calculateItemPersonalizationTotal(item);
                 const isActive = activeItemIndex === idx;
                 const isStale = staleIndexes.has(idx);
+                const isSelected = selectedIndexes.has(idx);
+                
                 return (
-                  <div
-                    key={idx}
-                    className={cn(
-                      "rounded-xl border transition-all cursor-pointer",
-                      isActive ? "border-primary/50 bg-primary/5 ring-1 ring-primary/20" : "border-border/60 bg-muted/30 hover:border-border",
-                      isStale && !isActive && "border-warning/40 bg-warning/[0.04]",
-                      isStale && isActive && "ring-warning/30"
+                  <React.Fragment key={idx}>
+                    {showGroupHeader && (
+                      <div className="flex items-center justify-between px-3 py-1.5 bg-emerald-500/10 border border-emerald-500/20 rounded-lg mb-2 mt-1 shadow-sm">
+                        <span className="flex items-center gap-1.5 text-[10px] font-bold text-emerald-700 uppercase tracking-wider">
+                          <Layers className="h-3 w-3" />
+                          Kit: {item.kit_name}
+                        </span>
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          className="h-5 text-[9px] text-emerald-700 hover:bg-emerald-500/20 px-1"
+                          onClick={() => onUngroup?.(item.kit_group_id!)}
+                        >
+                          Desfazer
+                        </Button>
+                      </div>
                     )}
-                    onClick={() => setActiveItemIndex(idx)}
-                  >
-                    <div className="p-3 space-y-2">
+                    <div
+                      className={cn(
+                        "rounded-xl border transition-all cursor-pointer relative",
+                        isActive ? "border-primary/50 bg-primary/5 ring-1 ring-primary/20" : "border-border/60 bg-muted/30 hover:border-border",
+                        isStale && !isActive && "border-warning/40 bg-warning/[0.04]",
+                        isStale && isActive && "ring-warning/30",
+                        isSelected && "ring-2 ring-primary/40 shadow-md"
+                      )}
+                      onClick={() => setActiveItemIndex(idx)}
+                    >
+                      {onToggleSelection && (
+                        <div 
+                          className="absolute top-2 left-2 z-10" 
+                          onClick={(e) => { e.stopPropagation(); onToggleSelection(idx); }}
+                        >
+                          <Checkbox checked={isSelected} className="h-3.5 w-3.5 rounded-sm border-muted-foreground/30 data-[state=checked]:bg-primary" />
+                        </div>
+                      )}
+                      <div className={cn("p-3 space-y-2", onToggleSelection && "pl-8")}>
                       <div className="flex items-start gap-3">
                         <div className="shrink-0">
                           {item.product_image_url ? (
