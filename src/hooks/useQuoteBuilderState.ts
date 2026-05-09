@@ -65,6 +65,7 @@ export function useQuoteBuilderState() {
   const [loadingQuote, setLoadingQuote] = useState(isEditMode);
   const [expandedItems, setExpandedItems] = useState<Set<number>>(new Set());
   const [activeItemIndex, setActiveItemIndex] = useState<number | null>(null);
+  const [selectedItemIndexes, setSelectedItemIndexes] = useState<Set<number>>(new Set());
 
   // ── Modular Hooks ──
   const search = useQuoteProductSearch();
@@ -170,6 +171,42 @@ export function useQuoteBuilderState() {
 
   const removeItem = useCallback((index: number) => {
     setItems(prev => prev.filter((_, idx) => idx !== index));
+    setSelectedItemIndexes(prev => {
+      const n = new Set(prev);
+      n.delete(index);
+      // Adjust indexes above removed
+      const adjusted = new Set<number>();
+      prev.forEach(i => {
+        if (i < index) adjusted.add(i);
+        else if (i > index) adjusted.add(i - 1);
+      });
+      return adjusted;
+    });
+  }, []);
+
+  const groupItemsIntoKit = useCallback((indexes: number[], kitName: string) => {
+    const groupId = crypto.randomUUID();
+    setItems(prev => prev.map((item, idx) => 
+      indexes.includes(idx) ? { ...item, kit_group_id: groupId, kit_name: kitName } : item
+    ));
+    setSelectedItemIndexes(new Set());
+    toast.success(`Itens agrupados no kit "${kitName}"`);
+  }, []);
+
+  const ungroupItems = useCallback((groupId: string) => {
+    setItems(prev => prev.map(item => 
+      item.kit_group_id === groupId ? { ...item, kit_group_id: null, kit_name: null } : item
+    ));
+    toast.success("Itens desagrupados do kit");
+  }, []);
+
+  const toggleItemSelection = useCallback((index: number) => {
+    setSelectedItemIndexes(prev => {
+      const n = new Set(prev);
+      if (n.has(index)) n.delete(index);
+      else n.add(index);
+      return n;
+    });
   }, []);
 
   const applyTemplate = useCallback((template: QuoteTemplate) => {
@@ -305,6 +342,8 @@ export function useQuoteBuilderState() {
     toggleExpanded, handlePersonalizationsChange,
     handleProductClick: search.setProductSearchOpen,
     addProductWithColor, updateItemQuantity, updateItemPrice, removeItem,
+    groupItemsIntoKit, ungroupItems, selectedItemIndexes, toggleItemSelection,
+    setSelectedItemIndexes,
     confirmItemPrice: (index: number) => {
       const ts = new Date().toISOString();
       setItems(prev => prev.map((item, idx) => idx === index ? { ...item, price_confirmed_at: ts } : item));
