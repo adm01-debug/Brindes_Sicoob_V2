@@ -99,7 +99,7 @@ async function buildDossier() {
     };
     const currentRepoUrl = envUrls[env] || envUrls.prod;
 
-    console.log(`🚀 Iniciando Enterprise Dossier Builder v10.3 [Ambiente: ${env}]...`);
+    console.log(`🚀 Iniciando Enterprise Dossier Builder v10.6 [Ambiente: ${env}]...`);
     
     const commitHash = execSync('git rev-parse --short HEAD').toString().trim();
     const rlsTables = await getRlsCoverage();
