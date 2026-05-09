@@ -134,6 +134,7 @@ export function QuotesConfigurableList({
   onBulkExport,
   onDuplicate,
   onMarkApproved,
+  isSupervisor = false,
 }: QuotesConfigurableListProps) {
   const navigate = useNavigate();
 
