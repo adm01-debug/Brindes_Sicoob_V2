@@ -7,6 +7,7 @@ import { useMemo } from "react";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { PageSEO } from "@/components/seo/PageSEO";
 import { cn } from "@/lib/utils";
+import { motion, AnimatePresence } from "framer-motion";
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -18,7 +19,8 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar";
 import {
   FileText, Plus, Save, Send, Package, Loader2, BookTemplate, ArrowLeft,
-  Edit, AlertTriangle, Calendar as CalendarIcon, Lock
+  Edit, AlertTriangle, Calendar as CalendarIcon, Lock, Layers, X
+} from "lucide-react";
 } from "lucide-react";
 import { toast } from "sonner";
 import { Sparkles, ExternalLink } from "lucide-react";
