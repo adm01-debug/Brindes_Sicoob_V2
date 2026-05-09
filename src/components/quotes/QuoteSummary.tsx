@@ -11,10 +11,13 @@ interface QuoteSummaryProps {
   discountType: 'percent' | 'amount';
   shippingCost: number;
   total: number;
+  profit?: number;
+  marginPercent?: number;
   paymentTerms?: string;
   deliveryTime?: string;
   validUntil?: string;
   className?: string;
+  isInternal?: boolean;
 }
 
 /**
