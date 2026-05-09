@@ -168,7 +168,10 @@ export const PropostaComercialTailwind = forwardRef<HTMLDivElement, { data: Prop
                 {isLast && (
                   <>
                     <ProposalTotals data={data} />
-                    <ProposalSellerSignature data={data} />
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
+                      <ProposalSellerSignature data={data} />
+                      <ProposalClientSignature data={data} />
+                    </div>
                   </>
                 )}
 
