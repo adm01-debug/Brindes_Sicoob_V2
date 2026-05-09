@@ -295,7 +295,7 @@ export function PdfGenerationDialog({
                         </span>
                       </div>
                     )}
-                    <PropostaComercialTailwind data={proposalData} isDraft={isDraft} options={pdfOptions} />
+                    <PropostaComercialTailwind data={proposalDataWithMeta as any} isDraft={isDraft} options={pdfOptions} />
                   </div>
                 </div>
               </div>
