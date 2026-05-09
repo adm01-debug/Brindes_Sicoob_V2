@@ -34,9 +34,12 @@ export interface ProposalItem {
 }
 
 export interface ProposalTemplateData {
+  quoteId?: string;
   quoteNumber: string;
+  idHash?: string;
   date: string;
   validUntil: string;
+  status?: string;
   client: {
     name: string;
     email?: string;
