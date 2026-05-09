@@ -7,6 +7,7 @@ import { ProposalTotals } from "./proposal/ProposalTotals";
 import { ProposalNotes } from "./proposal/ProposalNotes";
 import { ProposalSellerSignature } from "./proposal/ProposalSellerSignature";
 import { ProposalFooter } from "./proposal/ProposalFooter";
+import { ProposalClientSignature } from "./proposal/ProposalClientSignature";
 
 /* Compact client bar for continuation pages */
 function ProposalClientBarCompact({ data }: { data: ProposalTemplateData }) {
