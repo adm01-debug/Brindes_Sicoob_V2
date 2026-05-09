@@ -158,10 +158,13 @@ export default function QuoteBuilderPage() {
             <div className="sticky top-24 space-y-3 overflow-y-auto max-h-[calc(100vh-7rem)] pr-1">
               {/* Empresa + Contato */}
               <div className={cn("rounded-2xl border bg-card p-4 space-y-4", (s.validationErrors.includes("empresa") || s.validationErrors.includes("contato")) ? "border-destructive/50" : "border-border/50")}>
-                <CompanyContactSelector
-                  companyId={s.clientId} contactId={s.contactId}
-                  onCompanyChange={s.setClientId} onContactChange={s.setContactId}
-                  onCompanyInfoChange={s.setCompanyInfo} onContactInfoChange={s.setContactInfo}
+                <QuoteClientSelector
+                  clientId={s.clientId}
+                  contactId={s.contactId}
+                  onClientChange={s.setClientId}
+                  onContactChange={s.setContactId}
+                  onClientInfoChange={s.setCompanyInfo}
+                  onContactInfoChange={s.setContactInfo}
                 />
                 {(s.validationErrors.includes("empresa") || s.validationErrors.includes("contato")) && (
                   <p className="text-xs text-destructive flex items-center gap-1">
