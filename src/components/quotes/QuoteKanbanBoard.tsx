@@ -179,6 +179,9 @@ function KanbanColumn({ status, quotes, onQuoteClick, isReadOnly = false }: Kanb
           <Badge variant="secondary" className="h-5 px-1.5 text-[10px] font-bold">
             {quotes.length}
           </Badge>
+          {isReadOnly && (
+            <Lock className="h-3 w-3 text-muted-foreground" />
+          )}
         </div>
         <p className="text-[10px] text-muted-foreground mt-1 truncate">
           Total: {formatCurrency(quotes.reduce((s, i) => s + (i.total || 0), 0))}
