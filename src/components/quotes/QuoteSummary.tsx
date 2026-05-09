@@ -2,7 +2,9 @@ import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Calculator, Calendar, CreditCard, Truck } from "lucide-react";
+import { Calculator, Calendar, CreditCard, Truck, TrendingUp, TrendingDown, Info } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 
 interface QuoteSummaryProps {
@@ -87,18 +89,56 @@ export function QuoteSummary({
           </div>
 
           {isInternal && marginPercent !== undefined && (
-            <div className={cn(
-              "mt-3 p-2 rounded-lg border border-dashed flex items-center justify-between text-xs font-semibold shadow-sm transition-all",
-              marginPercent > 30 ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-700 dark:text-emerald-400" : 
-              marginPercent > 15 ? "bg-amber-500/10 border-amber-500/30 text-amber-700 dark:text-amber-400" : 
-              "bg-destructive/10 border-destructive/30 text-destructive dark:text-red-400"
-            )}>
-              <span className="flex items-center gap-1">
-                Rentabilidade
-              </span>
-              <span className="tabular-nums">
-                {profit && formatCurrency(profit)} ({marginPercent.toFixed(1)}%)
-              </span>
+            <div className="mt-4 pt-3 border-t border-border/50">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[10px] font-bold uppercase text-muted-foreground tracking-wider">Rentabilidade Real</span>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Info className="h-3 w-3 text-muted-foreground cursor-help" />
+                      </TooltipTrigger>
+                      <TooltipContent side="top" className="text-[10px] p-2 max-w-[200px]">
+                        <p>A margem é calculada sobre o valor real dos produtos (sem markup psicológico) subtraindo descontos e custos de personalização.</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
+                <div className={cn(
+                  "flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold",
+                  marginPercent > 30 ? "bg-emerald-500/10 text-emerald-600" : 
+                  marginPercent > 15 ? "bg-amber-500/10 text-amber-600" : 
+                  "bg-destructive/10 text-destructive"
+                )}>
+                  {marginPercent > 20 ? <TrendingUp className="h-2.5 w-2.5" /> : <TrendingDown className="h-2.5 w-2.5" />}
+                  {marginPercent.toFixed(1)}%
+                </div>
+              </div>
+
+              <div className="relative h-1.5 w-full bg-muted rounded-full overflow-hidden mb-1.5">
+                <div 
+                  className={cn(
+                    "absolute inset-y-0 left-0 transition-all duration-500 rounded-full",
+                    marginPercent > 30 ? "bg-emerald-500 shadow-glow-success" : 
+                    marginPercent > 15 ? "bg-amber-500" : 
+                    "bg-destructive"
+                  )} 
+                  style={{ width: `${Math.max(0, Math.min(marginPercent, 100))}%` }} 
+                />
+                {/* Meta line at 20% */}
+                <div className="absolute left-[20%] top-0 bottom-0 w-0.5 bg-foreground/20 z-10" />
+              </div>
+              
+              <div className="flex justify-between text-[9px] text-muted-foreground font-medium">
+                <span>Crítico</span>
+                <span className="text-foreground/40 font-bold">Meta 20%</span>
+                <span>Excelente</span>
+              </div>
+
+              <div className="mt-2.5 flex items-center justify-between text-[11px]">
+                <span className="text-muted-foreground">Lucro Bruto:</span>
+                <span className="font-bold text-foreground tabular-nums">{profit && formatCurrency(profit)}</span>
+              </div>
             </div>
           )}
         </div>

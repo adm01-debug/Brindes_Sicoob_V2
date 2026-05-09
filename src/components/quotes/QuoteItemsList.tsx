@@ -6,8 +6,11 @@ interface QuoteItemsListProps {
   items: QuoteItem[];
   onItemsChange?: (items: QuoteItem[]) => void;
   onEditItem?: (item: QuoteItem) => void;
-  onRemoveItem?: (id: string) => void;
+  onRemoveItem?: (index: number) => void;
   isEditable?: boolean;
+  selectedIndexes?: Set<number>;
+  onToggleSelection?: (index: number) => void;
+  onUngroup?: (groupId: string) => void;
 }
 
 /**
@@ -20,14 +23,30 @@ export function QuoteItemsList({
   onEditItem,
   onRemoveItem,
   isEditable = true,
+  selectedIndexes,
+  onToggleSelection,
+  onUngroup,
 }: QuoteItemsListProps) {
   if (isEditable && onItemsChange) {
     return (
       <DraggableQuoteItems
         items={items}
-        onItemsChange={onItemsChange}
-        onRemoveItem={onRemoveItem || (() => {})}
-        onEditItem={onEditItem || (() => {})}
+        onReorder={onItemsChange}
+        onUpdateQuantity={(idx, qty) => {
+          const newItems = [...items];
+          newItems[idx].quantity = qty;
+          onItemsChange(newItems);
+        }}
+        onUpdatePrice={(idx, price) => {
+          const newItems = [...items];
+          newItems[idx].unit_price = price;
+          onItemsChange(newItems);
+        }}
+        onRemove={onRemoveItem || (() => {})}
+        formatCurrency={(v) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v)}
+        selectedIndexes={selectedIndexes}
+        onToggleSelection={onToggleSelection}
+        onUngroup={onUngroup}
       />
     );
   }
