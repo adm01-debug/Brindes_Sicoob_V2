@@ -132,6 +132,7 @@ function SortableItem({
           "transition-all duration-200 overflow-hidden",
           isDragging && "opacity-50 shadow-2xl ring-2 ring-primary",
           "hover:shadow-md",
+          isSelected && "ring-2 ring-primary/40 bg-primary/[0.02]",
           isExpanded && "max-h-[calc(100vh-12rem)] flex flex-col"
         )}
       >
@@ -141,6 +142,17 @@ function SortableItem({
           isExpanded && "sticky top-0 border-b border-border/50 shadow-sm"
         )}>
           <div className="flex items-start gap-3">
+            {/* Selection Checkbox */}
+            {onToggleSelection && (
+              <div className="mt-2.5">
+                <Checkbox 
+                  checked={isSelected} 
+                  onCheckedChange={onToggleSelection} 
+                  className="rounded-sm border-muted-foreground/30 data-[state=checked]:bg-primary"
+                />
+              </div>
+            )}
+            {/* Drag Handle */}
             {/* Drag Handle */}
             <button
               {...attributes}
@@ -375,24 +387,52 @@ export function DraggableQuoteItems({
       >
         <div className="space-y-5">
           <AnimatePresence>
-            {itemsWithIds.map((item, index) => (
-              <SortableItem
-                key={item.id}
-                item={item}
-                index={index}
-                isExpanded={expandedItems.has(index)}
-                onUpdateQuantity={(qty) => onUpdateQuantity(index, qty)}
-                onUpdatePrice={(price) => onUpdatePrice(index, price)}
-                onRemove={() => onRemove(index)}
-                onTogglePersonalization={
-                  onTogglePersonalization ? () => onTogglePersonalization(index) : undefined
-                }
-                renderPersonalization={
-                  renderPersonalization ? () => renderPersonalization(item, index) : undefined
-                }
-                formatCurrency={formatCurrency}
-              />
-            ))}
+            {itemsWithIds.map((item, index) => {
+              const prevItem = index > 0 ? itemsWithIds[index - 1] : null;
+              const showGroupHeader = item.kit_group_id && (!prevItem || prevItem.kit_group_id !== item.kit_group_id);
+              
+              return (
+                <React.Fragment key={item.id}>
+                  {showGroupHeader && (
+                    <motion.div 
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      className="flex items-center justify-between px-4 py-2 bg-emerald-500/10 border border-emerald-500/20 rounded-xl"
+                    >
+                      <div className="flex items-center gap-2 text-emerald-700 font-bold text-xs uppercase tracking-wider">
+                        <Layers className="h-4 w-4" />
+                        Kit: {item.kit_name}
+                      </div>
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="h-6 text-[10px] text-emerald-700 hover:bg-emerald-500/20"
+                        onClick={() => onUngroup?.(item.kit_group_id!)}
+                      >
+                        Desagrupar
+                      </Button>
+                    </motion.div>
+                  )}
+                  <SortableItem
+                    item={item}
+                    index={index}
+                    isExpanded={expandedItems.has(index)}
+                    onUpdateQuantity={(qty) => onUpdateQuantity(index, qty)}
+                    onUpdatePrice={(price) => onUpdatePrice(index, price)}
+                    onRemove={() => onRemove(index)}
+                    isSelected={selectedIndexes.has(index)}
+                    onToggleSelection={onToggleSelection ? () => onToggleSelection(index) : undefined}
+                    onTogglePersonalization={
+                      onTogglePersonalization ? () => onTogglePersonalization(index) : undefined
+                    }
+                    renderPersonalization={
+                      renderPersonalization ? () => renderPersonalization(item, index) : undefined
+                    }
+                    formatCurrency={formatCurrency}
+                  />
+                </React.Fragment>
+              );
+            })}
           </AnimatePresence>
         </div>
       </SortableContext>
