@@ -18,6 +18,7 @@ export interface QuoteCardData {
   status: string;
   created_at: string;
   valid_until?: string | null;
+  tags?: string[] | null;
 }
 
 interface QuoteCardProps {
