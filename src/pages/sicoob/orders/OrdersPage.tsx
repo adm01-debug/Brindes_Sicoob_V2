@@ -376,8 +376,11 @@ export default function OrdersPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="flex items-center gap-1 text-[10px] text-sicoob-green font-bold">
+                <div className="flex items-center gap-2 text-[10px] text-sicoob-green font-bold mt-2">
                   <TrendingUp className="h-3 w-3" /> +12.5% <span className="text-muted-foreground font-normal ml-1">vs mês anterior</span>
+                  <div className="ml-auto opacity-60">
+                    <Sparkline data={[10, 25, 45, 30, 55, 70, 65]} height={15} width={40} />
+                  </div>
                 </div>
               </CardContent>
             </Card>
