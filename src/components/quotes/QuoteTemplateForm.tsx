@@ -118,6 +118,15 @@ export function QuoteTemplateForm({
               />
             </div>
             <div className="space-y-2">
+              <Label htmlFor="category">Categoria</Label>
+              <Input
+                id="category"
+                value={formData.category}
+                onChange={(e) => updateField("category", e.target.value)}
+                placeholder="Ex: Kits, Eventos, Promocional"
+              />
+            </div>
+            <div className="space-y-2">
               <Label htmlFor="validity">Validade (dias)</Label>
               <Input
                 id="validity"
