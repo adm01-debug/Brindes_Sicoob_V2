@@ -5172,6 +5172,7 @@ export type Database = {
           pa_id: string | null
           phone: string | null
           preferences: Json | null
+          quote_preferences: Json | null
           role: string | null
           updated_at: string
           user_id: string
@@ -5190,6 +5191,7 @@ export type Database = {
           pa_id?: string | null
           phone?: string | null
           preferences?: Json | null
+          quote_preferences?: Json | null
           role?: string | null
           updated_at?: string
           user_id: string
@@ -5208,6 +5210,7 @@ export type Database = {
           pa_id?: string | null
           phone?: string | null
           preferences?: Json | null
+          quote_preferences?: Json | null
           role?: string | null
           updated_at?: string
           user_id?: string
@@ -5586,6 +5589,47 @@ export type Database = {
           viewed_at?: string | null
         }
         Relationships: []
+      }
+      quote_audit_logs: {
+        Row: {
+          action: string
+          created_at: string | null
+          id: string
+          ip_address: string | null
+          metadata: Json | null
+          quote_id: string | null
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string | null
+          id?: string
+          ip_address?: string | null
+          metadata?: Json | null
+          quote_id?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string | null
+          id?: string
+          ip_address?: string | null
+          metadata?: Json | null
+          quote_id?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quote_audit_logs_quote_id_fkey"
+            columns: ["quote_id"]
+            isOneToOne: false
+            referencedRelation: "quotes"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       quote_comments: {
         Row: {
@@ -8233,6 +8277,10 @@ export type Database = {
           p_order_id: string
         }
         Returns: string
+      }
+      log_quote_action: {
+        Args: { _action: string; _metadata?: Json; _quote_id: string }
+        Returns: undefined
       }
       log_rls_denial: {
         Args: {

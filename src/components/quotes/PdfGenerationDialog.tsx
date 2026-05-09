@@ -20,6 +20,7 @@ import { generateProposalPDFv2, downloadPDF } from "@/utils/proposalPdfReactGene
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useQuoteHistory } from "@/hooks/useQuoteHistory";
 import { v4 as uuidv4 } from 'uuid';
 
 type Stage = "preview" | "generating" | "ready";
@@ -56,6 +57,7 @@ export function PdfGenerationDialog({
   trigger,
 }: PdfGenerationDialogProps) {
   const { profile } = useAuth();
+  const { logPdfGenerated, logStatusChanged } = useQuoteHistory();
   const [open, setOpen] = useState(false);
   const [stage, setStage] = useState<Stage>("preview");
   const [progress, setProgress] = useState(0);
@@ -154,6 +156,11 @@ export function PdfGenerationDialog({
       setPdfBlob(blob);
       blobUrlRef.current = URL.createObjectURL(blob);
       setStage("ready");
+      
+      if (quoteId) {
+        logPdfGenerated(quoteId, pdfOptions);
+      }
+      
       toast.success("PDF gerado com sucesso!");
     } catch (error) {
       console.error("Error generating PDF:", error);
@@ -214,6 +221,10 @@ export function PdfGenerationDialog({
         .eq("id", quoteId);
         
       if (updateError) throw updateError;
+
+      if (quoteId) {
+        logStatusChanged(quoteId, quoteStatus || "pending", "approved");
+      }
       
       toast.success("Orçamento aprovado e PDF assinado salvo!");
       onStatusUpdate?.("approved", publicUrl);
