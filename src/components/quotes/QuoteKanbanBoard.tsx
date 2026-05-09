@@ -187,6 +187,7 @@ interface KanbanColumnProps {
   isReadOnly?: boolean;
   selectedIds: string[];
   onToggleSelection: (id: string) => void;
+  stockIssues: Record<string, boolean>;
 }
 
 function KanbanColumn({ 
@@ -195,7 +196,8 @@ function KanbanColumn({
   onQuoteClick, 
   isReadOnly = false,
   selectedIds,
-  onToggleSelection
+  onToggleSelection,
+  stockIssues
 }: KanbanColumnProps) {
   const config = QUOTE_STATUS_CONFIG[status];
   const quoteIds = useMemo(() => quotes.map((q) => q.id!), [quotes]);
