@@ -5,12 +5,14 @@
  */
 
 import { useState, useCallback, useRef } from "react";
-import { Download, FileText, Eye, Loader2, Check, Send, Copy, Link2, MessageCircle, Mail, Printer } from "lucide-react";
+import { Download, FileText, Eye, Loader2, Check, Send, Copy, Link2, MessageCircle, Mail, Printer, Settings2, Image as ImageIcon, DollarSign } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { type ProposalTemplateData } from "@/components/pdf/ProposalHtmlTemplate";
 import { PropostaComercialTailwind } from "@/components/pdf/PropostaComercialTailwind";
@@ -58,6 +60,11 @@ export function PdfGenerationDialog({
   const [pdfBlob, setPdfBlob] = useState<Blob | null>(null);
   const [pdfVersion, setPdfVersion] = useState(1);
   const [isFinalizing, setIsFinalizing] = useState(false);
+  const [pdfOptions, setPdfOptions] = useState({
+    hidePrices: false,
+    hidePhotos: false,
+    hideTotals: false,
+  });
   const blobUrlRef = useRef<string | null>(null);
 
   const isDraft = quoteStatus === "draft";
@@ -80,7 +87,7 @@ export function PdfGenerationDialog({
       await new Promise((r) => setTimeout(r, 200));
       setProgress(50);
 
-      const blob = await generateProposalPDFv2(proposalData);
+      const blob = await generateProposalPDFv2(proposalData, pdfOptions);
 
       // Step 3: Finalizando
       setProgress(PROGRESS_STEPS[1].pct);
@@ -237,18 +244,49 @@ export function PdfGenerationDialog({
                         </span>
                       </div>
                     )}
-                    <PropostaComercialTailwind data={proposalData} isDraft={isDraft} />
+                    <PropostaComercialTailwind data={proposalData} isDraft={isDraft} options={pdfOptions} />
                   </div>
                 </div>
               </div>
 
               {/* Actions footer */}
-              <div className="px-6 py-4 border-t border-border bg-card flex items-center justify-between gap-3">
-                <div className="flex items-center gap-2 bg-warning/10 border border-warning/30 text-warning dark:text-warning rounded-lg px-3 py-2">
-                  <span className="text-lg">⚠️</span>
-                  <p className="text-sm font-semibold">
-                    Confira as informações antes de enviar
-                  </p>
+               <div className="px-6 py-4 border-t border-border bg-card flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div className="flex flex-wrap items-center gap-6">
+                  <div className="flex items-center space-x-2">
+                    <Switch 
+                      id="hide-prices" 
+                      checked={pdfOptions.hidePrices} 
+                      onCheckedChange={(v) => setPdfOptions(prev => ({ ...prev, hidePrices: v }))}
+                    />
+                    <Label htmlFor="hide-prices" className="text-xs cursor-pointer flex items-center gap-1.5">
+                      <DollarSign className="h-3 w-3 text-muted-foreground" />
+                      Ocultar Preços Unitários
+                    </Label>
+                  </div>
+                  
+                  <div className="flex items-center space-x-2">
+                    <Switch 
+                      id="hide-photos" 
+                      checked={pdfOptions.hidePhotos} 
+                      onCheckedChange={(v) => setPdfOptions(prev => ({ ...prev, hidePhotos: v }))}
+                    />
+                    <Label htmlFor="hide-photos" className="text-xs cursor-pointer flex items-center gap-1.5">
+                      <ImageIcon className="h-3 w-3 text-muted-foreground" />
+                      Ocultar Fotos
+                    </Label>
+                  </div>
+
+                  <div className="flex items-center space-x-2">
+                    <Switch 
+                      id="hide-totals" 
+                      checked={pdfOptions.hideTotals} 
+                      onCheckedChange={(v) => setPdfOptions(prev => ({ ...prev, hideTotals: v }))}
+                    />
+                    <Label htmlFor="hide-totals" className="text-xs cursor-pointer flex items-center gap-1.5">
+                      <Settings2 className="h-3 w-3 text-muted-foreground" />
+                      Ocultar Totais
+                    </Label>
+                  </div>
                 </div>
                 <div className="flex items-center gap-2">
                   <Button size="lg" className="gap-2 px-8" onClick={handleGenerate}>
