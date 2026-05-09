@@ -123,10 +123,12 @@ As evidências abaixo foram extraídas diretamente do histórico de commits do r
 *Relatório gerado automaticamente em ${new Date().toISOString()}. Confidencial e Intransferível.*
 `;
 
-    const reportPath = `reports/AUDIT_REPORT_${commitHash}.md`;
-    if (!fs.existsSync('reports')) fs.mkdirSync('reports');
+    const publicReportsDir = 'public/reports';
+    if (!fs.existsSync(publicReportsDir)) fs.mkdirSync(publicReportsDir, { recursive: true });
+    
+    const reportPath = `${publicReportsDir}/AUDIT_REPORT_${commitHash}.md`;
     fs.writeFileSync(reportPath, finalContent);
-    fs.writeFileSync(`AUDIT_ENTERPRISE_FINAL.md`, finalContent);
+    fs.writeFileSync(`public/AUDIT_ENTERPRISE_FINAL.md`, finalContent);
     console.log(`✅ Dossier v10.1 gerado com sucesso em: ${reportPath}`);
 }
 
