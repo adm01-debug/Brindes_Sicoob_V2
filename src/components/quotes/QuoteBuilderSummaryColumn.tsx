@@ -369,7 +369,8 @@ export function QuoteBuilderSummaryColumn({
                         </div>
                       </div>
                     )}
-                  </div>
+                    </div>
+                  </React.Fragment>
                 );
               })}
             </div>
