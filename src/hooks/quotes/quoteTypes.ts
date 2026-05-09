@@ -39,6 +39,7 @@ export interface QuoteItem {
   kit_name?: string | null;
   size_code?: string | null;
   gender?: string | null;
+  stock_available?: number | null;
   /** ISO timestamp da última atualização do preço no catálogo externo (SSOT). Usado pelo badge "preço pode estar defasado". */
   price_updated_at?: string | null;
   /** Janela (em dias) configurada por produto para alertar preço defasado. Default 60. */
