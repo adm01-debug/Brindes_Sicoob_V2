@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { PageSEO } from "@/components/seo/PageSEO";
 import { QuoteKanbanBoard } from "@/components/quotes/QuoteKanbanBoard";
+import { QuoteBulkActionsToolbar } from "@/components/quotes/QuoteBulkActionsToolbar";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -32,9 +33,16 @@ interface Client {
 
 export default function QuotesKanbanPage() {
   const navigate = useNavigate();
-  const { quotes, isLoading } = useQuotes();
+  const { quotes, isLoading, fetchQuotes } = useQuotes();
   const [selectedClientId, setSelectedClientId] = useState<string>("all");
   const [clients, setClients] = useState<Client[]>([]);
+  const [selectedQuoteIds, setSelectedQuoteIds] = useState<string[]>([]);
+
+  const toggleQuoteSelection = (id: string) => {
+    setSelectedQuoteIds((prev) =>
+      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]
+    );
+  };
 
   // Fetch clients for filter
   useEffect(() => {
@@ -177,7 +185,18 @@ export default function QuotesKanbanPage() {
         )}
 
         {/* Kanban Board */}
-        <QuoteKanbanBoard quotes={filteredQuotes} />
+        <QuoteKanbanBoard 
+          quotes={filteredQuotes} 
+          selectedIds={selectedQuoteIds}
+          onToggleSelection={toggleQuoteSelection}
+        />
+
+        {/* Bulk Actions Toolbar */}
+        <QuoteBulkActionsToolbar 
+          selectedIds={selectedQuoteIds}
+          onClearSelection={() => setSelectedQuoteIds([])}
+          onActionComplete={fetchQuotes}
+        />
 
         {/* Legend */}
         <div className="flex flex-wrap gap-4 text-xs text-muted-foreground bg-card/50 p-4 rounded-xl border border-border/40">

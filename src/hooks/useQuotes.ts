@@ -151,6 +151,55 @@ export function useQuotes() {
     }
   };
 
+  const bulkUpdateStatus = async (quoteIds: string[], status: Quote["status"], notes?: string) => {
+    if (!user) return false;
+    if (quoteIds.length === 0) return true;
+
+    // Permission check
+    const isRestrictedTransition = ['approved', 'rejected', 'approved_singular', 'rejected_singular'].includes(status);
+    if (isRestrictedTransition && !isSupervisorOrAbove) {
+      toast.error("Apenas supervisores podem aprovar ou rejeitar orçamentos em massa");
+      return false;
+    }
+
+    setIsLoading(true);
+    try {
+      const { error } = await supabase
+        .from("quotes")
+        .update({ 
+          status,
+          ...(notes ? { rejection_notes: notes } : {}),
+          ...(status === 'approved' ? { approved_at: new Date().toISOString(), approved_by: user.id } : {})
+        } as any)
+        .in("id", quoteIds);
+
+      if (error) throw error;
+
+      // Log history for each
+      const promises = quoteIds.map(id => 
+        QuoteService.logHistory({
+          quoteId: id,
+          userId: user.id,
+          action: "bulk_status_changed",
+          description: `Status alterado em massa para "${STATUS_LABELS[status]}"`,
+          fieldChanged: "status",
+          newValue: status,
+          metadata: { notes, isBulk: true }
+        })
+      );
+      await Promise.all(promises);
+
+      toast.success(`${quoteIds.length} orçamentos atualizados!`);
+      fetchQuotes();
+      return true;
+    } catch (err: any) {
+      toast.error("Erro ao atualizar orçamentos em massa");
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const deleteQuote = async (quoteId: string) => {
     try {
       await QuoteService.delete(quoteId);
@@ -259,7 +308,7 @@ export function useQuotes() {
 
   return {
     quotes, techniques, isLoading, error,
-    fetchQuotes, fetchQuote, createQuote, updateQuote, updateQuoteStatus,
+    fetchQuotes, fetchQuote, createQuote, updateQuote, updateQuoteStatus, bulkUpdateStatus,
     deleteQuote, reorderQuote, reorderFromOrder, syncQuoteToBitrix,
     logQuoteHistory: (id: string, action: string, desc: string, opts: any) => 
       QuoteService.logHistory({ quoteId: id, userId: user?.id || "", action, description: desc, ...opts })

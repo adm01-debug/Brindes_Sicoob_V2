@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import {
   DndContext,
   DragOverlay,
@@ -26,23 +26,43 @@ import { Card, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { QUOTE_STATUS_CONFIG } from "@/lib/quote-status-config";
 import { formatCurrency } from "@/utils/quote-calculations";
-import { Clock, ArrowRight, User, Building2, GripVertical, AlertTriangle, Lock } from "lucide-react";
+import { 
+  Clock, 
+  ArrowRight, 
+  Building2, 
+  GripVertical, 
+  AlertTriangle, 
+  Lock,
+  PackageX
+} from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { Quote } from "@/hooks/quotes/quoteTypes";
 import { useRBAC } from "@/hooks/useRBAC";
+import confetti from "canvas-confetti";
+import { Checkbox } from "@/components/ui/checkbox";
+import { useQuotesStockStatus } from "@/hooks/quote/useQuotesStockStatus";
 
 const KANBAN_STATUSES = ["draft", "pending", "sent", "approved", "rejected"] as const;
 type KanbanStatus = (typeof KANBAN_STATUSES)[number];
 
 interface QuoteKanbanBoardProps {
   quotes: Quote[];
+  selectedIds: string[];
+  onToggleSelection: (id: string) => void;
 }
 
-export function QuoteKanbanBoard({ quotes: initialQuotes }: QuoteKanbanBoardProps) {
-  const { updateQuoteStatus, isLoading } = useQuotes();
+export function QuoteKanbanBoard({ 
+  quotes: initialQuotes,
+  selectedIds,
+  onToggleSelection
+}: QuoteKanbanBoardProps) {
+  const { updateQuoteStatus, isLoading: quotesLoading, fetchQuotes } = useQuotes();
   const { isSupervisorOrAbove } = useRBAC();
   const navigate = useNavigate();
+
+  const quoteIdsForStock = useMemo(() => initialQuotes.map(q => q.id!).filter(Boolean), [initialQuotes]);
+  const { data: stockIssues } = useQuotesStockStatus(quoteIdsForStock);
   
   const [activeId, setActiveId] = useState<string | null>(null);
   const [activeQuote, setActiveQuote] = useState<Quote | null>(null);
@@ -87,7 +107,6 @@ export function QuoteKanbanBoard({ quotes: initialQuotes }: QuoteKanbanBoardProp
     const activeQuoteId = active.id as string;
     const overId = over.id as string;
 
-    // Check if dropped over a column or another card
     let newStatus: KanbanStatus | null = null;
     
     if (KANBAN_STATUSES.includes(overId as any)) {
@@ -101,11 +120,20 @@ export function QuoteKanbanBoard({ quotes: initialQuotes }: QuoteKanbanBoardProp
 
     const currentQuote = initialQuotes.find((q) => q.id === activeQuoteId);
     if (currentQuote && newStatus && currentQuote.status !== newStatus) {
-      await updateQuoteStatus(activeQuoteId, newStatus as any);
+      const success = await updateQuoteStatus(activeQuoteId, newStatus as any);
+      
+      if (success && newStatus === 'approved') {
+        confetti({
+          particleCount: 150,
+          spread: 70,
+          origin: { y: 0.6 },
+          colors: ['#00a859', '#fdd300', '#ffffff']
+        });
+      }
     }
   };
 
-  if (isLoading) return <div className="h-96 flex items-center justify-center">Carregando quadro...</div>;
+  if (quotesLoading) return <div className="h-96 flex items-center justify-center">Carregando quadro...</div>;
 
   return (
     <DndContext
@@ -122,6 +150,9 @@ export function QuoteKanbanBoard({ quotes: initialQuotes }: QuoteKanbanBoardProp
             quotes={columns[status]}
             onQuoteClick={(id) => navigate(`/orcamentos/${id}`)}
             isReadOnly={['approved', 'rejected'].includes(status) && !isSupervisorOrAbove}
+            selectedIds={selectedIds}
+            onToggleSelection={onToggleSelection}
+            stockIssues={stockIssues || {}}
           />
         ))}
       </div>
@@ -148,9 +179,20 @@ interface KanbanColumnProps {
   quotes: Quote[];
   onQuoteClick: (id: string) => void;
   isReadOnly?: boolean;
+  selectedIds: string[];
+  onToggleSelection: (id: string) => void;
+  stockIssues: Record<string, boolean>;
 }
 
-function KanbanColumn({ status, quotes, onQuoteClick, isReadOnly = false }: KanbanColumnProps) {
+function KanbanColumn({ 
+  status, 
+  quotes, 
+  onQuoteClick, 
+  isReadOnly = false,
+  selectedIds,
+  onToggleSelection,
+  stockIssues
+}: KanbanColumnProps) {
   const config = QUOTE_STATUS_CONFIG[status];
   const quoteIds = useMemo(() => quotes.map((q) => q.id!), [quotes]);
 
@@ -203,6 +245,9 @@ function KanbanColumn({ status, quotes, onQuoteClick, isReadOnly = false }: Kanb
                    quote={quote}
                    onClick={() => onQuoteClick(quote.id!)}
                    disabled={isReadOnly}
+                   isSelected={selectedIds.includes(quote.id!)}
+                   onToggleSelection={onToggleSelection}
+                   hasStockIssue={stockIssues[quote.id!]}
                  />
               ))
             )}
@@ -218,9 +263,26 @@ interface QuoteCardProps {
   isOverlay?: boolean;
   onClick?: () => void;
   disabled?: boolean;
+  isSelected?: boolean;
+  onToggleSelection?: (id: string) => void;
+  hasStockIssue?: boolean;
 }
 
-function SortableQuoteCard({ quote, onClick, disabled }: { quote: Quote; onClick: () => void; disabled?: boolean }) {
+function SortableQuoteCard({ 
+  quote, 
+  onClick, 
+  disabled, 
+  isSelected, 
+  onToggleSelection,
+  hasStockIssue
+}: { 
+  quote: Quote; 
+  onClick: () => void; 
+  disabled?: boolean;
+  isSelected?: boolean;
+  onToggleSelection: (id: string) => void;
+  hasStockIssue?: boolean;
+}) {
   const {
     attributes,
     listeners,
@@ -250,32 +312,70 @@ function SortableQuoteCard({ quote, onClick, disabled }: { quote: Quote; onClick
 
   return (
     <div ref={setNodeRef} style={style}>
-      <QuoteCard quote={quote} onClick={onClick} attributes={attributes} listeners={listeners} disabled={disabled} />
+      <QuoteCard 
+        quote={quote} 
+        onClick={onClick} 
+        attributes={attributes} 
+        listeners={listeners} 
+        disabled={disabled} 
+        isSelected={isSelected}
+        onToggleSelection={onToggleSelection}
+        hasStockIssue={hasStockIssue}
+      />
     </div>
   );
 }
 
-function QuoteCard({ quote, isOverlay, onClick, attributes, listeners, disabled }: QuoteCardProps & { attributes?: any; listeners?: any }) {
+function QuoteCard({ 
+  quote, 
+  isOverlay, 
+  onClick, 
+  attributes, 
+  listeners, 
+  disabled, 
+  isSelected, 
+  onToggleSelection,
+  hasStockIssue 
+}: QuoteCardProps & { attributes?: any; listeners?: any }) {
   const isHighValue = (quote.total || 0) > 5000;
 
   return (
     <Card
       className={cn(
-        "group cursor-pointer hover:shadow-md transition-all duration-200 border-border/60 bg-card select-none",
+        "group cursor-pointer hover:shadow-md transition-all duration-200 border-border/60 bg-card select-none relative",
         isOverlay && "shadow-xl border-primary ring-2 ring-primary/20",
         isHighValue && "border-l-4 border-l-amber-500",
-        disabled && "opacity-80 grayscale-[0.3]"
+        disabled && "opacity-80 grayscale-[0.3]",
+        isSelected && "border-primary bg-primary/5 ring-1 ring-primary"
       )}
       onClick={onClick}
     >
-      <CardContent className="p-3 space-y-3">
+      {onToggleSelection && !isOverlay && (
+        <div 
+          className="absolute top-2 left-2 z-20" 
+          onClick={(e) => {
+            e.stopPropagation();
+            onToggleSelection(quote.id!);
+          }}
+        >
+          <Checkbox checked={isSelected} className="rounded-sm h-4 w-4 data-[state=checked]:bg-primary border-muted-foreground/30" />
+        </div>
+      )}
+
+      <CardContent className={cn("p-3 space-y-3", onToggleSelection && "pl-8")}>
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <p className="text-xs font-bold text-foreground truncate">#{quote.quote_number}</p>
               {isHighValue && (
                 <Badge variant="outline" className="h-4 px-1 text-[8px] bg-amber-500/10 text-amber-600 border-amber-500/20">
                   Alta Alçada
+                </Badge>
+              )}
+              {hasStockIssue && (
+                <Badge variant="destructive" className="h-4 px-1 text-[8px] animate-pulse">
+                  <PackageX className="h-2 w-2 mr-1" />
+                  Estoque Crítico
                 </Badge>
               )}
             </div>
@@ -318,4 +418,3 @@ function QuoteCard({ quote, isOverlay, onClick, attributes, listeners, disabled 
     </Card>
   );
 }
-
