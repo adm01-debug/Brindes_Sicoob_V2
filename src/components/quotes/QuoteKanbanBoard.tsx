@@ -41,6 +41,7 @@ interface QuoteKanbanBoardProps {
 
 export function QuoteKanbanBoard({ quotes: initialQuotes }: QuoteKanbanBoardProps) {
   const { updateQuoteStatus, isLoading } = useQuotes();
+  const { isSupervisorOrAbove } = useRBAC();
   const navigate = useNavigate();
   
   const [activeId, setActiveId] = useState<string | null>(null);
