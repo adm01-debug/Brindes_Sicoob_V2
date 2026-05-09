@@ -121,6 +121,7 @@ export function QuoteKanbanBoard({ quotes: initialQuotes }: QuoteKanbanBoardProp
             status={status}
             quotes={columns[status]}
             onQuoteClick={(id) => navigate(`/orcamentos/${id}`)}
+            isReadOnly={['approved', 'rejected'].includes(status) && !isSupervisorOrAbove}
           />
         ))}
       </div>
