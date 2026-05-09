@@ -362,6 +362,9 @@ export function QuoteBuilderSummaryColumn({
               discountType={discountType}
               shippingCost={0}
               total={total}
+              profit={profit}
+              marginPercent={marginPercent}
+              isInternal={true}
               className="border-none bg-transparent shadow-none p-0 mb-4"
             />
 
