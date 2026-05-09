@@ -297,13 +297,23 @@ export function PdfGenerationDialog({
               </div>
 
               {/* Action Grid */}
-              <div className="flex justify-center w-full max-w-lg">
+              <div className="flex flex-col sm:flex-row gap-4 justify-center w-full max-w-lg">
                 <ActionButton
                   icon={<Download className="h-5 w-5" />}
                   label="Baixar"
                   onClick={handleDownload}
-                  variant="primary"
+                  variant="default"
                 />
+                
+                {quoteId && quoteStatus !== "approved" && (
+                  <ActionButton
+                    icon={isFinalizing ? <Loader2 className="h-5 w-5 animate-spin" /> : <Check className="h-5 w-5" />}
+                    label={isFinalizing ? "Salvando..." : "Aprovar e Salvar Assinado"}
+                    onClick={handleApproveAndSave}
+                    variant="primary"
+                    disabled={isFinalizing}
+                  />
+                )}
               </div>
 
               <Separator className="w-full max-w-lg" />
