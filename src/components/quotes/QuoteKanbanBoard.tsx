@@ -306,7 +306,15 @@ function SortableQuoteCard({
 
   return (
     <div ref={setNodeRef} style={style}>
-      <QuoteCard quote={quote} onClick={onClick} attributes={attributes} listeners={listeners} disabled={disabled} />
+      <QuoteCard 
+        quote={quote} 
+        onClick={onClick} 
+        attributes={attributes} 
+        listeners={listeners} 
+        disabled={disabled} 
+        isSelected={isSelected}
+        onToggleSelection={onToggleSelection}
+      />
     </div>
   );
 }
