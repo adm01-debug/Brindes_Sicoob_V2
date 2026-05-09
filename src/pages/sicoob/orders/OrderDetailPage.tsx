@@ -4,6 +4,10 @@ import { MainLayout } from "@/components/layout/MainLayout";
 import { PageSEO } from "@/components/seo/PageSEO";
 import { Button } from "@/components/ui/button";
 import { 
+  Avatar, 
+  AvatarFallback 
+} from "@/components/ui/avatar";
+import { 
   ArrowLeft, 
   Package, 
   MessageSquare,
