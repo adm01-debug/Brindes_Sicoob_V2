@@ -32,6 +32,7 @@ export function useQuoteBuilderState() {
   const isEditMode = Boolean(quoteId);
 
   const { user, roles: userRoles, isGerentePa } = useAuth();
+  const { isSupervisorOrAbove } = useRBAC();
   const { createQuote, updateQuote, fetchQuote, isLoading: quotesLoading } = useQuotes();
   const { templates } = useQuoteTemplates();
   const { myLimit: maxDiscountPercent } = useSellerDiscountLimits();
