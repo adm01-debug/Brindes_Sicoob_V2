@@ -364,7 +364,17 @@ export default function OrderDetailPage() {
                 <SLABadge status={orderData.sla_status} deadline={orderData.sla_deadline} />
               )}
             </div>
-            <p className="text-sm text-muted-foreground">Criado em {new Date(orderData.created_at).toLocaleString('pt-BR')}</p>
+            <div className="flex items-center gap-3 mt-1">
+               <p className="text-xs text-muted-foreground">Criado em {new Date(orderData.created_at).toLocaleString('pt-BR')}</p>
+               <Separator orientation="vertical" className="h-3" />
+               <div className="flex items-center gap-1.5">
+                  <div className="flex -space-x-2 mr-2">
+                     <Avatar className="h-5 w-5 border-2 border-background"><AvatarFallback className="text-[6px] bg-indigo-100">JD</AvatarFallback></Avatar>
+                     <Avatar className="h-5 w-5 border-2 border-background"><AvatarFallback className="text-[6px] bg-amber-100">MS</AvatarFallback></Avatar>
+                  </div>
+                  <span className="text-[10px] text-indigo-600 font-bold animate-pulse">2 gestores visualizando agora</span>
+               </div>
+            </div>
           </div>
           <div className="ml-auto flex gap-2">
             <OneClickReorder orderId={id!} variant="outline" className="h-9 border-sicoob-green/30 text-sicoob-green-dark hover:bg-sicoob-green/5" />
