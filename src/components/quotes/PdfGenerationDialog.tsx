@@ -307,7 +307,7 @@ export function PdfGenerationDialog({
                     <Switch 
                       id="hide-prices" 
                       checked={pdfOptions.hidePrices} 
-                      onCheckedChange={(v) => setPdfOptions(prev => ({ ...prev, hidePrices: v }))}
+                      onCheckedChange={(v) => handleOptionChange("hidePrices", v)}
                     />
                     <Label htmlFor="hide-prices" className="text-xs cursor-pointer flex items-center gap-1.5">
                       <DollarSign className="h-3 w-3 text-muted-foreground" />
@@ -319,7 +319,7 @@ export function PdfGenerationDialog({
                     <Switch 
                       id="hide-photos" 
                       checked={pdfOptions.hidePhotos} 
-                      onCheckedChange={(v) => setPdfOptions(prev => ({ ...prev, hidePhotos: v }))}
+                      onCheckedChange={(v) => handleOptionChange("hidePhotos", v)}
                     />
                     <Label htmlFor="hide-photos" className="text-xs cursor-pointer flex items-center gap-1.5">
                       <ImageIcon className="h-3 w-3 text-muted-foreground" />
@@ -331,7 +331,7 @@ export function PdfGenerationDialog({
                     <Switch 
                       id="hide-totals" 
                       checked={pdfOptions.hideTotals} 
-                      onCheckedChange={(v) => setPdfOptions(prev => ({ ...prev, hideTotals: v }))}
+                      onCheckedChange={(v) => handleOptionChange("hideTotals", v)}
                     />
                     <Label htmlFor="hide-totals" className="text-xs cursor-pointer flex items-center gap-1.5">
                       <Settings2 className="h-3 w-3 text-muted-foreground" />
