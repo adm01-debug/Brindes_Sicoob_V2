@@ -28,6 +28,7 @@ export interface QuoteItem {
   product_image_url?: string;
   quantity: number;
   unit_price: number;
+  unit_cost?: number;
   subtotal?: number;
   color_name?: string;
   color_hex?: string;
