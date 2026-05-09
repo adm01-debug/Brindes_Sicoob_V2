@@ -159,6 +159,7 @@ export function DraggableCard({ order, onClick, canDrag, reasonBlocked }: Dragga
             <div
               {...attributes}
               {...listeners}
+              onPointerDown={handlePointerDown}
               className="text-muted-foreground hover:text-sicoob-green opacity-0 group-hover:opacity-100 transition-opacity cursor-grab"
             >
               <GripVertical className="h-3.5 w-3.5" />
