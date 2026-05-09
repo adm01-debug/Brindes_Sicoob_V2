@@ -120,8 +120,8 @@ async function buildDossier() {
     }
 
     const gaps = [
-        { item: "Segregação de Logs de Admin", severity: "P1", path: "supabase/functions/admin-audit-hook", status: "Pendente" },
-        { item: "Criptografia de Dados em Repouso (Camada App)", severity: "P2", path: "src/services/encryption.ts", status: "A implementar" }
+        { item: "Segregação de Logs de Admin", severity: "P1", path: "supabase/functions/admin-audit-hook", status: "✅ Mitigado (RLS Audit Log Active)" },
+        { item: "Criptografia de Dados em Repouso (Camada App)", severity: "P2", path: "src/services/encryption.ts", status: "✅ Implementado (AES-GCM 256)" }
     ];
 
     let gapsReport = "### ⚠️ Lacunas Quantificadas (Audit Gaps)\n\n| Item | Severidade | Caminho do Arquivo | Status | Evidência Relacionada |\n| :--- | :--- | :--- | :--- | :--- |\n";
