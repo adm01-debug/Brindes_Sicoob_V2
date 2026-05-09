@@ -466,6 +466,7 @@ function QuoteCard({
         "group cursor-pointer hover:shadow-md transition-all duration-200 border-border/60 bg-card select-none relative",
         isOverlay && "shadow-xl border-primary ring-2 ring-primary/20",
         isHighValue && "border-l-4 border-l-amber-500",
+        isPendingResponse && "border-l-4 border-l-destructive",
         disabled && "opacity-80 grayscale-[0.3]",
         isSelected && "border-primary bg-primary/5 ring-1 ring-primary"
       )}
