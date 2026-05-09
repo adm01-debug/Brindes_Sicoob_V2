@@ -35,6 +35,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { sicoobOrderService } from "@/services/sicoob/orderService";
+import { useSicoobOrdersOptimistic } from "@/hooks/sicoob/useSicoobOrdersOptimistic";
 import { OrderStatus, ORDER_STATUS_CONFIG, ORDER_STATUS_OPTIONS, canSicoobTransitionTo } from "@/types/sicoob/orders";
 import {
   DndContext,
