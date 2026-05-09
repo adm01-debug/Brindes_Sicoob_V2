@@ -73,19 +73,32 @@ export function LogisticsCommandCenter({ orderId, trackingCode, status }: Logist
           </div>
 
           {/* Map Simulation */}
-          <div className="relative h-32 w-full bg-slate-100 rounded-lg overflow-hidden border border-slate-200">
-             <div className="absolute inset-0 bg-[url('https://api.mapbox.com/styles/v1/mapbox/light-v10/static/-47.8821,15.7942,4,0,0/600x300?access_token=pk.mock')] bg-cover opacity-50" />
+          <div className="relative h-48 w-full bg-slate-900 rounded-lg overflow-hidden border border-slate-200 shadow-inner group">
+             <div className="absolute inset-0 bg-[url('https://api.mapbox.com/styles/v1/mapbox/dark-v10/static/-47.8821,-15.7942,5,0,0/600x300?access_token=pk.mock')] bg-cover opacity-60 group-hover:scale-105 transition-transform duration-10000" />
              <div className="absolute inset-0 flex items-center justify-center">
-                <motion.div 
-                  animate={{ y: [0, -5, 0] }}
-                  transition={{ repeat: Infinity, duration: 2 }}
-                  className="bg-white p-2 rounded-full shadow-lg border border-blue-500"
-                >
-                  <Truck className="h-5 w-5 text-blue-600" />
-                </motion.div>
+                <div className="relative">
+                   <div className="absolute inset-0 bg-blue-500 rounded-full animate-ping opacity-25" />
+                   <motion.div 
+                     animate={{ y: [0, -10, 0] }}
+                     transition={{ repeat: Infinity, duration: 2 }}
+                     className="bg-white p-2.5 rounded-full shadow-2xl border-2 border-blue-600 relative z-10"
+                   >
+                     <Truck className="h-6 w-6 text-blue-600" />
+                   </motion.div>
+                </div>
              </div>
-             <div className="absolute bottom-2 left-2 bg-black/70 text-white text-[8px] px-1.5 py-0.5 rounded backdrop-blur-sm">
-                Última atualização: Posto Fiscal (BR-040)
+             
+             {/* Radar Scan Effect */}
+             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 border border-blue-500/20 rounded-full animate-pulse" />
+             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 border border-blue-500/10 rounded-full animate-pulse delay-75" />
+             
+             <div className="absolute top-2 right-2 bg-sicoob-green text-white text-[7px] px-1.5 py-0.5 rounded font-bold flex items-center gap-1">
+                <div className="h-1 w-1 bg-white rounded-full animate-ping" /> GPS SIGNAL: STRONG
+             </div>
+             
+             <div className="absolute bottom-2 left-2 right-2 bg-black/60 text-white text-[8px] px-2 py-1.5 rounded backdrop-blur-md border border-white/10 flex justify-between items-center">
+                <span>Coord: -15.7942, -47.8821</span>
+                <span className="font-bold">VEL: 82 KM/H</span>
              </div>
           </div>
         </div>
