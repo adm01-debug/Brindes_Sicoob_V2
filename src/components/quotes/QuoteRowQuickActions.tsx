@@ -42,6 +42,14 @@ export function QuoteRowQuickActions({ quote, onDuplicate, onMarkApproved, isSup
   
   const isClosed = quote.status === "approved" || quote.status === "converted" || quote.status === "rejected";
 
+  const buildWhatsappUrl = (quote: Quote) => {
+    const text = encodeURIComponent(
+      `Olá! Segue a proposta comercial *#${quote.quote_number}* no valor de *${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(quote.total || 0)}*.\n\nVisualize os detalhes aqui: ${APP_BASE_URL}/orcamentos/${quote.id}`
+    );
+    const phone = quote.client_phone?.replace(/\D/g, "");
+    return `https://wa.me/${phone ? (phone.startsWith("55") ? phone : "55" + phone) : ""}?text=${text}`;
+  };
+
   const handleCopyLink = async (e: ReactMouseEvent) => {
     e.stopPropagation();
     try {
