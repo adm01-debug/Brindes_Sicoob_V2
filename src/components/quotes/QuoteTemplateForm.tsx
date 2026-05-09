@@ -28,6 +28,7 @@ export function QuoteTemplateForm({
   const [formData, setFormData] = useState<CreateTemplateInput>({
     name: template?.name || "",
     description: template?.description || "",
+    category: template?.category || "Geral",
     is_default: template?.is_default || false,
     items_data: template?.items_data || initialItems,
     discount_percent: template?.discount_percent || 0,
