@@ -281,6 +281,24 @@ export default function OrdersKanbanPage() {
     }
   }, [realOrders]);
 
+  // Real-time synchronization
+  useEffect(() => {
+    const channel = supabase
+      .channel('kanban-db-changes')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'sicoob_orders' },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ["sicoob_orders_list_kanban"] });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [queryClient]);
+
   // Filtering logic - memoized for performance
   const filteredOrders = useMemo(() => {
     if (!searchQuery) return orders;
