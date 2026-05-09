@@ -159,7 +159,7 @@ export default function QuoteBuilderPage() {
         )}
 
         {/* 3-column layout */}
-        <div className="grid gap-4 lg:grid-cols-12">
+        <div className={cn("grid gap-4 lg:grid-cols-12", !s.canEdit && "pointer-events-none grayscale-[0.3] opacity-80")}>
           {/* COL 1 — Cliente + Condições */}
           <div className="lg:col-span-3">
             <div className="sticky top-24 space-y-3 overflow-y-auto max-h-[calc(100vh-7rem)] pr-1">
