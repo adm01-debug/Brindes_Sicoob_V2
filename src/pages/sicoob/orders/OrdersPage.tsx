@@ -592,6 +592,10 @@ export default function OrdersPage() {
                 </div>
               </PopoverContent>
             </Popover>
+            <Button variant="outline" className="border-indigo-200 text-indigo-700 hover:bg-indigo-50" onClick={() => toast.info("Audit Log em desenvolvimento para 10/10")}>
+              <History className="h-4 w-4 mr-2" />
+              Auditoria
+            </Button>
             <Button variant="outline" onClick={() => navigate("/sicoob/pedidos/kanban")}>
               <LayoutGrid className="h-4 w-4 mr-2" />
               Kanban
