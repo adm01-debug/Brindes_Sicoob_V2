@@ -308,6 +308,6 @@ export function useQuoteBuilderState() {
       const ts = new Date().toISOString();
       setItems(prev => prev.map((item, idx) => idx === index ? { ...item, price_confirmed_at: ts } : item));
     },
-    applyTemplate, handleSaveQuote,
+    applyTemplate, handleSaveQuote, canEdit,
   };
 }
