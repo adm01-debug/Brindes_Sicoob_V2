@@ -395,12 +395,12 @@ export default function OrdersPage() {
            <div className="lg:col-span-2">
               <AIOrderPredictor />
            </div>
-           <Card className="bg-slate-900 border-slate-800 text-slate-100 overflow-hidden shadow-2xl relative group">
+           <Card className="bg-sicoob-green-dark border-sicoob-green-dark/20 text-white overflow-hidden shadow-2xl relative group">
               <div className="absolute top-0 right-0 p-3">
-                 <Badge className="bg-indigo-500 hover:bg-indigo-600 border-none text-[8px] animate-pulse">PROJEÇÃO ATIVA</Badge>
+                 <Badge className="bg-sicoob-green text-sicoob-green-dark border-none text-[8px] animate-pulse">PROJEÇÃO ATIVA</Badge>
               </div>
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-bold flex items-center gap-2">
+                <CardTitle className="text-sm font-bold flex items-center gap-2 text-sicoob-green-light">
                   <TrendingUp className="h-4 w-4 text-indigo-400" />
                   Previsão de Receita (30d)
                 </CardTitle>
