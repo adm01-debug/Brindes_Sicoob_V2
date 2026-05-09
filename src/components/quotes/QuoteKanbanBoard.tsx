@@ -337,7 +337,19 @@ function QuoteCard({
   onToggleSelection,
   hasStockIssue 
 }: QuoteCardProps & { attributes?: any; listeners?: any }) {
+  const { isSupervisorOrAbove } = useRBAC();
   const isHighValue = (quote.total || 0) > 5000;
+  
+  // Margem Bruta Estimada
+  const totalCost = quote.total_cost || 0;
+  const totalValue = quote.total || 0;
+  const margin = totalValue > 0 ? ((totalValue - totalCost) / totalValue) * 100 : 0;
+  
+  const getMarginColor = (m: number) => {
+    if (m >= 30) return "text-emerald-500 bg-emerald-500/10 border-emerald-500/20";
+    if (m >= 15) return "text-amber-500 bg-amber-500/10 border-amber-500/20";
+    return "text-destructive bg-destructive/10 border-destructive/20";
+  };
 
   return (
     <Card
