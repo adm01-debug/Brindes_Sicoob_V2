@@ -257,5 +257,40 @@ export const sicoobOrderService = {
     }
 
     return newQuote.id;
+  },
+
+  async duplicateSicoobOrder(orderId: string): Promise<string> {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error("Usuário não autenticado");
+
+    const order = await this.getOrderById(orderId);
+    const items = await this.getOrderItems(orderId);
+
+    const { data: newOrder, error: oErr } = await supabase.from("sicoob_orders").insert({
+      pa_id: order.pa_id,
+      cooperative_id: order.cooperative_id,
+      status: 'draft',
+      notes: `Duplicado do pedido #${order.order_number || order.id.slice(0, 8)}`,
+      total_amount: order.total_amount,
+      created_by: user.id
+    }).select("id").single();
+
+    if (oErr) throw oErr;
+
+    if (items.length > 0) {
+      const orderItems = items.map(it => ({
+        order_id: newOrder.id,
+        product_id: it.product_id,
+        product_sku: it.product_sku,
+        product_name: it.product_name,
+        product_image_url: it.product_image_url,
+        quantity: it.quantity,
+        unit_price: it.unit_price,
+      }));
+      const { error: iErr } = await supabase.from("sicoob_order_items").insert(orderItems);
+      if (iErr) throw iErr;
+    }
+
+    return newOrder.id;
   }
 };
