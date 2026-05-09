@@ -49,7 +49,7 @@ export function calculateQuoteTotals(quote: Partial<Quote>, items: QuoteItem[]) 
     ? Math.round(((realSubtotal - finalBeforeShipping) / realSubtotal) * 10000) / 100
     : 0;
 
-  return { subtotal, realSubtotal, discountAmount, total, realDiscountPercent, markup, totalCost };
+  return { subtotal, realSubtotal, discountAmount, total, realDiscountPercent, markup, totalCost: realTotalCost };
 }
 
 export function buildInsertPayload(
