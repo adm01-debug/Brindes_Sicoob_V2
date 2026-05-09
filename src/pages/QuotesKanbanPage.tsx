@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { PageSEO } from "@/components/seo/PageSEO";
@@ -6,6 +6,7 @@ import { QuoteKanbanBoard } from "@/components/quotes/QuoteKanbanBoard";
 import { QuoteBulkActionsToolbar } from "@/components/quotes/QuoteBulkActionsToolbar";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -20,11 +21,24 @@ import {
   List,
   BarChart3,
   Building2,
+  Search,
+  Filter,
+  X,
+  User,
+  Calendar as CalendarIcon,
 } from "lucide-react";
 import { useQuotes } from "@/hooks/useQuotes";
 import { supabase } from "@/integrations/supabase/client";
-import { useEffect, useMemo } from "react";
 import { Badge } from "@/components/ui/badge";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
+import { useRBAC } from "@/hooks/useRBAC";
 
 interface Client {
   id: string;
