@@ -376,6 +376,7 @@ export function QuotesConfigurableList({
             <div className="flex items-center justify-end gap-0.5">
               <QuoteRowQuickActions
                 quote={quote}
+                isSupervisor={isSupervisor}
                 onDuplicate={onDuplicate}
                 onMarkApproved={(id) => onMarkApproved?.(id)}
               />
