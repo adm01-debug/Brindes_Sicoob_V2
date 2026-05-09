@@ -97,6 +97,9 @@ export function useQuotesDashboard() {
     const rejected = filtered.filter(q => q.status === "rejected");
     const pending = filtered.filter(q => ["pending", "sent"].includes(q.status));
     const approvedValue = approved.reduce((s, q) => s + (q.total || 0), 0);
+    const totalProfit = approved.reduce((s, q) => s + ((q.total || 0) - (q.total_cost || (q.real_subtotal ? q.real_subtotal * 0.7 : 0))), 0);
+    const averageMargin = approvedValue > 0 ? (totalProfit / approvedValue) * 100 : 0;
+
     const responded = [...approved, ...rejected];
     const approvalRate = responded.length > 0 ? (approved.length / responded.length) * 100 : 0;
     const rejectionRate = responded.length > 0 ? (rejected.length / responded.length) * 100 : 0;
