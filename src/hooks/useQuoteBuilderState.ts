@@ -144,11 +144,12 @@ export function useQuoteBuilderState() {
         const newItems = [...prev, {
           product_id: product.id, product_name: product.name, product_sku: product.sku,
           product_image_url: imageUrl, quantity: 1, unit_price: product.price,
+          unit_cost: product.costPrice || 0,
           color_name: colorName, color_hex: colorHex, size_code: sizeCode,
           bitrix_product_id: variant?.bitrix_product_id ?? null,
           price_updated_at: product.priceUpdatedAt ?? null,
           price_freshness_threshold_days: product.priceFreshnessThresholdDays ?? null,
-          stock_available: variant?.stock ?? product.stock ?? null,
+          stock_available: variant?.stock ?? product.totalStock ?? null,
           personalizations: [],
         }];
         setActiveItemIndex(newItems.length - 1);
