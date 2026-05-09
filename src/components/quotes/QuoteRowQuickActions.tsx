@@ -35,7 +35,7 @@ function buildShareUrl(quote: Quote) {
 
 // ...buildWhatsappUrl omitted for brevity
 
-export function QuoteRowQuickActions({ quote, onDuplicate, onMarkApproved }: QuoteRowQuickActionsProps) {
+export function QuoteRowQuickActions({ quote, onDuplicate, onMarkApproved, isSupervisor = false }: QuoteRowQuickActionsProps) {
   const [isDupDialogOpen, setIsDupDialogOpen] = useState(false);
   const [dupMode, setDupMode] = useState<'full' | 'partial'>('full');
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
