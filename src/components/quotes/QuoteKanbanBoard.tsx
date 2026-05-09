@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import {
   DndContext,
   DragOverlay,
@@ -26,11 +26,25 @@ import { Card, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { QUOTE_STATUS_CONFIG } from "@/lib/quote-status-config";
 import { formatCurrency } from "@/utils/quote-calculations";
-import { Clock, ArrowRight, User, Building2, GripVertical, AlertTriangle, Lock } from "lucide-react";
+import { 
+  Clock, 
+  ArrowRight, 
+  User, 
+  Building2, 
+  GripVertical, 
+  AlertTriangle, 
+  Lock,
+  Check,
+  PackageX,
+  PackageSearch
+} from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { Quote } from "@/hooks/quotes/quoteTypes";
 import { useRBAC } from "@/hooks/useRBAC";
+import confetti from "canvas-confetti";
+import { Checkbox } from "@/components/ui/checkbox";
+import { supabase } from "@/integrations/supabase/client";
 
 const KANBAN_STATUSES = ["draft", "pending", "sent", "approved", "rejected"] as const;
 type KanbanStatus = (typeof KANBAN_STATUSES)[number];
