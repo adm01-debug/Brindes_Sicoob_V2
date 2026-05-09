@@ -103,7 +103,7 @@ export function useQuotes() {
       
       const updateData: any = { status };
       if (notes) updateData.rejection_notes = notes;
-      if (status === 'approved_singular' || status === 'approved') {
+      if (isApprovalDecision) {
         updateData.approved_at = new Date().toISOString();
         updateData.approved_by = user.id;
       }
