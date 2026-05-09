@@ -46,11 +46,19 @@ import {
 } from "@/components/ui/tooltip";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { Quote } from "@/hooks/quotes/quoteTypes";
+import { Quote, QuoteItem } from "@/hooks/quotes/quoteTypes";
 import { useRBAC } from "@/hooks/useRBAC";
 import confetti from "canvas-confetti";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useQuotesStockStatus } from "@/hooks/quote/useQuotesStockStatus";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+} from "@/components/ui/sheet";
+import { Separator } from "@/components/ui/separator";
 
 const KANBAN_STATUSES = ["draft", "pending", "sent", "approved", "rejected"] as const;
 type KanbanStatus = (typeof KANBAN_STATUSES)[number];
