@@ -381,7 +381,7 @@ export default function OrderDetailPage() {
               )}
             </div>
             <div className="flex items-center gap-3 mt-1">
-               <p className="text-xs text-muted-foreground">Criado em {new Date(orderData.created_at).toLocaleString('pt-BR')}</p>
+               <p className="text-xs text-muted-foreground">ID: <span className="font-mono font-bold">#{orderData.id.slice(0, 8)}</span> • Criado em {new Date(orderData.created_at).toLocaleString('pt-BR')}</p>
                <Separator orientation="vertical" className="h-3" />
                <div className="flex items-center gap-1.5">
                   <div className="flex -space-x-2 mr-2">
