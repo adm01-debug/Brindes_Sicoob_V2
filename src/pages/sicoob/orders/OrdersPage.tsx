@@ -433,6 +433,11 @@ export default function OrdersPage() {
           </div>
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
             <Card className="bg-gradient-to-br from-sicoob-green/10 to-transparent border-sicoob-green/20 overflow-hidden relative group">
+              <div className="absolute top-2 right-2">
+                 <Button variant="ghost" size="icon" className="h-6 w-6 text-sicoob-green rounded-full bg-white/50 hover:bg-white shadow-sm" onClick={() => setStatusFilter("draft")}>
+                    <RotateCcw className="h-3 w-3" />
+                 </Button>
+              </div>
               <div className="absolute -right-4 -bottom-4 opacity-10 group-hover:scale-110 transition-transform">
                 <DollarSign className="h-24 w-24 text-sicoob-green" />
               </div>
