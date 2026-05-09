@@ -7,6 +7,7 @@ export interface Product {
   name: string;
   sku: string;
   price: number;
+  costPrice?: number;
   images: string[] | null;
   colors?: { name: string; hex?: string; stock?: number }[];
   minQuantity?: number;
