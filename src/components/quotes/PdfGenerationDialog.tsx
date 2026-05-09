@@ -57,6 +57,7 @@ export function PdfGenerationDialog({
   const [progressLabel, setProgressLabel] = useState("");
   const [pdfBlob, setPdfBlob] = useState<Blob | null>(null);
   const [pdfVersion, setPdfVersion] = useState(1);
+  const [isFinalizing, setIsFinalizing] = useState(false);
   const blobUrlRef = useRef<string | null>(null);
 
   const isDraft = quoteStatus === "draft";
