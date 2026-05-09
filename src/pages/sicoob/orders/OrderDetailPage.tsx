@@ -350,9 +350,7 @@ export default function OrderDetailPage() {
           </Alert>
         )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 space-y-6">
-            <div className="flex items-center gap-4">
+        <div className="flex items-center gap-4">
           <Button variant="ghost" size="icon" onClick={() => navigate("/sicoob/pedidos")}>
             <ArrowLeft className="h-5 w-5" />
           </Button>
