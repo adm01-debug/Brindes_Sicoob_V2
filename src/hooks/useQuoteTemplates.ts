@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
 
 export interface QuoteTemplate {
   id: string;
@@ -8,6 +9,7 @@ export interface QuoteTemplate {
   description: string | null;
   items_data: any[] | null;
   discount_percent: number | null;
+  discount_amount: number | null;
   payment_terms: string | null;
   delivery_time: string | null;
   is_public: boolean;
@@ -15,11 +17,27 @@ export interface QuoteTemplate {
   created_by: string | null;
   seller_id: string | null;
   notes: string | null;
+  internal_notes: string | null;
+  category: string | null;
+  validity_days: number | null;
 }
 
+export type QuoteTemplateItem = {
+  productId: string;
+  productName: string;
+  quantity: number;
+  unitPrice: number;
+  personalizations?: any[];
+};
+
+export type CreateTemplateInput = Partial<Omit<QuoteTemplate, 'id' | 'created_at' | 'updated_at'>>;
+
 export function useQuoteTemplates() {
+  const { user, profile } = useAuth();
   const [templates, setTemplates] = useState<QuoteTemplate[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+
+  const isAdmin = profile?.role === 'admin' || profile?.role === 'manager';
 
   const fetchTemplates = async () => {
     setIsLoading(true);
@@ -39,9 +57,8 @@ export function useQuoteTemplates() {
     }
   };
 
-  const createTemplate = async (template: Partial<QuoteTemplate>) => {
+  const createTemplate = async (template: CreateTemplateInput) => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Usuário não autenticado");
 
       const { data, error } = await supabase
@@ -57,10 +74,30 @@ export function useQuoteTemplates() {
       if (error) throw error;
       toast.success("Template salvo com sucesso!");
       fetchTemplates();
-      return data;
+      return data as QuoteTemplate;
     } catch (err) {
       console.error("Error creating template:", err);
       toast.error("Erro ao salvar template");
+      return null;
+    }
+  };
+
+  const updateTemplate = async (id: string, template: CreateTemplateInput) => {
+    try {
+      const { data, error } = await supabase
+        .from("quote_templates")
+        .update(template)
+        .eq("id", id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      toast.success("Template atualizado com sucesso!");
+      fetchTemplates();
+      return data as QuoteTemplate;
+    } catch (err) {
+      console.error("Error updating template:", err);
+      toast.error("Erro ao atualizar template");
       return null;
     }
   };
@@ -81,6 +118,35 @@ export function useQuoteTemplates() {
     }
   };
 
+  const validateTemplateItems = async (items: QuoteTemplateItem[]) => {
+    if (!items || items.length === 0) return [];
+    
+    try {
+      const productIds = items.map(i => i.productId);
+      const { data, error } = await supabase
+        .from("products")
+        .select("id, name, price")
+        .in("id", productIds);
+
+      if (error) throw error;
+
+      return items.map(item => {
+        const product = data?.find(p => p.id === item.productId);
+        return {
+          productId: item.productId,
+          productName: item.productName,
+          unitPrice: item.unitPrice,
+          currentPrice: product?.price || 0,
+          isValid: !!product,
+          priceChanged: product ? product.price !== item.unitPrice : false
+        };
+      });
+    } catch (err) {
+      console.error("Error validating items:", err);
+      return [];
+    }
+  };
+
   useEffect(() => {
     fetchTemplates();
   }, []);
@@ -88,8 +154,11 @@ export function useQuoteTemplates() {
   return {
     templates,
     isLoading,
+    isAdmin,
     fetchTemplates,
     createTemplate,
-    deleteTemplate
+    updateTemplate,
+    deleteTemplate,
+    validateTemplateItems
   };
 }
