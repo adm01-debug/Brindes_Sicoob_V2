@@ -7,7 +7,9 @@ import { Switch } from "@/components/ui/switch";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { type QuoteTemplate, type QuoteTemplateItem, type CreateTemplateInput, useQuoteTemplates } from "@/hooks/useQuoteTemplates";
-import { Save, X } from "lucide-react";
+import { Save, X, Eye, FileEdit } from "lucide-react";
+import { QuoteTemplatePreview } from "./QuoteTemplatePreview";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface QuoteTemplateFormProps {
   template?: QuoteTemplate | null;
@@ -94,17 +96,22 @@ export function QuoteTemplateForm({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>{isEditing ? "Editar Template" : "Novo Template"}</CardTitle>
-          <CardDescription>
-            {isEditing 
-              ? "Atualize as informações do template de orçamento" 
-              : "Crie um template reutilizável para agilizar seus orçamentos"}
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
+    <div className="grid gap-6 lg:grid-cols-2">
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <Card>
+          <CardHeader className="pb-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle>{isEditing ? "Editar Template" : "Novo Template"}</CardTitle>
+                <CardDescription>
+                  {isEditing 
+                    ? "Atualize as informações do template de orçamento" 
+                    : "Crie um template reutilizável para agilizar seus orçamentos"}
+                </CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-6">
           {/* Basic Info */}
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
@@ -283,21 +290,33 @@ export function QuoteTemplateForm({
               </div>
             </>
           )}
-        </CardContent>
-      </Card>
-
-      <div className="flex items-center justify-end gap-3">
-        {onCancel && (
-          <Button type="button" variant="outline" onClick={onCancel}>
-            <X className="h-4 w-4 mr-2" />
-            Cancelar
+          </CardContent>
+        </Card>
+        
+        <div className="flex items-center justify-end gap-3 sticky bottom-0 bg-background/80 backdrop-blur-sm py-4 border-t z-10">
+          {onCancel && (
+            <Button type="button" variant="outline" onClick={onCancel}>
+              <X className="h-4 w-4 mr-2" />
+              Cancelar
+            </Button>
+          )}
+          <Button type="submit" disabled={saving || !formData.name.trim()} className="min-w-[140px]">
+            <Save className="h-4 w-4 mr-2" />
+            {saving ? "Salvando..." : isEditing ? "Salvar" : "Criar Template"}
           </Button>
-        )}
-        <Button type="submit" disabled={saving || !formData.name.trim()}>
-          <Save className="h-4 w-4 mr-2" />
-          {saving ? "Salvando..." : isEditing ? "Salvar Alterações" : "Criar Template"}
-        </Button>
+        </div>
+      </form>
+
+      <div className="hidden lg:block">
+        <div className="sticky top-6">
+          <QuoteTemplatePreview data={formData} />
+        </div>
       </div>
-    </form>
+
+      <div className="lg:hidden">
+        <Separator className="my-6" />
+        <QuoteTemplatePreview data={formData} />
+      </div>
+    </div>
   );
 }
