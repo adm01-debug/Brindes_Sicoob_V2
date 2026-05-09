@@ -13,7 +13,9 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
 } from "@/components/ui/dialog";
-import { AlertTriangle, Edit, Loader2, Package, Percent, Save, Send, Shield, ShoppingCart, Trash2, CheckCircle2, X, ClipboardCheck } from "lucide-react";
+import { AlertTriangle, Edit, Loader2, Package, Percent, Save, Send, Shield, ShoppingCart, Trash2, CheckCircle2, X, ClipboardCheck, Layers, LayersSelect } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import type { QuoteItem } from "@/hooks/useQuotes";
@@ -56,6 +58,11 @@ interface Props {
   confirmItemPrice?: (index: number) => void;
   /** Marca todos os itens com preço aging/stale como confirmados. */
   confirmAllStalePrices?: () => void;
+  selectedIndexes?: Set<number>;
+  onToggleSelection?: (index: number) => void;
+  onGroupItems?: (indexes: number[], kitName: string) => void;
+  onUngroup?: (groupId: string) => void;
+  onClearSelection?: () => void;
 }
 
 export function QuoteBuilderSummaryColumn({
@@ -69,6 +76,7 @@ export function QuoteBuilderSummaryColumn({
   realSubtotal = 0, realDiscountPercent = 0,
   profit = 0, marginPercent = 0,
   confirmItemPrice, confirmAllStalePrices,
+  selectedIndexes = new Set(), onToggleSelection, onGroupItems, onUngroup, onClearSelection,
 }: Props) {
   const { isGerentePa } = useAuth();
   const [approvalDialogOpen, setApprovalDialogOpen] = useState(false);
@@ -150,6 +158,49 @@ export function QuoteBuilderSummaryColumn({
               )}
             </div>
           )}
+
+          {/* Batch Actions Toolbar */}
+          <AnimatePresence>
+            {selectedIndexes.size > 0 && (
+              <motion.div 
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                className="px-4 pb-3"
+              >
+                <div className="flex items-center justify-between p-2.5 bg-primary text-primary-foreground rounded-xl shadow-md">
+                  <div className="flex items-center gap-2">
+                    <Badge variant="secondary" className="bg-white/20 text-white border-0 h-5 px-1.5 text-[10px]">
+                      {selectedIndexes.size}
+                    </Badge>
+                    <span className="text-[11px] font-bold uppercase tracking-tight">Selecionados</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <Button 
+                      size="sm" 
+                      variant="ghost" 
+                      className="h-7 text-[10px] hover:bg-white/10 text-white px-2 gap-1.5"
+                      onClick={() => {
+                        const kitName = prompt("Nome do Kit:");
+                        if (kitName) onGroupItems?.(Array.from(selectedIndexes), kitName);
+                      }}
+                    >
+                      <Layers className="h-3.5 w-3.5" />
+                      Criar Kit
+                    </Button>
+                    <Button 
+                      size="sm" 
+                      variant="ghost" 
+                      className="h-7 w-7 p-0 hover:bg-white/10 text-white"
+                      onClick={onClearSelection}
+                    >
+                      <X className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           {/* Product Cards */}
           <div className="flex-1 min-h-0 px-4 overflow-y-auto max-h-[50vh]">
