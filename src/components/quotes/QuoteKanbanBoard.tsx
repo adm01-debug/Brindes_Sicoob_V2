@@ -139,7 +139,7 @@ export function QuoteKanbanBoard({
     }
   };
 
-  if (isLoading) return <div className="h-96 flex items-center justify-center">Carregando quadro...</div>;
+  if (quotesLoading) return <div className="h-96 flex items-center justify-center">Carregando quadro...</div>;
 
   return (
     <DndContext
