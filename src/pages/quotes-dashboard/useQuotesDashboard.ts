@@ -74,8 +74,9 @@ export function useQuotesDashboard() {
     if (!quotes.length) return {
       totalQuotes: 0, totalValue: 0, approvedValue: 0, approvalRate: 0, rejectionRate: 0,
       averageResponseTime: 0, averageValue: 0, pendingQuotes: 0,
+      totalProfit: 0, averageMargin: 0,
       statusDistribution: [] as { name: string; value: number; color: string }[],
-      monthlyData: [] as { month: string; total: number; approved: number; rejected: number; value: number }[],
+      monthlyData: [] as { month: string; total: number; approved: number; rejected: number; value: number; profit: number }[],
       conversionFunnel: [] as { stage: string; count: number; fill: string }[],
     };
 
