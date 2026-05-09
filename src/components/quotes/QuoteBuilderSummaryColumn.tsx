@@ -50,6 +50,8 @@ interface Props {
   setNegotiationMarkup?: (v: number) => void;
   realSubtotal?: number;
   realDiscountPercent?: number;
+  profit?: number;
+  marginPercent?: number;
   /** Marca um item como "preço confirmado com fornecedor" — suprime alerta stale. */
   confirmItemPrice?: (index: number) => void;
   /** Marca todos os itens com preço aging/stale como confirmados. */
