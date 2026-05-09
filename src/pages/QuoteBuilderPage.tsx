@@ -402,6 +402,11 @@ export default function QuoteBuilderPage() {
             realDiscountPercent={s.realDiscountPercent}
             confirmItemPrice={s.confirmItemPrice}
             confirmAllStalePrices={s.confirmAllStalePrices}
+            selectedIndexes={s.selectedItemIndexes}
+            onToggleSelection={s.toggleItemSelection}
+            onGroupItems={s.groupItemsIntoKit}
+            onUngroup={s.ungroupItems}
+            onClearSelection={() => s.setSelectedItemIndexes(new Set())}
           />
         </div>
       </div>
