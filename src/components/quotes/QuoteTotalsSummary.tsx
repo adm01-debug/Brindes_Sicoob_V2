@@ -23,18 +23,27 @@ interface QuoteTotalsSummaryProps {
 
 export function QuoteTotalsSummary({ items, discountPercent, discountAmount, shippingType, shippingCost }: QuoteTotalsSummaryProps) {
   const productSubtotal = items.reduce((acc, item) => acc + item.quantity * item.unit_price, 0);
+  const totalCost = items.reduce((acc, item) => acc + (item.quantity * (item.unit_cost || 0)), 0);
+  
   const personalizationTotal = items.reduce((acc, item) => {
     return acc + (item.personalizations || []).reduce(
       (pAcc: number, p: { total_cost?: number }) => pAcc + calcPersTotal(p.total_cost || 0, item.quantity), 0
     );
   }, 0);
+
   const fullSubtotal = productSubtotal + personalizationTotal;
   const discountValue = discountPercent
     ? Math.round(fullSubtotal * (discountPercent / 100) * 100) / 100
     : (discountAmount || 0);
+
   const shippingValue = (shippingType === "fob" || shippingType === "fob_pre")
     ? (shippingCost || 0) : 0;
+
   const computedTotal = fullSubtotal - discountValue + shippingValue;
+  const netRevenue = computedTotal - shippingValue; // Receita líquida sem o frete repassado
+  const profit = netRevenue - totalCost;
+  const margin = netRevenue > 0 ? (profit / netRevenue) * 100 : 0;
+
   const hasPersonalizations = personalizationTotal > 0;
 
   return (
@@ -69,10 +78,22 @@ export function QuoteTotalsSummary({ items, discountPercent, discountAmount, shi
             </div>
           )}
         </div>
-        <div className="bg-muted/50 border-t border-border px-4 py-3">
+        <div className="bg-muted/50 border-t border-border px-4 py-3 space-y-2">
           <div className="flex justify-between items-baseline">
             <span className="font-bold text-lg">Total:</span>
             <span className="text-2xl font-bold text-primary">{formatCurrency(computedTotal)}</span>
+          </div>
+          
+          <div className="flex justify-between items-center pt-2 border-t border-border/50">
+            <span className="text-xs font-medium text-muted-foreground uppercase">Rentabilidade Est.</span>
+            <div className="flex items-center gap-2">
+              <span className={`text-sm font-bold ${margin < 20 ? "text-destructive" : "text-success"}`}>
+                {margin.toFixed(1)}%
+              </span>
+              <span className="text-[10px] text-muted-foreground">
+                ({formatCurrency(profit)})
+              </span>
+            </div>
           </div>
         </div>
       </div>
