@@ -263,7 +263,8 @@ function QuoteCard({ quote, isOverlay, onClick, attributes, listeners, disabled 
       className={cn(
         "group cursor-pointer hover:shadow-md transition-all duration-200 border-border/60 bg-card select-none",
         isOverlay && "shadow-xl border-primary ring-2 ring-primary/20",
-        isHighValue && "border-l-4 border-l-amber-500"
+        isHighValue && "border-l-4 border-l-amber-500",
+        disabled && "opacity-80 grayscale-[0.3]"
       )}
       onClick={onClick}
     >
