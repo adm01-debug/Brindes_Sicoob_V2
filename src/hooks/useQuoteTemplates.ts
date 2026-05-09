@@ -34,6 +34,7 @@ export interface QuoteTemplate {
   seller_id: string;
   name: string;
   description?: string;
+  category?: string;
   is_default: boolean;
   template_data: Record<string, unknown>;
   items_data: QuoteTemplateItem[];
