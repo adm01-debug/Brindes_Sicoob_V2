@@ -17,6 +17,7 @@ function mapQuoteSearchProduct(p: any, getProductImageUrl: (product: any) => str
     name: p.name,
     sku: p.sku,
     price: p.sale_price ?? p.base_price ?? 0,
+    costPrice: p.cost_price ?? 0,
     images,
     colors: (p.colors || []).map((c: string | RawProductColor) => {
       const name = typeof c === 'string' ? c : c.name || '';
