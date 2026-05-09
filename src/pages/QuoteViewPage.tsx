@@ -128,12 +128,17 @@ export default function QuoteViewPage() {
             {quote.status !== "pending_approval" && (
             <PdfGenerationDialog
               proposalData={proposalData}
+              quoteId={id}
               quoteNumber={quote.quote_number}
               quoteStatus={quote.status}
               clientPhone={quote.client_phone}
               approvalLink={approvalLink}
               onWhatsApp={handleWhatsAppShare}
               onShareLink={handleShareLink}
+              onStatusUpdate={(newStatus, pdfUrl) => {
+                setQuote(prev => prev ? { ...prev, status: newStatus as any, approved_pdf_url: pdfUrl } : prev);
+                fetchQuote(id!); // Refresh from server to be safe
+              }}
               trigger={<Button className="gap-2"><Eye className="h-4 w-4" /> Preview Proposta</Button>}
             />
             )}
