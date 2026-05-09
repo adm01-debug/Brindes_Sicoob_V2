@@ -21,13 +21,16 @@ const steps = [
 ];
 
 const statusOrder: Record<string, number> = {
-  draft:             0,
-  pending_approval:  1,
-  pending:           2,
-  sent:              5,
-  approved:          5,
-  rejected:          5,
-  expired:           5,
+  draft:                     0,
+  pending_approval:          1,
+  pending_singular_approval: 2,
+  pending:                   3,
+  sent:                      5,
+  approved:                  5,
+  approved_singular:         5,
+  rejected:                  5,
+  rejected_singular:         5,
+  expired:                   5,
 };
 
 function formatTs(ts?: string) {
