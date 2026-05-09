@@ -327,7 +327,6 @@ export default function OrderDetailPage() {
   return (
     <MainLayout>
       <PageSEO title={`Pedido #${orderData?.order_number || id} - Sicoob`} description="Detalhes do pedido Sicoob." path={`/sicoob/pedidos/${id}`} noIndex />
-...
       <div className="space-y-6">
         {activeRequest && (
           <Alert className="bg-warning/10 border-warning/20">
@@ -905,6 +904,7 @@ export default function OrderDetailPage() {
               trackingCode={orderData?.tracking_code}
               status={orderData?.status}
             />
+          </div>
         </div>
       </div>
     </MainLayout>
