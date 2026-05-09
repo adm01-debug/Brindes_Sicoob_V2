@@ -10,6 +10,7 @@
  * Existing Alt shortcuts (sidebar): Alt+N novo orçamento, Alt+O orçamentos,
  *   Alt+R carrinhos, Alt+P produtos, Alt+F super filtro, Alt+M mockup, Alt+S simulador.
  *   Header: Alt+F favoritos, Alt+C comparar, Alt+T tema.
+ *   Sicoob: Alt+G pedidos, Alt+V kanban.
  */
 import { useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
