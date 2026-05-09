@@ -41,12 +41,14 @@ const PROGRESS_STEPS = [
 
 export function PdfGenerationDialog({
   proposalData,
+  quoteId,
   quoteNumber,
   quoteStatus,
   clientPhone,
   approvalLink,
   onWhatsApp,
   onShareLink,
+  onStatusUpdate,
   trigger,
 }: PdfGenerationDialogProps) {
   const [open, setOpen] = useState(false);
