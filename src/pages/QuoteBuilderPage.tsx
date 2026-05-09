@@ -315,7 +315,7 @@ export default function QuoteBuilderPage() {
           </div>
 
           {/* COL 2 — Item ativo + Personalização */}
-          <div className="lg:col-span-5">
+          <div className={cn("lg:col-span-5", !s.canEdit && "pointer-events-none grayscale-[0.3] opacity-80")}>
             <div className="sticky top-24 flex flex-col max-h-[calc(100vh-7rem)]">
               <div className="rounded-2xl border border-border/50 bg-card overflow-hidden flex flex-col flex-1 min-h-0">
                 <div className="flex items-center justify-between p-4 pb-3 shrink-0">
