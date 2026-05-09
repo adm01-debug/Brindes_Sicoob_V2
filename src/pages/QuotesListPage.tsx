@@ -410,6 +410,7 @@ export function QuotesListPage() {
             ) : (
               <QuotesConfigurableList
                 quotes={filteredQuotes}
+                isSupervisor={isSupervisorOrAbove}
                 onDelete={(id) => setDeleteConfirmId(id)}
                 onBulkDelete={(ids) => setBulkDeleteIds(ids)}
                 onBulkStatusChange={async (ids, status) => {
