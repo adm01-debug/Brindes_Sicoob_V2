@@ -1,9 +1,9 @@
 
 # 🛡️ DOSSIÊ DE AUDITORIA ENTERPRISE - PROMAGIFTS SICOOB [PROD]
-**ID da Auditoria:** `AUDIT-6a6993b3a-1778329961668`
-**Ref de Versão:** [6a6993b3a](https://github.com/promo-gifts/app/commit/6a6993b3a)
+**ID da Auditoria:** `AUDIT-ea7691634-1778330049672`
+**Ref de Versão:** [ea7691634](https://github.com/promo-gifts/app/commit/ea7691634)
 **Ambiente:** PROD
-**Data de Geração:** 09/05/2026, 12:32:41
+**Data de Geração:** 09/05/2026, 12:34:09
 **Responsável:** Lovable Enterprise Engine
 
 ---
@@ -34,9 +34,9 @@ O sistema foi submetido a uma auditoria automatizada de 360 graus no ambiente **
 
 | Módulo | Item | Status | Evidência (Link/Commit) | Validado | Link Ativo |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Segurança** | RLS Multi-tenant | ✅ Implementado | [Ver Evidência](https://github.com/promo-gifts/app/commit/6a6993b3a) | Sim | 🔴 <span title="404 Not Found">?</span> |
-| **Financeiro** | Precisão 4-Dec | ✅ Implementado | [Ver Evidência](https://github.com/promo-gifts/app/blob/6a6993b3a/supabase/migrations/20260502174252_a88e3c13-46b8-4ce4-b1b8-c8500d390f3d.sql) | Sim | 🔴 <span title="404 Not Found">?</span> |
-| **UX** | WCAG Compliance | ✅ Implementado | [Ver Evidência](https://github.com/promo-gifts/app/blob/6a6993b3a/src/pages/admin/AdminVerbasPage.tsx) | Sim | 🔴 <span title="404 Not Found">?</span> |
+| **Segurança** | RLS Multi-tenant | ✅ Implementado | [Ver Evidência](https://github.com/promo-gifts/app/commit/ea7691634) | Sim | 🔴 <span title="404 Not Found">?</span> |
+| **Financeiro** | Precisão 4-Dec | ✅ Implementado | [Ver Evidência](https://github.com/promo-gifts/app/blob/ea7691634/supabase/migrations/20260502174252_a88e3c13-46b8-4ce4-b1b8-c8500d390f3d.sql) | Sim | 🔴 <span title="404 Not Found">?</span> |
+| **UX** | WCAG Compliance | ✅ Implementado | [Ver Evidência](https://github.com/promo-gifts/app/blob/ea7691634/src/pages/admin/AdminVerbasPage.tsx) | Sim | 🔴 <span title="404 Not Found">?</span> |
 | **Governança** | Blockchain Log | ⏳ A implementar | [Ver Evidência](https://github.com/promo-gifts/app/tree/main/roadmap) | - | 🔴 <span title="404 Not Found">?</span> |
 
 
@@ -404,9 +404,9 @@ O sistema foi submetido a uma auditoria automatizada de 360 graus no ambiente **
 | webhook_deliveries | `https://github.com/promo-gifts/app/blob/052c26efd/supabase/migrations/001_notification_system.sql` | 404 Not Found |
 | webhook_delivery_metrics | `https://github.com/promo-gifts/app/blob/052c26efd/supabase/migrations/001_notification_system.sql` | 404 Not Found |
 | workspace_notifications | `https://github.com/promo-gifts/app/blob/052c26efd/supabase/migrations/001_notification_system.sql` | 404 Not Found |
-| RLS Multi-tenant | `https://github.com/promo-gifts/app/commit/6a6993b3a` | 404 Not Found |
-| Precisão 4-Dec | `https://github.com/promo-gifts/app/blob/6a6993b3a/supabase/migrations/20260502174252_a88e3c13-46b8-4ce4-b1b8-c8500d390f3d.sql` | 404 Not Found |
-| WCAG Compliance | `https://github.com/promo-gifts/app/blob/6a6993b3a/src/pages/admin/AdminVerbasPage.tsx` | 404 Not Found |
+| RLS Multi-tenant | `https://github.com/promo-gifts/app/commit/ea7691634` | 404 Not Found |
+| Precisão 4-Dec | `https://github.com/promo-gifts/app/blob/ea7691634/supabase/migrations/20260502174252_a88e3c13-46b8-4ce4-b1b8-c8500d390f3d.sql` | 404 Not Found |
+| WCAG Compliance | `https://github.com/promo-gifts/app/blob/ea7691634/src/pages/admin/AdminVerbasPage.tsx` | 404 Not Found |
 | Blockchain Log | `https://github.com/promo-gifts/app/tree/main/roadmap` | 404 Not Found |
 
 
@@ -414,9 +414,9 @@ O sistema foi submetido a uma auditoria automatizada de 360 graus no ambiente **
 ## 6. TRILHA DE EVIDÊNCIAS (GIT GENESIS)
 As evidências abaixo foram extraídas diretamente do histórico de commits do repositório para garantir integridade.
 
-- **Último Deploy:** 6a6993b3a
+- **Último Deploy:** ea7691634
 - **Ambiente:** Lovable Cloud PROD
 - **Integridade da Auditoria:** Verified by Lovable SHA-256
 
 ---
-*Relatório gerado automaticamente em 2026-05-09T12:32:41.682Z. Confidencial e Intransferível.*
+*Relatório gerado automaticamente em 2026-05-09T12:34:09.691Z. Confidencial e Intransferível.*
