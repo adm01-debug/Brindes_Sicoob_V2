@@ -4,8 +4,8 @@
  * Fluxo: Preview → Gerar com barra de progresso → Action sheet (Download, WhatsApp, Email, Copiar Link)
  */
 
-import { useState, useCallback, useRef } from "react";
-import { Download, FileText, Eye, Loader2, Check, Send, Copy, Link2, MessageCircle, Mail, Printer, Settings2, Image as ImageIcon, DollarSign } from "lucide-react";
+import { useState, useCallback, useRef, useEffect } from "react";
+import { Download, FileText, Eye, Loader2, Check, Send, Copy, Link2, MessageCircle, Mail, Printer, Settings2, Image as ImageIcon, DollarSign, ShieldCheck } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -19,6 +19,8 @@ import { PropostaComercialTailwind } from "@/components/pdf/PropostaComercialTai
 import { generateProposalPDFv2, downloadPDF } from "@/utils/proposalPdfReactGenerator";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { v4 as uuidv4 } from 'uuid';
 
 type Stage = "preview" | "generating" | "ready";
 
