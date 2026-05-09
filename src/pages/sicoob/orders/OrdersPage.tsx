@@ -195,22 +195,33 @@ export default function OrdersPage() {
       }
 
       const doc = new jsPDF();
-      doc.text("Relatório de Pedidos Sicoob", 14, 15);
       
+      // Estilo Enterprise
+      doc.setFillColor(46, 176, 134); // Sicoob Green
+      doc.rect(0, 0, 210, 40, 'F');
+      
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(22);
+      doc.text("PROMAGIFTS SICOOB", 14, 20);
+      doc.setFontSize(10);
+      doc.text("Relatório Consolidado de Governança e Pedidos", 14, 30);
+      doc.text(`Gerado em: ${new Date().toLocaleString('pt-BR')}`, 14, 35);
+
       const tableData = filteredOrders.map(o => [
-        o.id,
+        o.order_number || o.id.slice(0, 8),
         (o as any).pa?.nome || o.pa_id,
         (o as any).cooperativa?.nome || o.cooperative_id,
-        o.status,
+        o.status.toUpperCase(),
         `R$ ${o.total_amount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`,
-        "N/A",
         format(parseISO(o.created_at), "dd/MM/yyyy")
       ]);
 
       autoTable(doc, {
-        startY: 20,
-        head: [["ID", "PA", "Singular", "Status", "Total", "Itens", "Data"]],
+        startY: 50,
+        head: [["PEDIDO", "PONTO DE ATENDIMENTO", "SINGULAR", "STATUS", "TOTAL", "DATA"]],
         body: tableData,
+        headStyles: { fillColor: [46, 176, 134] },
+        alternateRowStyles: { fillColor: [245, 247, 250] },
       });
 
       doc.save(`pedidos_sicoob_${format(new Date(), 'yyyy-MM-dd')}.pdf`);
