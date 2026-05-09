@@ -6,8 +6,8 @@ import { motion } from "framer-motion";
 
 export function AIOrderPredictor() {
   const suggestions = [
-    { name: "Kit Boas-Vindas Cooperado", reason: "Alta demanda em Maio (Mês das Mães)", items: 3, prob: "94%" },
-    { name: "Reposição Brindes Institucionais", reason: "Último pedido há 6 meses", items: 5, prob: "87%" },
+    { name: "Kit Boas-Vindas Cooperado", reason: "Alta demanda histórica em Maio", items: 3, prob: "94%", detail: "Baseado em 12 PAs similares" },
+    { name: "Reposição Brindes Institucionais", reason: "Estoque crítico projetado (15 dias)", items: 5, prob: "87%", detail: "Tendência de consumo acelerada" },
   ];
 
   return (
@@ -36,9 +36,10 @@ export function AIOrderPredictor() {
                   </div>
                 </div>
                 <h4 className="text-sm font-bold text-slate-800 mb-1">{s.name}</h4>
-                <p className="text-[10px] text-muted-foreground flex items-center gap-1 mb-4">
+                <p className="text-[10px] text-muted-foreground flex items-center gap-1 mb-1">
                   <History className="h-3 w-3" /> {s.reason}
                 </p>
+                <p className="text-[9px] text-indigo-600 font-semibold mb-4">{s.detail}</p>
                 <Button variant="ghost" size="sm" className="w-full h-8 text-[10px] font-bold group-hover:bg-purple-600 group-hover:text-white border border-purple-100">
                   Importar Estrutura <ArrowRight className="ml-1 h-3 w-3" />
                 </Button>
