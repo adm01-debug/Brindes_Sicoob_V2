@@ -67,13 +67,7 @@ export function useQuotes() {
     if (!user) return null;
     setIsLoading(true);
     try {
-      const updated = await QuoteService.update({ quoteId, quote, items });
-      await QuoteService.logHistory({
-        quoteId,
-        userId: user.id,
-        action: "updated",
-        description: `Orçamento atualizado`
-      });
+      const updated = await QuoteService.update({ quoteId, quote, items, userId: user.id });
       toast.success("Orçamento atualizado!");
       fetchQuotes();
       return updated;
