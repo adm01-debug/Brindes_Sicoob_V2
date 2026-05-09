@@ -397,7 +397,10 @@ export function QuotesConfigurableList({
                     <Copy className="h-4 w-4 mr-2" /> Duplicar
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem className="text-destructive" onClick={() => onDelete(quote.id!)}>
+                  <DropdownMenuItem 
+                    className={cn("text-destructive", !isSupervisor && "opacity-50 pointer-events-none")} 
+                    onClick={() => isSupervisor && onDelete(quote.id!)}
+                  >
                     <Trash2 className="h-4 w-4 mr-2" /> Excluir
                   </DropdownMenuItem>
                 </DropdownMenuContent>
