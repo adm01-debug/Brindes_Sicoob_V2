@@ -783,7 +783,10 @@ export default function OrdersPage() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div>
-                    <div className="text-2xl font-bold text-foreground">R$ {order.total_amount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</div>
+                    <div className="flex items-center justify-between">
+                      <div className="text-2xl font-bold text-foreground">R$ {order.total_amount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</div>
+                      <Sparkline data={[50, 40, 60, 45, 70, 55, 65]} height={15} width={40} />
+                    </div>
                     <p className="text-[10px] text-muted-foreground mt-1 uppercase tracking-wider font-semibold">
                       {order.pa?.nome || "PA Não Identificado"}
                     </p>
