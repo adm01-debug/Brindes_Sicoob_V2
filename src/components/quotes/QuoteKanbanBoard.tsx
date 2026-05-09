@@ -33,8 +33,17 @@ import {
   GripVertical, 
   AlertTriangle, 
   Lock,
-  PackageX
+  PackageX,
+  TrendingUp,
+  TrendingDown,
+  Info
 } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { Quote } from "@/hooks/quotes/quoteTypes";
