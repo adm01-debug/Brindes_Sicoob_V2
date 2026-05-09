@@ -22,6 +22,7 @@ import { ConfirmDialog } from "@/components/common/ConfirmDialog";
 import { getPriceFreshness } from "@/utils/price-freshness";
 import { PriceFreshnessBadge } from "@/components/products/PriceFreshnessBadge";
 import { toast } from "sonner";
+import { QuoteSummary } from "@/components/quotes/QuoteSummary";
 
 interface Props {
   items: QuoteItem[];
