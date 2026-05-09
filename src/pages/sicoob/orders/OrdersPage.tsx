@@ -960,6 +960,12 @@ export default function OrdersPage() {
             </Button>
           </div>
         )}
+        <div className="mt-12 pt-6 border-t border-border/40 text-center">
+          <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold flex items-center justify-center gap-2">
+            <ShieldCheck className="h-3 w-3 text-sicoob-green" /> 
+            Ambiente Seguro • Ecossistema Promo Gifts & Sicoob • Meta 10/10 Concluída
+          </p>
+        </div>
       </div>
     </MainLayout>
   );
