@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { 
@@ -15,12 +15,21 @@ import {
   Upload,
   FileText,
   AlertTriangle,
-  Zap
+  Zap,
+  Info,
+  Monitor,
+  Globe,
+  ShieldCheck,
+  ChevronDown,
+  ChevronUp
 } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useQuoteHistory, type QuoteHistoryEntry } from "@/hooks/useQuoteHistory";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface QuoteHistoryPanelProps {
   quoteId: string;
