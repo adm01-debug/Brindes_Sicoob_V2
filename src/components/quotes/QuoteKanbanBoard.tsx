@@ -228,7 +228,10 @@ function SortableQuoteCard({ quote, onClick, disabled }: { quote: Quote; onClick
     transform,
     transition,
     isDragging,
-  } = useSortable({ id: quote.id! });
+  } = useSortable({ 
+    id: quote.id!,
+    disabled: disabled
+  });
 
   const style = {
     transform: CSS.Translate.toString(transform),
