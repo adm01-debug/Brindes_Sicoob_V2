@@ -244,6 +244,7 @@ export function useQuoteBuilderState() {
       client_company: companyInfo?.name || undefined, client_cnpj: companyInfo?.cnpj || undefined,
       client_email: contactInfo?.email || undefined, client_phone: contactInfo?.phone || undefined,
       status: finalStatus, 
+      tags: tags,
       discount_percent: discountType === "percent" ? discountValue : 0,
       discount_amount: discountType === "amount" ? discountValue : 0,
       negotiation_markup_percent: totals.markup,
