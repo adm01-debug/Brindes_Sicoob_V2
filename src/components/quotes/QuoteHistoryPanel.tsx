@@ -1,4 +1,5 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { 
@@ -15,12 +16,21 @@ import {
   Upload,
   FileText,
   AlertTriangle,
-  Zap
+  Zap,
+  Info,
+  Monitor,
+  Globe,
+  ShieldCheck,
+  ChevronDown,
+  ChevronUp
 } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useQuoteHistory, type QuoteHistoryEntry } from "@/hooks/useQuoteHistory";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface QuoteHistoryPanelProps {
   quoteId: string;
@@ -107,28 +117,110 @@ export function QuoteHistoryPanel({ quoteId }: QuoteHistoryPanelProps) {
 }
 
 function HistoryEntry({ entry, isFirst }: { entry: QuoteHistoryEntry; isFirst: boolean }) {
+  const [showDetails, setShowDetails] = useState(false);
   const icon = actionIcons[entry.action] || <Clock className="h-4 w-4" />;
   const colorClass = actionColors[entry.action] || "bg-muted text-muted-foreground";
+  
+  const metadata = entry.metadata || {};
+  const hasAudit = metadata.ip || metadata.user_agent;
 
   return (
-    <div className="relative pl-10">
+    <div className="relative pl-10 group">
       {/* Timeline dot */}
       <div
         className={cn(
-          "absolute left-0 flex h-8 w-8 items-center justify-center rounded-full border",
+          "absolute left-0 flex h-8 w-8 items-center justify-center rounded-full border z-10 transition-all",
           colorClass,
-          isFirst && "ring-2 ring-primary/20"
+          isFirst && "ring-2 ring-primary/20",
+          showDetails ? "scale-110 shadow-md" : ""
         )}
       >
         {icon}
       </div>
 
-      <div className="pt-1">
-        <p className="text-sm font-medium text-foreground">{entry.description}</p>
-        <p className="text-xs text-muted-foreground mt-1">
-          {format(new Date(entry.created_at), "dd 'de' MMM 'às' HH:mm", { locale: ptBR })}
-        </p>
+      <div className={cn(
+        "p-3 rounded-xl border border-transparent transition-all",
+        showDetails ? "bg-muted/50 border-border/50 shadow-sm" : "hover:bg-muted/20"
+      )}>
+        <div className="flex items-start justify-between gap-2">
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold text-foreground leading-tight">{entry.description}</p>
+            <div className="flex items-center gap-3 mt-1.5 flex-wrap">
+              <span className="text-[10px] text-muted-foreground flex items-center gap-1">
+                <Clock className="h-3 w-3" />
+                {format(new Date(entry.created_at), "dd 'de' MMM 'às' HH:mm", { locale: ptBR })}
+              </span>
+              {hasAudit && (
+                <Badge variant="outline" className="h-4 px-1 text-[8px] bg-primary/5 text-primary border-primary/20 flex items-center gap-1">
+                  <ShieldCheck className="h-2.5 w-2.5" />
+                  Auditado
+                </Badge>
+              )}
+            </div>
+          </div>
+          {hasAudit && (
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="h-6 w-6 text-muted-foreground"
+              onClick={() => setShowDetails(!showDetails)}
+            >
+              {showDetails ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+            </Button>
+          )}
+        </div>
+
+        {showDetails && hasAudit && (
+          <motion.div 
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            className="mt-3 pt-3 border-t border-border/50 space-y-2 overflow-hidden"
+          >
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <span className="text-[9px] font-bold uppercase text-muted-foreground tracking-widest flex items-center gap-1">
+                  <Globe className="h-2.5 w-2.5" /> IP de Origem
+                </span>
+                <p className="text-[10px] font-mono text-foreground bg-background px-1.5 py-0.5 rounded border">
+                  {metadata.ip || "Não registrado"}
+                </p>
+              </div>
+              <div className="space-y-1">
+                <span className="text-[9px] font-bold uppercase text-muted-foreground tracking-widest flex items-center gap-1">
+                  <Monitor className="h-2.5 w-2.5" /> Dispositivo / UA
+                </span>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <p className="text-[10px] text-foreground bg-background px-1.5 py-0.5 rounded border truncate cursor-help">
+                        {metadata.user_agent || "N/A"}
+                      </p>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom" className="text-[10px] max-w-[300px] break-all p-2">
+                      {metadata.user_agent}
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </div>
+            </div>
+            {metadata.changes && Array.isArray(metadata.changes) && (
+              <div className="space-y-1.5 mt-2">
+                <span className="text-[9px] font-bold uppercase text-muted-foreground tracking-widest">Resumo de Mudanças</span>
+                <div className="space-y-1">
+                  {metadata.changes.map((change: string, idx: number) => (
+                    <p key={idx} className="text-[10px] text-foreground flex items-start gap-1.5">
+                      <span className="text-primary mt-0.5">•</span>
+                      {change}
+                    </p>
+                  ))}
+                </div>
+              </div>
+            )}
+          </motion.div>
+        )}
       </div>
     </div>
   );
 }
+
+import { motion } from "framer-motion";

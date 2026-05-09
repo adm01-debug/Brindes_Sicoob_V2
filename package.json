@@ -150,7 +150,7 @@
     "pptxgenjs": "^4.0.1",
     "prettier": "^3.8.2",
     "prettier-plugin-tailwindcss": "^0.7.2",
-    "qrcode.react": "^3.1.0",
+    "qrcode.react": "^4.2.0",
     "react": "^18.3.1",
     "react-day-picker": "^8.10.0",
     "react-dom": "^18.3.1",

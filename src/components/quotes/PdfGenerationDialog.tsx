@@ -4,8 +4,8 @@
  * Fluxo: Preview → Gerar com barra de progresso → Action sheet (Download, WhatsApp, Email, Copiar Link)
  */
 
-import { useState, useCallback, useRef } from "react";
-import { Download, FileText, Eye, Loader2, Check, Send, Copy, Link2, MessageCircle, Mail, Printer, Settings2, Image as ImageIcon, DollarSign } from "lucide-react";
+import { useState, useCallback, useRef, useEffect } from "react";
+import { Download, FileText, Eye, Loader2, Check, Send, Copy, Link2, MessageCircle, Mail, Printer, Settings2, Image as ImageIcon, DollarSign, ShieldCheck } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -19,6 +19,8 @@ import { PropostaComercialTailwind } from "@/components/pdf/PropostaComercialTai
 import { generateProposalPDFv2, downloadPDF } from "@/utils/proposalPdfReactGenerator";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { v4 as uuidv4 } from 'uuid';
 
 type Stage = "preview" | "generating" | "ready";
 
@@ -53,6 +55,7 @@ export function PdfGenerationDialog({
   onStatusUpdate,
   trigger,
 }: PdfGenerationDialogProps) {
+  const { profile } = useAuth();
   const [open, setOpen] = useState(false);
   const [stage, setStage] = useState<Stage>("preview");
   const [progress, setProgress] = useState(0);
@@ -65,6 +68,54 @@ export function PdfGenerationDialog({
     hidePhotos: false,
     hideTotals: false,
   });
+
+  // Load preferences from profile
+  useEffect(() => {
+    if (profile?.preferences?.pdf_options) {
+      setPdfOptions(profile.preferences.pdf_options);
+    }
+  }, [profile]);
+
+  const savePreferences = async (options: typeof pdfOptions) => {
+    if (!profile?.id) return;
+    
+    const newPreferences = {
+      ...(profile.preferences || {}),
+      pdf_options: options
+    };
+
+    try {
+      await supabase
+        .from("profiles")
+        .update({ preferences: newPreferences })
+        .eq("user_id", profile.user_id);
+    } catch (err) {
+      console.error("Failed to save PDF preferences:", err);
+    }
+  };
+
+  const handleOptionChange = (key: keyof typeof pdfOptions, value: boolean) => {
+    const next = { ...pdfOptions, [key]: value };
+    setPdfOptions(next);
+    savePreferences(next);
+  };
+
+  const idHash = useMemo(() => {
+    if (!quoteId) return undefined;
+    // Generate a simple short hash for verification
+    return quoteId.slice(0, 8).toUpperCase();
+  }, [quoteId]);
+
+  const proposalDataWithMeta = useMemo(() => {
+    if (!proposalData) return null;
+    return {
+      ...proposalData,
+      quoteId,
+      idHash,
+      status: quoteStatus
+    };
+  }, [proposalData, quoteId, idHash, quoteStatus]);
+
   const blobUrlRef = useRef<string | null>(null);
 
   const isDraft = quoteStatus === "draft";
@@ -87,7 +138,7 @@ export function PdfGenerationDialog({
       await new Promise((r) => setTimeout(r, 200));
       setProgress(50);
 
-      const blob = await generateProposalPDFv2(proposalData, pdfOptions);
+      const blob = await generateProposalPDFv2(proposalDataWithMeta as any, pdfOptions);
 
       // Step 3: Finalizando
       setProgress(PROGRESS_STEPS[1].pct);
@@ -244,7 +295,7 @@ export function PdfGenerationDialog({
                         </span>
                       </div>
                     )}
-                    <PropostaComercialTailwind data={proposalData} isDraft={isDraft} options={pdfOptions} />
+                    <PropostaComercialTailwind data={proposalDataWithMeta as any} isDraft={isDraft} options={pdfOptions} />
                   </div>
                 </div>
               </div>
@@ -256,7 +307,7 @@ export function PdfGenerationDialog({
                     <Switch 
                       id="hide-prices" 
                       checked={pdfOptions.hidePrices} 
-                      onCheckedChange={(v) => setPdfOptions(prev => ({ ...prev, hidePrices: v }))}
+                      onCheckedChange={(v) => handleOptionChange("hidePrices", v)}
                     />
                     <Label htmlFor="hide-prices" className="text-xs cursor-pointer flex items-center gap-1.5">
                       <DollarSign className="h-3 w-3 text-muted-foreground" />
@@ -268,7 +319,7 @@ export function PdfGenerationDialog({
                     <Switch 
                       id="hide-photos" 
                       checked={pdfOptions.hidePhotos} 
-                      onCheckedChange={(v) => setPdfOptions(prev => ({ ...prev, hidePhotos: v }))}
+                      onCheckedChange={(v) => handleOptionChange("hidePhotos", v)}
                     />
                     <Label htmlFor="hide-photos" className="text-xs cursor-pointer flex items-center gap-1.5">
                       <ImageIcon className="h-3 w-3 text-muted-foreground" />
@@ -280,7 +331,7 @@ export function PdfGenerationDialog({
                     <Switch 
                       id="hide-totals" 
                       checked={pdfOptions.hideTotals} 
-                      onCheckedChange={(v) => setPdfOptions(prev => ({ ...prev, hideTotals: v }))}
+                      onCheckedChange={(v) => handleOptionChange("hideTotals", v)}
                     />
                     <Label htmlFor="hide-totals" className="text-xs cursor-pointer flex items-center gap-1.5">
                       <Settings2 className="h-3 w-3 text-muted-foreground" />

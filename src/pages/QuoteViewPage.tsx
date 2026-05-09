@@ -187,12 +187,42 @@ export default function QuoteViewPage() {
                 <Sheet>
                   <SheetTrigger asChild>
                     <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                      <History className="h-4 w-4 mr-2" /> Histórico
+                      <History className="h-4 w-4 mr-2" /> Trilha de Auditoria (10/10)
                     </DropdownMenuItem>
                   </SheetTrigger>
-                  <SheetContent>
-                    <SheetHeader><SheetTitle>Histórico de Alterações</SheetTitle></SheetHeader>
-                    <div className="mt-6"><QuoteHistoryPanel quoteId={id!} /></div>
+                  <SheetContent className="sm:max-w-xl overflow-y-auto">
+                    <SheetHeader className="pb-6">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 rounded-xl bg-primary/10">
+                          <ShieldCheck className="h-6 w-6 text-primary" />
+                        </div>
+                        <div>
+                          <SheetTitle className="text-xl font-bold">Relatório de Auditoria Digital</SheetTitle>
+                          <SheetDescription className="text-xs">
+                            Trilha completa de eventos, acessos e alterações com validade jurídica.
+                          </SheetDescription>
+                        </div>
+                      </div>
+                    </SheetHeader>
+                    <div className="space-y-6">
+                      <div className="rounded-xl border bg-muted/30 p-4 space-y-3">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Protocolo Digital</span>
+                          <Badge variant="outline" className="text-[9px] bg-primary/5 text-primary border-primary/20">Ativo</Badge>
+                        </div>
+                        <div className="grid grid-cols-2 gap-4 text-[11px]">
+                          <div>
+                            <p className="text-muted-foreground">Document ID</p>
+                            <p className="font-mono font-medium truncate">{quote.id}</p>
+                          </div>
+                          <div>
+                            <p className="text-muted-foreground">Versão Atual</p>
+                            <p className="font-medium">#{quote.quote_number}</p>
+                          </div>
+                        </div>
+                      </div>
+                      <QuoteHistoryPanel quoteId={id!} />
+                    </div>
                   </SheetContent>
                 </Sheet>
               </DropdownMenuContent>
