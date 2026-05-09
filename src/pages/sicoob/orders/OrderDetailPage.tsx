@@ -905,8 +905,8 @@ export default function OrderDetailPage() {
               trackingCode={orderData?.tracking_code}
               status={orderData?.status}
             />
+          </div>
         </div>
-      </div>
       </div>
     </MainLayout>
   );
