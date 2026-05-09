@@ -445,6 +445,10 @@ function QuoteCard({
   const { isSupervisorOrAbove } = useRBAC();
   const isHighValue = (quote.total || 0) > 5000;
   
+  // Orçamentos "Parados" (sem atualização há mais de 7 dias)
+  const isStale = quote.updated_at && (new Date().getTime() - new Date(quote.updated_at).getTime()) > 7 * 24 * 60 * 60 * 1000;
+  const isPendingResponse = quote.status === 'sent' && isStale;
+
   // Margem Bruta Estimada
   const totalCost = quote.total_cost || 0;
   const totalValue = quote.total || 0;
