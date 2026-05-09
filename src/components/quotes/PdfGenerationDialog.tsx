@@ -16,6 +16,7 @@ import { type ProposalTemplateData } from "@/components/pdf/ProposalHtmlTemplate
 import { PropostaComercialTailwind } from "@/components/pdf/PropostaComercialTailwind";
 import { generateProposalPDFv2, downloadPDF } from "@/utils/proposalPdfReactGenerator";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 type Stage = "preview" | "generating" | "ready";
 
