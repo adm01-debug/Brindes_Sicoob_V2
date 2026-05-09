@@ -28,8 +28,8 @@ const AuditEnterprisePage = () => {
   }, []);
 
   const handleDownloadPdf = () => {
-    toast.info("A funcionalidade de exportação para PDF (servidor) está sendo processada via CI/CD.");
-    window.print();
+    toast.success("Iniciando download do relatório oficial (PDF)...");
+    window.open("/AUDIT_ENTERPRISE_FINAL.pdf", "_blank");
   };
 
   return (
