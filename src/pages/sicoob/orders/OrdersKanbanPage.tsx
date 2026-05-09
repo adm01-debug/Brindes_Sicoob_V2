@@ -242,6 +242,7 @@ export default function OrdersKanbanPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { profile, isSupervisorOrAbove, isGerentePa } = useAuth();
+  const { updateStatus } = useSicoobOrdersOptimistic();
   
   // States
   const [activeId, setActiveId] = useState<string | null>(null);
