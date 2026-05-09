@@ -278,7 +278,7 @@ export function useQuoteBuilderState() {
     discountType, setDiscountType, discountValue, setDiscountValue,
     negotiationMarkup, setNegotiationMarkup,
     notes, setNotes, internalNotes, setInternalNotes,
-    items, setItems, quoteNumber, currentStatus,
+    items, setItems, tags, setTags, quoteNumber, currentStatus,
     paymentTerms, setPaymentTerms, deliveryTime, setDeliveryTime,
     deliveryMode, setDeliveryMode, deliveryDate, setDeliveryDate,
     shippingType, setShippingType, shippingCost, setShippingCost,
