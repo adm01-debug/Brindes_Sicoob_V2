@@ -48,8 +48,15 @@ interface Client {
 export default function QuotesKanbanPage() {
   const navigate = useNavigate();
   const { quotes, isLoading, fetchQuotes } = useQuotes();
+  const { isSupervisorOrAbove } = useRBAC();
+  
+  const [search, setSearch] = useState("");
   const [selectedClientId, setSelectedClientId] = useState<string>("all");
+  const [selectedSellerId, setSelectedSellerId] = useState<string>("all");
+  const [dateRange, setDateRange] = useState<{ from?: Date; to?: Date }>({});
+  
   const [clients, setClients] = useState<Client[]>([]);
+  const [sellers, setSellers] = useState<{ id: string; name: string }[]>([]);
   const [selectedQuoteIds, setSelectedQuoteIds] = useState<string[]>([]);
 
   const toggleQuoteSelection = (id: string) => {
