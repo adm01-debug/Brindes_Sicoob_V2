@@ -152,9 +152,10 @@ async function buildDossier() {
     }
 
     const finalContent = `
-# 🛡️ DOSSIÊ DE AUDITORIA ENTERPRISE - PROMAGIFTS SICOOB
+# 🛡️ DOSSIÊ DE AUDITORIA ENTERPRISE - PROMAGIFTS SICOOB [${env.toUpperCase()}]
 **ID da Auditoria:** \`AUDIT-${commitHash}-${Date.now()}\`
-**Ref de Versão:** [${commitHash}](${repoUrl}/commit/${commitHash})
+**Ref de Versão:** [${commitHash}](${currentRepoUrl}/commit/${commitHash})
+**Ambiente:** ${env.toUpperCase()}
 **Data de Geração:** ${new Date().toLocaleString('pt-BR')}
 **Responsável:** Lovable Enterprise Engine
 
@@ -165,20 +166,19 @@ async function buildDossier() {
 2. [Checklist de Conformidade](#checklist)
 3. [Cobertura RLS Detalhada](#rls-report)
 4. [Lacunas e Riscos (Gaps)](#gaps)
-5. [Trilha de Evidências (Git Genesis)](#evidencias)
+${failedLinks.length > 0 ? "5. [Falhas de Validação](#failed-links)\n6. [Trilha de Evidências (Git Genesis)](#evidencias)\n" : "5. [Trilha de Evidências (Git Genesis)](#evidencias)\n"}
 
 ---
 
 <a name="resumo"></a>
 ## 2. RESUMO EXECUTIVO
-O sistema foi submetido a uma auditoria automatizada de 360 graus. A infraestrutura de segurança baseada em Supabase RLS garante isolamento total entre cooperativas (Sicoob Central vs Singularidades).
+O sistema foi submetido a uma auditoria automatizada de 360 graus no ambiente **${env.toUpperCase()}**.
 
-### 📈 Métricas de Cobertura de Código
-- **Cobertura de Unidade/Integração:** ${metrics.coverage}
+### 📈 Métricas de Cobertura de Código (Métricas Reais: ${metrics.real ? '✅' : '❌'})
+- **Cobertura de Linhas (Vitest):** ${metrics.coverage}
 - **Componentes TSX Identificados:** ${metrics.totalComponents}
-- **Testes Automatizados (Vitest):** ${metrics.totalTests}
+- **Arquivos de Teste Detectados:** ${metrics.totalTests}
 - **Integridade de RLS:** 100% das tabelas validadas.
-
 
 <a name="checklist"></a>
 ${checklist}
@@ -189,12 +189,14 @@ ${rlsReport}
 <a name="gaps"></a>
 ${gapsReport}
 
+${failureSection}
+
 <a name="evidencias"></a>
-## 5. TRILHA DE EVIDÊNCIAS (GIT GENESIS)
+## ${failedLinks.length > 0 ? '6' : '5'}. TRILHA DE EVIDÊNCIAS (GIT GENESIS)
 As evidências abaixo foram extraídas diretamente do histórico de commits do repositório para garantir integridade.
 
 - **Último Deploy:** ${commitHash}
-- **Ambiente:** Lovable Cloud Production
+- **Ambiente:** Lovable Cloud ${env.toUpperCase()}
 - **Integridade da Auditoria:** Verified by Lovable SHA-256
 
 ---
