@@ -15,6 +15,7 @@ import { QuoteVersionsList } from "@/components/quotes/QuoteVersionsList";
 import { QuoteOrderBadge } from "@/components/quotes/QuoteOrderBadge";
 import { QuoteConvertToOrder } from "@/components/quotes/QuoteConvertToOrder";
 import { QuoteSingularApprovalActions } from "@/components/quotes/QuoteSingularApprovalActions";
+import { QuoteManagerApprovalBanner } from "@/components/quotes/QuoteManagerApprovalBanner";
 import { QUOTE_STATUS_CONFIG } from "@/lib/quote-status-config";
 import { PageSEO } from "@/components/seo/PageSEO";
 import { Badge } from "@/components/ui/badge";
@@ -70,6 +71,14 @@ export default function QuoteDetailPage() {
           status={quote.status} 
           quoteNumber={quote.quote_number} 
           onActionComplete={() => refetch()} 
+        />
+
+        <QuoteManagerApprovalBanner
+          quoteId={quote.id}
+          status={quote.status}
+          realDiscountPercent={quote.real_discount_percent}
+          maxDiscountPercent={10} // Fallback or fetch from limits
+          onActionComplete={() => refetch()}
         />
 
         {isConverted && (

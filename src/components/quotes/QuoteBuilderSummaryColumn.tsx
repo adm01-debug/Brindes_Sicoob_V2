@@ -222,12 +222,26 @@ export function QuoteBuilderSummaryColumn({
                           </Button>
                         </div>
                       </div>
-                      <div className="flex items-center gap-2 text-xs">
-                        <span className="text-muted-foreground">Qtd:</span>
-                        <span className="font-medium">{item.quantity}</span>
-                        <span className="text-muted-foreground">×</span>
-                        <span className="font-medium">{formatCurrency(item.unit_price)}</span>
-                        <span className="ml-auto font-semibold text-foreground tabular-nums">{formatCurrency(item.quantity * item.unit_price)}</span>
+                      <div className="flex flex-col gap-1">
+                        <div className="flex items-center gap-2 text-xs">
+                          <span className="text-muted-foreground">Qtd:</span>
+                          <span className={cn(
+                            "font-medium",
+                            item.stock_available !== null && item.stock_available < item.quantity ? "text-destructive font-bold" : ""
+                          )}>
+                            {item.quantity}
+                          </span>
+                          <span className="text-muted-foreground">×</span>
+                          <span className="font-medium">{formatCurrency(item.unit_price)}</span>
+                          <span className="ml-auto font-semibold text-foreground tabular-nums">{formatCurrency(item.quantity * item.unit_price)}</span>
+                        </div>
+                        
+                        {item.stock_available !== null && item.stock_available < item.quantity && (
+                          <div className="flex items-center gap-1 text-[10px] text-destructive font-semibold">
+                            <AlertTriangle className="h-3 w-3" />
+                            Estoque insuficiente (Disponível: {item.stock_available})
+                          </div>
+                        )}
                       </div>
                       {(item.price_updated_at || item.price_confirmed_at) && (
                         <div onClick={(e) => e.stopPropagation()} className="pt-0.5">
@@ -327,6 +341,17 @@ export function QuoteBuilderSummaryColumn({
                     <p className="text-xs text-amber-600 font-semibold">Desconto acima do autorizado</p>
                     <p className="text-[11px] text-amber-600/80 mt-0.5">
                       O orçamento será enviado para aprovação do administrador antes de poder ser finalizado.
+                    </p>
+                  </div>
+                </div>
+              )}
+              {marginPercent > 0 && marginPercent < 20 && (
+                <div className="mt-2 p-2 rounded-lg bg-primary/5 border border-primary/20 flex items-start gap-2">
+                  <Sparkles className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-[10px] font-bold text-primary uppercase">Dica de Performance</p>
+                    <p className="text-[11px] text-muted-foreground mt-0.5 leading-tight">
+                      Sua margem está em {marginPercent.toFixed(1)}%. Tente reduzir o desconto ou aumentar o markup em 3% para atingir a meta de rentabilidade.
                     </p>
                   </div>
                 </div>
