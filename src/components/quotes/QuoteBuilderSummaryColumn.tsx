@@ -352,17 +352,14 @@ export function QuoteBuilderSummaryColumn({
 
           {/* Footer */}
           <div className="shrink-0 pt-3 mt-3 border-t border-border/50 px-4 pb-4 space-y-3">
-            <div className="flex items-baseline justify-between gap-2">
-              <div>
-                <span className="font-bold text-base">Total</span>
-                {items.length > 0 && (
-                  <p className="text-[11px] text-muted-foreground">
-                    ≈{formatCurrency(items.reduce((s, i) => s + i.quantity, 0) > 0 ? total / items.reduce((s, i) => s + i.quantity, 0) : 0)}/un.
-                  </p>
-                )}
-              </div>
-              <span className="font-bold text-xl text-primary tabular-nums">{formatCurrency(total)}</span>
-            </div>
+            <QuoteSummary
+              subtotal={realSubtotal || (total + discountAmount)}
+              discountValue={discountValue}
+              discountType={discountType}
+              shippingCost={0}
+              total={total}
+              className="border-none bg-transparent shadow-none p-0 mb-4"
+            />
 
             {!isFormValid && (
               <div className="rounded-lg border border-destructive/30 bg-destructive/5 px-3 py-2 space-y-1">
