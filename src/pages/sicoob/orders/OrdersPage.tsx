@@ -67,6 +67,7 @@ import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import type { DateRange } from "react-day-picker";
 import { useAuth } from "@/contexts/AuthContext";
+import { useGlobalShortcuts } from "@/hooks/useGlobalShortcuts";
 import { OrderStatusBadge } from "@/components/sicoob/orders/OrderStatusBadge";
 import { OrderStatus, ORDER_STATUS_OPTIONS } from "@/types/sicoob/orders";
 import { sicoobOrderService } from "@/services/sicoob/orderService";
