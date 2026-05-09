@@ -284,9 +284,16 @@ function QuoteCard({ quote, isOverlay, onClick, attributes, listeners, disabled 
               <span className="truncate">{quote.client_company || quote.client_name || "Sem cliente"}</span>
             </div>
           </div>
-          <div {...attributes} {...listeners} className="p-1 hover:bg-muted rounded cursor-grab active:cursor-grabbing">
-            <GripVertical className="h-3.5 w-3.5 text-muted-foreground" />
-          </div>
+          {!disabled && (
+            <div {...attributes} {...listeners} className="p-1 hover:bg-muted rounded cursor-grab active:cursor-grabbing">
+              <GripVertical className="h-3.5 w-3.5 text-muted-foreground" />
+            </div>
+          )}
+          {disabled && (
+            <div className="p-1 opacity-40">
+              <Lock className="h-3.5 w-3.5 text-muted-foreground" />
+            </div>
+          )}
         </div>
 
         <div className="flex items-center justify-between gap-2 pt-2 border-t border-border/40">
