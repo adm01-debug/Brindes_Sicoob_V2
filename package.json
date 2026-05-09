@@ -140,6 +140,7 @@
     "lint-staged": "^16.4.0",
     "lovable-tagger": "^1.1.13",
     "lucide-react": "^0.309.0",
+    "md-to-pdf": "^5.2.5",
     "node-fetch": "^3.3.2",
     "otpauth": "^9.2.2",
     "papaparse": "^5.5.3",
