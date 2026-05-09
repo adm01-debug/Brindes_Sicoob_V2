@@ -948,6 +948,15 @@ export default function OrdersPage() {
                         Comprar Novamente
                       </Button>
                     )}
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="h-7 text-[10px] uppercase font-bold text-indigo-600 hover:text-indigo-700 px-2"
+                      onClick={(e) => handleDuplicate(order.id, e)}
+                    >
+                      <Copy className="h-3.5 w-3.5 mr-1" />
+                      Duplicar
+                    </Button>
                     <ArrowRight className="h-3.5 w-3.5 text-sicoob-green group-hover:translate-x-1 transition-transform" />
                   </div>
                 </CardFooter>
