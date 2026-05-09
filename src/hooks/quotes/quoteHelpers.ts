@@ -120,6 +120,7 @@ export function buildItemsInsertPayload(
     product_image_url: item.product_image_url,
     quantity: item.quantity,
     unit_price: item.unit_price,
+    unit_cost: item.unit_cost || 0,
     color_name: item.color_name,
     color_hex: item.color_hex,
     size_code: item.size_code || null,
