@@ -220,7 +220,7 @@ interface QuoteCardProps {
   disabled?: boolean;
 }
 
-function SortableQuoteCard({ quote, onClick }: { quote: Quote; onClick: () => void }) {
+function SortableQuoteCard({ quote, onClick, disabled }: { quote: Quote; onClick: () => void; disabled?: boolean }) {
   const {
     attributes,
     listeners,
