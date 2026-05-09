@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -19,6 +19,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
+  AlertDialogAction as AlertDialogConfirm,
 } from "@/components/ui/alert-dialog";
 import { 
   FileText, 
@@ -33,9 +34,13 @@ import {
   Package,
   Users,
   UserPlus,
-  Download
+  Download,
+  Tags,
+  Filter,
+  Eye
 } from "lucide-react";
 import { type QuoteTemplate, useQuoteTemplates } from "@/hooks/useQuoteTemplates";
+import { QuoteTemplatePreview } from "./QuoteTemplatePreview";
 import { exportTemplatesToJson, exportSingleTemplate } from "@/utils/templateExport";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -55,6 +60,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface QuoteTemplatesListProps {
   onApplyTemplate?: (template: QuoteTemplate) => void;
@@ -71,15 +77,29 @@ export function QuoteTemplatesList({
 }: QuoteTemplatesListProps) {
   const { templates, allTemplates, sellers, loading, deleteTemplate, setDefaultTemplate, duplicateTemplate, cloneTemplateToSeller, isAdmin } = useQuoteTemplates();
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const [cloneDialogOpen, setCloneDialogOpen] = useState(false);
   const [cloneTemplateId, setCloneTemplateId] = useState<string | null>(null);
   const [targetSellerId, setTargetSellerId] = useState<string>("");
+  const [previewTemplate, setPreviewTemplate] = useState<QuoteTemplate | null>(null);
 
-  const filteredTemplates = templates.filter((template) =>
-    template.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    template.description?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const categories = useMemo(() => {
+    const cats = new Set<string>();
+    templates.forEach(t => {
+      if (t.category) cats.add(t.category);
+    });
+    return Array.from(cats).sort();
+  }, [templates]);
+
+  const filteredTemplates = templates.filter((template) => {
+    const matchesSearch = template.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      template.description?.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesCategory = selectedCategory === "all" || template.category === selectedCategory;
+    
+    return matchesSearch && matchesCategory;
+  });
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat("pt-BR", {
@@ -168,6 +188,30 @@ export function QuoteTemplatesList({
         )}
       </div>
 
+      {categories.length > 0 && (
+        <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
+          <Tabs value={selectedCategory} onValueChange={setSelectedCategory} className="w-full">
+            <TabsList className="h-9 w-auto bg-transparent border p-0 gap-1">
+              <TabsTrigger 
+                value="all" 
+                className="rounded-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+              >
+                Todos
+              </TabsTrigger>
+              {categories.map(cat => (
+                <TabsTrigger 
+                  key={cat} 
+                  value={cat}
+                  className="rounded-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+                >
+                  {cat}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </Tabs>
+        </div>
+      )}
+
       {filteredTemplates.length === 0 ? (
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12 text-center">
@@ -199,8 +243,14 @@ export function QuoteTemplatesList({
               <CardHeader className="pb-2">
                 <div className="flex items-start justify-between">
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-wrap">
                       <CardTitle className="text-base truncate">{template.name}</CardTitle>
+                      {template.category && (
+                        <Badge variant="outline" className="text-[10px] font-normal py-0 px-1.5 h-4 flex items-center gap-1">
+                          <Tags className="h-2.5 w-2.5" />
+                          {template.category}
+                        </Badge>
+                      )}
                       {template.is_default && (
                         <Badge variant="secondary" className="shrink-0">
                           <Star className="h-3 w-3 mr-1 fill-current" />
@@ -227,6 +277,10 @@ export function QuoteTemplatesList({
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => setPreviewTemplate(template)}>
+                          <Eye className="h-4 w-4 mr-2" />
+                          Visualizar
+                        </DropdownMenuItem>
                         {onApplyTemplate && (
                           <DropdownMenuItem onClick={() => onApplyTemplate(template)}>
                             <FileText className="h-4 w-4 mr-2" />
@@ -389,6 +443,31 @@ export function QuoteTemplatesList({
               <Copy className="h-4 w-4 mr-2" />
               Clonar Template
             </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Preview Dialog */}
+      <Dialog open={!!previewTemplate} onOpenChange={() => setPreviewTemplate(null)}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Visualização do Template</DialogTitle>
+          </DialogHeader>
+          {previewTemplate && (
+            <QuoteTemplatePreview data={previewTemplate as any} />
+          )}
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={() => setPreviewTemplate(null)}>Fechar</Button>
+            {onApplyTemplate && (
+              <Button 
+                onClick={() => {
+                  if (previewTemplate) onApplyTemplate(previewTemplate);
+                  setPreviewTemplate(null);
+                }}
+              >
+                Usar este Template
+              </Button>
+            )}
           </DialogFooter>
         </DialogContent>
       </Dialog>

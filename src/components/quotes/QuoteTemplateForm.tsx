@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -7,7 +7,10 @@ import { Switch } from "@/components/ui/switch";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { type QuoteTemplate, type QuoteTemplateItem, type CreateTemplateInput, useQuoteTemplates } from "@/hooks/useQuoteTemplates";
-import { Save, X } from "lucide-react";
+import { Save, X, Eye, FileEdit, AlertTriangle, RefreshCw } from "lucide-react";
+import { QuoteTemplatePreview } from "./QuoteTemplatePreview";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 interface QuoteTemplateFormProps {
   template?: QuoteTemplate | null;
@@ -22,8 +25,10 @@ export function QuoteTemplateForm({
   onSave,
   onCancel,
 }: QuoteTemplateFormProps) {
-  const { createTemplate, updateTemplate } = useQuoteTemplates();
+  const { createTemplate, updateTemplate, validateTemplateItems } = useQuoteTemplates();
   const [saving, setSaving] = useState(false);
+  const [validating, setValidating] = useState(false);
+  const [itemsValidation, setItemsValidation] = useState<any[]>([]);
 
   const [formData, setFormData] = useState<CreateTemplateInput>({
     name: template?.name || "",
@@ -41,6 +46,21 @@ export function QuoteTemplateForm({
   });
 
   const isEditing = !!template;
+
+  useEffect(() => {
+    const validate = async () => {
+      if (formData.items_data && formData.items_data.length > 0) {
+        setValidating(true);
+        const results = await validateTemplateItems(formData.items_data);
+        setItemsValidation(results);
+        setValidating(false);
+      }
+    };
+    validate();
+  }, [validateTemplateItems, template]); // Only run once or when template changes
+
+  const hasInvalidItems = itemsValidation.some(item => item.isValid === false);
+  const hasPriceChanges = itemsValidation.some(item => item.isValid && item.currentPrice !== item.unitPrice);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -94,17 +114,62 @@ export function QuoteTemplateForm({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>{isEditing ? "Editar Template" : "Novo Template"}</CardTitle>
-          <CardDescription>
-            {isEditing 
-              ? "Atualize as informações do template de orçamento" 
-              : "Crie um template reutilizável para agilizar seus orçamentos"}
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
+    <div className="grid gap-6 lg:grid-cols-2">
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <Card>
+          <CardHeader className="pb-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle>{isEditing ? "Editar Template" : "Novo Template"}</CardTitle>
+                <CardDescription>
+                  {isEditing 
+                    ? "Atualize as informações do template de orçamento" 
+                    : "Crie um template reutilizável para agilizar seus orçamentos"}
+                </CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-6">
+          {/* Validation Warnings */}
+          {(hasInvalidItems || hasPriceChanges) && (
+            <div className="space-y-3">
+              {hasInvalidItems && (
+                <Alert variant="destructive">
+                  <AlertTriangle className="h-4 w-4" />
+                  <AlertTitle>Produtos Indisponíveis</AlertTitle>
+                  <AlertDescription>
+                    Alguns itens deste template não foram encontrados no catálogo atual. Eles podem ter sido removidos.
+                  </AlertDescription>
+                </Alert>
+              )}
+              {hasPriceChanges && (
+                <Alert className="border-amber-500 bg-amber-50 dark:bg-amber-950/20 text-amber-900 dark:text-amber-200">
+                  <RefreshCw className="h-4 w-4 text-amber-500" />
+                  <AlertTitle>Alteração de Preços</AlertTitle>
+                  <AlertDescription className="flex items-center justify-between">
+                    <span>Os preços de alguns produtos mudaram desde que o template foi criado.</span>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="h-7 border-amber-500 hover:bg-amber-100 dark:hover:bg-amber-900/40"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        const updatedItems = (formData.items_data || []).map(item => {
+                          const v = itemsValidation.find(iv => iv.productId === item.productId);
+                          return v && v.isValid ? { ...item, unitPrice: v.currentPrice } : item;
+                        });
+                        updateField("items_data", updatedItems);
+                        setItemsValidation(itemsValidation.map(v => ({ ...v, unitPrice: v.currentPrice })));
+                      }}
+                    >
+                      Atualizar Preços
+                    </Button>
+                  </AlertDescription>
+                </Alert>
+              )}
+            </div>
+          )}
+
           {/* Basic Info */}
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
@@ -264,16 +329,30 @@ export function QuoteTemplateForm({
               <div className="space-y-3">
                 <h4 className="font-medium">Itens do Template</h4>
                 <div className="bg-muted/50 rounded-lg p-4 space-y-2">
-                  {formData.items_data.map((item, index) => (
-                    <div key={index} className="flex items-center justify-between text-sm">
-                      <span className="truncate flex-1">
-                        {item.quantity}x {item.productName}
-                      </span>
-                      <span className="font-medium ml-4">
-                        {formatCurrency(item.quantity * item.unitPrice)}
-                      </span>
-                    </div>
-                  ))}
+                  {(formData.items_data || []).map((item, index) => {
+                    const validation = itemsValidation.find(v => v.productId === item.productId);
+                    const isInvalid = validation?.isValid === false;
+                    const priceChanged = validation?.isValid && validation.currentPrice !== item.unitPrice;
+                    
+                    return (
+                      <div key={index} className="flex items-center justify-between text-sm">
+                        <div className="flex flex-col flex-1">
+                          <span className={`truncate flex items-center gap-2 ${isInvalid ? "text-destructive line-through" : ""}`}>
+                            {item.quantity}x {item.productName}
+                            {isInvalid && <AlertTriangle className="h-3 w-3" />}
+                          </span>
+                          {priceChanged && (
+                            <span className="text-[10px] text-amber-600 font-medium">
+                              Preço no catálogo: {new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(validation.currentPrice)}
+                            </span>
+                          )}
+                        </div>
+                        <span className={`font-medium ml-4 ${priceChanged ? "text-amber-600" : ""}`}>
+                          {new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(item.quantity * item.unitPrice)}
+                        </span>
+                      </div>
+                    );
+                  })}
                   <Separator className="my-2" />
                   <div className="flex items-center justify-between font-medium">
                     <span>Total Estimado</span>
@@ -283,21 +362,33 @@ export function QuoteTemplateForm({
               </div>
             </>
           )}
-        </CardContent>
-      </Card>
-
-      <div className="flex items-center justify-end gap-3">
-        {onCancel && (
-          <Button type="button" variant="outline" onClick={onCancel}>
-            <X className="h-4 w-4 mr-2" />
-            Cancelar
+          </CardContent>
+        </Card>
+        
+        <div className="flex items-center justify-end gap-3 sticky bottom-0 bg-background/80 backdrop-blur-sm py-4 border-t z-10">
+          {onCancel && (
+            <Button type="button" variant="outline" onClick={onCancel}>
+              <X className="h-4 w-4 mr-2" />
+              Cancelar
+            </Button>
+          )}
+          <Button type="submit" disabled={saving || !formData.name.trim()} className="min-w-[140px]">
+            <Save className="h-4 w-4 mr-2" />
+            {saving ? "Salvando..." : isEditing ? "Salvar" : "Criar Template"}
           </Button>
-        )}
-        <Button type="submit" disabled={saving || !formData.name.trim()}>
-          <Save className="h-4 w-4 mr-2" />
-          {saving ? "Salvando..." : isEditing ? "Salvar Alterações" : "Criar Template"}
-        </Button>
+        </div>
+      </form>
+
+      <div className="hidden lg:block">
+        <div className="sticky top-6">
+          <QuoteTemplatePreview data={formData} />
+        </div>
       </div>
-    </form>
+
+      <div className="lg:hidden">
+        <Separator className="my-6" />
+        <QuoteTemplatePreview data={formData} />
+      </div>
+    </div>
   );
 }
