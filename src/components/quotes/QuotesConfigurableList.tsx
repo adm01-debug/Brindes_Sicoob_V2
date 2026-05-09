@@ -274,9 +274,12 @@ export function QuotesConfigurableList({
             icon: <Trash2 className="h-3.5 w-3.5" />,
             variant: "destructive" as const,
             onClick: (ids: string[]) => {
-              onBulkDelete([...ids]);
-              handleClearSelection();
+              if (isSupervisor) {
+                onBulkDelete([...ids]);
+                handleClearSelection();
+              }
             },
+            disabled: !isSupervisor,
           },
         ]}
       />
