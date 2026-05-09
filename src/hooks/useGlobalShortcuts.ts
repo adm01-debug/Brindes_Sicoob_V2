@@ -10,6 +10,7 @@
  * Existing Alt shortcuts (sidebar): Alt+N novo orçamento, Alt+O orçamentos,
  *   Alt+R carrinhos, Alt+P produtos, Alt+F super filtro, Alt+M mockup, Alt+S simulador.
  *   Header: Alt+F favoritos, Alt+C comparar, Alt+T tema.
+ *   Sicoob: Alt+G pedidos, Alt+V kanban.
  */
 import { useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
@@ -35,6 +36,20 @@ export function useGlobalShortcuts(handlers?: ShortcutHandlers) {
         target.tagName === "INPUT" ||
         target.tagName === "TEXTAREA" ||
         target.isContentEditable;
+
+      // Alt shortcuts (Navigation)
+      if (e.altKey && !isInput) {
+        if (e.key === "g" || e.key === "G") {
+          e.preventDefault();
+          navigate("/sicoob/pedidos");
+          return;
+        }
+        if (e.key === "v" || e.key === "V") {
+          e.preventDefault();
+          navigate("/sicoob/pedidos/kanban");
+          return;
+        }
+      }
 
       // G then K (within 800ms) → open kit library — no modifier, ignored in inputs
       if (!isMod && !e.altKey && !e.shiftKey && !isInput) {

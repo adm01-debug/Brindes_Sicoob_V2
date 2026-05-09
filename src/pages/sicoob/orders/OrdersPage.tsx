@@ -29,7 +29,8 @@ import {
   RotateCcw,
   AlertTriangle,
   History,
-  ShieldCheck
+  ShieldCheck,
+  Copy
 } from "lucide-react";
 import { toast } from "sonner";
 import { jsPDF } from "jspdf";
@@ -67,6 +68,7 @@ import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import type { DateRange } from "react-day-picker";
 import { useAuth } from "@/contexts/AuthContext";
+import { useGlobalShortcuts } from "@/hooks/useGlobalShortcuts";
 import { OrderStatusBadge } from "@/components/sicoob/orders/OrderStatusBadge";
 import { OrderStatus, ORDER_STATUS_OPTIONS } from "@/types/sicoob/orders";
 import { sicoobOrderService } from "@/services/sicoob/orderService";
@@ -82,6 +84,13 @@ export default function OrdersPage() {
   const [isExporting, setIsExporting] = useState<'csv' | 'pdf' | 'xlsx' | null>(null);
   const [selectedOrderIds, setSelectedOrderIds] = useState<string[]>([]);
   const [isBulkApproving, setIsExportingBulk] = useState(false);
+
+  useGlobalShortcuts({
+    onSearchFocus: () => {
+      const searchInput = document.querySelector<HTMLInputElement>('input[placeholder*="Buscar"]');
+      searchInput?.focus();
+    }
+  });
 
   const [searchTerm, setSearchTerm] = useState(searchParams.get("search") || "");
   const [statusFilter, setStatusFilter] = useState<string>(searchParams.get("status") || "all");
@@ -313,6 +322,17 @@ export default function OrdersPage() {
     }
   };
 
+  const handleDuplicate = async (orderId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    try {
+      const newId = await sicoobOrderService.duplicateSicoobOrder(orderId);
+      toast.success("Pedido duplicado como Rascunho!");
+      navigate(`/sicoob/pedidos/${newId}`);
+    } catch (err: any) {
+      toast.error("Erro ao duplicar pedido", { description: err.message });
+    }
+  };
+
   const toggleSelectOrder = (id: string) => {
     setSelectedOrderIds(prev => 
       prev.includes(id) ? prev.filter(oid => oid !== id) : [...prev, id]
@@ -395,12 +415,12 @@ export default function OrdersPage() {
            <div className="lg:col-span-2">
               <AIOrderPredictor />
            </div>
-           <Card className="bg-slate-900 border-slate-800 text-slate-100 overflow-hidden shadow-2xl relative group">
+           <Card className="bg-sicoob-green-dark border-sicoob-green-dark/20 text-white overflow-hidden shadow-2xl relative group">
               <div className="absolute top-0 right-0 p-3">
-                 <Badge className="bg-indigo-500 hover:bg-indigo-600 border-none text-[8px] animate-pulse">PROJEÇÃO ATIVA</Badge>
+                 <Badge className="bg-sicoob-green text-sicoob-green-dark border-none text-[8px] animate-pulse">PROJEÇÃO ATIVA</Badge>
               </div>
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-bold flex items-center gap-2">
+                <CardTitle className="text-sm font-bold flex items-center gap-2 text-sicoob-green-light">
                   <TrendingUp className="h-4 w-4 text-indigo-400" />
                   Previsão de Receita (30d)
                 </CardTitle>
@@ -928,6 +948,15 @@ export default function OrdersPage() {
                         Comprar Novamente
                       </Button>
                     )}
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="h-7 text-[10px] uppercase font-bold text-indigo-600 hover:text-indigo-700 px-2"
+                      onClick={(e) => handleDuplicate(order.id, e)}
+                    >
+                      <Copy className="h-3.5 w-3.5 mr-1" />
+                      Duplicar
+                    </Button>
                     <ArrowRight className="h-3.5 w-3.5 text-sicoob-green group-hover:translate-x-1 transition-transform" />
                   </div>
                 </CardFooter>
