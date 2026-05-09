@@ -257,7 +257,10 @@ export default function OrdersKanbanPage() {
   // Fetch with React Query for smart caching
   const { data: realOrders, isLoading, isRefetching, refetch } = useQuery({
     queryKey: ["sicoob_orders_list_kanban"],
-    queryFn: () => sicoobOrderService.listOrders(),
+    queryFn: async () => {
+      const { orders } = await sicoobOrderService.listOrders();
+      return orders;
+    },
     staleTime: 30000, // 30 seconds freshness
     gcTime: 1000 * 60 * 5, // 5 minutes cache
   });
