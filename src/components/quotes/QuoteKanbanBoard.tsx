@@ -200,9 +200,10 @@ function KanbanColumn({ status, quotes, onQuoteClick, isReadOnly = false }: Kanb
               quotes.map((quote) => (
                 <SortableQuoteCard
                   key={quote.id}
-                  quote={quote}
-                  onClick={() => onQuoteClick(quote.id!)}
-                />
+                   quote={quote}
+                   onClick={() => onQuoteClick(quote.id!)}
+                   disabled={isReadOnly}
+                 />
               ))
             )}
           </div>
