@@ -83,6 +83,7 @@ export function QuotesDashboardPage() {
           <StatCard title="Taxa de Aprovação" value={`${s.metrics.approvalRate.toFixed(1)}%`} icon={Target} variant="success" trend={s.metrics.approvalRate >= 50 ? { value: s.metrics.approvalRate } : undefined} />
           <StatCard title="Tempo Médio de Resposta" value={formatResponseTime(s.metrics.averageResponseTime)} icon={Hourglass} variant="warning" subtitle="para aprovação/rejeição" />
           <StatCard title="Valor Total Aprovado" value={formatCurrency(s.metrics.approvedValue)} icon={DollarSign} variant="success" subtitle={`de ${formatCurrency(s.metrics.totalValue)} orçados`} />
+          <StatCard title="Rentabilidade Total" value={formatCurrency(s.metrics.totalProfit)} icon={TrendingUp} variant="info" subtitle={`Margem média: ${s.metrics.averageMargin.toFixed(1)}%`} />
         </div>
 
         {/* Secondary metrics */}
