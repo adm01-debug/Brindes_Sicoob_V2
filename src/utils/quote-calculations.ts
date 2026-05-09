@@ -28,7 +28,7 @@ export const calculateItemCost = (item: QuoteItem) => {
 export const calculateQuoteTotals = (
   items: QuoteItem[],
   negotiationMarkup: number,
-  discountType: "percent" | "amount",
+  discountType: "percent" | "amount" | string,
   discountValue: number
 ) => {
   const realSubtotal = items.reduce((sum, item) => sum + calculateItemTotal(item), 0);

@@ -88,10 +88,10 @@ export function QuoteSummary({
 
           {isInternal && marginPercent !== undefined && (
             <div className={cn(
-              "mt-3 p-2 rounded-lg border border-dashed flex items-center justify-between text-xs font-semibold",
-              marginPercent > 30 ? "bg-success/5 border-success/30 text-success" : 
-              marginPercent > 15 ? "bg-warning/5 border-warning/30 text-warning" : 
-              "bg-destructive/5 border-destructive/30 text-destructive"
+              "mt-3 p-2 rounded-lg border border-dashed flex items-center justify-between text-xs font-semibold shadow-sm transition-all",
+              marginPercent > 30 ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-700 dark:text-emerald-400" : 
+              marginPercent > 15 ? "bg-amber-500/10 border-amber-500/30 text-amber-700 dark:text-amber-400" : 
+              "bg-destructive/10 border-destructive/30 text-destructive dark:text-red-400"
             )}>
               <span className="flex items-center gap-1">
                 Rentabilidade

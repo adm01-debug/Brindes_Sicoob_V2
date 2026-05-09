@@ -12,21 +12,25 @@ interface QuoteStatusTimelineProps {
 }
 
 const steps = [
-  { key: "draft",              label: "Rascunho",              icon: FileText },
-  { key: "pending_approval",   label: "Aprovação Desconto",    icon: Shield },
-  { key: "pending",            label: "Pendente",              icon: Clock },
-  { key: "syncing",            label: "Sincronizando",         icon: RefreshCw },
-  { key: "sent",               label: "Enviado",               icon: Send },
+  { key: "draft",                    label: "Rascunho",              icon: FileText },
+  { key: "pending_approval",         label: "Alçada Admin",          icon: Shield },
+  { key: "pending_singular_approval", label: "Análise Singular",      icon: Shield },
+  { key: "pending",                  label: "Pendente",              icon: Clock },
+  { key: "syncing",                  label: "Sincronizando",         icon: RefreshCw },
+  { key: "sent",                     label: "Enviado",               icon: Send },
 ];
 
 const statusOrder: Record<string, number> = {
-  draft:             0,
-  pending_approval:  1,
-  pending:           2,
-  sent:              5,
-  approved:          5,
-  rejected:          5,
-  expired:           5,
+  draft:                     0,
+  pending_approval:          1,
+  pending_singular_approval: 2,
+  pending:                   3,
+  sent:                      5,
+  approved:                  5,
+  approved_singular:         5,
+  rejected:                  5,
+  rejected_singular:         5,
+  expired:                   5,
 };
 
 function formatTs(ts?: string) {
@@ -46,21 +50,26 @@ export function QuoteStatusTimeline({
   isSyncing = false,
 }: QuoteStatusTimelineProps) {
   const isPendingApproval = status === "pending_approval";
+  const isPendingSingular = status === "pending_singular_approval";
+  
   // Compute current index based on filtered steps
-  const activeSteps = isPendingApproval ? steps : steps.filter(s => s.key !== "pending_approval");
+  const activeSteps = (isPendingApproval || isPendingSingular) 
+    ? steps 
+    : steps.filter(s => s.key !== "pending_approval" && s.key !== "pending_singular_approval");
+    
   const stepIdx = activeSteps.findIndex(s => s.key === status);
   const baseIdx = stepIdx >= 0 ? stepIdx : (statusOrder[status] != null ? Math.min(statusOrder[status], activeSteps.length) : 0);
   const syncIdx = activeSteps.findIndex(s => s.key === "syncing");
   const currentIdx = isSyncing && syncIdx >= 0 ? syncIdx : baseIdx;
 
-  const isRejected = status === "rejected";
+  const isRejected = status === "rejected" || status === "rejected_singular";
   const isExpired  = status === "expired";
   const isFinalNegative = isRejected || isExpired;
 
-  // Filter out pending_approval step if not relevant to this quote
-  const relevantSteps = isPendingApproval || status === "pending_approval"
+  // Filter out approval steps if not relevant to this quote
+  const relevantSteps = (isPendingApproval || isPendingSingular || statusOrder[status] > 0)
     ? steps
-    : steps.filter(s => s.key !== "pending_approval");
+    : steps.filter(s => s.key !== "pending_approval" && s.key !== "pending_singular_approval");
 
   const displaySteps = relevantSteps.map((step, idx) => {
     if (idx === relevantSteps.length - 1 && isRejected) {
@@ -96,7 +105,8 @@ export function QuoteStatusTimeline({
                   "w-9 h-9 rounded-full flex items-center justify-center border-2 transition-all",
                   isCompleted && "bg-primary border-primary text-primary-foreground",
                   isCurrent && isPendingApproval && step.key === "pending_approval" && "border-amber-500 bg-amber-500/10 text-amber-500 ring-2 ring-amber-500/20",
-                  isCurrent && !isFinalNegative && !isSync && !isPendingApproval && "border-primary bg-primary/10 text-primary ring-2 ring-primary/20",
+                  isCurrent && isPendingSingular && step.key === "pending_singular_approval" && "border-emerald-500 bg-emerald-500/10 text-emerald-500 ring-2 ring-emerald-500/20",
+                  isCurrent && !isFinalNegative && !isSync && !isPendingApproval && !isPendingSingular && "border-primary bg-primary/10 text-primary ring-2 ring-primary/20",
                   isCurrent && isSync && "border-success bg-primary/10 text-primary ring-2 ring-primary/20",
                   isCurrent && isRejected && "border-destructive bg-destructive/10 text-destructive ring-2 ring-destructive/20",
                   isCurrent && isExpired && "border-muted-foreground bg-muted text-muted-foreground ring-2 ring-muted-foreground/20",

@@ -86,18 +86,24 @@ export function useQuotes() {
     
     // Permission check for status transitions
     const isRestrictedTransition = ['approved', 'rejected', 'approved_singular', 'rejected_singular'].includes(status);
+    
+    // Check for "approved" specifically to set approved_by/at correctly
+    const isApprovalDecision = ['approved', 'approved_singular'].includes(status);
+    
+    // Check if transition is to one of the final/manager states
     if (isRestrictedTransition && !isSupervisorOrAbove) {
       toast.error("Apenas supervisores podem aprovar ou rejeitar orçamentos");
       return false;
     }
 
     try {
-      const quote = quotes.find(q => q.id === quoteId);
+      const { data: quote, error: fetchErr } = await supabase.from("quotes").select("*").eq("id", quoteId).single();
+      if (fetchErr) throw fetchErr;
       const oldStatus = quote?.status || "draft";
       
       const updateData: any = { status };
       if (notes) updateData.rejection_notes = notes;
-      if (status === 'approved_singular') {
+      if (isApprovalDecision) {
         updateData.approved_at = new Date().toISOString();
         updateData.approved_by = user.id;
       }

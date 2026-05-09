@@ -180,26 +180,26 @@ export default function QuotesKanbanPage() {
         <QuoteKanbanBoard quotes={filteredQuotes} />
 
         {/* Legend */}
-        <div className="flex flex-wrap gap-4 text-xs text-muted-foreground">
+        <div className="flex flex-wrap gap-4 text-xs text-muted-foreground bg-card/50 p-4 rounded-xl border border-border/40">
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded bg-muted/50" />
-            <span>Rascunho → Pendente/Enviado</span>
+            <div className="w-3 h-3 rounded bg-muted/50 border border-border" />
+            <span>Rascunho: Em elaboração pelo vendedor</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded bg-amber-500/50" />
-            <span>Aguardando Aprovação (desconto acima do limite)</span>
+            <div className="w-3 h-3 rounded bg-amber-500/20 border border-amber-500/40" />
+            <span>Pendente: Aguardando aprovação ou em processamento</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded bg-warning/50" />
-            <span>Pendente → Rascunho/Enviado/Expirado</span>
+            <div className="w-3 h-3 rounded bg-blue-500/20 border border-blue-500/40" />
+            <span>Enviado: Proposta em análise pelo cliente</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded bg-info/50" />
-            <span>Enviado → Aprovado/Rejeitado/Pendente/Expirado</span>
+            <div className="w-3 h-3 rounded bg-emerald-500/20 border border-emerald-500/40" />
+            <span>Aprovado: Pronto para virar pedido</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded bg-success/50" />
-            <span>Aprovado/Rejeitado → Enviado (reverter)</span>
+            <div className="w-3 h-3 rounded bg-destructive/20 border border-destructive/40" />
+            <span>Recusado: Necessita ajustes ou cancelado</span>
           </div>
         </div>
       </div>
