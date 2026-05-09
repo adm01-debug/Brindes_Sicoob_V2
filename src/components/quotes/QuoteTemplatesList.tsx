@@ -39,6 +39,7 @@ import {
   Filter
 } from "lucide-react";
 import { type QuoteTemplate, useQuoteTemplates } from "@/hooks/useQuoteTemplates";
+import { QuoteTemplatePreview } from "./QuoteTemplatePreview";
 import { exportTemplatesToJson, exportSingleTemplate } from "@/utils/templateExport";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -80,6 +81,7 @@ export function QuoteTemplatesList({
   const [cloneDialogOpen, setCloneDialogOpen] = useState(false);
   const [cloneTemplateId, setCloneTemplateId] = useState<string | null>(null);
   const [targetSellerId, setTargetSellerId] = useState<string>("");
+  const [previewTemplate, setPreviewTemplate] = useState<QuoteTemplate | null>(null);
 
   const categories = useMemo(() => {
     const cats = new Set<string>();
@@ -274,6 +276,10 @@ export function QuoteTemplatesList({
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => setPreviewTemplate(template)}>
+                          <Eye className="h-4 w-4 mr-2" />
+                          Visualizar
+                        </DropdownMenuItem>
                         {onApplyTemplate && (
                           <DropdownMenuItem onClick={() => onApplyTemplate(template)}>
                             <FileText className="h-4 w-4 mr-2" />
@@ -436,6 +442,31 @@ export function QuoteTemplatesList({
               <Copy className="h-4 w-4 mr-2" />
               Clonar Template
             </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Preview Dialog */}
+      <Dialog open={!!previewTemplate} onOpenChange={() => setPreviewTemplate(null)}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Visualização do Template</DialogTitle>
+          </DialogHeader>
+          {previewTemplate && (
+            <QuoteTemplatePreview data={previewTemplate as any} />
+          )}
+          <DialogFooter>
+            <Button onClick={() => setPreviewTemplate(null)}>Fechar</Button>
+            {onApplyTemplate && (
+              <Button 
+                onClick={() => {
+                  if (previewTemplate) onApplyTemplate(previewTemplate);
+                  setPreviewTemplate(null);
+                }}
+              >
+                Usar este Template
+              </Button>
+            )}
           </DialogFooter>
         </DialogContent>
       </Dialog>
