@@ -175,7 +175,7 @@ export const sicoobOrderService = {
       await supabase.from('notifications').insert({
         user_id: order.created_by,
         title: "Status do Pedido Sicoob Atualizado",
-        message: `Seu pedido #${orderId.slice(0, 8)} mudou para ${status}`,
+        message: `Seu pedido #${order.order_number || orderId.slice(0, 8)} mudou para ${status}`,
         type: 'info',
         category: 'status',
         source_entity_id: orderId,
