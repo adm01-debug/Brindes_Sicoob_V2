@@ -89,6 +89,7 @@ export default function OrdersPage() {
   const [page, setPage] = useState(1);
   const pageSize = 9;
 
+  const queryClient = useQueryClient();
   const { data: ordersData, isLoading: isLoadingOrders } = useQuery({
     queryKey: ["sicoob_orders_list", searchTerm, statusFilter, paFilter, singularFilter, searchParams.get("from"), searchParams.get("to"), page],
     queryFn: () => sicoobOrderService.listOrders({
@@ -102,6 +103,25 @@ export default function OrdersPage() {
         pageSize
       })
   });
+
+  // Real-time synchronization
+  useEffect(() => {
+    const channel = supabase
+      .channel('schema-db-changes')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'sicoob_orders' },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ["sicoob_orders_list"] });
+          queryClient.invalidateQueries({ queryKey: ["sicoob_orders_all_stats"] });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [queryClient]);
 
   const allOrdersForStats = useQuery({
     queryKey: ["sicoob_orders_all_stats"],
