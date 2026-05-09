@@ -260,11 +260,12 @@ function KanbanColumn({
                 <p className="text-[11px]">Arraste aqui</p>
               </div>
             ) : (
-              quotes.map((quote) => (
+               quotes.map((quote) => (
                 <SortableQuoteCard
                   key={quote.id}
                    quote={quote}
                    onClick={() => onQuoteClick(quote.id!)}
+                   onQuickView={() => onQuickView(quote)}
                    disabled={isReadOnly}
                    isSelected={selectedIds.includes(quote.id!)}
                    onToggleSelection={onToggleSelection}
