@@ -121,7 +121,16 @@ export function QuoteKanbanBoard({
 
     const currentQuote = initialQuotes.find((q) => q.id === activeQuoteId);
     if (currentQuote && newStatus && currentQuote.status !== newStatus) {
-      await updateQuoteStatus(activeQuoteId, newStatus as any);
+      const success = await updateQuoteStatus(activeQuoteId, newStatus as any);
+      
+      if (success && newStatus === 'approved') {
+        confetti({
+          particleCount: 150,
+          spread: 70,
+          origin: { y: 0.6 },
+          colors: ['#00a859', '#fdd300', '#ffffff']
+        });
+      }
     }
   };
 
