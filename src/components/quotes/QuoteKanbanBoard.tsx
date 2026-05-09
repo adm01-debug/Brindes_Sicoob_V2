@@ -26,10 +26,11 @@ import { Card, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { QUOTE_STATUS_CONFIG } from "@/lib/quote-status-config";
 import { formatCurrency } from "@/utils/quote-calculations";
-import { Clock, ArrowRight, User, Building2, GripVertical, AlertTriangle } from "lucide-react";
+import { Clock, ArrowRight, User, Building2, GripVertical, AlertTriangle, Lock } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { Quote } from "@/hooks/quotes/quoteTypes";
+import { useRBAC } from "@/hooks/useRBAC";
 
 const KANBAN_STATUSES = ["draft", "pending", "sent", "approved", "rejected"] as const;
 type KanbanStatus = (typeof KANBAN_STATUSES)[number];
