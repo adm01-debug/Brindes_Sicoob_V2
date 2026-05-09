@@ -268,8 +268,16 @@ export default function QuoteBuilderPage() {
               </div>
               </div>
 
-              {/* Atalho para Business Analytics do cliente — substitui o antigo painel de Recomendações IA,
-                  consolidando inteligência comercial no módulo /ferramentas/bi (SSOT). */}
+              {/* Etiquetas / Tags */}
+              <div className="rounded-2xl border border-border/50 bg-card p-4 space-y-3">
+                <h3 className="font-display font-semibold text-sm flex items-center gap-2">
+                  <span className="text-primary">🏷️</span>Etiquetas
+                </h3>
+                <TagManager tags={s.tags} onChange={s.setTags} />
+                <p className="text-[10px] text-muted-foreground">Etiquetas ajudam a organizar e filtrar orçamentos depois.</p>
+              </div>
+
+              {/* Atalho para Business Analytics do cliente */}
               {s.companyInfo?.id && (
                 <a
                   href={`/ferramentas/bi?clientId=${s.companyInfo.id}`}
