@@ -49,6 +49,7 @@ export function useQuoteBuilderState() {
   const [notes, setNotes] = useState("");
   const [internalNotes, setInternalNotes] = useState("");
   const [items, setItems] = useState<QuoteItem[]>([]);
+  const [tags, setTags] = useState<string[]>([]);
   const [quoteNumber, setQuoteNumber] = useState("");
   const [currentStatus, setCurrentStatus] = useState("draft");
   const [paymentTerms, setPaymentTerms] = useState("");
