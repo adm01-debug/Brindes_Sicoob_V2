@@ -35,7 +35,7 @@ export function QuoteValidityBanner({ validUntil, status, pdfUrl, onDownloadPdf 
     );
   }
 
-  if (!validUntil || status === "rejected") return null;
+  if (!validUntil || status === "rejected" || status === "rejected_singular") return null;
 
   const expiryDate = parseISO(validUntil);
   if (!isValid(expiryDate)) return null;
