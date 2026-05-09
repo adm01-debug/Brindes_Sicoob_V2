@@ -12,6 +12,18 @@ export function calculateQuoteTotals(quote: Partial<Quote>, items: QuoteItem[]) 
     return sum + baseTotal + persTotal;
   }, 0);
 
+  // Custo total = soma do custo dos produtos + custo das personalizações
+  const totalCost = items.reduce((sum, item) => {
+    const productCost = (item.unit_cost || item.unit_price * 0.7) * item.quantity;
+    const persCost = (item.personalizations || []).reduce((pSum, p) => {
+      const uCost = p.unit_cost || 0;
+      const sCost = p.setup_cost || 0;
+      const qty = p.personalized_quantity || item.quantity;
+      return pSum + (uCost * qty) + sCost;
+    }, 0);
+    return sum + productCost + persCost;
+  }, 0);
+
   // Margem de negociação (clamp 0–50)
   const markup = Math.min(50, Math.max(0, quote.negotiation_markup_percent || 0));
 
