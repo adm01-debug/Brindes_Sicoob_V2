@@ -66,7 +66,7 @@ export function QuoteNextActionBanner({
         return {
           icon: <CheckCircle2 className="h-5 w-5 text-success" />,
           title: "Orçamento Aprovado",
-          description: "A proposta foi aprovada! Converta agora em um pedido para iniciar a produção.",
+          description: "O orçamento foi aprovado! Converta agora em um pedido para iniciar a produção.",
           buttonLabel: "Converter em Pedido",
           action: () => onAction?.("convert_to_order"),
           variant: "success"
