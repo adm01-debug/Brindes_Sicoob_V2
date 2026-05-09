@@ -91,29 +91,24 @@ export default function OrdersPage() {
 
   const { data: ordersData, isLoading: isLoadingOrders } = useQuery({
     queryKey: ["sicoob_orders_list", searchTerm, statusFilter, paFilter, singularFilter, searchParams.get("from"), searchParams.get("to"), page],
-    queryFn: async () => {
-      const results = await sicoobOrderService.listOrders({
+    queryFn: () => sicoobOrderService.listOrders({
         search: searchTerm,
         status: statusFilter,
         pa_id: paFilter,
         cooperative_id: singularFilter,
         from: searchParams.get("from") || undefined,
-        to: searchParams.get("to") || undefined
-      });
-      
-      // Implement client-side pagination since listOrders returns all
-      const start = (page - 1) * pageSize;
-      const end = start + pageSize;
-      return {
-        orders: results.slice(start, end),
-        total: results.length
-      };
-    }
+        to: searchParams.get("to") || undefined,
+        page,
+        pageSize
+      })
   });
 
   const allOrdersForStats = useQuery({
     queryKey: ["sicoob_orders_all_stats"],
-    queryFn: () => sicoobOrderService.listOrders()
+    queryFn: async () => {
+      const { orders } = await sicoobOrderService.listOrders();
+      return orders;
+    }
   });
 
   const stats = useMemo(() => {

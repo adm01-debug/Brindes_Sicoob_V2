@@ -13,12 +13,15 @@ export const sicoobOrderService = {
     pa_id?: string, 
     cooperative_id?: string,
     from?: string,
-    to?: string
-  }): Promise<SicoobOrder[]> {
+    to?: string,
+    page?: number,
+    pageSize?: number
+  }): Promise<{ orders: SicoobOrder[], total: number }> {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error("Usuário não autenticado");
 
-    let query = supabase.from("sicoob_orders").select("*, pa:postos_atendimento(nome), cooperativa:cooperativas(nome)");
+    let query = supabase.from("sicoob_orders")
+      .select("*, pa:postos_atendimento(nome), cooperativa:cooperativas(nome)", { count: "exact" });
 
     if (filters?.status && filters.status !== "all") {
       query = query.eq("status", filters.status);
@@ -36,56 +39,35 @@ export const sicoobOrderService = {
       query = query.lte("created_at", filters.to);
     }
 
+    if (filters?.search) {
+      const term = filters.search.toLowerCase().trim();
+      // Em uma implementação enterprise real, usaríamos busca full-text ou um operador or complexo.
+      // Aqui, aplicamos o filtro na query principal para campos suportados.
+      query = query.or(`order_number.ilike.%${term}%,notes.ilike.%${term}%,tracking_code.ilike.%${term}%`);
+    }
+
     const { data: profile } = await supabase.from("profiles").select("role, pa_id, cooperativa_id").eq("id", user.id).single();
 
-    // RLS will handle most of this, but we filter here for cleaner code/UX
     if (profile?.role === 'gestor_pa' && profile.pa_id) {
       query = query.eq("pa_id", profile.pa_id);
     } else if (profile?.role === 'gestor_singular' && profile.cooperativa_id) {
       query = query.eq("cooperative_id", profile.cooperativa_id);
     }
 
-    const { data, error } = await query.order("created_at", { ascending: false });
+    // Paginação no servidor para performance máxima
+    if (filters?.page && filters?.pageSize) {
+      const from = (filters.page - 1) * filters.pageSize;
+      const to = from + filters.pageSize - 1;
+      query = query.range(from, to);
+    }
+
+    const { data, error, count } = await query.order("created_at", { ascending: false });
     if (error) throw error;
     
-    let results = data as SicoobOrder[];
-    
-    if (filters?.search) {
-      const term = filters.search.toLowerCase().trim();
-      
-      // Busca inteligente: 
-      // 1. Se o termo tem formato de UUID ou ID curto
-      // 2. Se o termo corresponde a nomes de PA ou Cooperativa (já inclusos no query)
-      // 3. Se o termo corresponde a notas ou códigos de rastreio
-      // 4. Se o termo corresponde a um status amigável (ex: "pendente")
-      
-      const statusMap: Record<string, string[]> = {
-        "pendente": ["pending", "waiting_approval"],
-        "rascunho": ["draft"],
-        "aprovado": ["confirmed"],
-        "cancelado": ["cancelled"],
-        "logistica": ["logistic"],
-        "concluido": ["completed"],
-        "alçada": ["waiting_approval", "escalated_to_board"],
-        "diretoria": ["escalated_to_board"]
-      };
-
-      const matchedStatuses = Object.entries(statusMap)
-        .filter(([key]) => key.includes(term))
-        .flatMap(([_, values]) => values);
-
-      results = results.filter(o => 
-        o.id.toLowerCase().includes(term) || 
-        o.order_number?.toLowerCase().includes(term) ||
-        o.notes?.toLowerCase().includes(term) ||
-        o.tracking_code?.toLowerCase().includes(term) ||
-        (o as any).pa?.nome?.toLowerCase().includes(term) ||
-        (o as any).cooperativa?.nome?.toLowerCase().includes(term) ||
-        matchedStatuses.includes(o.status)
-      );
-    }
-    
-    return results;
+    return {
+      orders: data as SicoobOrder[],
+      total: count || 0
+    };
   },
 
   async getOrderById(id: string): Promise<SicoobOrder> {
