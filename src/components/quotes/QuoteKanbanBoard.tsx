@@ -324,8 +324,9 @@ function KanbanColumn({
             <Lock className="h-3 w-3 text-muted-foreground" />
           )}
         </div>
-        <p className="text-[10px] text-muted-foreground mt-1 truncate">
-          Total: {formatCurrency(quotes.reduce((s, i) => s + (i.total || 0), 0))}
+        <p className="text-[10px] text-muted-foreground mt-1 flex justify-between items-center">
+          <span>Total: {formatCurrency(quotes.reduce((s, i) => s + (i.total || 0), 0))}</span>
+          <span className="opacity-70">{quotes.length} cards</span>
         </p>
       </div>
 
@@ -445,6 +446,10 @@ function QuoteCard({
   const { isSupervisorOrAbove } = useRBAC();
   const isHighValue = (quote.total || 0) > 5000;
   
+  // Orçamentos "Parados" (sem atualização há mais de 7 dias)
+  const isStale = quote.updated_at && (new Date().getTime() - new Date(quote.updated_at).getTime()) > 7 * 24 * 60 * 60 * 1000;
+  const isPendingResponse = quote.status === 'sent' && isStale;
+
   // Margem Bruta Estimada
   const totalCost = quote.total_cost || 0;
   const totalValue = quote.total || 0;
@@ -462,6 +467,7 @@ function QuoteCard({
         "group cursor-pointer hover:shadow-md transition-all duration-200 border-border/60 bg-card select-none relative",
         isOverlay && "shadow-xl border-primary ring-2 ring-primary/20",
         isHighValue && "border-l-4 border-l-amber-500",
+        isPendingResponse && "border-l-4 border-l-destructive",
         disabled && "opacity-80 grayscale-[0.3]",
         isSelected && "border-primary bg-primary/5 ring-1 ring-primary"
       )}
@@ -487,6 +493,12 @@ function QuoteCard({
               {isHighValue && (
                 <Badge variant="outline" className="h-4 px-1 text-[8px] bg-amber-500/10 text-amber-600 border-amber-500/20">
                   Alta Alçada
+                </Badge>
+              )}
+              {isPendingResponse && (
+                <Badge variant="outline" className="h-4 px-1 text-[8px] bg-destructive/10 text-destructive border-destructive/20 animate-pulse">
+                  <Clock className="h-2 w-2 mr-1" />
+                  Follow-up Pendente
                 </Badge>
               )}
               {isSupervisorOrAbove && (
