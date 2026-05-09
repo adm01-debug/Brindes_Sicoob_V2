@@ -51,9 +51,15 @@ type KanbanStatus = (typeof KANBAN_STATUSES)[number];
 
 interface QuoteKanbanBoardProps {
   quotes: Quote[];
+  selectedIds: string[];
+  onToggleSelection: (id: string) => void;
 }
 
-export function QuoteKanbanBoard({ quotes: initialQuotes }: QuoteKanbanBoardProps) {
+export function QuoteKanbanBoard({ 
+  quotes: initialQuotes,
+  selectedIds,
+  onToggleSelection
+}: QuoteKanbanBoardProps) {
   const { updateQuoteStatus, isLoading } = useQuotes();
   const { isSupervisorOrAbove } = useRBAC();
   const navigate = useNavigate();
