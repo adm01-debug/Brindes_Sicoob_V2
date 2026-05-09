@@ -100,8 +100,16 @@ function paginateItems(items: ProposalItem[]) {
   return pages;
 }
 
-export const PropostaComercialTailwind = forwardRef<HTMLDivElement, { data: ProposalTemplateData; isDraft?: boolean }>(
-  ({ data, isDraft = false }, ref) => {
+export const PropostaComercialTailwind = forwardRef<HTMLDivElement, { 
+  data: ProposalTemplateData; 
+  isDraft?: boolean;
+  options?: {
+    hidePrices?: boolean;
+    hidePhotos?: boolean;
+    hideTotals?: boolean;
+  }
+}>(
+  ({ data, isDraft = false, options = {} }, ref) => {
     const pages = paginateItems(data.items);
     const totalPages = pages.length;
     let itemIndex = 0;
@@ -162,10 +170,11 @@ export const PropostaComercialTailwind = forwardRef<HTMLDivElement, { data: Prop
                     items={pageItems}
                     showHeader={true}
                     startIndex={startIdx}
+                    options={options}
                   />
                 )}
 
-                {isLast && (
+                {isLast && !options.hideTotals && (
                   <>
                     <ProposalTotals data={data} />
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
