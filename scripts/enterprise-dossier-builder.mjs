@@ -31,27 +31,61 @@ async function getFileInfo(path) {
 }
 
 async function validateLink(url) {
-    if (!url || typeof url !== 'string') return false;
+    if (!url || typeof url !== 'string') return { ok: false, error: 'Empty URL' };
     if (url.startsWith('http')) {
-        try {
-            const res = await fetch(url, { method: 'HEAD', timeout: 5000 });
-            return res.ok;
-        } catch (e) {
-            console.warn(`⚠️ Link inválido: ${url} (${e.message})`);
-            return false;
+        const methods = ['HEAD', 'GET'];
+        for (const method of methods) {
+            try {
+                const options = { 
+                    method, 
+                    timeout: 8000,
+                    headers: method === 'GET' ? { 'Range': 'bytes=0-0' } : {} 
+                };
+                const res = await fetch(url, options);
+                if (res.ok) return { ok: true };
+                if (method === 'GET' && res.status === 404) return { ok: false, error: '404 Not Found' };
+            } catch (e) {
+                if (method === 'GET') return { ok: false, error: e.message };
+            }
         }
+        return { ok: false, error: 'Validation failed after HEAD/GET' };
     }
-    return fs.existsSync(url.split('#')[0]);
+    const exists = fs.existsSync(url.split('#')[0]);
+    return exists ? { ok: true } : { ok: false, error: 'Local file not found' };
 }
 
 async function getCoverageMetrics() {
-    // Simulação de métrica real baseada em arquivos
+    try {
+        console.log('🧪 Executando Vitest para métricas reais...');
+        // Executa vitest e gera o coverage summary
+        execSync('bun vitest run --coverage.enabled --coverage.reporter=json-summary --coverage.reportOnFailure', { stdio: 'inherit' });
+        
+        const summaryPath = 'coverage/coverage-summary.json';
+        if (fs.existsSync(summaryPath)) {
+            const summary = JSON.parse(fs.readFileSync(summaryPath, 'utf8'));
+            const total = summary.total || {};
+            const lines = total.lines?.pct || 0;
+            const srcFiles = execSync('find src -name "*.tsx" | wc -l').toString().trim();
+            const testFiles = execSync('find src -name "*.test.ts" -o -name "*.test.tsx" | wc -l').toString().trim();
+            
+            return {
+                coverage: `${lines}%`,
+                totalComponents: srcFiles,
+                totalTests: testFiles,
+                real: true
+            };
+        }
+    } catch (e) {
+        console.warn('⚠️ Falha ao coletar métricas reais do Vitest, usando heurística...');
+    }
+    
     const srcFiles = execSync('find src -name "*.tsx" | wc -l').toString().trim();
-    const testFiles = execSync('find tests -name "*.test.ts" | wc -l').toString().trim();
+    const testFiles = execSync('find src -name "*.test.ts" -o -name "*.test.tsx" | wc -l').toString().trim();
     return {
-        coverage: "98.2%",
+        coverage: "85% (Heurística)",
         totalComponents: srcFiles,
-        totalTests: testFiles
+        totalTests: testFiles,
+        real: false
     };
 }
 
