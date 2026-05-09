@@ -20,6 +20,7 @@ import { generateProposalPDFv2, downloadPDF } from "@/utils/proposalPdfReactGene
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useQuoteHistory } from "@/hooks/useQuoteHistory";
 import { v4 as uuidv4 } from 'uuid';
 
 type Stage = "preview" | "generating" | "ready";
