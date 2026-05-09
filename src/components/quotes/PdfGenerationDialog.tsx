@@ -22,12 +22,14 @@ type Stage = "preview" | "generating" | "ready";
 
 interface PdfGenerationDialogProps {
   proposalData: ProposalTemplateData | null;
+  quoteId?: string;
   quoteNumber?: string;
   quoteStatus?: string;
   clientPhone?: string;
   approvalLink?: string | null;
   onWhatsApp?: () => void;
   onShareLink?: () => void;
+  onStatusUpdate?: (newStatus: string, pdfUrl: string) => void;
   trigger?: React.ReactNode;
 }
 
