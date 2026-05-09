@@ -151,6 +151,8 @@ export function QuoteKanbanBoard({
             quotes={columns[status]}
             onQuoteClick={(id) => navigate(`/orcamentos/${id}`)}
             isReadOnly={['approved', 'rejected'].includes(status) && !isSupervisorOrAbove}
+            selectedIds={selectedIds}
+            onToggleSelection={onToggleSelection}
           />
         ))}
       </div>
