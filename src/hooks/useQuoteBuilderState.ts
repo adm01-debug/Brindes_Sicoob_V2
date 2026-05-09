@@ -49,6 +49,7 @@ export function useQuoteBuilderState() {
   const [notes, setNotes] = useState("");
   const [internalNotes, setInternalNotes] = useState("");
   const [items, setItems] = useState<QuoteItem[]>([]);
+  const [tags, setTags] = useState<string[]>([]);
   const [quoteNumber, setQuoteNumber] = useState("");
   const [currentStatus, setCurrentStatus] = useState("draft");
   const [paymentTerms, setPaymentTerms] = useState("");
@@ -75,7 +76,7 @@ export function useQuoteBuilderState() {
       setQuoteNumber, setCurrentStatus, setContactInfo, setCompanyInfo,
       setDiscountType, setDiscountValue, setNegotiationMarkup, setPaymentTerms,
       setShippingType, setShippingCost, setDeliveryMode, setDeliveryDate,
-      setDeliveryTime, setItems, setLoadingQuote, setActiveItemIndex, setExpandedItems
+      setDeliveryTime, setItems, setTags, setLoadingQuote, setActiveItemIndex, setExpandedItems
     }
   });
 
@@ -243,6 +244,7 @@ export function useQuoteBuilderState() {
       client_company: companyInfo?.name || undefined, client_cnpj: companyInfo?.cnpj || undefined,
       client_email: contactInfo?.email || undefined, client_phone: contactInfo?.phone || undefined,
       status: finalStatus, 
+      tags: tags,
       discount_percent: discountType === "percent" ? discountValue : 0,
       discount_amount: discountType === "amount" ? discountValue : 0,
       negotiation_markup_percent: totals.markup,
@@ -276,7 +278,7 @@ export function useQuoteBuilderState() {
     discountType, setDiscountType, discountValue, setDiscountValue,
     negotiationMarkup, setNegotiationMarkup,
     notes, setNotes, internalNotes, setInternalNotes,
-    items, setItems, quoteNumber, currentStatus,
+    items, setItems, tags, setTags, quoteNumber, currentStatus,
     paymentTerms, setPaymentTerms, deliveryTime, setDeliveryTime,
     deliveryMode, setDeliveryMode, deliveryDate, setDeliveryDate,
     shippingType, setShippingType, shippingCost, setShippingCost,

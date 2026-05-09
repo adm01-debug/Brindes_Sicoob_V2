@@ -5959,6 +5959,7 @@ export type Database = {
           suggested_modifications: Json | null
           synced_at: string | null
           synced_to_bitrix: boolean | null
+          tags: string[] | null
           total: number
           updated_at: string
           valid_until: string | null
@@ -6007,6 +6008,7 @@ export type Database = {
           suggested_modifications?: Json | null
           synced_at?: string | null
           synced_to_bitrix?: boolean | null
+          tags?: string[] | null
           total?: number
           updated_at?: string
           valid_until?: string | null
@@ -6055,6 +6057,7 @@ export type Database = {
           suggested_modifications?: Json | null
           synced_at?: string | null
           synced_to_bitrix?: boolean | null
+          tags?: string[] | null
           total?: number
           updated_at?: string
           valid_until?: string | null

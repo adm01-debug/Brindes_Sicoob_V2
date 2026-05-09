@@ -26,6 +26,9 @@ import { QuoteCommentsSection } from "@/components/quotes/QuoteCommentsSection";
 import { QuoteApprovalLinkCard } from "@/components/quotes/QuoteApprovalLinkCard";
 import { QuoteVersionHistory } from "@/components/quotes/QuoteVersionHistory";
 import { QuoteApprovalNotes } from "@/components/quotes/QuoteApprovalNotes";
+import { QuoteNextActionBanner } from "@/components/quotes/QuoteNextActionBanner";
+import { TagManager } from "@/components/quotes/TagManager";
+import { QuoteWhatsAppShare } from "@/components/quotes/QuoteWhatsAppShare";
 import { PresentationMode } from "@/components/presentation/PresentationMode";
 import { QuoteClientInfo } from "@/components/quotes/QuoteClientInfo";
 import { QuoteItemsTable } from "@/components/quotes/QuoteItemsTable";
@@ -195,6 +198,19 @@ export default function QuoteViewPage() {
           <QuoteValidityBanner validUntil={quote.valid_until} status={quote.status} pdfUrl={quote.approved_pdf_url} onDownloadPdf={handleDownloadPDF} />
         </div>
         
+        {/* Next Action Banner */}
+        <QuoteNextActionBanner 
+          quoteId={id!} 
+          status={quote.status} 
+          onAction={(action) => {
+            if (action === "share_link") handleShareLink();
+            if (action === "view_history") {
+              const historyTrigger = document.querySelector('[aria-label="Mais opções"]') as HTMLElement;
+              historyTrigger?.click();
+            }
+          }}
+        />
+
         {/* Singular Approval Actions */}
         {id && quote && <QuoteApprovalNotes notes={quote.rejection_notes} status={quote.status} />}
         
@@ -231,13 +247,31 @@ export default function QuoteViewPage() {
         <Card className="print:hidden">
           <Separator />
           <CardContent className="pt-6 space-y-6">
-            <QuoteClientInfo
-              clientCompany={quote.client_company}
-              clientName={quote.client_name}
-              clientEmail={quote.client_email}
-              clientPhone={quote.client_phone}
-              clientCnpj={clientCnpj}
-            />
+            <div className="flex flex-col md:flex-row gap-6 justify-between items-start">
+              <QuoteClientInfo
+                clientCompany={quote.client_company}
+                clientName={quote.client_name}
+                clientEmail={quote.client_email}
+                clientPhone={quote.client_phone}
+                clientCnpj={clientCnpj}
+              />
+              <div className="w-full md:w-48 space-y-2">
+                <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Etiquetas</h4>
+                <TagManager 
+                  tags={quote.tags || []} 
+                  readonly 
+                  onChange={() => {}} 
+                />
+                <QuoteWhatsAppShare 
+                  quoteNumber={quote.quote_number}
+                  total={quote.total}
+                  clientPhone={quote.client_phone}
+                  validUntil={quote.valid_until}
+                  approvalLink={approvalLink}
+                  className="w-full"
+                />
+              </div>
+            </div>
             <Separator />
             <QuoteItemsTable items={quote.items || []} />
             <QuoteTotalsSummary

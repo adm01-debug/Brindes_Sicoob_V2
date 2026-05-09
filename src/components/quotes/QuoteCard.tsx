@@ -18,6 +18,7 @@ export interface QuoteCardData {
   status: string;
   created_at: string;
   valid_until?: string | null;
+  tags?: string[] | null;
 }
 
 interface QuoteCardProps {
@@ -80,6 +81,19 @@ export function QuoteCard({ quote, onClick, className }: QuoteCardProps) {
             </span>
           </div>
         </div>
+
+        {quote.tags && quote.tags.length > 0 && (
+          <div className="flex flex-wrap gap-1">
+            {quote.tags.slice(0, 3).map((tag) => (
+              <Badge key={tag} variant="secondary" className="text-[9px] h-4 px-1 opacity-70">
+                {tag}
+              </Badge>
+            ))}
+            {quote.tags.length > 3 && (
+              <span className="text-[9px] text-muted-foreground">+{quote.tags.length - 3}</span>
+            )}
+          </div>
+        )}
 
         {isGerentePa && (quote.status === 'approved' || quote.status === 'converted') && (
           <div className="pt-2 border-t border-border/40" onClick={e => e.stopPropagation()}>

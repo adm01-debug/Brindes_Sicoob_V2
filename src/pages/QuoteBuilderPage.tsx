@@ -36,6 +36,7 @@ import { QuoteBuilderProductSearch } from "@/components/quotes/QuoteBuilderProdu
 import { useQuoteBuilderState } from "@/hooks/useQuoteBuilderState";
 import { useUnsavedChangesGuard } from "@/hooks/useUnsavedChangesGuard";
 import { UnsavedChangesDialog } from "@/components/common/UnsavedChangesDialog";
+import { TagManager } from "@/components/quotes/TagManager";
 
 export default function QuoteBuilderPage() {
   const s = useQuoteBuilderState();
@@ -59,7 +60,7 @@ export default function QuoteBuilderPage() {
 
       <QuoteAutoSave
         quoteId={s.quoteId}
-        data={{ clientId: s.clientId, validUntil: s.validUntil, discountType: s.discountType, discountValue: s.discountValue, notes: s.notes, internalNotes: s.internalNotes, items: s.items }}
+        data={{ clientId: s.clientId, validUntil: s.validUntil, discountType: s.discountType, discountValue: s.discountValue, notes: s.notes, internalNotes: s.internalNotes, items: s.items, tags: s.tags }}
         onRestore={(data) => {
           s.setClientId(data.clientId || "");
           s.setValidUntil(data.validUntil || format(addDays(new Date(), 30), "yyyy-MM-dd"));
@@ -68,6 +69,7 @@ export default function QuoteBuilderPage() {
           s.setNotes(data.notes || "");
           s.setInternalNotes(data.internalNotes || "");
           s.setItems(data.items || []);
+          s.setTags(data.tags || []);
           toast.success("Rascunho restaurado!");
         }}
         className="fixed top-20 right-4 z-40"
@@ -267,8 +269,16 @@ export default function QuoteBuilderPage() {
               </div>
               </div>
 
-              {/* Atalho para Business Analytics do cliente — substitui o antigo painel de Recomendações IA,
-                  consolidando inteligência comercial no módulo /ferramentas/bi (SSOT). */}
+              {/* Etiquetas / Tags */}
+              <div className="rounded-2xl border border-border/50 bg-card p-4 space-y-3">
+                <h3 className="font-display font-semibold text-sm flex items-center gap-2">
+                  <span className="text-primary">🏷️</span>Etiquetas
+                </h3>
+                <TagManager tags={s.tags} onChange={s.setTags} />
+                <p className="text-[10px] text-muted-foreground">Etiquetas ajudam a organizar e filtrar orçamentos depois.</p>
+              </div>
+
+              {/* Atalho para Business Analytics do cliente */}
               {s.companyInfo?.id && (
                 <a
                   href={`/ferramentas/bi?clientId=${s.companyInfo.id}`}
