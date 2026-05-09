@@ -112,6 +112,13 @@ export function useQuoteBuilderState() {
     return effectivePercent > maxDiscountPercent;
   }, [maxDiscountPercent, discountType, discountValue, totals.subtotal]);
 
+  const canEdit = useMemo(() => {
+    if (!isEditMode) return true;
+    if (isSupervisorOrAbove) return true;
+    // Agentes só editam rascunhos ou pendentes (não enviados/aprovados)
+    return ["draft", "pending"].includes(currentStatus);
+  }, [isEditMode, isSupervisorOrAbove, currentStatus]);
+
   // ── Actions ──
   const toggleExpanded = useCallback((index: number) => {
     setExpandedItems(prev => { const n = new Set(prev); n.has(index) ? n.delete(index) : n.add(index); return n; });
