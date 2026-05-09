@@ -55,6 +55,7 @@ export function PdfGenerationDialog({
   onStatusUpdate,
   trigger,
 }: PdfGenerationDialogProps) {
+  const { profile } = useAuth();
   const [open, setOpen] = useState(false);
   const [stage, setStage] = useState<Stage>("preview");
   const [progress, setProgress] = useState(0);
@@ -67,6 +68,54 @@ export function PdfGenerationDialog({
     hidePhotos: false,
     hideTotals: false,
   });
+
+  // Load preferences from profile
+  useEffect(() => {
+    if (profile?.preferences?.pdf_options) {
+      setPdfOptions(profile.preferences.pdf_options);
+    }
+  }, [profile]);
+
+  const savePreferences = async (options: typeof pdfOptions) => {
+    if (!profile?.id) return;
+    
+    const newPreferences = {
+      ...(profile.preferences || {}),
+      pdf_options: options
+    };
+
+    try {
+      await supabase
+        .from("profiles")
+        .update({ preferences: newPreferences })
+        .eq("user_id", profile.user_id);
+    } catch (err) {
+      console.error("Failed to save PDF preferences:", err);
+    }
+  };
+
+  const handleOptionChange = (key: keyof typeof pdfOptions, value: boolean) => {
+    const next = { ...pdfOptions, [key]: value };
+    setPdfOptions(next);
+    savePreferences(next);
+  };
+
+  const idHash = useMemo(() => {
+    if (!quoteId) return undefined;
+    // Generate a simple short hash for verification
+    return quoteId.slice(0, 8).toUpperCase();
+  }, [quoteId]);
+
+  const proposalDataWithMeta = useMemo(() => {
+    if (!proposalData) return null;
+    return {
+      ...proposalData,
+      quoteId,
+      idHash,
+      status: quoteStatus
+    };
+  }, [proposalData, quoteId, idHash, quoteStatus]);
+
   const blobUrlRef = useRef<string | null>(null);
 
   const isDraft = quoteStatus === "draft";
