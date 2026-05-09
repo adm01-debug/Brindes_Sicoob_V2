@@ -885,6 +885,19 @@ export default function OrderDetailPage() {
               </CardContent>
             </Card>
           </div>
+          <div className="space-y-6">
+            <OrderBudgetIntelligence 
+              orderTotal={orderTotal}
+              remainingBudget={remainingBudget}
+              allocatedBudget={budget?.allocated_amount || 50000}
+              paName={(orderData as any).pa?.nome || "PA Sicoob"}
+            />
+            <LogisticsCommandCenter 
+              orderId={id!}
+              trackingCode={orderData?.tracking_code}
+              status={orderData?.status}
+            />
+          </div>
         </div>
       </div>
     </MainLayout>
