@@ -10,8 +10,16 @@ const repoUrl = "https://github.com/promo-gifts/app"; // Base URL for evidence l
 async function getRlsCoverage() {
     try {
         const supabase = createClient(supabaseUrl, supabaseKey);
+        // Usamos uma query direta caso o RPC falhe ou não retorne todas as tabelas
         const { data: tables, error } = await supabase.rpc('check_tables_rls');
-        if (error) throw error;
+        if (error) {
+            console.warn("⚠️ RPC check_tables_rls falhou, tentando query direta no pg_class...");
+            const { data: directTables, error: directError } = await supabase.from('pg_class')
+                .select('relname, relrowsecurity')
+                .filter('relkind', 'eq', 'r');
+            if (directError) throw directError;
+            return directTables || [];
+        }
         return tables || [];
     } catch (e) {
         console.error("Error fetching RLS coverage:", e.message);
