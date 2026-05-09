@@ -29,7 +29,8 @@ import {
   RotateCcw,
   AlertTriangle,
   History,
-  ShieldCheck
+  ShieldCheck,
+  Copy
 } from "lucide-react";
 import { toast } from "sonner";
 import { jsPDF } from "jspdf";
