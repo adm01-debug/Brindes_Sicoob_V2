@@ -197,6 +197,7 @@ interface KanbanColumnProps {
   status: KanbanStatus;
   quotes: Quote[];
   onQuoteClick: (id: string) => void;
+  onQuickView: (quote: Quote) => void;
   isReadOnly?: boolean;
   selectedIds: string[];
   onToggleSelection: (id: string) => void;
@@ -207,6 +208,7 @@ function KanbanColumn({
   status, 
   quotes, 
   onQuoteClick, 
+  onQuickView,
   isReadOnly = false,
   selectedIds,
   onToggleSelection,
