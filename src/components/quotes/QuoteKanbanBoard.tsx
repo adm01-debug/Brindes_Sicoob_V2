@@ -26,10 +26,11 @@ import { Card, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { QUOTE_STATUS_CONFIG } from "@/lib/quote-status-config";
 import { formatCurrency } from "@/utils/quote-calculations";
-import { Clock, ArrowRight, User, Building2, GripVertical, AlertTriangle } from "lucide-react";
+import { Clock, ArrowRight, User, Building2, GripVertical, AlertTriangle, Lock } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { Quote } from "@/hooks/quotes/quoteTypes";
+import { useRBAC } from "@/hooks/useRBAC";
 
 const KANBAN_STATUSES = ["draft", "pending", "sent", "approved", "rejected"] as const;
 type KanbanStatus = (typeof KANBAN_STATUSES)[number];
@@ -40,6 +41,7 @@ interface QuoteKanbanBoardProps {
 
 export function QuoteKanbanBoard({ quotes: initialQuotes }: QuoteKanbanBoardProps) {
   const { updateQuoteStatus, isLoading } = useQuotes();
+  const { isSupervisorOrAbove } = useRBAC();
   const navigate = useNavigate();
   
   const [activeId, setActiveId] = useState<string | null>(null);
@@ -119,6 +121,7 @@ export function QuoteKanbanBoard({ quotes: initialQuotes }: QuoteKanbanBoardProp
             status={status}
             quotes={columns[status]}
             onQuoteClick={(id) => navigate(`/orcamentos/${id}`)}
+            isReadOnly={['approved', 'rejected'].includes(status) && !isSupervisorOrAbove}
           />
         ))}
       </div>
@@ -144,9 +147,10 @@ interface KanbanColumnProps {
   status: KanbanStatus;
   quotes: Quote[];
   onQuoteClick: (id: string) => void;
+  isReadOnly?: boolean;
 }
 
-function KanbanColumn({ status, quotes, onQuoteClick }: KanbanColumnProps) {
+function KanbanColumn({ status, quotes, onQuoteClick, isReadOnly = false }: KanbanColumnProps) {
   const config = QUOTE_STATUS_CONFIG[status];
   const quoteIds = useMemo(() => quotes.map((q) => q.id!), [quotes]);
 
@@ -175,6 +179,9 @@ function KanbanColumn({ status, quotes, onQuoteClick }: KanbanColumnProps) {
           <Badge variant="secondary" className="h-5 px-1.5 text-[10px] font-bold">
             {quotes.length}
           </Badge>
+          {isReadOnly && (
+            <Lock className="h-3 w-3 text-muted-foreground" />
+          )}
         </div>
         <p className="text-[10px] text-muted-foreground mt-1 truncate">
           Total: {formatCurrency(quotes.reduce((s, i) => s + (i.total || 0), 0))}
@@ -193,9 +200,10 @@ function KanbanColumn({ status, quotes, onQuoteClick }: KanbanColumnProps) {
               quotes.map((quote) => (
                 <SortableQuoteCard
                   key={quote.id}
-                  quote={quote}
-                  onClick={() => onQuoteClick(quote.id!)}
-                />
+                   quote={quote}
+                   onClick={() => onQuoteClick(quote.id!)}
+                   disabled={isReadOnly}
+                 />
               ))
             )}
           </div>
@@ -209,9 +217,10 @@ interface QuoteCardProps {
   quote: Quote;
   isOverlay?: boolean;
   onClick?: () => void;
+  disabled?: boolean;
 }
 
-function SortableQuoteCard({ quote, onClick }: { quote: Quote; onClick: () => void }) {
+function SortableQuoteCard({ quote, onClick, disabled }: { quote: Quote; onClick: () => void; disabled?: boolean }) {
   const {
     attributes,
     listeners,
@@ -219,7 +228,10 @@ function SortableQuoteCard({ quote, onClick }: { quote: Quote; onClick: () => vo
     transform,
     transition,
     isDragging,
-  } = useSortable({ id: quote.id! });
+  } = useSortable({ 
+    id: quote.id!,
+    disabled: disabled
+  });
 
   const style = {
     transform: CSS.Translate.toString(transform),
@@ -238,12 +250,12 @@ function SortableQuoteCard({ quote, onClick }: { quote: Quote; onClick: () => vo
 
   return (
     <div ref={setNodeRef} style={style}>
-      <QuoteCard quote={quote} onClick={onClick} attributes={attributes} listeners={listeners} />
+      <QuoteCard quote={quote} onClick={onClick} attributes={attributes} listeners={listeners} disabled={disabled} />
     </div>
   );
 }
 
-function QuoteCard({ quote, isOverlay, onClick, attributes, listeners }: QuoteCardProps & { attributes?: any; listeners?: any }) {
+function QuoteCard({ quote, isOverlay, onClick, attributes, listeners, disabled }: QuoteCardProps & { attributes?: any; listeners?: any }) {
   const isHighValue = (quote.total || 0) > 5000;
 
   return (
@@ -251,7 +263,8 @@ function QuoteCard({ quote, isOverlay, onClick, attributes, listeners }: QuoteCa
       className={cn(
         "group cursor-pointer hover:shadow-md transition-all duration-200 border-border/60 bg-card select-none",
         isOverlay && "shadow-xl border-primary ring-2 ring-primary/20",
-        isHighValue && "border-l-4 border-l-amber-500"
+        isHighValue && "border-l-4 border-l-amber-500",
+        disabled && "opacity-80 grayscale-[0.3]"
       )}
       onClick={onClick}
     >
@@ -271,9 +284,16 @@ function QuoteCard({ quote, isOverlay, onClick, attributes, listeners }: QuoteCa
               <span className="truncate">{quote.client_company || quote.client_name || "Sem cliente"}</span>
             </div>
           </div>
-          <div {...attributes} {...listeners} className="p-1 hover:bg-muted rounded cursor-grab active:cursor-grabbing">
-            <GripVertical className="h-3.5 w-3.5 text-muted-foreground" />
-          </div>
+          {!disabled && (
+            <div {...attributes} {...listeners} className="p-1 hover:bg-muted rounded cursor-grab active:cursor-grabbing">
+              <GripVertical className="h-3.5 w-3.5 text-muted-foreground" />
+            </div>
+          )}
+          {disabled && (
+            <div className="p-1 opacity-40">
+              <Lock className="h-3.5 w-3.5 text-muted-foreground" />
+            </div>
+          )}
         </div>
 
         <div className="flex items-center justify-between gap-2 pt-2 border-t border-border/40">

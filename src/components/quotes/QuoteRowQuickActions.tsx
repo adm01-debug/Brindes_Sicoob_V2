@@ -24,6 +24,7 @@ interface QuoteRowQuickActionsProps {
   quote: Quote;
   onDuplicate: (id: string, itemIds?: string[]) => void;
   onMarkApproved: (id: string) => void;
+  isSupervisor?: boolean;
 }
 
 const APP_BASE_URL = typeof window !== "undefined" ? window.location.origin : "";
@@ -34,7 +35,7 @@ function buildShareUrl(quote: Quote) {
 
 // ...buildWhatsappUrl omitted for brevity
 
-export function QuoteRowQuickActions({ quote, onDuplicate, onMarkApproved }: QuoteRowQuickActionsProps) {
+export function QuoteRowQuickActions({ quote, onDuplicate, onMarkApproved, isSupervisor = false }: QuoteRowQuickActionsProps) {
   const [isDupDialogOpen, setIsDupDialogOpen] = useState(false);
   const [dupMode, setDupMode] = useState<'full' | 'partial'>('full');
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
@@ -196,7 +197,7 @@ export function QuoteRowQuickActions({ quote, onDuplicate, onMarkApproved }: Quo
         <TooltipContent side="top">Enviar por WhatsApp</TooltipContent>
       </Tooltip>
 
-      {!isClosed && (
+      {!isClosed && isSupervisor && (
         <Tooltip>
           <TooltipTrigger asChild>
             <Button

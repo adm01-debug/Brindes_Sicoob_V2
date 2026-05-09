@@ -14,6 +14,7 @@ import { validateQuoteForm, QUOTE_FIELD_LABELS } from "@/lib/validations";
 import { useQuotes, type QuoteItem, type QuoteItemPersonalization } from "@/hooks/useQuotes";
 import { useQuoteTemplates, type QuoteTemplate, type QuoteTemplateItem } from "@/hooks/useQuoteTemplates";
 import { useAuth } from "@/contexts/AuthContext";
+import { useRBAC } from "@/hooks/useRBAC";
 import { getPriceFreshness } from "@/utils/price-freshness";
 import type { SelectedCompanyInfo, SelectedContactInfo } from "@/components/quotes/CompanyContactSelector";
 import type { ExternalVariantStock } from "@/hooks/useExternalVariantStock";
@@ -31,6 +32,7 @@ export function useQuoteBuilderState() {
   const isEditMode = Boolean(quoteId);
 
   const { user, roles: userRoles, isGerentePa } = useAuth();
+  const { isSupervisorOrAbove } = useRBAC();
   const { createQuote, updateQuote, fetchQuote, isLoading: quotesLoading } = useQuotes();
   const { templates } = useQuoteTemplates();
   const { myLimit: maxDiscountPercent } = useSellerDiscountLimits();
@@ -109,6 +111,13 @@ export function useQuoteBuilderState() {
       : (totals.subtotal > 0 ? (discountValue / totals.subtotal) * 100 : 0);
     return effectivePercent > maxDiscountPercent;
   }, [maxDiscountPercent, discountType, discountValue, totals.subtotal]);
+
+  const canEdit = useMemo(() => {
+    if (!isEditMode) return true;
+    if (isSupervisorOrAbove) return true;
+    // Agentes só editam rascunhos ou pendentes (não enviados/aprovados)
+    return ["draft", "pending"].includes(currentStatus);
+  }, [isEditMode, isSupervisorOrAbove, currentStatus]);
 
   // ── Actions ──
   const toggleExpanded = useCallback((index: number) => {
@@ -299,6 +308,6 @@ export function useQuoteBuilderState() {
       const ts = new Date().toISOString();
       setItems(prev => prev.map((item, idx) => idx === index ? { ...item, price_confirmed_at: ts } : item));
     },
-    applyTemplate, handleSaveQuote,
+    applyTemplate, handleSaveQuote, canEdit,
   };
 }

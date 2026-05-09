@@ -47,6 +47,7 @@ import {
 } from "lucide-react";
 import { useQuotes } from "@/hooks/useQuotes";
 import { useAuth } from "@/contexts/AuthContext";
+import { useRBAC } from "@/hooks/useRBAC";
 import Fuse from "fuse.js";
 import { format } from "date-fns";
 // DynamicBreadcrumbs removido: o MainLayout já renderiza PersistentBreadcrumbs sticky.
@@ -78,6 +79,7 @@ const sortOptions: { value: SortOption; label: string }[] = [
 export function QuotesListPage() {
   const navigate = useNavigate();
   const { isGestorCompras, isDev } = useAuth();
+  const { isSupervisorOrAbove } = useRBAC();
   const { quotes, isLoading, error, deleteQuote, duplicateQuote, updateQuoteStatus } = useQuotes();
 
   const [searchTerm, setSearchTerm] = useState("");
@@ -408,6 +410,7 @@ export function QuotesListPage() {
             ) : (
               <QuotesConfigurableList
                 quotes={filteredQuotes}
+                isSupervisor={isSupervisorOrAbove}
                 onDelete={(id) => setDeleteConfirmId(id)}
                 onBulkDelete={(ids) => setBulkDeleteIds(ids)}
                 onBulkStatusChange={async (ids, status) => {

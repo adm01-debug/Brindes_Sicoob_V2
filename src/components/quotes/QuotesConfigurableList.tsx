@@ -121,6 +121,7 @@ interface QuotesConfigurableListProps {
   onBulkExport?: (ids: string[]) => void;
   onDuplicate: (id: string) => void;
   onMarkApproved?: (id: string) => void;
+  isSupervisor?: boolean;
 }
 
 const PAGE_SIZE_OPTIONS = [10, 25, 50, 100];
@@ -133,6 +134,7 @@ export function QuotesConfigurableList({
   onBulkExport,
   onDuplicate,
   onMarkApproved,
+  isSupervisor = false,
 }: QuotesConfigurableListProps) {
   const navigate = useNavigate();
 
@@ -272,9 +274,12 @@ export function QuotesConfigurableList({
             icon: <Trash2 className="h-3.5 w-3.5" />,
             variant: "destructive" as const,
             onClick: (ids: string[]) => {
-              onBulkDelete([...ids]);
-              handleClearSelection();
+              if (isSupervisor) {
+                onBulkDelete([...ids]);
+                handleClearSelection();
+              }
             },
+            disabled: !isSupervisor,
           },
         ]}
       />
@@ -371,6 +376,7 @@ export function QuotesConfigurableList({
             <div className="flex items-center justify-end gap-0.5">
               <QuoteRowQuickActions
                 quote={quote}
+                isSupervisor={isSupervisor}
                 onDuplicate={onDuplicate}
                 onMarkApproved={(id) => onMarkApproved?.(id)}
               />
@@ -391,7 +397,10 @@ export function QuotesConfigurableList({
                     <Copy className="h-4 w-4 mr-2" /> Duplicar
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem className="text-destructive" onClick={() => onDelete(quote.id!)}>
+                  <DropdownMenuItem 
+                    className={cn("text-destructive", !isSupervisor && "opacity-50 pointer-events-none")} 
+                    onClick={() => isSupervisor && onDelete(quote.id!)}
+                  >
                     <Trash2 className="h-4 w-4 mr-2" /> Excluir
                   </DropdownMenuItem>
                 </DropdownMenuContent>

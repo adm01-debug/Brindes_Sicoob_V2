@@ -12,9 +12,11 @@ import { QuoteService } from "@/services/QuoteService";
 import type { Quote, QuoteItem, PersonalizationTechnique } from "./quotes/quoteTypes";
 import { STATUS_LABELS } from "./quotes/quoteHelpers";
 import { invokeExternalDb } from "@/lib/external-db";
+import { useRBAC } from "@/hooks/useRBAC";
 
 export function useQuotes() {
   const { user, isGestorCompras, isDev } = useAuth();
+  const { isSupervisorOrAbove } = useRBAC();
   const { currentOrg } = useOrganization();
   const scope = useSalesScope();
   
@@ -81,6 +83,14 @@ export function useQuotes() {
 
   const updateQuoteStatus = async (quoteId: string, status: Quote["status"], notes?: string) => {
     if (!user) return false;
+    
+    // Permission check for status transitions
+    const isRestrictedTransition = ['approved', 'rejected', 'approved_singular', 'rejected_singular'].includes(status);
+    if (isRestrictedTransition && !isSupervisorOrAbove) {
+      toast.error("Apenas supervisores podem aprovar ou rejeitar orçamentos");
+      return false;
+    }
+
     try {
       const quote = quotes.find(q => q.id === quoteId);
       const oldStatus = quote?.status || "draft";
