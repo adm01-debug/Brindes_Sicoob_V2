@@ -151,6 +151,7 @@ export default function OrdersPage() {
       avgTicket,
       totalCount: orders.length,
       criticalSla,
+      totalRevenueReal: totalRevenue,
       statusCounts
     };
   }, [allOrdersForStats.data]);
