@@ -129,7 +129,18 @@ As evidências abaixo foram extraídas diretamente do histórico de commits do r
     const reportPath = `${publicReportsDir}/AUDIT_REPORT_${commitHash}.md`;
     fs.writeFileSync(reportPath, finalContent);
     fs.writeFileSync(`public/AUDIT_ENTERPRISE_FINAL.md`, finalContent);
-    console.log(`✅ Dossier v10.1 gerado com sucesso em: ${reportPath}`);
+    
+    console.log(`✅ Dossier MD gerado: ${reportPath}`);
+
+    try {
+        console.log('📄 Convertendo para PDF...');
+        execSync(`bunx md-to-pdf public/AUDIT_ENTERPRISE_FINAL.md --config-file .mdtopdf.json`);
+        fs.renameSync('public/AUDIT_ENTERPRISE_FINAL.pdf', `public/reports/AUDIT_REPORT_${commitHash}.pdf`);
+        fs.copyFileSync(`public/reports/AUDIT_REPORT_${commitHash}.pdf`, 'public/AUDIT_ENTERPRISE_FINAL.pdf');
+        console.log(`✅ PDF gerado com sucesso: public/reports/AUDIT_REPORT_${commitHash}.pdf`);
+    } catch (pdfError) {
+        console.error('❌ Falha na geração do PDF:', pdfError.message);
+    }
 }
 
 buildDossier();
