@@ -326,6 +326,7 @@ function SortableQuoteCard({
         disabled={disabled} 
         isSelected={isSelected}
         onToggleSelection={onToggleSelection}
+        hasStockIssue={hasStockIssue}
       />
     </div>
   );
