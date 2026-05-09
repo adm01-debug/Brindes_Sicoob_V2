@@ -5799,6 +5799,7 @@ export type Database = {
           size_code: string | null
           sort_order: number | null
           subtotal: number | null
+          unit_cost: number | null
           unit_price: number
           updated_at: string
         }
@@ -5822,6 +5823,7 @@ export type Database = {
           size_code?: string | null
           sort_order?: number | null
           subtotal?: number | null
+          unit_cost?: number | null
           unit_price?: number
           updated_at?: string
         }
@@ -5845,6 +5847,7 @@ export type Database = {
           size_code?: string | null
           sort_order?: number | null
           subtotal?: number | null
+          unit_cost?: number | null
           unit_price?: number
           updated_at?: string
         }
@@ -5860,6 +5863,7 @@ export type Database = {
       }
       quote_templates: {
         Row: {
+          category: string | null
           created_at: string
           delivery_time: string | null
           description: string | null
@@ -5878,6 +5882,7 @@ export type Database = {
           validity_days: number | null
         }
         Insert: {
+          category?: string | null
           created_at?: string
           delivery_time?: string | null
           description?: string | null
@@ -5896,6 +5901,7 @@ export type Database = {
           validity_days?: number | null
         }
         Update: {
+          category?: string | null
           created_at?: string
           delivery_time?: string | null
           description?: string | null
@@ -5961,6 +5967,7 @@ export type Database = {
           synced_to_bitrix: boolean | null
           tags: string[] | null
           total: number
+          total_cost: number | null
           updated_at: string
           valid_until: string | null
           version: number
@@ -6010,6 +6017,7 @@ export type Database = {
           synced_to_bitrix?: boolean | null
           tags?: string[] | null
           total?: number
+          total_cost?: number | null
           updated_at?: string
           valid_until?: string | null
           version?: number
@@ -6059,6 +6067,7 @@ export type Database = {
           synced_to_bitrix?: boolean | null
           tags?: string[] | null
           total?: number
+          total_cost?: number | null
           updated_at?: string
           valid_until?: string | null
           version?: number

@@ -28,6 +28,7 @@ export function QuoteTemplateForm({
   const [formData, setFormData] = useState<CreateTemplateInput>({
     name: template?.name || "",
     description: template?.description || "",
+    category: template?.category || "Geral",
     is_default: template?.is_default || false,
     items_data: template?.items_data || initialItems,
     discount_percent: template?.discount_percent || 0,
@@ -114,6 +115,15 @@ export function QuoteTemplateForm({
                 onChange={(e) => updateField("name", e.target.value)}
                 placeholder="Ex: Kits Corporativos Padrão"
                 required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="category">Categoria</Label>
+              <Input
+                id="category"
+                value={formData.category}
+                onChange={(e) => updateField("category", e.target.value)}
+                placeholder="Ex: Kits, Eventos, Promocional"
               />
             </div>
             <div className="space-y-2">

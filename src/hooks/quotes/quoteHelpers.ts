@@ -12,6 +12,18 @@ export function calculateQuoteTotals(quote: Partial<Quote>, items: QuoteItem[]) 
     return sum + baseTotal + persTotal;
   }, 0);
 
+  // Custo total = soma do custo dos produtos + custo das personalizações
+  const totalCost = items.reduce((sum, item) => {
+    const productCost = (item.unit_cost || item.unit_price * 0.7) * item.quantity;
+    const persCost = (item.personalizations || []).reduce((pSum, p) => {
+      const uCost = p.unit_cost || 0;
+      const sCost = p.setup_cost || 0;
+      const qty = p.personalized_quantity || item.quantity;
+      return pSum + (uCost * qty) + sCost;
+    }, 0);
+    return sum + productCost + persCost;
+  }, 0);
+
   // Margem de negociação (clamp 0–50)
   const markup = Math.min(50, Math.max(0, quote.negotiation_markup_percent || 0));
 
@@ -34,14 +46,14 @@ export function calculateQuoteTotals(quote: Partial<Quote>, items: QuoteItem[]) 
     ? Math.round(((realSubtotal - finalBeforeShipping) / realSubtotal) * 10000) / 100
     : 0;
 
-  return { subtotal, realSubtotal, discountAmount, total, realDiscountPercent, markup };
+  return { subtotal, realSubtotal, discountAmount, total, realDiscountPercent, markup, totalCost };
 }
 
 export function buildInsertPayload(
   quote: Partial<Quote>,
   userId: string,
   orgId: string | null,
-  totals: { subtotal: number; discountAmount: number; total: number }
+  totals: { subtotal: number; discountAmount: number; total: number; totalCost: number }
 ): TablesInsert<"quotes"> {
   return {
     client_id: quote.client_id || null,
@@ -56,6 +68,7 @@ export function buildInsertPayload(
     discount_percent: quote.discount_percent || 0,
     discount_amount: totals.discountAmount,
     total: totals.total,
+    total_cost: totals.totalCost,
     negotiation_markup_percent: quote.negotiation_markup_percent || 0,
     payment_terms: quote.payment_terms || null,
     delivery_time: quote.delivery_time || null,
@@ -69,7 +82,7 @@ export function buildInsertPayload(
 
 export function buildUpdatePayload(
   quote: Partial<Quote>,
-  totals: { subtotal: number; discountAmount: number; total: number }
+  totals: { subtotal: number; discountAmount: number; total: number; totalCost: number }
 ): TablesUpdate<"quotes"> {
   return {
     client_id: quote.client_id || null,
@@ -82,6 +95,7 @@ export function buildUpdatePayload(
     discount_percent: quote.discount_percent || 0,
     discount_amount: totals.discountAmount,
     total: totals.total,
+    total_cost: totals.totalCost,
     negotiation_markup_percent: quote.negotiation_markup_percent || 0,
     payment_terms: quote.payment_terms || null,
     delivery_time: quote.delivery_time || null,
@@ -106,6 +120,7 @@ export function buildItemsInsertPayload(
     product_image_url: item.product_image_url,
     quantity: item.quantity,
     unit_price: item.unit_price,
+    unit_cost: item.unit_cost || 0,
     color_name: item.color_name,
     color_hex: item.color_hex,
     size_code: item.size_code || null,

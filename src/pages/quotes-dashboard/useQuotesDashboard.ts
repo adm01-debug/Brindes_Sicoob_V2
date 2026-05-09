@@ -74,8 +74,9 @@ export function useQuotesDashboard() {
     if (!quotes.length) return {
       totalQuotes: 0, totalValue: 0, approvedValue: 0, approvalRate: 0, rejectionRate: 0,
       averageResponseTime: 0, averageValue: 0, pendingQuotes: 0,
+      totalProfit: 0, averageMargin: 0,
       statusDistribution: [] as { name: string; value: number; color: string }[],
-      monthlyData: [] as { month: string; total: number; approved: number; rejected: number; value: number }[],
+      monthlyData: [] as { month: string; total: number; approved: number; rejected: number; value: number; profit: number }[],
       conversionFunnel: [] as { stage: string; count: number; fill: string }[],
     };
 
@@ -96,6 +97,9 @@ export function useQuotesDashboard() {
     const rejected = filtered.filter(q => q.status === "rejected");
     const pending = filtered.filter(q => ["pending", "sent"].includes(q.status));
     const approvedValue = approved.reduce((s, q) => s + (q.total || 0), 0);
+    const totalProfit = approved.reduce((s, q) => s + ((q.total || 0) - (q.total_cost || (q.real_subtotal ? q.real_subtotal * 0.7 : 0))), 0);
+    const averageMargin = approvedValue > 0 ? (totalProfit / approvedValue) * 100 : 0;
+
     const responded = [...approved, ...rejected];
     const approvalRate = responded.length > 0 ? (approved.length / responded.length) * 100 : 0;
     const rejectionRate = responded.length > 0 ? (rejected.length / responded.length) * 100 : 0;
@@ -114,12 +118,16 @@ export function useQuotesDashboard() {
 
     const monthlyGroups = filtered.reduce((a, q) => {
       const m = format(new Date(q.created_at), "MMM", { locale: ptBR });
-      if (!a[m]) a[m] = { month: m, total: 0, approved: 0, rejected: 0, value: 0 };
+      if (!a[m]) a[m] = { month: m, total: 0, approved: 0, rejected: 0, value: 0, profit: 0 };
       a[m].total++;
-      if (q.status === "approved") { a[m].approved++; a[m].value += q.total || 0; }
+      if (q.status === "approved") {
+        a[m].approved++;
+        a[m].value += q.total || 0;
+        a[m].profit += (q.total || 0) - (q.total_cost || (q.real_subtotal ? q.real_subtotal * 0.7 : 0));
+      }
       if (q.status === "rejected") a[m].rejected++;
       return a;
-    }, {} as Record<string, { month: string; total: number; approved: number; rejected: number; value: number }>);
+    }, {} as Record<string, { month: string; total: number; approved: number; rejected: number; value: number; profit: number }>);
 
     const conversionFunnel = [
       { stage: "Criados", count: totalQuotes, fill: "hsl(var(--primary))" },
@@ -131,6 +139,7 @@ export function useQuotesDashboard() {
     return {
       totalQuotes, totalValue, approvedValue, approvalRate, rejectionRate,
       averageResponseTime, averageValue: totalQuotes > 0 ? totalValue / totalQuotes : 0,
+      totalProfit, averageMargin,
       pendingQuotes: pending.length, statusDistribution,
       monthlyData: Object.values(monthlyGroups), conversionFunnel,
     };
@@ -159,6 +168,8 @@ export function useQuotesDashboard() {
         ["Valor Total Orçado", formatCurrency(metrics.totalValue)],
         ["Valor Total Aprovado", formatCurrency(metrics.approvedValue)],
         ["Ticket Médio", formatCurrency(metrics.averageValue)],
+        ["Lucro Bruto Total", formatCurrency(metrics.totalProfit)],
+        ["Margem Média", `${metrics.averageMargin.toFixed(1)}%`],
       ],
       theme: "grid", headStyles: { fillColor: [245, 158, 11] }, styles: { fontSize: 10 },
     });

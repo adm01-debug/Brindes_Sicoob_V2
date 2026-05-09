@@ -34,6 +34,7 @@ export interface QuoteTemplate {
   seller_id: string;
   name: string;
   description?: string;
+  category?: string;
   is_default: boolean;
   template_data: Record<string, unknown>;
   items_data: QuoteTemplateItem[];
@@ -51,6 +52,7 @@ export interface QuoteTemplate {
 export interface CreateTemplateInput {
   name: string;
   description?: string;
+  category?: string;
   is_default?: boolean;
   items_data?: QuoteTemplateItem[];
   discount_percent?: number;
