@@ -386,7 +386,7 @@ export default function OrderDetailPage() {
                      <Avatar className="h-5 w-5 border-2 border-background"><AvatarFallback className="text-[6px] bg-indigo-100">JD</AvatarFallback></Avatar>
                      <Avatar className="h-5 w-5 border-2 border-background"><AvatarFallback className="text-[6px] bg-amber-100">MS</AvatarFallback></Avatar>
                   </div>
-                  <span className="text-[10px] text-indigo-600 font-bold animate-pulse">2 gestores visualizando agora</span>
+                  <span className="text-[10px] text-indigo-600 font-bold animate-pulse">{activeViewers} {activeViewers === 1 ? 'gestor visualizando' : 'gestores visualizando'} agora</span>
                </div>
             </div>
           </div>
