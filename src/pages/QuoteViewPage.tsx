@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { ArrowLeft, Copy, CreditCard, Edit2, Eye, FileText, History, Loader2, Monitor, MoreHorizontal, Package, RefreshCw, Shield, Truck, Undo2 } from "lucide-react";
+import { ArrowLeft, Copy, CreditCard, Edit2, Eye, FileText, History, Loader2, Monitor, MoreHorizontal, Package, Printer, RefreshCw, Shield, Truck, Undo2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { PageSEO } from "@/components/seo/PageSEO";
@@ -115,6 +115,11 @@ export default function QuoteViewPage() {
           </div>
 
           <div className="flex items-center gap-2">
+            <Button variant="outline" className="hidden md:flex gap-2" onClick={() => window.print()}>
+              <Printer className="h-4 w-4" />
+              Imprimir
+            </Button>
+
             {quote.status !== "pending_approval" && (
             <div className="hidden md:flex items-center gap-2">
               <QuoteConvertToOrder quoteId={id!} status={quote.status} onConverted={() => { if (id) fetchQuote(id).then(setQuote); }} />
