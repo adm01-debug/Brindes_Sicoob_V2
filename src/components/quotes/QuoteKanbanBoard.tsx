@@ -29,14 +29,11 @@ import { formatCurrency } from "@/utils/quote-calculations";
 import { 
   Clock, 
   ArrowRight, 
-  User, 
   Building2, 
   GripVertical, 
   AlertTriangle, 
   Lock,
-  Check,
-  PackageX,
-  PackageSearch
+  PackageX
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -44,12 +41,10 @@ import { Quote } from "@/hooks/quotes/quoteTypes";
 import { useRBAC } from "@/hooks/useRBAC";
 import confetti from "canvas-confetti";
 import { Checkbox } from "@/components/ui/checkbox";
-import { supabase } from "@/integrations/supabase/client";
+import { useQuotesStockStatus } from "@/hooks/quote/useQuotesStockStatus";
 
 const KANBAN_STATUSES = ["draft", "pending", "sent", "approved", "rejected"] as const;
 type KanbanStatus = (typeof KANBAN_STATUSES)[number];
-
-import { useQuotesStockStatus } from "@/hooks/quote/useQuotesStockStatus";
 
 interface QuoteKanbanBoardProps {
   quotes: Quote[];
@@ -62,7 +57,7 @@ export function QuoteKanbanBoard({
   selectedIds,
   onToggleSelection
 }: QuoteKanbanBoardProps) {
-  const { updateQuoteStatus, isLoading: quotesLoading } = useQuotes();
+  const { updateQuoteStatus, isLoading: quotesLoading, fetchQuotes } = useQuotes();
   const { isSupervisorOrAbove } = useRBAC();
   const navigate = useNavigate();
 
@@ -112,7 +107,6 @@ export function QuoteKanbanBoard({
     const activeQuoteId = active.id as string;
     const overId = over.id as string;
 
-    // Check if dropped over a column or another card
     let newStatus: KanbanStatus | null = null;
     
     if (KANBAN_STATUSES.includes(overId as any)) {
@@ -245,7 +239,7 @@ function KanbanColumn({
                 <p className="text-[11px]">Arraste aqui</p>
               </div>
             ) : (
-               quotes.map((quote) => (
+              quotes.map((quote) => (
                 <SortableQuoteCard
                   key={quote.id}
                    quote={quote}
@@ -332,27 +326,56 @@ function SortableQuoteCard({
   );
 }
 
-function QuoteCard({ quote, isOverlay, onClick, attributes, listeners, disabled }: QuoteCardProps & { attributes?: any; listeners?: any }) {
+function QuoteCard({ 
+  quote, 
+  isOverlay, 
+  onClick, 
+  attributes, 
+  listeners, 
+  disabled, 
+  isSelected, 
+  onToggleSelection,
+  hasStockIssue 
+}: QuoteCardProps & { attributes?: any; listeners?: any }) {
   const isHighValue = (quote.total || 0) > 5000;
 
   return (
     <Card
       className={cn(
-        "group cursor-pointer hover:shadow-md transition-all duration-200 border-border/60 bg-card select-none",
+        "group cursor-pointer hover:shadow-md transition-all duration-200 border-border/60 bg-card select-none relative",
         isOverlay && "shadow-xl border-primary ring-2 ring-primary/20",
         isHighValue && "border-l-4 border-l-amber-500",
-        disabled && "opacity-80 grayscale-[0.3]"
+        disabled && "opacity-80 grayscale-[0.3]",
+        isSelected && "border-primary bg-primary/5 ring-1 ring-primary"
       )}
       onClick={onClick}
     >
-      <CardContent className="p-3 space-y-3">
+      {onToggleSelection && !isOverlay && (
+        <div 
+          className="absolute top-2 left-2 z-20" 
+          onClick={(e) => {
+            e.stopPropagation();
+            onToggleSelection(quote.id!);
+          }}
+        >
+          <Checkbox checked={isSelected} className="rounded-sm h-4 w-4 data-[state=checked]:bg-primary border-muted-foreground/30" />
+        </div>
+      )}
+
+      <CardContent className={cn("p-3 space-y-3", onToggleSelection && "pl-8")}>
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <p className="text-xs font-bold text-foreground truncate">#{quote.quote_number}</p>
               {isHighValue && (
                 <Badge variant="outline" className="h-4 px-1 text-[8px] bg-amber-500/10 text-amber-600 border-amber-500/20">
                   Alta Alçada
+                </Badge>
+              )}
+              {hasStockIssue && (
+                <Badge variant="destructive" className="h-4 px-1 text-[8px] animate-pulse">
+                  <PackageX className="h-2 w-2 mr-1" />
+                  Estoque Crítico
                 </Badge>
               )}
             </div>
@@ -395,4 +418,3 @@ function QuoteCard({ quote, isOverlay, onClick, attributes, listeners, disabled 
     </Card>
   );
 }
-
