@@ -58,7 +58,8 @@ async function getCoverageMetrics() {
     try {
         console.log('🧪 Executando Vitest para métricas reais...');
         // Executa vitest e gera o coverage summary
-        execSync('bun vitest run --coverage.enabled --coverage.reporter=json-summary --coverage.reportOnFailure', { stdio: 'inherit' });
+        // Executa vitest de forma simplificada para evitar timeouts longos no dossier builder
+        execSync('bun vitest run --coverage.enabled --coverage.reporter=json-summary --coverage.reportOnFailure --test-timeout=5000 --max-workers=1', { stdio: 'inherit' });
         
         const summaryPath = 'coverage/coverage-summary.json';
         if (fs.existsSync(summaryPath)) {
