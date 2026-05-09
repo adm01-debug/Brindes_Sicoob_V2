@@ -47,6 +47,7 @@ import {
 } from "lucide-react";
 import { useQuotes } from "@/hooks/useQuotes";
 import { useAuth } from "@/contexts/AuthContext";
+import { useRBAC } from "@/hooks/useRBAC";
 import Fuse from "fuse.js";
 import { format } from "date-fns";
 // DynamicBreadcrumbs removido: o MainLayout já renderiza PersistentBreadcrumbs sticky.
