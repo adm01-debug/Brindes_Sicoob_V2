@@ -99,9 +99,31 @@ export default function QuotesKanbanPage() {
   }, [quotes]);
 
   const filteredQuotes = useMemo(() => {
-    if (selectedClientId === "all") return quotes;
-    return quotes.filter((q) => q.client_id === selectedClientId);
-  }, [quotes, selectedClientId]);
+    return quotes.filter((q) => {
+      // Search filter
+      const searchMatch = !search || 
+        q.quote_number?.toLowerCase().includes(search.toLowerCase()) ||
+        q.client_name?.toLowerCase().includes(search.toLowerCase()) ||
+        q.client_company?.toLowerCase().includes(search.toLowerCase());
+      
+      // Client filter
+      const clientMatch = selectedClientId === "all" || q.client_id === selectedClientId;
+      
+      // Seller filter
+      const sellerMatch = selectedSellerId === "all" || q.seller_id === selectedSellerId;
+      
+      // Date filter
+      let dateMatch = true;
+      if (dateRange.from && q.created_at) {
+        dateMatch = new Date(q.created_at) >= dateRange.from;
+      }
+      if (dateMatch && dateRange.to && q.created_at) {
+        dateMatch = new Date(q.created_at) <= dateRange.to;
+      }
+
+      return searchMatch && clientMatch && sellerMatch && dateMatch;
+    });
+  }, [quotes, search, selectedClientId, selectedSellerId, dateRange]);
 
   const selectedClientName = useMemo(() => {
     if (selectedClientId === "all") return null;
