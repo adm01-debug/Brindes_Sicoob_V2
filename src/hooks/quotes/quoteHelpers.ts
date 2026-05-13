@@ -121,27 +121,30 @@ export function buildItemsInsertPayload(
   items: QuoteItem[],
   quoteId: string
 ): TablesInsert<"quote_items">[] {
-  return items.map((item, index) => ({
-    quote_id: quoteId,
-    product_id: item.product_id,
-    product_name: item.product_name,
-    product_sku: item.product_sku || null,
-    product_image_url: item.product_image_url || null,
-    quantity: item.quantity,
-    unit_price: item.unit_price,
-    unit_cost: item.unit_cost || 0,
-    color_name: item.color_name || null,
-    color_hex: item.color_hex || null,
-    size_code: item.size_code || null,
-    gender: item.gender || null,
-    notes: item.notes || null,
-    sort_order: index,
-    kit_group_id: item.kit_group_id || null,
-    kit_name: item.kit_name || null,
-    price_confirmed_at: item.price_confirmed_at ?? null,
-    subtotal: item.quantity * item.unit_price + (item.personalizations || []).reduce((sum, p) => sum + (p.total_cost || 0), 0),
-    total_price: item.quantity * item.unit_price + (item.personalizations || []).reduce((sum, p) => sum + (p.total_cost || 0), 0),
-  }));
+  return items.map((item, index) => {
+    const itemSubtotal = item.quantity * item.unit_price + (item.personalizations || []).reduce((sum, p) => sum + (p.total_cost || 0), 0);
+    return {
+      quote_id: quoteId,
+      product_id: item.product_id,
+      product_name: item.product_name,
+      product_sku: item.product_sku || null,
+      product_image_url: item.product_image_url || null,
+      quantity: item.quantity,
+      unit_price: item.unit_price,
+      unit_cost: item.unit_cost || 0,
+      color_name: item.color_name || null,
+      color_hex: item.color_hex || null,
+      size_code: item.size_code || null,
+      gender: item.gender || null,
+      notes: item.notes || null,
+      sort_order: index,
+      kit_group_id: item.kit_group_id || null,
+      kit_name: item.kit_name || null,
+      price_confirmed_at: item.price_confirmed_at ?? null,
+      subtotal: itemSubtotal,
+      total_price: itemSubtotal,
+    };
+  });
 }
 
 export function buildPersonalizationsInsertPayload(
