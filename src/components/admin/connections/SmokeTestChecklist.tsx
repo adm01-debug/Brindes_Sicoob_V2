@@ -166,8 +166,7 @@ export function SmokeTestChecklist({ availableSecrets = [] }: Props) {
           detail: `previous=${rotateResult.previous_suffix ?? "(env)"} → new=${normalizeMaskedSuffix(rotateResult.masked_suffix)} • ${rotateResult.length} chars`,
           durationMs: took,
         });
-        // eslint-disable-next-line no-console
-        console.log("[smoke-test] step 1 OK", { took, suffix: rotateResult.masked_suffix });
+        log.info("step_1_ok", { took, suffix: rotateResult.masked_suffix });
       }
     } catch (err) {
       const took = Math.round(performance.now() - t1);
