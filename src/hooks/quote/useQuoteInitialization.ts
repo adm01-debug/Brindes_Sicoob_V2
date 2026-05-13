@@ -19,8 +19,8 @@ interface InitParams {
     setInternalNotes: (v: string) => void;
     setQuoteNumber: (v: string) => void;
     setCurrentStatus: (v: string) => void;
-    setContactInfo: (v: any) => void;
-    setCompanyInfo: (v: any) => void;
+    setContactInfo: (v: SelectedContactInfo | null) => void;
+    setCompanyInfo: (v: SelectedCompanyInfo | null) => void;
     setDiscountType: (v: "percent" | "amount") => void;
     setDiscountValue: (v: number) => void;
     setNegotiationMarkup: (v: number) => void;
