@@ -45,7 +45,7 @@ export function CompanyContactSelector({
   });
 
   // Fetch contacts for selected company
-  const { data: contacts, isLoading: loadingContacts } = useQuery({
+  const { data: contacts, isLoading: loadingContacts } = useQuery<SelectedContactInfo[]>({
     queryKey: ["quote-company-contacts", companyId],
     queryFn: async () => {
       if (!companyId) return [];

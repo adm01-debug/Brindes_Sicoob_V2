@@ -2,9 +2,16 @@ import { getCorsHeaders, handleCorsPreflightIfNeeded } from '../_shared/cors.ts'
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 import { z } from "npm:zod@3.23.8";
 import { fetchWithBreaker, CircuitOpenError, circuitOpenResponse } from "../_shared/external-fetch.ts";
+import { RateLimiter, applyRateLimit } from "../_shared/rate-limiter.ts";
 
 const CnpjBodySchema = z.object({
   cnpj: z.string().min(1, "CNPJ é obrigatório").transform(v => v.replace(/\D/g, "")).refine(v => v.length === 14, "CNPJ deve ter 14 dígitos"),
+});
+
+const cnpjLimiter = new RateLimiter({
+  maxRequests: 10,
+  windowMs: 60 * 1000,
+  keyPrefix: 'cnpj-lookup'
 });
 
 Deno.serve(async (req) => {
@@ -14,6 +21,8 @@ Deno.serve(async (req) => {
   }
 
   try {
+    const rateLimitResponse = await applyRateLimit(req, cnpjLimiter);
+    if (rateLimitResponse) return rateLimitResponse;
     // Auth check
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) {

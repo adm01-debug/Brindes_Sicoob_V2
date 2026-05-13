@@ -8220,6 +8220,7 @@ export type Database = {
         Args: { _template_id: string }
         Returns: undefined
       }
+      inspect_query_plan: { Args: { p_query: string }; Returns: string }
       is_admin: { Args: { _user_id?: string }; Returns: boolean }
       is_admin_strict: { Args: { _user_id?: string }; Returns: boolean }
       is_dev: { Args: { _user_id?: string }; Returns: boolean }

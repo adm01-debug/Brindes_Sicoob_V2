@@ -1,10 +1,17 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.7.1";
+import { RateLimiter, applyRateLimit } from "../_shared/rate-limiter.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
+
+const approvalLimiter = new RateLimiter({
+  maxRequests: 10,
+  windowMs: 60 * 1000,
+  keyPrefix: 'quote-approval'
+});
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -12,6 +19,8 @@ serve(async (req) => {
   }
 
   try {
+    const rateLimitResponse = await applyRateLimit(req, approvalLimiter);
+    if (rateLimitResponse) return rateLimitResponse;
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
