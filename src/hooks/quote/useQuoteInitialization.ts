@@ -33,7 +33,7 @@ interface InitParams {
     setItems: (v: QuoteItem[]) => void;
     setLoadingQuote: (v: boolean) => void;
     setActiveItemIndex: (v: number | null) => void;
-    setExpandedItems: (v: any) => void;
+    setExpandedItems: (v: Set<number>) => void;
   };
 }
 
