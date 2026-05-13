@@ -60,7 +60,7 @@ export function QuoteItemsList({
         >
           {item.product_image_url && (
             <img 
-              src={item.product_image} 
+              src={item.product_image_url} 
               alt={item.product_name} 
               className="h-12 w-12 object-cover rounded-lg"
             />
