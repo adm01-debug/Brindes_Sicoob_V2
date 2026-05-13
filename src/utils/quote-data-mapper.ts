@@ -18,7 +18,7 @@ export function mapQuoteToProposalData(
     (s, i) =>
       s +
       (i.personalizations || []).reduce(
-        (ps: number, p: any) => ps + (p.total_cost || 0),
+        (ps, p) => ps + (p.total_cost || 0),
         0
       ),
     0
