@@ -74,8 +74,9 @@ export function useQuotes() {
       toast.success("Orçamento atualizado!");
       fetchQuotes();
       return updated;
-    } catch (err: any) {
-      toast.error("Erro ao atualizar orçamento");
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      toast.error("Erro ao atualizar orçamento", { description: msg });
       return null;
     } finally {
       setIsLoading(false);
