@@ -82,9 +82,10 @@ Checklist mínimo:
 - Nunca vazar mensagem de erro com detalhes internos para o cliente
 
 ### Migrations Supabase
-- Operações destrutivas isoladas em migrations próprias
-- Backup antes de DROP em tabela `_backup_<original>_YYYYMMDD`
-- RLS ON em qualquer tabela nova
+- Operações destrutivas isoladas em migrations próprias.
+- Backup antes de DROP em tabela `_backup_<original>_YYYYMMDD`.
+- RLS ON em qualquer tabela nova.
+- **Rollback**: Toda migration deve ser testada para reversão. Mantenha os comandos SQL de "Down" documentados no corpo do Pull Request.
 
 ### Bitrix24
 - `crm.item.get` com `entityTypeId=4` para Smart Companies (não usar `crm.company.get`)
