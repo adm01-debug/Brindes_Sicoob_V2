@@ -18,7 +18,7 @@ const QA_ACCOUNTS = [
 ];
 
 export async function runQaSeed(scenario?: string) {
-  console.log("🚀 Iniciando Seed QA...");
+  log.info("started", { scenario });
   
   try {
     // 1. Provisionamento de Contas (via Edge Function ou Admin API se disponível)
