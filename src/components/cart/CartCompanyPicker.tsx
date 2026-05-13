@@ -46,7 +46,7 @@ export function CartCompanyPicker({ onCreated, onCancel }: CartCompanyPickerProp
   }, []);
 
   // Local companies cache
-  const { data: localCompanies = [], isLoading: loadingLocal } = useQuery({
+  const { data: localCompanies = [], isLoading: loadingLocal } = useQuery<CompanyItem[]>({
     queryKey: ["cart-companies-local"],
     queryFn: async () => {
       const companies = await selectCrm<CrmCompany>("companies", {
@@ -68,7 +68,7 @@ export function CartCompanyPicker({ onCreated, onCancel }: CartCompanyPickerProp
   });
 
   // Server search for long queries
-  const { data: serverResults = [], isLoading: loadingServer } = useQuery({
+  const { data: serverResults = [], isLoading: loadingServer } = useQuery<CompanyItem[]>({
     queryKey: ["cart-companies-search", debouncedSearch],
     queryFn: async () => {
       if (debouncedSearch.length < 3) return [];

@@ -70,7 +70,7 @@ export function CartCompanyPickerDialog({ open, onOpenChange, onCreated }: CartC
     return () => clearTimeout(t);
   }, [searchTerm]);
 
-  const { data: localCompanies = [], isLoading: loadingLocal } = useQuery({
+  const { data: localCompanies = [], isLoading: loadingLocal } = useQuery<CompanyItem[]>({
     queryKey: ["cart-companies-local"],
     queryFn: async () => {
       const companies = await selectCrm<CrmCompany>("companies", {
@@ -92,7 +92,7 @@ export function CartCompanyPickerDialog({ open, onOpenChange, onCreated }: CartC
     enabled: open,
   });
 
-  const { data: serverResults = [], isLoading: loadingServer } = useQuery({
+  const { data: serverResults = [], isLoading: loadingServer } = useQuery<CompanyItem[]>({
     queryKey: ["cart-companies-search", debouncedSearch],
     queryFn: async () => {
       if (debouncedSearch.length < 3) return [];
