@@ -4,7 +4,7 @@
 import type { TablesInsert, TablesUpdate } from "@/integrations/supabase/types";
 import type { Quote, QuoteItem } from "./quoteTypes";
 
-export function calculateQuoteTotals(quote: Partial<Quote>, items: QuoteItem[]) {
+export function calculateQuoteTotals(quote: Partial<Quote>, items: QuoteItem[], negotiationMarkup?: number, discountType: 'percent' | 'amount' = 'percent', discountValue: number = 0) {
   // Subtotal real = soma direta dos itens + personalizações (sem markup)
   const realSubtotal = items.reduce((sum, item) => {
     const baseTotal = item.quantity * item.unit_price;
@@ -25,9 +25,9 @@ export function calculateQuoteTotals(quote: Partial<Quote>, items: QuoteItem[]) 
   }, 0);
 
   // Margem de negociação (clamp 0–50)
-  const markup = Math.min(50, Math.max(0, quote.negotiation_markup_percent || 0));
+  const markup = Math.min(50, Math.max(0, negotiationMarkup ?? quote.negotiation_markup_percent || 0));
 
-  // Subtotal apresentado = subtotal real * (1 + markup/100). É o que o cliente vê e o que vai para o banco em `subtotal`.
+  // Subtotal apresentado = subtotal real * (1 + markup/100)
   const subtotal = markup > 0
     ? Math.round(realSubtotal * (1 + markup / 100) * 100) / 100
     : realSubtotal;
@@ -36,9 +36,9 @@ export function calculateQuoteTotals(quote: Partial<Quote>, items: QuoteItem[]) 
   const realTotalCost = totalCost;
 
   // Desconto APARENTE aplicado sobre subtotal apresentado
-  const discountAmount = quote.discount_percent
-    ? subtotal * (quote.discount_percent / 100)
-    : (quote.discount_amount || 0);
+  const discountAmount = (discountType === 'percent' || (discountValue > 0 && !discountType))
+    ? subtotal * (discountValue / 100)
+    : discountValue;
   const shippingCostValue = (quote.shipping_type === "fob" || quote.shipping_type === "fob_pre")
     ? (quote.shipping_cost || 0) : 0;
   const total = subtotal - discountAmount + shippingCostValue;
@@ -111,7 +111,7 @@ export function buildUpdatePayload(
   };
 
   if (quote.row_version !== undefined) {
-    (payload as any).row_version = quote.row_version + 1;
+    payload.row_version = quote.row_version + 1;
   }
 
   return payload;
@@ -121,25 +121,30 @@ export function buildItemsInsertPayload(
   items: QuoteItem[],
   quoteId: string
 ): TablesInsert<"quote_items">[] {
-  return items.map((item, index) => ({
-    quote_id: quoteId,
-    product_id: item.product_id,
-    product_name: item.product_name,
-    product_sku: item.product_sku,
-    product_image_url: item.product_image_url,
-    quantity: item.quantity,
-    unit_price: item.unit_price,
-    unit_cost: item.unit_cost || 0,
-    color_name: item.color_name,
-    color_hex: item.color_hex,
-    size_code: item.size_code || null,
-    gender: item.gender || null,
-    notes: item.notes,
-    sort_order: index,
-    kit_group_id: item.kit_group_id || null,
-    kit_name: item.kit_name || null,
-    price_confirmed_at: item.price_confirmed_at ?? null,
-  }));
+  return items.map((item, index) => {
+    const itemSubtotal = item.quantity * item.unit_price + (item.personalizations || []).reduce((sum, p) => sum + (p.total_cost || 0), 0);
+    return {
+      quote_id: quoteId,
+      product_id: item.product_id,
+      product_name: item.product_name,
+      product_sku: item.product_sku || null,
+      product_image_url: item.product_image_url || null,
+      quantity: item.quantity,
+      unit_price: item.unit_price,
+      unit_cost: item.unit_cost || 0,
+      color_name: item.color_name || null,
+      color_hex: item.color_hex || null,
+      size_code: item.size_code || null,
+      gender: item.gender || null,
+      notes: item.notes || null,
+      sort_order: index,
+      kit_group_id: item.kit_group_id || null,
+      kit_name: item.kit_name || null,
+      price_confirmed_at: item.price_confirmed_at ?? null,
+      subtotal: itemSubtotal,
+      total_price: itemSubtotal,
+    };
+  });
 }
 
 export function buildPersonalizationsInsertPayload(

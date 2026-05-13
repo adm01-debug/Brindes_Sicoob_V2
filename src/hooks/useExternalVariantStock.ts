@@ -31,20 +31,7 @@ export function useExternalVariantStock(productId: string | undefined) {
 
       // Buscar variantes e imagens em paralelo
       const [variantsResult, imagesResult] = await Promise.all([
-        invokeExternalDb<{
-          id: string;
-          product_id: string;
-          sku: string;
-          supplier_sku: string | null;
-          color_code: string | null;
-          color_name: string | null;
-          color_hex: string | null;
-          size_code: string | null;
-          stock_quantity: number | null;
-          selected_thumbnail: string | null;
-          images: string[] | null;
-          bitrix_product_id: string | number | null;
-        }>({
+        invokeExternalDb<ExternalVariantStock>({
           table: 'product_variants',
           operation: 'select',
           select: 'id, product_id, sku, supplier_sku, color_code, color_name, color_hex, size_code, stock_quantity, selected_thumbnail, images, bitrix_product_id',
@@ -113,7 +100,7 @@ export function useExternalVariantStock(productId: string | undefined) {
         
         // Prioridade: variantImage > colorImage > selected_thumbnail válido > null
         const thumbnail = variantImage || colorImage || validSelectedThumb || null;
-        const imgs = v.images;
+        const imgs = v.images as string[] | null;
 
         return {
           ...v,

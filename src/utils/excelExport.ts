@@ -7,15 +7,15 @@ const getXLSX = () => import('@e965/xlsx');
 /**
  * Configuração de exportação Excel
  */
-export interface ExcelExportConfig {
+export interface ExcelExportConfig<T = Record<string, unknown>> {
   /** Nome do arquivo (sem extensão) */
   filename: string;
   /** Nome da planilha */
   sheetName?: string;
   /** Colunas a exportar */
-  columns: ExcelColumn[];
+  columns: ExcelColumn<T>[];
   /** Dados a exportar */
-  data: any[];
+  data: T[];
   /** Incluir timestamp no nome do arquivo */
   includeTimestamp?: boolean;
 }
@@ -23,7 +23,7 @@ export interface ExcelExportConfig {
 /**
  * Definição de coluna
  */
-export interface ExcelColumn {
+export interface ExcelColumn<T = any> {
   /** Chave do campo no objeto de dados */
   key: string;
   /** Cabeçalho da coluna */
@@ -31,7 +31,7 @@ export interface ExcelColumn {
   /** Largura da coluna (em caracteres) */
   width?: number;
   /** Função de formatação customizada */
-  format?: (value: any, row: any) => string | number;
+  format?: (value: any, row: T) => string | number;
 }
 
 /**
@@ -53,7 +53,7 @@ export interface ExcelColumn {
  * });
  * ```
  */
-export async function exportToExcel(config: ExcelExportConfig): Promise<void> {
+export async function exportToExcel<T = Record<string, unknown>>(config: ExcelExportConfig<T>): Promise<void> {
   const {
     filename,
     sheetName = 'Dados',
@@ -66,7 +66,7 @@ export async function exportToExcel(config: ExcelExportConfig): Promise<void> {
     const XLSX = await getXLSX();
     // 1. Preparar dados formatados
     const formattedData = data.map((row) => {
-      const formattedRow: any = {};
+      const formattedRow: Record<string, string | number> = {};
       
       columns.forEach((col) => {
         const value = getNestedValue(row, col.key);
@@ -132,12 +132,12 @@ export async function exportToExcel(config: ExcelExportConfig): Promise<void> {
 /**
  * Exporta múltiplas planilhas em um único arquivo
  */
-export async function exportMultipleSheets(
+export async function exportMultipleSheets<T = Record<string, unknown>>(
   filename: string,
   sheets: Array<{
     sheetName: string;
-    columns: ExcelColumn[];
-    data: any[];
+    columns: ExcelColumn<T>[];
+    data: T[];
   }>,
   includeTimestamp = true
 ): Promise<void> {
@@ -148,7 +148,7 @@ export async function exportMultipleSheets(
     sheets.forEach(({ sheetName, columns, data }) => {
       // Formatar dados
       const formattedData = data.map((row) => {
-        const formattedRow: any = {};
+        const formattedRow: Record<string, string | number> = {};
         columns.forEach((col) => {
           const value = getNestedValue(row, col.key);
           formattedRow[col.header] = col.format 
@@ -186,7 +186,7 @@ export async function exportMultipleSheets(
  */
 
 // Pega valor aninhado de objeto (ex: 'client.name')
-function getNestedValue(obj: any, path: string): any {
+function getNestedValue(obj: Record<string, any>, path: string): any {
   return path.split('.').reduce((current, prop) => current?.[prop], obj);
 }
 

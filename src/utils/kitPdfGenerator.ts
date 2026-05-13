@@ -308,7 +308,7 @@ function drawPriceBreakdown(
       3: { halign: 'right', cellWidth: 26 },
     },
     margin: { left: 14, right: 14 },
-    didParseCell: (data: any) => {
+    didParseCell: (data) => {
       // Indent personalization rows
       if (data.section === 'body') {
         const text = String(data.cell.raw);

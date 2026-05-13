@@ -81,7 +81,7 @@ export default [
       ],
 
       // General strict rules
-      'no-console': ['warn', { allow: ['warn', 'error'] }],
+      'no-console': ['error', { allow: ['warn', 'error'] }],
       'no-debugger': 'error',
       'no-duplicate-imports': 'error',
       'no-else-return': 'warn',

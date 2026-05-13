@@ -2,13 +2,14 @@
 import { useEffect } from "react";
 import { format, addDays } from "date-fns";
 import { toast } from "sonner";
-import type { QuoteItem, QuoteItemPersonalization } from "@/hooks/useQuotes";
+import type { Quote, QuoteItem, QuoteItemPersonalization } from "@/hooks/quotes/quoteTypes";
+import type { SelectedCompanyInfo, SelectedContactInfo } from "@/components/quotes/CompanyContactSelector";
 
 interface InitParams {
   isEditMode: boolean;
   quoteId?: string;
-  fetchQuote: (id: string) => Promise<any>;
-  locationState: any;
+  fetchQuote: (id: string) => Promise<Quote | null>;
+  locationState: unknown;
   searchParams: URLSearchParams;
   setters: {
     setClientId: (v: string) => void;
@@ -18,8 +19,8 @@ interface InitParams {
     setInternalNotes: (v: string) => void;
     setQuoteNumber: (v: string) => void;
     setCurrentStatus: (v: string) => void;
-    setContactInfo: (v: any) => void;
-    setCompanyInfo: (v: any) => void;
+    setContactInfo: (v: SelectedContactInfo | null) => void;
+    setCompanyInfo: (v: SelectedCompanyInfo | null) => void;
     setDiscountType: (v: "percent" | "amount") => void;
     setDiscountValue: (v: number) => void;
     setNegotiationMarkup: (v: number) => void;
@@ -29,10 +30,10 @@ interface InitParams {
     setDeliveryMode: (v: "prazo" | "data") => void;
     setDeliveryDate: (v: Date | undefined) => void;
     setDeliveryTime: (v: string) => void;
-    setItems: (v: any) => void;
+    setItems: (v: QuoteItem[]) => void;
     setLoadingQuote: (v: boolean) => void;
     setActiveItemIndex: (v: number | null) => void;
-    setExpandedItems: (v: any) => void;
+    setExpandedItems: (v: Set<number>) => void;
   };
 }
 

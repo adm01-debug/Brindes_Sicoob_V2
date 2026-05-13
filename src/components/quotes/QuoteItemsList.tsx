@@ -58,9 +58,9 @@ export function QuoteItemsList({
           key={item.id || index} 
           className="flex items-center gap-4 p-3 rounded-xl border border-border/50 bg-card/50"
         >
-          {item.product_image && (
+          {item.product_image_url && (
             <img 
-              src={item.product_image} 
+              src={item.product_image_url} 
               alt={item.product_name} 
               className="h-12 w-12 object-cover rounded-lg"
             />
@@ -73,7 +73,7 @@ export function QuoteItemsList({
           </div>
           <div className="text-right">
             <p className="text-sm font-bold text-primary">
-              {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(item.total_price)}
+              {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(item.subtotal || (item.quantity * item.unit_price))}
             </p>
           </div>
         </div>

@@ -30,7 +30,7 @@ export function useSellerDiscountLimits() {
       .select("*")
       .eq("user_id", user.id)
       .maybeSingle();
-    setMyLimit(data?.max_discount_percent ?? null);
+    setMyLimit((data as SellerDiscountLimit)?.max_discount_percent ?? null);
   }, [user]);
 
   // Fetch all limits (for admins)

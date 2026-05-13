@@ -18,7 +18,7 @@ export function mapQuoteToProposalData(
     (s, i) =>
       s +
       (i.personalizations || []).reduce(
-        (ps: number, p: any) => ps + (p.total_cost || 0),
+        (ps, p) => ps + (p.total_cost || 0),
         0
       ),
     0
@@ -70,7 +70,7 @@ export function mapQuoteToProposalData(
       unitPrice: item.unit_price,
       color: item.color_name || undefined,
       imageUrl: item.product_image_url || undefined,
-      personalizations: (item.personalizations || []).map((p: any) => ({
+      personalizations: (item.personalizations || []).map((p) => ({
         technique_name: p.technique_name || 'Personalização',
         colors_count: p.colors_count || 1,
         width_cm: p.width_cm || undefined,

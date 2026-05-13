@@ -1,6 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import { applySellerScope } from "@/lib/auth/apply-seller-scope";
-import { Quote, QuoteItem, PersonalizationTechnique } from "@/hooks/quotes/quoteTypes";
+import { Quote, QuoteItem } from "@/hooks/quotes/quoteTypes";
+import { PersonalizationTechnique } from "@/types/quote-builder";
 import { calculateQuoteTotals, buildInsertPayload, buildUpdatePayload, buildItemsInsertPayload, buildPersonalizationsInsertPayload } from "@/hooks/quotes/quoteHelpers";
 
 export class QuoteService {
@@ -29,14 +30,14 @@ export class QuoteService {
 
     const items: QuoteItem[] = (itemsData || []).map((item) => ({
       ...item,
-      personalizations: allPersonalizations.filter(p => p.quote_item_id === item.id),
+      personalizations: (allPersonalizations as unknown as QuoteItemPersonalization[]).filter(p => p.quote_item_id === item.id),
     }));
 
     return { ...quoteData, items } as Quote;
   }
 
   static async create(params: { quote: Partial<Quote>, items: QuoteItem[], userId: string, orgId: string | null }): Promise<Quote> {
-    const totals = calculateQuoteTotals(params.quote, params.items);
+    const totals = calculateQuoteTotals(params.quote, params.items, params.quote.negotiation_markup_percent, params.quote.discount_percent ? 'percent' : 'amount', params.quote.discount_percent || params.quote.discount_amount || 0);
     const insertPayload = buildInsertPayload(params.quote, params.userId, params.orgId, totals);
     
     const { data: inserted, error: insErr } = await supabase.from("quotes").insert(insertPayload).select("*").single();
@@ -46,7 +47,7 @@ export class QuoteService {
       await this.insertItemsWithPersonalizations(params.items, inserted.id);
     }
 
-    return inserted as unknown as Quote;
+    return inserted as Quote;
   }
 
   static async update(params: { 
@@ -58,7 +59,7 @@ export class QuoteService {
     const oldQuote = await this.getById(params.quoteId);
     if (!oldQuote) throw new Error("Orçamento não encontrado para atualização");
 
-    const totals = calculateQuoteTotals(params.quote, params.items);
+    const totals = calculateQuoteTotals(params.quote, params.items, params.quote.negotiation_markup_percent, params.quote.discount_percent ? 'percent' : 'amount', params.quote.discount_percent || params.quote.discount_amount || 0);
     const updatePayload = buildUpdatePayload({ ...params.quote, row_version: oldQuote.row_version }, totals);
     
     const { data: updated, error: updErr } = await supabase
@@ -130,7 +131,7 @@ export class QuoteService {
     await supabase.from("quote_items").delete().eq("quote_id", params.quoteId);
     await this.insertItemsWithPersonalizations(params.items, params.quoteId);
 
-    return updated as unknown as Quote;
+    return updated as Quote;
   }
 
   static async delete(quoteId: string) {

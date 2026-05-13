@@ -33,8 +33,8 @@ export function useQuotes() {
     try {
       const data = await QuoteService.list({ userId: user.id, scope, orgId });
       setQuotes(data);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
       toast.error("Erro ao carregar orçamentos");
     } finally {
       setIsLoading(false);
@@ -57,8 +57,9 @@ export function useQuotes() {
       toast.success("Orçamento criado!");
       fetchQuotes();
       return newQuote;
-    } catch (err: any) {
-      toast.error("Erro ao criar orçamento", { description: err.message });
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      toast.error("Erro ao criar orçamento", { description: msg });
       return null;
     } finally {
       setIsLoading(false);
@@ -73,8 +74,9 @@ export function useQuotes() {
       toast.success("Orçamento atualizado!");
       fetchQuotes();
       return updated;
-    } catch (err: any) {
-      toast.error("Erro ao atualizar orçamento");
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      toast.error("Erro ao atualizar orçamento", { description: msg });
       return null;
     } finally {
       setIsLoading(false);
@@ -101,7 +103,7 @@ export function useQuotes() {
       if (fetchErr) throw fetchErr;
       const oldStatus = quote?.status || "draft";
       
-      const updateData: any = { status };
+      const updateData: Partial<Quote> & { approved_at?: string; approved_by?: string; rejection_notes?: string } = { status };
       if (notes) updateData.rejection_notes = notes;
       if (isApprovalDecision) {
         updateData.approved_at = new Date().toISOString();
@@ -180,7 +182,7 @@ export function useQuotes() {
           status,
           ...(notes ? { rejection_notes: notes } : {}),
           ...(status === 'approved' ? { approved_at: new Date().toISOString(), approved_by: user.id } : {})
-        } as any)
+        } as Partial<Quote>)
         .in("id", quoteIds);
 
       if (error) throw error;
@@ -202,8 +204,9 @@ export function useQuotes() {
       toast.success(`${quoteIds.length} orçamentos atualizados!`);
       fetchQuotes();
       return true;
-    } catch (err: any) {
-      toast.error("Erro ao atualizar orçamentos em massa");
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      toast.error("Erro ao atualizar orçamentos em massa", { description: msg });
       return false;
     } finally {
       setIsLoading(false);
@@ -254,8 +257,9 @@ export function useQuotes() {
       });
       fetchQuotes();
       return newQuote;
-    } catch (err: any) {
-      toast.error("Erro ao reordenar orçamento");
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      toast.error("Erro ao reordenar orçamento", { description: msg });
       return null;
     } finally {
       setIsLoading(false);
@@ -272,8 +276,9 @@ export function useQuotes() {
       });
       fetchQuotes();
       return newQuote;
-    } catch (err: any) {
-      toast.error("Erro ao converter pedido");
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      toast.error("Erro ao converter pedido", { description: msg });
       return null;
     } finally {
       setIsLoading(false);
@@ -305,7 +310,7 @@ export function useQuotes() {
       });
       setTechniques(result.records || []);
     } catch (err) {
-      console.error(err);
+      // Silent fail as this is background info
     }
   };
 
@@ -320,7 +325,7 @@ export function useQuotes() {
     quotes, techniques, isLoading, error,
     fetchQuotes, fetchQuote, createQuote, updateQuote, updateQuoteStatus, bulkUpdateStatus,
     deleteQuote, reorderQuote, reorderFromOrder, syncQuoteToBitrix,
-    logQuoteHistory: (id: string, action: string, desc: string, opts: any) => 
+    logQuoteHistory: (id: string, action: string, desc: string, opts: Record<string, unknown>) => 
       QuoteService.logHistory({ quoteId: id, userId: user?.id || "", action, description: desc, ...opts })
   };
 }
