@@ -66,7 +66,7 @@ export async function exportToExcel<T = Record<string, unknown>>(config: ExcelEx
     const XLSX = await getXLSX();
     // 1. Preparar dados formatados
     const formattedData = data.map((row) => {
-      const formattedRow: any = {};
+      const formattedRow: Record<string, string | number> = {};
       
       columns.forEach((col) => {
         const value = getNestedValue(row, col.key);
