@@ -228,8 +228,7 @@ export function SmokeTestChecklist({ availableSecrets = [] }: Props) {
           detail: "Secret não retornou na listagem após reload.",
           durationMs: took,
         });
-        // eslint-disable-next-line no-console
-        console.error("[smoke-test] step 3 missing in list");
+        log.error("step_3_missing_in_list");
       } else if (normalizeMaskedSuffix(target.masked_suffix) !== expectedSuffix) {
         updateStep("reload", {
           status: "failed",
