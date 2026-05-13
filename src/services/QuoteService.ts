@@ -131,7 +131,7 @@ export class QuoteService {
     await supabase.from("quote_items").delete().eq("quote_id", params.quoteId);
     await this.insertItemsWithPersonalizations(params.items, params.quoteId);
 
-    return updated as unknown as Quote;
+    return updated as Quote;
   }
 
   static async delete(quoteId: string) {
