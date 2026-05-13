@@ -7,6 +7,12 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+const approvalLimiter = new RateLimiter({
+  maxRequests: 10,
+  windowMs: 60 * 1000,
+  keyPrefix: 'quote-approval'
+});
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
