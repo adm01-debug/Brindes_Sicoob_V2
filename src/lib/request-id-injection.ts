@@ -29,6 +29,11 @@ export function injectRequestId() {
         headers.set('X-Request-Id', requestId);
       }
       
+      // Inject W3C Traceparent for unified observability
+      if (!headers.has('traceparent')) {
+        headers.set('traceparent', newTraceparent());
+      }
+      
       newConfig.headers = headers;
       return originalFetch(resource, newConfig);
     }
