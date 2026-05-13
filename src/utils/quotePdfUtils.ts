@@ -50,7 +50,7 @@ export async function generateQuotePDF(quoteId: string) {
     doc.text(`E-mail: ${quote.client_email || quote.client?.email || "N/A"}`, 14, 67);
 
     // Items Table
-    const tableData = quote.items.map((item: any) => [
+    const tableData = (quote.items as any[]).map((item) => [
       item.product?.sku || "-",
       item.product?.name || "Produto não identificado",
       item.quantity,
