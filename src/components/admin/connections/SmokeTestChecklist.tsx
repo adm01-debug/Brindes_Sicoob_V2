@@ -127,11 +127,9 @@ export function SmokeTestChecklist({ availableSecrets = [] }: Props) {
     const expectedSuffix = suffixOf(newValue);
     const startedAt = new Date();
     const sessionId = `smoke-${Date.now().toString(36)}`;
+    const log = createClientLogger("admin.smoke-test", { requestId: sessionId });
 
-    // eslint-disable-next-line no-console
-    console.groupCollapsed(`[smoke-test] ${sessionId} • ${secretName}`);
-    // eslint-disable-next-line no-console
-    console.log("[smoke-test] starting", { secretName, expectedSuffix, length: newValue.length });
+    log.info("starting", { secretName, expectedSuffix, length: newValue.length });
 
     // STEP 1 — rotate
     updateStep("rotate", { status: "running" });
