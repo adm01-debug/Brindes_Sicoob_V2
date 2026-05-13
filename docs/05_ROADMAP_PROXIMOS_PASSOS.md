@@ -31,18 +31,15 @@
 
 ### **1.1: Criar primeira Organization**
 
-**Status:** ⏳ Pendente
+**Status:** ✅ Concluído
 
 **Tarefas:**
 ```sql
--- Executar no SQL Editor
-- [ ] Criar organization "Pink e Cerébro"
-- [ ] Adicionar você como owner
-- [ ] Associar categorias à org
-- [ ] Testar acesso com RLS
+- [x] Criar organization "Pink e Cerébro"
+- [x] Adicionar você como owner
+- [x] Associar categorias à org
+- [x] Testar acesso com RLS
 ```
-
-**Referência:** [01_CRIAR_PRIMEIRA_ORGANIZATION.md](./01_CRIAR_PRIMEIRA_ORGANIZATION.md)
 
 **Resultado esperado:** Organization funcionando + você como owner
 
