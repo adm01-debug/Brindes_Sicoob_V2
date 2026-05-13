@@ -204,8 +204,9 @@ export function useQuotes() {
       toast.success(`${quoteIds.length} orçamentos atualizados!`);
       fetchQuotes();
       return true;
-    } catch (err: any) {
-      toast.error("Erro ao atualizar orçamentos em massa");
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      toast.error("Erro ao atualizar orçamentos em massa", { description: msg });
       return false;
     } finally {
       setIsLoading(false);
