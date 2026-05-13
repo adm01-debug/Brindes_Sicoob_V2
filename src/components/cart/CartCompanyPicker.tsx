@@ -46,7 +46,7 @@ export function CartCompanyPicker({ onCreated, onCancel }: CartCompanyPickerProp
   }, []);
 
   // Local companies cache
-  const { data: localCompanies = [], isLoading: loadingLocal } = useQuery({
+  const { data: localCompanies = [], isLoading: loadingLocal } = useQuery<CompanyItem[]>({
     queryKey: ["cart-companies-local"],
     queryFn: async () => {
       const companies = await selectCrm<CrmCompany>("companies", {
