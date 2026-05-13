@@ -2,6 +2,9 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { notificationsMetrics, type FetchSource } from "@/lib/notifications-metrics";
+import { createClientLogger } from "@/lib/telemetry/structuredLogger";
+
+const log = createClientLogger("notifications");
 
 export interface WorkspaceNotification {
   id: string;
