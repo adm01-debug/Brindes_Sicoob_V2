@@ -14,7 +14,8 @@
  * facilitar QA via DevTools sem depender da UI.
  */
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
+import { createClientLogger } from "@/lib/telemetry/structuredLogger";
 import { CheckCircle2, XCircle, Loader2, ListChecks, PlayCircle, Copy, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
