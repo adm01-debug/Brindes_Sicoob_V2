@@ -252,8 +252,7 @@ export function SmokeTestChecklist({ availableSecrets = [] }: Props) {
         detail: err instanceof Error ? err.message : "Erro ao recarregar",
         durationMs: took,
       });
-      // eslint-disable-next-line no-console
-      console.error("[smoke-test] step 3 EXCEPTION", err);
+      log.error("step_3_exception", { err });
     }
 
     // eslint-disable-next-line no-console
