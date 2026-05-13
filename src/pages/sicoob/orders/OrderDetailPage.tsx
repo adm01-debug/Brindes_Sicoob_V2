@@ -134,11 +134,6 @@ export default function OrderDetailPage() {
   const [isRequestDialogOpen, setIsRequestDialogOpen] = useState(false);
   const [isRejectDialogOpen, setIsRejectDialogOpen] = useState(false);
   const [isEscalateDialogOpen, setIsEscalateDialogOpen] = useState(false);
-  const [requestReason, setRequestReason] = useState("");
-  const [rejectionReason, setRejectionReason] = useState("");
-  const [isRequestDialogOpen, setIsRequestDialogOpen] = useState(false);
-  const [isRejectDialogOpen, setIsRejectDialogOpen] = useState(false);
-  const [isEscalateDialogOpen, setIsEscalateDialogOpen] = useState(false);
 
   const { data: orderData, isLoading: isLoadingOrder, refetch: refetchOrder } = useSicoobOrder(id);
   const { items: orderItems, logs: itemLogs } = useSicoobOrderDetails(id);
