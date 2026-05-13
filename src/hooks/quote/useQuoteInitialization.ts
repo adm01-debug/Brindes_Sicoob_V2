@@ -30,7 +30,7 @@ interface InitParams {
     setDeliveryMode: (v: "prazo" | "data") => void;
     setDeliveryDate: (v: Date | undefined) => void;
     setDeliveryTime: (v: string) => void;
-    setItems: (v: any) => void;
+    setItems: (v: QuoteItem[]) => void;
     setLoadingQuote: (v: boolean) => void;
     setActiveItemIndex: (v: number | null) => void;
     setExpandedItems: (v: any) => void;
