@@ -8,7 +8,7 @@ import { dedupeById, rankProductSearchResults, createProductFuseOptions } from "
 import type { Product, RawProductColor } from "@/types/quote-builder";
 
 // Mapeamento interno para simplificar o hook principal
-function mapQuoteSearchProduct(p: any, getProductImageUrl: (product: any) => string | null): Product {
+function mapQuoteSearchProduct(p: Record<string, any>, getProductImageUrl: (product: any) => string | null): Product {
   const imgUrl = getProductImageUrl(p);
   const images = (p.images && p.images.length > 0) ? p.images : (imgUrl ? [imgUrl] : []);
 
