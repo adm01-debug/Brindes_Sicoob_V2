@@ -195,8 +195,7 @@ export function SmokeTestChecklist({ availableSecrets = [] }: Props) {
           detail: `Nenhum registro com sufixo ${formatMaskedSuffix(expectedSuffix)} encontrado (${entries.length} entradas vistas).`,
           durationMs: took,
         });
-        // eslint-disable-next-line no-console
-        console.error("[smoke-test] step 2 missing entry", { expectedSuffix, total: entries.length });
+        log.error("step_2_missing_entry", { expectedSuffix, total: entries.length });
       } else {
         const author = matching.rotated_by_email ?? matching.rotated_by ?? "desconhecido";
         updateStep("history", {
