@@ -176,7 +176,7 @@ export function CategoriesManager() {
     { 
       header: "Nome", 
       accessorKey: "name",
-      cell: (row: any) => (
+      cell: (row: Category) => (
         <div className="flex items-center gap-2">
           {row.parent_id && <Badge variant="outline" className="text-[10px] uppercase">Sub</Badge>}
           <span className="font-medium">{row.name}</span>
