@@ -113,7 +113,7 @@ export function useExternalVariantStock(productId: string | undefined) {
         
         // Prioridade: variantImage > colorImage > selected_thumbnail válido > null
         const thumbnail = variantImage || colorImage || validSelectedThumb || null;
-        const imgs = v.images;
+        const imgs = v.images as string[] | null;
 
         return {
           ...v,
