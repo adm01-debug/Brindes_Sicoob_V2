@@ -61,8 +61,20 @@ export class QuoteService {
     const totals = calculateQuoteTotals(params.quote, params.items);
     const updatePayload = buildUpdatePayload(params.quote, totals);
     
-    const { data: updated, error: updErr } = await supabase.from("quotes").update(updatePayload).eq("id", params.quoteId).select("*").single();
-    if (updErr) throw updErr;
+    const { data: updated, error: updErr } = await supabase
+      .from("quotes")
+      .update(updatePayload)
+      .eq("id", params.quoteId)
+      .eq("row_version", oldQuote.row_version || 1)
+      .select("*")
+      .single();
+
+    if (updErr) {
+      if (updErr.code === 'PGRST116') {
+        throw new Error("Concorrência detectada: Este orçamento foi modificado por outro usuário. Por favor, recarregue a página.");
+      }
+      throw updErr;
+    }
 
     // Granular Audit Logging
     const changes: string[] = [];
