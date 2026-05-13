@@ -47,7 +47,7 @@ export class QuoteService {
       await this.insertItemsWithPersonalizations(params.items, inserted.id);
     }
 
-    return inserted as unknown as Quote;
+    return inserted as Quote;
   }
 
   static async update(params: { 
