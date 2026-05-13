@@ -1,5 +1,8 @@
 import { useEffect, useRef, useCallback } from "react";
 import { toast } from "sonner";
+import { createClientLogger } from "@/lib/telemetry/structuredLogger";
+
+const log = createClientLogger("autosave");
 
 interface AutoSaveOptions<T> {
   key: string;
