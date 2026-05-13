@@ -182,7 +182,7 @@ export function useQuotes() {
           status,
           ...(notes ? { rejection_notes: notes } : {}),
           ...(status === 'approved' ? { approved_at: new Date().toISOString(), approved_by: user.id } : {})
-        } as any)
+        } as Partial<Quote>)
         .in("id", quoteIds);
 
       if (error) throw error;
