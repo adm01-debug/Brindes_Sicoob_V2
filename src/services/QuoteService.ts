@@ -58,7 +58,7 @@ export class QuoteService {
     const oldQuote = await this.getById(params.quoteId);
     if (!oldQuote) throw new Error("Orçamento não encontrado para atualização");
 
-    const totals = calculateQuoteTotals(params.quote, params.items);
+    const totals = calculateQuoteTotals(params.quote, params.items, params.quote.negotiation_markup_percent, params.quote.discount_percent ? 'percent' : 'amount', params.quote.discount_percent || params.quote.discount_amount || 0);
     const updatePayload = buildUpdatePayload({ ...params.quote, row_version: oldQuote.row_version }, totals);
     
     const { data: updated, error: updErr } = await supabase
