@@ -5430,6 +5430,7 @@ export type Database = {
       product_categories: {
         Row: {
           created_at: string | null
+          deleted_at: string | null
           description: string | null
           icon_url: string | null
           id: string
@@ -5442,6 +5443,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string | null
+          deleted_at?: string | null
           description?: string | null
           icon_url?: string | null
           id?: string
@@ -5454,6 +5456,7 @@ export type Database = {
         }
         Update: {
           created_at?: string | null
+          deleted_at?: string | null
           description?: string | null
           icon_url?: string | null
           id?: string
