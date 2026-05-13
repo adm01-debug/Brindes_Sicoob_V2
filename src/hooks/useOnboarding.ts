@@ -64,7 +64,7 @@ export function useOnboarding() {
 
   const updateStep = useCallback(async (step: number) => {
     setCurrentStep(step);
-    console.log(`[onboarding] Avançando para o passo ${step}`, { onboardingId, userId: user?.id });
+    logger.log(`[onboarding] Avançando para o passo ${step}`, { onboardingId, userId: user?.id });
 
     if (!user || !onboardingId) return;
 

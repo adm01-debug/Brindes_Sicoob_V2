@@ -89,9 +89,9 @@ export function summarizeSession(session: Session | null | undefined) {
 export function authDebug(scope: string, message: string, data?: unknown): void {
   const ts = new Date().toISOString();
   // eslint-disable-next-line no-console
-  console.log(`${PREFIX} [${ts}] [${scope}] ${message}`, data ?? "");
+  logger.log(`${PREFIX} [${ts}] [${scope}] ${message}`, data ?? "");
   
-  // Persistir no localStorage para o Widget de Diagnóstico ler sem depender de console.logs
+  // Persistir no localStorage para o Widget de Diagnóstico ler sem depender de logger.logs
   if (typeof window !== "undefined") {
     try {
       const logs = JSON.parse(localStorage.getItem('auth_debug_history') || '[]');

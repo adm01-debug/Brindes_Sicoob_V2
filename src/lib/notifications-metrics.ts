@@ -187,7 +187,7 @@ function isDebugEnabled(): boolean {
 
 /**
  * Throttle window for console output (ms). Counters update instantly; only the
- * `console.log` side-effect is rate-limited. Within each window we emit at most
+ * `logger.log` side-effect is rate-limited. Within each window we emit at most
  * one leading log per event type and then a single trailing log carrying the
  * most recent payload + a `coalesced` count of suppressed entries.
  */
@@ -203,7 +203,7 @@ const throttleByEvent = new Map<string, ThrottleEntry>();
 
 function emit(event: string, payload: Record<string, unknown>) {
   // eslint-disable-next-line no-console
-  console.log(
+  logger.log(
     `%c[notifications-metrics:${event}]`,
     "color:#0891b2;font-weight:600",
     payload
