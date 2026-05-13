@@ -19,11 +19,22 @@ import * as XLSX from 'xlsx';
 import { logAdminAction } from "@/utils/adminAudit";
 import { useAdminPermissions } from "@/hooks/useAdminPermissions";
 
+interface Category {
+  id: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  parent_id: string | null;
+  sort_order: number;
+  is_active: boolean;
+  created_at?: string;
+}
+
 export function CategoriesManager() {
-  const [categories, setCategories] = useState<any[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isFormOpen, setIsFormOpen] = useState(false);
-  const [editingCategory, setEditingCategory] = useState<any>(null);
+  const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const { canEdit, canDelete, canImport, canExport } = useAdminPermissions();
 
   const fetchCategories = async () => {
