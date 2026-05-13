@@ -32,10 +32,10 @@ export async function runQaSeed(scenario?: string) {
 
     if (error) throw error;
 
-    console.log("✅ Seed finalizado:", data);
+    log.info("finished", { data });
     return data;
   } catch (err) {
-    console.error("❌ Falha no Seed QA:", err);
+    log.error("failed", { err });
     throw err;
   }
 }
