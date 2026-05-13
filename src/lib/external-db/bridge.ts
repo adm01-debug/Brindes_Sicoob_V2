@@ -100,12 +100,16 @@ export async function invokeBridge<T>(body: Record<string, unknown>): Promise<Br
   }
 
   let sawColdStart = false;
+  const requestId = newRequestId();
+  
   for (let attempt = 1; attempt <= BOOT_RETRY_ATTEMPTS; attempt++) {
     // Explicitly attach the access token to avoid preview proxy issues
     const { data: sessionData } = await supabase.auth.getSession();
     const accessToken = sessionData?.session?.access_token;
 
-    const headers: Record<string, string> = {};
+    const headers: Record<string, string> = {
+      [REQUEST_ID_HEADER]: requestId,
+    };
     if (accessToken) {
       headers['Authorization'] = `Bearer ${accessToken}`;
     }
