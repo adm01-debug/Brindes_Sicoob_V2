@@ -30,7 +30,7 @@ export class QuoteService {
 
     const items: QuoteItem[] = (itemsData || []).map((item) => ({
       ...item,
-      personalizations: allPersonalizations.filter(p => p.quote_item_id === item.id),
+      personalizations: allPersonalizations.filter(p => p.quote_item_id === item.id) as any[],
     }));
 
     return { ...quoteData, items } as Quote;
