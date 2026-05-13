@@ -1,5 +1,6 @@
-import { onCLS, onLCP, onTTFB, onFCP, onINP } from 'web-vitals';
+import { onCLS, onLCP, onTTFB, onFCP, onINP, type Metric } from 'web-vitals';
 import { createClientLogger } from './structuredLogger';
+import { captureException } from '@/lib/sentry';
 
 const log = createClientLogger('performance.web-vitals');
 
