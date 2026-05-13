@@ -70,7 +70,7 @@ export function CartCompanyPickerDialog({ open, onOpenChange, onCreated }: CartC
     return () => clearTimeout(t);
   }, [searchTerm]);
 
-  const { data: localCompanies = [], isLoading: loadingLocal } = useQuery({
+  const { data: localCompanies = [], isLoading: loadingLocal } = useQuery<CompanyItem[]>({
     queryKey: ["cart-companies-local"],
     queryFn: async () => {
       const companies = await selectCrm<CrmCompany>("companies", {
