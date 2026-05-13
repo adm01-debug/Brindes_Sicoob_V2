@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
-import { AlertTriangle, CheckCircle2, ImageOff, FolderX, Tag } from "lucide-react";
+import { AlertTriangle, CheckCircle2, ImageOff, FolderX, Tag, ListFilter } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 interface QualityMetrics {
@@ -15,6 +15,7 @@ interface QualityMetrics {
   lastRunAt: string | null;
   totalRecordsProcessed: number;
   totalRecordsFailed: number;
+  catalogSize: number;
 }
 
 export function CatalogQualityDashboard() {
@@ -24,19 +25,26 @@ export function CatalogQualityDashboard() {
   useEffect(() => {
     (async () => {
       try {
-        const { data } = await supabase
-          .from("product_sync_logs")
-          .select("status, records_processed, records_failed, created_at")
-          .order("created_at", { ascending: false })
-          .limit(50);
+        const [syncLogs, productCount] = await Promise.all([
+          supabase
+            .from("product_sync_logs")
+            .select("status, records_processed, records_failed, created_at")
+            .order("created_at", { ascending: false })
+            .limit(50),
+          // Since product data is in an external-db via bridge, we use the bridge count if available
+          // For now we use the local product_groups as a proxy or just zero if not applicable
+          // But wait, we can invoke the bridge!
+          import('@/lib/external-db').then(m => m.fetchPromobrindProducts({ limit: 1, returnCount: true }))
+        ]);
 
-        const rows = data || [];
+        const rows = syncLogs.data || [];
         setMetrics({
           totalSyncRuns: rows.length,
           failedRuns: rows.filter((r) => r.status === "failed").length,
           lastRunAt: rows[0]?.created_at ?? null,
           totalRecordsProcessed: rows.reduce((sum, r) => sum + (r.records_processed || 0), 0),
           totalRecordsFailed: rows.reduce((sum, r) => sum + (r.records_failed || 0), 0),
+          catalogSize: productCount.count || 0,
         });
       } finally {
         setIsLoading(false);
@@ -98,6 +106,18 @@ export function CatalogQualityDashboard() {
             <p className="text-xs text-muted-foreground mt-1">
               de {metrics.totalRecordsProcessed} processados
             </p>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium flex items-center gap-2">
+              <ListFilter className="h-4 w-4 text-info" /> Tamanho do Catálogo
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-3xl font-semibold">{metrics.catalogSize.toLocaleString()}</p>
+            <p className="text-xs text-muted-foreground mt-1">SKUs ativos e sincronizados</p>
           </CardContent>
         </Card>
       </div>

@@ -69,7 +69,7 @@ Automação de marketing e branding.
 | **Segurança RLS** | Zero negações sem log em `admin_audit_log`. | Crítica | ✅ Implementado |
 | **Assinatura Digital** | Conformidade com MP 2.200-2 verificada. | Alta | ✅ Implementado |
 | **Agente de Voz** | Resposta em < 2s via ElevenLabs. | Média | ⏳ Em Scaffold |
-| **Blockchain Log** | Imutabilidade via Ledger externo. | Baixa | 📅 Planejado |
+| **Blockchain Log** | Imutabilidade via Hash Chaining em `admin_audit_log`. | Baixa | ✅ Implementado |
 
 ---
 

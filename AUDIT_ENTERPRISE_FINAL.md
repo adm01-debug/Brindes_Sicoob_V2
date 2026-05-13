@@ -215,8 +215,8 @@ O sistema foi submetido a uma auditoria automatizada de 360 graus. A infraestrut
 
 | Item | Severidade | Caminho do Arquivo | Status | Evidência Relacionada |
 | :--- | :--- | :--- | :--- | :--- |
-| Segregação de Logs de Admin | **P1** | `supabase/functions/admin-audit-hook` | Pendente | [Link](https://github.com/promo-gifts/app/tree/main/supabase/functions/admin-audit-hook) |
-| Criptografia de Dados em Repouso (Camada App) | **P2** | `src/services/encryption.ts` | A implementar | [Link](https://github.com/promo-gifts/app/tree/main/src/services/encryption.ts) |
+| Segregação de Logs de Admin | **P1** | `supabase/functions/admin-audit-hook` | ✅ Concluído | [Hook Deployed](https://github.com/promo-gifts/app/tree/main/supabase/functions/admin-audit-hook) |
+| Criptografia de Dados em Repouso (Camada App) | **P2** | `src/services/encryption.ts` | ✅ Concluído | [Service Implemented](https://github.com/promo-gifts/app/tree/main/src/services/encryption.ts) |
 
 
 <a name="evidencias"></a>

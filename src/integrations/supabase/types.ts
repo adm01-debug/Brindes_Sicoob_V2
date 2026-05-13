@@ -18,12 +18,14 @@ export type Database = {
         Row: {
           action: string
           created_at: string
+          current_hash: string | null
           details: Json | null
           duration_ms: number | null
           finished_at: string | null
           id: string
           ip_address: string | null
           payload_summary: Json | null
+          previous_hash: string | null
           request_id: string | null
           resource_id: string | null
           resource_type: string
@@ -36,12 +38,14 @@ export type Database = {
         Insert: {
           action: string
           created_at?: string
+          current_hash?: string | null
           details?: Json | null
           duration_ms?: number | null
           finished_at?: string | null
           id?: string
           ip_address?: string | null
           payload_summary?: Json | null
+          previous_hash?: string | null
           request_id?: string | null
           resource_id?: string | null
           resource_type: string
@@ -54,12 +58,14 @@ export type Database = {
         Update: {
           action?: string
           created_at?: string
+          current_hash?: string | null
           details?: Json | null
           duration_ms?: number | null
           finished_at?: string | null
           id?: string
           ip_address?: string | null
           payload_summary?: Json | null
+          previous_hash?: string | null
           request_id?: string | null
           resource_id?: string | null
           resource_type?: string
@@ -132,12 +138,14 @@ export type Database = {
         Row: {
           action: string
           created_at: string
+          current_hash: string | null
           details: Json | null
           duration_ms: number | null
           finished_at: string | null
           id: string
           ip_address: string | null
           payload_summary: Json | null
+          previous_hash: string | null
           request_id: string | null
           resource_id: string | null
           resource_type: string
@@ -150,12 +158,14 @@ export type Database = {
         Insert: {
           action: string
           created_at?: string
+          current_hash?: string | null
           details?: Json | null
           duration_ms?: number | null
           finished_at?: string | null
           id?: string
           ip_address?: string | null
           payload_summary?: Json | null
+          previous_hash?: string | null
           request_id?: string | null
           resource_id?: string | null
           resource_type: string
@@ -168,12 +178,14 @@ export type Database = {
         Update: {
           action?: string
           created_at?: string
+          current_hash?: string | null
           details?: Json | null
           duration_ms?: number | null
           finished_at?: string | null
           id?: string
           ip_address?: string | null
           payload_summary?: Json | null
+          previous_hash?: string | null
           request_id?: string | null
           resource_id?: string | null
           resource_type?: string
@@ -246,12 +258,14 @@ export type Database = {
         Row: {
           action: string
           created_at: string
+          current_hash: string | null
           details: Json | null
           duration_ms: number | null
           finished_at: string | null
           id: string
           ip_address: string | null
           payload_summary: Json | null
+          previous_hash: string | null
           request_id: string | null
           resource_id: string | null
           resource_type: string
@@ -264,12 +278,14 @@ export type Database = {
         Insert: {
           action: string
           created_at?: string
+          current_hash?: string | null
           details?: Json | null
           duration_ms?: number | null
           finished_at?: string | null
           id?: string
           ip_address?: string | null
           payload_summary?: Json | null
+          previous_hash?: string | null
           request_id?: string | null
           resource_id?: string | null
           resource_type: string
@@ -282,12 +298,14 @@ export type Database = {
         Update: {
           action?: string
           created_at?: string
+          current_hash?: string | null
           details?: Json | null
           duration_ms?: number | null
           finished_at?: string | null
           id?: string
           ip_address?: string | null
           payload_summary?: Json | null
+          previous_hash?: string | null
           request_id?: string | null
           resource_id?: string | null
           resource_type?: string
@@ -303,12 +321,14 @@ export type Database = {
         Row: {
           action: string
           created_at: string
+          current_hash: string | null
           details: Json | null
           duration_ms: number | null
           finished_at: string | null
           id: string
           ip_address: string | null
           payload_summary: Json | null
+          previous_hash: string | null
           request_id: string | null
           resource_id: string | null
           resource_type: string
@@ -321,12 +341,14 @@ export type Database = {
         Insert: {
           action: string
           created_at?: string
+          current_hash?: string | null
           details?: Json | null
           duration_ms?: number | null
           finished_at?: string | null
           id?: string
           ip_address?: string | null
           payload_summary?: Json | null
+          previous_hash?: string | null
           request_id?: string | null
           resource_id?: string | null
           resource_type: string
@@ -339,12 +361,14 @@ export type Database = {
         Update: {
           action?: string
           created_at?: string
+          current_hash?: string | null
           details?: Json | null
           duration_ms?: number | null
           finished_at?: string | null
           id?: string
           ip_address?: string | null
           payload_summary?: Json | null
+          previous_hash?: string | null
           request_id?: string | null
           resource_id?: string | null
           resource_type?: string
@@ -360,12 +384,14 @@ export type Database = {
         Row: {
           action: string
           created_at: string
+          current_hash: string | null
           details: Json | null
           duration_ms: number | null
           finished_at: string | null
           id: string
           ip_address: string | null
           payload_summary: Json | null
+          previous_hash: string | null
           request_id: string | null
           resource_id: string | null
           resource_type: string
@@ -378,12 +404,14 @@ export type Database = {
         Insert: {
           action: string
           created_at?: string
+          current_hash?: string | null
           details?: Json | null
           duration_ms?: number | null
           finished_at?: string | null
           id?: string
           ip_address?: string | null
           payload_summary?: Json | null
+          previous_hash?: string | null
           request_id?: string | null
           resource_id?: string | null
           resource_type: string
@@ -396,12 +424,14 @@ export type Database = {
         Update: {
           action?: string
           created_at?: string
+          current_hash?: string | null
           details?: Json | null
           duration_ms?: number | null
           finished_at?: string | null
           id?: string
           ip_address?: string | null
           payload_summary?: Json | null
+          previous_hash?: string | null
           request_id?: string | null
           resource_id?: string | null
           resource_type?: string
@@ -417,12 +447,14 @@ export type Database = {
         Row: {
           action: string
           created_at: string
+          current_hash: string | null
           details: Json | null
           duration_ms: number | null
           finished_at: string | null
           id: string
           ip_address: string | null
           payload_summary: Json | null
+          previous_hash: string | null
           request_id: string | null
           resource_id: string | null
           resource_type: string
@@ -435,12 +467,14 @@ export type Database = {
         Insert: {
           action: string
           created_at?: string
+          current_hash?: string | null
           details?: Json | null
           duration_ms?: number | null
           finished_at?: string | null
           id?: string
           ip_address?: string | null
           payload_summary?: Json | null
+          previous_hash?: string | null
           request_id?: string | null
           resource_id?: string | null
           resource_type: string
@@ -453,12 +487,14 @@ export type Database = {
         Update: {
           action?: string
           created_at?: string
+          current_hash?: string | null
           details?: Json | null
           duration_ms?: number | null
           finished_at?: string | null
           id?: string
           ip_address?: string | null
           payload_summary?: Json | null
+          previous_hash?: string | null
           request_id?: string | null
           resource_id?: string | null
           resource_type?: string
@@ -474,12 +510,14 @@ export type Database = {
         Row: {
           action: string
           created_at: string
+          current_hash: string | null
           details: Json | null
           duration_ms: number | null
           finished_at: string | null
           id: string
           ip_address: string | null
           payload_summary: Json | null
+          previous_hash: string | null
           request_id: string | null
           resource_id: string | null
           resource_type: string
@@ -492,12 +530,14 @@ export type Database = {
         Insert: {
           action: string
           created_at?: string
+          current_hash?: string | null
           details?: Json | null
           duration_ms?: number | null
           finished_at?: string | null
           id?: string
           ip_address?: string | null
           payload_summary?: Json | null
+          previous_hash?: string | null
           request_id?: string | null
           resource_id?: string | null
           resource_type: string
@@ -510,12 +550,14 @@ export type Database = {
         Update: {
           action?: string
           created_at?: string
+          current_hash?: string | null
           details?: Json | null
           duration_ms?: number | null
           finished_at?: string | null
           id?: string
           ip_address?: string | null
           payload_summary?: Json | null
+          previous_hash?: string | null
           request_id?: string | null
           resource_id?: string | null
           resource_type?: string
@@ -531,12 +573,14 @@ export type Database = {
         Row: {
           action: string
           created_at: string
+          current_hash: string | null
           details: Json | null
           duration_ms: number | null
           finished_at: string | null
           id: string
           ip_address: string | null
           payload_summary: Json | null
+          previous_hash: string | null
           request_id: string | null
           resource_id: string | null
           resource_type: string
@@ -549,12 +593,14 @@ export type Database = {
         Insert: {
           action: string
           created_at?: string
+          current_hash?: string | null
           details?: Json | null
           duration_ms?: number | null
           finished_at?: string | null
           id?: string
           ip_address?: string | null
           payload_summary?: Json | null
+          previous_hash?: string | null
           request_id?: string | null
           resource_id?: string | null
           resource_type: string
@@ -567,12 +613,14 @@ export type Database = {
         Update: {
           action?: string
           created_at?: string
+          current_hash?: string | null
           details?: Json | null
           duration_ms?: number | null
           finished_at?: string | null
           id?: string
           ip_address?: string | null
           payload_summary?: Json | null
+          previous_hash?: string | null
           request_id?: string | null
           resource_id?: string | null
           resource_type?: string
@@ -588,12 +636,14 @@ export type Database = {
         Row: {
           action: string
           created_at: string
+          current_hash: string | null
           details: Json | null
           duration_ms: number | null
           finished_at: string | null
           id: string
           ip_address: string | null
           payload_summary: Json | null
+          previous_hash: string | null
           request_id: string | null
           resource_id: string | null
           resource_type: string
@@ -606,12 +656,14 @@ export type Database = {
         Insert: {
           action: string
           created_at?: string
+          current_hash?: string | null
           details?: Json | null
           duration_ms?: number | null
           finished_at?: string | null
           id?: string
           ip_address?: string | null
           payload_summary?: Json | null
+          previous_hash?: string | null
           request_id?: string | null
           resource_id?: string | null
           resource_type: string
@@ -624,12 +676,14 @@ export type Database = {
         Update: {
           action?: string
           created_at?: string
+          current_hash?: string | null
           details?: Json | null
           duration_ms?: number | null
           finished_at?: string | null
           id?: string
           ip_address?: string | null
           payload_summary?: Json | null
+          previous_hash?: string | null
           request_id?: string | null
           resource_id?: string | null
           resource_type?: string
@@ -645,12 +699,14 @@ export type Database = {
         Row: {
           action: string
           created_at: string
+          current_hash: string | null
           details: Json | null
           duration_ms: number | null
           finished_at: string | null
           id: string
           ip_address: string | null
           payload_summary: Json | null
+          previous_hash: string | null
           request_id: string | null
           resource_id: string | null
           resource_type: string
@@ -663,12 +719,14 @@ export type Database = {
         Insert: {
           action: string
           created_at?: string
+          current_hash?: string | null
           details?: Json | null
           duration_ms?: number | null
           finished_at?: string | null
           id?: string
           ip_address?: string | null
           payload_summary?: Json | null
+          previous_hash?: string | null
           request_id?: string | null
           resource_id?: string | null
           resource_type: string
@@ -681,12 +739,14 @@ export type Database = {
         Update: {
           action?: string
           created_at?: string
+          current_hash?: string | null
           details?: Json | null
           duration_ms?: number | null
           finished_at?: string | null
           id?: string
           ip_address?: string | null
           payload_summary?: Json | null
+          previous_hash?: string | null
           request_id?: string | null
           resource_id?: string | null
           resource_type?: string
