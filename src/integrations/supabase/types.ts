@@ -6005,6 +6005,7 @@ export type Database = {
           real_discount_percent: number | null
           real_subtotal: number | null
           rejection_notes: string | null
+          row_version: number
           seller_id: string
           sent_at: string | null
           shipping_cost: number | null
@@ -6055,6 +6056,7 @@ export type Database = {
           real_discount_percent?: number | null
           real_subtotal?: number | null
           rejection_notes?: string | null
+          row_version?: number
           seller_id: string
           sent_at?: string | null
           shipping_cost?: number | null
@@ -6105,6 +6107,7 @@ export type Database = {
           real_discount_percent?: number | null
           real_subtotal?: number | null
           rejection_notes?: string | null
+          row_version?: number
           seller_id?: string
           sent_at?: string | null
           shipping_cost?: number | null
