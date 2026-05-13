@@ -57,8 +57,9 @@ export function useQuotes() {
       toast.success("Orçamento criado!");
       fetchQuotes();
       return newQuote;
-    } catch (err: any) {
-      toast.error("Erro ao criar orçamento", { description: err.message });
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      toast.error("Erro ao criar orçamento", { description: msg });
       return null;
     } finally {
       setIsLoading(false);
