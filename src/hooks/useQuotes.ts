@@ -305,7 +305,7 @@ export function useQuotes() {
       });
       setTechniques(result.records || []);
     } catch (err) {
-      console.error(err);
+      // Silent fail as this is background info
     }
   };
 
