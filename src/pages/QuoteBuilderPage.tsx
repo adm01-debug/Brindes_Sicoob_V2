@@ -180,19 +180,11 @@ export default function QuoteBuilderPage() {
               </div>
 
               {/* Validade */}
-              <div className="rounded-2xl border border-border/50 bg-card p-4 space-y-3">
-                <h3 className="font-display font-semibold text-sm flex items-center gap-2"><span className="text-primary">📅</span>Validade | Proposta</h3>
-                <Select value={s.validityDays} onValueChange={(val) => { s.setValidityDays(val); s.setValidUntil(format(addDays(new Date(), parseInt(val)), "yyyy-MM-dd")); }}>
-                  <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="Selecione" /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="1">1 dia</SelectItem>
-                    <SelectItem value="3">3 dias</SelectItem>
-                    <SelectItem value="7">7 dias</SelectItem>
-                    <SelectItem value="15">15 dias</SelectItem>
-                    <SelectItem value="30">30 dias</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+              <ValidityPicker
+                validityDays={s.validityDays}
+                setValidityDays={s.setValidityDays}
+                setValidUntil={s.setValidUntil}
+              />
 
               {/* Condições Comerciais */}
               <CommercialConditions
