@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
-import { AlertTriangle, CheckCircle2, ImageOff, FolderX, Tag } from "lucide-react";
+import { AlertTriangle, CheckCircle2, ImageOff, FolderX, Tag, ListFilter } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 interface QualityMetrics {
