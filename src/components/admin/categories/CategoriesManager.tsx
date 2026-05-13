@@ -189,7 +189,7 @@ export function CategoriesManager() {
     { 
       header: "Status", 
       accessorKey: "is_active",
-      cell: (row: any) => (
+      cell: (row: Category) => (
         <Badge variant={row.is_active ? "default" : "secondary"}>
           {row.is_active ? "Ativa" : "Inativa"}
         </Badge>
