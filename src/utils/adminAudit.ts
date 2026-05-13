@@ -30,27 +30,26 @@ export async function logAdminAction({
   metadata
 }: LogAdminActionParams) {
   try {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
+    // Generate a simple traceparent-like ID for W3C traceability if not present
+    // Format: 00-traceId-spanId-flags (simplified)
+    const traceId = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+    const traceparent = `00-${traceId}-0000000000000000-01`;
 
-    const { error } = await supabase
-      .from('admin_audit_log')
-      .insert({
-        user_id: user.id,
+    const { error } = await supabase.functions.invoke('admin-audit-hook', {
+      body: {
         event_type,
         entity_type,
         entity_id,
-        new_data: payload,
-        old_data: previous_state,
-        metadata: {
-          ...metadata,
-          user_email: user.email,
-          user_agent: navigator.userAgent,
-          timestamp: new Date().toISOString()
-        }
-      });
+        payload,
+        previous_state,
+        metadata
+      },
+      headers: {
+        'traceparent': traceparent
+      }
+    });
 
-    if (error) console.error("Error logging admin action:", error);
+    if (error) console.error("Error logging admin action via hook:", error);
   } catch (err) {
     console.error("Critical error in logAdminAction:", err);
   }
