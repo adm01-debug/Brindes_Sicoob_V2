@@ -42,6 +42,17 @@ export default defineConfig(({ mode }) => ({
     rollupOptions: {
       output: {
         manualChunks(id) {
+          // Admin & Quotes routes — isolando rotas pesadas
+          if (id.includes('src/pages/Admin/')) {
+            return 'admin-pages';
+          }
+          if (id.includes('src/pages/Quotes/')) {
+            return 'quotes-pages';
+          }
+          if (id.includes('src/pages/Sicoob/')) {
+            return 'sicoob-pages';
+          }
+
           // Core React
           if (id.includes('node_modules/react/') || id.includes('node_modules/react-dom/')) {
             return 'react-vendor';
