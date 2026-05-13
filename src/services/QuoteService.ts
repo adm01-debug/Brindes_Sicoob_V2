@@ -224,7 +224,7 @@ export class QuoteService {
     fieldChanged?: string;
     oldValue?: string;
     newValue?: string;
-    metadata?: any;
+    metadata?: Record<string, unknown>;
   }) {
     // Captura IP e UA do lado do cliente se não for fornecido
     const clientMetadata = {
