@@ -59,7 +59,7 @@ export function CategoriesManager() {
     fetchCategories();
   }, []);
 
-  const handleSave = async (formData: any) => {
+  const handleSave = async (formData: Omit<Category, 'id' | 'is_active'>) => {
     setIsLoading(true);
     try {
       if (editingCategory) {
