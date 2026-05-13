@@ -1,5 +1,8 @@
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { createClientLogger } from "@/lib/telemetry/structuredLogger";
+
+const log = createClientLogger("qa-seed");
 
 /**
  * Script de Seed QA para provisionamento de contas e cenários (§0-bis).
