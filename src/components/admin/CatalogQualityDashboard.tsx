@@ -25,19 +25,26 @@ export function CatalogQualityDashboard() {
   useEffect(() => {
     (async () => {
       try {
-        const { data } = await supabase
-          .from("product_sync_logs")
-          .select("status, records_processed, records_failed, created_at")
-          .order("created_at", { ascending: false })
-          .limit(50);
+        const [syncLogs, productCount] = await Promise.all([
+          supabase
+            .from("product_sync_logs")
+            .select("status, records_processed, records_failed, created_at")
+            .order("created_at", { ascending: false })
+            .limit(50),
+          // Since product data is in an external-db via bridge, we use the bridge count if available
+          // For now we use the local product_groups as a proxy or just zero if not applicable
+          // But wait, we can invoke the bridge!
+          import('@/lib/external-db').then(m => m.fetchPromobrindProducts({ limit: 1, returnCount: true }))
+        ]);
 
-        const rows = data || [];
+        const rows = syncLogs.data || [];
         setMetrics({
           totalSyncRuns: rows.length,
           failedRuns: rows.filter((r) => r.status === "failed").length,
           lastRunAt: rows[0]?.created_at ?? null,
           totalRecordsProcessed: rows.reduce((sum, r) => sum + (r.records_processed || 0), 0),
           totalRecordsFailed: rows.reduce((sum, r) => sum + (r.records_failed || 0), 0),
+          catalogSize: productCount.count || 0,
         });
       } finally {
         setIsLoading(false);
