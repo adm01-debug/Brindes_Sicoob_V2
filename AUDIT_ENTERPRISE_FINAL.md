@@ -29,7 +29,7 @@ O sistema foi submetido a uma auditoria automatizada de 360 graus. A infraestrut
 | **Segurança** | RLS Multi-tenant | ✅ Implementado | [Commit 631165be8](https://github.com/promo-gifts/app/commit/631165be8) | Sim |
 | **Financeiro** | Precisão 4-Dec | ✅ Implementado | [Migração SQL](https://github.com/promo-gifts/app/blob/631165be8/supabase/migrations/20260502174252_a88e3c13-46b8-4ce4-b1b8-c8500d390f3d.sql) | Sim |
 | **UX** | WCAG Compliance | ✅ Implementado | [Page Evidence](https://github.com/promo-gifts/app/blob/631165be8/src/pages/admin/AdminVerbasPage.tsx) | Sim |
-| **Governança** | Blockchain Log | ⏳ A implementar | [Roadmap 2026](https://github.com/promo-gifts/app/tree/main/roadmap) | - |
+| **Governança** | Blockchain Log | ✅ Implementado | [Hash Chaining in audit-hook](https://github.com/promo-gifts/app/tree/main/supabase/functions/admin-audit-hook) | Sim |
 
 
 <a name="rls-report"></a>
