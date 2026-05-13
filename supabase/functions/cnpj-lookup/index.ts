@@ -8,6 +8,12 @@ const CnpjBodySchema = z.object({
   cnpj: z.string().min(1, "CNPJ é obrigatório").transform(v => v.replace(/\D/g, "")).refine(v => v.length === 14, "CNPJ deve ter 14 dígitos"),
 });
 
+const cnpjLimiter = new RateLimiter({
+  maxRequests: 10,
+  windowMs: 60 * 1000,
+  keyPrefix: 'cnpj-lookup'
+});
+
 Deno.serve(async (req) => {
   const corsHeaders = getCorsHeaders(req);
   if (req.method === "OPTIONS") {
