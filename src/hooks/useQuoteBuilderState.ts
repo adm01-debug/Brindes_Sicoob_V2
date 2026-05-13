@@ -133,7 +133,7 @@ export function useQuoteBuilderState() {
     const colorName = variant?.color_name || undefined;
     const colorHex = variant?.color_hex || undefined;
     const sizeCode = variant?.size_code || undefined;
-    const imageUrl = variant?.selected_thumbnail || (variant?.images?.length ? variant.images[0] : undefined) || (Array.isArray(product.images) && product.images.length > 0 ? product.images[0] : undefined);
+    const imageUrl = variant?.selected_thumbnail || (variant?.images?.length ? variant.images[0] : undefined) || (Array.isArray(product.images) && product.images.length > 0 ? (product.images[0] as string) : undefined);
     
     const existingIndex = items.findIndex(i => i.product_id === product.id && i.color_name === colorName && i.size_code === sizeCode);
     
