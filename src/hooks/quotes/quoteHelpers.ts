@@ -4,7 +4,7 @@
 import type { TablesInsert, TablesUpdate } from "@/integrations/supabase/types";
 import type { Quote, QuoteItem } from "./quoteTypes";
 
-export function calculateQuoteTotals(quote: Partial<Quote>, items: QuoteItem[]) {
+export function calculateQuoteTotals(quote: Partial<Quote>, items: QuoteItem[], negotiationMarkup?: number, discountType: 'percent' | 'amount' = 'percent', discountValue: number = 0) {
   // Subtotal real = soma direta dos itens + personalizações (sem markup)
   const realSubtotal = items.reduce((sum, item) => {
     const baseTotal = item.quantity * item.unit_price;
