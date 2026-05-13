@@ -58,7 +58,7 @@ export function QuoteItemsList({
           key={item.id || index} 
           className="flex items-center gap-4 p-3 rounded-xl border border-border/50 bg-card/50"
         >
-          {item.product_image && (
+          {item.product_image_url && (
             <img 
               src={item.product_image} 
               alt={item.product_name} 
