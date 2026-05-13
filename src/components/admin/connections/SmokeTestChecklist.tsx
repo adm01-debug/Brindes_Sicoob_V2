@@ -212,8 +212,7 @@ export function SmokeTestChecklist({ availableSecrets = [] }: Props) {
         detail: err instanceof Error ? err.message : "Erro ao consultar histórico",
         durationMs: took,
       });
-      // eslint-disable-next-line no-console
-      console.error("[smoke-test] step 2 EXCEPTION", err);
+      log.error("step_2_exception", { err });
     }
 
     // STEP 3 — cold reload from DB (simulates F5)
