@@ -30,6 +30,7 @@ export interface QuoteItem {
   unit_price: number;
   unit_cost?: number;
   subtotal?: number;
+  total_price?: number;
   color_name?: string;
   color_hex?: string;
   notes?: string;
