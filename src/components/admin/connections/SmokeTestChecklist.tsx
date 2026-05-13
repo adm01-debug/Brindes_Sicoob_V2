@@ -145,13 +145,10 @@ export function SmokeTestChecklist({ availableSecrets = [] }: Props) {
           detail: rotateResult.error?.message ?? "Falha desconhecida",
           durationMs: took,
         });
-        // eslint-disable-next-line no-console
-        console.error("[smoke-test] step 1 FAILED", rotateResult.error);
+        log.error("step_1_failed", { error: rotateResult.error });
         setRunning(false);
         updateStep("history", { status: "skipped", detail: "Pulado (rotação falhou)" });
         updateStep("reload", { status: "skipped", detail: "Pulado (rotação falhou)" });
-        // eslint-disable-next-line no-console
-        console.groupEnd();
         return;
       }
       const suffixOk = normalizeMaskedSuffix(rotateResult.masked_suffix) === expectedSuffix;
