@@ -87,13 +87,11 @@ export interface Quote {
   client_response_notes?: string;
   created_at?: string;
   updated_at?: string;
-  row_version?: number;
   items?: QuoteItem[];
   singular_id?: string;
   rejection_notes?: string;
   approved_at?: string;
   approved_by?: string;
-  row_version?: number;
 }
 
 export interface PersonalizationTechnique {
