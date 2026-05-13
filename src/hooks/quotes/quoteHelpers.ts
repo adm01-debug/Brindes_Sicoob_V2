@@ -25,7 +25,7 @@ export function calculateQuoteTotals(quote: Partial<Quote>, items: QuoteItem[], 
   }, 0);
 
   // Margem de negociação (clamp 0–50)
-  const markup = Math.min(50, Math.max(0, negotiationMarkup ?? quote.negotiation_markup_percent || 0));
+  const markup = Math.min(50, Math.max(0, (negotiationMarkup ?? quote.negotiation_markup_percent) || 0));
 
   // Subtotal apresentado = subtotal real * (1 + markup/100)
   const subtotal = markup > 0
