@@ -5,16 +5,29 @@
  */
 
 export const REQUEST_ID_HEADER = "X-Request-Id";
+export const TRACEPARENT_HEADER = "traceparent";
 
-/** Lê o request-id do header ou gera um novo. */
+/** 
+ * Lê o request-id do header ou gera um novo.
+ * Suporta também o padrão W3C traceparent (00-traceId-spanId-flags).
+ */
 export function getOrCreateRequestId(req: Request): string {
+  // 1. Tenta W3C traceparent (prioridade p/ observabilidade moderna)
+  const traceparent = req.headers.get(TRACEPARENT_HEADER);
+  if (traceparent && traceparent.startsWith('00-')) {
+    const parts = traceparent.split('-');
+    if (parts.length >= 2) return parts[1]; // traceId
+  }
+
+  // 2. Tenta header legado/customizado
   const incoming = req.headers.get(REQUEST_ID_HEADER) || req.headers.get("x-request-id");
   if (incoming && incoming.length >= 8 && incoming.length <= 128) return incoming;
+  
   if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
-    return crypto.randomUUID();
+    return crypto.randomUUID().replace(/-/g, '');
   }
-  // Fallback ultra-simples (boot só uma vez por isolate; aceitável).
-  return `srv-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+  // Fallback ultra-simples
+  return `srv${Date.now().toString(36)}${Math.random().toString(36).slice(2, 10)}`;
 }
 
 /** Constrói um logger fininho que prefixa toda mensagem com [req_id=...]. */
