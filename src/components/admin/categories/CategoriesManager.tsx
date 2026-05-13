@@ -317,8 +317,17 @@ export function CategoriesManager() {
   );
 }
 
-function CategoryFormDialog({ open, onOpenChange, category, onSave, categories, isLoading }: any) {
-  const [formData, setFormData] = useState<any>({
+interface CategoryFormDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  category: Category | null;
+  onSave: (formData: any) => Promise<void>;
+  categories: Category[];
+  isLoading: boolean;
+}
+
+function CategoryFormDialog({ open, onOpenChange, category, onSave, categories, isLoading }: CategoryFormDialogProps) {
+  const [formData, setFormData] = useState<Partial<Category>>({
     name: '',
     slug: '',
     description: '',
