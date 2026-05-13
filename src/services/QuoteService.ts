@@ -59,7 +59,7 @@ export class QuoteService {
     if (!oldQuote) throw new Error("Orçamento não encontrado para atualização");
 
     const totals = calculateQuoteTotals(params.quote, params.items);
-    const updatePayload = buildUpdatePayload(params.quote, totals);
+    const updatePayload = buildUpdatePayload({ ...params.quote, row_version: oldQuote.row_version }, totals);
     
     const { data: updated, error: updErr } = await supabase
       .from("quotes")

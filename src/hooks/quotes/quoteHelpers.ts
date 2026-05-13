@@ -87,7 +87,7 @@ export function buildUpdatePayload(
   quote: Partial<Quote>,
   totals: { subtotal: number; discountAmount: number; total: number; totalCost: number }
 ): TablesUpdate<"quotes"> {
-  return {
+  const payload: TablesUpdate<"quotes"> = {
     client_id: quote.client_id || null,
     client_name: quote.client_name || null,
     client_email: quote.client_email || null,
@@ -109,6 +109,12 @@ export function buildUpdatePayload(
     valid_until: quote.valid_until || null,
     updated_at: new Date().toISOString(),
   };
+
+  if (quote.row_version !== undefined) {
+    (payload as any).row_version = quote.row_version + 1;
+  }
+
+  return payload;
 }
 
 export function buildItemsInsertPayload(
