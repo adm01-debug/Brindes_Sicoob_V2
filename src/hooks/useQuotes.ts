@@ -257,8 +257,9 @@ export function useQuotes() {
       });
       fetchQuotes();
       return newQuote;
-    } catch (err: any) {
-      toast.error("Erro ao reordenar orçamento");
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      toast.error("Erro ao reordenar orçamento", { description: msg });
       return null;
     } finally {
       setIsLoading(false);
