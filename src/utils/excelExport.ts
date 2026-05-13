@@ -148,7 +148,7 @@ export async function exportMultipleSheets<T = Record<string, unknown>>(
     sheets.forEach(({ sheetName, columns, data }) => {
       // Formatar dados
       const formattedData = data.map((row) => {
-        const formattedRow: any = {};
+        const formattedRow: Record<string, string | number> = {};
         columns.forEach((col) => {
           const value = getNestedValue(row, col.key);
           formattedRow[col.header] = col.format 
