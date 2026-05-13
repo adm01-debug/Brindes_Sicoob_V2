@@ -1,4 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
+import { newTraceparent } from './telemetry/requestId';
 
 /**
  * request-id-injection.ts
@@ -26,6 +27,11 @@ export function injectRequestId() {
       const headers = new Headers(newConfig.headers || {});
       if (!headers.has('X-Request-Id')) {
         headers.set('X-Request-Id', requestId);
+      }
+      
+      // Inject W3C Traceparent for unified observability
+      if (!headers.has('traceparent')) {
+        headers.set('traceparent', newTraceparent());
       }
       
       newConfig.headers = headers;

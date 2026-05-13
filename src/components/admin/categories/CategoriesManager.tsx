@@ -19,11 +19,22 @@ import * as XLSX from 'xlsx';
 import { logAdminAction } from "@/utils/adminAudit";
 import { useAdminPermissions } from "@/hooks/useAdminPermissions";
 
+interface Category {
+  id: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  parent_id: string | null;
+  sort_order: number;
+  is_active: boolean;
+  created_at?: string;
+}
+
 export function CategoriesManager() {
-  const [categories, setCategories] = useState<any[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isFormOpen, setIsFormOpen] = useState(false);
-  const [editingCategory, setEditingCategory] = useState<any>(null);
+  const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const { canEdit, canDelete, canImport, canExport } = useAdminPermissions();
 
   const fetchCategories = async () => {
@@ -48,7 +59,7 @@ export function CategoriesManager() {
     fetchCategories();
   }, []);
 
-  const handleSave = async (formData: any) => {
+  const handleSave = async (formData: Omit<Category, 'id' | 'is_active'>) => {
     setIsLoading(true);
     try {
       if (editingCategory) {
@@ -165,7 +176,7 @@ export function CategoriesManager() {
     { 
       header: "Nome", 
       accessorKey: "name",
-      cell: (row: any) => (
+      cell: (row: Category) => (
         <div className="flex items-center gap-2">
           {row.parent_id && <Badge variant="outline" className="text-[10px] uppercase">Sub</Badge>}
           <span className="font-medium">{row.name}</span>
@@ -178,7 +189,7 @@ export function CategoriesManager() {
     { 
       header: "Status", 
       accessorKey: "is_active",
-      cell: (row: any) => (
+      cell: (row: Category) => (
         <Badge variant={row.is_active ? "default" : "secondary"}>
           {row.is_active ? "Ativa" : "Inativa"}
         </Badge>
@@ -188,7 +199,7 @@ export function CategoriesManager() {
     {
       header: "Ações",
       accessorKey: "id",
-      cell: (row: any) => (
+      cell: (row: Category) => (
         <div className="flex justify-end gap-2">
           {canEdit && (
             <Button variant="ghost" size="icon" onClick={() => { setEditingCategory(row); setIsFormOpen(true); }}>
@@ -306,8 +317,17 @@ export function CategoriesManager() {
   );
 }
 
-function CategoryFormDialog({ open, onOpenChange, category, onSave, categories, isLoading }: any) {
-  const [formData, setFormData] = useState<any>({
+interface CategoryFormDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  category: Category | null;
+  onSave: (formData: any) => Promise<void>;
+  categories: Category[];
+  isLoading: boolean;
+}
+
+function CategoryFormDialog({ open, onOpenChange, category, onSave, categories, isLoading }: CategoryFormDialogProps) {
+  const [formData, setFormData] = useState<Partial<Category>>({
     name: '',
     slug: '',
     description: '',
@@ -352,7 +372,7 @@ function CategoryFormDialog({ open, onOpenChange, category, onSave, categories, 
     }
 
     // Check for duplicate slug (excluding current category)
-    const isDuplicateSlug = categories?.some((c: any) => 
+    const isDuplicateSlug = categories?.some((c: Category) => 
       c.slug === formData.slug && c.id !== category?.id
     );
 
