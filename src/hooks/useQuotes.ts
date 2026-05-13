@@ -102,7 +102,7 @@ export function useQuotes() {
       if (fetchErr) throw fetchErr;
       const oldStatus = quote?.status || "draft";
       
-      const updateData: any = { status };
+      const updateData: Partial<Quote> & { approved_at?: string; approved_by?: string; rejection_notes?: string } = { status };
       if (notes) updateData.rejection_notes = notes;
       if (isApprovalDecision) {
         updateData.approved_at = new Date().toISOString();
