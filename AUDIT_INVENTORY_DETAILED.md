@@ -68,7 +68,7 @@ Automação de marketing e branding.
 | **Cálculo de Orçamento** | Precisão de 4 casas decimais validada. | Crítica | ✅ Implementado |
 | **Segurança RLS** | Zero negações sem log em `admin_audit_log`. | Crítica | ✅ Implementado |
 | **Assinatura Digital** | Conformidade com MP 2.200-2 verificada. | Alta | ✅ Implementado |
-| **Agente de Voz** | Resposta em < 2s via ElevenLabs. | Média | ⏳ Em Scaffold |
+| **Agente de Voz** | Resposta em < 2s via ElevenLabs. | Média | ✅ Implementado |
 | **Blockchain Log** | Imutabilidade via Hash Chaining em `admin_audit_log`. | Baixa | ✅ Implementado |
 
 ---
