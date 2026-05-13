@@ -372,7 +372,7 @@ function CategoryFormDialog({ open, onOpenChange, category, onSave, categories, 
     }
 
     // Check for duplicate slug (excluding current category)
-    const isDuplicateSlug = categories?.some((c: any) => 
+    const isDuplicateSlug = categories?.some((c: Category) => 
       c.slug === formData.slug && c.id !== category?.id
     );
 
