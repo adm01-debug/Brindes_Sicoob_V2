@@ -276,8 +276,9 @@ export function useQuotes() {
       });
       fetchQuotes();
       return newQuote;
-    } catch (err: any) {
-      toast.error("Erro ao converter pedido");
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      toast.error("Erro ao converter pedido", { description: msg });
       return null;
     } finally {
       setIsLoading(false);
