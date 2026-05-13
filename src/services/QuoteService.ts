@@ -21,10 +21,10 @@ export class QuoteService {
     const { data: itemsData } = await supabase.from("quote_items").select("*").eq("quote_id", quoteId).order("sort_order", { ascending: true });
     
     const itemIds = (itemsData || []).map((i) => i.id);
-    let allPersonalizations: any[] = [];
+    let allPersonalizations: Array<Record<string, unknown>> = [];
     if (itemIds.length > 0) {
       const { data: persData } = await supabase.from("quote_item_personalizations").select("*").in("quote_item_id", itemIds);
-      allPersonalizations = persData || [];
+      allPersonalizations = (persData || []) as Array<Record<string, unknown>>;
     }
 
     const items: QuoteItem[] = (itemsData || []).map((item) => ({
