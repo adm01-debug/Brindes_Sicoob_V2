@@ -6,7 +6,7 @@ import { calculateQuoteTotals, buildInsertPayload, buildUpdatePayload, buildItem
 export class QuoteService {
   static async list(params: { userId: string, scope: string, orgId: string | null }): Promise<Quote[]> {
     let q = supabase.from("quotes").select("*").order("created_at", { ascending: false }).limit(500);
-    q = applySellerScope(q, { scope: params.scope as any, userId: params.userId });
+    q = applySellerScope(q, { scope: params.scope, userId: params.userId });
     
     const { data, error } = await q;
     if (error) throw error;
