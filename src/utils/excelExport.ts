@@ -132,12 +132,12 @@ export async function exportToExcel<T = Record<string, unknown>>(config: ExcelEx
 /**
  * Exporta múltiplas planilhas em um único arquivo
  */
-export async function exportMultipleSheets(
+export async function exportMultipleSheets<T = Record<string, unknown>>(
   filename: string,
   sheets: Array<{
     sheetName: string;
-    columns: ExcelColumn[];
-    data: any[];
+    columns: ExcelColumn<T>[];
+    data: T[];
   }>,
   includeTimestamp = true
 ): Promise<void> {
