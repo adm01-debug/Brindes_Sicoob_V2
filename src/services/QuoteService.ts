@@ -36,7 +36,7 @@ export class QuoteService {
   }
 
   static async create(params: { quote: Partial<Quote>, items: QuoteItem[], userId: string, orgId: string | null }): Promise<Quote> {
-    const totals = calculateQuoteTotals(params.quote, params.items);
+    const totals = calculateQuoteTotals(params.quote, params.items, params.quote.negotiation_markup_percent, params.quote.discount_percent ? 'percent' : 'amount', params.quote.discount_percent || params.quote.discount_amount || 0);
     const insertPayload = buildInsertPayload(params.quote, params.userId, params.orgId, totals);
     
     const { data: inserted, error: insErr } = await supabase.from("quotes").insert(insertPayload).select("*").single();
