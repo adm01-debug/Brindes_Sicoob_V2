@@ -147,7 +147,7 @@ export class QuoteService {
       id, created_at, updated_at, quote_number, status, 
       total, subtotal, discount_amount, converted_at,
       ...cleanQuote 
-    } = original as any;
+    } = original;
     
     const newQuote: Partial<Quote> = {
       ...cleanQuote,
