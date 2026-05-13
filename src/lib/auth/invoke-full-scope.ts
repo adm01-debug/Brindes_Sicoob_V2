@@ -29,6 +29,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { StepUpAction } from "@/hooks/useStepUpAuth";
 import { handleStepUpError } from "@/lib/auth/step-up-error";
+import { newRequestId, REQUEST_ID_HEADER, newTraceparent, TRACEPARENT_HEADER } from "@/lib/telemetry/requestId";
 
 interface ChallengeFn {
   (req: { action: StepUpAction; actionLabel: string; targetRef?: string | null }): Promise<string | null>;
@@ -93,6 +94,10 @@ export async function invokeFullScopeFunction<
 
     const { data, error } = await supabase.functions.invoke(functionName, {
       body: { ...body, step_up_token: token },
+      headers: {
+        [REQUEST_ID_HEADER]: newRequestId(),
+        [TRACEPARENT_HEADER]: newTraceparent(),
+      },
     });
 
     // Detecta step-up errors e exibe toast com CTA "Refazer verificação".

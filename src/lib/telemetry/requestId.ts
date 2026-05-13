@@ -14,6 +14,7 @@
  */
 
 export const REQUEST_ID_HEADER = 'X-Request-Id';
+export const TRACEPARENT_HEADER = 'traceparent';
 
 export function newRequestId(): string {
   const c = (globalThis as { crypto?: Crypto }).crypto;
@@ -28,7 +29,20 @@ export function newRequestId(): string {
 
 /** Trunca um UUID p/ exibição compacta (mantém prefixo + sufixo). */
 export function shortRequestId(id: string | undefined | null): string {
-  if (!id) return '—';
-  if (id.length <= 12) return id;
+...
   return `${id.slice(0, 8)}…${id.slice(-4)}`;
+}
+
+/**
+ * Gera um header traceparent W3C (00-traceId-spanId-flags).
+ * @see https://www.w3.org/TR/trace-context/
+ */
+export function newTraceparent(): string {
+  const hex = (len: number) => {
+    const arr = new Uint8Array(len / 2);
+    crypto.getRandomValues(arr);
+    return Array.from(arr).map(b => b.toString(16).padStart(2, '0')).join('');
+  };
+  // version-traceId-parentSpanId-flags
+  return `00-${hex(32)}-${hex(16)}-01`;
 }

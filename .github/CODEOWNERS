@@ -1,5 +1,6 @@
 # Donos de código — Promo Brindes
 # Ref: https://docs.github.com/en/repositories/managing-your-repositories-settings-and-security/customizing-your-repository/about-code-owners
+# SLA de Revisão: 24h úteis (conforme CONTRIBUTING.md)
 #
 # Sintaxe: <padrão>  <@usuário ou @org/team>
 # A última regra que casa vence.

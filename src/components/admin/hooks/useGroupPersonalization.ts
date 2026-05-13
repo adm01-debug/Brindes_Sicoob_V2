@@ -6,6 +6,8 @@ import { invokeExternalDb } from "@/lib/external-db";
 import { toast } from "sonner";
 import { logger } from "@/lib/logger";
 
+export type UpdateData = { id: string; [key: string]: string | number | boolean | null | undefined };
+
 export interface ProductGroup {
   id: string;
   group_code: string;
@@ -159,7 +161,7 @@ export function useGroupPersonalization() {
   });
 
   const updateComponent = useMutation({
-    mutationFn: async ({ id, ...data }: { id: string; [key: string]: any }) => {
+    mutationFn: async ({ id, ...data }: UpdateData) => {
       const { error } = await untypedFrom("product_group_components").update(data).eq("id", id);
       if (error) throw error;
     },
@@ -192,7 +194,7 @@ export function useGroupPersonalization() {
   });
 
   const updateLocation = useMutation({
-    mutationFn: async ({ id, ...data }: { id: string; [key: string]: any }) => {
+    mutationFn: async ({ id, ...data }: UpdateData) => {
       const { error } = await untypedFrom("product_group_locations").update(data).eq("id", id);
       if (error) throw error;
     },
@@ -228,7 +230,7 @@ export function useGroupPersonalization() {
   });
 
   const updateTechnique = useMutation({
-    mutationFn: async ({ id, ...data }: { id: string; [key: string]: any }) => {
+    mutationFn: async ({ id, ...data }: UpdateData) => {
       const { error } = await untypedFrom("product_group_location_techniques").update(data).eq("id", id);
       if (error) throw error;
     },

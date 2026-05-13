@@ -17,7 +17,8 @@ export type FeatureFlag =
   | 'magic_up'
   | 'e2e_tests'
   | 'advanced_analytics'
-  | 'custom_kits_v2';
+  | 'custom_kits_v2'
+  | 'canary_release';
 
 interface FlagConfig {
   /** Default enabled state */
@@ -61,6 +62,10 @@ const FLAG_REGISTRY: Record<FeatureFlag, FlagConfig> = {
   custom_kits_v2: {
     enabled: false,
     description: 'Nova versão do montador de kits',
+  },
+  canary_release: {
+    enabled: false,
+    description: 'Release gradual para novas funcionalidades (canary)',
   },
 };
 
@@ -116,4 +121,21 @@ export function getAllFlags(userRole?: string): Record<FeatureFlag, boolean> {
  */
 export function getFlagRegistry(): Record<FeatureFlag, FlagConfig> {
   return { ...FLAG_REGISTRY };
+}
+
+/**
+ * Canary Rollout Helper - Determina se um usuário específico entra no rollout baseado em porcentagem.
+ * @param userId UUID do usuário
+ * @param percentage Porcentagem alvo (0-100)
+ */
+export function isUserInCanary(userId: string | undefined, percentage: number): boolean {
+  if (!userId) return false;
+  // Hash determinístico simples
+  let hash = 0;
+  for (let i = 0; i < userId.length; i++) {
+    hash = ((hash << 5) - hash) + userId.charCodeAt(i);
+    hash |= 0; // Convert to 32bit integer
+  }
+  const score = Math.abs(hash) % 100;
+  return score < percentage;
 }

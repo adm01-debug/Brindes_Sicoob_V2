@@ -128,6 +128,576 @@ export type Database = {
         }
         Relationships: []
       }
+      admin_audit_log_default: {
+        Row: {
+          action: string
+          created_at: string
+          details: Json | null
+          duration_ms: number | null
+          finished_at: string | null
+          id: string
+          ip_address: string | null
+          payload_summary: Json | null
+          request_id: string | null
+          resource_id: string | null
+          resource_type: string
+          source: string | null
+          started_at: string | null
+          status: string | null
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          details?: Json | null
+          duration_ms?: number | null
+          finished_at?: string | null
+          id?: string
+          ip_address?: string | null
+          payload_summary?: Json | null
+          request_id?: string | null
+          resource_id?: string | null
+          resource_type: string
+          source?: string | null
+          started_at?: string | null
+          status?: string | null
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          details?: Json | null
+          duration_ms?: number | null
+          finished_at?: string | null
+          id?: string
+          ip_address?: string | null
+          payload_summary?: Json | null
+          request_id?: string | null
+          resource_id?: string | null
+          resource_type?: string
+          source?: string | null
+          started_at?: string | null
+          status?: string | null
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      admin_audit_log_old: {
+        Row: {
+          action: string
+          created_at: string
+          details: Json | null
+          duration_ms: number | null
+          finished_at: string | null
+          id: string
+          ip_address: string | null
+          payload_summary: Json | null
+          request_id: string | null
+          resource_id: string | null
+          resource_type: string
+          source: string | null
+          started_at: string | null
+          status: string | null
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          details?: Json | null
+          duration_ms?: number | null
+          finished_at?: string | null
+          id?: string
+          ip_address?: string | null
+          payload_summary?: Json | null
+          request_id?: string | null
+          resource_id?: string | null
+          resource_type: string
+          source?: string | null
+          started_at?: string | null
+          status?: string | null
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          details?: Json | null
+          duration_ms?: number | null
+          finished_at?: string | null
+          id?: string
+          ip_address?: string | null
+          payload_summary?: Json | null
+          request_id?: string | null
+          resource_id?: string | null
+          resource_type?: string
+          source?: string | null
+          started_at?: string | null
+          status?: string | null
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      admin_audit_log_y2024: {
+        Row: {
+          action: string
+          created_at: string
+          details: Json | null
+          duration_ms: number | null
+          finished_at: string | null
+          id: string
+          ip_address: string | null
+          payload_summary: Json | null
+          request_id: string | null
+          resource_id: string | null
+          resource_type: string
+          source: string | null
+          started_at: string | null
+          status: string | null
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          details?: Json | null
+          duration_ms?: number | null
+          finished_at?: string | null
+          id?: string
+          ip_address?: string | null
+          payload_summary?: Json | null
+          request_id?: string | null
+          resource_id?: string | null
+          resource_type: string
+          source?: string | null
+          started_at?: string | null
+          status?: string | null
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          details?: Json | null
+          duration_ms?: number | null
+          finished_at?: string | null
+          id?: string
+          ip_address?: string | null
+          payload_summary?: Json | null
+          request_id?: string | null
+          resource_id?: string | null
+          resource_type?: string
+          source?: string | null
+          started_at?: string | null
+          status?: string | null
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      admin_audit_log_y2025: {
+        Row: {
+          action: string
+          created_at: string
+          details: Json | null
+          duration_ms: number | null
+          finished_at: string | null
+          id: string
+          ip_address: string | null
+          payload_summary: Json | null
+          request_id: string | null
+          resource_id: string | null
+          resource_type: string
+          source: string | null
+          started_at: string | null
+          status: string | null
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          details?: Json | null
+          duration_ms?: number | null
+          finished_at?: string | null
+          id?: string
+          ip_address?: string | null
+          payload_summary?: Json | null
+          request_id?: string | null
+          resource_id?: string | null
+          resource_type: string
+          source?: string | null
+          started_at?: string | null
+          status?: string | null
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          details?: Json | null
+          duration_ms?: number | null
+          finished_at?: string | null
+          id?: string
+          ip_address?: string | null
+          payload_summary?: Json | null
+          request_id?: string | null
+          resource_id?: string | null
+          resource_type?: string
+          source?: string | null
+          started_at?: string | null
+          status?: string | null
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      admin_audit_log_y2026_m01: {
+        Row: {
+          action: string
+          created_at: string
+          details: Json | null
+          duration_ms: number | null
+          finished_at: string | null
+          id: string
+          ip_address: string | null
+          payload_summary: Json | null
+          request_id: string | null
+          resource_id: string | null
+          resource_type: string
+          source: string | null
+          started_at: string | null
+          status: string | null
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          details?: Json | null
+          duration_ms?: number | null
+          finished_at?: string | null
+          id?: string
+          ip_address?: string | null
+          payload_summary?: Json | null
+          request_id?: string | null
+          resource_id?: string | null
+          resource_type: string
+          source?: string | null
+          started_at?: string | null
+          status?: string | null
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          details?: Json | null
+          duration_ms?: number | null
+          finished_at?: string | null
+          id?: string
+          ip_address?: string | null
+          payload_summary?: Json | null
+          request_id?: string | null
+          resource_id?: string | null
+          resource_type?: string
+          source?: string | null
+          started_at?: string | null
+          status?: string | null
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      admin_audit_log_y2026_m02: {
+        Row: {
+          action: string
+          created_at: string
+          details: Json | null
+          duration_ms: number | null
+          finished_at: string | null
+          id: string
+          ip_address: string | null
+          payload_summary: Json | null
+          request_id: string | null
+          resource_id: string | null
+          resource_type: string
+          source: string | null
+          started_at: string | null
+          status: string | null
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          details?: Json | null
+          duration_ms?: number | null
+          finished_at?: string | null
+          id?: string
+          ip_address?: string | null
+          payload_summary?: Json | null
+          request_id?: string | null
+          resource_id?: string | null
+          resource_type: string
+          source?: string | null
+          started_at?: string | null
+          status?: string | null
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          details?: Json | null
+          duration_ms?: number | null
+          finished_at?: string | null
+          id?: string
+          ip_address?: string | null
+          payload_summary?: Json | null
+          request_id?: string | null
+          resource_id?: string | null
+          resource_type?: string
+          source?: string | null
+          started_at?: string | null
+          status?: string | null
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      admin_audit_log_y2026_m03: {
+        Row: {
+          action: string
+          created_at: string
+          details: Json | null
+          duration_ms: number | null
+          finished_at: string | null
+          id: string
+          ip_address: string | null
+          payload_summary: Json | null
+          request_id: string | null
+          resource_id: string | null
+          resource_type: string
+          source: string | null
+          started_at: string | null
+          status: string | null
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          details?: Json | null
+          duration_ms?: number | null
+          finished_at?: string | null
+          id?: string
+          ip_address?: string | null
+          payload_summary?: Json | null
+          request_id?: string | null
+          resource_id?: string | null
+          resource_type: string
+          source?: string | null
+          started_at?: string | null
+          status?: string | null
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          details?: Json | null
+          duration_ms?: number | null
+          finished_at?: string | null
+          id?: string
+          ip_address?: string | null
+          payload_summary?: Json | null
+          request_id?: string | null
+          resource_id?: string | null
+          resource_type?: string
+          source?: string | null
+          started_at?: string | null
+          status?: string | null
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      admin_audit_log_y2026_m04: {
+        Row: {
+          action: string
+          created_at: string
+          details: Json | null
+          duration_ms: number | null
+          finished_at: string | null
+          id: string
+          ip_address: string | null
+          payload_summary: Json | null
+          request_id: string | null
+          resource_id: string | null
+          resource_type: string
+          source: string | null
+          started_at: string | null
+          status: string | null
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          details?: Json | null
+          duration_ms?: number | null
+          finished_at?: string | null
+          id?: string
+          ip_address?: string | null
+          payload_summary?: Json | null
+          request_id?: string | null
+          resource_id?: string | null
+          resource_type: string
+          source?: string | null
+          started_at?: string | null
+          status?: string | null
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          details?: Json | null
+          duration_ms?: number | null
+          finished_at?: string | null
+          id?: string
+          ip_address?: string | null
+          payload_summary?: Json | null
+          request_id?: string | null
+          resource_id?: string | null
+          resource_type?: string
+          source?: string | null
+          started_at?: string | null
+          status?: string | null
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      admin_audit_log_y2026_m05: {
+        Row: {
+          action: string
+          created_at: string
+          details: Json | null
+          duration_ms: number | null
+          finished_at: string | null
+          id: string
+          ip_address: string | null
+          payload_summary: Json | null
+          request_id: string | null
+          resource_id: string | null
+          resource_type: string
+          source: string | null
+          started_at: string | null
+          status: string | null
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          details?: Json | null
+          duration_ms?: number | null
+          finished_at?: string | null
+          id?: string
+          ip_address?: string | null
+          payload_summary?: Json | null
+          request_id?: string | null
+          resource_id?: string | null
+          resource_type: string
+          source?: string | null
+          started_at?: string | null
+          status?: string | null
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          details?: Json | null
+          duration_ms?: number | null
+          finished_at?: string | null
+          id?: string
+          ip_address?: string | null
+          payload_summary?: Json | null
+          request_id?: string | null
+          resource_id?: string | null
+          resource_type?: string
+          source?: string | null
+          started_at?: string | null
+          status?: string | null
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      admin_audit_log_y2026_m06: {
+        Row: {
+          action: string
+          created_at: string
+          details: Json | null
+          duration_ms: number | null
+          finished_at: string | null
+          id: string
+          ip_address: string | null
+          payload_summary: Json | null
+          request_id: string | null
+          resource_id: string | null
+          resource_type: string
+          source: string | null
+          started_at: string | null
+          status: string | null
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          details?: Json | null
+          duration_ms?: number | null
+          finished_at?: string | null
+          id?: string
+          ip_address?: string | null
+          payload_summary?: Json | null
+          request_id?: string | null
+          resource_id?: string | null
+          resource_type: string
+          source?: string | null
+          started_at?: string | null
+          status?: string | null
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          details?: Json | null
+          duration_ms?: number | null
+          finished_at?: string | null
+          id?: string
+          ip_address?: string | null
+          payload_summary?: Json | null
+          request_id?: string | null
+          resource_id?: string | null
+          resource_type?: string
+          source?: string | null
+          started_at?: string | null
+          status?: string | null
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       admin_config_audit: {
         Row: {
           action_type: string
@@ -4908,6 +5478,7 @@ export type Database = {
         Row: {
           component_id: string
           created_at: string
+          deleted_at: string | null
           description: string | null
           id: string
           is_active: boolean
@@ -4921,6 +5492,7 @@ export type Database = {
         Insert: {
           component_id: string
           created_at?: string
+          deleted_at?: string | null
           description?: string | null
           id?: string
           is_active?: boolean
@@ -4934,6 +5506,7 @@ export type Database = {
         Update: {
           component_id?: string
           created_at?: string
+          deleted_at?: string | null
           description?: string | null
           id?: string
           is_active?: boolean
@@ -4959,6 +5532,7 @@ export type Database = {
           component_code: string
           component_name: string
           created_at: string
+          deleted_at: string | null
           id: string
           is_active: boolean
           is_personalizable: boolean
@@ -4970,6 +5544,7 @@ export type Database = {
           component_code: string
           component_name: string
           created_at?: string
+          deleted_at?: string | null
           id?: string
           is_active?: boolean
           is_personalizable?: boolean
@@ -4981,6 +5556,7 @@ export type Database = {
           component_code?: string
           component_name?: string
           created_at?: string
+          deleted_at?: string | null
           id?: string
           is_active?: boolean
           is_personalizable?: boolean
@@ -5028,6 +5604,7 @@ export type Database = {
       product_groups: {
         Row: {
           created_at: string
+          deleted_at: string | null
           description: string | null
           group_code: string
           group_name: string
@@ -5037,6 +5614,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          deleted_at?: string | null
           description?: string | null
           group_code: string
           group_name: string
@@ -5046,6 +5624,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          deleted_at?: string | null
           description?: string | null
           group_code?: string
           group_name?: string
@@ -5163,6 +5742,7 @@ export type Database = {
           avatar_url: string | null
           cooperativa_id: string | null
           created_at: string
+          deleted_at: string | null
           department: string | null
           email: string | null
           full_name: string | null
@@ -5182,6 +5762,7 @@ export type Database = {
           avatar_url?: string | null
           cooperativa_id?: string | null
           created_at?: string
+          deleted_at?: string | null
           department?: string | null
           email?: string | null
           full_name?: string | null
@@ -5201,6 +5782,7 @@ export type Database = {
           avatar_url?: string | null
           cooperativa_id?: string | null
           created_at?: string
+          deleted_at?: string | null
           department?: string | null
           email?: string | null
           full_name?: string | null
@@ -5989,11 +6571,13 @@ export type Database = {
           client_response_notes: string | null
           consolidation_id: string | null
           created_at: string
+          deleted_at: string | null
           delivery_time: string | null
           discount_amount: number
           discount_percent: number
           id: string
           internal_notes: string | null
+          is_active: boolean | null
           is_latest_version: boolean
           negotiation_markup_percent: number
           notes: string | null
@@ -6040,11 +6624,13 @@ export type Database = {
           client_response_notes?: string | null
           consolidation_id?: string | null
           created_at?: string
+          deleted_at?: string | null
           delivery_time?: string | null
           discount_amount?: number
           discount_percent?: number
           id?: string
           internal_notes?: string | null
+          is_active?: boolean | null
           is_latest_version?: boolean
           negotiation_markup_percent?: number
           notes?: string | null
@@ -6091,11 +6677,13 @@ export type Database = {
           client_response_notes?: string | null
           consolidation_id?: string | null
           created_at?: string
+          deleted_at?: string | null
           delivery_time?: string | null
           discount_amount?: number
           discount_percent?: number
           id?: string
           internal_notes?: string | null
+          is_active?: boolean | null
           is_latest_version?: boolean
           negotiation_markup_percent?: number
           notes?: string | null

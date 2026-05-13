@@ -58,7 +58,7 @@ export function ImageUploadButton({
       let retryCount = 0;
       const maxRetries = 3;
       let uploadSuccess = false;
-      let lastError: any = null;
+      let lastError: (Error & { status?: number; context?: any }) | null = null;
 
       while (retryCount < maxRetries && !uploadSuccess) {
         try {
@@ -77,8 +77,9 @@ export function ImageUploadButton({
           onUpload(data.url);
           toast.success("Imagem enviada com segurança!");
           uploadSuccess = true;
-        } catch (error: any) {
-          lastError = error;
+        } catch (error: unknown) {
+          const err = error as Error & { status?: number; context?: any };
+          lastError = err;
           
           // Se for bloqueio de segurança (403), interrompe as tentativas
           if (error.status === 403 || (error.context?.context?.status === 403)) {

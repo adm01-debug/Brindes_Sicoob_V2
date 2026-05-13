@@ -12,7 +12,7 @@ import { Plus, Trash2, Loader2, MapPin } from "lucide-react";
 import { InlineEditField } from "../InlineEditField";
 import { SortableItem } from "../SortableItem";
 import { GroupLocationCard } from "./GroupLocationCard";
-import type { GroupComponent, GroupLocation, GroupLocationTechnique, Technique } from "../hooks/useGroupPersonalization";
+import type { GroupComponent, GroupLocation, GroupLocationTechnique, Technique, UpdateData } from "../hooks/useGroupPersonalization";
 
 interface GroupComponentCardProps {
   component: GroupComponent;
@@ -20,15 +20,15 @@ interface GroupComponentCardProps {
   locations: GroupLocation[];
   techniques: Technique[] | undefined;
   locationTechniques: GroupLocationTechnique[];
-  onUpdateComponent: (data: { id: string; [key: string]: any }) => void;
+  onUpdateComponent: (data: UpdateData) => void;
   onDeleteComponent: (id: string) => void;
   onAddLocation: (data: { group_component_id: string; location_code: string; location_name: string; max_width_cm?: number; max_height_cm?: number; max_area_cm2?: number }) => void;
   addLocationPending: boolean;
-  onUpdateLocation: (data: { id: string; [key: string]: any }) => void;
+  onUpdateLocation: (data: UpdateData) => void;
   onDeleteLocation: (id: string) => void;
   onAddTechnique: (data: { group_location_id: string; technique_id: string; max_colors?: number }) => void;
   addTechniquePending: boolean;
-  onUpdateTechnique: (data: { id: string; [key: string]: any }) => void;
+  onUpdateTechnique: (data: UpdateData) => void;
   onDeleteTechnique: (id: string) => void;
 }
 
