@@ -8,8 +8,8 @@ import type { SelectedCompanyInfo, SelectedContactInfo } from "@/components/quot
 interface InitParams {
   isEditMode: boolean;
   quoteId?: string;
-  fetchQuote: (id: string) => Promise<any>;
-  locationState: any;
+  fetchQuote: (id: string) => Promise<Quote | null>;
+  locationState: unknown;
   searchParams: URLSearchParams;
   setters: {
     setClientId: (v: string) => void;
