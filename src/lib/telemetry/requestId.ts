@@ -29,7 +29,8 @@ export function newRequestId(): string {
 
 /** Trunca um UUID p/ exibição compacta (mantém prefixo + sufixo). */
 export function shortRequestId(id: string | undefined | null): string {
-...
+  if (!id) return '';
+  if (id.length <= 12) return id;
   return `${id.slice(0, 8)}…${id.slice(-4)}`;
 }
 
