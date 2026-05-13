@@ -186,7 +186,7 @@ export async function exportMultipleSheets<T = Record<string, unknown>>(
  */
 
 // Pega valor aninhado de objeto (ex: 'client.name')
-function getNestedValue(obj: any, path: string): any {
+function getNestedValue(obj: Record<string, any>, path: string): any {
   return path.split('.').reduce((current, prop) => current?.[prop], obj);
 }
 
