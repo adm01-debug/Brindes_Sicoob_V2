@@ -175,11 +175,8 @@ export function SmokeTestChecklist({ availableSecrets = [] }: Props) {
         detail: err instanceof Error ? err.message : "Erro inesperado",
         durationMs: took,
       });
-      // eslint-disable-next-line no-console
-      console.error("[smoke-test] step 1 EXCEPTION", err);
+      log.error("step_1_exception", { err });
       setRunning(false);
-      // eslint-disable-next-line no-console
-      console.groupEnd();
       return;
     }
 
