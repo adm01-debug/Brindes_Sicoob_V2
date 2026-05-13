@@ -199,7 +199,7 @@ export function CategoriesManager() {
     {
       header: "Ações",
       accessorKey: "id",
-      cell: (row: any) => (
+      cell: (row: Category) => (
         <div className="flex justify-end gap-2">
           {canEdit && (
             <Button variant="ghost" size="icon" onClick={() => { setEditingCategory(row); setIsFormOpen(true); }}>
