@@ -53,7 +53,7 @@ export interface ExcelColumn<T = any> {
  * });
  * ```
  */
-export async function exportToExcel(config: ExcelExportConfig): Promise<void> {
+export async function exportToExcel<T = Record<string, unknown>>(config: ExcelExportConfig<T>): Promise<void> {
   const {
     filename,
     sheetName = 'Dados',
