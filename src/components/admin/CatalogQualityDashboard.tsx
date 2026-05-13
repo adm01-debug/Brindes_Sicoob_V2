@@ -15,6 +15,7 @@ interface QualityMetrics {
   lastRunAt: string | null;
   totalRecordsProcessed: number;
   totalRecordsFailed: number;
+  catalogSize: number;
 }
 
 export function CatalogQualityDashboard() {
