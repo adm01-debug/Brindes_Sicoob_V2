@@ -1,6 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import { applySellerScope } from "@/lib/auth/apply-seller-scope";
-import { Quote, QuoteItem, PersonalizationTechnique } from "@/hooks/quotes/quoteTypes";
+import { Quote, QuoteItem } from "@/hooks/quotes/quoteTypes";
+import { PersonalizationTechnique } from "@/types/quote-builder";
 import { calculateQuoteTotals, buildInsertPayload, buildUpdatePayload, buildItemsInsertPayload, buildPersonalizationsInsertPayload } from "@/hooks/quotes/quoteHelpers";
 
 export class QuoteService {
