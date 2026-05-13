@@ -89,12 +89,25 @@ export function useCrmCompanyLegacy(id: string | null | undefined) {
  * Busca lista de empresas para seletores (dropdown/combobox)
  * Retorna apenas campos essenciais para performance
  */
+export interface CrmSelectorResult {
+  id: string;
+  name: string;
+  razao_social: string;
+  nome_fantasia: string | null;
+  ramo: string | null;
+  nicho: string | null;
+  primary_color_name: string | null;
+  primary_color_hex: string | null;
+  logo_url: string | null;
+  cnpj: string | null;
+}
+
 export function useCrmCompanySelector() {
-  return useQuery({
+  return useQuery<CrmSelectorResult[]>({
     queryKey: ["crm-companies-selector"],
     queryFn: async () => {
       const companies = await selectCrm<CrmCompany>("companies", {
-        select: "id, razao_social, nome_fantasia, ramo_atividade, logo_url, cnpj, is_customer, is_supplier",
+        select: "id, razao_social, nome_fantasia, title, ramo_atividade, logo_url, cnpj, is_customer, is_supplier",
         filters: { deleted_at: null },
         orderBy: { column: "razao_social", ascending: true },
         limit: 200,
