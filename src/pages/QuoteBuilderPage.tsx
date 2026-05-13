@@ -35,6 +35,7 @@ import { QuoteSummary } from "@/components/quotes/QuoteSummary";
 import { QuoteAutoSave } from "@/components/quotes/QuoteAutoSave";
 import { QuoteBuilderStepper } from "@/components/quotes/QuoteBuilderStepper";
 import { QuoteBuilderSummaryColumn } from "@/components/quotes/QuoteBuilderSummaryColumn";
+import { CommercialConditions } from "@/components/quotes/builder/CommercialConditions";
 import { useQuoteBuilderState } from "@/hooks/useQuoteBuilderState";
 import { useUnsavedChangesGuard } from "@/hooks/useUnsavedChangesGuard";
 import { UnsavedChangesDialog } from "@/components/common/UnsavedChangesDialog";
