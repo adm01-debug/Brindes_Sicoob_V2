@@ -21,6 +21,8 @@ Deno.serve(async (req) => {
   }
 
   try {
+    const rateLimitResponse = await applyRateLimit(req, cnpjLimiter);
+    if (rateLimitResponse) return rateLimitResponse;
     // Auth check
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) {
