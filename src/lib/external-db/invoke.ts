@@ -7,7 +7,7 @@ import { logger } from "@/lib/logger";
 import { emitBridgeStatus, isColdStartSignal } from './bridge-status-events';
 import { ensureCloudReady, CloudNotReadyError, getCachedCloudStatus } from '@/lib/cloud-status';
 import { recordBridgeCall, estimatePayloadBytes } from '@/lib/telemetry/bridgeCallMetrics';
-import { newRequestId, REQUEST_ID_HEADER } from '@/lib/telemetry/requestId';
+import { newRequestId, REQUEST_ID_HEADER, newTraceparent, TRACEPARENT_HEADER } from '@/lib/telemetry/requestId';
 
 function deriveExternalOp(body: Record<string, unknown>): { op: string; target?: string } {
   const operation = typeof body.operation === 'string' ? body.operation : undefined;
@@ -107,6 +107,7 @@ export async function invokeWithRetry(
   const reqBytes = estimatePayloadBytes(body);
   const { op, target } = deriveExternalOp(body);
   const requestId = newRequestId();
+  const traceparent = newTraceparent();
   let serverRequestId: string | undefined;
 
   const finalize = (result: { data: unknown; error: Error | null }) => {
@@ -151,7 +152,10 @@ export async function invokeWithRetry(
   for (let attempt = 0; attempt <= retries; attempt++) {
     const { data, error } = await supabase.functions.invoke('external-db-bridge', {
       body,
-      headers: { [REQUEST_ID_HEADER]: requestId },
+      headers: { 
+        [REQUEST_ID_HEADER]: requestId,
+        [TRACEPARENT_HEADER]: traceparent 
+      },
     });
 
     if (!error) {
