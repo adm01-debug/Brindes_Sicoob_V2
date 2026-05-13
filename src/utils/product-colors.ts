@@ -75,11 +75,30 @@ export function detectColorGroup(colorName: string): string {
   return firstWord.charAt(0).toUpperCase() + firstWord.slice(1);
 }
 
+interface RawColor {
+  name?: string;
+  color_name?: string;
+  hex?: string;
+  hex_code?: string;
+  color_hex?: string;
+  groupName?: string;
+  group?: string;
+  color_group?: string;
+  groupSlug?: string;
+  variationSlug?: string;
+  code?: string;
+  color_code?: string;
+  supplier_code?: string;
+  image?: string;
+  images?: string[];
+  stock?: number;
+}
+
 /** Normaliza array de cores (strings ou objetos) para formato padronizado */
-export function normalizeColors(colors: any[] | undefined): ProductColor[] {
+export function normalizeColors(colors: Array<string | RawColor> | undefined | null): ProductColor[] {
   if (!colors || !Array.isArray(colors)) return [];
 
-  return colors.map((c: any) => {
+  return colors.map((c) => {
     if (typeof c === 'string') {
       const name = c || 'Sem cor';
       return {
@@ -109,7 +128,7 @@ export function normalizeColors(colors: any[] | undefined): ProductColor[] {
       variationSlug,
       code: c.code || c.color_code || c.supplier_code || undefined,
       image: c.image || undefined,
-      images: c.images?.length ? c.images : undefined,
+      images: Array.isArray(c.images) && c.images.length ? c.images : undefined,
     };
   });
 }
