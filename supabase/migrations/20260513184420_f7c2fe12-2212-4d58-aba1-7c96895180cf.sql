@@ -1,0 +1,1 @@
+DROP POLICY IF EXISTS "Authenticated can insert audit logs" ON public.admin_audit_log;
