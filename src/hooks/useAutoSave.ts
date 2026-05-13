@@ -1,5 +1,8 @@
 import { useEffect, useRef, useCallback } from "react";
 import { toast } from "sonner";
+import { createClientLogger } from "@/lib/telemetry/structuredLogger";
+
+const log = createClientLogger("autosave");
 
 interface AutoSaveOptions<T> {
   key: string;
@@ -39,9 +42,9 @@ export function useAutoSave<T>({
       }
       
       lastSavedData.current = currentDataStr;
-      console.log(`[AutoSave] Saved ${key}`);
+      log.info("saved", { key });
     } catch (error) {
-      console.error(`[AutoSave] Error saving ${key}:`, error);
+      log.error("save_failed", { key, error });
     }
   }, [key, data, onSave]);
 

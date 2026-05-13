@@ -1,5 +1,8 @@
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { createClientLogger } from "@/lib/telemetry/structuredLogger";
+
+const log = createClientLogger("qa-seed");
 
 /**
  * Script de Seed QA para provisionamento de contas e cenários (§0-bis).
@@ -15,7 +18,7 @@ const QA_ACCOUNTS = [
 ];
 
 export async function runQaSeed(scenario?: string) {
-  console.log("🚀 Iniciando Seed QA...");
+  log.info("started", { scenario });
   
   try {
     // 1. Provisionamento de Contas (via Edge Function ou Admin API se disponível)
@@ -29,10 +32,10 @@ export async function runQaSeed(scenario?: string) {
 
     if (error) throw error;
 
-    console.log("✅ Seed finalizado:", data);
+    log.info("finished", { data });
     return data;
   } catch (err) {
-    console.error("❌ Falha no Seed QA:", err);
+    log.error("failed", { err });
     throw err;
   }
 }
