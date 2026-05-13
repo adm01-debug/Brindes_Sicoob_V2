@@ -44,15 +44,16 @@ function parseTagList(value: unknown): string[] {
   if (p.colors && Array.isArray(p.colors)) {
     p.colors.forEach((c, index: number) => {
       if (typeof c === 'object' && c !== null && 'name' in c) {
+        const colorObj = c as { name: string; hex?: string; stock?: number; sku?: string; image?: string; images?: string[]; size_code?: string };
         variations.push({
           id: `${p.id}-${index}`,
-          sku: (c as any).sku || p.sku,
-          color: { name: c.name || 'Sem cor', hex: (c as any).hex || '#CCCCCC' },
-          stock: (c as any).stock ?? 0,
-          image: (c as any).image || null,
-          images: (c as any).images || [],
+          sku: colorObj.sku || p.sku,
+          color: { name: colorObj.name, hex: colorObj.hex || '#CCCCCC' },
+          stock: colorObj.stock ?? 0,
+          image: colorObj.image || null,
+          images: colorObj.images || [],
           videos: [],
-          size_code: (c as any).size_code || null,
+          size_code: colorObj.size_code || null,
         });
       }
     });
