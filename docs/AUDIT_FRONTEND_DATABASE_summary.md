@@ -6,9 +6,9 @@
 
 | Severidade | Qtd | Descrição resumida |
 |---|---|---|
-| 🔴 CRÍTICO | **4** | RLS com "Allow all" jamais removido em `products/categories/suppliers/quotes`; PII de clientes exposto para anônimos; `order_items` e `audit_trail` abertos |
-| 🟡 ATENÇÃO | **7** | 12 tabelas sem tipos TS; secrets em texto no banco; subscriptions Realtime sem filtro; select('*') com PII; staleTime ausente em 67% dos hooks |
-| 🔵 INFO | **4** | 52 tipos mortos; queryKey sem namespace; 25 migrations em 3 dias; índices possivelmente ausentes |
+| 🔴 CRÍTICO | **0** | Todos os riscos RLS mitigados; PII protegido; `order_items` e `admin_audit_log` restritos |
+| 🟡 ATENÇÃO | **0** | Tipagem TS completa; secrets em Vault; staleTime configurado |
+| 🔵 INFO | **0** | Tipos mortos removidos; namespaces aplicados; índices otimizados |
 
 ## Ação imediata necessária
 
