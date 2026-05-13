@@ -96,7 +96,7 @@ export function useRBAC() {
         logger.warn('Failed to fetch role permissions, using fallback:', error.message);
         return null;
       }
-      return data.map((row: { permission_code: string }) => row.permission_code);
+      return data.map((row) => row.permission_code);
     },
     enabled: !!user,
     staleTime: 5 * 60 * 1000,
