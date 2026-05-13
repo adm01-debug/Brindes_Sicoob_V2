@@ -33,8 +33,8 @@ export function useQuotes() {
     try {
       const data = await QuoteService.list({ userId: user.id, scope, orgId });
       setQuotes(data);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
       toast.error("Erro ao carregar orçamentos");
     } finally {
       setIsLoading(false);
