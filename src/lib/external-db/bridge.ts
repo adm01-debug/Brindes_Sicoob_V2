@@ -3,6 +3,7 @@
  * Handles retry, error parsing, batch queries.
  */
 import { supabase } from '@/integrations/supabase/client';
+import { REQUEST_ID_HEADER, newRequestId } from '@/lib/telemetry/requestId';
 import { logger } from '@/lib/logger';
 import { emitBridgeStatus, isColdStartSignal } from './bridge-status-events';
 
