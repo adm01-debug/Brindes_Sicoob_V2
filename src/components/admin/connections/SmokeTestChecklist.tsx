@@ -203,8 +203,7 @@ export function SmokeTestChecklist({ availableSecrets = [] }: Props) {
           detail: `Registro #${entries.length} • por ${author} • ${new Date(matching.rotated_at).toLocaleTimeString("pt-BR")}`,
           durationMs: took,
         });
-        // eslint-disable-next-line no-console
-        console.log("[smoke-test] step 2 OK", { took, author, entryId: matching.id });
+        log.info("step_2_ok", { took, author, entryId: matching.id });
       }
     } catch (err) {
       const took = Math.round(performance.now() - t2);
