@@ -159,8 +159,7 @@ export function SmokeTestChecklist({ availableSecrets = [] }: Props) {
           detail: `Sufixo esperado ${formatMaskedSuffix(expectedSuffix)}, recebido ${formatMaskedSuffix(rotateResult.masked_suffix)}`,
           durationMs: took,
         });
-        // eslint-disable-next-line no-console
-        console.error("[smoke-test] step 1 mismatch", { expectedSuffix, got: rotateResult.masked_suffix });
+        log.error("step_1_mismatch", { expectedSuffix, got: rotateResult.masked_suffix });
       } else {
         updateStep("rotate", {
           status: "passed",
