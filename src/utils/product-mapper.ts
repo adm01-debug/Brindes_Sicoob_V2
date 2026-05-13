@@ -24,7 +24,23 @@ function parseMaterials(materials: unknown): string[] {
 }
 
 function parseTagList(value: unknown): string[] {
-...
+  if (!value) return [];
+  if (Array.isArray(value)) return value.filter((v): v is string => typeof v === 'string');
+  if (typeof value === 'object' && value !== null) {
+    return Object.keys(value);
+  }
+  return [];
+}
+
+function normalizeMarketingTags(tags: unknown): string[] {
+  return parseTagList(tags);
+}
+
+export function mapPromobrindToProduct(p: PromobrindProduct): Product {
+  const imageUrl = getProductImageUrl(p);
+  const stock = getProductStock(p);
+  const colors = normalizeColors(p.colors);
+
   // Extrair imagens
   let images: string[] = [];
   if (p.images && Array.isArray(p.images)) {
@@ -106,12 +122,6 @@ function parseTagList(value: unknown): string[] {
     boxLengthMm: p.box_length_mm, boxWeightKg: p.box_weight_kg,
     boxQuantity: p.box_quantity, boxVolumeCm3: p.box_volume_cm3,
     leadTimeDays: p.lead_time_days ?? null,
-    // SSOT: coluna dedicada `price_updated_at` no BD externo (Promobrind),
-    // mantida por trigger automático em mudanças de preço (cost_price,
-    // sale_price, suggested_price, list_price, cost_price_1..5).
-    // Precedência: price_updated_at SEMPRE vence quando presente; só caímos
-    // em `updated_at` se o campo oficial for null/undefined/string vazia
-    // (~0,08% dos produtos hoje — registros antigos sem trigger disparado).
     priceUpdatedAt:
       (typeof p.price_updated_at === 'string' && p.price_updated_at.trim() !== ''
         ? p.price_updated_at
