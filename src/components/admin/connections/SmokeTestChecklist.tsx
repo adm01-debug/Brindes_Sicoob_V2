@@ -235,8 +235,7 @@ export function SmokeTestChecklist({ availableSecrets = [] }: Props) {
           detail: `Sufixo divergente após reload: esperado ${formatMaskedSuffix(expectedSuffix)}, recebido ${formatMaskedSuffix(target.masked_suffix)}`,
           durationMs: took,
         });
-        // eslint-disable-next-line no-console
-        console.error("[smoke-test] step 3 suffix mismatch after reload", target);
+        log.error("step_3_suffix_mismatch", target);
       } else {
         const sourceTag = target.source ? ` • source=${target.source}` : "";
         updateStep("reload", {
