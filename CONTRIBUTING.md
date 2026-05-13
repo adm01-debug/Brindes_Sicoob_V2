@@ -42,7 +42,8 @@ Razão: rastreabilidade + revisão automática (CodeRabbit) + ponto de gate ante
    - Preencher o template
    - Aguardar revisão automática do **CodeRabbit** (~3 min)
    - Endereçar comentários críticos
-   - Solicitar aprovação humana se mudança não-trivial
+    - Solicitar aprovação humana se mudança não-trivial
+    - **SLA de Revisão:** Todo Pull Request deve ser revisado em até **24 horas úteis**. Caso expire, o autor deve escalar via canal de Incidentes.
 
 5. **Merge** somente após:
    - ✅ CodeRabbit revisou
