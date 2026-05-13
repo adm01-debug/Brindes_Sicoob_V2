@@ -85,8 +85,8 @@ export function useQuoteBuilderState() {
 
   // ── Computeds ──
   const totals = useMemo(() => 
-    calculateQuoteTotals(items, negotiationMarkup, discountType, discountValue),
-    [items, negotiationMarkup, discountType, discountValue]
+    calculateQuoteTotals(items, negotiationMarkup, discountType, discountValue, shippingCost, shippingType),
+    [items, negotiationMarkup, discountType, discountValue, shippingCost, shippingType]
   );
 
   const completedSteps = useMemo((): QuoteBuilderStep[] => {
