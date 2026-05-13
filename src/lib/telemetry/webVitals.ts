@@ -15,7 +15,7 @@ export function reportWebVitals() {
       value: Math.round(name === 'CLS' ? value * 1000 : value),
       delta: Math.round(name === 'CLS' ? delta * 1000 : delta),
       rating,
-      navigation_type: entries[0]?.entryType === 'navigation' ? (entries[0] as any).type : 'unknown',
+      navigation_type: entries[0]?.entryType === 'navigation' ? (entries[0] as PerformanceNavigationTiming).type : 'unknown',
     };
 
     log.info(`metric_${name.toLowerCase()}`, payload);
