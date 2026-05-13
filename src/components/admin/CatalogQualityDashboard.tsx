@@ -108,6 +108,18 @@ export function CatalogQualityDashboard() {
             </p>
           </CardContent>
         </Card>
+        
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium flex items-center gap-2">
+              <ListFilter className="h-4 w-4 text-info" /> Tamanho do Catálogo
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-3xl font-semibold">{metrics.catalogSize.toLocaleString()}</p>
+            <p className="text-xs text-muted-foreground mt-1">SKUs ativos e sincronizados</p>
+          </CardContent>
+        </Card>
       </div>
 
       <Card>
