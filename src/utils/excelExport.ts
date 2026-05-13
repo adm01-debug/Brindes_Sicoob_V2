@@ -23,7 +23,7 @@ export interface ExcelExportConfig<T = Record<string, unknown>> {
 /**
  * Definição de coluna
  */
-export interface ExcelColumn {
+export interface ExcelColumn<T = any> {
   /** Chave do campo no objeto de dados */
   key: string;
   /** Cabeçalho da coluna */
@@ -31,7 +31,7 @@ export interface ExcelColumn {
   /** Largura da coluna (em caracteres) */
   width?: number;
   /** Função de formatação customizada */
-  format?: (value: any, row: any) => string | number;
+  format?: (value: any, row: T) => string | number;
 }
 
 /**
