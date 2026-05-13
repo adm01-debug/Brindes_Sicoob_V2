@@ -7,15 +7,15 @@ const getXLSX = () => import('@e965/xlsx');
 /**
  * Configuração de exportação Excel
  */
-export interface ExcelExportConfig {
+export interface ExcelExportConfig<T = Record<string, unknown>> {
   /** Nome do arquivo (sem extensão) */
   filename: string;
   /** Nome da planilha */
   sheetName?: string;
   /** Colunas a exportar */
-  columns: ExcelColumn[];
+  columns: ExcelColumn<T>[];
   /** Dados a exportar */
-  data: any[];
+  data: T[];
   /** Incluir timestamp no nome do arquivo */
   includeTimestamp?: boolean;
 }
