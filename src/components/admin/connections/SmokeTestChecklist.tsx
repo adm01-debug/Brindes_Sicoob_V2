@@ -243,8 +243,7 @@ export function SmokeTestChecklist({ availableSecrets = [] }: Props) {
           detail: `Persistido • ${formatMaskedSuffix(target.masked_suffix)} • ${target.length} chars${sourceTag}`,
           durationMs: took,
         });
-        // eslint-disable-next-line no-console
-        console.log("[smoke-test] step 3 OK", { took, source: target.source });
+        log.info("step_3_ok", { took, source: target.source });
       }
     } catch (err) {
       const took = Math.round(performance.now() - t3);
