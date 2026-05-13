@@ -14,9 +14,9 @@ function getStockStatus(stock: number): 'in-stock' | 'low-stock' | 'out-of-stock
   return 'in-stock';
 }
 
-function parseMaterials(materials: any): string[] {
+function parseMaterials(materials: unknown): string[] {
   if (!materials) return [];
-  if (Array.isArray(materials)) return materials.filter(Boolean);
+  if (Array.isArray(materials)) return materials.filter((m): m is string => typeof m === 'string' && !!m.trim());
   if (typeof materials === 'string') {
     return materials.split(/[,;|]/).map(m => m.trim()).filter(Boolean);
   }
@@ -24,54 +24,36 @@ function parseMaterials(materials: any): string[] {
 }
 
 function parseTagList(value: unknown): string[] {
-  if (!value) return [];
-  if (Array.isArray(value)) return value.filter((v): v is string => typeof v === 'string' && !!v.trim());
-  if (typeof value === 'string') return value.split(/[,;|]/).map(v => v.trim()).filter(Boolean);
-  return [];
-}
-
-function normalizeMarketingTags(rawTags: unknown): Product['tags'] {
-  const tags = (rawTags && typeof rawTags === 'object') ? rawTags as Record<string, unknown> : {};
-  return {
-    publicoAlvo: parseTagList(tags.publicoAlvo ?? tags.publico_alvo),
-    datasComemorativas: parseTagList(tags.datasComemorativas ?? tags.datas_comemorativas),
-    endomarketing: parseTagList(tags.endomarketing),
-    ramo: parseTagList(tags.ramo ?? tags.ramosAtividade ?? tags.ramos_atividade),
-    nicho: parseTagList(tags.nicho ?? tags.segmentosAtividade ?? tags.segmentos_atividade),
-  };
-}
-
-/** Converte produto Promobrind para formato interno */
-export function mapPromobrindToProduct(p: PromobrindProduct): Product {
-  const imageUrl = getProductImageUrl(p);
-  const stock = getProductStock(p);
-  const colors = normalizeColors(p.colors);
-
+...
   // Extrair imagens
   let images: string[] = [];
   if (p.images && Array.isArray(p.images)) {
-    images = p.images.map((img: any) => {
+    images = p.images.map((img: string | { url?: string; src?: string; image_url?: string }) => {
       if (typeof img === 'string') return img;
-      return img.url || img.src || img.image_url || '';
+      if (typeof img === 'object' && img !== null) {
+        return img.url || img.src || img.image_url || '';
+      }
+      return '';
     }).filter(Boolean);
   }
   if (images.length === 0 && imageUrl) images = [imageUrl];
   if (images.length === 0) images = ['/placeholder.svg'];
 
   // Mapear variações
-  const variations: any[] = [];
+  const variations: NonNullable<Product['variations']> = [];
   if (p.colors && Array.isArray(p.colors)) {
-    p.colors.forEach((c: any, index: number) => {
-      if (typeof c === 'object' && c.name) {
+    p.colors.forEach((c, index: number) => {
+      if (typeof c === 'object' && c !== null && 'name' in c) {
+        const colorObj = c as { name: string; hex?: string; stock?: number; sku?: string; image?: string; images?: string[]; size_code?: string };
         variations.push({
           id: `${p.id}-${index}`,
-          sku: c.sku || p.sku,
-          color: { name: c.name, hex: c.hex || '#CCCCCC' },
-          stock: c.stock ?? 0,
-          image: c.image || null,
-          images: c.images || [],
+          sku: colorObj.sku || p.sku,
+          color: { name: colorObj.name, hex: colorObj.hex || '#CCCCCC' },
+          stock: colorObj.stock ?? 0,
+          image: colorObj.image || null,
+          images: colorObj.images || [],
           videos: [],
-          size_code: c.size_code || null,
+          size_code: colorObj.size_code || null,
         });
       }
     });

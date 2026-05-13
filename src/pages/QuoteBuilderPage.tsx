@@ -35,6 +35,8 @@ import { QuoteSummary } from "@/components/quotes/QuoteSummary";
 import { QuoteAutoSave } from "@/components/quotes/QuoteAutoSave";
 import { QuoteBuilderStepper } from "@/components/quotes/QuoteBuilderStepper";
 import { QuoteBuilderSummaryColumn } from "@/components/quotes/QuoteBuilderSummaryColumn";
+import { CommercialConditions } from "@/components/quotes/builder/CommercialConditions";
+import { ValidityPicker } from "@/components/quotes/builder/ValidityPicker";
 import { useQuoteBuilderState } from "@/hooks/useQuoteBuilderState";
 import { useUnsavedChangesGuard } from "@/hooks/useUnsavedChangesGuard";
 import { UnsavedChangesDialog } from "@/components/common/UnsavedChangesDialog";
@@ -178,103 +180,28 @@ export default function QuoteBuilderPage() {
               </div>
 
               {/* Validade */}
-              <div className="rounded-2xl border border-border/50 bg-card p-4 space-y-3">
-                <h3 className="font-display font-semibold text-sm flex items-center gap-2"><span className="text-primary">📅</span>Validade | Proposta</h3>
-                <Select value={s.validityDays} onValueChange={(val) => { s.setValidityDays(val); s.setValidUntil(format(addDays(new Date(), parseInt(val)), "yyyy-MM-dd")); }}>
-                  <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="Selecione" /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="1">1 dia</SelectItem>
-                    <SelectItem value="3">3 dias</SelectItem>
-                    <SelectItem value="7">7 dias</SelectItem>
-                    <SelectItem value="15">15 dias</SelectItem>
-                    <SelectItem value="30">30 dias</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+              <ValidityPicker
+                validityDays={s.validityDays}
+                setValidityDays={s.setValidityDays}
+                setValidUntil={s.setValidUntil}
+              />
 
               {/* Condições Comerciais */}
-              <div className={cn("rounded-2xl border bg-card p-4 space-y-3", (s.validationErrors.includes("prazo_pagamento") || s.validationErrors.includes("prazo_entrega") || s.validationErrors.includes("frete") || s.validationErrors.includes("valor_frete")) ? "border-destructive/50" : "border-border/50")}>
-                <h3 className="font-display font-semibold text-sm flex items-center gap-2"><Package className="h-4 w-4 text-primary" />Condições</h3>
-
-                {/* Pagamento */}
-                <div className="space-y-1">
-                  <Label className={cn("text-xs", s.validationErrors.includes("prazo_pagamento") ? "text-destructive" : "text-muted-foreground")}>
-                    Prazo | Pagamento {s.validationErrors.includes("prazo_pagamento") && <span className="ml-1">*</span>}
-                  </Label>
-                  <Select value={s.paymentTerms} onValueChange={s.setPaymentTerms}>
-                    <SelectTrigger className={cn("h-8 text-xs", s.validationErrors.includes("prazo_pagamento") && "border-destructive")}><SelectValue placeholder="Selecione" /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="21_dias">21 dias | A partir da entrega</SelectItem>
-                      <SelectItem value="28_dias">28 dias | A partir da entrega</SelectItem>
-                      <SelectItem value="50_50">50% entrada / 50% após entrega</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {/* Entrega */}
-                <div className="space-y-1">
-                  <div className="flex items-center justify-between">
-                    <Label className={cn("text-xs", s.validationErrors.includes("prazo_entrega") ? "text-destructive" : "text-muted-foreground")}>
-                      Prazo | Entrega {s.validationErrors.includes("prazo_entrega") && <span className="ml-1">*</span>}
-                    </Label>
-                    <div className="flex gap-0.5 rounded-md bg-muted p-0.5">
-                      <button type="button" onClick={() => { s.setDeliveryMode("prazo"); s.setDeliveryTime(""); s.setDeliveryDate(undefined); }}
-                        className={cn("px-2 py-0.5 text-[10px] rounded-sm font-medium transition-colors", s.deliveryMode === "prazo" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground")}>Prazo</button>
-                      <button type="button" onClick={() => { s.setDeliveryMode("data"); s.setDeliveryTime(""); }}
-                        className={cn("px-2 py-0.5 text-[10px] rounded-sm font-medium transition-colors", s.deliveryMode === "data" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground")}>Data</button>
-                    </div>
-                  </div>
-                  {s.deliveryMode === "prazo" ? (
-                    <Select value={s.deliveryTime} onValueChange={s.setDeliveryTime}>
-                      <SelectTrigger className={cn("h-8 text-xs", s.validationErrors.includes("prazo_entrega") && "border-destructive")}><SelectValue placeholder="Selecione" /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="14_dias">14 dias | Após aprovação</SelectItem>
-                        <SelectItem value="21_dias">21 dias | Após aprovação</SelectItem>
-                        <SelectItem value="28_dias">28 dias | Após aprovação</SelectItem>
-                        <SelectItem value="45_dias">45 dias | Após aprovação</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  ) : (
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button variant="outline" className={cn("h-8 w-full justify-start text-left text-xs font-normal", !s.deliveryDate && "text-muted-foreground", s.validationErrors.includes("prazo_entrega") && "border-destructive")}>
-                          <CalendarIcon className="mr-2 h-3.5 w-3.5" />
-                          {s.deliveryDate ? format(s.deliveryDate, "dd/MM/yyyy") : "Selecione a data"}
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar mode="single" selected={s.deliveryDate} onSelect={(date) => { s.setDeliveryDate(date); s.setDeliveryTime(date ? `date:${format(date, "yyyy-MM-dd")}` : ""); }} disabled={(date) => date < new Date()} initialFocus />
-                      </PopoverContent>
-                    </Popover>
-                  )}
-                </div>
-
-                {/* Frete */}
-                <div className="space-y-1">
-                  <Label className={cn("text-xs", s.validationErrors.includes("frete") ? "text-destructive" : "text-muted-foreground")}>
-                    Frete {s.validationErrors.includes("frete") && <span className="ml-1">*</span>}
-                  </Label>
-                  <Select value={s.shippingType} onValueChange={s.setShippingType}>
-                    <SelectTrigger className={cn("h-8 text-xs", s.validationErrors.includes("frete") && "border-destructive")}><SelectValue placeholder="Selecione" /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="cif">CIF | Frete grátis</SelectItem>
-                      <SelectItem value="fob">FOB | Repassado ao cliente</SelectItem>
-                      <SelectItem value="fob_pre">FOB | Valor pré negociado</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  {(s.shippingType === "fob_pre" || s.shippingType === "fob") && (
-                    <div className="space-y-1 mt-1.5">
-                      <Label className={cn("text-xs", s.validationErrors.includes("valor_frete") ? "text-destructive" : "text-muted-foreground")}>
-                        Valor R$ {s.validationErrors.includes("valor_frete") && <span className="ml-1">*</span>}
-                      </Label>
-                      <div className="flex items-center gap-1.5">
-                        <span className="text-xs text-muted-foreground">R$</span>
-                        <Input type="number" min={0} step={0.01} value={s.shippingCost || ""} onChange={(e) => s.setShippingCost(parseFloat(e.target.value) || 0)} placeholder="0,00" className={cn("h-8 text-xs", s.validationErrors.includes("valor_frete") && "border-destructive")} />
-                      </div>
-                    </div>
-                  )}
-              </div>
-              </div>
+              <CommercialConditions
+                paymentTerms={s.paymentTerms}
+                setPaymentTerms={s.setPaymentTerms}
+                deliveryMode={s.deliveryMode}
+                setDeliveryMode={s.setDeliveryMode}
+                deliveryTime={s.deliveryTime}
+                setDeliveryTime={s.setDeliveryTime}
+                deliveryDate={s.deliveryDate}
+                setDeliveryDate={s.setDeliveryDate}
+                shippingType={s.shippingType}
+                setShippingType={s.setShippingType}
+                shippingCost={s.shippingCost}
+                setShippingCost={s.setShippingCost}
+                validationErrors={s.validationErrors}
+              />
 
               {/* Etiquetas / Tags */}
               <div className="rounded-2xl border border-border/50 bg-card p-4 space-y-3">

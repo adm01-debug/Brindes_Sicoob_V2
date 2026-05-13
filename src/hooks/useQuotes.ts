@@ -108,8 +108,18 @@ export function useQuotes() {
         updateData.approved_by = user.id;
       }
 
-      const { error } = await supabase.from("quotes").update(updateData).eq("id", quoteId);
-      if (error) throw error;
+      const { error } = await supabase
+        .from("quotes")
+        .update(updateData)
+        .eq("id", quoteId)
+        .eq("row_version", quote.row_version || 1);
+      
+      if (error) {
+        if (error.code === 'PGRST116') {
+          throw new Error("Concorrência detectada: Este orçamento foi modificado por outro usuário. Por favor, recarregue a página.");
+        }
+        throw error;
+      }
 
       // Logic for notifications
       if (status === 'pending_singular_approval') {

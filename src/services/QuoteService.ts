@@ -6,7 +6,7 @@ import { calculateQuoteTotals, buildInsertPayload, buildUpdatePayload, buildItem
 export class QuoteService {
   static async list(params: { userId: string, scope: string, orgId: string | null }): Promise<Quote[]> {
     let q = supabase.from("quotes").select("*").order("created_at", { ascending: false }).limit(500);
-    q = applySellerScope(q, { scope: params.scope as any, userId: params.userId });
+    q = applySellerScope(q, { scope: params.scope, userId: params.userId });
     
     const { data, error } = await q;
     if (error) throw error;
@@ -21,10 +21,10 @@ export class QuoteService {
     const { data: itemsData } = await supabase.from("quote_items").select("*").eq("quote_id", quoteId).order("sort_order", { ascending: true });
     
     const itemIds = (itemsData || []).map((i) => i.id);
-    let allPersonalizations: any[] = [];
+    let allPersonalizations: Array<Record<string, unknown>> = [];
     if (itemIds.length > 0) {
       const { data: persData } = await supabase.from("quote_item_personalizations").select("*").in("quote_item_id", itemIds);
-      allPersonalizations = persData || [];
+      allPersonalizations = (persData || []) as Array<Record<string, unknown>>;
     }
 
     const items: QuoteItem[] = (itemsData || []).map((item) => ({
@@ -61,8 +61,20 @@ export class QuoteService {
     const totals = calculateQuoteTotals(params.quote, params.items);
     const updatePayload = buildUpdatePayload(params.quote, totals);
     
-    const { data: updated, error: updErr } = await supabase.from("quotes").update(updatePayload).eq("id", params.quoteId).select("*").single();
-    if (updErr) throw updErr;
+    const { data: updated, error: updErr } = await supabase
+      .from("quotes")
+      .update(updatePayload)
+      .eq("id", params.quoteId)
+      .eq("row_version", oldQuote.row_version || 1)
+      .select("*")
+      .single();
+
+    if (updErr) {
+      if (updErr.code === 'PGRST116') {
+        throw new Error("Concorrência detectada: Este orçamento foi modificado por outro usuário. Por favor, recarregue a página.");
+      }
+      throw updErr;
+    }
 
     // Granular Audit Logging
     const changes: string[] = [];
@@ -135,7 +147,7 @@ export class QuoteService {
       id, created_at, updated_at, quote_number, status, 
       total, subtotal, discount_amount, converted_at,
       ...cleanQuote 
-    } = original as any;
+    } = original;
     
     const newQuote: Partial<Quote> = {
       ...cleanQuote,
@@ -212,7 +224,7 @@ export class QuoteService {
     fieldChanged?: string;
     oldValue?: string;
     newValue?: string;
-    metadata?: any;
+    metadata?: Record<string, unknown>;
   }) {
     // Captura IP e UA do lado do cliente se não for fornecido
     const clientMetadata = {
