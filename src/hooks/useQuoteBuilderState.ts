@@ -303,8 +303,12 @@ export function useQuoteBuilderState() {
     };
 
     let result;
-    if (isEditMode && quoteId) { result = await updateQuote(quoteId, quoteData, items); }
-    else { result = await createQuote(quoteData, items); }
+    if (isEditMode && quoteId) { 
+      const currentQuote = await fetchQuote(quoteId);
+      result = await updateQuote(quoteId, { ...quoteData, row_version: currentQuote?.row_version }, items); 
+    } else { 
+      result = await createQuote(quoteData, items); 
+    }
 
     if (result && finalStatus === "pending_approval" && maxDiscountPercent != null) {
       await requestApproval(result.id, totals.realDiscountPercent, maxDiscountPercent, sellerNotes);
