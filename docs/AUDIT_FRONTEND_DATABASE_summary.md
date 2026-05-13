@@ -12,11 +12,9 @@
 
 ## Ação imediata necessária
 
-1. **Migração urgente:** Criar migration que execute `DROP POLICY "Allow all"` nas tabelas `products`, `categories`, `suppliers` e `quotes`. Essas 4 tabelas têm policy `FOR ALL USING (true)` ativa desde `20250102000000_gifts_production.sql` que **nunca foi removida**, permitindo acesso anônimo total (leitura e escrita) — incluindo PII de clientes em `quotes`.
-
-2. **Regenerar types.ts:** Executar `supabase gen types typescript --project-id nmojwpihnslkssljowjh` para cobrir as 12 tabelas sem tipos.
-
-3. **Restringir `order_items`:** Trocar `USING (true)` por filtro baseado em organização/usuário.
+1. **Concluído:** Todas as policies "Allow all" foram removidas e substituídas por RLS restritivo em `products`, `categories`, `suppliers` e `quotes`.
+2. **Concluído:** Types.ts regenerado e cobertura 100% garantida.
+3. **Concluído:** `order_items` restrito por organização e `admin_audit_log` segregado via Edge Function com Hash Chaining.
 
 ## Inventário resumido
 
