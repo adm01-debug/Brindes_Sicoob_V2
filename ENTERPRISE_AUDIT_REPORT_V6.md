@@ -62,7 +62,7 @@ Justificativa técnica baseada em telemetria e análise de código:
 | :--- | :--- | :--- | :--- | :--- |
 | **1** | Auditoria Semanal RLS | P0 | Baixo | Pipeline de CI verde em caso de conformidade 100%. |
 | **2** | Otimização ProductsManager | P1 | Médio | Carregamento < 2s para catálogos > 10k SKUs. |
-| **3** | Redundância de Storage | P2 | Médio | Bucket B ativado em caso de erro 5xx no Bucket A. |
+| **3** | Redundância de Storage | P2 | Médio | ✅ Bucket Secondary e resilientUpload implementados. |
 
 ---
 
