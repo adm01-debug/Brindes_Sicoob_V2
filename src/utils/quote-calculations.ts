@@ -46,7 +46,8 @@ export const calculateQuoteTotals = (
     ? subtotal * (discountValue / 100) 
     : discountValue;
 
-  const total = Math.max(0, subtotal - discountAmount);
+  const shippingValue = (shippingType === "fob" || shippingType === "fob_pre") ? shippingCost : 0;
+  const total = Math.max(0, subtotal - discountAmount + shippingValue);
 
   // Desconto REAL (sobre subtotal real) — usado para alçada
   const realDiscountPercent = realSubtotal <= 0 
