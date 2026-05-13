@@ -93,6 +93,7 @@ export interface Quote {
   rejection_notes?: string;
   approved_at?: string;
   approved_by?: string;
+  row_version?: number;
 }
 
 export interface PersonalizationTechnique {
