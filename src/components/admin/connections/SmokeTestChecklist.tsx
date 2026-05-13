@@ -255,10 +255,7 @@ export function SmokeTestChecklist({ availableSecrets = [] }: Props) {
       log.error("step_3_exception", { err });
     }
 
-    // eslint-disable-next-line no-console
-    console.log("[smoke-test] finished", { sessionId, secretName });
-    // eslint-disable-next-line no-console
-    console.groupEnd();
+    log.info("finished", { sessionId, secretName });
     setRunning(false);
   };
 
