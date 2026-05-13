@@ -111,7 +111,7 @@ export function buildUpdatePayload(
   };
 
   if (quote.row_version !== undefined) {
-    (payload as any).row_version = quote.row_version + 1;
+    payload.row_version = quote.row_version + 1;
   }
 
   return payload;
