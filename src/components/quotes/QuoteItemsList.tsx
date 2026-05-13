@@ -73,7 +73,7 @@ export function QuoteItemsList({
           </div>
           <div className="text-right">
             <p className="text-sm font-bold text-primary">
-              {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(item.total_price)}
+              {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(item.subtotal || (item.quantity * item.unit_price))}
             </p>
           </div>
         </div>
