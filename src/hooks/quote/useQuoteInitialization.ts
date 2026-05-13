@@ -2,7 +2,8 @@
 import { useEffect } from "react";
 import { format, addDays } from "date-fns";
 import { toast } from "sonner";
-import type { QuoteItem, QuoteItemPersonalization } from "@/hooks/useQuotes";
+import type { Quote, QuoteItem, QuoteItemPersonalization } from "@/hooks/quotes/quoteTypes";
+import type { SelectedCompanyInfo, SelectedContactInfo } from "@/components/quotes/CompanyContactSelector";
 
 interface InitParams {
   isEditMode: boolean;
