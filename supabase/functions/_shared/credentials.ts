@@ -467,26 +467,24 @@ export async function resolveCredential(
       if (!error && data && data.secret_value) {
         const value = sanitizeResolvedCredential(name, data.secret_value as string);
         if (!value) {
-          // If we have an invalid URL or placeholder in DB, we DON'T stop.
-          // We allow fallback to ENV.
           dbError = `invalid value stored for ${name}`;
         } else {
-        const now = Date.now();
-        CACHE.set(name, { value, source: "db", expires_at: now + TTL_MS, stored_at: now });
-        const duration = Date.now() - startedAt;
-        recordResolution({ name, source: "db", duration_ms: duration, cached: false, expired_before: expiredBefore });
-        logResolution({
-          event: "credential_resolved",
-          name,
-          resolved_name: name,
-          source: "db",
-          has_value: true,
-          value_length: value.length,
-          cached: false,
-          duration_ms: duration,
-          via_alias: false,
-        });
-        return { value, source: "db", resolved_name: name };
+          const now = Date.now();
+          CACHE.set(name, { value, source: "db", expires_at: now + TTL_MS, stored_at: now });
+          const duration = Date.now() - startedAt;
+          recordResolution({ name, source: "db", duration_ms: duration, cached: false, expired_before: expiredBefore });
+          logResolution({
+            event: "credential_resolved",
+            name,
+            resolved_name: name,
+            source: "db",
+            has_value: true,
+            value_length: value.length,
+            cached: false,
+            duration_ms: duration,
+            via_alias: false,
+          });
+          return { value, source: "db", resolved_name: name };
         }
       }
       if (error) dbError = error.message;
