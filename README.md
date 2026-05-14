@@ -10,6 +10,22 @@
 
 ## 📋 Sumário
 
+- [Relatório de Auditoria Enterprise 10/10](#-relatório-de-auditoria)
+- [Visão Geral](#-visão-geral)
+...
+- [Troubleshooting](#-troubleshooting)
+
+---
+
+## 🛡️ Relatório de Auditoria
+
+O sistema passa por auditorias regulares de segurança, performance e integridade. O relatório mais recente (14/05/2026) está disponível nos seguintes formatos:
+
+- 📄 **[Relatório em Markdown (Audit Report)](./audit_report.md)** - Visualização rápida no GitHub.
+- 📕 **[Relatório em PDF (Enterprise Audit)](./audit_report.pdf)** - Versão para download e arquivamento oficial.
+
+---
+
 - [Visão Geral](#-visão-geral)
 - [Stack Tecnológico](#-stack-tecnológico)
 - [Arquitetura](#-arquitetura)
