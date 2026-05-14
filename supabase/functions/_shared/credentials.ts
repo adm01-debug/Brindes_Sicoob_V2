@@ -57,6 +57,9 @@ function sanitizeResolvedCredential(name: string, value: string | null): string 
 
   if (name.endsWith("_URL")) {
     try {
+      // Se for apenas o protocolo ou algo muito curto, falhamos
+      if (trimmed.length < 10) return null;
+      
       const url = new URL(trimmed);
       if (url.protocol !== "https:") return null;
     } catch {
@@ -461,27 +464,27 @@ export async function resolveCredential(
         .select("secret_value")
         .eq("secret_name", name)
         .maybeSingle();
-      if (!error && data?.secret_value) {
+      if (!error && data && data.secret_value) {
         const value = sanitizeResolvedCredential(name, data.secret_value as string);
         if (!value) {
           dbError = `invalid value stored for ${name}`;
         } else {
-        const now = Date.now();
-        CACHE.set(name, { value, source: "db", expires_at: now + TTL_MS, stored_at: now });
-        const duration = Date.now() - startedAt;
-        recordResolution({ name, source: "db", duration_ms: duration, cached: false, expired_before: expiredBefore });
-        logResolution({
-          event: "credential_resolved",
-          name,
-          resolved_name: name,
-          source: "db",
-          has_value: true,
-          value_length: value.length,
-          cached: false,
-          duration_ms: duration,
-          via_alias: false,
-        });
-        return { value, source: "db", resolved_name: name };
+          const now = Date.now();
+          CACHE.set(name, { value, source: "db", expires_at: now + TTL_MS, stored_at: now });
+          const duration = Date.now() - startedAt;
+          recordResolution({ name, source: "db", duration_ms: duration, cached: false, expired_before: expiredBefore });
+          logResolution({
+            event: "credential_resolved",
+            name,
+            resolved_name: name,
+            source: "db",
+            has_value: true,
+            value_length: value.length,
+            cached: false,
+            duration_ms: duration,
+            via_alias: false,
+          });
+          return { value, source: "db", resolved_name: name };
         }
       }
       if (error) dbError = error.message;
@@ -492,7 +495,7 @@ export async function resolveCredential(
   }
 
   // 2) Env at canonical name
-  const envCanonical = sanitizeResolvedCredential(name, Deno.env.get(name));
+  const envCanonical = sanitizeResolvedCredential(name, Deno.env.get(name) ?? null);
   if (envCanonical) {
     const now = Date.now();
     CACHE.set(name, { value: envCanonical, source: "env", expires_at: now + TTL_MS, stored_at: now });
@@ -515,7 +518,7 @@ export async function resolveCredential(
 
   // 3) Env at legacy aliases
   for (const alias of ALIASES[name] ?? []) {
-    const v = sanitizeResolvedCredential(name, Deno.env.get(alias));
+    const v = sanitizeResolvedCredential(name, Deno.env.get(alias) ?? null);
     if (v) {
       const now = Date.now();
       CACHE.set(name, { value: v, source: "env", expires_at: now + TTL_MS, stored_at: now });
