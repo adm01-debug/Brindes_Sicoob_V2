@@ -10,10 +10,20 @@
 
 ## 📋 Sumário
 
-- [Relatório de Auditoria Enterprise 10/10](#-relatório-de-auditoria)
-- [Visão Geral](#-visão-geral)
-...
-- [Troubleshooting](#-troubleshooting)
+- [🛡️ Relatório de Auditoria](#-relatório-de-auditoria)
+- [🎯 Visão Geral](#-visão-geral)
+- [🛠 Stack Tecnológico](#-stack-tecnológico)
+- [🏗 Arquitetura](#-arquitetura)
+- [🚀 Setup Local](#-setup-local)
+- [📁 Estrutura de Pastas](#-estrutura-de-pastas)
+- [📦 Módulos Principais](#-módulos-principais)
+- [🔐 Autenticação e Autorização](#-autenticação-e-autorização)
+- [🗄 Banco de Dados](#-banco-de-dados)
+- [⚡ Edge Functions](#-edge-functions)
+- [🔌 Integrações](#-integrações)
+- [📝 Convenções de Código](#-convenções-de-código)
+- [🚢 Deploy](#-deploy)
+- [🔧 Troubleshooting](#-troubleshooting)
 
 ---
 
@@ -23,22 +33,6 @@ O sistema passa por auditorias regulares de segurança, performance e integridad
 
 - 📄 **[Relatório em Markdown (Audit Report)](./audit_report.md)** - Visualização rápida no GitHub.
 - 📕 **[Relatório em PDF (Enterprise Audit)](./audit_report.pdf)** - Versão para download e arquivamento oficial.
-
----
-
-- [Visão Geral](#-visão-geral)
-- [Stack Tecnológico](#-stack-tecnológico)
-- [Arquitetura](#-arquitetura)
-- [Setup Local](#-setup-local)
-- [Estrutura de Pastas](#-estrutura-de-pastas)
-- [Módulos Principais](#-módulos-principais)
-- [Autenticação e Autorização](#-autenticação-e-autorização)
-- [Banco de Dados](#-banco-de-dados)
-- [Edge Functions](#-edge-functions)
-- [Integrações](#-integrações)
-- [Convenções de Código](#-convenções-de-código)
-- [Deploy](#-deploy)
-- [Troubleshooting](#-troubleshooting)
 
 ---
 
