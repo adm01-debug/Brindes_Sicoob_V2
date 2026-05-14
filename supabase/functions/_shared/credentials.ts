@@ -464,7 +464,7 @@ export async function resolveCredential(
         .select("secret_value")
         .eq("secret_name", name)
         .maybeSingle();
-      if (!error && data?.secret_value) {
+      if (!error && data && data.secret_value) {
         const value = sanitizeResolvedCredential(name, data.secret_value as string);
         if (!value) {
           // If we have an invalid URL or placeholder in DB, we DON'T stop.
