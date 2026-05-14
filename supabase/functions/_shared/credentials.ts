@@ -57,6 +57,9 @@ function sanitizeResolvedCredential(name: string, value: string | null): string 
 
   if (name.endsWith("_URL")) {
     try {
+      // Se for apenas o protocolo ou algo muito curto, falhamos
+      if (trimmed.length < 10) return null;
+      
       const url = new URL(trimmed);
       if (url.protocol !== "https:") return null;
     } catch {
