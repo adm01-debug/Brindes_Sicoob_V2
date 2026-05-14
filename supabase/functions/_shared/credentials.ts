@@ -467,6 +467,8 @@ export async function resolveCredential(
       if (!error && data?.secret_value) {
         const value = sanitizeResolvedCredential(name, data.secret_value as string);
         if (!value) {
+          // If we have an invalid URL or placeholder in DB, we DON'T stop.
+          // We allow fallback to ENV.
           dbError = `invalid value stored for ${name}`;
         } else {
         const now = Date.now();
