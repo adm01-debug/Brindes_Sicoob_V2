@@ -492,7 +492,7 @@ export async function resolveCredential(
   }
 
   // 2) Env at canonical name
-  const envCanonical = sanitizeResolvedCredential(name, Deno.env.get(name));
+  const envCanonical = sanitizeResolvedCredential(name, Deno.env.get(name) ?? null);
   if (envCanonical) {
     const now = Date.now();
     CACHE.set(name, { value: envCanonical, source: "env", expires_at: now + TTL_MS, stored_at: now });
@@ -515,7 +515,7 @@ export async function resolveCredential(
 
   // 3) Env at legacy aliases
   for (const alias of ALIASES[name] ?? []) {
-    const v = sanitizeResolvedCredential(name, Deno.env.get(alias));
+    const v = sanitizeResolvedCredential(name, Deno.env.get(alias) ?? null);
     if (v) {
       const now = Date.now();
       CACHE.set(name, { value: v, source: "env", expires_at: now + TTL_MS, stored_at: now });
