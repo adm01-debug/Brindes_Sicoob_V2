@@ -44,6 +44,7 @@ export const useOrderInvoices = (orderId?: string) => {
     mutationFn: (values: any) => OrderService.addInvoice(orderId!, values),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["order-invoices", orderId] });
+      queryClient.invalidateQueries({ queryKey: ["order-audit", orderId] });
       toast.success("Nota fiscal adicionada");
     },
   });
