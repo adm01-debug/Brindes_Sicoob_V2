@@ -17,6 +17,8 @@ export const useOrderLogistics = (orderId?: string) => {
     mutationFn: (values: any) => OrderService.upsertLogistics(orderId!, values),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["order-logistics", orderId] });
+      queryClient.invalidateQueries({ queryKey: ["logistics-tracking", orderId] });
+      queryClient.invalidateQueries({ queryKey: ["order-audit", orderId] });
       toast.success("Logística atualizada com sucesso");
     },
     onError: (error: any) => {
