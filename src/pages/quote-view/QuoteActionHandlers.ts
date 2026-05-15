@@ -9,23 +9,14 @@ import { toast } from "sonner";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { logger } from "@/lib/logger";
+import { formatCurrency, formatCNPJ } from "@/utils/formatters";
 
-export function formatCurrency(value: number): string {
-  return value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
-}
+export { formatCurrency, formatCNPJ };
 
 export function calcPersTotal(totalCost: number, qty: number): number {
   if (qty <= 0) return totalCost;
   const roundedUnit = Math.round((totalCost / qty) * 100) / 100;
   return Math.round(roundedUnit * qty * 100) / 100;
-}
-
-export function formatCNPJ(cnpj: string): string {
-  const digits = cnpj.replace(/\D/g, "");
-  if (digits.length === 14) {
-    return `${digits.slice(0, 2)}.${digits.slice(2, 5)}.${digits.slice(5, 8)}/${digits.slice(8, 12)}-${digits.slice(12, 14)}`;
-  }
-  return cnpj;
 }
 
 export async function handleDownloadPDF(
