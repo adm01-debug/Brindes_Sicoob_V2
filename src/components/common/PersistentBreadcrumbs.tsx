@@ -59,7 +59,7 @@ export const PersistentBreadcrumbs = forwardRef<HTMLElement, PersistentBreadcrum
     }
   }, [navigate]);
   
-  const buildBreadcrumbs = (): BreadcrumbItem[] => {
+  const breadcrumbs = useMemo((): BreadcrumbItem[] => {
     if (customItems) return customItems;
     
     const items: BreadcrumbItem[] = [];
@@ -86,8 +86,6 @@ export const PersistentBreadcrumbs = forwardRef<HTMLElement, PersistentBreadcrum
         }
         items.push({ label: `#${part.slice(0, 8)}...` });
       } else {
-        // Esconder segmentos técnicos do breadcrumb para não-dev
-        // (defesa em profundidade — DevRoute também bloqueia o acesso).
         if (!isDev && isDevOnlyPath(currentPath)) {
           return;
         }
@@ -106,9 +104,7 @@ export const PersistentBreadcrumbs = forwardRef<HTMLElement, PersistentBreadcrum
     });
     
     return items;
-  };
-  
-  const breadcrumbs = buildBreadcrumbs();
+  }, [location.pathname, showHome, customItems, isDev, isAdmin]);
   if (breadcrumbs.length === 0) return null;
 
   const isNotHome = location.pathname !== "/";
