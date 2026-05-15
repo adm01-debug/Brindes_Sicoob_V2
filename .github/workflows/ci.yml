@@ -25,8 +25,12 @@ jobs:
           bun run lint
           bun run typecheck
 
-      - name: Unit & Integration Tests
+      - name: Unit, Integration & Fuzz Tests
         run: bun run test:coverage:ci
+
+      - name: Edge Function Tests
+        run: deno test --allow-all supabase/functions/tests/
+
 
       - name: Build Check
         run: bun run build
