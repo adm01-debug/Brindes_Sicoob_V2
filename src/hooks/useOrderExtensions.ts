@@ -130,6 +130,9 @@ export const useOrderPilotApprovals = (orderId?: string) => {
 
   const updateApprovalStatus = useMutation({
     mutationFn: async ({ id, status, feedback }: { id: string, status: string, feedback?: string }) => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Não autenticado");
+
       const { data, error } = await supabase
         .from("order_pilot_approvals")
         .update({ status, feedback, approved_at: status === 'approved' ? new Date().toISOString() : null })
@@ -137,10 +140,22 @@ export const useOrderPilotApprovals = (orderId?: string) => {
         .select()
         .single();
       if (error) throw error;
+
+      // Log audit for pilot status change
+      await OrderService.logAudit({
+        orderId: data.order_id,
+        eventType: 'pilot_update',
+        description: `Status do piloto alterado para: ${status === 'approved' ? 'Aprovado' : 'Reprovado'}`,
+        metadata: { status, feedback },
+        createdByName: user.email
+      });
+
       return data;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["order-pilot-approvals", orderId] });
+    onSuccess: (_, { id }) => {
+      // Invalidate both local pilot data and the order details
+      queryClient.invalidateQueries({ queryKey: ["order-pilot-approvals"] });
+      queryClient.invalidateQueries({ queryKey: ["orders"] });
       toast.success("Status do piloto atualizado");
     },
   });
