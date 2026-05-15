@@ -27,12 +27,22 @@ export class OrderService {
     if (filters?.endDate) q = q.lte("created_at", filters.endDate);
     
     if (filters?.search) {
-      q = q.or(`order_number.ilike.%${filters.search}%,client_name.ilike.%${filters.search}%,client_company.ilike.%${filters.search}%`);
+      // Improved multi-column search
+      const search = filters.search.trim();
+      q = q.or(`order_number.ilike.%${search}%,client_name.ilike.%${search}%,client_company.ilike.%${search}%`);
     }
 
-    const { data, error, count } = await q.range((page - 1) * pageSize, page * pageSize - 1);
-    if (error) throw error;
-    return { data: (data ?? []) as OrderRow[], count };
+    try {
+      const { data, error, count } = await q.range((page - 1) * pageSize, page * pageSize - 1);
+      if (error) {
+        logger.error("Error listing orders:", error);
+        throw error;
+      }
+      return { data: (data ?? []) as OrderRow[], count };
+    } catch (err) {
+      logger.error("Unexpected error in OrderService.list:", err);
+      throw err;
+    }
   }
 
   static async getById(orderId: string) {
@@ -134,19 +144,24 @@ export class OrderService {
     return { comments: data as any[], count };
   }
 
-  static async addComment(orderId: string, authorId: string, content: string, isInternal = false, attachments = null) {
+  static async addComment(orderId: string, authorId: string, content: string, isInternal = false, attachments: any = null) {
+    if (!content?.trim()) throw new Error("Conteúdo do comentário é obrigatório");
+
     const { data, error } = await supabase
       .from("order_comments")
       .insert({
         order_id: orderId,
         author_id: authorId,
-        content,
+        content: content.trim(),
         is_internal: isInternal,
         attachments
       })
       .select()
       .single();
-    if (error) throw error;
+    if (error) {
+      logger.error("Error adding order comment:", error);
+      throw error;
+    }
     return data;
   }
 
