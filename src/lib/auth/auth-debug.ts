@@ -10,14 +10,12 @@ import type { Session, User } from "@supabase/supabase-js";
 
 const PREFIX = "[AUTH-DEBUG]";
 
-/** Mascara token JWT mostrando apenas 8 primeiros e 6 últimos caracteres. */
 function maskToken(token: string | null | undefined): string {
   if (!token) return "<null>";
   if (token.length <= 16) return `${token.slice(0, 4)}…(${token.length})`;
   return `${token.slice(0, 8)}…${token.slice(-6)} (len=${token.length})`;
 }
 
-/** Mascara email: `joao.silva@empresa.com` → `j***a@empresa.com`. */
 function maskEmail(email: string | null | undefined): string {
   if (!email) return "<null>";
   const at = email.indexOf("@");
@@ -28,7 +26,6 @@ function maskEmail(email: string | null | undefined): string {
   return `${local[0]}***${local.slice(-1)}${domain}`;
 }
 
-/** Decodifica payload de JWT (sem validar assinatura) para inspecionar claims. */
 function decodeJwtPayload(token: string | null | undefined): Record<string, unknown> | null {
   if (!token) return null;
   const parts = token.split(".");
@@ -88,7 +85,6 @@ export function summarizeSession(session: Session | null | undefined) {
 
 export function authDebug(scope: string, message: string, data?: unknown): void {
   const ts = new Date().toISOString();
-  // eslint-disable-next-line no-console
   logger.log(`${PREFIX} [${ts}] [${scope}] ${message}`, data ?? "");
   
   if (typeof window !== "undefined") {
@@ -108,7 +104,6 @@ export function authDebugError(scope: string, message: string, error: unknown): 
       ? { name: error.name, message: error.message, stack: error.stack }
       : { value: error };
   const ts = new Date().toISOString();
-  // eslint-disable-next-line no-console
   console.error(`${PREFIX} [${ts}] [${scope}] ${message}`, normalized);
 
   if (typeof window !== "undefined") {
