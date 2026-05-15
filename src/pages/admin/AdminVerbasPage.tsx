@@ -29,11 +29,13 @@ export default function AdminVerbasPage() {
   const [newCategoryThreshold, setNewCategoryThreshold] = useState({ pa_id: '', category_id: '', limite_alcada: 0 });
 
   
-  // Budget alert settings
+  // Budget alert settings - hardened with redundancy check
   const [alertConfig, setAlertConfig] = useState({
     warningThreshold: 70, // 70%
-    criticalThreshold: 90  // 90%
+    criticalThreshold: 90, // 90%
+    backupStrategy: 'manual-review'
   });
+
 
   const [categoryThresholds, setCategoryThresholds] = useState<any[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
