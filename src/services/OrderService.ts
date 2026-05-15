@@ -1,6 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import { OrderRow, OrderFilters, OrderItem, OrderStatus, OrderLogistics, OrderInvoice, OrderComment } from "@/types/orders";
 import { ORDER_STATUS_LABELS } from "@/constants/orders";
+import { logger } from "@/lib/logger";
 
 export class OrderService {
   static async list(sellerId: string, scope: string, filters?: OrderFilters & { page?: number; pageSize?: number }): Promise<{ data: OrderRow[]; count: number | null }> {
@@ -35,17 +36,16 @@ export class OrderService {
   }
 
   static async getById(orderId: string) {
-    const [orderRes, itemsRes] = await Promise.all([
-      supabase.from("orders").select("*").eq("id", orderId).maybeSingle(),
-      supabase.from("order_items").select("*").eq("order_id", orderId),
-    ]);
-    
-    if (orderRes.error) throw orderRes.error;
-    if (itemsRes.error) throw itemsRes.error;
+    const { data: order, error: orderError } = await supabase.from("orders").select("*").eq("id", orderId).maybeSingle();
+    if (orderError) throw orderError;
+    if (!order) return null;
+
+    const { data: items, error: itemsError } = await supabase.from("order_items").select("*").eq("order_id", orderId);
+    if (itemsError) throw itemsError;
     
     return {
-      order: orderRes.data as OrderRow | null,
-      items: itemsRes.data as OrderItem[],
+      order: order as OrderRow,
+      items: items as OrderItem[],
     };
   }
 
