@@ -157,6 +157,24 @@ function buildEmailContent(event: EmailRequest): { subject: string; html: string
   }
 }
 
+function validatePayload(event: EmailRequest) {
+  const requiredFields: Record<string, string[]> = {
+    quote_sent: ["quote_number", "total", "approval_url"],
+    quote_approved: ["quote_number", "total"],
+    quote_rejected: ["quote_number"],
+    order_created: ["order_number", "total"],
+    sicoob_order_status_change: ["order_number", "new_status", "action_url"],
+    sicoob_order_approval_request: ["order_number", "pa_name", "total", "action_url"]
+  };
+
+  const fields = requiredFields[event.event_type] || [];
+  for (const field of fields) {
+    if (!event.data || event.data[field] === undefined || event.data[field] === null || event.data[field] === "") {
+      throw new Error(`Invalid payload: missing field '${field}' for event '${event.event_type}'`);
+    }
+  }
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: getCorsHeaders(req) });
@@ -173,11 +191,13 @@ serve(async (req) => {
       });
     }
 
-    const supabase = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_ANON_KEY") ?? "",
-      { global: { headers: { Authorization: authHeader } } }
-    );
+    const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
+    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
+    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+
+    const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: authHeader } }
+    });
 
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     if (authError || !user) {
@@ -189,6 +209,7 @@ serve(async (req) => {
 
     const body: EmailRequest = await req.json();
 
+    // 1. Basic Validation
     if (!body.event_type || !body.recipient_email) {
       return new Response(JSON.stringify({ error: "Missing event_type or recipient_email" }), {
         status: 400,
@@ -196,15 +217,20 @@ serve(async (req) => {
       });
     }
 
+    // 2. Schema Hardening
+    try {
+      validatePayload(body);
+    } catch (validationError: any) {
+      return new Response(JSON.stringify({ error: validationError.message }), {
+        status: 422,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     const { subject, html } = buildEmailContent(body);
 
-    // Log the email attempt
-    const adminClient = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
-    );
-
-    // Store email log in workspace_notifications as a record
+    // 3. Admin Log
+    const adminClient = createClient(supabaseUrl, supabaseServiceKey);
     await adminClient.from("workspace_notifications").insert({
       user_id: user.id,
       title: `📧 Email: ${subject}`,
@@ -213,19 +239,19 @@ serve(async (req) => {
       category: "emails",
     });
 
-    // Return email content (actual sending happens when email domain is configured)
     return new Response(
       JSON.stringify({
         success: true,
-        message: "Email queued successfully",
+        message: "Email validated and queued successfully",
         preview: { subject, recipient: body.recipient_email, event_type: body.event_type },
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error ?? "Internal error");
+    console.error(`Edge Function Error [send-transactional-email]: ${message}`);
     return new Response(
-      JSON.stringify({ error: message }),
+      JSON.stringify({ error: "Internal Server Error during email processing" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
