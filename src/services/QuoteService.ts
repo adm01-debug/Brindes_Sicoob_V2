@@ -1,17 +1,26 @@
 import { supabase } from "@/integrations/supabase/client";
 import { applySellerScope } from "@/lib/auth/apply-seller-scope";
-import { Quote, QuoteItem } from "@/hooks/quotes/quoteTypes";
+import { Quote, QuoteItem, QuoteItemPersonalization } from "@/hooks/quotes/quoteTypes";
 import { PersonalizationTechnique } from "@/types/quote-builder";
 import { calculateQuoteTotals, buildInsertPayload, buildUpdatePayload, buildItemsInsertPayload, buildPersonalizationsInsertPayload } from "@/hooks/quotes/quoteHelpers";
+import { logger } from "@/lib/logger";
 
 export class QuoteService {
   static async list(params: { userId: string, scope: string, orgId: string | null }): Promise<Quote[]> {
     let q = supabase.from("quotes").select("*").order("created_at", { ascending: false }).limit(500);
     q = applySellerScope(q, { scope: params.scope, userId: params.userId });
     
-    const { data, error } = await q;
-    if (error) throw error;
-    return (data || []) as Quote[];
+    try {
+      const { data, error } = await q;
+      if (error) {
+        logger.error("Error listing quotes:", error);
+        throw error;
+      }
+      return (data || []) as Quote[];
+    } catch (err) {
+      logger.error("Unexpected error in QuoteService.list:", err);
+      throw err;
+    }
   }
 
   static async getById(quoteId: string): Promise<Quote | null> {
