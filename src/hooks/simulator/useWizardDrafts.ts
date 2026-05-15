@@ -30,7 +30,7 @@ export function useWizardDrafts() {
 
       const { data, error } = await supabase
         .from('simulator_wizard_drafts')
-        .select('*')
+        .select('id, title, product_data, quantity, personalizations, wizard_step, created_at, updated_at')
         .eq('user_id', user.id)
         .order('updated_at', { ascending: false })
         .limit(20);
