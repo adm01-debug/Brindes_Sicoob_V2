@@ -74,11 +74,14 @@ Automação de marketing e branding.
 
 ---
 
-## 5. EVIDÊNCIAS DE QUALIDADE (TESTES)
+## 5. EVIDÊNCIAS DE QUALIDADE E PERFORMANCE
 
-*   **Suite E2E:** Localizada em `e2e/`. Inclui `admin-verbas-audit.spec.ts`.
+*   **Dashboards de Alta Performance:** `CatalogQualityDashboard.tsx` refatorado para suporte a volumes >5k SKUs com cache e queries otimizadas.
+*   **Segurança de Dependências:** Eliminação de vulnerabilidades críticas (CVEs resolvidos via migração `xlsx` -> `@e965/xlsx`).
+*   **Monitoramento Proativo:** `SidebarFooterHealth.tsx` provê visibilidade em tempo real da saúde do banco de dados e motor de sincronização.
 *   **Métrica de Cobertura:** 80.2% global (threshold elevado em `vitest.config.ts`).
 *   **Sanity Check:** Script `npm run smoke` integrado ao Husky pre-push.
+
 
 ---
 
