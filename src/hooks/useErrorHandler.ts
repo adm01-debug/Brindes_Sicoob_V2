@@ -31,6 +31,13 @@ export function useErrorHandler() {
         options?.message ||
         (error instanceof Error ? error.message : 'Ocorreu um erro inesperado');
 
+      // Do not show toasts for intentional cancellations or aborted requests
+      const isCancellation = 
+        error instanceof Error && 
+        (error.name === 'AbortError' || error.message?.includes('aborted') || error.message?.includes('cancel'));
+      
+      if (isCancellation) return;
+
       console.error('[useErrorHandler]', error);
       
       // Centralized reporting
