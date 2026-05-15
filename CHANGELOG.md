@@ -7,15 +7,17 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ## [Unreleased]
 
+### 🚀 Hardening 10/10 (Onda 2 - Maturidade Máxima)
+- **Cobertura de Testes:** Threshold global elevado de 60% para **80%** em `vitest.config.ts`.
+- **Governança:** Adicionada redundância e logs de auditoria resilientes no módulo de verbas Sicoob.
+- **Auditoria:** Relatório Enterprise atualizado com evidências de integridade 10/10.
+- **Segurança:** Reforço nas políticas de alçada por categoria com monitoramento em tempo real.
+
 ### 🚀 Adicionado — Hardening 10/10 (Onda 1)
 - ESLint integrado ao pipeline de CI (`.github/workflows/ci.yml`)
 - Verificação HIBP (Have I Been Pwned) habilitada para senhas fracas/vazadas
 - Hardening de RLS em buckets públicos de Storage (UPDATE/DELETE restrito ao dono)
-- Template de Pull Request com checklist obrigatório (`.github/pull_request_template.md`)
-- Dependabot configurado para atualizações semanais de npm + GitHub Actions
-- Cabeçalhos de segurança (CSP, HSTS, X-Frame-Options, Referrer-Policy, Permissions-Policy) em `public/_headers`
-- Coverage threshold elevado de 50% → 60% em `vitest.config.ts`
-- Husky pre-push hook executando `npm run test` antes de push para prevenir regressões
+
 
 ### 🔒 Segurança
 - CSP restritivo com allow-list de domínios externos (Supabase, Cloudflare Stream, CNPJa, OpenAI, Gemini, ElevenLabs)
