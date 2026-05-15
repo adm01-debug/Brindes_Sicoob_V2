@@ -3,8 +3,14 @@ import { OrderRow, OrderFilters, OrderItem, OrderStatus, OrderLogistics, OrderIn
 import { ORDER_STATUS_LABELS } from "@/constants/orders";
 
 export class OrderService {
-  static async list(sellerId: string, scope: string, filters?: OrderFilters): Promise<OrderRow[]> {
-    let q = supabase.from("orders").select("*").order("created_at", { ascending: false });
+  static async list(sellerId: string, scope: string, filters?: OrderFilters & { page?: number; pageSize?: number }): Promise<{ data: OrderRow[]; count: number | null }> {
+    const page = filters?.page || 1;
+    const pageSize = filters?.pageSize || 20;
+    
+    let q = supabase
+      .from("orders")
+      .select("*", { count: 'exact' })
+      .order("created_at", { ascending: false });
     
     if (scope === "self" && sellerId) q = q.eq("seller_id", sellerId);
     
@@ -23,9 +29,9 @@ export class OrderService {
       q = q.or(`order_number.ilike.%${filters.search}%,client_name.ilike.%${filters.search}%,client_company.ilike.%${filters.search}%`);
     }
 
-    const { data, error } = await q;
+    const { data, error, count } = await q.range((page - 1) * pageSize, page * pageSize - 1);
     if (error) throw error;
-    return (data ?? []) as OrderRow[];
+    return { data: (data ?? []) as OrderRow[], count };
   }
 
   static async getById(orderId: string) {
@@ -206,7 +212,10 @@ export class OrderService {
 
   static async duplicate(orderId: string, sellerId: string): Promise<OrderRow> {
     const { order: original, items } = await this.getById(orderId);
-    if (!original) throw new Error("Order not found");
+    if (!original) throw new Error("Pedido não encontrado");
+
+    // Copy logistics if exists
+    const logistics = await this.getLogistics(orderId);
 
     const newOrderNumber = `RE-${original.order_number.replace('PED-', '')}-${Math.floor(Math.random() * 1000)}`;
     
@@ -226,13 +235,34 @@ export class OrderService {
 
     if (insErr) throw insErr;
 
+    // Deep copy items
     if (items?.length) {
       const newItems = items.map(it => ({
         ...it,
+        id: undefined, // Ensure new IDs
         order_id: newOrder.id,
       }));
       await supabase.from("order_items").insert(newItems);
     }
+
+    // Deep copy logistics
+    if (logistics) {
+      await supabase.from("order_logistics").insert({
+        ...logistics,
+        id: undefined,
+        order_id: newOrder.id,
+        tracking_code: null, // Reset tracking on duplication
+        status: 'pending'
+      });
+    }
+
+    // Log the event
+    await this.logAudit({
+      orderId: newOrder.id,
+      eventType: 'ORDER_DUPLICATED',
+      description: `Pedido duplicado a partir do pedido #${original.order_number}`,
+      metadata: { originalOrderId: orderId }
+    });
 
     return newOrder as OrderRow;
   }

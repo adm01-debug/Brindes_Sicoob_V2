@@ -24,19 +24,26 @@ export function OrdersPage() {
   const navigate = useNavigate();
   const scope = useSalesScope();
   
-  const [filterValues, setFilterValues] = useState<OrderFilterValues>({
+  const [filterValues, setFilterValues] = useState<OrderFilterValues & { page: number }>({
     search: "",
     status: "all",
-    clientCompany: ""
+    clientCompany: "",
+    page: 1
   });
   
-  const { data: orders = [], isLoading } = useOrdersList(user?.id, scope, {
+  const { data: response, isLoading } = useOrdersList(user?.id, scope, {
     search: filterValues.search,
     status: filterValues.status,
     clientCompany: filterValues.clientCompany,
     startDate: filterValues.dateRange?.from?.toISOString(),
-    endDate: filterValues.dateRange?.to?.toISOString()
+    endDate: filterValues.dateRange?.to?.toISOString(),
+    page: filterValues.page,
+    pageSize: 15
   });
+
+  const orders = response?.data || [];
+  const totalCount = response?.count || 0;
+  const totalPages = Math.ceil(totalCount / 15);
 
   const handleExport = (type: 'excel' | 'pdf') => {
     const data = orders.map(o => ({
@@ -77,7 +84,7 @@ export function OrdersPage() {
         <OrderStatsBar />
 
         <div className="bg-card rounded-xl border p-4 shadow-sm space-y-4">
-          <OrderFilters onFiltersChange={setFilterValues} />
+          <OrderFilters onFiltersChange={(v) => setFilterValues({ ...v, page: 1 })} />
           
           <div className="flex items-center justify-between gap-2 border-t pt-4">
             <p className="text-sm text-muted-foreground">
@@ -115,6 +122,30 @@ export function OrdersPage() {
             {orders.map((order) => (
               <OrderCard key={order.id} order={order} onClick={() => navigate(`/pedidos/${order.id}`)} />
             ))}
+          </div>
+        )}
+
+        {totalPages > 1 && (
+          <div className="flex items-center justify-center gap-2 mt-8">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => setFilterValues(prev => ({ ...prev, page: Math.max(1, prev.page - 1) }))}
+              disabled={filterValues.page === 1}
+            >
+              Anterior
+            </Button>
+            <span className="text-sm text-muted-foreground mx-2">
+              Página {filterValues.page} de {totalPages}
+            </span>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => setFilterValues(prev => ({ ...prev, page: Math.min(totalPages, prev.page + 1) }))}
+              disabled={filterValues.page === totalPages}
+            >
+              Próxima
+            </Button>
           </div>
         )}
       </div>

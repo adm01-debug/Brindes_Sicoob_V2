@@ -19,7 +19,7 @@ export * from "@/constants/orders";
 export function useOrdersList(
   sellerId?: string, 
   scope: "self" | "team" | "all" = "self",
-  filters?: OrderFilters
+  filters?: OrderFilters & { page?: number; pageSize?: number }
 ) {
   return useQuery({
     queryKey: ["orders", "list", sellerId, scope, filters],
