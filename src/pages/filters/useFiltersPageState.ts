@@ -132,10 +132,16 @@ export function useFiltersPageState() {
   const [isFiltering, setIsFiltering] = useState(false);
 
   const filtersJson = JSON.stringify(filters);
-  useEffect(() => { setIsFiltering(true); const timer = setTimeout(() => setIsFiltering(false), 350); return () => clearTimeout(timer); }, [filtersJson]);
+  useEffect(() => { 
+    setIsFiltering(true); 
+    const timer = setTimeout(() => setIsFiltering(false), 200); 
+    return () => clearTimeout(timer); 
+  }, [filtersJson]);
 
   const sortBy = filters.sortBy || 'name';
-  const setSortBy = useCallback((value: string) => { setFilters(prev => ({ ...prev, sortBy: value })); }, []);
+  const setSortBy = useCallback((value: string) => { 
+    setFilters(prev => (prev.sortBy === value ? prev : { ...prev, sortBy: value })); 
+  }, []);
 
   // Brindes Sicoob sales ranking (lazy — only fetched when needed)
   const { data: promoSalesMap } = usePromoSalesRanking();
