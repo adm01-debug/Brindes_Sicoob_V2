@@ -18,7 +18,7 @@ export default function GestorDashboardPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('profiles')
-        .select('*')
+        .select('id, user_id, full_name, avatar_url, role, cooperativa_id, pa_id')
         .eq('user_id', user?.id)
         .single();
       if (error) throw error;
