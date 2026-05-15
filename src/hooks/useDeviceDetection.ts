@@ -119,7 +119,7 @@ export function useDeviceDetection(targetUserId?: string) {
 
     const { data, error } = await supabase
       .from('user_known_devices')
-      .select('*')
+      .select('id, user_id, fingerprint, user_agent, browser_name, os_name, device_type, last_seen_at, is_trusted')
       .eq('user_id', effectiveUserId)
       .order('last_seen_at', { ascending: false });
 

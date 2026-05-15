@@ -256,11 +256,8 @@ export function VirtualizedProductGrid({
                       activeColorFilter={activeColorFilter}
                     />
                   ) : (
-                    <motion.div
+                    <div
                       key={product.id}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: colIndex * 0.05 }}
                       className={cn(
                         "relative transition-all duration-200",
                         selectionMode && selectedIds?.has(product.id) && "ring-2 ring-primary/50 rounded-2xl shadow-md"
@@ -298,7 +295,7 @@ export function VirtualizedProductGrid({
                         onShare={onShare}
                         activeColorFilter={activeColorFilter}
                       />
-                    </motion.div>
+                    </div>
                   )
                 )}
               </div>

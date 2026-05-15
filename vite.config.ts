@@ -28,8 +28,9 @@ export default defineConfig(({ mode }) => ({
   },
   
   esbuild: {
-    // Strip console.log/debug/info in production — keep warn/error for diagnostics
-    drop: mode === 'production' ? ['console', 'debugger'] : [],
+    // Keep console.warn/error for diagnostics in production
+    pure: mode === 'production' ? ['console.log', 'console.debug', 'console.info'] : [],
+    drop: mode === 'production' ? ['debugger'] : [],
   },
   
   build: {
@@ -42,78 +43,42 @@ export default defineConfig(({ mode }) => ({
     rollupOptions: {
       output: {
         manualChunks(id) {
-          // Admin & Quotes routes — isolando rotas pesadas
-          if (id.includes('src/pages/Admin/')) {
-            return 'admin-pages';
+          // Admin, Quotes, Sicoob — isolando rotas pesadas
+          if (id.includes('src/pages/admin/') || id.includes('src/pages/Admin/')) return 'admin-pages';
+          if (id.includes('src/pages/quotes/') || id.includes('src/pages/Quotes/')) return 'quotes-pages';
+          if (id.includes('src/pages/sicoob/') || id.includes('src/pages/Sicoob/')) return 'sicoob-pages';
+
+          // Core React & Router
+          if (id.includes('node_modules/react') || id.includes('node_modules/scheduler')) {
+            return 'core-vendor';
           }
-          if (id.includes('src/pages/Quotes/')) {
-            return 'quotes-pages';
-          }
-          if (id.includes('src/pages/Sicoob/')) {
-            return 'sicoob-pages';
+          
+          // Data & API
+          if (id.includes('node_modules/@tanstack/') || id.includes('node_modules/@supabase/') || id.includes('node_modules/supabase')) {
+            return 'data-vendor';
           }
 
-          // Core React
-          if (id.includes('node_modules/react/') || id.includes('node_modules/react-dom/')) {
-            return 'react-vendor';
-          }
-          if (id.includes('node_modules/react-router')) {
-            return 'router-vendor';
-          }
-          // UI primitives (Radix)
-          if (id.includes('node_modules/@radix-ui/')) {
+          // UI & Icons
+          if (id.includes('node_modules/@radix-ui/') || id.includes('node_modules/lucide-react/') || id.includes('node_modules/sonner/')) {
             return 'ui-vendor';
           }
-          // Data fetching
-          if (id.includes('node_modules/@tanstack/')) {
-            return 'query-vendor';
-          }
-          // Supabase client
-          if (id.includes('node_modules/@supabase/')) {
-            return 'supabase-vendor';
-          }
-          // Animation library — lazy loaded with most pages
+
+          // Animations
           if (id.includes('node_modules/framer-motion/')) {
             return 'motion-vendor';
           }
-          // Date utilities
-          if (id.includes('node_modules/date-fns/')) {
-            return 'date-vendor';
-          }
-          // Charts - isolate recharts into its own chunk (only loaded by dashboard pages)
-          if (id.includes('node_modules/recharts/') || id.includes('node_modules/d3-')) {
-            return 'charts-vendor';
-          }
-          // Icons — chunk único compartilhado entre rotas (cache de longo prazo).
-          // 680KB descomprimido / 118KB gzip carregado UMA vez por usuário.
-          // Otimização futura: migrar para imports `lucide-react/icons/<Name>`
-          // permitiria tree-shaking real por page-chunk.
-          if (id.includes('node_modules/lucide-react/')) {
-            return 'icons-vendor';
-          }
-          // Validation
-          if (id.includes('node_modules/zod/')) {
-            return 'zod-vendor';
-          }
-          // Form handling
-          if (id.includes('node_modules/react-hook-form/') || id.includes('node_modules/@hookform/')) {
-            return 'form-vendor';
-          }
-          // Sonner + toast
-          if (id.includes('node_modules/sonner/')) {
-            return 'toast-vendor';
-          }
-          // PDF/Export libs — only loaded on demand
-          if (id.includes('node_modules/jspdf') || id.includes('node_modules/html2canvas')) {
-            return 'export-vendor';
-          }
-          // DnD — only used in kit builder / kanban
-          if (id.includes('node_modules/@dnd-kit/')) {
-            return 'dnd-vendor';
-          }
-          // Markdown / Audit libs
-          if (id.includes('node_modules/react-markdown/') || id.includes('node_modules/remark-gfm/')) {
-            return 'audit-vendor';
+
+          // Utilities (Forms, Dates, Charts, PDF, DnD)
+          if (
+            id.includes('node_modules/react-hook-form/') || 
+            id.includes('node_modules/zod/') ||
+            id.includes('node_modules/date-fns/') ||
+            id.includes('node_modules/recharts/') ||
+            id.includes('node_modules/jspdf') ||
+            id.includes('node_modules/html2canvas') ||
+            id.includes('node_modules/@dnd-kit/')
+          ) {
+            return 'utils-vendor';
           }
         },
       },

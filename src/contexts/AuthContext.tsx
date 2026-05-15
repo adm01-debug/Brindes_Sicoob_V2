@@ -346,21 +346,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, [user, fetchUserData]);
 
   const role = useMemo(() => getHighestRole(userRoles), [userRoles]);
-  const isDev = userRoles.includes("dev");
-  const isGestorCompras = userRoles.includes("gestor_compras");
-  const isGerentePa = userRoles.includes("gerente_pa") || userRoles.includes("comprador_pac");
-  const isVendedor = userRoles.includes("vendedor");
-  const isSupervisor = userRoles.includes("supervisor") || userRoles.includes("admin");
-  const isAgente = userRoles.includes("agente");
-  const isCompradorSingular = userRoles.includes("comprador_singular") || userRoles.includes("gestor_compras");
-  const isSupervisorOrAbove = isDev || isSupervisor || isCompradorSingular;
-  const canManage = isSupervisorOrAbove;
+  const isDev = useMemo(() => userRoles.includes("dev"), [userRoles]);
+  const isGestorCompras = useMemo(() => userRoles.includes("gestor_compras"), [userRoles]);
+  const isGerentePa = useMemo(() => userRoles.includes("gerente_pa") || userRoles.includes("comprador_pac"), [userRoles]);
+  const isVendedor = useMemo(() => userRoles.includes("vendedor"), [userRoles]);
+  const isSupervisor = useMemo(() => userRoles.includes("supervisor") || userRoles.includes("admin"), [userRoles]);
+  const isAgente = useMemo(() => userRoles.includes("agente"), [userRoles]);
+  const isCompradorSingular = useMemo(() => userRoles.includes("comprador_singular") || userRoles.includes("gestor_compras"), [userRoles]);
+  const isSupervisorOrAbove = useMemo(() => isDev || isSupervisor || isCompradorSingular, [isDev, isSupervisor, isCompradorSingular]);
+  const canManage = useMemo(() => isSupervisorOrAbove, [isSupervisorOrAbove]);
 
-  const cooperativaId = profile?.cooperativa_id || null;
-  const paId = profile?.pa_id || null;
+  const cooperativaId = useMemo(() => profile?.cooperativa_id || null, [profile?.cooperativa_id]);
+  const paId = useMemo(() => profile?.pa_id || null, [profile?.pa_id]);
 
-
-  const value: AuthContextType = {
+  const value = useMemo((): AuthContextType => ({
     user,
     session,
     profile,
@@ -390,7 +389,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     signOut,
     refreshProfile,
     refreshSession,
-  };
+  }), [
+    user, session, profile, isLoading, userRoles, role, isDev, isGestorCompras, 
+    isGerentePa, isVendedor, isSupervisor, isAgente, isSupervisorOrAbove, 
+    canManage, cooperativaId, paId, currentAAL, nextAAL, hasMFA, rolesLoaded, 
+    fetchAAL, refreshSession
+  ]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
