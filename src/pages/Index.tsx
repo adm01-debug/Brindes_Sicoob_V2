@@ -17,6 +17,7 @@ export default function Index() {
   const catalog = useCatalogState();
   const [variantForShare, setVariantForShare] = useState<ExternalVariantStock | null | undefined>(undefined);
   const variantSelectedRef = useRef(false);
+  const shareDialogOpenRef = useRef(false);
   // undefined = picker not answered yet; null = "sem cor específica"; object = selected variant
 
   return (
@@ -137,7 +138,7 @@ export default function Index() {
         <VariantPickerDialog
           open
           onOpenChange={(open) => {
-            if (!open && !variantSelectedRef.current) {
+            if (!open && !variantSelectedRef.current && !shareDialogOpenRef.current) {
               catalog.setShareProduct(null);
             }
             variantSelectedRef.current = false;
@@ -157,6 +158,7 @@ export default function Index() {
         <SharePreviewDialog
           open
           onOpenChange={(open) => {
+            shareDialogOpenRef.current = open;
             if (!open) {
               catalog.setShareProduct(null);
               setVariantForShare(undefined);
