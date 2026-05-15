@@ -24,25 +24,41 @@ export class QuoteService {
   }
 
   static async getById(quoteId: string): Promise<Quote | null> {
-    const { data: quoteData, error: qErr } = await supabase.from("quotes").select("*").eq("id", quoteId).single();
-    if (qErr) throw qErr;
-    if (!quoteData) return null;
+    try {
+      const { data: quoteData, error: qErr } = await supabase.from("quotes").select("*").eq("id", quoteId).maybeSingle();
+      if (qErr) {
+        logger.error("Error fetching quote:", qErr);
+        throw qErr;
+      }
+      if (!quoteData) return null;
 
-    const { data: itemsData } = await supabase.from("quote_items").select("*").eq("quote_id", quoteId).order("sort_order", { ascending: true });
-    
-    const itemIds = (itemsData || []).map((i) => i.id);
-    let allPersonalizations: Array<Record<string, unknown>> = [];
-    if (itemIds.length > 0) {
-      const { data: persData } = await supabase.from("quote_item_personalizations").select("*").in("quote_item_id", itemIds);
-      allPersonalizations = (persData || []) as Array<Record<string, unknown>>;
+      const { data: itemsData, error: iErr } = await supabase.from("quote_items").select("*").eq("quote_id", quoteId).order("sort_order", { ascending: true });
+      if (iErr) {
+        logger.error("Error fetching quote items:", iErr);
+        throw iErr;
+      }
+      
+      const itemIds = (itemsData || []).map((i) => i.id);
+      let allPersonalizations: Array<Record<string, unknown>> = [];
+      if (itemIds.length > 0) {
+        const { data: persData, error: pErr } = await supabase.from("quote_item_personalizations").select("*").in("quote_item_id", itemIds);
+        if (pErr) {
+          logger.error("Error fetching quote personalizations:", pErr);
+          throw pErr;
+        }
+        allPersonalizations = (persData || []) as Array<Record<string, unknown>>;
+      }
+
+      const items: QuoteItem[] = (itemsData || []).map((item) => ({
+        ...item,
+        personalizations: (allPersonalizations as any[]).filter(p => p.quote_item_id === item.id) as QuoteItemPersonalization[],
+      }));
+
+      return { ...quoteData, items } as Quote;
+    } catch (err) {
+      logger.error("Unexpected error in QuoteService.getById:", err);
+      throw err;
     }
-
-    const items: QuoteItem[] = (itemsData || []).map((item) => ({
-      ...item,
-      personalizations: (allPersonalizations as any[]).filter(p => p.quote_item_id === item.id) as QuoteItemPersonalization[],
-    }));
-
-    return { ...quoteData, items } as Quote;
   }
 
   static async create(params: { quote: Partial<Quote>, items: QuoteItem[], userId: string, orgId: string | null }): Promise<Quote> {
