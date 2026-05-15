@@ -8,23 +8,19 @@ export function useUserProfile() {
   const [profile, setProfile] = useState<Profile | null>(null);
 
   const fetchProfile = useCallback(async (userId: string) => {
+    if (!userId) return;
     try {
       const { data, error } = await authService.fetchProfile(userId);
       if (error) throw error;
       
       if (data) {
-        // Use functional state update to prevent stale closures and unnecessary re-renders
         setProfile(prev => {
-          if (JSON.stringify(prev) === JSON.stringify(data)) return prev;
+          if (prev?.user_id === data.user_id && prev?.updated_at === data.updated_at) return prev;
           return data as Profile;
         });
         
-        // Non-blocking update of last_login_at
-        supabase
-          .from("profiles")
-          .update({ last_login_at: new Date().toISOString() })
-          .eq("user_id", userId)
-          .catch(() => {});
+        // Background update of last_login_at
+        authService.updateLastLogin(userId).catch(() => {});
       }
     } catch (error) {
       authDebugError("useUserProfile", "Failed to fetch profile", error);
