@@ -35,12 +35,12 @@ export function SingleVariantPicker({ productId, onSelect, compact, className }:
 
   // Auto-skip when no variants — use setTimeout to let dialog mount first
   useEffect(() => {
-    if (!isLoading && !sortedVariants.length) {
+    if (!isLoading && variants !== undefined && sortedVariants.length === 0) {
       const t = setTimeout(() => onSelect(null), 150);
       return () => clearTimeout(t);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isLoading, sortedVariants.length]);
+  }, [isLoading, variants, sortedVariants.length]);
 
   if (isLoading) {
     return (

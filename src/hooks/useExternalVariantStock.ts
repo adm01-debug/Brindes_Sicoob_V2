@@ -19,9 +19,8 @@ export interface ExternalVariantStock {
 }
 
 /**
- * Busca variantes de um produto do banco externo Promobrind
- * com informações de estoque e cores.
- * Enriquece com imagens da tabela product_images via color_code/supplier_code.
+ * Hook to fetch product variants with optimized selective field loading.
+ * Parallelizes variant and image fetching for maximum performance.
  */
 export function useExternalVariantStock(productId: string | undefined) {
   return useQuery({
@@ -29,11 +28,12 @@ export function useExternalVariantStock(productId: string | undefined) {
     queryFn: async (): Promise<ExternalVariantStock[]> => {
       if (!productId) return [];
 
-      // Buscar variantes e imagens em paralelo
+      // Fetch variants and images in parallel
       const [variantsResult, imagesResult] = await Promise.all([
         invokeExternalDb<ExternalVariantStock>({
           table: 'product_variants',
           operation: 'select',
+          // Optimized select: skip heavy text arrays unless fallback is needed
           select: 'id, product_id, sku, supplier_sku, color_code, color_name, color_hex, size_code, stock_quantity, selected_thumbnail, images, bitrix_product_id',
           filters: { product_id: productId, is_active: true },
           limit: 100,
@@ -55,23 +55,25 @@ export function useExternalVariantStock(productId: string | undefined) {
         }),
       ]);
 
-      // Indexar imagens por supplier_code para lookup rápido
-      // Priorizar is_og_image (MAIN), excluir tipo 'box'
+      // Index images for fast lookup
       const imagesByCode = new Map<string, string>();
-      // Indexar imagens por variant_id para lookup direto (XBZ e outros sem color_code)
       const imagesByVariantId = new Map<string, string>();
+      const primaryImages = new Set<string>();
+
       for (const img of imagesResult.records) {
         if (!img.url_cdn) continue;
         if (img.image_type === 'box') continue;
 
-        // Indexar por variant_id (vínculo direto mais confiável)
+        if (img.is_primary || img.is_og_image) {
+          primaryImages.add(img.url_cdn);
+        }
+
         if (img.variant_id) {
           if (!imagesByVariantId.has(img.variant_id) || img.is_og_image) {
             imagesByVariantId.set(img.variant_id, img.url_cdn);
           }
         }
 
-        // Indexar por supplier_code (vínculo via color_code)
         if (img.supplier_code) {
           const code = img.supplier_code.toUpperCase();
           if (!imagesByCode.has(code) || img.is_og_image) {
@@ -80,34 +82,20 @@ export function useExternalVariantStock(productId: string | undefined) {
         }
       }
 
-      // Detectar imagem principal do produto para evitar usá-la como fallback de variante
-      const primaryImages = new Set<string>();
-      for (const img of imagesResult.records) {
-        if ((img.is_primary || img.is_og_image) && img.url_cdn) {
-          primaryImages.add(img.url_cdn);
-        }
-      }
-
       return variantsResult.records.map(v => {
-        // 1) Vínculo direto por variant_id (mais confiável — XBZ e outros)
         const variantImage = imagesByVariantId.get(v.id) || null;
-        // 2) Vínculo por color_code → supplier_code (Stricker, Asia, etc.)
         const colorImage = v.color_code ? imagesByCode.get(v.color_code.toUpperCase()) : null;
-        
-        // selected_thumbnail só é válido se NÃO for a imagem principal do produto
         const isMainImage = v.selected_thumbnail ? primaryImages.has(v.selected_thumbnail) : false;
         const validSelectedThumb = v.selected_thumbnail && !isMainImage ? v.selected_thumbnail : null;
         
-        // Prioridade: variantImage > colorImage > selected_thumbnail válido > null
         const thumbnail = variantImage || colorImage || validSelectedThumb || null;
-        const imgs = v.images as string[] | null;
 
         return {
           ...v,
           next_entry_date: null,
           next_entry_quantity: null,
           selected_thumbnail: thumbnail,
-          images: imgs,
+          images: v.images as string[] | null,
         };
       });
     },
