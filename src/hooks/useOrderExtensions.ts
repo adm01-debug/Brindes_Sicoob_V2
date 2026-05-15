@@ -233,6 +233,7 @@ export const useOrderComments = (orderId?: string, filters?: { search?: string }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["order-comments", orderId] });
+      queryClient.invalidateQueries({ queryKey: ["order-audit", orderId] });
       toast.success("Comentário enviado");
     },
   });
