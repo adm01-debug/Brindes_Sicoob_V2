@@ -104,7 +104,10 @@ export function ProductsProvider({ children }: { children: ReactNode }) {
       const found: Product[] = [];
       const missing: string[] = [];
 
-      for (const id of ids) {
+      // Deduplicate requested IDs
+      const uniqueIds = Array.from(new Set(ids));
+
+      for (const id of uniqueIds) {
         const cached = cacheRef.current.get(id);
         if (cached) {
           found.push(cached);
@@ -129,7 +132,9 @@ export function ProductsProvider({ children }: { children: ReactNode }) {
       const next = new Map(prev);
       let changed = false;
       for (const p of products) {
-        if (!next.has(p.id)) {
+        // deep compare to ensure we only update if data changed
+        const existing = next.get(p.id);
+        if (!existing || JSON.stringify(existing) !== JSON.stringify(p)) {
           next.set(p.id, p);
           changed = true;
         }
