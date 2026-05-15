@@ -189,8 +189,8 @@ export const ProductCard = memo(forwardRef<HTMLElement, ProductCardProps>(functi
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => { setIsHovered(false); setActionsOpen(false); }}
       onClick={(e) => {
-        if (actionsOpen || actionBusyRef.current || variantPickerOpen || collectionModalOpen || quickViewOpen) { e.stopPropagation(); return; }
-        if (currentVariant?.name) {
+        if (actionsOpen || actionBusyRef.current || variantPickerOpen || collectionModalOpen || quickViewOpen || shareDialogOpen) { e.stopPropagation(); return; }
+        if (currentVariant?.name && !e.shiftKey) {
           const params = new URLSearchParams();
           params.set('cor', currentVariant.name);
           if (currentVariant.groupSlug) params.set('grupo', currentVariant.groupSlug);

@@ -33,14 +33,14 @@ export function SingleVariantPicker({ productId, onSelect, compact, className }:
 
   const fmt = (qty: number) => (qty >= 1000 ? `${(qty / 1000).toFixed(1)}k` : qty.toString());
 
-  // Auto-skip when no variants — use setTimeout to let dialog mount first
+  // Auto-skip when no variants — use requestAnimationFrame to let dialog mount first
   useEffect(() => {
-    if (!isLoading && !sortedVariants.length) {
-      const t = setTimeout(() => onSelect(null), 150);
-      return () => clearTimeout(t);
+    if (!isLoading && variants !== undefined && sortedVariants.length === 0) {
+      const raf = requestAnimationFrame(() => onSelect(null));
+      return () => cancelAnimationFrame(raf);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isLoading, sortedVariants.length]);
+  }, [isLoading, variants, sortedVariants.length]);
 
   if (isLoading) {
     return (

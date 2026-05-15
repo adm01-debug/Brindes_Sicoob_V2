@@ -67,8 +67,10 @@ export function VariantPickerDialog({
 
   const handleSelect = (variant: ExternalVariantStock | null) => {
     onComplete(variant);
-    // Delay close to let parent state update propagate first (avoids race condition)
-    setTimeout(() => onOpenChange(false), 0);
+    // Use requestAnimationFrame to ensure state updates are queued
+    requestAnimationFrame(() => {
+      onOpenChange(false);
+    });
   };
 
   return (

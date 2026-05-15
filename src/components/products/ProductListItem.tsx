@@ -171,7 +171,8 @@ export const ProductListItem = memo(function ProductListItem({
   const handleClick = () => {
     if (actionBusyRef.current || variantPickerOpen || collectionModalOpen || quickViewOpen || shareDialogOpen) return;
     // When a specific color variant is active (from carousel/filter), navigate with color param
-    if (currentVariant?.name) {
+    // Shift+click bypasses color param to go to main product
+    if (currentVariant?.name && !window.event?.shiftKey) {
       const params = new URLSearchParams();
       params.set('cor', currentVariant.name);
       if (currentVariant.groupSlug) params.set('grupo', currentVariant.groupSlug);
