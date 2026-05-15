@@ -22,8 +22,10 @@ installGlobalErrorHandlers();
 // Inject traceability headers
 injectRequestId();
 
-// Start Core Web Vitals monitoring
-reportWebVitals();
+// Start Core Web Vitals monitoring (deferred)
+if (import.meta.env.PROD) {
+  import("@/lib/telemetry/webVitals").then(({ reportWebVitals }) => reportWebVitals());
+}
 
 // Inicializa auto-reload para erros de pré-condição (412) no preview
 setupPreviewAutoReload();
