@@ -94,10 +94,6 @@ const App = () => {
   useGlobalErrorCatcher();
 
   useEffect(() => {
-    const cfg = loadThemeConfig();
-    const mode = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
-    applyThemePreset(cfg.presetId, mode);
-    applyRadius(cfg.radius);
     markBootSuccessful();
   }, []);
 
