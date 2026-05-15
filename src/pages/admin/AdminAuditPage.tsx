@@ -15,7 +15,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import * as XLSX from 'xlsx';
+import * as XLSX from '@e965/xlsx';
 
 export default function AdminAuditPage() {
   const navigate = useNavigate();
