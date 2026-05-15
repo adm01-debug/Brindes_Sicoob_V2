@@ -63,3 +63,10 @@ export const FULFILLMENT_COLORS: Record<string, string> = {
   partial: "bg-warning/15 text-warning/80 border-warning/25",
   fulfilled: "bg-primary/20 text-primary border-primary/30",
 };
+
+export function canTransitionTo(current: string, next: string): boolean {
+  if (current === next) return true;
+  const validNext = VALID_TRANSITIONS[current as OrderStatus] || [];
+  return validNext.includes(next as OrderStatus);
+}
+
