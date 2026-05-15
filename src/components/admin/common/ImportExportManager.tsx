@@ -11,7 +11,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { FileUp, FileDown, AlertCircle, CheckCircle2, Loader2, Table as TableIcon, Download } from "lucide-react";
-import * as XLSX from 'xlsx';
+import * as XLSX from '@e965/xlsx';
 import Papa from 'papaparse';
 import { toast } from "sonner";
 import { ScrollArea } from "@/components/ui/scroll-area";

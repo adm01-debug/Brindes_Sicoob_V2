@@ -15,7 +15,7 @@ import { AdminDataTable } from "@/components/admin/common/AdminDataTable";
 import { ImportExportManager } from "@/components/admin/common/ImportExportManager";
 import { CategoryTreeDiagram } from "./CategoryTreeDiagram";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import * as XLSX from 'xlsx';
+import * as XLSX from '@e965/xlsx';
 import { logAdminAction } from "@/utils/adminAudit";
 import { useAdminPermissions } from "@/hooks/useAdminPermissions";
 

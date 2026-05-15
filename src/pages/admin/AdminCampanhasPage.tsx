@@ -16,7 +16,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { format, isWithinInterval, startOfDay, endOfDay } from "date-fns";
 import { logAdminAction } from "@/utils/adminAudit";
-import * as XLSX from 'xlsx';
+import * as XLSX from '@e965/xlsx';
 
 export default function AdminCampanhasPage() {
   const [campaigns, setCampaigns] = useState<any[]>([]);
