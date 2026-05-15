@@ -1,5 +1,5 @@
 import { useParams, useNavigate } from "react-router-dom";
-import { Package, ArrowLeft, FileText, CreditCard, Clock } from "lucide-react";
+import { Package, ArrowLeft, FileText, CreditCard, Clock, Truck, MessageSquare } from "lucide-react";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { PageSEO } from "@/components/seo/PageSEO";
 import { Button } from "@/components/ui/button";
@@ -7,8 +7,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { OrderStatusTimeline } from "@/components/orders/OrderStatusTimeline";
 import { OrderFulfillmentManager } from "@/components/orders/OrderFulfillmentManager";
+import { OrderInvoicesManager } from "@/components/orders/OrderInvoicesManager";
+import { OrderLogisticsTracking } from "@/components/orders/OrderLogisticsTracking";
 import { OrderPilotWorkflow } from "@/components/orders/OrderPilotWorkflow";
 import { OrderAuditTimeline } from "@/components/orders/OrderAuditTimeline";
 import { OrderComments } from "@/components/orders/OrderComments";
@@ -69,18 +72,48 @@ export default function OrderDetailPage() {
           <div className="lg:col-span-2 space-y-6">
             <OrderSellerActions order={order} />
 
-            <div className="space-y-0">
-              <OrderItemsList items={items} />
-              <Card className="mt-[-1px] rounded-t-none">
-                <CardContent className="pt-0">
-                  <OrderSummary order={order} />
-                </CardContent>
-              </Card>
-            </div>
+            <Tabs defaultValue="items" className="w-full">
+              <TabsList className="grid w-full grid-cols-4">
+                <TabsTrigger value="items" className="gap-2">
+                  <Package className="h-4 w-4" /> Itens
+                </TabsTrigger>
+                <TabsTrigger value="logistics" className="gap-2">
+                  <Truck className="h-4 w-4" /> Logística
+                </TabsTrigger>
+                <TabsTrigger value="invoices" className="gap-2">
+                  <FileText className="h-4 w-4" /> Notas
+                </TabsTrigger>
+                <TabsTrigger value="chat" className="gap-2">
+                  <MessageSquare className="h-4 w-4" /> Chat
+                </TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="items" className="space-y-6 mt-4">
+                <div className="space-y-0">
+                  <OrderItemsList items={items} />
+                  <Card className="mt-[-1px] rounded-t-none">
+                    <CardContent className="pt-0">
+                      <OrderSummary order={order} />
+                    </CardContent>
+                  </Card>
+                </div>
+                <OrderPilotWorkflow orderId={order.id} />
+              </TabsContent>
 
-            <OrderFulfillmentManager order={order} />
-            <OrderPilotWorkflow orderId={order.id} />
-            <OrderComments orderId={order.id} />
+              <TabsContent value="logistics" className="mt-4 space-y-4">
+                <OrderLogisticsTracking orderId={order.id} />
+                <OrderFulfillmentManager orderId={order.id} currentFulfillmentStatus={order.fulfillment_status} />
+              </TabsContent>
+
+              <TabsContent value="invoices" className="mt-4">
+                <OrderInvoicesManager orderId={order.id} />
+              </TabsContent>
+
+              <TabsContent value="chat" className="mt-4">
+                <OrderComments orderId={order.id} />
+              </TabsContent>
+            </Tabs>
+
             <OrderAuditTimeline orderId={order.id} />
           </div>
 

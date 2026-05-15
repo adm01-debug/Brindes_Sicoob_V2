@@ -48,6 +48,43 @@ export interface OrderItem {
   created_at?: string;
 }
 
+export interface OrderLogistics {
+  id: string;
+  order_id: string;
+  tracking_number: string | null;
+  carrier: string | null;
+  shipping_type: string | null;
+  estimated_delivery: string | null;
+  actual_delivery: string | null;
+  status: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface OrderInvoice {
+  id: string;
+  order_id: string;
+  invoice_number: string;
+  access_key: string | null;
+  file_url: string | null;
+  total_amount: number | null;
+  created_at: string;
+}
+
+export interface OrderComment {
+  id: string;
+  order_id: string;
+  author_id: string;
+  content: string;
+  is_internal: boolean;
+  attachments: any | null;
+  created_at: string;
+  author?: {
+    full_name: string | null;
+    avatar_url: string | null;
+  };
+}
+
 export interface OrderFilters {
   search?: string;
   status?: string;

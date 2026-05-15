@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { OrderService } from "@/services/OrderService";
 
 export interface PilotApproval {
   id: string;
@@ -37,6 +38,8 @@ export function usePilotApprovals(orderId: string) {
 
   const createApproval = useMutation({
     mutationFn: async (payload: Partial<PilotApproval>) => {
+      const { data: { user } } = await supabase.auth.getUser();
+      
       const { data, error } = await supabase
         .from("order_pilot_approvals")
         .insert({
@@ -49,10 +52,21 @@ export function usePilotApprovals(orderId: string) {
         .single();
       
       if (error) throw error;
+
+      // Log audit
+      await OrderService.logAudit({
+        orderId,
+        eventType: 'pilot_created',
+        description: `Novo piloto enviado para aprovação`,
+        metadata: { photo_url: payload.mockup_url },
+        createdByName: user?.email
+      });
+
       return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["order_pilot_approvals", orderId] });
+      queryClient.invalidateQueries({ queryKey: ["order-audit", orderId] });
       toast.success("Solicitação de piloto criada");
     },
   });
@@ -60,6 +74,7 @@ export function usePilotApprovals(orderId: string) {
   const updateStatus = useMutation({
     mutationFn: async ({ id, status, notes }: { id: string, status: string, notes?: string }) => {
       const { data: { user } } = await supabase.auth.getUser();
+      
       const { error } = await supabase
         .from("order_pilot_approvals")
         .update({ 
@@ -72,9 +87,20 @@ export function usePilotApprovals(orderId: string) {
         .eq("id", id);
       
       if (error) throw error;
+
+      // Log audit
+      await OrderService.logAudit({
+        orderId,
+        eventType: 'pilot_update',
+        description: `Piloto ${status === 'approved' ? 'Aprovado' : status === 'rejected' ? 'Rejeitado' : 'com Ajuste Solicitado'}`,
+        metadata: { status, notes },
+        createdByName: user?.email
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["order_pilot_approvals", orderId] });
+      queryClient.invalidateQueries({ queryKey: ["order-audit", orderId] });
+      queryClient.invalidateQueries({ queryKey: ["orders"] });
       toast.success("Status do piloto atualizado");
     },
   });
