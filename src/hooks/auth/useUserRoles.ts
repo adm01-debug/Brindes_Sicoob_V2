@@ -15,15 +15,19 @@ export function useUserRoles() {
       try {
         let result = await authService.queryRoles(userId);
         
-        // Retry logic as seen in original code
+        // Retry logic for potential eventual consistency in Edge Auth
         if (!result.error && (!result.data || result.data.length === 0)) {
-          await new Promise((r) => setTimeout(r, 250));
+          await new Promise((r) => setTimeout(r, 500)); // Increased to 500ms
           result = await authService.queryRoles(userId);
         }
 
         if (result.data && result.data.length > 0) {
           const roles = result.data.map((r) => r.role as AppRole);
-          setUserRoles(roles);
+          setUserRoles(prev => {
+             // Only update if roles actually changed
+             if (prev.length === roles.length && prev.every((v, i) => v === roles[i])) return prev;
+             return roles;
+          });
           setRolesLoaded(true);
         }
       } catch (error) {
