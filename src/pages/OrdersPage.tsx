@@ -84,7 +84,7 @@ export function OrdersPage() {
         <OrderStatsBar />
 
         <div className="bg-card rounded-xl border p-4 shadow-sm space-y-4">
-          <OrderFilters onFiltersChange={setFilterValues} />
+          <OrderFilters onFiltersChange={(v) => setFilterValues({ ...v, page: 1 })} />
           
           <div className="flex items-center justify-between gap-2 border-t pt-4">
             <p className="text-sm text-muted-foreground">
