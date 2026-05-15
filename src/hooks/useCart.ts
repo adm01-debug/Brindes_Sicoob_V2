@@ -113,6 +113,20 @@ export function useCart() {
       queryClient.invalidateQueries({ queryKey: [QUERY_KEY] });
       toast.success("Item removido do carrinho");
     },
+    onMutate: async (itemId) => {
+      await queryClient.cancelQueries({ queryKey: [QUERY_KEY] });
+      const previous = queryClient.getQueryData<CartItem[]>([QUERY_KEY, userId]);
+      if (previous) {
+        queryClient.setQueryData<CartItem[]>(
+          [QUERY_KEY, userId],
+          previous.filter((it) => it.id !== itemId)
+        );
+      }
+      return { previous };
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEY] });
+    },
   });
 
   const updateQuantity = useMutation({
@@ -158,6 +172,15 @@ export function useCart() {
       if (error) throw error;
     },
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEY] });
+    },
+    onMutate: async () => {
+      await queryClient.cancelQueries({ queryKey: [QUERY_KEY] });
+      const previous = queryClient.getQueryData<CartItem[]>([QUERY_KEY, userId]);
+      queryClient.setQueryData<CartItem[]>([QUERY_KEY, userId], []);
+      return { previous };
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: [QUERY_KEY] });
     },
   });
