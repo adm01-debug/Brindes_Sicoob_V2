@@ -8,7 +8,7 @@ import EnhancedErrorBoundary from "@/components/errors/EnhancedErrorBoundary";
 import "@/lib/diagnostics"; // Initialize diagnostics early
 import { setupPreviewAutoReload } from "@/lib/preview-auto-reload";
 import { injectRequestId } from "@/lib/request-id-injection";
-import { reportWebVitals } from "@/lib/telemetry/webVitals";
+// Web Vitals is loaded dynamically
 import App from "./App.tsx";
 import "./index.css";
 
