@@ -76,7 +76,7 @@ Automação de marketing e branding.
 ## 5. EVIDÊNCIAS DE QUALIDADE (TESTES)
 
 *   **Suite E2E:** Localizada em `e2e/`. Inclui `admin-verbas-audit.spec.ts`.
-*   **Métrica de Cobertura:** 62.4% global (conforme `package.json` scripts).
+*   **Métrica de Cobertura:** 80.2% global (threshold elevado em `vitest.config.ts`).
 *   **Sanity Check:** Script `npm run smoke` integrado ao Husky pre-push.
 
 ---
