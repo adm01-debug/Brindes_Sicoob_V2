@@ -139,7 +139,7 @@ export function useCatalogState() {
   const hasColorFilterActive = (filterState.filters.colorGroups?.length || 0) > 0 || (filterState.filters.colorVariations?.length || 0) > 0;
   const paginatedProductIds = useMemo(() => rawPaginatedProducts.map(p => p.id), [rawPaginatedProducts]);
   
-  const { data: catalogColorEnrichmentMap } = useColorEnrichment({
+  const { data: catalogColorEnrichmentMap, isFetching: isEnrichingColors } = useColorEnrichment({
     productIds: paginatedProductIds,
     colorGroups: filterState.filters.colorGroups || [],
     colorVariations: filterState.filters.colorVariations || [],
@@ -237,6 +237,7 @@ export function useCatalogState() {
     totalEstimate,
     hasNextPage,
     statBadges,
+    isEnrichingColors,
 
     resetFilters,
     handleViewProduct,
