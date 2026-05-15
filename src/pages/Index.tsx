@@ -81,10 +81,11 @@ export default function Index() {
               setViewMode={catalog.setViewMode}
               gridColumns={catalog.gridColumns}
               setGridColumns={catalog.setGridColumns}
-              selectionMode={catalog.selectionMode}
-              onToggleSelectionMode={catalog.toggleSelectionMode}
-              selectedCount={catalog.selectedCount}
-            />
+               selectionMode={catalog.selectionMode}
+               onToggleSelectionMode={catalog.toggleSelectionMode}
+               selectedCount={catalog.selectedCount}
+               isEnrichingColors={catalog.isEnrichingColors}
+             />
             </div>
 
             {/* Active filter badges */}
