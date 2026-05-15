@@ -101,9 +101,12 @@ export function Header({ onMenuToggle, searchQuery, onSearchChange }: HeaderProp
 
   // #10 — Truncate inteligente: "Joaquim Ataides" → "Joaquim A."
   const truncatedName = (() => {
+    if (!displayName) return "Usuário";
     const parts = displayName.trim().split(/\s+/);
     if (parts.length <= 1) return displayName;
-    return `${parts[0]} ${parts[parts.length - 1][0]}.`;
+    const first = parts[0];
+    const lastInitial = parts[parts.length - 1][0];
+    return `${first} ${lastInitial}.`;
   })();
 
   return (
