@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { useCallback } from "react";
 
 export interface CartItem {
   id: string;
@@ -165,6 +166,10 @@ export function useCart() {
   const subtotal = cartItems.reduce((sum, item) => sum + (item.product_price * item.quantity), 0);
   const totalItemsCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
 
+  const getOptimisticQuantity = useCallback((itemId: string) => {
+    return cartItems.find(it => it.id === itemId)?.quantity ?? 0;
+  }, [cartItems]);
+
   return {
     items: cartItems,
     isLoading: cartQuery.isLoading,
@@ -175,5 +180,6 @@ export function useCart() {
     updateQuantity,
     clearCart,
     refetch: cartQuery.refetch,
+    getOptimisticQuantity,
   };
 }
