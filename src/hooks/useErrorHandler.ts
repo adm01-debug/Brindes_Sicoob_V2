@@ -1,6 +1,7 @@
 import { useCallback, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { reportError } from '@/lib/error-reporter';
 
 interface ErrorHandlerOptions {
   /** Custom message shown in toast. Falls back to error.message */
@@ -31,8 +32,13 @@ export function useErrorHandler() {
         (error instanceof Error ? error.message : 'Ocorreu um erro inesperado');
 
       console.error('[useErrorHandler]', error);
-
-      // Log to query_telemetry if it's a DB error
+      
+      // Centralized reporting
+      if (error instanceof Error) {
+        reportError(error, { context: 'useErrorHandler', ...(options?.message ? { customMessage: options.message } : {}) });
+      } else {
+        reportError(new Error(msg), { context: 'useErrorHandler', originalError: error });
+      }
       if (error && typeof error === 'object' && 'code' in error) {
         const pgError = error as { code: string; message: string };
         const isRls = pgError.code === '42501';
@@ -98,6 +104,11 @@ export function useGlobalErrorCatcher() {
           type: 'runtime'
         } 
       }));
+
+      // Fallback for global reporter if not already caught
+      if (event.error instanceof Error) {
+        reportError(event.error, { type: 'unhandled_error_global' });
+      }
     };
 
     const onUnhandledRejection = (event: PromiseRejectionEvent) => {
@@ -112,6 +123,10 @@ export function useGlobalErrorCatcher() {
           type: isCritical ? 'server' : 'rejection'
         } 
       }));
+
+      if (event.reason instanceof Error) {
+        reportError(event.reason, { type: 'unhandled_rejection_global' });
+      }
     };
 
     window.addEventListener('error', onUnhandled);
