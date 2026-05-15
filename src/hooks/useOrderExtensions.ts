@@ -22,6 +22,10 @@ export const useOrderLogistics = (orderId?: string) => {
     onError: (error: any) => {
       toast.error("Erro ao atualizar logística: " + error.message);
     },
+    onSettled: () => {
+      // Invalidate the order data as well since logistics updates might affect fulfillment status
+      queryClient.invalidateQueries({ queryKey: ["orders"] });
+    },
   });
 
   return { logistics, isLoading, updateLogistics };
