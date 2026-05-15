@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { History, Circle, ArrowRight, Filter, SortAsc, SortDesc, Search, ChevronUp, ChevronDown } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { History, Circle, ArrowRight, Filter, SortAsc, SortDesc, Search, ChevronUp, Loader2 } from "lucide-react";
 import { useOrderAudit } from "@/hooks/useOrderExtensions";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -19,7 +19,7 @@ export function OrderAuditTimeline({ orderId }: OrderAuditTimelineProps) {
   const { auditEvents: events, totalCount, isLoading, page, setPage, pageSize } = useOrderAudit(orderId, { search, event_type: type });
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
 
-  if (isLoading && page === 1) return <div className="h-32 flex items-center justify-center">Carregando histórico...</div>;
+  if (isLoading && page === 1) return <Card className="h-32 flex items-center justify-center"><Loader2 className="h-6 w-6 animate-spin mr-2" /> Carregando histórico...</Card>;
 
   const sortedEvents = events ? [...events].sort((a, b) => {
     const dateA = new Date(a.created_at).getTime();
@@ -31,9 +31,12 @@ export function OrderAuditTimeline({ orderId }: OrderAuditTimelineProps) {
     <Card data-testid="order-audit-timeline">
       <CardHeader className="flex flex-col space-y-4 pb-3">
         <div className="flex flex-row items-center justify-between">
-          <CardTitle className="text-base flex items-center gap-2">
-            <History className="h-4 w-4 text-primary" /> Timeline de Auditoria
-          </CardTitle>
+          <div>
+            <CardTitle className="text-base flex items-center gap-2">
+              <History className="h-4 w-4 text-primary" /> Timeline de Auditoria
+            </CardTitle>
+            <CardDescription>Rastreabilidade completa de todas as alterações.</CardDescription>
+          </div>
           <div className="flex items-center gap-2">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -45,6 +48,7 @@ export function OrderAuditTimeline({ orderId }: OrderAuditTimelineProps) {
                 <DropdownMenuItem onClick={() => setType("all")}>Todos</DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setType("status_change")}>Mudanças de Status</DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setType("comment")}>Comentários</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setType("logistics")}>Logística</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
             <Button 
@@ -75,7 +79,7 @@ export function OrderAuditTimeline({ orderId }: OrderAuditTimelineProps) {
           <div className="flex items-center justify-center gap-2 py-2 border-b mb-4">
             <Button 
               variant="ghost" 
-              size="xs" 
+              size="sm" 
               className="h-7 text-[10px]" 
               onClick={() => setPage(p => p + 1)}
               disabled={page * pageSize >= totalCount}
@@ -103,15 +107,16 @@ export function OrderAuditTimeline({ orderId }: OrderAuditTimelineProps) {
                   </span>
                 </div>
                 
-                {event.metadata && Object.keys(event.metadata).length > 0 && (
-                   <div className="mt-1 flex items-center gap-1 text-[11px] text-muted-foreground">
+                {event.metadata && typeof event.metadata === 'object' && Object.keys(event.metadata).length > 0 && (
+                   <div className="mt-1 flex flex-wrap items-center gap-1 text-[11px] text-muted-foreground">
                      {event.metadata.old_status && (
                        <>
                          <Badge variant="outline" className="text-[10px] font-normal">{event.metadata.old_status}</Badge>
                          <ArrowRight className="h-3 w-3" />
                        </>
                      )}
-                     <Badge variant="secondary" className="text-[10px]">{event.metadata.new_status || JSON.stringify(event.metadata)}</Badge>
+                     {event.metadata.new_status && <Badge variant="secondary" className="text-[10px]">{event.metadata.new_status}</Badge>}
+                     {event.metadata.tracking_number && <Badge variant="outline" className="text-[10px]">Rastreador: {event.metadata.tracking_number}</Badge>}
                    </div>
                 )}
                 
@@ -124,7 +129,7 @@ export function OrderAuditTimeline({ orderId }: OrderAuditTimelineProps) {
             </div>
           ))}
           {(!sortedEvents || sortedEvents.length === 0) && (
-            <p className="text-sm text-muted-foreground pl-8 italic text-center">Sem eventos encontrados.</p>
+            <p className="text-sm text-muted-foreground pl-8 italic text-center py-4">Sem eventos encontrados.</p>
           )}
         </div>
       </CardContent>
