@@ -11,6 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { OrderStatusTimeline } from "@/components/orders/OrderStatusTimeline";
 import { OrderFulfillmentManager } from "@/components/orders/OrderFulfillmentManager";
 import { OrderInvoicesManager } from "@/components/orders/OrderInvoicesManager";
+import { OrderLogisticsTracking } from "@/components/orders/OrderLogisticsTracking";
 import { OrderPilotWorkflow } from "@/components/orders/OrderPilotWorkflow";
 import { OrderAuditTimeline } from "@/components/orders/OrderAuditTimeline";
 import { OrderComments } from "@/components/orders/OrderComments";
