@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Label } from "@/components/ui/label";
 import { OrderStatusTimeline } from "@/components/orders/OrderStatusTimeline";
 import { OrderFulfillmentManager } from "@/components/orders/OrderFulfillmentManager";
+import { OrderInvoicesManager } from "@/components/orders/OrderInvoicesManager";
 import { OrderPilotWorkflow } from "@/components/orders/OrderPilotWorkflow";
 import { OrderAuditTimeline } from "@/components/orders/OrderAuditTimeline";
 import { OrderComments } from "@/components/orders/OrderComments";
@@ -78,7 +79,8 @@ export default function OrderDetailPage() {
               </Card>
             </div>
 
-            <OrderFulfillmentManager order={order} />
+            <OrderFulfillmentManager orderId={order.id} currentFulfillmentStatus={order.fulfillment_status} />
+            <OrderInvoicesManager orderId={order.id} />
             <OrderPilotWorkflow orderId={order.id} />
             <OrderComments orderId={order.id} />
             <OrderAuditTimeline orderId={order.id} />
