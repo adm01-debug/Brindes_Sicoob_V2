@@ -68,9 +68,10 @@ Automação de marketing e branding.
 | :--- | :--- | :--- | :--- |
 | **Cálculo de Orçamento** | Precisão de 4 casas decimais validada. | Crítica | ✅ Implementado |
 | **Segurança RLS** | Zero negações sem log em `admin_audit_log`. | Crítica | ✅ Implementado |
-| **Assinatura Digital** | Conformidade com MP 2.200-2 verificada. | Alta | ✅ Implementado |
-| **Agente de Voz** | Resposta em < 2s via ElevenLabs. | Média | ✅ Implementado |
-| **Blockchain Log** | Imutabilidade via Hash Chaining em `admin_audit_log`. | Baixa | ✅ Implementado |
+| **Integridade de Ativos** | Migração total para `@e965/xlsx` (0 vulnerabilities). | Alta | ✅ Implementado |
+| **Monitoramento** | Saúde do sistema (DB/Sync) visível em Sidebar. | Média | ✅ Implementado |
+| **Performance de Catálogo** | Suporte a >5k SKUs com cache resiliente. | Alta | ✅ Implementado |
+
 
 ---
 
