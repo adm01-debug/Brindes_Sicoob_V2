@@ -62,17 +62,25 @@ export class QuoteService {
   }
 
   static async create(params: { quote: Partial<Quote>, items: QuoteItem[], userId: string, orgId: string | null }): Promise<Quote> {
-    const totals = calculateQuoteTotals(params.quote, params.items, params.quote.negotiation_markup_percent, params.quote.discount_percent ? 'percent' : 'amount', params.quote.discount_percent || params.quote.discount_amount || 0);
-    const insertPayload = buildInsertPayload(params.quote, params.userId, params.orgId, totals);
-    
-    const { data: inserted, error: insErr } = await supabase.from("quotes").insert(insertPayload).select("*").single();
-    if (insErr) throw insErr;
+    try {
+      const totals = calculateQuoteTotals(params.quote, params.items, params.quote.negotiation_markup_percent, params.quote.discount_percent ? 'percent' : 'amount', params.quote.discount_percent || params.quote.discount_amount || 0);
+      const insertPayload = buildInsertPayload(params.quote, params.userId, params.orgId, totals);
+      
+      const { data: inserted, error: insErr } = await supabase.from("quotes").insert(insertPayload).select("*").single();
+      if (insErr) {
+        logger.error("Error creating quote:", insErr);
+        throw insErr;
+      }
 
-    if (params.items.length > 0) {
-      await this.insertItemsWithPersonalizations(params.items, inserted.id);
+      if (params.items.length > 0) {
+        await this.insertItemsWithPersonalizations(params.items, inserted.id);
+      }
+
+      return inserted as Quote;
+    } catch (err) {
+      logger.error("Unexpected error in QuoteService.create:", err);
+      throw err;
     }
-
-    return inserted as Quote;
   }
 
   static async update(params: { 
@@ -230,14 +238,21 @@ export class QuoteService {
   private static async insertItemsWithPersonalizations(items: QuoteItem[], quoteId: string) {
     const itemsPayload = buildItemsInsertPayload(items, quoteId);
     const { data: insertedItems, error: itemsErr } = await supabase.from("quote_items").insert(itemsPayload).select("*");
-    if (itemsErr) throw itemsErr;
+    if (itemsErr) {
+      logger.error("Error inserting quote items:", itemsErr);
+      throw itemsErr;
+    }
 
     for (let i = 0; i < items.length; i++) {
       const item = items[i];
       const insertedItem = insertedItems?.[i];
       if (item.personalizations?.length && insertedItem) {
         const persPayload = buildPersonalizationsInsertPayload(item.personalizations, insertedItem.id);
-        await supabase.from("quote_item_personalizations").insert(persPayload);
+        const { error: pErr } = await supabase.from("quote_item_personalizations").insert(persPayload);
+        if (pErr) {
+          logger.error("Error inserting personalizations for item:", insertedItem.id, pErr);
+          throw pErr;
+        }
       }
     }
   }
