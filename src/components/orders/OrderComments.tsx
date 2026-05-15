@@ -18,17 +18,20 @@ interface OrderCommentsProps {
 
 export function OrderComments({ orderId }: OrderCommentsProps) {
   const [search, setSearch] = useState("");
-  const [hasAttachments, setHasAttachments] = useState(false);
   const [filterInternal, setFilterInternal] = useState<boolean | undefined>(undefined);
   
   const { comments, totalCount, isLoading, addComment, page, setPage, pageSize } = useOrderComments(orderId, { 
     search, 
-    hasAttachments,
-    isInternal: filterInternal
   });
   
   const [newComment, setNewComment] = useState("");
   const [isInternal, setIsInternal] = useState(false);
+
+  // Apply manual internal filtering since API doesn't support it yet
+  const filteredComments = comments?.filter(c => {
+    if (filterInternal === undefined) return true;
+    return c.is_internal === filterInternal;
+  });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,7 +40,7 @@ export function OrderComments({ orderId }: OrderCommentsProps) {
     setNewComment("");
   };
 
-  if (isLoading && page === 1) return <div className="h-32 flex items-center justify-center">Carregando comentários...</div>;
+  if (isLoading && page === 1) return <Card className="h-32 flex items-center justify-center"><Loader2 className="h-6 w-6 animate-spin mr-2" /> Carregando comentários...</Card>;
 
   return (
     <Card className="flex flex-col h-[600px]" data-testid="order-chat">
@@ -54,9 +57,6 @@ export function OrderComments({ orderId }: OrderCommentsProps) {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => setHasAttachments(prev => !prev)}>
-                  {hasAttachments ? "✓ Com Anexos" : "Mostrar apenas com anexos"}
-                </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setFilterInternal(undefined)}>Todas as mensagens</DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setFilterInternal(true)}>Apenas internas</DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setFilterInternal(false)}>Apenas públicas</DropdownMenuItem>
@@ -83,7 +83,7 @@ export function OrderComments({ orderId }: OrderCommentsProps) {
           <div className="flex items-center justify-center gap-2 py-2 border-b">
             <Button 
               variant="ghost" 
-              size="xs" 
+              size="sm" 
               className="h-7 text-[10px]" 
               onClick={() => setPage(p => p + 1)}
               disabled={page * pageSize >= totalCount}
@@ -94,14 +94,18 @@ export function OrderComments({ orderId }: OrderCommentsProps) {
         )}
         <ScrollArea className="flex-1 pr-4">
           <div className="space-y-4 py-2 flex flex-col">
-            {comments?.map((comment) => (
-              <div key={comment.id} className={`flex flex-col ${comment.is_internal ? 'bg-amber-50 dark:bg-amber-950/20 p-2 rounded-lg border border-amber-100 dark:border-amber-900/30' : ''}`}>
+            {filteredComments?.map((comment) => (
+              <div key={comment.id} className={`flex flex-col p-2 rounded-lg transition-colors ${comment.is_internal ? 'bg-amber-50 dark:bg-amber-950/20 border border-amber-100 dark:border-amber-900/30' : 'hover:bg-muted/50'}`}>
                 <div className="flex items-center justify-between gap-2 mb-1">
                   <div className="flex items-center gap-2">
-                    <div className="h-6 w-6 rounded-full bg-muted flex items-center justify-center">
-                      <User className="h-3 w-3" />
+                    <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden">
+                      {comment.author?.avatar_url ? (
+                        <img src={comment.author.avatar_url} alt="" className="h-full w-full object-cover" />
+                      ) : (
+                        <User className="h-3 w-3 text-primary" />
+                      )}
                     </div>
-                    <span className="text-xs font-semibold">{comment.author_role.toUpperCase()}</span>
+                    <span className="text-xs font-semibold">{comment.author?.full_name || "Sistema"}</span>
                     {comment.is_internal && <Badge variant="outline" className="text-[10px] bg-amber-100 text-amber-800 border-amber-200">INTERNO</Badge>}
                   </div>
                   <span className="text-[10px] text-muted-foreground">
@@ -109,18 +113,10 @@ export function OrderComments({ orderId }: OrderCommentsProps) {
                   </span>
                 </div>
                 <p className="text-sm whitespace-pre-wrap pl-8">{comment.content}</p>
-                {comment.attachments && (
-                  <div className="mt-2 pl-8 flex gap-2">
-                    {/* Simplified attachment view */}
-                    <span className="text-[10px] text-primary flex items-center gap-1 cursor-pointer hover:underline">
-                      <Paperclip className="h-3 w-3" /> Anexo
-                    </span>
-                  </div>
-                )}
               </div>
             ))}
-            {(!comments || comments.length === 0) && (
-              <p className="text-sm text-muted-foreground text-center py-8 italic">Nenhum comentário ainda.</p>
+            {(!filteredComments || filteredComments.length === 0) && (
+              <p className="text-sm text-muted-foreground text-center py-8 italic">Nenhum comentário encontrado.</p>
             )}
           </div>
         </ScrollArea>
@@ -132,7 +128,7 @@ export function OrderComments({ orderId }: OrderCommentsProps) {
                  type="checkbox" 
                  checked={isInternal} 
                  onChange={(e) => setIsInternal(e.target.checked)}
-                 className="h-3 w-3"
+                 className="h-3 w-3 rounded border-gray-300 text-primary focus:ring-primary"
                />
                Nota interna
              </label>
@@ -154,10 +150,10 @@ export function OrderComments({ orderId }: OrderCommentsProps) {
               type="submit" 
               size="icon" 
               variant="ghost" 
-              className="absolute right-2 bottom-2 h-8 w-8 text-primary"
+              className="absolute right-2 bottom-2 h-8 w-8 text-primary hover:bg-primary/10"
               disabled={addComment.isPending || !newComment.trim()}
             >
-              <Send className="h-4 w-4" />
+              {addComment.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
             </Button>
           </div>
         </form>
@@ -165,3 +161,4 @@ export function OrderComments({ orderId }: OrderCommentsProps) {
     </Card>
   );
 }
+
