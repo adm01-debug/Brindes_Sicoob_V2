@@ -24,6 +24,7 @@ export class QuoteService {
   }
 
   static async getById(quoteId: string): Promise<Quote | null> {
+    if (!quoteId) return null;
     try {
       const { data: quoteData, error: qErr } = await supabase.from("quotes").select("*").eq("id", quoteId).maybeSingle();
       if (qErr) {
