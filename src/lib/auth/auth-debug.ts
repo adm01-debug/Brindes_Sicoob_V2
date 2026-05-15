@@ -91,10 +91,10 @@ export function authDebug(scope: string, message: string, data?: unknown): void 
   // eslint-disable-next-line no-console
   logger.log(`${PREFIX} [${ts}] [${scope}] ${message}`, data ?? "");
   
-  // Persistir no localStorage para o Widget de Diagnóstico ler sem depender de logger.logs
   if (typeof window !== "undefined") {
     try {
-      const logs = JSON.parse(localStorage.getItem('auth_debug_history') || '[]');
+      const logsStr = localStorage.getItem('auth_debug_history');
+      const logs = logsStr ? JSON.parse(logsStr) : [];
       logs.push({ ts, scope, message, data, type: 'info' });
       localStorage.setItem('auth_debug_history', JSON.stringify(logs.slice(-50)));
       window.dispatchEvent(new CustomEvent('auth_debug_update'));
