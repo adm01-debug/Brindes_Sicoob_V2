@@ -69,9 +69,11 @@ export function QuickAddToQuote({
   };
 
   const handleOpenChange = (open: boolean) => {
+    // Close immediately to allow next interaction
     setIsOpen(open);
     if (!open) {
-      setSelectedVariant(undefined);
+      // Small delay for clean cleanup without blocking
+      requestAnimationFrame(() => setSelectedVariant(undefined));
     }
   };
 

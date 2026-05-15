@@ -66,7 +66,6 @@ export function VariantPickerDialog({
   const Icon = config.icon;
 
   const handleSelect = (variant: ExternalVariantStock | null) => {
-    // Execute callback immediately
     onComplete(variant);
     // Use requestAnimationFrame to ensure state updates are queued
     requestAnimationFrame(() => {
