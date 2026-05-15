@@ -171,14 +171,17 @@ export function useCart() {
         .eq("user_id", userId);
       if (error) throw error;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [QUERY_KEY] });
-    },
     onMutate: async () => {
       await queryClient.cancelQueries({ queryKey: [QUERY_KEY] });
       const previous = queryClient.getQueryData<CartItem[]>([QUERY_KEY, userId]);
       queryClient.setQueryData<CartItem[]>([QUERY_KEY, userId], []);
       return { previous };
+    },
+    onError: (err, variables, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData([QUERY_KEY, userId], context.previous);
+      }
+      toast.error("Erro ao limpar carrinho");
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: [QUERY_KEY] });
