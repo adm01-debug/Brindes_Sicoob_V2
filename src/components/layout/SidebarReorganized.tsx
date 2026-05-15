@@ -463,9 +463,11 @@ export const SidebarReorganized = React.forwardRef<HTMLElement, SidebarProps>(
             ))}
           </nav>
 
-
+          {/* System Health Status (Admins/Devs only) */}
+          <SidebarFooterHealth isCollapsed={isCollapsed} />
         </div>
       </aside>
+
     </>
   );
   }
