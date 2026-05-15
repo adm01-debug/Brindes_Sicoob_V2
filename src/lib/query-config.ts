@@ -105,8 +105,10 @@ const defaultQueryOptions: DefaultOptions = {
     
     // Refetch behavior
     refetchOnWindowFocus: false,
-    refetchOnReconnect: true,
-    refetchOnMount: true,
+    refetchOnReconnect: false,
+    refetchOnMount: false,
+    staleTime: 1000 * 60 * 5, // 5 minutes default
+
   },
   mutations: {
     retry: false,
