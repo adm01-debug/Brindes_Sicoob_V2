@@ -59,6 +59,7 @@ export class OrderService {
   }
 
   static async getById(orderId: string) {
+    if (!orderId) return null;
     const { data: order, error: orderError } = await supabase.from("orders").select("*").eq("id", orderId).maybeSingle();
     if (orderError) throw orderError;
     if (!order) return null;

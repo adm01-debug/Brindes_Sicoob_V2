@@ -51,10 +51,10 @@ export function useAccessSecurity() {
     setIsLoading(true);
     try {
       const [settingsRes, ipsRes, citiesRes, logsRes] = await Promise.all([
-        supabase.from("access_security_settings").select("*").limit(1).single(),
-        supabase.from("ip_whitelist").select("*").order("created_at", { ascending: false }),
-        supabase.from("city_whitelist").select("*").order("created_at", { ascending: false }),
-        supabase.from("access_blocked_log").select("*").order("created_at", { ascending: false }).limit(50),
+        supabase.from("access_security_settings").select("id, ip_whitelist_enabled, city_whitelist_enabled, block_unknown_locations, max_failed_attempts, lockout_duration_minutes").limit(1).single(),
+        supabase.from("ip_whitelist").select("id, ip_address, label, is_active, created_at").order("created_at", { ascending: false }),
+        supabase.from("city_whitelist").select("id, city_name, state, country_code, is_active, created_at").order("created_at", { ascending: false }),
+        supabase.from("access_blocked_log").select("id, email, ip_address, city, state, country, block_reason, user_agent, created_at").order("created_at", { ascending: false }).limit(50),
       ]);
 
       if (settingsRes.data) setSettings(settingsRes.data as unknown as AccessSecuritySettings);

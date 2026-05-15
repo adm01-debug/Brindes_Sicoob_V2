@@ -41,10 +41,9 @@ export function mapPromobrindToProduct(p: PromobrindProduct): Product {
   const stock = getProductStock(p);
   const colors = normalizeColors(p.colors);
 
-  // Extrair imagens
   let images: string[] = [];
   if (p.images && Array.isArray(p.images)) {
-    images = p.images.map((img: string | { url?: string; src?: string; image_url?: string }) => {
+    images = p.images.map((img: any) => {
       if (typeof img === 'string') return img;
       if (typeof img === 'object' && img !== null) {
         return img.url || img.src || img.image_url || '';
@@ -55,31 +54,32 @@ export function mapPromobrindToProduct(p: PromobrindProduct): Product {
   if (images.length === 0 && imageUrl) images = [imageUrl];
   if (images.length === 0) images = ['/placeholder.svg'];
 
-  // Mapear variações
   const variations: NonNullable<Product['variations']> = [];
   if (p.colors && Array.isArray(p.colors)) {
-    p.colors.forEach((c, index: number) => {
+    p.colors.forEach((c: any, index: number) => {
       if (typeof c === 'object' && c !== null && 'name' in c) {
-        const colorObj = c as { name: string; hex?: string; stock?: number; sku?: string; image?: string; images?: string[]; size_code?: string };
         variations.push({
           id: `${p.id}-${index}`,
-          sku: colorObj.sku || p.sku,
-          color: { name: colorObj.name, hex: colorObj.hex || '#CCCCCC' },
-          stock: colorObj.stock ?? 0,
-          image: colorObj.image || null,
-          images: colorObj.images || [],
+          sku: c.sku || p.sku,
+          color: { name: c.name, hex: c.hex || '#CCCCCC' },
+          stock: c.stock ?? 0,
+          image: c.image || null,
+          images: c.images || [],
           videos: [],
-          size_code: colorObj.size_code || null,
+          size_code: c.size_code || null,
         });
       }
     });
   }
 
+  const categoryId = p.category_id || p.main_category_id || "0";
+  const supplierId = p.supplier_id || p.supplier_reference || p.brand || "unknown";
+
   return {
     id: p.id,
     name: p.name,
     description: p.description || p.short_description || p.meta_description,
-    category_id: p.category_id || p.main_category_id,
+    category_id: categoryId,
     category_name: p.category_name || null,
     price: getProductPrice(p),
     image_url: images[0],
@@ -100,11 +100,11 @@ export function mapPromobrindToProduct(p: PromobrindProduct): Product {
     isKit: Boolean(p.is_kit),
     gender: p.gender || null,
     category: {
-      id: p.category_id || p.main_category_id || "0",
+      id: categoryId,
       name: p.category_name || "Sem categoria",
     },
     supplier: {
-      id: p.supplier_id || p.supplier_reference || p.brand || "unknown",
+      id: supplierId,
       name: p.supplier_name || p.brand || "Fornecedor",
     },
     tags: normalizeMarketingTags(p.tags),
@@ -122,17 +122,11 @@ export function mapPromobrindToProduct(p: PromobrindProduct): Product {
     boxLengthMm: p.box_length_mm, boxWeightKg: p.box_weight_kg,
     boxQuantity: p.box_quantity, boxVolumeCm3: p.box_volume_cm3,
     leadTimeDays: p.lead_time_days ?? null,
-    priceUpdatedAt:
-      (typeof p.price_updated_at === 'string' && p.price_updated_at.trim() !== ''
-        ? p.price_updated_at
-        : null)
-      ?? (typeof p.updated_at === 'string' && p.updated_at.trim() !== ''
-        ? p.updated_at
-        : null),
+    priceUpdatedAt: (typeof p.price_updated_at === 'string' && p.price_updated_at.trim() !== '' ? p.price_updated_at : null) || (typeof p.updated_at === 'string' && p.updated_at.trim() !== '' ? p.updated_at : null),
     priceFreshnessThresholdDays: p.price_freshness_threshold_days ?? null,
     variations: variations.length > 0 ? variations : undefined,
     productVideos: p.product_videos?.length ? p.product_videos : undefined,
-    kitItems: p.kit_components?.map(c => ({
+    kitItems: p.kit_components?.map((c: any) => ({
       id: c.id,
       productId: c.component_product_id || c.id,
       productName: c.component_name || 'Componente',

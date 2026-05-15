@@ -45,7 +45,7 @@ export interface PromobrindTechnique {
   [key: string]: unknown;
 }
 
-const TECHNIQUE_SELECT_FIELDS = '*';
+const TECHNIQUE_SELECT_FIELDS = 'id, codigo, code, nome, name, descricao, description, permite_cores, requires_color_count, max_cores, max_colors, cobra_por_cor, price_by_color, cobra_por_area, price_by_area, ativo, is_active, tempo_producao_dias, estimated_days, ordem_exibicao, display_order';
 
 function mapTechniqueFields(t: Record<string, unknown>): PromobrindTechnique {
   const maxCoresRaw = t.max_cores ?? t.max_colors;

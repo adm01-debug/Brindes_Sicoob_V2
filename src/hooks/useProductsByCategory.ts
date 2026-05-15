@@ -32,13 +32,11 @@ export function useProductsByCategory({
   const [categoriesCount, setCategoriesCount] = useState(0);
   const [source, setSource] = useState<string | null>(null);
   
-  // CRITICAL: Estabilizar referência do array para evitar loops infinitos
   const categoryIdsKey = useMemo(() => 
-    [...categoryIds].sort().join(','), 
+    categoryIds.length > 0 ? [...categoryIds].sort().join(',') : '', 
     [categoryIds]
   );
   
-  // Ref para evitar chamadas duplicadas
   const lastFetchedKey = useRef<string>('');
   const isFetchingRef = useRef(false);
 

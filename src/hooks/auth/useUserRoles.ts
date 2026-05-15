@@ -9,6 +9,7 @@ export function useUserRoles() {
   const fetchPromiseRef = useRef<Promise<void> | null>(null);
 
   const fetchRoles = useCallback(async (userId: string) => {
+    if (!userId) return;
     if (fetchPromiseRef.current) return fetchPromiseRef.current;
 
     const doFetch = async () => {
@@ -17,14 +18,13 @@ export function useUserRoles() {
         
         // Retry logic for potential eventual consistency in Edge Auth
         if (!result.error && (!result.data || result.data.length === 0)) {
-          await new Promise((r) => setTimeout(r, 500)); // Increased to 500ms
+          await new Promise((r) => setTimeout(r, 500));
           result = await authService.queryRoles(userId);
         }
 
         if (result.data && result.data.length > 0) {
           const roles = result.data.map((r) => r.role as AppRole);
           setUserRoles(prev => {
-             // Only update if roles actually changed
              if (prev.length === roles.length && prev.every((v, i) => v === roles[i])) return prev;
              return roles;
           });
