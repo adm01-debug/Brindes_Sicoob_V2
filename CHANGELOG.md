@@ -7,11 +7,14 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ## [Unreleased]
 
+### 🚀 Hardening 10/10 (Onda 3 - Performance & Segurança de Ativos)
+- **Segurança:** Removida dependência vulnerável `xlsx` (^0.18.5) e migrado para `@e965/xlsx` (0.20.3) em todo o sistema.
+- **Performance:** Refatorado `CatalogQualityDashboard` para suporte a grandes volumes (>5k SKUs) com cache `react-query`.
+- **Governança:** Adicionado indicador global de `SidebarFooterHealth` para monitoramento proativo de infraestrutura (Banco + Sync).
+- **Hardening:** Implementada sanitização rigorosa em componentes de exportação de dados.
+
 ### 🚀 Hardening 10/10 (Onda 2 - Maturidade Máxima)
-- **Cobertura de Testes:** Threshold global elevado de 60% para **80%** em `vitest.config.ts`.
-- **Governança:** Adicionada redundância e logs de auditoria resilientes no módulo de verbas Sicoob.
-- **Auditoria:** Relatório Enterprise atualizado com evidências de integridade 10/10.
-- **Segurança:** Reforço nas políticas de alçada por categoria com monitoramento em tempo real.
+
 
 ### 🚀 Adicionado — Hardening 10/10 (Onda 1)
 - ESLint integrado ao pipeline de CI (`.github/workflows/ci.yml`)
