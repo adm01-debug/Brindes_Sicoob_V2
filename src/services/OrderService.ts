@@ -283,6 +283,18 @@ export class OrderService {
         tracking_code: null, // Reset tracking on duplication
         status: 'pending'
       });
+    }
+
+    // Log the event
+    await this.logAudit({
+      orderId: newOrder.id,
+      eventType: 'ORDER_DUPLICATED',
+      description: `Pedido duplicado a partir do pedido #${original.order_number}`,
+      metadata: { originalOrderId: orderId }
+    });
+
+    return newOrder as OrderRow;
+  }
 
   static async convertQuoteToOrder({ quoteId, sellerId, organizationId }: ConvertQuoteToOrderParams): Promise<ConvertedOrder> {
     try {
@@ -345,16 +357,5 @@ export class OrderService {
       logger.error("Error converting quote to order:", error);
       throw error;
     }
-  }
-
-    // Log the event
-    await this.logAudit({
-      orderId: newOrder.id,
-      eventType: 'ORDER_DUPLICATED',
-      description: `Pedido duplicado a partir do pedido #${original.order_number}`,
-      metadata: { originalOrderId: orderId }
-    });
-
-    return newOrder as OrderRow;
   }
 }
