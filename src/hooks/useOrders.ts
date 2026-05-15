@@ -106,7 +106,38 @@ export function useUpdateOrder(orderId?: string, currentStatus?: string) {
       toast.success("Pedido atualizado");
       qc.invalidateQueries({ queryKey: ["orders"] });
     },
-    onError: (e: Error) => toast.error(e.message),
+    onError: (e: Error) => {
+      console.error("Update order failed:", e);
+      toast.error(e.message);
+    },
+  });
+}
+
+/**
+ * Hook para conversão de orçamento em pedido.
+ */
+export function useConvertQuoteToOrder() {
+  const qc = useQueryClient();
+  const { user } = useAuth();
+
+  return useMutation({
+    mutationFn: async (params: { quoteId: string; organizationId?: string | null }) => {
+      if (!user) throw new Error("Usuário não autenticado");
+      return await OrderService.convertQuoteToOrder({
+        quoteId: params.quoteId,
+        sellerId: user.id,
+        organizationId: params.organizationId,
+      });
+    },
+    onSuccess: (order) => {
+      toast.success(`Pedido #${order.order_number} criado com sucesso!`);
+      qc.invalidateQueries({ queryKey: ["orders"] });
+      qc.invalidateQueries({ queryKey: ["quotes"] });
+    },
+    onError: (e: Error) => {
+      console.error("Conversion failed:", e);
+      toast.error(e.message || "Erro ao converter orçamento");
+    },
   });
 }
 

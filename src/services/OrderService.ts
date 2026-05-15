@@ -1,6 +1,20 @@
 import { supabase } from "@/integrations/supabase/client";
 import { OrderRow, OrderFilters, OrderItem, OrderStatus, OrderLogistics, OrderInvoice, OrderComment } from "@/types/orders";
 import { ORDER_STATUS_LABELS } from "@/constants/orders";
+import { logger } from "@/lib/logger";
+
+export interface ConvertQuoteToOrderParams {
+  quoteId: string;
+  sellerId: string;
+  organizationId?: string | null;
+}
+
+export interface ConvertedOrder {
+  id: string;
+  order_number: string;
+  status: string;
+  total: number;
+}
 
 export class OrderService {
   static async list(sellerId: string, scope: string, filters?: OrderFilters & { page?: number; pageSize?: number }): Promise<{ data: OrderRow[]; count: number | null }> {
@@ -26,26 +40,35 @@ export class OrderService {
     if (filters?.endDate) q = q.lte("created_at", filters.endDate);
     
     if (filters?.search) {
-      q = q.or(`order_number.ilike.%${filters.search}%,client_name.ilike.%${filters.search}%,client_company.ilike.%${filters.search}%`);
+      // Improved multi-column search
+      const search = filters.search.trim();
+      q = q.or(`order_number.ilike.%${search}%,client_name.ilike.%${search}%,client_company.ilike.%${search}%`);
     }
 
-    const { data, error, count } = await q.range((page - 1) * pageSize, page * pageSize - 1);
-    if (error) throw error;
-    return { data: (data ?? []) as OrderRow[], count };
+    try {
+      const { data, error, count } = await q.range((page - 1) * pageSize, page * pageSize - 1);
+      if (error) {
+        logger.error("Error listing orders:", error);
+        throw error;
+      }
+      return { data: (data ?? []) as OrderRow[], count };
+    } catch (err) {
+      logger.error("Unexpected error in OrderService.list:", err);
+      throw err;
+    }
   }
 
   static async getById(orderId: string) {
-    const [orderRes, itemsRes] = await Promise.all([
-      supabase.from("orders").select("*").eq("id", orderId).maybeSingle(),
-      supabase.from("order_items").select("*").eq("order_id", orderId),
-    ]);
-    
-    if (orderRes.error) throw orderRes.error;
-    if (itemsRes.error) throw itemsRes.error;
+    const { data: order, error: orderError } = await supabase.from("orders").select("*").eq("id", orderId).maybeSingle();
+    if (orderError) throw orderError;
+    if (!order) return null;
+
+    const { data: items, error: itemsError } = await supabase.from("order_items").select("*").eq("order_id", orderId);
+    if (itemsError) throw itemsError;
     
     return {
-      order: orderRes.data as OrderRow | null,
-      items: itemsRes.data as OrderItem[],
+      order: order as OrderRow,
+      items: items as OrderItem[],
     };
   }
 
@@ -134,19 +157,24 @@ export class OrderService {
     return { comments: data as any[], count };
   }
 
-  static async addComment(orderId: string, authorId: string, content: string, isInternal = false, attachments = null) {
+  static async addComment(orderId: string, authorId: string, content: string, isInternal = false, attachments: any = null) {
+    if (!content?.trim()) throw new Error("Conteúdo do comentário é obrigatório");
+
     const { data, error } = await supabase
       .from("order_comments")
       .insert({
         order_id: orderId,
         author_id: authorId,
-        content,
+        content: content.trim(),
         is_internal: isInternal,
         attachments
       })
       .select()
       .single();
-    if (error) throw error;
+    if (error) {
+      logger.error("Error adding order comment:", error);
+      throw error;
+    }
     return data;
   }
 
@@ -265,5 +293,104 @@ export class OrderService {
     });
 
     return newOrder as OrderRow;
+  }
+
+  static async convertQuoteToOrder({ quoteId, sellerId, organizationId }: ConvertQuoteToOrderParams): Promise<ConvertedOrder> {
+    try {
+      // 1. Fetch the quote
+      const { data: quote, error: qErr } = await supabase
+        .from("quotes")
+        .select("*, items:quote_items(*)")
+        .eq("id", quoteId)
+        .maybeSingle();
+      
+      if (qErr) throw qErr;
+      if (!quote) throw new Error("Orçamento não encontrado");
+
+      const validStatuses = ["approved", "approved_singular"];
+      if (!validStatuses.includes(quote.status)) {
+        throw new Error("Apenas orçamentos aprovados pela Singular podem ser oficializados");
+      }
+
+      // 2. Check if items have price/stock
+      if (!quote.items?.length) {
+        throw new Error("O orçamento não possui itens para oficialização");
+      }
+
+      const hasIncompleteItems = quote.items.some((i: any) => !i.unit_price || i.unit_price <= 0);
+      if (hasIncompleteItems) {
+        throw new Error("Existem itens com preço zerado ou inválido. Por favor, revise o orçamento.");
+      }
+
+      // 3. Check if order already exists
+      const { data: existingOrder, error: eErr } = await supabase
+        .from("orders")
+        .select("id, order_number")
+        .eq("quote_id", quoteId)
+        .maybeSingle();
+      
+      if (eErr) throw eErr;
+      if (existingOrder) {
+        throw new Error(`Este orçamento já foi convertido no pedido #${existingOrder.order_number}`);
+      }
+
+      // 4. Create the order
+      const effectiveOrgId = organizationId || quote.organization_id || null;
+      const { data: order, error: insErr } = await supabase
+        .from("orders")
+        .insert({
+          seller_id: sellerId,
+          organization_id: effectiveOrgId,
+          quote_id: quoteId,
+          client_id: quote.client_id,
+          client_name: quote.client_name,
+          client_email: quote.client_email,
+          client_phone: quote.client_phone,
+          client_company: quote.client_company,
+          subtotal: quote.subtotal,
+          discount_amount: quote.discount_amount,
+          shipping_cost: quote.shipping_cost || 0,
+          shipping_type: quote.shipping_type,
+          total: quote.total,
+          payment_terms: quote.payment_terms,
+          delivery_time: quote.delivery_time,
+          notes: quote.notes,
+          internal_notes: quote.internal_notes,
+          status: "confirmed",
+          fulfillment_status: "unfulfilled",
+        })
+        .select("id, order_number, status, total")
+        .single();
+
+      if (insErr) throw insErr;
+
+      // 5. Copy items
+      const orderItems = quote.items.map((item: any) => ({
+        order_id: order.id,
+        organization_id: effectiveOrgId,
+        product_id: item.product_id,
+        product_sku: item.product_sku,
+        product_name: item.product_name,
+        product_image_url: item.product_image_url,
+        quantity: item.quantity,
+        unit_price: item.unit_price,
+      }));
+
+      const { error: itemInsErr } = await supabase.from("order_items").insert(orderItems);
+      if (itemInsErr) throw itemInsErr;
+
+      // 6. Update quote status
+      const { error: updErr } = await supabase
+        .from("quotes")
+        .update({ status: "converted" })
+        .eq("id", quoteId);
+      
+      if (updErr) throw updErr;
+
+      return order;
+    } catch (error: any) {
+      logger.error("Error converting quote to order:", error);
+      throw error;
+    }
   }
 }

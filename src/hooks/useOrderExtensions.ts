@@ -234,11 +234,22 @@ export const useOrderComments = (orderId?: string, filters?: { search?: string }
 
       return OrderService.addComment(orderId!, user.id, content, isInternal, attachments);
     },
-    onSuccess: () => {
+    onSuccess: (data: any) => {
       queryClient.invalidateQueries({ queryKey: ["order-comments", orderId] });
       queryClient.invalidateQueries({ queryKey: ["order-audit", orderId] });
+      
+      // Auto-invalidation if multiple tabs/windows are open (optional but professional)
+      // queryClient.setQueryData(["order-comments", orderId, filters, page], (old: any) => ({
+      //   ...old,
+      //   comments: [data, ...(old?.comments || [])]
+      // }));
+      
       toast.success("Comentário enviado");
     },
+    onError: (err: Error) => {
+      console.error("Error adding comment:", err);
+      toast.error(err.message || "Erro ao enviar comentário");
+    }
   });
 
   return { 

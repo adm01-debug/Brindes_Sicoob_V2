@@ -1,53 +1,86 @@
 import { supabase } from "@/integrations/supabase/client";
 import { applySellerScope } from "@/lib/auth/apply-seller-scope";
-import { Quote, QuoteItem } from "@/hooks/quotes/quoteTypes";
+import { Quote, QuoteItem, QuoteItemPersonalization } from "@/hooks/quotes/quoteTypes";
 import { PersonalizationTechnique } from "@/types/quote-builder";
 import { calculateQuoteTotals, buildInsertPayload, buildUpdatePayload, buildItemsInsertPayload, buildPersonalizationsInsertPayload } from "@/hooks/quotes/quoteHelpers";
+import { logger } from "@/lib/logger";
 
 export class QuoteService {
   static async list(params: { userId: string, scope: string, orgId: string | null }): Promise<Quote[]> {
     let q = supabase.from("quotes").select("*").order("created_at", { ascending: false }).limit(500);
     q = applySellerScope(q, { scope: params.scope, userId: params.userId });
     
-    const { data, error } = await q;
-    if (error) throw error;
-    return (data || []) as Quote[];
+    try {
+      const { data, error } = await q;
+      if (error) {
+        logger.error("Error listing quotes:", error);
+        throw error;
+      }
+      return (data || []) as Quote[];
+    } catch (err) {
+      logger.error("Unexpected error in QuoteService.list:", err);
+      throw err;
+    }
   }
 
   static async getById(quoteId: string): Promise<Quote | null> {
-    const { data: quoteData, error: qErr } = await supabase.from("quotes").select("*").eq("id", quoteId).single();
-    if (qErr) throw qErr;
-    if (!quoteData) return null;
+    try {
+      const { data: quoteData, error: qErr } = await supabase.from("quotes").select("*").eq("id", quoteId).maybeSingle();
+      if (qErr) {
+        logger.error("Error fetching quote:", qErr);
+        throw qErr;
+      }
+      if (!quoteData) return null;
 
-    const { data: itemsData } = await supabase.from("quote_items").select("*").eq("quote_id", quoteId).order("sort_order", { ascending: true });
-    
-    const itemIds = (itemsData || []).map((i) => i.id);
-    let allPersonalizations: Array<Record<string, unknown>> = [];
-    if (itemIds.length > 0) {
-      const { data: persData } = await supabase.from("quote_item_personalizations").select("*").in("quote_item_id", itemIds);
-      allPersonalizations = (persData || []) as Array<Record<string, unknown>>;
+      const { data: itemsData, error: iErr } = await supabase.from("quote_items").select("*").eq("quote_id", quoteId).order("sort_order", { ascending: true });
+      if (iErr) {
+        logger.error("Error fetching quote items:", iErr);
+        throw iErr;
+      }
+      
+      const itemIds = (itemsData || []).map((i) => i.id);
+      let allPersonalizations: Array<Record<string, unknown>> = [];
+      if (itemIds.length > 0) {
+        const { data: persData, error: pErr } = await supabase.from("quote_item_personalizations").select("*").in("quote_item_id", itemIds);
+        if (pErr) {
+          logger.error("Error fetching quote personalizations:", pErr);
+          throw pErr;
+        }
+        allPersonalizations = (persData || []) as Array<Record<string, unknown>>;
+      }
+
+      const items: QuoteItem[] = (itemsData || []).map((item) => ({
+        ...item,
+        personalizations: (allPersonalizations as any[]).filter(p => p.quote_item_id === item.id) as QuoteItemPersonalization[],
+      }));
+
+      return { ...quoteData, items } as Quote;
+    } catch (err) {
+      logger.error("Unexpected error in QuoteService.getById:", err);
+      throw err;
     }
-
-    const items: QuoteItem[] = (itemsData || []).map((item) => ({
-      ...item,
-      personalizations: (allPersonalizations as unknown as QuoteItemPersonalization[]).filter(p => p.quote_item_id === item.id),
-    }));
-
-    return { ...quoteData, items } as Quote;
   }
 
   static async create(params: { quote: Partial<Quote>, items: QuoteItem[], userId: string, orgId: string | null }): Promise<Quote> {
-    const totals = calculateQuoteTotals(params.quote, params.items, params.quote.negotiation_markup_percent, params.quote.discount_percent ? 'percent' : 'amount', params.quote.discount_percent || params.quote.discount_amount || 0);
-    const insertPayload = buildInsertPayload(params.quote, params.userId, params.orgId, totals);
-    
-    const { data: inserted, error: insErr } = await supabase.from("quotes").insert(insertPayload).select("*").single();
-    if (insErr) throw insErr;
+    try {
+      const totals = calculateQuoteTotals(params.quote, params.items, params.quote.negotiation_markup_percent, params.quote.discount_percent ? 'percent' : 'amount', params.quote.discount_percent || params.quote.discount_amount || 0);
+      const insertPayload = buildInsertPayload(params.quote, params.userId, params.orgId, totals);
+      
+      const { data: inserted, error: insErr } = await supabase.from("quotes").insert(insertPayload).select("*").single();
+      if (insErr) {
+        logger.error("Error creating quote:", insErr);
+        throw insErr;
+      }
 
-    if (params.items.length > 0) {
-      await this.insertItemsWithPersonalizations(params.items, inserted.id);
+      if (params.items.length > 0) {
+        await this.insertItemsWithPersonalizations(params.items, inserted.id);
+      }
+
+      return inserted as Quote;
+    } catch (err) {
+      logger.error("Unexpected error in QuoteService.create:", err);
+      throw err;
     }
-
-    return inserted as Quote;
   }
 
   static async update(params: { 
@@ -56,26 +89,28 @@ export class QuoteService {
     items: QuoteItem[],
     userId: string 
   }): Promise<Quote> {
-    const oldQuote = await this.getById(params.quoteId);
-    if (!oldQuote) throw new Error("Orçamento não encontrado para atualização");
+    try {
+      const oldQuote = await this.getById(params.quoteId);
+      if (!oldQuote) throw new Error("Orçamento não encontrado para atualização");
 
-    const totals = calculateQuoteTotals(params.quote, params.items, params.quote.negotiation_markup_percent, params.quote.discount_percent ? 'percent' : 'amount', params.quote.discount_percent || params.quote.discount_amount || 0);
-    const updatePayload = buildUpdatePayload({ ...params.quote, row_version: oldQuote.row_version }, totals);
-    
-    const { data: updated, error: updErr } = await supabase
-      .from("quotes")
-      .update(updatePayload)
-      .eq("id", params.quoteId)
-      .eq("row_version", oldQuote.row_version || 1)
-      .select("*")
-      .single();
+      const totals = calculateQuoteTotals(params.quote, params.items, params.quote.negotiation_markup_percent, params.quote.discount_percent ? 'percent' : 'amount', params.quote.discount_percent || params.quote.discount_amount || 0);
+      const updatePayload = buildUpdatePayload({ ...params.quote, row_version: oldQuote.row_version }, totals);
+      
+      const { data: updated, error: updErr } = await supabase
+        .from("quotes")
+        .update(updatePayload)
+        .eq("id", params.quoteId)
+        .eq("row_version", oldQuote.row_version || 1)
+        .select("*")
+        .single();
 
-    if (updErr) {
-      if (updErr.code === 'PGRST116') {
-        throw new Error("Concorrência detectada: Este orçamento foi modificado por outro usuário. Por favor, recarregue a página.");
+      if (updErr) {
+        if (updErr.code === 'PGRST116') {
+          throw new Error("Concorrência detectada: Este orçamento foi modificado por outro usuário. Por favor, recarregue a página.");
+        }
+        logger.error("Error updating quote:", updErr);
+        throw updErr;
       }
-      throw updErr;
-    }
 
     // Granular Audit Logging
     const changes: string[] = [];
@@ -131,7 +166,11 @@ export class QuoteService {
     await supabase.from("quote_items").delete().eq("quote_id", params.quoteId);
     await this.insertItemsWithPersonalizations(params.items, params.quoteId);
 
-    return updated as Quote;
+      return updated as Quote;
+    } catch (err) {
+      logger.error("Unexpected error in QuoteService.update:", err);
+      throw err;
+    }
   }
 
   static async delete(quoteId: string) {
@@ -205,14 +244,21 @@ export class QuoteService {
   private static async insertItemsWithPersonalizations(items: QuoteItem[], quoteId: string) {
     const itemsPayload = buildItemsInsertPayload(items, quoteId);
     const { data: insertedItems, error: itemsErr } = await supabase.from("quote_items").insert(itemsPayload).select("*");
-    if (itemsErr) throw itemsErr;
+    if (itemsErr) {
+      logger.error("Error inserting quote items:", itemsErr);
+      throw itemsErr;
+    }
 
     for (let i = 0; i < items.length; i++) {
       const item = items[i];
       const insertedItem = insertedItems?.[i];
       if (item.personalizations?.length && insertedItem) {
         const persPayload = buildPersonalizationsInsertPayload(item.personalizations, insertedItem.id);
-        await supabase.from("quote_item_personalizations").insert(persPayload);
+        const { error: pErr } = await supabase.from("quote_item_personalizations").insert(persPayload);
+        if (pErr) {
+          logger.error("Error inserting personalizations for item:", insertedItem.id, pErr);
+          throw pErr;
+        }
       }
     }
   }
