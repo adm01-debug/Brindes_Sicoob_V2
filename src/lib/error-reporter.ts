@@ -110,10 +110,10 @@ async function flushErrors() {
       user_id: err.userId || '00000000-0000-0000-0000-000000000000',
       details: {
         message: err.message,
-        stack: err.stack?.slice(0, 2000),
+        stack: err.stack?.slice(0, 3000), // Increased to capture more trace
         url: err.url,
         timestamp: err.timestamp,
-        userAgent: err.userAgent.slice(0, 200),
+        userAgent: err.userAgent.slice(0, 500),
         ...err.metadata,
       },
       ip_address: null,
@@ -159,6 +159,8 @@ export function reportError(error: Error, metadata?: Record<string, unknown>) {
   const enrichedMetadata: Record<string, unknown> = {
     ...metadata,
     category,
+    platform: typeof window !== 'undefined' ? 'browser' : 'server',
+    environment: (import.meta as any).env?.MODE || 'production',
     // Quando o erro é transitório, sobrescreve o `type` para que filtros
     // legados (que agrupam por type=react_error_boundary/unhandled_*)
     // não contabilizem como blank screen.
