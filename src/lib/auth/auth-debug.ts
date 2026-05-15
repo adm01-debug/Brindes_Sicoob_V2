@@ -113,7 +113,8 @@ export function authDebugError(scope: string, message: string, error: unknown): 
 
   if (typeof window !== "undefined") {
     try {
-      const logs = JSON.parse(localStorage.getItem('auth_debug_history') || '[]');
+      const logsStr = localStorage.getItem('auth_debug_history');
+      const logs = logsStr ? JSON.parse(logsStr) : [];
       logs.push({ ts, scope, message, data: normalized, type: 'error' });
       localStorage.setItem('auth_debug_history', JSON.stringify(logs.slice(-50)));
       window.dispatchEvent(new CustomEvent('auth_debug_update'));
