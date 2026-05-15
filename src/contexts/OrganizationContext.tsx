@@ -111,21 +111,28 @@ export function OrganizationProvider({ children }: { children: ReactNode }) {
     (orgId: string) => {
       const org = organizations.find((o) => o.id === orgId);
       if (org) {
+        // Prevent redundant state updates
+        if (currentOrg?.id === orgId) return;
+
         setCurrentOrg(org);
         localStorage.setItem(ORG_STORAGE_KEY, orgId);
-        // Update role
-        supabase
-          .from("organization_members")
-          .select("role")
-          .eq("organization_id", orgId)
-          .eq("user_id", user?.id ?? "")
-          .single()
-          .then(({ data }) => {
-            setCurrentRole((data?.role as OrgMember["role"]) || null);
-          });
+        
+        // Update role asynchronously
+        void (async () => {
+          const { data } = await supabase
+            .from("organization_members")
+            .select("role")
+            .eq("organization_id", orgId)
+            .eq("user_id", user?.id ?? "")
+            .single();
+          
+          if (data) {
+            setCurrentRole((data.role as OrgMember["role"]) || null);
+          }
+        })();
       }
     },
-    [organizations, user]
+    [organizations, user, currentOrg?.id]
   );
 
   const createOrganization = useCallback(

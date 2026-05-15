@@ -35,7 +35,7 @@ export function startBridgeTelemetry(): () => void {
     if (now - lastSentAt < THROTTLE_MS) return;
     lastSentAt = now;
 
-    const retries = pendingRetries;
+    const retries = Math.max(pendingRetries, event.type === 'unavailable' ? event.attempts : 0);
     pendingRetries = 0;
 
     const payload = event.type === 'unavailable'

@@ -45,18 +45,27 @@ export const AriaLiveProvider = forwardRef<HTMLDivElement, { children: ReactNode
     }
   }, [assertiveMessage]);
 
-  const announce = (message: string, priority: "polite" | "assertive" = "polite") => {
+  const announce = useCallback((message: string, priority: "polite" | "assertive" = "polite") => {
     if (priority === "assertive") {
       setAssertiveMessage(message);
     } else {
       setPoliteMessage(message);
     }
-  };
+  }, []);
 
-  const announceStatus = (message: string) => {
+  const announceStatus = useCallback((message: string) => {
     setStatusMessage(message);
     setTimeout(() => setStatusMessage(""), 1000);
-  };
+  }, []);
+
+  useEffect(() => {
+    const handler = (e: any) => {
+      const { message, priority = 'polite' } = e.detail || {};
+      if (message) announce(message, priority);
+    };
+    window.addEventListener('a11y-announce', handler);
+    return () => window.removeEventListener('a11y-announce', handler);
+  }, [announce]);
 
   const announceAlert = (message: string) => {
     setAssertiveMessage(message);

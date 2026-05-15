@@ -21,7 +21,7 @@ import { Progress } from "@/components/ui/progress";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 export function MiniCart() {
-  const { items, subtotal, totalItemsCount, removeItem, updateQuantity, clearCart } = useCart();
+  const { items, subtotal, totalItemsCount, removeItem, updateQuantity, clearCart, getOptimisticQuantity } = useCart();
   const { threshold, needsApproval } = useApprovalThreshold(items);
   
   const isOverThreshold = needsApproval(subtotal);
@@ -114,16 +114,28 @@ export function MiniCart() {
                             variant="outline" 
                             size="icon" 
                             className="h-7 w-7"
-                            onClick={() => updateQuantity.mutate({ itemId: item.id, quantity: item.quantity - 1 })}
+                            disabled={updateQuantity.isPending}
+                            onClick={(e) => {
+                              e.preventDefault();
+                              const currentQty = getOptimisticQuantity(item.id);
+                              updateQuantity.mutate({ itemId: item.id, quantity: currentQty - 1 });
+                            }}
                           >
                             <Minus className="h-3 w-3" />
                           </Button>
-                          <span className="text-sm w-6 text-center">{item.quantity}</span>
+                          <span className="text-sm w-6 text-center font-medium tabular-nums">
+                            {getOptimisticQuantity(item.id)}
+                          </span>
                           <Button 
                             variant="outline" 
                             size="icon" 
                             className="h-7 w-7"
-                            onClick={() => updateQuantity.mutate({ itemId: item.id, quantity: item.quantity + 1 })}
+                            disabled={updateQuantity.isPending}
+                            onClick={(e) => {
+                              e.preventDefault();
+                              const currentQty = getOptimisticQuantity(item.id);
+                              updateQuantity.mutate({ itemId: item.id, quantity: currentQty + 1 });
+                            }}
                           >
                             <Plus className="h-3 w-3" />
                           </Button>
@@ -131,8 +143,9 @@ export function MiniCart() {
                         <Button 
                           variant="ghost" 
                           size="icon" 
-                          className="h-7 w-7 text-destructive"
+                          className="h-7 w-7 text-destructive hover:bg-destructive/10 transition-colors"
                           onClick={() => removeItem.mutate(item.id)}
+                          disabled={removeItem.isPending}
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>

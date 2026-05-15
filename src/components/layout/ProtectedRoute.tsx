@@ -21,13 +21,16 @@ export const ProtectedRoute = forwardRef<HTMLDivElement, ProtectedRouteProps>(fu
   requireAdmin = false,
   requireDev = false,
 }, ref) {
-  const { user, isDev, isSupervisorOrAbove, isLoading, profile } = useAuth();
+  const { user, isDev, isSupervisorOrAbove, isLoading, profile, rolesLoaded } = useAuth();
   const location = useLocation();
 
-  if (isLoading) {
+  if (isLoading || (user && !rolesLoaded)) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          {user && !rolesLoaded && <p className="text-sm text-muted-foreground animate-pulse">Carregando permissões...</p>}
+        </div>
       </div>
     );
   }

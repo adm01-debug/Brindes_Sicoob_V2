@@ -13,7 +13,11 @@ export function useUserProfile() {
       if (error) throw error;
       
       if (data) {
-        setProfile(data as Profile);
+        // Use functional state update to prevent stale closures and unnecessary re-renders
+        setProfile(prev => {
+          if (JSON.stringify(prev) === JSON.stringify(data)) return prev;
+          return data as Profile;
+        });
         
         // Non-blocking update of last_login_at
         supabase

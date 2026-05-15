@@ -9,9 +9,9 @@ export function useAuthAAL() {
   const fetchAAL = useCallback(async () => {
     try {
       const data = await authService.fetchAAL();
-      setCurrentAAL(data.currentLevel);
-      setNextAAL(data.nextLevel);
-      setHasMFA(data.hasMFA);
+      setCurrentAAL(prev => prev === data.currentLevel ? prev : data.currentLevel);
+      setNextAAL(prev => prev === data.nextLevel ? prev : data.nextLevel);
+      setHasMFA(prev => prev === data.hasMFA ? prev : data.hasMFA);
     } catch (e) {
       // Fail silently in background
     }

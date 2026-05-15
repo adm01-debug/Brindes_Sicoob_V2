@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { useCallback } from "react";
 
 export interface CartItem {
   id: string;
@@ -112,6 +113,20 @@ export function useCart() {
       queryClient.invalidateQueries({ queryKey: [QUERY_KEY] });
       toast.success("Item removido do carrinho");
     },
+    onMutate: async (itemId) => {
+      await queryClient.cancelQueries({ queryKey: [QUERY_KEY] });
+      const previous = queryClient.getQueryData<CartItem[]>([QUERY_KEY, userId]);
+      if (previous) {
+        queryClient.setQueryData<CartItem[]>(
+          [QUERY_KEY, userId],
+          previous.filter((it) => it.id !== itemId)
+        );
+      }
+      return { previous };
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEY] });
+    },
   });
 
   const updateQuantity = useMutation({
@@ -125,7 +140,24 @@ export function useCart() {
         .eq("id", itemId);
       if (error) throw error;
     },
-    onSuccess: () => {
+    onMutate: async ({ itemId, quantity }) => {
+      await queryClient.cancelQueries({ queryKey: [QUERY_KEY] });
+      const previous = queryClient.getQueryData<CartItem[]>([QUERY_KEY, userId]);
+      if (previous) {
+        queryClient.setQueryData<CartItem[]>(
+          [QUERY_KEY, userId],
+          previous.map((it) => (it.id === itemId ? { ...it, quantity } : it))
+        );
+      }
+      return { previous };
+    },
+    onError: (err, variables, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData([QUERY_KEY, userId], context.previous);
+      }
+      toast.error("Erro ao atualizar quantidade");
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: [QUERY_KEY] });
     },
   });
@@ -139,7 +171,19 @@ export function useCart() {
         .eq("user_id", userId);
       if (error) throw error;
     },
-    onSuccess: () => {
+    onMutate: async () => {
+      await queryClient.cancelQueries({ queryKey: [QUERY_KEY] });
+      const previous = queryClient.getQueryData<CartItem[]>([QUERY_KEY, userId]);
+      queryClient.setQueryData<CartItem[]>([QUERY_KEY, userId], []);
+      return { previous };
+    },
+    onError: (err, variables, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData([QUERY_KEY, userId], context.previous);
+      }
+      toast.error("Erro ao limpar carrinho");
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: [QUERY_KEY] });
     },
   });
@@ -147,6 +191,10 @@ export function useCart() {
   const cartItems = cartQuery.data || [];
   const subtotal = cartItems.reduce((sum, item) => sum + (item.product_price * item.quantity), 0);
   const totalItemsCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
+
+  const getOptimisticQuantity = useCallback((itemId: string) => {
+    return cartItems.find(it => it.id === itemId)?.quantity ?? 0;
+  }, [cartItems]);
 
   return {
     items: cartItems,
@@ -158,5 +206,6 @@ export function useCart() {
     updateQuantity,
     clearCart,
     refetch: cartQuery.refetch,
+    getOptimisticQuantity,
   };
 }
