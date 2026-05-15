@@ -299,14 +299,9 @@ export function getFallback(pathname: string): React.ReactNode {
   if (pathname === "/dashboard") return <DashboardSkeleton />;
   if (pathname.startsWith("/pedidos")) return <OrdersSkeleton />;
 
-  if (
-    pathname === "/mockup-generator" ||
-    pathname === "/montar-kit" ||
-    pathname === "/simulador" ||
-    pathname === "/magic-up" ||
-    pathname === "/simulador-precos" ||
-    pathname === "/busca-preco"
-  )
+  if (pathname === "/mockup-generator" || pathname === "/montar-kit" || pathname === "/simulador" || pathname === "/magic-up" || pathname === "/simulador-precos" || pathname === "/busca-preco")
     return <ToolsSkeleton />;
+  if (pathname === "/tendencias")
+    return <AdminSkeleton />;
   return <GenericSkeleton />;
 }

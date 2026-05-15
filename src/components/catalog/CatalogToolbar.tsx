@@ -1,6 +1,6 @@
 import React, { Suspense } from "react";
 import { SORT_OPTIONS } from "@/constants/filters";
-import { Filter, ArrowUpDown, CheckSquare } from "lucide-react";
+import { Filter, ArrowUpDown, CheckSquare, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -48,6 +48,7 @@ interface CatalogToolbarProps {
   selectionMode: boolean;
   onToggleSelectionMode: () => void;
   selectedCount?: number;
+  isEnrichingColors?: boolean;
 }
 
 export function CatalogToolbar({
@@ -59,6 +60,7 @@ export function CatalogToolbar({
   gridColumns, setGridColumns,
   selectionMode, onToggleSelectionMode,
   selectedCount = 0,
+  isEnrichingColors = false,
 }: CatalogToolbarProps) {
   return (
     <div className="flex items-center justify-between gap-2 flex-wrap py-1">
@@ -103,6 +105,23 @@ export function CatalogToolbar({
         <div className="hidden sm:block">
           <StatsPopover stats={statBadges} isFiltered={activeFiltersCount > 0} />
         </div>
+        
+        {/* Color Enrichment Indicator */}
+        <AnimatePresence>
+          {isEnrichingColors && (
+            <motion.div
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -10 }}
+              className="hidden lg:flex items-center gap-1.5 px-2 py-1 rounded-full bg-primary/5 border border-primary/10"
+            >
+              <Loader2 className="h-3 w-3 text-primary animate-spin" />
+              <span className="text-[10px] text-primary/70 font-medium whitespace-nowrap">
+                Refinando cores...
+              </span>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
       <div className="flex items-center gap-2">

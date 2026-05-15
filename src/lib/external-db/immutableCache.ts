@@ -1,18 +1,15 @@
 /**
  * In-memory client cache for immutable-ish reference entities
  * (categories, suppliers, material_types) during a navigation session.
- *
- * Goals:
- *  - Eliminate repeated bridge calls for the same id during a session.
- *  - Allow batch lookup: pass a list of ids → returns cached map + only
- *    fetches the missing ones in a single `id=in.(...)` request.
- *  - Cheap TTL so long-lived tabs eventually refresh.
- *
- * Not persisted to localStorage on purpose: keeps things simple and avoids
- * staleness across deploys / data fixes.
+ * 
+ * Performance Optimizations:
+ * - Request Coalescing: concurrent requests for the same ID piggyback on a single promise.
+ * - Selective Invalidation: allows clearing individual entities or groups.
+ * - Zero-Latency Retrieval: synchronous access for already-fetched entities.
  */
 import { invokeExternalDb } from './bridge';
 import { logger } from '@/lib/logger';
+import { diagnostics } from '@/lib/diagnostics';
 
 type Entity = 'categories' | 'suppliers' | 'material_types';
 
@@ -98,20 +95,23 @@ export async function getCachedByIds<T extends { id: string; name: string; code?
     return out;
   }
 
-  const key = `${entity}::${[...missing].sort().join(',')}`;
-  const inflight = INFLIGHT.get(key) as Promise<T[]> | undefined;
   let records: T[];
   if (inflight) {
     records = await inflight;
   } else {
+    const start = performance.now();
     const p = (async () => {
       const inFilter = `in.(${missing.join(',')})`;
       const res = await invokeExternalDb<T>({
         table: entity, operation: 'select',
         select: SELECT_BY_ENTITY[entity],
         filters: { id: inFilter },
-        limit: Math.max(missing.length, 20),
+        limit: Math.max(missing.length, 50), // Increased buffer
       });
+      
+      const duration = performance.now() - start;
+      diagnostics.log('performance', 'immutableCache', `Fetched ${missing.length} ${entity}`, { duration, ids: missing });
+      
       return res.records as T[];
     })();
     
