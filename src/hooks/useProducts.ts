@@ -38,14 +38,21 @@ export function useProducts(
       // Relevância simples no frontend (se houver termo de busca)
       if (filters?.search) {
         const term = filters.search.toLowerCase();
-        result = result.sort((a, b) => {
-          const aExact = a.name.toLowerCase().startsWith(term) ? 1 : 0;
-          const bExact = b.name.toLowerCase().startsWith(term) ? 1 : 0;
-          if (aExact !== bExact) return bExact - aExact;
+        result.sort((a, b) => {
+          const aName = a.name.toLowerCase();
+          const bName = b.name.toLowerCase();
           
-          const aIncludes = a.name.toLowerCase().includes(term) ? 1 : 0;
-          const bIncludes = b.name.toLowerCase().includes(term) ? 1 : 0;
-          return bIncludes - aIncludes;
+          const aStartsWith = aName.startsWith(term);
+          const bStartsWith = bName.startsWith(term);
+          if (aStartsWith && !bStartsWith) return -1;
+          if (!aStartsWith && bStartsWith) return 1;
+          
+          const aIncludes = aName.includes(term);
+          const bIncludes = bName.includes(term);
+          if (aIncludes && !bIncludes) return -1;
+          if (!aIncludes && bIncludes) return 1;
+          
+          return aName.localeCompare(bName);
         });
       }
 
