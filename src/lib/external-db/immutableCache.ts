@@ -113,13 +113,10 @@ export async function getCachedByIds<T extends { id: string; name: string; code?
         limit: Math.max(missing.length, 20),
       });
       return res.records as T[];
-    })().catch((err) => {
-      logger.warn(`[immutableCache] fetch failed for ${entity}:`, err);
-      return [] as T[];
-    }).finally(() => { INFLIGHT.delete(key); });
+    })();
+    
     INFLIGHT.set(key, p as Promise<unknown>);
 
-    // Registra resolvers individuais por id para piggyback de chamadas concorrentes.
     const resolvers = new Map<string, (rec: T | undefined) => void>();
     for (const id of missing) {
       const perId = new Promise<T | undefined>((resolve) => {
@@ -127,16 +124,25 @@ export async function getCachedByIds<T extends { id: string; name: string; code?
       });
       INFLIGHT_BY_ID[entity].set(id, perId as Promise<{ id: string; name: string; code?: string } | undefined>);
     }
-    p.then((recs) => {
-      const byId = new Map(recs.map(r => [r.id, r]));
+
+    try {
+      records = await p;
+      const byId = new Map(records.map(r => [r.id, r]));
       for (const id of missing) {
         const r = byId.get(id);
         resolvers.get(id)?.(r);
         INFLIGHT_BY_ID[entity].delete(id);
       }
-    });
-
-    records = await p;
+    } catch (err) {
+      logger.warn(`[immutableCache] fetch failed for ${entity}:`, err);
+      for (const id of missing) {
+        resolvers.get(id)?.(undefined);
+        INFLIGHT_BY_ID[entity].delete(id);
+      }
+      records = [];
+    } finally {
+      INFLIGHT.delete(key);
+    }
   }
 
   for (const rec of records) {
