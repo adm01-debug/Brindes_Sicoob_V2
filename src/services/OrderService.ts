@@ -2,7 +2,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { OrderRow, OrderFilters, OrderItem, OrderStatus, OrderLogistics, OrderInvoice, OrderComment } from "@/types/orders";
 import { ORDER_STATUS_LABELS } from "@/constants/orders";
 import { logger } from "@/lib/logger";
-import { quoteToOrderService } from "./quoteToOrderService";
 
 export interface ConvertQuoteToOrderParams {
   quoteId: string;
@@ -299,14 +298,21 @@ export class OrderService {
   static async convertQuoteToOrder({ quoteId, sellerId, organizationId }: ConvertQuoteToOrderParams): Promise<ConvertedOrder> {
     try {
       // 1. Fetch the quote
-      const quote = await quoteToOrderService.fetchQuote(quoteId);
+      const { data: quote, error: qErr } = await supabase
+        .from("quotes")
+        .select("*, items:quote_items(*)")
+        .eq("id", quoteId)
+        .maybeSingle();
+      
+      if (qErr) throw qErr;
+      if (!quote) throw new Error("Orçamento não encontrado");
 
       const validStatuses = ["approved", "approved_singular"];
       if (!validStatuses.includes(quote.status)) {
         throw new Error("Apenas orçamentos aprovados pela Singular podem ser oficializados");
       }
 
-      // New validation: check if items have price/stock
+      // 2. Check if items have price/stock
       if (!quote.items?.length) {
         throw new Error("O orçamento não possui itens para oficialização");
       }
@@ -316,41 +322,70 @@ export class OrderService {
         throw new Error("Existem itens com preço zerado ou inválido. Por favor, revise o orçamento.");
       }
 
-      // 2. Check if order already exists
-      const existingOrder = await quoteToOrderService.checkExistingOrder(quoteId);
+      // 3. Check if order already exists
+      const { data: existingOrder, error: eErr } = await supabase
+        .from("orders")
+        .select("id, order_number")
+        .eq("quote_id", quoteId)
+        .maybeSingle();
+      
+      if (eErr) throw eErr;
       if (existingOrder) {
         throw new Error(`Este orçamento já foi convertido no pedido #${existingOrder.order_number}`);
       }
 
-      // 3. Create the order
+      // 4. Create the order
       const effectiveOrgId = organizationId || quote.organization_id || null;
-      const order = await quoteToOrderService.createOrder({
-        seller_id: sellerId,
+      const { data: order, error: insErr } = await supabase
+        .from("orders")
+        .insert({
+          seller_id: sellerId,
+          organization_id: effectiveOrgId,
+          quote_id: quoteId,
+          client_id: quote.client_id,
+          client_name: quote.client_name,
+          client_email: quote.client_email,
+          client_phone: quote.client_phone,
+          client_company: quote.client_company,
+          subtotal: quote.subtotal,
+          discount_amount: quote.discount_amount,
+          shipping_cost: quote.shipping_cost || 0,
+          shipping_type: quote.shipping_type,
+          total: quote.total,
+          payment_terms: quote.payment_terms,
+          delivery_time: quote.delivery_time,
+          notes: quote.notes,
+          internal_notes: quote.internal_notes,
+          status: "confirmed",
+          fulfillment_status: "unfulfilled",
+        })
+        .select("id, order_number, status, total")
+        .single();
+
+      if (insErr) throw insErr;
+
+      // 5. Copy items
+      const orderItems = quote.items.map((item: any) => ({
+        order_id: order.id,
         organization_id: effectiveOrgId,
-        quote_id: quoteId,
-        client_id: quote.client_id,
-        client_name: quote.client_name,
-        client_email: quote.client_email,
-        client_phone: quote.client_phone,
-        client_company: quote.client_company,
-        subtotal: quote.subtotal,
-        discount_amount: quote.discount_amount,
-        shipping_cost: quote.shipping_cost || 0,
-        shipping_type: quote.shipping_type,
-        total: quote.total,
-        payment_terms: quote.payment_terms,
-        delivery_time: quote.delivery_time,
-        notes: quote.notes,
-        internal_notes: quote.internal_notes,
-        status: "confirmed",
-        fulfillment_status: "unfulfilled",
-      });
+        product_id: item.product_id,
+        product_sku: item.product_sku,
+        product_name: item.product_name,
+        product_image_url: item.product_image_url,
+        quantity: item.quantity,
+        unit_price: item.unit_price,
+      }));
 
-      // 4. Copy items
-      await quoteToOrderService.copyItems(order.id, quoteId, effectiveOrgId);
+      const { error: itemInsErr } = await supabase.from("order_items").insert(orderItems);
+      if (itemInsErr) throw itemInsErr;
 
-      // 5. Update quote status
-      await quoteToOrderService.updateQuoteStatus(quoteId, "converted");
+      // 6. Update quote status
+      const { error: updErr } = await supabase
+        .from("quotes")
+        .update({ status: "converted" })
+        .eq("id", quoteId);
+      
+      if (updErr) throw updErr;
 
       return order;
     } catch (error: any) {
