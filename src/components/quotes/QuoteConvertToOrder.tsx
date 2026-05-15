@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useOrganization } from "@/contexts/OrganizationContext";
-import { convertQuoteToOrder } from "@/services/orderService";
+import { OrderService } from "@/services/OrderService";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -40,7 +40,7 @@ export function QuoteConvertToOrder({ quoteId, status, onConverted }: QuoteConve
 
     setIsConverting(true);
     try {
-      const order = await convertQuoteToOrder({
+      const order = await OrderService.convertQuoteToOrder({
         quoteId,
         sellerId: user.id,
         organizationId: currentOrg?.id || null,
