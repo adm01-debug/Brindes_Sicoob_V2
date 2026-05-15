@@ -56,7 +56,9 @@ import { SidebarBrandHeader } from "./sidebar/SidebarBrandHeader";
 import { OrganizationSwitcher } from "@/components/OrganizationSwitcher";
 
 import { SidebarNavGroup, type NavGroup } from "./sidebar/SidebarNavGroup";
+import { SidebarFooterHealth } from "./sidebar/SidebarFooterHealth";
 import { RestrictedRouteNotice } from "./sidebar/RestrictedRouteNotice";
+
 import { isDevOnlyPath, isAdminOnlyPath } from "@/lib/navigation/restricted-routes";
 import { isNavItemActive } from "@/lib/navigation/active-match";
 
