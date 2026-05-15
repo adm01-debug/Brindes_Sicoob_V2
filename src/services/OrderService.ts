@@ -1,5 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
-import { OrderRow, OrderFilters, OrderItem, OrderStatus } from "@/types/orders";
+import { OrderRow, OrderFilters, OrderItem, OrderStatus, OrderLogistics, OrderInvoice, OrderComment } from "@/types/orders";
 import { ORDER_STATUS_LABELS } from "@/constants/orders";
 
 export class OrderService {
@@ -52,6 +52,98 @@ export class OrderService {
     if (error) throw error;
   }
 
+  // Logistics Methods
+  static async getLogistics(orderId: string) {
+    const { data, error } = await supabase
+      .from("order_logistics")
+      .select("*")
+      .eq("order_id", orderId)
+      .maybeSingle();
+    if (error) throw error;
+    return data as OrderLogistics | null;
+  }
+
+  static async upsertLogistics(orderId: string, values: Partial<OrderLogistics>) {
+    const existing = await this.getLogistics(orderId);
+    if (existing) {
+      const { data, error } = await supabase
+        .from("order_logistics")
+        .update(values)
+        .eq("id", existing.id)
+        .select()
+        .single();
+      if (error) throw error;
+      return data;
+    } else {
+      const { data, error } = await supabase
+        .from("order_logistics")
+        .insert({ order_id: orderId, ...values })
+        .select()
+        .single();
+      if (error) throw error;
+      return data;
+    }
+  }
+
+  // Invoices Methods
+  static async listInvoices(orderId: string) {
+    const { data, error } = await supabase
+      .from("order_invoices")
+      .select("*")
+      .eq("order_id", orderId);
+    if (error) throw error;
+    return data as OrderInvoice[];
+  }
+
+  static async addInvoice(orderId: string, values: Partial<OrderInvoice>) {
+    const { data, error } = await supabase
+      .from("order_invoices")
+      .insert({ order_id: orderId, ...values })
+      .select()
+      .single();
+    if (error) throw error;
+    return data;
+  }
+
+  // Comments Methods
+  static async listComments(orderId: string, filters?: { search?: string, page?: number, pageSize?: number }) {
+    const page = filters?.page || 1;
+    const pageSize = filters?.pageSize || 15;
+    
+    let query = supabase
+      .from("order_comments")
+      .select(`
+        *,
+        author:profiles!order_comments_author_id_fkey(full_name, avatar_url)
+      `, { count: 'exact' })
+      .eq("order_id", orderId)
+      .order("created_at", { ascending: false });
+
+    if (filters?.search) {
+      query = query.ilike("content", `%${filters.search}%`);
+    }
+
+    const { data, error, count } = await query.range((page - 1) * pageSize, page * pageSize - 1);
+    if (error) throw error;
+    return { comments: data as any[], count };
+  }
+
+  static async addComment(orderId: string, authorId: string, content: string, isInternal = false, attachments = null) {
+    const { data, error } = await supabase
+      .from("order_comments")
+      .insert({
+        order_id: orderId,
+        author_id: authorId,
+        content,
+        is_internal: isInternal,
+        attachments
+      })
+      .select()
+      .single();
+    if (error) throw error;
+    return data;
+  }
+
   static async logAudit(params: {
     orderId: string;
     eventType: string;
@@ -78,7 +170,6 @@ export class OrderService {
   }) {
     const statusLabel = ORDER_STATUS_LABELS[params.newStatus];
     
-    // In-app notification
     await supabase.from('notifications').insert({
       user_id: params.userId,
       title: "Status do Pedido Atualizado",
@@ -91,8 +182,10 @@ export class OrderService {
       action_url: `/pedidos/${params.orderId}`
     });
 
-    // Edge Function Email
     try {
+      // Safe origin detection for both browser and SSR/Deno
+      const origin = typeof window !== 'undefined' ? window.location.origin : (process.env.APP_URL || '');
+      
       await supabase.functions.invoke('send-transactional-email', {
         body: {
           event_type: 'sicoob_order_status_change',
@@ -102,7 +195,7 @@ export class OrderService {
             order_number: params.orderId.slice(0, 8),
             new_status: statusLabel,
             notes: params.notes,
-            action_url: `${window.location.origin}/pedidos/${params.orderId}`
+            action_url: `${origin}/pedidos/${params.orderId}`
           }
         }
       });
@@ -136,9 +229,7 @@ export class OrderService {
     if (items?.length) {
       const newItems = items.map(it => ({
         ...it,
-        id: undefined,
         order_id: newOrder.id,
-        created_at: undefined
       }));
       await supabase.from("order_items").insert(newItems);
     }
