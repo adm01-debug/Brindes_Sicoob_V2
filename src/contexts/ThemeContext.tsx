@@ -1,5 +1,5 @@
-import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
-import { loadThemeConfig, applyThemePreset, applyRadius } from '@/lib/theme-presets';
+import { createContext, useContext, useState, useEffect, type ReactNode, useCallback } from 'react';
+import { loadThemeConfig, applyThemePreset, applyRadius, saveThemeConfig } from '@/lib/theme-presets';
 
 type Theme = 'light' | 'dark' | 'auto';
 
@@ -83,18 +83,24 @@ export const ThemeProvider = ({
     return () => mediaQuery.removeEventListener('change', handleChange);
   }, [theme]);
 
-  const setTheme = (newTheme: Theme) => {
+  const setTheme = useCallback((newTheme: Theme) => {
     localStorage.setItem(storageKey, newTheme);
     setThemeState(newTheme);
-  };
+    
+    // Persist to theme config SSOT
+    const cfg = loadThemeConfig();
+    saveThemeConfig({ ...cfg, mode: newTheme });
 
-  const toggleTheme = () => {
-    if (actualTheme === 'light') {
-      setTheme('dark');
-    } else {
-      setTheme('light');
-    }
-  };
+    // Announce theme change for accessibility
+    const themeLabel = newTheme === "auto" ? "do Sistema" : newTheme === "dark" ? "Escuro" : "Claro";
+    window.dispatchEvent(new CustomEvent('a11y-announce', { 
+      detail: { message: `Tema alterado para modo ${themeLabel}` } 
+    }));
+  }, [storageKey]);
+
+  const toggleTheme = useCallback(() => {
+    setTheme(actualTheme === 'light' ? 'dark' : 'light');
+  }, [actualTheme, setTheme]);
 
   const value: ThemeContextType = {
     theme,
