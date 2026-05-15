@@ -5,16 +5,11 @@
  * a UI pode aguardar `waitForBridgeReady()` para garantir que o isolate está
  * quente. Isso evita cascatas de 503 `SUPABASE_EDGE_RUNTIME_ERROR` em cold
  * starts.
- *
- * Estratégia:
- *  - `pingHealth()`: 1 chamada com timeout curto (default 2.5s). Sem retry —
- *    apenas reporta o estado atual.
- *  - `waitForBridgeReady()`: poll com backoff exponencial até 200 ou timeout
- *    global. Cacheia "ready" por READY_CACHE_MS para chamadas próximas.
  */
 import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/lib/logger';
 import { getRequestHeaders } from '@/lib/system/request-context';
+import { emitBridgeStatus } from './bridge-status-events';
 
 export type BridgeHealth = {
   ok: boolean;
@@ -96,18 +91,29 @@ export async function waitForBridgeReady(totalTimeoutMs = 5000): Promise<BridgeH
       last = await pingHealth(perAttempt);
       if (last.ok) {
         logger.log(`[Health] ✅ bridge ready in ${Math.round(performance.now() - start)}ms (${attempt}x)`);
+        emitBridgeStatus({ type: 'recovered' });
         return last;
       }
+      
       // Backoff acelerado: 80 → 160 → 320 → 500 → 500 (cap 500ms) com jitter ±20%.
-      // Cap menor (era 800ms) acelera a detecção pós-warm sem aumentar carga:
-      // mesmo no pior caso (5 tentativas) ainda são apenas 5 pings totais.
       const base = Math.min(500, 80 * Math.pow(2, attempt - 1));
-      const jitter = base * (0.8 + Math.random() * 0.4); // 0.8x–1.2x
+      const jitter = base * (0.8 + Math.random() * 0.4); 
       const delay = Math.round(jitter);
+      
+      emitBridgeStatus({ 
+        type: 'degraded', 
+        attempt, 
+        maxAttempts: Math.ceil(totalTimeoutMs / 250), // Rough estimate
+        delayMs: delay,
+        reason: last.error || 'Cold start'
+      });
+
       if (performance.now() - start + delay >= totalTimeoutMs) break;
       await new Promise((r) => setTimeout(r, delay));
     }
+    
     logger.warn(`[Health] ⛔ bridge not ready after ${attempt} attempts (${last.error ?? 'unknown'})`);
+    emitBridgeStatus({ type: 'unavailable', reason: last.error || 'Timeout', attempts: attempt });
     return last;
   })();
 
