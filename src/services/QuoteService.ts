@@ -89,26 +89,28 @@ export class QuoteService {
     items: QuoteItem[],
     userId: string 
   }): Promise<Quote> {
-    const oldQuote = await this.getById(params.quoteId);
-    if (!oldQuote) throw new Error("Orçamento não encontrado para atualização");
+    try {
+      const oldQuote = await this.getById(params.quoteId);
+      if (!oldQuote) throw new Error("Orçamento não encontrado para atualização");
 
-    const totals = calculateQuoteTotals(params.quote, params.items, params.quote.negotiation_markup_percent, params.quote.discount_percent ? 'percent' : 'amount', params.quote.discount_percent || params.quote.discount_amount || 0);
-    const updatePayload = buildUpdatePayload({ ...params.quote, row_version: oldQuote.row_version }, totals);
-    
-    const { data: updated, error: updErr } = await supabase
-      .from("quotes")
-      .update(updatePayload)
-      .eq("id", params.quoteId)
-      .eq("row_version", oldQuote.row_version || 1)
-      .select("*")
-      .single();
+      const totals = calculateQuoteTotals(params.quote, params.items, params.quote.negotiation_markup_percent, params.quote.discount_percent ? 'percent' : 'amount', params.quote.discount_percent || params.quote.discount_amount || 0);
+      const updatePayload = buildUpdatePayload({ ...params.quote, row_version: oldQuote.row_version }, totals);
+      
+      const { data: updated, error: updErr } = await supabase
+        .from("quotes")
+        .update(updatePayload)
+        .eq("id", params.quoteId)
+        .eq("row_version", oldQuote.row_version || 1)
+        .select("*")
+        .single();
 
-    if (updErr) {
-      if (updErr.code === 'PGRST116') {
-        throw new Error("Concorrência detectada: Este orçamento foi modificado por outro usuário. Por favor, recarregue a página.");
+      if (updErr) {
+        if (updErr.code === 'PGRST116') {
+          throw new Error("Concorrência detectada: Este orçamento foi modificado por outro usuário. Por favor, recarregue a página.");
+        }
+        logger.error("Error updating quote:", updErr);
+        throw updErr;
       }
-      throw updErr;
-    }
 
     // Granular Audit Logging
     const changes: string[] = [];
@@ -164,7 +166,11 @@ export class QuoteService {
     await supabase.from("quote_items").delete().eq("quote_id", params.quoteId);
     await this.insertItemsWithPersonalizations(params.items, params.quoteId);
 
-    return updated as Quote;
+      return updated as Quote;
+    } catch (err) {
+      logger.error("Unexpected error in QuoteService.update:", err);
+      throw err;
+    }
   }
 
   static async delete(quoteId: string) {
