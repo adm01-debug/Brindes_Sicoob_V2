@@ -100,7 +100,8 @@ export default function OrderDetailPage() {
                 <OrderPilotWorkflow orderId={order.id} />
               </TabsContent>
 
-              <TabsContent value="logistics" className="mt-4">
+              <TabsContent value="logistics" className="mt-4 space-y-4">
+                <OrderLogisticsTracking orderId={order.id} />
                 <OrderFulfillmentManager orderId={order.id} currentFulfillmentStatus={order.fulfillment_status} />
               </TabsContent>
 
