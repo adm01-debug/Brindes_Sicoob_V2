@@ -1,5 +1,5 @@
 import { useParams, useNavigate } from "react-router-dom";
-import { Package, ArrowLeft, FileText, CreditCard, Clock } from "lucide-react";
+import { Package, ArrowLeft, FileText, CreditCard, Clock, Truck, MessageSquare } from "lucide-react";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { PageSEO } from "@/components/seo/PageSEO";
 import { Button } from "@/components/ui/button";
@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { OrderStatusTimeline } from "@/components/orders/OrderStatusTimeline";
 import { OrderFulfillmentManager } from "@/components/orders/OrderFulfillmentManager";
 import { OrderInvoicesManager } from "@/components/orders/OrderInvoicesManager";
