@@ -125,7 +125,24 @@ export function useCart() {
         .eq("id", itemId);
       if (error) throw error;
     },
-    onSuccess: () => {
+    onMutate: async ({ itemId, quantity }) => {
+      await queryClient.cancelQueries({ queryKey: [QUERY_KEY] });
+      const previous = queryClient.getQueryData<CartItem[]>([QUERY_KEY, userId]);
+      if (previous) {
+        queryClient.setQueryData<CartItem[]>(
+          [QUERY_KEY, userId],
+          previous.map((it) => (it.id === itemId ? { ...it, quantity } : it))
+        );
+      }
+      return { previous };
+    },
+    onError: (err, variables, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData([QUERY_KEY, userId], context.previous);
+      }
+      toast.error("Erro ao atualizar quantidade");
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: [QUERY_KEY] });
     },
   });

@@ -141,12 +141,29 @@ export function useWorkspaceNotifications() {
           .order("created_at", { ascending: false })
           .limit(50);
 
-        if (error) throw error;
+        if (error) {
+          // Retry on network errors or transient bridge failures
+          if (error.message.includes('fetch') || error.message.includes('503')) {
+            await new Promise(r => setTimeout(r, 2000));
+            return fetchNotifications({ ...opts, silent: true, source: "retry" });
+          }
+          throw error;
+        }
+        
         const items = (data || []) as WorkspaceNotification[];
-        setNotifications(items);
-        setUnreadCount(items.filter((n) => !n.is_read).length);
+        
+        // Only update if data actually changed to prevent shallow-equal re-renders
+        const changed = items.length !== notifications.length || 
+                      items.some((it, idx) => it.id !== notifications[idx]?.id || it.is_read !== notifications[idx]?.is_read);
+        
+        if (changed) {
+          setNotifications(items);
+          setUnreadCount(items.filter((n) => !n.is_read).length);
+          writeCache(user.id, items);
+        }
+        
         lastFetchAtRef.current = Date.now();
-        writeCache(user.id, items);
+        
         if (badgeSourceRef.current !== "cache") {
           const elapsedMs =
             (typeof performance !== "undefined" ? performance.now() : Date.now()) -
@@ -188,7 +205,7 @@ export function useWorkspaceNotifications() {
         else setIsLoading(false);
       }
     },
-    [user, notifications.length]
+    [user, notifications] // Added notifications to dependencies for correct comparison
   );
 
   // Initial fetch (always, but in background if cache hydrated)

@@ -114,7 +114,11 @@ export function MiniCart() {
                             variant="outline" 
                             size="icon" 
                             className="h-7 w-7"
-                            onClick={() => updateQuantity.mutate({ itemId: item.id, quantity: item.quantity - 1 })}
+                            disabled={updateQuantity.isPending}
+                            onClick={(e) => {
+                              e.preventDefault();
+                              updateQuantity.mutate({ itemId: item.id, quantity: item.quantity - 1 });
+                            }}
                           >
                             <Minus className="h-3 w-3" />
                           </Button>
@@ -123,7 +127,11 @@ export function MiniCart() {
                             variant="outline" 
                             size="icon" 
                             className="h-7 w-7"
-                            onClick={() => updateQuantity.mutate({ itemId: item.id, quantity: item.quantity + 1 })}
+                            disabled={updateQuantity.isPending}
+                            onClick={(e) => {
+                              e.preventDefault();
+                              updateQuantity.mutate({ itemId: item.id, quantity: item.quantity + 1 });
+                            }}
                           >
                             <Plus className="h-3 w-3" />
                           </Button>
