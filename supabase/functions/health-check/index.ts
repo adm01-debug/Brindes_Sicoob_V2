@@ -35,7 +35,11 @@ Deno.serve(async (req) => {
     const extStart = Date.now();
     const extUrl = Deno.env.get("EXTERNAL_SUPABASE_URL");
     const extKey = Deno.env.get("EXTERNAL_SUPABASE_SERVICE_KEY");
-    if (extUrl && extKey) {
+    
+    // Ignore placeholder values
+    const isPlaceholder = (val?: string) => !val || val.includes("PLACEHOLDER") || val === "undefined";
+
+    if (!isPlaceholder(extUrl) && !isPlaceholder(extKey)) {
       const extClient = createClient(extUrl, extKey);
       const { error } = await extClient.from("produto").select("id").limit(1);
       checks.external_db = {
