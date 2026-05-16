@@ -182,7 +182,7 @@ export function MainLayout({ children }: MainLayoutProps) {
           >
             
             <Suspense fallback={<div>{children || <Outlet />}</div>}>
-              <PageTransition variant="dynamic-slide" duration={0.3} className="min-h-[calc(100vh-140px)]">
+              <PageTransition variant="morph" duration={0.4} className="min-h-[calc(100vh-140px)]">
                 {children || <Outlet />}
               </PageTransition>
             </Suspense>

@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useLocation } from "react-router-dom";
 import { useNavigationStore } from "@/stores/useNavigationStore";
 
-type TransitionVariant = "fade" | "slide-up" | "slide-left" | "slide-right" | "scale" | "fade-slide" | "dynamic-slide";
+type TransitionVariant = "fade" | "slide-up" | "slide-left" | "slide-right" | "scale" | "fade-slide" | "dynamic-slide" | "morph";
 
 interface PageTransitionProps {
   children: ReactNode;
@@ -60,6 +60,11 @@ export function PageTransition({
         initial: { opacity: 0, y: 6 },
         animate: { opacity: 1, y: 0 },
         exit: { opacity: 0, y: -4 },
+      },
+      morph: {
+        initial: { opacity: 0, scale: 0.98, filter: "blur(4px)" },
+        animate: { opacity: 1, scale: 1, filter: "blur(0px)" },
+        exit: { opacity: 0, scale: 1.02, filter: "blur(4px)" },
       },
     };
     return staticVariants[variant as keyof typeof staticVariants] || staticVariants["fade-slide"];
