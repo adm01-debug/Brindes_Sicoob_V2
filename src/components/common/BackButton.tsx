@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { useSmartNavigation } from "@/hooks/useSmartNavigation";
+import { useNavigationStore } from "@/stores/useNavigationStore";
 
 const routeLabels: Record<string, string> = {
   "/": "Início",
@@ -44,10 +45,14 @@ export const BackButton = forwardRef<HTMLButtonElement, BackButtonProps>(
     useChevron = false
   }: BackButtonProps, ref) {
     const { goBack, previousItem, history } = useSmartNavigation();
+    const direction = useNavigationStore(s => s.direction);
     const location = useLocation();
     
     // Check if we can actually go back or ascend
     const canGoBack = history.length > 1 || location.pathname !== "/";
+    const isCriticalPath = location.pathname.includes('/simulador') || 
+                         location.pathname.includes('/orcamentos/novo') ||
+                         location.pathname.includes('/mockup-generator');
 
     if (location.pathname === "/" || !canGoBack) return null;
 
@@ -64,6 +69,10 @@ export const BackButton = forwardRef<HTMLButtonElement, BackButtonProps>(
             animate={{ opacity: 1, scale: 1 }}
             whileTap={{ scale: 0.97 }}
             transition={{ duration: 0.1 }}
+            animate={isCriticalPath ? {
+              x: [0, -2, 2, -2, 2, 0],
+              transition: { repeat: Infinity, duration: 2, repeatDelay: 5 }
+            } : {}}
           >
             <Button
               ref={ref}
