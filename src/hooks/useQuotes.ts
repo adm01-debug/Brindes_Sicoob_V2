@@ -13,6 +13,7 @@ import type { Quote, QuoteItem, PersonalizationTechnique } from "./quotes/quoteT
 import { STATUS_LABELS } from "./quotes/quoteHelpers";
 import { invokeExternalDb } from "@/lib/external-db";
 import { useRBAC } from "@/hooks/useRBAC";
+import { invokeEdgeFunction } from "@/lib/edge-function-client";
 
 export function useQuotes() {
   const { user, isGestorCompras, isDev } = useAuth();
@@ -288,11 +289,10 @@ export function useQuotes() {
   const syncQuoteToBitrix = async (quoteId: string) => {
     const log = createClientLogger('quote.syncBitrix', { base: { quoteId } });
     try {
-      const { data, error: fnError } = await supabase.functions.invoke("quote-sync", {
+      await invokeEdgeFunction("quote-sync", {
         body: { action: "sync_quote", data: { quoteId } },
         headers: log.headers(),
       });
-      if (fnError) throw fnError;
       toast.success("Sincronizado com Bitrix!");
       fetchQuotes();
       return true;

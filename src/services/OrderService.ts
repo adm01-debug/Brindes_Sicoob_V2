@@ -2,6 +2,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { OrderRow, OrderFilters, OrderItem, OrderStatus, OrderLogistics, OrderInvoice, OrderComment } from "@/types/orders";
 import { ORDER_STATUS_LABELS } from "@/constants/orders";
 import { logger } from "@/lib/logger";
+import { invokeEdgeFunction } from "@/lib/edge-function-client";
 
 export interface ConvertQuoteToOrderParams {
   quoteId: string;
@@ -221,7 +222,7 @@ export class OrderService {
       // Safe origin detection for both browser and SSR/Deno
       const origin = typeof window !== 'undefined' ? window.location.origin : (process.env.APP_URL || '');
       
-      await supabase.functions.invoke('send-transactional-email', {
+      await invokeEdgeFunction('send-transactional-email', {
         body: {
           event_type: 'sicoob_order_status_change',
           recipient_email: params.userEmail,
