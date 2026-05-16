@@ -65,7 +65,9 @@ export function ProductDetailHero({
   onOpenPackagingModal, onOpenFutureStock, onOpenSupplierComparison,
 }: ProductDetailHeroProps) {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [quoteVariantWizardOpen, setQuoteVariantWizardOpen] = useState(false);
+
 
   const minQuantity = product.minQuantity || 1;
   const stockInfo = getStockStatusInfo(product.stockStatus);
