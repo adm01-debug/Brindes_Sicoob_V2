@@ -16,6 +16,8 @@ import { VariantPickerDialog } from "@/components/products/VariantPickerDialog";
 import { FutureStockModal } from "@/components/products/FutureStockModal";
 import { PackagingModal } from "@/components/products/PackagingModal";
 import { useToast } from "@/hooks/use-toast";
+import { showUndoToast } from "@/utils/undoToast";
+
 import { useProductAnalytics } from "@/hooks/useProductAnalytics";
 import { useProduct } from "@/hooks/useProducts";
 import { useQuery } from "@tanstack/react-query";
