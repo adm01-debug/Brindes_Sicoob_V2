@@ -7,6 +7,7 @@ import { useScrollLockFix } from "@/hooks/useScrollLockFix";
 import { useGlobalShortcuts } from "@/hooks/useGlobalShortcuts";
 import { SkipToContent } from "@/components/common/SkipToContent";
 import { BackButton } from "@/components/common/BackButton";
+import { useSwipeBack } from "@/hooks/useSwipeBack";
 
 import { lazyWithRetry } from "@/lib/lazyWithRetry";
 
@@ -35,9 +36,6 @@ import { cn } from "@/lib/utils";
 import { diagnostics } from "@/lib/diagnostics";
 import { APIInspector } from "@/components/debug/APIInspector";
 
-
-
-
 interface MainLayoutProps {
   children: React.ReactNode;
 }
@@ -56,16 +54,15 @@ export function MainLayout({ children }: MainLayoutProps) {
 
   const { pullDistance, isRefreshing } = usePullToRefresh(handleRefresh);
   const location = useLocation();
-  const isMockupGenerator = location.pathname === "/mockup-generator";
   const isHome = location.pathname === "/";
 
   useScrollLockFix();
   useGlobalShortcuts();
+  useSwipeBack(!isHome); // Habilitar gesto de voltar em subpáginas
 
   useEffect(() => {
     diagnostics.log('event', 'MainLayout', 'MainLayout montado');
   }, []);
-
 
   // Propaga --breadcrumb-h ao :root para que stickys filhos (toolbars de
   // página) ancorem corretamente abaixo do Header + Breadcrumb. Em "/" a
@@ -170,7 +167,7 @@ export function MainLayout({ children }: MainLayoutProps) {
           >
             
             <Suspense fallback={<div>{children}</div>}>
-              <PageTransition variant="fade-slide" duration={0.2}>
+              <PageTransition variant="dynamic-slide" duration={0.25}>
                 {children}
               </PageTransition>
             </Suspense>
