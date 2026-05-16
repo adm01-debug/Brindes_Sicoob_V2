@@ -1,8 +1,9 @@
 import { type ReactNode } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLocation } from "react-router-dom";
+import { useNavigationStore } from "@/stores/useNavigationStore";
 
-type TransitionVariant = "fade" | "slide-up" | "slide-left" | "slide-right" | "scale" | "fade-slide";
+type TransitionVariant = "fade" | "slide-up" | "slide-left" | "slide-right" | "scale" | "fade-slide" | "dynamic-slide";
 
 interface PageTransitionProps {
   children: ReactNode;
@@ -11,39 +12,6 @@ interface PageTransitionProps {
   className?: string;
 }
 
-const variants = {
-  fade: {
-    initial: { opacity: 0 },
-    animate: { opacity: 1 },
-    exit: { opacity: 0 },
-  },
-  "slide-up": {
-    initial: { opacity: 0, y: 20 },
-    animate: { opacity: 1, y: 0 },
-    exit: { opacity: 0, y: -20 },
-  },
-  "slide-left": {
-    initial: { opacity: 0, x: 20 },
-    animate: { opacity: 1, x: 0 },
-    exit: { opacity: 0, x: -20 },
-  },
-  "slide-right": {
-    initial: { opacity: 0, x: -20 },
-    animate: { opacity: 1, x: 0 },
-    exit: { opacity: 0, x: 20 },
-  },
-  scale: {
-    initial: { opacity: 0, scale: 0.95 },
-    animate: { opacity: 1, scale: 1 },
-    exit: { opacity: 0, scale: 1.05 },
-  },
-  "fade-slide": {
-    initial: { opacity: 0, y: 6 },
-    animate: { opacity: 1, y: 0 },
-    exit: { opacity: 0, y: -4 },
-  },
-};
-
 export function PageTransition({
   children,
   variant = "fade-slide",
@@ -51,7 +19,53 @@ export function PageTransition({
   className,
 }: PageTransitionProps) {
   const location = useLocation();
-  const selectedVariant = variants[variant];
+  const direction = useNavigationStore((s) => s.direction);
+
+  const getVariants = () => {
+    if (variant === "dynamic-slide") {
+      return {
+        initial: { opacity: 0, x: direction === "forward" ? 20 : -20 },
+        animate: { opacity: 1, x: 0 },
+        exit: { opacity: 0, x: direction === "forward" ? -20 : 20 },
+      };
+    }
+
+    const staticVariants = {
+      fade: {
+        initial: { opacity: 0 },
+        animate: { opacity: 1 },
+        exit: { opacity: 0 },
+      },
+      "slide-up": {
+        initial: { opacity: 0, y: 20 },
+        animate: { opacity: 1, y: 0 },
+        exit: { opacity: 0, y: -20 },
+      },
+      "slide-left": {
+        initial: { opacity: 0, x: 20 },
+        animate: { opacity: 1, x: 0 },
+        exit: { opacity: 0, x: -20 },
+      },
+      "slide-right": {
+        initial: { opacity: 0, x: -20 },
+        animate: { opacity: 1, x: 0 },
+        exit: { opacity: 0, x: 20 },
+      },
+      scale: {
+        initial: { opacity: 0, scale: 0.95 },
+        animate: { opacity: 1, scale: 1 },
+        exit: { opacity: 0, scale: 1.05 },
+      },
+      "fade-slide": {
+        initial: { opacity: 0, y: 6 },
+        animate: { opacity: 1, y: 0 },
+        exit: { opacity: 0, y: -4 },
+      },
+    };
+    return staticVariants[variant as keyof typeof staticVariants] || staticVariants["fade-slide"];
+  };
+
+  const selectedVariant = getVariants();
 
   return (
     <AnimatePresence mode="wait">
@@ -72,6 +86,7 @@ export function PageTransition({
   );
 }
 
+// ... preserve StaggerContainer, StaggerItem, FadeInView
 // Staggered container for child animations
 interface StaggerContainerProps {
   children: ReactNode;
