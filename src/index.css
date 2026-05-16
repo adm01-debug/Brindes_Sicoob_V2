@@ -38,6 +38,8 @@ html[data-scroll-locked] body {
 
 @layer base {
   :root {
+    --nav-h: 3.5rem;
+    --safe-area-bottom: env(safe-area-inset-bottom, 0px);
     /* ===== FONTS ===== */
     --font-sans: 'Plus Jakarta Sans', system-ui, sans-serif;
     --font-display: 'Outfit', system-ui, sans-serif;

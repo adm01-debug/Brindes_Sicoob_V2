@@ -14,8 +14,9 @@ export function useSwipeBack(enabled = true) {
 
     const onTouchStart = (e: TouchEvent) => {
       // Só capturar se começar na borda esquerda (ex: primeiros 30px)
-      if (e.touches[0].clientX < 30) {
+      if (e.touches[0].clientX < 40) { // Increased hit area for easier swipe
         touchStartRef.current = e.touches[0].clientX;
+        (touchStartRef as any).current_y = e.touches[0].clientY;
         touchEndRef.current = null;
       }
     };
@@ -29,10 +30,9 @@ export function useSwipeBack(enabled = true) {
 
       const distance = touchEndRef.current - touchStartRef.current;
       const isRightSwipe = distance > minSwipeDistance;
+      const verticalDistance = Math.abs(e.changedTouches[0].clientY - (touchStartRef.current_y || 0));
 
-      if (isRightSwipe) {
-        // Verificar se não houve muito movimento vertical
-        // (Isso é mais difícil de rastrear sem touchmove completo, mas simplificado aqui)
+      if (isRightSwipe && verticalDistance < maxVerticalDistance) {
         goBack();
       }
 
