@@ -16,6 +16,8 @@ import { VariantPickerDialog } from "@/components/products/VariantPickerDialog";
 import { FutureStockModal } from "@/components/products/FutureStockModal";
 import { PackagingModal } from "@/components/products/PackagingModal";
 import { useToast } from "@/hooks/use-toast";
+import { showUndoToast } from "@/utils/undoToast";
+
 import { useProductAnalytics } from "@/hooks/useProductAnalytics";
 import { useProduct } from "@/hooks/useProducts";
 import { useQuery } from "@tanstack/react-query";
@@ -131,9 +133,19 @@ export default function ProductDetail() {
   const isFavorite = id ? isFavoriteCheck(id) : false;
   const handleFavorite = () => {
     if (!id) return;
-    if (isFavorite) { removeFavorite(id); toast({ title: "Removido dos favoritos", description: product.name }); }
-    else setFavPickerOpen(true);
+    if (isFavorite) {
+      const currentVariant = useFavoritesStore.getState().getFavoriteVariant(id);
+      removeFavorite(id);
+      showUndoToast({
+        title: "Removido dos favoritos",
+        description: product.name,
+        onUndo: () => toggleFavorite(id, currentVariant),
+      });
+    } else {
+      setFavPickerOpen(true);
+    }
   };
+
   const handleFavoriteVariantSelected = (variant: any) => {
     if (!id) return;
     toggleFavorite(id, variant ? { color_name: variant.color_name, color_hex: variant.color_hex, size_code: variant.size_code, variant_id: variant.variant_id, thumbnail: variant.thumbnail } : undefined);

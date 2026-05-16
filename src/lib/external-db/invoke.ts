@@ -8,6 +8,13 @@ import { emitBridgeStatus, isColdStartSignal } from './bridge-status-events';
 import { ensureCloudReady, CloudNotReadyError, getCachedCloudStatus } from '@/lib/cloud-status';
 import { recordBridgeCall, estimatePayloadBytes } from '@/lib/telemetry/bridgeCallMetrics';
 import { newRequestId, REQUEST_ID_HEADER, newTraceparent, TRACEPARENT_HEADER } from '@/lib/telemetry/requestId';
+import { getCircuitBreaker } from '@/lib/circuit-breaker';
+
+const bridgeBreaker = getCircuitBreaker('external-db-bridge', {
+  failureThreshold: 10,
+  resetTimeout: 45000,
+});
+
 
 function deriveExternalOp(body: Record<string, unknown>): { op: string; target?: string } {
   const operation = typeof body.operation === 'string' ? body.operation : undefined;
@@ -150,15 +157,18 @@ export async function invokeWithRetry(
   }
 
   for (let attempt = 0; attempt <= retries; attempt++) {
-    const { data, error } = await supabase.functions.invoke('external-db-bridge', {
-      body,
-      headers: { 
-        [REQUEST_ID_HEADER]: requestId,
-        [TRACEPARENT_HEADER]: traceparent 
-      },
-    });
+    const { data, error } = await bridgeBreaker.execute(() => 
+      supabase.functions.invoke('external-db-bridge', {
+        body,
+        headers: { 
+          [REQUEST_ID_HEADER]: requestId,
+          [TRACEPARENT_HEADER]: traceparent 
+        },
+      })
+    );
 
     if (!error) {
+
       if (sawColdStart) emitBridgeStatus({ type: 'recovered' });
       return finalize({ data, error: null });
     }

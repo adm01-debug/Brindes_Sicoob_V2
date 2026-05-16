@@ -56,7 +56,9 @@ export function useGlobalSearch() {
   const navigate = useNavigate();
   const { history, quickSuggestions, addToHistory, removeFromHistory } = useSearch();
   const { suggestions: contextualSuggestions, routeContext } = useContextualSuggestions({ searchQuery: query });
-  const popularProducts = usePopularSearchItems(open);
+  const popularProductsQuery = usePopularSearchItems(open);
+  const popularProducts = popularProductsQuery.data || [];
+
   
   const { handleVoiceAction } = useVoiceSearchAction(setOpen, setVoiceOverlayOpen, setQuery, setResults);
 

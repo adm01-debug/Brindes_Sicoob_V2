@@ -9,6 +9,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { logger } from "@/lib/logger";
 import { recordBridgeCall, estimatePayloadBytes } from "@/lib/telemetry/bridgeCallMetrics";
 import { newRequestId, REQUEST_ID_HEADER } from "@/lib/telemetry/requestId";
+import { getCircuitBreaker } from "@/lib/circuit-breaker";
+
+const crmBreaker = getCircuitBreaker("crm-db-bridge", {
+  failureThreshold: 8,
+  resetTimeout: 60000, // 60s
+});
+
 
 export interface CrmQuery {
   table: string;
@@ -58,10 +65,13 @@ export async function invokeCrmBatch(queries: CrmBatchQuery[]): Promise<CrmBatch
   const body = { operation: "batch", queries };
   const reqBytes = estimatePayloadBytes(body);
   const requestId = newRequestId();
-  const { data, error } = await supabase.functions.invoke("crm-db-bridge", {
-    body,
-    headers: { [REQUEST_ID_HEADER]: requestId },
-  });
+  const { data, error } = await crmBreaker.execute(() => 
+    supabase.functions.invoke("crm-db-bridge", {
+      body,
+      headers: { [REQUEST_ID_HEADER]: requestId },
+    })
+  );
+
 
   const serverRequestId =
     data && typeof data === "object" && "request_id" in data
@@ -166,10 +176,13 @@ export async function invokeCrmDb<T>(query: CrmQuery): Promise<CrmResponse<T>> {
   };
 
   for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
-    const { data, error } = await supabase.functions.invoke("crm-db-bridge", {
-      body: query,
-      headers: { [REQUEST_ID_HEADER]: requestId },
-    });
+    const { data, error } = await crmBreaker.execute(() => 
+      supabase.functions.invoke("crm-db-bridge", {
+        body: query,
+        headers: { [REQUEST_ID_HEADER]: requestId },
+      })
+    );
+
 
     if (!error && !data?.error) {
       record(true, data);
