@@ -157,12 +157,17 @@ export function MainLayout({ children }: MainLayoutProps) {
               (isHome || location.pathname === "/dashboard") && "opacity-0 pointer-events-none h-0 border-none",
               hideBreadcrumb && !isHome && "translate-y-[-100%] opacity-0 pointer-events-none",
             )}
-
             data-testid="breadcrumb-bar"
           >
-            <div className="max-w-[1920px] mx-auto px-3 sm:px-4 lg:px-6 py-2">
+            <div className="max-w-[1920px] mx-auto px-3 sm:px-4 lg:px-6 py-2 flex items-center gap-3">
               <Suspense fallback={<div className="h-6" />}>
-                <PersistentBreadcrumbs showBackButton className="py-0.5" />
+                <BackButton 
+                  useChevron 
+                  showLabel={false} 
+                  className="h-8 w-8 rounded-full bg-muted/20 hover:bg-muted/40 text-muted-foreground hover:text-foreground transition-all duration-200 border-none shadow-none sm:hidden" 
+                  variant="ghost" 
+                />
+                <PersistentBreadcrumbs showBackButton className="py-0.5 flex-1" />
               </Suspense>
             </div>
           </div>
