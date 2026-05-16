@@ -128,19 +128,32 @@ export function Header({ onMenuToggle, searchQuery, onSearchChange }: HeaderProp
       <div className="flex items-center justify-between h-full px-2 sm:px-4 lg:px-6">
         {/* ══════ Left section — Menu + Âncora contextual (#1) ══════ */}
         <div className="flex items-center gap-2 sm:gap-3 min-w-0 shrink-0">
-          <div className="flex lg:hidden items-center mr-2">
-            <img 
-              src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/ca/Sicoob_logo.svg/2560px-Sicoob_logo.svg.png" 
-              alt="Sicoob" 
-              className="h-7 w-auto object-contain"
-            />
+          {/* Mobile Back Button — replaces logo on subpages */}
+          <div className="lg:hidden flex items-center">
+            {location.pathname !== "/" ? (
+              <BackButton variant="ghost" size="icon" showLabel={false} className="h-9 w-9 rounded-full" />
+            ) : (
+              <div className="flex items-center mr-1 ml-1">
+                <img 
+                  src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/ca/Sicoob_logo.svg/2560px-Sicoob_logo.svg.png" 
+                  alt="Sicoob" 
+                  className="h-6 w-auto object-contain"
+                />
+              </div>
+            )}
           </div>
+
           <Button
             variant="ghost"
             size="icon"
-            className="lg:hidden hover:bg-brand/10 hover:text-brand h-8 w-8 sm:h-9 sm:w-9"
+            className={cn(
+              "hover:bg-brand/10 hover:text-brand h-8 w-8 sm:h-9 sm:w-9 transition-all",
+              location.pathname !== "/" ? "hidden lg:flex" : "flex lg:hidden"
+            )}
             onClick={onMenuToggle}
-           aria-label="Menu"><Menu className="h-5 w-5" />
+            aria-label="Menu"
+          >
+            <Menu className="h-5 w-5" />
           </Button>
 
           {/* #1 — Seção atual como âncora */}
