@@ -5,6 +5,8 @@ import { usePullToRefresh } from "@/hooks/usePullToRefresh";
 import { useLocation } from "react-router-dom";
 import { useScrollLockFix } from "@/hooks/useScrollLockFix";
 import { useGlobalShortcuts } from "@/hooks/useGlobalShortcuts";
+import { useScrollDirection } from "@/hooks/useScroll";
+
 import { SkipToContent } from "@/components/common/SkipToContent";
 import { BackButton } from "@/components/common/BackButton";
 import { useSwipeBack } from "@/hooks/useSwipeBack";
