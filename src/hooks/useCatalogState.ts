@@ -2,7 +2,7 @@
  * useCatalogState — Orchestrates catalog page state & logic by composing specialized hooks.
  * Refactored for 10/10 technical excellence.
  */
-import { useState, useMemo, useEffect, useCallback } from "react";
+import { useState, useMemo, useEffect, useCallback, useTransition } from "react";
 import { useColorEnrichment } from "@/hooks/useColorEnrichment";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useProductsCatalog } from "@/hooks/useProductsLightweight";
@@ -46,7 +46,8 @@ export function useCatalogState() {
   const searchQueryFromUrl = searchParams.get("search") || "";
 
   // Compose specialized state
-  const display = useCatalogDisplay();
+  const [isPending, startTransition] = useTransition();
+50:   const display = useCatalogDisplay();
   const filterState = useCatalogFilters();
   const selection = useCatalogSelectionState();
   
