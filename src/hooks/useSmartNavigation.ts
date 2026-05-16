@@ -10,8 +10,12 @@ export function useSmartNavigation() {
 
   // Rastrear navegação
   useEffect(() => {
-    // Pegar o título da página se possível
+    // Só adiciona se o path mudou (evita search query loops se não for desejado)
     const title = document.title || 'Página';
+    
+    // Pegar labels de breadcrumbs para títulos mais precisos se possível
+    // Aqui poderíamos injetar um resolver de títulos baseado no path
+    
     push({
       pathname: location.pathname,
       search: location.search,
@@ -20,7 +24,7 @@ export function useSmartNavigation() {
     });
   }, [location.pathname, location.search, push]);
 
-  const goBack = useCallback(() => {
+  const goBack = useCallback((fallbackPath?: string) => {
     Haptics.impactLight();
     
     setDirection('backward');
@@ -29,11 +33,15 @@ export function useSmartNavigation() {
     if (previous) {
       pop(); // Remove o atual
       navigate(-1);
+    } else if (fallbackPath) {
+      navigate(fallbackPath);
     } else {
+      // Lógica de subida hierárquica inteligente
       const pathParts = location.pathname.split('/').filter(Boolean);
       if (pathParts.length <= 1) {
         navigate('/');
       } else {
+        // Se estamos em /pedidos/123, sobe para /pedidos
         navigate('/' + pathParts.slice(0, -1).join('/'));
       }
     }

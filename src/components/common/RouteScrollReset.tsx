@@ -24,17 +24,29 @@ export function RouteScrollReset() {
       return;
     }
     if (navType === "POP") return;
-    if (hash) return;
+    if (hash) {
+      // Se houver hash, tenta rolar até o elemento após um micro-delay para garantir render
+      setTimeout(() => {
+        const element = document.getElementById(hash.replace('#', ''));
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth' });
+        }
+      }, 100);
+      return;
+    }
 
     const prefersReduced = window.matchMedia(
       "(prefers-reduced-motion: reduce)",
     ).matches;
 
-    window.scrollTo({
-      top: 0,
-      left: 0,
-      behavior: prefersReduced ? "auto" : "smooth",
-    });
+    // Rola para o topo suavemente, mas garante que seja imediato se o usuário já estiver no topo
+    if (window.scrollY > 0) {
+      window.scrollTo({
+        top: 0,
+        left: 0,
+        behavior: prefersReduced ? "auto" : "smooth",
+      });
+    }
   }, [pathname, hash, navType]);
 
   return null;

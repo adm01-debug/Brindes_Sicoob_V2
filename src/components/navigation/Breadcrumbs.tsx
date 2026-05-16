@@ -1,8 +1,10 @@
-import { ChevronRight, Home } from "lucide-react";
+import { ChevronRight, Home, ArrowLeft } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { canNavigateTo, isDevOnlyPath } from "@/lib/navigation/restricted-routes";
+import { useSmartNavigation } from "@/hooks/useSmartNavigation";
+import { Button } from "@/components/ui/button";
 
 export interface BreadcrumbItem {
   label: string;
@@ -39,6 +41,7 @@ const routeLabels: Record<string, string> = {
   "gestor": "Gestão",
   "compras": "Compras",
   "aprovacoes": "Aprovações",
+  "carrinhos": "Carrinhos",
   
   "perfil": "Meu Perfil",
   "seguranca": "Segurança",
@@ -61,17 +64,31 @@ const routeLabels: Record<string, string> = {
 export function Breadcrumbs({ items, className, showHome = true }: BreadcrumbsProps) {
   const location = useLocation();
   const { isDev, isAdmin } = useAuth();
+  const { goBack } = useSmartNavigation();
 
   // Generate breadcrumbs from route if not provided
   const breadcrumbItems: BreadcrumbItem[] = items || generateBreadcrumbs(location.pathname, { isDev, isAdmin });
 
   if (breadcrumbItems.length === 0) return null;
   
+  const isHome = location.pathname === "/";
+  
   return (
     <nav 
       aria-label="Navegação de migalhas de pão" 
       className={cn("flex items-center text-sm", className)}
     >
+      {!isHome && (
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-7 w-7 rounded-full mr-2 lg:hidden"
+          onClick={() => goBack()}
+          aria-label="Voltar"
+        >
+          <ArrowLeft className="h-4 w-4" />
+        </Button>
+      )}
       <ol className="flex items-center gap-1.5 flex-wrap">
         {showHome && (
           <>
@@ -99,7 +116,7 @@ export function Breadcrumbs({ items, className, showHome = true }: BreadcrumbsPr
             <li key={index} className="flex items-center gap-1.5">
               {isLast ? (
                 <span 
-                  className="font-medium text-foreground"
+                  className="font-medium text-foreground max-w-[150px] sm:max-w-none truncate"
                   aria-current="page"
                 >
                   {item.label}
@@ -108,7 +125,7 @@ export function Breadcrumbs({ items, className, showHome = true }: BreadcrumbsPr
                 <>
                   <Link
                     to={item.href || "#"}
-                    className="text-muted-foreground hover:text-foreground transition-colors"
+                    className="text-muted-foreground hover:text-foreground transition-colors max-w-[120px] sm:max-w-none truncate"
                   >
                     {item.label}
                   </Link>

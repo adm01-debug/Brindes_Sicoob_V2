@@ -46,8 +46,8 @@ export const BackButton = forwardRef<HTMLButtonElement, BackButtonProps>(
     const { goBack, previousItem, history } = useSmartNavigation();
     const location = useLocation();
     
-    // Check if we can actually go back (history length > 1 or from another site)
-    const canGoBack = history.length > 1;
+    // Check if we can actually go back or ascend
+    const canGoBack = history.length > 1 || location.pathname !== "/";
 
     if (location.pathname === "/" || !canGoBack) return null;
 
