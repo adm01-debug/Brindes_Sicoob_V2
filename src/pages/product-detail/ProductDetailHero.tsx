@@ -6,8 +6,12 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  Heart, Package, Clock, Tag, Layers, Sparkles, FileText, Eye,
+  Heart, Package, Clock, Tag, Layers, Sparkles, FileText, Eye, GitCompare
 } from "lucide-react";
+import { useComparisonStore } from "@/stores/useComparisonStore";
+import { showUndoToast } from "@/utils/undoToast";
+import { useToast } from "@/hooks/use-toast";
+
 import { ProductGallery } from "@/components/products/ProductGallery";
 import { KitComposition } from "@/components/products/KitComposition";
 import { ProductCategoryBadges } from "@/components/products/ProductCategoryBadges";
