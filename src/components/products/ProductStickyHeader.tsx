@@ -67,8 +67,9 @@ export function ProductStickyHeader({
             exit={{ y: -60, opacity: 0 }}
             transition={{ duration: 0.25, ease: "easeOut" }}
             className="fixed top-0 left-0 right-0 z-50 hidden md:block bg-background/95 backdrop-blur-md border-b border-border shadow-sm"
+            style={{ top: "var(--header-h, 56px)" }}
           >
-            <div className="max-w-7xl mx-auto px-4 lg:px-6 h-14 flex items-center gap-4">
+            <div className="max-w-7xl mx-auto px-4 lg:px-6 h-12 flex items-center gap-4">
               {/* Thumbnail */}
               <div className="w-10 h-10 rounded-lg overflow-hidden bg-secondary shrink-0 border border-border">
                 <img
