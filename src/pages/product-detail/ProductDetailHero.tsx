@@ -319,12 +319,13 @@ export function ProductDetailHero({
                       }}
                       className={cn(
                         "rounded-full px-3 text-xs gap-1.5 h-7 transition-all duration-300 hover:bg-primary/15 hover:text-primary hover:scale-105 hover:shadow-md hover:shadow-primary/20",
-                        useComparisonStore(s => s.isInCompare(id)) && "text-primary bg-primary/10"
+                        isInCompare && "text-primary bg-primary/10"
                       )}
                     >
-                      <GitCompare className={cn("h-3.5 w-3.5 transition-all duration-300", useComparisonStore(s => s.isInCompare(id)) && "text-primary scale-110")} />
-                      {useComparisonStore(s => s.isInCompare(id)) ? "Comparando" : "Comparar"}
+                      <GitCompare className={cn("h-3.5 w-3.5 transition-all duration-300", isInCompare && "text-primary scale-110")} />
+                      {isInCompare ? "Comparando" : "Comparar"}
                     </Button>
+
                   </div>
                 </div>
 
