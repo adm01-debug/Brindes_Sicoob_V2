@@ -47,7 +47,7 @@ export function useCatalogState() {
 
   // Compose specialized state
   const [isPending, startTransition] = useTransition();
-50:   const display = useCatalogDisplay();
+const display = useCatalogDisplay();
   const filterState = useCatalogFilters();
   const selection = useCatalogSelectionState();
   
