@@ -146,7 +146,7 @@ export function MainLayout({ children }: MainLayoutProps) {
               "sticky top-[var(--header-h,56px)] z-30 print:hidden",
               "bg-background/95 backdrop-blur-md supports-[backdrop-filter]:bg-background/80",
               "border-b border-border/40 transition-all duration-200",
-              isHome && "opacity-0 pointer-events-none h-0 border-none",
+              (isHome || location.pathname === "/dashboard") && "opacity-0 pointer-events-none h-0 border-none",
             )}
             data-testid="breadcrumb-bar"
           >
