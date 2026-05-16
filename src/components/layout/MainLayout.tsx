@@ -144,9 +144,9 @@ export function MainLayout({ children }: MainLayoutProps) {
           <div
             className={cn(
               "sticky top-[var(--header-h,56px)] z-30 print:hidden",
-              "bg-background/85 backdrop-blur-md",
-              "border-b border-border/40",
-              isHome && "hidden",
+              "bg-background/95 backdrop-blur-md supports-[backdrop-filter]:bg-background/80",
+              "border-b border-border/40 transition-all duration-200",
+              (isHome || location.pathname === "/dashboard") && "opacity-0 pointer-events-none h-0 border-none",
             )}
             data-testid="breadcrumb-bar"
           >
@@ -167,7 +167,7 @@ export function MainLayout({ children }: MainLayoutProps) {
           >
             
             <Suspense fallback={<div>{children}</div>}>
-              <PageTransition variant="dynamic-slide" duration={0.25}>
+              <PageTransition variant="dynamic-slide" duration={0.3} className="min-h-[calc(100vh-140px)]">
                 {children}
               </PageTransition>
             </Suspense>
