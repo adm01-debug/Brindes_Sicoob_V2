@@ -43,10 +43,13 @@ export const BackButton = forwardRef<HTMLButtonElement, BackButtonProps>(
     showLabel = true,
     useChevron = false
   }: BackButtonProps, ref) {
-    const { goBack, previousItem } = useSmartNavigation();
+    const { goBack, previousItem, history } = useSmartNavigation();
     const location = useLocation();
+    
+    // Check if we can actually go back (history length > 1 or from another site)
+    const canGoBack = history.length > 1;
 
-    if (location.pathname === "/") return null;
+    if (location.pathname === "/" || !canGoBack) return null;
 
     const parentPath = previousItem?.pathname || "/";
     const parentLabel = routeLabels[parentPath] || previousItem?.title || "Voltar";
