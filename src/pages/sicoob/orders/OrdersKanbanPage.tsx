@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect, useCallback, useRef } from "react";
-import { MainLayout } from "@/components/layout/MainLayout";
+// import { MainLayout } from "@/components/layout/MainLayout";
 import { PageSEO } from "@/components/seo/PageSEO";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -370,7 +370,7 @@ export default function OrdersKanbanPage() {
   };
 
   return (
-    <MainLayout>
+    <>
       <PageSEO
         title="Kanban de Pedidos | Sicoob"
         description="Gestão de alto desempenho para o fluxo de pedidos Sicoob."
@@ -522,6 +522,6 @@ export default function OrdersKanbanPage() {
           </DndContext>
         </div>
       </TooltipProvider>
-    </MainLayout>
+    </>
   );
 }

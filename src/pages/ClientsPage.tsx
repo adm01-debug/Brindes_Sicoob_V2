@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { MainLayout } from "@/components/layout/MainLayout";
+// import { MainLayout } from "@/components/layout/MainLayout";
 import { PageSEO } from "@/components/seo/PageSEO";
 import { Users, Search, Plus, Filter, TrendingUp, DollarSign, Target, ChevronRight } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -52,7 +52,7 @@ export default function ClientsPage() {
   ];
 
   return (
-    <MainLayout>
+    <>
       <PageSEO
         title="Gestão de Clientes | 10/10 CRM"
         description="Gestão de clientes com visão 360° de pedidos, ticket médio e LTV."
@@ -193,6 +193,6 @@ export default function ClientsPage() {
           )}
         </div>
       </div>
-    </MainLayout>
+    </>
   );
 }

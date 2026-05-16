@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { MainLayout } from "@/components/layout/MainLayout";
+// import { MainLayout } from "@/components/layout/MainLayout";
 import { PageSEO } from "@/components/seo/PageSEO";
 import { QuotesListPage } from "./QuotesListPage";
 import { OrderTemplatesSheet } from "@/components/orders/OrderTemplatesSheet";
@@ -14,7 +14,7 @@ export default function MeusOrcamentos() {
   const navigate = useNavigate();
 
   return (
-    <MainLayout>
+    <>
       <PageSEO title="Meus Orçamentos" description="Gerencie suas solicitações de brinde." path="/meus-orcamentos" />
       
       <div className="space-y-6">
@@ -40,7 +40,7 @@ export default function MeusOrcamentos() {
           <QuotesListPage />
         </div>
       </div>
-    </MainLayout>
+    </>
   );
 }
 

@@ -5,7 +5,7 @@
  */
 import { useState, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { MainLayout } from '@/components/layout/MainLayout';
+// import { MainLayout } from "@/components/layout/MainLayout";
 import { PageSEO } from '@/components/seo/PageSEO';
 import { useProducts, type Product } from '@/hooks/useProducts';
 import { useProductMatch, type MatchFilters, type MatchResult } from '@/hooks/useProductMatch';
@@ -61,7 +61,7 @@ export default function ProductMatchPage() {
   }, []);
 
   return (
-    <MainLayout>
+    <>
       <PageSEO
         title="Match de Produtos"
         description="Encontre produtos idênticos, semelhantes e complementares para venda cruzada."
@@ -207,6 +207,6 @@ export default function ProductMatchPage() {
           </div>
         </div>
       </div>
-    </MainLayout>
+    </>
   );
 }

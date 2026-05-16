@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { MainLayout } from "@/components/layout/MainLayout";
+// import { MainLayout } from "@/components/layout/MainLayout";
 import { PageSEO } from "@/components/seo/PageSEO";
 import { useFavoritesStore, type FavoriteVariantInfo } from "@/stores/useFavoritesStore";
 import {
@@ -339,7 +339,7 @@ export default function FavoritesPage() {
   );
 
   return (
-    <MainLayout>
+    <>
       <PageSEO title="Favoritos" description="Suas listas de produtos favoritos com organização, anotações e compartilhamento." path="/favoritos" />
       <div className="w-full max-w-[1920px] mx-auto px-3 sm:px-4 lg:px-6 xl:px-8 py-3 sm:py-4 pb-24 md:pb-6 animate-fade-in">
         {/* Header global */}
@@ -742,6 +742,6 @@ export default function FavoritesPage() {
           onClose={() => setPresenting(false)}
         />
       )}
-    </MainLayout>
+    </>
   );
 }

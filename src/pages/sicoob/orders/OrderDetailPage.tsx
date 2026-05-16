@@ -1,6 +1,6 @@
 import { useState, useMemo, useCallback, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { MainLayout } from "@/components/layout/MainLayout";
+// import { MainLayout } from "@/components/layout/MainLayout";
 import { PageSEO } from "@/components/seo/PageSEO";
 import { Button } from "@/components/ui/button";
 import { 
@@ -295,11 +295,11 @@ export default function OrderDetailPage() {
 
   if (isLoadingOrder) {
     return (
-      <MainLayout>
+      <>
         <div className="flex items-center justify-center h-64">
           <p>Carregando detalhes do pedido...</p>
         </div>
-      </MainLayout>
+      </>
     );
   }
 
@@ -315,7 +315,7 @@ export default function OrderDetailPage() {
   }, [isSupervisorOrAbove]);
 
   return (
-    <MainLayout>
+    <>
       <PageSEO title={`Pedido #${orderData?.order_number || id} - Sicoob`} description="Detalhes do pedido Sicoob." path={`/sicoob/pedidos/${id}`} noIndex />
       <div className="space-y-6">
         <div>
@@ -793,6 +793,6 @@ export default function OrderDetailPage() {
           </div>
         </div>
       </div>
-    </MainLayout>
+    </>
   );
 }

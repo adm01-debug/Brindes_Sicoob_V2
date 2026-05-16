@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { MainLayout } from "@/components/layout/MainLayout";
+// import { MainLayout } from "@/components/layout/MainLayout";
 import { PageSEO } from "@/components/seo/PageSEO";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -98,7 +98,7 @@ export default function ReleaseEvidencesPage() {
   };
 
   return (
-    <MainLayout>
+    <>
       <PageSEO title="Evidências de Release - Sicoob QA" description="Gestão de evidências para releases do projeto Sicoob." path="/admin/qa/release-evidences" />
       
       <div className="space-y-6">
@@ -206,6 +206,6 @@ export default function ReleaseEvidencesPage() {
           </Card>
         </div>
       </div>
-    </MainLayout>
+    </>
   );
 }

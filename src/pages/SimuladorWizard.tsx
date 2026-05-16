@@ -4,7 +4,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { MainLayout } from "@/components/layout/MainLayout";
+// import { MainLayout } from "@/components/layout/MainLayout";
 import { PageSEO } from "@/components/seo/PageSEO";
 import { useSimulatorWizard } from "@/hooks/simulator/useSimulatorWizard";
 import { useWizardDrafts } from "@/hooks/simulator/useWizardDrafts";
@@ -125,7 +125,7 @@ export default function SimuladorWizard() {
 
   return (
     <>
-    <MainLayout>
+    <>
       <PageSEO title="Simulador de Personalização" description="Simule personalizações de brindes com cálculo automático de custos." path="/simulador" />
       <div className="w-full max-w-[1920px] mx-auto px-3 sm:px-4 lg:px-6 xl:px-8 py-3 sm:py-4 space-y-3 sm:space-y-4 pb-24 md:pb-6 animate-fade-in min-h-[calc(100vh-8rem)]">
         {/* Compact Header */}
@@ -304,7 +304,7 @@ export default function SimuladorWizard() {
           />
         )}
       </div>
-    </MainLayout>
+    </>
 
     {/* Save Draft Dialog */}
     <Dialog open={saveDialogOpen} onOpenChange={setSaveDialogOpen}>

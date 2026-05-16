@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { MainLayout } from "@/components/layout/MainLayout";
+// import { MainLayout } from "@/components/layout/MainLayout";
 import { PageSEO } from "@/components/seo/PageSEO";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useQuery } from "@tanstack/react-query";
@@ -80,7 +80,7 @@ export default function RLSAuditPage() {
   const deniedCount = logs?.filter((l: any) => !l.is_allowed).length || 0;
 
   return (
-    <MainLayout>
+    <>
       <PageSEO title="Auditoria de RLS - Sicoob" description="Monitoramento de segurança e acesso." path="/admin/seguranca/rls" />
       
       <div className="space-y-6">
@@ -223,6 +223,6 @@ export default function RLSAuditPage() {
           </CardContent>
         </Card>
       </div>
-    </MainLayout>
+    </>
   );
 }

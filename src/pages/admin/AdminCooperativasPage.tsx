@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { MainLayout } from "@/components/layout/MainLayout";
+// import { MainLayout } from "@/components/layout/MainLayout";
 import { PageSEO } from "@/components/seo/PageSEO";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -74,7 +74,7 @@ export default function AdminCooperativasPage() {
   const filtered = cooperativas.filter(c => c.name.toLowerCase().includes(searchTerm.toLowerCase()));
 
   return (
-    <MainLayout>
+    <>
       <PageSEO title="Cooperativas Parceiras" description="Gerencie as cooperativas parceiras." path="/admin/cooperativas" noIndex />
       <div className="w-full max-w-[1920px] mx-auto px-4 py-6 space-y-6">
         <div className="flex items-center gap-3">
@@ -165,6 +165,6 @@ export default function AdminCooperativasPage() {
           <DialogFooter><Button variant="outline" onClick={() => setIsFormOpen(false)}>Cancelar</Button><Button onClick={() => handleSave(editingCoop)}>Salvar</Button></DialogFooter>
         </DialogContent>
       </Dialog>
-    </MainLayout>
+    </>
   );
 }

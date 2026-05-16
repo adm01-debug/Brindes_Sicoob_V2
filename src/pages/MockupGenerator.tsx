@@ -8,7 +8,7 @@ import { type MockupTechnique } from "@/types/external-db";
  */
 
 import { useMemo, useCallback, Suspense } from "react";
-import { MainLayout } from "@/components/layout/MainLayout";
+// import { MainLayout } from "@/components/layout/MainLayout";
 import { PageSEO } from "@/components/seo/PageSEO";
 import { Button } from "@/components/ui/button";
 import { Loader2, AlertCircle, CheckCircle2 } from "lucide-react";
@@ -120,7 +120,7 @@ export default function MockupGenerator() {
   }, [mg.setLastSavedRecordId, mg.setLastSavedMockupUrl, mg.fetchHistory]);
 
   return (
-    <MainLayout>
+    <>
       <PageSEO title="Gerador de Mockups" description="Crie mockups profissionais de brindes personalizados com sua logo." path="/mockup-generator" />
       <Suspense fallback={null}>
         <OffscreenLayoutCapture request={layoutCaptureRequest} onCaptured={handleLayoutCaptured} />
@@ -366,6 +366,6 @@ export default function MockupGenerator() {
       <Suspense fallback={null}>
         <AIMockupAssistant productName={mg.selectedProduct?.name} techniqueName={mg.selectedTechnique?.name} />
       </Suspense>
-    </MainLayout>
+    </>
   );
 }

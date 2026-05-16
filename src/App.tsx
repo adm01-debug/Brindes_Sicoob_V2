@@ -1,4 +1,4 @@
-import { useEffect, type ReactNode, Suspense } from "react";
+import { useEffect, type ReactNode, Suspense, forwardRef } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -11,7 +11,6 @@ import { ThemeProvider } from "@/contexts/ThemeContext";
 import { ProtectedRoute } from "@/components/layout/ProtectedRoute";
 import { AdminRoute } from "@/components/layout/AdminRoute";
 import { DevRoute } from "@/components/layout/DevRoute";
-import { DeprecatedRoute } from "@/components/layout/DeprecatedRoute";
 import { SicoobRoute } from "@/components/layout/SicoobRoute";
 import { AppProviders } from "@/components/providers/AppProviders";
 import { AccessibilityProvider, AriaLiveProvider } from "@/components/a11y";
@@ -19,6 +18,7 @@ import { useGlobalErrorCatcher } from "@/hooks/useErrorHandler";
 import { markBootSuccessful } from "@/lib/chunk-recovery";
 import { getFallback } from "@/components/layout/SkeletonLoaders";
 import { BridgeStatusBanner } from "@/components/BridgeStatusBanner";
+import { MainLayout } from "@/components/layout/MainLayout";
 import { CloudStatusBanner } from "@/components/system/CloudStatusBanner";
 import { DevOnlyBridgeOverlay } from "@/components/dev/DevOnlyBridgeOverlay";
 import { AuthDiagnosticsWidget } from "@/components/dev/AuthDiagnosticsWidget";
@@ -48,10 +48,7 @@ startColdStartRecorder();
 const queryClient = createQueryClient();
 
 import { useCatalogPrefetch } from '@/hooks/useCatalogPrefetch';
-import { loadThemeConfig, applyThemePreset, applyRadius } from '@/lib/theme-presets';
 import { ThemeInitializer } from '@/components/ThemeInitializer';
-
-import { forwardRef } from 'react';
 
 const AppWithAuth = forwardRef<HTMLDivElement, { children: ReactNode }>(({ children }, ref) => {
   useCatalogPrefetch();
@@ -60,16 +57,12 @@ const AppWithAuth = forwardRef<HTMLDivElement, { children: ReactNode }>(({ child
 
 AppWithAuth.displayName = 'AppWithAuth';
 
-const RouteSuspense = forwardRef<HTMLDivElement, { children: ReactNode }>(({ children }, ref) => {
+const RouteSuspense = ({ children }: { children: ReactNode }) => {
   const { pathname } = useLocation();
   return (
-    <div ref={ref}>
-      <Suspense fallback={getFallback(pathname)}>{children}</Suspense>
-    </div>
+    <Suspense fallback={getFallback(pathname)}>{children}</Suspense>
   );
-});
-
-RouteSuspense.displayName = 'RouteSuspense';
+};
 
 const Index = lazyWithRetry(() => import("./pages/Index"));
 const CustomizableDashboard = lazyWithRetry(() => import("./pages/CustomizableDashboard"));
@@ -87,8 +80,6 @@ const ForbiddenPage = lazyWithRetry(() => import("./pages/ForbiddenPage"));
 const OrderAuditPage = lazyWithRetry(() => import("./pages/OrderAuditPage"));
 const TestDashboard = lazyWithRetry(() => import("./pages/TestDashboard"));
 const GestorApprovalsPage = lazyWithRetry(() => import("./pages/GestorApprovalsPage"));
-
-
 
 const App = () => {
   useGlobalErrorCatcher();
@@ -117,76 +108,74 @@ const App = () => {
                       <DiagnosticOverlay />
                       <RouteScrollReset />
 
-                      <RouteSuspense>
-                        <Routes>
-                          {/* Public Routes */}
-                          {publicRoutes.map(r => (
-                            <Route key={r.path} path={r.path} element={<r.component />} />
-                          ))}
+                      <Routes>
+                        {/* Public Routes */}
+                        {publicRoutes.map(r => (
+                          <Route key={r.path} path={r.path} element={<RouteSuspense><r.component /></RouteSuspense>} />
+                        ))}
 
-                          {/* Static Redirects & Legacy (Unprotected) */}
-                          <Route path="/configuracoes" element={<div data-testid="redirect-config"><Navigate to="/admin/usuarios" replace /></div>} />
-                          <Route path="/perfil" element={<div data-testid="redirect-perfil"><Navigate to="/admin/usuarios" replace /></div>} />
-                          <Route path="/403" element={<div data-testid="app-forbidden"><ForbiddenPage /></div>} />
+                        {/* Static Redirects & Legacy (Unprotected) */}
+                        <Route path="/configuracoes" element={<div data-testid="redirect-config"><Navigate to="/admin/usuarios" replace /></div>} />
+                        <Route path="/perfil" element={<div data-testid="redirect-perfil"><Navigate to="/admin/usuarios" replace /></div>} />
+                        <Route path="/403" element={<div data-testid="app-forbidden"><RouteSuspense><ForbiddenPage /></RouteSuspense></div>} />
 
-
-                          {/* Protected Layout Route */}
-                          <Route element={<ProtectedRoute />}>
-                            <Route path="/" element={<Index />} />
-                            <Route path="/dashboard" element={<CustomizableDashboard />} />
+                        {/* Protected Layout Route */}
+                        <Route element={<ProtectedRoute />}>
+                          <Route element={<MainLayout />}>
+                            <Route path="/" element={<RouteSuspense><Index /></RouteSuspense>} />
+                            <Route path="/dashboard" element={<RouteSuspense><CustomizableDashboard /></RouteSuspense>} />
 
                             {/* Modular Routes */}
                             {productRoutes.map(r => (
-                              <Route key={r.path} path={r.path} element={<r.component />} />
+                              <Route key={r.path} path={r.path} element={<RouteSuspense><r.component /></RouteSuspense>} />
                             ))}
                             {quoteRoutes.map(r => (
-                              <Route key={r.path} path={r.path} element={<r.component />} />
+                              <Route key={r.path} path={r.path} element={<RouteSuspense><r.component /></RouteSuspense>} />
                             ))}
                             {toolRoutes.map(r => (
-                              <Route key={r.path} path={r.path} element={<r.component />} />
+                              <Route key={r.path} path={r.path} element={<RouteSuspense><r.component /></RouteSuspense>} />
                             ))}
 
-                            <Route path="/admin/temas" element={<AdminTemasPage />} />
+                            <Route path="/admin/temas" element={<RouteSuspense><AdminTemasPage /></RouteSuspense>} />
 
                             {/* Admin Routes */}
                             <Route element={<AdminRoute />}>
                               {adminRoutes.map(r => (
-                                <Route key={r.path} path={r.path} element={<r.component />} />
+                                <Route key={r.path} path={r.path} element={<RouteSuspense><r.component /></RouteSuspense>} />
                               ))}
                               
                               <Route element={<SicoobRoute />}>
                                 {sicoobRoutes.map(r => (
-                                  <Route key={r.path} path={r.path} element={<r.component />} />
+                                  <Route key={r.path} path={r.path} element={<RouteSuspense><r.component /></RouteSuspense>} />
                                 ))}
-                                <Route path="/admin/design-system/colors" element={<ColorDocumentationPage />} />
+                                <Route path="/admin/design-system/colors" element={<RouteSuspense><ColorDocumentationPage /></RouteSuspense>} />
                               </Route>
                             </Route>
 
                             {/* Dev Routes */}
                             <Route element={<DevRoute />}>
                               {devRoutes.map(r => (
-                                <Route key={r.path} path={r.path} element={<r.component />} />
+                                <Route key={r.path} path={r.path} element={<RouteSuspense><r.component /></RouteSuspense>} />
                               ))}
                             </Route>
 
                             {/* Common App Routes */}
-                            <Route path="/pedidos" element={<OrdersPage />} />
-                            <Route path="/pedidos/:id" element={<OrderDetailPage />} />
-                            <Route path="/clientes" element={<ClientsPage />} />
-                            <Route path="/clientes/:id" element={<ClientDetailPage />} />
-                            <Route path="/tendencias" element={<TrendsPage />} />
-                            <Route path="/notificacoes" element={<NotificationsPage />} />
-                            <Route path="/gestor/compras" element={<GestorComprasPage />} />
-                            <Route path="/gestor/aprovacoes" element={<GestorApprovalsPage />} />
-                            <Route path="/pedidos/:id/auditoria" element={<OrderAuditPage />} />
-                            <Route path="/admin/saude-testes" element={<TestDashboard />} />
+                            <Route path="/pedidos" element={<RouteSuspense><OrdersPage /></RouteSuspense>} />
+                            <Route path="/pedidos/:id" element={<RouteSuspense><OrderDetailPage /></RouteSuspense>} />
+                            <Route path="/clientes" element={<RouteSuspense><ClientsPage /></RouteSuspense>} />
+                            <Route path="/clientes/:id" element={<RouteSuspense><ClientDetailPage /></RouteSuspense>} />
+                            <Route path="/tendencias" element={<RouteSuspense><TrendsPage /></RouteSuspense>} />
+                            <Route path="/notificacoes" element={<RouteSuspense><NotificationsPage /></RouteSuspense>} />
+                            <Route path="/gestor/compras" element={<RouteSuspense><GestorComprasPage /></RouteSuspense>} />
+                            <Route path="/gestor/aprovacoes" element={<RouteSuspense><GestorApprovalsPage /></RouteSuspense>} />
+                            <Route path="/pedidos/:id/auditoria" element={<RouteSuspense><OrderAuditPage /></RouteSuspense>} />
+                            <Route path="/admin/saude-testes" element={<RouteSuspense><TestDashboard /></RouteSuspense>} />
 
                             {/* Error Fallback */}
-                            <Route path="*" element={<div data-testid="page-not-found"><NotFound /></div>} />
-
+                            <Route path="*" element={<div data-testid="page-not-found"><RouteSuspense><NotFound /></RouteSuspense></div>} />
                           </Route>
-                        </Routes>
-                      </RouteSuspense>
+                        </Route>
+                      </Routes>
                     </AppProviders>
                   </AppWithAuth>
                 </AuthProvider>

@@ -1,5 +1,5 @@
 import React from "react";
-import { MainLayout } from "@/components/layout/MainLayout";
+// import { MainLayout } from "@/components/layout/MainLayout";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
@@ -27,7 +27,7 @@ export default function PADashboardPage() {
     : 0;
 
   return (
-    <MainLayout>
+    <>
       <div className="container mx-auto p-6 space-y-8 animate-fade-in">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
@@ -185,7 +185,7 @@ export default function PADashboardPage() {
           </Card>
         </div>
       </div>
-    </MainLayout>
+    </>
   );
 }
 

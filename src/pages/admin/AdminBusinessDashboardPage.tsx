@@ -1,4 +1,4 @@
-import { MainLayout } from "@/components/layout/MainLayout";
+// import { MainLayout } from "@/components/layout/MainLayout";
 import { PageSEO } from "@/components/seo/PageSEO";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { GoalTracker } from "@/components/admin/GoalTracker";
@@ -15,7 +15,7 @@ export default function AdminBusinessDashboardPage() {
   const funnelData = useQuoteFunnel(quotes, {});
 
   return (
-    <MainLayout>
+    <>
       <PageSEO title="Business Intelligence" description="Painel executivo de vendas e metas." path="/admin/business" noIndex />
       
       <div className="max-w-[1920px] mx-auto p-4 lg:p-6 space-y-6 animate-fade-in">
@@ -115,6 +115,6 @@ export default function AdminBusinessDashboardPage() {
           </div>
         </div>
       </div>
-    </MainLayout>
+    </>
   );
 }

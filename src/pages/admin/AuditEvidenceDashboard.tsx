@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { MainLayout } from "@/components/layout/MainLayout";
+// import { MainLayout } from "@/components/layout/MainLayout";
 import { PageSEO } from "@/components/seo/PageSEO";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -82,7 +82,7 @@ export default function AuditEvidenceDashboard() {
   );
 
   return (
-    <MainLayout>
+    <>
       <PageSEO title="Dashboard de Evidências" description="Rastreabilidade total para auditoria." path="/admin/auditoria/evidencias" noIndex />
       
       <div className="space-y-6 p-6">
@@ -241,7 +241,7 @@ export default function AuditEvidenceDashboard() {
           </TabsContent>
         </Tabs>
       </div>
-    </MainLayout>
+    </>
   );
 }
 

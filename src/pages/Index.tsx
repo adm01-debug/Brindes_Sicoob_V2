@@ -1,6 +1,6 @@
 // Catálogo de Produtos - Index Page (v3 - refactored)
 import { useState, useRef } from "react";
-import { MainLayout } from "@/components/layout/MainLayout";
+// // import { MainLayout } from "@/components/layout/MainLayout";
 import { PageSEO } from "@/components/seo/PageSEO";
 import { FloatingCompareBar } from "@/components/compare/FloatingCompareBar";
 import { SharePreviewDialog } from "@/components/products/share/SharePreviewDialog";
@@ -21,7 +21,7 @@ export default function Index() {
   // undefined = picker not answered yet; null = "sem cor específica"; object = selected variant
 
   return (
-    <MainLayout>
+    <>
       <PageSEO
         title="Portal de Compras Sicoob - Catálogo de Produtos"
         description="Explore o catálogo oficial do Sicoob. Produtos de papelaria, brindes e itens institucionais."
@@ -175,6 +175,6 @@ export default function Index() {
           } : null}
         />
       )}
-    </MainLayout>
+    </>
   );
 }

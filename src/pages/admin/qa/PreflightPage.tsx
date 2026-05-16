@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { MainLayout } from "@/components/layout/MainLayout";
+// import { MainLayout } from "@/components/layout/MainLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -74,7 +74,7 @@ export default function PreflightPage() {
   );
 
   return (
-    <MainLayout>
+    <>
       <div className="max-w-4xl mx-auto space-y-6 animate-fade-in">
         <header className="flex items-center justify-between">
           <div>
@@ -122,6 +122,6 @@ export default function PreflightPage() {
           </p>
         )}
       </div>
-    </MainLayout>
+    </>
   );
 }

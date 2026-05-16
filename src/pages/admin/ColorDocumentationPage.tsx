@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { MainLayout } from "@/components/layout/MainLayout";
+// import { MainLayout } from "@/components/layout/MainLayout";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -92,7 +92,7 @@ export default function ColorDocumentationPage() {
   ), [filterToken]);
 
   return (
-    <MainLayout>
+    <>
       <div className="container max-w-6xl py-10 space-y-12 pb-32">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-2">
@@ -489,7 +489,7 @@ export default function ColorDocumentationPage() {
           </div>
         </section>
       </div>
-    </MainLayout>
+    </>
   );
 }
 

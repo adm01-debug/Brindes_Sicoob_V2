@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { MainLayout } from "@/components/layout/MainLayout";
+// import { MainLayout } from "@/components/layout/MainLayout";
 import { PageSEO } from "@/components/seo/PageSEO";
 import { Mail, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -151,7 +151,7 @@ export default function AdminNewsletterPage() {
   ];
 
   return (
-    <MainLayout>
+    <>
       <PageSEO title="Assinantes Newsletter" description="Gerencie a lista de assinantes da newsletter." path="/admin/newsletter" noIndex />
       <div className="w-full max-w-[1920px] mx-auto px-4 py-6 space-y-6">
         <div className="flex items-center justify-between">
@@ -187,7 +187,7 @@ export default function AdminNewsletterPage() {
           searchKey="email"
         />
       </div>
-    </MainLayout>
+    </>
   );
 }
 

@@ -1,4 +1,4 @@
-import { MainLayout } from "@/components/layout/MainLayout";
+// import { MainLayout } from "@/components/layout/MainLayout";
 import { PageSEO } from "@/components/seo/PageSEO";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -12,7 +12,7 @@ export default function PWAInstallPage() {
   const isMobile = useIsMobile();
 
   return (
-    <MainLayout>
+    <>
       <PageSEO title="Instalar App" description="Tenha o Portal de Brindes Sicoob sempre à mão no seu celular." path="/instalar" noIndex />
       
       <div className="max-w-md mx-auto p-4 lg:p-6 space-y-6 animate-fade-in pb-24 md:pb-6">
@@ -110,6 +110,6 @@ export default function PWAInstallPage() {
           </div>
         </div>
       </div>
-    </MainLayout>
+    </>
   );
 }

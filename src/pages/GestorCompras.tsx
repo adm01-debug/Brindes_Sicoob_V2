@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { MainLayout } from "@/components/layout/MainLayout";
+// import { MainLayout } from "@/components/layout/MainLayout";
 import { PageSEO } from "@/components/seo/PageSEO";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ClipboardCheck, LayoutGrid, Layers, Bell, Package } from "lucide-react";
@@ -14,7 +14,7 @@ export default function GestorCompras() {
   const { profile } = useAuth();
 
   return (
-    <MainLayout>
+    <>
       <PageSEO title="Gestão de Compras - Singular" description="Aprovação e gestão de pedidos dos PACs." path="/gestor/compras" />
       
       <div className="space-y-6">
@@ -105,6 +105,6 @@ export default function GestorCompras() {
           </div>
         </div>
       </div>
-    </MainLayout>
+    </>
   );
 }

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { MainLayout } from "@/components/layout/MainLayout";
+// import { MainLayout } from "@/components/layout/MainLayout";
 import { PageSEO } from "@/components/seo/PageSEO";
 import { useAuth } from "@/contexts/AuthContext";
 import { Package, Download, FileSpreadsheet, FileText, ShoppingBag } from "lucide-react";
@@ -18,11 +18,20 @@ import { BatchExportDialog } from "@/components/orders/BatchExportDialog";
 import { OrderFilters, OrderFilterValues } from "@/components/orders/OrderFilters";
 import { OrderStatsBar } from "@/components/orders/OrderStatsBar";
 import { PersistentBreadcrumbs } from "@/components/common/PersistentBreadcrumbs";
+import { useRealtimeSync } from "@/hooks/useRealtimeSync";
+import { useQueryClient } from "@tanstack/react-query";
 
 export function OrdersPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const scope = useSalesScope();
+  const queryClient = useQueryClient();
+  
+  useRealtimeSync("orders", {
+    onDataChange: () => {
+      queryClient.invalidateQueries({ queryKey: ["orders"] });
+    }
+  });
   
   const [filterValues, setFilterValues] = useState<OrderFilterValues & { page: number }>({
     search: "",
@@ -61,7 +70,7 @@ export function OrdersPage() {
   };
 
   return (
-    <MainLayout>
+    <>
       <PageSEO title="Meus Pedidos" description="Acompanhe e gerencie todos os seus pedidos em um só lugar." path="/pedidos" />
       
       <div className="w-full max-w-[1920px] mx-auto px-3 sm:px-4 lg:px-6 xl:px-8 py-3 sm:py-4 space-y-6 pb-24 md:pb-6 animate-fade-in">
@@ -149,7 +158,7 @@ export function OrdersPage() {
           </div>
         )}
       </div>
-    </MainLayout>
+    </>
   );
 }
 

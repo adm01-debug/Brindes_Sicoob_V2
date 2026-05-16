@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { MainLayout } from '@/components/layout/MainLayout';
+// import { MainLayout } from "@/components/layout/MainLayout";
 import { Save, Palette, Sun, Moon, Monitor, Sparkles, Check, Gamepad2 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -108,7 +108,7 @@ export default function AdminTemasPage() {
   const currentMode = config.mode === 'auto' ? 'system' : config.mode;
 
   return (
-    <MainLayout>
+    <>
       <PageSEO
         title="Temas"
         description="Personalize a aparência visual da plataforma."
@@ -247,6 +247,6 @@ export default function AdminTemasPage() {
           />
         </motion.div>
       </div>
-    </MainLayout>
+    </>
   );
 }

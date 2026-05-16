@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { MainLayout } from "@/components/layout/MainLayout";
+// import { MainLayout } from "@/components/layout/MainLayout";
 import { PageSEO } from "@/components/seo/PageSEO";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -165,7 +165,7 @@ export default function GestorApprovalsPage() {
   });
 
   return (
-    <MainLayout>
+    <>
       <PageSEO title="Fila de Aprovações" description="Gerencie as aprovações de alçada da sua Singular." path="/gestor/aprovacoes" />
       
       <div className="space-y-6">
@@ -365,6 +365,6 @@ export default function GestorApprovalsPage() {
           </TabsContent>
         </Tabs>
       </div>
-    </MainLayout>
+    </>
   );
 }

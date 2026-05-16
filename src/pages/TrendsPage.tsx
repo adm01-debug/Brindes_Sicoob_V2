@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { MainLayout } from "@/components/layout/MainLayout";
+// import { MainLayout } from "@/components/layout/MainLayout";
 import { untypedFrom } from "@/lib/supabase-untyped";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -322,7 +322,7 @@ export default function TrendsPage() {
   };
 
   return (
-    <MainLayout>
+    <>
       <PageSEO title="Tendências" description="Analise tendências de produtos e buscas." path="/tendencias" noIndex />
       <div className="w-full max-w-[1920px] mx-auto px-3 sm:px-4 lg:px-6 xl:px-8 py-3 sm:py-4 space-y-3 sm:space-y-4 pb-24 md:pb-6 animate-fade-in">
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
@@ -417,6 +417,6 @@ export default function TrendsPage() {
         </Tabs>
       </div>
       <TrendsTour />
-    </MainLayout>
+    </>
   );
 }

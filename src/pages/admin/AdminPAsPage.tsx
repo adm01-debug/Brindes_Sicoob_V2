@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { MainLayout } from "@/components/layout/MainLayout";
+// import { MainLayout } from "@/components/layout/MainLayout";
 import { PageSEO } from "@/components/seo/PageSEO";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -91,7 +91,7 @@ export default function AdminPAsPage() {
   );
 
   return (
-    <MainLayout>
+    <>
       <PageSEO title="Gerenciar PAs" description="Administre os Postos de Atendimento (PAs)." path="/admin/pas" noIndex />
       <div className="w-full max-w-[1920px] mx-auto px-4 py-6 space-y-6">
         <div className="flex items-center gap-3">
@@ -167,7 +167,7 @@ export default function AdminPAsPage() {
       </div>
 
       <PAFormDialog open={isFormOpen} onOpenChange={setIsFormOpen} pa={editingPa} onSave={handleSave} singulares={singulares} />
-    </MainLayout>
+    </>
   );
 }
 

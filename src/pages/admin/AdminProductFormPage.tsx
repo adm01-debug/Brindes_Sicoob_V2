@@ -5,7 +5,7 @@
 
 import { useState, useEffect, useCallback, Suspense } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { MainLayout } from '@/components/layout/MainLayout';
+// import { MainLayout } from "@/components/layout/MainLayout";
 import { invokeExternalDbSingle, invokeExternalDbDelete, fetchPromobrindProductById, getProductImageUrl, getProductPrice, getProductStock } from '@/lib/external-db';
 import { useAuditLog } from '@/hooks/useAuditLog';
 import { toast } from 'sonner';
@@ -326,7 +326,7 @@ export default function AdminProductFormPage() {
 
   if (isLoading) {
     return (
-      <MainLayout>
+      <>
       <PageSEO title="Cadastro de Produto" description="Cadastre ou edite produtos do catálogo." path="/admin/cadastros/produto" noIndex />
         <div className="flex items-center justify-center min-h-[60vh]">
           <div className="flex flex-col items-center gap-3">
@@ -334,12 +334,12 @@ export default function AdminProductFormPage() {
             <p className="text-sm text-muted-foreground">Carregando produto...</p>
           </div>
         </div>
-      </MainLayout>
+      </>
     );
   }
 
   return (
-    <MainLayout>
+    <>
       <div className="w-full max-w-[1920px] mx-auto px-3 sm:px-4 lg:px-6 xl:px-8 py-3 sm:py-4 space-y-3 sm:space-y-4 pb-24 md:pb-6 animate-fade-in">
         {/* Breadcrumbs are rendered by MainLayout's PersistentBreadcrumbs */}
 
@@ -444,6 +444,6 @@ export default function AdminProductFormPage() {
           )}
         </Suspense>
       </div>
-    </MainLayout>
+    </>
   );
 }

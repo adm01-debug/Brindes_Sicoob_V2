@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect, useCallback } from "react";
-import { MainLayout } from "@/components/layout/MainLayout";
+// import { MainLayout } from "@/components/layout/MainLayout";
 import { PageSEO } from "@/components/seo/PageSEO";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -402,7 +402,7 @@ export default function OrdersPage() {
   };
 
   return (
-    <MainLayout>
+    <>
       <PageSEO title="Pedidos Sicoob" description="Gerenciamento de pedidos do ecossistema Sicoob." path="/sicoob/pedidos" noIndex />
 
       <div className="space-y-6 max-w-[1920px] mx-auto w-full">
@@ -997,6 +997,6 @@ export default function OrdersPage() {
           </p>
         </div>
       </div>
-    </MainLayout>
+    </>
   );
 }

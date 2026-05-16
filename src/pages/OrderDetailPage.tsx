@@ -1,7 +1,7 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { SkeletonTransition } from "@/components/effects/SkeletonTransition";
 import { Package, ArrowLeft, FileText, CreditCard, Clock, Truck, MessageSquare } from "lucide-react";
-import { MainLayout } from "@/components/layout/MainLayout";
+// import { MainLayout } from "@/components/layout/MainLayout";
 import { PageSEO } from "@/components/seo/PageSEO";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -50,7 +50,7 @@ export default function OrderDetailPage() {
 
   if (!data?.order) {
     return (
-      <MainLayout>
+      <>
         <div className="flex flex-col items-center justify-center py-20 text-center">
           <Package className="h-16 w-16 text-muted-foreground/40 mb-4" />
           <h2 className="font-display text-xl font-semibold mb-2">Pedido não encontrado</h2>
@@ -59,14 +59,14 @@ export default function OrderDetailPage() {
             <ArrowLeft className="h-4 w-4 mr-2" /> Voltar aos Pedidos
           </Button>
         </div>
-      </MainLayout>
+      </>
     );
   }
 
   const { order, items } = data;
 
   return (
-    <MainLayout>
+    <>
       <PageSEO title={`Pedido #${order.order_number}`} description={`Detalhes do pedido ${order.order_number}`} path={`/pedidos/${id}`} noIndex />
       
       <SkeletonTransition isLoading={isLoading} fallback={fallback}>
@@ -221,6 +221,6 @@ export default function OrderDetailPage() {
           </div>
         </div>
       </SkeletonTransition>
-    </MainLayout>
+    </>
   );
 }
