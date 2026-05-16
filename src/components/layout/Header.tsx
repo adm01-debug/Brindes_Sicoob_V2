@@ -123,9 +123,9 @@ export function Header({ onMenuToggle, searchQuery, onSearchChange }: HeaderProp
       } as CSSProperties}
       className={cn(
         "border-b transition-all duration-300 print:hidden",
-        "bg-card/95 backdrop-blur-md border-border",
-        "h-[var(--header-h)]",
-        isScrolled && "bg-card/98 backdrop-blur-lg shadow-md border-primary/15",
+        "bg-background/80 backdrop-blur-xl border-border/50",
+        "h-[var(--header-h)] sticky top-0",
+        isScrolled && "bg-background/95 backdrop-blur-2xl shadow-sm border-primary/20",
       )}
     >
       <div className="flex items-center justify-between h-full px-2 sm:px-4 lg:px-6">

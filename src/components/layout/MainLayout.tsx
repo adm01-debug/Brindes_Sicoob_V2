@@ -152,8 +152,8 @@ export function MainLayout({ children }: MainLayoutProps) {
           <div
             className={cn(
               "sticky top-[var(--header-h,56px)] z-30 print:hidden",
-              "bg-background/95 backdrop-blur-md supports-[backdrop-filter]:bg-background/80",
-              "border-b border-border/40 transition-all duration-300",
+              "bg-background/70 backdrop-blur-lg supports-[backdrop-filter]:bg-background/60",
+              "border-b border-border/30 transition-all duration-300 shadow-sm/5",
               (isHome || location.pathname === "/dashboard") && "opacity-0 pointer-events-none h-0 border-none",
               hideBreadcrumb && !isHome && "translate-y-[-100%] opacity-0 pointer-events-none",
             )}
