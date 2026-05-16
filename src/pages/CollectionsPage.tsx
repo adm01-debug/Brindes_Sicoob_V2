@@ -13,7 +13,7 @@ import { ExternalCollectionCard } from "@/components/collections/ExternalCollect
 import { CollectionsHeatmap } from "@/components/collections/CollectionsHeatmap";
 import { CollectionsEmptyStateSmart } from "@/components/collections/CollectionsEmptyStateSmart";
 import { useCollectionsGlobalShortcuts } from "@/hooks/useCollectionsGlobalShortcuts";
-import { MainLayout } from "@/components/layout/MainLayout";
+// import { MainLayout } from "@/components/layout/MainLayout";
 import { PageSEO } from "@/components/seo/PageSEO";
 import { Button } from "@/components/ui/button";
 import { LayoutPopover } from "@/components/products/LayoutPopover";

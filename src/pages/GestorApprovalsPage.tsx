@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { MainLayout } from "@/components/layout/MainLayout";
+// import { MainLayout } from "@/components/layout/MainLayout";
 import { PageSEO } from "@/components/seo/PageSEO";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";

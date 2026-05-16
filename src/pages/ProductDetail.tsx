@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo, useCallback } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { getCdnUrl } from "@/utils/image-utils";
-import { MainLayout } from "@/components/layout/MainLayout";
+// import { MainLayout } from "@/components/layout/MainLayout";
 import { ProductStickyHeader } from "@/components/products/ProductStickyHeader";
 import { SimilarProducts } from "@/components/products/SimilarProducts";
 import { SmartRecommendations } from "@/components/products/SmartRecommendations";

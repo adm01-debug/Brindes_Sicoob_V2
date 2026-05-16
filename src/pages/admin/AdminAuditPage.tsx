@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { MainLayout } from "@/components/layout/MainLayout";
+// import { MainLayout } from "@/components/layout/MainLayout";
 import { PageSEO } from "@/components/seo/PageSEO";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { History, Search, Filter, FileDown, User, Activity, Calendar, ShieldCheck } from "lucide-react";

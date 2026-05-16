@@ -8,7 +8,7 @@
  */
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { MainLayout } from "@/components/layout/MainLayout";
+// import { MainLayout } from "@/components/layout/MainLayout";
 import { PageSEO } from "@/components/seo/PageSEO";
 import { useComparisonStore, type CompareVariantInfo } from "@/stores/useComparisonStore";
 import { useProductsContext } from "@/contexts/ProductsContext";

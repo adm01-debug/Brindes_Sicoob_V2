@@ -1,4 +1,4 @@
-import { MainLayout } from "@/components/layout/MainLayout";
+// import { MainLayout } from "@/components/layout/MainLayout";
 import { MockupPromptManager } from "@/components/admin/MockupPromptManager";
 import { Brain } from "lucide-react";
 import { PageSEO } from "@/components/seo/PageSEO";

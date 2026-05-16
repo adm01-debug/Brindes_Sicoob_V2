@@ -4,7 +4,7 @@
  */
 
 import { useMemo } from "react";
-import { MainLayout } from "@/components/layout/MainLayout";
+// import { MainLayout } from "@/components/layout/MainLayout";
 import { PageSEO } from "@/components/seo/PageSEO";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";

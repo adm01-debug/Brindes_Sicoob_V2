@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { MainLayout } from "@/components/layout/MainLayout";
+// import { MainLayout } from "@/components/layout/MainLayout";
 import { PageSEO } from "@/components/seo/PageSEO";
 import { QuoteKanbanBoard } from "@/components/quotes/QuoteKanbanBoard";
 import { QuoteBulkActionsToolbar } from "@/components/quotes/QuoteBulkActionsToolbar";

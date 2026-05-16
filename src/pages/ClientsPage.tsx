@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { MainLayout } from "@/components/layout/MainLayout";
+// import { MainLayout } from "@/components/layout/MainLayout";
 import { PageSEO } from "@/components/seo/PageSEO";
 import { Users, Search, Plus, Filter, TrendingUp, DollarSign, Target, ChevronRight } from "lucide-react";
 import { Input } from "@/components/ui/input";

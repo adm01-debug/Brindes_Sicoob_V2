@@ -5,7 +5,7 @@
 
 import { useState, useEffect, useCallback, Suspense } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { MainLayout } from '@/components/layout/MainLayout';
+// import { MainLayout } from "@/components/layout/MainLayout";
 import { invokeExternalDbSingle, invokeExternalDbDelete, fetchPromobrindProductById, getProductImageUrl, getProductPrice, getProductStock } from '@/lib/external-db';
 import { useAuditLog } from '@/hooks/useAuditLog';
 import { toast } from 'sonner';

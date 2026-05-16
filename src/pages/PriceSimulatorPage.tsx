@@ -1,4 +1,4 @@
-import { MainLayout } from '@/components/layout/MainLayout';
+// import { MainLayout } from "@/components/layout/MainLayout";
 import { PageSEO } from '@/components/seo/PageSEO';
 import { ProductPriceSimulator } from '@/components/pricing/ProductPriceSimulator';
 import { QuantityPriceCalculator } from '@/components/pricing/QuantityPriceCalculator';

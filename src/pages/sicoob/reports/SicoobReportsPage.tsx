@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { MainLayout } from "@/components/layout/MainLayout";
+// import { MainLayout } from "@/components/layout/MainLayout";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { FileText, FileSpreadsheet, FileBarChart, History, Download, CalendarIcon, Loader2, Search } from "lucide-react";
 import { jsPDF } from "jspdf";

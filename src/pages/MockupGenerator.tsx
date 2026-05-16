@@ -8,7 +8,7 @@ import { type MockupTechnique } from "@/types/external-db";
  */
 
 import { useMemo, useCallback, Suspense } from "react";
-import { MainLayout } from "@/components/layout/MainLayout";
+// import { MainLayout } from "@/components/layout/MainLayout";
 import { PageSEO } from "@/components/seo/PageSEO";
 import { Button } from "@/components/ui/button";
 import { Loader2, AlertCircle, CheckCircle2 } from "lucide-react";

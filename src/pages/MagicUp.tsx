@@ -4,7 +4,7 @@
  * v5: Extracted config/result panels into sub-components.
  */
 
-import { MainLayout } from "@/components/layout/MainLayout";
+// import { MainLayout } from "@/components/layout/MainLayout";
 import { PageSEO } from "@/components/seo/PageSEO";
 import { Badge } from "@/components/ui/badge";
 import { Sparkles, ChevronRight, Clock } from "lucide-react";

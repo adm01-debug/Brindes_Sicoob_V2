@@ -1,4 +1,4 @@
-import { MainLayout } from "@/components/layout/MainLayout";
+// import { MainLayout } from "@/components/layout/MainLayout";
 import { PageSEO } from "@/components/seo/PageSEO";
 import { KeyRound, ArrowLeft } from "lucide-react";
 import { Link } from "react-router-dom";

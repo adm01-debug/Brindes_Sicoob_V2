@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { MainLayout } from "@/components/layout/MainLayout";
+// import { MainLayout } from "@/components/layout/MainLayout";
 import { PageSEO } from "@/components/seo/PageSEO";
 import { useAuth } from "@/contexts/AuthContext";
 import { Package, Download, FileSpreadsheet, FileText, ShoppingBag } from "lucide-react";

@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { PageSEO } from '@/components/seo/PageSEO';
-import { MainLayout } from '@/components/layout/MainLayout';
+// import { MainLayout } from "@/components/layout/MainLayout";
 import { TrendingUp, Package, Award, Share2, Eye, Percent } from 'lucide-react';
 import { formatCurrency } from '@/lib/kit-builder';
 

@@ -10,7 +10,7 @@
  */
 import { useCallback, useMemo, useRef } from "react";
 
-import { MainLayout } from "@/components/layout/MainLayout";
+// import { MainLayout } from "@/components/layout/MainLayout";
 import { type CartStatus } from "@/hooks/useSellerCarts";
 import { CartCompanyPickerDialog } from "@/components/cart/CartCompanyPickerDialog";
 import { CartTabsRich } from "@/components/cart/CartTabsRich";

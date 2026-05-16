@@ -4,7 +4,7 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { ArrowLeft, Copy, CreditCard, Edit2, Eye, FileText, History, Loader2, Monitor, MoreHorizontal, Package, Printer, RefreshCw, Shield, Truck, Undo2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { MainLayout } from "@/components/layout/MainLayout";
+// import { MainLayout } from "@/components/layout/MainLayout";
 import { PageSEO } from "@/components/seo/PageSEO";
 import { formatPaymentTerms, formatDeliveryTime } from "@/components/pdf/ProposalHtmlTemplate";
 import { Button } from "@/components/ui/button";

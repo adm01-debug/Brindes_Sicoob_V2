@@ -1,6 +1,6 @@
 import React, { Suspense } from "react";
 import { useSearchParams } from "react-router-dom";
-import { MainLayout } from "@/components/layout/MainLayout";
+// import { MainLayout } from "@/components/layout/MainLayout";
 import { PageSEO } from "@/components/seo/PageSEO";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Package, Palette, FolderOpen, Truck } from "lucide-react";

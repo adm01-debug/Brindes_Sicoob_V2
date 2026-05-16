@@ -2,7 +2,7 @@
  * Página: Busca Avançada por Preço
  * Refatorada: lógica em useAdvancedPriceSearch, views em ResultViews, tipos em types.ts
  */
-import { MainLayout } from '@/components/layout/MainLayout';
+// import { MainLayout } from "@/components/layout/MainLayout";
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';

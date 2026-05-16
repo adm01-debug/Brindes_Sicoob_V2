@@ -3,7 +3,7 @@
  * Sub-components extracted to ./ai-usage/
  */
 import { useState } from "react";
-import { MainLayout } from "@/components/layout/MainLayout";
+// import { MainLayout } from "@/components/layout/MainLayout";
 import { PageSEO } from "@/components/seo/PageSEO";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Brain, Zap, Activity, DollarSign, Users } from "lucide-react";

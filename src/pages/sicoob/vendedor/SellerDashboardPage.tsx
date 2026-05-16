@@ -1,5 +1,5 @@
 import React from "react";
-import { MainLayout } from "@/components/layout/MainLayout";
+// import { MainLayout } from "@/components/layout/MainLayout";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Users, ShoppingBag, Target, TrendingUp, Calendar, ArrowRight, UserPlus, Briefcase, Loader2 } from "lucide-react";
 import { useSellerDashboardStats } from "@/hooks/sicoob/useSellerDashboardStats";

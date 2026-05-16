@@ -1,4 +1,4 @@
-import { MainLayout } from "@/components/layout/MainLayout";
+// import { MainLayout } from "@/components/layout/MainLayout";
 import { PageSEO } from "@/components/seo/PageSEO";
 import { useNotifications } from "@/hooks/useNotifications";
 import { Bell, CheckCircle2, Info, AlertCircle, ShoppingCart } from "lucide-react";

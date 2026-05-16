@@ -6,7 +6,7 @@ import { GripVertical, LayoutDashboard, TrendingUp, Users, ShoppingCart, Package
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
-import { MainLayout } from '@/components/layout/MainLayout';
+// import { MainLayout } from "@/components/layout/MainLayout";
 import { PageSEO } from "@/components/seo/PageSEO";
 import { UpcomingDatesWidget } from '@/components/dashboard/UpcomingDatesWidget';
 import { QuickActionsPanel } from '@/components/dashboard/QuickActionsPanel';

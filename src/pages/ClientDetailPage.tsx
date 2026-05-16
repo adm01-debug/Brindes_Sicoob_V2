@@ -1,6 +1,6 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { SkeletonTransition } from "@/components/effects/SkeletonTransition";
-import { MainLayout } from "@/components/layout/MainLayout";
+// import { MainLayout } from "@/components/layout/MainLayout";
 import { PageSEO } from "@/components/seo/PageSEO";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";

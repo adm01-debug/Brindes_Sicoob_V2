@@ -1,5 +1,5 @@
 import { Sparkles } from "lucide-react";
-import { MainLayout } from "@/components/layout/MainLayout";
+// import { MainLayout } from "@/components/layout/MainLayout";
 import { PageSEO } from "@/components/seo/PageSEO";
 import { NoveltyStatsCards } from "@/components/novelties/NoveltyStatsCards";
 import { NoveltyProductGrid } from "@/components/novelties/NoveltyProductGrid";
