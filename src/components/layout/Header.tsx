@@ -192,14 +192,17 @@ export function Header({ onMenuToggle, searchQuery, onSearchChange }: HeaderProp
 
           {/* ── Cluster 1: Transacional (carrinho, notificações, alertas) ── */}
           <div className="flex items-center gap-0.5">
-            <CartHeaderButton />
-            <MiniCart />
-            <DiscountApprovalHeaderBadge />
-            <NotificationBell />
-            <div className="hidden md:block">
-              <StockAlertsIndicator />
-            </div>
+            <Suspense fallback={<div className="h-8 w-8 rounded-full bg-muted/20 animate-pulse" />}>
+              <CartHeaderButton />
+              <MiniCart />
+              <DiscountApprovalHeaderBadge />
+              <NotificationBell />
+              <div className="hidden md:block">
+                <StockAlertsIndicator />
+              </div>
+            </Suspense>
           </div>
+
 
           {/* Divider entre clusters (#2) */}
           <div className="h-5 w-px bg-border/60 mx-1.5 hidden md:block" />
