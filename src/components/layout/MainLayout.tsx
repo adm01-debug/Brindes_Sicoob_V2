@@ -152,7 +152,7 @@ export function MainLayout({ children }: MainLayoutProps) {
           >
             <div className="max-w-[1920px] mx-auto px-3 sm:px-4 lg:px-6 py-2">
               <Suspense fallback={<div className="h-6" />}>
-                <PersistentBreadcrumbs showBackButton />
+                <PersistentBreadcrumbs showBackButton className="py-0.5" />
               </Suspense>
             </div>
           </div>
