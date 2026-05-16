@@ -9,6 +9,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { logger } from "@/lib/logger";
 import { recordBridgeCall, estimatePayloadBytes } from "@/lib/telemetry/bridgeCallMetrics";
 import { newRequestId, REQUEST_ID_HEADER } from "@/lib/telemetry/requestId";
+import { getCircuitBreaker } from "@/lib/circuit-breaker";
+
+const crmBreaker = getCircuitBreaker("crm-db-bridge", {
+  failureThreshold: 8,
+  resetTimeout: 60000, // 60s
+});
+
 
 export interface CrmQuery {
   table: string;
