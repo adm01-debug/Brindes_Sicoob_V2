@@ -102,8 +102,8 @@ export function DataCard({
   return (
     <Card 
       className={cn(
-        "transition-all duration-200",
-        onClick && "cursor-pointer hover:shadow-md hover:-translate-y-0.5",
+        "transition-all duration-300",
+        onClick && "cursor-pointer active:scale-[0.98]",
         className
       )}
       onClick={onClick}
