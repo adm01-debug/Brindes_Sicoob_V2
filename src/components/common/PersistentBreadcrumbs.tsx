@@ -1,10 +1,16 @@
-import { forwardRef, useMemo } from "react";
+import { forwardRef, useMemo, useState } from "react";
 import { useLocation, Link } from "react-router-dom";
-import { ChevronRight, Home } from "lucide-react";
+import { ChevronRight, Home, MoreHorizontal } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { canNavigateTo, isDevOnlyPath } from "@/lib/navigation/restricted-routes";
 import { BackButton } from "./BackButton";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface BreadcrumbItem {
   label: string;
@@ -127,43 +133,82 @@ export const PersistentBreadcrumbs = forwardRef<HTMLElement, PersistentBreadcrum
       )}
       
       <ol className="flex items-center gap-1.5 overflow-x-auto scrollbar-hide py-1">
-        {breadcrumbs.map((item, index) => {
-          const Icon = item.icon;
-          const isLast = index === breadcrumbs.length - 1;
-          
-          return (
+        {breadcrumbs.length > 3 ? (
+          <>
+            {/* First Item */}
+            <BreadcrumbItem item={breadcrumbs[0]} index={0} />
+            <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/30 shrink-0" />
+            
+            {/* Dropdown for middle items */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="h-6 w-8 flex items-center justify-center hover:bg-muted/50 rounded-md transition-colors">
+                  <MoreHorizontal className="h-4 w-4 text-muted-foreground" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="w-48">
+                {breadcrumbs.slice(1, -1).map((item, i) => (
+                  <DropdownMenuItem key={i} asChild>
+                    <Link to={item.href || "#"} className="flex items-center gap-2">
+                      {item.icon && <item.icon className="h-3.5 w-3.5" />}
+                      <span>{item.label}</span>
+                    </Link>
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/30 shrink-0" />
+            
+            {/* Last Item */}
+            <BreadcrumbItem 
+              item={breadcrumbs[breadcrumbs.length - 1]} 
+              index={breadcrumbs.length - 1} 
+              isLast 
+            />
+          </>
+        ) : (
+          breadcrumbs.map((item, index) => (
             <li key={`${item.href ?? item.label}-${index}`} className="flex items-center gap-1.5 flex-shrink-0">
               {index > 0 && (
                 <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/30 shrink-0" />
               )}
-              
-              {item.href ? (
-                <Link
-                  to={item.href}
-                  className={cn(
-                    "flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-all duration-200",
-                    "hover:bg-muted/50 px-2 py-0.5 rounded-md -mx-1"
-                  )}
-                >
-                  {Icon && <Icon className="h-3.5 w-3.5" />}
-                  <span className="truncate max-w-[120px] sm:max-w-[200px]">{item.label}</span>
-                </Link>
-              ) : (
-                <span 
-                  className={cn(
-                    "flex items-center gap-1.5 px-2 py-0.5 rounded-md -mx-1",
-                    isLast ? "text-foreground font-semibold" : "text-muted-foreground"
-                  )}
-                  aria-current={isLast ? "page" : undefined}
-                >
-                  {Icon && <Icon className="h-3.5 w-3.5" />}
-                  <span className="truncate max-w-[120px] sm:max-w-[200px]">{item.label}</span>
-                </span>
-              )}
+              <BreadcrumbItem item={item} index={index} isLast={index === breadcrumbs.length - 1} />
             </li>
-          );
-        })}
+          ))
+        )}
       </ol>
     </nav>
   );
 });
+
+function BreadcrumbItem({ item, index, isLast }: { item: BreadcrumbItem, index: number, isLast?: boolean }) {
+  const Icon = item.icon;
+  
+  if (item.href && !isLast) {
+    return (
+      <Link
+        to={item.href}
+        className={cn(
+          "flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-all duration-200",
+          "hover:bg-muted/50 px-2 py-0.5 rounded-md -mx-1"
+        )}
+      >
+        {Icon && <Icon className="h-3.5 w-3.5" />}
+        <span className="truncate max-w-[120px] sm:max-w-[200px]">{item.label}</span>
+      </Link>
+    );
+  }
+
+  return (
+    <span 
+      className={cn(
+        "flex items-center gap-1.5 px-2 py-0.5 rounded-md -mx-1",
+        isLast ? "text-foreground font-semibold" : "text-muted-foreground"
+      )}
+      aria-current={isLast ? "page" : undefined}
+    >
+      {Icon && <Icon className="h-3.5 w-3.5" />}
+      <span className="truncate max-w-[120px] sm:max-w-[200px]">{item.label}</span>
+    </span>
+  );
+}
