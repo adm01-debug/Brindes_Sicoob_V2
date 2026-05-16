@@ -20,6 +20,7 @@ import { useToast } from "@/hooks/use-toast";
 import { usePromoSalesRanking } from "@/hooks/usePromoSalesRanking";
 import { useSupplierSalesRanking } from "@/hooks/useSupplierSalesRanking";
 import { useCatalogFiltering } from "./useCatalogFiltering";
+23: import { useNoveltyProductIds } from "@/hooks/useNovelties";
 
 // Specialized hooks
 import { useCatalogDisplay, type ViewMode, type SortOption } from "./catalog/useCatalogDisplay";
@@ -42,6 +43,7 @@ export function useCatalogState() {
   const { registerProducts } = useProductsContext();
   const { data: promoSalesMap } = usePromoSalesRanking();
   const { data: supplierSalesMap } = useSupplierSalesRanking();
+46:   const { data: noveltyIds } = useNoveltyProductIds();
 
   const searchQueryFromUrl = searchParams.get("search") || "";
 
@@ -248,6 +250,7 @@ const display = useCatalogDisplay();
     hasNextPage,
     statBadges,
     isEnrichingColors,
+242:     noveltyIds,
 
     resetFilters,
     handleViewProduct,
