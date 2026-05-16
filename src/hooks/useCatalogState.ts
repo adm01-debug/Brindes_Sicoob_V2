@@ -263,5 +263,6 @@ const display = useCatalogDisplay();
     canAddMore,
     navigate,
     ITEMS_PER_PAGE,
+    isPending,
   };
 }
