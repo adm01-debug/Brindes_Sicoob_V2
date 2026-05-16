@@ -1,4 +1,4 @@
-import { useEffect, type CSSProperties } from "react";
+import { useEffect, type CSSProperties, lazy, Suspense } from "react";
 import { User, Menu, Sun, Moon, Heart, GitCompare, Search, LogOut, Settings, HelpCircle, Shield, MoreHorizontal, Palette, RotateCcw, Smartphone } from "lucide-react";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useNavigate } from "react-router-dom";
@@ -21,18 +21,21 @@ import { useOnboardingContext } from "@/contexts/OnboardingContext";
 import { useOrganization } from "@/contexts/OrganizationContext";
 import { usePWAInstall } from "@/hooks/usePWAInstall";
 
-import { StockAlertsIndicator } from "@/components/inventory/StockAlertsIndicator";
-import { NotificationBell } from "@/components/notifications/NotificationDrawer";
-import { DiscountApprovalHeaderBadge } from "@/components/admin/DiscountApprovalHeaderBadge";
-
-import { GlobalSearchPalette } from "@/components/search/GlobalSearchPalette";
-import { CartHeaderButton } from "@/components/cart/CartHeaderButton";
-import { MiniCart } from "@/components/cart/MiniCart";
 import { useIsScrolled } from "@/hooks/useScroll";
 import { useCurrentSection } from "@/hooks/useCurrentSection";
 import { cn } from "@/lib/utils";
 import { getRoleLabel } from "@/lib/roles";
 import { RoleBadge } from "@/components/RoleBadge";
+import { BackButton } from "@/components/common/BackButton";
+
+// Lazy load non-critical Header sub-components
+const StockAlertsIndicator = lazy(() => import("@/components/inventory/StockAlertsIndicator").then(m => ({ default: m.StockAlertsIndicator })));
+const NotificationBell = lazy(() => import("@/components/notifications/NotificationDrawer").then(m => ({ default: m.NotificationBell })));
+const DiscountApprovalHeaderBadge = lazy(() => import("@/components/admin/DiscountApprovalHeaderBadge").then(m => ({ default: m.DiscountApprovalHeaderBadge })));
+const GlobalSearchPalette = lazy(() => import("@/components/search/GlobalSearchPalette").then(m => ({ default: m.GlobalSearchPalette })));
+const CartHeaderButton = lazy(() => import("@/components/cart/CartHeaderButton").then(m => ({ default: m.CartHeaderButton })));
+const MiniCart = lazy(() => import("@/components/cart/MiniCart").then(m => ({ default: m.MiniCart })));
+
 
 interface HeaderProps {
   onMenuToggle: () => void;
