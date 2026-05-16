@@ -8,6 +8,10 @@ export function useSmartNavigation() {
   const navigate = useNavigate();
   const { push, getPrevious, pop, history, direction, setDirection } = useNavigationStore();
 
+  const isCriticalPath = location.pathname.includes('/simulador') || 
+                         location.pathname.includes('/orcamentos/novo') ||
+                         location.pathname.includes('/mockup-generator');
+
   // Rastrear navegação
   useEffect(() => {
     // Só adiciona se o path mudou (evita search query loops se não for desejado)
@@ -24,7 +28,12 @@ export function useSmartNavigation() {
     });
   }, [location.pathname, location.search, push]);
 
-  const goBack = useCallback((fallbackPath?: string) => {
+  const goBack = useCallback((fallbackPath?: string, force = false) => {
+    if (!force && isCriticalPath) {
+      const confirmed = window.confirm("Você tem alterações não salvas. Deseja realmente sair?");
+      if (!confirmed) return;
+    }
+
     Haptics.impactLight();
     
     setDirection('backward');

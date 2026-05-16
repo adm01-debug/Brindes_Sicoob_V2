@@ -9,6 +9,7 @@ import { useScrollDirection } from "@/hooks/useScroll";
 
 import { SkipToContent } from "@/components/common/SkipToContent";
 import { BackButton } from "@/components/common/BackButton";
+import { FloatingBackButton } from "@/components/common/FloatingBackButton";
 import { useSwipeBack } from "@/hooks/useSwipeBack";
 
 import { lazyWithRetry } from "@/lib/lazyWithRetry";
@@ -212,6 +213,8 @@ export function MainLayout({ children }: MainLayoutProps) {
           <SmartMobileNav />
         </Suspense>
       </div>
+
+      <FloatingBackButton />
       
       {/* Restrito a usuários com papel `dev` (gate interno via useDevGate) */}
       <APIInspector />
