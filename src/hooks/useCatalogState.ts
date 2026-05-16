@@ -157,11 +157,9 @@ const display = useCatalogDisplay();
 
   const paginatedProducts = useMemo(() => {
     if (!catalogColorEnrichmentMap || catalogColorEnrichmentMap.size === 0 || !hasColorFilterActive) return rawPaginatedProducts;
-    return rawPaginatedProducts.map(product => {
-      const enrichment = catalogColorEnrichmentMap.get(product.id);
-      if (!enrichment) return product;
       return {
         ...product,
+        isNovelty: noveltyIds?.has(product.id),
         ...(enrichment.image ? {
           og_image_url: enrichment.image,
           images: [enrichment.image, ...product.images.filter((img: string) => img !== enrichment.image)],
