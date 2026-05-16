@@ -19,6 +19,7 @@ import { useGlobalErrorCatcher } from "@/hooks/useErrorHandler";
 import { markBootSuccessful } from "@/lib/chunk-recovery";
 import { getFallback } from "@/components/layout/SkeletonLoaders";
 import { BridgeStatusBanner } from "@/components/BridgeStatusBanner";
+import { MainLayout } from "@/components/layout/MainLayout";
 import { CloudStatusBanner } from "@/components/system/CloudStatusBanner";
 import { DevOnlyBridgeOverlay } from "@/components/dev/DevOnlyBridgeOverlay";
 import { AuthDiagnosticsWidget } from "@/components/dev/AuthDiagnosticsWidget";
@@ -132,7 +133,8 @@ const App = () => {
 
                           {/* Protected Layout Route */}
                           <Route element={<ProtectedRoute />}>
-                            <Route path="/" element={<Index />} />
+                            <Route element={<MainLayout />}>
+                              <Route path="/" element={<Index />} />
                             <Route path="/dashboard" element={<CustomizableDashboard />} />
 
                             {/* Modular Routes */}
@@ -184,6 +186,7 @@ const App = () => {
                             {/* Error Fallback */}
                             <Route path="*" element={<div data-testid="page-not-found"><NotFound /></div>} />
 
+                            </Route>
                           </Route>
                         </Routes>
                       </RouteSuspense>

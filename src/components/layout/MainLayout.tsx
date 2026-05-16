@@ -2,7 +2,7 @@ import { useState, Suspense, useEffect, useRef, useCallback } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { PullToRefreshIndicator } from "@/components/mobile/PullToRefreshIndicator";
 import { usePullToRefresh } from "@/hooks/usePullToRefresh";
-import { useLocation } from "react-router-dom";
+import { useLocation, Outlet } from "react-router-dom";
 import { useScrollLockFix } from "@/hooks/useScrollLockFix";
 import { useGlobalShortcuts } from "@/hooks/useGlobalShortcuts";
 import { useScrollDirection } from "@/hooks/useScroll";
@@ -39,7 +39,7 @@ import { diagnostics } from "@/lib/diagnostics";
 import { APIInspector } from "@/components/debug/APIInspector";
 
 interface MainLayoutProps {
-  children: React.ReactNode;
+  children?: React.ReactNode;
 }
 
 export function MainLayout({ children }: MainLayoutProps) {
@@ -173,9 +173,9 @@ export function MainLayout({ children }: MainLayoutProps) {
             aria-label="Conteúdo principal"
           >
             
-            <Suspense fallback={<div>{children}</div>}>
+            <Suspense fallback={<div>{children || <Outlet />}</div>}>
               <PageTransition variant="dynamic-slide" duration={0.3} className="min-h-[calc(100vh-140px)]">
-                {children}
+                {children || <Outlet />}
               </PageTransition>
             </Suspense>
           </main>
