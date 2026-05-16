@@ -11,6 +11,7 @@ import { SkipToContent } from "@/components/common/SkipToContent";
 import { BackButton } from "@/components/common/BackButton";
 import { FloatingBackButton } from "@/components/common/FloatingBackButton";
 import { useSwipeBack } from "@/hooks/useSwipeBack";
+import { RouteLoadingBar } from "@/components/common/RouteLoadingBar";
 
 import { lazyWithRetry } from "@/lib/lazyWithRetry";
 
@@ -97,6 +98,7 @@ export function MainLayout({ children }: MainLayoutProps) {
   const layoutContent = (
     <div className="min-h-screen bg-background ambient-glow print:min-h-0 relative" role="document">
       <PullToRefreshIndicator pullDistance={pullDistance} isRefreshing={isRefreshing} />
+      <RouteLoadingBar />
       
       <div className="print:hidden">
         <Suspense fallback={null}>

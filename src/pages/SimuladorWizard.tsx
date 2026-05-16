@@ -231,12 +231,12 @@ export default function SimuladorWizard() {
               </motion.div>
             )}
 
-            {/* Step Indicator */}
+            {/* Step Indicator - Sticky on mobile */}
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
-              className="mb-8"
+              className="mb-8 sticky top-[var(--header-h,56px)] z-20 bg-background/95 backdrop-blur-md -mx-4 px-4 py-2 sm:static sm:bg-transparent sm:backdrop-blur-none sm:m-0 sm:p-0"
             >
               <WizardStepIndicator wizard={wizard} />
             </motion.div>
