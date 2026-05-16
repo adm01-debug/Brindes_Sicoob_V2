@@ -44,5 +44,11 @@ export function useSmartNavigation() {
     navigate(path);
   }, [navigate, setDirection]);
 
+  useEffect(() => {
+    const handleSmartBack = () => goBack();
+    window.addEventListener('smart-back', handleSmartBack);
+    return () => window.removeEventListener('smart-back', handleSmartBack);
+  }, [goBack]);
+
   return { goBack, goForward, previousItem: getPrevious(), history, direction };
 }
