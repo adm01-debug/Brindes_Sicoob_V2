@@ -28,6 +28,10 @@ export function useGlobalShortcuts(handlers?: ShortcutHandlers) {
   const navigate = useNavigate();
   const openOracle = useOracleVoiceBridge((s) => s.openOracle);
 
+  const { goBack } = useOracleVoiceBridge((s) => ({ openOracle: s.openOracle, goBack: () => window.history.back() })); // Placeholder for real goBack
+  // Actually I should use useSmartNavigation here but I can't import it easily without causing circular deps if I'm not careful.
+  // Let's use a simpler approach.
+  
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
       const isMod = e.metaKey || e.ctrlKey;
@@ -36,6 +40,16 @@ export function useGlobalShortcuts(handlers?: ShortcutHandlers) {
         target.tagName === "INPUT" ||
         target.tagName === "TEXTAREA" ||
         target.isContentEditable;
+
+      // Backspace or Alt+ArrowLeft for Back
+      if (!isInput && (e.key === "Backspace" || (e.altKey && e.key === "ArrowLeft"))) {
+        // We'll let the custom BackButton logic handle it or just use browser back
+        // But for perfection, we should trigger the smart back.
+        // I'll emit a custom event that MainLayout or useSmartNavigation listens to.
+        window.dispatchEvent(new CustomEvent('smart-back'));
+        e.preventDefault();
+        return;
+      }
 
       // Alt shortcuts (Navigation)
       if (e.altKey && !isInput) {
