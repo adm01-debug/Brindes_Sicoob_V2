@@ -1,5 +1,16 @@
 import * as React from "react";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Skeleton as BaseSkeleton } from "@/components/ui/skeleton";
+import { motion } from "framer-motion";
+
+const Skeleton = ({ className, ...props }: React.ComponentProps<typeof BaseSkeleton>) => (
+  <motion.div
+    initial={{ opacity: 0.5 }}
+    animate={{ opacity: [0.5, 0.8, 0.5] }}
+    transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+  >
+    <BaseSkeleton className={className} {...props} />
+  </motion.div>
+);
 
 /**
  * Helper para criar skeletons como forwardRef divs.
@@ -51,12 +62,15 @@ export const CatalogSkeleton = makeSkeleton(
       <Skeleton className="h-10 w-full max-w-md" />
       {/* Product grid */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-        {Array.from({ length: 15 }).map((_, i) => (
-          <div key={i} className="space-y-3">
+        {Array.from({ length: 10 }).map((_, i) => (
+          <div key={i} className="bg-card/30 rounded-2xl p-3 border border-border/5 space-y-3">
             <Skeleton className="aspect-square w-full rounded-xl" />
-            <Skeleton className="h-4 w-3/4" />
-            <Skeleton className="h-4 w-1/2" />
-            <Skeleton className="h-5 w-1/3" />
+            <Skeleton className="h-4 w-3/4 rounded-full" />
+            <Skeleton className="h-4 w-1/2 rounded-full" />
+            <div className="flex justify-between items-center pt-1">
+              <Skeleton className="h-5 w-1/3 rounded-full" />
+              <Skeleton className="h-8 w-8 rounded-full" />
+            </div>
           </div>
         ))}
       </div>
@@ -283,7 +297,8 @@ export const GenericSkeleton = makeSkeleton(
  * Returns the appropriate skeleton component based on the current route.
  */
 export function getFallback(pathname: string): React.ReactNode {
-  if (pathname.startsWith("/produto/")) return <ProductDetailSkeleton />;
+  // Check exact matches or patterns
+  if (pathname.includes("/produto/")) return <ProductDetailSkeleton />;
   if (
     pathname === "/produtos" ||
     pathname === "/filtros" ||
@@ -293,15 +308,18 @@ export function getFallback(pathname: string): React.ReactNode {
     pathname === "/favoritos"
   )
     return <CatalogSkeleton />;
-  if (pathname.startsWith("/orcamentos")) return <QuotesSkeleton />;
-  if (pathname.startsWith("/admin") || pathname === "/status")
+  
+  if (pathname.includes("/orcamentos")) return <QuotesSkeleton />;
+  if (pathname.includes("/admin") || pathname === "/status")
     return <AdminSkeleton />;
   if (pathname === "/dashboard") return <DashboardSkeleton />;
-  if (pathname.startsWith("/pedidos")) return <OrdersSkeleton />;
+  if (pathname.includes("/pedidos")) return <OrdersSkeleton />;
 
-  if (pathname === "/mockup-generator" || pathname === "/montar-kit" || pathname === "/simulador" || pathname === "/magic-up" || pathname === "/simulador-precos" || pathname === "/busca-preco")
-    return <ToolsSkeleton />;
+  const isTool = ["/mockup-generator", "/montar-kit", "/simulador", "/magic-up", "/simulador-precos", "/busca-preco"].some(p => pathname.startsWith(p));
+  if (isTool) return <ToolsSkeleton />;
+  
   if (pathname === "/tendencias")
     return <AdminSkeleton />;
+  
   return <GenericSkeleton />;
 }
