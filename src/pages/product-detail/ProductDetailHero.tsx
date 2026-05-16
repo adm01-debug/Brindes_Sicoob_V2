@@ -276,13 +276,54 @@ export function ProductDetailHero({
                     <Eye className="h-3.5 w-3.5" /><span className="font-semibold text-foreground">{viewCount}</span><span>visualizações</span>
                   </div>
                   <div className="h-4 w-px bg-border/30" />
-                  <Button variant="ghost" size="sm" onClick={onToggleFavorite}
-                    className={cn("rounded-full px-3 text-xs gap-1.5 h-7 transition-all duration-300 hover:bg-destructive/15 hover:text-destructive hover:scale-105 hover:shadow-md hover:shadow-destructive/20", isFavorite && "text-destructive bg-destructive/10")}
-                  >
-                    <Heart className={cn("h-3.5 w-3.5 transition-all duration-300", isFavorite && "fill-destructive text-destructive scale-110")} />
-                    {isFavorite ? "Favoritado" : "Favoritar"}
-                  </Button>
+                  
+                  <div className="flex items-center gap-2">
+                    <Button variant="ghost" size="sm" onClick={onToggleFavorite}
+                      className={cn("rounded-full px-3 text-xs gap-1.5 h-7 transition-all duration-300 hover:bg-destructive/15 hover:text-destructive hover:scale-105 hover:shadow-md hover:shadow-destructive/20", isFavorite && "text-destructive bg-destructive/10")}
+                    >
+                      <Heart className={cn("h-3.5 w-3.5 transition-all duration-300", isFavorite && "fill-destructive text-destructive scale-110")} />
+                      {isFavorite ? "Favoritado" : "Favoritar"}
+                    </Button>
+
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={() => {
+                        const { toggleCompare, isInCompare } = useComparisonStore.getState();
+                        const isCurrentlyIn = isInCompare(id);
+                        const { added, isFull } = toggleCompare(id, selectedVariation);
+                        
+                        if (isFull) {
+                          toast({
+                            title: "Limite atingido",
+                            description: "Você pode comparar até 4 produtos.",
+                            variant: "destructive"
+                          });
+                        } else if (added) {
+                          showUndoToast({
+                            title: "Adicionado para comparação",
+                            description: product.name,
+                            onUndo: () => toggleCompare(id, selectedVariation),
+                          });
+                        } else {
+                          showUndoToast({
+                            title: "Removido da comparação",
+                            description: product.name,
+                            onUndo: () => toggleCompare(id, selectedVariation),
+                          });
+                        }
+                      }}
+                      className={cn(
+                        "rounded-full px-3 text-xs gap-1.5 h-7 transition-all duration-300 hover:bg-primary/15 hover:text-primary hover:scale-105 hover:shadow-md hover:shadow-primary/20",
+                        useComparisonStore(s => s.isInCompare(id)) && "text-primary bg-primary/10"
+                      )}
+                    >
+                      <GitCompare className={cn("h-3.5 w-3.5 transition-all duration-300", useComparisonStore(s => s.isInCompare(id)) && "text-primary scale-110")} />
+                      {useComparisonStore(s => s.isInCompare(id)) ? "Comparando" : "Comparar"}
+                    </Button>
+                  </div>
                 </div>
+
               </div>
             </div>
           </div>
