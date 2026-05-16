@@ -36,7 +36,7 @@ class DiagnosticsManager {
     if (typeof window !== 'undefined') {
       // @ts-ignore
       window.__DIAGNOSTICS__ = this;
-      logger.log('🔍 Sicoob Diagnostic Engine v2 initialized. [OND-018-HEALTH]');
+      console.log('🔍 Sicoob Diagnostic Engine v2 initialized. [OND-018-HEALTH]');
     }
   }
 
