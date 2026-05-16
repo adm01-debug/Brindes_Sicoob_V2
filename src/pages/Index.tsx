@@ -83,9 +83,10 @@ export default function Index() {
               setGridColumns={catalog.setGridColumns}
                selectionMode={catalog.selectionMode}
                onToggleSelectionMode={catalog.toggleSelectionMode}
-               selectedCount={catalog.selectedCount}
-               isEnrichingColors={catalog.isEnrichingColors}
-             />
+                selectedCount={catalog.selectedCount}
+                isEnrichingColors={catalog.isEnrichingColors}
+                isPending={catalog.isPending}
+              />
             </div>
 
             {/* Active filter badges */}

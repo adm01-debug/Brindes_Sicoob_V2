@@ -91,7 +91,7 @@ export function mapLightweightToProduct(p: LightweightProduct): Product {
 // INFINITE CATALOG HOOK
 // ============================================
 
-export const CATALOG_PAGE_SIZE = 500;
+export const CATALOG_PAGE_SIZE = 800; // Increased for better fill on initial load
 export const CATALOG_BATCH_PAGES = 4;
 // `price_updated_at` é o SSOT da idade do preço (trigger no BD externo).
 // `price_freshness_threshold_days` ainda NÃO existe no BD externo — quando

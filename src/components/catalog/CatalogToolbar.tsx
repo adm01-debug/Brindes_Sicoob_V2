@@ -49,6 +49,7 @@ interface CatalogToolbarProps {
   onToggleSelectionMode: () => void;
   selectedCount?: number;
   isEnrichingColors?: boolean;
+  isPending?: boolean;
 }
 
 export function CatalogToolbar({
@@ -61,6 +62,7 @@ export function CatalogToolbar({
   selectionMode, onToggleSelectionMode,
   selectedCount = 0,
   isEnrichingColors = false,
+  isPending = false,
 }: CatalogToolbarProps) {
   return (
     <div className="flex items-center justify-between gap-2 flex-wrap py-1">
@@ -122,6 +124,13 @@ export function CatalogToolbar({
             </motion.div>
           )}
         </AnimatePresence>
+
+        {isPending && (
+          <div className="flex items-center gap-1.5 px-2 py-1">
+            <Loader2 className="h-3 w-3 text-muted-foreground animate-spin" />
+            <span className="text-[10px] text-muted-foreground font-medium">Atualizando...</span>
+          </div>
+        )}
       </div>
 
       <div className="flex items-center gap-2">

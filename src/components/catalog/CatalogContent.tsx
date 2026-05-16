@@ -109,7 +109,7 @@ function useScrollableContainer(hasMore: boolean, isLoadingMore: boolean, onLoad
   return { parentRef, showScrollTop, scrollToTop };
 }
 
-const CONTAINER_CLASS = "h-[calc(100vh-180px)] min-h-[500px] overflow-y-auto rounded-xl border border-border/40 bg-gradient-to-b from-background/80 to-background/40 backdrop-blur-sm scrollbar-products shadow-inner";
+const CONTAINER_CLASS = "h-[calc(100vh-180px)] min-h-[500px] overflow-y-auto rounded-xl border border-border/40 bg-gradient-to-b from-background/80 to-background/40 backdrop-blur-sm scrollbar-products shadow-inner will-change-scroll";
 
 // ─── VirtualGrid ────────────────────────────────────────────────────
 function VirtualGrid({ products, columns, navigate, handleViewProduct, handleShareProduct, isFavorite, toggleFavorite, isInCompare, onToggleCompare, canAddToCompare, hasMore, isLoadingMore, totalEstimate, filteredCount, loadMoreRef, itemsPerPage, onLoadMore, selectionMode, selectedIds, onToggleSelect, activeColorFilter }: {
