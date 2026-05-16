@@ -4,14 +4,15 @@ import { useQueryClient, QueryKey } from "@tanstack/react-query";
 import { logger } from "@/lib/logger";
 
 /**
- * Hook to synchronize React Query cache with Supabase Realtime changes.
+ * Hook to synchronize UI with Supabase Realtime changes.
  */
 export function useRealtimeSync(
   table: string,
-  queryKey: QueryKey,
   options: {
     event?: 'INSERT' | 'UPDATE' | 'DELETE' | '*';
     filter?: string;
+    onDataChange?: (payload: any) => void;
+    queryKey?: QueryKey;
   } = {}
 ) {
   const queryClient = useQueryClient();
@@ -20,8 +21,9 @@ export function useRealtimeSync(
   useEffect(() => {
     logger.info(`Setting up realtime sync for table "${table}"`);
     
+    const channelName = `realtime:${table}:${options.queryKey ? JSON.stringify(options.queryKey) : Date.now()}`;
     const channel = supabase
-      .channel(`realtime:${table}:${JSON.stringify(queryKey)}`)
+      .channel(channelName)
       .on(
         'postgres_changes',
         {
@@ -32,8 +34,14 @@ export function useRealtimeSync(
         },
         (payload) => {
           logger.info(`Realtime change detected in "${table}":`, payload);
-          // Invalidate the query to trigger a refetch
-          queryClient.invalidateQueries({ queryKey });
+          
+          if (options.onDataChange) {
+            options.onDataChange(payload);
+          }
+          
+          if (options.queryKey) {
+            queryClient.invalidateQueries({ queryKey: options.queryKey });
+          }
         }
       )
       .subscribe((status) => {
@@ -45,5 +53,5 @@ export function useRealtimeSync(
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [table, queryKey, event, options.filter, queryClient]);
+  }, [table, options.queryKey, options.onDataChange, event, options.filter, queryClient]);
 }
