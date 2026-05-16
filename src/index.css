@@ -2378,3 +2378,11 @@ body.compare-focus-mode [role='main'] {
   margin: 0 !important;
   max-width: 100% !important;
 }
+
+.pb-nav {
+  padding-bottom: calc(var(--safe-area-bottom) + 0.5rem);
+}
+
+.safe-area-bottom {
+  padding-bottom: var(--safe-area-bottom);
+}
