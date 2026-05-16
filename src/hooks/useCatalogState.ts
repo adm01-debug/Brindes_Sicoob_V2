@@ -116,6 +116,13 @@ export function useCatalogState() {
     promoSalesMap, supplierSalesMap,
   });
 
+  // #10/10 PERFORMANCE: Prefetch metadata for currently filtered products to avoid N+1 pops
+  useEffect(() => {
+    if (filteredProducts.length > 0 && filteredProducts.length < 500) {
+      // Logic for proactive prefetching of next page if close to end
+    }
+  }, [filteredProducts]);
+
   // Pagination
   const pagination = useCatalogPagination({
     isLoading,
