@@ -159,7 +159,7 @@ html[data-scroll-locked] body {
     --input: 190 30% 15% / 0.08;
     --ring: 175 100% 34%;
 
-    --radius: 0.85rem;
+    --radius: 1rem;
 
     /* ===== ELEVAÇÃO ===== */
     --elevated: 0 0% 100%;
@@ -1586,7 +1586,7 @@ html[data-scroll-locked] body {
   }
 
   .card-interactive {
-    @apply relative cursor-pointer overflow-hidden rounded-xl border-[1.5px] border-primary/15 bg-card p-[var(--spacing-card)] transition-all duration-300 hover:border-primary/45 hover:shadow-lg;
+    @apply relative cursor-pointer overflow-hidden rounded-xl border-[1.5px] border-primary/10 bg-card p-[var(--spacing-card)] transition-all duration-500 ease-out hover:border-primary/30 hover:shadow-2xl hover:-translate-y-1.5 hover:bg-card/95;
   }
 
   .card-interactive::before {
