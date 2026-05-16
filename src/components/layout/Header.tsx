@@ -169,8 +169,11 @@ export function Header({ onMenuToggle, searchQuery, onSearchChange }: HeaderProp
 
         {/* ══════ Center section — Global Search (#4 expandida) ══════ */}
         <div className="flex-1 max-w-lg mx-4 hidden md:block" data-tour="search">
-          <GlobalSearchPalette />
+          <Suspense fallback={<div className="h-10 w-full bg-muted/20 animate-pulse rounded-lg" />}>
+            <GlobalSearchPalette />
+          </Suspense>
         </div>
+
 
         {/* ══════ Right section — Agrupamento em clusters (#2) ══════ */}
         <div className="flex items-center gap-0.5 sm:gap-0.5">
