@@ -197,10 +197,12 @@ const display = useCatalogDisplay();
 
   // Handlers
   const resetFilters = useCallback(() => {
-    filterState.setFilters(defaultFilters);
-    display.setSortBy("name");
-    search.setSearchQuery("");
-    navigate("/", { replace: true });
+    startTransition(() => {
+      filterState.setFilters(defaultFilters);
+      display.setSortBy("name");
+      search.setSearchQuery("");
+      navigate("/", { replace: true });
+    });
   }, [navigate, filterState, display, search]);
 
   const handleViewProduct = useCallback((product: Product) => {
