@@ -38,8 +38,8 @@ export function RouteLoadingBar() {
           initial={{ scaleX: 0, opacity: 1, originX: 0 }}
           animate={{ scaleX: progress / 100, opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.4, ease: "easeOut" }}
-          className="fixed top-0 left-0 right-0 h-[3px] bg-brand z-[100] shadow-[0_0_8px_rgba(var(--brand-rgb),0.5)]"
+          transition={{ duration: 0.3, ease: "linear" }}
+          className="fixed top-0 left-0 right-0 h-[2.5px] bg-gradient-to-r from-brand/40 via-brand to-accent z-[100] shadow-[0_0_12px_rgba(var(--brand-rgb,0,163,163),0.6)]"
         />
       )}
     </AnimatePresence>
