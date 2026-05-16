@@ -65,10 +65,13 @@ export async function invokeCrmBatch(queries: CrmBatchQuery[]): Promise<CrmBatch
   const body = { operation: "batch", queries };
   const reqBytes = estimatePayloadBytes(body);
   const requestId = newRequestId();
-  const { data, error } = await supabase.functions.invoke("crm-db-bridge", {
-    body,
-    headers: { [REQUEST_ID_HEADER]: requestId },
-  });
+  const { data, error } = await crmBreaker.execute(() => 
+    supabase.functions.invoke("crm-db-bridge", {
+      body,
+      headers: { [REQUEST_ID_HEADER]: requestId },
+    })
+  );
+
 
   const serverRequestId =
     data && typeof data === "object" && "request_id" in data
