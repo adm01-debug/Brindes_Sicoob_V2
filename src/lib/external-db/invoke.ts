@@ -157,15 +157,18 @@ export async function invokeWithRetry(
   }
 
   for (let attempt = 0; attempt <= retries; attempt++) {
-    const { data, error } = await supabase.functions.invoke('external-db-bridge', {
-      body,
-      headers: { 
-        [REQUEST_ID_HEADER]: requestId,
-        [TRACEPARENT_HEADER]: traceparent 
-      },
-    });
+    const { data, error } = await bridgeBreaker.execute(() => 
+      supabase.functions.invoke('external-db-bridge', {
+        body,
+        headers: { 
+          [REQUEST_ID_HEADER]: requestId,
+          [TRACEPARENT_HEADER]: traceparent 
+        },
+      })
+    );
 
     if (!error) {
+
       if (sawColdStart) emitBridgeStatus({ type: 'recovered' });
       return finalize({ data, error: null });
     }
