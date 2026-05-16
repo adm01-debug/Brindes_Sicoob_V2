@@ -38,6 +38,8 @@ html[data-scroll-locked] body {
 
 @layer base {
   :root {
+    --nav-h: 3.5rem;
+    --safe-area-bottom: env(safe-area-inset-bottom, 0px);
     /* ===== FONTS ===== */
     --font-sans: 'Plus Jakarta Sans', system-ui, sans-serif;
     --font-display: 'Outfit', system-ui, sans-serif;
@@ -2375,4 +2377,12 @@ body.compare-focus-mode [role='main'] {
   padding: 0 !important;
   margin: 0 !important;
   max-width: 100% !important;
+}
+
+.pb-nav {
+  padding-bottom: calc(var(--safe-area-bottom) + 0.5rem);
+}
+
+.safe-area-bottom {
+  padding-bottom: var(--safe-area-bottom);
 }

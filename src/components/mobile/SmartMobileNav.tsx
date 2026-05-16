@@ -166,11 +166,10 @@ export const SmartMobileNav = forwardRef<HTMLDivElement>(function SmartMobileNav
       <motion.nav
         initial={{ y: 0 }}
         animate={{ y: isScrollingUp ? 0 : 100 }}
-        transition={{ duration: 0.3 }}
-        className="fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-md border-t border-border lg:hidden"
+        transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+        className="fixed bottom-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-xl border-t border-border/40 lg:hidden safe-area-bottom pb-nav"
         role="navigation"
         aria-label="Navegação principal mobile"
-        style={{ paddingBottom: 'env(safe-area-inset-bottom, 0.5rem)' }}
       >
         <div className="flex items-center justify-around h-14 sm:h-16 px-1 sm:px-2 relative">
           {mainNavItems.map((item, index) => {
