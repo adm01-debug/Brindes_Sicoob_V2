@@ -61,14 +61,12 @@ const AppWithAuth = forwardRef<HTMLDivElement, { children: ReactNode }>(({ child
 
 AppWithAuth.displayName = 'AppWithAuth';
 
-const RouteSuspense = forwardRef<HTMLDivElement, { children: ReactNode }>(({ children }, ref) => {
+const RouteSuspense = ({ children }: { children: ReactNode }) => {
   const { pathname } = useLocation();
   return (
-    <div ref={ref}>
-      <Suspense fallback={getFallback(pathname)}>{children}</Suspense>
-    </div>
+    <Suspense fallback={getFallback(pathname)}>{children}</Suspense>
   );
-});
+};
 
 RouteSuspense.displayName = 'RouteSuspense';
 
@@ -118,11 +116,10 @@ const App = () => {
                       <DiagnosticOverlay />
                       <RouteScrollReset />
 
-                      <RouteSuspense>
-                        <Routes>
+                      <Routes>
                           {/* Public Routes */}
                           {publicRoutes.map(r => (
-                            <Route key={r.path} path={r.path} element={<r.component />} />
+                            <Route key={r.path} path={r.path} element={<RouteSuspense><r.component /></RouteSuspense>} />
                           ))}
 
                           {/* Static Redirects & Legacy (Unprotected) */}
