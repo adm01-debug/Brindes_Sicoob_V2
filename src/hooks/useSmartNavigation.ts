@@ -6,7 +6,7 @@ import { Haptics } from '@/utils/haptics';
 export function useSmartNavigation() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { push, getPrevious, pop, history } = useNavigationStore();
+  const { push, getPrevious, pop, history, direction, setDirection } = useNavigationStore();
 
   // Rastrear navegação
   useEffect(() => {
@@ -23,16 +23,13 @@ export function useSmartNavigation() {
   const goBack = useCallback(() => {
     Haptics.impactLight();
     
+    setDirection('backward');
     const previous = getPrevious();
     
-    // Se temos um histórico rastreado, usamos ele para decidir
     if (previous) {
-      // Se o anterior for uma sub-página do atual ou igual, retrocede no histórico real do navegador
-      // caso contrário, vai para o caminho mapeado
       pop(); // Remove o atual
       navigate(-1);
     } else {
-      // Fallback para o pai se não houver histórico útil
       const pathParts = location.pathname.split('/').filter(Boolean);
       if (pathParts.length <= 1) {
         navigate('/');
@@ -40,7 +37,12 @@ export function useSmartNavigation() {
         navigate('/' + pathParts.slice(0, -1).join('/'));
       }
     }
-  }, [location.pathname, getPrevious, pop, navigate]);
+  }, [location.pathname, getPrevious, pop, navigate, setDirection]);
 
-  return { goBack, previousItem: getPrevious(), history };
+  const goForward = useCallback((path: string) => {
+    setDirection('forward');
+    navigate(path);
+  }, [navigate, setDirection]);
+
+  return { goBack, goForward, previousItem: getPrevious(), history, direction };
 }
