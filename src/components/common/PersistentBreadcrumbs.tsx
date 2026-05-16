@@ -1,9 +1,10 @@
-import { forwardRef, useCallback, useMemo } from "react";
-import { useLocation, useNavigate, Link } from "react-router-dom";
+import { forwardRef, useMemo } from "react";
+import { useLocation, Link } from "react-router-dom";
 import { ChevronRight, Home } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { canNavigateTo, isDevOnlyPath } from "@/lib/navigation/restricted-routes";
+import { BackButton } from "./BackButton";
 
 interface BreadcrumbItem {
   label: string;
@@ -26,7 +27,6 @@ const routeLabels: Record<string, string> = {
   "/magic-up": "Magic Up",
   "/favoritos": "Favoritos",
   "/comparar": "Comparar",
-  
   "/configuracoes": "Configurações",
   "/admin": "Administração",
   "/seguranca": "Segurança",
@@ -48,16 +48,7 @@ export const PersistentBreadcrumbs = forwardRef<HTMLElement, PersistentBreadcrum
   customItems 
 }, ref) {
   const location = useLocation();
-  const navigate = useNavigate();
   const { isDev, isAdmin } = useAuth();
-  
-  const handleBack = useCallback(() => {
-    if (window.history.length > 2) {
-      navigate(-1);
-    } else {
-      navigate("/");
-    }
-  }, [navigate]);
   
   const breadcrumbs = useMemo((): BreadcrumbItem[] => {
     if (customItems) return customItems;
@@ -105,6 +96,7 @@ export const PersistentBreadcrumbs = forwardRef<HTMLElement, PersistentBreadcrum
     
     return items;
   }, [location.pathname, showHome, customItems, isDev, isAdmin]);
+
   if (breadcrumbs.length === 0) return null;
 
   const isNotHome = location.pathname !== "/";
@@ -115,72 +107,49 @@ export const PersistentBreadcrumbs = forwardRef<HTMLElement, PersistentBreadcrum
       data-testid="breadcrumb"
       aria-label="Breadcrumb" 
       className={cn(
-        "flex items-center text-sm overflow-x-auto scrollbar-hide",
-        "max-w-full gap-2",
+        "flex items-center text-sm overflow-hidden",
+        "max-w-full gap-3 py-1",
         className
       )}
     >
       {showBackButton && isNotHome && (
-        <button
-          onClick={handleBack}
-          aria-label="Teletransporte — Voltar"
-          title="Teletransporte"
-          className="hidden sm:inline-flex items-center justify-center gap-1.5 h-7 px-3 rounded-full text-xs font-medium text-muted-foreground hover:text-foreground bg-muted/60 hover:bg-muted border border-border/40 hover:border-border transition-all duration-200 flex-shrink-0 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 group"
-        >
-          {/* Teleport icon — person with rings */}
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="h-4 w-4 group-hover:animate-pulse"
-          >
-            <circle cx="12" cy="5" r="2.5" fill="currentColor" stroke="none" />
-            <path d="M10 10h4v6h-4z" fill="currentColor" stroke="none" />
-            <rect x="10" y="17" width="1.5" height="3" rx="0.5" fill="currentColor" stroke="none" />
-            <rect x="12.5" y="17" width="1.5" height="3" rx="0.5" fill="currentColor" stroke="none" />
-            <ellipse cx="12" cy="8" rx="6" ry="1.5" className="opacity-70" />
-            <ellipse cx="12" cy="13" rx="5" ry="1.3" className="opacity-50" />
-            <ellipse cx="12" cy="17.5" rx="4.5" ry="1.2" className="opacity-30" />
-          </svg>
-          <span className="hidden md:inline">Teletransporte</span>
-        </button>
+        <div className="flex-shrink-0 border-r border-border/30 pr-3 mr-1">
+          <BackButton useChevron showLabel={false} className="h-7 w-7 rounded-full bg-muted/40" variant="ghost" />
+        </div>
       )}
-      <ol className="flex items-center gap-1.5 flex-wrap">
+      
+      <ol className="flex items-center gap-1.5 overflow-x-auto scrollbar-hide py-1">
         {breadcrumbs.map((item, index) => {
           const Icon = item.icon;
           const isLast = index === breadcrumbs.length - 1;
           
           return (
-            <li key={`${item.href ?? item.label}-${index}`} className="flex items-center gap-1.5">
+            <li key={`${item.href ?? item.label}-${index}`} className="flex items-center gap-1.5 flex-shrink-0">
               {index > 0 && (
-                <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/50" />
+                <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/30 shrink-0" />
               )}
               
               {item.href ? (
                 <Link
                   to={item.href}
                   className={cn(
-                    "flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors",
-                    "hover:underline underline-offset-4"
+                    "flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-all duration-200",
+                    "hover:bg-muted/50 px-2 py-0.5 rounded-md -mx-1"
                   )}
                 >
                   {Icon && <Icon className="h-3.5 w-3.5" />}
-                  <span>{item.label}</span>
+                  <span className="truncate max-w-[120px] sm:max-w-[200px]">{item.label}</span>
                 </Link>
               ) : (
                 <span 
                   className={cn(
-                    "flex items-center gap-1.5",
-                    isLast ? "text-foreground font-medium" : "text-muted-foreground"
+                    "flex items-center gap-1.5 px-2 py-0.5 rounded-md -mx-1",
+                    isLast ? "text-foreground font-semibold" : "text-muted-foreground"
                   )}
                   aria-current={isLast ? "page" : undefined}
                 >
                   {Icon && <Icon className="h-3.5 w-3.5" />}
-                  <span>{item.label}</span>
+                  <span className="truncate max-w-[120px] sm:max-w-[200px]">{item.label}</span>
                 </span>
               )}
             </li>
