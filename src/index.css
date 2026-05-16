@@ -443,16 +443,7 @@ html[data-scroll-locked] body {
       hsl(220 60% 50% / 0.06) 50%,
       hsl(var(--primary) / 0.08) 100%
     );
-    --gradient-ambient: radial-gradient(
-      ellipse 80% 50% at 50% 0%,
-      hsl(var(--primary) / 0.08) 0%,
-      transparent 60%
-    );
-    --gradient-ambient-bottom: radial-gradient(
-      ellipse 60% 40% at 80% 100%,
-      hsl(220 80% 50% / 0.06) 0%,
-      transparent 50%
-    );
+// ... keep existing code
 
     /* ===== SOMBRAS — enhanced glow system ===== */
     --shadow-xs: 0 1px 2px hsl(225 20% 2% / 0.6);

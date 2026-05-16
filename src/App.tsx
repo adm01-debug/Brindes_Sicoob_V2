@@ -24,7 +24,7 @@ import { DevOnlyBridgeOverlay } from "@/components/dev/DevOnlyBridgeOverlay";
 import { AuthDiagnosticsWidget } from "@/components/dev/AuthDiagnosticsWidget";
 import { RouteScrollReset } from "@/components/common/RouteScrollReset";
 import { startBridgeTelemetry } from "@/lib/external-db/bridge-telemetry-client";
-import { GlobalMotionOverlay } from "@/components/common/GlobalMotionOverlay";
+// ... keep existing code
 import { startColdStartRecorder } from "@/lib/external-db/cold-start-recorder";
 import { DiagnosticOverlay } from "@/components/dev/DiagnosticOverlay";
 import { diagnostics } from "@/lib/diagnostics";
@@ -108,7 +108,7 @@ const App = () => {
                       <AuthDiagnosticsWidget />
                       <DiagnosticOverlay />
                       <RouteScrollReset />
-                      <GlobalMotionOverlay />
+                      // ... keep existing code
 
                       <Routes>
                         {/* Public Routes */}
