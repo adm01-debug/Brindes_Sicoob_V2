@@ -14,6 +14,7 @@ import { STATUS_LABELS } from "./quotes/quoteHelpers";
 import { invokeExternalDb } from "@/lib/external-db";
 import { useRBAC } from "@/hooks/useRBAC";
 import { invokeEdgeFunction } from "@/lib/edge-function-client";
+import { useRealtimeSync } from "@/hooks/useRealtimeSync";
 
 export function useQuotes() {
   const { user, isGestorCompras, isDev } = useAuth();
@@ -313,6 +314,13 @@ export function useQuotes() {
       // Silent fail as this is background info
     }
   };
+
+  useRealtimeSync("quotes", {
+    onDataChange: () => {
+      logger.info("Quotes table changed, refreshing...");
+      fetchQuotes();
+    }
+  });
 
   useEffect(() => {
     if (user) {
