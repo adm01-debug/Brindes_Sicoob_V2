@@ -8,6 +8,13 @@ import { emitBridgeStatus, isColdStartSignal } from './bridge-status-events';
 import { ensureCloudReady, CloudNotReadyError, getCachedCloudStatus } from '@/lib/cloud-status';
 import { recordBridgeCall, estimatePayloadBytes } from '@/lib/telemetry/bridgeCallMetrics';
 import { newRequestId, REQUEST_ID_HEADER, newTraceparent, TRACEPARENT_HEADER } from '@/lib/telemetry/requestId';
+import { getCircuitBreaker } from '@/lib/circuit-breaker';
+
+const bridgeBreaker = getCircuitBreaker('external-db-bridge', {
+  failureThreshold: 10,
+  resetTimeout: 45000,
+});
+
 
 function deriveExternalOp(body: Record<string, unknown>): { op: string; target?: string } {
   const operation = typeof body.operation === 'string' ? body.operation : undefined;
