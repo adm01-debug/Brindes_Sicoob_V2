@@ -1,6 +1,6 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 
-export const ITEMS_PER_PAGE = 12;
+export const ITEMS_PER_PAGE = 24; // Increased to reduce layout shifts during load-more
 
 interface UseCatalogPaginationProps {
   isLoading: boolean;
