@@ -18,11 +18,20 @@ import { BatchExportDialog } from "@/components/orders/BatchExportDialog";
 import { OrderFilters, OrderFilterValues } from "@/components/orders/OrderFilters";
 import { OrderStatsBar } from "@/components/orders/OrderStatsBar";
 import { PersistentBreadcrumbs } from "@/components/common/PersistentBreadcrumbs";
+import { useRealtimeSync } from "@/hooks/useRealtimeSync";
+import { useQueryClient } from "@tanstack/react-query";
 
 export function OrdersPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const scope = useSalesScope();
+  const queryClient = useQueryClient();
+  
+  useRealtimeSync("orders", {
+    onDataChange: () => {
+      queryClient.invalidateQueries({ queryKey: ["orders"] });
+    }
+  });
   
   const [filterValues, setFilterValues] = useState<OrderFilterValues & { page: number }>({
     search: "",
