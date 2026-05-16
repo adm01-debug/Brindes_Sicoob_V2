@@ -1,10 +1,11 @@
-import { forwardRef, useCallback } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
-import { ArrowLeft } from "lucide-react";
+import { forwardRef } from "react";
+import { useLocation } from "react-router-dom";
+import { ArrowLeft, ChevronLeft } from "lucide-react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
+import { useSmartNavigation } from "@/hooks/useSmartNavigation";
 
 const routeLabels: Record<string, string> = {
   "/": "Início",
@@ -20,7 +21,6 @@ const routeLabels: Record<string, string> = {
   "/magic-up": "Magic Up",
   "/favoritos": "Favoritos",
   "/comparar": "Comparar",
-  
   "/configuracoes": "Configurações",
   "/admin": "Administração",
   "/seguranca": "Segurança",
@@ -29,72 +29,66 @@ const routeLabels: Record<string, string> = {
 
 interface BackButtonProps {
   className?: string;
-  fallbackPath?: string;
+  variant?: "ghost" | "outline" | "secondary" | "default";
+  size?: "default" | "sm" | "lg" | "icon";
+  showLabel?: boolean;
+  useChevron?: boolean;
 }
 
 export const BackButton = forwardRef<HTMLButtonElement, BackButtonProps>(
-  function BackButton({ className, fallbackPath }: BackButtonProps, ref) {
-    const navigate = useNavigate();
+  function BackButton({ 
+    className, 
+    variant = "ghost", 
+    size = "sm", 
+    showLabel = true,
+    useChevron = false
+  }: BackButtonProps, ref) {
+    const { goBack, previousItem } = useSmartNavigation();
     const location = useLocation();
-
-    const getParentPath = useCallback(() => {
-      const pathParts = location.pathname.split("/").filter(Boolean);
-      if (pathParts.length <= 1) return "/";
-
-      const lastPart = pathParts[pathParts.length - 1];
-      const isId =
-        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(lastPart) ||
-        /^\d+$/.test(lastPart);
-
-      if (isId && pathParts.length > 2) {
-        return "/" + pathParts.slice(0, -2).join("/");
-      }
-      return "/" + pathParts.slice(0, -1).join("/");
-    }, [location.pathname]);
 
     if (location.pathname === "/") return null;
 
-    const targetPath = fallbackPath || getParentPath();
-    const parentLabel = routeLabels[targetPath] || targetPath.split("/").pop() || "Início";
-
-    const handleBack = () => {
-      if (window.history.length > 2) {
-        navigate(-1);
-      } else {
-        navigate(targetPath);
-      }
-    };
-
+    const parentPath = previousItem?.pathname || "/";
+    const parentLabel = routeLabels[parentPath] || previousItem?.title || "Voltar";
     const ariaLabel = `Voltar para ${parentLabel}`;
+    const Icon = useChevron ? ChevronLeft : ArrowLeft;
 
     return (
       <Tooltip>
         <TooltipTrigger asChild>
           <motion.div
-            initial={{ opacity: 0, x: -8 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.2, ease: "easeOut" }}
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            whileTap={{ scale: 0.97 }}
+            transition={{ duration: 0.1 }}
           >
             <Button
               ref={ref}
-              variant="ghost"
-              size="sm"
-              onClick={handleBack}
+              variant={variant}
+              size={size}
+              onClick={goBack}
               aria-label={ariaLabel}
               className={cn(
-                "gap-1.5 text-muted-foreground hover:text-foreground -ml-2 h-8 px-2 group",
-                "focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+                "gap-1.5 transition-all group shrink-0",
+                variant === "ghost" && "text-muted-foreground hover:text-foreground hover:bg-muted/50",
                 className
               )}
             >
-              <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-0.5" />
-              <span className="text-sm hidden sm:inline">Voltar para {parentLabel}</span>
-              <span className="text-sm sm:hidden">Voltar</span>
+              <Icon className={cn(
+                "h-4 w-4 transition-transform",
+                !useChevron && "group-hover:-translate-x-0.5"
+              )} />
+              {showLabel && (
+                <>
+                  <span className="text-sm hidden sm:inline">{parentLabel === "Início" ? "Voltar ao Início" : `Voltar para ${parentLabel}`}</span>
+                  <span className="text-sm sm:hidden">Voltar</span>
+                </>
+              )}
             </Button>
           </motion.div>
         </TooltipTrigger>
-        <TooltipContent side="bottom" className="text-xs">
-          {ariaLabel}
+        <TooltipContent side="bottom" className="text-[10px] py-1 px-2 font-medium">
+          {ariaLabel} <kbd className="ml-1 opacity-60">Esc</kbd>
         </TooltipContent>
       </Tooltip>
     );
