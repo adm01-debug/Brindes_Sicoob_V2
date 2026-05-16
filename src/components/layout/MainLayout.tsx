@@ -57,10 +57,13 @@ export function MainLayout({ children }: MainLayoutProps) {
   const { pullDistance, isRefreshing } = usePullToRefresh(handleRefresh);
   const location = useLocation();
   const isHome = location.pathname === "/";
+  const scrollDirection = useScrollDirection(50);
+  const hideBreadcrumb = scrollDirection === "down" && window.scrollY > 200;
 
   useScrollLockFix();
   useGlobalShortcuts();
   useSwipeBack(!isHome); // Habilitar gesto de voltar em subpáginas
+
 
   useEffect(() => {
     diagnostics.log('event', 'MainLayout', 'MainLayout montado');
