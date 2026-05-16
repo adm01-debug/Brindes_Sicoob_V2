@@ -66,7 +66,9 @@ export function ProductDetailHero({
 }: ProductDetailHeroProps) {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const isInCompare = useComparisonStore(s => s.compareIds.includes(id));
   const [quoteVariantWizardOpen, setQuoteVariantWizardOpen] = useState(false);
+
 
 
   const minQuantity = product.minQuantity || 1;
