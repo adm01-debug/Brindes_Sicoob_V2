@@ -173,10 +173,13 @@ export async function invokeCrmDb<T>(query: CrmQuery): Promise<CrmResponse<T>> {
   };
 
   for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
-    const { data, error } = await supabase.functions.invoke("crm-db-bridge", {
-      body: query,
-      headers: { [REQUEST_ID_HEADER]: requestId },
-    });
+    const { data, error } = await crmBreaker.execute(() => 
+      supabase.functions.invoke("crm-db-bridge", {
+        body: query,
+        headers: { [REQUEST_ID_HEADER]: requestId },
+      })
+    );
+
 
     if (!error && !data?.error) {
       record(true, data);
