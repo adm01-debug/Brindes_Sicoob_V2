@@ -74,7 +74,7 @@ export default function PreflightPage() {
   );
 
   return (
-    <MainLayout>
+    <>
       <div className="max-w-4xl mx-auto space-y-6 animate-fade-in">
         <header className="flex items-center justify-between">
           <div>
@@ -122,6 +122,6 @@ export default function PreflightPage() {
           </p>
         )}
       </div>
-    </MainLayout>
+    </>
   );
 }

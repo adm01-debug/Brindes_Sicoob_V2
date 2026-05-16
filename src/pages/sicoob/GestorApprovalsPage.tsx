@@ -108,7 +108,7 @@ export default function GestorApprovalsPage() {
   };
 
   return (
-    <MainLayout>
+    <>
       <PageSEO title="Aprovações Pendentes" description="Gerencie pedidos que excederam o orçamento." path="/gestor/aprovacoes" noIndex />
       <div className="container mx-auto p-6 space-y-6 animate-fade-in">
         <div className="flex items-center gap-4">
@@ -216,6 +216,6 @@ export default function GestorApprovalsPage() {
           </CardContent>
         </Card>
       </div>
-    </MainLayout>
+    </>
   );
 }

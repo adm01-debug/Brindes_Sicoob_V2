@@ -14,7 +14,7 @@ export default function GestorCompras() {
   const { profile } = useAuth();
 
   return (
-    <MainLayout>
+    <>
       <PageSEO title="Gestão de Compras - Singular" description="Aprovação e gestão de pedidos dos PACs." path="/gestor/compras" />
       
       <div className="space-y-6">
@@ -105,6 +105,6 @@ export default function GestorCompras() {
           </div>
         </div>
       </div>
-    </MainLayout>
+    </>
   );
 }

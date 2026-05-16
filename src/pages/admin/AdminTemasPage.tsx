@@ -108,7 +108,7 @@ export default function AdminTemasPage() {
   const currentMode = config.mode === 'auto' ? 'system' : config.mode;
 
   return (
-    <MainLayout>
+    <>
       <PageSEO
         title="Temas"
         description="Personalize a aparência visual da plataforma."
@@ -247,6 +247,6 @@ export default function AdminTemasPage() {
           />
         </motion.div>
       </div>
-    </MainLayout>
+    </>
   );
 }

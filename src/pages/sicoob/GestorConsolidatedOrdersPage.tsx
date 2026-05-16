@@ -21,7 +21,7 @@ export default function GestorConsolidatedOrdersPage() {
   });
 
   return (
-    <MainLayout>
+    <>
       <div className="container mx-auto p-6 space-y-6 animate-fade-in">
         <div className="flex justify-between items-center">
           <div>
@@ -105,6 +105,6 @@ export default function GestorConsolidatedOrdersPage() {
           </CardContent>
         </Card>
       </div>
-    </MainLayout>
+    </>
   );
 }

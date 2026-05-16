@@ -98,7 +98,7 @@ export default function ReleaseEvidencesPage() {
   };
 
   return (
-    <MainLayout>
+    <>
       <PageSEO title="Evidências de Release - Sicoob QA" description="Gestão de evidências para releases do projeto Sicoob." path="/admin/qa/release-evidences" />
       
       <div className="space-y-6">
@@ -206,6 +206,6 @@ export default function ReleaseEvidencesPage() {
           </Card>
         </div>
       </div>
-    </MainLayout>
+    </>
   );
 }

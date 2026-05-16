@@ -61,7 +61,7 @@ export function OrdersPage() {
   };
 
   return (
-    <MainLayout>
+    <>
       <PageSEO title="Meus Pedidos" description="Acompanhe e gerencie todos os seus pedidos em um só lugar." path="/pedidos" />
       
       <div className="w-full max-w-[1920px] mx-auto px-3 sm:px-4 lg:px-6 xl:px-8 py-3 sm:py-4 space-y-6 pb-24 md:pb-6 animate-fade-in">
@@ -149,7 +149,7 @@ export function OrdersPage() {
           </div>
         )}
       </div>
-    </MainLayout>
+    </>
   );
 }
 

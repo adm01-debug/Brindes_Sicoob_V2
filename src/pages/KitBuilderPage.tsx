@@ -307,7 +307,7 @@ export default function KitBuilderPage() {
   const pricing = calculateTotalKitPrice(kitState.box, kitState.items, kitState.personalization, kitQuantity);
 
   return (
-    <MainLayout>
+    <>
       <KitOnboardingTour />
       <KitShortcutsDialog />
 
@@ -626,6 +626,6 @@ export default function KitBuilderPage() {
         </div>
         <div className="h-20 lg:hidden" aria-hidden />
       </div>
-    </MainLayout>
+    </>
   );
 }

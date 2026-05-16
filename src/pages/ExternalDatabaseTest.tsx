@@ -85,7 +85,7 @@ export default function ExternalDatabaseTest() {
   };
 
   return (
-    <MainLayout>
+    <>
       <PageSEO title="Teste de Banco Externo" description="Teste de conexão com banco de dados externo." path="/external-db-test" noIndex />
       <div className="container mx-auto py-6 space-y-6">
         <div className="flex items-center justify-between">
@@ -221,6 +221,6 @@ export default function ExternalDatabaseTest() {
           </TabsContent>
         </Tabs>
       </div>
-    </MainLayout>
+    </>
   );
 }

@@ -105,16 +105,16 @@ export default function ComparePage() {
   // Empty state with smart suggestions
   if (compareCount < 2) {
     return (
-      <MainLayout>
+      <>
         <PageSEO title="Comparar Produtos" description="Compare brindes lado a lado." path="/comparar"
           jsonLd={{ "@context": "https://schema.org", "@type": "WebPage", "name": "Comparar Produtos", "url": "https://criar-together-now.lovable.app/comparar" }} />
         <CompareEmptyStateSmart />
-      </MainLayout>
+      </>
     );
   }
 
   return (
-    <MainLayout>
+    <>
       {/* ARIA-live region for accessibility announcements */}
       <div aria-live="polite" aria-atomic="true" className="sr-only">{ariaMessage}</div>
 
@@ -283,6 +283,6 @@ export default function ComparePage() {
           <SimilarProductsRail products={products} formatCurrency={formatCurrency} />
         </div>
       </div>
-    </MainLayout>
+    </>
   );
 }

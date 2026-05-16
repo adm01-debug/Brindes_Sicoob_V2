@@ -55,7 +55,7 @@ export default function SicoobKpiPage() {
   });
 
   return (
-    <MainLayout>
+    <>
       <div className="container mx-auto p-4 sm:p-6 space-y-6 animate-fade-in">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
@@ -203,6 +203,6 @@ export default function SicoobKpiPage() {
           </Card>
         </div>
       </div>
-    </MainLayout>
+    </>
   );
 }

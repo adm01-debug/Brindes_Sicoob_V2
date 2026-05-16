@@ -80,7 +80,7 @@ export default function RLSAuditPage() {
   const deniedCount = logs?.filter((l: any) => !l.is_allowed).length || 0;
 
   return (
-    <MainLayout>
+    <>
       <PageSEO title="Auditoria de RLS - Sicoob" description="Monitoramento de segurança e acesso." path="/admin/seguranca/rls" />
       
       <div className="space-y-6">
@@ -223,6 +223,6 @@ export default function RLSAuditPage() {
           </CardContent>
         </Card>
       </div>
-    </MainLayout>
+    </>
   );
 }

@@ -165,7 +165,7 @@ export default function GestorApprovalsPage() {
   });
 
   return (
-    <MainLayout>
+    <>
       <PageSEO title="Fila de Aprovações" description="Gerencie as aprovações de alçada da sua Singular." path="/gestor/aprovacoes" />
       
       <div className="space-y-6">
@@ -365,6 +365,6 @@ export default function GestorApprovalsPage() {
           </TabsContent>
         </Tabs>
       </div>
-    </MainLayout>
+    </>
   );
 }

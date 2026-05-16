@@ -64,7 +64,7 @@ export default function CollectionsPage() {
   } = state;
 
   return (
-    <MainLayout>
+    <>
       <PageSEO title="Coleções" description="Organize seus produtos favoritos em coleções personalizadas." path="/colecoes" />
       <div className="w-full max-w-[1920px] mx-auto px-3 sm:px-4 lg:px-6 xl:px-8 py-3 sm:py-4 space-y-3 sm:space-y-4 pb-24 md:pb-6 animate-fade-in">
         {/* KPI Stat Cards */}
@@ -350,6 +350,6 @@ export default function CollectionsPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </MainLayout>
+    </>
   );
 }

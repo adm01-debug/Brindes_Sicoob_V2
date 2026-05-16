@@ -194,7 +194,7 @@ export default function AdminAuditPage() {
   ];
 
   return (
-    <MainLayout>
+    <>
       <PageSEO title="Trilha de Auditoria" description="Revise as ações administrativas do sistema." path="/admin/auditoria" noIndex />
       <div className="w-full max-w-[1920px] mx-auto px-4 py-6 space-y-6">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -312,6 +312,6 @@ export default function AdminAuditPage() {
           onSortChange={setSort}
         />
       </div>
-    </MainLayout>
+    </>
   );
 }

@@ -33,7 +33,7 @@ export default function OrderAuditPage() {
   const { auditEvents, isLoading } = useOrderAudit(id, filters);
 
   return (
-    <MainLayout>
+    <>
       <PageSEO title={`Auditoria Pedido #${orderData?.order?.order_number || id}`} noIndex />
       
       <div className="space-y-6">
@@ -120,6 +120,6 @@ export default function OrderAuditPage() {
           )}
         </div>
       </div>
-    </MainLayout>
+    </>
   );
 }

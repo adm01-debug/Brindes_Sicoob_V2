@@ -30,7 +30,7 @@ export default function SellerPanelPage() {
   ];
 
   return (
-    <MainLayout>
+    <>
       <PageSEO title="Painel do Vendedor Sicoob" description="Gestão de vendas e pedidos para vendedores Sicoob." path="/sicoob/vendas" noIndex />
       
       <div className="space-y-6">
@@ -109,6 +109,6 @@ export default function SellerPanelPage() {
           </Card>
         </div>
       </div>
-    </MainLayout>
+    </>
   );
 }

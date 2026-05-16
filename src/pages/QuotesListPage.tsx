@@ -183,7 +183,7 @@ export function QuotesListPage() {
 
   if (isLoading) {
     return (
-      <MainLayout>
+      <>
         <div className="w-full max-w-[1920px] mx-auto px-3 sm:px-4 lg:px-6 xl:px-8 py-3 sm:py-4 space-y-4 pb-24 md:pb-6 animate-fade-in">
           {/* Breadcrumb global vem do MainLayout (sticky) — não duplicar aqui. */}
           <div className="flex items-center justify-between gap-3">
@@ -204,7 +204,7 @@ export function QuotesListPage() {
             ))}
           </div>
         </div>
-      </MainLayout>
+      </>
     );
   }
 
@@ -216,7 +216,7 @@ export function QuotesListPage() {
   };
 
   return (
-    <MainLayout>
+    <>
       <PageSEO title="Orçamentos" description="Gerencie seus orçamentos. Crie, edite e acompanhe propostas comerciais." path="/orcamentos" />
       <TooltipProvider>
         <div className="space-y-5">
@@ -494,7 +494,7 @@ export function QuotesListPage() {
           </AlertDialogContent>
         </AlertDialog>
       </TooltipProvider>
-    </MainLayout>
+    </>
   );
 }
 

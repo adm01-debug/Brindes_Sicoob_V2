@@ -61,7 +61,7 @@ export default function ProductMatchPage() {
   }, []);
 
   return (
-    <MainLayout>
+    <>
       <PageSEO
         title="Match de Produtos"
         description="Encontre produtos idênticos, semelhantes e complementares para venda cruzada."
@@ -207,6 +207,6 @@ export default function ProductMatchPage() {
           </div>
         </div>
       </div>
-    </MainLayout>
+    </>
   );
 }

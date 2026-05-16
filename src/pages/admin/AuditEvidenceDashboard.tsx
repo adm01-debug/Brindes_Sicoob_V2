@@ -82,7 +82,7 @@ export default function AuditEvidenceDashboard() {
   );
 
   return (
-    <MainLayout>
+    <>
       <PageSEO title="Dashboard de Evidências" description="Rastreabilidade total para auditoria." path="/admin/auditoria/evidencias" noIndex />
       
       <div className="space-y-6 p-6">
@@ -241,7 +241,7 @@ export default function AuditEvidenceDashboard() {
           </TabsContent>
         </Tabs>
       </div>
-    </MainLayout>
+    </>
   );
 }
 

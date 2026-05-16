@@ -130,7 +130,7 @@ export default function OwnershipAuditAdminPage() {
   }
 
   return (
-    <MainLayout>
+    <>
       <PageSEO title="Auditoria de Propriedade" description="Auditoria periódica de registros órfãos e sem dono." path="/admin/auditoria-propriedade" />
       <div className="container mx-auto px-4 py-6 space-y-6">
         <header className="flex items-start justify-between gap-4">
@@ -393,6 +393,6 @@ export default function OwnershipAuditAdminPage() {
           </CardContent>
         </Card>
       </div>
-    </MainLayout>
+    </>
   );
 }

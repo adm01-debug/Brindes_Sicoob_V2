@@ -26,7 +26,7 @@ export default function GestorOrcamentos() {
   );
 
   return (
-    <MainLayout>
+    <>
       <PageSEO title="Gestão de Orçamentos - Singular" description="Aprovação e consolidação de solicitações dos PACs." path="/gestor/orcamentos" />
       
       <div className="space-y-6">
@@ -92,6 +92,6 @@ export default function GestorOrcamentos() {
           </TabsContent>
         </Tabs>
       </div>
-    </MainLayout>
+    </>
   );
 }

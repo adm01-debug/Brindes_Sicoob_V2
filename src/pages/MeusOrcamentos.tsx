@@ -14,7 +14,7 @@ export default function MeusOrcamentos() {
   const navigate = useNavigate();
 
   return (
-    <MainLayout>
+    <>
       <PageSEO title="Meus Orçamentos" description="Gerencie suas solicitações de brinde." path="/meus-orcamentos" />
       
       <div className="space-y-6">
@@ -40,7 +40,7 @@ export default function MeusOrcamentos() {
           <QuotesListPage />
         </div>
       </div>
-    </MainLayout>
+    </>
   );
 }
 

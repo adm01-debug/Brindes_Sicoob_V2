@@ -44,7 +44,7 @@ export default function GestorAuditPage() {
   );
 
   return (
-    <MainLayout>
+    <>
       <PageSEO title="Log de Auditoria" description="Histórico de ações realizadas por gestores." path="/gestor/auditoria" noIndex />
       <div className="container mx-auto p-6 space-y-6 animate-fade-in">
         <div className="flex justify-between items-center">
@@ -137,6 +137,6 @@ export default function GestorAuditPage() {
           </CardContent>
         </Card>
       </div>
-    </MainLayout>
+    </>
   );
 }

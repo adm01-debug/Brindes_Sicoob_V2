@@ -17,7 +17,7 @@ export default function NotificationsPage() {
   const navigate = useNavigate();
 
   return (
-    <MainLayout>
+    <>
       <PageSEO title="Notificações" description="Suas notificações de pedidos e orçamentos" />
       
       <div className="max-w-4xl mx-auto space-y-6">
@@ -94,6 +94,6 @@ export default function NotificationsPage() {
           )}
         </div>
       </div>
-    </MainLayout>
+    </>
   );
 }

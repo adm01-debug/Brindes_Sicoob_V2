@@ -27,7 +27,7 @@ export default function QuoteApprovalHistoryPage() {
   const { requests, isLoading } = useApprovalRequests();
 
   return (
-    <MainLayout>
+    <>
       <PageSEO 
         title="Histórico de Aprovações" 
         description="Veja o status e os motivos das decisões de alçada sobre seus pedidos." 
@@ -126,6 +126,6 @@ export default function QuoteApprovalHistoryPage() {
           </CardContent>
         </Card>
       </div>
-    </MainLayout>
+    </>
   );
 }

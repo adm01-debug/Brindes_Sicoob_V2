@@ -14,7 +14,7 @@ export default function SellerDashboardPage() {
   const goalProgress = stats ? (stats.monthlySales / stats.salesGoal) * 100 : 0;
 
   return (
-    <MainLayout>
+    <>
       <div className="container mx-auto p-6 space-y-8 animate-fade-in">
         <div className="flex justify-between items-center">
           <div>
@@ -151,6 +151,6 @@ export default function SellerDashboardPage() {
           </Card>
         </div>
       </div>
-    </MainLayout>
+    </>
   );
 }

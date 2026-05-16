@@ -230,7 +230,7 @@ export function CustomizableDashboard() {
   const fullWidthIds = new Set(['quick-actions', 'upcoming-dates', 'recent-kits', 'my-quotes', 'my-orders', 'my-discounts']);
 
   return (
-    <MainLayout>
+    <>
       <PageSEO title="Dashboard" description="Painel personalizado com métricas, ações rápidas e widgets." path="/dashboard" />
       <div className="w-full max-w-[1920px] mx-auto px-3 sm:px-4 lg:px-6 xl:px-8 py-3 sm:py-4 space-y-3 sm:space-y-4 pb-24 md:pb-6 animate-fade-in">
         <div className="flex items-center justify-between flex-wrap gap-2">
@@ -315,7 +315,7 @@ export function CustomizableDashboard() {
           </SortableContext>
         </DndContext>
       </div>
-    </MainLayout>
+    </>
   );
 }
 

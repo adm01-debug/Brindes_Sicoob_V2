@@ -188,7 +188,7 @@ export default function SellerDiscountLimitsAdminPage() {
   }, [impact]);
 
   return (
-    <MainLayout>
+    <>
       <PageSEO
         title="Limites de Desconto — Admin"
         description="Configure os limites máximos de desconto por vendedor e visualize o impacto nas solicitações de aprovação."
@@ -404,7 +404,7 @@ export default function SellerDiscountLimitsAdminPage() {
           </Card>
         </div>
       </div>
-    </MainLayout>
+    </>
   );
 }
 

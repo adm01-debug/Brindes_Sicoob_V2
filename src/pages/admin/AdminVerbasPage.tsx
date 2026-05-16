@@ -190,7 +190,7 @@ export default function AdminVerbasPage() {
 
 
   return (
-    <MainLayout>
+    <>
       <PageSEO title="Gestão de Verbas" description="Administre as verbas dos PAs." path="/admin/verbas" noIndex />
       <div className="w-full max-w-[1920px] mx-auto px-4 py-6 space-y-6">
         <div className="flex items-center gap-3">
@@ -468,7 +468,7 @@ export default function AdminVerbasPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </MainLayout>
+    </>
   );
 }
 

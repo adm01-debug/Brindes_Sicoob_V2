@@ -134,7 +134,7 @@ export default function QuotesKanbanPage() {
 
   if (isLoading) {
     return (
-      <MainLayout>
+      <>
         <div className="w-full max-w-[1920px] mx-auto px-3 sm:px-4 lg:px-6 xl:px-8 py-3 sm:py-4 space-y-3 sm:space-y-4 pb-24 md:pb-6 animate-fade-in">
           <Skeleton className="h-10 w-64" />
           <div className="flex gap-4 overflow-x-auto">
@@ -143,12 +143,12 @@ export default function QuotesKanbanPage() {
             ))}
           </div>
         </div>
-      </MainLayout>
+      </>
     );
   }
 
   return (
-    <MainLayout>
+    <>
       <PageSEO title="Kanban de Orçamentos" description="Visualize e gerencie orçamentos no formato Kanban." path="/orcamentos/kanban" noIndex />
       <div className="space-y-6">
         {/* Header */}
@@ -368,6 +368,6 @@ export default function QuotesKanbanPage() {
           </div>
         </div>
       </div>
-    </MainLayout>
+    </>
   );
 }

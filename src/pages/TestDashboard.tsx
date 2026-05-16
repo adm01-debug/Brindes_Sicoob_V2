@@ -34,7 +34,7 @@ export default function TestDashboard() {
   };
 
   return (
-    <MainLayout>
+    <>
       <PageSEO title="Test Health Dashboard" noIndex />
       
       <div className="space-y-6">
@@ -182,6 +182,6 @@ export default function TestDashboard() {
           </Card>
         </div>
       </div>
-    </MainLayout>
+    </>
   );
 }

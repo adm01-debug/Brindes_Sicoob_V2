@@ -38,7 +38,7 @@ export default function QuoteTemplatesPage() {
   };
 
   return (
-    <MainLayout>
+    <>
       <PageSEO title="Modelos de Orçamento" description="Gerencie modelos para criar orçamentos rapidamente." path="/orcamentos/modelos" noIndex />
       <div className="w-full max-w-[1920px] mx-auto px-3 sm:px-4 lg:px-6 xl:px-8 py-3 sm:py-4 space-y-3 sm:space-y-4 pb-24 md:pb-6 animate-fade-in">
         <div className="flex items-center gap-4">
@@ -99,6 +99,6 @@ export default function QuoteTemplatesPage() {
           />
         )}
       </div>
-    </MainLayout>
+    </>
   );
 }

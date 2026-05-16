@@ -102,7 +102,7 @@ export default function RlsDenialsAdminPage() {
   const alertActive = stats.last24h >= ALERT_THRESHOLD_24H;
 
   return (
-    <MainLayout>
+    <>
       <PageSEO
         title="Tentativas negadas (RLS) — Admin"
         description="Auditoria de tentativas de acesso bloqueadas pelas políticas de Row-Level Security."
@@ -341,6 +341,6 @@ export default function RlsDenialsAdminPage() {
           </CardContent>
         </Card>
       </div>
-    </MainLayout>
+    </>
   );
 }

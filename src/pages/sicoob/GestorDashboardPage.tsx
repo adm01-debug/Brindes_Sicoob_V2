@@ -95,7 +95,7 @@ export default function GestorDashboardPage() {
   const budgetProgress = stats ? (stats.totalSpentMonth / stats.monthlyBudget) * 100 : 0;
 
   return (
-    <MainLayout>
+    <>
       <div className="container mx-auto p-6 space-y-8 animate-fade-in">
         <div className="flex justify-between items-center">
           <div>
@@ -233,6 +233,6 @@ export default function GestorDashboardPage() {
           </Card>
         </div>
       </div>
-    </MainLayout>
+    </>
   );
 }

@@ -52,7 +52,7 @@ export default function ClientsPage() {
   ];
 
   return (
-    <MainLayout>
+    <>
       <PageSEO
         title="Gestão de Clientes | 10/10 CRM"
         description="Gestão de clientes com visão 360° de pedidos, ticket médio e LTV."
@@ -193,6 +193,6 @@ export default function ClientsPage() {
           )}
         </div>
       </div>
-    </MainLayout>
+    </>
   );
 }

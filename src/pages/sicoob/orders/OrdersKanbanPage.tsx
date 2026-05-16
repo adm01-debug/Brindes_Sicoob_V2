@@ -370,7 +370,7 @@ export default function OrdersKanbanPage() {
   };
 
   return (
-    <MainLayout>
+    <>
       <PageSEO
         title="Kanban de Pedidos | Sicoob"
         description="Gestão de alto desempenho para o fluxo de pedidos Sicoob."
@@ -522,6 +522,6 @@ export default function OrdersKanbanPage() {
           </DndContext>
         </div>
       </TooltipProvider>
-    </MainLayout>
+    </>
   );
 }

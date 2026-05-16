@@ -160,7 +160,7 @@ export default function AdminSegurancaAcessoPage() {
   };
 
   return (
-    <MainLayout>
+    <>
       <PageSEO
         title="Segurança e Acesso"
         description="Painel admin para gestão de bot detection, rate limits e allowlist/blocklist de IPs."
@@ -452,7 +452,7 @@ export default function AdminSegurancaAcessoPage() {
           </TabsContent>
         </Tabs>
       </div>
-    </MainLayout>
+    </>
   );
 }
 

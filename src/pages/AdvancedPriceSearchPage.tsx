@@ -45,7 +45,7 @@ export default function AdvancedPriceSearchPage() {
   } = useAdvancedPriceSearch();
 
   return (
-    <MainLayout>
+    <>
       <PageSEO title="Busca Avançada de Preços" description="Pesquise preços de brindes com filtros avançados." path="/busca-precos" noIndex />
       <div className="container py-6 space-y-6">
         <div className="flex items-center gap-3">
@@ -189,6 +189,6 @@ export default function AdvancedPriceSearchPage() {
           </div>
         </div>
       </div>
-    </MainLayout>
+    </>
   );
 }

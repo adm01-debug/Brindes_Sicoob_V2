@@ -7,7 +7,7 @@ import { FolderTree } from "lucide-react";
 
 export default function AdminCategoriesPage() {
   return (
-    <MainLayout>
+    <>
       <PageSEO title="Gerenciar Categorias" description="Administre as categorias de produtos do sistema." path="/admin/categories" noIndex />
       <div className="w-full max-w-[1920px] mx-auto px-4 py-6 space-y-6">
         <div className="flex items-center gap-3">
@@ -22,6 +22,6 @@ export default function AdminCategoriesPage() {
         
         <CategoriesManager />
       </div>
-    </MainLayout>
+    </>
   );
 }

@@ -73,7 +73,7 @@ export default function QARunDetailPage() {
     }
   });
 
-  if (loadingRun) return <MainLayout><div className="p-8 text-center">Carregando execução...</div></MainLayout>;
+  if (loadingRun) return <><div className="p-8 text-center">Carregando execução...</div></>;
 
   const passCount = steps?.filter(s => s.status === 'pass').length || 0;
   const failCount = steps?.filter(s => s.status === 'fail').length || 0;
@@ -81,7 +81,7 @@ export default function QARunDetailPage() {
   const progress = total > 0 ? (passCount / total) * 100 : 0;
 
   return (
-    <MainLayout>
+    <>
       <PageSEO title={`QA Run #${id?.slice(0,8)} - Sicoob`} description="Resumo da execução de testes." path={`/admin/qa/run/${id}`} />
       
       <div className="space-y-6">
@@ -167,6 +167,6 @@ export default function QARunDetailPage() {
           </Card>
         </div>
       </div>
-    </MainLayout>
+    </>
   );
 }

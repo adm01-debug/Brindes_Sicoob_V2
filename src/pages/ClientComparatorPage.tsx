@@ -39,7 +39,7 @@ export default function ClientComparatorPage() {
   };
 
   return (
-    <MainLayout>
+    <>
       <PageSEO
         title="Comparador de clientes · BI"
         description="Compare lado a lado até 3 clientes da carteira: Health Score, LTV, ticket, sazonalidade."
@@ -85,6 +85,6 @@ export default function ClientComparatorPage() {
 
         <ClientComparator clientIds={clientIds} onRemove={removeClient} />
       </div>
-    </MainLayout>
+    </>
   );
 }

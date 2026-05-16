@@ -24,7 +24,7 @@ export function QuotesDashboardPage() {
 
   if (s.isLoading) {
     return (
-      <MainLayout>
+      <>
         <div className="w-full max-w-[1920px] mx-auto px-3 sm:px-4 lg:px-6 xl:px-8 py-3 sm:py-4 space-y-3 sm:space-y-4 pb-24 md:pb-6 animate-fade-in">
           <Skeleton className="h-10 w-64" />
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -34,12 +34,12 @@ export function QuotesDashboardPage() {
             <Skeleton className="h-80" /><Skeleton className="h-80" />
           </div>
         </div>
-      </MainLayout>
+      </>
     );
   }
 
   return (
-    <MainLayout>
+    <>
       <PageSEO title="Dashboard de Orçamentos" description="Acompanhe métricas e indicadores dos seus orçamentos." path="/orcamentos/dashboard" noIndex />
       <div className="space-y-6">
         {/* Header */}
@@ -196,7 +196,7 @@ export function QuotesDashboardPage() {
           </CardContent>
         </Card>
       </div>
-    </MainLayout>
+    </>
   );
 }
 
