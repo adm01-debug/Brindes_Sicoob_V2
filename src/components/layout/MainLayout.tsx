@@ -150,9 +150,11 @@ export function MainLayout({ children }: MainLayoutProps) {
             className={cn(
               "sticky top-[var(--header-h,56px)] z-30 print:hidden",
               "bg-background/95 backdrop-blur-md supports-[backdrop-filter]:bg-background/80",
-              "border-b border-border/40 transition-all duration-200",
+              "border-b border-border/40 transition-all duration-300",
               (isHome || location.pathname === "/dashboard") && "opacity-0 pointer-events-none h-0 border-none",
+              hideBreadcrumb && !isHome && "translate-y-[-100%] opacity-0 pointer-events-none",
             )}
+
             data-testid="breadcrumb-bar"
           >
             <div className="max-w-[1920px] mx-auto px-3 sm:px-4 lg:px-6 py-2">
