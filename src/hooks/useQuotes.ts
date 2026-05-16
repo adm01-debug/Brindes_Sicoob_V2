@@ -317,7 +317,7 @@ export function useQuotes() {
 
   useRealtimeSync("quotes", {
     onDataChange: () => {
-      logger.info("Quotes table changed, refreshing...");
+      console.info("Quotes table changed, refreshing...");
       fetchQuotes();
     }
   });

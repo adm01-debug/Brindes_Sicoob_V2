@@ -36,7 +36,7 @@ class DiagnosticsManager {
     if (typeof window !== 'undefined') {
       // @ts-ignore
       window.__DIAGNOSTICS__ = this;
-      logger.log('🔍 Sicoob Diagnostic Engine v2 initialized. [OND-018-HEALTH]');
+      console.log('🔍 Sicoob Diagnostic Engine v2 initialized. [OND-018-HEALTH]');
     }
   }
 
@@ -58,7 +58,7 @@ class DiagnosticsManager {
     // Output to console in development
     if (import.meta.env.DEV) {
       const color = this.getTypeColor(type);
-      logger.log(
+      console.log(
         `%c[${source}] %c${message} ${duration ? `(${duration.toFixed(0)}ms)` : ''}`, 
         `color: #00334e; font-weight: bold;`, 
         `color: ${color}; font-weight: 500;`, 

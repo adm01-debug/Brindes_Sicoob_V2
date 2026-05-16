@@ -85,7 +85,7 @@ export function summarizeSession(session: Session | null | undefined) {
 
 export function authDebug(scope: string, message: string, data?: unknown): void {
   const ts = new Date().toISOString();
-  logger.log(`${PREFIX} [${ts}] [${scope}] ${message}`, data ?? "");
+  console.log(`${PREFIX} [${ts}] [${scope}] ${message}`, data ?? "");
   
   if (typeof window !== "undefined") {
     try {

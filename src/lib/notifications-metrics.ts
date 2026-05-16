@@ -203,7 +203,7 @@ const throttleByEvent = new Map<string, ThrottleEntry>();
 
 function emit(event: string, payload: Record<string, unknown>) {
   // eslint-disable-next-line no-console
-  logger.log(
+  console.log(
     `%c[notifications-metrics:${event}]`,
     "color:#0891b2;font-weight:600",
     payload

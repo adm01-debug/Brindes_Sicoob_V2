@@ -110,7 +110,7 @@ export const ProductCardImage = memo(function ProductCardImage({
             onImageLoad();
             // Ref: OND-014-IMG - Auditoria visual de carregamento
             if (window.location.search.includes('debug-img')) {
-              logger.error(`[IMG_SUCCESS] ${product.name} loaded from ${cardImageUrl}`);
+              console.error(`[IMG_SUCCESS] ${product.name} loaded from ${cardImageUrl}`);
             }
           }}
           onError={(e) => {
