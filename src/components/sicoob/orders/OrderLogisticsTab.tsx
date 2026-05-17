@@ -1,12 +1,13 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Truck, Calendar, MapPin, Package, Camera, Loader2 } from "lucide-react";
+import { Truck, Calendar, MapPin, Package, Camera, Loader2, Info } from "lucide-react";
 import { useOrderLogistics, useOrderInvoices } from "@/hooks/useOrderExtensions";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
+import { useUpdateSicoobOrderStatus } from "@/hooks/sicoob/useSicoobOrder";
 
 interface OrderLogisticsTabProps {
   orderId: string;
@@ -15,16 +16,29 @@ interface OrderLogisticsTabProps {
 export function OrderLogisticsTab({ orderId }: OrderLogisticsTabProps) {
   const { logistics, updateLogistics, isLoading } = useOrderLogistics(orderId);
   const { uploadFile } = useOrderInvoices(orderId);
+  const updateStatus = useUpdateSicoobOrderStatus();
   const [trackingCode, setTrackingCode] = useState("");
   const [carrier, setCarrier] = useState("");
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleUpdateTracking = () => {
-    updateLogistics.mutate({
+  useEffect(() => {
+    if (logistics?.tracking_code) setTrackingCode(logistics.tracking_code);
+    if (logistics?.carrier) setCarrier(logistics.carrier);
+  }, [logistics]);
+
+  const handleUpdateTracking = async () => {
+    await updateLogistics.mutateAsync({
       tracking_code: trackingCode,
       carrier: carrier,
       status: 'in_transit'
+    });
+
+    // Ao atualizar rastreio, mover pedido para status logística se ainda não estiver
+    updateStatus.mutate({ 
+      orderId, 
+      status: 'logistic',
+      observations: `Rastreio atualizado: ${carrier} - ${trackingCode}` 
     });
   };
 
