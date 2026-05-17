@@ -15,3 +15,5 @@ export {
   ActionResultAnnouncer,
   ListUpdateAnnouncer,
 } from "./AriaLive";
+export { RouteAnnouncer } from "./RouteAnnouncer";
+
