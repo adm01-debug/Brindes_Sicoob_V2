@@ -11,6 +11,7 @@ export const adminRoutes = [
   defineRoute({ path: "/admin/cadastros", component: lazyWithRetry(() => import("@/pages/admin/AdminCadastrosPage")) }),
   defineRoute({ path: "/admin/cadastros/produto/:id", component: lazyWithRetry(() => import("@/pages/admin/AdminProductFormPage")) }),
   defineRoute({ path: "/admin/categories", component: lazyWithRetry(() => import("@/pages/admin/AdminCategoriesPage")) }),
+  defineRoute({ path: "/admin/centrais", component: lazyWithRetry(() => import("@/pages/admin/AdminCentraisPage")) }),
   defineRoute({ path: "/admin/singulares", component: lazyWithRetry(() => import("@/pages/admin/AdminSingularesPage")) }),
   defineRoute({ path: "/admin/pas", component: lazyWithRetry(() => import("@/pages/admin/AdminPAsPage")) }),
   defineRoute({ path: "/admin/cooperativas", component: lazyWithRetry(() => import("@/pages/admin/AdminCooperativasPage")) }),
