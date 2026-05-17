@@ -4,9 +4,10 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Package, Layers, ArrowRight, CheckCircle2, AlertCircle } from "lucide-react";
+import { Package, Layers, ArrowRight, CheckCircle2, AlertCircle, Globe } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { formatCurrency } from "@/utils/formatters";
+import { LogisticsCommandCenter } from "@/components/sicoob/orders/LogisticsCommandCenter";
 
 export default function GestorConsolidatedOrdersPage() {
   const { data: consolidations } = useQuery({
@@ -104,6 +105,49 @@ export default function GestorConsolidatedOrdersPage() {
             </Table>
           </CardContent>
         </Card>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <LogisticsCommandCenter 
+            orderId="LOT-001" 
+            trackingCode="SCB-7721-BR" 
+            status="transit" 
+          />
+          <Card className="border-[1.5px] bg-slate-900 text-white overflow-hidden relative">
+            <div className="absolute inset-0 bg-gradient-to-br from-sicoob-green/20 to-transparent pointer-events-none" />
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-sm font-bold">
+                <Globe className="h-4 w-4 text-sicoob-green" />
+                Resumo de Malha Logística
+              </CardTitle>
+              <CardDescription className="text-slate-400 text-[10px]">Distribuição geográfica de entregas em curso</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <div className="flex justify-between text-xs">
+                  <span className="text-slate-400">Região Sul (SC/RS)</span>
+                  <span className="font-bold text-sicoob-green">R$ 124.500,00</span>
+                </div>
+                <div className="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden">
+                  <div className="h-full bg-sicoob-green w-[65%]" />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <div className="flex justify-between text-xs">
+                  <span className="text-slate-400">Região Sudeste (RJ/SP)</span>
+                  <span className="font-bold text-blue-400">R$ 82.100,00</span>
+                </div>
+                <div className="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden">
+                  <div className="h-full bg-blue-400 w-[42%]" />
+                </div>
+              </div>
+              <div className="pt-4 border-t border-slate-800">
+                <p className="text-[10px] text-slate-500 italic">
+                  * Consolidação de pedidos reduz o custo de frete em média <strong>18%</strong> para a Singular.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </>
   );

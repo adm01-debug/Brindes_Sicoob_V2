@@ -18,14 +18,19 @@ import { formatCurrency } from "@/utils/formatters";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { SicoobStatusBadge } from "@/components/sicoob/SicoobStatusBadge";
+import { OrderBudgetIntelligence } from "@/components/sicoob/orders/OrderBudgetIntelligence";
 import { usePaDashboardStats } from "@/hooks/sicoob/usePaDashboardStats";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function PADashboardPage() {
+  const { profile } = useAuth();
   const { data: stats, isLoading } = usePaDashboardStats();
 
   const budgetUsed = stats && stats.monthlyLimit > 0 
     ? ((stats.monthlyLimit - stats.availableBudget) / stats.monthlyLimit) * 100 
     : 0;
+
+  const paName = profile?.full_name?.split(' - ')[1] || "Minha Agência";
 
   return (
     <>
@@ -156,34 +161,37 @@ export default function PADashboardPage() {
             </CardContent>
           </Card>
 
-          <Card className="border-[1.5px] h-full">
-            <CardHeader>
-              <CardTitle>Suporte & Dúvidas</CardTitle>
-              <CardDescription>Precisa de ajuda com seu pedido ou verba?</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="p-4 rounded-xl bg-sicoob-green/5 border border-sicoob-green/10">
-                <h4 className="font-bold text-sm text-sicoob-green-dark mb-1">Dica de Verba</h4>
-                <p className="text-xs text-sicoob-green-dark/70 leading-relaxed">
-                  Pedidos que excedem o saldo disponível são automaticamente encaminhados para aprovação extra da Singular.
-                </p>
-              </div>
-              <Button variant="outline" className="w-full justify-start gap-3 h-12">
-                <div className="w-6 h-6 rounded-full bg-sicoob-green/10 flex items-center justify-center">
-                  <TrendingUp className="h-3 w-3 text-sicoob-green" />
-                </div>
-                <span className="text-sm font-medium">Solicitar Aumento de Limite</span>
-              </Button>
-              <Button variant="outline" className="w-full justify-start gap-3 h-12" asChild>
-                <Link to="/relatorios/sicoob">
-                  <div className="w-6 h-6 rounded-full bg-status-transit/10 flex items-center justify-center">
-                    <Search className="h-3 w-3 text-status-transit" />
+          <div className="space-y-6">
+            <OrderBudgetIntelligence 
+              orderTotal={0} // Sem pedido ativo no dashboard, apenas análise do saldo
+              remainingBudget={stats?.availableBudget || 0}
+              allocatedBudget={stats?.monthlyLimit || 0}
+              paName={paName}
+            />
+
+            <Card className="border-[1.5px] h-full">
+              <CardHeader>
+                <CardTitle>Suporte & Dúvidas</CardTitle>
+                <CardDescription>Precisa de ajuda com seu pedido ou verba?</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <Button variant="outline" className="w-full justify-start gap-3 h-12">
+                  <div className="w-6 h-6 rounded-full bg-sicoob-green/10 flex items-center justify-center">
+                    <TrendingUp className="h-3 w-3 text-sicoob-green" />
                   </div>
-                  <span className="text-sm font-medium">Extrato Detalhado de Verba</span>
-                </Link>
-              </Button>
-            </CardContent>
-          </Card>
+                  <span className="text-sm font-medium">Solicitar Aumento de Limite</span>
+                </Button>
+                <Button variant="outline" className="w-full justify-start gap-3 h-12" asChild>
+                  <Link to="/relatorios/sicoob">
+                    <div className="w-6 h-6 rounded-full bg-status-transit/10 flex items-center justify-center">
+                      <Search className="h-3 w-3 text-status-transit" />
+                    </div>
+                    <span className="text-sm font-medium">Extrato Detalhado de Verba</span>
+                  </Link>
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </div>
     </>
