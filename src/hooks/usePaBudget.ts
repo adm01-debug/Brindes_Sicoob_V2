@@ -48,6 +48,12 @@ export const usePaBudget = (paId?: string) => {
     return ((budget.verba_consumida || 0) / budget.verba_total) * 100;
   };
 
+  const isBoardApprovalRequired = (amount: number) => {
+    // Alçada superior: se o pedido for > 150% do limite de alçada padrão ou > R$ 50k
+    if (!budget) return false;
+    return amount > (budget.limite_alcada * 1.5) || amount > 50000;
+  };
+
   return {
     budget,
     isLoading,
@@ -57,5 +63,6 @@ export const usePaBudget = (paId?: string) => {
     consumptionPercentage: getConsumptionPercentage(),
     isOverBudget: (amount: number) => amount > getRemainingBudget(),
     isOverThreshold: (amount: number) => budget ? amount > budget.limite_alcada : false,
+    isBoardApprovalRequired,
   };
 };
