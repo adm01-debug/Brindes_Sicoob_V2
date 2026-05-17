@@ -243,8 +243,14 @@ export const useApprovalRequests = (orderId?: string) => {
 
       // 2. Validar permissão por role
       const canManage = isAdmin || isSupervisorOrAbove || isGerentePa;
+      const isBoard = isAdmin || isSupervisorOrAbove; // Diretoria/Central
+      
       if (payload.newStatus === 'confirmed' && !canManage) {
         throw new Error("Apenas gestores podem confirmar pedidos.");
+      }
+
+      if (payload.previousStatus === 'escalated_to_board' && payload.newStatus === 'confirmed' && !isBoard) {
+        throw new Error("Apenas a Diretoria/Central pode aprovar pedidos em alçada superior.");
       }
 
       const { error: orderError } = await supabase
