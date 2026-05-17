@@ -31,11 +31,11 @@ export function useCatalogStats({
     // Faster check for product count when no search is active
     if (!hasActiveFilters && totalEstimate !== null) {
       return [
-        { id: "products", label: "Produtos Únicos", value: totalEstimate, icon: React.createElement(Package, { className: "h-4 w-4" }) },
-        { id: "variants", label: "Variações", value: realStats?.totalVariants || 0, icon: React.createElement(Palette, { className: "h-4 w-4" }) },
-        { id: "categories", label: "Categorias", value: realStats?.totalCategories || 0, icon: React.createElement(FolderTree, { className: "h-4 w-4" }) },
-        { id: "suppliers", label: "Fornecedores", value: realStats?.totalSuppliers || 0, icon: React.createElement(Users, { className: "h-4 w-4" }) },
-        { id: "favorites", label: "Favoritos", value: favoriteCount, icon: React.createElement(Heart, { className: "h-4 w-4" }) },
+        { id: "products", label: "Catálogo Sicoob", value: totalEstimate, icon: React.createElement(Package, { className: "h-4 w-4" }) },
+        { id: "variants", label: "Variações Ativas", value: realStats?.totalVariants || 0, icon: React.createElement(Palette, { className: "h-4 w-4" }) },
+        { id: "categories", label: "Nichos", value: realStats?.totalCategories || 0, icon: React.createElement(FolderTree, { className: "h-4 w-4" }) },
+        { id: "suppliers", label: "Homologados", value: realStats?.totalSuppliers || 0, icon: React.createElement(Users, { className: "h-4 w-4" }) },
+        { id: "favorites", label: "Meus Favoritos", value: favoriteCount, icon: React.createElement(Heart, { className: "h-4 w-4" }) },
       ];
     }
 
@@ -64,11 +64,11 @@ export function useCatalogStats({
     );
 
     return [
-      { id: "products", label: "Produtos Únicos", value: productCount, icon: React.createElement(Package, { className: "h-4 w-4" }) },
-      { id: "variants", label: "Variações", value: localVariants, icon: React.createElement(Palette, { className: "h-4 w-4" }) },
-      { id: "categories", label: "Categorias", value: uniqueCategoryIds.size, icon: React.createElement(FolderTree, { className: "h-4 w-4" }) },
-      { id: "suppliers", label: "Fornecedores", value: uniqueSuppliers.size, icon: React.createElement(Users, { className: "h-4 w-4" }) },
-      { id: "favorites", label: "Favoritos", value: isFavorite ? deduped.filter(p => isFavorite(p.id)).length : favoriteCount, icon: React.createElement(Heart, { className: "h-4 w-4" }) },
+      { id: "products", label: "Catálogo Sicoob", value: productCount, icon: React.createElement(Package, { className: "h-4 w-4" }) },
+      { id: "variants", label: "Variações Ativas", value: localVariants, icon: React.createElement(Palette, { className: "h-4 w-4" }) },
+      { id: "categories", label: "Nichos", value: uniqueCategoryIds.size, icon: React.createElement(FolderTree, { className: "h-4 w-4" }) },
+      { id: "suppliers", label: "Homologados", value: uniqueSuppliers.size, icon: React.createElement(Users, { className: "h-4 w-4" }) },
+      { id: "favorites", label: "Meus Favoritos", value: isFavorite ? deduped.filter(p => isFavorite(p.id)).length : favoriteCount, icon: React.createElement(Heart, { className: "h-4 w-4" }) },
     ];
   }, [filteredProducts, favoriteCount, isFavorite, activeFiltersCount, searchQuery, totalEstimate, hasNextPage, realStats]);
 }

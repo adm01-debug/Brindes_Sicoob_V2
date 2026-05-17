@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Skeleton } from "@/components/ui/skeleton";
+import { SicoobStatusBadge } from "@/components/sicoob/SicoobStatusBadge";
 
 export default function GestorDashboardPage() {
   const { user } = useAuth();
@@ -179,9 +180,7 @@ export default function GestorDashboardPage() {
                   stats?.recentOrders.map((order) => (
                     <div key={order.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/30 border border-border/40 hover:bg-muted/50 transition-colors">
                       <div className="flex items-center gap-3">
-                        <div className={`p-2 rounded-full ${order.status === 'pending' ? 'bg-status-production/10' : order.status === 'approved' ? 'bg-status-delivered/10' : 'bg-destructive/10'}`}>
-                          {order.status === 'pending' ? <Clock className="h-4 w-4 text-status-production" /> : order.status === 'approved' ? <CheckCircle2 className="h-4 w-4 text-status-delivered" /> : <TrendingUp className="h-4 w-4 text-destructive" />}
-                        </div>
+                        <SicoobStatusBadge status={order.status} showLabel={false} />
                         <div>
                           <div className="font-medium text-sm">{order.pa}</div>
                           <div className="text-xs text-muted-foreground">Valor: {formatCurrency(order.val)}</div>

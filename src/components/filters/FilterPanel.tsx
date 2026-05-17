@@ -194,28 +194,44 @@ export function FilterPanel({
         </SelectContent>
       </Select>
     ),
-    genero: () => {
-      const GENDER_OPTIONS = ["Unissex", "Masculino", "Feminino", "Infantil"];
-      return (
-        <div className="flex flex-wrap gap-1.5 px-1">
-          {GENDER_OPTIONS.map((g) => {
-            const isSelected = (filters.gender || []).includes(g);
-            return (
-              <button
-                key={g}
-                onClick={() => state.toggleArrayFilter("gender", g)}
-                className={`px-2.5 py-1 rounded-md text-xs font-medium border transition-all ${
-                  isSelected
-                    ? "bg-primary text-primary-foreground border-primary shadow-sm"
-                    : "bg-card border-border text-foreground hover:border-primary/40 hover:bg-accent"
-                }`}
-              >
-                {g}
-              </button>
-            );
-          })}
+    temas: () => (
+      <div className="flex flex-wrap gap-1.5 px-1">
+        {['Agro', 'Sul', 'Praia', 'Corporativo'].map((tema) => {
+          const isSelected = (filters.sicoobThemes || []).includes(tema);
+          return (
+            <button
+              key={tema}
+              onClick={() => state.toggleArrayFilter("sicoobThemes", tema)}
+              className={`px-2.5 py-1 rounded-md text-xs font-medium border transition-all ${
+                isSelected
+                  ? "bg-sicoob-green text-white border-sicoob-green shadow-sm"
+                  : "bg-card border-border text-foreground hover:border-sicoob-green/40 hover:bg-accent"
+              }`}
+            >
+              {tema}
+            </button>
+          );
+        })}
+      </div>
+    ),
+    "tiragem-minima": () => (
+      <div className="px-1">
+        <div className="flex items-center gap-2 text-sm">
+          <span className="text-muted-foreground text-xs whitespace-nowrap">Máximo de</span>
+          <DebouncedPriceInput 
+            value={filters.minQuantity || ''} 
+            onChange={(v) => onFilterChange({ ...filters, minQuantity: v })} 
+            fallback={0} 
+            placeholder="Ex: 100" 
+            min={0} 
+            className={filters.minQuantity && filters.minQuantity > 0 ? 'border-sicoob-green/60' : ''} 
+          />
+          <span className="text-muted-foreground text-xs">un.</span>
         </div>
-      );
+      </div>
+    ),
+    genero: () => {
+...
     },
     tamanhos: () => (
       <SizeFilter

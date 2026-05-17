@@ -17,6 +17,7 @@ import {
 import { formatCurrency } from "@/utils/formatters";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { SicoobStatusBadge } from "@/components/sicoob/SicoobStatusBadge";
 import { usePaDashboardStats } from "@/hooks/sicoob/usePaDashboardStats";
 
 export default function PADashboardPage() {
@@ -140,7 +141,7 @@ export default function PADashboardPage() {
                       <div className="flex items-center gap-4">
                         <div className="text-right hidden sm:block">
                           <div className="text-xs font-medium">{new Date(order.created_at).toLocaleDateString('pt-BR')}</div>
-                          <OrderStatusBadge status={order.status} className="mt-1" />
+                          <SicoobStatusBadge status={order.status} className="mt-1" />
                         </div>
                         <Button variant="ghost" size="icon" asChild>
                           <Link to={`/sicoob/pedidos/${order.id}`}>
