@@ -98,10 +98,14 @@ export default function GestorDashboardPage() {
   return (
     <>
       <div className="container mx-auto p-6 space-y-8 animate-fade-in">
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-3xl font-bold font-display tracking-tight text-sicoob-green-dark">Gestão da Singular</h1>
-            <p className="text-muted-foreground">Visão consolidada da Singular e fluxo de aprovações.</p>
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+          <div className="space-y-2">
+            <HierarchyPath paId={profile?.pa_id} />
+            <h1 className="text-3xl font-bold font-display tracking-tight text-sicoob-green-dark flex items-center gap-2">
+              <ShieldCheck className="h-7 w-7 text-sicoob-green" />
+              Gestão de Governança Singular
+            </h1>
+            <p className="text-sm text-muted-foreground">Monitoramento consolidado, curadoria regional e fluxo de aprovações financeiras.</p>
           </div>
           <div className="flex gap-2">
             <Button variant="outline" asChild>
