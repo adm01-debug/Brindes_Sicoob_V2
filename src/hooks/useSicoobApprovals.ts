@@ -75,7 +75,10 @@ export const useApprovalRequests = (orderId?: string) => {
       amount: number; 
       threshold: number;
       previousStatus: string;
+      isEscalated?: boolean;
     }) => {
+      const targetStatus = payload.isEscalated ? 'escalated_to_board' : 'waiting_approval';
+      
       const { error: requestError } = await supabase
         .from("sicoob_approval_requests")
         .insert({
@@ -84,8 +87,26 @@ export const useApprovalRequests = (orderId?: string) => {
           request_reason: payload.reason,
           amount_at_request: payload.amount,
           threshold_at_request: payload.threshold,
-          status: 'pending'
+          status: 'pending',
+          metadata: payload.isEscalated ? { escalated: true, level: 'board' } : {}
         });
+
+      if (requestError) throw requestError;
+
+      const { error: orderError } = await supabase
+        .from("sicoob_orders")
+        .update({ status: targetStatus })
+        .eq("id", payload.orderId);
+
+      if (orderError) throw orderError;
+
+      await recordHistory(
+        payload.orderId, 
+        payload.previousStatus, 
+        targetStatus, 
+        `Solicitação de aprovação ${payload.isEscalated ? '(Diretoria)' : '(Gestor)'}: ${payload.reason}`
+      );
+    },
 
       if (requestError) throw requestError;
 
