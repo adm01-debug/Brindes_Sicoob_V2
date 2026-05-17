@@ -56,7 +56,7 @@ export const ProductCardActions = memo(function ProductCardActions({
           "transition-all duration-300 ease-out",
           "min-h-[36px] min-w-[36px] md:min-h-[44px] md:min-w-[44px]",
           "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-          actionsOpen ? "bg-muted text-muted-foreground rotate-45" : "bg-brand/60 text-brand-foreground hover:bg-brand/80"
+          actionsOpen ? "bg-muted text-muted-foreground rotate-45" : "bg-sicoob-green/60 text-white hover:bg-sicoob-green/80"
         )}
         onClick={(e) => { e.stopPropagation(); onToggleActions(); }}
         aria-label={actionsOpen ? "Fechar ações" : "Ações rápidas"}
