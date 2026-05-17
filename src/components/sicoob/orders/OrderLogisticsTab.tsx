@@ -74,6 +74,17 @@ export function OrderLogisticsTab({ orderId }: OrderLogisticsTabProps) {
 
   return (
     <div className="space-y-6">
+      <div className="bg-blue-50/50 border border-blue-100 p-4 rounded-xl flex items-start gap-3">
+        <Info className="h-5 w-5 text-blue-500 mt-0.5" />
+        <div className="space-y-1">
+          <p className="text-xs font-bold text-blue-900">Gestão de Fluxo Logístico</p>
+          <p className="text-[10px] text-blue-700 leading-relaxed">
+            Ao confirmar o rastreio, o pedido transita automaticamente para o status <strong>Logística</strong>. 
+            O upload do comprovante de entrega finaliza o processo movendo o pedido para <strong>Concluído</strong>.
+          </p>
+        </div>
+      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card>
           <CardHeader className="pb-2">
