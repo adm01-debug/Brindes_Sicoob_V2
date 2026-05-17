@@ -1,12 +1,13 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Truck, Calendar, MapPin, Package, Camera, Loader2 } from "lucide-react";
+import { Truck, Calendar, MapPin, Package, Camera, Loader2, Info } from "lucide-react";
 import { useOrderLogistics, useOrderInvoices } from "@/hooks/useOrderExtensions";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
+import { useUpdateSicoobOrderStatus } from "@/hooks/sicoob/useSicoobOrder";
 
 interface OrderLogisticsTabProps {
   orderId: string;
@@ -15,16 +16,29 @@ interface OrderLogisticsTabProps {
 export function OrderLogisticsTab({ orderId }: OrderLogisticsTabProps) {
   const { logistics, updateLogistics, isLoading } = useOrderLogistics(orderId);
   const { uploadFile } = useOrderInvoices(orderId);
+  const updateStatus = useUpdateSicoobOrderStatus();
   const [trackingCode, setTrackingCode] = useState("");
   const [carrier, setCarrier] = useState("");
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleUpdateTracking = () => {
-    updateLogistics.mutate({
+  useEffect(() => {
+    if (logistics?.tracking_code) setTrackingCode(logistics.tracking_code);
+    if (logistics?.carrier) setCarrier(logistics.carrier);
+  }, [logistics]);
+
+  const handleUpdateTracking = async () => {
+    await updateLogistics.mutateAsync({
       tracking_code: trackingCode,
       carrier: carrier,
       status: 'in_transit'
+    });
+
+    // Ao atualizar rastreio, mover pedido para status logística se ainda não estiver
+    updateStatus.mutate({ 
+      orderId, 
+      status: 'logistic',
+      observations: `Rastreio atualizado: ${carrier} - ${trackingCode}` 
     });
   };
 
@@ -36,12 +50,19 @@ export function OrderLogisticsTab({ orderId }: OrderLogisticsTabProps) {
       setIsUploadingPhoto(true);
       const publicUrl = await uploadFile(file, `delivery-photo-${Date.now()}.jpg`);
       
-      updateLogistics.mutate({
+      await updateLogistics.mutateAsync({
         delivery_photo_url: publicUrl,
         status: 'delivered'
       });
+
+      // Se a foto foi enviada (comprovante), mover para Concluído
+      updateStatus.mutate({ 
+        orderId, 
+        status: 'completed',
+        observations: "Entrega comprovada via foto/anexo logístico." 
+      });
       
-      toast.success("Foto de entrega enviada com sucesso");
+      toast.success("Foto de entrega enviada e pedido concluído");
     } catch (error: any) {
       toast.error("Erro no upload da foto: " + error.message);
     } finally {
@@ -53,6 +74,17 @@ export function OrderLogisticsTab({ orderId }: OrderLogisticsTabProps) {
 
   return (
     <div className="space-y-6">
+      <div className="bg-blue-50/50 border border-blue-100 p-4 rounded-xl flex items-start gap-3">
+        <Info className="h-5 w-5 text-blue-500 mt-0.5" />
+        <div className="space-y-1">
+          <p className="text-xs font-bold text-blue-900">Gestão de Fluxo Logístico</p>
+          <p className="text-[10px] text-blue-700 leading-relaxed">
+            Ao confirmar o rastreio, o pedido transita automaticamente para o status <strong>Logística</strong>. 
+            O upload do comprovante de entrega finaliza o processo movendo o pedido para <strong>Concluído</strong>.
+          </p>
+        </div>
+      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card>
           <CardHeader className="pb-2">

@@ -75,7 +75,10 @@ export const useApprovalRequests = (orderId?: string) => {
       amount: number; 
       threshold: number;
       previousStatus: string;
+      isEscalated?: boolean;
     }) => {
+      const targetStatus = payload.isEscalated ? 'escalated_to_board' : 'waiting_approval';
+      
       const { error: requestError } = await supabase
         .from("sicoob_approval_requests")
         .insert({
@@ -84,8 +87,26 @@ export const useApprovalRequests = (orderId?: string) => {
           request_reason: payload.reason,
           amount_at_request: payload.amount,
           threshold_at_request: payload.threshold,
-          status: 'pending'
+          status: 'pending',
+          metadata: payload.isEscalated ? { escalated: true, level: 'board' } : {}
         });
+
+      if (requestError) throw requestError;
+
+      const { error: orderError } = await supabase
+        .from("sicoob_orders")
+        .update({ status: targetStatus })
+        .eq("id", payload.orderId);
+
+      if (orderError) throw orderError;
+
+      await recordHistory(
+        payload.orderId, 
+        payload.previousStatus, 
+        targetStatus, 
+        `Solicitação de aprovação ${payload.isEscalated ? '(Diretoria)' : '(Gestor)'}: ${payload.reason}`
+      );
+    },
 
       if (requestError) throw requestError;
 
@@ -205,11 +226,15 @@ export const useApprovalRequests = (orderId?: string) => {
     mutationFn: async (payload: { orderId: string; newStatus: string; previousStatus: string; comment?: string }) => {
       // 1. Definir transições permitidas (SSOT com o Kanban)
       const ALLOWED_TRANSITIONS: Record<string, string[]> = {
-        draft: ["waiting_approval"],
-        waiting_approval: ["confirmed", "rejected", "draft"],
-        confirmed: ["logistic"],
-        logistic: ["completed"],
+        draft: ["pending", "cancelled"],
+        pending: ["waiting_approval", "cancelled"],
+        waiting_approval: ["confirmed", "rejected", "escalated_to_board", "cancelled"],
+        escalated_to_board: ["confirmed", "rejected", "cancelled"],
+        confirmed: ["logistic", "cancelled"],
+        logistic: ["completed", "cancelled"],
+        rejected: ["draft", "pending"],
         completed: [],
+        cancelled: [],
       };
 
       if (!ALLOWED_TRANSITIONS[payload.previousStatus]?.includes(payload.newStatus)) {
@@ -218,8 +243,14 @@ export const useApprovalRequests = (orderId?: string) => {
 
       // 2. Validar permissão por role
       const canManage = isAdmin || isSupervisorOrAbove || isGerentePa;
+      const isBoard = isAdmin || isSupervisorOrAbove; // Diretoria/Central
+      
       if (payload.newStatus === 'confirmed' && !canManage) {
         throw new Error("Apenas gestores podem confirmar pedidos.");
+      }
+
+      if (payload.previousStatus === 'escalated_to_board' && payload.newStatus === 'confirmed' && !isBoard) {
+        throw new Error("Apenas a Diretoria/Central pode aprovar pedidos em alçada superior.");
       }
 
       const { error: orderError } = await supabase
