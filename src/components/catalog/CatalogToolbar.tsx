@@ -142,13 +142,13 @@ export function CatalogToolbar({
           className={cn(
             "gap-1.5 h-8 transition-all relative",
             selectionMode
-              ? "bg-brand text-brand-foreground shadow-md hover:bg-brand/90"
-              : "hover:border-brand/50"
+              ? "bg-sicoob-green text-white shadow-md hover:bg-sicoob-green/90"
+              : "hover:border-sicoob-green/50"
           )}
           onClick={onToggleSelectionMode}
         >
           <CheckSquare className="h-3.5 w-3.5" />
-          <span className="hidden sm:inline text-xs">{selectionMode ? "Cancelar" : "Selecionar"}</span>
+          <span className="hidden sm:inline text-xs">{selectionMode ? "Cancelar" : "Multiseleção Sicoob"}</span>
 
           {/* Animated counter badge */}
           <AnimatePresence>
