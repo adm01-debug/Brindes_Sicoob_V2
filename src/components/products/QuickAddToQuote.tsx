@@ -121,7 +121,7 @@ export function QuickAddToQuote({
         ) : (
           <Button
             size={buttonSize}
-            className={cn(className)}
+            className={cn("bg-sicoob-green hover:bg-sicoob-green/90 text-white", className)}
             onClick={(e) => e.stopPropagation()}
           >
             {iconOverride === "cart" ? <ShoppingBag className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
