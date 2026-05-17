@@ -205,11 +205,15 @@ export const useApprovalRequests = (orderId?: string) => {
     mutationFn: async (payload: { orderId: string; newStatus: string; previousStatus: string; comment?: string }) => {
       // 1. Definir transições permitidas (SSOT com o Kanban)
       const ALLOWED_TRANSITIONS: Record<string, string[]> = {
-        draft: ["waiting_approval"],
-        waiting_approval: ["confirmed", "rejected", "draft"],
-        confirmed: ["logistic"],
-        logistic: ["completed"],
+        draft: ["pending", "cancelled"],
+        pending: ["waiting_approval", "cancelled"],
+        waiting_approval: ["confirmed", "rejected", "escalated_to_board", "cancelled"],
+        escalated_to_board: ["confirmed", "rejected", "cancelled"],
+        confirmed: ["logistic", "cancelled"],
+        logistic: ["completed", "cancelled"],
+        rejected: ["draft", "pending"],
         completed: [],
+        cancelled: [],
       };
 
       if (!ALLOWED_TRANSITIONS[payload.previousStatus]?.includes(payload.newStatus)) {
