@@ -12,12 +12,38 @@ interface LogisticsCommandCenterProps {
 }
 
 export function LogisticsCommandCenter({ orderId, trackingCode, status }: LogisticsCommandCenterProps) {
-  const steps = [
-    { label: "Pedido Confirmado", date: "10 Mai, 09:00", status: "completed", icon: CheckCircle2 },
-    { label: "Aguardando Produção", date: "10 Mai, 14:20", status: "completed", icon: Package },
-    { label: "Em Trânsito", date: "11 Mai, 10:00", status: "current", icon: Truck },
-    { label: "Entrega no PA", date: "Previsão: 13 Mai", status: "pending", icon: MapPin },
-  ];
+  const steps = React.useMemo(() => {
+    const isLogistic = status === 'logistic';
+    const isCompleted = status === 'completed';
+    const isConfirmed = ['confirmed', 'logistic', 'completed'].includes(status);
+    
+    return [
+      { 
+        label: "Pedido Confirmado", 
+        date: isConfirmed ? "Processado" : "Pendente", 
+        status: isConfirmed ? "completed" : "current", 
+        icon: CheckCircle2 
+      },
+      { 
+        label: "Em Produção", 
+        date: isConfirmed ? "Em andamento" : "Aguardando", 
+        status: isConfirmed ? (isLogistic || isCompleted ? "completed" : "current") : "pending", 
+        icon: Package 
+      },
+      { 
+        label: "Em Trânsito", 
+        date: isLogistic ? "Despachado" : (isCompleted ? "Entregue" : "Aguardando"), 
+        status: isLogistic ? "current" : (isCompleted ? "completed" : "pending"), 
+        icon: Truck 
+      },
+      { 
+        label: "Entrega no PA", 
+        date: isCompleted ? "Confirmado" : "Previsão: 5-7 dias", 
+        status: isCompleted ? "completed" : "pending", 
+        icon: MapPin 
+      },
+    ];
+  }, [status]);
 
   return (
     <Card className="border-[1.5px] shadow-sm overflow-hidden bg-slate-50/50">
