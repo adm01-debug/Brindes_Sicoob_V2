@@ -79,25 +79,32 @@ export default function AdminNewsletterPage() {
     fetchData();
   };
 
-  const handleExport = () => {
-    const exportData = subscribers.map(s => ({
-      'Email': s.email,
-      'Nome Completo': s.full_name || '',
-      'Data de Inscrição': new Date(s.created_at).toLocaleDateString('pt-BR'),
-      'Origem': s.source || 'Geral',
-      'Status': s.is_active ? 'Ativo' : 'Inativo'
-    }));
+  const handleExport = async () => {
+    try {
+      const XLSX = await import('@e965/xlsx');
+      const exportData = subscribers.map(s => ({
+        'Email': s.email,
+        'Nome Completo': s.full_name || '',
+        'Data de Inscrição': new Date(s.created_at).toLocaleDateString('pt-BR'),
+        'Origem': s.source || 'Geral',
+        'Status': s.is_active ? 'Ativo' : 'Inativo'
+      }));
 
-    const worksheet = XLSX.utils.json_to_sheet(exportData);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Assinantes");
-    XLSX.writeFile(workbook, `newsletter_subscribers_${new Date().toISOString().split('T')[0]}.xlsx`);
+      const worksheet = XLSX.utils.json_to_sheet(exportData);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Assinantes");
+      XLSX.writeFile(workbook, `newsletter_subscribers_${new Date().toISOString().split('T')[0]}.xlsx`);
 
-    logAdminAction({
-      event_type: 'EXPORT',
-      entity_type: 'newsletter_subscribers',
-      metadata: { count: exportData.length }
-    });
+      logAdminAction({
+        event_type: 'EXPORT',
+        entity_type: 'newsletter_subscribers',
+        metadata: { count: exportData.length }
+      });
+      toast.success("Lista exportada com sucesso");
+    } catch (error) {
+      console.error("Error exporting newsletter:", error);
+      toast.error("Erro ao carregar módulo de exportação");
+    }
   };
 
   const columns = [
