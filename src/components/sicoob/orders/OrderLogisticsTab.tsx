@@ -50,12 +50,19 @@ export function OrderLogisticsTab({ orderId }: OrderLogisticsTabProps) {
       setIsUploadingPhoto(true);
       const publicUrl = await uploadFile(file, `delivery-photo-${Date.now()}.jpg`);
       
-      updateLogistics.mutate({
+      await updateLogistics.mutateAsync({
         delivery_photo_url: publicUrl,
         status: 'delivered'
       });
+
+      // Se a foto foi enviada (comprovante), mover para Concluído
+      updateStatus.mutate({ 
+        orderId, 
+        status: 'completed',
+        observations: "Entrega comprovada via foto/anexo logístico." 
+      });
       
-      toast.success("Foto de entrega enviada com sucesso");
+      toast.success("Foto de entrega enviada e pedido concluído");
     } catch (error: any) {
       toast.error("Erro no upload da foto: " + error.message);
     } finally {
