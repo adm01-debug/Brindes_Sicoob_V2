@@ -154,7 +154,7 @@ function VirtualGrid({ products, columns, navigate, handleViewProduct, handleSha
                   return (
                     <div key={product.id} className="relative">
                       {selectionMode && <div className="absolute top-2.5 left-2.5 z-20"><SelectionCheckbox checked={!!isSelected} onChange={() => onToggleSelect?.(product.id)} size="lg" animateEntry /></div>}
-                      <div className={cn("transition-all duration-200 rounded-xl", isSelected && "ring-2 ring-primary/50 shadow-[0_0_12px_-4px_hsl(var(--primary)/0.3)]")}>
+                      <div className={cn("transition-all duration-200 rounded-xl", isSelected && "ring-2 ring-sicoob-green/50 shadow-[0_0_12px_-4px_rgba(40,167,69,0.3)]")}>
                         <ProductCard
                           product={product}
                           onClick={() => selectionMode ? onToggleSelect?.(product.id) : navigate(`/produto/${product.id}`)}
