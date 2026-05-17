@@ -199,7 +199,7 @@ export const EmptyState = React.forwardRef<HTMLDivElement, EmptyStateProps>(func
             </Button>
           )}
           {secondaryAction && (
-            <Button variant="outline" onClick={secondaryAction.onClick}>
+            <Button variant="outline" onClick={secondaryAction.onClick} className="border-sicoob-green text-sicoob-green-dark hover:bg-sicoob-green/5">
               {secondaryAction.label}
             </Button>
           )}
