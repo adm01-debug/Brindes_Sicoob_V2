@@ -13,7 +13,7 @@ import { AdminRoute } from "@/components/layout/AdminRoute";
 import { DevRoute } from "@/components/layout/DevRoute";
 import { SicoobRoute } from "@/components/layout/SicoobRoute";
 import { AppProviders } from "@/components/providers/AppProviders";
-import { AccessibilityProvider, AriaLiveProvider } from "@/components/a11y";
+import { AccessibilityProvider, AriaLiveProvider, RouteAnnouncer } from "@/components/a11y";
 import { useGlobalErrorCatcher } from "@/hooks/useErrorHandler";
 import { markBootSuccessful } from "@/lib/chunk-recovery";
 import { getFallback } from "@/components/layout/SkeletonLoaders";
@@ -107,7 +107,7 @@ const App = () => {
                       <AuthDiagnosticsWidget />
                       <DiagnosticOverlay />
                       <RouteScrollReset />
-                      
+                      <RouteAnnouncer />
 
                       <Routes>
                         {/* Public Routes */}

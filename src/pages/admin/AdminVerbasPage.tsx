@@ -16,7 +16,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
-import * as XLSX from '@e965/xlsx';
+// XLSX will be loaded dynamically when needed
 
 export default function AdminVerbasPage() {
   const [budgets, setBudgets] = useState<any[]>([]);
@@ -54,16 +54,23 @@ export default function AdminVerbasPage() {
     setCategories(cData || []);
   };
 
-  const exportAuditToCSV = () => {
-    const ws = XLSX.utils.json_to_sheet(auditLogs.map(log => ({
-      Data: format(new Date(log.created_at), 'dd/MM/yyyy HH:mm'),
-      Evento: log.event_type,
-      Usuario: log.metadata?.user_email || 'Sistema',
-      Detalhes: JSON.stringify(log.payload)
-    })));
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Histórico");
-    XLSX.writeFile(wb, `auditoria_verbas_${new Date().toISOString().split('T')[0]}.xlsx`);
+  const exportAuditToCSV = async () => {
+    try {
+      const XLSX = await import('@e965/xlsx');
+      const ws = XLSX.utils.json_to_sheet(auditLogs.map(log => ({
+        Data: format(new Date(log.created_at), 'dd/MM/yyyy HH:mm'),
+        Evento: log.event_type,
+        Usuario: log.metadata?.user_email || 'Sistema',
+        Detalhes: JSON.stringify(log.payload)
+      })));
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Histórico");
+      XLSX.writeFile(wb, `auditoria_verbas_${new Date().toISOString().split('T')[0]}.xlsx`);
+      toast.success("Histórico exportado com sucesso");
+    } catch (error) {
+      console.error("Error exporting audit logs:", error);
+      toast.error("Erro ao carregar módulo de exportação");
+    }
   };
 
   const { data: auditLogs = [] } = useQuery({
@@ -167,20 +174,27 @@ export default function AdminVerbasPage() {
     }
   };
 
-  const exportBudgets = () => {
-    const data = budgets.map(b => ({
-      'PA': b.postos_atendimento?.nome,
-      'Código': b.postos_atendimento?.codigo,
-      'Mês': b.mes,
-      'Ano': b.ano,
-      'Verba Total': b.verba_total,
-      'Consumido': b.verba_consumida,
-      'Alçada': b.limite_alcada
-    }));
-    const worksheet = XLSX.utils.json_to_sheet(data);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Verbas");
-    XLSX.writeFile(workbook, `verbas_admin_${format(new Date(), 'yyyy-MM-dd')}.xlsx`);
+  const exportBudgets = async () => {
+    try {
+      const XLSX = await import('@e965/xlsx');
+      const data = budgets.map(b => ({
+        'PA': b.postos_atendimento?.nome,
+        'Código': b.postos_atendimento?.codigo,
+        'Mês': b.mes,
+        'Ano': b.ano,
+        'Verba Total': b.verba_total,
+        'Consumido': b.verba_consumida,
+        'Alçada': b.limite_alcada
+      }));
+      const worksheet = XLSX.utils.json_to_sheet(data);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Verbas");
+      XLSX.writeFile(workbook, `verbas_admin_${format(new Date(), 'yyyy-MM-dd')}.xlsx`);
+      toast.success("Verbas exportadas com sucesso");
+    } catch (error) {
+      console.error("Error exporting budgets:", error);
+      toast.error("Erro ao carregar módulo de exportação");
+    }
   };
 
   const filtered = budgets.filter(b => 

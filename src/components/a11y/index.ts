@@ -9,9 +9,11 @@ export {
 export {
   AriaLiveProvider,
   useAriaLive,
-  RouteAnnouncer,
+  // RouteAnnouncer moved to standalone file
   LoadingStateAnnouncer,
   FormErrorAnnouncer,
   ActionResultAnnouncer,
   ListUpdateAnnouncer,
 } from "./AriaLive";
+export { RouteAnnouncer } from "./RouteAnnouncer";
+

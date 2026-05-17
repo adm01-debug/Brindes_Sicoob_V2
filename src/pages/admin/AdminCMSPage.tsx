@@ -17,7 +17,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogD
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AdminDataTable } from "@/components/admin/common/AdminDataTable";
 import { logAdminAction } from "@/utils/adminAudit";
-import * as XLSX from '@e965/xlsx';
+// XLSX will be loaded dynamically when needed
 
 export default function AdminCMSPage() {
   return (
@@ -67,19 +67,26 @@ function BannersTab() {
   const [banners, setBanners] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  const handleExport = (data: any[]) => {
-    const exportData = data.map(b => ({
-      'Título': b.title,
-      'URL Imagem': b.image_url,
-      'Link': b.link_url || '',
-      'Posição': b.position,
-      'Ordem': b.sort_order,
-      'Status': b.is_active ? 'Ativo' : 'Inativo'
-    }));
-    const worksheet = XLSX.utils.json_to_sheet(exportData);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Banners");
-    XLSX.writeFile(workbook, `banners_cms_${new Date().toISOString().split('T')[0]}.xlsx`);
+  const handleExport = async (data: any[]) => {
+    try {
+      const XLSX = await import('@e965/xlsx');
+      const exportData = data.map(b => ({
+        'Título': b.title,
+        'URL Imagem': b.image_url,
+        'Link': b.link_url || '',
+        'Posição': b.position,
+        'Ordem': b.sort_order,
+        'Status': b.is_active ? 'Ativo' : 'Inativo'
+      }));
+      const worksheet = XLSX.utils.json_to_sheet(exportData);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Banners");
+      XLSX.writeFile(workbook, `banners_cms_${new Date().toISOString().split('T')[0]}.xlsx`);
+      toast.success("Banners exportados com sucesso");
+    } catch (error) {
+      console.error("Error exporting banners:", error);
+      toast.error("Erro ao carregar módulo de exportação");
+    }
   };
 
   const fetchBanners = async () => {
