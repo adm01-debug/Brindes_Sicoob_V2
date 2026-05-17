@@ -48,6 +48,23 @@ export function useCatalogFiltering({
       return [];
     }
 
+    // New Sicoob Theme Filter
+    if (filters.sicoobThemes?.length > 0) {
+      const selectedThemes = new Set(filters.sicoobThemes.map(t => t.toLowerCase()));
+      result = result.filter(p => {
+        const pThemes = (p.tags?.temas || []).map((t: string) => t.toLowerCase());
+        return pThemes.some(t => selectedThemes.has(t));
+      });
+    }
+
+    // New Minimum Quantity Filter
+    if (filters.minQuantity && filters.minQuantity > 0) {
+      result = result.filter(p => {
+        const minQ = (p as any).min_quantity || 0;
+        return minQ <= filters.minQuantity!;
+      });
+    }
+
     if (colorFilterSet.size > 0) {
       result = result.filter((p) =>
         p.colors?.some((c: Record<string, string>) => colorFilterSet.has(c.name))
@@ -124,6 +141,7 @@ export function useCatalogFiltering({
 
     return result;
   }, [
+    filters.sicoobThemes, filters.minQuantity,
     filters, sortBy, hasFuzzySearch, fuzzySearchResults, realProducts, 
     hasMaterialFilter, materialFilteredProductIds, isLoadingMaterialFilter, 
     hasCategoryFilter, categoryFilteredProductIds, isLoadingCategoryFilter, 
