@@ -16,7 +16,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
-import * as XLSX from '@e965/xlsx';
+// XLSX will be loaded dynamically when needed
 
 export default function AdminVerbasPage() {
   const [budgets, setBudgets] = useState<any[]>([]);
