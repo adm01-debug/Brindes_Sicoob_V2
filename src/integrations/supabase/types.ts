@@ -5269,6 +5269,7 @@ export type Database = {
       }
       pa_singularidades: {
         Row: {
+          central_id: string | null
           code: string | null
           created_at: string
           id: string
@@ -5277,6 +5278,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          central_id?: string | null
           code?: string | null
           created_at?: string
           id?: string
@@ -5285,6 +5287,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          central_id?: string | null
           code?: string | null
           created_at?: string
           id?: string
@@ -5292,7 +5295,15 @@ export type Database = {
           name?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "pa_singularidades_central_id_fkey"
+            columns: ["central_id"]
+            isOneToOne: false
+            referencedRelation: "sicoob_centrais"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       permissions: {
         Row: {
@@ -7495,6 +7506,33 @@ export type Database = {
           },
         ]
       }
+      sicoob_centrais: {
+        Row: {
+          code: string | null
+          created_at: string | null
+          id: string
+          name: string
+          region: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          code?: string | null
+          created_at?: string | null
+          id?: string
+          name: string
+          region?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          code?: string | null
+          created_at?: string | null
+          id?: string
+          name?: string
+          region?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       sicoob_manager_audit: {
         Row: {
           action: string
@@ -7777,6 +7815,30 @@ export type Database = {
           resolved?: boolean | null
           status?: string
           table_name?: string
+        }
+        Relationships: []
+      }
+      sicoob_temas: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          icon_url: string | null
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          icon_url?: string | null
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          icon_url?: string | null
+          id?: string
+          name?: string
         }
         Relationships: []
       }
