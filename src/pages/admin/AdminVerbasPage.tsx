@@ -174,20 +174,27 @@ export default function AdminVerbasPage() {
     }
   };
 
-  const exportBudgets = () => {
-    const data = budgets.map(b => ({
-      'PA': b.postos_atendimento?.nome,
-      'Código': b.postos_atendimento?.codigo,
-      'Mês': b.mes,
-      'Ano': b.ano,
-      'Verba Total': b.verba_total,
-      'Consumido': b.verba_consumida,
-      'Alçada': b.limite_alcada
-    }));
-    const worksheet = XLSX.utils.json_to_sheet(data);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Verbas");
-    XLSX.writeFile(workbook, `verbas_admin_${format(new Date(), 'yyyy-MM-dd')}.xlsx`);
+  const exportBudgets = async () => {
+    try {
+      const XLSX = await import('@e965/xlsx');
+      const data = budgets.map(b => ({
+        'PA': b.postos_atendimento?.nome,
+        'Código': b.postos_atendimento?.codigo,
+        'Mês': b.mes,
+        'Ano': b.ano,
+        'Verba Total': b.verba_total,
+        'Consumido': b.verba_consumida,
+        'Alçada': b.limite_alcada
+      }));
+      const worksheet = XLSX.utils.json_to_sheet(data);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Verbas");
+      XLSX.writeFile(workbook, `verbas_admin_${format(new Date(), 'yyyy-MM-dd')}.xlsx`);
+      toast.success("Verbas exportadas com sucesso");
+    } catch (error) {
+      console.error("Error exporting budgets:", error);
+      toast.error("Erro ao carregar módulo de exportação");
+    }
   };
 
   const filtered = budgets.filter(b => 
