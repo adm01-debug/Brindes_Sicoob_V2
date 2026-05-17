@@ -93,6 +93,7 @@ export default function AdminAuditPage() {
   const handleExport = async () => {
     setIsLoading(true);
     try {
+      const XLSX = await import('@e965/xlsx');
       let query = supabase
         .from('admin_audit_log')
         .select('*')
