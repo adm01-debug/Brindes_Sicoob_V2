@@ -212,7 +212,7 @@ function VirtualList({ products, navigate, handleViewProduct, handleShareProduct
             return (
               <div key={vr.key} data-index={vr.index} ref={virtualizer.measureElement}
                 style={{ position: "absolute", top: 0, left: 0, width: "100%", transform: `translateY(${vr.start}px)`, paddingBottom: "8px" }}>
-                <div className={cn("flex items-center gap-2 rounded-xl transition-all duration-200", isSelected && "ring-2 ring-primary/40 bg-primary/5")}>
+                <div className={cn("flex items-center gap-2 rounded-xl transition-all duration-200", isSelected && "ring-2 ring-sicoob-green/40 bg-sicoob-green/5")}>
                   {selectionMode && <div className="flex-shrink-0 ml-1"><SelectionCheckbox checked={!!isSelected} onChange={() => onToggleSelect?.(product.id)} size="md" /></div>}
                   <div className="flex-1 min-w-0">
                     <ProductListItem product={product} onClick={() => selectionMode ? onToggleSelect?.(product.id) : navigate(`/produto/${product.id}`)} onView={handleViewProduct} onShare={handleShareProduct} isFavorited={isFavorite(product.id)} onToggleFavorite={toggleFavorite} isInCompare={isInCompare(product.id)} onToggleCompare={onToggleCompare} canAddToCompare={canAddToCompare} activeColorFilter={activeColorFilter} />
