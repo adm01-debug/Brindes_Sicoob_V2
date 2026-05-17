@@ -128,7 +128,7 @@ export default function AdminCampanhasPage() {
     });
   }, [campaigns, searchTerm, filters]);
 
-  const handleExport = (format: 'xlsx' | 'csv') => {
+  const handleExport = async (format: 'xlsx' | 'csv') => {
     const data = filtered.map(c => ({
       'Nome': c.name,
       'Status': c.status,
@@ -139,10 +139,17 @@ export default function AdminCampanhasPage() {
     }));
 
     if (format === 'xlsx') {
-      const worksheet = XLSX.utils.json_to_sheet(data);
-      const workbook = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(workbook, worksheet, "Campanhas");
-      XLSX.writeFile(workbook, `campanhas_admin_${format(new Date(), 'yyyy-MM-dd')}.xlsx`);
+      try {
+        const XLSX = await import('@e965/xlsx');
+        const worksheet = XLSX.utils.json_to_sheet(data);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, "Campanhas");
+        XLSX.writeFile(workbook, `campanhas_admin_${format(new Date(), 'yyyy-MM-dd')}.xlsx`);
+        toast.success("Relatório exportado em XLSX");
+      } catch (error) {
+        console.error("Error exporting to XLSX:", error);
+        toast.error("Erro ao carregar módulo de exportação");
+      }
     } else {
       const headers = Object.keys(data[0] || {}).join(",");
       const csvContent = [headers, ...data.map(row => Object.values(row).join(","))].join("\n");
@@ -151,8 +158,8 @@ export default function AdminCampanhasPage() {
       link.href = URL.createObjectURL(blob);
       link.download = `campanhas_admin_${format(new Date(), 'yyyy-MM-dd')}.csv`;
       link.click();
+      toast.success("Relatório exportado em CSV");
     }
-    toast.success(`Relatório exportado em ${format.toUpperCase()}`);
   };
 
   const getStatusBadge = (status: string) => {
