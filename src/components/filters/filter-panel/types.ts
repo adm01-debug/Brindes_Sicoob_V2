@@ -29,6 +29,8 @@ export interface FilterState {
   tags: string[];
   priceRange: [number, number];
   minStock: number;
+  minQuantity?: number;
+  sicoobThemes: string[];
   inStock: boolean;
   isKit: boolean;
   featured: boolean;
@@ -73,6 +75,8 @@ export const defaultFilters: FilterState = {
   tags: [],
   priceRange: [0, 9999],
   minStock: 0,
+  minQuantity: 0,
+  sicoobThemes: [],
   inStock: false,
   isKit: false,
   featured: false,
@@ -101,10 +105,13 @@ export const SECTION_CONFIG: Record<string, { title: string; icon: React.ReactNo
   tags: { title: "Tags", icon: React.createElement(Tag, { className: "h-4 w-4" }) },
   "opcoes-rapidas": { title: "Opções Rápidas", icon: React.createElement(Sparkles, { className: "h-4 w-4" }) },
   ordenacao: { title: "Ordenar por", icon: React.createElement(Filter, { className: "h-4 w-4" }) },
+  temas: { title: "Regionalismo/Temas", icon: React.createElement(Gem, { className: "h-4 w-4" }) },
+  "tiragem-minima": { title: "Tiragem Mínima", icon: React.createElement(Package, { className: "h-4 w-4" }) },
 };
 
 export const SECTION_GROUPS = [
-  { label: "PRODUTO", sections: ["cores", "categorias", "estoque", "preco", "materiais", "genero", "tamanhos"], icon: Package },
+  { label: "SICOOB CATALOG", sections: ["temas", "tiragem-minima", "categorias", "estoque", "preco"], icon: Target },
+  { label: "PRODUTO", sections: ["cores", "materiais", "genero", "tamanhos"], icon: Package },
   { label: "COMERCIAL", sections: ["fornecedores", "tecnicas"], icon: TrendingUp },
   { label: "MARKETING", sections: ["publico", "datas-comemorativas", "endomarketing", "ramos-atividade"], icon: Target },
   { label: "ATALHOS", sections: ["tags", "opcoes-rapidas"], icon: Zap },
