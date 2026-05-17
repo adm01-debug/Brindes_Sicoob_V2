@@ -53,11 +53,11 @@ export const SelectionCheckbox = React.forwardRef<HTMLButtonElement, SelectionCh
           "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1",
           s.box,
           checked
-            ? "bg-primary border-2 border-primary text-primary-foreground shadow-md shadow-primary/25"
+            ? "bg-sicoob-green border-2 border-sicoob-green text-white shadow-md shadow-sicoob-green/25"
             : [
                 "border-2 border-foreground/20",
                 "bg-background/60 backdrop-blur-sm",
-                "hover:border-primary/50 hover:bg-primary/10",
+                "hover:border-sicoob-green/50 hover:bg-sicoob-green/10",
                 "hover:shadow-sm",
               ],
           className
