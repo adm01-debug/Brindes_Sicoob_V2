@@ -54,16 +54,23 @@ export default function AdminVerbasPage() {
     setCategories(cData || []);
   };
 
-  const exportAuditToCSV = () => {
-    const ws = XLSX.utils.json_to_sheet(auditLogs.map(log => ({
-      Data: format(new Date(log.created_at), 'dd/MM/yyyy HH:mm'),
-      Evento: log.event_type,
-      Usuario: log.metadata?.user_email || 'Sistema',
-      Detalhes: JSON.stringify(log.payload)
-    })));
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Histórico");
-    XLSX.writeFile(wb, `auditoria_verbas_${new Date().toISOString().split('T')[0]}.xlsx`);
+  const exportAuditToCSV = async () => {
+    try {
+      const XLSX = await import('@e965/xlsx');
+      const ws = XLSX.utils.json_to_sheet(auditLogs.map(log => ({
+        Data: format(new Date(log.created_at), 'dd/MM/yyyy HH:mm'),
+        Evento: log.event_type,
+        Usuario: log.metadata?.user_email || 'Sistema',
+        Detalhes: JSON.stringify(log.payload)
+      })));
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Histórico");
+      XLSX.writeFile(wb, `auditoria_verbas_${new Date().toISOString().split('T')[0]}.xlsx`);
+      toast.success("Histórico exportado com sucesso");
+    } catch (error) {
+      console.error("Error exporting audit logs:", error);
+      toast.error("Erro ao carregar módulo de exportação");
+    }
   };
 
   const { data: auditLogs = [] } = useQuery({
