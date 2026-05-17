@@ -94,9 +94,9 @@ export function QuickAddToQuote({
             variant="outline"
             className={cn(
               "px-2.5 py-1 text-sm font-medium cursor-pointer",
-              "border-primary/50 bg-primary/10 hover:bg-primary/20",
-              "text-primary hover:text-primary/80",
-              "transition-all duration-200 hover:scale-105 hover:border-primary",
+              "border-sicoob-green/50 bg-sicoob-green/10 hover:bg-sicoob-green/20",
+              "text-sicoob-green-dark hover:text-sicoob-green",
+              "transition-all duration-200 hover:scale-105 hover:border-sicoob-green",
               className,
             )}
             onClick={(e) => e.stopPropagation()}
@@ -111,7 +111,7 @@ export function QuickAddToQuote({
             aria-label="ShoppingCart"
             className={cn(
               "h-10 w-10 rounded-full bg-card/95 backdrop-blur-md shadow-lg border border-border/50",
-              "hover:bg-primary hover:text-primary-foreground hover:scale-110 transition-all duration-200",
+              "hover:bg-sicoob-green hover:text-white hover:scale-110 transition-all duration-200",
               className,
             )}
             onClick={(e) => e.stopPropagation()}
@@ -121,7 +121,7 @@ export function QuickAddToQuote({
         ) : (
           <Button
             size={buttonSize}
-            className={cn(className)}
+            className={cn("bg-sicoob-green hover:bg-sicoob-green/90 text-white", className)}
             onClick={(e) => e.stopPropagation()}
           >
             {iconOverride === "cart" ? <ShoppingBag className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
@@ -223,7 +223,7 @@ export function QuickAddToQuote({
               <p className="text-xs text-muted-foreground">Mínimo: {minQuantity} un.</p>
             </div>
 
-            <Button data-testid="product-card-add-to-cart" className="w-full gap-2" onClick={handleAddToQuote} disabled={isAdded || !activeCart}>
+            <Button data-testid="product-card-add-to-cart" className="w-full gap-2 bg-sicoob-green hover:bg-sicoob-green/90 text-white" onClick={handleAddToQuote} disabled={isAdded || !activeCart}>
               {isAdded ? (
                 <>
                   <Check className="h-4 w-4" />
