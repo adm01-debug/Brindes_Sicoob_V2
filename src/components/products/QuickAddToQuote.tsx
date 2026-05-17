@@ -111,7 +111,7 @@ export function QuickAddToQuote({
             aria-label="ShoppingCart"
             className={cn(
               "h-10 w-10 rounded-full bg-card/95 backdrop-blur-md shadow-lg border border-border/50",
-              "hover:bg-primary hover:text-primary-foreground hover:scale-110 transition-all duration-200",
+              "hover:bg-sicoob-green hover:text-white hover:scale-110 transition-all duration-200",
               className,
             )}
             onClick={(e) => e.stopPropagation()}
