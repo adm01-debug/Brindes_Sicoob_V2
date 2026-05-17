@@ -1717,43 +1717,52 @@ export type Database = {
       }
       cooperativas: {
         Row: {
+          address: string | null
           alcada_superior_threshold: number | null
           central_id: string | null
           cidade: string | null
           cnpj: string | null
           codigo: string
           created_at: string
+          email: string | null
           id: string
           is_active: boolean
           nome: string
+          phone: string | null
           sicoob_tema_id: string | null
           uf: string | null
           updated_at: string
         }
         Insert: {
+          address?: string | null
           alcada_superior_threshold?: number | null
           central_id?: string | null
           cidade?: string | null
           cnpj?: string | null
           codigo: string
           created_at?: string
+          email?: string | null
           id?: string
           is_active?: boolean
           nome: string
+          phone?: string | null
           sicoob_tema_id?: string | null
           uf?: string | null
           updated_at?: string
         }
         Update: {
+          address?: string | null
           alcada_superior_threshold?: number | null
           central_id?: string | null
           cidade?: string | null
           cnpj?: string | null
           codigo?: string
           created_at?: string
+          email?: string | null
           id?: string
           is_active?: boolean
           nome?: string
+          phone?: string | null
           sicoob_tema_id?: string | null
           uf?: string | null
           updated_at?: string
