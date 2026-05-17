@@ -1,15 +1,15 @@
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-// import { MainLayout } from "@/components/layout/MainLayout";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Users, FileText, CheckCircle2, Clock, Building, ArrowRight, Wallet, TrendingUp } from "lucide-react";
+import { Users, FileText, CheckCircle2, Clock, Building, ArrowRight, Wallet, TrendingUp, ShieldCheck } from "lucide-react";
 import { formatCurrency } from "@/utils/formatters";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Skeleton } from "@/components/ui/skeleton";
 import { SicoobStatusBadge } from "@/components/sicoob/SicoobStatusBadge";
+import { HierarchyPath } from "@/components/sicoob/HierarchyPath";
 
 export default function GestorDashboardPage() {
   const { user } = useAuth();
