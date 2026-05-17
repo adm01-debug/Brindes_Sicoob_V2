@@ -107,7 +107,7 @@ const App = () => {
                       <AuthDiagnosticsWidget />
                       <DiagnosticOverlay />
                       <RouteScrollReset />
-                      
+                      <RouteAnnouncer />
 
                       <Routes>
                         {/* Public Routes */}
