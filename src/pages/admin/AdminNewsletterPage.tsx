@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { AdminDataTable } from "@/components/admin/common/AdminDataTable";
 import { ImportExportManager } from "@/components/admin/common/ImportExportManager";
-import * as XLSX from '@e965/xlsx';
+// XLSX will be loaded dynamically when needed
 import { logAdminAction } from "@/utils/adminAudit";
 
 export default function AdminNewsletterPage() {
