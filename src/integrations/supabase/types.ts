@@ -1706,46 +1706,90 @@ export type Database = {
             referencedRelation: "cooperativas"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "cooperativa_budgets_cooperativa_id_fkey"
+            columns: ["cooperativa_id"]
+            isOneToOne: false
+            referencedRelation: "v_sicoob_hierarchy"
+            referencedColumns: ["singular_id"]
+          },
         ]
       }
       cooperativas: {
         Row: {
+          address: string | null
           alcada_superior_threshold: number | null
+          central_id: string | null
           cidade: string | null
           cnpj: string | null
           codigo: string
           created_at: string
+          email: string | null
           id: string
           is_active: boolean
           nome: string
+          phone: string | null
+          sicoob_tema_id: string | null
           uf: string | null
           updated_at: string
         }
         Insert: {
+          address?: string | null
           alcada_superior_threshold?: number | null
+          central_id?: string | null
           cidade?: string | null
           cnpj?: string | null
           codigo: string
           created_at?: string
+          email?: string | null
           id?: string
           is_active?: boolean
           nome: string
+          phone?: string | null
+          sicoob_tema_id?: string | null
           uf?: string | null
           updated_at?: string
         }
         Update: {
+          address?: string | null
           alcada_superior_threshold?: number | null
+          central_id?: string | null
           cidade?: string | null
           cnpj?: string | null
           codigo?: string
           created_at?: string
+          email?: string | null
           id?: string
           is_active?: boolean
           nome?: string
+          phone?: string | null
+          sicoob_tema_id?: string | null
           uf?: string | null
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "cooperativas_central_id_fkey"
+            columns: ["central_id"]
+            isOneToOne: false
+            referencedRelation: "sicoob_centrais"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cooperativas_central_id_fkey"
+            columns: ["central_id"]
+            isOneToOne: false
+            referencedRelation: "v_sicoob_hierarchy"
+            referencedColumns: ["central_id"]
+          },
+          {
+            foreignKeyName: "cooperativas_sicoob_tema_id_fkey"
+            columns: ["sicoob_tema_id"]
+            isOneToOne: false
+            referencedRelation: "sicoob_temas"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       cooperativas_parceiras: {
         Row: {
@@ -3130,6 +3174,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "postos_atendimento"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "limit_increase_requests_pa_id_fkey"
+            columns: ["pa_id"]
+            isOneToOne: false
+            referencedRelation: "v_sicoob_hierarchy"
+            referencedColumns: ["pa_id"]
           },
         ]
       }
@@ -5195,6 +5246,13 @@ export type Database = {
             referencedRelation: "postos_atendimento"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "pa_budgets_pa_id_fkey"
+            columns: ["pa_id"]
+            isOneToOne: false
+            referencedRelation: "v_sicoob_hierarchy"
+            referencedColumns: ["pa_id"]
+          },
         ]
       }
       pa_category_thresholds: {
@@ -5226,6 +5284,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "postos_atendimento"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pa_category_thresholds_pa_id_fkey"
+            columns: ["pa_id"]
+            isOneToOne: false
+            referencedRelation: "v_sicoob_hierarchy"
+            referencedColumns: ["pa_id"]
           },
         ]
       }
@@ -5265,6 +5330,13 @@ export type Database = {
             referencedRelation: "postos_atendimento"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "pa_notification_settings_pa_id_fkey"
+            columns: ["pa_id"]
+            isOneToOne: false
+            referencedRelation: "v_sicoob_hierarchy"
+            referencedColumns: ["pa_id"]
+          },
         ]
       }
       pa_singularidades: {
@@ -5302,6 +5374,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "sicoob_centrais"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pa_singularidades_central_id_fkey"
+            columns: ["central_id"]
+            isOneToOne: false
+            referencedRelation: "v_sicoob_hierarchy"
+            referencedColumns: ["central_id"]
           },
         ]
       }
@@ -5471,6 +5550,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "cooperativas"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "postos_atendimento_cooperativa_id_fkey"
+            columns: ["cooperativa_id"]
+            isOneToOne: false
+            referencedRelation: "v_sicoob_hierarchy"
+            referencedColumns: ["singular_id"]
           },
         ]
       }
@@ -5880,11 +5966,25 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "profiles_cooperativa_id_fkey"
+            columns: ["cooperativa_id"]
+            isOneToOne: false
+            referencedRelation: "v_sicoob_hierarchy"
+            referencedColumns: ["singular_id"]
+          },
+          {
             foreignKeyName: "profiles_pa_id_fkey"
             columns: ["pa_id"]
             isOneToOne: false
             referencedRelation: "postos_atendimento"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profiles_pa_id_fkey"
+            columns: ["pa_id"]
+            isOneToOne: false
+            referencedRelation: "v_sicoob_hierarchy"
+            referencedColumns: ["pa_id"]
           },
         ]
       }
@@ -6364,6 +6464,13 @@ export type Database = {
             referencedRelation: "cooperativas"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "quote_consolidations_singular_id_fkey"
+            columns: ["singular_id"]
+            isOneToOne: false
+            referencedRelation: "v_sicoob_hierarchy"
+            referencedColumns: ["singular_id"]
+          },
         ]
       }
       quote_history: {
@@ -6810,6 +6917,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "quotes_pa_id_fkey"
+            columns: ["pa_id"]
+            isOneToOne: false
+            referencedRelation: "v_sicoob_hierarchy"
+            referencedColumns: ["pa_id"]
+          },
+          {
             foreignKeyName: "quotes_parent_quote_id_fkey"
             columns: ["parent_quote_id"]
             isOneToOne: false
@@ -6822,6 +6936,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "cooperativas"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quotes_singular_id_fkey"
+            columns: ["singular_id"]
+            isOneToOne: false
+            referencedRelation: "v_sicoob_hierarchy"
+            referencedColumns: ["singular_id"]
           },
         ]
       }
@@ -7511,7 +7632,9 @@ export type Database = {
           code: string | null
           created_at: string | null
           id: string
+          logo_url: string | null
           name: string
+          primary_color: string | null
           region: string | null
           updated_at: string | null
         }
@@ -7519,7 +7642,9 @@ export type Database = {
           code?: string | null
           created_at?: string | null
           id?: string
+          logo_url?: string | null
           name: string
+          primary_color?: string | null
           region?: string | null
           updated_at?: string | null
         }
@@ -7527,7 +7652,9 @@ export type Database = {
           code?: string | null
           created_at?: string | null
           id?: string
+          logo_url?: string | null
           name?: string
+          primary_color?: string | null
           region?: string | null
           updated_at?: string | null
         }
@@ -7750,11 +7877,25 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "sicoob_orders_cooperative_id_fkey"
+            columns: ["cooperative_id"]
+            isOneToOne: false
+            referencedRelation: "v_sicoob_hierarchy"
+            referencedColumns: ["singular_id"]
+          },
+          {
             foreignKeyName: "sicoob_orders_pa_id_fkey"
             columns: ["pa_id"]
             isOneToOne: false
             referencedRelation: "postos_atendimento"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sicoob_orders_pa_id_fkey"
+            columns: ["pa_id"]
+            isOneToOne: false
+            referencedRelation: "v_sicoob_hierarchy"
+            referencedColumns: ["pa_id"]
           },
         ]
       }
@@ -8476,6 +8617,13 @@ export type Database = {
             referencedRelation: "postos_atendimento"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "pa_budgets_pa_id_fkey"
+            columns: ["pa_id"]
+            isOneToOne: false
+            referencedRelation: "v_sicoob_hierarchy"
+            referencedColumns: ["pa_id"]
+          },
         ]
       }
       v_full_scope_grants: {
@@ -8500,6 +8648,30 @@ export type Database = {
           verifications_applied: Json | null
         }
         Relationships: []
+      }
+      v_sicoob_hierarchy: {
+        Row: {
+          central_color: string | null
+          central_id: string | null
+          central_name: string | null
+          pa_code: string | null
+          pa_id: string | null
+          pa_name: string | null
+          singular_code: string | null
+          singular_id: string | null
+          singular_name: string | null
+          tema_id: string | null
+          tema_name: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cooperativas_sicoob_tema_id_fkey"
+            columns: ["tema_id"]
+            isOneToOne: false
+            referencedRelation: "sicoob_temas"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Functions: {

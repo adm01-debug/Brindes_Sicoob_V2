@@ -1,57 +1,66 @@
 import React, { useState, useEffect } from 'react';
-// import { MainLayout } from "@/components/layout/MainLayout";
 import { PageSEO } from "@/components/seo/PageSEO";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Plus, Search, Pencil, Trash2, Building2, MapPin, Phone, Mail } from "lucide-react";
+import { Plus, Search, Pencil, Trash2, Building2, MapPin, Phone, Mail, Globe, Palette } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export default function AdminSingularesPage() {
   const [singulares, setSingulares] = useState<any[]>([]);
+  const [centrais, setCentrais] = useState<any[]>([]);
+  const [temas, setTemas] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingSingular, setEditingSingular] = useState<any>(null);
 
-  const fetchSingulares = async () => {
+  const fetchData = async () => {
     setIsLoading(true);
     try {
-      const { data, error } = await supabase
-        .from('singulares')
-        .select('*')
-        .order('name', { ascending: true });
-      if (error) throw error;
-      setSingulares(data || []);
+      const [singRes, centraisRes, temasRes] = await Promise.all([
+        supabase.from('cooperativas').select('*, sicoob_centrais(name)').order('nome', { ascending: true }),
+        supabase.from('sicoob_centrais').select('id, name').order('name'),
+        supabase.from('sicoob_temas').select('id, name').order('name')
+      ]);
+
+      if (singRes.error) throw singRes.error;
+      setSingulares(singRes.data || []);
+      setCentrais(centraisRes.data || []);
+      setTemas(temasRes.data || []);
     } catch (error) {
-      console.error("Error fetching singulares:", error);
-      toast.error("Erro ao carregar singulares");
+      console.error("Error fetching data:", error);
+      toast.error("Erro ao carregar dados do ecossistema Sicoob");
     } finally {
       setIsLoading(false);
     }
   };
 
-  useEffect(() => { fetchSingulares(); }, []);
+  useEffect(() => { fetchData(); }, []);
 
   const handleSave = async (formData: any) => {
     try {
+      const dataToSave = { ...formData };
+      delete dataToSave.sicoob_centrais; // Remove joined data
+
       if (editingSingular) {
-        const { error } = await supabase.from('singulares').update(formData).eq('id', editingSingular.id);
+        const { error } = await supabase.from('cooperativas').update(dataToSave).eq('id', editingSingular.id);
         if (error) throw error;
         toast.success("Singular atualizada com sucesso");
       } else {
-        const { error } = await supabase.from('singulares').insert(formData);
+        const { error } = await supabase.from('cooperativas').insert(dataToSave);
         if (error) throw error;
         toast.success("Singular criada com sucesso");
       }
       setIsFormOpen(false);
       setEditingSingular(null);
-      fetchSingulares();
+      fetchData();
     } catch (error) {
       console.error("Error saving singular:", error);
       toast.error("Erro ao salvar singular");
@@ -59,82 +68,101 @@ export default function AdminSingularesPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Tem certeza que deseja excluir esta singular?")) return;
+    if (!confirm("Tem certeza que deseja excluir esta singular? Isso pode afetar usuários vinculados.")) return;
     try {
-      const { error } = await supabase.from('singulares').delete().eq('id', id);
+      const { error } = await supabase.from('cooperativas').delete().eq('id', id);
       if (error) throw error;
       toast.success("Singular excluída com sucesso");
-      fetchSingulares();
+      fetchData();
     } catch (error) {
       console.error("Error deleting singular:", error);
-      toast.error("Erro ao excluir singular");
+      toast.error("Erro ao excluir singular (verifique se há PAs vinculados)");
     }
   };
 
-  const filtered = singulares.filter(s => s.name.toLowerCase().includes(searchTerm.toLowerCase()) || s.code.toLowerCase().includes(searchTerm.toLowerCase()));
+  const filtered = singulares.filter(s => 
+    s.nome.toLowerCase().includes(searchTerm.toLowerCase()) || 
+    s.codigo.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
     <>
-      <PageSEO title="Gerenciar Singulares" description="Administre as cooperativas singulares do sistema." path="/admin/singulares" noIndex />
+      <PageSEO title="Gerenciar Singulares Sicoob" description="Administre as cooperativas singulares do sistema." path="/admin/singulares" noIndex />
       <div className="w-full max-w-[1920px] mx-auto px-4 py-6 space-y-6">
         <div className="flex items-center gap-3">
-          <div className="p-3 rounded-xl bg-primary/10">
-            <Building2 className="h-8 w-8 text-primary" />
+          <div className="p-3 rounded-xl bg-sicoob-green/10">
+            <Building2 className="h-8 w-8 text-sicoob-green" />
           </div>
           <div>
-            <h1 className="font-display text-3xl font-bold tracking-tight">Singulares</h1>
-            <p className="text-muted-foreground">Gerencie as cooperativas regionais (Singulares)</p>
+            <h1 className="font-display text-3xl font-bold tracking-tight text-sicoob-green-dark">Singulares (Cooperativas)</h1>
+            <p className="text-muted-foreground">Governança regional e curadoria temática por Singular</p>
           </div>
         </div>
 
-        <Card>
+        <Card className="border-border/40 shadow-sm">
           <CardHeader className="flex flex-row items-center justify-between">
             <div>
-              <CardTitle>Lista de Singulares</CardTitle>
-              <CardDescription>Visualize e edite as informações das cooperativas singulares</CardDescription>
+              <CardTitle>Ecossistema de Singulares</CardTitle>
+              <CardDescription>Configure limites de alçada, centrais e curadoria temática.</CardDescription>
             </div>
-            <Button onClick={() => { setEditingSingular(null); setIsFormOpen(true); }} className="gap-2">
+            <Button onClick={() => { setEditingSingular(null); setIsFormOpen(true); }} className="gap-2 bg-sicoob-green hover:bg-sicoob-green-dark text-white">
               <Plus className="h-4 w-4" /> Nova Singular
             </Button>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input placeholder="Buscar por nome ou código..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-9" />
+              <Input placeholder="Buscar por nome ou código..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-9 h-10 rounded-xl" />
             </div>
 
-            <div className="rounded-md border">
+            <div className="rounded-xl border border-border/60 overflow-hidden">
               <Table>
-                <TableHeader>
+                <TableHeader className="bg-muted/30">
                   <TableRow>
-                    <TableHead>Nome</TableHead>
-                    <TableHead>Código</TableHead>
-                    <TableHead>Contato</TableHead>
+                    <TableHead>Singular / Central</TableHead>
+                    <TableHead>Código / CNPJ</TableHead>
+                    <TableHead>Alçada Superior</TableHead>
+                    <TableHead>Tema Padrão</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead className="text-right">Ações</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {isLoading ? (
-                    <TableRow><TableCell colSpan={5} className="text-center py-8">Carregando...</TableCell></TableRow>
+                    <TableRow><TableCell colSpan={6} className="text-center py-8">Carregando ecossistema...</TableCell></TableRow>
                   ) : filtered.length === 0 ? (
-                    <TableRow><TableCell colSpan={5} className="text-center py-8 text-muted-foreground">Nenhuma singular encontrada</TableCell></TableRow>
+                    <TableRow><TableCell colSpan={6} className="text-center py-8 text-muted-foreground">Nenhuma singular encontrada</TableCell></TableRow>
                   ) : (
                     filtered.map((s) => (
-                      <TableRow key={s.id}>
-                        <TableCell className="font-medium">{s.name}</TableCell>
-                        <TableCell><Badge variant="outline">{s.code}</Badge></TableCell>
+                      <TableRow key={s.id} className="hover:bg-muted/5 transition-colors">
                         <TableCell>
-                          <div className="flex flex-col text-xs text-muted-foreground">
-                            {s.email && <div className="flex items-center gap-1"><Mail className="h-3 w-3" /> {s.email}</div>}
-                            {s.phone && <div className="flex items-center gap-1"><Phone className="h-3 w-3" /> {s.phone}</div>}
+                          <div className="font-bold text-sicoob-green-dark">{s.nome}</div>
+                          <div className="text-[10px] text-muted-foreground flex items-center gap-1 uppercase font-bold tracking-tighter">
+                            <Globe className="h-2.5 w-2.5" /> {s.sicoob_centrais?.name || "Sem Central"}
                           </div>
                         </TableCell>
-                        <TableCell><Badge variant={s.is_active ? "default" : "secondary"}>{s.is_active ? "Ativa" : "Inativa"}</Badge></TableCell>
+                        <TableCell>
+                          <Badge variant="outline" className="font-mono text-[10px]">{s.codigo}</Badge>
+                          <div className="text-[10px] text-muted-foreground mt-0.5">{s.cnpj || "CNPJ não informado"}</div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="font-medium text-sm">R$ {Number(s.alcada_superior_threshold).toLocaleString('pt-BR')}</div>
+                          <div className="text-[10px] text-muted-foreground uppercase font-bold tracking-tighter">Workflow Board</div>
+                        </TableCell>
+                        <TableCell>
+                          {s.sicoob_tema_id ? (
+                            <Badge className="bg-sicoob-green/10 text-sicoob-green border-sicoob-green/20 text-[10px] uppercase font-bold">
+                              {temas.find(t => t.id === s.sicoob_tema_id)?.name || "Personalizado"}
+                            </Badge>
+                          ) : (
+                            <span className="text-[10px] text-muted-foreground italic">Catálogo Global</span>
+                          )}
+                        </TableCell>
+                        <TableCell><Badge variant={s.is_active ? "default" : "secondary"} className={s.is_active ? "bg-sicoob-green" : ""}>{s.is_active ? "Ativa" : "Inativa"}</Badge></TableCell>
                         <TableCell className="text-right">
-                          <div className="flex justify-end gap-2">
-                            <Button variant="ghost" size="icon" onClick={() => { setEditingSingular(s); setIsFormOpen(true); }}><Pencil className="h-4 w-4" /></Button>
-                            <Button variant="ghost" size="icon" className="text-destructive" onClick={() => handleDelete(s.id)}><Trash2 className="h-4 w-4" /></Button>
+                          <div className="flex justify-end gap-1">
+                            <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg" onClick={() => { setEditingSingular(s); setIsFormOpen(true); }}><Pencil className="h-3.5 w-3.5" /></Button>
+                            <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-destructive hover:text-destructive hover:bg-destructive/10" onClick={() => handleDelete(s.id)}><Trash2 className="h-3.5 w-3.5" /></Button>
                           </div>
                         </TableCell>
                       </TableRow>
@@ -147,24 +175,56 @@ export default function AdminSingularesPage() {
         </Card>
       </div>
 
-      <SingularFormDialog open={isFormOpen} onOpenChange={setIsFormOpen} singular={editingSingular} onSave={handleSave} />
+      <SingularFormDialog 
+        open={isFormOpen} 
+        onOpenChange={setIsFormOpen} 
+        singular={editingSingular} 
+        onSave={handleSave} 
+        centrais={centrais}
+        temas={temas}
+      />
     </>
   );
 }
 
 
-function SingularFormDialog({ open, onOpenChange, singular, onSave }: any) {
-  const [formData, setFormData] = useState<any>({ name: '', code: '', address: '', phone: '', email: '', is_active: true });
+function SingularFormDialog({ open, onOpenChange, singular, onSave, centrais, temas }: any) {
+  const [formData, setFormData] = useState<any>({ 
+    nome: '', 
+    codigo: '', 
+    cnpj: '',
+    address: '', 
+    phone: '', 
+    email: '', 
+    is_active: true,
+    central_id: null,
+    sicoob_tema_id: null,
+    alcada_superior_threshold: 50000
+  });
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => { 
-    if (singular) setFormData(singular); 
-    else setFormData({ name: '', code: '', address: '', phone: '', email: '', is_active: true }); 
-  }, [singular, open]);
+    if (singular) setFormData({
+        ...singular,
+        alcada_superior_threshold: Number(singular.alcada_superior_threshold) || 50000
+    }); 
+    else setFormData({ 
+        nome: '', 
+        codigo: '', 
+        cnpj: '',
+        address: '', 
+        phone: '', 
+        email: '', 
+        is_active: true,
+        central_id: centrais[0]?.id || null,
+        sicoob_tema_id: null,
+        alcada_superior_threshold: 50000
+    }); 
+  }, [singular, open, centrais]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.name || !formData.code) {
+    if (!formData.nome || !formData.codigo) {
       toast.error("Nome e código são obrigatórios");
       return;
     }
@@ -178,48 +238,89 @@ function SingularFormDialog({ open, onOpenChange, singular, onSave }: any) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[600px] rounded-2xl">
         <DialogHeader>
-          <DialogTitle>{singular ? 'Editar Singular' : 'Nova Singular'}</DialogTitle>
-          <DialogDescription>Preencha os dados da cooperativa regional.</DialogDescription>
+          <DialogTitle className="text-xl font-display font-bold text-sicoob-green-dark">{singular ? 'Editar Singular' : 'Nova Singular'}</DialogTitle>
+          <DialogDescription>Dados cadastrais e configuração de governança Sicoob.</DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="grid gap-4 py-4">
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="name" className="text-right">Nome</Label>
-            <Input id="name" className="col-span-3" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} required />
-          </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="code" className="text-right">Código</Label>
-            <Input id="code" className="col-span-3" value={formData.code} onChange={(e) => setFormData({ ...formData, code: e.target.value })} required placeholder="Ex: 4001" />
-          </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="email" className="text-right">Email</Label>
-            <Input id="email" type="email" className="col-span-3" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} />
-          </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="phone" className="text-right">Telefone</Label>
-            <Input id="phone" className="col-span-3" value={formData.phone} onChange={(e) => setFormData({ ...formData, phone: e.target.value })} />
-          </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="address" className="text-right">Endereço</Label>
-            <Input id="address" className="col-span-3" value={formData.address} onChange={(e) => setFormData({ ...formData, address: e.target.value })} />
-          </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label className="text-right">Ativo</Label>
-            <div className="col-span-3 flex items-center gap-2">
-              <input 
-                type="checkbox" 
-                id="is_active"
-                className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
-                checked={formData.is_active} 
-                onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })} 
-              />
-              <Label htmlFor="is_active" className="text-sm font-normal">Habilitado para transações</Label>
+        <form onSubmit={handleSubmit} className="space-y-6 py-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="nome" className="text-xs font-bold uppercase">Nome da Singular</Label>
+              <Input id="nome" value={formData.nome} onChange={(e) => setFormData({ ...formData, nome: e.target.value })} required className="rounded-xl" />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="codigo" className="text-xs font-bold uppercase">Código</Label>
+              <Input id="codigo" value={formData.codigo} onChange={(e) => setFormData({ ...formData, codigo: e.target.value })} required placeholder="Ex: 4001" className="rounded-xl" />
             </div>
           </div>
-          <DialogFooter className="pt-4">
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
-            <Button type="submit" disabled={isSaving}>{isSaving ? "Salvando..." : "Salvar"}</Button>
+
+          <div className="grid grid-cols-2 gap-4">
+             <div className="space-y-2">
+              <Label htmlFor="central" className="text-xs font-bold uppercase">Central Regional</Label>
+              <Select value={formData.central_id || ""} onValueChange={(val) => setFormData({ ...formData, central_id: val })}>
+                <SelectTrigger className="rounded-xl"><SelectValue placeholder="Selecione a Central" /></SelectTrigger>
+                <SelectContent>
+                    {centrais.map((c: any) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="tema" className="text-xs font-bold uppercase">Curadoria Temática</Label>
+              <Select value={formData.sicoob_tema_id || "none"} onValueChange={(val) => setFormData({ ...formData, sicoob_tema_id: val === 'none' ? null : val })}>
+                <SelectTrigger className="rounded-xl"><SelectValue placeholder="Catálogo Padrão" /></SelectTrigger>
+                <SelectContent>
+                    <SelectItem value="none">Catálogo Global Sicoob</SelectItem>
+                    {temas.map((t: any) => <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="cnpj" className="text-xs font-bold uppercase">CNPJ</Label>
+              <Input id="cnpj" value={formData.cnpj || ''} onChange={(e) => setFormData({ ...formData, cnpj: e.target.value })} className="rounded-xl" />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="alcada" className="text-xs font-bold uppercase">Limite Alçada Board (R$)</Label>
+              <Input 
+                id="alcada" 
+                type="number" 
+                value={formData.alcada_superior_threshold} 
+                onChange={(e) => setFormData({ ...formData, alcada_superior_threshold: parseFloat(e.target.value) })} 
+                className="rounded-xl font-bold text-sicoob-green" 
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4 border-t border-border/40 pt-4">
+            <div className="space-y-2">
+              <Label htmlFor="email" className="text-xs font-bold uppercase">Email Institucional</Label>
+              <Input id="email" type="email" value={formData.email || ''} onChange={(e) => setFormData({ ...formData, email: e.target.value })} className="rounded-xl" />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="phone" className="text-xs font-bold uppercase">Telefone</Label>
+              <Input id="phone" value={formData.phone || ''} onChange={(e) => setFormData({ ...formData, phone: e.target.value })} className="rounded-xl" />
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 bg-muted/30 p-3 rounded-xl">
+            <input 
+              type="checkbox" 
+              id="is_active"
+              className="h-4 w-4 rounded border-gray-300 text-sicoob-green focus:ring-sicoob-green"
+              checked={formData.is_active} 
+              onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })} 
+            />
+            <Label htmlFor="is_active" className="text-sm font-medium">Singular Habilitada para Operações</Label>
+          </div>
+
+          <DialogFooter>
+            <Button type="button" variant="ghost" onClick={() => onOpenChange(false)} className="rounded-xl">Cancelar</Button>
+            <Button type="submit" disabled={isSaving} className="bg-sicoob-green hover:bg-sicoob-green-dark text-white rounded-xl px-8">
+                {isSaving ? "Salvando..." : "Salvar Configuração"}
+            </Button>
           </DialogFooter>
         </form>
       </DialogContent>

@@ -1,5 +1,4 @@
 import React from "react";
-// import { MainLayout } from "@/components/layout/MainLayout";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
@@ -12,7 +11,8 @@ import {
   Plus, 
   ArrowRight,
   Package,
-  Search
+  Search,
+  LayoutDashboard
 } from "lucide-react";
 import { formatCurrency } from "@/utils/formatters";
 import { Badge } from "@/components/ui/badge";
@@ -21,6 +21,7 @@ import { SicoobStatusBadge } from "@/components/sicoob/SicoobStatusBadge";
 import { OrderBudgetIntelligence } from "@/components/sicoob/orders/OrderBudgetIntelligence";
 import { usePaDashboardStats } from "@/hooks/sicoob/usePaDashboardStats";
 import { useAuth } from "@/contexts/AuthContext";
+import { HierarchyPath } from "@/components/sicoob/HierarchyPath";
 
 export default function PADashboardPage() {
   const { profile } = useAuth();
@@ -35,10 +36,14 @@ export default function PADashboardPage() {
   return (
     <>
       <div className="container mx-auto p-6 space-y-8 animate-fade-in">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-          <div>
-            <h1 className="text-3xl font-bold font-display tracking-tight text-sicoob-green-dark">Portal do PA</h1>
-            <p className="text-muted-foreground italic">Gestão tática de pedidos e abastecimento da agência.</p>
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+          <div className="space-y-2">
+            <HierarchyPath paId={profile?.pa_id} />
+            <h1 className="text-3xl font-bold font-display tracking-tight text-sicoob-green-dark flex items-center gap-2">
+              <LayoutDashboard className="h-7 w-7 text-sicoob-green" />
+              Portal de Abastecimento PA
+            </h1>
+            <p className="text-sm text-muted-foreground italic">Gestão tática de brindes e materiais institucionais para sua unidade.</p>
           </div>
           <div className="flex gap-2">
             <Button variant="outline" asChild>
