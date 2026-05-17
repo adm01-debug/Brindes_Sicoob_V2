@@ -163,6 +163,8 @@ export function useFilterPanelState(
     const ramoCount = (filters.ramosAtividade?.length || 0) + (filters.segmentosAtividade?.length || 0);
     const quickCount = [filters.isKit, filters.featured, filters.isNew, filters.hasPersonalization, filters.inStock, filters.hasCommercialPackaging].filter(Boolean).length;
     return {
+      temas: (filters.sicoobThemes || []).length,
+      "tiragem-minima": filters.minQuantity && filters.minQuantity > 0 ? 1 : 0,
       cores: colorCount,
       categorias: filters.categories?.length || 0,
       estoque: filters.minStock > 0 ? 1 : 0,
