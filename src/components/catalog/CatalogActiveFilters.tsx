@@ -13,8 +13,45 @@ export function CatalogActiveFilters({ filters, setFilters, activeFiltersCount }
   if (activeFiltersCount === 0) return null;
 
   return (
-    <div className="flex flex-wrap gap-2">
+    <div className="flex flex-wrap gap-2 py-2">
       <AnimatePresence mode="popLayout">
+        {(filters.sicoobThemes || []).map((theme) => (
+          <motion.div
+            key={`theme-${theme}`}
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.8 }}
+            layout
+          >
+            <Badge
+              variant="outline"
+              className="cursor-pointer hover:bg-destructive/10 border-sicoob-green/30 text-sicoob-green-dark bg-sicoob-green/5"
+              onClick={() => setFilters({ ...filters, sicoobThemes: filters.sicoobThemes.filter((t) => t !== theme) })}
+            >
+              🌿 Tema: {theme}
+              <span className="ml-1 opacity-60">×</span>
+            </Badge>
+          </motion.div>
+        ))}
+
+        {filters.minQuantity && filters.minQuantity > 0 ? (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.8 }}
+            layout
+          >
+            <Badge
+              variant="outline"
+              className="cursor-pointer hover:bg-destructive/10 border-sicoob-green/30 text-sicoob-green-dark bg-sicoob-green/5"
+              onClick={() => setFilters({ ...filters, minQuantity: 0 })}
+            >
+              📊 Tiragem: ≤{filters.minQuantity} un.
+              <span className="ml-1 opacity-60">×</span>
+            </Badge>
+          </motion.div>
+        ) : null}
+
         {filters.colors.map((color) => (
           <motion.div
             key={color}
@@ -25,11 +62,11 @@ export function CatalogActiveFilters({ filters, setFilters, activeFiltersCount }
           >
             <Badge
               variant="outline"
-              className="cursor-pointer hover:bg-destructive/10 border-brand/20 text-brand"
+              className="cursor-pointer hover:bg-destructive/10 border-muted-foreground/20 text-muted-foreground"
               onClick={() => setFilters({ ...filters, colors: filters.colors.filter((c) => c !== color) })}
             >
               🎨 {color}
-              <span className="ml-1">×</span>
+              <span className="ml-1 opacity-60">×</span>
             </Badge>
           </motion.div>
         ))}
@@ -45,11 +82,11 @@ export function CatalogActiveFilters({ filters, setFilters, activeFiltersCount }
             >
               <Badge
                 variant="outline"
-                className="cursor-pointer hover:bg-destructive/10 border-brand/20 text-brand"
+                className="cursor-pointer hover:bg-destructive/10 border-muted-foreground/20 text-muted-foreground"
                 onClick={() => setFilters({ ...filters, categories: filters.categories.filter((c) => c !== catId) })}
               >
                 {cat.icon} {cat.name}
-                <span className="ml-1">×</span>
+                <span className="ml-1 opacity-60">×</span>
               </Badge>
             </motion.div>
           ) : null;
@@ -63,11 +100,11 @@ export function CatalogActiveFilters({ filters, setFilters, activeFiltersCount }
           >
             <Badge
               variant="outline"
-              className="cursor-pointer hover:bg-destructive/10 border-brand/20 text-brand"
+              className="cursor-pointer hover:bg-destructive/10 border-muted-foreground/20 text-muted-foreground"
               onClick={() => setFilters({ ...filters, featured: false })}
             >
               ⭐ Destaques
-              <span className="ml-1">×</span>
+              <span className="ml-1 opacity-60">×</span>
             </Badge>
           </motion.div>
         )}
@@ -80,11 +117,11 @@ export function CatalogActiveFilters({ filters, setFilters, activeFiltersCount }
           >
             <Badge
               variant="outline"
-              className="cursor-pointer hover:bg-destructive/10 border-brand/20 text-brand"
+              className="cursor-pointer hover:bg-destructive/10 border-muted-foreground/20 text-muted-foreground"
               onClick={() => setFilters({ ...filters, isKit: false })}
             >
               📦 KITs
-              <span className="ml-1">×</span>
+              <span className="ml-1 opacity-60">×</span>
             </Badge>
           </motion.div>
         )}
