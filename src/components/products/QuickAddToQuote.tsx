@@ -94,9 +94,9 @@ export function QuickAddToQuote({
             variant="outline"
             className={cn(
               "px-2.5 py-1 text-sm font-medium cursor-pointer",
-              "border-primary/50 bg-primary/10 hover:bg-primary/20",
-              "text-primary hover:text-primary/80",
-              "transition-all duration-200 hover:scale-105 hover:border-primary",
+              "border-sicoob-green/50 bg-sicoob-green/10 hover:bg-sicoob-green/20",
+              "text-sicoob-green-dark hover:text-sicoob-green",
+              "transition-all duration-200 hover:scale-105 hover:border-sicoob-green",
               className,
             )}
             onClick={(e) => e.stopPropagation()}
