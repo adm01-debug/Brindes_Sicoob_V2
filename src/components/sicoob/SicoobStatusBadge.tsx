@@ -7,11 +7,13 @@ interface SicoobStatusBadgeProps {
   showIcon?: boolean;
   className?: string;
   variant?: "solid" | "soft" | "outline";
+  showLabel?: boolean;
 }
 
 export function SicoobStatusBadge({ 
   status, 
   showIcon = true, 
+  showLabel = true,
   className,
   variant = "soft"
 }: SicoobStatusBadgeProps) {
@@ -28,7 +30,7 @@ export function SicoobStatusBadge({
         className
       )}>
         {showIcon && <Icon className="h-3.5 w-3.5" />}
-        <span>{config.label}</span>
+        {showLabel && <span>{config.label}</span>}
       </div>
     );
   }
@@ -39,7 +41,7 @@ export function SicoobStatusBadge({
       className={cn("gap-1.5", className)}
     >
       {showIcon && <Icon className="h-3 w-3" />}
-      {config.label}
+      {showLabel && config.label}
     </Badge>
   );
 }
