@@ -1,5 +1,4 @@
 import React from "react";
-// import { MainLayout } from "@/components/layout/MainLayout";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
@@ -12,7 +11,8 @@ import {
   Plus, 
   ArrowRight,
   Package,
-  Search
+  Search,
+  LayoutDashboard
 } from "lucide-react";
 import { formatCurrency } from "@/utils/formatters";
 import { Badge } from "@/components/ui/badge";
@@ -21,6 +21,7 @@ import { SicoobStatusBadge } from "@/components/sicoob/SicoobStatusBadge";
 import { OrderBudgetIntelligence } from "@/components/sicoob/orders/OrderBudgetIntelligence";
 import { usePaDashboardStats } from "@/hooks/sicoob/usePaDashboardStats";
 import { useAuth } from "@/contexts/AuthContext";
+import { HierarchyPath } from "@/components/sicoob/HierarchyPath";
 
 export default function PADashboardPage() {
   const { profile } = useAuth();
