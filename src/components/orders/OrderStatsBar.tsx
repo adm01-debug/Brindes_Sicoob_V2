@@ -1,7 +1,7 @@
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Package, CheckCircle2, Clock, FileText } from 'lucide-react';
-import { useOrdersList } from '@/hooks/useOrders';
+import { useOrdersList } from '@/hooks/orders/useOrders';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSalesScope } from '@/lib/auth/visibility-scope';
 

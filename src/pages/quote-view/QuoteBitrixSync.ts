@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import { logger } from "@/lib/logger";
 import { selectCrmById } from "@/lib/crm-db";
 import type { ProposalTemplateData } from "@/components/pdf/ProposalHtmlTemplate";
-import type { Quote } from "@/hooks/useQuotes";
+import type { Quote } from "@/hooks/quotes/useQuotes";
 import { bitrixCircuitBreaker } from "@/utils/resilience";
 
 interface SyncBitrixParams {

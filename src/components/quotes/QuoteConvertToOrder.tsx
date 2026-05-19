@@ -2,7 +2,7 @@ import { Package, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { useOrganization } from "@/contexts/OrganizationContext";
-import { useConvertQuoteToOrder } from "@/hooks/useOrders";
+import { useConvertQuoteToOrder } from "@/hooks/orders/useOrders";
 import {
   AlertDialog,
   AlertDialogAction,

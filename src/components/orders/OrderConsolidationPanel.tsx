@@ -5,7 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { QuoteService } from "@/services/QuoteService";
 import { toast } from "sonner";
 import { formatCurrency } from "@/utils/quote-calculations";
 import { cn } from "@/lib/utils";
@@ -25,18 +25,10 @@ export function OrderConsolidationPanel({ singularId }: Props) {
   // Fetch approved quotes that are not yet consolidated
   const { data: pendingQuotes, isLoading } = useQuery({
     queryKey: ["quotes", "to-consolidate", singularId],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("quotes")
-        .select("*")
-        .eq("singular_id", singularId!)
-        .eq("status", "approved_singular")
-        .is("consolidation_id", null);
-      if (error) throw error;
-      return data;
-    },
+    queryFn: () => QuoteService.listToConsolidate(singularId!),
     enabled: !!singularId,
   });
+
 
   const toggleQuoteSelection = (id: string) => {
     setSelectedQuoteIds(prev => 
@@ -52,26 +44,11 @@ export function OrderConsolidationPanel({ singularId }: Props) {
 
     setIsConsolidating(true);
     try {
-      // 1. Create consolidation record
-      const { data: consolidation, error: consErr } = await supabase
-        .from("quote_consolidations")
-        .insert({
-          singular_id: singularId,
-          status: "pending",
-          notes: `Consolidação de ${selectedQuoteIds.length} orçamentos.`
-        })
-        .select()
-        .single();
-
-      if (consErr) throw consErr;
-
-      // 2. Link quotes to it
-      const { error: updErr } = await supabase
-        .from("quotes")
-        .update({ consolidation_id: consolidation.id } as any)
-        .in("id", selectedQuoteIds);
-
-      if (updErr) throw updErr;
+      await QuoteService.consolidate({
+        singularId,
+        quoteIds: selectedQuoteIds,
+        notes: `Consolidação de ${selectedQuoteIds.length} orçamentos.`
+      });
 
       toast.success("Orçamentos consolidados com sucesso!");
       setSelectedQuoteIds([]);
@@ -82,6 +59,7 @@ export function OrderConsolidationPanel({ singularId }: Props) {
       setIsConsolidating(false);
     }
   };
+
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

@@ -1,5 +1,5 @@
 
-import type { QuoteItem, QuoteItemPersonalization } from "@/hooks/useQuotes";
+import type { QuoteItem, QuoteItemPersonalization } from "@/hooks/quotes/useQuotes";
 import type { SelectedCompanyInfo, SelectedContactInfo } from "@/components/quotes/CompanyContactSelector";
 
 export interface Product {

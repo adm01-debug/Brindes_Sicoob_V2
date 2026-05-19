@@ -7,7 +7,7 @@ import {
   AlertCircle,
   TrendingUp
 } from 'lucide-react';
-import { useQuotes } from '@/hooks/useQuotes';
+import { useQuotes } from '@/hooks/quotes/useQuotes';
 
 export function QuoteMetricsDashboard() {
   const { quotes } = useQuotes();

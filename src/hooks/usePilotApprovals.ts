@@ -23,16 +23,7 @@ export function usePilotApprovals(orderId: string) {
 
   const query = useQuery({
     queryKey: ["order_pilot_approvals", orderId],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("order_pilot_approvals")
-        .select("*")
-        .eq("order_id", orderId)
-        .order("created_at", { ascending: false });
-      
-      if (error) throw error;
-      return data as PilotApproval[];
-    },
+    queryFn: () => OrderService.listPilotApprovals(orderId),
     enabled: !!orderId,
   });
 
@@ -40,19 +31,13 @@ export function usePilotApprovals(orderId: string) {
     mutationFn: async (payload: Partial<PilotApproval>) => {
       const { data: { user } } = await supabase.auth.getUser();
       
-      const { data, error } = await supabase
-        .from("order_pilot_approvals")
-        .insert({
-          ...payload,
-          order_id: orderId,
-          status: payload.status || 'pending',
-          revision_round: payload.revision_round || 1
-        })
-        .select()
-        .single();
+      const data = await OrderService.createPilotApproval({
+        ...payload,
+        order_id: orderId,
+        status: payload.status || 'pending',
+        revision_round: payload.revision_round || 1
+      });
       
-      if (error) throw error;
-
       // Log audit
       await OrderService.logAudit({
         orderId,
@@ -75,19 +60,14 @@ export function usePilotApprovals(orderId: string) {
     mutationFn: async ({ id, status, notes }: { id: string, status: string, notes?: string }) => {
       const { data: { user } } = await supabase.auth.getUser();
       
-      const { error } = await supabase
-        .from("order_pilot_approvals")
-        .update({ 
-          status, 
-          reviewer_notes: notes, 
-          reviewer_name: user?.email || 'Reviewer',
-          reviewed_at: new Date().toISOString(),
-          updated_at: new Date().toISOString() 
-        })
-        .eq("id", id);
+      await OrderService.updatePilotApprovalStatus(id, { 
+        status, 
+        reviewer_notes: notes, 
+        reviewer_name: user?.email || 'Reviewer',
+        reviewed_at: new Date().toISOString(),
+        updated_at: new Date().toISOString() 
+      });
       
-      if (error) throw error;
-
       // Log audit
       await OrderService.logAudit({
         orderId,
@@ -106,10 +86,11 @@ export function usePilotApprovals(orderId: string) {
   });
 
   return { 
-    approvals: query.data || [],
+    approvals: (query.data || []) as PilotApproval[],
     isLoading: query.isLoading,
     error: query.error,
     createApproval, 
     updateStatus 
   };
 }
+

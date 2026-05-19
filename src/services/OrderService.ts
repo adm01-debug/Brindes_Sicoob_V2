@@ -216,6 +216,97 @@ export class OrderService {
     return data;
   }
 
+  // Pilot Approvals Methods
+  static async listPilotApprovals(orderId: string) {
+    const { data, error } = await supabase
+      .from("order_pilot_approvals")
+      .select("*")
+      .eq("order_id", orderId)
+      .order("created_at", { ascending: false });
+    
+    if (error) throw error;
+    return data;
+  }
+
+  static async createPilotApproval(payload: any) {
+    const { data, error } = await supabase
+      .from("order_pilot_approvals")
+      .insert(payload)
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return data;
+  }
+
+  static async updatePilotApprovalStatus(id: string, payload: any) {
+    const { error } = await supabase
+      .from("order_pilot_approvals")
+      .update(payload)
+      .eq("id", id);
+    
+    if (error) throw error;
+  }
+
+  static async uploadPilotPhoto(orderId: string, file: File) {
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${orderId}/${Math.random()}.${fileExt}`;
+    const filePath = `pilots/${fileName}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from('personalization')
+      .upload(filePath, file);
+
+    if (uploadError) throw uploadError;
+
+    const { data: { publicUrl } } = supabase.storage
+      .from('personalization')
+      .getPublicUrl(filePath);
+      
+    return publicUrl;
+  }
+
+  // Order Templates Methods
+  static async listTemplates() {
+    const { data, error } = await supabase
+      .from("order_templates")
+      .select("*, items:order_template_items(*)")
+      .order("created_at", { ascending: false });
+    if (error) throw error;
+    return data;
+  }
+
+  static async deleteTemplate(id: string) {
+    const { error } = await supabase.from("order_templates").delete().eq("id", id);
+    if (error) throw error;
+  }
+
+  static async getApprovalHistory(orderId: string) {
+    const { data, error } = await supabase
+      .from("order_approval_history")
+      .select(`
+        *,
+        approver:approver_id(full_name)
+      `)
+      .eq("order_id", orderId)
+      .order("created_at", { ascending: false });
+    if (error) throw error;
+    return data;
+  }
+
+  static async getSmartAlerts() {
+    const { data: pending } = await supabase
+      .from("orders")
+      .select("id, created_at")
+      .eq("status", "enviado_gestor");
+    
+    return pending || [];
+  }
+
+
+
+
+
 
   static async notifyStatusChange(params: {
     orderId: string;

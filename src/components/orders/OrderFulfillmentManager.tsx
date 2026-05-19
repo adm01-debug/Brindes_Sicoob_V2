@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Truck, Loader2, Save } from "lucide-react";
-import { useOrderLogistics } from "@/hooks/useOrderExtensions";
+import { useOrderLogistics } from "@/hooks/orders/extensions";
 import { FULFILLMENT_LABELS, canTransitionTo } from "@/constants/orders";
 
 interface OrderFulfillmentManagerProps {

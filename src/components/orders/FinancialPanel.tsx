@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DollarSign, PieChart, ArrowUpRight } from "lucide-react";
-import { type OrderRow } from "@/hooks/useOrders";
+import { type OrderRow } from "@/hooks/orders/useOrders";
 import { formatCurrency } from "@/utils/quote-calculations";
 
 interface FinancialPanelProps {

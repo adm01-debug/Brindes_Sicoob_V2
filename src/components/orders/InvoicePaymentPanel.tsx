@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FileText, CreditCard, CheckCircle2 } from "lucide-react";
-import { type OrderRow } from "@/hooks/useOrders";
+import { type OrderRow } from "@/hooks/orders/useOrders";
 import { Badge } from "@/components/ui/badge";
 
 interface InvoicePaymentPanelProps {

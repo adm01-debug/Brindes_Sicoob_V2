@@ -18,7 +18,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
-import type { QuoteItem } from "@/hooks/useQuotes";
+import type { QuoteItem } from "@/hooks/quotes/useQuotes";
 import { NegotiationMarkupCard } from "@/components/quote/NegotiationMarkupCard";
 import { ConfirmDialog } from "@/components/common/ConfirmDialog";
 import { getPriceFreshness } from "@/utils/price-freshness";

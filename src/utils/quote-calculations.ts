@@ -1,5 +1,5 @@
 
-import { type QuoteItem, type QuoteItemPersonalization } from "@/hooks/useQuotes";
+import { type QuoteItem, type QuoteItemPersonalization } from "@/hooks/quotes/useQuotes";
 
 export const calculateItemPersonalizationTotal = (item: QuoteItem) => {
   return (item.personalizations || []).reduce((sum, p) => sum + (p.total_cost || 0), 0);

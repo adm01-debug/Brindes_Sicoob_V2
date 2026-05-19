@@ -1,8 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { AlertCircle, TrendingUp, Clock, Info } from "lucide-react";
+import { OrderService } from "@/services/OrderService";
+import { AlertCircle, TrendingUp, Info } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 
 export interface SmartAlert {
   id: string;
@@ -16,16 +15,10 @@ export function SmartAlertsPanel() {
   const { data: alerts } = useQuery({
     queryKey: ["smart-alerts"],
     queryFn: async () => {
-      // In a real app, this would call an Edge Function or complex SQL
-      // For now, let's mock some logic based on data
-      const { data: pending } = await supabase
-        .from("orders")
-        .select("id, created_at")
-        .eq("status", "enviado_gestor");
-      
+      const pending = await OrderService.getSmartAlerts();
       const alerts: SmartAlert[] = [];
       
-      if (pending && pending.length > 5) {
+      if (pending.length > 5) {
         alerts.push({
           id: "high-volume",
           type: "warning",
@@ -38,9 +31,9 @@ export function SmartAlertsPanel() {
       // Check for old orders
       const yesterday = new Date();
       yesterday.setDate(yesterday.getDate() - 1);
-      const oldOrders = pending?.filter(o => new Date(o.created_at) < yesterday);
+      const oldOrders = pending.filter(o => new Date(o.created_at) < yesterday);
       
-      if (oldOrders && oldOrders.length > 0) {
+      if (oldOrders.length > 0) {
         alerts.push({
           id: "stale-orders",
           type: "critical",
@@ -55,6 +48,7 @@ export function SmartAlertsPanel() {
   });
 
   if (!alerts || alerts.length === 0) return null;
+
 
   return (
     <Card className="border-primary/20 bg-primary/5">

@@ -10,7 +10,7 @@ import {
   Image as ImageIcon,
   MessageSquare
 } from "lucide-react";
-import { useOrderPilotApprovals } from "@/hooks/useOrderExtensions";
+import { useOrderPilotApprovals } from "@/hooks/orders/extensions";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 

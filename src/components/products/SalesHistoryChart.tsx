@@ -30,7 +30,7 @@ import { cn } from "@/lib/utils";
 import { formatCurrency } from "@/lib/format";
 import { useSalesHistory, type SellerRanking } from "@/hooks/useSalesHistory";
 import { safeParseDateForChart } from "@/lib/stock-chart-utils";
-import { KpiCard } from "@/components/ui/kpi-card";
+import { KpiCard } from "@/components/ui/KpiCard";
 import { useProductInsights } from "@/hooks/useProductRecommendations";
 
 

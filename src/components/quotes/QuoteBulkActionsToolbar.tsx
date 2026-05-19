@@ -9,7 +9,7 @@ import {
   FileArchive
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useQuotes } from "@/hooks/useQuotes";
+import { useQuotes } from "@/hooks/quotes/useQuotes";
 import { useAuth } from "@/contexts/AuthContext";
 import { exportQuotesAsZip } from "@/utils/quoteExportUtils";
 import { toast } from "sonner";

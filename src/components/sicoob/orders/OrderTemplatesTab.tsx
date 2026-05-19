@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Layout, FileText, CheckCircle } from "lucide-react";
-import { useOrderTemplates } from "@/hooks/useOrderExtensions";
+import { useOrderTemplates } from "@/hooks/orders/extensions";
 import { Badge } from "@/components/ui/badge";
 
 interface OrderTemplatesTabProps {

@@ -5,7 +5,7 @@ import { GoalTracker } from "@/components/admin/GoalTracker";
 import { OrdersHeatmap } from "@/components/admin/OrdersHeatmap";
 import { ConversionFunnel } from "@/components/intelligence/ConversionFunnel";
 import { QuotesFunnelChart } from "@/components/quotes/QuotesFunnelChart";
-import { useQuotes } from "@/hooks/useQuotes";
+import { useQuotes } from "@/hooks/quotes/useQuotes";
 import { useQuoteFunnel } from "@/hooks/useQuoteFunnel";
 import { BarChart3, TrendingUp, Users, ShoppingBag } from "lucide-react";
 

@@ -1,15 +1,16 @@
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Camera, CheckCircle, XCircle, Clock, Loader2, Upload, MessageSquare } from "lucide-react";
-import { type OrderRow } from "@/hooks/useOrders";
+import { type OrderRow } from "@/hooks/orders/useOrders";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { usePilotApprovals } from "@/hooks/usePilotApprovals";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
+import { OrderService } from "@/services/OrderService";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { cn } from "@/lib/utils";
 
 interface PilotApprovalPanelProps {
   order: OrderRow;
@@ -29,19 +30,7 @@ export function PilotApprovalPanel({ order }: PilotApprovalPanelProps) {
 
     setIsUploading(true);
     try {
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${order.id}/${Math.random()}.${fileExt}`;
-      const filePath = `pilots/${fileName}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from('personalization')
-        .upload(filePath, file);
-
-      if (uploadError) throw uploadError;
-
-      const { data: { publicUrl } } = supabase.storage
-        .from('personalization')
-        .getPublicUrl(filePath);
+      const publicUrl = await OrderService.uploadPilotPhoto(order.id, file);
 
       await createApproval.mutateAsync({
         mockup_url: publicUrl,
@@ -53,6 +42,7 @@ export function PilotApprovalPanel({ order }: PilotApprovalPanelProps) {
       setIsUploading(false);
     }
   };
+
 
   const handleAction = async (status: 'approved' | 'rejected' | 'revision') => {
     if (!latestApproval) return;

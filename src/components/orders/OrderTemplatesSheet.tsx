@@ -12,7 +12,7 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card, CardContent } from "@/components/ui/card";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { OrderService } from "@/services/OrderService";
 import { toast } from "sonner";
 import { format } from "date-fns";
 
@@ -29,27 +29,18 @@ export function OrderTemplatesSheet({ onApplyTemplate }: Props) {
 
   const { data: templates, isLoading } = useQuery({
     queryKey: ["order-templates"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("order_templates")
-        .select("*, items:order_template_items(*)")
-        .order("created_at", { ascending: false });
-      if (error) throw error;
-      return data;
-    },
+    queryFn: () => OrderService.listTemplates(),
     enabled: isOpen,
   });
 
   const deleteTemplate = useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase.from("order_templates").delete().eq("id", id);
-      if (error) throw error;
-    },
+    mutationFn: (id: string) => OrderService.deleteTemplate(id),
     onSuccess: () => {
       toast.success("Template removido");
       qc.invalidateQueries({ queryKey: ["order-templates"] });
     },
   });
+
 
   return (
     <Sheet open={isOpen} onOpenChange={setIsOpen}>

@@ -6,8 +6,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { ArrowLeft, Filter } from 'lucide-react';
-import { useOrderAudit } from '@/hooks/useOrderExtensions';
-import { useOrderDetail } from '@/hooks/useOrders';
+import { useOrderAudit } from '@/hooks/orders/extensions';
+import { useOrderDetail } from '@/hooks/orders/useOrders';
 import { 
   Select, 
   SelectContent, 

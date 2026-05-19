@@ -12,7 +12,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useAuth } from "@/contexts/AuthContext";
-import { useQuotes } from "@/hooks/useQuotes";
+import { useQuotes } from "@/hooks/quotes/useQuotes";
 import { toast } from "sonner";
 
 interface Props {

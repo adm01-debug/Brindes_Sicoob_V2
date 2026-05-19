@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useOrderComments } from "@/hooks/useOrderExtensions";
+import { useOrderComments } from "@/hooks/orders/extensions";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
