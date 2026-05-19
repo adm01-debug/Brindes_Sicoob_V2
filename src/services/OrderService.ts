@@ -294,6 +294,16 @@ export class OrderService {
     return data;
   }
 
+  static async getSmartAlerts() {
+    const { data: pending } = await supabase
+      .from("orders")
+      .select("id, created_at")
+      .eq("status", "enviado_gestor");
+    
+    return pending || [];
+  }
+
+
 
 
 
