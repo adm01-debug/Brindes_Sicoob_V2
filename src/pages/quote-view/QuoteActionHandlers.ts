@@ -9,7 +9,7 @@ import { toast } from "sonner";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { logger } from "@/lib/logger";
-import { formatCurrency, formatCNPJ } from "@/utils/formatters";
+import { formatCurrency, formatCNPJ } from "@/lib/format";
 
 export { formatCurrency, formatCNPJ };
 

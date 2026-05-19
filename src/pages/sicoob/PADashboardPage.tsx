@@ -14,7 +14,7 @@ import {
   Search,
   LayoutDashboard
 } from "lucide-react";
-import { formatCurrency } from "@/utils/formatters";
+import { formatCurrency } from "@/lib/format";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { SicoobStatusBadge } from "@/components/sicoob/SicoobStatusBadge";
