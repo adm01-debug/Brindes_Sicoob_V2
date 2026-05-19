@@ -34,7 +34,6 @@ export function useNotificationPreferences() {
       if (error) throw error;
       
       if (!data) {
-        // Create default preferences if not exists
         const { data: newData, error: insertError } = await supabase
           .from("notification_preferences")
           .insert({

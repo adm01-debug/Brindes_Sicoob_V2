@@ -1,5 +1,5 @@
 import { Separator } from "@/components/ui/separator";
-import { formatCurrency } from "@/utils/formatters";
+import { formatCurrency } from "@/lib/format";
 import { OrderRow } from "@/types/orders";
 
 interface OrderSummaryProps {

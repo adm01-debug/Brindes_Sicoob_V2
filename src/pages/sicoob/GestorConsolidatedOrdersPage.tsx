@@ -6,7 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Package, Layers, ArrowRight, CheckCircle2, AlertCircle, Globe } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
-import { formatCurrency } from "@/utils/formatters";
+import { formatCurrency } from "@/lib/format";
 import { LogisticsCommandCenter } from "@/components/sicoob/orders/LogisticsCommandCenter";
 
 export default function GestorConsolidatedOrdersPage() {

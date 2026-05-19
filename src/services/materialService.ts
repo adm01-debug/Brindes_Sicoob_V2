@@ -1,4 +1,4 @@
-import { supabase } from "@/integrations/supabase/client";
+import { BaseHttpService } from "./infrastructure/BaseHttpService";
 
 // Tipos
 export interface MaterialGroup {
@@ -43,50 +43,19 @@ export interface MaterialComplete {
 }
 
 // Service para chamadas à API de materiais
-class MaterialService {
-  private baseUrl: string;
-
-  constructor() {
-    this.baseUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/materials-api`;
+class MaterialService extends BaseHttpService {
+  protected getBaseUrl(): string {
+    return `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/materials-api`;
   }
 
-  private async getAuthHeaders(): Promise<HeadersInit> {
-    const { data: { session } } = await supabase.auth.getSession();
-    return {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${session?.access_token || ''}`,
-      'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
-    };
+  private async callAction<T>(action: string, params: Record<string, any> = {}): Promise<T> {
+    return this.post<T>({ action, ...params });
   }
 
-  private async callApi<T>(action: string, params: Record<string, any> = {}): Promise<T> {
-    const headers = await this.getAuthHeaders();
-
-    const response = await fetch(this.baseUrl, {
-      method: "POST",
-      headers,
-      body: JSON.stringify({ action, ...params }),
-    });
-
-    const result = await response.json().catch(() => ({}));
-
-    if (!response.ok) {
-      throw new Error(result?.error || "Erro ao buscar materiais");
-    }
-
-    // A função costuma responder no formato:
-    // { success: true, data: {...} }
-    // (mas mantém fallback para formato antigo sem envelope)
-    if (result?.success === false) {
-      throw new Error(result?.error || "Erro ao buscar materiais");
-    }
-
-    return (result?.data ?? result) as T;
-  }
 
   // Buscar todos os grupos de materiais com estatísticas
   async getGroups(): Promise<{ groups: MaterialGroup[]; count: number }> {
-    const res = await this.callApi<{ groups: Record<string, unknown>[]; count?: number }>("groups");
+    const res = await this.callAction<{ groups: Record<string, unknown>[]; count?: number }>("groups");
 
     const groups: MaterialGroup[] = (res.groups || []).map((g) => ({
       group_id: g.group_id ?? g.id ?? "",
@@ -105,7 +74,7 @@ class MaterialService {
 
   // Buscar todos os tipos de materiais
   async getTypes(): Promise<{ types: MaterialType[]; count: number }> {
-    const res = await this.callApi<{ types: Record<string, unknown>[]; count?: number }>("types");
+    const res = await this.callAction<{ types: Record<string, unknown>[]; count?: number }>("types");
 
     const types: MaterialType[] = (res.types || []).map((t) => ({
       id: t.id ?? t.material_id ?? "",
@@ -125,7 +94,7 @@ class MaterialService {
 
   // Buscar tipos de um grupo específico por slug
   async getTypesByGroupSlug(groupSlug: string): Promise<{ types: MaterialType[]; count: number; groupSlug: string }> {
-    const res = await this.callApi<{ types: Record<string, unknown>[]; count?: number }>("types_by_group", { groupId: groupSlug });
+    const res = await this.callAction<{ types: Record<string, unknown>[]; count?: number }>("types_by_group", { groupId: groupSlug });
 
     const types: MaterialType[] = (res.types || []).map((t) => ({
       id: t.id ?? t.material_id ?? "",
@@ -145,7 +114,7 @@ class MaterialService {
 
   // Buscar materiais completos (tipos + grupos)
   async getComplete(): Promise<{ materials: MaterialComplete[]; count: number }> {
-    const res = await this.callApi<{ materials: Record<string, unknown>[]; count?: number }>("complete");
+    const res = await this.callAction<{ materials: Record<string, unknown>[]; count?: number }>("complete");
 
     const materials: MaterialComplete[] = (res.materials || []).map((m) => ({
       type_id: m.type_id ?? m.material_id ?? m.id ?? "",
@@ -171,17 +140,17 @@ class MaterialService {
     groups: MaterialGroup[]; 
     summary: { totalGroups: number; totalMaterials: number; totalProducts: number } 
   }> {
-    return this.callApi('stats');
+    return this.callAction('stats');
   }
 
   // Buscar materiais por termo
   async search(searchTerm: string): Promise<{ types: MaterialComplete[]; count: number; search: string }> {
-    return this.callApi('search', { search: searchTerm });
+    return this.callAction('search', { search: searchTerm });
   }
 
   // Buscar materiais de um produto específico
   async getProductMaterials(productId: string): Promise<{ materials: Record<string, unknown>[]; count: number; productId: string }> {
-    return this.callApi('product_materials', { productId });
+    return this.callAction('product_materials', { productId });
   }
 
   // Buscar IDs de produtos que possuem determinados materiais
@@ -189,7 +158,7 @@ class MaterialService {
     materialTypeIds?: string[];
     materialGroupSlugs?: string[];
   }): Promise<{ productIds: string[]; count: number; materialTypeIds?: string[] }> {
-    return this.callApi('products_by_materials', options);
+    return this.callAction('products_by_materials', options);
   }
 }
 

@@ -7,7 +7,6 @@ export function useDuplicateEntity(tableName: string, queryKey: string[]) {
 
   return useMutation({
     mutationFn: async (id: string) => {
-      // 1. Fetch current entity
       const { data: entity, error: fetchError } = await supabase
         .from(tableName)
         .select("*")
@@ -16,17 +15,15 @@ export function useDuplicateEntity(tableName: string, queryKey: string[]) {
 
       if (fetchError) throw fetchError;
 
-      // 2. Prepare new entity (remove unique/auto fields)
       const { 
         id: _id, 
         created_at: _ca, 
         updated_at: _ua, 
-        order_number: _on, // Specific for orders
-        number: _n, // Common for invoices/quotes
+        order_number: _on, 
+        number: _n, 
         ...cleanEntity 
       } = entity;
 
-      // Add a mark that it's a copy if it has a title/name field
       const nameFields = ['name', 'title', 'code', 'razao_social'];
       for (const field of nameFields) {
         if (cleanEntity[field]) {
@@ -35,7 +32,6 @@ export function useDuplicateEntity(tableName: string, queryKey: string[]) {
         }
       }
 
-      // 3. Insert duplicate
       const { data: newEntity, error: insertError } = await supabase
         .from(tableName)
         .insert(cleanEntity)

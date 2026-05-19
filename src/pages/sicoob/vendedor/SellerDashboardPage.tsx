@@ -3,7 +3,7 @@ import React from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Users, ShoppingBag, Target, TrendingUp, Calendar, ArrowRight, UserPlus, Briefcase, Loader2 } from "lucide-react";
 import { useSellerDashboardStats } from "@/hooks/sicoob/useSellerDashboardStats";
-import { formatCurrency } from "@/utils/formatters";
+import { formatCurrency } from "@/lib/format";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { Progress } from "@/components/ui/progress";

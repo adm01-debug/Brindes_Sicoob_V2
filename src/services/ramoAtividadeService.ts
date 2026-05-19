@@ -1,4 +1,4 @@
-import { supabase } from "@/integrations/supabase/client";
+import { BaseHttpService } from "./infrastructure/BaseHttpService";
 import type {
   RamoAtividade,
   RamoAtividadeFilho,
@@ -7,43 +7,15 @@ import type {
 } from "@/types/ramo-atividade";
 
 // Service para chamadas à API de Ramos de Atividade (banco externo)
-class RamoAtividadeService {
-  private baseUrl: string;
-
-  constructor() {
-    this.baseUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/external-db-bridge`;
+class RamoAtividadeService extends BaseHttpService {
+  protected getBaseUrl(): string {
+    return `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/external-db-bridge`;
   }
 
-  private async getAuthHeaders(): Promise<HeadersInit> {
-    const { data: { session } } = await supabase.auth.getSession();
-    return {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${session?.access_token || ''}`,
-      'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
-    };
+  private async callBridge<T>(table: string, operation: string, params: Record<string, unknown> = {}): Promise<T> {
+    return this.post<T>({ table, operation, ...params });
   }
 
-  private async callApi<T>(table: string, operation: string, params: Record<string, unknown> = {}): Promise<T> {
-    const headers = await this.getAuthHeaders();
-
-    const response = await fetch(this.baseUrl, {
-      method: "POST",
-      headers,
-      body: JSON.stringify({ table, operation, ...params }),
-    });
-
-    const result = await response.json().catch(() => ({}));
-
-    if (!response.ok) {
-      throw new Error(result?.error || "Erro ao acessar ramos de atividade");
-    }
-
-    if (result?.success === false) {
-      throw new Error(result?.error || "Erro ao acessar ramos de atividade");
-    }
-
-    return (result?.data ?? result) as T;
-  }
 
   // ============================================================
   // RAMOS DE ATIVIDADE (Categorias Pai)

@@ -2,7 +2,7 @@ import React from "react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
 import { useSicoobBudget } from "@/hooks/sicoob/useSicoobBudget";
-import { formatCurrency } from "@/utils/formatters";
+import { formatCurrency } from "@/lib/format";
 
 interface BudgetExceededBannerProps {
   currentTotal?: number;

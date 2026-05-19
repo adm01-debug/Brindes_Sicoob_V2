@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { formatCurrency } from "@/utils/formatters";
+import { formatCurrency } from "@/lib/format";
 import { Quote, QuoteItem } from "@/hooks/quotes/quoteTypes";
 import { Package, Hash, Layers, PieChart, FileText, Search, Filter, ChevronDown, ChevronRight, ArrowUpDown, Download, History, Share2, Save, X, Calendar, Clock, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";

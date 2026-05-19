@@ -18,7 +18,7 @@ import {
   TableRow 
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { formatCurrency } from "@/utils/formatters";
+import { formatCurrency } from "@/lib/format";
 import { format } from "date-fns";
 import { History, AlertCircle, CheckCircle2, XCircle, Clock } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";

@@ -1,4 +1,3 @@
-
 import { useAuth } from "@/contexts/AuthContext";
 import { useMemo } from "react";
 
@@ -14,7 +13,7 @@ export type AdminModule =
   | 'budgets';
 
 export function useAdminPermissions() {
-  const { userRoles, isDev, isSupervisor, isGestorCompras } = useAuth();
+  const { isDev, isSupervisor, isGestorCompras } = useAuth();
 
   const permissions = useMemo(() => {
     return {
