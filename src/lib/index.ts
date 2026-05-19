@@ -1,6 +1,6 @@
 // Core Infrastructure
-export { supabase } from "@/integrations/supabase/client";
 export { logger } from "./logger";
+
 export { diagnostics } from "./diagnostics";
 
 // Formatting
