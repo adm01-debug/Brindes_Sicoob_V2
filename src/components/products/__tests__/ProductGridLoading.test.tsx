@@ -1,8 +1,12 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { ProductGridSkeleton } from '@/components/products/ProductCardSkeleton';
 import { CatalogContent } from '@/components/catalog/CatalogContent';
 import React from 'react';
+
+// Define globally needed variables for Supabase client
+(globalThis as any).SUPABASE_URL = 'https://mock.supabase.co';
+(globalThis as any).SUPABASE_PUBLISHABLE_KEY = 'mock-key';
 
 // Mock matchMedia
 Object.defineProperty(window, 'matchMedia', {
