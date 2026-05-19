@@ -58,6 +58,7 @@ export { EmptyState, InlineEmptyState } from "./EmptyState";
 export { DataCard } from "./DataCard";
 export { FormSection } from "./FormSection";
 export { Sparkline } from "./Sparkline";
-export { StatCard } from "./stat-card";
-export { KpiCard } from "./kpi-card";
+export { StatCard } from "./StatCard";
+export { KpiCard } from "./KpiCard";
+
 export { FocusTrap, useFocusTrap, AccessibleModal } from "./FocusTrap";
