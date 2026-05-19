@@ -85,13 +85,12 @@ export const PAsTab = () => {
 
   const updateMutation = useMutation({
     mutationFn: async (pa: any) => {
+      const dataToSave = { ...pa };
+      delete dataToSave.id;
+      delete dataToSave.cooperativa; // Remove joined data
       const { data, error } = await supabase
         .from("postos_atendimento")
-        .update({
-          nome: pa.nome,
-          codigo: pa.codigo,
-          cooperativa_id: pa.cooperativa_id,
-        })
+        .update(dataToSave)
         .eq("id", pa.id)
         .select()
         .single();
@@ -135,6 +134,9 @@ export const PAsTab = () => {
       nome: formData.get("name") as string,
       codigo: formData.get("code") as string,
       cooperativa_id: formData.get("cooperativa_id") as string,
+      endereco: formData.get("endereco") as string,
+      cidade: formData.get("cidade") as string,
+      uf: (formData.get("uf") as string)?.toUpperCase(),
     });
   };
 
@@ -146,6 +148,9 @@ export const PAsTab = () => {
       nome: formData.get("name") as string,
       codigo: formData.get("code") as string,
       cooperativa_id: formData.get("cooperativa_id") as string,
+      endereco: formData.get("endereco") as string,
+      cidade: formData.get("cidade") as string,
+      uf: (formData.get("uf") as string)?.toUpperCase(),
     });
   };
 
@@ -193,13 +198,29 @@ export const PAsTab = () => {
                       </SelectContent>
                     </Select>
                   </div>
-                  <div className="space-y-2">
-                    <label htmlFor="name">Nome do PA</label>
-                    <Input id="name" name="name" placeholder="Ex: PA Centro" required />
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <label htmlFor="name">Nome do PA</label>
+                      <Input id="name" name="name" placeholder="Ex: PA Centro" required />
+                    </div>
+                    <div className="space-y-2">
+                      <label htmlFor="code">Código</label>
+                      <Input id="code" name="code" placeholder="Ex: 01" required />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-3 gap-4">
+                    <div className="col-span-2 space-y-2">
+                      <label htmlFor="cidade">Cidade</label>
+                      <Input id="cidade" name="cidade" placeholder="Ex: Vilhena" />
+                    </div>
+                    <div className="space-y-2">
+                      <label htmlFor="uf">UF</label>
+                      <Input id="uf" name="uf" maxLength={2} placeholder="RO" />
+                    </div>
                   </div>
                   <div className="space-y-2">
-                    <label htmlFor="code">Código/Número</label>
-                    <Input id="code" name="code" placeholder="Ex: 01" required />
+                    <label htmlFor="endereco">Endereço</label>
+                    <Input id="endereco" name="endereco" placeholder="Rua..." />
                   </div>
                 </div>
                 <DialogFooter>
@@ -315,23 +336,29 @@ export const PAsTab = () => {
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="space-y-2">
-                  <label htmlFor="edit-name">Nome do PA</label>
-                  <Input
-                    id="edit-name"
-                    name="name"
-                    defaultValue={editingPA.nome}
-                    required
-                  />
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label htmlFor="edit-name">Nome do PA</label>
+                    <Input id="edit-name" name="name" defaultValue={editingPA.nome} required />
+                  </div>
+                  <div className="space-y-2">
+                    <label htmlFor="edit-code">Código</label>
+                    <Input id="edit-code" name="code" defaultValue={editingPA.codigo} required />
+                  </div>
+                </div>
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="col-span-2 space-y-2">
+                    <label htmlFor="edit-cidade">Cidade</label>
+                    <Input id="edit-cidade" name="cidade" defaultValue={editingPA.cidade} />
+                  </div>
+                  <div className="space-y-2">
+                    <label htmlFor="edit-uf">UF</label>
+                    <Input id="edit-uf" name="uf" maxLength={2} defaultValue={editingPA.uf} />
+                  </div>
                 </div>
                 <div className="space-y-2">
-                  <label htmlFor="edit-code">Código/Número</label>
-                  <Input
-                    id="edit-code"
-                    name="code"
-                    defaultValue={editingPA.codigo}
-                    required
-                  />
+                  <label htmlFor="edit-endereco">Endereço</label>
+                  <Input id="edit-endereco" name="endereco" defaultValue={editingPA.endereco} />
                 </div>
               </div>
               <DialogFooter>

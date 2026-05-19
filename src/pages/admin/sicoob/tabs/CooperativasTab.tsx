@@ -30,23 +30,29 @@ export const CooperativasTab = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [editingCoop, setEditingCoop] = useState<any>(null);
+  const [centrais, setCentrais] = useState<any[]>([]);
+  const [temas, setTemas] = useState<any[]>([]);
   const queryClient = useQueryClient();
 
 
   const { data: cooperativas, isLoading } = useQuery({
     queryKey: ["cooperativas"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("cooperativas")
-        .select("*")
-        .order("nome");
-      if (error) throw error;
-      return data;
+      const [coopRes, centraisRes, temasRes] = await Promise.all([
+        supabase.from("cooperativas").select("*, central:sicoob_centrais(name)").order("nome"),
+        supabase.from("sicoob_centrais").select("id, name").order("name"),
+        supabase.from("sicoob_temas").select("id, name").order("name")
+      ]);
+      
+      if (centraisRes.data) setCentrais(centraisRes.data);
+      if (temasRes.data) setTemas(temasRes.data);
+      
+      return coopRes.data;
     },
   });
 
   const createMutation = useMutation({
-    mutationFn: async (newCoop: { nome: string; codigo: string }) => {
+    mutationFn: async (newCoop: any) => {
       const { data, error } = await supabase
         .from("cooperativas")
         .insert([newCoop])
@@ -66,10 +72,13 @@ export const CooperativasTab = () => {
   });
 
   const updateMutation = useMutation({
-    mutationFn: async (coop: { id: string; nome: string; codigo: string }) => {
+    mutationFn: async (coop: any) => {
+      const dataToSave = { ...coop };
+      delete dataToSave.id;
+      delete dataToSave.central; // Remove joined data
       const { data, error } = await supabase
         .from("cooperativas")
-        .update({ nome: coop.nome, codigo: coop.codigo })
+        .update(dataToSave)
         .eq("id", coop.id)
         .select()
         .single();
@@ -111,6 +120,9 @@ export const CooperativasTab = () => {
     createMutation.mutate({
       nome: formData.get("name") as string,
       codigo: formData.get("code") as string,
+      central_id: formData.get("central_id"),
+      sicoob_tema_id: formData.get("tema_id") === "none" ? null : formData.get("tema_id"),
+      alcada_superior_threshold: parseFloat(formData.get("alcada") as string || "50000"),
     });
   };
 
@@ -154,13 +166,40 @@ export const CooperativasTab = () => {
                   </DialogDescription>
                 </DialogHeader>
                 <div className="grid gap-4 py-4">
-                  <div className="space-y-2">
-                    <label htmlFor="name">Nome da Cooperativa</label>
-                    <Input id="name" name="name" placeholder="Ex: Sicoob Credisul" required />
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <label htmlFor="name">Nome da Cooperativa</label>
+                      <Input id="name" name="name" placeholder="Ex: Sicoob Credisul" required />
+                    </div>
+                    <div className="space-y-2">
+                      <label htmlFor="code">Código</label>
+                      <Input id="code" name="code" placeholder="Ex: 4321" required />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <label>Central Regional</label>
+                      <Select name="central_id" required>
+                        <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
+                        <SelectContent>
+                          {centrais.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <label>Curadoria Temática</label>
+                      <Select name="tema_id" defaultValue="none">
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="none">Catálogo Global</SelectItem>
+                          {temas.map(t => <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
                   <div className="space-y-2">
-                    <label htmlFor="code">Código/Número</label>
-                    <Input id="code" name="code" placeholder="Ex: 4321" required />
+                    <label htmlFor="alcada">Limite Alçada Superior (R$)</label>
+                    <Input id="alcada" name="alcada" type="number" defaultValue="50000" required />
                   </div>
                 </div>
                 <DialogFooter>

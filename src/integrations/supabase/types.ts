@@ -7583,6 +7583,7 @@ export type Database = {
           approver_id: string | null
           created_at: string
           id: string
+          metadata: Json | null
           order_id: string
           rejection_reason: string | null
           request_reason: string | null
@@ -7596,6 +7597,7 @@ export type Database = {
           approver_id?: string | null
           created_at?: string
           id?: string
+          metadata?: Json | null
           order_id: string
           rejection_reason?: string | null
           request_reason?: string | null
@@ -7609,6 +7611,7 @@ export type Database = {
           approver_id?: string | null
           created_at?: string
           id?: string
+          metadata?: Json | null
           order_id?: string
           rejection_reason?: string | null
           request_reason?: string | null
