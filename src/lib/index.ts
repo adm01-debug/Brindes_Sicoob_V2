@@ -10,7 +10,9 @@ export * from "./textUtils";
 
 // Auth & Security
 export * from "./auth/auth-utils";
+export * from "./roles";
 export { CircuitBreaker } from "./circuit-breaker";
+
 
 // Communication
 export { invokeEdgeFunction } from "./edge-function-client";
