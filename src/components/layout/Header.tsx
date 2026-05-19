@@ -25,7 +25,7 @@ import { useIsScrolled } from "@/hooks/useScroll";
 import { useCurrentSection } from "@/hooks/useCurrentSection";
 import { cn } from "@/lib/utils";
 import { getRoleLabel } from "@/lib/roles";
-import { RoleBadge } from "@/components/RoleBadge";
+import { RoleBadge } from "@/components/ui/RoleBadge";
 import { BackButton } from "@/components/common/BackButton";
 
 // Lazy load non-critical Header sub-components
