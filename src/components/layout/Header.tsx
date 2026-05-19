@@ -136,6 +136,7 @@ export function Header({ onMenuToggle, searchQuery, onSearchChange }: HeaderProp
             {location.pathname !== "/" && location.pathname !== "/dashboard" ? (
               <BackButton variant="ghost" size="icon" showLabel={false} className="h-9 w-9 rounded-full" />
             ) : (
+
               <div className="flex items-center mr-1 ml-1">
                 <img 
                   src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/ca/Sicoob_logo.svg/2560px-Sicoob_logo.svg.png" 
@@ -152,6 +153,7 @@ export function Header({ onMenuToggle, searchQuery, onSearchChange }: HeaderProp
             className={cn(
               "hover:bg-brand/10 hover:text-brand h-8 w-8 sm:h-9 sm:w-9 transition-all",
               location.pathname !== "/" && location.pathname !== "/dashboard" ? "hidden lg:flex" : "flex lg:hidden"
+
             )}
             onClick={onMenuToggle}
             aria-label="Menu"
