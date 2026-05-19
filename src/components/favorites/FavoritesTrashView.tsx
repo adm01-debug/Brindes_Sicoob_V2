@@ -4,8 +4,8 @@ import { RotateCcw, Trash2 } from "lucide-react";
 import { useFavoriteTrash } from "@/hooks/useFavoriteLists";
 import { useProductsContext } from "@/contexts/ProductsContext";
 import { useMemo, useState } from "react";
-import { DeleteConfirmDialog } from "@/components/ui/ConfirmDialog";
-import { EmptyState } from "@/components/common/EmptyState";
+import { DeleteConfirmDialog } from "@/components/common/ConfirmDialog";
+import { EmptyState } from "@/components/ui/EmptyState";
 
 export function FavoritesTrashView() {
   const { items, isLoading, restoreItem, purgeItem, purgeAll } = useFavoriteTrash();

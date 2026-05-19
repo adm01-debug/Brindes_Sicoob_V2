@@ -51,7 +51,7 @@ import { useRBAC } from "@/hooks/useRBAC";
 import Fuse from "fuse.js";
 import { format } from "date-fns";
 // DynamicBreadcrumbs removido: o MainLayout já renderiza PersistentBreadcrumbs sticky.
-import { EmptyState } from "@/components/common/EmptyState";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { QuoteCardSkeleton } from "@/components/common/ContextualSkeleton";
 import { FadeInView, AnimatedCounter } from "@/components/common/MicroInteractions";
 import { QuotesConfigurableList } from "@/components/quotes/QuotesConfigurableList";
