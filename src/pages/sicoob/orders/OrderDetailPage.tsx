@@ -43,7 +43,7 @@ import { toast } from "sonner";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePaBudget } from "@/hooks/usePaBudget";
-import { useApprovalThreshold } from "@/hooks/useApprovalThreshold";
+import { useApprovalThreshold } from "@/hooks/admin/useApprovalThreshold";
 import { useApprovalRequests } from "@/hooks/useSicoobApprovals";
 import { useSicoobOrderItems } from "@/hooks/useSicoobOrderItems";
 import { useSicoobOrderHistory } from "@/hooks/useSicoobOrderHistory";
