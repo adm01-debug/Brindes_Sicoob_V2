@@ -108,22 +108,6 @@ export const useApprovalRequests = (orderId?: string) => {
       );
     },
 
-      if (requestError) throw requestError;
-
-      const { error: orderError } = await supabase
-        .from("sicoob_orders")
-        .update({ status: 'waiting_approval' })
-        .eq("id", payload.orderId);
-
-      if (orderError) throw orderError;
-
-      await recordHistory(
-        payload.orderId, 
-        payload.previousStatus, 
-        'waiting_approval', 
-        `Solicitação de aprovação: ${payload.reason}`
-      );
-    },
     onSuccess: () => {
       toast.success("Solicitação de aprovação enviada");
       queryClient.invalidateQueries({ queryKey: ["approval_requests"] });

@@ -1,7 +1,7 @@
 import { useState, useCallback } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { type AppRole, type UserWithRole } from "./types";
+import { type UserWithRole, type AppRole } from "@/types/users";
+import { UserService } from "@/services/admin/UserService";
 
 export function useUserManagement() {
   const [users, setUsers] = useState<UserWithRole[]>([]);
@@ -11,29 +11,8 @@ export function useUserManagement() {
   const fetchUsers = useCallback(async () => {
     setIsLoading(true);
     try {
-      const [{ data: profiles, error: profilesError }, { data: roles, error: rolesError }] = await Promise.all([
-        supabase.from("profiles").select("id, user_id, full_name, email, avatar_url, is_active, created_at").order("created_at", { ascending: false }),
-        supabase.from("user_roles").select("user_id, role"),
-      ]);
-
-      if (profilesError) throw profilesError;
-      if (rolesError) throw rolesError;
-
-      const usersWithRoles: UserWithRole[] = (profiles || []).map((profile) => {
-        const userRole = roles?.find((r) => r.user_id === profile.user_id);
-        return {
-          id: profile.id,
-          user_id: profile.user_id,
-          full_name: profile.full_name,
-          email: profile.email,
-          avatar_url: profile.avatar_url,
-          role: (userRole?.role as AppRole) || "vendedor",
-          created_at: profile.created_at,
-          is_active: profile.is_active,
-        };
-      });
-
-      setUsers(usersWithRoles);
+      const data = await UserService.list();
+      setUsers(data);
     } catch (error) {
       console.error("Error fetching users:", error);
       toast.error("Erro ao carregar usuários");
@@ -45,10 +24,9 @@ export function useUserManagement() {
   const handleRoleChange = async (userId: string, newRole: AppRole) => {
     setUpdatingUserId(userId);
     try {
-      const { error } = await supabase.from("user_roles").update({ role: newRole }).eq("user_id", userId);
-      if (error) throw error;
-
+      await UserService.updateRole(userId, newRole);
       setUsers((prev) => prev.map((u) => (u.user_id === userId ? { ...u, role: newRole } : u)));
+      
       const label =
         newRole === "dev" ? "Dev"
         : newRole === "supervisor" || newRole === "admin" || newRole === "manager" ? "Supervisor"
@@ -76,11 +54,7 @@ export function useUserManagement() {
       return false;
     }
     try {
-      const { data, error } = await supabase.functions.invoke("manage-users", {
-        body: { action: "create", email: form.email.trim(), password: form.password, full_name: form.full_name.trim(), role: form.role },
-      });
-      if (error) throw error;
-      if (data?.error) throw new Error(data.error);
+      await UserService.createUser(form);
       toast.success("Usuário criado com sucesso");
       await fetchUsers();
       return true;
@@ -97,11 +71,7 @@ export function useUserManagement() {
 
   const handleDeleteUser = async (userId: string) => {
     try {
-      const { data, error } = await supabase.functions.invoke("manage-users", {
-        body: { action: "delete", user_id: userId },
-      });
-      if (error) throw error;
-      if (data?.error) throw new Error(data.error);
+      await UserService.deleteUser(userId);
       toast.success("Usuário excluído com sucesso");
       setUsers((prev) => prev.filter((u) => u.user_id !== userId));
       return true;
@@ -114,13 +84,7 @@ export function useUserManagement() {
 
   const handleSaveEdit = async (userId: string, form: { full_name: string; email: string; is_active: boolean }) => {
     try {
-      const { error } = await supabase.from("profiles").update({
-        full_name: form.full_name.trim() || null,
-        email: form.email.trim() || null,
-        is_active: form.is_active,
-      }).eq("user_id", userId);
-      if (error) throw error;
-
+      await UserService.updateProfile(userId, form);
       setUsers((prev) =>
         prev.map((u) =>
           u.user_id === userId
@@ -143,13 +107,7 @@ export function useUserManagement() {
       return null;
     }
     try {
-      const ext = file.name.split(".").pop();
-      const filePath = `${userId}/avatar.${ext}`;
-      const { error: uploadError } = await supabase.storage.from("avatars").upload(filePath, file, { upsert: true });
-      if (uploadError) throw uploadError;
-      const { data: urlData } = supabase.storage.from("avatars").getPublicUrl(filePath);
-      const publicUrl = urlData.publicUrl + `?t=${Date.now()}`;
-      await supabase.from("profiles").update({ avatar_url: publicUrl }).eq("user_id", userId);
+      const publicUrl = await UserService.uploadAvatar(userId, file);
       setUsers((prev) => prev.map((u) => u.user_id === userId ? { ...u, avatar_url: publicUrl } : u));
       toast.success("Foto atualizada com sucesso");
       return publicUrl;
@@ -162,7 +120,7 @@ export function useUserManagement() {
 
   const handleRemoveAvatar = async (userId: string) => {
     try {
-      await supabase.from("profiles").update({ avatar_url: null }).eq("user_id", userId);
+      await UserService.removeAvatar(userId);
       setUsers((prev) => prev.map((u) => u.user_id === userId ? { ...u, avatar_url: null } : u));
       toast.success("Foto removida");
       return true;
@@ -185,3 +143,4 @@ export function useUserManagement() {
     handleRemoveAvatar,
   };
 }
+

@@ -4,9 +4,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search, Building2, MapPin, Briefcase, Save, Loader2 } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
+import { UserService } from "@/services/admin/UserService";
 
 export function SicoobHierarchyTab() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -15,26 +15,14 @@ export function SicoobHierarchyTab() {
 
   const { data: users = [], isLoading, refetch } = useQuery({
     queryKey: ["sicoob-users-hierarchy"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("id, full_name, email, pa_id, singular_id, carteira_id")
-        .order("full_name");
-      if (error) throw error;
-      return data;
-    }
+    queryFn: () => UserService.listHierarchy()
   });
 
   const handleUpdateHierarchy = async (userId: string, field: string, value: string) => {
     setUpdatingId(userId);
     try {
       const uuidValue = value.trim() || null;
-      const { error } = await supabase
-        .from("profiles")
-        .update({ [field]: uuidValue })
-        .eq("id", userId);
-
-      if (error) throw error;
+      await UserService.updateHierarchy(userId, field, uuidValue);
       
       toast({
         title: "Sucesso",
@@ -51,6 +39,7 @@ export function SicoobHierarchyTab() {
       setUpdatingId(null);
     }
   };
+
 
   const filteredUsers = users.filter(u => 
     (u.full_name || "").toLowerCase().includes(searchQuery.toLowerCase()) ||

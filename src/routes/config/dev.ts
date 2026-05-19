@@ -8,32 +8,33 @@ import { defineRoute } from "@/lib/router-utils";
 export const devRoutes = [
   defineRoute({ 
     path: "/admin/telemetria", 
-    component: lazyWithRetry(() => import("@/pages/admin/TelemetryPage")) 
+    component: lazyWithRetry(() => import("@/pages/admin/AdminTelemetriaPage")) 
   }),
   defineRoute({ 
     path: "/admin/seguranca", 
-    component: lazyWithRetry(() => import("@/pages/admin/SecurityPage")) 
+    component: lazyWithRetry(() => import("@/pages/admin/AdminSegurancaPage")) 
   }),
   defineRoute({ 
     path: "/admin/seguranca-acesso", 
-    component: lazyWithRetry(() => import("@/pages/admin/AccessSecurityPage")) 
+    component: lazyWithRetry(() => import("@/pages/admin/AdminSegurancaAcessoPage")) 
   }),
   defineRoute({ 
     path: "/admin/conexoes", 
-    component: lazyWithRetry(() => import("@/pages/admin/ConnectionsPage")) 
+    component: lazyWithRetry(() => import("@/pages/admin/AdminConexoesPage")) 
   }),
   defineRoute({ 
     path: "/admin/prompts-ia", 
-    component: lazyWithRetry(() => import("@/pages/admin/AIPromptsPage")) 
+    component: lazyWithRetry(() => import("@/pages/admin/AdminPromptsIAPage")) 
   }),
   defineRoute({ 
     path: "/admin/workflows", 
-    component: lazyWithRetry(() => import("@/pages/admin/WorkflowsPage")) 
+    component: lazyWithRetry(() => import("@/pages/admin/AdminWorkflowsPage")) 
   }),
   defineRoute({ 
     path: "/admin/rbac-rotas", 
-    component: lazyWithRetry(() => import("@/pages/admin/RBACAuditPage")) 
+    component: lazyWithRetry(() => import("@/pages/admin/AdminRbacRoutesPage")) 
   }),
+
   defineRoute({ 
     path: "/admin/qa/preflight", 
     component: lazyWithRetry(() => import("@/pages/admin/qa/PreflightPage")) 
