@@ -149,18 +149,21 @@ export function useCatalogState() {
   });
 
   const paginatedProducts = useMemo(() => {
+    const productsToProcess = rawPaginatedProducts.map(product => ({
+      ...product,
+      isNovelty: noveltyIds?.has(product.id),
+    }));
+
     if (!catalogColorEnrichmentMap || catalogColorEnrichmentMap.size === 0 || !hasColorFilterActive) {
-      return rawPaginatedProducts.map(product => ({
-        ...product,
-        isNovelty: noveltyIds?.has(product.id),
-      }));
+      return productsToProcess;
     }
-    return rawPaginatedProducts.map(product => {
+
+    return productsToProcess.map(product => {
       const enrichment = catalogColorEnrichmentMap.get(product.id);
-      if (!enrichment) return { ...product, isNovelty: noveltyIds?.has(product.id) };
+      if (!enrichment) return product;
+      
       return {
         ...product,
-        isNovelty: noveltyIds?.has(product.id),
         ...(enrichment.image ? {
           og_image_url: enrichment.image,
           images: [enrichment.image, ...product.images.filter((img: string) => img !== enrichment.image)],

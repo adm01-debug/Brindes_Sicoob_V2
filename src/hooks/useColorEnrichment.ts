@@ -286,8 +286,8 @@ export function useColorEnrichment({ productIds, colorGroups, colorVariations }:
       return new Map(accumulatedMapRef.current);
     },
     enabled: queryEnabled,
-    staleTime: 60 * 1000, // Increased to reduce redundant requests during fast scroll
-    gcTime: 10 * 60 * 1000,
+    staleTime: 5 * 60 * 1000, // 5 minutes (reduced redundant background fetches)
+    gcTime: 15 * 60 * 1000,
   });
 
   // Return accumulated map even when query isn't running (for already-enriched products)
