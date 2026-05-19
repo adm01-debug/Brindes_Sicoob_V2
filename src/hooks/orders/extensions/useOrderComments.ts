@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { OrderService } from "@/services/OrderService";
@@ -42,5 +43,3 @@ export const useOrderComments = (orderId?: string, filters?: { search?: string }
     pageSize
   };
 };
-
-import { useState } from "react";
