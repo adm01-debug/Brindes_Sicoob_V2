@@ -27,7 +27,7 @@ interface AuditLogParams {
   newValues?: Record<string, any> | null;
 }
 
-interface AuditLogEntry {
+export interface AuditLogEntry {
   id: string;
   user_id: string | null;
   action: string;
@@ -44,16 +44,9 @@ interface AuditLogEntry {
   } | null;
 }
 
-/**
- * Hook para registrar ações de auditoria no sistema.
- * Registra INSERT, UPDATE e DELETE em entidades importantes.
- */
 export function useAuditLog() {
   const { user } = useAuth();
 
-  /**
-   * Registra uma ação no log de auditoria
-   */
   const logAction = async ({
     action,
     entityType,
@@ -69,7 +62,7 @@ export function useAuditLog() {
         entity_id: entityId,
         old_values: oldValues,
         new_values: newValues,
-        ip_address: null, // Pode ser capturado via API externa se necessário
+        ip_address: null,
         user_agent: typeof navigator !== 'undefined' ? navigator.userAgent : null
       });
 
@@ -85,9 +78,6 @@ export function useAuditLog() {
     }
   };
 
-  /**
-   * Helper para calcular apenas os campos alterados em um UPDATE
-   */
   const getChangedFields = (
     oldRecord: Record<string, any>,
     newRecord: Record<string, any>
@@ -96,13 +86,11 @@ export function useAuditLog() {
     const newFields: Record<string, any> = {};
 
     Object.keys(newRecord).forEach(key => {
-      // Ignorar campos de timestamp que mudam automaticamente
       if (['updated_at', 'created_at'].includes(key)) return;
       
       const oldValue = oldRecord[key];
       const newValue = newRecord[key];
       
-      // Comparar valores (convertendo para JSON para comparar objetos/arrays)
       if (JSON.stringify(oldValue) !== JSON.stringify(newValue)) {
         oldFields[key] = oldValue;
         newFields[key] = newValue;
@@ -112,9 +100,6 @@ export function useAuditLog() {
     return { oldFields, newFields };
   };
 
-  /**
-   * Wrapper para CREATE com auditoria automática
-   */
   const auditedInsert = async <T extends Record<string, unknown>>(
     table: AuditEntityType,
     data: T,
@@ -135,9 +120,6 @@ export function useAuditLog() {
     return result;
   };
 
-  /**
-   * Wrapper para UPDATE com auditoria automática
-   */
   const auditedUpdate = async <T extends Record<string, unknown>>(
     table: AuditEntityType,
     entityId: string,
@@ -150,7 +132,6 @@ export function useAuditLog() {
     if (result.data && !result.error) {
       const { oldFields, newFields } = getChangedFields(oldRecord, updates);
       
-      // Só registra se houve mudanças reais
       if (Object.keys(newFields).length > 0) {
         await logAction({
           action: 'UPDATE',
@@ -165,9 +146,6 @@ export function useAuditLog() {
     return result;
   };
 
-  /**
-   * Wrapper para DELETE com auditoria automática
-   */
   const auditedDelete = async <T extends Record<string, unknown>>(
     table: AuditEntityType,
     entityId: string,
@@ -198,9 +176,6 @@ export function useAuditLog() {
   };
 }
 
-/**
- * Busca histórico de auditoria para uma entidade específica
- */
 export async function fetchAuditHistory(
   entityType: AuditEntityType,
   entityId: string
@@ -226,9 +201,6 @@ export async function fetchAuditHistory(
   return (data || []) as AuditLogEntry[];
 }
 
-/**
- * Busca todos os logs de auditoria (para admin)
- */
 export async function fetchAllAuditLogs(
   filters?: {
     entityType?: AuditEntityType;
