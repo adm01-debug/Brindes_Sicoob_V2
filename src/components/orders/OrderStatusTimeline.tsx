@@ -2,10 +2,10 @@
  * OrderStatusTimeline — visualização horizontal do progresso do pedido.
  */
 import { Check, Circle, XCircle, Clock, Package, Truck, CheckCircle2, ShieldCheck, History, Info } from "lucide-react";
-import { ORDER_STATUS_FLOW, ORDER_STATUS_LABELS } from "@/hooks";
+import { ORDER_STATUS_FLOW, ORDER_STATUS_LABELS } from "@/hooks/orders/useOrders";
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { OrderService } from "@/services/OrderService";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { format } from "date-fns";
 
@@ -27,21 +27,10 @@ const statusIcons: Record<string, any> = {
 export function OrderStatusTimeline({ status, orderId }: OrderStatusTimelineProps) {
   const { data: approvalHistory } = useQuery({
     queryKey: ["order_approval_history_timeline", orderId],
-    queryFn: async () => {
-      if (!orderId) return [];
-      const { data, error } = await supabase
-        .from("order_approval_history")
-        .select(`
-          *,
-          approver:approver_id(full_name)
-        `)
-        .eq("order_id", orderId)
-        .order("created_at", { ascending: false });
-      if (error) throw error;
-      return data;
-    },
+    queryFn: () => orderId ? OrderService.getApprovalHistory(orderId) : Promise.resolve([]),
     enabled: !!orderId
   });
+
 
   const latestApproval = approvalHistory?.[0];
   if (status === "cancelled") {
