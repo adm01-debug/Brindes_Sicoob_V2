@@ -1,6 +1,6 @@
 // src/lib/date-utils.ts
 
-import { format, formatDistance, formatRelative, parseISO } from 'date-fns';
+import { format, formatDistance, formatRelative, parseISO, isValid } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
 /**
@@ -10,12 +10,15 @@ import { ptBR } from 'date-fns/locale';
  * @returns String formatada em português
  */
 export function formatDate(
-  date: Date | string | number,
+  date: Date | string | number | null | undefined,
   pattern: string = 'dd/MM/yyyy'
 ): string {
+  if (!date) return "-";
   const parsedDate = typeof date === 'string' ? parseISO(date) : new Date(date);
+  if (!isValid(parsedDate)) return "Data Inválida";
   return format(parsedDate, pattern, { locale: ptBR });
 }
+
 
 /**
  * Formata data e hora no padrão brasileiro
