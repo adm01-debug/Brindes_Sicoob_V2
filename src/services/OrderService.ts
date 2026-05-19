@@ -266,6 +266,22 @@ export class OrderService {
     return publicUrl;
   }
 
+  // Order Templates Methods
+  static async listTemplates() {
+    const { data, error } = await supabase
+      .from("order_templates")
+      .select("*, items:order_template_items(*)")
+      .order("created_at", { ascending: false });
+    if (error) throw error;
+    return data;
+  }
+
+  static async deleteTemplate(id: string) {
+    const { error } = await supabase.from("order_templates").delete().eq("id", id);
+    if (error) throw error;
+  }
+
+
 
 
   static async notifyStatusChange(params: {
