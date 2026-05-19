@@ -5,7 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Package, Download, FileSpreadsheet, FileText, ShoppingBag } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
-import { useOrdersList, ORDER_STATUS_LABELS } from "@/hooks/useOrders";
+import { useOrdersList, ORDER_STATUS_LABELS } from "@/hooks/orders/useOrders";
 import { OrderCard } from "@/components/orders/OrderCard";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useSalesScope } from "@/lib/auth/visibility-scope";

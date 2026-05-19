@@ -66,14 +66,15 @@ export const BackButton = forwardRef<HTMLButtonElement, BackButtonProps>(
         <TooltipTrigger asChild>
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            whileTap={{ scale: 0.97 }}
-            transition={{ duration: 0.1 }}
             animate={isCriticalPath ? {
+              opacity: 1, scale: 1,
               x: [0, -2, 2, -2, 2, 0],
               transition: { repeat: Infinity, duration: 2, repeatDelay: 5 }
-            } : {}}
+            } : { opacity: 1, scale: 1 }}
+            whileTap={{ scale: 0.97 }}
+            transition={{ duration: 0.1 }}
           >
+
             <Button
               ref={ref}
               variant={variant}

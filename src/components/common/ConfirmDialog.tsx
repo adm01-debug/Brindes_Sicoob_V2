@@ -7,7 +7,8 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "./alert-dialog";
+} from "@/components/ui/alert-dialog";
+
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 import { AlertTriangle, Trash2, Info, HelpCircle, Loader2, type LucideIcon } from "lucide-react";

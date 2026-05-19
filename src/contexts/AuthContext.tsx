@@ -13,37 +13,10 @@ import { useUserProfile } from "@/hooks/auth/useUserProfile";
 import { useAuthAAL } from "@/hooks/auth/useAuthAAL";
 
 
-// Tipos de role conforme app_role enum no banco.
-// 'admin', 'manager' e 'vendedor' permanecem por compatibilidade com dados legados,
-// mas a nova hierarquia oficial é: dev > supervisor > agente.
-export type AppRole =
-  | "dev"
-  | "gestor_compras"
-  | "gerente_pa"
-  | "comprador_pac"
-  | "comprador_singular"
-  | "vendedor"
-  | "supervisor"
-  | "agente";
+import { type AppRole, type Profile } from "@/types/users";
 
-// Interface do Profile
-export interface Profile {
-  id: string;
-  user_id: string;
-  email: string | null;
-  full_name: string | null;
-  role: string | null;           // Auto-synced from user_roles via DB trigger
-  cooperativa_id: string | null; // Sicoob: Singular
-  pa_id: string | null;          // Sicoob: PA
-  avatar_url: string | null;
-  phone: string | null;
-  department: string | null;
-  is_active: boolean | null;
-  last_login_at: string | null;
-  preferences: Record<string, any> | null;
-  created_at: string;
-  updated_at: string;
-}
+export type { AppRole, Profile };
+
 
 interface AuthContextType {
   user: User | null;

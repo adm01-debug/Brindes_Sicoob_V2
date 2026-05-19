@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useOrderInvoices } from "@/hooks/useOrderExtensions";
+import { useOrderInvoices } from "@/hooks/orders/extensions";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

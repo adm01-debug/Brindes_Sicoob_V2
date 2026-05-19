@@ -230,9 +230,19 @@ export function FilterPanel({
         </div>
       </div>
     ),
-    genero: () => {
-...
-    },
+    genero: () => (
+      <div className="flex flex-wrap gap-2 px-1">
+        {["Masculino", "Feminino", "Unissex"].map((g) => (
+          <GenderBadge
+            key={g}
+            gender={g}
+            selected={(filters.genders || []).includes(g)}
+            onClick={() => state.toggleArrayFilter("genders", g)}
+          />
+        ))}
+      </div>
+    ),
+
     tamanhos: () => (
       <SizeFilter
         selectedSizes={filters.sizes || []}

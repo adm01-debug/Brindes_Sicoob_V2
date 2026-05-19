@@ -196,6 +196,27 @@ export class OrderService {
     });
   }
 
+  static async listAuditEvents(orderId: string, filters?: { event_type?: string, search?: string }) {
+    let query = supabase
+      .from('order_audit_events')
+      .select('*')
+      .eq('order_id', orderId)
+      .order('created_at', { ascending: false });
+
+    if (filters?.event_type && filters.event_type !== 'all') {
+      query = query.eq('event_type', filters.event_type);
+    }
+
+    if (filters?.search) {
+      query = query.ilike('description', `%${filters.search}%`);
+    }
+
+    const { data, error } = await query;
+    if (error) throw error;
+    return data;
+  }
+
+
   static async notifyStatusChange(params: {
     orderId: string;
     userId: string;
