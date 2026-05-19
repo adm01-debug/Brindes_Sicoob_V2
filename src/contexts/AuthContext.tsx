@@ -24,9 +24,7 @@ export type AppRole =
   | "comprador_singular"
   | "vendedor"
   | "supervisor"
-  | "agente"
-  | "admin"      // legado (alias de supervisor)
-  | "manager";    // legado
+  | "agente";
 
 // Interface do Profile
 export interface Profile {

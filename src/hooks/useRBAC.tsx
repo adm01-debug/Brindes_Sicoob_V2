@@ -42,7 +42,7 @@ function parsePermissionCode(code: string): Permission {
 function normalizeRole(raw: string | null | undefined): RoleName {
   const r = (raw ?? '').toLowerCase();
   if (r === 'dev') return 'dev';
-  if (r === 'supervisor' || r === 'admin' || r === 'manager') return 'supervisor';
+  if (r === 'supervisor' || r === 'admin' || r === 'manager' || r === 'gestor_compras' || r === 'comprador_singular') return 'supervisor';
   return 'agente';
 }
 

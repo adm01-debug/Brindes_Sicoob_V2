@@ -125,7 +125,7 @@ export function Header({ onMenuToggle, searchQuery, onSearchChange }: HeaderProp
       className={cn(
         "border-b transition-all duration-300 print:hidden",
         "bg-background/80 backdrop-blur-xl border-border/50",
-        "h-[var(--header-h)] sticky top-0",
+        "h-[var(--header-h,56px)] sticky top-0",
         isScrolled && "bg-background/95 backdrop-blur-2xl shadow-sm border-primary/20",
       )}
     >
