@@ -34,7 +34,7 @@ import {
 import { cn } from "@/lib/utils";
 import { safeNumber, COMMERCIAL_FLAG_CONFIG } from "@/lib/stock-chart-utils";
 import { formatCurrency } from "@/lib/format";
-import { KpiCard } from "@/components/ui/kpi-card";
+import { KpiCard } from "@/components/ui/KpiCard";
 import { SupplierChartFilter } from "./SupplierChartFilter";
 import { SupplierComparisonCards } from "./SupplierComparisonCards";
 import { useStockChartData } from "./useStockChartData";
