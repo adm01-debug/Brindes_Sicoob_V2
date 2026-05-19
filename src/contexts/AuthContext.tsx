@@ -348,10 +348,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const isGestorCompras = useMemo(() => userRoles.includes("gestor_compras"), [userRoles]);
   const isGerentePa = useMemo(() => userRoles.includes("gerente_pa") || userRoles.includes("comprador_pac"), [userRoles]);
   const isVendedor = useMemo(() => userRoles.includes("vendedor"), [userRoles]);
-  const isSupervisor = useMemo(() => userRoles.includes("supervisor") || userRoles.includes("admin"), [userRoles]);
+  const isSupervisor = useMemo(() => userRoles.includes("supervisor"), [userRoles]);
   const isAgente = useMemo(() => userRoles.includes("agente"), [userRoles]);
-  const isCompradorSingular = useMemo(() => userRoles.includes("comprador_singular") || userRoles.includes("gestor_compras"), [userRoles]);
-  const isSupervisorOrAbove = useMemo(() => isDev || isSupervisor || isCompradorSingular, [isDev, isSupervisor, isCompradorSingular]);
+  const isCompradorSingular = useMemo(() => userRoles.includes("comprador_singular"), [userRoles]);
+  const isSupervisorOrAbove = useMemo(() => 
+    isDev || isSupervisor || isGestorCompras || isCompradorSingular, 
+    [isDev, isSupervisor, isGestorCompras, isCompradorSingular]
+  );
   const canManage = useMemo(() => isSupervisorOrAbove, [isSupervisorOrAbove]);
 
   const cooperativaId = useMemo(() => profile?.cooperativa_id || null, [profile?.cooperativa_id]);

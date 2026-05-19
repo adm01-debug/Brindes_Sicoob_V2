@@ -71,15 +71,13 @@ export function MainLayout({ children }: MainLayoutProps) {
     diagnostics.log('event', 'MainLayout', 'MainLayout montado');
   }, []);
 
-  // Propaga --breadcrumb-h ao :root para que stickys filhos (toolbars de
-  // página) ancorem corretamente abaixo do Header + Breadcrumb. Em "/" a
-  // breadcrumb-bar fica oculta → 0px.
+  // CSS Variable propagation for sticky elements calculation
   useEffect(() => {
     document.documentElement.style.setProperty(
       "--breadcrumb-h",
-      isHome ? "0px" : "40px",
+      isHome || location.pathname === "/dashboard" ? "0px" : "40px",
     );
-  }, [isHome]);
+  }, [isHome, location.pathname]);
 
   // Focus management: move focus to main content on route changes for screen readers
   const mainRef = useRef<HTMLElement>(null);
