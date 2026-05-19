@@ -73,7 +73,7 @@ export function CatalogToolbar({
               <Filter className="h-4 w-4 sm:mr-2" aria-hidden="true" />
               <span className="hidden sm:inline">Filtros</span>
               {activeFiltersCount > 0 && (
-                <Badge variant="secondary" className="ml-1 sm:ml-2 h-5 min-w-5 text-xs">
+                <Badge variant="accent" className="ml-1 sm:ml-2 h-5 min-w-5 text-xs bg-sicoob-green text-sicoob-green-dark border-none shadow-sm">
                   <span className="sr-only">Ativos: </span>
                   {activeFiltersCount}
                 </Badge>
