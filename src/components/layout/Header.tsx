@@ -23,18 +23,19 @@ import { usePWAInstall } from "@/hooks/usePWAInstall";
 
 import { useIsScrolled } from "@/hooks/useScroll";
 import { useCurrentSection } from "@/hooks/useCurrentSection";
-import { cn } from "@/lib/utils";
-import { getRoleLabel } from "@/lib/roles";
+import { cn, getRoleLabel, lazyWithRetry } from "@/lib";
 import { RoleBadge } from "@/components/ui/RoleBadge";
 import { BackButton } from "@/components/common/BackButton";
 
+
 // Lazy load non-critical Header sub-components
-const StockAlertsIndicator = lazy(() => import("@/components/inventory/StockAlertsIndicator").then(m => ({ default: m.StockAlertsIndicator })));
-const NotificationBell = lazy(() => import("@/components/notifications/NotificationDrawer").then(m => ({ default: m.NotificationBell })));
-const DiscountApprovalHeaderBadge = lazy(() => import("@/components/admin/DiscountApprovalHeaderBadge").then(m => ({ default: m.DiscountApprovalHeaderBadge })));
-const GlobalSearchPalette = lazy(() => import("@/components/search/GlobalSearchPalette").then(m => ({ default: m.GlobalSearchPalette })));
-const CartHeaderButton = lazy(() => import("@/components/cart/CartHeaderButton").then(m => ({ default: m.CartHeaderButton })));
-const MiniCart = lazy(() => import("@/components/cart/MiniCart").then(m => ({ default: m.MiniCart })));
+const StockAlertsIndicator = lazyWithRetry(() => import("@/components/inventory/StockAlertsIndicator").then(m => ({ default: m.StockAlertsIndicator })));
+const NotificationBell = lazyWithRetry(() => import("@/components/notifications/NotificationDrawer").then(m => ({ default: m.NotificationBell })));
+const DiscountApprovalHeaderBadge = lazyWithRetry(() => import("@/components/admin/DiscountApprovalHeaderBadge").then(m => ({ default: m.DiscountApprovalHeaderBadge })));
+const GlobalSearchPalette = lazyWithRetry(() => import("@/components/search/GlobalSearchPalette").then(m => ({ default: m.GlobalSearchPalette })));
+const CartHeaderButton = lazyWithRetry(() => import("@/components/cart/CartHeaderButton").then(m => ({ default: m.CartHeaderButton })));
+const MiniCart = lazyWithRetry(() => import("@/components/cart/MiniCart").then(m => ({ default: m.MiniCart })));
+
 
 
 interface HeaderProps {
