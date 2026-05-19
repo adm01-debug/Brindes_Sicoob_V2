@@ -1,6 +1,3 @@
-/**
- * useOrders — hooks centralizados para listagem, detalhe e mutações de pedidos.
- */
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { logRlsDenial } from "@/lib/security/rls-denial-logger";
@@ -12,10 +9,6 @@ import { ORDER_STATUS_LABELS, VALID_TRANSITIONS } from "@/constants/orders";
 export * from "@/types/orders";
 export * from "@/constants/orders";
 
-
-/**
- * Lista pedidos respeitando RLS e filtros avançados.
- */
 export function useOrdersList(
   sellerId?: string, 
   scope: "self" | "team" | "all" = "self",
@@ -40,9 +33,6 @@ export function useOrdersList(
   });
 }
 
-/**
- * Hook para detalhes de um pedido.
- */
 export function useOrderDetail(orderId?: string) {
   return useQuery({
     queryKey: ["orders", "detail", orderId],
@@ -51,9 +41,6 @@ export function useOrderDetail(orderId?: string) {
   });
 }
 
-/**
- * Hook para atualização de pedidos com auditoria e notificações.
- */
 export function useUpdateOrder(orderId?: string, currentStatus?: string) {
   const qc = useQueryClient();
   const { user } = useAuth();
@@ -62,7 +49,6 @@ export function useUpdateOrder(orderId?: string, currentStatus?: string) {
     mutationFn: async (patch: Partial<OrderRow>) => {
       if (!orderId) throw new Error("ID do pedido é obrigatório");
 
-      // Validar transição
       if (patch.status && currentStatus && !canTransitionTo(currentStatus, patch.status)) {
         throw new Error(`Transição de status inválida: de ${ORDER_STATUS_LABELS[currentStatus as OrderStatus] || currentStatus} para ${ORDER_STATUS_LABELS[patch.status as OrderStatus] || patch.status}`);
       }
@@ -79,7 +65,6 @@ export function useUpdateOrder(orderId?: string, currentStatus?: string) {
         throw error;
       }
 
-      // Se o status mudou, registrar auditoria e notificar
       if (patch.status && patch.status !== currentStatus && user) {
         const oldLabel = ORDER_STATUS_LABELS[currentStatus as OrderStatus] || currentStatus;
         const newLabel = ORDER_STATUS_LABELS[patch.status as OrderStatus] || patch.status;
@@ -113,9 +98,6 @@ export function useUpdateOrder(orderId?: string, currentStatus?: string) {
   });
 }
 
-/**
- * Hook para conversão de orçamento em pedido.
- */
 export function useConvertQuoteToOrder() {
   const qc = useQueryClient();
   const { user } = useAuth();
@@ -141,18 +123,12 @@ export function useConvertQuoteToOrder() {
   });
 }
 
-/**
- * Funções utilitárias de transição expostas para compatibilidade
- */
 export function canTransitionTo(current: string, next: string): boolean {
   if (current === next) return true;
   const validNext = VALID_TRANSITIONS[current as OrderStatus] || [];
   return validNext.includes(next as OrderStatus);
 }
 
-/**
- * Hook para ações diversas em pedidos (duplicação, etc).
- */
 export function useOrderActions() {
   const qc = useQueryClient();
   const { user } = useAuth();
@@ -176,7 +152,6 @@ export function useOrderActions() {
   };
 }
 
-// Para manter compatibilidade com import { useOrders }
 export function useOrders() {
   return useOrderActions();
 }

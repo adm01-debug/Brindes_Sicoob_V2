@@ -1,4 +1,4 @@
-export * from './useOrders';
+export * from './orders/useOrders';
 export * from './orders/extensions/useOrderLogistics';
 export * from './orders/extensions/useOrderInvoices';
 export * from './orders/extensions/useOrderComments';
