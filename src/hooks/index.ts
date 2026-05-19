@@ -12,7 +12,7 @@ export * from './admin/useAccessSecurity';
 export * from './bi/useSmartAlerts';
 export * from './admin/useApprovalThreshold';
 export * from './quotes/usePendingQuotesCount';
-export * from './useQuotes';
+export * from './quotes/useQuotes';
 export * from './cart/useCart';
 export * from './cart/useCartTemplates';
 export * from './useDuplicateEntity';
