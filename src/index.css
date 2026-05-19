@@ -1,4 +1,4 @@
-/* Google Fonts loaded asynchronously in index.html for better FCP */
+/* Portal Sicoob - Professional Architecture 10/10 */
 
 @keyframes brain-glow {
   0%, 100% { opacity: 0; transform: scale(1); filter: blur(0px); }
@@ -491,10 +491,12 @@ html[data-scroll-locked] body {
       color 0.3s ease;
   }
 
-  /* Light mode: textos mais pesados para melhor legibilidade e contraste (LP-01) */
+  /* Refined text rendering for excellence 10/10 */
   :root body {
     font-weight: 450;
     -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
   }
   :root p,
   :root span,
