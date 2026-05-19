@@ -6,11 +6,16 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Eye, EyeOff, Loader2, Gift, Mail, Lock, ShieldAlert, Globe, Wifi, AlertTriangle } from "lucide-react";
 import { AuthBrandingPanel } from "./auth/AuthBranding";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { 
+  Button, 
+  Input, 
+  Label, 
+  Card, 
+  CardContent, 
+  CardHeader 
+} from "@/components/ui";
 import { useToast } from "@/hooks/use-toast";
+
 import { useAuth } from "@/contexts/AuthContext";
 import { ForgotPasswordForm } from "@/components/auth/ForgotPasswordForm";
 import { useIPValidation } from "@/hooks/useIPValidation";
@@ -23,7 +28,7 @@ import { loginSchema, type LoginFormData } from "@/lib/validations";
 
 type LoginForm = LoginFormData;
 
-import { diagnostics } from "@/lib/diagnostics";
+import { diagnostics } from "@/lib";
 
 // ContinuousRockets and AuthBrandingPanel extracted to ./auth/AuthBranding.tsx
 
