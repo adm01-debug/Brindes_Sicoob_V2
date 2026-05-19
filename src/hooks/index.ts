@@ -9,8 +9,9 @@ export * from './admin/useAuditLog';
 export * from './admin/useAccessSecurity';
 export * from './useSmartAlerts';
 export * from './useApprovalThreshold';
-export * from './usePendingQuotesCount';
+export * from './quotes/usePendingQuotesCount';
 export * from './useQuotes';
+
 export * from './cart/useCart';
 export * from './cart/useCartTemplates';
 export * from './useDuplicateEntity';
