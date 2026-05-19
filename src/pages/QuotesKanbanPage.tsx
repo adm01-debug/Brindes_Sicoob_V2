@@ -27,7 +27,7 @@ import {
   User,
   Calendar as CalendarIcon,
 } from "lucide-react";
-import { useQuotes } from "@/hooks/useQuotes";
+import { useQuotes } from "@/hooks/quotes/useQuotes";
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
 import {

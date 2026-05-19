@@ -1,4 +1,4 @@
-import { useLogisticsTracking } from "@/hooks/useOrderExtensions";
+import { useLogisticsTracking } from "@/hooks/orders/extensions";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Truck, MapPin, Clock, CheckCircle2, Loader2, AlertCircle } from "lucide-react";
 import { format } from "date-fns";

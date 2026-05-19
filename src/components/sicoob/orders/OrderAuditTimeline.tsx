@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useOrderAudit } from "@/hooks/useOrderExtensions";
+import { useOrderAudit } from "@/hooks/orders/extensions";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { History, User, Package, FileText, CheckCircle2, Truck, AlertCircle, ChevronLeft, ChevronRight, Filter } from "lucide-react";

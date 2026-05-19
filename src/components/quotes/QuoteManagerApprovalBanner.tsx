@@ -13,7 +13,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useRBAC } from "@/hooks/useRBAC";
-import { useQuotes } from "@/hooks/useQuotes";
+import { useQuotes } from "@/hooks/quotes/useQuotes";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 

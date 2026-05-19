@@ -17,7 +17,7 @@ import { OrderPilotWorkflow } from "@/components/orders/OrderPilotWorkflow";
 import { OrderAuditTimeline } from "@/components/orders/OrderAuditTimeline";
 import { OrderComments } from "@/components/orders/OrderComments";
 import { OrderSellerActions } from "@/components/orders/OrderSellerActions";
-import { useOrderDetail, useUpdateOrder, ORDER_STATUS_LABELS, OrderStatus } from "@/hooks/useOrders";
+import { useOrderDetail, useUpdateOrder, ORDER_STATUS_LABELS, OrderStatus } from "@/hooks/orders/useOrders";
 
 import { OrderDetailHeader } from "@/components/orders/detail/OrderDetailHeader";
 import { OrderItemsList } from "@/components/orders/detail/OrderItemsList";

@@ -86,7 +86,7 @@ import {
   useOrderPilotApprovals,
   useOrderComments,
   useOrderTemplates
-} from "@/hooks/useOrderExtensions";
+} from "@/hooks/orders/extensions";
 import { OrderLogisticsTab } from "@/components/sicoob/orders/OrderLogisticsTab";
 import { OrderInvoicesTab } from "@/components/sicoob/orders/OrderInvoicesTab";
 import { OrderPaymentsTab } from "@/components/sicoob/orders/OrderPaymentsTab";

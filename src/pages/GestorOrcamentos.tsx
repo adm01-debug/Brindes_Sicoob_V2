@@ -9,7 +9,7 @@ import { QuoteKanbanBoard } from "@/components/quotes/QuoteKanbanBoard";
 import { OrderConsolidationPanel } from "@/components/orders/OrderConsolidationPanel";
 import { QuoteConsolidationPanel } from "@/components/quotes/QuoteConsolidationPanel";
 import { useAuth } from "@/contexts/AuthContext";
-import { useQuotes } from "@/hooks/useQuotes";
+import { useQuotes } from "@/hooks/quotes/useQuotes";
 
 /**
  * GestorOrcamentos — Painel central do Gestor de Compras (Singular).

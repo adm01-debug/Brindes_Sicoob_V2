@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CreditCard, Calendar, CheckCircle2, Clock, AlertCircle } from "lucide-react";
-import { useOrderPayments } from "@/hooks/useOrderExtensions";
+import { useOrderPayments } from "@/hooks/orders/extensions";
 import { Badge } from "@/components/ui/badge";
 
 interface OrderPaymentsTabProps {

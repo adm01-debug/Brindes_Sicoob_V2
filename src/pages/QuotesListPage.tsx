@@ -45,7 +45,7 @@ import {
   DollarSign,
   Loader2,
 } from "lucide-react";
-import { useQuotes } from "@/hooks/useQuotes";
+import { useQuotes } from "@/hooks/quotes/useQuotes";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRBAC } from "@/hooks/useRBAC";
 import Fuse from "fuse.js";

@@ -11,7 +11,7 @@ import { useDiscountApproval } from "@/hooks/useDiscountApproval";
 import { format, addDays } from "date-fns";
 import { toast } from "sonner";
 import { validateQuoteForm, QUOTE_FIELD_LABELS } from "@/lib/validations";
-import { useQuotes, type QuoteItem, type QuoteItemPersonalization } from "@/hooks/useQuotes";
+import { useQuotes, type QuoteItem, type QuoteItemPersonalization } from "@/hooks/quotes/useQuotes";
 import { useQuoteTemplates, type QuoteTemplate, type QuoteTemplateItem } from "@/hooks/useQuoteTemplates";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRBAC } from "@/hooks/useRBAC";

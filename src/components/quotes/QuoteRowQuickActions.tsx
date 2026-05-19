@@ -8,7 +8,7 @@ import { Copy, Share2, MessageCircle, Trophy, ListChecks, FileStack } from "luci
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import type { Quote } from "@/hooks/useQuotes";
+import type { Quote } from "@/hooks/quotes/useQuotes";
 import { 
   Dialog, 
   DialogContent, 

@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { FileText, Upload, FileCode, Download, Trash2 } from "lucide-react";
-import { useOrderInvoices } from "@/hooks/useOrderExtensions";
+import { useOrderInvoices } from "@/hooks/orders/extensions";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 
