@@ -10,8 +10,8 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useProductsContext } from "@/contexts/ProductsContext";
 import { useCollectionsContext } from "@/contexts/CollectionsContext";
-import { DeleteConfirmDialog } from "@/components/ui/ConfirmDialog";
-import { EmptyState } from "@/components/common/EmptyState";
+import { DeleteConfirmDialog } from "@/components/common/ConfirmDialog";
+import { EmptyState } from "@/components/ui/EmptyState";
 
 interface TrashRow {
   id: string;

@@ -27,7 +27,7 @@ import {
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
-import { DeleteConfirmDialog } from "@/components/ui/ConfirmDialog";
+import { DeleteConfirmDialog } from "@/components/common/ConfirmDialog";
 
 import { useCatalogSelection } from "@/components/catalog/useCatalogSelection";
 import { CatalogBulkModals } from "@/components/catalog/CatalogBulkModals";

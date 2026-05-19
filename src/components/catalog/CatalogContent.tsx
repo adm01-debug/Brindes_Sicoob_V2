@@ -9,7 +9,7 @@ import { ProductListItem } from "@/components/products/ProductListItem";
 import { ProductTableView } from "@/components/products/ProductTableView";
 import { ProductGridSkeleton } from "@/components/products/ProductCardSkeleton";
 import { ProductListSkeleton } from "@/components/products/ProductListItemSkeleton";
-import { EmptyState } from "@/components/common/EmptyState";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { SelectionCheckbox } from "@/components/common/SelectionCheckbox";
 import { CatalogBulkModals } from "./CatalogBulkModals";
 import { useCatalogSelection } from "./useCatalogSelection";

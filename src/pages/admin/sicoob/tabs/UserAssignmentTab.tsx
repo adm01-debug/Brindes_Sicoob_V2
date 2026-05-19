@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/select";
 import { Search, Save, UserCheck, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
-import { RoleBadge } from "@/components/RoleBadge";
+import { RoleBadge } from "@/components/ui/RoleBadge";
 import {
   DropdownMenu,
   DropdownMenuContent,

@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Loader2, Pencil, Trash2, ArrowUpCircle, Copy } from "lucide-react";
 import { useDuplicateEntity } from "@/hooks/useDuplicateEntity";
-import { RoleBadge } from "@/components/RoleBadge";
+import { RoleBadge } from "@/components/ui/RoleBadge";
 import { type UserWithRole } from "./types";
 
 interface UserTableProps {

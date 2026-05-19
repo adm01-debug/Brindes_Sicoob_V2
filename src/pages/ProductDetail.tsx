@@ -23,7 +23,7 @@ import { useProduct } from "@/hooks/useProducts";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { ProductDetailSkeleton } from "@/components/products/ProductDetailSkeleton";
-import { EmptyState } from "@/components/common/EmptyState";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { IntelligenceBadges } from "@/components/common/IntelligenceBadges";
 import { useProductIntelligenceBadges } from "@/hooks/useProductIntelligenceBadges";
 import { useSupplierTrust } from "@/hooks/useSupplierTrust";

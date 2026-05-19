@@ -12,7 +12,7 @@ import { cn } from "@/lib/utils";
 import type { FavoriteList } from "@/hooks/useFavoriteLists";
 import { CreateListDialog } from "./CreateListDialog";
 import { ShareListDialog } from "./ShareListDialog";
-import { DeleteConfirmDialog } from "@/components/ui/ConfirmDialog";
+import { DeleteConfirmDialog } from "@/components/common/ConfirmDialog";
 
 interface Props {
   lists: FavoriteList[];

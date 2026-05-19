@@ -17,7 +17,7 @@ import { AccessibilityProvider, AriaLiveProvider, RouteAnnouncer } from "@/compo
 import { useGlobalErrorCatcher } from "@/hooks/useErrorHandler";
 import { markBootSuccessful } from "@/lib/chunk-recovery";
 import { getFallback } from "@/components/layout/SkeletonLoaders";
-import { BridgeStatusBanner } from "@/components/BridgeStatusBanner";
+import { BridgeStatusBanner } from "@/components/system/BridgeStatusBanner";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { CloudStatusBanner } from "@/components/system/CloudStatusBanner";
 import { DevOnlyBridgeOverlay } from "@/components/dev/DevOnlyBridgeOverlay";
@@ -48,7 +48,7 @@ startColdStartRecorder();
 const queryClient = createQueryClient();
 
 import { useCatalogPrefetch } from '@/hooks/useCatalogPrefetch';
-import { ThemeInitializer } from '@/components/ThemeInitializer';
+import { ThemeInitializer } from '@/components/system/ThemeInitializer';
 
 const AppWithAuth = forwardRef<HTMLDivElement, { children: ReactNode }>(({ children }, ref) => {
   useCatalogPrefetch();

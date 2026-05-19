@@ -53,7 +53,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { SidebarBrandHeader } from "./sidebar/SidebarBrandHeader";
-import { OrganizationSwitcher } from "@/components/OrganizationSwitcher";
+import { OrganizationSwitcher } from "@/components/navigation/OrganizationSwitcher";
 
 import { SidebarNavGroup, type NavGroup } from "./sidebar/SidebarNavGroup";
 import { SidebarFooterHealth } from "./sidebar/SidebarFooterHealth";
