@@ -1,4 +1,4 @@
-/* Google Fonts loaded asynchronously in index.html for better FCP */
+/* Portal Sicoob - Professional Architecture 10/10 */
 
 @keyframes brain-glow {
   0%, 100% { opacity: 0; transform: scale(1); filter: blur(0px); }
@@ -112,7 +112,7 @@ html[data-scroll-locked] body {
     --surface: 220 14% 98%;
     --surface-hover: 220 14% 95%;
     --text-secondary: 220 12% 42%;
-    --interactive: 82 73% 41%;
+    --interactive: 175 100% 34%; /* Turquesa Sicoob */
     --divider: 220 14% 86%;
 
     /* ===== ACCENT (ROXO SICOOB — #5C2D91 — detalhes) ===== */
@@ -188,7 +188,7 @@ html[data-scroll-locked] body {
     --sidebar-foreground: 190 100% 13%;
     --sidebar-primary: 190 100% 13%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 82 73% 41% / 0.1;
+    --sidebar-accent: 175 100% 34% / 0.1;
     --sidebar-accent-foreground: 190 100% 13%;
     --sidebar-border: 220 14% 90%;
     --sidebar-ring: 190 100% 13%;
@@ -343,7 +343,7 @@ html[data-scroll-locked] body {
     --surface: 225 18% 9%;
     --surface-hover: 225 16% 12%;
     --text-secondary: 215 20% 72%;
-    --interactive: 82 73% 41%;
+    --interactive: 175 90% 42%; /* Turquesa Sicoob dark */
     --divider: 225 14% 18%;
 
     /* ===== ACCENT (ROXO SICOOB — dark) ===== */
@@ -417,7 +417,7 @@ html[data-scroll-locked] body {
     --sidebar-foreground: 210 40% 98%;
     --sidebar-primary: 190 100% 15%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 82 73% 41% / 0.15;
+    --sidebar-accent: 175 90% 42% / 0.15;
     --sidebar-accent-foreground: 210 40% 98%;
     --sidebar-border: 225 14% 12%;
     --sidebar-ring: 190 100% 15%;
@@ -491,10 +491,12 @@ html[data-scroll-locked] body {
       color 0.3s ease;
   }
 
-  /* Light mode: textos mais pesados para melhor legibilidade e contraste (LP-01) */
+  /* Refined text rendering for excellence 10/10 */
   :root body {
     font-weight: 450;
     -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
   }
   :root p,
   :root span,

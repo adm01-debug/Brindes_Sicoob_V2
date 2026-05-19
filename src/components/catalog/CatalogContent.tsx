@@ -131,7 +131,7 @@ function VirtualGrid({ products, columns, navigate, handleViewProduct, handleSha
     return 500;
   }, [columns]);
 
-  const virtualizer = useVirtualizer({ count: rowCount + 1, getScrollElement: () => parentRef.current, estimateSize: estimateRowHeight, overscan: 3 });
+  const virtualizer = useVirtualizer({ count: rowCount + 1, getScrollElement: () => parentRef.current, estimateSize: estimateRowHeight, overscan: 5 });
   const gap = columns >= 8 ? 16 : columns >= 6 ? 24 : 32;
 
   return (
@@ -194,7 +194,7 @@ function VirtualList({ products, navigate, handleViewProduct, handleShareProduct
 }) {
   const { parentRef, showScrollTop, scrollToTop } = useScrollableContainer(hasMore, isLoadingMore, onLoadMore);
   const rowCount = products.length;
-  const virtualizer = useVirtualizer({ count: rowCount + 1, getScrollElement: () => parentRef.current, estimateSize: () => 88, overscan: 8 });
+  const virtualizer = useVirtualizer({ count: rowCount + 1, getScrollElement: () => parentRef.current, estimateSize: () => 88, overscan: 12 });
 
   return (
     <div className="relative h-full">

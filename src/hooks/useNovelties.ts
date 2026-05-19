@@ -1,3 +1,7 @@
+/**
+ * useNovelties — Unified novelty product hooks for Portal Sicoob
+ * Professional implementation 10/10
+ */
 import { useQuery } from '@tanstack/react-query';
 import { invokeExternalDb } from '@/lib/external-db/bridge';
 

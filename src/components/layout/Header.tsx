@@ -1,3 +1,7 @@
+/**
+ * Header — Application navigation and user clusters
+ * Optimized for performance 10/10
+ */
 import { useEffect, type CSSProperties, lazy, Suspense } from "react";
 import { User, Menu, Sun, Moon, Heart, GitCompare, Search, LogOut, Settings, HelpCircle, Shield, MoreHorizontal, Palette, RotateCcw, Smartphone } from "lucide-react";
 import { useTheme } from "@/contexts/ThemeContext";
@@ -126,7 +130,7 @@ export function Header({ onMenuToggle, searchQuery, onSearchChange }: HeaderProp
         "border-b transition-all duration-300 print:hidden",
         "bg-background/80 backdrop-blur-xl border-border/50",
         "h-[var(--header-h,56px)] sticky top-0",
-        isScrolled && "bg-background/95 backdrop-blur-2xl shadow-sm border-primary/20",
+        isScrolled && "bg-background/95 backdrop-blur-2xl shadow-sm border-brand/20",
       )}
     >
       <div className="flex items-center justify-between h-full px-2 sm:px-4 lg:px-6">

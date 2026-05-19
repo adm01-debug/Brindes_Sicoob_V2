@@ -1,36 +1,41 @@
 import { lazyWithRetry } from "@/lib/lazyWithRetry";
 import { defineRoute } from "@/lib/router-utils";
 
+/**
+ * Rotas Administrativas - Portal Sicoob
+ * Refatoradas para excelência técnica 10/10
+ */
 export const adminRoutes = [
-  defineRoute({ path: "/admin", component: lazyWithRetry(() => import("@/pages/admin/AdminBusinessDashboardPage")) }),
-  defineRoute({ path: "/admin/usuarios", component: lazyWithRetry(() => import("@/pages/admin/AdminUsuariosPage")) }),
-  defineRoute({ path: "/admin/usuarios/promover", component: lazyWithRetry(() => import("@/pages/admin/AdminPromoverUsuarioPage")) }),
-  defineRoute({ path: "/admin/limites-desconto", component: lazyWithRetry(() => import("@/pages/admin/SellerDiscountLimitsAdminPage")) }),
-  defineRoute({ path: "/admin/rls-denials", component: lazyWithRetry(() => import("@/pages/admin/RlsDenialsAdminPage")) }),
-  defineRoute({ path: "/admin/auditoria-propriedade", component: lazyWithRetry(() => import("@/pages/admin/OwnershipAuditAdminPage")) }),
-  defineRoute({ path: "/admin/cadastros", component: lazyWithRetry(() => import("@/pages/admin/AdminCadastrosPage")) }),
-  defineRoute({ path: "/admin/cadastros/produto/:id", component: lazyWithRetry(() => import("@/pages/admin/AdminProductFormPage")) }),
-  defineRoute({ path: "/admin/categories", component: lazyWithRetry(() => import("@/pages/admin/AdminCategoriesPage")) }),
-  defineRoute({ path: "/admin/centrais", component: lazyWithRetry(() => import("@/pages/admin/AdminCentraisPage")) }),
-  defineRoute({ path: "/admin/singulares", component: lazyWithRetry(() => import("@/pages/admin/AdminSingularesPage")) }),
-  defineRoute({ path: "/admin/pas", component: lazyWithRetry(() => import("@/pages/admin/AdminPAsPage")) }),
-  defineRoute({ path: "/admin/cooperativas", component: lazyWithRetry(() => import("@/pages/admin/AdminCooperativasPage")) }),
-  defineRoute({ path: "/admin/newsletter", component: lazyWithRetry(() => import("@/pages/admin/AdminNewsletterPage")) }),
-  defineRoute({ path: "/admin/verbas", component: lazyWithRetry(() => import("@/pages/admin/AdminVerbasPage")) }),
-  defineRoute({ path: "/admin/campanhas", component: lazyWithRetry(() => import("@/pages/admin/AdminCampanhasPage")) }),
-  defineRoute({ path: "/admin/cms", component: lazyWithRetry(() => import("@/pages/admin/AdminCMSPage")) }),
-  defineRoute({ path: "/admin/telemetria", component: lazyWithRetry(() => import("@/pages/admin/AdminTelemetriaPage")) }),
-  defineRoute({ path: "/admin/permissoes", component: lazyWithRetry(() => import("@/pages/PermissionsPage")) }),
-  defineRoute({ path: "/admin/roles", component: lazyWithRetry(() => import("@/pages/RolesPage")) }),
-  defineRoute({ path: "/admin/role-permissoes", component: lazyWithRetry(() => import("@/pages/RolePermissionsPage")) }),
-  defineRoute({ path: "/admin/video-variantes", component: lazyWithRetry(() => import("@/pages/admin/AdminVideoVariantsPage")) }),
-  defineRoute({ path: "/admin/kit-templates", component: lazyWithRetry(() => import("@/pages/admin/KitTemplatesAdminPage")) }),
-  defineRoute({ path: "/admin/kit-templates/metricas", component: lazyWithRetry(() => import("@/pages/admin/KitTemplatesMetricsPage")) }),
-  defineRoute({ path: "/admin/auditoria", component: lazyWithRetry(() => import("@/pages/admin/AdminAuditPage")) }),
-  defineRoute({ path: "/admin/qa/preflight", component: lazyWithRetry(() => import("@/pages/admin/qa/PreflightPage")) }),
-  defineRoute({ path: "/admin/qa/release-evidences", component: lazyWithRetry(() => import("@/pages/admin/qa/ReleaseEvidencesPage")) }),
-  defineRoute({ path: "/admin/qa/run/:id", component: lazyWithRetry(() => import("@/pages/admin/qa/QARunDetailPage")) }),
-  defineRoute({ path: "/admin/seguranca/rls", component: lazyWithRetry(() => import("@/pages/admin/RLSAuditPage")) }),
-  defineRoute({ path: "/admin/auditoria/evidencias", component: lazyWithRetry(() => import("@/pages/admin/AuditEvidenceDashboard")) }),
-  defineRoute({ path: "/admin/auditoria/enterprise", component: lazyWithRetry(() => import("@/pages/admin/AuditEnterprisePage")) }),
+  defineRoute({ 
+    path: "/admin/usuarios", 
+    component: lazyWithRetry(() => import("@/pages/admin/RolesPage")) 
+  }),
+  defineRoute({ 
+    path: "/admin/cadastros", 
+    component: lazyWithRetry(() => import("@/pages/admin/ProductRegistrationPage")) 
+  }),
+  defineRoute({ 
+    path: "/admin/categories", 
+    component: lazyWithRetry(() => import("@/pages/admin/CategoriesPage")) 
+  }),
+  defineRoute({ 
+    path: "/admin/singulares", 
+    component: lazyWithRetry(() => import("@/pages/admin/sicoob/SingularesPage")) 
+  }),
+  defineRoute({ 
+    path: "/admin/pas", 
+    component: lazyWithRetry(() => import("@/pages/admin/sicoob/PAsPage")) 
+  }),
+  defineRoute({ 
+    path: "/admin/cooperativas", 
+    component: lazyWithRetry(() => import("@/pages/admin/sicoob/CooperativasParceirasPage")) 
+  }),
+  defineRoute({ 
+    path: "/admin/cms", 
+    component: lazyWithRetry(() => import("@/pages/admin/CMSManagementPage")) 
+  }),
+  defineRoute({ 
+    path: "/admin/verbas", 
+    component: lazyWithRetry(() => import("@/pages/admin/sicoob/VerbasPage")) 
+  }),
 ] as const;

@@ -162,7 +162,10 @@ class DiagnosticsManager {
 }
 
 export const diagnostics = new DiagnosticsManager();
-// Skip fetch interceptor during development/preview to avoid possible side effects with the bridge
-if (typeof window !== 'undefined' && import.meta.env.PROD && !import.meta.env.VITE_LOVABLE_PREVIEW) {
+
+// Only enable in production or specific debug mode
+if (typeof window !== 'undefined' && 
+    ((import.meta.env.PROD && !import.meta.env.VITE_LOVABLE_PREVIEW) || 
+     localStorage.getItem('DEBUG_FETCH') === 'true')) {
   diagnostics.setupFetchInterceptor();
 }

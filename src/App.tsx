@@ -115,18 +115,18 @@ const App = () => {
                           <Route key={r.path} path={r.path} element={<RouteSuspense><r.component /></RouteSuspense>} />
                         ))}
 
-                        {/* Static Redirects & Legacy (Unprotected) */}
-                        <Route path="/configuracoes" element={<div data-testid="redirect-config"><Navigate to="/admin/usuarios" replace /></div>} />
-                        <Route path="/perfil" element={<div data-testid="redirect-perfil"><Navigate to="/admin/usuarios" replace /></div>} />
-                        <Route path="/403" element={<div data-testid="app-forbidden"><RouteSuspense><ForbiddenPage /></RouteSuspense></div>} />
+                        {/* Static Redirects */}
+                        <Route path="/configuracoes" element={<Navigate to="/admin/usuarios" replace />} />
+                        <Route path="/perfil" element={<Navigate to="/admin/usuarios" replace />} />
+                        <Route path="/403" element={<RouteSuspense><ForbiddenPage /></RouteSuspense>} />
 
-                        {/* Protected Layout Route */}
+                        {/* Protected Routes */}
                         <Route element={<ProtectedRoute />}>
                           <Route element={<MainLayout />}>
                             <Route path="/" element={<RouteSuspense><Index /></RouteSuspense>} />
                             <Route path="/dashboard" element={<RouteSuspense><CustomizableDashboard /></RouteSuspense>} />
 
-                            {/* Modular Routes */}
+                            {/* Feature Modules */}
                             {productRoutes.map(r => (
                               <Route key={r.path} path={r.path} element={<RouteSuspense><r.component /></RouteSuspense>} />
                             ))}
@@ -139,7 +139,7 @@ const App = () => {
 
                             <Route path="/admin/temas" element={<RouteSuspense><AdminTemasPage /></RouteSuspense>} />
 
-                            {/* Admin Routes */}
+                            {/* Admin & Sicoob Group */}
                             <Route element={<AdminRoute />}>
                               {adminRoutes.map(r => (
                                 <Route key={r.path} path={r.path} element={<RouteSuspense><r.component /></RouteSuspense>} />
@@ -153,14 +153,14 @@ const App = () => {
                               </Route>
                             </Route>
 
-                            {/* Dev Routes */}
+                            {/* Dev Tools */}
                             <Route element={<DevRoute />}>
                               {devRoutes.map(r => (
                                 <Route key={r.path} path={r.path} element={<RouteSuspense><r.component /></RouteSuspense>} />
                               ))}
                             </Route>
 
-                            {/* Common App Routes */}
+                            {/* Shared App Routes */}
                             <Route path="/pedidos" element={<RouteSuspense><OrdersPage /></RouteSuspense>} />
                             <Route path="/pedidos/:id" element={<RouteSuspense><OrderDetailPage /></RouteSuspense>} />
                             <Route path="/clientes" element={<RouteSuspense><ClientsPage /></RouteSuspense>} />
@@ -172,8 +172,8 @@ const App = () => {
                             <Route path="/pedidos/:id/auditoria" element={<RouteSuspense><OrderAuditPage /></RouteSuspense>} />
                             <Route path="/admin/saude-testes" element={<RouteSuspense><TestDashboard /></RouteSuspense>} />
 
-                            {/* Error Fallback */}
-                            <Route path="*" element={<div data-testid="page-not-found"><RouteSuspense><NotFound /></RouteSuspense></div>} />
+                            {/* Fallback */}
+                            <Route path="*" element={<RouteSuspense><NotFound /></RouteSuspense>} />
                           </Route>
                         </Route>
                       </Routes>
