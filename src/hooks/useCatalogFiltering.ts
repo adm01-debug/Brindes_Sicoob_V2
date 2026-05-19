@@ -110,7 +110,10 @@ export function useCatalogFiltering({
     }
 
     if (filters.inStock) {
-      result = result.filter((p) => (p.stock || 0) > 0);
+      result = result.filter((p) => {
+        const stock = (p as any).stock_quantity ?? p.stock ?? 0;
+        return stock > 0;
+      });
     }
 
     if (genderFilterSet.size > 0) {
