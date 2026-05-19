@@ -166,13 +166,40 @@ export const CooperativasTab = () => {
                   </DialogDescription>
                 </DialogHeader>
                 <div className="grid gap-4 py-4">
-                  <div className="space-y-2">
-                    <label htmlFor="name">Nome da Cooperativa</label>
-                    <Input id="name" name="name" placeholder="Ex: Sicoob Credisul" required />
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <label htmlFor="name">Nome da Cooperativa</label>
+                      <Input id="name" name="name" placeholder="Ex: Sicoob Credisul" required />
+                    </div>
+                    <div className="space-y-2">
+                      <label htmlFor="code">Código</label>
+                      <Input id="code" name="code" placeholder="Ex: 4321" required />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <label>Central Regional</label>
+                      <Select name="central_id" required>
+                        <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
+                        <SelectContent>
+                          {centrais.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <label>Curadoria Temática</label>
+                      <Select name="tema_id" defaultValue="none">
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="none">Catálogo Global</SelectItem>
+                          {temas.map(t => <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
                   <div className="space-y-2">
-                    <label htmlFor="code">Código/Número</label>
-                    <Input id="code" name="code" placeholder="Ex: 4321" required />
+                    <label htmlFor="alcada">Limite Alçada Superior (R$)</label>
+                    <Input id="alcada" name="alcada" type="number" defaultValue="50000" required />
                   </div>
                 </div>
                 <DialogFooter>
