@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -60,7 +59,6 @@ export function useCart() {
         throw new Error("Não autenticado");
       }
 
-      // Check if item already exists in cart (same product and same color)
       const { data: existing } = await supabase
         .from("cart_items")
         .select("id, quantity")

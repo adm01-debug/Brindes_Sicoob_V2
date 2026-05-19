@@ -9,5 +9,7 @@ export * from './useSmartAlerts';
 export * from './useApprovalThreshold';
 export * from './usePendingQuotesCount';
 export * from './useQuotes';
-export * from './useCart';
+export * from './cart/useCart';
+export * from './cart/useCartTemplates';
+
 export * from './useDuplicateEntity';
