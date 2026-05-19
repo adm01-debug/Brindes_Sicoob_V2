@@ -281,6 +281,20 @@ export class OrderService {
     if (error) throw error;
   }
 
+  static async getApprovalHistory(orderId: string) {
+    const { data, error } = await supabase
+      .from("order_approval_history")
+      .select(`
+        *,
+        approver:approver_id(full_name)
+      `)
+      .eq("order_id", orderId)
+      .order("created_at", { ascending: false });
+    if (error) throw error;
+    return data;
+  }
+
+
 
 
 
