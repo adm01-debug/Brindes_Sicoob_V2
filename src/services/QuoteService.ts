@@ -293,4 +293,41 @@ export class QuoteService {
       metadata: clientMetadata,
     });
   }
+
+  static async listToConsolidate(singularId: string) {
+    const { data, error } = await supabase
+      .from("quotes")
+      .select("*")
+      .eq("singular_id", singularId)
+      .eq("status", "approved_singular")
+      .is("consolidation_id", null);
+    if (error) throw error;
+    return data;
+  }
+
+  static async consolidate(params: { singularId: string | null, quoteIds: string[], notes: string }) {
+    // 1. Create consolidation record
+    const { data: consolidation, error: consErr } = await supabase
+      .from("quote_consolidations")
+      .insert({
+        singular_id: params.singularId,
+        status: "pending",
+        notes: params.notes
+      })
+      .select()
+      .single();
+
+    if (consErr) throw consErr;
+
+    // 2. Link quotes to it
+    const { error: updErr } = await supabase
+      .from("quotes")
+      .update({ consolidation_id: consolidation.id } as any)
+      .in("id", params.quoteIds);
+
+    if (updErr) throw updErr;
+
+    return consolidation;
+  }
 }
+
