@@ -1,3 +1,7 @@
+/**
+ * SidebarReorganized — Hierarchical navigation system
+ * Refactored for Portal Sicoob 10/10
+ */
 import React, { useState, useMemo, useEffect, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useLocation, useNavigate } from "react-router-dom";
