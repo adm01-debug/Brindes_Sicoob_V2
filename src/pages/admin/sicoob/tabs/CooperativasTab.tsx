@@ -30,23 +30,29 @@ export const CooperativasTab = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [editingCoop, setEditingCoop] = useState<any>(null);
+  const [centrais, setCentrais] = useState<any[]>([]);
+  const [temas, setTemas] = useState<any[]>([]);
   const queryClient = useQueryClient();
 
 
   const { data: cooperativas, isLoading } = useQuery({
     queryKey: ["cooperativas"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("cooperativas")
-        .select("*")
-        .order("nome");
-      if (error) throw error;
-      return data;
+      const [coopRes, centraisRes, temasRes] = await Promise.all([
+        supabase.from("cooperativas").select("*, central:sicoob_centrais(name)").order("nome"),
+        supabase.from("sicoob_centrais").select("id, name").order("name"),
+        supabase.from("sicoob_temas").select("id, name").order("name")
+      ]);
+      
+      if (centraisRes.data) setCentrais(centraisRes.data);
+      if (temasRes.data) setTemas(temasRes.data);
+      
+      return coopRes.data;
     },
   });
 
   const createMutation = useMutation({
-    mutationFn: async (newCoop: { nome: string; codigo: string }) => {
+    mutationFn: async (newCoop: any) => {
       const { data, error } = await supabase
         .from("cooperativas")
         .insert([newCoop])
@@ -66,10 +72,13 @@ export const CooperativasTab = () => {
   });
 
   const updateMutation = useMutation({
-    mutationFn: async (coop: { id: string; nome: string; codigo: string }) => {
+    mutationFn: async (coop: any) => {
+      const dataToSave = { ...coop };
+      delete dataToSave.id;
+      delete dataToSave.central; // Remove joined data
       const { data, error } = await supabase
         .from("cooperativas")
-        .update({ nome: coop.nome, codigo: coop.codigo })
+        .update(dataToSave)
         .eq("id", coop.id)
         .select()
         .single();
@@ -111,6 +120,9 @@ export const CooperativasTab = () => {
     createMutation.mutate({
       nome: formData.get("name") as string,
       codigo: formData.get("code") as string,
+      central_id: formData.get("central_id"),
+      sicoob_tema_id: formData.get("tema_id") === "none" ? null : formData.get("tema_id"),
+      alcada_superior_threshold: parseFloat(formData.get("alcada") as string || "50000"),
     });
   };
 
