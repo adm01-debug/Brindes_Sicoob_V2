@@ -16,3 +16,5 @@ export * from './quotes/useQuotes';
 export * from './cart/useCart';
 export * from './cart/useCartTemplates';
 export * from './common/useDuplicateEntity';
+export * from './common/use-mobile';
+
