@@ -44,26 +44,11 @@ export function OrderConsolidationPanel({ singularId }: Props) {
 
     setIsConsolidating(true);
     try {
-      // 1. Create consolidation record
-      const { data: consolidation, error: consErr } = await supabase
-        .from("quote_consolidations")
-        .insert({
-          singular_id: singularId,
-          status: "pending",
-          notes: `Consolidação de ${selectedQuoteIds.length} orçamentos.`
-        })
-        .select()
-        .single();
-
-      if (consErr) throw consErr;
-
-      // 2. Link quotes to it
-      const { error: updErr } = await supabase
-        .from("quotes")
-        .update({ consolidation_id: consolidation.id } as any)
-        .in("id", selectedQuoteIds);
-
-      if (updErr) throw updErr;
+      await QuoteService.consolidate({
+        singularId,
+        quoteIds: selectedQuoteIds,
+        notes: `Consolidação de ${selectedQuoteIds.length} orçamentos.`
+      });
 
       toast.success("Orçamentos consolidados com sucesso!");
       setSelectedQuoteIds([]);
@@ -74,6 +59,7 @@ export function OrderConsolidationPanel({ singularId }: Props) {
       setIsConsolidating(false);
     }
   };
+
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
