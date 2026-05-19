@@ -25,9 +25,13 @@ export type AppRole =
   | "comprador_pac" 
   | "agente"
   | "vendedor" 
-  | "supervisor" 
-  | "admin" 
-  | "manager";
+  | "supervisor";
+
+// Aliases legados mapeados para a nova hierarquia
+export const ROLE_ALIASES: Record<string, AppRole> = {
+  admin: "supervisor",
+  manager: "supervisor",
+};
 
 export type RoleVisual = {
   /** Rótulo exibido ao usuário (sempre em português). */

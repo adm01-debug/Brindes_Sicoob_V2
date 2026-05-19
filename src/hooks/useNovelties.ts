@@ -119,7 +119,7 @@ async function enrichNovelties(novelties: NoveltyWithDetails[]): Promise<Novelty
     ...n,
     category_name: (n.category_id && catMap.get(n.category_id)) || null,
     supplier_name: (n.supplier_id && supMap.get(n.supplier_id)?.name) || null,
-    supplier_code: (n.supplier_id && supMap.get(n.supplier_id)?.code) || null,
+    supplier_code: (n.supplier_id && supMap.get(n.supplier_id)?.code) || n.supplier_code || null,
   }));
 }
 
