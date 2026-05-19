@@ -15,7 +15,7 @@ import { Separator } from "@/components/ui/separator";
 import { formatCurrency } from "@/lib/utils";
 import { Link } from "react-router-dom";
 import { CouponInput } from "./CouponInput";
-import { useApprovalThreshold } from "@/hooks/useApprovalThreshold";
+import { useApprovalThreshold } from "@/hooks/admin/useApprovalThreshold";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
