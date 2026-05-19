@@ -247,7 +247,7 @@
 /* ===== Content Visibility for Performance ===== */
 .content-visibility-auto {
   content-visibility: auto;
-  contain-intrinsic-size: 0 500px;
+  contain-intrinsic-size: 1px 500px;
 }
 
 /* ===== Optimized Transitions ===== */
