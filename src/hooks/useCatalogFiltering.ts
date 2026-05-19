@@ -110,7 +110,10 @@ export function useCatalogFiltering({
     }
 
     if (filters.inStock) {
-      result = result.filter((p) => (p.stock || 0) > 0);
+      result = result.filter((p) => {
+        const stock = (p as any).stock_quantity ?? p.stock ?? 0;
+        return stock > 0;
+      });
     }
 
     if (genderFilterSet.size > 0) {
@@ -135,7 +138,7 @@ export function useCatalogFiltering({
       });
     }
 
-    // ⚠️ REGRA DE NEGÓCIO — NÃO ALTERAR
+    // ⚠️ REGRA DE NEGÓCIO — NÃO ALTERAR — Ordem técnica Portal Sicoob
     const skipSort = hasFuzzySearch && sortBy === 'name';
     sortProducts(result, sortBy, { promoSalesMap, supplierSalesMap, skipSort });
 

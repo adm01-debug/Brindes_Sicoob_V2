@@ -10,8 +10,8 @@ import { logger } from '@/lib/logger';
 
 /**
  * Hierarquia oficial: dev > supervisor > agente.
- * Os nomes legados admin/manager/seller permanecem na tabela `role_permissions`
- * por compatibilidade — mapeamos transparentemente abaixo.
+ * Os nomes legados permanecem na tabela `role_permissions` por compatibilidade.
+ * Mapeamento: dev (topo) > supervisor (gestor) > agente (operacional).
  */
 export type RoleName = 'dev' | 'supervisor' | 'agente';
 

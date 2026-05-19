@@ -131,6 +131,9 @@ export function useCatalogState() {
 
   // Override pagination's hasMoreProducts with real logic
   const hasMoreProducts = pagination.displayCount < filteredProducts.length || !!hasNextPage;
+  
+  // Real-time stat sync
+  const currentTotal = totalEstimate ?? filteredProducts.length;
 
   // Reset pagination on filter change
   useEffect(() => {
@@ -185,7 +188,10 @@ export function useCatalogState() {
 
   const shouldShowCatalogSkeleton = isInitialCatalogLoad || (isLoading && paginatedProducts.length === 0);
   const hasActiveCatalogConstraints = filterState.activeFiltersCount > 0 || search.searchQuery.trim().length > 0;
-  const shouldShowEmptyState = !shouldShowCatalogSkeleton && paginatedProducts.length === 0;
+  
+  // Adjusted empty state logic to avoid false positives during fetch transitions
+  const isDataFullyLoaded = !isLoadingProducts && !isFetchingProducts && !isLoading;
+  const shouldShowEmptyState = isDataFullyLoaded && paginatedProducts.length === 0;
 
   // Stats
   const statBadges = useCatalogStats({
