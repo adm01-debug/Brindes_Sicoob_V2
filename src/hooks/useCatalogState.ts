@@ -1,6 +1,6 @@
 /**
- * useCatalogState — Orchestrates catalog page state & logic by composing specialized hooks.
- * Refactored for 10/10 technical excellence with dynamic prefetching and prioritized rendering.
+ * useCatalogState — Orchestrates catalog page state & logic.
+ * Unified architecture for the Sicoob Portal.
  */
 import { useState, useMemo, useEffect, useCallback, useTransition } from "react";
 import { useColorEnrichment } from "@/hooks/useColorEnrichment";

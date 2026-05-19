@@ -1,6 +1,6 @@
 /**
  * useRBAC — Dynamic Role Based Access Control for Portal Sicoob
- * Refactored for technical excellence 10/10
+ * Single Source of Truth for the hierarchy: dev > supervisor > agente.
  */
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
