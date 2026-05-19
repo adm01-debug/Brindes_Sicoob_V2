@@ -15,4 +15,4 @@ export * from './quotes/usePendingQuotesCount';
 export * from './quotes/useQuotes';
 export * from './cart/useCart';
 export * from './cart/useCartTemplates';
-export * from './useDuplicateEntity';
+export * from './common/useDuplicateEntity';
