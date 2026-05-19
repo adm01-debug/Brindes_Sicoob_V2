@@ -12,7 +12,7 @@ const buttonVariants = cva(
       variant: {
         default: "bg-brand text-brand-foreground hover:bg-brand/90 shadow-sm hover:shadow-md hover:shadow-brand/20 active:translate-y-[1px]",
         destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/90 shadow-sm hover:shadow-md active:translate-y-[1px]",
-        outline: "border-2 border-input bg-background hover:bg-accent hover:text-accent-foreground hover:border-accent active:translate-y-[1px]",
+        outline: "border-2 border-input bg-background hover:bg-accent hover:text-accent-foreground hover:border-accent active:translate-y-[1px] hover:shadow-sm",
         secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80 shadow-sm active:translate-y-[1px]",
         ghost: "hover:bg-accent hover:text-accent-foreground active:scale-95",
         link: "text-brand underline-offset-4 hover:underline",
