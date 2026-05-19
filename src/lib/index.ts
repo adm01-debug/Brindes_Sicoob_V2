@@ -1,6 +1,6 @@
 // Core Infrastructure
+export { supabase } from "@/integrations/supabase/client";
 export { logger } from "./logger";
-
 export { diagnostics } from "./diagnostics";
 
 // Formatting
@@ -12,7 +12,6 @@ export * from "./textUtils";
 export * from "./auth/auth-utils";
 export * from "./roles";
 export { CircuitBreaker } from "./circuit-breaker";
-
 
 // Communication
 export { invokeEdgeFunction } from "./edge-function-client";
