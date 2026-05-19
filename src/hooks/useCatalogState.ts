@@ -131,6 +131,9 @@ export function useCatalogState() {
 
   // Override pagination's hasMoreProducts with real logic
   const hasMoreProducts = pagination.displayCount < filteredProducts.length || !!hasNextPage;
+  
+  // Real-time stat sync
+  const currentTotal = totalEstimate ?? filteredProducts.length;
 
   // Reset pagination on filter change
   useEffect(() => {

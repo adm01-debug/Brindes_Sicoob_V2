@@ -138,7 +138,7 @@ export function useCatalogFiltering({
       });
     }
 
-    // ⚠️ REGRA DE NEGÓCIO — NÃO ALTERAR
+    // ⚠️ REGRA DE NEGÓCIO — NÃO ALTERAR — Ordem técnica Portal Sicoob
     const skipSort = hasFuzzySearch && sortBy === 'name';
     sortProducts(result, sortBy, { promoSalesMap, supplierSalesMap, skipSort });
 
