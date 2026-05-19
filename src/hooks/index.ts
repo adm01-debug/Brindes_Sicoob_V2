@@ -1,5 +1,7 @@
 export * from './useOrders';
-export * from './useOrderExtensions';
+export * from './orders/extensions/useOrderLogistics';
+export * from './orders/extensions/useOrderInvoices';
+export * from './orders/extensions/useOrderComments';
 export * from './useNotificationPreferences';
 export * from './useExportJobs';
 export * from './orders/useOrderHistory';
@@ -11,7 +13,6 @@ export * from './useSmartAlerts';
 export * from './useApprovalThreshold';
 export * from './quotes/usePendingQuotesCount';
 export * from './useQuotes';
-
 export * from './cart/useCart';
 export * from './cart/useCartTemplates';
 export * from './useDuplicateEntity';
