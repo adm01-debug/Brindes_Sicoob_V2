@@ -11,5 +11,20 @@ export const sicoobCommonService = {
     const { data, error } = await supabase.from("cooperativas").select("id, nome");
     if (error) throw error;
     return data || [];
+  },
+
+  subscribeToOrders(callback: () => void) {
+    const channel = supabase
+      .channel('sicoob-orders-realtime')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'sicoob_orders' },
+        callback
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }
 };
