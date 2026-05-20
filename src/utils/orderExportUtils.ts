@@ -115,3 +115,5 @@ export async function exportToPDF(data: any[], filename: string) {
     toast.success("Relatório PDF gerado com sucesso.");
   }, 2000);
 }
+
+export const ORDER_EXPORT_COLUMNS = ["Número", "Cliente", "Vendedor", "Status", "Valor Total", "Data de Criação"];
