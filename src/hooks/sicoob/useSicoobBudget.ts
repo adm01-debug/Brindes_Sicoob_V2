@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { sicoobBudgetService } from "@/services/sicoob/budgetService";
 import { useAuth } from "@/contexts/AuthContext";
 
 export const useSicoobBudget = () => {
@@ -9,15 +9,7 @@ export const useSicoobBudget = () => {
     queryKey: ["sicoob-budget", profile?.pa_id],
     queryFn: async () => {
       if (!profile?.pa_id) return null;
-
-      const { data, error } = await supabase
-        .from("pa_budgets")
-        .select("*")
-        .eq("pa_id", profile.pa_id)
-        .maybeSingle();
-
-      if (error) throw error;
-      return data;
+      return sicoobBudgetService.getBudgetByPa(profile.pa_id);
     },
     enabled: !!profile?.pa_id,
   });
