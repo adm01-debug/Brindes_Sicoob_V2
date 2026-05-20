@@ -57,15 +57,41 @@ export interface SicoobOrder {
   pa?: { nome: string };
   cooperativa?: { nome: string };
 }
-
+ 
 export interface SicoobOrderItem {
   id: string;
   order_id: string;
   product_id: string;
   product_name: string;
+  product_sku: string;
+  product_image_url?: string;
   quantity: number;
   unit_price: number;
   total_price: number;
+}
+
+export interface SicoobBudget {
+  id: string;
+  pa_id: string;
+  cooperative_id: string;
+  verba_total: number;
+  verba_consumida: number;
+  mes: number;
+  ano: number;
+  updated_at: string;
+  postos_atendimento?: { nome: string };
+}
+
+export interface SicoobApprovalRequest {
+  id: string;
+  order_id: string;
+  status: 'pending' | 'approved' | 'rejected';
+  amount_at_request: number;
+  threshold_at_request: number;
+  request_reason?: string;
+  rejection_reason?: string;
+  created_at: string;
+  sicoob_orders?: Partial<SicoobOrder>;
 }
 
 export interface SicoobOrderItemLog {
