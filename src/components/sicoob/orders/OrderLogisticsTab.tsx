@@ -24,13 +24,13 @@ export function OrderLogisticsTab({ orderId }: OrderLogisticsTabProps) {
 
   useEffect(() => {
     if (logistics?.tracking_code) setTrackingCode(logistics.tracking_code);
-    if (logistics?.carrier) setCarrier(logistics.carrier);
+    if (logistics?.carrier_name) setCarrier(logistics.carrier_name);
   }, [logistics]);
 
   const handleUpdateTracking = async () => {
     await updateLogistics.mutateAsync({
       tracking_code: trackingCode,
-      carrier: carrier,
+      carrier_name: carrier,
       status: 'in_transit'
     });
 
@@ -94,7 +94,7 @@ export function OrderLogisticsTab({ orderId }: OrderLogisticsTabProps) {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-bold">{logistics?.carrier || "Não informada"}</p>
+            <p className="text-2xl font-bold">{logistics?.carrier_name || "Não informada"}</p>
           </CardContent>
         </Card>
         <Card>
