@@ -3,6 +3,7 @@ import { render, screen, waitFor } from '@testing-library/react';
 import { ProductGrid } from '@/components/products/ProductGrid';
 import { BrowserRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { TooltipProvider } from '@/components/ui/tooltip';
 import React from 'react';
 
 const queryClient = new QueryClient({
@@ -16,9 +17,11 @@ const queryClient = new QueryClient({
 const renderWithProviders = (ui: React.ReactElement) => {
   return render(
     <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
-        {ui}
-      </BrowserRouter>
+      <TooltipProvider>
+        <BrowserRouter>
+          {ui}
+        </BrowserRouter>
+      </TooltipProvider>
     </QueryClientProvider>
   );
 };
@@ -82,9 +85,11 @@ describe('ProductGrid Stability and Skeletons', () => {
     // Rerender as loaded
     rerender(
       <QueryClientProvider client={queryClient}>
-        <BrowserRouter>
-          <ProductGrid products={mockProducts} isLoading={false} columns={5} />
-        </BrowserRouter>
+        <TooltipProvider>
+          <BrowserRouter>
+            <ProductGrid products={mockProducts} isLoading={false} columns={5} />
+          </BrowserRouter>
+        </TooltipProvider>
       </QueryClientProvider>
     );
 
