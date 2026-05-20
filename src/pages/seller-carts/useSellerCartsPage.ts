@@ -6,7 +6,7 @@ import { useState, useCallback, useMemo, useRef, useEffect, useContext } from "r
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { useSellerCartContext } from "@/contexts/SellerCartContext";
 import { type SellerCart, CartStatus } from "@/hooks/useSellerCarts";
-import { useCartTemplates, type CartTemplateItem } from "@/hooks/useCartTemplates";
+import { useCartTemplates, type CartTemplateItem } from "@/hooks/cart/useCartTemplates";
 import { ProductsContext } from "@/contexts/ProductsContext";
 import {
   recordAction, exportCartToCSV, exportCartToPDF, shareCartLink,

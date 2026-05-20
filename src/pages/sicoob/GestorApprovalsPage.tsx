@@ -2,7 +2,7 @@ import React from "react";
 // import { MainLayout } from "@/components/layout/MainLayout";
 import { PageSEO } from "@/components/seo/PageSEO";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { sicoobApprovalService } from "@/services/sicoob/approvalService";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
@@ -20,44 +20,12 @@ export default function GestorApprovalsPage() {
 
   const { data: approvals, isLoading } = useQuery({
     queryKey: ["sicoob-pending-approvals"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('sicoob_approval_requests')
-        .select(`
-          *,
-          sicoob_orders (
-            id,
-            total_amount,
-            status,
-            postos_atendimento (nome),
-            created_at,
-            profiles:created_by (full_name)
-          )
-        `)
-        .eq('status', 'pending')
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        console.error("Error fetching approvals:", error);
-        throw error;
-      }
-      return data;
-    }
+    queryFn: () => sicoobApprovalService.listPendingApprovals()
   });
 
   const approveMutation = useMutation({
-    mutationFn: async ({ id, orderId }: { id: string, orderId: string }) => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("Usuário não autenticado");
-
-      const { error } = await supabase.rpc('approve_sicoob_order', {
-        p_request_id: id,
-        p_order_id: orderId,
-        p_manager_id: user.id
-      });
-
-      if (error) throw error;
-    },
+    mutationFn: ({ id, orderId }: { id: string, orderId: string }) => 
+      sicoobApprovalService.approveOrder(id, orderId),
     onSuccess: () => {
       toast.success("Pedido aprovado com sucesso!");
       queryClient.invalidateQueries({ queryKey: ["sicoob-pending-approvals"] });
@@ -70,19 +38,8 @@ export default function GestorApprovalsPage() {
   });
 
   const rejectMutation = useMutation({
-    mutationFn: async ({ id, orderId, reason }: { id: string, orderId: string, reason: string }) => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("Usuário não autenticado");
-
-      const { error } = await supabase.rpc('reject_sicoob_order', {
-        p_request_id: id,
-        p_order_id: orderId,
-        p_manager_id: user.id,
-        p_reason: reason
-      });
-
-      if (error) throw error;
-    },
+    mutationFn: ({ id, orderId, reason }: { id: string, orderId: string, reason: string }) =>
+      sicoobApprovalService.rejectOrder(id, orderId, reason),
     onSuccess: () => {
       toast.success("Pedido rejeitado.");
       queryClient.invalidateQueries({ queryKey: ["sicoob-pending-approvals"] });

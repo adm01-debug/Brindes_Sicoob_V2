@@ -31,7 +31,7 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { KpiCard } from "@/components/ui/kpi-card";
+import { KpiCard } from "@/components/ui/KpiCard";
 import { useMarketIntelligenceMacro, type MacroSupplierMetrics, type MacroMarketPoint, type MacroMarketKpis } from "@/hooks/useMarketIntelligenceMacro";
 import { useSupplierNames } from "@/hooks/useSupplierNames";
 import { safeParseDateForChart } from "@/lib/stock-chart-utils";

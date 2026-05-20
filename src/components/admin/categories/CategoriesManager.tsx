@@ -17,7 +17,7 @@ import { CategoryTreeDiagram } from "./CategoryTreeDiagram";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import * as XLSX from '@e965/xlsx';
 import { logAdminAction } from "@/utils/adminAudit";
-import { useAdminPermissions } from "@/hooks/useAdminPermissions";
+import { useAdminPermissions } from "@/hooks/admin/useAdminPermissions";
 
 interface Category {
   id: string;

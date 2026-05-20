@@ -2,7 +2,7 @@ import { DollarSign, ShoppingCart, Receipt, TrendingUp, BarChart3 } from "lucide
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { KpiCard } from "@/components/ui/kpi-card";
+import { KpiCard } from "@/components/ui/KpiCard";
 import { useCommercialKPIs } from "@/hooks/useCommercialIntelligence";
 
 interface Props {

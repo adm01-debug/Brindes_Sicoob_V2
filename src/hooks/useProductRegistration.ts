@@ -17,7 +17,7 @@ import {
   type ExternalSupplierColor,
   type ExternalSupplierMaterial,
 } from './useExternalDatabase';
-import { useAuditLog } from './useAuditLog';
+import { useAuditLog } from './admin/useAuditLog';
 import { useProductImport } from './useProductRegistrationImport';
 
 // Tipos para o formulário de cadastro

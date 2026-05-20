@@ -1,22 +1,22 @@
 import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
-import { AriaLive } from "./AriaLive";
+import { useAriaLive } from "./AriaLive";
 
 export const RouteAnnouncer = () => {
   const location = useLocation();
-  const [announcement, setAnnouncement] = useState("");
+  const { announce } = useAriaLive();
 
   useEffect(() => {
     // Small delay to ensure the page title has updated if set by PageSEO
     const timeout = setTimeout(() => {
       const pageTitle = document.title;
       if (pageTitle) {
-        setAnnouncement(`Navegou para a página: ${pageTitle}`);
+        announce(`Navegou para a página: ${pageTitle}`);
       }
     }, 100);
 
     return () => clearTimeout(timeout);
-  }, [location.pathname]);
+  }, [location.pathname, announce]);
 
-  return <AriaLive message={announcement} aria-live="polite" />;
+  return null;
 };

@@ -20,7 +20,7 @@ import { Badge } from "@/components/ui/badge";
 import { Loader2, ShoppingCart, FileText, DollarSign, Users, Target, Package } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatCurrency } from "@/lib/format";
-import { KpiCard } from "@/components/ui/kpi-card";
+import { KpiCard } from "@/components/ui/KpiCard";
 import { useSalesHistoryMacro } from "@/hooks/useSalesHistoryMacro";
 import { safeParseDateForChart } from "@/lib/stock-chart-utils";
 

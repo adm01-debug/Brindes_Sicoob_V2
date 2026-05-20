@@ -1,5 +1,5 @@
 
-import { useCart } from "@/hooks/useCart";
+import { useCart } from "@/hooks/cart/useCart";
 import { Button } from "@/components/ui/button";
 import { 
   Sheet, 
