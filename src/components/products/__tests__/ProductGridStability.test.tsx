@@ -4,6 +4,9 @@ import { ProductGrid } from '@/components/products/ProductGrid';
 import { BrowserRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { TooltipProvider } from '@/components/ui/tooltip';
+import { SellerCartProvider } from '@/contexts/SellerCartContext';
+import { CollectionsProvider } from '@/contexts/CollectionsContext';
+import { ProductsProvider } from '@/contexts/ProductsContext';
 import React from 'react';
 
 const queryClient = new QueryClient({
@@ -17,11 +20,17 @@ const queryClient = new QueryClient({
 const renderWithProviders = (ui: React.ReactElement) => {
   return render(
     <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <BrowserRouter>
-          {ui}
-        </BrowserRouter>
-      </TooltipProvider>
+      <ProductsProvider>
+        <CollectionsProvider>
+          <SellerCartProvider>
+            <TooltipProvider>
+              <BrowserRouter>
+                {ui}
+              </BrowserRouter>
+            </TooltipProvider>
+          </SellerCartProvider>
+        </CollectionsProvider>
+      </ProductsProvider>
     </QueryClientProvider>
   );
 };
@@ -85,11 +94,17 @@ describe('ProductGrid Stability and Skeletons', () => {
     // Rerender as loaded
     rerender(
       <QueryClientProvider client={queryClient}>
-        <TooltipProvider>
-          <BrowserRouter>
-            <ProductGrid products={mockProducts} isLoading={false} columns={5} />
-          </BrowserRouter>
-        </TooltipProvider>
+        <ProductsProvider>
+          <CollectionsProvider>
+            <SellerCartProvider>
+              <TooltipProvider>
+                <BrowserRouter>
+                  <ProductGrid products={mockProducts} isLoading={false} columns={5} />
+                </BrowserRouter>
+              </TooltipProvider>
+            </SellerCartProvider>
+          </CollectionsProvider>
+        </ProductsProvider>
       </QueryClientProvider>
     );
 
