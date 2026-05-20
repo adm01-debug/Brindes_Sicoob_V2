@@ -8,6 +8,7 @@ import { useOrderLogistics, useOrderInvoices } from "@/hooks/orders/extensions";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { useUpdateSicoobOrderStatus } from "@/hooks/sicoob/useSicoobOrder";
+import { supabase } from "@/integrations/supabase/client";
 
 interface OrderLogisticsTabProps {
   orderId: string;
@@ -24,13 +25,13 @@ export function OrderLogisticsTab({ orderId }: OrderLogisticsTabProps) {
 
   useEffect(() => {
     if (logistics?.tracking_code) setTrackingCode(logistics.tracking_code);
-    if (logistics?.carrier) setCarrier(logistics.carrier);
+    if (logistics?.carrier_name) setCarrier(logistics.carrier_name);
   }, [logistics]);
 
   const handleUpdateTracking = async () => {
     await updateLogistics.mutateAsync({
       tracking_code: trackingCode,
-      carrier: carrier,
+      carrier_name: carrier,
       status: 'in_transit'
     });
 
@@ -48,7 +49,17 @@ export function OrderLogisticsTab({ orderId }: OrderLogisticsTabProps) {
 
     try {
       setIsUploadingPhoto(true);
-      const publicUrl = await uploadFile(file, `delivery-photo-${Date.now()}.jpg`);
+      
+      const fileName = `${orderId}/delivery-photo-${Date.now()}.jpg`;
+      const { data, error } = await supabase.storage
+        .from('order-documents')
+        .upload(fileName, file);
+
+      if (error) throw error;
+      
+      const { data: { publicUrl } } = supabase.storage
+        .from('order-documents')
+        .getPublicUrl(data.path);
       
       await updateLogistics.mutateAsync({
         delivery_photo_url: publicUrl,
@@ -94,7 +105,7 @@ export function OrderLogisticsTab({ orderId }: OrderLogisticsTabProps) {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-bold">{logistics?.carrier || "Não informada"}</p>
+            <p className="text-2xl font-bold">{logistics?.carrier_name || "Não informada"}</p>
           </CardContent>
         </Card>
         <Card>
