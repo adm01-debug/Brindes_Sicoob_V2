@@ -7,6 +7,7 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import { SellerCartProvider } from '@/contexts/SellerCartContext';
 import { CollectionsProvider } from '@/contexts/CollectionsContext';
 import { ProductsProvider } from '@/contexts/ProductsContext';
+import { AuthProvider } from '@/contexts/AuthContext';
 import React from 'react';
 
 const queryClient = new QueryClient({
@@ -20,17 +21,19 @@ const queryClient = new QueryClient({
 const renderWithProviders = (ui: React.ReactElement) => {
   return render(
     <QueryClientProvider client={queryClient}>
-      <ProductsProvider>
-        <CollectionsProvider>
-          <SellerCartProvider>
-            <TooltipProvider>
-              <BrowserRouter>
-                {ui}
-              </BrowserRouter>
-            </TooltipProvider>
-          </SellerCartProvider>
-        </CollectionsProvider>
-      </ProductsProvider>
+      <AuthProvider>
+        <ProductsProvider>
+          <CollectionsProvider>
+            <SellerCartProvider>
+              <TooltipProvider>
+                <BrowserRouter>
+                  {ui}
+                </BrowserRouter>
+              </TooltipProvider>
+            </SellerCartProvider>
+          </CollectionsProvider>
+        </ProductsProvider>
+      </AuthProvider>
     </QueryClientProvider>
   );
 };
@@ -94,17 +97,19 @@ describe('ProductGrid Stability and Skeletons', () => {
     // Rerender as loaded
     rerender(
       <QueryClientProvider client={queryClient}>
-        <ProductsProvider>
-          <CollectionsProvider>
-            <SellerCartProvider>
-              <TooltipProvider>
-                <BrowserRouter>
-                  <ProductGrid products={mockProducts} isLoading={false} columns={5} />
-                </BrowserRouter>
-              </TooltipProvider>
-            </SellerCartProvider>
-          </CollectionsProvider>
-        </ProductsProvider>
+        <AuthProvider>
+          <ProductsProvider>
+            <CollectionsProvider>
+              <SellerCartProvider>
+                <TooltipProvider>
+                  <BrowserRouter>
+                    <ProductGrid products={mockProducts} isLoading={false} columns={5} />
+                  </BrowserRouter>
+                </TooltipProvider>
+              </SellerCartProvider>
+            </CollectionsProvider>
+          </ProductsProvider>
+        </AuthProvider>
       </QueryClientProvider>
     );
 
