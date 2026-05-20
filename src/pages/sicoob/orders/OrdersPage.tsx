@@ -72,6 +72,7 @@ import { useGlobalShortcuts } from "@/hooks/useGlobalShortcuts";
 import { OrderStatusBadge } from "@/components/sicoob/orders/OrderStatusBadge";
 import { OrderStatus, ORDER_STATUS_OPTIONS } from "@/types/sicoob/orders";
 import { sicoobOrderService } from "@/services/sicoob/orderService";
+import { sicoobCommonService } from "@/services/sicoob/commonService";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { motion } from "framer-motion";
@@ -370,18 +371,12 @@ export default function OrdersPage() {
 
   const { data: pas = [] } = useQuery({
     queryKey: ["postos_atendimento"],
-    queryFn: async () => {
-      const { data } = await supabase.from("postos_atendimento").select("id, nome");
-      return data || [];
-    }
+    queryFn: () => sicoobCommonService.listPostosAtendimento()
   });
 
   const { data: cooperatives = [] } = useQuery({
     queryKey: ["cooperativas"],
-    queryFn: async () => {
-      const { data } = await supabase.from("cooperativas").select("id, nome");
-      return data || [];
-    }
+    queryFn: () => sicoobCommonService.listCooperativas()
   });
 
   const paOptions = pas;

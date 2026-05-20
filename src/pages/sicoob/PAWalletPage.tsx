@@ -6,7 +6,8 @@ import { Wallet, TrendingUp, AlertCircle, Calendar, Plus, History, Clock, FileTe
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { sicoobBudgetService } from "@/services/sicoob/budgetService";
+import { sicoobApprovalService } from "@/services/sicoob/approvalService";
 import { formatCurrency } from "@/lib/format";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 // import { MainLayout } from "@/components/layout/MainLayout";
@@ -35,49 +36,30 @@ export default function PAWalletPage() {
   
   const { data: budget, isLoading } = useQuery({
     queryKey: ["pa-budget", user?.id],
-    queryFn: async () => {
+    queryFn: () => {
       if (!profile?.pa_id) return null;
-
-      const { data, error } = await supabase
-        .from("pa_budgets")
-        .select("*")
-        .eq("pa_id", profile.pa_id)
-        .order("ano", { ascending: false })
-        .order("mes", { ascending: false })
-        .limit(1)
-        .maybeSingle();
-        
-      if (error) throw error;
-      return data;
+      return sicoobBudgetService.getBudgetByPa(profile.pa_id);
     },
     enabled: !!profile?.pa_id,
   });
 
   const { data: requests } = useQuery({
     queryKey: ["budget-requests", profile?.pa_id],
-    queryFn: async () => {
+    queryFn: () => {
       if (!profile?.pa_id) return [];
-      const { data, error } = await supabase
-        .from("limit_increase_requests")
-        .select("*")
-        .eq("pa_id", profile.pa_id)
-        .order("created_at", { ascending: false });
-      if (error) throw error;
-      return data;
+      return sicoobApprovalService.listLimitIncreaseRequests(profile.pa_id);
     },
     enabled: !!profile?.pa_id,
   });
 
   const createRequest = useMutation({
-    mutationFn: async () => {
+    mutationFn: () => {
       if (!profile?.pa_id) throw new Error("PA não identificado");
-      const { error } = await supabase.from("limit_increase_requests").insert({
-        pa_id: profile.pa_id,
-        requested_limit: Number(requestedAmount),
-        reason: requestReason,
-        status: 'pending'
-      });
-      if (error) throw error;
+      return sicoobApprovalService.createLimitIncreaseRequest(
+        profile.pa_id,
+        Number(requestedAmount),
+        requestReason
+      );
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["budget-requests"] });
