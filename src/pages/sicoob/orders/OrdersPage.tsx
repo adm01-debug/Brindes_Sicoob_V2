@@ -123,7 +123,6 @@ export default function OrdersPage() {
       queryClient.invalidateQueries({ queryKey: ["sicoob_orders_all_stats"] });
     });
   }, [queryClient]);
-  }, [queryClient]);
 
   const allOrdersForStats = useQuery({
     queryKey: ["sicoob_orders_all_stats"],
