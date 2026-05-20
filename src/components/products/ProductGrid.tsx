@@ -1,4 +1,5 @@
 import { ProductCard } from "./ProductCard";
+import { ProductGridSkeleton } from "./ProductCardSkeleton";
 import type { Product } from "@/hooks/useProducts";
 import type { ActiveColorFilter } from "@/utils/color-image-resolver";
 import { useEffect, useState, useRef, useMemo, memo, useCallback } from "react";
@@ -9,6 +10,7 @@ import { cn } from "@/lib/utils";
 
 export interface ProductGridProps {
   products: Product[];
+  isLoading?: boolean;
   onProductClick?: (productId: string) => void;
   onViewProduct?: (product: Product) => void;
   onShareProduct?: (product: Product) => void;
@@ -121,6 +123,7 @@ const columnClasses: Record<number, string> = {
 
 export function ProductGrid({ 
   products,
+  isLoading = false,
   onProductClick,
   onViewProduct, 
   onShareProduct, 
@@ -182,6 +185,14 @@ export function ProductGrid({
     const timer = setTimeout(() => setIsGridVisible(true), 50);
     return () => clearTimeout(timer);
   }, [products]);
+
+  if (isLoading) {
+    return (
+      <div className="w-full" data-testid="product-grid-loading">
+        <ProductGridSkeleton count={columns * 3} variant="default" stagger={true} />
+      </div>
+    );
+  }
 
   if (products.length === 0) {
     return (
