@@ -35,6 +35,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { sicoobOrderService } from "@/services/sicoob/orderService";
+import { sicoobCommonService } from "@/services/sicoob/commonService";
 import { useSicoobOrdersOptimistic } from "@/hooks/sicoob/useSicoobOrdersOptimistic";
 import { OrderStatus, ORDER_STATUS_CONFIG, ORDER_STATUS_OPTIONS, canSicoobTransitionTo } from "@/types/sicoob/orders";
 import {
@@ -283,20 +284,9 @@ export default function OrdersKanbanPage() {
 
   // Real-time synchronization
   useEffect(() => {
-    const channel = supabase
-      .channel('kanban-db-changes')
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'sicoob_orders' },
-        () => {
-          queryClient.invalidateQueries({ queryKey: ["sicoob_orders_list_kanban"] });
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
+    return sicoobCommonService.subscribeToOrders(() => {
+      queryClient.invalidateQueries({ queryKey: ["sicoob_orders_list_kanban"] });
+    });
   }, [queryClient]);
 
   // Filtering logic - memoized for performance

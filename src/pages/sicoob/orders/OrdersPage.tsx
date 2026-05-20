@@ -118,21 +118,10 @@ export default function OrdersPage() {
 
   // Real-time synchronization
   useEffect(() => {
-    const channel = supabase
-      .channel('schema-db-changes-v10')
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'sicoob_orders' },
-        () => {
-          queryClient.invalidateQueries({ queryKey: ["sicoob_orders_list"] });
-          queryClient.invalidateQueries({ queryKey: ["sicoob_orders_all_stats"] });
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
+    return sicoobCommonService.subscribeToOrders(() => {
+      queryClient.invalidateQueries({ queryKey: ["sicoob_orders_list"] });
+      queryClient.invalidateQueries({ queryKey: ["sicoob_orders_all_stats"] });
+    });
   }, [queryClient]);
 
   const allOrdersForStats = useQuery({
