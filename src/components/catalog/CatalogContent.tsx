@@ -19,6 +19,7 @@ import type { ViewMode } from "@/hooks/useCatalogState";
 import type { ColumnCount } from "@/components/products/ColumnSelector";
 import type { RefObject } from "react";
 import { SparklineSalesProvider } from "@/hooks/useSparklineSales";
+import { ProductGrid } from "@/components/products/ProductGrid";
 
 interface CatalogContentProps {
   viewMode: ViewMode;
@@ -248,14 +249,6 @@ export function CatalogContent({
     activeColorFilter,
   };
 
-  if (shouldShowCatalogSkeleton) {
-    return (
-      <div className={`${CONTAINER_CLASS} p-4`}>
-        {viewMode === "grid" ? <ProductGridSkeleton count={8} /> : <ProductListSkeleton count={viewMode === "table" ? 12 : 8} />}
-      </div>
-    );
-  }
-
   if (shouldShowEmptyState) {
     return (
       <div className={`${CONTAINER_CLASS} p-4`}>
@@ -272,23 +265,47 @@ export function CatalogContent({
 
   const content = viewMode === "table" ? (
     <div className={`${CONTAINER_CLASS}`}>
-      <ProductTableView
-        products={paginatedProducts} onProductClick={(id) => navigate(`/produto/${id}`)}
-        isFavorite={isFavorite} onToggleFavorite={toggleFavorite}
-        isInCompare={isInCompare} onToggleCompare={onToggleCompare} canAddToCompare={canAddToCompare}
-        onShareProduct={handleShareProduct} selectionMode={selectionMode}
-        selectedIds={sel.selectedIds} onToggleSelect={sel.toggleSelect} activeColorFilter={activeColorFilter}
-      />
-      {hasMoreProducts && (
-        <div ref={loadMoreRef} className="flex flex-col items-center gap-3 pt-8 pb-4 px-4" style={{ minHeight: "60px" }}>
-          <p className="text-sm text-muted-foreground">Mostrando {paginatedProducts.length} de {(totalEstimate ?? filteredProducts.length).toLocaleString("pt-BR")} produtos</p>
-        </div>
+      {shouldShowCatalogSkeleton ? (
+         <div className="p-4"><ProductListSkeleton count={12} /></div>
+      ) : (
+        <>
+          <ProductTableView
+            products={paginatedProducts} onProductClick={(id) => navigate(`/produto/${id}`)}
+            isFavorite={isFavorite} onToggleFavorite={toggleFavorite}
+            isInCompare={isInCompare} onToggleCompare={onToggleCompare} canAddToCompare={canAddToCompare}
+            onShareProduct={handleShareProduct} selectionMode={selectionMode}
+            selectedIds={sel.selectedIds} onToggleSelect={sel.toggleSelect} activeColorFilter={activeColorFilter}
+          />
+          {hasMoreProducts && (
+            <div ref={loadMoreRef} className="flex flex-col items-center gap-3 pt-8 pb-4 px-4" style={{ minHeight: "60px" }}>
+              <p className="text-sm text-muted-foreground">Mostrando {paginatedProducts.length} de {(totalEstimate ?? filteredProducts.length).toLocaleString("pt-BR")} produtos</p>
+            </div>
+          )}
+        </>
       )}
     </div>
   ) : viewMode === "list" ? (
-    <SparklineSalesProvider productIds={sparklineProductIds}><VirtualList {...sharedProps} /></SparklineSalesProvider>
+    <SparklineSalesProvider productIds={sparklineProductIds}>
+      {shouldShowCatalogSkeleton ? (
+        <div className={`${CONTAINER_CLASS} p-4`}><ProductListSkeleton count={8} /></div>
+      ) : (
+        <VirtualList {...sharedProps} />
+      )}
+    </SparklineSalesProvider>
   ) : (
-    <SparklineSalesProvider productIds={sparklineProductIds}><VirtualGrid {...sharedProps} columns={gridColumns} /></SparklineSalesProvider>
+    <SparklineSalesProvider productIds={sparklineProductIds}>
+      <div className={`${CONTAINER_CLASS} p-4`}>
+        <ProductGrid
+          {...sharedProps}
+          products={paginatedProducts}
+          isLoading={shouldShowCatalogSkeleton}
+          columns={gridColumns}
+          onProductClick={(id) => selectionMode ? sel.toggleSelect(id) : navigate(`/produto/${id}`)}
+          onViewProduct={handleViewProduct}
+          onShareProduct={handleShareProduct}
+        />
+      </div>
+    </SparklineSalesProvider>
   );
 
   return (

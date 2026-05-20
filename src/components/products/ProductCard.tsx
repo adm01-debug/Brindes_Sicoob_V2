@@ -2,7 +2,7 @@
  * ProductCard — Main catalog card component.
  * Refactored: image section in ProductCardImage, FAB actions in ProductCardActions.
  */
-import { useState, useRef, useEffect, memo, forwardRef, useCallback } from "react";
+import { useState, useRef, useEffect, memo, forwardRef, useCallback, useMemo } from "react";
 import { GenderBadge } from "./GenderBadge";
 import { Building2, Package } from "lucide-react";
 import { useNavigate } from "react-router-dom";
