@@ -68,8 +68,8 @@ describe('ProductGrid Stability and Skeletons', () => {
 
   it('ProductGrid remains stable while transitioning from loading to loaded', async () => {
     const mockProducts = [
-      { id: '1', name: 'Product 1', sku: 'SKU1', price: 10, images: [], colors: [], supplier: { name: 'S1' } },
-      { id: '2', name: 'Product 2', sku: 'SKU2', price: 20, images: [], colors: [], supplier: { name: 'S2' } }
+      { id: '1', name: 'Product 1', sku: 'SKU1', price: 10, images: [], colors: [], supplier: { name: 'S1' }, stock: 100, stockStatus: 'in-stock' },
+      { id: '2', name: 'Product 2', sku: 'SKU2', price: 20, images: [], colors: [], supplier: { name: 'S2' }, stock: 50, stockStatus: 'low-stock' }
     ] as any;
 
     const { rerender, container } = renderWithProviders(
