@@ -38,6 +38,20 @@ Object.defineProperty(window, 'matchMedia', {
   }),
 });
 
+// Mock Virtualizer - avoid issues with scroll-based rendering in tests
+vi.mock('@tanstack/react-virtual', () => ({
+  useVirtualizer: vi.fn(({ count }) => ({
+    getTotalSize: () => count * 480,
+    getVirtualItems: () => Array.from({ length: count }).map((_, i) => ({
+      index: i,
+      key: i,
+      size: 480,
+      start: i * 480,
+    })),
+    measureElement: () => {},
+  })),
+}));
+
 describe('ProductGrid Stability and Skeletons', () => {
   it('ProductGrid shows skeletons when isLoading is true', () => {
     const { container } = renderWithProviders(
