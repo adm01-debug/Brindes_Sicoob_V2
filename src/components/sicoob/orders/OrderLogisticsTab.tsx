@@ -8,6 +8,7 @@ import { useOrderLogistics, useOrderInvoices } from "@/hooks/orders/extensions";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { useUpdateSicoobOrderStatus } from "@/hooks/sicoob/useSicoobOrder";
+import { supabase } from "@/integrations/supabase/client";
 
 interface OrderLogisticsTabProps {
   orderId: string;
@@ -48,7 +49,17 @@ export function OrderLogisticsTab({ orderId }: OrderLogisticsTabProps) {
 
     try {
       setIsUploadingPhoto(true);
-      const publicUrl = await uploadFile(file, `delivery-photo-${Date.now()}.jpg`);
+      
+      const fileName = `${orderId}/delivery-photo-${Date.now()}.jpg`;
+      const { data, error } = await supabase.storage
+        .from('order-documents')
+        .upload(fileName, file);
+
+      if (error) throw error;
+      
+      const { data: { publicUrl } } = supabase.storage
+        .from('order-documents')
+        .getPublicUrl(data.path);
       
       await updateLogistics.mutateAsync({
         delivery_photo_url: publicUrl,
