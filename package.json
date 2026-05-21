@@ -19,7 +19,7 @@
     "lint:check": "eslint src --max-warnings=500",
     "lint:baseline": "node scripts/check-eslint-baseline.mjs",
     "lint:baseline:update": "node scripts/eslint-baseline-generate.mjs",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc --noEmit -p tsconfig.app.json && tsc --noEmit -p tsconfig.node.json",
     "format": "prettier --write \"src/**/*.{ts,tsx,css}\"",
     "format:check": "prettier --check \"src/**/*.{ts,tsx,css}\"",
     "prepare": "husky",
@@ -173,7 +173,6 @@
     "vaul": "^0.9.0",
     "vitest": "^3.2.4",
     "web-vitals": "^5.2.0",
-    "xlsx": "^0.18.5",
     "zod": "^3.22.4",
     "zustand": "^4.5.0"
   },

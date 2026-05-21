@@ -1,3 +1,4 @@
+import * as React from 'react';
 import { Package, AlertTriangle, XCircle, TrendingUp, Clock } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
@@ -14,7 +15,63 @@ interface StockBadgeProps extends React.HTMLAttributes<HTMLDivElement> {
   expectedDate?: string;
 }
 
-// ... keep existing code
+interface StatusConfigEntry {
+  icon: React.ComponentType<{ className?: string }>;
+  label: string;
+  shortLabel: string;
+  bgClass: string;
+  className: string;
+}
+
+const statusConfig: Record<StockStatus, StatusConfigEntry> = {
+  'in-stock': {
+    icon: Package,
+    label: 'Em estoque',
+    shortLabel: 'Em estoque',
+    bgClass: 'bg-primary/10',
+    className: 'text-primary border-primary/20',
+  },
+  'low-stock': {
+    icon: AlertTriangle,
+    label: 'Estoque baixo',
+    shortLabel: 'Baixo',
+    bgClass: 'bg-warning/10',
+    className: 'text-warning border-warning/20',
+  },
+  'out-of-stock': {
+    icon: XCircle,
+    label: 'Sem estoque',
+    shortLabel: 'Esgotado',
+    bgClass: 'bg-destructive/10',
+    className: 'text-destructive border-destructive/20',
+  },
+  'pre-order': {
+    icon: Clock,
+    label: 'Pré-venda',
+    shortLabel: 'Pré-venda',
+    bgClass: 'bg-primary/10',
+    className: 'text-primary border-primary/20',
+  },
+  'incoming': {
+    icon: TrendingUp,
+    label: 'A caminho',
+    shortLabel: 'A caminho',
+    bgClass: 'bg-primary/5',
+    className: 'text-primary/80 border-primary/10',
+  },
+};
+
+interface SizeConfigEntry {
+  badge: string;
+  icon: string;
+}
+
+const sizeConfig: Record<NonNullable<StockBadgeProps['size']>, SizeConfigEntry> = {
+  sm: { badge: 'text-[10px] px-1.5 py-0 gap-1', icon: 'h-3 w-3' },
+  md: { badge: 'text-xs px-2 py-0.5 gap-1', icon: 'h-3.5 w-3.5' },
+  lg: { badge: 'text-sm px-2.5 py-1 gap-1.5', icon: 'h-4 w-4' },
+};
+
 export const StockBadge = React.forwardRef<HTMLDivElement, StockBadgeProps>(
   (
     {
@@ -89,32 +146,6 @@ export const StockBadge = React.forwardRef<HTMLDivElement, StockBadgeProps>(
 );
 
 StockBadge.displayName = "StockBadge";
-
-
-  // Se tem informação adicional, mostrar tooltip
-  if (expectedDate || (quantity !== undefined && !showQuantity)) {
-    return (
-      <Tooltip>
-        <TooltipTrigger asChild>
-          {badgeContent}
-        </TooltipTrigger>
-        <TooltipContent>
-          <div className="text-xs space-y-1">
-            <p className="font-medium">{config.label}</p>
-            {quantity !== undefined && (
-              <p>Quantidade: {quantity.toLocaleString('pt-BR')} unidades</p>
-            )}
-            {expectedDate && (
-              <p>Previsão: {new Date(expectedDate).toLocaleDateString('pt-BR')}</p>
-            )}
-          </div>
-        </TooltipContent>
-      </Tooltip>
-    );
-  }
-
-  return badgeContent;
-}
 
 // Função helper para determinar status com base na quantidade
 export function getStockStatus(quantity: number, lowThreshold = 50): StockStatus {

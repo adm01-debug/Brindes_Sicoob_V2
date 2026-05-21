@@ -95,6 +95,11 @@ export async function getCachedByIds<T extends { id: string; name: string; code?
     return out;
   }
 
+  // Batch-level coalescing: a concurrent call requesting the exact same set of
+  // missing ids piggybacks on the single in-flight bridge promise.
+  const key = `${entity}:${[...missing].sort().join(',')}`;
+  const inflight = INFLIGHT.get(key) as Promise<T[]> | undefined;
+
   let records: T[];
   if (inflight) {
     records = await inflight;

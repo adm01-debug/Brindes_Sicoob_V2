@@ -35,7 +35,7 @@ import {
 import { toast } from "sonner";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
-import * as XLSX from "xlsx";
+import * as XLSX from "@e965/xlsx";
 import { Sparkline } from "@/components/ui/Sparkline";
 import { AIOrderPredictor } from "@/components/sicoob/orders/AIOrderPredictor";
 import { Input } from "@/components/ui/input";

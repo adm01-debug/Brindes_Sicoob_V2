@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { FileText, FileSpreadsheet, FileBarChart, History, Download, CalendarIcon, Loader2, Search } from "lucide-react";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
-import * as XLSX from "xlsx";
+import * as XLSX from "@e965/xlsx";
 import { Button } from "@/components/ui/button";
 import { formatCurrency } from "@/lib/format";
 import { useQuery } from "@tanstack/react-query";

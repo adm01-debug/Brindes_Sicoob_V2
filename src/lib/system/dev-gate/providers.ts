@@ -19,17 +19,13 @@ export function parseGateFlag(raw: unknown): GateValue {
  * Provedor de flag baseado em variáveis de ambiente do Vite.
  */
 export class EnvGateProvider implements GateFlagProvider {
-  private static cachedValue: GateValue | null = null;
-
   getFlag(): GateValue {
-    if (EnvGateProvider.cachedValue !== null) return EnvGateProvider.cachedValue;
-
     try {
-      // Otimização: Acesso direto ao import.meta.env (Vite substitui em build-time)
-      // O cache estático evita parsing de string em cada chamada.
+      // Vite substitui `import.meta.env` em build-time, então a leitura é barata.
+      // Não cacheamos estaticamente: um cache estático nunca-invalidado congela o
+      // valor para todo o ciclo de vida do módulo e vaza estado entre instâncias.
       const raw = import.meta.env.VITE_SHOW_DEV_INFRA_MESSAGES;
-      EnvGateProvider.cachedValue = parseGateFlag(raw);
-      return EnvGateProvider.cachedValue;
+      return parseGateFlag(raw);
     } catch {
       return 'auto';
     }
