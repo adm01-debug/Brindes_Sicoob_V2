@@ -14,6 +14,78 @@ export type Database = {
   }
   public: {
     Tables: {
+      access_blocked_log: {
+        Row: {
+          block_reason: string
+          city: string | null
+          country: string | null
+          created_at: string
+          email: string | null
+          id: string
+          ip_address: string
+          state: string | null
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          block_reason: string
+          city?: string | null
+          country?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          ip_address: string
+          state?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          block_reason?: string
+          city?: string | null
+          country?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          ip_address?: string
+          state?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      access_security_settings: {
+        Row: {
+          block_unknown_locations: boolean
+          city_whitelist_enabled: boolean
+          id: string
+          ip_whitelist_enabled: boolean
+          lockout_duration_minutes: number
+          max_failed_attempts: number
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          block_unknown_locations?: boolean
+          city_whitelist_enabled?: boolean
+          id?: string
+          ip_whitelist_enabled?: boolean
+          lockout_duration_minutes?: number
+          max_failed_attempts?: number
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          block_unknown_locations?: boolean
+          city_whitelist_enabled?: boolean
+          id?: string
+          ip_whitelist_enabled?: boolean
+          lockout_duration_minutes?: number
+          max_failed_attempts?: number
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       admin_audit_log: {
         Row: {
           action: string
@@ -1229,6 +1301,39 @@ export type Database = {
         }
         Relationships: []
       }
+      city_whitelist: {
+        Row: {
+          city_name: string
+          country_code: string
+          created_at: string
+          created_by: string | null
+          id: string
+          is_active: boolean
+          state: string | null
+          updated_at: string
+        }
+        Insert: {
+          city_name: string
+          country_code?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_active?: boolean
+          state?: string | null
+          updated_at?: string
+        }
+        Update: {
+          city_name?: string
+          country_code?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_active?: boolean
+          state?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       cms_banners: {
         Row: {
           created_at: string | null
@@ -1952,6 +2057,50 @@ export type Database = {
           volume_usage_percent?: number
         }
         Relationships: []
+      }
+      device_login_notifications: {
+        Row: {
+          created_at: string
+          device_id: string | null
+          email_sent: boolean | null
+          id: string
+          ip_address: string
+          location: string | null
+          notification_sent_at: string
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          device_id?: string | null
+          email_sent?: boolean | null
+          id?: string
+          ip_address: string
+          location?: string | null
+          notification_sent_at?: string
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          device_id?: string | null
+          email_sent?: boolean | null
+          id?: string
+          ip_address?: string
+          location?: string | null
+          notification_sent_at?: string
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "device_login_notifications_device_id_fkey"
+            columns: ["device_id"]
+            isOneToOne: false
+            referencedRelation: "user_known_devices"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       discount_approval_requests: {
         Row: {
@@ -2868,6 +3017,36 @@ export type Database = {
           ip_address?: string
           list_type?: string
           reason?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      ip_whitelist: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          ip_address: string
+          is_active: boolean
+          label: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          ip_address: string
+          is_active?: boolean
+          label?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          ip_address?: string
+          is_active?: boolean
+          label?: string | null
           updated_at?: string
         }
         Relationships: []
@@ -8303,6 +8482,54 @@ export type Database = {
         }
         Relationships: []
       }
+      user_known_devices: {
+        Row: {
+          browser_name: string | null
+          created_at: string
+          device_fingerprint: string
+          device_type: string | null
+          first_seen_at: string
+          id: string
+          ip_address: string
+          is_trusted: boolean | null
+          last_seen_at: string
+          location: string | null
+          os_name: string | null
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          browser_name?: string | null
+          created_at?: string
+          device_fingerprint: string
+          device_type?: string | null
+          first_seen_at?: string
+          id?: string
+          ip_address: string
+          is_trusted?: boolean | null
+          last_seen_at?: string
+          location?: string | null
+          os_name?: string | null
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          browser_name?: string | null
+          created_at?: string
+          device_fingerprint?: string
+          device_type?: string | null
+          first_seen_at?: string
+          id?: string
+          ip_address?: string
+          is_trusted?: boolean | null
+          last_seen_at?: string
+          location?: string | null
+          os_name?: string | null
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_onboarding: {
         Row: {
           completed_at: string | null
@@ -8629,6 +8856,39 @@ export type Database = {
           },
         ]
       }
+      telemetry_query_performance: {
+        Row: {
+          created_at: string | null
+          duration_ms: number | null
+          error_message: string | null
+          id: string | null
+          operation: string | null
+          severity: string | null
+          table_name: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          duration_ms?: number | null
+          error_message?: string | null
+          id?: string | null
+          operation?: string | null
+          severity?: string | null
+          table_name?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          duration_ms?: number | null
+          error_message?: string | null
+          id?: string | null
+          operation?: string | null
+          severity?: string | null
+          table_name?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       v_full_scope_grants: {
         Row: {
           audit_id: string | null
@@ -8716,6 +8976,7 @@ export type Database = {
       }
       can_approve_discount: { Args: { _user_id?: string }; Returns: boolean }
       can_grant_mcp_full: { Args: { _user_id: string }; Returns: boolean }
+      can_manage: { Args: { _user_id: string }; Returns: boolean }
       can_manage_connections: { Args: { _user_id?: string }; Returns: boolean }
       can_manage_quotes: { Args: { _user_id?: string }; Returns: boolean }
       can_view_all_sales: { Args: { _user_id?: string }; Returns: boolean }
@@ -9076,6 +9337,10 @@ export type Database = {
           name: string
           updated_at: string
         }[]
+      }
+      get_user_role: {
+        Args: { _user_id: string }
+        Returns: Database["public"]["Enums"]["app_role"]
       }
       get_webhook_delivery_summary: {
         Args: { _minutes?: number }
