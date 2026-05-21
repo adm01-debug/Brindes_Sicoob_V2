@@ -1,6 +1,6 @@
 import { getCorsHeaders, handleCorsPreflightIfNeeded } from '../_shared/cors.ts';
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
-import { z } from "npm:zod@3.23.8";
+import { z } from "https://deno.land/x/zod@v3.23.8/mod.ts";
 
 const DeviceInfoSchema = z.object({
   fingerprint: z.string().min(1).max(256),
