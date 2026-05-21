@@ -3,15 +3,10 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 vi.mock('@/integrations/supabase/client', () => ({
   supabase: {
     auth: {
-      getSession: vi.fn().mockResolvedValue({
-        data: { session: { access_token: 'mock-token' } },
-      }),
+      getSession: vi.fn().mockResolvedValue({ data: { session: { access_token: 'mock-token' } } }),
     },
     functions: {
       invoke: vi.fn(),
-    },
-    auth: {
-      getSession: vi.fn().mockResolvedValue({ data: { session: { access_token: 'mock-token' } } }),
     },
   },
 }));
@@ -25,18 +20,26 @@ import { supabase } from '@/integrations/supabase/client';
 
 const mockInvoke = vi.mocked(supabase.functions.invoke);
 
+// NOTE: a semântica de retry/erro/cold-start vive em `invoke.ts` (invokeWithRetry)
+// e é coberta por tests/lib/external-db-invoke.test.ts. Aqui testamos apenas o
+// que o wrapper fino `bridge.ts` adiciona por cima.
+
 describe('invokeBridge', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it('throws if table is missing for non-batch operations', async () => {
-    await expect(
-      invokeBridge({ operation: 'select' })
-    ).rejects.toThrow('tabela não informada');
+  it('retorna o data da resposta em sucesso', async () => {
+    mockInvoke.mockResolvedValue({
+      data: { success: true, data: { records: [], count: 0 } },
+      error: null,
+    });
+
+    const result = await invokeBridge({ table: 'products', operation: 'select' });
+    expect(result.success).toBe(true);
   });
 
-  it('allows batch operations without table', async () => {
+  it('permite operação batch sem table', async () => {
     mockInvoke.mockResolvedValue({
       data: { success: true, data: { results: [{ success: true, data: { records: [], count: 0 } }] } },
       error: null,
@@ -45,59 +48,6 @@ describe('invokeBridge', () => {
     const result = await invokeBridge({ operation: 'batch', queries: [] });
     expect(result.success).toBe(true);
   });
-
-  it('retries on boot errors', async () => {
-    // First call fails with 502
-    mockInvoke.mockResolvedValueOnce({
-      data: null,
-      error: { message: 'Bad Gateway', context: { status: 502 } },
-    });
-    // Second call succeeds
-    mockInvoke.mockResolvedValueOnce({
-      data: { success: true, data: { records: [], count: 0 } },
-      error: null,
-    });
-
-    const result = await invokeBridge({ table: 'products', operation: 'select' });
-    expect(result.success).toBe(true);
-    expect(mockInvoke).toHaveBeenCalledTimes(2);
-  });
-
-  it('throws after max retries', async () => {
-    const errorResponse = {
-      data: null,
-      error: { message: 'function failed to start' },
-    };
-    mockInvoke.mockResolvedValue(errorResponse);
-
-    await expect(
-      invokeBridge({ table: 'products', operation: 'select' })
-    ).rejects.toThrow('Erro na bridge');
-    expect(mockInvoke).toHaveBeenCalledTimes(3); // BOOT_RETRY_ATTEMPTS
-  });
-
-  it('throws on non-retryable errors immediately', async () => {
-    mockInvoke.mockResolvedValue({
-      data: null,
-      error: { message: 'Invalid request' },
-    });
-
-    await expect(
-      invokeBridge({ table: 'products', operation: 'select' })
-    ).rejects.toThrow('Erro na bridge');
-    expect(mockInvoke).toHaveBeenCalledTimes(1);
-  });
-
-  it('throws on success:false response', async () => {
-    mockInvoke.mockResolvedValue({
-      data: { success: false, error: 'Tabela não encontrada' },
-      error: null,
-    });
-
-    await expect(
-      invokeBridge({ table: 'nonexistent', operation: 'select' })
-    ).rejects.toThrow('Tabela não encontrada');
-  });
 });
 
 describe('invokeExternalDb', () => {
@@ -105,7 +55,7 @@ describe('invokeExternalDb', () => {
     vi.clearAllMocks();
   });
 
-  it('wraps single non-record responses for mutations', async () => {
+  it('embrulha respostas não-record de mutações em { records, count }', async () => {
     mockInvoke.mockResolvedValue({
       data: { success: true, data: { id: 'new-1', name: 'Test' } },
       error: null,
@@ -122,16 +72,13 @@ describe('invokeExternalDb', () => {
     expect(result.count).toBe(1);
   });
 
-  it('passes through records array for select', async () => {
+  it('repassa array de records para select', async () => {
     mockInvoke.mockResolvedValue({
       data: { success: true, data: { records: [{ id: '1' }, { id: '2' }], count: 2 } },
       error: null,
     });
 
-    const result = await invokeExternalDb({
-      table: 'products',
-      operation: 'select',
-    });
+    const result = await invokeExternalDb({ table: 'products', operation: 'select' });
 
     expect(result.records).toHaveLength(2);
     expect(result.count).toBe(2);
@@ -143,17 +90,21 @@ describe('invokeExternalDbDelete', () => {
     vi.clearAllMocks();
   });
 
-  it('calls bridge with delete operation', async () => {
+  it('chama a bridge com operação delete e o body correto', async () => {
     mockInvoke.mockResolvedValue({
       data: { success: true, data: { deleted_id: 'del-1' } },
       error: null,
     });
 
     await invokeExternalDbDelete('products', 'del-1');
-    expect(mockInvoke).toHaveBeenCalledWith('external-db-bridge', {
-      body: { table: 'products', operation: 'delete', id: 'del-1' },
-      headers: { Authorization: 'Bearer mock-token' },
-    });
+    // O cliente injeta headers de correlação (request-id/traceparent), então
+    // validamos apenas o nome da função e o body via objectContaining.
+    expect(mockInvoke).toHaveBeenCalledWith(
+      'external-db-bridge',
+      expect.objectContaining({
+        body: { table: 'products', operation: 'delete', id: 'del-1' },
+      }),
+    );
   });
 });
 
@@ -162,7 +113,7 @@ describe('invokeBatchBridge', () => {
     vi.clearAllMocks();
   });
 
-  it('sends all queries in single call when under limit', async () => {
+  it('envia todas as queries em uma chamada quando abaixo do limite', async () => {
     const queries = Array.from({ length: 5 }, (_, i) => ({
       table: `table_${i}`,
       operation: 'select' as const,
@@ -172,10 +123,7 @@ describe('invokeBatchBridge', () => {
       data: {
         success: true,
         data: {
-          results: queries.map(() => ({
-            success: true,
-            data: { records: [], count: 0 },
-          })),
+          results: queries.map(() => ({ success: true, data: { records: [], count: 0 } })),
         },
       },
       error: null,
@@ -186,47 +134,23 @@ describe('invokeBatchBridge', () => {
     expect(mockInvoke).toHaveBeenCalledTimes(1);
   });
 
-  it('chunks queries exceeding batch limit', async () => {
+  it('fragmenta queries acima do limite de batch', async () => {
     const queries = Array.from({ length: 15 }, (_, i) => ({
       table: `table_${i}`,
       operation: 'select' as const,
     }));
 
-    mockInvoke.mockResolvedValue({
-      data: {
-        success: true,
-        data: {
-          results: Array.from({ length: 10 }, () => ({
-            success: true,
-            data: { records: [], count: 0 },
-          })),
-        },
-      },
-      error: null,
-    });
-
-    // Will need 2 calls: 10 + 5
     mockInvoke.mockResolvedValueOnce({
       data: {
         success: true,
-        data: {
-          results: Array.from({ length: 10 }, () => ({
-            success: true,
-            data: { records: [], count: 0 },
-          })),
-        },
+        data: { results: Array.from({ length: 10 }, () => ({ success: true, data: { records: [], count: 0 } })) },
       },
       error: null,
     });
     mockInvoke.mockResolvedValueOnce({
       data: {
         success: true,
-        data: {
-          results: Array.from({ length: 5 }, () => ({
-            success: true,
-            data: { records: [], count: 0 },
-          })),
-        },
+        data: { results: Array.from({ length: 5 }, () => ({ success: true, data: { records: [], count: 0 } })) },
       },
       error: null,
     });
