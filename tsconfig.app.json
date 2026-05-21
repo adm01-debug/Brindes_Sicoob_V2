@@ -10,6 +10,14 @@
     ],
     "module": "ESNext",
     "moduleDetection": "force",
+    "types": [
+      "vite/client",
+      "node",
+      "react",
+      "react-dom",
+      "trusted-types",
+      "dom-mediacapture-record"
+    ],
     "moduleResolution": "bundler",
     "noEmit": true,
     "noFallthroughCasesInSwitch": true,
