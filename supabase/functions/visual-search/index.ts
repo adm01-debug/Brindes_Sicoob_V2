@@ -4,6 +4,7 @@ import { callAiWithTracking, QuotaExceededError } from '../_shared/ai-usage.ts';
 import { z } from '../_shared/zod-validate.ts';
 import { rateLimiters, applyRateLimit } from '../_shared/rate-limiter.ts';
 import { runBotProtection } from '../_shared/bot-protection.ts';
+import { sanitizeIlikeValue } from '../_shared/pgrest-filter.ts';
 
 Deno.serve(async (req) => {
   const corsHeaders = getCorsHeaders(req);
@@ -181,7 +182,7 @@ Responda APENAS em JSON com este formato:
         .from("products")
         .select("id, name, sku, category_name, subcategory, description, price, colors, materials, tags, images")
         .eq("is_active", true)
-        .or(`name.ilike.%${productAnalysis.productType}%,category_name.ilike.%${productAnalysis.category}%`)
+        .or(`name.ilike.%${sanitizeIlikeValue(productAnalysis.productType ?? "")}%,category_name.ilike.%${sanitizeIlikeValue(productAnalysis.category ?? "")}%`)
         .limit(20);
 
       if (!directError && directProducts) {
