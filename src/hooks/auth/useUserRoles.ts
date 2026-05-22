@@ -22,9 +22,10 @@ export function useUserRoles() {
           result = await authService.queryRoles(userId);
         }
 
-        if (result.data && result.data.length > 0) {
+        if (result.data) {
           const roles = result.data.map((r) => r.role as AppRole);
           setUserRoles(prev => {
+             // Deep equality check to prevent redundant state updates
              if (prev.length === roles.length && prev.every((v, i) => v === roles[i])) return prev;
              return roles;
           });
@@ -44,6 +45,7 @@ export function useUserRoles() {
   const clearRoles = useCallback(() => {
     setUserRoles([]);
     setRolesLoaded(false);
+    fetchPromiseRef.current = null;
   }, []);
 
   return { userRoles, rolesLoaded, fetchRoles, clearRoles };

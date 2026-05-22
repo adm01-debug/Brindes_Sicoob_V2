@@ -122,14 +122,12 @@ export function Header({ onMenuToggle, searchQuery, onSearchChange }: HeaderProp
       data-testid="app-header"
       style={{
         "--header-h": `${headerHeightPx}px`,
-        position: "sticky",
-        top: 0,
-        zIndex: 50,
       } as CSSProperties}
       className={cn(
         "border-b transition-all duration-300 print:hidden",
         "bg-background/80 backdrop-blur-xl border-border/50",
         "h-[var(--header-h,56px)] sticky top-0",
+        "z-50 will-change-transform", // Hint for GPU acceleration
         isScrolled && "bg-background/95 backdrop-blur-2xl shadow-sm border-brand/20",
       )}
     >

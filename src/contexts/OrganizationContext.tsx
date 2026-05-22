@@ -84,7 +84,7 @@ export function OrganizationProvider({ children }: { children: ReactNode }) {
       const orgList = (orgs || []) as Organization[];
       setOrganizations(orgList);
 
-      // Restore saved org or pick first
+      // Restore saved org or pick first, ensuring the user actually belongs to it
       const savedOrgId = localStorage.getItem(ORG_STORAGE_KEY);
       const savedOrg = orgList.find((o) => o.id === savedOrgId);
       const selected = savedOrg || orgList[0] || null;
@@ -95,6 +95,8 @@ export function OrganizationProvider({ children }: { children: ReactNode }) {
         const membership = members.find((m) => m.organization_id === selected.id);
         setCurrentRole((membership?.role as OrgMember["role"]) || null);
         localStorage.setItem(ORG_STORAGE_KEY, selected.id);
+      } else {
+        localStorage.removeItem(ORG_STORAGE_KEY);
       }
     } catch (err) {
       console.error("Failed to fetch organizations:", err);
