@@ -41,23 +41,35 @@ export function useErrorHandler() {
       console.error('[useErrorHandler]', error);
       
       // Centralized reporting
+      const severity = options?.silent ? 'info' : 'error';
+      const metadata = { 
+        context: 'useErrorHandler', 
+        severity,
+        ...(options?.message ? { customMessage: options.message } : {}),
+        ...(error && typeof error === 'object' && 'code' in error ? { pg_code: (error as any).code } : {})
+      };
+
       if (error instanceof Error) {
-        reportError(error, { context: 'useErrorHandler', ...(options?.message ? { customMessage: options.message } : {}) });
+        reportError(error, metadata);
       } else {
-        reportError(new Error(msg), { context: 'useErrorHandler', originalError: error });
+        reportError(new Error(msg), { ...metadata, originalError: error });
       }
+
+      // Operational Telemetry
       if (error && typeof error === 'object' && 'code' in error) {
         const pgError = error as { code: string; message: string };
         const isRls = pgError.code === '42501';
         
-        supabase.from('query_telemetry').insert({
-          operation: 'unhandled_error',
-          error_message: pgError.message,
-          error_code: pgError.code,
-          is_rls_violation: isRls,
-          rls_blocked_count: isRls ? 1 : 0,
+        (supabase.from('telemetry_events') as any).insert({
+          event_type: 'database_error',
           severity: isRls ? 'critical' : 'error',
-        }).then(({ error: logErr }) => {
+          metadata: {
+            operation: 'unhandled_error',
+            error_message: pgError.message,
+            error_code: pgError.code,
+            is_rls_violation: isRls,
+          }
+        }).then(({ error: logErr }: { error: any }) => {
           if (logErr) console.warn('Falha ao logar erro na telemetria', logErr);
         });
       }
