@@ -81,7 +81,7 @@ export function useGeoBlocking() {
         .not('id', 'is', null); // Atualiza qualquer registro (deve haver apenas um)
 
       if (error) throw error;
-      setSettings(newSettings);
+      setSettings(prev => ({ ...prev, enabled }));
       return { success: true };
     } catch (error: unknown) {
       return { success: false, error: error instanceof Error ? error.message : 'Erro desconhecido' };
