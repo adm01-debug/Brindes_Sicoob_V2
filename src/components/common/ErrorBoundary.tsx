@@ -32,16 +32,18 @@ export class ErrorBoundary extends Component<Props, State> {
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     const boundaryName = this.props.name || 'Anonymous';
     
-    // Log to telemetry
-    diagnostics.log('error', 'ErrorBoundary', `Render error in [${boundaryName}]: ${error.message}`);
+    // Log to telemetry with structured data
+    diagnostics.log('error', 'ErrorBoundary', `Render error in [${boundaryName}]: ${error.message}`, {
+      boundary: boundaryName,
+      componentStack: errorInfo.componentStack?.slice(0, 1000), // Limit size
+      url: window.location.href,
+    });
     
     // Report to external monitor
     reportError(error, {
       boundary: boundaryName,
       componentStack: errorInfo.componentStack,
     });
-    
-    console.error(`[ErrorBoundary:${boundaryName}]`, error, errorInfo);
   }
 
   private handleReset = () => {

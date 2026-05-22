@@ -24,26 +24,38 @@ export function lazyWithRetry<T extends ComponentType<unknown>>(
 
     for (let i = 0; i < retries; i++) {
       try {
-        return await componentImport();
+        const component = await componentImport();
+        // Once loaded, clear any pending recovery state for this component
+        if (i > 0) {
+          logger.info(`Chunk recovered after ${i + 1} attempts`);
+        }
+        return component;
       } catch (error) {
         lastError = error as Error;
 
-        if (isChunkLoadError(error)) {
-          logger.warn(`Chunk load failed (attempt ${i + 1}/${retries}), retrying...`);
-          await new Promise(resolve => setTimeout(resolve, interval * (i + 1)));
+        // Cover silent fetch failures or timeout errors often seen on mobile/unstable networks
+        const shouldRetry = isChunkLoadError(error) || 
+                           (error instanceof Error && (
+                             error.message.includes("Network request failed") ||
+                             error.message.includes("Timeout")
+                           ));
 
-          // Última tentativa: aciona recovery agressivo (hard reload + cache bust).
+        if (shouldRetry) {
+          const delay = interval * (i + 1);
+          logger.warn(`Chunk load failed (attempt ${i + 1}/${retries}), retrying in ${delay}ms...`, error);
+          await new Promise(resolve => setTimeout(resolve, delay));
+
+          // Last attempt before giving up or doing hard reload
           if (i === retries - 1) {
             const reloaded = await attemptChunkRecovery(error);
             if (reloaded) {
-              // Aguarda navegação — devolve promise pendente para a Suspense.
+              // Navigation triggered, return a never-resolving promise to keep Suspense active
               return new Promise(() => {});
             }
-            // Recovery atingiu o limite — propaga para a Error Boundary.
             throw error;
           }
         } else {
-          // Re-throw non-chunk errors immediately
+          // Immediate failure for logic/syntax errors
           throw error;
         }
       }
