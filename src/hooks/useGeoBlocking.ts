@@ -120,8 +120,8 @@ export function useGeoBlocking() {
 
   const removeCountry = useCallback(async (id: string): Promise<{ success: boolean; error?: string }> => {
     try {
-      const { error } = await (supabase
-        .from('city_whitelist') as any)
+      const { error } = await supabase
+        .from('city_whitelist')
         .delete()
         .eq('id', id);
 
@@ -138,8 +138,8 @@ export function useGeoBlocking() {
     isActive: boolean
   ): Promise<{ success: boolean; error?: string }> => {
     try {
-      const { error } = await (supabase
-        .from('city_whitelist') as any)
+      const { error } = await supabase
+        .from('city_whitelist')
         .update({ is_active: isActive })
         .eq('id', id);
 
