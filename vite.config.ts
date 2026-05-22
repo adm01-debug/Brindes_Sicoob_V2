@@ -38,7 +38,7 @@ export default defineConfig(({ mode }) => ({
     sourcemap: false,
     minify: 'esbuild',
     target: 'esnext',
-    chunkSizeWarningLimit: 2000,
+    chunkSizeWarningLimit: 1200, // Reduced from 2000 to be more strict
     
     rollupOptions: {
       output: {
@@ -47,9 +47,13 @@ export default defineConfig(({ mode }) => ({
           if (id.includes('src/pages/admin/') || id.includes('src/pages/Admin/')) return 'admin-pages';
           if (id.includes('src/pages/quotes/') || id.includes('src/pages/Quotes/')) return 'quotes-pages';
           if (id.includes('src/pages/sicoob/') || id.includes('src/pages/Sicoob/')) return 'sicoob-pages';
+          
+          // Kit Builder & Trends — Heavy modules that were causing double-import warnings
+          if (id.includes('src/lib/kit-builder/') || id.includes('src/pages/KitBuilderPage.tsx')) return 'kit-builder';
+          if (id.includes('src/pages/trends/')) return 'trends-module';
 
-          // Core React & Router
-          if (id.includes('node_modules/react') || id.includes('node_modules/scheduler')) {
+          // Core React & Router (Shared vendor)
+          if (id.includes('node_modules/react/') || id.includes('node_modules/react-dom/') || id.includes('node_modules/scheduler/')) {
             return 'core-vendor';
           }
           
@@ -58,27 +62,31 @@ export default defineConfig(({ mode }) => ({
             return 'data-vendor';
           }
 
-          // UI & Icons
-          if (id.includes('node_modules/@radix-ui/') || id.includes('node_modules/lucide-react/') || id.includes('node_modules/sonner/')) {
+          // Charts (Very heavy)
+          if (id.includes('node_modules/recharts/') || id.includes('node_modules/d3-')) {
+            return 'charts-vendor';
+          }
+
+          // UI & Icons (Radix is fine, lucide is big)
+          if (id.includes('node_modules/lucide-react/')) {
+            return 'icons-vendor';
+          }
+          
+          if (id.includes('node_modules/@radix-ui/')) {
             return 'ui-vendor';
           }
 
-          // Animations
-          if (id.includes('node_modules/framer-motion/')) {
-            return 'motion-vendor';
+          // Utilities (Forms, Dates, PDF, DnD)
+          if (id.includes('node_modules/jspdf') || id.includes('node_modules/html2canvas')) {
+            return 'pdf-vendor';
           }
 
-          // Utilities (Forms, Dates, Charts, PDF, DnD)
-          if (
-            id.includes('node_modules/react-hook-form/') || 
-            id.includes('node_modules/zod/') ||
-            id.includes('node_modules/date-fns/') ||
-            id.includes('node_modules/recharts/') ||
-            id.includes('node_modules/jspdf') ||
-            id.includes('node_modules/html2canvas') ||
-            id.includes('node_modules/@dnd-kit/')
-          ) {
-            return 'utils-vendor';
+          if (id.includes('node_modules/date-fns/')) {
+            return 'date-vendor';
+          }
+          
+          if (id.includes('node_modules/framer-motion/')) {
+            return 'motion-vendor';
           }
         },
       },
