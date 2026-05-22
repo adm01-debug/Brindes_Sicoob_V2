@@ -166,6 +166,7 @@ export const diagnostics = new DiagnosticsManager();
 // Only enable in production or specific debug mode
 if (typeof window !== 'undefined' && 
     ((import.meta.env.PROD && !import.meta.env.VITE_LOVABLE_PREVIEW) || 
-     localStorage.getItem('DEBUG_FETCH') === 'true')) {
+     localStorage.getItem('DEBUG_FETCH') === 'true' ||
+     import.meta.env.VITE_LOVABLE_PREVIEW)) {
   diagnostics.setupFetchInterceptor();
 }
