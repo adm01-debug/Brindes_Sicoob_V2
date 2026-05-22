@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { useCallback, useRef } from "react";
+import { createClientLogger } from "@/lib/telemetry/structuredLogger";
 
 export interface CartItem {
   id: string;
@@ -40,6 +41,7 @@ export function useCart() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const userId = user?.id;
+  const log = createClientLogger('hook.useCart');
   
   // Ref for debounced updates to avoid DB spamming
   const debounceTimersRef = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
@@ -62,7 +64,9 @@ export function useCart() {
 
   const addItem = useMutation({
     mutationFn: async (input: AddToCartInput) => {
+      const startTime = performance.now();
       if (!userId) {
+        log.warn('add_item_unauthenticated');
         toast.error("Você precisa estar logado para adicionar itens ao carrinho");
         throw new Error("Não autenticado");
       }
@@ -97,23 +101,37 @@ export function useCart() {
           });
         if (error) throw error;
       }
+      
+      const duration = performance.now() - startTime;
+      log.info('add_item_success', { 
+        product_id: input.product_id, 
+        duration_ms: Math.round(duration) 
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [QUERY_KEY] });
       toast.success("Produto adicionado ao carrinho");
     },
     onError: (err: Error) => {
+      log.error('add_item_error', { message: err.message });
       toast.error("Erro ao adicionar ao carrinho: " + err.message);
     },
   });
 
   const removeItem = useMutation({
     mutationFn: async (itemId: string) => {
+      const startTime = performance.now();
       const { error } = await supabase
         .from("cart_items")
         .delete()
         .eq("id", itemId);
       if (error) throw error;
+      
+      const duration = performance.now() - startTime;
+      log.info('remove_item_success', { 
+        item_id: itemId, 
+        duration_ms: Math.round(duration) 
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [QUERY_KEY] });
@@ -137,6 +155,7 @@ export function useCart() {
 
   const updateQuantity = useMutation({
     mutationFn: async ({ itemId, quantity }: { itemId: string; quantity: number }) => {
+      const startTime = performance.now();
       if (quantity <= 0) {
         return removeItem.mutateAsync(itemId);
       }
@@ -153,6 +172,13 @@ export function useCart() {
         .eq("id", itemId);
       
       if (error) throw error;
+
+      const duration = performance.now() - startTime;
+      log.info('update_quantity_success', { 
+        item_id: itemId, 
+        quantity, 
+        duration_ms: Math.round(duration) 
+      });
     },
     onMutate: async ({ itemId, quantity }) => {
       await queryClient.cancelQueries({ queryKey: [QUERY_KEY, userId] });
