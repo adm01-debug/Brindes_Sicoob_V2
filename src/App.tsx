@@ -28,6 +28,7 @@ import { startColdStartRecorder } from "@/lib/external-db/cold-start-recorder";
 import { DiagnosticOverlay } from "@/components/dev/DiagnosticOverlay";
 import { diagnostics } from "@/lib/diagnostics";
 import { lazyWithRetry } from "@/lib/lazyWithRetry";
+import { ErrorBoundary } from "@/components/common/ErrorBoundary";
 
 import { publicRoutes } from "./routes/config/public";
 import { productRoutes } from "./routes/config/products";
@@ -89,7 +90,8 @@ const App = () => {
   }, []);
 
   return (
-    <QueryClientProvider client={queryClient}>
+    <ErrorBoundary name="Root">
+      <QueryClientProvider client={queryClient}>
       <ThemeProvider>
         <ThemeInitializer />
         <AccessibilityProvider>
@@ -186,6 +188,7 @@ const App = () => {
         </AccessibilityProvider>
       </ThemeProvider>
     </QueryClientProvider>
+    </ErrorBoundary>
   );
 };
 
