@@ -198,8 +198,11 @@ export const SidebarReorganized = React.forwardRef<HTMLElement, SidebarProps>(
   const location = useLocation();
   const navigate = useNavigate();
   const [isCollapsed, setIsCollapsed] = useState(false);
-  const isItemActive = (href: string, exact?: boolean) =>
-    isNavItemActive(location.pathname, href, exact);
+  
+  const { isAdmin, isDev, isGestorCompras, isCompradorSingular, isSupervisorOrAbove } = useAuth();
+
+  const isItemActive = useCallback((href: string, exact?: boolean) =>
+    isNavItemActive(location.pathname, href, exact), [location.pathname]);
 
   // Compute which groups should be auto-opened for the current route.
   // Derived synchronously from `location` so back/forward navigation never
@@ -227,8 +230,6 @@ export const SidebarReorganized = React.forwardRef<HTMLElement, SidebarProps>(
     setOpenGroups(computeAutoOpen());
   }
 
-  const { isAdmin, isDev, isGestorCompras } = useAuth();
-
   // Pending discount approval count for admin badge
   const { data: pendingApprovalCount } = useQuery({
     queryKey: ["pending-discount-approvals-count"],
@@ -239,7 +240,7 @@ export const SidebarReorganized = React.forwardRef<HTMLElement, SidebarProps>(
         .eq("status", "pending");
       return count || 0;
     },
-    enabled: isAdmin,
+    enabled: isSupervisorOrAbove,
     refetchInterval: 30_000,
     staleTime: 15_000,
   });
@@ -254,7 +255,7 @@ export const SidebarReorganized = React.forwardRef<HTMLElement, SidebarProps>(
         .eq("status", "pending_singular_approval");
       return count || 0;
     },
-    enabled: isGestorCompras || isDev,
+    enabled: isGestorCompras || isCompradorSingular || isDev,
     refetchInterval: 30_000,
     staleTime: 15_000,
   });
@@ -263,7 +264,7 @@ export const SidebarReorganized = React.forwardRef<HTMLElement, SidebarProps>(
   const enrichedNavGroups = useMemo(() => {
     return navGroups.map(group => {
       // 1) Admin badge
-      if (group.id === "admin" && isAdmin && pendingApprovalCount) {
+      if (group.id === "admin" && isSupervisorOrAbove && pendingApprovalCount) {
         return {
           ...group,
           items: group.items.map(item =>
@@ -275,7 +276,7 @@ export const SidebarReorganized = React.forwardRef<HTMLElement, SidebarProps>(
       }
       
       // 2) Singular Buyer badge
-      if (group.id === "quotes" && (isGestorCompras || isDev) && pendingPacRequestsCount) {
+      if (group.id === "quotes" && (isGestorCompras || isCompradorSingular || isDev) && pendingPacRequestsCount) {
         return {
           ...group,
           items: group.items.map(item =>
@@ -347,20 +348,20 @@ export const SidebarReorganized = React.forwardRef<HTMLElement, SidebarProps>(
       const href = item.href ?? "";
       // 1) Flags declarativas
       if (item.devOnly && !isDev) return false;
-      if (item.adminOnly && !isAdmin) return false;
+      if (item.adminOnly && !isSupervisorOrAbove) return false;
       // 2) SSOT por path (defesa contra flags faltantes/erradas)
       if (href && isDevOnlyPath(href) && !isDev) return false;
-      if (href && isAdminOnlyPath(href) && !isAdmin) return false;
+      if (href && isAdminOnlyPath(href) && !isSupervisorOrAbove) return false;
       return true;
     },
-    [isDev, isAdmin],
+    [isDev, isSupervisorOrAbove],
   );
 
   const filteredGroups = useMemo(
     () => {
       // Optimization: filter groups and items only when roles or groups change
       return enrichedNavGroups
-        .filter((g) => (!g.adminOnly || isAdmin) && (!g.devOnly || isDev))
+        .filter((g) => (!g.adminOnly || isSupervisorOrAbove) && (!g.devOnly || isDev))
         .map((g) => ({
           ...g,
           items: g.items.filter(isItemVisible).map((i) => ({
@@ -371,7 +372,7 @@ export const SidebarReorganized = React.forwardRef<HTMLElement, SidebarProps>(
         }))
         .filter((g) => g.items.length > 0);
     },
-    [isAdmin, isDev, enrichedNavGroups, isItemVisible]
+    [isSupervisorOrAbove, isDev, enrichedNavGroups, isItemVisible]
   );
 
   return (

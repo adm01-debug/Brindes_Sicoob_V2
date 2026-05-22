@@ -80,11 +80,12 @@ export function useRBAC() {
   // Prioriza as roles reais do user_roles; cai no `role` único como fallback
   const roleName: RoleName = useMemo(() => {
     if (isDev) return 'dev';
-    if (isSupervisor || authRoles?.includes('admin') || authRoles?.includes('supervisor')) {
+    // isSupervisorOrAbove now includes dev, supervisor, gestor_compras, and comprador_singular
+    if (isSupervisorOrAbove) {
       return 'supervisor';
     }
     return normalizeRole(authRole);
-  }, [isDev, isSupervisor, authRoles, authRole]);
+  }, [isDev, isSupervisorOrAbove, authRole]);
 
   const dbRole = toDbRole(roleName);
 
