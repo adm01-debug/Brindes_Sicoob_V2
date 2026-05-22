@@ -87,7 +87,7 @@ export function useSellerCarts() {
         .order("updated_at", { ascending: false });
 
       if (cartsError) throw cartsError;
-      if (!carts?.length) return [];
+      if (!carts || carts.length === 0) return [];
 
       const { data: items, error: itemsError } = await supabase
         .from("seller_cart_items")
@@ -97,6 +97,7 @@ export function useSellerCarts() {
 
       if (itemsError) throw itemsError;
 
+      // Ensure stable references for cart items
       return carts.map(cart => ({
         ...cart,
         notes: (cart as Record<string, unknown>).notes ?? null,
@@ -105,7 +106,8 @@ export function useSellerCarts() {
       }));
     },
     enabled: !!userId,
-    staleTime: 30 * 1000,
+    staleTime: 60 * 1000, // Increased staleTime to reduce redundant fetches
+    gcTime: 5 * 60 * 1000,
   });
 
   // Create cart

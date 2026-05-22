@@ -357,18 +357,20 @@ export const SidebarReorganized = React.forwardRef<HTMLElement, SidebarProps>(
   );
 
   const filteredGroups = useMemo(
-    () =>
-      enrichedNavGroups
+    () => {
+      // Optimization: filter groups and items only when roles or groups change
+      return enrichedNavGroups
         .filter((g) => (!g.adminOnly || isAdmin) && (!g.devOnly || isDev))
         .map((g) => ({
           ...g,
           items: g.items.filter(isItemVisible).map((i) => ({
             ...i,
-            // Filtra também os filhos (ex.: subitens de Cadastros)
+            // Filter children recursively
             children: i.children?.filter(isItemVisible),
           })),
         }))
-        .filter((g) => g.items.length > 0),
+        .filter((g) => g.items.length > 0);
+    },
     [isAdmin, isDev, enrichedNavGroups, isItemVisible]
   );
 
