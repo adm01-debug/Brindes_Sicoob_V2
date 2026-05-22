@@ -45,7 +45,26 @@ export const OrderAuditTimeline = ({ orderId }: OrderAuditTimelineProps) => {
     return event.event_type;
   };
 
-  if (isLoading) return <div className="p-4 text-center">Carregando linha do tempo...</div>;
+  if (isLoading) {
+    return (
+      <Card>
+        <CardHeader>
+          <div className="h-6 w-48 bg-muted animate-pulse rounded" />
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="flex gap-4">
+              <div className="h-10 w-10 bg-muted animate-pulse rounded-full shrink-0" />
+              <div className="flex-1 space-y-2">
+                <div className="h-4 w-1/3 bg-muted animate-pulse rounded" />
+                <div className="h-3 w-1/2 bg-muted animate-pulse rounded" />
+              </div>
+            </div>
+          ))}
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card>
