@@ -73,8 +73,21 @@ export function AIOrderPredictor() {
                   <History className="h-3 w-3" /> {s.reason}
                 </p>
                 <p className="text-[9px] text-sicoob-green font-semibold mb-4">{s.detail}</p>
-                <Button variant="ghost" size="sm" className="w-full h-8 text-[10px] font-bold group-hover:bg-sicoob-green group-hover:text-white border border-sicoob-green/10">
-                  Gerar Pedido Preditivo <ArrowRight className="ml-1 h-3 w-3" />
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className={cn(
+                    "w-full h-8 text-[10px] font-bold transition-all border border-sicoob-green/10",
+                    "group-hover:bg-sicoob-green group-hover:text-white"
+                  )}
+                  onClick={() => handleGenerate(s.name)}
+                  disabled={processingId === s.name}
+                >
+                  {processingId === s.name ? (
+                    <Loader2 className="h-3 w-3 animate-spin mr-2" />
+                  ) : (
+                    <>Gerar Pedido Preditivo <ArrowRight className="ml-1 h-3 w-3" /></>
+                  )}
                 </Button>
               </CardContent>
             </Card>
