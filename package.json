@@ -178,7 +178,8 @@
     "zustand": "^4.5.0"
   },
   "devDependencies": {
-    "@types/node": "^20.11.0",
+    "@playwright/test": "^1.60.0",
+    "@types/node": "^25.9.1",
     "@types/pdf-parse": "^1.1.5",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
