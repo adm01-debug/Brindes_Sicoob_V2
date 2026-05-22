@@ -38,7 +38,7 @@ export function useAllowedIPs(targetUserId?: string) {
       const { data, error } = await supabase
         .from('ip_whitelist')
         .select('*')
-        .or(`user_id.eq.${userId},user_id.is.null`)
+        .or(`created_by.eq.${userId},created_by.is.null`)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -68,7 +68,7 @@ export function useAllowedIPs(targetUserId?: string) {
       const { error } = await supabase
         .from('ip_whitelist')
         .insert({
-          user_id: userId,
+          created_by: userId,
           ip_address: ipAddress,
           label: label || null,
         });
