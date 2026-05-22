@@ -1,4 +1,4 @@
-import { renderHook, waitFor } from '@testing-library/react';
+import { renderHook, waitFor, act } from '@testing-library/react';
 import { useGeoBlocking } from '@/hooks/useGeoBlocking';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -95,9 +95,12 @@ describe('useGeoBlocking', () => {
     const { result } = renderHook(() => useGeoBlocking());
     await waitFor(() => expect(result.current.isLoading).toBe(false));
 
-    const addResult = await result.current.addCountry('US', 'United States');
+    let addResult;
+    await act(async () => {
+      addResult = await result.current.addCountry('US', 'United States');
+    });
 
-    expect(addResult.success).toBe(true);
+    expect(addResult!.success).toBe(true);
     expect(mockInsert).toHaveBeenCalledWith({
       city_name: 'United States',
       country_code: 'US',
@@ -133,9 +136,12 @@ describe('useGeoBlocking', () => {
     const { result } = renderHook(() => useGeoBlocking());
     await waitFor(() => expect(result.current.isLoading).toBe(false));
 
-    const toggleResult = await result.current.toggleEnabled(true);
+    let toggleResult;
+    await act(async () => {
+      toggleResult = await result.current.toggleEnabled(true);
+    });
 
-    expect(toggleResult.success).toBe(true);
+    expect(toggleResult!.success).toBe(true);
     expect(mockUpdate).toHaveBeenCalledWith(expect.objectContaining({
       city_whitelist_enabled: true,
     }));

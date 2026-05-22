@@ -1,4 +1,4 @@
-import { renderHook, waitFor } from '@testing-library/react';
+import { renderHook, waitFor, act } from '@testing-library/react';
 import { useAllowedIPs } from '@/hooks/useAllowedIPs';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -74,9 +74,12 @@ describe('useAllowedIPs', () => {
 
     await waitFor(() => expect(result.current.isLoading).toBe(false));
 
-    const addResult = await result.current.addIP(newIP, 'Home');
+    let addResult;
+    await act(async () => {
+      addResult = await result.current.addIP(newIP, 'Home');
+    });
 
-    expect(addResult.success).toBe(true);
+    expect(addResult!.success).toBe(true);
     expect(mockInsert).toHaveBeenCalledWith({
       user_id: mockUser.id,
       ip_address: newIP,
@@ -104,9 +107,12 @@ describe('useAllowedIPs', () => {
     const { result } = renderHook(() => useAllowedIPs());
     await waitFor(() => expect(result.current.isLoading).toBe(false));
 
-    const removeResult = await result.current.removeIP(ipId);
+    let removeResult;
+    await act(async () => {
+      removeResult = await result.current.removeIP(ipId);
+    });
 
-    expect(removeResult.success).toBe(true);
+    expect(removeResult!.success).toBe(true);
     expect(mockDelete).toHaveBeenCalled();
   });
 
