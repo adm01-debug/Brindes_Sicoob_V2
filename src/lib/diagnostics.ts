@@ -140,7 +140,19 @@ class DiagnosticsManager {
         const duration = performance.now() - startTime;
         this.metrics.latencySum += duration;
 
-        if (!response.ok) this.metrics.failedRequests++;
+        if (!response.ok) {
+          this.metrics.failedRequests++;
+          // Em preview, se houver erro 412 (Precondition Failed), forçar reload
+          if (response.status === 412 && import.meta.env.VITE_LOVABLE_PREVIEW) {
+            console.warn('[OND-018-HEALTH] Erro 412 detectado em fetch, acionando auto-reload...');
+            try {
+              const { attemptChunkRecovery } = await import('@/lib/chunk-recovery');
+              attemptChunkRecovery('Precondition Failed (412)');
+            } catch (e) {
+              window.location.reload();
+            }
+          }
+        }
 
         this.log(
           response.ok ? 'response' : 'error', 
@@ -166,6 +178,7 @@ export const diagnostics = new DiagnosticsManager();
 // Only enable in production or specific debug mode
 if (typeof window !== 'undefined' && 
     ((import.meta.env.PROD && !import.meta.env.VITE_LOVABLE_PREVIEW) || 
-     localStorage.getItem('DEBUG_FETCH') === 'true')) {
+     localStorage.getItem('DEBUG_FETCH') === 'true' ||
+     import.meta.env.VITE_LOVABLE_PREVIEW)) {
   diagnostics.setupFetchInterceptor();
 }
