@@ -38,14 +38,14 @@ export function useGeoBlocking() {
   const fetchData = useCallback(async () => {
     try {
       const [countriesRes, settingsRes] = await Promise.all([
-        supabase
-          .from('geo_allowed_countries')
+        (supabase
+          .from('city_whitelist') as any)
           .select('*')
-          .order('country_name'),
-        supabase
-          .from('security_settings')
+          .order('city_name'),
+        (supabase
+          .from('access_security_settings') as any)
           .select('*')
-          .eq('setting_key', 'geo_blocking')
+          .limit(1)
           .single(),
       ]);
 
@@ -53,8 +53,10 @@ export function useGeoBlocking() {
       setCountries(countriesRes.data || []);
 
       if (settingsRes.data) {
-        const value = settingsRes.data.setting_value as GeoBlockingSettings;
-        setSettings(value);
+        setSettings({
+          enabled: settingsRes.data.city_whitelist_enabled,
+          mode: 'whitelist'
+        });
       }
     } catch (error) {
       console.error('Error fetching geo blocking data:', error);
@@ -70,15 +72,13 @@ export function useGeoBlocking() {
 
   const toggleEnabled = useCallback(async (enabled: boolean): Promise<{ success: boolean; error?: string }> => {
     try {
-      const newSettings = { ...settings, enabled };
-      const { error } = await supabase
-        .from('security_settings')
+      const { error } = await (supabase
+        .from('access_security_settings') as any)
         .update({ 
-          setting_value: newSettings,
-          updated_at: new Date().toISOString(),
-          updated_by: user?.id 
+          city_whitelist_enabled: enabled,
+          updated_at: new Date().toISOString()
         })
-        .eq('setting_key', 'geo_blocking');
+        .not('id', 'is', null); // Atualiza qualquer registro (deve haver apenas um)
 
       if (error) throw error;
       setSettings(newSettings);
@@ -97,11 +97,11 @@ export function useGeoBlocking() {
     }
 
     try {
-      const { error } = await supabase
-        .from('geo_allowed_countries')
+      const { error } = await (supabase
+        .from('city_whitelist') as any)
         .insert({
+          city_name: countryName, // Temporariamente usando countryName como city_name para compatibilidade de UI
           country_code: countryCode.toUpperCase(),
-          country_name: countryName,
           created_by: user.id,
         });
 
@@ -121,8 +121,8 @@ export function useGeoBlocking() {
 
   const removeCountry = useCallback(async (id: string): Promise<{ success: boolean; error?: string }> => {
     try {
-      const { error } = await supabase
-        .from('geo_allowed_countries')
+      const { error } = await (supabase
+        .from('city_whitelist') as any)
         .delete()
         .eq('id', id);
 
@@ -139,8 +139,8 @@ export function useGeoBlocking() {
     isActive: boolean
   ): Promise<{ success: boolean; error?: string }> => {
     try {
-      const { error } = await supabase
-        .from('geo_allowed_countries')
+      const { error } = await (supabase
+        .from('city_whitelist') as any)
         .update({ is_active: isActive })
         .eq('id', id);
 
