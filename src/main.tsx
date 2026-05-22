@@ -30,9 +30,9 @@ if (import.meta.env.PROD) {
 // Inicializa auto-reload para erros de pré-condição (412) no preview
 setupPreviewAutoReload();
 
-const root = document.getElementById("root");
+const rootElement = document.getElementById("root");
 
-if (!root) {
+if (!rootElement) {
   throw new Error('❌ Elemento root não encontrado no DOM');
 }
 
@@ -40,7 +40,7 @@ if (!root) {
 // AuthProvider) para poder ser gateado por papel `dev` + SSOT
 // `shouldShowDevInfraMessages`. Em build de produção, o componente
 // retorna null no topo e o chunk é tree-shaken pelo bundler.
-createRoot(root).render(
+createRoot(rootElement).render(
   <Fragment>
     <HelmetProvider>
       <EnhancedErrorBoundary>
@@ -49,6 +49,15 @@ createRoot(root).render(
     </HelmetProvider>
   </Fragment>
 );
+
+// Sinalizar que a renderização inicial ocorreu para remover o splash screen do HTML
+requestAnimationFrame(() => {
+  const splash = document.getElementById('initial-splash');
+  if (splash) {
+    splash.classList.add('fade-out');
+    setTimeout(() => splash.remove(), 400);
+  }
+});
 
 // Registrar Service Worker para PWA (apenas em produção para evitar cache issues no preview)
 if ('serviceWorker' in navigator && import.meta.env.PROD) {
