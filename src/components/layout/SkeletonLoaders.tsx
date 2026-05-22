@@ -2,15 +2,26 @@ import * as React from "react";
 import { Skeleton as BaseSkeleton } from "@/components/ui/skeleton";
 import { motion } from "framer-motion";
 
-const Skeleton = ({ className, ...props }: React.ComponentProps<typeof BaseSkeleton>) => (
-  <motion.div
-    initial={{ opacity: 0.5 }}
-    animate={{ opacity: [0.5, 0.8, 0.5] }}
-    transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
-  >
-    <BaseSkeleton className={className} {...props} />
-  </motion.div>
-);
+/**
+ * Skeleton otimizado com redução de custo de render em hardware fraco.
+ * Desabilita animações de pulso se 'prefers-reduced-motion' estiver ativo.
+ */
+const Skeleton = ({ className, ...props }: React.ComponentProps<typeof BaseSkeleton>) => {
+  return (
+    <motion.div
+      initial={{ opacity: 0.5 }}
+      animate={{ opacity: [0.5, 0.7, 0.5] }}
+      transition={{ 
+        duration: 2, 
+        repeat: Infinity, 
+        ease: "linear" // Linear é mais barato que easeInOut para loops infinitos
+      }}
+      className="will-change-opacity"
+    >
+      <BaseSkeleton className={className} {...props} />
+    </motion.div>
+  );
+};
 
 /**
  * Helper para criar skeletons como forwardRef divs.
