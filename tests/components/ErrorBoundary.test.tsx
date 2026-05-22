@@ -70,7 +70,7 @@ describe('ErrorBoundary', () => {
     );
 
     expect(screen.getByText(/Atualização Necessária/i)).toBeInTheDocument();
-    expect(screen.getByText(/Tentar Novamente/i)).toBeInTheDocument();
+    expect(screen.getByText(/Atualizar Agora/i)).toBeInTheDocument();
   });
 
   it('copies error details to clipboard', async () => {
