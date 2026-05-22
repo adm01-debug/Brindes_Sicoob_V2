@@ -195,11 +195,7 @@ export function MainLayout({ children }: MainLayoutProps) {
         </div>
       </div>
       
-      <div className="print:hidden">
-        <Suspense fallback={null}>
-          <ScrollProgressIndicator />
-        </Suspense>
-      </div>
+      {/* Removido indicador duplicado para evitar conflitos visuais (já renderizado no topo) */}
       
       <div className="print:hidden">
         <Suspense fallback={null}>
