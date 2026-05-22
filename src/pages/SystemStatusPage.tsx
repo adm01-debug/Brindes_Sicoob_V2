@@ -153,6 +153,34 @@ export default function SystemStatusPage() {
       });
     }
 
+    // 7. Security & Telemetry tables
+    try {
+      const infraTables = ["ip_whitelist", "city_whitelist", "error_logs", "telemetry_events"] as const;
+      const checks = await Promise.all(
+        infraTables.map(async (t) => {
+          const { error } = await (supabase.from(t) as any).select("id", { count: "exact", head: true });
+          return { table: t, ok: !error, msg: error?.message };
+        })
+      );
+      const allOk = checks.every((c) => c.ok);
+      const failed = checks.filter((c) => !c.ok);
+      results.push({
+        name: "Infraestrutura de Segurança",
+        status: allOk ? "ok" : "error",
+        message: allOk
+          ? "IP Whitelist, City Whitelist, Logs e Telemetria operacionais"
+          : `Falha em: ${failed.map((f) => f.table).join(", ")}`,
+        icon: <TableProperties className="h-5 w-5 text-indigo-500" />,
+      });
+    } catch {
+      results.push({
+        name: "Infraestrutura de Segurança",
+        status: "error",
+        message: "Erro ao verificar tabelas de infraestrutura",
+        icon: <TableProperties className="h-5 w-5" />,
+      });
+    }
+
     setStatuses(results);
     setLastCheck(new Date());
     setIsChecking(false);
