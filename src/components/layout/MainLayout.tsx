@@ -152,9 +152,13 @@ export function MainLayout({ children }: MainLayoutProps) {
               "sticky top-[var(--header-h,56px)] z-30 print:hidden",
               "bg-background/70 backdrop-blur-lg supports-[backdrop-filter]:bg-background/60",
               "border-b border-border/30 transition-all duration-300 shadow-sm/5",
+              "will-change-transform", // HW acceleration for smooth sticky transition
               (isHome || location.pathname === "/dashboard") && "opacity-0 pointer-events-none h-0 border-none overflow-hidden",
               hideBreadcrumb && !isHome && "translate-y-[-100%] opacity-0 pointer-events-none",
             )}
+            style={{ 
+              contain: "layout style", // Optimization: isolates layout calculations
+            }}
             data-testid="breadcrumb-bar"
           >
             <div className="max-w-[1920px] mx-auto px-3 sm:px-4 lg:px-6 py-2 flex items-center gap-3">
