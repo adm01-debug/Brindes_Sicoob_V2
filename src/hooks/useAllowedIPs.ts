@@ -1,15 +1,12 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { diagnostics } from '@/lib/diagnostics';
+import { reportError } from '@/lib/error-reporter';
+import { Database } from '@/integrations/supabase/types';
 
-interface AllowedIP {
-  id: string;
-  user_id: string;
-  ip_address: string;
-  label: string | null;
-  is_active: boolean;
-  created_at: string;
-}
+type AllowedIP = Database['public']['Tables']['ip_whitelist']['Row'];
+
 
 export function useAllowedIPs(targetUserId?: string) {
   const { user } = useAuth();
@@ -38,7 +35,8 @@ export function useAllowedIPs(targetUserId?: string) {
     }
 
     try {
-      const { data, error } = await (supabase.from('ip_whitelist') as any)
+      const { data, error } = await supabase
+        .from('ip_whitelist')
         .select('*')
         .or(`user_id.eq.${userId},user_id.is.null`)
         .order('created_at', { ascending: false });
@@ -46,7 +44,8 @@ export function useAllowedIPs(targetUserId?: string) {
       if (error) throw error;
       setAllowedIPs(data || []);
     } catch (error) {
-      console.error('Error fetching allowed IPs:', error);
+      diagnostics.log('error', 'useAllowedIPs', `Erro ao buscar IPs: ${error instanceof Error ? error.message : String(error)}`);
+      reportError(error instanceof Error ? error : new Error(String(error)), { context: 'fetchAllowedIPs', userId });
     } finally {
       setIsLoading(false);
     }
@@ -66,7 +65,8 @@ export function useAllowedIPs(targetUserId?: string) {
     }
 
     try {
-      const { error } = await (supabase.from('ip_whitelist') as any)
+      const { error } = await supabase
+        .from('ip_whitelist')
         .insert({
           user_id: userId,
           ip_address: ipAddress,
@@ -91,7 +91,8 @@ export function useAllowedIPs(targetUserId?: string) {
     ipId: string
   ): Promise<{ success: boolean; error?: string }> => {
     try {
-      const { error } = await (supabase.from('ip_whitelist') as any)
+      const { error } = await supabase
+        .from('ip_whitelist')
         .delete()
         .eq('id', ipId);
 
@@ -109,7 +110,8 @@ export function useAllowedIPs(targetUserId?: string) {
     isActive: boolean
   ): Promise<{ success: boolean; error?: string }> => {
     try {
-      const { error } = await (supabase.from('ip_whitelist') as any)
+      const { error } = await supabase
+        .from('ip_whitelist')
         .update({ is_active: isActive })
         .eq('id', ipId);
 
