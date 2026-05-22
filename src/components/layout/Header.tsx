@@ -54,7 +54,7 @@ export function Header({ onMenuToggle, searchQuery, onSearchChange }: HeaderProp
   const { toast } = useToast();
   const favoriteCount = useFavoritesStore((s) => s.favoriteCount);
   const compareCount = useComparisonStore((s) => s.compareCount);
-  const { user, profile, role, isAdmin, signOut, rolesLoaded } = useAuth();
+  const { user, profile, role, isSupervisorOrAbove, signOut, rolesLoaded } = useAuth();
   const { currentOrg } = useOrganization();
   const currentSection = useCurrentSection();
   const { restartTour, hasCompletedTour, isLoading: onboardingLoading } = useOnboardingContext();
@@ -165,8 +165,8 @@ export function Header({ onMenuToggle, searchQuery, onSearchChange }: HeaderProp
           </Button>
 
           {/* #1 — Seção atual como âncora */}
-          <div className="hidden lg:flex items-center gap-2">
-            <span className="font-display text-sm font-semibold text-foreground tracking-tight truncate max-w-[160px]">
+          <div className="hidden lg:flex items-center gap-2 max-w-[200px]">
+            <span className="font-display text-sm font-semibold text-foreground tracking-tight truncate">
               {currentSection}
             </span>
           </div>
@@ -378,13 +378,15 @@ export function Header({ onMenuToggle, searchQuery, onSearchChange }: HeaderProp
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator className="bg-border" />
-              <DropdownMenuItem
-                onClick={() => navigate("/admin/temas")}
-                className="hover:bg-primary/10 focus:bg-primary/10 cursor-pointer"
-              >
-                <Palette className="h-4 w-4 mr-2" />
-                Skins
-              </DropdownMenuItem>
+              {isSupervisorOrAbove && (
+                <DropdownMenuItem
+                  onClick={() => navigate("/admin/temas")}
+                  className="hover:bg-primary/10 focus:bg-primary/10 cursor-pointer"
+                >
+                  <Palette className="h-4 w-4 mr-2" />
+                  Skins
+                </DropdownMenuItem>
+              )}
               <DropdownMenuItem className="hover:bg-primary/10 focus:bg-primary/10 cursor-pointer">
                 <HelpCircle className="h-4 w-4 mr-2" />
                 Ajuda

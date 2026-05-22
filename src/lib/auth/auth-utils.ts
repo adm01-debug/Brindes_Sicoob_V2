@@ -28,10 +28,12 @@ export function getRandomGreeting(name: string): string {
 const ROLE_HIERARCHY: AppRole[] = [
   "dev",
   "gestor_compras",
+  "comprador_singular",
   "supervisor",
   "admin",
   "manager",
   "gerente_pa",
+  "comprador_pac",
   "agente",
   "vendedor",
 ];
@@ -48,7 +50,7 @@ export function getHighestRole(roles: AppRole[]): AppRole | null {
 }
 
 export function isSupervisorOrAbove(roles: AppRole[]): boolean {
-  return roles.some((r) => ["dev", "gestor_compras", "supervisor", "admin", "manager"].includes(r));
+  return roles.some((r) => ["dev", "gestor_compras", "comprador_singular", "supervisor", "admin", "manager"].includes(r));
 }
 
 /**
