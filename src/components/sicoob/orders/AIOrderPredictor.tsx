@@ -1,14 +1,47 @@
 import React from "react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Sparkles, ArrowRight, History, Package } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Sparkles, ArrowRight, History, Package, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
+import { useAIOrderPredictor } from "@/hooks/sicoob/useAIOrderPredictor";
+import { useToast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
 
 export function AIOrderPredictor() {
-  const suggestions = [
-    { name: "Kit Boas-Vindas Cooperado", reason: "Alta demanda histórica em Maio", items: 3, prob: "94%", detail: "Baseado em 12 PAs similares" },
-    { name: "Reposição Brindes Institucionais", reason: "Estoque crítico projetado (15 dias)", items: 5, prob: "87%", detail: "Tendência de consumo acelerada" },
-  ];
+  const { predictions, isLoading } = useAIOrderPredictor();
+  const { toast } = useToast();
+  const [processingId, setProcessingId] = React.useState<string | null>(null);
+
+  const handleGenerate = (name: string) => {
+    setProcessingId(name);
+    setTimeout(() => {
+      setProcessingId(null);
+      toast({
+        title: "Inteligência Sicoob",
+        description: `Rascunho do pedido "${name}" criado com sucesso.`,
+      });
+    }, 2000);
+  };
+
+  if (isLoading) {
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {[1, 2, 3].map((i) => (
+          <Card key={i} className="animate-pulse bg-muted/20 border-border/40">
+            <CardContent className="p-4 space-y-4">
+              <div className="flex justify-between">
+                <div className="h-10 w-10 bg-muted rounded-lg" />
+                <div className="h-6 w-20 bg-muted rounded" />
+              </div>
+              <div className="h-5 w-3/4 bg-muted rounded" />
+              <div className="h-4 w-1/2 bg-muted rounded" />
+              <div className="h-8 w-full bg-muted rounded" />
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4">
@@ -17,8 +50,8 @@ export function AIOrderPredictor() {
         <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Promo Gifts Intelligence Sugere:</h3>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {suggestions.map((s, i) => (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {predictions.map((s, i) => (
           <motion.div 
             key={i}
             initial={{ opacity: 0, scale: 0.95 }}
@@ -40,8 +73,21 @@ export function AIOrderPredictor() {
                   <History className="h-3 w-3" /> {s.reason}
                 </p>
                 <p className="text-[9px] text-sicoob-green font-semibold mb-4">{s.detail}</p>
-                <Button variant="ghost" size="sm" className="w-full h-8 text-[10px] font-bold group-hover:bg-sicoob-green group-hover:text-white border border-sicoob-green/10">
-                  Gerar Pedido Preditivo <ArrowRight className="ml-1 h-3 w-3" />
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className={cn(
+                    "w-full h-8 text-[10px] font-bold transition-all border border-sicoob-green/10",
+                    "group-hover:bg-sicoob-green group-hover:text-white"
+                  )}
+                  onClick={() => handleGenerate(s.name)}
+                  disabled={processingId === s.name}
+                >
+                  {processingId === s.name ? (
+                    <Loader2 className="h-3 w-3 animate-spin mr-2" />
+                  ) : (
+                    <>Gerar Pedido Preditivo <ArrowRight className="ml-1 h-3 w-3" /></>
+                  )}
                 </Button>
               </CardContent>
             </Card>

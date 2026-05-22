@@ -102,26 +102,22 @@ async function flushErrors() {
       err.userId = userId;
     }
 
-    // Log to admin_audit_log for observability
     const rows = batch.map(err => ({
-      action: 'client_error',
-      resource_type: 'error',
-      resource_id: null,
-      user_id: err.userId || '00000000-0000-0000-0000-000000000000',
-      details: {
-        message: err.message,
-        stack: err.stack?.slice(0, 3000), // Increased to capture more trace
-        url: err.url,
-        timestamp: err.timestamp,
-        userAgent: err.userAgent.slice(0, 500),
-        ...err.metadata,
-      },
-      ip_address: null,
-      user_agent: err.userAgent.slice(0, 200),
+      user_id: err.userId || null,
+      error_message: err.message,
+      error_stack: err.stack?.slice(0, 5000),
+      component_stack: err.componentStack?.slice(0, 5000),
+      url: err.url,
+      user_agent: err.userAgent.slice(0, 500),
+      severity: (err.metadata?.severity as string) || (err.metadata?.category === 'blank_screen' ? 'critical' : 'error'),
+      metadata: err.metadata || {},
     }));
 
-    const { error } = await supabase.from('admin_audit_log').insert(rows);
-    if (error) logger.warn('[ErrorReporter] Failed to flush:', error.message);
+    // Usamos o cast 'as any' porque os tipos do Supabase podem ainda não estar sincronizados com o novo schema
+    const { error } = await (supabase.from('error_logs') as any).insert(rows);
+    if (error) logger.warn('[ErrorReporter] Failed to flush to error_logs:', error.message);
+    
+    // Fallback para admin_audit_log se necessário (opcional, vamos manter apenas error_logs para evitar duplicidade excessiva)
   } catch (e) {
     logger.warn('[ErrorReporter] Flush failed:', e);
   }

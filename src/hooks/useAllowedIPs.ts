@@ -38,10 +38,9 @@ export function useAllowedIPs(targetUserId?: string) {
     }
 
     try {
-      const { data, error } = await supabase
-        .from('user_allowed_ips')
+      const { data, error } = await (supabase.from('ip_whitelist') as any)
         .select('*')
-        .eq('user_id', userId)
+        .or(`user_id.eq.${userId},user_id.is.null`)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -67,13 +66,11 @@ export function useAllowedIPs(targetUserId?: string) {
     }
 
     try {
-      const { error } = await supabase
-        .from('user_allowed_ips')
+      const { error } = await (supabase.from('ip_whitelist') as any)
         .insert({
           user_id: userId,
           ip_address: ipAddress,
           label: label || null,
-          created_by: user.id,
         });
 
       if (error) {
@@ -94,8 +91,7 @@ export function useAllowedIPs(targetUserId?: string) {
     ipId: string
   ): Promise<{ success: boolean; error?: string }> => {
     try {
-      const { error } = await supabase
-        .from('user_allowed_ips')
+      const { error } = await (supabase.from('ip_whitelist') as any)
         .delete()
         .eq('id', ipId);
 
@@ -113,8 +109,7 @@ export function useAllowedIPs(targetUserId?: string) {
     isActive: boolean
   ): Promise<{ success: boolean; error?: string }> => {
     try {
-      const { error } = await supabase
-        .from('user_allowed_ips')
+      const { error } = await (supabase.from('ip_whitelist') as any)
         .update({ is_active: isActive })
         .eq('id', ipId);
 

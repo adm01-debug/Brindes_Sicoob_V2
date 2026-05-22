@@ -2,7 +2,10 @@ import React from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Truck, MapPin, CheckCircle2, Clock, Package, ExternalLink, Globe } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
+import { useToast } from "@/hooks/use-toast";
+import { Copy, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface LogisticsCommandCenterProps {
@@ -12,6 +15,21 @@ interface LogisticsCommandCenterProps {
 }
 
 export function LogisticsCommandCenter({ orderId, trackingCode, status }: LogisticsCommandCenterProps) {
+  const { toast } = useToast();
+  const [copied, setCopied] = React.useState(false);
+
+  const copyTracking = () => {
+    if (trackingCode) {
+      navigator.clipboard.writeText(trackingCode);
+      setCopied(true);
+      toast({
+        title: "Copiado!",
+        description: "Código de rastreio copiado para a área de transferência.",
+      });
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
+
   const steps = React.useMemo(() => {
     const isLogistic = status === 'logistic';
     const isCompleted = status === 'completed';
@@ -91,9 +109,21 @@ export function LogisticsCommandCenter({ orderId, trackingCode, status }: Logist
           <div className="flex items-center justify-between mb-4">
             <div className="space-y-1">
               <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-tight">Código de Rastreio</p>
-              <p className="font-mono text-sm font-bold text-slate-700">{trackingCode || "SCB-998122-BR"}</p>
+              <div className="flex items-center gap-2">
+                <p className="font-mono text-sm font-bold text-slate-700">{trackingCode || "SCB-998122-BR"}</p>
+                {trackingCode && (
+                  <Button variant="ghost" size="icon" className="h-6 w-6" onClick={copyTracking}>
+                    {copied ? <Check className="h-3 w-3 text-success" /> : <Copy className="h-3 w-3" />}
+                  </Button>
+                )}
+              </div>
             </div>
-            <Button variant="ghost" size="sm" className="h-8 text-xs text-blue-600 hover:text-blue-700 hover:bg-blue-50 gap-2">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="h-8 text-xs text-blue-600 hover:text-blue-700 hover:bg-blue-50 gap-2"
+              onClick={() => window.open(`https://www.rastreie.com.br/${trackingCode}`, '_blank')}
+            >
               <ExternalLink className="h-3.5 w-3.5" /> Site da Transportadora
             </Button>
           </div>
