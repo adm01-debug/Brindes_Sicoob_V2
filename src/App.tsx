@@ -29,6 +29,7 @@ import { DiagnosticOverlay } from "@/components/dev/DiagnosticOverlay";
 import { diagnostics } from "@/lib/diagnostics";
 import { lazyWithRetry } from "@/lib/lazyWithRetry";
 import { ErrorBoundary } from "@/components/common/ErrorBoundary";
+import { useWebVitals } from "@/hooks/infrastructure/useWebVitals";
 
 import { publicRoutes } from "./routes/config/public";
 import { productRoutes } from "./routes/config/products";
@@ -84,6 +85,7 @@ const GestorApprovalsPage = lazyWithRetry(() => import("./pages/GestorApprovalsP
 
 const App = () => {
   useGlobalErrorCatcher();
+  useWebVitals({ debug: import.meta.env.DEV });
 
   useEffect(() => {
     markBootSuccessful();

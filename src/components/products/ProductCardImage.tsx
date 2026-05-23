@@ -10,6 +10,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { NoveltyBadge } from "./NoveltyBadge";
 import { cn } from "@/lib/utils";
 import { isLightColor } from "@/hooks/useColorSystem";
+import { OptimizedImage } from "@/components/common/OptimizedImage";
 import type { MatchedColorVariant } from "@/utils/color-variant-carousel";
 
 interface ProductCardImageProps {
@@ -87,45 +88,22 @@ export const ProductCardImage = memo(function ProductCardImage({
       } : undefined}
     >
       <div className="relative w-full h-full">
-        {/* Placeholder/Loading State */}
-        {!imageLoaded && (
-          <div className="absolute inset-0 flex items-center justify-center bg-muted/20 animate-pulse">
-            <Package className="h-8 w-8 text-muted-foreground/20" />
-          </div>
-        )}
-        
-        <img
-          src={cardImageUrl}
-          srcSet={cardSrcSet}
-          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 400px"
+        {/* #10/10 PERFORMANCE: Optimized Image with FetchPriority and SrcSet */}
+        <OptimizedImage
+          urlCdn={colorSpecificImage || product.images[0] || ""}
+          variant="card"
+          context="card"
+          priority={product.featured || safeVariantIdx === 0}
           alt={activeColorName ? `${product.name} - ${activeColorName}` : product.name}
           title={activeColorName ? `${product.name} - ${activeColorName}` : product.name}
           className={cn(
-            "w-full h-full object-contain ease-out transition-all duration-300",
-            imageLoaded ? "opacity-100 blur-0 scale-100" : "opacity-0 blur-sm scale-[1.05]"
+            "w-full h-full",
+            imageLoaded ? "blur-0" : "blur-sm"
           )}
           style={imageLoaded ? { transform: `scale(${computedImageScale})` } : undefined}
-          loading="lazy"
-          onLoad={() => {
-            onImageLoad();
-            // Ref: OND-014-IMG - Auditoria visual de carregamento
-            if (window.location.search.includes('debug-img')) {
-              console.error(`[IMG_SUCCESS] ${product.name} loaded from ${cardImageUrl}`);
-            }
-          }}
-          onError={(e) => {
-            const img = e.currentTarget;
-            if (!img.dataset.fallback) { 
-              img.dataset.fallback = '1'; 
-              img.srcset = ''; 
-              // Hierarchy: specific variant image -> first product image -> placeholder
-              img.src = product.images[0] || '/placeholder.svg'; 
-              console.warn(`[IMG_FALLBACK] Retrying ${product.name} with original source`);
-            } else if (img.dataset.fallback === '1') {
-              img.dataset.fallback = '2';
-              img.src = '/placeholder.svg';
-              console.error(`[IMG_FAILURE] Final placeholder for ${product.name}`);
-            }
+          onLoad={onImageLoad}
+          onError={() => {
+            console.warn(`[IMG_FALLBACK] Retrying ${product.name}`);
           }}
         />
       </div>

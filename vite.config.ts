@@ -35,10 +35,11 @@ export default defineConfig(({ mode }) => ({
   
   build: {
     outDir: 'dist',
-    sourcemap: false,
+    sourcemap: mode === 'production' ? false : true,
     minify: 'esbuild',
     target: 'esnext',
-    chunkSizeWarningLimit: 1200, // Reduced from 2000 to be more strict
+    chunkSizeWarningLimit: 800, // Strict limit for Bundle Analysis in CI
+    reportCompressedSize: true,
     
     rollupOptions: {
       output: {
