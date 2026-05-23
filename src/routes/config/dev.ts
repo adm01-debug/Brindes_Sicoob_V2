@@ -11,6 +11,10 @@ export const devRoutes = [
     component: lazyWithRetry(() => import("@/pages/admin/AdminTelemetriaPage")) 
   }),
   defineRoute({ 
+    path: "/admin/performance", 
+    component: lazyWithRetry(() => import("@/pages/admin/AdminPerformancePage")) 
+  }),
+  defineRoute({ 
     path: "/admin/seguranca", 
     component: lazyWithRetry(() => import("@/pages/admin/AdminSegurancaPage")) 
   }),
@@ -40,3 +44,4 @@ export const devRoutes = [
     component: lazyWithRetry(() => import("@/pages/admin/qa/PreflightPage")) 
   }),
 ] as const;
+
