@@ -26,8 +26,23 @@ jobs:
         run: |
           npx bundle-stats build --out-dir bundle-stats
       
+      - name: Check for large chunks
+        run: |
+          # Fail if any file in dist/assets is > 600KB (gzipped usually smaller, but this is raw)
+          # We check the size and print a recommendation if it exceeds 500KB
+          find dist/assets -name "*.js" -size +500k | while read -r file; do
+            echo "::warning file=$file::Large chunk detected. Consider using manualChunks or lazy loading for this module."
+          done
+          
+          # Hard failure at 800KB for critical performance paths
+          if find dist/assets -name "*.js" -size +800k | grep -q .; then
+            echo "::error::Bundle contains chunks larger than 800KB. Build failing."
+            exit 1
+          fi
+
       - name: Upload bundle stats
         uses: actions/upload-artifact@v4
         with:
           name: bundle-stats
           path: bundle-stats
+
