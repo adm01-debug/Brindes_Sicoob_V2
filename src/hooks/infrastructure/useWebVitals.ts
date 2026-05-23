@@ -1,8 +1,9 @@
 import { useCallback, useEffect } from 'react';
-import { onLCP, onFID, onCLS, onINP, onTTFB, type Metric } from 'web-vitals';
+import { onLCP, onCLS, onINP, onTTFB, type Metric } from 'web-vitals';
 import { supabase } from "@/integrations/supabase/client";
 
 interface WebVitalsConfig {
+
   sampleRate?: number;
   onReport?: (metric: Metric) => void;
   debug?: boolean;
@@ -59,12 +60,12 @@ export function useWebVitals({ sampleRate = 1.0, onReport, debug = false }: WebV
 
   useEffect(() => {
     onLCP(reportMetric);
-    onFID(reportMetric);
     onCLS(reportMetric);
     onINP(reportMetric);
     onTTFB(reportMetric);
   }, [reportMetric]);
 }
+
 
 function getDeviceType() {
   const ua = navigator.userAgent;
