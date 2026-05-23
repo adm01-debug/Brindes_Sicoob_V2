@@ -63,7 +63,7 @@ export default function AdminPerformancePage() {
   const stats = useMemo(() => {
     if (!vitals?.length) return null;
     
-    const metrics: Record<string, number[]> = { LCP: [], CLS: [], INP: [], FID: [], TTFB: [] };
+    const metrics: Record<string, number[]> = { LCP: [], CLS: [], INP: [], TTFB: [] };
     
     vitals.forEach(v => {
       const m = v.metadata as any;
@@ -71,6 +71,7 @@ export default function AdminPerformancePage() {
     });
 
     const getP75 = (arr: number[]) => {
+
       if (!arr.length) return 0;
       const sorted = [...arr].sort((a, b) => a - b);
       const pos = Math.floor(sorted.length * 0.75);
@@ -81,21 +82,21 @@ export default function AdminPerformancePage() {
       LCP: getP75(metrics.LCP),
       CLS: getP75(metrics.CLS),
       INP: getP75(metrics.INP),
-      FID: getP75(metrics.FID),
       TTFB: getP75(metrics.TTFB),
       count: vitals.length
     };
+
   }, [vitals]);
 
   const chartData = useMemo(() => {
     if (!stats) return [];
     return [
       { name: 'LCP', value: stats.LCP, unit: 'ms', threshold: 2500 },
-      { name: 'FID', value: stats.FID, unit: 'ms', threshold: 100 },
       { name: 'CLS', value: stats.CLS, unit: '', threshold: 0.1 },
       { name: 'INP', value: stats.INP, unit: 'ms', threshold: 200 },
       { name: 'TTFB', value: stats.TTFB, unit: 'ms', threshold: 800 },
     ];
+
   }, [stats]);
 
   const getRating = (name: string, value: number) => {
