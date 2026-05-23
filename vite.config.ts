@@ -38,7 +38,8 @@ export default defineConfig(({ mode }) => ({
     sourcemap: mode === 'production' ? false : true,
     minify: 'esbuild',
     target: 'esnext',
-    chunkSizeWarningLimit: 800, // Strict limit for Bundle Analysis in CI
+    chunkSizeWarningLimit: 600, // Reduced for stricter CI bundle analysis
+
     reportCompressedSize: true,
     
     rollupOptions: {
