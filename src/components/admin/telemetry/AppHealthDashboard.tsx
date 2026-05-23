@@ -18,6 +18,7 @@ import { toast } from 'sonner';
 import { diagnostics, type AppHealthStatus } from '@/lib/diagnostics';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Separator } from '@/components/ui/separator';
+import { WebVitalsPanel } from './WebVitalsPanel';
 
 const WINDOW_OPTIONS: { value: HealthWindow; label: string }[] = [
   { value: 15, label: '15min' },
@@ -181,6 +182,11 @@ export function AppHealthDashboard() {
           </div>
         </Card>
       </div>
+
+      <Separator className="bg-border/40" />
+
+      {/* Web Vitals Panel OND-025 */}
+      <WebVitalsPanel />
 
       <Separator className="bg-border/40" />
 

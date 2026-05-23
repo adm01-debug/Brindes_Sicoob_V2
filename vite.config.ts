@@ -3,7 +3,6 @@ import react from '@vitejs/plugin-react-swc'
 import path from 'path'
 import { componentTagger } from "lovable-tagger";
 import { visualizer } from "rollup-plugin-visualizer";
-import { chunkSplitPlugin } from 'vite-plugin-chunk-split';
 
 /**
  * Vite Configuration - Production Ready
