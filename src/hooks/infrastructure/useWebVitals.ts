@@ -1,5 +1,6 @@
 import { useCallback, useEffect } from 'react';
 import { onLCP, onFID, onCLS, onINP, onTTFB, type Metric } from 'web-vitals';
+import { supabase } from "@/integrations/supabase/client";
 
 interface WebVitalsConfig {
   sampleRate?: number;
@@ -16,7 +17,7 @@ interface WebVitalsConfig {
  * 3. Filtragem por tipo de dispositivo e versão do app.
  */
 export function useWebVitals({ sampleRate = 1.0, onReport, debug = false }: WebVitalsConfig = {}) {
-  const reportMetric = useCallback((metric: Metric) => {
+  const reportMetric = useCallback(async (metric: Metric) => {
     // Amostragem aleatória para evitar sobrecarga de rede em produção
     if (Math.random() > sampleRate) return;
 
@@ -28,31 +29,31 @@ export function useWebVitals({ sampleRate = 1.0, onReport, debug = false }: WebV
       onReport(metric);
     }
 
-    // Enviar para Supabase (ou sua API de telemetria)
-    // Aqui injetamos metadados úteis para o painel
-    const payload = {
+    // Enviar para Supabase
+    const metadata = {
       name: metric.name,
       value: metric.value,
-      rating: metric.rating, // 'good' | 'needs-improvement' | 'poor'
+      rating: metric.rating,
       delta: metric.delta,
       id: metric.id,
       navigationType: (metric as any).navigationType,
-      url: window.location.pathname,
       device: getDeviceType(),
       connection: (navigator as any).connection?.effectiveType || 'unknown',
-      timestamp: new Date().toISOString(),
-      version: import.meta.env.VITE_APP_VERSION || '2.0.0',
+      version: "2.0.0", // Idealmente dinâmico do package.json ou env
     };
 
-    // Exemplo de chamada silenciosa para telemetria
-    // Em Lovable Cloud, usaríamos uma Edge Function ou tabela de logs
-    if (!debug && window.location.hostname !== 'localhost') {
-      fetch('/api/telemetry/web-vitals', {
-        method: 'POST',
-        body: JSON.stringify(payload),
-        keepalive: true,
-        headers: { 'Content-Type': 'application/json' },
-      }).catch(() => {}); // Falha silenciosa para não afetar UX
+    if (window.location.hostname !== 'localhost') {
+      try {
+        await supabase.from('telemetry_events').insert({
+          event_type: 'web_vitals',
+          severity: metric.rating === 'poor' ? 'error' : metric.rating === 'needs-improvement' ? 'warning' : 'info',
+          url: window.location.pathname,
+          metadata,
+          user_agent: navigator.userAgent
+        });
+      } catch (err) {
+        if (debug) console.error('Failed to send web vitals:', err);
+      }
     }
   }, [sampleRate, onReport, debug]);
 
@@ -71,3 +72,4 @@ function getDeviceType() {
   if (/Mobile|Android|iP(hone|od)|IEMobile|BlackBerry|Kindle|Silk-Accelerated/i.test(ua)) return 'mobile';
   return 'desktop';
 }
+
