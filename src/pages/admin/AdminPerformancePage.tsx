@@ -101,11 +101,11 @@ export default function AdminPerformancePage() {
 
   const getRating = (name: string, value: number) => {
     if (name === 'LCP') return value <= 2500 ? 'good' : value <= 4000 ? 'needs-improvement' : 'poor';
-    if (name === 'FID') return value <= 100 ? 'good' : value <= 300 ? 'needs-improvement' : 'poor';
     if (name === 'CLS') return value <= 0.1 ? 'good' : value <= 0.25 ? 'needs-improvement' : 'poor';
     if (name === 'INP') return value <= 200 ? 'good' : value <= 500 ? 'needs-improvement' : 'poor';
     return 'good';
   };
+
 
   const getRatingColor = (rating: string) => {
     if (rating === 'good') return 'text-success bg-success/10 border-success/20';
