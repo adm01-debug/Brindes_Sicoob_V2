@@ -68,7 +68,7 @@ afterEach(() => {
 function findBadgeRenderLogs() {
   return consoleSpy.mock.calls
     .filter((args) => typeof args[0] === "string" && (args[0] as string).includes("notifications:badge-render"))
-    .map((args) => args[2] as Record<string, unknown>);
+    .map((args) => args[1] as Record<string, unknown>);
 }
 
 async function loadHookAndMetrics() {

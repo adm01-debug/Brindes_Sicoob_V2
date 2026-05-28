@@ -9,6 +9,8 @@
  * Consumido pelo card "Bridges (ao vivo)" em /admin/telemetria.
  */
 
+import { isInstrumentationPaused } from './instrumentationControl';
+
 export type BridgeName = 'external-db-bridge' | 'crm-db-bridge';
 
 /** Operações permitidas para cada bridge, garantindo consistência em compile-time. */

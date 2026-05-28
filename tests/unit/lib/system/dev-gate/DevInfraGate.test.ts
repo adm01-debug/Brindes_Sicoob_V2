@@ -27,29 +27,31 @@ describe('parseGateFlag', () => {
 });
 
 describe('DevInfraGate', () => {
-  it('deve retornar isDev quando todos os providers retornam "auto"', () => {
+  // A API atual é shouldShow(userRoles: AppRole[]): primeiro verifica acesso por
+  // role (DEFAULT_ALLOWED_ROLES = dev/supervisor/admin), depois avalia providers.
+  it('reflete a decisão dos providers quando todos retornam "auto" e há acesso', () => {
     const mockProvider: GateFlagProvider = { getFlag: () => 'auto' };
     const gate = new DevInfraGate([mockProvider]);
-    
-    expect(gate.shouldShow(true)).toBe(true);
-    expect(gate.shouldShow(false)).toBe(false);
+
+    expect(gate.shouldShow(['dev'])).toBe(true);   // tem acesso + providers auto → mostra
+    expect(gate.shouldShow([])).toBe(false);        // sem acesso → não mostra
   });
 
   it('deve respeitar a precedência do primeiro provider que retornar um booleano', () => {
     const p1: GateFlagProvider = { getFlag: () => false };
     const p2: GateFlagProvider = { getFlag: () => true };
     const gate = new DevInfraGate([p1, p2]);
-    
-    // P1 tem precedência e diz false, ignorando P2 e isDev=true
-    expect(gate.shouldShow(true)).toBe(false);
+
+    // P1 tem precedência e diz false, ignorando P2 (mesmo com acesso)
+    expect(gate.shouldShow(['dev'])).toBe(false);
   });
 
   it('deve passar para o próximo provider se o primeiro for "auto"', () => {
     const p1: GateFlagProvider = { getFlag: () => 'auto' };
     const p2: GateFlagProvider = { getFlag: () => true };
     const gate = new DevInfraGate([p1, p2]);
-    
-    expect(gate.shouldShow(false)).toBe(true);
+
+    expect(gate.shouldShow(['dev'])).toBe(true);
   });
 });
 

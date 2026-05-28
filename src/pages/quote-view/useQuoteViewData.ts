@@ -162,8 +162,8 @@ export function useQuoteViewData(id: string | undefined) {
 
   const handleGenerateApprovalLink = async () => {
     if (!id) return;
-    const link = await generateApprovalLink(id);
-    if (link) setApprovalLink(link);
+    const result = await generateApprovalLink(id);
+    if (result) setApprovalLink(result.link);
   };
 
   const handleWhatsAppShare = () => {
@@ -194,10 +194,10 @@ export function useQuoteViewData(id: string | undefined) {
     if (approvalLink) {
       await copyToClipboard(approvalLink);
     } else {
-      const link = await generateApprovalLink(id!);
-      if (link) {
-        setApprovalLink(link);
-        await copyToClipboard(link);
+      const result = await generateApprovalLink(id!);
+      if (result) {
+        setApprovalLink(result.link);
+        await copyToClipboard(result.link);
       }
     }
   };

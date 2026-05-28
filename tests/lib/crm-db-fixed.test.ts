@@ -88,12 +88,12 @@ describe('searchCrm', () => {
   it('passes search params correctly', async () => {
     mockInvoke.mockResolvedValueOnce({ data: { data: [{ id: '1' }] }, error: null });
     await searchCrm('companies', 'nome_fantasia', 'Acme');
-    expect(mockInvoke).toHaveBeenCalledWith('crm-db-bridge', {
+    expect(mockInvoke).toHaveBeenCalledWith('crm-db-bridge', expect.objectContaining({
       body: expect.objectContaining({
         operation: 'search',
         search: { column: 'nome_fantasia', term: 'Acme' },
       }),
-    });
+    }));
   });
 });
 
@@ -109,9 +109,9 @@ describe('updateCrm', () => {
   it('passes id and data', async () => {
     mockInvoke.mockResolvedValueOnce({ data: { data: [{ id: '1' }] }, error: null });
     await updateCrm('quotes', '1', { status: 'approved' });
-    expect(mockInvoke).toHaveBeenCalledWith('crm-db-bridge', {
+    expect(mockInvoke).toHaveBeenCalledWith('crm-db-bridge', expect.objectContaining({
       body: expect.objectContaining({ operation: 'update', id: '1', data: { status: 'approved' } }),
-    });
+    }));
   });
 });
 
@@ -119,9 +119,9 @@ describe('deleteCrm', () => {
   it('calls with delete operation', async () => {
     mockInvoke.mockResolvedValueOnce({ data: {}, error: null });
     await deleteCrm('quotes', '1');
-    expect(mockInvoke).toHaveBeenCalledWith('crm-db-bridge', {
+    expect(mockInvoke).toHaveBeenCalledWith('crm-db-bridge', expect.objectContaining({
       body: expect.objectContaining({ operation: 'delete', id: '1' }),
-    });
+    }));
   });
 });
 

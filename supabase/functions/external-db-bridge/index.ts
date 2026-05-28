@@ -8,6 +8,7 @@ import {
 } from "../_shared/supabase-client-adapter.ts";
 import { z } from "https://deno.land/x/zod@v3.23.8/mod.ts";
 import { getCorsHeaders, handleCorsPreflightIfNeeded } from "../_shared/cors.ts";
+import { sanitizeIlikeValue } from "../_shared/pgrest-filter.ts";
 import {
   type Operation,
   ALLOWED_RPCS,
@@ -163,7 +164,8 @@ export function applyFilters(
     if (value === undefined || value === null || value === '') return;
 
     if (key === '_search' && typeof value === 'string') {
-      const escaped = value.replace(/%/g, '\\%').replace(/_/g, '\\_');
+      // Sanitiza chars estruturais do `.or()` (`,` `(` `)`) além dos wildcards LIKE.
+      const escaped = sanitizeIlikeValue(value);
       query = query.or(`name.ilike.%${escaped}%,sku.ilike.%${escaped}%,supplier_reference.ilike.%${escaped}%,brand.ilike.%${escaped}%,description.ilike.%${escaped}%`);
       return;
     }

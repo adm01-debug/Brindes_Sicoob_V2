@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 import fs from 'fs';
 import path from 'path';
-import * as XLSX from 'xlsx';
+import * as XLSX from '@e965/xlsx';
 import pdf from 'pdf-parse';
 
 test.describe('Order RBAC and Status Flow E2E', () => {
