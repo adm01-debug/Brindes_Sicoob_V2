@@ -58,7 +58,10 @@
     "check:npm-audit": "node scripts/check-npm-audit.mjs",
     "seed:qa": "node scripts/seed-qa.mjs",
     "test:rls": "node scripts/test-rls.mjs",
-    "healthcheck": "node scripts/healthcheck.mjs"
+    "healthcheck": "node scripts/healthcheck.mjs",
+    "test:simulation": "node scripts/simulate-webhooks.mjs",
+    "test:load": "node scripts/load-test.mjs",
+    "test:fuzzing": "vitest run tests/unit/fuzzing.test.ts"
   },
   "lint-staged": {
     "src/**/*.{ts,tsx}": [
