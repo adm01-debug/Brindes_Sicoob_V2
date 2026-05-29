@@ -65,7 +65,8 @@ export default function Auth() {
 
   const handleSocialError = useCallback((message: string) => {
     setSocialError(message);
-    setTimeout(() => emailInputRef.current?.focus(), 50);
+    const timer = setTimeout(() => emailInputRef.current?.focus(), 50);
+    return () => clearTimeout(timer);
   }, []);
 
   const focusEmailFallback = useCallback(() => {
@@ -92,18 +93,21 @@ export default function Auth() {
   // Redirect if already logged in - using role-based routing
   useEffect(() => {
     if (user && !authLoading && role) {
-      const redirectPath = searchParams.get("redirect") || "/";
+      const redirectPath = searchParams.get("redirect");
       
       // If it's just the root or empty, apply role-based default
-      if (redirectPath === "/" || redirectPath === "") {
+      if (!redirectPath || redirectPath === "/" || redirectPath === "") {
         import("@/lib/auth/auth-utils").then(({ getDefaultRouteByRole }) => {
-          navigate(getDefaultRouteByRole(role));
+          const defaultRoute = getDefaultRouteByRole(role);
+          if (location.pathname !== defaultRoute) {
+            navigate(defaultRoute, { replace: true });
+          }
         });
       } else {
-        navigate(redirectPath);
+        navigate(redirectPath, { replace: true });
       }
     }
-  }, [user, authLoading, navigate, role, searchParams]);
+  }, [user, authLoading, navigate, role, searchParams, location.pathname]);
 
   const loginForm = useForm<LoginForm>({
     resolver: zodResolver(loginSchema),

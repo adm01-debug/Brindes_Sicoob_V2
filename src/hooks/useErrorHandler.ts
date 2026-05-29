@@ -60,7 +60,7 @@ export function useErrorHandler() {
         const pgError = error as { code: string; message: string };
         const isRls = pgError.code === '42501';
         
-        (supabase.from('telemetry_events') as any).insert({
+        supabase.from('telemetry_events').insert({
           event_type: 'database_error',
           severity: isRls ? 'critical' : 'error',
           metadata: {
@@ -69,7 +69,7 @@ export function useErrorHandler() {
             error_code: pgError.code,
             is_rls_violation: isRls,
           }
-        }).then(({ error: logErr }: { error: any }) => {
+        }).then(({ error: logErr }) => {
           if (logErr) console.warn('Falha ao logar erro na telemetria', logErr);
         });
       }
