@@ -8473,6 +8473,30 @@ export type Database = {
         }
         Relationships: []
       }
+      test_suites_runs: {
+        Row: {
+          executed_at: string | null
+          id: string
+          metadata: Json | null
+          results: Json
+          test_type: string
+        }
+        Insert: {
+          executed_at?: string | null
+          id?: string
+          metadata?: Json | null
+          results: Json
+          test_type: string
+        }
+        Update: {
+          executed_at?: string | null
+          id?: string
+          metadata?: Json | null
+          results?: Json
+          test_type?: string
+        }
+        Relationships: []
+      }
       user_comparisons: {
         Row: {
           client_id: string | null
