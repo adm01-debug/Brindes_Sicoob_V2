@@ -26,10 +26,21 @@ jobs:
           bun run typecheck
 
       - name: Unit, Integration & Fuzz Tests
-        run: bun run test:coverage:ci
+        run: |
+          bun run test:coverage:ci
+          bun run test:fuzzing
+
+      - name: Webhook Simulation & Load Test
+        run: |
+          bun run test:simulation
+          bun run test:load
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          WEBHOOK_HMAC_SECRET: ${{ secrets.WEBHOOK_HMAC_SECRET }}
 
       - name: Edge Function Tests
         run: deno test --allow-all supabase/functions/tests/
+
 
 
       - name: Build Check
