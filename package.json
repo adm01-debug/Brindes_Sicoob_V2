@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "generate:audit": "nix run nixpkgs#pandoc -- -o audit_report.html audit_report.md && nix run nixpkgs#chromium -- --headless --disable-gpu --no-sandbox --print-to-pdf=audit_report.pdf audit_report.html && rm audit_report.html",
+    "generate:audit": "echo 'Skipping audit PDF generation in build'",
     "build": "npm run generate:audit && npm run check:npm-audit && vite build",
     "build:dev": "npm run check:npm-audit && npm run typecheck && vite build --mode development",
     "preview": "vite preview",
