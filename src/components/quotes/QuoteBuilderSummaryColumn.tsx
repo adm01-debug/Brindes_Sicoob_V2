@@ -13,7 +13,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
 } from "@/components/ui/dialog";
-import { AlertTriangle, Edit, Loader2, Package, Percent, Save, Send, Shield, ShoppingCart, Trash2, CheckCircle2, X, ClipboardCheck, Layers, LayersSelect } from "lucide-react";
+import { AlertTriangle, Edit, Loader2, Package, Percent, Save, Send, Shield, ShoppingCart, Trash2, CheckCircle2, X, ClipboardCheck, Layers, Sparkles } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";

@@ -7,7 +7,7 @@ import { useState, useEffect, useCallback, Suspense } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 // import { MainLayout } from "@/components/layout/MainLayout";
 import { invokeExternalDbSingle, invokeExternalDbDelete, fetchPromobrindProductById, getProductImageUrl, getProductPrice, getProductStock } from '@/lib/external-db';
-import { useAuditLog } from '@/hooks/useAuditLog';
+import { useAuditLog } from '@/hooks/admin/useAuditLog';
 import { toast } from 'sonner';
 import { type ProductFormData, defaultFormValues } from '@/components/admin/products/ProductFormSchema';
 import { Loader2, ArrowLeft, History, Pencil, Copy, FileDown } from 'lucide-react';

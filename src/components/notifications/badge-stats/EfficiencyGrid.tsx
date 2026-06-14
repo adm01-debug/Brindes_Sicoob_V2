@@ -1,6 +1,6 @@
 import { Zap, MousePointerClick, Wifi } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { ratioTone, ttlWithinPct, ttlAfterPct } from "./utils"; // Wait, I need to pass these as props or calculate them
+import { ratioTone } from "./utils";
 
 interface EfficiencyGridProps {
   triggers: number;

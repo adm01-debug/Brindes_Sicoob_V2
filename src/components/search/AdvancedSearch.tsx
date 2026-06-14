@@ -47,6 +47,13 @@ export function AdvancedSearch({ onSearch, onVisualSearchResults, className }: A
   const [isOpen, setIsOpen] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const [isVoiceOverlayOpen, setIsVoiceOverlayOpen] = useState(false);
+  // Voice capture is handled by the lazy-loaded VoiceSearchOverlay; the inline
+  // listening/transcript indicators are derived from browser capability only.
+  const isVoiceSupported =
+    typeof window !== "undefined" &&
+    ("webkitSpeechRecognition" in window || "SpeechRecognition" in window);
+  const isListening = false;
+  const transcript = "";
   const inputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 

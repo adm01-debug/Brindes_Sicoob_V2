@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Loader2, Pencil, Trash2, ArrowUpCircle, Copy } from "lucide-react";
-import { useDuplicateEntity } from "@/hooks/useDuplicateEntity";
+import { useDuplicateEntity } from "@/hooks/common/useDuplicateEntity";
 import { RoleBadge } from "@/components/ui/RoleBadge";
 import { type UserWithRole } from "./types";
 

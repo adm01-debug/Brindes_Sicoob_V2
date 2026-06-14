@@ -7,9 +7,8 @@ import {
   PointerSensor,
   useSensor,
   useSensors,
-  DragStart,
-  DragOver,
-  DragEnd,
+  type DragStartEvent,
+  type DragEndEvent,
   defaultDropAnimationSideEffects,
 } from "@dnd-kit/core";
 import {
@@ -23,6 +22,7 @@ import { CSS } from "@dnd-kit/utilities";
 import { useQuotes } from "@/hooks/quotes/useQuotes";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { QUOTE_STATUS_CONFIG } from "@/lib/quote-status-config";
 import { formatCurrency } from "@/utils/quote-calculations";
@@ -108,14 +108,14 @@ export function QuoteKanbanBoard({
     return map;
   }, [initialQuotes]);
 
-  const handleDragStart = (event: DragStart) => {
+  const handleDragStart = (event: DragStartEvent) => {
     const { active } = event;
     setActiveId(active.id as string);
     const quote = initialQuotes.find((q) => q.id === active.id);
     if (quote) setActiveQuote(quote);
   };
 
-  const handleDragEnd = async (event: DragEnd) => {
+  const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event;
     
     setActiveId(null);

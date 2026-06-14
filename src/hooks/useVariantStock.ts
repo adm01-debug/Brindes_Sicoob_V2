@@ -9,6 +9,7 @@ import {
   type StockFilters,
   type StockDashboardSummary,
   type VariantStock,
+  type StockAlertType,
   defaultStockFilters,
 } from '@/types/stock';
 import { fetchAndProcessStockData } from './stock/stockFetcher';

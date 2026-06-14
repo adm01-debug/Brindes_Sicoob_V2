@@ -10,6 +10,8 @@ import { createClientLogger } from "@/lib/telemetry/structuredLogger";
 import { toast } from "sonner";
 import { QuoteService } from "@/services/QuoteService";
 import type { Quote, QuoteItem, PersonalizationTechnique } from "./quoteTypes";
+// Re-export the canonical quote types so consumers can import them from this hook.
+export type { Quote, QuoteItem, QuoteItemPersonalization, PersonalizationTechnique } from "./quoteTypes";
 import { STATUS_LABELS } from "./quoteHelpers";
 import { invokeExternalDb } from "@/lib/external-db";
 import { useRBAC } from "@/hooks/useRBAC";

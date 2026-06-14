@@ -1,5 +1,5 @@
 import { AlertTriangle } from "lucide-react";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/badge-stats-tooltip"; // Adjust if needed, or use standard
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"; // Adjust if needed, or use standard
 import { cn } from "@/lib/utils";
 
 // Re-using common components from the main project
