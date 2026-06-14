@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { ONBOARDING_STEPS } from "@/constants/onboarding";
+export { ONBOARDING_STEPS } from "@/constants/onboarding";
 
 export function useOnboarding() {
   const { user } = useAuth();

@@ -247,6 +247,7 @@ export function useCollectionsPageState() {
     handleSendSelectedToQuote,
     resetForm,
     updateCollection,
+    createCollection,
 
     // Computed
     selectedSummary,

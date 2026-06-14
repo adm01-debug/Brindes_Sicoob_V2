@@ -6,7 +6,7 @@
  */
 import { useState } from "react";
 import { type SellerCart } from "@/hooks/useSellerCarts";
-import { type CartTemplateItem } from "@/hooks/useCartTemplates";
+import { type CartTemplateItem } from "@/hooks/cart/useCartTemplates";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";

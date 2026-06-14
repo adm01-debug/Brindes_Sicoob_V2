@@ -5,6 +5,8 @@
  */
 import { invokeWithRetry, type InvokeOptions, type InvokeResult } from './invoke';
 
+export type { InvokeOptions, InvokeResult } from './invoke';
+
 export type Operation = 'select' | 'insert' | 'update' | 'delete' | 'upsert' | 'batch_insert';
 
 export interface BridgeResponse<T> {

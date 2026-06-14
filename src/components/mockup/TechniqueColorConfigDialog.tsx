@@ -24,6 +24,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
 import { Paintbrush, Palette, Zap, Check, Info } from "lucide-react";
 import type { DetectedColor } from "@/hooks/useLogoColorAnalysis";
+import type { TechniqueColorConfig } from "./techniqueColorUtils";
 
 // Re-export types and utils from shared module
 export type { TechniqueCategory, LaserTone, TechniqueColorConfig } from "./techniqueColorUtils";

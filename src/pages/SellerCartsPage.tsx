@@ -239,7 +239,7 @@ function SellerCartsContent() {
             {s.activeCart.items.length === 0 ? (
               <CartEmptyStateSmart
                 activeCart={s.activeCart}
-                templates={s.templates as { id: string; name: string; description?: string; items: import("@/hooks/useCartTemplates").CartTemplateItem[] }[]}
+                templates={s.templates as { id: string; name: string; description?: string; items: import("@/hooks/cart/useCartTemplates").CartTemplateItem[] }[]}
                 otherCarts={s.otherCarts}
                 onApplyTemplate={s.handleLoadTemplate}
                 onDuplicateLast={handleDuplicateLast}

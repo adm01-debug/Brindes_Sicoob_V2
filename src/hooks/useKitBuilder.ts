@@ -25,6 +25,9 @@ import {
 } from '@/lib/kit-builder';
 import { useKitBuilderQueries } from './useKitBuilderQueries';
 
+// Re-export kit-builder types so consumers can import them from this hook.
+export type { KitState } from '@/lib/kit-builder';
+
 // ============================================
 // HOOK PRINCIPAL
 // ============================================

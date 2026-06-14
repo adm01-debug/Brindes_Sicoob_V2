@@ -3,7 +3,7 @@
  */
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import type { OrderRow } from "./useOrders";
+import type { OrderRow } from "@/types/orders";
 
 export interface ClientOrdersHistory {
   orders: OrderRow[];

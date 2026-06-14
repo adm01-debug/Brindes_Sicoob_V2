@@ -1,12 +1,8 @@
 import JSZip from "jszip";
-import { saveAs } from "file-saver";
 import { supabase } from "@/integrations/supabase/client";
 import { QuoteService } from "@/services/QuoteService";
 
-// file-saver might not be installed, I'll use a direct link approach if needed, 
-// but JSZip works well with blobs.
-// Let's check if file-saver is in package.json. (It wasn't).
-// I'll use a helper to download the blob.
+// Uses a local helper to trigger the browser download (no external dependency).
 
 function downloadBlob(blob: Blob, fileName: string) {
   const url = URL.createObjectURL(blob);

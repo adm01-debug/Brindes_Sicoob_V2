@@ -5,6 +5,7 @@
 
 import React, { createContext, useContext, useState, useCallback, type ReactNode } from "react";
 import { useSellerCarts, type SellerCart, type AddToCartInput, type CreateCartInput, type CartStatus } from "@/hooks/useSellerCarts";
+export type { CreateCartInput } from "@/hooks/useSellerCarts";
 import { toast } from "sonner";
 
 interface SellerCartContextType {

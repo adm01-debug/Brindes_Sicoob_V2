@@ -23,7 +23,7 @@ export * from "./validations";
 // Routing & Performance
 export { lazyWithRetry } from "./lazyWithRetry";
 export * from "./router-utils";
-export { routePrefetch } from "./routePrefetch";
+export { prefetchRoute, getPrefetchHandlers } from "./routePrefetch";
 
 // Domain Helpers
 export * from "./order-status-config";

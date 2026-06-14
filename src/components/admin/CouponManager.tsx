@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Plus, Search, Pencil, Trash2, Ticket, Percent, DollarSign, Calendar, Copy, History } from "lucide-react";
-import { useDuplicateEntity } from "@/hooks/useDuplicateEntity";
+import { useDuplicateEntity } from "@/hooks/common/useDuplicateEntity";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";

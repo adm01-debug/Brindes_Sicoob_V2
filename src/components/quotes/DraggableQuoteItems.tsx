@@ -23,7 +23,7 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { GripVertical, Package, Trash2, ChevronDown, ChevronUp, Palette, AlertTriangle, Layers, LayersSelect } from "lucide-react";
+import { GripVertical, Package, Trash2, ChevronDown, ChevronUp, Palette, AlertTriangle, Layers } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";

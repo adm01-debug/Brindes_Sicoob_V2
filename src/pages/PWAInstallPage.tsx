@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Smartphone, Download, Share, PlusSquare, ArrowRight, ShieldCheck, Zap } from "lucide-react";
 import { usePWAInstall } from "@/hooks/usePWAInstall";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { useIsMobile } from "@/hooks/common/use-mobile";
 import { cn } from "@/lib/utils";
 
 export default function PWAInstallPage() {

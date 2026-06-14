@@ -7,7 +7,9 @@ import { useState, type MouseEvent as ReactMouseEvent } from "react";
 import { Copy, Share2, MessageCircle, Trophy, ListChecks, FileStack } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { cn } from "@/lib/utils";
 import type { Quote } from "@/hooks/quotes/useQuotes";
 import { 
   Dialog, 

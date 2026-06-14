@@ -31,7 +31,11 @@ function StatusBadge({ status }: { status: OptimizationItem['status'] }) {
     blocked: { label: 'Bloqueado', cls: 'bg-warning/15 text-warning border-warning/30', Icon: AlertTriangle },
     skipped: { label: 'Ignorado', cls: 'bg-muted text-muted-foreground', Icon: Clock },
   };
-  const { label, cls, Icon } = map[status];
+  const { label, cls, Icon } = map[status] ?? {
+    label: String(status ?? 'Desconhecido'),
+    cls: 'bg-muted text-muted-foreground',
+    Icon: Clock,
+  };
   return (
     <Badge variant="outline" className={cn('text-[10px] gap-1', cls)}>
       <Icon className={cn('h-3 w-3', status === 'running' && 'animate-spin')} aria-hidden />

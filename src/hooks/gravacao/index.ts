@@ -1,6 +1,6 @@
 // Barrel export para hooks de Gravação
 export { useTecnicasGravacao, useTecnicaGravacao } from './useTecnicasGravacao';
-export { useVariantesGravacao, useAllVariantes } from './useVariantesGravacao';
+export { useVariantesGravacao } from './useVariantesGravacao';
 export { useFornecedoresGravacao } from './useFornecedoresGravacao';
 
 // ============================================
@@ -32,14 +32,3 @@ export {
   findPriceTier,
   calculateCustomizationTotal,
 } from '../useGravacaoV2';
-
-// ============================================
-// LEGACY (compatibilidade - será removido)
-// ============================================
-export {
-  useCustomizationPrice,
-  useFindPriceTable,
-  QUANTITY_TIERS,
-  type TecnicaGravacao,
-  type CustomizationPrice,
-} from '../useGravacao';

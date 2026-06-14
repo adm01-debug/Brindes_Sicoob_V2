@@ -15,6 +15,39 @@ const bridgeBreaker = getCircuitBreaker('external-db-bridge', {
   resetTimeout: 45000,
 });
 
+/**
+ * Options accepted by the external-db CRUD helpers. The shape is intentionally
+ * permissive (index signature) because the bridge forwards arbitrary PostgREST
+ * parameters; only the operation/table fields are commonly read on the client.
+ */
+export interface InvokeOptions {
+  table?: string;
+  operation?: string;
+  select?: string;
+  filters?: Record<string, unknown>;
+  data?: unknown;
+  limit?: number;
+  offset?: number;
+  orderBy?: { column: string; ascending?: boolean } | string;
+  order?: string;
+  ascending?: boolean;
+  single?: boolean;
+  count?: boolean | string | number | null;
+  onConflict?: string;
+  range?: [number, number];
+  or?: string;
+  [key: string]: unknown;
+}
+
+/**
+ * Normalized result returned by the external-db CRUD helpers.
+ */
+export interface InvokeResult<T> {
+  records?: T[];
+  count?: number | null;
+  [key: string]: unknown;
+}
+
 
 function deriveExternalOp(body: Record<string, unknown>): { op: string; target?: string } {
   const operation = typeof body.operation === 'string' ? body.operation : undefined;
