@@ -6,7 +6,7 @@
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ShieldAlert, RefreshCw, Database, Clock, AlertTriangle, CheckCircle2, Lock, Download, FileText } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { getSupabaseFunctionUrl, supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -101,7 +101,7 @@ export default function OwnershipAuditAdminPage() {
         toast.error("Sessão expirada — faça login novamente.");
         return;
       }
-      const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/rls-matrix-export?format=${format}`;
+      const url = getSupabaseFunctionUrl('rls-matrix-export', `format=${format}`);
       const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
       if (!res.ok) {
         const msg = await res.text().catch(() => res.statusText);

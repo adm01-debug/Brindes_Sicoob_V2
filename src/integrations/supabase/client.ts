@@ -6,25 +6,56 @@ import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 
 // Credentials are injected at build time via Vite env (VITE_*). In test
-// environments where import.meta.env is not populated, we fall back to the
-// global shims defined in src/test/setup.ts so the client can be constructed.
-// NOTE: do NOT name shim keys `SUPABASE_URL` / `SUPABASE_PUBLISHABLE_KEY` —
-// Rollup's minifier rewrites `globalThis.X` into a bare `X` global reference,
-// which throws `ReferenceError: SUPABASE_URL is not defined` in production.
-type SupabaseShim = { __SUPABASE_URL__?: string; __SUPABASE_PUBLISHABLE_KEY__?: string };
-const globalShim = globalThis as SupabaseShim;
-const SUPABASE_URL =
-  import.meta.env.VITE_SUPABASE_URL ?? globalShim.__SUPABASE_URL__;
-const SUPABASE_PUBLISHABLE_KEY =
-  import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ?? globalShim.__SUPABASE_PUBLISHABLE_KEY__;
+// environments where import.meta.env is not populated, we read a namespaced
+// shim through bracket notation. This is intentionally not named
+// `SUPABASE_URL`: aggressive minifiers can rewrite dotted globals into bare
+// identifiers and trigger TDZ/runtime errors in production bundles.
+type RuntimeConfig = {
+  url?: string;
+  publishableKey?: string;
+};
+
+type RuntimeGlobal = typeof globalThis & Record<string, unknown> & {
+  __PORTAL_SICOOB_RUNTIME_CONFIG__?: RuntimeConfig;
+};
+
+const runtimeGlobal = globalThis as RuntimeGlobal;
+const runtimeConfig = runtimeGlobal['__PORTAL_SICOOB_RUNTIME_CONFIG__'];
+
+const legacyBackendUrl = runtimeGlobal['SUPABASE_URL'];
+const legacyPublishableKey =
+  runtimeGlobal['SUPABASE_PUBLISHABLE_KEY'] ?? runtimeGlobal['SUPABASE_ANON_KEY'];
+
+const backendUrl =
+  import.meta.env.VITE_SUPABASE_URL ??
+  runtimeConfig?.url ??
+  (typeof legacyBackendUrl === 'string' ? legacyBackendUrl : undefined);
+const backendPublishableKey =
+  import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ??
+  runtimeConfig?.publishableKey ??
+  (typeof legacyPublishableKey === 'string' ? legacyPublishableKey : undefined);
+
+if (!backendUrl || !backendPublishableKey) {
+  throw new Error(
+    'Configuração do backend ausente: VITE_SUPABASE_URL e VITE_SUPABASE_PUBLISHABLE_KEY são obrigatórios.',
+  );
+}
+
+export const supabaseUrl = backendUrl;
+export const supabasePublishableKey = backendPublishableKey;
+
+export function getSupabaseFunctionUrl(functionName: string, query = ''): string {
+  const normalizedQuery = query ? (query.startsWith('?') ? query : `?${query}`) : '';
+  return `${supabaseUrl}/functions/v1/${functionName}${normalizedQuery}`;
+}
 
 /**
  * Supabase client instance for Portal Sicoob.
  * Optimized for technical excellence 10/10 with enhanced performance config.
  */
-export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+export const supabase = createClient<Database>(backendUrl, backendPublishableKey, {
   auth: {
-    storage: localStorage,
+    storage: typeof localStorage !== 'undefined' ? localStorage : undefined,
     persistSession: true,
     autoRefreshToken: true,
     detectSessionInUrl: true,

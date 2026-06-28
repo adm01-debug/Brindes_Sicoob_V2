@@ -1,14 +1,14 @@
 // public/sw.js
-// Service Worker para Gifts Store PWA
-// Versão: 1.0.0
+// Service Worker para Portal Sicoob PWA
+// Versão: 2.0.1 — cache-safe para evitar bundles obsoletos em produção
 
-const CACHE_NAME = 'gifts-store-v1';
-const RUNTIME_CACHE = 'runtime-cache-v1';
+const CACHE_NAME = 'portal-sicoob-static-v3';
+const RUNTIME_CACHE = 'portal-sicoob-runtime-v3';
+const IMAGE_CACHE = 'portal-sicoob-images-v3';
+const ALLOWED_CACHES = new Set([CACHE_NAME, RUNTIME_CACHE, IMAGE_CACHE]);
 
 // Arquivos essenciais para cache
 const STATIC_ASSETS = [
-  '/',
-  '/index.html',
   '/manifest.json'
 ];
 
@@ -34,7 +34,7 @@ self.addEventListener('activate', (event) => {
     caches.keys().then((cacheNames) => {
       return Promise.all(
         cacheNames
-          .filter((name) => name !== CACHE_NAME && name !== RUNTIME_CACHE)
+          .filter((name) => !ALLOWED_CACHES.has(name))
           .map((name) => {
             console.log('[SW] Deleting old cache:', name);
             return caches.delete(name);
@@ -44,6 +44,20 @@ self.addEventListener('activate', (event) => {
   );
 });
 
+self.addEventListener('message', (event) => {
+  if (event.data?.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
+
+  if (event.data?.type === 'CLEAR_OLD_CACHES') {
+    event.waitUntil(
+      caches.keys().then((cacheNames) =>
+        Promise.all(cacheNames.filter((name) => !ALLOWED_CACHES.has(name)).map((name) => caches.delete(name)))
+      )
+    );
+  }
+});
+
 // Fetch: estratégia Network First com cache fallback
 self.addEventListener('fetch', (event) => {
   const { request } = event;
@@ -51,6 +65,42 @@ self.addEventListener('fetch', (event) => {
 
   // Só cachear requisições GET do mesmo origin
   if (request.method !== 'GET' || url.origin !== location.origin) {
+    return;
+  }
+
+  const isHtmlNavigation = request.mode === 'navigate' || request.destination === 'document';
+  const isBuildAsset = /\.(?:js|css|map)$/i.test(url.pathname) || url.pathname.startsWith('/assets/');
+  const isImage = request.destination === 'image' || /\.(jpg|jpeg|png|gif|webp|svg|ico)$/i.test(url.pathname);
+
+  // Nunca servir HTML/JS/CSS obsoletos do cache. Isso evita erros como
+  // `ReferenceError: SUPABASE_URL is not defined` vindos de bundles antigos.
+  if (isHtmlNavigation || isBuildAsset) {
+    event.respondWith(
+      fetch(request, { cache: 'no-store' }).catch((error) => {
+        if (isHtmlNavigation) {
+          return caches.match('/offline.html').then((offline) => offline || Response.error());
+        }
+        throw error;
+      })
+    );
+    return;
+  }
+
+  if (isImage) {
+    event.respondWith(
+      caches.open(IMAGE_CACHE).then((cache) =>
+        cache.match(request).then((cachedResponse) => {
+          const refresh = fetch(request).then((networkResponse) => {
+            if (networkResponse && networkResponse.status === 200) {
+              cache.put(request, networkResponse.clone());
+            }
+            return networkResponse;
+          });
+
+          return cachedResponse || refresh.catch(() => cache.match('/placeholder.svg') || new Response('Offline', { status: 503 }));
+        })
+      )
+    );
     return;
   }
 
@@ -154,60 +204,3 @@ async function syncQuotes() {
 
 console.log('[SW] Service Worker loaded');
 
-// Cache de Imagens - Cache First com expiração e limite
-self.addEventListener('fetch', (event) => {
-  const { request } = event;
-  const url = new URL(request.url);
-
-  // Cache imagens (CDN e locais)
-  if (request.destination === 'image' || 
-      /\.(jpg|jpeg|png|gif|webp|svg|ico)$/i.test(url.pathname)) {
-    
-    // Ignorar trackers/analytics
-    if (url.hostname.includes('google-analytics') || url.hostname.includes('sentry')) return;
-
-    event.respondWith(
-      caches.open('images-cache-v1').then((cache) => {
-        return cache.match(request).then((cachedResponse) => {
-          if (cachedResponse) {
-            // Background update (Stale-While-Revalidate para imagens dinâmicas como produtos)
-            // Se a imagem for da nossa CDN ou Supabase, tentamos atualizar silenciosamente
-            if (url.hostname.includes('supabase.co') || url.hostname.includes('pub-')) {
-               fetch(request).then(networkResponse => {
-                 if (networkResponse.status === 200) cache.put(request, networkResponse);
-               }).catch(() => {});
-            }
-            return cachedResponse;
-          }
-
-          return fetch(request).then((networkResponse) => {
-            if (networkResponse && networkResponse.status === 200) {
-              cache.put(request, networkResponse.clone());
-            }
-            return networkResponse;
-          }).catch(() => {
-            return cache.match('/placeholder.svg') || new Response('Offline', { status: 503 });
-          });
-        });
-      })
-    );
-  }
-});
-
-// Limpar caches antigos
-self.addEventListener('activate', (event) => {
-  const cacheWhitelist = ['app-cache-v1', 'images-cache-v1'];
-  
-  event.waitUntil(
-    caches.keys().then((cacheNames) => {
-      return Promise.all(
-        cacheNames.map((cacheName) => {
-          if (!cacheWhitelist.includes(cacheName)) {
-            console.log('Deletando cache antigo:', cacheName);
-            return caches.delete(cacheName);
-          }
-        })
-      );
-    })
-  );
-});

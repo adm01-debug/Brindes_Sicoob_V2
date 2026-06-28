@@ -6,9 +6,18 @@ import { BrowserRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import React from 'react';
 
-// Define globally needed variables for Supabase client
-(globalThis as any).__SUPABASE_URL__ = 'https://mock.supabase.co';
-(globalThis as any).__SUPABASE_PUBLISHABLE_KEY__ = 'mock-key';
+vi.mock('@/contexts/SellerCartContext', () => ({
+  useSellerCartContext: () => ({
+    activeCart: null,
+    addToActiveCart: vi.fn(),
+  }),
+}));
+
+// Define globally needed variables for backend client tests.
+(globalThis as any).__PORTAL_SICOOB_RUNTIME_CONFIG__ = {
+  url: 'https://mock.supabase.co',
+  publishableKey: 'mock-key',
+};
 
 const queryClient = new QueryClient({
   defaultOptions: {

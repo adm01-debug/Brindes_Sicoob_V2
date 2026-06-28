@@ -14,15 +14,24 @@
 /assets/*
   Cache-Control: public, max-age=31536000, immutable
 
-/*.js
-  Cache-Control: public, max-age=31536000, immutable
+# Service Worker must never be immutable; otherwise stale cache strategies keep
+# old production bundles alive and can re-trigger runtime ReferenceErrors.
+/sw.js
+  Cache-Control: no-cache, no-store, must-revalidate
 
-/*.css
-  Cache-Control: public, max-age=31536000, immutable
+/manifest.json
+  Cache-Control: no-cache, no-store, must-revalidate
+
+# Built chunks live under /assets and are already immutable above. Root-level JS
+# such as /sw.js must remain refreshable, so avoid a broad /*.js rule here.
 
 # HTML — no cache (always fresh)
 /
-  Cache-Control: public, max-age=0, must-revalidate
+  Cache-Control: no-cache, no-store, must-revalidate
+  Pragma: no-cache
+  Expires: 0
 
 /index.html
-  Cache-Control: public, max-age=0, must-revalidate
+  Cache-Control: no-cache, no-store, must-revalidate
+  Pragma: no-cache
+  Expires: 0

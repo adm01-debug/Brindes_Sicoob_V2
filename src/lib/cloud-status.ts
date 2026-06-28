@@ -17,7 +17,7 @@
  *   - Coalescing de chamadas paralelas (1 sondagem por vez).
  *   - EventTarget para broadcast — UI escuta via `onCloudStatusChange()`.
  */
-import { supabase } from '@/integrations/supabase/client';
+import { supabase, supabasePublishableKey, supabaseUrl } from '@/integrations/supabase/client';
 import { logger } from '@/lib/logger';
 import { pingHealth } from '@/lib/external-db/health-check';
 import { getRequestHeaders } from '@/lib/system/request-context'; // Novo utilitário para propagar X-Request-Id
@@ -80,8 +80,8 @@ async function checkAuth(): Promise<{ ok: boolean; ms: number }> {
 
 async function checkRest(): Promise<{ ok: boolean; ms: number }> {
   const t0 = performance.now();
-  const url = import.meta.env.VITE_SUPABASE_URL as string | undefined;
-  const key = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string | undefined;
+  const url = supabaseUrl;
+  const key = supabasePublishableKey;
   if (!url || !key) return { ok: false, ms: 0 };
   try {
     const headers = getRequestHeaders({ 

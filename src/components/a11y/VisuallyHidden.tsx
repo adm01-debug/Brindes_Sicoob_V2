@@ -10,12 +10,7 @@ interface VisuallyHiddenProps {
  * Use for descriptive text that provides context for assistive technologies.
  */
 export const VisuallyHidden = forwardRef<HTMLElement, VisuallyHiddenProps>(({ children, as: component = "span" }, ref) => {
-  const Component = component;
-  return (
-    <Component ref={ref as any} className="sr-only">
-      {children}
-    </Component>
-  );
+  return React.createElement(component, { ref, className: "sr-only" }, children);
 });
 
 VisuallyHidden.displayName = 'VisuallyHidden';

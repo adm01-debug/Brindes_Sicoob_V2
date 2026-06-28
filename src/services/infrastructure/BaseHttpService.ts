@@ -1,4 +1,4 @@
-import { supabase } from "@/integrations/supabase/client";
+import { supabase, supabasePublishableKey } from "@/integrations/supabase/client";
 
 export abstract class BaseHttpService {
   protected abstract getBaseUrl(): string;
@@ -8,7 +8,7 @@ export abstract class BaseHttpService {
     return {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${session?.access_token || ''}`,
-      'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+      'apikey': supabasePublishableKey,
     };
   }
 

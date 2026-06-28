@@ -3,7 +3,7 @@
  * Returns a promise that resolves when audio finishes or rejects on error.
  * Includes user auth token for authenticated edge functions.
  */
-import { supabase } from "@/integrations/supabase/client";
+import { getSupabaseFunctionUrl, supabase, supabasePublishableKey } from "@/integrations/supabase/client";
 
 function createSilentWavUrl(durationMs = 120) {
   const sampleRate = 8000;
@@ -88,7 +88,7 @@ export function playTtsAudio(
     const { data: { session } } = await supabase.auth.getSession();
     if (stopped) return;
 
-    const authToken = session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+    const authToken = session?.access_token || supabasePublishableKey;
 
     const maxLen = 800;
     const ttsText = text.length > maxLen
@@ -101,12 +101,12 @@ export function playTtsAudio(
     let ttsResponse: Response;
     try {
       ttsResponse = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/elevenlabs-tts`,
+        getSupabaseFunctionUrl('elevenlabs-tts'),
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+            apikey: supabasePublishableKey,
             Authorization: `Bearer ${authToken}`,
           },
           body: JSON.stringify({ text: ttsText }),

@@ -101,6 +101,34 @@
         <div class="spinner"></div>
       </div>
     </div>
+    <script>
+      // Runtime config + backward compatibility for previously generated bundles.
+      // Some stale/minified artifacts referenced SUPABASE_URL as a bare global
+      // identifier. Defining these globals before the module entrypoint prevents
+      // a fatal ReferenceError while the new cache-safe bundle takes over.
+      function normalizePortalEnv(value) {
+        return value && !value.startsWith('%VITE_') ? value : undefined;
+      }
+
+      var __portalSicoobRuntimeConfig = {
+        url: normalizePortalEnv("%VITE_SUPABASE_URL%"),
+        publishableKey: normalizePortalEnv("%VITE_SUPABASE_PUBLISHABLE_KEY%")
+      };
+
+      window.__PORTAL_SICOOB_RUNTIME_CONFIG__ = __portalSicoobRuntimeConfig;
+
+      // Compatibilidade máxima com bundles antigos minificados que acessavam
+      // SUPABASE_URL como identificador global nu dentro de módulos. Como este
+      // script clássico executa no escopo global, `var` cria um binding global
+      // real; apenas `window.SUPABASE_URL = ...` pode não bastar para módulos.
+      var SUPABASE_URL = __portalSicoobRuntimeConfig.url || '';
+      var SUPABASE_PUBLISHABLE_KEY = __portalSicoobRuntimeConfig.publishableKey || '';
+      var SUPABASE_ANON_KEY = __portalSicoobRuntimeConfig.publishableKey || '';
+
+      window.SUPABASE_URL = SUPABASE_URL;
+      window.SUPABASE_PUBLISHABLE_KEY = SUPABASE_PUBLISHABLE_KEY;
+      window.SUPABASE_ANON_KEY = SUPABASE_ANON_KEY;
+    </script>
     <script type="module" src="/src/main.tsx"></script>
     <script>
       // Remover splash logo que o React hidratar (emissão de evento customizado ou timeout de segurança)

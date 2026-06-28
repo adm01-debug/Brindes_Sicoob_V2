@@ -68,7 +68,7 @@ const RouteSuspense = ({ children }: { children: ReactNode }) => {
 
 const Index = lazyWithRetry(() => import("./pages/Index"));
 const CustomizableDashboard = lazyWithRetry(() => import("./pages/CustomizableDashboard"));
-const OrdersPage = lazyWithRetry(() => import("./pages/OrdersPage"));
+const OrdersPage = lazyWithRetry(() => import("./pages/OrdersPage").then((module) => ({ default: module.OrdersPage })));
 const OrderDetailPage = lazyWithRetry(() => import("./pages/OrderDetailPage"));
 const ClientsPage = lazyWithRetry(() => import("./pages/ClientsPage"));
 const ClientDetailPage = lazyWithRetry(() => import("./pages/ClientDetailPage"));

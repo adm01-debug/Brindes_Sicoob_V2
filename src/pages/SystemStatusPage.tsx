@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase, supabasePublishableKey, supabaseUrl } from "@/integrations/supabase/client";
 import { invokeCrmDb } from "@/lib/crm-db";
 import {
   CheckCircle,
@@ -67,8 +67,8 @@ export default function SystemStatusPage() {
     });
 
     // 2. Env vars
-    const hasSupabaseUrl = !!import.meta.env.VITE_SUPABASE_URL;
-    const hasSupabaseKey = !!import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+    const hasSupabaseUrl = !!supabaseUrl;
+    const hasSupabaseKey = !!supabasePublishableKey;
     results.push({
       name: "Variáveis de Ambiente",
       status: hasSupabaseUrl && hasSupabaseKey ? "ok" : "error",

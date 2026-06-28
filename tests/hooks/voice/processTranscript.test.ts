@@ -3,6 +3,9 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 // Mock supabase before importing the module
 vi.mock("@/integrations/supabase/client", () => {
   return {
+    getSupabaseFunctionUrl: (functionName: string, query = '') =>
+      `https://test.supabase.co/functions/v1/${functionName}${query ? `?${query.replace(/^\?/, '')}` : ''}`,
+    supabasePublishableKey: 'test-anon-key',
     supabase: {
       auth: {
         getSession: () =>
