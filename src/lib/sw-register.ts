@@ -11,12 +11,18 @@ export async function registerServiceWorker(): Promise<void> {
   if ('serviceWorker' in navigator) {
     try {
       const registration = await navigator.serviceWorker.register('/sw.js', {
-        scope: '/'
+        scope: '/',
+        updateViaCache: 'none',
       });
 
       logger.log('✅ Service Worker registrado:', registration.scope);
 
+      await registration.update().catch((error) => {
+        logger.warn('⚠️ Falha ao forçar atualização do Service Worker:', error);
+      });
+
       registration.active?.postMessage({ type: 'CLEAR_OLD_CACHES' });
+      registration.waiting?.postMessage({ type: 'SKIP_WAITING' });
 
       // Checar atualizações
       registration.addEventListener('updatefound', () => {
