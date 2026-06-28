@@ -16,6 +16,8 @@ export async function registerServiceWorker(): Promise<void> {
 
       logger.log('✅ Service Worker registrado:', registration.scope);
 
+      registration.active?.postMessage({ type: 'CLEAR_OLD_CACHES' });
+
       // Checar atualizações
       registration.addEventListener('updatefound', () => {
         const newWorker = registration.installing;
@@ -23,13 +25,16 @@ export async function registerServiceWorker(): Promise<void> {
         newWorker.addEventListener('statechange', () => {
             if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
               logger.log('🔄 Nova versão do Service Worker disponível');
-              // Reload automático removido para evitar auto-refresh intermitente
+              newWorker.postMessage({ type: 'SKIP_WAITING' });
             }
           });
         }
       });
 
-      // Controllerchange listener removido para evitar auto-refresh
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        navigator.serviceWorker.controller?.postMessage({ type: 'CLEAR_OLD_CACHES' });
+      });
+
       logger.log('✅ Service Worker configurado sem auto-reload');
 
     } catch (error) {
