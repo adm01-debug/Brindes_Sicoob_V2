@@ -39,10 +39,11 @@ interface DiagSnapshot {
   };
 }
 
-const PROJECT_ID = import.meta.env.VITE_SUPABASE_PROJECT_ID as string;
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string;
-const ANON_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string;
-const FN_URL = `${SUPABASE_URL ?? `https://${PROJECT_ID}.supabase.co`}/functions/v1/crm-db-bridge?op=diag`;
+const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID as string | undefined;
+const backendUrl = import.meta.env.VITE_SUPABASE_URL as string | undefined;
+const backendPublishableKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string | undefined;
+const functionBaseUrl = backendUrl ?? (projectId ? `https://${projectId}.supabase.co` : '');
+const functionUrl = `${functionBaseUrl}/functions/v1/crm-db-bridge?op=diag`;
 const POLL_MS = 30_000;
 
 function fmtMs(v: number | null | undefined): string {
@@ -75,9 +76,13 @@ export function ColdVsWarmCrmCard() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(FN_URL, {
+      if (!functionBaseUrl || !backendPublishableKey) {
+        throw new Error('Configuração do backend indisponível para diagnóstico.');
+      }
+
+      const res = await fetch(functionUrl, {
         method: 'GET',
-        headers: { apikey: ANON_KEY },
+        headers: { apikey: backendPublishableKey },
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const json = (await res.json()) as DiagSnapshot;

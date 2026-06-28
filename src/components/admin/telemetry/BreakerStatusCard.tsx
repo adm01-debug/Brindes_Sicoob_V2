@@ -38,9 +38,9 @@ interface BreakerStatusResponse {
   all: Array<BreakerStatusResponse['breaker']>;
 }
 
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string;
-const ANON_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string;
-const FN_URL = `${SUPABASE_URL}/functions/v1/crm-db-bridge?op=breaker_status`;
+const backendUrl = import.meta.env.VITE_SUPABASE_URL as string | undefined;
+const backendPublishableKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string | undefined;
+const functionUrl = `${backendUrl ?? ''}/functions/v1/crm-db-bridge?op=breaker_status`;
 const POLL_MS = 15_000;
 
 function fmtMs(ms: number): string {
@@ -95,9 +95,13 @@ export function BreakerStatusCard() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(FN_URL, {
+      if (!backendUrl || !backendPublishableKey) {
+        throw new Error('Configuração do backend indisponível para diagnóstico.');
+      }
+
+      const res = await fetch(functionUrl, {
         method: 'GET',
-        headers: { apikey: ANON_KEY },
+        headers: { apikey: backendPublishableKey },
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const json = (await res.json()) as BreakerStatusResponse;
