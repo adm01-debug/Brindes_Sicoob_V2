@@ -117,9 +117,18 @@
         };
 
         window.__PORTAL_SICOOB_RUNTIME_CONFIG__ = runtimeConfig;
-        window.SUPABASE_URL = runtimeConfig.url;
-        window.SUPABASE_PUBLISHABLE_KEY = runtimeConfig.publishableKey;
-        window.SUPABASE_ANON_KEY = runtimeConfig.publishableKey;
+
+        // Compatibilidade máxima com bundles antigos minificados que acessavam
+        // SUPABASE_URL como identificador global nu dentro de módulos. `var`
+        // cria um binding global real; apenas `window.SUPABASE_URL = ...` pode
+        // não ser suficiente em todos os caminhos de avaliação de módulos/cache.
+        var SUPABASE_URL = runtimeConfig.url || '';
+        var SUPABASE_PUBLISHABLE_KEY = runtimeConfig.publishableKey || '';
+        var SUPABASE_ANON_KEY = runtimeConfig.publishableKey || '';
+
+        window.SUPABASE_URL = SUPABASE_URL;
+        window.SUPABASE_PUBLISHABLE_KEY = SUPABASE_PUBLISHABLE_KEY;
+        window.SUPABASE_ANON_KEY = SUPABASE_ANON_KEY;
       })();
     </script>
     <script type="module" src="/src/main.tsx"></script>

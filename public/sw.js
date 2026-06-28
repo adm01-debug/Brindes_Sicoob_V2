@@ -1,10 +1,10 @@
 // public/sw.js
 // Service Worker para Portal Sicoob PWA
-// Versão: 2.0.0 — cache-safe para evitar bundles obsoletos em produção
+// Versão: 2.0.1 — cache-safe para evitar bundles obsoletos em produção
 
-const CACHE_NAME = 'portal-sicoob-static-v2';
-const RUNTIME_CACHE = 'portal-sicoob-runtime-v2';
-const IMAGE_CACHE = 'portal-sicoob-images-v2';
+const CACHE_NAME = 'portal-sicoob-static-v3';
+const RUNTIME_CACHE = 'portal-sicoob-runtime-v3';
+const IMAGE_CACHE = 'portal-sicoob-images-v3';
 const ALLOWED_CACHES = new Set([CACHE_NAME, RUNTIME_CACHE, IMAGE_CACHE]);
 
 // Arquivos essenciais para cache
