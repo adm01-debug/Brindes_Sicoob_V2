@@ -45,9 +45,9 @@ export async function generateQuotePDF(quoteId: string) {
     doc.setTextColor(0);
     doc.text("INFORMAÇÕES DO CLIENTE (PAC)", 14, 50);
     doc.setFontSize(10);
-    doc.text(`Nome: ${quote.client_name || quote.client?.full_name || "N/A"}`, 14, 57);
+    doc.text(`Nome: ${quote.client_name || (quote.client as any)?.full_name || "N/A"}`, 14, 57);
     doc.text(`Empresa: ${quote.client_company || "N/A"}`, 14, 62);
-    doc.text(`E-mail: ${quote.client_email || quote.client?.email || "N/A"}`, 14, 67);
+    doc.text(`E-mail: ${quote.client_email || (quote.client as any)?.email || "N/A"}`, 14, 67);
 
     // Items Table
     const tableData = (quote.items as any[]).map((item) => [
