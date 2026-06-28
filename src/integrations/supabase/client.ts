@@ -60,9 +60,10 @@ export const supabase = createClient<Database>(backendUrl, backendPublishableKey
     autoRefreshToken: true,
     detectSessionInUrl: true,
   },
-  global: {
-    headers: { 'x-application-name': 'portal-sicoob' },
-  },
+  // NOTE: não injetar headers globais customizados aqui (ex.: x-application-name).
+  // Eles disparam preflight CORS em TODAS as edge functions, e qualquer função
+  // cuja allowlist não contenha o header rejeita a requisição. Telemetria de
+  // origem deve ser feita via body/URL, não via header global.
   // Higher performance defaults for DB operations
   db: {
     schema: 'public'
