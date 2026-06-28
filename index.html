@@ -101,6 +101,23 @@
         <div class="spinner"></div>
       </div>
     </div>
+    <script>
+      // Runtime config + backward compatibility for previously generated bundles.
+      // Some stale/minified artifacts referenced SUPABASE_URL as a bare global
+      // identifier. Defining these globals before the module entrypoint prevents
+      // a fatal ReferenceError while the new cache-safe bundle takes over.
+      (function () {
+        var runtimeConfig = {
+          url: "%VITE_SUPABASE_URL%",
+          publishableKey: "%VITE_SUPABASE_PUBLISHABLE_KEY%"
+        };
+
+        window.__PORTAL_SICOOB_RUNTIME_CONFIG__ = runtimeConfig;
+        window.SUPABASE_URL = runtimeConfig.url;
+        window.SUPABASE_PUBLISHABLE_KEY = runtimeConfig.publishableKey;
+        window.SUPABASE_ANON_KEY = runtimeConfig.publishableKey;
+      })();
+    </script>
     <script type="module" src="/src/main.tsx"></script>
     <script>
       // Remover splash logo que o React hidratar (emissão de evento customizado ou timeout de segurança)

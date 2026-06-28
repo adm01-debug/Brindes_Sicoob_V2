@@ -15,16 +15,25 @@ type RuntimeConfig = {
   publishableKey?: string;
 };
 
-type RuntimeGlobal = typeof globalThis & {
+type RuntimeGlobal = typeof globalThis & Record<string, unknown> & {
   __PORTAL_SICOOB_RUNTIME_CONFIG__?: RuntimeConfig;
 };
 
 const runtimeGlobal = globalThis as RuntimeGlobal;
 const runtimeConfig = runtimeGlobal['__PORTAL_SICOOB_RUNTIME_CONFIG__'];
 
-const backendUrl = import.meta.env.VITE_SUPABASE_URL ?? runtimeConfig?.url;
+const legacyBackendUrl = runtimeGlobal['SUPABASE_URL'];
+const legacyPublishableKey =
+  runtimeGlobal['SUPABASE_PUBLISHABLE_KEY'] ?? runtimeGlobal['SUPABASE_ANON_KEY'];
+
+const backendUrl =
+  import.meta.env.VITE_SUPABASE_URL ??
+  runtimeConfig?.url ??
+  (typeof legacyBackendUrl === 'string' ? legacyBackendUrl : undefined);
 const backendPublishableKey =
-  import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ?? runtimeConfig?.publishableKey;
+  import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ??
+  runtimeConfig?.publishableKey ??
+  (typeof legacyPublishableKey === 'string' ? legacyPublishableKey : undefined);
 
 if (!backendUrl || !backendPublishableKey) {
   throw new Error(
