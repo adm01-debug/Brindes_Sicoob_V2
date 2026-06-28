@@ -7,8 +7,8 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import React from 'react';
 
 // Define globally needed variables for Supabase client
-(globalThis as any).SUPABASE_URL = 'https://mock.supabase.co';
-(globalThis as any).SUPABASE_PUBLISHABLE_KEY = 'mock-key';
+(globalThis as any).__SUPABASE_URL__ = 'https://mock.supabase.co';
+(globalThis as any).__SUPABASE_PUBLISHABLE_KEY__ = 'mock-key';
 
 const queryClient = new QueryClient({
   defaultOptions: {
