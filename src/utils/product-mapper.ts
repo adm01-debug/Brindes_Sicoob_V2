@@ -124,7 +124,7 @@ export function mapPromobrindToProduct(p: PromobrindProduct): Product {
     leadTimeDays: p.lead_time_days ?? null,
     priceUpdatedAt: (typeof p.price_updated_at === 'string' && p.price_updated_at.trim() !== '' ? p.price_updated_at : null) || (typeof p.updated_at === 'string' && p.updated_at.trim() !== '' ? p.updated_at : null),
     priceFreshnessThresholdDays: p.price_freshness_threshold_days ?? null,
-    variations: variations.length > 0 ? variations : undefined,
+    variations: variations.length > 0 ? variations : null,
     productVideos: p.product_videos?.length ? p.product_videos : undefined,
     kitItems: p.kit_components?.map((c: any) => ({
       id: c.id,
