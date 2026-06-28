@@ -29,15 +29,35 @@ html {
   scroll-behavior: smooth;
 }
 
-/* Better focus for accessibility */
-:focus-visible {
+/* Better focus for accessibility — WCAG 2.4.7 (AA) + 2.4.11 (AAA)
+   Anel duplo (ring + offset contrastante) garante visibilidade
+   em qualquer fundo, claro ou escuro, em todos os elementos. */
+:where(a, button, input, select, textarea, summary, [tabindex]:not([tabindex="-1"]), [role="button"], [role="link"], [role="menuitem"], [role="tab"], [role="option"]):focus-visible {
   outline: 2px solid hsl(var(--ring));
   outline-offset: 2px;
+  box-shadow: 0 0 0 4px hsl(var(--background)), 0 0 0 6px hsl(var(--ring) / 0.45);
+  border-radius: var(--radius, 0.5rem);
+  transition: box-shadow 0.15s ease, outline-offset 0.15s ease;
 }
 
 /* Hide focus when using mouse */
 :focus:not(:focus-visible) {
   outline: none;
+}
+
+/* Respeitar usuários que preferem menos movimento */
+@media (prefers-reduced-motion: reduce) {
+  :focus-visible {
+    transition: none !important;
+  }
+}
+
+/* Alto contraste forçado (Windows High Contrast Mode) */
+@media (forced-colors: active) {
+  :focus-visible {
+    outline: 3px solid CanvasText !important;
+    outline-offset: 2px !important;
+  }
 }
 
 /* Disable pull-to-refresh on mobile */
