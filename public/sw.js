@@ -70,6 +70,7 @@ self.addEventListener('fetch', (event) => {
 
   const isHtmlNavigation = request.mode === 'navigate' || request.destination === 'document';
   const isBuildAsset = /\.(?:js|css|map)$/i.test(url.pathname) || url.pathname.startsWith('/assets/');
+  const isImage = request.destination === 'image' || /\.(jpg|jpeg|png|gif|webp|svg|ico)$/i.test(url.pathname);
 
   // Nunca servir HTML/JS/CSS obsoletos do cache. Isso evita erros como
   // `ReferenceError: SUPABASE_URL is not defined` vindos de bundles antigos.
@@ -81,6 +82,24 @@ self.addEventListener('fetch', (event) => {
         }
         throw error;
       })
+    );
+    return;
+  }
+
+  if (isImage) {
+    event.respondWith(
+      caches.open(IMAGE_CACHE).then((cache) =>
+        cache.match(request).then((cachedResponse) => {
+          const refresh = fetch(request).then((networkResponse) => {
+            if (networkResponse && networkResponse.status === 200) {
+              cache.put(request, networkResponse.clone());
+            }
+            return networkResponse;
+          });
+
+          return cachedResponse || refresh.catch(() => cache.match('/placeholder.svg') || new Response('Offline', { status: 503 }));
+        })
+      )
     );
     return;
   }
@@ -184,44 +203,4 @@ async function syncQuotes() {
 }
 
 console.log('[SW] Service Worker loaded');
-
-// Cache de Imagens - Cache First com expiração e limite
-self.addEventListener('fetch', (event) => {
-  const { request } = event;
-  const url = new URL(request.url);
-
-  // Cache imagens (CDN e locais)
-  if (request.destination === 'image' || 
-      /\.(jpg|jpeg|png|gif|webp|svg|ico)$/i.test(url.pathname)) {
-    
-    // Ignorar trackers/analytics
-    if (url.hostname.includes('google-analytics') || url.hostname.includes('sentry')) return;
-
-    event.respondWith(
-      caches.open('images-cache-v1').then((cache) => {
-        return cache.match(request).then((cachedResponse) => {
-          if (cachedResponse) {
-            // Background update (Stale-While-Revalidate para imagens dinâmicas como produtos)
-            // Se a imagem for da nossa CDN ou Supabase, tentamos atualizar silenciosamente
-            if (url.hostname.includes('supabase.co') || url.hostname.includes('pub-')) {
-               fetch(request).then(networkResponse => {
-                 if (networkResponse.status === 200) cache.put(request, networkResponse);
-               }).catch(() => {});
-            }
-            return cachedResponse;
-          }
-
-          return fetch(request).then((networkResponse) => {
-            if (networkResponse && networkResponse.status === 200) {
-              cache.put(request, networkResponse.clone());
-            }
-            return networkResponse;
-          }).catch(() => {
-            return cache.match('/placeholder.svg') || new Response('Offline', { status: 503 });
-          });
-        });
-      })
-    );
-  }
-});
 
