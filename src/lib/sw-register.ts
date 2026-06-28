@@ -22,7 +22,7 @@ export async function registerServiceWorker(): Promise<void> {
       registration.addEventListener('updatefound', () => {
         const newWorker = registration.installing;
         if (newWorker) {
-        newWorker.addEventListener('statechange', () => {
+          newWorker.addEventListener('statechange', () => {
             if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
               logger.log('🔄 Nova versão do Service Worker disponível');
               newWorker.postMessage({ type: 'SKIP_WAITING' });
