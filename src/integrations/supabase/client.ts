@@ -41,6 +41,14 @@ if (!backendUrl || !backendPublishableKey) {
   );
 }
 
+export const supabaseUrl = backendUrl;
+export const supabasePublishableKey = backendPublishableKey;
+
+export function getSupabaseFunctionUrl(functionName: string, query = ''): string {
+  const normalizedQuery = query ? (query.startsWith('?') ? query : `?${query}`) : '';
+  return `${supabaseUrl}/functions/v1/${functionName}${normalizedQuery}`;
+}
+
 /**
  * Supabase client instance for Portal Sicoob.
  * Optimized for technical excellence 10/10 with enhanced performance config.

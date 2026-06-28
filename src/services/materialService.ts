@@ -1,4 +1,5 @@
 import { BaseHttpService } from "./infrastructure/BaseHttpService";
+import { getSupabaseFunctionUrl } from "@/integrations/supabase/client";
 
 // Tipos
 export interface MaterialGroup {
@@ -45,7 +46,7 @@ export interface MaterialComplete {
 // Service para chamadas à API de materiais
 class MaterialService extends BaseHttpService {
   protected getBaseUrl(): string {
-    return `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/materials-api`;
+    return getSupabaseFunctionUrl('materials-api');
   }
 
   private async callAction<T>(action: string, params: Record<string, any> = {}): Promise<T> {

@@ -1,4 +1,5 @@
 import { BaseHttpService } from "./infrastructure/BaseHttpService";
+import { getSupabaseFunctionUrl } from "@/integrations/supabase/client";
 import type {
   RamoAtividade,
   RamoAtividadeFilho,
@@ -9,7 +10,7 @@ import type {
 // Service para chamadas à API de Ramos de Atividade (banco externo)
 class RamoAtividadeService extends BaseHttpService {
   protected getBaseUrl(): string {
-    return `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/external-db-bridge`;
+    return getSupabaseFunctionUrl('external-db-bridge');
   }
 
   private async callBridge<T>(table: string, operation: string, params: Record<string, unknown> = {}): Promise<T> {

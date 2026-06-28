@@ -15,6 +15,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Flame, RefreshCw, Snowflake, Thermometer } from 'lucide-react';
+import { getSupabaseFunctionUrl, supabasePublishableKey } from '@/integrations/supabase/client';
 
 interface DiagSnapshot {
   ok: boolean;
@@ -39,11 +40,7 @@ interface DiagSnapshot {
   };
 }
 
-const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID as string | undefined;
-const backendUrl = import.meta.env.VITE_SUPABASE_URL as string | undefined;
-const backendPublishableKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string | undefined;
-const functionBaseUrl = backendUrl ?? (projectId ? `https://${projectId}.supabase.co` : '');
-const functionUrl = `${functionBaseUrl}/functions/v1/crm-db-bridge?op=diag`;
+const functionUrl = getSupabaseFunctionUrl('crm-db-bridge', 'op=diag');
 const POLL_MS = 30_000;
 
 function fmtMs(v: number | null | undefined): string {
@@ -76,13 +73,13 @@ export function ColdVsWarmCrmCard() {
     setLoading(true);
     setError(null);
     try {
-      if (!functionBaseUrl || !backendPublishableKey) {
+      if (!supabasePublishableKey) {
         throw new Error('Configuração do backend indisponível para diagnóstico.');
       }
 
       const res = await fetch(functionUrl, {
         method: 'GET',
-        headers: { apikey: backendPublishableKey },
+        headers: { apikey: supabasePublishableKey },
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const json = (await res.json()) as DiagSnapshot;
