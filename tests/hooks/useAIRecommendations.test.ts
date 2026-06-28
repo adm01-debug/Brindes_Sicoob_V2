@@ -2,6 +2,9 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { renderHook, act } from "@testing-library/react";
 
 vi.mock("@/integrations/supabase/client", () => ({
+  getSupabaseFunctionUrl: (functionName: string, query = '') =>
+    `https://test.supabase.co/functions/v1/${functionName}${query ? `?${query.replace(/^\?/, '')}` : ''}`,
+  supabasePublishableKey: 'test-key',
   supabase: {
     auth: {
       getSession: () =>

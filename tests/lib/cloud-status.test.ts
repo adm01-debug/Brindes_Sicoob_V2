@@ -3,6 +3,8 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 // Mock supabase client + pingHealth ANTES de importar o módulo testado.
 const getSessionMock = vi.fn();
 vi.mock('@/integrations/supabase/client', () => ({
+  supabaseUrl: 'https://test.supabase.co',
+  supabasePublishableKey: 'test-anon-key',
   supabase: { auth: { getSession: () => getSessionMock() } },
 }));
 

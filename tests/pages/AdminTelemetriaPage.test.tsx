@@ -15,6 +15,10 @@ const mockDelete = vi.fn();
 const mockFrom = vi.fn();
 
 vi.mock('@/integrations/supabase/client', () => ({
+  getSupabaseFunctionUrl: (functionName: string, query = '') =>
+    `https://test.supabase.co/functions/v1/${functionName}${query ? `?${query.replace(/^\?/, '')}` : ''}`,
+  supabasePublishableKey: 'test-anon-key',
+  supabaseUrl: 'https://test.supabase.co',
   supabase: {
     from: (...args: any[]) => mockFrom(...args),
   },
