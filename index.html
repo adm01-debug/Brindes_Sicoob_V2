@@ -107,13 +107,13 @@
       // identifier. Defining these globals before the module entrypoint prevents
       // a fatal ReferenceError while the new cache-safe bundle takes over.
       (function () {
-        function normalizeEnv(value, token) {
-          return value && value !== token && !value.startsWith('%VITE_') ? value : undefined;
+        function normalizeEnv(value) {
+          return value && !value.startsWith('%VITE_') ? value : undefined;
         }
 
         var runtimeConfig = {
-          url: normalizeEnv("%VITE_SUPABASE_URL%", "%VITE_SUPABASE_URL%"),
-          publishableKey: normalizeEnv("%VITE_SUPABASE_PUBLISHABLE_KEY%", "%VITE_SUPABASE_PUBLISHABLE_KEY%")
+          url: normalizeEnv("%VITE_SUPABASE_URL%"),
+          publishableKey: normalizeEnv("%VITE_SUPABASE_PUBLISHABLE_KEY%")
         };
 
         window.__PORTAL_SICOOB_RUNTIME_CONFIG__ = runtimeConfig;
