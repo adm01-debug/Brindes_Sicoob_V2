@@ -55,7 +55,7 @@ export function getSupabaseFunctionUrl(functionName: string, query = ''): string
  */
 export const supabase = createClient<Database>(backendUrl, backendPublishableKey, {
   auth: {
-    storage: localStorage,
+    storage: typeof localStorage !== 'undefined' ? localStorage : undefined,
     persistSession: true,
     autoRefreshToken: true,
     detectSessionInUrl: true,
