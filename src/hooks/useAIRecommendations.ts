@@ -9,7 +9,7 @@
  * - Tratamento específico para 429 (rate limit) e 402 (créditos)
  */
 import { useState, useCallback, useRef } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { getSupabaseFunctionUrl, supabase, supabasePublishableKey } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 // ============================================
@@ -126,12 +126,12 @@ export function useAIRecommendations() {
 
           try {
             const response = await fetch(
-              `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ai-recommendations`,
+              getSupabaseFunctionUrl('ai-recommendations'),
               {
                 method: "POST",
                 headers: {
                   "Content-Type": "application/json",
-                  apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+                  apikey: supabasePublishableKey,
                   Authorization: `Bearer ${token}`,
                 },
                 body: JSON.stringify({ client, products }),

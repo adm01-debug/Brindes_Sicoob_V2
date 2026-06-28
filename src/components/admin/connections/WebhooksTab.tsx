@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Webhook, Plus, Trash2, Copy } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { getSupabaseFunctionUrl, supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter,
@@ -36,7 +36,7 @@ export function WebhooksTab() {
   const [form, setForm] = useState({ name: "", url: "", events: [] as string[] });
   const [formIn, setFormIn] = useState({ name: "", source_system: "" });
 
-  const baseUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/webhook-inbound`;
+  const baseUrl = getSupabaseFunctionUrl('webhook-inbound');
 
   const load = async () => {
     const [{ data: o }, { data: i }] = await Promise.all([

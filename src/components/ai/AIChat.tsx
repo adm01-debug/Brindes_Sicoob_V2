@@ -13,7 +13,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent }
 import { Send, Loader2, Bot, User as UserIcon, AlertCircle, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { supabase } from "@/integrations/supabase/client";
+import { getSupabaseFunctionUrl, supabase, supabasePublishableKey } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 // ============================================
@@ -197,12 +197,12 @@ export function AIChat({
       if (!token) throw new Error("Usuário não autenticado");
 
       const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/expert-chat`,
+        getSupabaseFunctionUrl('expert-chat'),
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+            apikey: supabasePublishableKey,
             Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({
