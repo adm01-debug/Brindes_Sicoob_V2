@@ -74,7 +74,7 @@ export function useGroupPersonalization() {
     queryFn: async () => {
       if (!selectedGroup) return [];
       try {
-        const { data, error } = await untypedFrom("product_group_components")
+        const { data, error } = await untypedFrom<GroupComponent>("product_group_components")
           .select("*")
           .eq("product_group_id", selectedGroup)
           .order("sort_order");
@@ -82,7 +82,7 @@ export function useGroupPersonalization() {
           logger.warn("[Admin] product_group_components not available:", error.message);
           return [];
         }
-        return data as GroupComponent[];
+        return data ?? [];
       } catch {
         return [];
       }
@@ -96,14 +96,14 @@ export function useGroupPersonalization() {
       if (!components?.length) return [];
       try {
         const componentIds = components.map((c) => c.id);
-        const { data, error } = await untypedFrom("product_group_locations")
+        const { data, error } = await untypedFrom<GroupLocation>("product_group_locations")
           .select("*")
           .in("group_component_id", componentIds);
         if (error) {
           logger.warn("[Admin] product_group_locations not available:", error.message);
           return [];
         }
-        return data as GroupLocation[];
+        return data ?? [];
       } catch {
         return [];
       }
@@ -132,14 +132,14 @@ export function useGroupPersonalization() {
       if (!locations?.length) return [];
       try {
         const locationIds = locations.map((l) => l.id);
-        const { data, error } = await untypedFrom("product_group_location_techniques")
+        const { data, error } = await untypedFrom<GroupLocationTechnique>("product_group_location_techniques")
           .select(`*, technique:personalization_techniques(id, code, name)`)
           .in("group_location_id", locationIds);
         if (error) {
           logger.warn("[Admin] product_group_location_techniques not available:", error.message);
           return [];
         }
-        return data as GroupLocationTechnique[];
+        return data ?? [];
       } catch {
         return [];
       }
@@ -150,7 +150,7 @@ export function useGroupPersonalization() {
   // Mutations
   const addComponent = useMutation({
     mutationFn: async (data: { product_group_id: string; component_code: string; component_name: string }) => {
-      const { error } = await untypedFrom("product_group_components").insert(data);
+      const { error } = await untypedFrom<GroupComponent>("product_group_components").insert(data);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -162,7 +162,7 @@ export function useGroupPersonalization() {
 
   const updateComponent = useMutation({
     mutationFn: async ({ id, ...data }: UpdateData) => {
-      const { error } = await untypedFrom("product_group_components").update(data).eq("id", id);
+      const { error } = await untypedFrom<GroupComponent>("product_group_components").update(data).eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["group-components"] }),
@@ -171,7 +171,7 @@ export function useGroupPersonalization() {
 
   const deleteComponent = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await untypedFrom("product_group_components").delete().eq("id", id);
+      const { error } = await untypedFrom<GroupComponent>("product_group_components").delete().eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -183,7 +183,7 @@ export function useGroupPersonalization() {
 
   const addLocation = useMutation({
     mutationFn: async (data: { group_component_id: string; location_code: string; location_name: string; max_width_cm?: number; max_height_cm?: number; max_area_cm2?: number }) => {
-      const { error } = await untypedFrom("product_group_locations").insert(data);
+      const { error } = await untypedFrom<GroupLocation>("product_group_locations").insert(data);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -195,7 +195,7 @@ export function useGroupPersonalization() {
 
   const updateLocation = useMutation({
     mutationFn: async ({ id, ...data }: UpdateData) => {
-      const { error } = await untypedFrom("product_group_locations").update(data).eq("id", id);
+      const { error } = await untypedFrom<GroupLocation>("product_group_locations").update(data).eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -207,7 +207,7 @@ export function useGroupPersonalization() {
 
   const deleteLocation = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await untypedFrom("product_group_locations").delete().eq("id", id);
+      const { error } = await untypedFrom<GroupLocation>("product_group_locations").delete().eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -219,7 +219,7 @@ export function useGroupPersonalization() {
 
   const addTechnique = useMutation({
     mutationFn: async (data: { group_location_id: string; technique_id: string; max_colors?: number }) => {
-      const { error } = await untypedFrom("product_group_location_techniques").insert(data);
+      const { error } = await untypedFrom<GroupLocationTechnique>("product_group_location_techniques").insert(data);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -231,7 +231,7 @@ export function useGroupPersonalization() {
 
   const updateTechnique = useMutation({
     mutationFn: async ({ id, ...data }: UpdateData) => {
-      const { error } = await untypedFrom("product_group_location_techniques").update(data).eq("id", id);
+      const { error } = await untypedFrom<GroupLocationTechnique>("product_group_location_techniques").update(data).eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -243,7 +243,7 @@ export function useGroupPersonalization() {
 
   const deleteTechnique = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await untypedFrom("product_group_location_techniques").delete().eq("id", id);
+      const { error } = await untypedFrom<GroupLocationTechnique>("product_group_location_techniques").delete().eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -263,8 +263,9 @@ export function useGroupPersonalization() {
     const { arrayMove } = await import("@dnd-kit/sortable");
     const reordered = arrayMove(components, oldIndex, newIndex);
     for (let i = 0; i < reordered.length; i++) {
-      if (reordered[i].sort_order !== i) {
-        await untypedFrom("product_group_components").update({ sort_order: i }).eq("id", reordered[i].id);
+      const item = reordered[i];
+      if (item && item.sort_order !== i) {
+        await untypedFrom<GroupComponent>("product_group_components").update({ sort_order: i }).eq("id", item.id);
       }
     }
     queryClient.invalidateQueries({ queryKey: ["group-components"] });
