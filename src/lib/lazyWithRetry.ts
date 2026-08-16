@@ -14,14 +14,14 @@ import { attemptChunkRecovery, isChunkLoadError } from "@/lib/chunk-recovery";
  *      Se já estourou o limite de reloads na janela, propaga o erro para
  *      a Error Boundary exibir tela estável (evita loop = tela branca).
  */
-export function lazyWithRetry<P>(
-  componentImport: () => Promise<{ default: ComponentType<P> }>,
+export function lazyWithRetry<M extends { default: ComponentType<never> }>(
+  componentImport: () => Promise<M>,
   retries = 3,
   interval = 1000
-): React.LazyExoticComponent<ComponentType<P>> {
+): React.LazyExoticComponent<M["default"]> {
   type LoadedModule = Awaited<ReturnType<typeof componentImport>>;
 
-  return lazy<ComponentType<P>>(async () => {
+  return lazy<M["default"]>(async () => {
     let lastError: Error | undefined;
 
     for (let i = 0; i < retries; i++) {

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useOrderAudit } from "@/hooks/orders/extensions";
+import { useOrderAudit, OrderAuditEvent } from "@/hooks/orders/extensions";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { History, User, Package, FileText, CheckCircle2, Truck, AlertCircle, ChevronLeft, ChevronRight, Filter } from "lucide-react";
@@ -22,7 +22,7 @@ export const OrderAuditTimeline = ({ orderId }: OrderAuditTimelineProps) => {
   const [filters, setFilters] = useState({ event_type: 'all', startDate: '', endDate: '', search: '' });
   const { auditEvents, totalCount, isLoading, page, setPage, pageSize } = useOrderAudit(orderId, filters);
 
-  const getEventIcon = (type: string, event: any) => {
+  const getEventIcon = (type: string, event: OrderAuditEvent) => {
     if (type === 'status_change') {
       const status = event.new_value?.fulfillment_status;
       const config = getStatusConfig(status);
@@ -37,7 +37,7 @@ export const OrderAuditTimeline = ({ orderId }: OrderAuditTimelineProps) => {
     }
   };
 
-  const getEventLabel = (event: any) => {
+  const getEventLabel = (event: OrderAuditEvent) => {
     if (event.event_type === 'status_change') {
       const newStatus = event.new_value?.fulfillment_status;
       return `Status alterado para: ${newStatus}`;
@@ -141,7 +141,7 @@ export const OrderAuditTimeline = ({ orderId }: OrderAuditTimelineProps) => {
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-semibold">{getEventLabel(event)}</span>
                   <span className="text-xs text-muted-foreground">
-                    {format(new Date(event.created_at), "dd/MM/yyyy HH:mm", { locale: ptBR })}
+                    {format(new Date(event.created_at ?? event.occurred_at ?? Date.now()), "dd/MM/yyyy HH:mm", { locale: ptBR })}
                   </span>
                   {event.new_value?.sla_status && (
                     <SLABadge status={event.new_value.sla_status} className="scale-75 origin-left" />
@@ -179,7 +179,7 @@ export const OrderAuditTimeline = ({ orderId }: OrderAuditTimelineProps) => {
               <Button 
                 variant="outline" 
                 size="sm" 
-                onClick={() => setPage(p => Math.max(1, p - 1))}
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
                 disabled={page === 1}
               >
                 <ChevronLeft className="h-4 w-4" />
@@ -188,7 +188,7 @@ export const OrderAuditTimeline = ({ orderId }: OrderAuditTimelineProps) => {
               <Button 
                 variant="outline" 
                 size="sm" 
-                onClick={() => setPage(p => p + 1)}
+                onClick={() => setPage((p) => p + 1)}
                 disabled={page * pageSize >= totalCount}
               >
                 <ChevronRight className="h-4 w-4" />

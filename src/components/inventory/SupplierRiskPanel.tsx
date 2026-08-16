@@ -106,7 +106,7 @@ export function SupplierRiskPanel({ products }: SupplierRiskPanelProps) {
     }
     setSelectedProductId(prev => {
       if (prev && filteredProducts.some(p => p.id === prev)) return prev;
-      return filteredProducts[0].id;
+      return filteredProducts[0]?.id ?? null;
     });
   }, [filteredProducts]);
 
@@ -254,6 +254,7 @@ export function SupplierRiskPanel({ products }: SupplierRiskPanelProps) {
                 <div style={{ height: `${virtualizer.getTotalSize()}px`, width: '100%', position: 'relative' }}>
                   {virtualizer.getVirtualItems().map(virtualRow => {
                     const product = filteredProducts[virtualRow.index];
+                    if (!product) return null;
                     return (
                       <div
                         key={product.id}

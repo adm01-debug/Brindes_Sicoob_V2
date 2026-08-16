@@ -77,7 +77,9 @@ export function checkItemFits(
   const boxDims = [box.internalWidth, box.internalHeight, box.internalDepth].sort((a, b) => a - b);
 
   // Se as dimensões ordenadas do item excedem as da caixa, não cabe em nenhuma orientação
-  const fitsAnyOrientation = itemDims[0] <= boxDims[0] && itemDims[1] <= boxDims[1] && itemDims[2] <= boxDims[2];
+  const [itemD0, itemD1, itemD2] = itemDims;
+  const [boxD0, boxD1, boxD2] = boxDims;
+  const fitsAnyOrientation = (itemD0 ?? 0) <= (boxD0 ?? 0) && (itemD1 ?? 0) <= (boxD1 ?? 0) && (itemD2 ?? 0) <= (boxD2 ?? 0);
 
   if (!fitsAnyOrientation) {
     return {
@@ -182,10 +184,11 @@ export function parseDimensionsString(
   const match = normalized.match(/(\d+(?:\.\d+)?)[x×](\d+(?:\.\d+)?)[x×](\d+(?:\.\d+)?)/);
   
   if (match) {
+    const [, w, h, d] = match;
     return {
-      width: parseFloat(match[1]),
-      height: parseFloat(match[2]),
-      depth: parseFloat(match[3]),
+      width: parseFloat(w ?? "0"),
+      height: parseFloat(h ?? "0"),
+      depth: parseFloat(d ?? "0"),
     };
   }
 

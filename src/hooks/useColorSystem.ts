@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { untypedFrom } from '@/lib/supabase-untyped';
 import { logger } from "@/lib/logger";
 
 // =====================================================
@@ -108,8 +109,7 @@ export function useColorSystem() {
       const groups = await fetchExternalColors();
       
       // Nuances são mantidas localmente (acabamentos como Fosco, Brilhante, etc.)
-      const { data: nuances, error: nuancesError } = await supabase
-        .from('color_nuances')
+      const { data: nuances, error: nuancesError } = await untypedFrom('color_nuances')
         .select('id, name, slug')
         .eq('is_active', true)
         .order('sort_order');
@@ -120,7 +120,7 @@ export function useColorSystem() {
 
       return {
         groups,
-        nuances: nuances || []
+        nuances: (nuances || []) as ColorNuance[]
       };
     },
     staleTime: 60 * 60 * 1000, // 1 hora
@@ -155,8 +155,7 @@ export function useColorNuances() {
   return useQuery<ColorNuance[]>({
     queryKey: ['color-nuances'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('color_nuances')
+      const { data, error } = await untypedFrom('color_nuances')
         .select('id, name, slug')
         .eq('is_active', true)
         .order('sort_order');
@@ -165,7 +164,7 @@ export function useColorNuances() {
         throw new Error(`Falha ao carregar nuances: ${error.message}`);
       }
 
-      return data || [];
+      return (data || []) as ColorNuance[];
     },
     staleTime: 60 * 60 * 1000,
   });

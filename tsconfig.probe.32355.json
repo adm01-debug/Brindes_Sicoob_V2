@@ -1,0 +1,7 @@
+{
+  "extends": "./tsconfig.app.json",
+  "include": [
+    "src/components/filters/preset-utils.ts",
+    "src/lib/kit-builder/volume-calculator.ts"
+  ]
+}
