@@ -53,7 +53,7 @@ export function QuickTestLogin() {
   const [integrityStatus, setIntegrityStatus] = useState<Record<string, { isValid: boolean; reason?: string }>>({});
   const [isValidating, setIsValidating] = useState(true);
 
-  const checkIntegrity = async () => {
+  const checkIntegrity = async (attempt = 0) => {
     setIsValidating(true);
     try {
       const { data, error } = await supabase.functions.invoke("auth-integrity-check", {
@@ -62,15 +62,22 @@ export function QuickTestLogin() {
       if (error) throw error;
       setIntegrityStatus(data || {});
     } catch (err) {
-      console.error("Erro ao validar integridade:", err);
+      // Indisponibilidade temporária do backend (ex.: 521/503 no gateway):
+      // tenta novamente com backoff antes de desistir silenciosamente.
+      if (attempt < 2) {
+        setTimeout(() => { void checkIntegrity(attempt + 1); }, 2000 * (attempt + 1));
+        return;
+      }
+      console.warn("Validação de integridade indisponível no momento:", err);
     } finally {
       setIsValidating(false);
     }
   };
 
   useEffect(() => {
-    checkIntegrity();
+    void checkIntegrity();
   }, []);
+
 
   const runSeed = async (silent = false): Promise<boolean> => {
     setIsSeeding(true);
