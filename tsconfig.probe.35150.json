@@ -1,0 +1,7 @@
+{
+  "extends": "./tsconfig.app.json",
+  "include": [
+    "src/lib/supabase-untyped.ts",
+    "src/hooks/useColorSystem.ts"
+  ]
+}

@@ -109,7 +109,7 @@ export function useColorSystem() {
       const groups = await fetchExternalColors();
       
       // Nuances são mantidas localmente (acabamentos como Fosco, Brilhante, etc.)
-      const { data: nuances, error: nuancesError } = await untypedFrom('color_nuances')
+      const { data: nuances, error: nuancesError } = await untypedFrom<ColorNuance>('color_nuances')
         .select('id, name, slug')
         .eq('is_active', true)
         .order('sort_order');
@@ -120,7 +120,7 @@ export function useColorSystem() {
 
       return {
         groups,
-        nuances: (nuances || []) as ColorNuance[]
+        nuances: nuances || []
       };
     },
     staleTime: 60 * 60 * 1000, // 1 hora
@@ -155,7 +155,7 @@ export function useColorNuances() {
   return useQuery<ColorNuance[]>({
     queryKey: ['color-nuances'],
     queryFn: async () => {
-      const { data, error } = await untypedFrom('color_nuances')
+      const { data, error } = await untypedFrom<ColorNuance>('color_nuances')
         .select('id, name, slug')
         .eq('is_active', true)
         .order('sort_order');
@@ -164,7 +164,7 @@ export function useColorNuances() {
         throw new Error(`Falha ao carregar nuances: ${error.message}`);
       }
 
-      return (data || []) as ColorNuance[];
+      return data || [];
     },
     staleTime: 60 * 60 * 1000,
   });

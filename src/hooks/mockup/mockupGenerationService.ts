@@ -3,6 +3,7 @@
  * Extracted from useMockupGenerator to reduce hook complexity.
  */
 import { supabase } from "@/integrations/supabase/client";
+import { untypedFrom } from "@/lib/supabase-untyped";
 import { uploadLogoToStorage, downloadImageAsPdfFromUrl } from "@/lib/mockup-storage";
 import { showMockupSuccessToast } from "@/components/mockup/MockupSuccessToast";
 import { toast } from "sonner";
@@ -117,13 +118,13 @@ export async function saveMockupToDb(params: SaveMockupParams): Promise<string |
     // Validate FK targets
     let safeProductId: string | null = null;
     if (product.id) {
-      const { data: productRow } = await supabase.from("products" as never).select("id").eq("id", product.id).maybeSingle();
+      const { data: productRow } = await untypedFrom("products").select("id").eq("id", product.id).maybeSingle();
       if (productRow) safeProductId = product.id;
     }
 
     let safeTechniqueId: string | null = null;
     if (technique.id) {
-      const { data: techRow } = await supabase.from("personalization_techniques" as never).select("id").eq("id", technique.id).maybeSingle();
+      const { data: techRow } = await untypedFrom("personalization_techniques").select("id").eq("id", technique.id).maybeSingle();
       if (techRow) safeTechniqueId = technique.id;
     }
 
