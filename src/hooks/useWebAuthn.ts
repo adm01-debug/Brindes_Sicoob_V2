@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { untypedFrom } from "@/lib/supabase-untyped";
 import { useToast } from "@/hooks/use-toast";
 
 interface Passkey {
@@ -38,8 +38,8 @@ function base64urlToArrayBuffer(base64url: string): ArrayBuffer {
   return bytes.buffer;
 }
 
-function generateChallenge(): Uint8Array {
-  return crypto.getRandomValues(new Uint8Array(32));
+function generateChallenge(): BufferSource {
+  return crypto.getRandomValues(new Uint8Array(32)) as BufferSource;
 }
 
 function getDeviceName(): string {
@@ -77,15 +77,15 @@ export function useWebAuthn() {
   // Fetch user's registered passkeys
   const fetchPasskeys = useCallback(async (userId: string) => {
     try {
-      const { data, error } = await supabase
-        .from("user_passkeys")
+      const { data, error } = await untypedFrom<Passkey>("user_passkeys")
         .select("*")
         .eq("user_id", userId)
         .order("created_at", { ascending: false });
 
       if (error) throw error;
-      setPasskeys((data as Passkey[]) || []);
-      return data as Passkey[];
+      const rows = data || [];
+      setPasskeys(rows);
+      return rows;
     } catch (error) {
       console.error("Error fetching passkeys:", error);
       return [];
@@ -127,7 +127,7 @@ export function useWebAuthn() {
             user: {
               id: new TextEncoder().encode(userId),
               name: userEmail,
-              displayName: userEmail.split("@")[0],
+              displayName: userEmail.split("@")[0] ?? userEmail,
             },
             pubKeyCredParams: [
               { alg: -7, type: "public-key" }, // ES256
@@ -158,7 +158,7 @@ export function useWebAuthn() {
         const publicKey = arrayBufferToBase64url(response.getPublicKey()!);
         const transports = response.getTransports?.() || [];
 
-        const { error } = await supabase.from("user_passkeys").insert({
+        const { error } = await untypedFrom<Passkey>("user_passkeys").insert({
           user_id: userId,
           credential_id: credentialId,
           public_key: publicKey,
@@ -244,8 +244,7 @@ export function useWebAuthn() {
         const credentialId = arrayBufferToBase64url(credential.rawId);
 
         // Find the passkey in database
-        const { data: passkey, error: findError } = await supabase
-          .from("user_passkeys")
+        const { data: passkey, error: findError } = await untypedFrom<Passkey>("user_passkeys")
           .select("*")
           .eq("credential_id", credentialId)
           .single();
@@ -255,8 +254,7 @@ export function useWebAuthn() {
         }
 
         // Update last used
-        await supabase
-          .from("user_passkeys")
+        await untypedFrom<Passkey>("user_passkeys")
           .update({ 
             last_used_at: new Date().toISOString(),
             counter: (passkey.counter || 0) + 1 
@@ -293,8 +291,7 @@ export function useWebAuthn() {
   const deletePasskey = useCallback(
     async (passkeyId: string): Promise<boolean> => {
       try {
-        const { error } = await supabase
-          .from("user_passkeys")
+        const { error } = await untypedFrom<Passkey>("user_passkeys")
           .delete()
           .eq("id", passkeyId);
 
@@ -324,13 +321,12 @@ export function useWebAuthn() {
   const hasPasskeys = useCallback(
     async (userId: string): Promise<boolean> => {
       try {
-        const { count, error } = await supabase
-          .from("user_passkeys")
-          .select("*", { count: "exact", head: true })
+        const { data, error } = await untypedFrom<Passkey>("user_passkeys")
+          .select("*")
           .eq("user_id", userId);
 
         if (error) throw error;
-        return (count || 0) > 0;
+        return (data || []).length > 0;
       } catch {
         return false;
       }
