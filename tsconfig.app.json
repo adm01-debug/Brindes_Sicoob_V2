@@ -22,7 +22,7 @@
     "noEmit": true,
     "noFallthroughCasesInSwitch": true,
     "noImplicitAny": true,
-    "noUncheckedIndexedAccess": false,
+    "noUncheckedIndexedAccess": true,
     "noUnusedLocals": false,
     "noUnusedParameters": false,
     "paths": {
