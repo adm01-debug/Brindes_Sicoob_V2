@@ -72,6 +72,7 @@ export interface PromobrindProduct {
   tags?: Record<string, unknown> | null;
   price_updated_at?: string | null;
   price_freshness_threshold_days?: number | null;
+  lead_time_days?: number | null;
   kit_components?: Array<{
     id: string; component_name: string | null; component_code: string | null;
     component_product_id: string | null; component_sku: string | null;

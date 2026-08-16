@@ -84,6 +84,23 @@ export interface Product {
   priceUpdatedAt?: string | null;
   /** Per-product override (in days) for the "stale price" alert threshold. Default = 60. */
   priceFreshnessThresholdDays?: number | null;
+  /** Supplier lead time in days (SSOT: external DB). */
+  leadTimeDays?: number | null;
+  /** Product-level videos (Cloudflare Stream), when available. */
+  productVideos?: ProductVideo[];
+}
+
+export interface ProductVideo {
+  id: string;
+  url_stream: string | null;
+  url_hls: string | null;
+  url_thumbnail: string | null;
+  url_original: string | null;
+  source_youtube_id: string | null;
+  video_type: string | null;
+  display_order: number;
+  is_primary: boolean;
+  title: string | null;
 }
 
 export interface KitComponent {

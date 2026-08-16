@@ -3,7 +3,7 @@
  * 
  * Converts raw PromobrindProduct to the internal Product format.
  */
-import type { Product } from '@/types/product';
+import type { Product } from '@/types/product-catalog';
 import type { PromobrindProduct } from '@/lib/external-db';
 import { getProductImageUrl, getProductPrice, getProductStock } from '@/lib/external-db';
 import { normalizeColors } from '@/utils/product-colors';
@@ -32,8 +32,22 @@ function parseTagList(value: unknown): string[] {
   return [];
 }
 
-function normalizeMarketingTags(tags: unknown): string[] {
-  return parseTagList(tags);
+/**
+ * Converte o JSONB `tags` do banco externo na estrutura de marketing esperada
+ * pela UI. Tolera ausência de chaves e formatos legados (array plano ou string).
+ */
+function normalizeMarketingTags(tags: unknown): Product['tags'] {
+  const source = (typeof tags === 'object' && tags !== null && !Array.isArray(tags))
+    ? (tags as Record<string, unknown>)
+    : {};
+
+  return {
+    publicoAlvo: parseTagList(source.publicoAlvo ?? source.publico_alvo),
+    datasComemorativas: parseTagList(source.datasComemorativas ?? source.datas_comemorativas),
+    endomarketing: parseTagList(source.endomarketing),
+    ramo: parseTagList(source.ramo),
+    nicho: parseTagList(source.nicho),
+  };
 }
 
 export function mapPromobrindToProduct(p: PromobrindProduct): Product {
