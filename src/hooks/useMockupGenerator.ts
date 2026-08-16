@@ -260,7 +260,7 @@ export function useMockupGenerator() {
         toast.error("Erro ao carregar técnicas. Tente recarregar a página.");
         return;
       }
-      const techniquesResObj = (techniquesRes ?? {}) as { data?: { records?: unknown[] }; records?: unknown[] };
+      const techniquesResObj = (techniquesRes ?? {}) as { data?: { records?: Record<string, unknown>[] }; records?: Record<string, unknown>[] };
       const records = adaptTabelaPrecoRows(techniquesResObj.data?.records || techniquesResObj.records || []);
       const techniquesData = records.map((r) => ({
         id: r.id,
