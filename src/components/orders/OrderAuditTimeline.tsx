@@ -22,8 +22,8 @@ export function OrderAuditTimeline({ orderId }: OrderAuditTimelineProps) {
   if (isLoading && page === 1) return <Card className="h-32 flex items-center justify-center"><Loader2 className="h-6 w-6 animate-spin mr-2" /> Carregando histórico...</Card>;
 
   const sortedEvents = events ? [...events].sort((a, b) => {
-    const dateA = new Date(a.created_at).getTime();
-    const dateB = new Date(b.created_at).getTime();
+    const dateA = new Date(a.created_at ?? 0).getTime();
+    const dateB = new Date(b.created_at ?? 0).getTime();
     return sortOrder === "asc" ? dateA - dateB : dateB - dateA;
   }) : [];
 
@@ -103,22 +103,28 @@ export function OrderAuditTimeline({ orderId }: OrderAuditTimelineProps) {
                     )}
                   </div>
                   <span className="text-[10px] text-muted-foreground whitespace-nowrap">
-                    {format(new Date(event.created_at), "dd/MM HH:mm", { locale: ptBR })}
+                    {format(new Date(event.created_at ?? 0), "dd/MM HH:mm", { locale: ptBR })}
                   </span>
                 </div>
                 
-                {event.metadata && typeof event.metadata === 'object' && Object.keys(event.metadata).length > 0 && (
-                   <div className="mt-1 flex flex-wrap items-center gap-1 text-[11px] text-muted-foreground">
-                     {event.metadata.old_status && (
-                       <>
-                         <Badge variant="outline" className="text-[10px] font-normal">{event.metadata.old_status}</Badge>
-                         <ArrowRight className="h-3 w-3" />
-                       </>
-                     )}
-                     {event.metadata.new_status && <Badge variant="secondary" className="text-[10px]">{event.metadata.new_status}</Badge>}
-                     {event.metadata.tracking_number && <Badge variant="outline" className="text-[10px]">Rastreador: {event.metadata.tracking_number}</Badge>}
-                   </div>
-                )}
+                {event.metadata && typeof event.metadata === 'object' && Object.keys(event.metadata).length > 0 && (() => {
+                   const metadata = event.metadata as Record<string, unknown>;
+                   const oldStatus = typeof metadata.old_status === 'string' ? metadata.old_status : null;
+                   const newStatus = typeof metadata.new_status === 'string' ? metadata.new_status : null;
+                   const trackingNumber = typeof metadata.tracking_number === 'string' ? metadata.tracking_number : null;
+                   return (
+                     <div className="mt-1 flex flex-wrap items-center gap-1 text-[11px] text-muted-foreground">
+                       {oldStatus && (
+                         <>
+                           <Badge variant="outline" className="text-[10px] font-normal">{oldStatus}</Badge>
+                           <ArrowRight className="h-3 w-3" />
+                         </>
+                       )}
+                       {newStatus && <Badge variant="secondary" className="text-[10px]">{newStatus}</Badge>}
+                       {trackingNumber && <Badge variant="outline" className="text-[10px]">Rastreador: {trackingNumber}</Badge>}
+                     </div>
+                   );
+                })()}
                 
                 {event.observations && (
                   <p className="mt-1 text-[11px] text-muted-foreground italic">

@@ -134,6 +134,7 @@ export function AdminTemplatesManager({ onEditTemplate }: AdminTemplatesManagerP
       const { id, ...rest } = source;
       const { error } = await supabase.from("quote_templates").insert({
         ...rest,
+        items_data: rest.items_data ? JSON.parse(JSON.stringify(rest.items_data)) : null,
         created_by: user.id,
         seller_id: targetSellerId,
       });
