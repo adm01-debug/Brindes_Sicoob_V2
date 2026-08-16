@@ -12,6 +12,7 @@ interface Passkey {
   transports: string[] | null;
   created_at: string;
   last_used_at: string | null;
+  [key: string]: unknown;
 }
 
 // Helper functions for base64url encoding/decoding
