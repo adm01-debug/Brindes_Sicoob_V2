@@ -27,7 +27,8 @@ export function useDuplicateEntity(tableName: TableName, queryKey: string[]) {
 
   return useMutation({
     mutationFn: async (id: string) => {
-      const table = supabase.from(tableName) as GenericTableClient;
+      const rawTable: unknown = supabase.from(tableName);
+      const table = rawTable as GenericTableClient;
 
       const { data: entity, error: fetchError } = await table
         .select("*")
