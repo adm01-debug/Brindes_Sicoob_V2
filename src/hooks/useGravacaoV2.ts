@@ -45,7 +45,7 @@ export function useProductPrintAreas(productId: string | null) {
         const techniques: { id: string; nome: string; codigo: string }[] = [];
         for (const tid of (area.allowed_technique_ids || [])) {
           const tech = techById.get(tid);
-          if (tech) techniques.push({ id: tech.id, nome: tech.nome, codigo: tech.codigo_curto || tech.codigo_tabela || '' });
+          if (tech) techniques.push({ id: String(tech.id ?? ''), nome: String(tech.nome ?? ''), codigo: String(tech.codigo_curto ?? tech.codigo_tabela ?? '') });
         }
         return {
           area_id: area.id,
@@ -117,39 +117,49 @@ export function useCustomizationPriceLegacy() {
       );
       if (!rawResult?.success) { setLoading(false); return null; }
 
+      const asRecord = (value: unknown): Record<string, unknown> =>
+        (value && typeof value === 'object') ? (value as Record<string, unknown>) : {};
+      const area = asRecord(rawResult.area);
+      const faixa = asRecord(rawResult.faixa);
+      const tabela = asRecord(rawResult.tabela);
+      const parametros = asRecord(rawResult.parametros);
+      const custos = asRecord(rawResult.custos);
+      const precos = asRecord(rawResult.precos);
+      const tabelaCodigo = (tabela.codigo_tabela as string | undefined) || '';
+
       const result: CustomizationPriceV2 = {
         success: true,
-        area_id: rawResult.area?.id || areaId,
-        area_code: rawResult.area?.code || '',
-        area_name: rawResult.area?.name || '',
-        area_order: rawResult.faixa?.ordem || 0,
-        tabela_id: rawResult.tabela?.id || '',
-        tabela_codigo: rawResult.tabela?.codigo_tabela || '',
-        tabela_codigo_curto: rawResult.tabela?.codigo_tabela?.split('-')[0] || '',
-        technique: rawResult.tabela?.nome || '',
-        codigo_orcamento: rawResult.codigo_orcamento || '',
-        quantity: rawResult.parametros?.quantidade || quantidade,
-        num_cores: rawResult.parametros?.num_cores || numCores,
-        tier_used: rawResult.faixa?.ordem || 0,
-        tier_min_qty: rawResult.faixa?.quantidade_minima || 0,
-        tier_max_qty: rawResult.faixa?.quantidade_maxima || 0,
-        cost_base_unit: rawResult.custos?.custo_base_unitario || 0,
-        cost_unit_total: rawResult.custos?.custo_unitario_total || 0,
-        cost_setup: rawResult.custos?.custo_setup_base || 0,
-        cost_total: (rawResult.custos?.custo_unitario_total || 0) * quantidade,
-        markup_percent: rawResult.precos?.markup_percent || 0,
+        area_id: (area.id as string | undefined) || areaId,
+        area_code: (area.code as string | undefined) || '',
+        area_name: (area.name as string | undefined) || '',
+        area_order: (faixa.ordem as number | undefined) || 0,
+        tabela_id: (tabela.id as string | undefined) || '',
+        tabela_codigo: tabelaCodigo,
+        tabela_codigo_curto: tabelaCodigo.split('-')[0] || '',
+        technique: (tabela.nome as string | undefined) || '',
+        codigo_orcamento: (rawResult.codigo_orcamento as string | undefined) || '',
+        quantity: (parametros.quantidade as number | undefined) || quantidade,
+        num_cores: (parametros.num_cores as number | undefined) || numCores,
+        tier_used: (faixa.ordem as number | undefined) || 0,
+        tier_min_qty: (faixa.quantidade_minima as number | undefined) || 0,
+        tier_max_qty: (faixa.quantidade_maxima as number | undefined) || 0,
+        cost_base_unit: (custos.custo_base_unitario as number | undefined) || 0,
+        cost_unit_total: (custos.custo_unitario_total as number | undefined) || 0,
+        cost_setup: (custos.custo_setup_base as number | undefined) || 0,
+        cost_total: ((custos.custo_unitario_total as number | undefined) || 0) * quantidade,
+        markup_percent: (precos.markup_percent as number | undefined) || 0,
         preco_minimo_unitario: 0,
-        unit_price: rawResult.precos?.preco_unitario_final || 0,
-        subtotal_pecas: rawResult.precos?.subtotal_pecas || 0,
-        faturamento_minimo_gravacao: rawResult.precos?.faturamento_minimo_gravacao || 0,
-        minimum_applied: rawResult.precos?.aplica_minimo || false,
-        total_price: rawResult.precos?.total_final || 0,
-        margin_percent: rawResult.precos?.markup_percent || 0,
-        price_by_color: rawResult.tabela?.cobra_por_cor || false,
+        unit_price: (precos.preco_unitario_final as number | undefined) || 0,
+        subtotal_pecas: (precos.subtotal_pecas as number | undefined) || 0,
+        faturamento_minimo_gravacao: (precos.faturamento_minimo_gravacao as number | undefined) || 0,
+        minimum_applied: (precos.aplica_minimo as boolean | undefined) || false,
+        total_price: (precos.total_final as number | undefined) || 0,
+        margin_percent: (precos.markup_percent as number | undefined) || 0,
+        price_by_color: (tabela.cobra_por_cor as boolean | undefined) || false,
         setup_by_color: false,
-        production_days: rawResult.faixa?.prazo_dias ?? null,
-        largura_max_tecnica: rawResult.area?.max_width ?? null,
-        altura_max_tecnica: rawResult.area?.max_height ?? null,
+        production_days: (faixa.prazo_dias as number | null | undefined) ?? null,
+        largura_max_tecnica: (area.max_width as number | null | undefined) ?? null,
+        altura_max_tecnica: (area.max_height as number | null | undefined) ?? null,
       };
       setLoading(false);
       return result;
@@ -179,7 +189,7 @@ export function useTabelaPrecoPorCodigo(codigo: string | null) {
         filters: { codigo },
         limit: 1,
       });
-      return result.records[0] || null;
+      return result.records?.[0] || null;
     },
     enabled: !!codigo,
     staleTime: 5 * 60 * 1000,

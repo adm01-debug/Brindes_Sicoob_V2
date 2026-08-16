@@ -15,7 +15,7 @@ import {
   CollapsibleTrigger,
 } from '@/components/ui/collapsible';
 import { cn } from '@/lib/utils';
-import { useColorSystem, ColorGroup, ColorNuance, isLightColor } from '@/hooks/useColorSystem';
+import { useColorSystem, ColorGroup, ColorNuance, ColorFilters, isLightColor } from '@/hooks/useColorSystem';
 
 // =====================================================
 // TIPOS
@@ -109,7 +109,8 @@ export function ColorGroupFilter({
   showVariations = true,
   className,
 }: ColorGroupFilterProps) {
-  const { data: colorData, isLoading } = useColorSystem();
+  const { data: colorDataRaw, isLoading } = useColorSystem();
+  const colorData = colorDataRaw as ColorFilters | undefined;
   const [isOpen, setIsOpen] = useState(false);
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
 
@@ -438,7 +439,8 @@ interface ColorSwatchBarProps {
 }
 
 export function ColorSwatchBar({ selection, onChange, className }: ColorSwatchBarProps) {
-  const { data: colorData, isLoading } = useColorSystem();
+  const { data: colorDataRaw, isLoading } = useColorSystem();
+  const colorData = colorDataRaw as ColorFilters | undefined;
 
   const toggleGroup = (slug: string) => {
     const newGroups = selection.groups.includes(slug)

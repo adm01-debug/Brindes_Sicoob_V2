@@ -98,10 +98,13 @@ export function useSpeechRecognition({
 
       for (let i = event.resultIndex; i < event.results.length; i++) {
         const result = event.results[i];
+        if (!result) continue;
+        const alt = result[0];
+        if (!alt) continue;
         if (result.isFinal) {
-          finalTranscript += result[0].transcript;
+          finalTranscript += alt.transcript;
         } else {
-          interimTranscript += result[0].transcript;
+          interimTranscript += alt.transcript;
         }
       }
 

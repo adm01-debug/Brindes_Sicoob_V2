@@ -94,6 +94,8 @@ export interface Quote {
   rejection_notes?: string;
   approved_at?: string;
   approved_by?: string;
+  approved_pdf_url?: string;
+  tags?: string[];
 }
 
 export interface PersonalizationTechnique {

@@ -25,27 +25,7 @@ import { MockupCompareDialog } from "./MockupCompareDialog";
 import { MockupLightbox } from "./MockupLightbox";
 import { ShareMenu } from "./ShareMenu";
 
-interface GeneratedMockup {
-  id: string;
-  product_id: string | null;
-  product_name: string;
-  product_sku: string | null;
-  technique_id: string | null;
-  technique_name: string;
-  mockup_url: string;
-  layout_url: string | null;
-  logo_url: string;
-  position_x: number | null;
-  position_y: number | null;
-  logo_width_cm: number | null;
-  logo_height_cm: number | null;
-  location_name: string | null;
-  colors_count: number | null;
-  created_at: string;
-  client_id: string | null;
-  client_name: string | null;
-  annotations: any | null;
-}
+import type { GeneratedMockup } from "@/hooks/mockup/mockupGenerationService";
 
 interface Technique { id: string; name: string; code: string | null; }
 interface Client { id: string; name: string; }
@@ -78,7 +58,7 @@ export function MockupHistoryPanel({
   const [gridColumns, setGridColumns] = useState<ColumnCount>(() => getDefaultColumns());
   const [lightboxMockup, setLightboxMockup] = useState<GeneratedMockup | null>(null);
 
-  const handleSetViewMode = (mode: "grid" | "list") => { setViewMode(mode); setCurrentPage(1); };
+  const handleSetViewMode = (mode: "grid" | "list" | "table") => { setViewMode(mode as "grid" | "list"); setCurrentPage(1); };
   const toggleCompareSelection = (id: string) => {
     setSelectedForCompare(prev => {
       const next = new Set(prev);

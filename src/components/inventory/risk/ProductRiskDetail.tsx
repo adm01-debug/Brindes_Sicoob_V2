@@ -39,6 +39,7 @@ import {
   aggregateDailySummaryByDate,
   getActiveFlags,
   type IntelligenceFlag,
+  type ProductIntelligenceData,
 } from "@/hooks/useStockHistory";
 import {
   safeVelocityTrend,
@@ -115,7 +116,7 @@ export function ProductRiskDetail({ productId, productName, productSku }: Produc
   }, [summaries, days, hasData, mockChartData]);
 
   // #9 fix: use mockIntel in demo mode (was `intelligence ?? null`)
-  const effectiveIntelligence = intelligence ?? (isDemo ? mockIntel : null);
+  const effectiveIntelligence: ProductIntelligenceData | MockIntelligenceData | null = intelligence ?? (isDemo ? mockIntel : null);
 
   const bestVelocity = velocity?.length
     ? velocity.reduce((best, v) =>

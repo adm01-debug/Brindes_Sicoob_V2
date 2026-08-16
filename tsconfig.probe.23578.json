@@ -1,0 +1,11 @@
+{
+  "extends": "./tsconfig.app.json",
+  "include": [
+    "src/components/admin/personalization/GroupInheritance.tsx",
+    "src/components/notifications/badge-stats/useNotificationsMetricsPanel.ts",
+    "src/components/products/FutureStockModal.tsx",
+    "src/hooks/useProductIntelligenceBadges.ts",
+    "src/pages/MockupGenerator.tsx",
+    "src/utils/laser-logo-processor.ts"
+  ]
+}

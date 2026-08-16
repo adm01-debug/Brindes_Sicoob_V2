@@ -1,0 +1,7 @@
+{
+  "extends": "./tsconfig.app.json",
+  "include": [
+    "src/lib/stock-chart-utils.ts",
+    "src/pages/sicoob/orders/OrdersKanbanPage.tsx"
+  ]
+}

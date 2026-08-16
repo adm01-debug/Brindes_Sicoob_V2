@@ -133,9 +133,10 @@ export function useSupplierFiscalData(productId: string | undefined, supplierId:
       let vss: VSSRecord | null = null;
       let matchedVariantId: string | null = null;
 
-      if (variantsResult.records.length) {
+      const variantRecords = variantsResult.records ?? [];
+      if (variantRecords.length) {
         // 2. Get variant_supplier_sources for this supplier + product's variants
-        const variantIds = variantsResult.records.map(v => v.id);
+        const variantIds = variantRecords.map(v => v.id);
         
         for (const variantId of variantIds.slice(0, 5)) {
           const vssResult = await invokeExternalDb<VSSRecord>({
@@ -145,16 +146,18 @@ export function useSupplierFiscalData(productId: string | undefined, supplierId:
             filters: { supplier_id: supplierId, variant_id: variantId },
             limit: 1,
           });
-          if (vssResult.records.length) {
-            vss = vssResult.records[0];
+          const vssRecord = vssResult.records?.[0];
+          if (vssRecord) {
+            vss = vssRecord;
             matchedVariantId = variantId;
             break;
           }
         }
 
         // Keep first variant ID for potential new VSS creation
-        if (!matchedVariantId && variantsResult.records.length) {
-          matchedVariantId = variantsResult.records[0].id;
+        const firstVariant = variantRecords[0];
+        if (!matchedVariantId && firstVariant) {
+          matchedVariantId = firstVariant.id;
         }
       }
 
@@ -170,8 +173,9 @@ export function useSupplierFiscalData(productId: string | undefined, supplierId:
               filters: { id: vss.supplier_branch_id },
               limit: 1,
             });
-            if (branchResult.records.length) {
-              branchData = branchResult.records[0];
+            const branchRecord = branchResult.records?.[0];
+            if (branchRecord) {
+              branchData = branchRecord;
             }
           } catch (err) {
             logger.warn('[useSupplierFiscalData] Failed to fetch branch data:', err);
@@ -210,8 +214,8 @@ export function useSupplierFiscalData(productId: string | undefined, supplierId:
           limit: 5,
         });
 
-        if (branchesResult.records.length) {
-          const branch = branchesResult.records[0];
+        const branch = branchesResult.records?.[0];
+        if (branch) {
           const result = buildFromBranch(branch);
           result._variantId = matchedVariantId || undefined;
           return result;
@@ -251,8 +255,9 @@ export function useSupplierFiscalData(productId: string | undefined, supplierId:
               attributes: {},
             },
           });
-          if (createResult.records?.length) {
-            variantId = createResult.records[0].id;
+          const createdRecord = createResult.records?.[0];
+          if (createdRecord) {
+            variantId = createdRecord.id;
           } else if ((createResult as Record<string, unknown>).id) {
             variantId = (createResult as Record<string, unknown>).id as string;
           }
@@ -286,12 +291,13 @@ export function useSupplierFiscalData(productId: string | undefined, supplierId:
         operation_nature: input.operation_nature || null,
       };
 
-      if (existingResult.records.length) {
+      const existingRecord = existingResult.records?.[0];
+      if (existingRecord) {
         // Update existing VSS
         await invokeExternalDb({
           table: 'variant_supplier_sources',
           operation: 'update',
-          id: existingResult.records[0].id,
+          id: existingRecord.id,
           data: payload,
         });
       } else {
@@ -305,8 +311,9 @@ export function useSupplierFiscalData(productId: string | undefined, supplierId:
             filters: { supplier_id: supplierId },
             limit: 1,
           });
-          if (orgResult.records.length) {
-            organizationId = orgResult.records[0].organization_id;
+          const orgRecord = orgResult.records?.[0];
+          if (orgRecord) {
+            organizationId = orgRecord.organization_id;
           }
         } catch (e) {
           logger.warn('[saveFiscalOverride] Could not fetch org_id from existing VSS:', e);
@@ -355,11 +362,12 @@ export function useSupplierFiscalData(productId: string | undefined, supplierId:
         limit: 1,
       });
 
-      if (vssResult.records.length) {
+      const vssRecord = vssResult.records?.[0];
+      if (vssRecord) {
         await invokeExternalDb({
           table: 'variant_supplier_sources',
           operation: 'delete',
-          id: vssResult.records[0].id,
+          id: vssRecord.id,
         });
       }
 

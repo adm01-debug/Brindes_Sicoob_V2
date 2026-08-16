@@ -1,0 +1,13 @@
+{
+  "extends": "./tsconfig.app.json",
+  "include": [
+    "src/components/admin/personalization-manager/usePersonalizationManager.ts",
+    "src/components/admin/users/SicoobHierarchyTab.tsx",
+    "src/components/orders/ApprovalKanbanBoard.tsx",
+    "src/components/orders/OrderAuditTimeline.tsx",
+    "src/pages/ProductDetail.tsx",
+    "src/services/ramoAtividadeService.ts",
+    "src/services/admin/UserService.ts",
+    "src/components/admin/personalization-manager/types.ts"
+  ]
+}

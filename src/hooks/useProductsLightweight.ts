@@ -9,7 +9,7 @@ import { fetchPromobrindProductsLightweight, invokeBatchBridge, type Lightweight
 // Re-export type for consumers
 export type { ProductLightweight } from '@/types/product-catalog';
 import type { ProductLightweight } from '@/types/product-catalog';
-import type { Product } from '@/types/product';
+import type { Product } from '@/types/product-catalog';
 
 function mapLightweight(p: LightweightProduct): ProductLightweight {
   const price = (p.sale_price ?? p.cost_price ?? 0);

@@ -1,0 +1,11 @@
+{
+  "extends": "./tsconfig.app.json",
+  "include": [
+    "src/components/admin/products/ProductFormFullscreen.tsx",
+    "src/components/admin/products/ProductFormStepContent.tsx",
+    "src/components/layout/MainLayout.tsx",
+    "src/components/quotes/AdminTemplatesManager.tsx",
+    "src/hooks/useSupplierFiscalData.ts",
+    "src/lib/external-db/products.ts"
+  ]
+}

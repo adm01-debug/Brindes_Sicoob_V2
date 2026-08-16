@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { untypedFrom } from '@/lib/supabase-untyped';
 import { logger } from "@/lib/logger";
 
 // =====================================================
@@ -79,7 +80,7 @@ async function fetchExternalColors() {
   const groupsWithVariations: ColorGroup[] = groups.map((group: Record<string, string>) => ({
     id: group.id,
     name: group.name,
-    slug: group.slug || group.name.toLowerCase().replace(/\s+/g, '-'),
+    slug: group.slug || (group.name || '').toLowerCase().replace(/\s+/g, '-'),
     hex_code: group.hex_code,
     internal_code: group.internal_code,
     variations: variations
@@ -87,7 +88,7 @@ async function fetchExternalColors() {
       .map((v: Record<string, string>) => ({
         id: v.id,
         name: v.name,
-        slug: v.slug || v.name.toLowerCase().replace(/\s+/g, '-'),
+        slug: v.slug || (v.name || '').toLowerCase().replace(/\s+/g, '-'),
         hex_code: v.hex_code,
         internal_code: v.internal_code,
         group_id: v.group_id
@@ -108,8 +109,7 @@ export function useColorSystem() {
       const groups = await fetchExternalColors();
       
       // Nuances são mantidas localmente (acabamentos como Fosco, Brilhante, etc.)
-      const { data: nuances, error: nuancesError } = await supabase
-        .from('color_nuances')
+      const { data: nuances, error: nuancesError } = await untypedFrom<ColorNuance>('color_nuances')
         .select('id, name, slug')
         .eq('is_active', true)
         .order('sort_order');
@@ -155,8 +155,7 @@ export function useColorNuances() {
   return useQuery<ColorNuance[]>({
     queryKey: ['color-nuances'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('color_nuances')
+      const { data, error } = await untypedFrom<ColorNuance>('color_nuances')
         .select('id, name, slug')
         .eq('is_active', true)
         .order('sort_order');
@@ -196,7 +195,7 @@ export function useColorVariations(groupId: string | null) {
       return (response.data?.data?.records || []).map((v: Record<string, string>) => ({
         id: v.id,
         name: v.name,
-        slug: v.slug || v.name.toLowerCase().replace(/\s+/g, '-'),
+        slug: v.slug || (v.name || '').toLowerCase().replace(/\s+/g, '-'),
         hex_code: v.hex_code,
         internal_code: v.internal_code,
         group_id: v.group_id

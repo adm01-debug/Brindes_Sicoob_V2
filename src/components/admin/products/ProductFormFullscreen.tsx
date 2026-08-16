@@ -45,7 +45,7 @@ const STEPS: StepDef[] = [
   { id: 'commercial', label: 'Categorias e Dimensões', description: 'Categoria, dimensões e flags', icon: Tag, requiredFields: [], fieldLabels: {} },
   { id: 'engraving', label: 'Gravação', description: 'Áreas de personalização', icon: Paintbrush, requiredFields: [], fieldLabels: {} },
   { id: 'packaging', label: 'Embalagem', description: 'Dados da embalagem', icon: Package, requiredFields: [], fieldLabels: {} },
-  { id: 'kits', label: 'Kits', description: 'Gestão de kits nativos', icon: Boxes, requiredFields: [], fieldLabels: {} } as StepDef,
+  { id: 'kits', label: 'Kits', description: 'Gestão de kits nativos', icon: Boxes, requiredFields: [], fieldLabels: {} },
   { id: 'media', label: 'Mídia', description: 'Imagens e vídeos', icon: ImageIcon, requiredFields: [], fieldLabels: {} },
   { id: 'content', label: 'SEO', description: 'Meta tags e marketing', icon: Megaphone, requiredFields: [], fieldLabels: {} },
 ];
@@ -96,19 +96,19 @@ export function ProductFormFullscreen({
   const supplierRefValue = formValues.supplier_reference || '';
 
   const flags: Record<string, boolean> = {
-    is_active: formValues.is_active,
-    is_featured: formValues.is_featured,
-    is_bestseller: formValues.is_bestseller,
-    is_new: formValues.is_new,
-    is_on_sale: formValues.is_on_sale,
-    is_kit: formValues.is_kit,
-    is_imported: formValues.is_imported,
-    is_textil: formValues.is_textil,
-    is_thermal: formValues.is_thermal,
-    allows_personalization: formValues.allows_personalization,
-    has_gift_box: formValues.has_gift_box,
-    has_optional_packaging: formValues.has_optional_packaging,
-    has_commercial_packaging: formValues.has_commercial_packaging,
+    is_active: formValues.is_active ?? false,
+    is_featured: formValues.is_featured ?? false,
+    is_bestseller: formValues.is_bestseller ?? false,
+    is_new: formValues.is_new ?? false,
+    is_on_sale: formValues.is_on_sale ?? false,
+    is_kit: formValues.is_kit ?? false,
+    is_imported: formValues.is_imported ?? false,
+    is_textil: formValues.is_textil ?? false,
+    is_thermal: formValues.is_thermal ?? false,
+    allows_personalization: formValues.allows_personalization ?? false,
+    has_gift_box: formValues.has_gift_box ?? false,
+    has_optional_packaging: formValues.has_optional_packaging ?? false,
+    has_commercial_packaging: formValues.has_commercial_packaging ?? false,
   };
 
   const expirations: Record<string, string | null> = {
@@ -167,7 +167,7 @@ export function ProductFormFullscreen({
           if (typeof val === 'number') return val <= 0 || val === undefined || val === null;
           return !val;
         })
-        .map(f => step.fieldLabels[f] || f)
+        .map(f => step.fieldLabels[f as string] || f)
     );
   }, [formValues]);
 
@@ -228,7 +228,7 @@ export function ProductFormFullscreen({
     })(e);
   };
 
-  const currentStep = STEPS[stepIndex];
+  const currentStep = STEPS[stepIndex] ?? STEPS[0];
   const hasPrev = stepIndex > 0;
   const hasNext = stepIndex < STEPS.length - 1;
   const isLast = stepIndex === STEPS.length - 1;
@@ -315,16 +315,16 @@ export function ProductFormFullscreen({
             </motion.div>
           </AnimatePresence>
 
-          {showValidation && missingFields[stepIndex].length > 0 && (
+          {showValidation && (missingFields[stepIndex]?.length ?? 0) > 0 && (
             <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="rounded-lg border border-warning/30 bg-warning/5 p-3">
               <div className="flex items-start gap-2.5">
                 <AlertCircle className="h-4 w-4 text-warning mt-0.5 shrink-0" />
                 <div>
                   <p className="text-sm font-semibold text-warning">
-                    {missingFields[stepIndex].length} campo{missingFields[stepIndex].length > 1 ? 's' : ''} obrigatório{missingFields[stepIndex].length > 1 ? 's' : ''} nesta etapa
+                    {missingFields[stepIndex]?.length ?? 0} campo{(missingFields[stepIndex]?.length ?? 0) > 1 ? 's' : ''} obrigatório{(missingFields[stepIndex]?.length ?? 0) > 1 ? 's' : ''} nesta etapa
                   </p>
                   <ul className="mt-1.5 space-y-0.5">
-                    {missingFields[stepIndex].map(label => (
+                    {(missingFields[stepIndex] ?? []).map(label => (
                       <li key={label} className="text-xs text-muted-foreground flex items-center gap-1.5">
                         <span className="h-1 w-1 rounded-full bg-warning" />
                         {label}
@@ -339,18 +339,18 @@ export function ProductFormFullscreen({
           {/* Navigation footer */}
           <div className="flex items-center justify-between pt-2 pb-20 lg:pb-4">
             <div className="flex items-center gap-3">
-              {hasPrev && (
+              {hasPrev && STEPS[stepIndex - 1] && (
                 <Button type="button" variant="outline" size="sm" onClick={() => goStep(stepIndex - 1)} className="gap-2">
                   <ChevronLeft className="h-4 w-4" />
-                  {STEPS[stepIndex - 1].label}
+                  {STEPS[stepIndex - 1]?.label}
                 </Button>
               )}
               <span className="hidden lg:inline text-[10px] text-muted-foreground/50">Ctrl+←/→ navegar · Ctrl+S salvar</span>
             </div>
             <div className="flex items-center gap-2">
-              {hasNext && (
+              {hasNext && STEPS[stepIndex + 1] && (
                 <Button type="button" size="sm" onClick={() => goStep(stepIndex + 1)} className="gap-2">
-                  {STEPS[stepIndex + 1].label}
+                  {STEPS[stepIndex + 1]?.label}
                   <ChevronRight className="h-4 w-4" />
                 </Button>
               )}
@@ -381,7 +381,7 @@ export function ProductFormFullscreen({
                   name={nameValue} sku={skuValue} salePrice={salePriceValue}
                   stockQuantity={stockQuantityValue} images={images} brand={brandValue}
                   isFeatured={flags.is_featured} isNew={flags.is_new} isOnSale={flags.is_on_sale}
-                  isKit={formValues.is_kit} isActive={flags.is_active}
+                  isKit={formValues.is_kit ?? false} isActive={flags.is_active}
                 />
               </div>
             )}

@@ -3,6 +3,7 @@
  * Extracted from useMockupGenerator to reduce hook complexity.
  */
 import { supabase } from "@/integrations/supabase/client";
+import { untypedFrom } from "@/lib/supabase-untyped";
 import { uploadLogoToStorage, downloadImageAsPdfFromUrl } from "@/lib/mockup-storage";
 import { showMockupSuccessToast } from "@/components/mockup/MockupSuccessToast";
 import { toast } from "sonner";
@@ -61,7 +62,7 @@ export function getTechniquePrompt(technique: Technique): string {
   for (const [key, prompt] of Object.entries(TECHNIQUE_PROMPTS)) {
     if (code.includes(key) || technique.name.toLowerCase().includes(key)) return prompt;
   }
-  return TECHNIQUE_PROMPTS.default;
+  return TECHNIQUE_PROMPTS.default ?? "as professionally printed/applied logo";
 }
 
 // ─── History fetching ────────────────────────────────────────────────
@@ -74,7 +75,18 @@ export async function fetchMockupHistory(userId?: string): Promise<GeneratedMock
   if (userId) query = query.eq("seller_id", userId);
   const { data, error } = await query;
   if (error) throw error;
-  return data || [];
+  return (data || []).map((row) => ({
+    ...row,
+    product_sku: row.product_sku ?? null,
+    technique_id: row.technique_id ?? null,
+    technique_name: row.technique_name ?? "",
+    layout_url: row.layout_url ?? null,
+    location_name: row.location_name ?? null,
+    colors_count: row.colors_count ?? null,
+    client_id: row.client_id ?? null,
+    client_name: row.client_name ?? null,
+    annotations: (row.annotations as Array<Record<string, unknown>> | null) ?? null,
+  })) as GeneratedMockup[];
 }
 
 // ─── Save to history ─────────────────────────────────────────────────
@@ -106,13 +118,13 @@ export async function saveMockupToDb(params: SaveMockupParams): Promise<string |
     // Validate FK targets
     let safeProductId: string | null = null;
     if (product.id) {
-      const { data: productRow } = await supabase.from("products").select("id").eq("id", product.id).maybeSingle();
+      const { data: productRow } = await untypedFrom("products").select("id").eq("id", product.id).maybeSingle();
       if (productRow) safeProductId = product.id;
     }
 
     let safeTechniqueId: string | null = null;
     if (technique.id) {
-      const { data: techRow } = await supabase.from("personalization_techniques").select("id").eq("id", technique.id).maybeSingle();
+      const { data: techRow } = await untypedFrom("personalization_techniques").select("id").eq("id", technique.id).maybeSingle();
       if (techRow) safeTechniqueId = technique.id;
     }
 
@@ -125,7 +137,7 @@ export async function saveMockupToDb(params: SaveMockupParams): Promise<string |
       client_name: clientName,
       product_id: safeProductId,
       product_name: product.name,
-      product_sku: product.sku,
+      product_sku: product.sku ?? null,
       technique_id: safeTechniqueId,
       technique_name: technique.name,
       logo_url: logoUrl,
@@ -138,7 +150,7 @@ export async function saveMockupToDb(params: SaveMockupParams): Promise<string |
       location_name: extra?.locationName || area.name || null,
       colors_count: extra?.colorsCount || null,
       annotations: annotations && annotations.length > 0 ? annotations : null,
-    } as Record<string, unknown>).select("id").single();
+    }).select("id").single();
 
     if (error) throw error;
     return insertedRow?.id || null;
@@ -169,6 +181,7 @@ export async function generateMockupApi(params: GenerateMockupParams): Promise<G
 
   if (areasWithLogos.length === 1) {
     const area = areasWithLogos[0];
+    if (!area) throw new Error("Nenhuma área com logo encontrada");
     const isLogoUrl = area.logoPreview?.startsWith("http");
 
     const response = await supabase.functions.invoke("generate-mockup", {
@@ -228,7 +241,9 @@ export async function generateMockupApi(params: GenerateMockupParams): Promise<G
   }
 
   if (results.length === 0) throw new Error("Nenhum mockup gerado no batch");
-  return { singleUrl: results[0].url, batchResults: results };
+  const first = results[0];
+  if (!first) throw new Error("Nenhum mockup gerado no batch");
+  return { singleUrl: first.url, batchResults: results };
 }
 
 // ─── Download ────────────────────────────────────────────────────────

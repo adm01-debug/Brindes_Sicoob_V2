@@ -25,7 +25,7 @@ class RamoAtividadeService extends BaseHttpService {
   // Buscar todos os ramos de atividade
   async getRamos(apenasAtivos = true): Promise<{ ramos: RamoAtividade[]; count: number }> {
     const filters = apenasAtivos ? { ativo: true } : {};
-    const res = await this.callApi<{ records: RamoAtividade[]; count: number }>(
+    const res = await this.callBridge<{ records: RamoAtividade[]; count: number }>(
       'ramo_atividade',
       'select',
       { 
@@ -71,7 +71,7 @@ class RamoAtividadeService extends BaseHttpService {
 
   // Buscar ramo por ID
   async getRamoById(id: string): Promise<RamoAtividade | null> {
-    const res = await this.callApi<{ records: RamoAtividade[] }>(
+    const res = await this.callBridge<{ records: RamoAtividade[] }>(
       'ramo_atividade',
       'select',
       { id }
@@ -81,7 +81,7 @@ class RamoAtividadeService extends BaseHttpService {
 
   // Criar ramo
   async createRamo(data: Partial<RamoAtividade>): Promise<RamoAtividade> {
-    const res = await this.callApi<RamoAtividade>(
+    const res = await this.callBridge<RamoAtividade>(
       'ramo_atividade',
       'insert',
       { data }
@@ -91,7 +91,7 @@ class RamoAtividadeService extends BaseHttpService {
 
   // Atualizar ramo
   async updateRamo(id: string, data: Partial<RamoAtividade>): Promise<RamoAtividade> {
-    const res = await this.callApi<RamoAtividade>(
+    const res = await this.callBridge<RamoAtividade>(
       'ramo_atividade',
       'update',
       { id, data }
@@ -101,7 +101,7 @@ class RamoAtividadeService extends BaseHttpService {
 
   // Deletar ramo
   async deleteRamo(id: string): Promise<void> {
-    await this.callApi(
+    await this.callBridge(
       'ramo_atividade',
       'delete',
       { id }
@@ -115,7 +115,7 @@ class RamoAtividadeService extends BaseHttpService {
   // Buscar todos os segmentos
   async getSegmentos(apenasAtivos = true): Promise<{ segmentos: RamoAtividadeFilho[]; count: number }> {
     const filters = apenasAtivos ? { ativo: true } : {};
-    const res = await this.callApi<{ records: RamoAtividadeFilho[]; count: number }>(
+    const res = await this.callBridge<{ records: RamoAtividadeFilho[]; count: number }>(
       'ramo_atividade_filho',
       'select',
       { 
@@ -137,7 +137,7 @@ class RamoAtividadeService extends BaseHttpService {
       filters.ativo = true;
     }
     
-    const res = await this.callApi<{ records: RamoAtividadeFilho[]; count: number }>(
+    const res = await this.callBridge<{ records: RamoAtividadeFilho[]; count: number }>(
       'ramo_atividade_filho',
       'select',
       { 
@@ -192,7 +192,7 @@ class RamoAtividadeService extends BaseHttpService {
 
   // Buscar segmento por ID
   async getSegmentoById(id: string): Promise<RamoAtividadeFilho | null> {
-    const res = await this.callApi<{ records: RamoAtividadeFilho[] }>(
+    const res = await this.callBridge<{ records: RamoAtividadeFilho[] }>(
       'ramo_atividade_filho',
       'select',
       { id }
@@ -202,7 +202,7 @@ class RamoAtividadeService extends BaseHttpService {
 
   // Criar segmento
   async createSegmento(data: Partial<RamoAtividadeFilho>): Promise<RamoAtividadeFilho> {
-    const res = await this.callApi<RamoAtividadeFilho>(
+    const res = await this.callBridge<RamoAtividadeFilho>(
       'ramo_atividade_filho',
       'insert',
       { data }
@@ -212,7 +212,7 @@ class RamoAtividadeService extends BaseHttpService {
 
   // Atualizar segmento
   async updateSegmento(id: string, data: Partial<RamoAtividadeFilho>): Promise<RamoAtividadeFilho> {
-    const res = await this.callApi<RamoAtividadeFilho>(
+    const res = await this.callBridge<RamoAtividadeFilho>(
       'ramo_atividade_filho',
       'update',
       { id, data }
@@ -222,7 +222,7 @@ class RamoAtividadeService extends BaseHttpService {
 
   // Deletar segmento
   async deleteSegmento(id: string): Promise<void> {
-    await this.callApi(
+    await this.callBridge(
       'ramo_atividade_filho',
       'delete',
       { id }
@@ -235,7 +235,7 @@ class RamoAtividadeService extends BaseHttpService {
 
   // Buscar ramos de um produto
   async getRamosDoProduto(produtoId: string): Promise<{ associacoes: { id: string; ramo_atividade_filho_id: string }[]; count: number }> {
-    const res = await this.callApi<{ records: { id: string; ramo_atividade_filho_id: string }[]; count: number }>(
+    const res = await this.callBridge<{ records: { id: string; ramo_atividade_filho_id: string }[]; count: number }>(
       'produto_ramo_atividade',
       'select',
       { 
@@ -251,7 +251,7 @@ class RamoAtividadeService extends BaseHttpService {
 
   // Adicionar ramo a um produto
   async addRamoAoProduto(produtoId: string, segmentoId: string): Promise<void> {
-    await this.callApi(
+    await this.callBridge(
       'produto_ramo_atividade',
       'insert',
       { 
@@ -270,7 +270,7 @@ class RamoAtividadeService extends BaseHttpService {
     const assoc = associacoes.find(a => a.ramo_atividade_filho_id === segmentoId);
     
     if (assoc) {
-      await this.callApi(
+      await this.callBridge(
         'produto_ramo_atividade',
         'delete',
         { id: assoc.id }
@@ -291,7 +291,7 @@ class RamoAtividadeService extends BaseHttpService {
     // Executar operações
     await Promise.all([
       ...toAdd.map(segId => this.addRamoAoProduto(produtoId, segId)),
-      ...toRemove.map(assoc => this.callApi('produto_ramo_atividade', 'delete', { id: assoc.id }))
+      ...toRemove.map(assoc => this.callBridge('produto_ramo_atividade', 'delete', { id: assoc.id }))
     ]);
   }
 }

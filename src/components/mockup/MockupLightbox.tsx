@@ -13,19 +13,7 @@ import {
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { ShareMenu } from "./ShareMenu";
-
-interface GeneratedMockup {
-  id: string;
-  product_name: string;
-  product_sku: string | null;
-  technique_name: string;
-  mockup_url: string;
-  layout_url: string | null;
-  logo_url: string;
-  location_name: string | null;
-  created_at: string;
-  client_name: string | null;
-}
+import type { GeneratedMockup } from "@/hooks/mockup/mockupGenerationService";
 
 interface MockupLightboxProps {
   mockup: GeneratedMockup | null;

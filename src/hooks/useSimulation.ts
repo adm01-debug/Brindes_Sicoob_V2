@@ -19,6 +19,22 @@ import type {
 } from "@/types/simulation";
 import type { SimulationScenario } from "@/components/simulator/ScenarioComparison";
 
+type SavedSimulationRawRow = {
+  id: string;
+  seller_id: string;
+  product_id: string | null;
+  product_name: string;
+  product_sku: string | null;
+  quantity: number;
+  product_unit_price: number;
+  simulation_data: unknown;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+  client_id: string | null;
+  bitrix_clients: { id: string; name: string; ramo: string | null } | null;
+};
+
 export function useSimulation() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
@@ -103,9 +119,20 @@ export function useSimulation() {
 
   const { data: techniques, isLoading: techniquesLoading } = useQuery({
     queryKey: ["simulator-techniques-external"],
-    queryFn: async () => {
-      const result = await invokeExternalDb<Technique>({ table: "personalization_techniques", operation: "select", filters: { is_active: true }, orderBy: { column: "name", ascending: true }, limit: 100 });
-      return result.records.map(t => ({ ...t, setup_cost: (t as ExternalTechnique).setup_price ?? t.setup_cost, unit_cost: (t as ExternalTechnique).handling_price ?? t.unit_cost }));
+    queryFn: async (): Promise<Technique[]> => {
+      const result = await invokeExternalDb<ExternalTechnique>({ table: "personalization_techniques", operation: "select", filters: { is_active: true }, orderBy: { column: "name", ascending: true }, limit: 100 });
+      const toStr = (v: unknown, fallback = ""): string => (typeof v === "string" ? v : fallback);
+      const toNum = (v: unknown, fallback = 0): number => (typeof v === "number" ? v : fallback);
+      return (result.records ?? []).map((t): Technique => ({
+        id: t.id,
+        code: t.code ?? t.technique_code ?? "",
+        name: t.name ?? t.technique_name ?? "",
+        description: typeof t.description === "string" ? t.description : null,
+        unit_cost: t.handling_price ?? t.unit_cost ?? toNum(t.unit_cost),
+        setup_cost: t.setup_price ?? t.setup_cost ?? toNum(t.setup_cost),
+        estimated_days: toNum(t.sla_days),
+        min_quantity: toNum(t.min_quantity, 1) || toNum(toStr(t.min_quantity)),
+      }));
     },
   });
 
@@ -114,10 +141,28 @@ export function useSimulation() {
 
   const { data: savedSimulations, isLoading: savedSimulationsLoading } = useQuery({
     queryKey: ["saved-simulations"],
-    queryFn: async () => {
-      const { data, error } = await supabase.from("personalization_simulations").select(`*, bitrix_clients (id, name, ramo)`).order("created_at", { ascending: false }).limit(50);
+    queryFn: async (): Promise<SavedSimulation[]> => {
+      const { data, error } = await supabase
+        .from("personalization_simulations")
+        .select<'*, bitrix_clients (id, name, ramo)', SavedSimulationRawRow>(`*, bitrix_clients (id, name, ramo)`)
+        .order("created_at", { ascending: false })
+        .limit(50);
       if (error) throw error;
-      return (data || []).map(item => ({ ...item, simulation_data: item.simulation_data as unknown as SimulationOption[] })) as SavedSimulation[];
+      return (data ?? []).map((item): SavedSimulation => ({
+        id: item.id,
+        seller_id: item.seller_id,
+        product_id: item.product_id,
+        product_name: item.product_name,
+        product_sku: item.product_sku,
+        quantity: item.quantity,
+        product_unit_price: item.product_unit_price,
+        simulation_data: (Array.isArray(item.simulation_data) ? item.simulation_data : []) as SimulationOption[],
+        notes: item.notes,
+        created_at: item.created_at,
+        updated_at: item.updated_at,
+        client_id: item.client_id,
+        bitrix_clients: item.bitrix_clients ?? null,
+      }));
     },
   });
 
@@ -163,7 +208,12 @@ export function useSimulation() {
   }, [techniqueSettings, setLastTechniques, setLastTechniqueSettings]);
 
   const updateTechniqueSetting = useCallback((techniqueId: string, field: keyof TechniqueSettings, value: number) => {
-    setTechniqueSettingsState(prev => { const u = { ...prev, [techniqueId]: { ...prev[techniqueId], [field]: value } }; setLastTechniqueSettings(u); return u; });
+    setTechniqueSettingsState(prev => {
+      const current: TechniqueSettings = prev[techniqueId] ?? { colors: 1, width: 10, height: 10, positions: 1 };
+      const u: Record<string, TechniqueSettings> = { ...prev, [techniqueId]: { ...current, [field]: value } };
+      setLastTechniqueSettings(u);
+      return u;
+    });
   }, [setLastTechniqueSettings]);
 
   const fallbackToastShownRef = useRef(false);

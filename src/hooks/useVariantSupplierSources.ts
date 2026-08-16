@@ -15,12 +15,17 @@ export interface VariantWithStock {
 }
 
 export interface StockEntry {
+  id: string;
+  entryIndex: number;
   variantId: string;
   colorName: string;
   colorHex: string | null;
   expectedDate: string;
   expectedQuantity: number;
   thumbnail: string | null;
+  supplierSku: string;
+  currentStock: number;
+  reservedStock: number;
 }
 
 export interface ColorSummary {
@@ -75,16 +80,23 @@ export function useProductVariantsWithStock(productId: string | undefined) {
  */
 export function processStockEntries(variants: VariantWithStock[]): StockEntry[] {
   const entries: StockEntry[] = [];
+  let entryIndex = 0;
 
   for (const v of variants) {
     if (v.next_entry_date && v.next_entry_quantity && v.next_entry_quantity > 0) {
+      entryIndex += 1;
       entries.push({
+        id: `${v.id}-${entryIndex}`,
+        entryIndex,
         variantId: v.id,
         colorName: v.color_name || 'Sem cor',
         colorHex: v.color_hex,
         expectedDate: v.next_entry_date,
         expectedQuantity: v.next_entry_quantity,
         thumbnail: v.selected_thumbnail,
+        supplierSku: v.sku,
+        currentStock: v.stock_quantity || 0,
+        reservedStock: 0,
       });
     }
   }

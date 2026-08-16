@@ -1,0 +1,6 @@
+{
+  "extends": "./tsconfig.app.json",
+  "include": [
+    "src/hooks/useGravacaoV2.ts"
+  ]
+}

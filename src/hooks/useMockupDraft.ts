@@ -3,6 +3,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { type PersonalizationArea } from "@/components/mockup/MultiAreaManager";
+import { untypedFrom } from "@/lib/supabase-untyped";
+import type { Json } from "@/integrations/supabase/types";
 
 const LOCAL_STORAGE_KEY = "mockup_draft_v1";
 const AUTO_SAVE_DELAY = 2000; // 2 segundos de debounce
@@ -78,8 +80,7 @@ export function useMockupDraft(options: UseMockupDraftOptions = {}) {
       // Products from external DB won't have a matching row, so we skip the FK
       let safeProductId: string | null = null;
       if (data.productId) {
-        const { data: productRow } = await supabase
-          .from("products")
+        const { data: productRow } = await untypedFrom<{ id: string }>("products")
           .select("id")
           .eq("id", data.productId)
           .maybeSingle();
@@ -91,8 +92,7 @@ export function useMockupDraft(options: UseMockupDraftOptions = {}) {
       // Same check for technique_id
       let safeTechniqueId: string | null = null;
       if (data.techniqueId) {
-        const { data: techRow } = await supabase
-          .from("personalization_techniques")
+        const { data: techRow } = await untypedFrom<{ id: string }>("personalization_techniques")
           .select("id")
           .eq("id", data.techniqueId)
           .maybeSingle();
@@ -104,8 +104,7 @@ export function useMockupDraft(options: UseMockupDraftOptions = {}) {
       // Same check for client_id
       let safeClientId: string | null = null;
       if (data.clientId) {
-        const { data: clientRow } = await supabase
-          .from("bitrix_clients")
+        const { data: clientRow } = await untypedFrom<{ id: string }>("bitrix_clients")
           .select("id")
           .eq("id", data.clientId)
           .maybeSingle();
@@ -123,7 +122,7 @@ export function useMockupDraft(options: UseMockupDraftOptions = {}) {
         technique_name: data.techniqueName,
         client_id: safeClientId,
         client_name: data.clientName,
-        personalization_areas: areasWithoutLogos as unknown as Record<string, unknown>[],
+        personalization_areas: areasWithoutLogos as unknown as Json,
         logo_data: safeLogoData,
         updated_at: new Date().toISOString(),
       };
@@ -183,23 +182,24 @@ export function useMockupDraft(options: UseMockupDraftOptions = {}) {
       }
 
       if (data) {
-        const areas = Array.isArray(data.personalization_areas) 
-          ? (data.personalization_areas as unknown[]).map(a => ({
-              id: a.id || crypto.randomUUID(),
-              name: a.name || "Frente",
-              positionX: a.positionX ?? 50,
-              positionY: a.positionY ?? 50,
-              logoWidth: a.logoWidth ?? 5,
-              logoHeight: a.logoHeight ?? 3,
-              logoRotation: a.logoRotation ?? 0,
-              logoScale: a.logoScale ?? 100,
-              logoPreview: a.logoPreview || null,
+        const areas: PersonalizationArea[] = Array.isArray(data.personalization_areas)
+          ? (data.personalization_areas as Record<string, unknown>[]).map((a) => ({
+              id: (a.id as string) || crypto.randomUUID(),
+              name: (a.name as string) || "Frente",
+              positionX: (a.positionX as number) ?? 50,
+              positionY: (a.positionY as number) ?? 50,
+              logoWidth: (a.logoWidth as number) ?? 5,
+              logoHeight: (a.logoHeight as number) ?? 3,
+              logoRotation: (a.logoRotation as number) ?? 0,
+              logoScale: (a.logoScale as number) ?? 100,
+              logoPreview: (a.logoPreview as string) || null,
             }))
           : [];
 
         // Restaurar logo do campo logo_data se não estiver nas áreas
-        if (data.logo_data && areas.length > 0 && !areas[0].logoPreview) {
-          areas[0].logoPreview = data.logo_data;
+        const firstArea = areas[0];
+        if (data.logo_data && firstArea && !firstArea.logoPreview) {
+          firstArea.logoPreview = data.logo_data;
         }
 
         return {

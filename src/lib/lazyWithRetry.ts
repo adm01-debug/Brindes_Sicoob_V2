@@ -14,12 +14,17 @@ import { attemptChunkRecovery, isChunkLoadError } from "@/lib/chunk-recovery";
  *      Se já estourou o limite de reloads na janela, propaga o erro para
  *      a Error Boundary exibir tela estável (evita loop = tela branca).
  */
-export function lazyWithRetry<T extends ComponentType<unknown>>(
-  componentImport: () => Promise<{ default: T }>,
+// `ComponentType<any>` acompanha a assinatura de `React.lazy`: qualquer outro
+// constraint quebra a inferência das props reais de cada componente lazy.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function lazyWithRetry<M extends { default: ComponentType<any> }>(
+  componentImport: () => Promise<M>,
   retries = 3,
   interval = 1000
-): React.LazyExoticComponent<T> {
-  return lazy(async () => {
+): React.LazyExoticComponent<M["default"]> {
+  type LoadedModule = Awaited<ReturnType<typeof componentImport>>;
+
+  return lazy<M["default"]>(async () => {
     let lastError: Error | undefined;
 
     for (let i = 0; i < retries; i++) {
@@ -50,7 +55,7 @@ export function lazyWithRetry<T extends ComponentType<unknown>>(
             const reloaded = await attemptChunkRecovery(error);
             if (reloaded) {
               // Navigation triggered, return a never-resolving promise to keep Suspense active
-              return new Promise(() => {});
+              return new Promise<LoadedModule>(() => {});
             }
             throw error;
           }
@@ -65,4 +70,3 @@ export function lazyWithRetry<T extends ComponentType<unknown>>(
     throw lastError;
   });
 }
-

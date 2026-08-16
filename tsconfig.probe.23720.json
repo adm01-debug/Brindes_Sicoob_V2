@@ -1,0 +1,11 @@
+{
+  "extends": "./tsconfig.app.json",
+  "include": [
+    "src/components/kit-builder/KitIsometricPreview.tsx",
+    "src/components/sicoob/orders/OrderPaymentsTab.tsx",
+    "src/hooks/useQuoteBuilderState.ts",
+    "src/hooks/useSalesGoals.ts",
+    "src/pages/sicoob/orders/OrderDetailPage.tsx",
+    "src/services/ramoAtividadeService.ts"
+  ]
+}

@@ -14,6 +14,113 @@ export type Database = {
   }
   public: {
     Tables: {
+      personalization_simulations: {
+        Row: {
+          id: string
+          seller_id: string
+          product_id: string | null
+          product_name: string
+          product_sku: string | null
+          quantity: number
+          product_unit_price: number
+          simulation_data: Json
+          notes: string | null
+          created_at: string
+          updated_at: string
+          client_id: string | null
+        }
+        Insert: {
+          id?: string
+          seller_id: string
+          product_id?: string | null
+          product_name: string
+          product_sku?: string | null
+          quantity: number
+          product_unit_price: number
+          simulation_data: Json
+          notes?: string | null
+          created_at?: string
+          updated_at?: string
+          client_id?: string | null
+        }
+        Update: {
+          id?: string
+          seller_id?: string
+          product_id?: string | null
+          product_name?: string
+          product_sku?: string | null
+          quantity?: number
+          product_unit_price?: number
+          simulation_data?: Json
+          notes?: string | null
+          created_at?: string
+          updated_at?: string
+          client_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "personalization_simulations_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "bitrix_clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sales_goals: {
+        Row: {
+          achieved_at: string | null
+          created_at: string
+          current_conversions: number | null
+          current_quotes: number | null
+          current_value: number
+          end_date: string
+          goal_type: string
+          id: string
+          is_achieved: boolean | null
+          start_date: string
+          target_conversions: number | null
+          target_quotes: number | null
+          target_value: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          achieved_at?: string | null
+          created_at?: string
+          current_conversions?: number | null
+          current_quotes?: number | null
+          current_value?: number
+          end_date: string
+          goal_type?: string
+          id?: string
+          is_achieved?: boolean | null
+          start_date: string
+          target_conversions?: number | null
+          target_quotes?: number | null
+          target_value?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          achieved_at?: string | null
+          created_at?: string
+          current_conversions?: number | null
+          current_quotes?: number | null
+          current_value?: number
+          end_date?: string
+          goal_type?: string
+          id?: string
+          is_achieved?: boolean | null
+          start_date?: string
+          target_conversions?: number | null
+          target_quotes?: number | null
+          target_value?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       access_blocked_log: {
         Row: {
           block_reason: string

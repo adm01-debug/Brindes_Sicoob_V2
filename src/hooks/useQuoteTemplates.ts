@@ -3,11 +3,25 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 
+export interface QuoteTemplatePersonalization {
+  unitCost?: number;
+  setupCost?: number;
+  [key: string]: unknown;
+}
+
+export type QuoteTemplateItem = {
+  productId: string;
+  productName: string;
+  quantity: number;
+  unitPrice: number;
+  personalizations?: QuoteTemplatePersonalization[];
+};
+
 export interface QuoteTemplate {
   id: string;
   name: string;
   description: string | null;
-  items_data: any[] | null;
+  items_data: QuoteTemplateItem[] | null;
   discount_percent: number | null;
   discount_amount: number | null;
   payment_terms: string | null;
@@ -21,14 +35,6 @@ export interface QuoteTemplate {
   category: string | null;
   validity_days: number | null;
 }
-
-export type QuoteTemplateItem = {
-  productId: string;
-  productName: string;
-  quantity: number;
-  unitPrice: number;
-  personalizations?: any[];
-};
 
 export type CreateTemplateInput = Partial<Omit<QuoteTemplate, 'id' | 'created_at' | 'updated_at'>>;
 

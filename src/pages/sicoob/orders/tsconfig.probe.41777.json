@@ -1,0 +1,6 @@
+{
+  "extends": "./tsconfig.app.json",
+  "include": [
+    "src/pages/sicoob/orders/OrderDetailPage.tsx"
+  ]
+}

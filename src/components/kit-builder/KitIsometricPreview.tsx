@@ -38,7 +38,7 @@ const PALETTE = [
 ];
 
 function colorFor(id: string, idx: number): string {
-  return PALETTE[idx % PALETTE.length];
+  return PALETTE[idx % PALETTE.length] ?? PALETTE[0];
 }
 
 // Bin packing 3D simplificado (shelf packing por camadas Y)
@@ -131,10 +131,11 @@ export function KitIsometricPreview({ kitState, className }: KitIsometricPreview
   }
 
   const { internalWidth: bw, internalHeight: bh, internalDepth: bd } = box;
-  const corners = [
+  const corners: { px: number; py: number }[] = [
     iso(0, 0, 0), iso(bw, 0, 0), iso(bw, 0, bd), iso(0, 0, bd),
     iso(0, bh, 0), iso(bw, bh, 0), iso(bw, bh, bd), iso(0, bh, bd),
   ];
+  const corner = (i: number): { px: number; py: number } => corners[i] ?? { px: 0, py: 0 };
   const xs = corners.map((c) => c.px);
   const ys = corners.map((c) => c.py);
   const minX = Math.min(...xs), maxX = Math.max(...xs);
@@ -160,9 +161,9 @@ export function KitIsometricPreview({ kitState, className }: KitIsometricPreview
     pts.map((p, i) => `${i === 0 ? 'M' : 'L'}${(p.px + tx).toFixed(1)},${(p.py + ty).toFixed(1)}`).join(' ') + ' Z';
 
   // Caixa: face traseira-direita + base + lateral
-  const boxBack = facePath([corners[1], corners[2], corners[6], corners[5]]);
-  const boxLeft = facePath([corners[0], corners[3], corners[7], corners[4]]);
-  const boxBottom = facePath([corners[0], corners[1], corners[2], corners[3]]);
+  const boxBack = facePath([corner(1), corner(2), corner(6), corner(5)]);
+  const boxLeft = facePath([corner(0), corner(3), corner(7), corner(4)]);
+  const boxBottom = facePath([corner(0), corner(1), corner(2), corner(3)]);
 
   // Itens — desenhar do mais distante (z+x maior) ao mais próximo, baixo→alto
   const sorted = layout
@@ -236,7 +237,7 @@ export function KitIsometricPreview({ kitState, className }: KitIsometricPreview
 
             {/* Borda superior (wireframe) */}
             <path
-              d={facePath([corners[4], corners[5], corners[6], corners[7]])}
+              d={facePath([corner(4), corner(5), corner(6), corner(7)])}
               fill="none"
               stroke="hsl(var(--border))"
               strokeWidth="1"

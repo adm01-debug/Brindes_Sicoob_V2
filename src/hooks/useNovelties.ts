@@ -116,8 +116,8 @@ async function enrichNovelties(novelties: NoveltyWithDetails[]): Promise<Novelty
       : { records: [] as SupplierRecord[] },
   ]);
 
-  const catMap = new Map(catResult.records.map(c => [c.id, c.name]));
-  const supMap = new Map(supResult.records.map(s => [s.id, { name: s.name, code: s.code }]));
+  const catMap = new Map((catResult.records || []).map(c => [c.id, c.name]));
+  const supMap = new Map((supResult.records || []).map(s => [s.id, { name: s.name, code: s.code }]));
 
   return novelties.map(n => ({
     ...n,
@@ -189,7 +189,7 @@ export function useNoveltiesWithDetails(options: UseNoveltiesOptions = {}) {
         limit,
       });
 
-      let novelties = result.records.map(toNovelty).filter(n => n.is_active);
+      let novelties = (result.records || []).map(toNovelty).filter(n => n.is_active);
 
       if (onlyHighlighted) {
         novelties = novelties.filter(n => n.is_highlighted);
@@ -222,7 +222,7 @@ export function useExpiringNovelties(maxDays: number = 7) {
         limit: 200,
       });
 
-      return result.records
+      return (result.records || [])
         .map(toNovelty)
         .filter(n => n.is_active && n.days_remaining <= maxDays)
         .sort((a, b) => a.days_remaining - b.days_remaining);
@@ -265,7 +265,7 @@ export function useNoveltyStats() {
       const weekStart = todayStart - 6 * 86400000;
       const fifteenDaysStart = todayStart - 14 * 86400000;
 
-      const novelties = noveltiesResult.records.map(p => ({
+      const novelties = (noveltiesResult.records || []).map(p => ({
         daysRemaining: calcDaysRemaining(p.created_at),
         createdTime: new Date(p.created_at).getTime(),
         supplierId: p.supplier_id,
@@ -306,7 +306,7 @@ export function useNoveltyStats() {
             filters: { id: topSupplierId },
             limit: 1,
           });
-          topSupplierName = supResult.records[0]?.name || null;
+          topSupplierName = supResult.records?.[0]?.name || null;
         } catch { /* fallback */ }
       }
 
@@ -349,8 +349,8 @@ export function useNovelties(options: UseNoveltiesOptions & { supplierCode?: str
           filters: { code: supplierCode },
           limit: 1,
         });
-        if (supplierResult.records.length > 0) {
-          filters.supplier_id = supplierResult.records[0].id;
+        if (supplierResult.records && supplierResult.records.length > 0) {
+          filters.supplier_id = supplierResult.records[0]?.id;
         }
       }
 
@@ -363,7 +363,7 @@ export function useNovelties(options: UseNoveltiesOptions & { supplierCode?: str
         limit,
       });
 
-      let novelties = result.records.map(toNovelty).filter(n => n.is_active);
+      let novelties = (result.records || []).map(toNovelty).filter(n => n.is_active);
 
       if (maxDays) {
         novelties = novelties.filter(n => n.days_remaining >= (NOVELTY_WINDOW_DAYS - maxDays));
@@ -416,11 +416,11 @@ export function useIsProductNovelty(productId: string) {
         limit: 1,
       });
 
-      if (!result.records.length) {
+      if (!result.records || !result.records.length) {
         return { isNovelty: false, daysRemaining: null };
       }
 
-      const daysRemaining = calcDaysRemaining(result.records[0].created_at);
+      const daysRemaining = calcDaysRemaining(result.records[0]!.created_at);
       return {
         isNovelty: daysRemaining > 0,
         daysRemaining: daysRemaining > 0 ? daysRemaining : null,
@@ -448,7 +448,7 @@ export function useNoveltyProductIds() {
         limit: 500,
       });
 
-      return new Set(result.records.map(r => r.id));
+      return new Set((result.records || []).map(r => r.id));
     },
     staleTime: 2 * 60 * 1000,
   });

@@ -222,10 +222,10 @@ export default function ProductDetail() {
         <SupplierComparisonModal product={product} open={supplierCompareOpen} onOpenChange={setSupplierCompareOpen} />
         <FutureStockModal open={futureStockOpen} onOpenChange={setFutureStockOpen} productId={product.id} productName={product.name} productSku={product.sku} />
         <PackagingModal isOpen={packagingModalOpen} onClose={() => setPackagingModalOpen(false)}
-          packingType={product.packagingContext === 'with_customization' ? (product.repackingType || product.packingType) : product.packingType}
-          packagingContext={product.packagingContext} boxImage={product.boxImage}
-          boxWidthMm={product.boxWidthMm} boxHeightMm={product.boxHeightMm} boxLengthMm={product.boxLengthMm}
-          boxWeightKg={product.boxWeightKg} boxQuantity={product.boxQuantity} boxVolumeCm3={product.boxVolumeCm3}
+          packingType={(product.packagingContext === 'with_customization' ? (product.repackingType || product.packingType) : product.packingType) ?? null}
+          packagingContext={product.packagingContext} boxImage={product.boxImage ?? null}
+          boxWidthMm={product.boxWidthMm ?? null} boxHeightMm={product.boxHeightMm ?? null} boxLengthMm={product.boxLengthMm ?? null}
+          boxWeightKg={product.boxWeightKg ?? null} boxQuantity={product.boxQuantity ?? null} boxVolumeCm3={product.boxVolumeCm3 ?? null}
         />
       </div>
 

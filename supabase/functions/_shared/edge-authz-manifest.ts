@@ -72,6 +72,12 @@ export const EDGE_AUTHZ_MANIFEST: Record<string, AuthzEntry> = {
   "detect-new-device": { category: "public", rationale: "Anti-fraude pré-login" },
   "bi-share-dossier": { category: "public", rationale: "Dossiê compartilhado por token" },
   "dropbox-list": { category: "public", rationale: "Listagem pública de arquivos curados" },
+  "quote-approval": {
+    category: "public",
+    rationale: "Aprovação/assinatura de orçamento pelo cliente via token público (quote_approval_tokens) + rate limit",
+    enforcedBy: "custom",
+    skipAnonBypassTest: true,
+  },
 
   // ---------------- Webhooks (assinatura própria) ----------------
   "webhook-inbound": { category: "scoped", rationale: "HMAC-SHA256 inline" },
@@ -96,8 +102,19 @@ export const EDGE_AUTHZ_MANIFEST: Record<string, AuthzEntry> = {
   "connections-auto-test": { category: "service", rationale: "pg_cron — auto-test connections" },
   "connections-hub-audit": { category: "service", rationale: "pg_cron diário — auditoria" },
   "ownership-audit": { category: "service", rationale: "pg_cron diário — auditoria órfãos" },
+  "sicoob-approval-notifications": {
+    category: "service",
+    rationale: "Disparada por trigger/DB webhook em sicoob_approval_requests; envia notificações (Slack/e-mail) via service-role",
+    enforcedBy: "custom",
+    skipAnonBypassTest: true,
+  },
 
   // ---------------- Authenticated (qualquer user logado) ----------------
+  "admin-audit-hook": {
+    category: "authenticated",
+    rationale: "Registra eventos de auditoria do usuário logado (valida JWT via auth.getUser inline)",
+    enforcedBy: "custom",
+  },
   "ai-recommendations": { category: "authenticated", rationale: "Recomendações IA do user logado" },
   "elevenlabs-scribe-token": { category: "authenticated", rationale: "Token TTS do user" },
   "elevenlabs-tts": { category: "authenticated", rationale: "TTS do user" },

@@ -77,7 +77,7 @@ async function fetchPageResilient(params: {
       fetchPageResilient({ ...params, offset: params.offset + firstHalf, limit: secondHalf, countMode: 'none' }),
     ]);
     return {
-      records: [...left.records, ...right.records],
+      records: [...(left.records ?? []), ...(right.records ?? [])],
       count: params.countMode === 'none' ? null : left.count ?? right.count ?? null,
     };
   }
@@ -97,7 +97,7 @@ export async function fetchPromobrindProductsLightweight(options?: {
 
   if (typeof options?.limit === 'number' && options.limit > 0) {
     const result = await fetchPageResilient({ filters, orderBy, limit: options.limit, offset: baseOffset, countMode: 'none' });
-    return result.records;
+    return result.records ?? [];
   }
 
   const maxTotal = LIGHTWEIGHT_MAX_TOTAL;
@@ -150,9 +150,10 @@ export async function fetchPromobrindProductsLightweight(options?: {
       logger.warn(`[lightweight] Fase 2 abortada em offset=${nextOffset} (${products.length} produtos):`, err);
       break;
     }
-    if (page.records.length === 0) break;
-    products.push(...page.records);
-    if (page.records.length < LIGHTWEIGHT_PAGE_SIZE) break;
+    const pageRecords = page.records ?? [];
+    if (pageRecords.length === 0) break;
+    products.push(...pageRecords);
+    if (pageRecords.length < LIGHTWEIGHT_PAGE_SIZE) break;
     nextOffset += LIGHTWEIGHT_PAGE_SIZE;
   }
 
@@ -166,10 +167,11 @@ async function fetchSequential(
   maxTotal: number,
 ): Promise<LightweightProduct[]> {
   const firstPage = await fetchPageResilient({ filters, orderBy, limit: LIGHTWEIGHT_PAGE_SIZE, offset: baseOffset, countMode: 'planned' });
-  const products: LightweightProduct[] = [...firstPage.records];
-  if (firstPage.records.length < LIGHTWEIGHT_PAGE_SIZE) return products;
+  const firstPageRecords = firstPage.records ?? [];
+  const products: LightweightProduct[] = [...firstPageRecords];
+  if (firstPageRecords.length < LIGHTWEIGHT_PAGE_SIZE) return products;
 
-  const estimatedTotal = typeof firstPage.count === 'number' && firstPage.count > firstPage.records.length
+  const estimatedTotal = typeof firstPage.count === 'number' && firstPage.count > firstPageRecords.length
     ? Math.min(firstPage.count, maxTotal) : maxTotal;
   const remaining = estimatedTotal - products.length;
   if (remaining <= 0) return products;
@@ -184,8 +186,9 @@ async function fetchSequential(
     const pages = await Promise.all(
       batch.map(offset => fetchPageResilient({ filters, orderBy, limit: LIGHTWEIGHT_PAGE_SIZE, offset, countMode: 'none' })),
     );
-    for (const page of pages) products.push(...page.records);
-    if (pages[pages.length - 1]?.records.length < LIGHTWEIGHT_PAGE_SIZE) break;
+    for (const page of pages) products.push(...(page.records ?? []));
+    const lastPage = pages[pages.length - 1];
+    if ((lastPage?.records?.length ?? 0) < LIGHTWEIGHT_PAGE_SIZE) break;
     if (products.length >= maxTotal) break;
   }
   return products;

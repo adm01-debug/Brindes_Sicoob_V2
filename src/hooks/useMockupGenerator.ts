@@ -147,11 +147,11 @@ export function useMockupGenerator() {
         isCurved: loc.isCurved,
         techniquesAvailable: loc.techniquesAvailable,
       }));
-    if (newAreas.length > 0) { setPersonalizationAreas(newAreas); setActiveAreaId(newAreas[0].id); }
+    if (newAreas.length > 0) { setPersonalizationAreas(newAreas); setActiveAreaId(newAreas[0]?.id ?? null); }
   }, [productLocations]);
 
   useEffect(() => {
-    if (!activeAreaId && personalizationAreas.length > 0) setActiveAreaId(personalizationAreas[0].id);
+    if (!activeAreaId && personalizationAreas.length > 0) setActiveAreaId(personalizationAreas[0]?.id ?? null);
   }, [activeAreaId, personalizationAreas]);
 
   useEffect(() => { fetchData(); fetchHistory(); }, []);
@@ -200,7 +200,7 @@ export function useMockupGenerator() {
           if (draft.clientId && draft.clientName) setSelectedClient({ id: draft.clientId, name: draft.clientName });
           if (draft.personalizationAreas.length > 0) {
             setPersonalizationAreas(draft.personalizationAreas);
-            setActiveAreaId(draft.personalizationAreas[0].id);
+            setActiveAreaId(draft.personalizationAreas[0]?.id ?? null);
           }
           setShowDraftRestoredNotice(true);
           setTimeout(() => setShowDraftRestoredNotice(false), 5000);
@@ -260,7 +260,8 @@ export function useMockupGenerator() {
         toast.error("Erro ao carregar técnicas. Tente recarregar a página.");
         return;
       }
-      const records = adaptTabelaPrecoRows(techniquesRes?.data?.records || techniquesRes?.records || []);
+      const techniquesResObj = (techniquesRes ?? {}) as { data?: { records?: Record<string, unknown>[] }; records?: Record<string, unknown>[] };
+      const records = adaptTabelaPrecoRows(techniquesResObj.data?.records || techniquesResObj.records || []);
       const techniquesData = records.map((r) => ({
         id: r.id,
         name: r.name ?? r.nome ?? '',
@@ -363,7 +364,9 @@ export function useMockupGenerator() {
 
       if (result.singleUrl && result.batchResults.length === 0) {
         setGeneratedMockup(result.singleUrl);
-        const recordId = await saveMockupToHistory(result.singleUrl, areasWithLogos[0]);
+        const firstArea = areasWithLogos[0];
+        if (!firstArea) return;
+        const recordId = await saveMockupToHistory(result.singleUrl, firstArea);
         if (recordId) { setLastSavedMockupUrl(result.singleUrl); setLastSavedLayoutMode('ai'); setLastSavedRecordId(recordId); }
         showMockupSuccessToast({
           mockupUrl: result.singleUrl, productName: selectedProduct!.name,
@@ -373,7 +376,9 @@ export function useMockupGenerator() {
       } else {
         for (let i = 0; i < result.batchResults.length; i++) {
           const r = result.batchResults[i];
+          if (!r) continue;
           const area = areasWithLogos.find(a => a.name === r.areaName) || areasWithLogos[i];
+          if (!area) continue;
           const recordId = await saveMockupToHistory(r.url, area);
           if (recordId && i === result.batchResults.length - 1) {
             setLastSavedMockupUrl(r.url); setLastSavedLayoutMode('ai'); setLastSavedRecordId(recordId);

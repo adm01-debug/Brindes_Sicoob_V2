@@ -1,0 +1,11 @@
+{
+  "extends": "./tsconfig.app.json",
+  "include": [
+    "src/components/filters/ColorGroupFilter.tsx",
+    "src/components/sicoob/orders/OrderAuditTimeline.tsx",
+    "src/data/mockData.ts",
+    "src/hooks/useMockupDraft.ts",
+    "src/lib/external-db/products-detail.ts",
+    "src/pages/filters/useFiltersPageState.ts"
+  ]
+}

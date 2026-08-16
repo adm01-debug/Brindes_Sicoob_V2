@@ -1,0 +1,8 @@
+{
+  "extends": "./tsconfig.app.json",
+  "include": [
+    "src/hooks/useMockupDraft.ts",
+    "src/hooks/useSupplierFiscalData.ts",
+    "src/pages/FavoritesPage.tsx"
+  ]
+}

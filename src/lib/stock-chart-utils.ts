@@ -114,7 +114,12 @@ export interface MockVelocityData {
 }
 
 export function generateMockVelocity(productId: string): MockVelocityData {
-  return generateMockVelocities(productId)[0];
+  const velocities = generateMockVelocities(productId);
+  const first = velocities[0];
+  if (!first) {
+    throw new Error('generateMockVelocities returned empty array');
+  }
+  return first;
 }
 
 /**
@@ -170,7 +175,7 @@ export function generateMockSupplierNames(productId: string): Map<string, string
   const map = new Map<string, string>();
   for (let i = 0; i < count; i++) {
     const nameIdx = (Math.floor(seededRandom(baseSeed + 400 + i) * MOCK_SUPPLIER_NAMES.length)) % MOCK_SUPPLIER_NAMES.length;
-    map.set(`mock-supplier-${i}`, MOCK_SUPPLIER_NAMES[nameIdx]);
+    map.set(`mock-supplier-${i}`, MOCK_SUPPLIER_NAMES[nameIdx] ?? MOCK_SUPPLIER_NAMES[0]!);
   }
   return map;
 }
@@ -201,6 +206,9 @@ export function generateMockIntelligence(productId: string): MockIntelligenceDat
   const baseSeed = hashCode(productId);
   const vels = generateMockVelocities(productId);
   const vel = vels[0]; // best velocity
+  if (!vel) {
+    throw new Error('generateMockVelocities returned empty array');
+  }
   const abcRoll = seededRandom(baseSeed + 200);
   const abc: 'A' | 'B' | 'C' = abcRoll < 0.2 ? 'A' : abcRoll < 0.5 ? 'B' : 'C';
   const totalStock = vels.reduce((sum, v) => sum + v.current_stock, 0);

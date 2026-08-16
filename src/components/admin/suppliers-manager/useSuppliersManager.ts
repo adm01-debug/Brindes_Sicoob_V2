@@ -90,7 +90,7 @@ export function useSuppliersManager() {
   const addPixKey = () => setPixKeys(prev => [...prev, createEmptyPixKey(prev.length === 0)]);
   const removePixKey = (id: string) => setPixKeys(prev => {
     const next = prev.filter(k => k.id !== id);
-    if (next.length > 0 && !next.some(k => k.principal)) next[0].principal = true;
+    if (next.length > 0 && !next.some(k => k.principal)) { const first = next[0]; if (first) first.principal = true; }
     return next.length > 0 ? next : [createEmptyPixKey(true)];
   });
 
@@ -136,9 +136,9 @@ export function useSuppliersManager() {
   const handleNew = () => { setEditingSupplier({ ...EMPTY_SUPPLIER }); setContacts([createEmptyContact()]); setIsNew(true); };
 
   const handleEdit = (supplier: Supplier) => {
-    const s = { ...supplier } as Record<string, unknown>;
-    try { const addr = (supplier as Record<string, unknown>).address_details ? JSON.parse((supplier as Record<string, unknown>).address_details as string) : null; if (addr && typeof addr === 'object') Object.assign(s, addr); } catch { /* ignore */ }
-    try { const social = (supplier as Record<string, unknown>).social_details ? JSON.parse((supplier as Record<string, unknown>).social_details as string) : null; if (social && typeof social === 'object') Object.assign(s, social); } catch { /* ignore */ }
+    const s: Record<string, unknown> = { ...supplier };
+    try { const addr = supplier.address_details ? JSON.parse(supplier.address_details) : null; if (addr && typeof addr === 'object') Object.assign(s, addr); } catch { /* ignore */ }
+    try { const social = supplier.social_details ? JSON.parse(supplier.social_details) : null; if (social && typeof social === 'object') Object.assign(s, social); } catch { /* ignore */ }
     setEditingSupplier(s as Partial<Supplier>);
 
     try {
@@ -160,18 +160,30 @@ export function useSuppliersManager() {
     const finMatchNew = notesStr.match(/\[Financeiro: Forma: (.*?), PIX: (.*?), PIX Atualizado: (.*?)\]/);
     const finMatchLegacy = notesStr.match(/\[Financeiro: Forma: (.*?), PIX Tipo: (.*?), PIX Número: (.*?), PIX Favorecido: (.*?), PIX Atualizado: (.*?)\]/);
     if (finMatchNew) {
-      setFormaPagamento(finMatchNew[1] !== '-' ? finMatchNew[1].split(',').filter(Boolean) : []);
+      const formaStr = finMatchNew[1] ?? '-';
+      setFormaPagamento(formaStr !== '-' ? formaStr.split(',').filter(Boolean) : []);
       const pixData = finMatchNew[2];
       if (pixData && pixData !== '-') {
-        const keys = pixData.split(';;').map(entry => { const [tipo, chave, favorecido, principal] = entry.split('|'); return { id: crypto.randomUUID(), tipo: tipo === '-' ? '' : tipo, chave, favorecido: favorecido === '-' ? '' : favorecido, principal: principal === '1' }; });
-        if (keys.length > 0 && !keys.some(k => k.principal)) keys[0].principal = true;
+        const keys = pixData.split(';;').map(entry => {
+          const [tipoRaw, chaveRaw, favorecidoRaw, principalRaw] = entry.split('|');
+          const tipo = tipoRaw ?? '';
+          const chave = chaveRaw ?? '';
+          const favorecido = favorecidoRaw ?? '';
+          return { id: crypto.randomUUID(), tipo: tipo === '-' ? '' : tipo, chave, favorecido: favorecido === '-' ? '' : favorecido, principal: principalRaw === '1' };
+        });
+        if (keys.length > 0 && !keys.some(k => k.principal)) { const first = keys[0]; if (first) first.principal = true; }
         setPixKeys(keys.length > 0 ? keys : [createEmptyPixKey(true)]);
       } else { setPixKeys([createEmptyPixKey(true)]); }
     } else if (finMatchLegacy) {
-      setFormaPagamento(finMatchLegacy[1] !== '-' ? finMatchLegacy[1].split(',').filter(Boolean) : []);
-      const chave = finMatchLegacy[3] !== '-' ? finMatchLegacy[3] : '';
-      if (chave) { setPixKeys([{ id: crypto.randomUUID(), tipo: finMatchLegacy[2] !== '-' ? finMatchLegacy[2] : '', chave, favorecido: finMatchLegacy[4] !== '-' ? finMatchLegacy[4] : '', principal: true }]); }
-      else { setPixKeys([createEmptyPixKey(true)]); }
+      const formaLegacyStr = finMatchLegacy[1] ?? '-';
+      setFormaPagamento(formaLegacyStr !== '-' ? formaLegacyStr.split(',').filter(Boolean) : []);
+      const chaveRaw = finMatchLegacy[3] ?? '-';
+      const chave = chaveRaw !== '-' ? chaveRaw : '';
+      if (chave) {
+        const tipoRaw = finMatchLegacy[2] ?? '-';
+        const favorecidoRaw = finMatchLegacy[4] ?? '-';
+        setPixKeys([{ id: crypto.randomUUID(), tipo: tipoRaw !== '-' ? tipoRaw : '', chave, favorecido: favorecidoRaw !== '-' ? favorecidoRaw : '', principal: true }]);
+      } else { setPixKeys([createEmptyPixKey(true)]); }
     } else { setFormaPagamento([]); setPixKeys([createEmptyPixKey(true)]); }
 
     // ── Read dedicated columns (no more regex for these!) ──
@@ -185,23 +197,29 @@ export function useSuppliersManager() {
     if (!supplier.inscricao_estadual && !supplier.tax_regime && !supplier.state_uf) {
       const fiscalMatch = notesStr.match(/\[Fiscal: IE: (.*?), Regime: (.*?), UF Faturamento: (.*?)\]/);
       if (fiscalMatch) {
-        setInscricaoEstadual(fiscalMatch[1] !== '-' ? fiscalMatch[1] : '');
-        setRegimeTributario(fiscalMatch[2] !== '-' ? fiscalMatch[2] : '');
-        setEstadoFaturamento(fiscalMatch[3] !== '-' ? fiscalMatch[3] : '');
+        const ie = fiscalMatch[1] ?? '-';
+        const regime = fiscalMatch[2] ?? '-';
+        const uf = fiscalMatch[3] ?? '-';
+        setInscricaoEstadual(ie !== '-' ? ie : '');
+        setRegimeTributario(regime !== '-' ? regime : '');
+        setEstadoFaturamento(uf !== '-' ? uf : '');
       }
     }
     if (!supplier.phone2) {
       const foneMatch = notesStr.match(/\[Fones Fixos: 01: (.*?), 02: (.*?)\]/);
       if (foneMatch) {
         // phone (fone fixo 1) is already a column — only recover phone2
-        setFoneFixo2(foneMatch[2] !== '-' ? foneMatch[2] : '');
+        const fone2 = foneMatch[2] ?? '-';
+        setFoneFixo2(fone2 !== '-' ? fone2 : '');
       }
     }
 
     const carrierMatch = notesStr.match(/\[Transportadora: (.*?), ID: (.*?)\]/);
     if (carrierMatch) {
-      setTransportadoraPadrao(carrierMatch[1] !== '-' ? carrierMatch[1] : '');
-      setTransportadoraId(carrierMatch[2] !== '-' ? carrierMatch[2] : '');
+      const carrierName = carrierMatch[1] ?? '-';
+      const carrierId = carrierMatch[2] ?? '-';
+      setTransportadoraPadrao(carrierName !== '-' ? carrierName : '');
+      setTransportadoraId(carrierId !== '-' ? carrierId : '');
     } else { setTransportadoraPadrao(''); setTransportadoraId(''); }
     setCarrierSearch(''); setCarrierResults([]); setShowCarrierDropdown(false);
 

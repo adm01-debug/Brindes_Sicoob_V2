@@ -77,7 +77,7 @@ export function useSellerCarts() {
   // Fetch all carts with items
   const cartsQuery = useQuery<SellerCart[]>({
     queryKey: [QUERY_KEY, userId],
-    queryFn: async () => {
+    queryFn: async (): Promise<SellerCart[]> => {
       if (!userId) return [];
 
       const { data: carts, error: cartsError } = await supabase
@@ -100,8 +100,8 @@ export function useSellerCarts() {
       // Ensure stable references for cart items
       return carts.map(cart => ({
         ...cart,
-        notes: (cart as Record<string, unknown>).notes ?? null,
-        status: (cart as Record<string, unknown>).status ?? "novo",
+        notes: ((cart as Record<string, unknown>).notes as string | null) ?? null,
+        status: ((cart as Record<string, unknown>).status as string) ?? "novo",
         items: (items || []).filter(i => i.cart_id === cart.id),
       }));
     },

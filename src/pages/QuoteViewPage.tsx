@@ -90,7 +90,7 @@ export default function QuoteViewPage() {
     );
   }
 
-  const status = statusConfig[quote.status] || statusConfig.draft;
+  const status = statusConfig[quote.status] ?? { label: quote.status, variant: "outline" as const };
 
   return (
     <>
@@ -158,6 +158,7 @@ export default function QuoteViewPage() {
                     onClick={async () => {
                       try {
                         // rls-allow: lookup por id; RLS valida ownership
+                        if (!quote.id) return;
                         await supabase.from("quotes").update({ status: "pending" } as Record<string, unknown>).eq("id", quote.id);
                         await logQuoteHistory(quote.id, "status_change", "Status revertido para Pendente", { oldValue: "sent", newValue: "pending" });
                         setQuote((prev) => prev ? { ...prev, status: "pending" } : prev);
@@ -303,7 +304,7 @@ export default function QuoteViewPage() {
                   onChange={() => {}} 
                 />
                 <QuoteWhatsAppShare 
-                  quoteNumber={quote.quote_number}
+                  quoteNumber={quote.quote_number || ""}
                   total={quote.total}
                   clientPhone={quote.client_phone}
                   validUntil={quote.valid_until}
@@ -313,7 +314,21 @@ export default function QuoteViewPage() {
               </div>
             </div>
             <Separator />
-            <QuoteItemsTable items={quote.items || []} />
+            <QuoteItemsTable
+              items={(quote.items || []).map((item) => ({
+                ...item,
+                product_id: item.product_id,
+                product_sku: item.product_sku ?? null,
+                product_image_url: item.product_image_url ?? null,
+                color_name: item.color_name ?? null,
+                color_hex: item.color_hex ?? null,
+                kit_group_id: item.kit_group_id ?? null,
+                kit_name: item.kit_name ?? null,
+                price_updated_at: item.price_updated_at ?? null,
+                price_freshness_threshold_days: item.price_freshness_threshold_days ?? null,
+                personalizations: item.personalizations ?? [],
+              }))}
+            />
             <QuoteTotalsSummary
               items={quote.items || []}
               discountPercent={quote.discount_percent}
