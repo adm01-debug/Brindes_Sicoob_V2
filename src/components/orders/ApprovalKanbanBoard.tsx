@@ -10,8 +10,8 @@ import {
 } from "@dnd-kit/core";
 import { toast } from "sonner";
 import { useOrdersList, useUpdateOrder, ORDER_STATUS_LABELS, canTransitionTo, type OrderRow, type OrderStatus } from "@/hooks";
-import { DroppableColumn } from "@/pages/sicoob/orders/OrdersKanbanPage";
-import { DraggableCard } from "@/pages/sicoob/orders/OrdersKanbanPage";
+import { DroppableColumn, type DroppableColumnProps } from "@/pages/sicoob/orders/OrdersKanbanPage";
+import { DraggableCard, type DraggableCardProps } from "@/pages/sicoob/orders/OrdersKanbanPage";
 import { useAuth } from "@/contexts/AuthContext";
 import { Loader2 } from "lucide-react";
 import { OrderDetailSheet } from "./OrderDetailSheet";
@@ -80,7 +80,7 @@ export function ApprovalKanbanBoard() {
           return (
             <DroppableColumn
               key={column.id}
-              column={{ id: column.id as any, title: column.title }}
+              column={{ id: column.id as string as DroppableColumnProps["column"]["id"], title: column.title }}
               isOver={false} // Will be handled by the component internally if possible or simplified
               invalidTarget={false}
               count={columnOrders.length}
@@ -92,7 +92,7 @@ export function ApprovalKanbanBoard() {
                     id: order.id,
                     order_number: order.order_number,
                     pa: order.client_company || "Sem Empresa",
-                    status: order.status,
+                    status: order.status as string as DraggableCardProps["order"]["status"],
                     total: order.total || 0,
                   }}
                   onClick={() => setSelectedOrderId(order.id)}

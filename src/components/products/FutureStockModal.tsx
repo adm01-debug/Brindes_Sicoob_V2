@@ -237,7 +237,7 @@ export function FutureStockModal({
                             !hasEntries && "opacity-40 grayscale"
                           )}
                           style={{
-                            borderColor: isSelected ? color.hex : undefined,
+                            borderColor: isSelected ? (color.hex ?? undefined) : undefined,
                           }}
                         >
                           {/* Imagem ou cor sólida */}

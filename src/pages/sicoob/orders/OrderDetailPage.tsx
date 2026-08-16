@@ -303,6 +303,8 @@ export default function OrderDetailPage() {
     );
   }
 
+  if (!orderData) return null;
+
   const canApprove = isSupervisorOrAbove || (isGerentePa && orderData?.pa_id === profile?.pa_id);
   
   // Controle de permissões por aba
@@ -741,20 +743,20 @@ export default function OrderDetailPage() {
                   <div className="w-full h-2.5 bg-secondary rounded-full overflow-hidden relative">
                     <div 
                       className={`h-full transition-all duration-500 ${isOverBudget ? 'bg-destructive' : 'bg-success'}`} 
-                      style={{ width: `${Math.min((orderTotal / Math.max(budget, 1)) * 100, 100)}%` }} 
+                      style={{ width: `${Math.min((orderTotal / Math.max(budget?.verba_total ?? 1, 1)) * 100, 100)}%` }} 
                     />
                     {/* Indicador visual do impacto deste pedido específico */}
                     <div 
                       className="absolute top-0 h-full bg-primary/30 animate-pulse"
                       style={{ 
-                        left: `${Math.min(((remainingBudget - orderTotal) / Math.max(budget, 1)) * 100, 100)}%`,
-                        width: `${Math.min((orderTotal / Math.max(budget, 1)) * 100, 100)}%` 
+                        left: `${Math.min(((remainingBudget - orderTotal) / Math.max(budget?.verba_total ?? 1, 1)) * 100, 100)}%`,
+                        width: `${Math.min((orderTotal / Math.max(budget?.verba_total ?? 1, 1)) * 100, 100)}%` 
                       }}
                     />
                   </div>
                   <p className="text-[10px] text-muted-foreground flex justify-between">
                     <span>Impacto do Pedido: R$ {orderTotal.toLocaleString('pt-BR')}</span>
-                    <span>Total Verba: R$ {budget.toLocaleString('pt-BR')}</span>
+                    <span>Total Verba: R$ {(budget?.verba_total ?? 0).toLocaleString('pt-BR')}</span>
                   </p>
                 </div>
 
@@ -782,8 +784,8 @@ export default function OrderDetailPage() {
             <OrderBudgetIntelligence 
               orderTotal={orderTotal}
               remainingBudget={remainingBudget}
-              allocatedBudget={budget?.allocated_amount || 50000}
-              paName={(orderData as any).pa?.nome || "PA Sicoob"}
+              allocatedBudget={budget?.verba_total || 50000}
+              paName={orderData.pa?.nome || "PA Sicoob"}
             />
             <LogisticsCommandCenter 
               orderId={id!}
