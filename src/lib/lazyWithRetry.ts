@@ -14,7 +14,7 @@ import { attemptChunkRecovery, isChunkLoadError } from "@/lib/chunk-recovery";
  *      Se já estourou o limite de reloads na janela, propaga o erro para
  *      a Error Boundary exibir tela estável (evita loop = tela branca).
  */
-export function lazyWithRetry<M extends { default: ComponentType<any> }>(
+export function lazyWithRetry<M extends { default: ComponentType<never> }>(
   componentImport: () => Promise<M>,
   retries = 3,
   interval = 1000
