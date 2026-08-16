@@ -125,6 +125,33 @@ for (const fn of fns) {
   }
 }
 
+// 4.1) Anti-exfiltração: nenhuma edge pode devolver credenciais de serviço
+// no corpo da resposta (incidente migrate-helper). Detecta o uso das envs
+// sensíveis fora de um client Supabase (createClient) legítimo.
+const SECRET_ENVS = ["SUPABASE_SERVICE_ROLE_KEY", "SUPABASE_DB_URL"];
+for (const fn of fns) {
+  const path = join(FN_DIR, fn, "index.ts");
+  let src;
+  try {
+    src = readFileSync(path, "utf8");
+  } catch {
+    continue;
+  }
+  for (const env of SECRET_ENVS) {
+    // Padrão proibido: env sensível dentro de JSON.stringify / objeto de resposta.
+    const re = new RegExp(
+      `(JSON\\.stringify\\([^;]{0,400}${env}|(?:service_role|db_url|serviceRole|dbUrl)\\s*:\\s*Deno\\.env\\.get\\(["']${env}["']\\))`,
+      "s",
+    );
+    if (re.test(src)) {
+      errors.push(
+        `[exfiltration] ${fn}: parece retornar ${env} no corpo da resposta. ` +
+          `Credenciais de serviço NUNCA podem ser expostas por uma edge function.`,
+      );
+    }
+  }
+}
+
 // 5) Output
 console.log(`\n🔐 Edge Authorization Gate`);
 console.log(`   Edges no FS: ${fns.length}`);
