@@ -13,7 +13,7 @@ import type {
   Product, ProductGroup, ProductGroupMember, Component, Location, Technique, LocationTechnique,
 } from "./types";
 
-interface GroupComponentRow {
+type GroupComponentRow = {
   id: string;
   component_code: string;
   component_name: string;
@@ -22,7 +22,7 @@ interface GroupComponentRow {
   sort_order: number;
 }
 
-interface GroupLocationRow {
+type GroupLocationRow = {
   id: string;
   location_code: string;
   location_name: string;
@@ -33,7 +33,7 @@ interface GroupLocationRow {
   is_active: boolean;
 }
 
-interface GroupLocationTechniqueRow {
+type GroupLocationTechniqueRow = {
   technique_id: string;
   max_colors: number | null;
   is_default: boolean;

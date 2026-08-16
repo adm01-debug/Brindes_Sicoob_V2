@@ -70,8 +70,8 @@ export async function fetchPromobrindProducts(options?: {
         countMode: shouldRequestCount ? 'planned' : 'none',
       });
     }
-    products = result.records;
-    totalCount = result.count;
+    products = result.records ?? [];
+    totalCount = result.count ?? null;
   } else {
     const BASE_PAGE_SIZE = 200;
     let offset = 0;
@@ -135,10 +135,11 @@ export async function fetchPromobrindProducts(options?: {
         }
       }
 
+      const pageRecords = page!.records ?? [];
       if (typeof page!.count === 'number') loopCount = page!.count;
-      products.push(...page!.records);
-      offset += page!.records.length;
-      if (page!.records.length < pageSize) break;
+      products.push(...pageRecords);
+      offset += pageRecords.length;
+      if (pageRecords.length < pageSize) break;
       if (loopCount !== null && products.length >= loopCount) break;
     }
     totalCount = loopCount;
@@ -179,7 +180,9 @@ async function enrichProducts(
   }
 
   const batchQueries: BatchQuery[] = [];
-  const queryMap: Record<string, number[]> = { variants: [], images: [], suppliers: [], colorVariations: [], colorGroups: [] };
+  const queryMap: { variants: number[]; images: number[]; suppliers: number[]; colorVariations: number[]; colorGroups: number[] } = {
+    variants: [], images: [], suppliers: [], colorVariations: [], colorGroups: [],
+  };
 
   if (shouldRunHeavyEnrichment) {
     for (const chunk of idChunks) {
@@ -232,31 +235,46 @@ async function enrichProducts(
   }
 
   // Extract results
-  const variantsRecords: Record<string, unknown>[] = [];
+  type VariantRecord = {
+    id?: string; product_id: string; color_name: string | null; color_hex: string | null;
+    color_code: string | null; color_id: string | null; sku: string | null;
+    stock_quantity: number | null; images: string[] | null; selected_thumbnail: string | null;
+  };
+  type ImageRecord = {
+    product_id: string; url_cdn: string; url_original: string | null; filename: string | null;
+    image_type: string; is_primary: boolean; is_og_image: boolean; applies_to_color: boolean | null;
+    display_order: number; alt_text: string | null; title_text: string | null;
+    supplier_code: string | null; variant_id: string | null;
+  };
+  type SupplierRecord = { id: string; name: string; code: string };
+  type ColorVariationRecord = { id: string; name: string; slug: string; group_id: string };
+  type ColorGroupRecord = { id: string; name: string; slug: string };
+
+  const variantsRecords: VariantRecord[] = [];
   for (const idx of queryMap.variants) {
     const r = batchResults[idx];
-    if (r?.success && r.data?.records) variantsRecords.push(...r.data.records);
+    if (r?.success && r.data?.records) variantsRecords.push(...(r.data.records as VariantRecord[]));
   }
-  const imagesRecords: Record<string, unknown>[] = [];
+  const imagesRecords: ImageRecord[] = [];
   for (const idx of queryMap.images) {
     const r = batchResults[idx];
-    if (r?.success && r.data?.records) imagesRecords.push(...r.data.records);
+    if (r?.success && r.data?.records) imagesRecords.push(...(r.data.records as ImageRecord[]));
   }
-  const suppliersRecords: { id: string; name: string; code: string }[] = [];
+  const suppliersRecords: SupplierRecord[] = [];
   for (const idx of queryMap.suppliers) {
     const r = batchResults[idx];
-    if (r?.success && r.data?.records) suppliersRecords.push(...(r.data.records as ExternalProduct[]));
+    if (r?.success && r.data?.records) suppliersRecords.push(...(r.data.records as SupplierRecord[]));
   }
 
-  let colorVariationsRecords: Record<string, unknown>[] = [];
+  let colorVariationsRecords: ColorVariationRecord[] = [];
   for (const idx of queryMap.colorVariations) {
     const r = batchResults[idx];
-    if (r?.success && r.data?.records) colorVariationsRecords = r.data.records as unknown[];
+    if (r?.success && r.data?.records) colorVariationsRecords = r.data.records as ColorVariationRecord[];
   }
-  let colorGroupsRecords: Record<string, unknown>[] = [];
+  let colorGroupsRecords: ColorGroupRecord[] = [];
   for (const idx of queryMap.colorGroups) {
     const r = batchResults[idx];
-    if (r?.success && r.data?.records) colorGroupsRecords = r.data.records as unknown[];
+    if (r?.success && r.data?.records) colorGroupsRecords = r.data.records as ColorGroupRecord[];
   }
 
   const suppliersMap = new Map(suppliersRecords.map(s => [s.id, s.name]));
@@ -267,8 +285,8 @@ async function enrichProducts(
       if (s?.id && s?.name) putInCacheSafe('suppliers', { id: s.id, name: s.name, code: s.code });
     }
   } catch { /* cache populate is best-effort */ }
-  const colorVariationMap = new Map(colorVariationsRecords.map((v) => [v.id as string, { name: v.name as string, slug: v.slug as string, group_id: v.group_id as string }]));
-  const colorGroupMap = new Map(colorGroupsRecords.map((g) => [g.id as string, { name: g.name as string, slug: g.slug as string }]));
+  const colorVariationMap = new Map(colorVariationsRecords.map((v) => [v.id, { name: v.name, slug: v.slug, group_id: v.group_id }]));
+  const colorGroupMap = new Map(colorGroupsRecords.map((g) => [g.id, { name: g.name, slug: g.slug }]));
 
   // Build image map (Set already exists)
   // const productIdSet = new Set(productIds);

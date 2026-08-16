@@ -349,7 +349,7 @@ export function FutureStockModal({
                           ) : (
                             <div
                               className="w-full h-full"
-                              style={{ backgroundColor: entry.colorHex }}
+                              style={{ backgroundColor: entry.colorHex ?? undefined }}
                             />
                           )}
                         </div>

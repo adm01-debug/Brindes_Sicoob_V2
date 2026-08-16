@@ -353,7 +353,7 @@ export function sortVariationsByColor<T extends { color: { name: string; hex?: s
 /**
  * Ordena resumo de cores para FutureStockModal (escuro → claro)
  */
-export function sortColorSummary<T extends { name: string; hex?: string }>(
+export function sortColorSummary<T extends { name: string; hex?: string | null }>(
   colors: T[]
 ): T[] {
   if (!colors || colors.length === 0) return [];
@@ -361,6 +361,6 @@ export function sortColorSummary<T extends { name: string; hex?: string }>(
   return sortByColorGroup(
     colors, 
     (c) => c.name || '',
-    (c) => c.hex
+    (c) => c.hex ?? undefined
   );
 }

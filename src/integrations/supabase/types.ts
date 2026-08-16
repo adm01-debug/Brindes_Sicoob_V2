@@ -14,6 +14,59 @@ export type Database = {
   }
   public: {
     Tables: {
+      personalization_simulations: {
+        Row: {
+          id: string
+          seller_id: string
+          product_id: string | null
+          product_name: string
+          product_sku: string | null
+          quantity: number
+          product_unit_price: number
+          simulation_data: Json
+          notes: string | null
+          created_at: string
+          updated_at: string
+          client_id: string | null
+        }
+        Insert: {
+          id?: string
+          seller_id: string
+          product_id?: string | null
+          product_name: string
+          product_sku?: string | null
+          quantity: number
+          product_unit_price: number
+          simulation_data: Json
+          notes?: string | null
+          created_at?: string
+          updated_at?: string
+          client_id?: string | null
+        }
+        Update: {
+          id?: string
+          seller_id?: string
+          product_id?: string | null
+          product_name?: string
+          product_sku?: string | null
+          quantity?: number
+          product_unit_price?: number
+          simulation_data?: Json
+          notes?: string | null
+          created_at?: string
+          updated_at?: string
+          client_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "personalization_simulations_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "bitrix_clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       sales_goals: {
         Row: {
           achieved_at: string | null

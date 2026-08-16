@@ -9,7 +9,7 @@ import {
   type DragStartEvent,
 } from "@dnd-kit/core";
 import { toast } from "sonner";
-import { useOrdersList, useUpdateOrder, ORDER_STATUS_LABELS, canTransitionTo, type OrderRow } from "@/hooks";
+import { useOrdersList, useUpdateOrder, ORDER_STATUS_LABELS, canTransitionTo, type OrderRow, type OrderStatus } from "@/hooks";
 import { DroppableColumn } from "@/pages/sicoob/orders/OrdersKanbanPage";
 import { DraggableCard } from "@/pages/sicoob/orders/OrdersKanbanPage";
 import { useAuth } from "@/contexts/AuthContext";
@@ -27,7 +27,8 @@ const COLUMNS = [
 
 export function ApprovalKanbanBoard() {
   const { user } = useAuth();
-  const { data: orders, isLoading } = useOrdersList(user?.id, "all");
+  const { data: ordersResult, isLoading } = useOrdersList(user?.id, "all");
+  const orders = ordersResult?.data;
   const updateOrder = useUpdateOrder();
   
   const [activeId, setActiveId] = useState<string | null>(null);
@@ -39,7 +40,7 @@ export function ApprovalKanbanBoard() {
   );
 
   const activeOrder = useMemo(
-    () => orders?.find((o) => o.id === activeId) ?? null,
+    () => orders?.find((o: OrderRow) => o.id === activeId) ?? null,
     [orders, activeId],
   );
 
@@ -49,12 +50,12 @@ export function ApprovalKanbanBoard() {
 
   const handleDragEnd = (e: DragEndEvent) => {
     const orderId = String(e.active.id);
-    const targetStatus = e.over ? String(e.over.id) : null;
+    const targetStatus = e.over ? (String(e.over.id) as OrderStatus) : null;
     setActiveId(null);
     
     if (!targetStatus || !orders) return;
 
-    const order = orders.find((o) => o.id === orderId);
+    const order = orders.find((o: OrderRow) => o.id === orderId);
     if (!order || order.status === targetStatus) return;
 
     if (!canTransitionTo(order.status, targetStatus)) {
@@ -62,7 +63,7 @@ export function ApprovalKanbanBoard() {
       return;
     }
 
-    updateOrder.mutate({ id: orderId, status: targetStatus } as any);
+    updateOrder.mutate({ id: orderId, status: targetStatus });
   };
 
   if (isLoading) return <div className="py-20 text-center"><Loader2 className="h-8 w-8 animate-spin mx-auto text-primary" /></div>;
@@ -75,7 +76,7 @@ export function ApprovalKanbanBoard() {
     >
       <div className="flex gap-4 overflow-x-auto pb-4 min-h-[500px]" data-testid="approval-kanban">
         {COLUMNS.map((column) => {
-          const columnOrders = orders?.filter((o) => o.status === column.id) || [];
+          const columnOrders = orders?.filter((o: OrderRow) => o.status === column.id) || [];
           return (
             <DroppableColumn
               key={column.id}
@@ -84,15 +85,15 @@ export function ApprovalKanbanBoard() {
               invalidTarget={false}
               count={columnOrders.length}
             >
-              {columnOrders.map((order) => (
+              {columnOrders.map((order: OrderRow) => (
                 <DraggableCard
                   key={order.id}
                   order={{
                     id: order.id,
+                    order_number: order.order_number,
                     pa: order.client_company || "Sem Empresa",
-                    status: order.status as any,
+                    status: order.status,
                     total: order.total || 0,
-                    items: 0, 
                   }}
                   onClick={() => setSelectedOrderId(order.id)}
                   canDrag={true}

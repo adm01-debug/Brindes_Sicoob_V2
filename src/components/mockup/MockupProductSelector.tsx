@@ -282,6 +282,7 @@ export function MockupProductSelector({ selection, onSelect, disabled }: MockupP
             >
               {rowVirtualizer.getVirtualItems().map((virtualRow) => {
                 const product = sortedProducts[virtualRow.index];
+                if (!product) return null;
                 return (
                   <div
                     key={product.id}

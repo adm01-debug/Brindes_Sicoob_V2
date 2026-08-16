@@ -1,6 +1,16 @@
 import { supabase } from "@/integrations/supabase/client";
+import { untypedFrom } from "@/lib/supabase-untyped";
 import { type UserWithRole, type AppRole } from "@/types/users";
 import { logger } from "@/lib/logger";
+
+type ProfileHierarchyRow = {
+  id: string;
+  full_name: string | null;
+  email: string | null;
+  pa_id: string | null;
+  singular_id: string | null;
+  carteira_id: string | null;
+};
 
 export class UserService {
   static async list(): Promise<UserWithRole[]> {
@@ -86,13 +96,12 @@ export class UserService {
     if (error) throw error;
   }
 
-  static async listHierarchy() {
-    const { data, error } = await supabase
-      .from("profiles")
+  static async listHierarchy(): Promise<ProfileHierarchyRow[]> {
+    const { data, error } = await untypedFrom<ProfileHierarchyRow>("profiles")
       .select("id, full_name, email, pa_id, singular_id, carteira_id")
       .order("full_name");
     if (error) throw error;
-    return data;
+    return data || [];
   }
 
   static async updateHierarchy(userId: string, field: string, value: string | null) {

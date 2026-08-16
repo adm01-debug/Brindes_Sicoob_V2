@@ -2,10 +2,9 @@
  * AdminTemplatesManager — Refactored orchestrator
  * Table/Grid views extracted to ./admin-templates/
  */
-import { useState, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
@@ -13,6 +12,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { TemplateDeleteDialog, TemplateCloneDialog } from "./AdminTemplateDialogs";
 import { FileText, Search, Users, User, Filter, LayoutGrid, List, Download } from "lucide-react";
 import { type QuoteTemplate, useQuoteTemplates } from "@/hooks/useQuoteTemplates";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "sonner";
 import { exportTemplatesToJson } from "@/utils/templateExport";
 import { TemplateTableView } from "./admin-templates/TemplateTableView";
 import { TemplateGridView } from "./admin-templates/TemplateGridView";
@@ -21,8 +23,16 @@ interface AdminTemplatesManagerProps {
   onEditTemplate?: (template: QuoteTemplate) => void;
 }
 
+interface Seller {
+  id: string;
+  full_name: string | null;
+  email: string;
+}
+
 export function AdminTemplatesManager({ onEditTemplate }: AdminTemplatesManagerProps) {
-  const { allTemplates, sellers, loading, deleteTemplate, cloneTemplateToSeller } = useQuoteTemplates();
+  const { user } = useAuth();
+  const { templates, isLoading, fetchTemplates, deleteTemplate } = useQuoteTemplates();
+  const [sellers, setSellers] = useState<Seller[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedSellerId, setSelectedSellerId] = useState<string>("all");
   const [viewMode, setViewMode] = useState<"grid" | "table">("table");
@@ -31,43 +41,135 @@ export function AdminTemplatesManager({ onEditTemplate }: AdminTemplatesManagerP
   const [cloneTemplateId, setCloneTemplateId] = useState<string | null>(null);
   const [targetSellerId, setTargetSellerId] = useState<string>("");
 
+  // Carrega os vendedores donos dos templates existentes
+  useEffect(() => {
+    const sellerIds = Array.from(
+      new Set(templates.map((t) => t.seller_id).filter((id): id is string => !!id))
+    );
+    if (sellerIds.length === 0) {
+      setSellers([]);
+      return;
+    }
+
+    let cancelled = false;
+    supabase
+      .from("profiles")
+      .select("user_id, full_name, email")
+      .in("user_id", sellerIds)
+      .then(({ data, error }) => {
+        if (cancelled || error || !data) return;
+        setSellers(
+          data.map((p) => ({
+            id: p.user_id,
+            full_name: p.full_name,
+            email: p.email ?? "",
+          }))
+        );
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [templates]);
+
   const getSellerName = (sellerId: string) => {
-    const seller = sellers.find(s => s.id === sellerId);
-    return seller?.full_name || seller?.email || 'Vendedor desconhecido';
+    const seller = sellers.find((s) => s.id === sellerId);
+    return seller?.full_name || seller?.email || "Vendedor desconhecido";
   };
 
-  const filteredTemplates = useMemo(() => allTemplates.filter((t) => {
-    const matchesSearch = t.name.toLowerCase().includes(searchTerm.toLowerCase()) || t.description?.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesSeller = selectedSellerId === "all" || t.seller_id === selectedSellerId;
-    return matchesSearch && matchesSeller;
-  }), [allTemplates, searchTerm, selectedSellerId]);
+  const filteredTemplates = useMemo(
+    () =>
+      templates.filter((t) => {
+        const matchesSearch =
+          t.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          (t.description?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false);
+        const matchesSeller = selectedSellerId === "all" || t.seller_id === selectedSellerId;
+        return matchesSearch && matchesSeller;
+      }),
+    [templates, searchTerm, selectedSellerId]
+  );
 
   const templatesBySeller = useMemo(() => {
     const grouped: Record<string, QuoteTemplate[]> = {};
-    filteredTemplates.forEach(t => { if (!grouped[t.seller_id]) grouped[t.seller_id] = []; grouped[t.seller_id].push(t); });
+    filteredTemplates.forEach((t) => {
+      const key = t.seller_id ?? "sem-vendedor";
+      if (!grouped[key]) grouped[key] = [];
+      grouped[key].push(t);
+    });
     return grouped;
   }, [filteredTemplates]);
 
-  const formatCurrency = (value: number) => new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value);
+  const formatCurrency = (value: number) =>
+    new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value);
 
-  const calculateTotal = (template: QuoteTemplate) => {
-    const itemsTotal = template.items_data.reduce((sum, item) => {
-      const personalizationCost = item.personalizations?.reduce((pSum, p) => pSum + (p.unitCost || 0) * item.quantity + (p.setupCost || 0), 0) || 0;
+  const calculateTotal = useCallback((template: QuoteTemplate) => {
+    const items = template.items_data ?? [];
+    const itemsTotal = items.reduce((sum, item) => {
+      const personalizationCost =
+        item.personalizations?.reduce(
+          (pSum, p) => pSum + (p.unitCost || 0) * item.quantity + (p.setupCost || 0),
+          0
+        ) || 0;
       return sum + item.quantity * item.unitPrice + personalizationCost;
     }, 0);
-    const discountValue = template.discount_percent > 0 ? itemsTotal * (template.discount_percent / 100) : template.discount_amount;
+    const discountPercent = template.discount_percent ?? 0;
+    const discountAmount = template.discount_amount ?? 0;
+    const discountValue = discountPercent > 0 ? itemsTotal * (discountPercent / 100) : discountAmount;
     return itemsTotal - discountValue;
+  }, []);
+
+  const handleDelete = async () => {
+    if (deleteConfirmId) {
+      await deleteTemplate(deleteConfirmId);
+      setDeleteConfirmId(null);
+    }
   };
 
-  const handleDelete = async () => { if (deleteConfirmId) { await deleteTemplate(deleteConfirmId); setDeleteConfirmId(null); } };
-  const handleClone = async () => { if (cloneTemplateId && targetSellerId) { await cloneTemplateToSeller(cloneTemplateId, targetSellerId); setCloneDialogOpen(false); setCloneTemplateId(null); setTargetSellerId(""); } };
+  const handleClone = async () => {
+    if (!cloneTemplateId || !targetSellerId || !user) return;
+    const source = templates.find((t) => t.id === cloneTemplateId);
+    if (!source) return;
 
-  if (loading) return <div className="space-y-4"><div className="flex items-center gap-3"><Skeleton className="h-10 flex-1" /><Skeleton className="h-10 w-48" /></div>{[1,2,3,4].map(i => <Skeleton key={i} className="h-16" />)}</div>;
+    try {
+      const { id, ...rest } = source;
+      const { error } = await supabase.from("quote_templates").insert({
+        ...rest,
+        created_by: user.id,
+        seller_id: targetSellerId,
+      });
+      if (error) throw error;
+      toast.success("Template clonado com sucesso!");
+      fetchTemplates();
+    } catch (err) {
+      console.error("Error cloning template:", err);
+      toast.error("Erro ao clonar template");
+    } finally {
+      setCloneDialogOpen(false);
+      setCloneTemplateId(null);
+      setTargetSellerId("");
+    }
+  };
+
+  if (isLoading)
+    return (
+      <div className="space-y-4">
+        <div className="flex items-center gap-3">
+          <Skeleton className="h-10 flex-1" />
+          <Skeleton className="h-10 w-48" />
+        </div>
+        {[1, 2, 3, 4].map((i) => (
+          <Skeleton key={i} className="h-16" />
+        ))}
+      </div>
+    );
 
   return (
     <div className="space-y-4">
       <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
-        <div className="relative flex-1 w-full"><Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" /><Input placeholder="Buscar templates..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-9" /></div>
+        <div className="relative flex-1 w-full">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input placeholder="Buscar templates..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-9" />
+        </div>
         <div className="flex items-center gap-2 w-full sm:w-auto">
           <Select value={selectedSellerId} onValueChange={setSelectedSellerId}>
             <SelectTrigger className="w-full sm:w-[200px]"><Filter className="h-4 w-4 mr-2" /><SelectValue placeholder="Filtrar por vendedor" /></SelectTrigger>

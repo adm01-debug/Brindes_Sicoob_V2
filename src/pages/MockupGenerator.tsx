@@ -1,4 +1,4 @@
-import { type MockupTechnique } from "@/types/external-db";
+import type { TechniqueWithLimits } from "@/hooks/useMockupTechniques";
 /**
  * MockupGenerator — Refactored v5
  * 
@@ -84,8 +84,8 @@ export default function MockupGenerator() {
         name: mg.selectedProduct.name,
         sku: mg.selectedProduct.sku,
         imageUrl: mg.getProductImage() || undefined,
-        color: mg.productSelection?.selectedColor?.name,
-        colorHex: mg.productSelection?.selectedColor?.hex,
+        color: mg.productSelection?.colorName,
+        colorHex: mg.productSelection?.colorHex,
         material: mg.selectedProduct.materials?.[0],
         heightCm: mg.selectedProduct.dimensions?.height_cm ?? null,
         widthCm: mg.selectedProduct.dimensions?.width_cm ?? null,
@@ -97,7 +97,7 @@ export default function MockupGenerator() {
       personalization: {
         techniqueName: mg.selectedTechnique.name,
         techniqueCode: mg.selectedTechnique.code || undefined,
-        locationName: ('locationName' in mg.selectedTechnique ? (mg.selectedTechnique as MockupTechnique).locationName : null) || mg.activeArea?.name || "Frente",
+        locationName: ('locationName' in mg.selectedTechnique ? (mg.selectedTechnique as TechniqueWithLimits).locationName : null) || mg.activeArea?.name || "Frente",
         widthCm: mg.activeArea?.logoWidth || 0,
         heightCm: mg.activeArea?.logoHeight || 0,
         colorsCount: mg.techniqueColorConfig?.colorCount,
@@ -222,10 +222,10 @@ export default function MockupGenerator() {
                       logoScale={mg.activeArea.logoScale ?? 100}
                       techniqueCode={mg.selectedTechnique?.code}
                       techniqueName={mg.selectedTechnique?.name}
-                      maxWidth={'maxWidth' in (mg.selectedTechnique || {}) ? (mg.selectedTechnique as MockupTechnique).maxWidth : null}
-                      maxHeight={'maxHeight' in (mg.selectedTechnique || {}) ? (mg.selectedTechnique as MockupTechnique).maxHeight : null}
-                      productHeightCm={mg.selectedProduct?.dimensions?.height_cm ?? (mg.selectedProduct?.metadata?.height_mm ? mg.selectedProduct.metadata.height_mm / 10 : null)}
-                      productWidthCm={mg.selectedProduct?.dimensions?.width_cm ?? mg.selectedProduct?.dimensions?.diameter_cm ?? (mg.selectedProduct?.metadata?.width_mm ? mg.selectedProduct.metadata.width_mm / 10 : null)}
+                      maxWidth={mg.selectedTechnique && 'maxWidth' in mg.selectedTechnique ? (mg.selectedTechnique as TechniqueWithLimits).maxWidth : null}
+                      maxHeight={mg.selectedTechnique && 'maxHeight' in mg.selectedTechnique ? (mg.selectedTechnique as TechniqueWithLimits).maxHeight : null}
+                      productHeightCm={mg.selectedProduct?.dimensions?.height_cm ?? null}
+                      productWidthCm={mg.selectedProduct?.dimensions?.width_cm ?? mg.selectedProduct?.dimensions?.diameter_cm ?? null}
                       onPositionChange={(x, y) => mg.updateActiveArea({ positionX: x, positionY: y })}
                       onSizeChange={(w, h) => mg.updateActiveArea({ logoWidth: w, logoHeight: h })}
                       onRotationChange={(r) => mg.updateActiveArea({ logoRotation: r })}
@@ -238,8 +238,8 @@ export default function MockupGenerator() {
                           product={mg.selectedProduct ? {
                             name: mg.selectedProduct.name, sku: mg.selectedProduct.sku,
                             imageUrl: mg.getProductImage() || undefined,
-                            color: mg.productSelection?.selectedColor?.name,
-                            colorHex: mg.productSelection?.selectedColor?.hex,
+                            color: mg.productSelection?.colorName,
+                            colorHex: mg.productSelection?.colorHex,
                             material: mg.selectedProduct.materials?.[0],
                             heightCm: mg.selectedProduct.dimensions?.height_cm ?? null,
                             widthCm: mg.selectedProduct.dimensions?.width_cm ?? null,
@@ -250,15 +250,15 @@ export default function MockupGenerator() {
                           } : null}
                           technique={mg.selectedTechnique ? {
                             name: mg.selectedTechnique.name, code: mg.selectedTechnique.code,
-                            maxWidth: 'maxWidth' in mg.selectedTechnique ? (mg.selectedTechnique as MockupTechnique).maxWidth : null,
-                            maxHeight: 'maxHeight' in mg.selectedTechnique ? (mg.selectedTechnique as MockupTechnique).maxHeight : null,
-                            locationName: 'locationName' in mg.selectedTechnique ? (mg.selectedTechnique as MockupTechnique).locationName : null,
+                            maxWidth: 'maxWidth' in mg.selectedTechnique ? (mg.selectedTechnique as TechniqueWithLimits).maxWidth : null,
+                            maxHeight: 'maxHeight' in mg.selectedTechnique ? (mg.selectedTechnique as TechniqueWithLimits).maxHeight : null,
+                            locationName: 'locationName' in mg.selectedTechnique ? (mg.selectedTechnique as TechniqueWithLimits).locationName : null,
                           } : null}
                           client={mg.selectedClient}
                           seller={profile ? { name: profile.full_name || "—", email: profile.email || undefined } : null}
                           activeArea={mg.activeArea || null}
-                          productHeightCm={mg.selectedProduct?.dimensions?.height_cm ?? (mg.selectedProduct?.metadata?.height_mm ? mg.selectedProduct.metadata.height_mm / 10 : null)}
-                          productWidthCm={mg.selectedProduct?.dimensions?.width_cm ?? mg.selectedProduct?.dimensions?.diameter_cm ?? (mg.selectedProduct?.metadata?.width_mm ? mg.selectedProduct.metadata.width_mm / 10 : null)}
+                          productHeightCm={mg.selectedProduct?.dimensions?.height_cm ?? null}
+                          productWidthCm={mg.selectedProduct?.dimensions?.width_cm ?? mg.selectedProduct?.dimensions?.diameter_cm ?? null}
                           pantoneColors={mg.logoColorAnalysis.colors}
                           colorsCount={mg.techniqueColorConfig?.colorCount}
                           onStaticGenerated={async (dataUrl, extra) => {

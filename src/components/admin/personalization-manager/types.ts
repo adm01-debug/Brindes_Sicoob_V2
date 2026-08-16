@@ -28,7 +28,7 @@ export interface Component {
   sort_order: number;
 }
 
-export interface Location {
+export type Location = {
   id: string;
   component_id: string;
   location_code: string;
@@ -46,7 +46,7 @@ export interface Technique {
   name: string;
 }
 
-export interface LocationTechnique {
+export type LocationTechnique = {
   id: string;
   component_location_id: string;
   technique_id: string;
