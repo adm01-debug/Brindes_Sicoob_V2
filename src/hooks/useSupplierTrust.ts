@@ -45,7 +45,7 @@ export function useSupplierTrust(productId?: string) {
           countMode: 'none',
         });
 
-        const variantIds = variantResult.records.map(v => v.id);
+        const variantIds = (variantResult.records ?? []).map(v => v.id);
         if (!variantIds.length) {
           return getMockSupplierTrust(productId);
         }
@@ -61,7 +61,7 @@ export function useSupplierTrust(productId?: string) {
           countMode: 'none',
         });
 
-        const sources = vssResult.records;
+        const sources = vssResult.records ?? [];
         if (!sources.length) {
           // No real data — fallback to mock
           return getMockSupplierTrust(productId);
@@ -69,6 +69,9 @@ export function useSupplierTrust(productId?: string) {
 
         // Use preferred source, or first active one
         const preferred = sources.find(s => s.is_preferred) ?? sources[0];
+        if (!preferred) {
+          return getMockSupplierTrust(productId);
+        }
         const leadTimeDays = preferred.lead_time_days;
 
         // 2. Check if supplier is "verified" (active in suppliers table)
@@ -83,8 +86,9 @@ export function useSupplierTrust(productId?: string) {
               limit: 1,
               countMode: 'none',
             });
-            if (supplierResult.records.length) {
-              isVerified = supplierResult.records[0].active !== false;
+            const supplierRecord = supplierResult.records?.[0];
+            if (supplierRecord) {
+              isVerified = supplierRecord.active !== false;
             }
           } catch {
             // Supplier lookup failed — mark as not verified
