@@ -1,0 +1,12 @@
+{
+  "extends": "./tsconfig.app.json",
+  "include": [
+    "src/hooks/mockup/mockupGenerationService.ts",
+    "src/hooks/useSimulation.ts",
+    "src/hooks/useSpeechRecognition.ts",
+    "src/lib/external-db/products-detail.ts",
+    "src/lib/external-db/products.ts",
+    "src/lib/stock-chart-utils.ts",
+    "src/pages/sicoob/orders/OrdersKanbanPage.tsx"
+  ]
+}
