@@ -1,0 +1,11 @@
+{
+  "extends": "./tsconfig.app.json",
+  "include": [
+    "src/components/admin/suppliers-manager/useSuppliersManager.ts",
+    "src/components/inventory/risk/ProductRiskDetail.tsx",
+    "src/hooks/useGravacaoV2.ts",
+    "src/hooks/useNovelties.ts",
+    "src/lib/external-db/techniques.ts",
+    "src/services/QuoteService.ts"
+  ]
+}

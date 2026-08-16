@@ -1,0 +1,6 @@
+{
+  "extends": "./tsconfig.app.json",
+  "include": [
+    "src/components/filters/ColorGroupFilter.tsx"
+  ]
+}

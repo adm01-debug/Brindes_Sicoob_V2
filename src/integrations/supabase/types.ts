@@ -14,6 +14,60 @@ export type Database = {
   }
   public: {
     Tables: {
+      sales_goals: {
+        Row: {
+          achieved_at: string | null
+          created_at: string
+          current_conversions: number | null
+          current_quotes: number | null
+          current_value: number
+          end_date: string
+          goal_type: string
+          id: string
+          is_achieved: boolean | null
+          start_date: string
+          target_conversions: number | null
+          target_quotes: number | null
+          target_value: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          achieved_at?: string | null
+          created_at?: string
+          current_conversions?: number | null
+          current_quotes?: number | null
+          current_value?: number
+          end_date: string
+          goal_type?: string
+          id?: string
+          is_achieved?: boolean | null
+          start_date: string
+          target_conversions?: number | null
+          target_quotes?: number | null
+          target_value?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          achieved_at?: string | null
+          created_at?: string
+          current_conversions?: number | null
+          current_quotes?: number | null
+          current_value?: number
+          end_date?: string
+          goal_type?: string
+          id?: string
+          is_achieved?: boolean | null
+          start_date?: string
+          target_conversions?: number | null
+          target_quotes?: number | null
+          target_value?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       access_blocked_log: {
         Row: {
           block_reason: string

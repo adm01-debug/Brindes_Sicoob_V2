@@ -96,7 +96,7 @@ export function useStockDailySummary(productId: string | undefined, days = 90) {
         orderBy: { column: 'summary_date', ascending: true },
       });
 
-      return result.records;
+      return result.records || [];
     },
     enabled: !!productId,
     staleTime: 10 * 60 * 1000,
@@ -119,7 +119,7 @@ export function useStockVelocity(productId: string | undefined) {
           filters: { product_id: productId },
           limit: 50,
         });
-        return result.records;
+        return result.records || [];
       } catch (err: unknown) {
         const msg = err instanceof Error ? err.message : '';
         if (msg.includes('not been populated') || msg.includes('não mapeada')) {
@@ -131,9 +131,10 @@ export function useStockVelocity(productId: string | undefined) {
     },
     enabled: !!productId,
     staleTime: 30 * 60 * 1000,
-    retry: (failureCount, error: unknown) => {
+    retry: (failureCount, error: unknown): boolean => {
       const msg = error instanceof Error ? error.message : '';
       if (msg.includes('not been populated')) return false;
+      return failureCount < 3;
     },
   });
 }
@@ -154,7 +155,7 @@ export function useProductIntelligenceData(productId: string | undefined) {
           filters: { product_id: productId },
           limit: 1,
         });
-        return result.records[0] || null;
+        return result.records?.[0] || null;
       } catch (err: unknown) {
         const msg = err instanceof Error ? err.message : '';
         if (msg.includes('not been populated') || msg.includes('não mapeada')) {
@@ -165,9 +166,10 @@ export function useProductIntelligenceData(productId: string | undefined) {
     },
     enabled: !!productId,
     staleTime: 30 * 60 * 1000,
-    retry: (failureCount, error: unknown) => {
+    retry: (failureCount, error: unknown): boolean => {
       const msg = error instanceof Error ? error.message : '';
       if (msg.includes('not been populated')) return false;
+      return failureCount < 3;
     },
   });
 }

@@ -50,18 +50,22 @@ const TECHNIQUE_SELECT_FIELDS = 'id, codigo, code, nome, name, descricao, descri
 function mapTechniqueFields(t: Record<string, unknown>): PromobrindTechnique {
   const maxCoresRaw = t.max_cores ?? t.max_colors;
   const maxCores = typeof maxCoresRaw === 'number' ? maxCoresRaw : typeof maxCoresRaw === 'string' ? Number(maxCoresRaw) : null;
+  const str = (v: unknown): string | undefined => typeof v === 'string' ? v : v == null ? undefined : String(v);
+  const bool = (v: unknown): boolean | undefined => typeof v === 'boolean' ? v : v == null ? undefined : Boolean(v);
+  const num = (v: unknown): number | undefined => typeof v === 'number' ? v : v == null ? undefined : Number(v);
   return {
     ...t,
-    code: t.codigo ?? t.code,
-    name: t.nome ?? t.name,
-    description: t.descricao ?? t.description ?? null,
-    requires_color_count: t.permite_cores ?? t.requires_color_count ?? null,
+    id: t.id as string,
+    code: str(t.codigo ?? t.code),
+    name: str(t.nome ?? t.name) ?? '',
+    description: str(t.descricao ?? t.description) ?? null,
+    requires_color_count: bool(t.permite_cores ?? t.requires_color_count),
     max_colors: Number.isFinite(maxCores as number) ? (maxCores as number) : null,
-    price_by_color: t.cobra_por_cor ?? t.price_by_color ?? null,
-    price_by_area: t.cobra_por_area ?? t.price_by_area ?? null,
-    is_active: t.ativo ?? t.is_active ?? true,
-    estimated_days: t.tempo_producao_dias ?? t.estimated_days ?? null,
-    display_order: t.ordem_exibicao ?? t.display_order ?? null,
+    price_by_color: bool(t.cobra_por_cor ?? t.price_by_color),
+    price_by_area: bool(t.cobra_por_area ?? t.price_by_area),
+    is_active: bool(t.ativo ?? t.is_active) ?? true,
+    estimated_days: num(t.tempo_producao_dias ?? t.estimated_days) ?? null,
+    display_order: num(t.ordem_exibicao ?? t.display_order),
     setup_price: null, handling_price: null, setup_cost: null, unit_cost: null, min_quantity: null,
   };
 }
@@ -87,9 +91,9 @@ export async function fetchPromobrindPrintAreas(productId: string): Promise<Prom
         component_name: area.component_name, location_name: area.location_name,
         max_width_cm: area.max_width, max_height_cm: area.max_height,
         max_area_cm2: null, is_curved: area.is_curved ?? false,
-        technique_id: undefined as unknown, technique_code: undefined as unknown,
-        technique_name: undefined as unknown, max_colors: undefined as unknown,
-        is_default: area.is_primary ?? false, area_image_url: undefined as unknown,
+        technique_id: null, technique_code: null,
+        technique_name: null, max_colors: null,
+        is_default: area.is_primary ?? false, area_image_url: null,
       });
     } else {
       for (const tid of allowedIds) {
@@ -100,9 +104,11 @@ export async function fetchPromobrindPrintAreas(productId: string): Promise<Prom
           component_name: area.component_name, location_name: area.location_name,
           max_width_cm: area.max_width, max_height_cm: area.max_height,
           max_area_cm2: null, is_curved: area.is_curved ?? false,
-          technique_id: tech?.id || tid, technique_code: tech?.codigo,
-          technique_name: tech?.nome, max_colors: tech?.max_cores,
-          is_default: area.is_primary ?? false, area_image_url: undefined as unknown,
+          technique_id: (tech?.id as string | undefined) || tid,
+          technique_code: (tech?.codigo as string | undefined) ?? null,
+          technique_name: (tech?.nome as string | undefined) ?? null,
+          max_colors: (tech?.max_cores as number | undefined) ?? null,
+          is_default: area.is_primary ?? false, area_image_url: null,
         });
       }
     }
@@ -122,7 +128,7 @@ export async function fetchPromobrindTechniques(options?: {
     select: TECHNIQUE_SELECT_FIELDS, limit: options?.limit || 100,
     orderBy: { column: 'ordem_exibicao', ascending: true },
   });
-  return result.records.map(mapTechniqueFields);
+  return (result.records || []).map(mapTechniqueFields);
 }
 
 export async function fetchPromobrindTechniqueById(techniqueId: string): Promise<PromobrindTechnique | null> {
@@ -130,6 +136,6 @@ export async function fetchPromobrindTechniqueById(techniqueId: string): Promise
     table: 'tecnica_gravacao', operation: 'select',
     filters: { id: techniqueId }, select: TECHNIQUE_SELECT_FIELDS, limit: 1,
   });
-  const tech = result.records[0];
+  const tech = result.records?.[0];
   return tech ? mapTechniqueFields(tech) : null;
 }

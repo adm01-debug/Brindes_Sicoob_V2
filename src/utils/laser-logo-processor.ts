@@ -72,10 +72,10 @@ export async function processLogoForLaser(
       const data = imageData.data;
 
       for (let i = 0; i < data.length; i += 4) {
-        const r = data[i];
-        const g = data[i + 1];
-        const b = data[i + 2];
-        const a = data[i + 3];
+        const r = data[i] ?? 0;
+        const g = data[i + 1] ?? 0;
+        const b = data[i + 2] ?? 0;
+        const a = data[i + 3] ?? 0;
 
         // Skip fully/mostly transparent pixels
         if (a < 30) {
@@ -165,10 +165,10 @@ export async function processLogoForSerigrafia(
       const WHITE_THRESHOLD = 220;
 
       for (let i = 0; i < data.length; i += 4) {
-        const r = data[i];
-        const g = data[i + 1];
-        const b = data[i + 2];
-        const a = data[i + 3];
+        const r = data[i] ?? 0;
+        const g = data[i + 1] ?? 0;
+        const b = data[i + 2] ?? 0;
+        const a = data[i + 3] ?? 0;
 
         // Skip fully/mostly transparent pixels
         if (a < 30) {
@@ -187,7 +187,9 @@ export async function processLogoForSerigrafia(
         let bestIdx = 0;
         let bestDist = Infinity;
         for (let p = 0; p < palette.length; p++) {
-          const [pR, pG, pB] = palette[p].rgb;
+          const entry = palette[p];
+          if (!entry) continue;
+          const [pR, pG, pB] = entry.rgb;
           const dist = (r - pR) ** 2 + (g - pG) ** 2 + (b - pB) ** 2;
           if (dist < bestDist) {
             bestDist = dist;
@@ -195,7 +197,8 @@ export async function processLogoForSerigrafia(
           }
         }
 
-        const [tR, tG, tB] = palette[bestIdx].rgb;
+        const bestEntry = palette[bestIdx];
+        const [tR, tG, tB] = bestEntry ? bestEntry.rgb : [0, 0, 0];
         data[i] = tR;
         data[i + 1] = tG;
         data[i + 2] = tB;

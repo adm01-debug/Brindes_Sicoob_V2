@@ -1,0 +1,8 @@
+{
+  "extends": "./tsconfig.app.json",
+  "include": [
+    "src/utils/pixMask.ts",
+    "src/utils/product-colors.ts",
+    "src/utils/masks.ts"
+  ]
+}

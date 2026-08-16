@@ -18,7 +18,9 @@ interface FloatingParticlesProps {
   isBooting: boolean;
 }
 
-const PHASE_CONFIG: Record<string, { count: number; speed: number; hueRange: [number, number]; sizeRange: [number, number] }> = {
+type PhaseConfigKey = VoiceAgentPhase | "booting";
+
+const PHASE_CONFIG: Record<PhaseConfigKey, { count: number; speed: number; hueRange: [number, number]; sizeRange: [number, number] }> = {
   idle: { count: 20, speed: 0.3, hueRange: [220, 260], sizeRange: [1, 2.5] },
   listening: { count: 40, speed: 0.6, hueRange: [250, 290], sizeRange: [1.5, 3.5] },
   processing: { count: 35, speed: 0.8, hueRange: [270, 310], sizeRange: [1, 3] },
@@ -35,7 +37,7 @@ export const FloatingParticles: React.FC<FloatingParticlesProps> = React.memo(({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const particlesRef = useRef<Particle[]>([]);
   const animRef = useRef<number>(0);
-  const configKey = isBooting ? "booting" : phase;
+  const configKey: PhaseConfigKey = isBooting ? "booting" : phase;
 
   const createParticle = useCallback((w: number, h: number, cfg: typeof PHASE_CONFIG["idle"]): Particle => {
     const angle = Math.random() * Math.PI * 2;
@@ -74,7 +76,7 @@ export const FloatingParticles: React.FC<FloatingParticlesProps> = React.memo(({
     const draw = () => {
       const w = canvas.width / (window.devicePixelRatio || 1);
       const h = canvas.height / (window.devicePixelRatio || 1);
-      const cfg = PHASE_CONFIG[configKey] || PHASE_CONFIG.idle;
+      const cfg = PHASE_CONFIG[configKey];
 
       ctx.clearRect(0, 0, w, h);
 
@@ -91,6 +93,7 @@ export const FloatingParticles: React.FC<FloatingParticlesProps> = React.memo(({
       const particles = particlesRef.current;
       for (let i = 0; i < particles.length; i++) {
         const p = particles[i];
+        if (!p) continue;
         p.life++;
         p.x += p.vx;
         p.y += p.vy;
@@ -113,13 +116,17 @@ export const FloatingParticles: React.FC<FloatingParticlesProps> = React.memo(({
       ctx.lineWidth = 0.8;
       for (let i = 0; i < particles.length; i++) {
         const a = particles[i];
+        if (!a) continue;
         for (let j = i + 1; j < particles.length; j++) {
           const b = particles[j];
+          if (!b) continue;
           const dx = a.x - b.x;
           const dy = a.y - b.y;
           const dist = Math.sqrt(dx * dx + dy * dy);
+          const alphaI = alphas[i] ?? 0;
+          const alphaJ = alphas[j] ?? 0;
           if (dist < CONNECTION_DIST) {
-            const lineAlpha = (1 - dist / CONNECTION_DIST) * Math.min(alphas[i], alphas[j]) * 0.6;
+            const lineAlpha = (1 - dist / CONNECTION_DIST) * Math.min(alphaI, alphaJ) * 0.6;
             const hue = (a.hue + b.hue) / 2;
             ctx.strokeStyle = `hsla(${hue}, 60%, 60%, ${lineAlpha})`;
             ctx.beginPath();
@@ -133,7 +140,8 @@ export const FloatingParticles: React.FC<FloatingParticlesProps> = React.memo(({
       // Draw particles
       for (let i = 0; i < particles.length; i++) {
         const p = particles[i];
-        const alpha = alphas[i];
+        if (!p) continue;
+        const alpha = alphas[i] ?? 0;
 
         const gradient = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.size * 3);
         gradient.addColorStop(0, `hsla(${p.hue}, 80%, 70%, ${alpha})`);

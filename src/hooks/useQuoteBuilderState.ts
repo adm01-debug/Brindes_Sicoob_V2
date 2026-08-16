@@ -80,7 +80,7 @@ export function useQuoteBuilderState() {
       setQuoteNumber, setCurrentStatus, setContactInfo, setCompanyInfo,
       setDiscountType, setDiscountValue, setNegotiationMarkup, setPaymentTerms,
       setShippingType, setShippingCost, setDeliveryMode, setDeliveryDate,
-      setDeliveryTime, setItems, setTags, setLoadingQuote, setActiveItemIndex, setExpandedItems
+      setDeliveryTime, setItems, setLoadingQuote, setActiveItemIndex, setExpandedItems
     }
   });
 
@@ -151,7 +151,7 @@ export function useQuoteBuilderState() {
           bitrix_product_id: variant?.bitrix_product_id ?? null,
           price_updated_at: product.priceUpdatedAt ?? null,
           price_freshness_threshold_days: product.priceFreshnessThresholdDays ?? null,
-          stock_available: variant?.stock ?? product.totalStock ?? null,
+          stock_available: variant?.stock_quantity ?? product.totalStock ?? null,
           personalizations: [],
         }];
         setActiveItemIndex(newItems.length - 1);
@@ -211,7 +211,7 @@ export function useQuoteBuilderState() {
   }, []);
 
   const applyTemplate = useCallback((template: QuoteTemplate) => {
-    const newItems: QuoteItem[] = template.items_data.map((item) => ({
+    const newItems: QuoteItem[] = (template.items_data ?? []).map((item: QuoteTemplateItem) => ({
       product_id: item.productId || "", product_name: item.productName,
       product_sku: item.productSku, product_image_url: item.productImageUrl,
       quantity: item.quantity, unit_price: item.unitPrice,
@@ -223,8 +223,8 @@ export function useQuoteBuilderState() {
       })),
     }));
     setItems(newItems);
-    if (template.discount_percent > 0) { setDiscountType("percent"); setDiscountValue(template.discount_percent); }
-    else if (template.discount_amount > 0) { setDiscountType("amount"); setDiscountValue(template.discount_amount); }
+    if ((template.discount_percent ?? 0) > 0) { setDiscountType("percent"); setDiscountValue(template.discount_percent ?? 0); }
+    else if ((template.discount_amount ?? 0) > 0) { setDiscountType("amount"); setDiscountValue(template.discount_amount ?? 0); }
     if (template.notes) setNotes(template.notes);
     if (template.internal_notes) setInternalNotes(template.internal_notes);
     if (template.validity_days) setValidUntil(format(addDays(new Date(), template.validity_days), "yyyy-MM-dd"));
@@ -264,9 +264,10 @@ export function useQuoteBuilderState() {
       
       if (budget) {
         // 1. Check Alçada (transaction limit)
-        if (budget.limite_alcada > 0 && totals.total > budget.limite_alcada) {
+        const limiteAlcada = budget.limite_alcada ?? 0;
+        if (limiteAlcada > 0 && totals.total > limiteAlcada) {
           toast.error("Limite de alçada excedido!", {
-            description: `Este pedido (R$ ${totals.total.toLocaleString()}) supera seu limite de R$ ${budget.limite_alcada.toLocaleString()}.`
+            description: `Este pedido (R$ ${totals.total.toLocaleString()}) supera seu limite de R$ ${limiteAlcada.toLocaleString()}.`
           });
           return;
         }
@@ -284,7 +285,7 @@ export function useQuoteBuilderState() {
 
     // PAC workflow: force status to pending_singular_approval if user is Gerente PA and status is not draft
     let finalStatus = status;
-    if (status === "pending" && (user?.isGerentePa || userRoles?.includes("comprador_pac"))) {
+    if (status === "pending" && (isGerentePa || userRoles?.includes("comprador_pac"))) {
       finalStatus = "pending_singular_approval";
     }
 
@@ -311,7 +312,7 @@ export function useQuoteBuilderState() {
       result = await createQuote(quoteData, items); 
     }
 
-    if (result && finalStatus === "pending_approval" && maxDiscountPercent != null) {
+    if (result?.id && finalStatus === "pending_approval" && maxDiscountPercent != null) {
       await requestApproval(result.id, totals.realDiscountPercent, maxDiscountPercent, sellerNotes);
     }
 
@@ -321,7 +322,7 @@ export function useQuoteBuilderState() {
       }
       navigate(`/orcamentos/${result.id}`);
     }
-  }, [isDraftValid, isFormValid, validationErrors, clientId, contactInfo, companyInfo, discountType, discountValue, totals, notes, internalNotes, validUntil, paymentTerms, deliveryTime, shippingType, shippingCost, isEditMode, quoteId, items, navigate, updateQuote, createQuote, maxDiscountPercent, requestApproval, user?.isGerentePa, userRoles]);
+  }, [isDraftValid, isFormValid, validationErrors, clientId, contactInfo, companyInfo, discountType, discountValue, totals, notes, internalNotes, validUntil, paymentTerms, deliveryTime, shippingType, shippingCost, isEditMode, quoteId, items, navigate, updateQuote, createQuote, maxDiscountPercent, requestApproval, isGerentePa, userRoles]);
 
   return {
     navigate, quoteId, isEditMode, loadingQuote, user,

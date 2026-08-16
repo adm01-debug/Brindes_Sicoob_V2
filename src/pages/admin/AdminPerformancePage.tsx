@@ -67,8 +67,11 @@ export default function AdminPerformancePage() {
     const metrics: Record<string, number[]> = { LCP: [], CLS: [], INP: [], TTFB: [] };
     
     vitals.forEach(v => {
-      const m = v.metadata as any;
-      if (metrics[m.name]) metrics[m.name].push(m.value);
+      const m = v.metadata as { name?: string; value?: number };
+      if (typeof m.name === "string" && typeof m.value === "number") {
+        const bucket = metrics[m.name];
+        if (bucket) bucket.push(m.value);
+      }
     });
 
     const getP75 = (arr: number[]) => {
@@ -76,14 +79,14 @@ export default function AdminPerformancePage() {
       if (!arr.length) return 0;
       const sorted = [...arr].sort((a, b) => a - b);
       const pos = Math.floor(sorted.length * 0.75);
-      return sorted[pos];
+      return sorted[pos] ?? 0;
     };
 
     return {
-      LCP: getP75(metrics.LCP),
-      CLS: getP75(metrics.CLS),
-      INP: getP75(metrics.INP),
-      TTFB: getP75(metrics.TTFB),
+      LCP: getP75(metrics.LCP ?? []),
+      CLS: getP75(metrics.CLS ?? []),
+      INP: getP75(metrics.INP ?? []),
+      TTFB: getP75(metrics.TTFB ?? []),
       count: vitals.length
     };
 
@@ -250,7 +253,7 @@ export default function AdminPerformancePage() {
                 <CardDescription>Sugestões automáticas baseadas nos dados coletados.</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                {stats?.LCP > 2500 && (
+                {!!stats && stats.LCP > 2500 && (
                   <div className="flex items-start gap-3 p-3 rounded-lg border border-warning/20 bg-warning/5">
                     <AlertCircle className="h-5 w-5 text-warning shrink-0 mt-0.5" />
                     <div>
@@ -259,7 +262,7 @@ export default function AdminPerformancePage() {
                     </div>
                   </div>
                 )}
-                {stats?.CLS > 0.1 && (
+                {!!stats && stats.CLS > 0.1 && (
                   <div className="flex items-start gap-3 p-3 rounded-lg border border-destructive/20 bg-destructive/5">
                     <AlertCircle className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
                     <div>

@@ -74,7 +74,18 @@ export async function fetchMockupHistory(userId?: string): Promise<GeneratedMock
   if (userId) query = query.eq("seller_id", userId);
   const { data, error } = await query;
   if (error) throw error;
-  return data || [];
+  return (data || []).map((row) => ({
+    ...row,
+    product_sku: row.product_sku ?? null,
+    technique_id: row.technique_id ?? null,
+    technique_name: row.technique_name ?? "",
+    layout_url: row.layout_url ?? null,
+    location_name: row.location_name ?? null,
+    colors_count: row.colors_count ?? null,
+    client_id: row.client_id ?? null,
+    client_name: row.client_name ?? null,
+    annotations: (row.annotations as Array<Record<string, unknown>> | null) ?? null,
+  })) as GeneratedMockup[];
 }
 
 // ─── Save to history ─────────────────────────────────────────────────
@@ -125,7 +136,7 @@ export async function saveMockupToDb(params: SaveMockupParams): Promise<string |
       client_name: clientName,
       product_id: safeProductId,
       product_name: product.name,
-      product_sku: product.sku,
+      product_sku: product.sku ?? null,
       technique_id: safeTechniqueId,
       technique_name: technique.name,
       logo_url: logoUrl,

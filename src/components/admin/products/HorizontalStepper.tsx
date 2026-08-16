@@ -6,7 +6,7 @@ import { cn } from '@/lib/utils';
 import { CheckCircle2, AlertCircle, Info } from 'lucide-react';
 import type { ProductFormData } from './ProductFormSchema';
 
-export type StepId = 'essentials' | 'commercial' | 'packaging' | 'fiscal' | 'engraving' | 'classification' | 'media' | 'content';
+export type StepId = 'essentials' | 'commercial' | 'packaging' | 'fiscal' | 'engraving' | 'classification' | 'kits' | 'media' | 'content';
 
 export interface StepDef {
   id: StepId;

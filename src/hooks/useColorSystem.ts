@@ -79,7 +79,7 @@ async function fetchExternalColors() {
   const groupsWithVariations: ColorGroup[] = groups.map((group: Record<string, string>) => ({
     id: group.id,
     name: group.name,
-    slug: group.slug || group.name.toLowerCase().replace(/\s+/g, '-'),
+    slug: group.slug || (group.name || '').toLowerCase().replace(/\s+/g, '-'),
     hex_code: group.hex_code,
     internal_code: group.internal_code,
     variations: variations
@@ -87,7 +87,7 @@ async function fetchExternalColors() {
       .map((v: Record<string, string>) => ({
         id: v.id,
         name: v.name,
-        slug: v.slug || v.name.toLowerCase().replace(/\s+/g, '-'),
+        slug: v.slug || (v.name || '').toLowerCase().replace(/\s+/g, '-'),
         hex_code: v.hex_code,
         internal_code: v.internal_code,
         group_id: v.group_id
@@ -196,7 +196,7 @@ export function useColorVariations(groupId: string | null) {
       return (response.data?.data?.records || []).map((v: Record<string, string>) => ({
         id: v.id,
         name: v.name,
-        slug: v.slug || v.name.toLowerCase().replace(/\s+/g, '-'),
+        slug: v.slug || (v.name || '').toLowerCase().replace(/\s+/g, '-'),
         hex_code: v.hex_code,
         internal_code: v.internal_code,
         group_id: v.group_id

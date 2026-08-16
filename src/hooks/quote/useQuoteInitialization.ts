@@ -31,6 +31,7 @@ interface InitParams {
     setDeliveryDate: (v: Date | undefined) => void;
     setDeliveryTime: (v: string) => void;
     setItems: (v: QuoteItem[]) => void;
+    setTags: (v: string[]) => void;
     setLoadingQuote: (v: boolean) => void;
     setActiveItemIndex: (v: number | null) => void;
     setExpandedItems: (v: Set<number>) => void;

@@ -80,6 +80,7 @@ export function useNotificationsMetricsPanel(visible: boolean) {
     let streak = 0;
     for (let i = samples.length - 1; i >= 0; i--) {
       const s = samples[i];
+      if (!s) break;
       if (s.triggers > 0 && s.ratio >= SUSPICIOUS_RATIO_THRESHOLD) streak += 1;
       else break;
     }
@@ -99,6 +100,9 @@ export function useNotificationsMetricsPanel(visible: boolean) {
     }
     const first = samples[streakStartIdx];
     const last = samples[samples.length - 1];
+    if (!first || !last) {
+      return { triggers: 0, fetches: 0, ratio: 0, fromT: 0, toT: 0, seconds: 0 };
+    }
     const before = streakStartIdx > 0 ? samples[streakStartIdx - 1] : null;
     const triggers = before
       ? Math.max(0, last.triggers - before.triggers)
@@ -140,8 +144,11 @@ export function useNotificationsMetricsPanel(visible: boolean) {
     let num = 0;
     let den = 0;
     for (let i = 0; i < n; i++) {
-      num += (xs[i] - meanX) * (ys[i] - meanY);
-      den += (xs[i] - meanX) ** 2;
+      const xi = xs[i];
+      const yi = ys[i];
+      if (xi === undefined || yi === undefined) continue;
+      num += (xi - meanX) * (yi - meanY);
+      den += (xi - meanX) ** 2;
     }
     const slopePerSec = den === 0 ? 0 : num / den;
     const direction: "rising" | "flat" | "falling" =

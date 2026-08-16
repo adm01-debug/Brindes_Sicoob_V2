@@ -71,7 +71,9 @@ export function detectColorGroup(colorName: string): string {
   for (const [group, keywords] of Object.entries(COLOR_GROUP_KEYWORDS)) {
     if (keywords.some(kw => nameLower.includes(kw))) return group;
   }
-  const firstWord = nameLower.split(/[\s-]+/)[0];
+  // `split` sempre devolve ao menos um elemento, mas com noUncheckedIndexedAccess
+  // o tipo é `string | undefined` — normalizamos com fallback vazio.
+  const firstWord = nameLower.split(/[\s-]+/)[0] ?? '';
   return firstWord.charAt(0).toUpperCase() + firstWord.slice(1);
 }
 

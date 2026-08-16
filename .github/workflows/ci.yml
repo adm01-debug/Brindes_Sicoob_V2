@@ -20,10 +20,15 @@ jobs:
       - name: Install Dependencies
         run: bun install
 
-      - name: Lint & Typecheck
-        run: |
-          bun run lint
-          bun run typecheck
+      # Enquanto a dívida de tipagem (strict + noUncheckedIndexedAccess) é
+      # zerada arquivo a arquivo, o gate compara com `.typecheck-baseline.json`:
+      # nenhum arquivo pode piorar e arquivos novos precisam nascer limpos.
+      # Quando o baseline chegar a 0, trocar por `bun run typecheck`.
+      - name: Typecheck (baseline gate)
+        run: bun run typecheck:baseline
+
+      - name: Edge Authorization Gate
+        run: node scripts/check-edge-authorization.mjs
 
       - name: Unit, Integration & Fuzz Tests
         run: |

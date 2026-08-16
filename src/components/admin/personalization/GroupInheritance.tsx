@@ -12,6 +12,36 @@ import { untypedFrom } from "@/lib/supabase-untyped";
 import { toast } from "sonner";
 import type { ProductGroupMember, Technique } from "./usePersonalizationData";
 
+interface GroupComponentRow {
+  id: string;
+  component_code: string;
+  component_name: string;
+  is_personalizable: boolean;
+  is_active: boolean;
+  sort_order: number;
+}
+
+interface GroupLocationRow {
+  id: string;
+  group_component_id: string;
+  location_code: string;
+  location_name: string;
+  max_width_cm: number | null;
+  max_height_cm: number | null;
+  max_area_cm2: number | null;
+  area_image_url: string | null;
+  is_active: boolean;
+}
+
+interface GroupLocationTechniqueRow {
+  id: string;
+  group_location_id: string;
+  technique_id: string;
+  max_colors: number | null;
+  is_default: boolean;
+  is_active: boolean;
+}
+
 interface GroupInheritanceProps {
   productMembership: ProductGroupMember;
   selectedProduct: string;
@@ -27,9 +57,10 @@ export function GroupInheritance({ productMembership, selectedProduct, technique
   const copyGroupRulesToProduct = async () => {
     setIsCopying(true);
     try {
-      const { data: groupComponents } = await untypedFrom("product_group_components")
+      const { data: groupComponentsRaw } = await untypedFrom("product_group_components")
         .select("*")
         .eq("product_group_id", productMembership.product_group_id);
+      const groupComponents = groupComponentsRaw as GroupComponentRow[] | null;
 
       if (!groupComponents?.length) { toast.error("Grupo não possui componentes configurados"); return; }
 
@@ -42,7 +73,8 @@ export function GroupInheritance({ productMembership, selectedProduct, technique
           .select().single();
         if (compError) throw compError;
 
-        const { data: groupLocations } = await untypedFrom("product_group_locations").select("*").eq("group_component_id", gc.id);
+        const { data: groupLocationsRaw } = await untypedFrom("product_group_locations").select("*").eq("group_component_id", gc.id);
+        const groupLocations = groupLocationsRaw as GroupLocationRow[] | null;
         if (groupLocations?.length) {
           for (const gl of groupLocations) {
             const { data: newLoc, error: locError } = await untypedFrom("product_component_locations")
@@ -50,7 +82,8 @@ export function GroupInheritance({ productMembership, selectedProduct, technique
               .select().single();
             if (locError) throw locError;
 
-            const { data: groupTechs } = await untypedFrom("product_group_location_techniques").select("*").eq("group_location_id", gl.id);
+            const { data: groupTechsRaw } = await untypedFrom("product_group_location_techniques").select("*").eq("group_location_id", gl.id);
+            const groupTechs = groupTechsRaw as GroupLocationTechniqueRow[] | null;
             if (groupTechs?.length) {
               for (const gt of groupTechs) {
                 const tech = techniques?.find((t) => t.id === gt.technique_id);
