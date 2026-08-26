@@ -209,7 +209,7 @@ export default function Auth() {
           "@type": "WebPage",
           "name": "Login — Portal Sicoob",
           "description": "Página de autenticação do Portal de Compras Sicoob.",
-          "url": "https://criar-together-now.lovable.app/login"
+          "url": "https://vamos-build-awesome.lovable.app/login"
         }}
       />
       {/* Left side - Branding */}

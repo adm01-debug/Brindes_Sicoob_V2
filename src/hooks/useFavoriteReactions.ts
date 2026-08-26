@@ -52,7 +52,7 @@ export function useFavoriteReactions(listId: string | null, listToken: string | 
   const react = useMutation({
     mutationFn: async ({ itemId, emoji }: { itemId: string; emoji: "👍" | "❤️" | "🔥" | "💡" }) => {
       if (!listToken) throw new Error("Lista não está pública");
-      const url = `https://nmojwpihnslkssljowjh.supabase.co/functions/v1/favorites-public-react`;
+      const url = `https://cfmzkthhgliqelozlmwu.supabase.co/functions/v1/favorites-public-react`;
       const res = await fetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },

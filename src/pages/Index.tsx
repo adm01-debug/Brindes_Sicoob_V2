@@ -31,8 +31,8 @@ export default function Index() {
           "@type": "CollectionPage",
           "name": "Catálogo de Produtos Sicoob",
           "description": "Portal de compras centralizado para produtos e brindes do sistema Sicoob.",
-          "url": "https://criar-together-now.lovable.app/",
-          "isPartOf": { "@type": "WebSite", "name": "Sicoob", "url": "https://criar-together-now.lovable.app" }
+          "url": "https://vamos-build-awesome.lovable.app/",
+          "isPartOf": { "@type": "WebSite", "name": "Sicoob", "url": "https://vamos-build-awesome.lovable.app" }
         }}
       />
       <div>

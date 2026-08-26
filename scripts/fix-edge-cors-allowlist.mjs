@@ -9,7 +9,7 @@
  *   const corsHeaders = getCorsHeaders(new Request("https://local"));
  *
  * Não é o ideal (não reflete o Origin do request), mas é seguro:
- * a função getCorsHeaders cai no fallback `https://criar-together-now.lovable.app`
+ * a função getCorsHeaders cai no fallback `https://vamos-build-awesome.lovable.app`
  * quando o Origin não está presente. Para a maioria dos endpoints isso
  * é equivalente ao comportamento atual em produção.
  *
@@ -50,7 +50,7 @@ for (const fn of FILES) {
   }
   const decl =
     `\n// CORS allowlist — reflete Origin via _shared/cors.ts (fallback ao domínio canônico)\n` +
-    `const corsHeaders = getCorsHeaders(new Request("https://criar-together-now.lovable.app"));\n`;
+    `const corsHeaders = getCorsHeaders(new Request("https://vamos-build-awesome.lovable.app"));\n`;
   lines.splice(lastImport + 1, 0, decl);
   writeFileSync(path, lines.join("\n"), "utf8");
   fixed++;

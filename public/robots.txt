@@ -13,4 +13,4 @@ Allow: /
 User-agent: *
 Allow: /
 
-Sitemap: https://criar-together-now.lovable.app/sitemap.xml
+Sitemap: https://vamos-build-awesome.lovable.app/sitemap.xml

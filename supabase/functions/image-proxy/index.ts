@@ -10,7 +10,7 @@ const ALLOWED_DOMAINS = [
 
 // Allowed referer hosts (anti-hotlinking)
 const ALLOWED_REFERER_HOSTS = [
-  'criar-together-now.lovable.app',
+  'vamos-build-awesome.lovable.app',
   'promogifts.com.br',
   'www.promogifts.com.br',
   'lovable.app',          // any *.lovable.app subdomain

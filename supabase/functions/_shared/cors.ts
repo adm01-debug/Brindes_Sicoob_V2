@@ -2,9 +2,9 @@
 // Centralized CORS configuration — restrict to known origins
 
 const EXACT_ALLOWED_ORIGINS = new Set([
-  'https://criar-together-now.lovable.app',
-  'https://id-preview--1be35a65-1f65-4c2b-9a79-7d563930aacd.lovable.app',
-  'https://1be35a65-1f65-4c2b-9a79-7d563930aacd.lovableproject.com',
+  'https://vamos-build-awesome.lovable.app',
+  'https://id-preview--fe8e4c8b-66f6-4a3b-bbec-0366e2d42e04.lovable.app',
+  'https://fe8e4c8b-66f6-4a3b-bbec-0366e2d42e04.lovableproject.com',
   'https://promogifts.com.br',
   'https://www.promogifts.com.br',
   'http://localhost:5173',
@@ -39,7 +39,7 @@ function isAllowedOrigin(origin: string): boolean {
  */
 export function getCorsHeaders(req?: Request): Record<string, string> {
   const origin = req?.headers.get('Origin') || req?.headers.get('origin') || '';
-  const fallbackOrigin = 'https://criar-together-now.lovable.app';
+  const fallbackOrigin = 'https://vamos-build-awesome.lovable.app';
   const allowedOrigin = origin && isAllowedOrigin(origin) ? origin : fallbackOrigin;
 
   return {

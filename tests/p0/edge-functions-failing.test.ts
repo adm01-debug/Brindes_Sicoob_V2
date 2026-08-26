@@ -16,7 +16,7 @@ import {
   type EdgeFnResponseSpec,
 } from "./_mocks";
 
-const FUNCTIONS_BASE = "https://nmojwpihnslkssljowjh.supabase.co/functions/v1";
+const FUNCTIONS_BASE = "https://cfmzkthhgliqelozlmwu.supabase.co/functions/v1";
 
 describe("P0 — Edge functions com falha", () => {
   let fetchMock: ReturnType<typeof mockEdgeFunctionFetch>;

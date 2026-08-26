@@ -107,7 +107,7 @@ export default function ComparePage() {
     return (
       <>
         <PageSEO title="Comparar Produtos" description="Compare brindes lado a lado." path="/comparar"
-          jsonLd={{ "@context": "https://schema.org", "@type": "WebPage", "name": "Comparar Produtos", "url": "https://criar-together-now.lovable.app/comparar" }} />
+          jsonLd={{ "@context": "https://schema.org", "@type": "WebPage", "name": "Comparar Produtos", "url": "https://vamos-build-awesome.lovable.app/comparar" }} />
         <CompareEmptyStateSmart />
       </>
     );

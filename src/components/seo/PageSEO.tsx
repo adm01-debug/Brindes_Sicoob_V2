@@ -11,7 +11,7 @@ interface PageSEOProps {
   jsonLd?: Record<string, unknown>;
 }
 
-const BASE_URL = "https://criar-together-now.lovable.app";
+const BASE_URL = "https://vamos-build-awesome.lovable.app";
 const SITE_NAME = "Portal de Compras Sicoob";
 const DEFAULT_DESC = "Portal oficial de compras do Sicoob. Catálogo centralizado de produtos, brindes e itens institucionais.";
 const DEFAULT_OG_IMAGE = "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/e1261250-c70e-4278-b09c-68f108f6f3fb/id-preview-c11a0001--1be35a65-1f65-4c2b-9a79-7d563930aacd.lovable.app-1773315238298.png";
