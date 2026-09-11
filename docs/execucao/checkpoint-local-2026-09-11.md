@@ -2,6 +2,8 @@
 
 Este registro separa o que foi demonstrado e testado localmente do que ainda depende dos ambientes Supabase, de responsáveis do negócio e de uso real. Ele não marca as 1.000 subetapas do plano como concluídas: a regra do projeto exige evidência, responsável, revisão, dependências e aceite específico para cada fechamento.
 
+**Revisão posterior:** o [relatório dos 1.000 requisitos](revisao-implementacao-2026-09-11.md) identifica integrações parciais, seis reproduções locais de lacunas e dois gates remotos malsucedidos no commit `6f1c5f9`. As capacidades abaixo descrevem avanços locais, sem homologação da compra integral. As afirmações de atomicidade completa e ocultação de todo custo foram restringidas após a revisão.
+
 ## Preview disponível
 
 - Loja demonstrativa: `http://localhost:4178/loja-demo`.
@@ -39,9 +41,9 @@ Este registro separa o que foi demonstrado e testado localmente do que ainda dep
 - `migrate-helper` e `cleanup-novelties` desativadas com resposta 410, sem leitura de credenciais.
 - Autorização compartilhada recusa papéis desconhecidos e exige papel técnico explícito.
 - As 101 Edge Functions possuem categoria e enforcement no manifesto.
-- Ponte do catálogo restringe origem, método, lote, operações e RPCs a leitura; custo e margem são removidos da resposta.
+- Ponte do catálogo restringe origem, método, lote, operações e RPCs a leitura; seis nomes de campos internos são removidos. A revisão A10 identificou `setup_cost` e `unit_cost` ainda preservados; não há comprovação de ocultação integral de custos.
 - Rotas de comprador, gestor, supervisor e desenvolvimento usam políticas explícitas e estados de carregamento seguros.
-- Aprovação, rejeição e confirmação de pedidos usam RPCs transacionais com bloqueio, controle de versão, idempotência e escopo.
+- Aprovação, rejeição e confirmação de pedidos usam RPCs transacionais com bloqueio, estado anterior, idempotência e escopo. Isso não inclui versionamento atômico de toda proposta, versão imutável de arte, vínculo ativo ou todos os impedimentos de política; ver A07 e A15.
 - Débito e estorno de verba foram simulados em PostgreSQL 17 descartável, inclusive sob concorrência.
 
 ## Evidências atuais
@@ -56,13 +58,13 @@ Este registro separa o que foi demonstrado e testado localmente do que ainda dep
 | Erros de navegador na demonstração | 0 |
 | Violações automatizadas WCAG na demonstração | 0 |
 | Overflows horizontais em 1440, 390 e 320 px | 0 |
-| Vulnerabilidades conhecidas pelo `npm audit` | 0 |
-| Erros nos arquivos TypeScript alterados | 0 |
-| Regressões de ESLint nos arquivos alterados | 0; 12 erros herdados removidos |
+| Auditoria de dependências de produção (`npm audit --omit=dev`) | 0 no registro local; não substitui análise do código |
+| Comparação TypeScript com baseline | sem regressão no conjunto comparado; 1.246 erros globais herdados permanecem |
+| Comparação ESLint local | sem regressão; 12 erros herdados removidos; execução remota do comparador falhou |
 | Sintaxe dos workflows GitHub Actions | aprovada pelo `actionlint` |
-| Smoke público Playwright gerenciado | 6/6; 33 cenários autenticados ignorados sem segredos |
+| Smoke público Playwright gerenciado | 5 cenários públicos + 1 fixture aprovados; 33 ignorados, sem comprovar jornada autenticada |
 | Lighthouse do login, três execuções | performance mediana 0,96; acessibilidade 1,00; boas práticas 1,00; SEO 0,93 |
-| Core Web Vitals de laboratório do login | LCP mediano 2.286 ms; TBT mediano 36 ms; CLS 0 |
+| Métricas de laboratório do login | LCP mediano 2.286 ms; TBT mediano 36 ms; CLS 0; INP de campo não medido |
 | Maior chunk JavaScript bruto | 566,2 KB; abaixo do limite de 800 KB |
 | Build de produção | aprovado |
 
@@ -81,6 +83,7 @@ A análise do produto concorrente e do repositório de referência está em [ben
 - Acessibilidade automatizada não substitui teste por teclado, leitor de tela, zoom e participantes reais.
 - Desempenho de laboratório e métricas de uso real ainda precisam ser medidos no domínio definitivo.
 - A composição automática por rota eliminou os chunks circulares observados e reduziu o antigo bundle administrativo de 1,55 MB. Permanecem dois avisos acima de 500 KB brutos (`useKitShare` e busca por voz), ambos abaixo do limite bloqueante de 800 KB; a próxima rodada deve medir o efeito deles nas rotas que realmente os carregam em aparelhos modestos.
-- A varredura ampla do Vitest revelou dívida legada e coleta indevida de specs E2E/Deno no comando genérico. O gate crítico usado pela CI está verde, mas a suíte histórica integral ainda precisa de triagem por domínio antes de poder servir como gate único.
+- A varredura ampla do Vitest revelou dívida legada e coleta indevida de specs E2E/Deno no comando genérico. Testes críticos locais passaram, mas o Quality Gate remoto falhou no ESLint e a regressão E2E registrou falhas antes de atingir o limite de tempo. A suíte histórica integral ainda precisa de triagem por domínio.
+- O job CodeQL concluiu a análise, mas seu SARIF contém 26 alertas de 12 regras ainda sem triagem conclusiva. O estado verde do job não comprova ausência de vulnerabilidades.
 
 Essas dependências não anulam as correções locais. Elas delimitam com precisão o que ainda precisa de validação externa antes de qualquer publicação ou nota final.

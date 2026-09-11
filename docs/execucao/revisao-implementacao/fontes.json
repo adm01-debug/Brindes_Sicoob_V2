@@ -1,0 +1,829 @@
+{
+  "grupos": {
+    "diagnostico": [
+      "docs/pesquisa/2026-09-11/dossie.md",
+      "docs/pesquisa/2026-09-11/anexos/auditoria-tecnica-a.md",
+      "docs/pesquisa/2026-09-11/anexos/auditoria-tecnica-b.md"
+    ],
+    "checkpoint": [
+      "docs/execucao/checkpoint-local-2026-09-11.md"
+    ],
+    "pesquisa": [
+      "docs/pesquisa/2026-09-11/dossie.md",
+      "docs/pesquisa/2026-09-11/anexos/perfis-profissionais.md",
+      "docs/pesquisa/2026-09-11/anexos/documentos-fornecidos.md"
+    ],
+    "benchmark": [
+      "docs/pesquisa/2026-09-11/benchmark-promo-gifts-v4.md"
+    ],
+    "plano": [
+      "docs/plano-implementacao/plano.json",
+      "docs/execucao/validacao-do-plano.md"
+    ],
+    "seguranca": [
+      "supabase/functions/_shared/edge-authz-manifest.ts",
+      "supabase/functions/migrate-helper/index.ts",
+      "tests/security/edge-authz-bypass.test.ts",
+      "docs/SECURITY.md"
+    ],
+    "catalogo": [
+      "src/components/catalog/CatalogStorefrontHero.tsx",
+      "src/components/catalog/CatalogContent.tsx",
+      "supabase/functions/external-db-bridge/index.ts",
+      "supabase/functions/_shared/catalog-redaction.ts",
+      "supabase/functions/_shared/external-db-config.ts",
+      "tests/scenarios/catalogo-somente-leitura.mjs"
+    ],
+    "modelo": [
+      "supabase/migrations/20260502175334_93cdfc03-97b2-4de9-9e60-5152452316b5.sql",
+      "supabase/migrations/20260502174252_a88e3c13-46b8-4ce4-b1b8-c8500d390f3d.sql",
+      "src/contexts/OrganizationContext.tsx"
+    ],
+    "pedido": [
+      "src/services/sicoob/orderService.ts",
+      "src/pages/sicoob/orders/OrderDetailPage.tsx",
+      "src/types/sicoob/orders.ts"
+    ],
+    "legado": [
+      "src/services/OrderService.ts",
+      "src/hooks/orders/useOrders.ts"
+    ],
+    "aprovacao": [
+      "src/services/sicoob/approvalService.ts",
+      "supabase/migrations/20260911143000_sicoob_order_budget_atomicity.sql"
+    ],
+    "organizacao": [
+      "src/contexts/OrganizationContext.tsx",
+      "src/contexts/AuthContext.tsx"
+    ],
+    "usuarios": [
+      "src/services/sicoob/userService.ts",
+      "src/pages/admin/sicoob/tabs/UserAssignmentTab.tsx"
+    ],
+    "verba": [
+      "src/services/sicoob/budgetService.ts",
+      "supabase/migrations/20260911143000_sicoob_order_budget_atomicity.sql",
+      "docs/execucao/evidencias/verba-atomica.json"
+    ],
+    "permissoes": [
+      "src/lib/roles.ts",
+      "src/lib/rbac/route-matrix.ts",
+      "tests/sicoob/route-access-scenarios.test.tsx"
+    ],
+    "rotas": [
+      "src/routes/config/sicoob.ts",
+      "src/routes/config/sicoob-rbac.ts",
+      "tests/sicoob/route-access-scenarios.test.tsx"
+    ],
+    "sessao": [
+      "src/contexts/AuthContext.tsx",
+      "src/components/layout/ProtectedRoute.tsx",
+      "src/components/layout/SicoobRoute.tsx",
+      "src/lib/auth/invoke-full-scope.ts"
+    ],
+    "login": [
+      "src/pages/Auth.tsx",
+      "src/pages/auth/AuthBranding.tsx",
+      "tests/components/pages/Auth.test.tsx"
+    ],
+    "qualidade": [
+      "scripts/check-eslint-baseline.mjs",
+      "scripts/check-typecheck-baseline.mjs",
+      "docs/execucao/evidencias/gates-depois.tap",
+      "docs/execucao/evidencias/cenarios-integrados.tap"
+    ],
+    "ci": [
+      "docs/execucao/revisao-implementacao/ci.json",
+      "docs/execucao/revisao-implementacao/resumo-codeql.json",
+      ".github/workflows/e2e.yml"
+    ],
+    "operacao": [
+      "docs/DR.md",
+      "docs/OBSERVABILITY.md",
+      "docs/SECURITY_RUNBOOK.md"
+    ],
+    "navegacao": [
+      "src/components/layout/Header.tsx",
+      "src/components/layout/SidebarReorganized.tsx",
+      "src/routes/config/sicoob.ts"
+    ],
+    "busca": [
+      "src/hooks/useSearch.ts",
+      "src/utils/product-search.ts",
+      "tests/hooks/useSearch.test.ts",
+      "src/components/catalog/CatalogHeader.tsx"
+    ],
+    "filtros": [
+      "src/hooks/catalog/useCatalogFilters.ts",
+      "src/components/catalog/CatalogActiveFilters.tsx",
+      "tests/components/catalog/CatalogStorefrontExperience.test.tsx"
+    ],
+    "metricas": [
+      "src/hooks/sicoob/useAIOrderPredictor.ts",
+      "src/pages/sicoob/orders/OrdersPage.tsx",
+      "src/pages/sicoob/orders/OrderDetailPage.tsx",
+      "src/services/sicoob/statsService.ts"
+    ],
+    "notificacoes": [
+      "src/hooks/useNotifications.ts",
+      "src/hooks/useNotificationOmnichannel.ts",
+      "src/services/sicoob/orderService.ts"
+    ],
+    "demo": [
+      "src/pages/sicoob/StorefrontDemoPage.tsx",
+      "docs/execucao/evidencias/visual/demo-resultado.json"
+    ],
+    "marca": [
+      "docs/pesquisa/2026-09-11/dossie.md",
+      "src/pages/auth/AuthBranding.tsx",
+      "docs/execucao/ativos-imagegen.json"
+    ],
+    "design": [
+      "src/index.css",
+      "tailwind.config.ts",
+      "docs/ACCESSIBILITY.md",
+      "src/components/ui/button.tsx",
+      "src/components/ui/dialog.tsx"
+    ],
+    "visual": [
+      "docs/execucao/evidencias/visual/demo-resultado.json",
+      "docs/execucao/evidencias/visual/resultado.json",
+      "docs/execucao/evidencias/visual/login-390.png"
+    ],
+    "produto": [
+      "src/pages/ProductDetail.tsx",
+      "src/pages/product-detail/ProductDetailHero.tsx"
+    ],
+    "personalizacao": [
+      "src/pages/PersonalizationSimulator.tsx",
+      "src/components/kit-builder/PersonalizationConfig.tsx",
+      "src/lib/external-db/techniques.ts"
+    ],
+    "comparacao": [
+      "src/pages/ComparePage.tsx",
+      "src/hooks/useSupplierComparison.ts",
+      "src/components/compare/ComparisonMobileView.tsx"
+    ],
+    "compartilhamento": [
+      "src/hooks/useFavoriteLists.ts",
+      "src/hooks/useKitShare.ts",
+      "src/stores/useFavoritesStore.ts"
+    ],
+    "campanhas": [
+      "src/pages/admin/AdminCampanhasPage.tsx"
+    ],
+    "artes": [
+      "src/components/mockup/ArtFileUpload.tsx",
+      "src/components/magic-up/MagicUpBrandKitPanel.tsx",
+      "src/components/orders/PilotApprovalPanel.tsx",
+      "src/hooks/usePilotApprovals.ts"
+    ],
+    "kit": [
+      "src/pages/KitBuilderPage.tsx",
+      "src/hooks/useKitAutoSave.ts",
+      "src/hooks/useKitStockValidation.ts",
+      "src/lib/kit-builder/types.ts",
+      "src/components/kit-builder/VariantSelector.tsx"
+    ],
+    "distribuicao": [
+      "supabase/migrations/20260503000002_sicoob_consolidation_logic.sql",
+      "src/pages/sicoob/GestorConsolidatedOrdersPage.tsx"
+    ],
+    "carrinho": [
+      "src/components/cart/CartHeaderButton.tsx",
+      "src/components/layout/Header.tsx"
+    ],
+    "propostas": [
+      "src/pages/QuoteBuilderPage.tsx",
+      "src/services/QuoteService.ts",
+      "src/hooks/quotes/useQuotes.ts"
+    ],
+    "versoes": [
+      "src/hooks/useQuoteVersions.ts",
+      "src/components/quotes/QuoteVersionCompare.tsx"
+    ],
+    "logistica": [
+      "src/components/sicoob/orders/OrderLogisticsTab.tsx",
+      "src/services/OrderService.ts"
+    ],
+    "recompra": [
+      "src/components/orders/OneClickReorder.tsx",
+      "src/services/sicoob/orderService.ts",
+      "src/services/OrderService.ts"
+    ],
+    "ajuda": [
+      "src/components/ai/AIChat.tsx",
+      "docs/pesquisa/2026-09-11/dossie.md"
+    ],
+    "desempenho": [
+      ".lighthouserc.cjs",
+      "scripts/qa/check-bundle-budget.mjs",
+      "docs/execucao/evidencias/lighthouse-login.json"
+    ],
+    "privacidade": [
+      "docs/SECURITY.md",
+      "src/contexts/AuthContext.tsx",
+      "src/hooks/useSearch.ts"
+    ],
+    "simulacoes": [
+      "scripts/revisao/simular-lacunas.mjs",
+      "docs/execucao/revisao-implementacao/simulacoes.json"
+    ],
+    "revisao": [
+      "docs/execucao/revisao-implementacao/anotacoes.txt",
+      "docs/execucao/revisao-implementacao/achados.json"
+    ]
+  },
+  "arquivos": [
+    {
+      "arquivo": "docs/pesquisa/2026-09-11/dossie.md",
+      "sha256": "90894cb36bbcbb7952ed1e66e0344a3fcdd7ffc18fc772ace12977a2048b5058",
+      "url": "../../../docs/pesquisa/2026-09-11/dossie.md"
+    },
+    {
+      "arquivo": "docs/pesquisa/2026-09-11/anexos/auditoria-tecnica-a.md",
+      "sha256": "f56c33532dbc91ef62d6e16b27c5167cd6c896dc686840d7ab9228b449cd53c3",
+      "url": "../../../docs/pesquisa/2026-09-11/anexos/auditoria-tecnica-a.md"
+    },
+    {
+      "arquivo": "docs/pesquisa/2026-09-11/anexos/auditoria-tecnica-b.md",
+      "sha256": "6f751785963804cb41996261672f9965f2b6e685f5600390801999a09a21383d",
+      "url": "../../../docs/pesquisa/2026-09-11/anexos/auditoria-tecnica-b.md"
+    },
+    {
+      "arquivo": "docs/execucao/checkpoint-local-2026-09-11.md",
+      "sha256": "b986a85b40debb28d29825d45dad1c5e5e60ca12bb1a09ebd97c46de26f4ae16",
+      "url": "../../../docs/execucao/checkpoint-local-2026-09-11.md"
+    },
+    {
+      "arquivo": "docs/pesquisa/2026-09-11/anexos/perfis-profissionais.md",
+      "sha256": "f2acb378ee2cc70d4bdf7e76179dcba385b954060e144109768aa064a93eca37",
+      "url": "../../../docs/pesquisa/2026-09-11/anexos/perfis-profissionais.md"
+    },
+    {
+      "arquivo": "docs/pesquisa/2026-09-11/anexos/documentos-fornecidos.md",
+      "sha256": "5d099ea2e00092a0037419d7669b8236d4a4134adb3cb4038086d33dee307b92",
+      "url": "../../../docs/pesquisa/2026-09-11/anexos/documentos-fornecidos.md"
+    },
+    {
+      "arquivo": "docs/pesquisa/2026-09-11/benchmark-promo-gifts-v4.md",
+      "sha256": "9e18dfdc964eaf8a95ee6b69f506fefe534e1a5fb6a3f216d2ecba94bfcdc0a2",
+      "url": "../../../docs/pesquisa/2026-09-11/benchmark-promo-gifts-v4.md"
+    },
+    {
+      "arquivo": "docs/plano-implementacao/plano.json",
+      "sha256": "50c5d83d7af3d34bb560ddfc90a270b722cb24068463a4c94cac752f6387e9f6",
+      "url": "../../../docs/plano-implementacao/plano.json"
+    },
+    {
+      "arquivo": "docs/execucao/validacao-do-plano.md",
+      "sha256": "2990f6c13e3394c4e69e25e26f702b8544e8c480dd9249943e78e94932cd334b",
+      "url": "../../../docs/execucao/validacao-do-plano.md"
+    },
+    {
+      "arquivo": "supabase/functions/_shared/edge-authz-manifest.ts",
+      "sha256": "a63dce72337f5b5feb6e5af93c5d1713b4cb48c65fed18e9cac46d2fd9fd001f",
+      "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/blob/6f1c5f94f612c13071b8dbe61b500b915e50b123/supabase/functions/_shared/edge-authz-manifest.ts"
+    },
+    {
+      "arquivo": "supabase/functions/migrate-helper/index.ts",
+      "sha256": "88fc996845be9c97ec00d8c7fe65f3e12a7c21e6b4dd22468f7d4573e887d7ec",
+      "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/blob/6f1c5f94f612c13071b8dbe61b500b915e50b123/supabase/functions/migrate-helper/index.ts"
+    },
+    {
+      "arquivo": "tests/security/edge-authz-bypass.test.ts",
+      "sha256": "58921944fcf55bb8406ba025d9e9d4b11d9522c0ada8b0398d0f706ee99c9a5e",
+      "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/blob/6f1c5f94f612c13071b8dbe61b500b915e50b123/tests/security/edge-authz-bypass.test.ts"
+    },
+    {
+      "arquivo": "docs/SECURITY.md",
+      "sha256": "b26b4eb0bce4e677336a1690741872d0f1fdf4fbdd3ebc8507db136270df87a6",
+      "url": "../../../docs/SECURITY.md"
+    },
+    {
+      "arquivo": "src/components/catalog/CatalogStorefrontHero.tsx",
+      "sha256": "e96796e77b99264bd955fa4cf5c7ccb167aa31b623be01acd72cefb04f3fc65d",
+      "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/blob/6f1c5f94f612c13071b8dbe61b500b915e50b123/src/components/catalog/CatalogStorefrontHero.tsx"
+    },
+    {
+      "arquivo": "src/components/catalog/CatalogContent.tsx",
+      "sha256": "1fd400890576d000896569d95b4cb2874c10aca9946e21336d6dad91247eec48",
+      "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/blob/6f1c5f94f612c13071b8dbe61b500b915e50b123/src/components/catalog/CatalogContent.tsx"
+    },
+    {
+      "arquivo": "supabase/functions/external-db-bridge/index.ts",
+      "sha256": "c7d42184f2db0d86f65cdf04d3223d8489c25cff5213cad2887303a9888a859f",
+      "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/blob/6f1c5f94f612c13071b8dbe61b500b915e50b123/supabase/functions/external-db-bridge/index.ts"
+    },
+    {
+      "arquivo": "supabase/functions/_shared/catalog-redaction.ts",
+      "sha256": "689bdfe537761867e2b46de8bc3a0e4a7b6c7992286165805659078d1fde39c8",
+      "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/blob/6f1c5f94f612c13071b8dbe61b500b915e50b123/supabase/functions/_shared/catalog-redaction.ts"
+    },
+    {
+      "arquivo": "supabase/functions/_shared/external-db-config.ts",
+      "sha256": "1ec2a4501dde4e3f7e76a4f8f2f5082a9c758817868056ddc0edb238b883aed2",
+      "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/blob/6f1c5f94f612c13071b8dbe61b500b915e50b123/supabase/functions/_shared/external-db-config.ts"
+    },
+    {
+      "arquivo": "tests/scenarios/catalogo-somente-leitura.mjs",
+      "sha256": "378ce09a3af1161124a028a72d85843c7357044f410159e69584df1302ba7360",
+      "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/blob/6f1c5f94f612c13071b8dbe61b500b915e50b123/tests/scenarios/catalogo-somente-leitura.mjs"
+    },
+    {
+      "arquivo": "supabase/migrations/20260502175334_93cdfc03-97b2-4de9-9e60-5152452316b5.sql",
+      "sha256": "277d117294637215cc685356b16be7a7238177a1c29fc798477c34aff397ff9b",
+      "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/blob/6f1c5f94f612c13071b8dbe61b500b915e50b123/supabase/migrations/20260502175334_93cdfc03-97b2-4de9-9e60-5152452316b5.sql"
+    },
+    {
+      "arquivo": "supabase/migrations/20260502174252_a88e3c13-46b8-4ce4-b1b8-c8500d390f3d.sql",
+      "sha256": "2a00ab271e8d3d7d1a3cdf05fd7ef0861071ec01cd9fd00805962e15cedb5f35",
+      "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/blob/6f1c5f94f612c13071b8dbe61b500b915e50b123/supabase/migrations/20260502174252_a88e3c13-46b8-4ce4-b1b8-c8500d390f3d.sql"
+    },
+    {
+      "arquivo": "src/contexts/OrganizationContext.tsx",
+      "sha256": "6d06297f28b5a5d273ee2fd780c4e7b410876e92f9a806b029a5b9a69a173bb8",
+      "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/blob/6f1c5f94f612c13071b8dbe61b500b915e50b123/src/contexts/OrganizationContext.tsx"
+    },
+    {
+      "arquivo": "src/services/sicoob/orderService.ts",
+      "sha256": "9ecc38d6cdfd31a370901e88378193087d2cb75e013f9ff5f4b27369bf8e13c6",
+      "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/blob/6f1c5f94f612c13071b8dbe61b500b915e50b123/src/services/sicoob/orderService.ts"
+    },
+    {
+      "arquivo": "src/pages/sicoob/orders/OrderDetailPage.tsx",
+      "sha256": "b9d31ddee2cbdfc5a501bcdcd65b7e2614da776f8a9bfb4f5670d9083f93edf4",
+      "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/blob/6f1c5f94f612c13071b8dbe61b500b915e50b123/src/pages/sicoob/orders/OrderDetailPage.tsx"
+    },
+    {
+      "arquivo": "src/types/sicoob/orders.ts",
+      "sha256": "4efcd52e809570f04a6f209b5ae9a9fda9ce898f52d803ff6ab0b96b7e174676",
+      "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/blob/6f1c5f94f612c13071b8dbe61b500b915e50b123/src/types/sicoob/orders.ts"
+    },
+    {
+      "arquivo": "src/services/OrderService.ts",
+      "sha256": "f9d802fed7aba3396bc343c2c17cebc15943ac515525ae95656b33b5076be711",
+      "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/blob/6f1c5f94f612c13071b8dbe61b500b915e50b123/src/services/OrderService.ts"
+    },
+    {
+      "arquivo": "src/hooks/orders/useOrders.ts",
+      "sha256": "0ffbda2e8c16328b9690deab71e8ec59cdda55a9f6bce5f7d69e3e07e8c61bf8",
+      "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/blob/6f1c5f94f612c13071b8dbe61b500b915e50b123/src/hooks/orders/useOrders.ts"
+    },
+    {
+      "arquivo": "src/services/sicoob/approvalService.ts",
+      "sha256": "9aa56c6443f9bf67fb2d81dadec41351beffd492843e65f78a273ad13794866e",
+      "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/blob/6f1c5f94f612c13071b8dbe61b500b915e50b123/src/services/sicoob/approvalService.ts"
+    },
+    {
+      "arquivo": "supabase/migrations/20260911143000_sicoob_order_budget_atomicity.sql",
+      "sha256": "3a3e188bea7bfbc21c624a6a4c9faa7b57bba3e866817ab00853312daa6854f9",
+      "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/blob/6f1c5f94f612c13071b8dbe61b500b915e50b123/supabase/migrations/20260911143000_sicoob_order_budget_atomicity.sql"
+    },
+    {
+      "arquivo": "src/contexts/AuthContext.tsx",
+      "sha256": "0075c4152294276ee11e8d35654fe335bdf556c187a8801b4ee099df67ed801b",
+      "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/blob/6f1c5f94f612c13071b8dbe61b500b915e50b123/src/contexts/AuthContext.tsx"
+    },
+    {
+      "arquivo": "src/services/sicoob/userService.ts",
+      "sha256": "99de5c176ee0088ddce25a1292a60c0e9020947aa3e553d3d244b0758c71e016",
+      "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/blob/6f1c5f94f612c13071b8dbe61b500b915e50b123/src/services/sicoob/userService.ts"
+    },
+    {
+      "arquivo": "src/pages/admin/sicoob/tabs/UserAssignmentTab.tsx",
+      "sha256": "327dc52c5a21e13b205c622289ac5a8a80982bef9a0fed0469744c4056076011",
+      "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/blob/6f1c5f94f612c13071b8dbe61b500b915e50b123/src/pages/admin/sicoob/tabs/UserAssignmentTab.tsx"
+    },
+    {
+      "arquivo": "src/services/sicoob/budgetService.ts",
+      "sha256": "83dd3fb43ff5d3b1e8579025d2a0d25e1acd5fc9703a9261093bf8eb7cac7ee0",
+      "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/blob/6f1c5f94f612c13071b8dbe61b500b915e50b123/src/services/sicoob/budgetService.ts"
+    },
+    {
+      "arquivo": "docs/execucao/evidencias/verba-atomica.json",
+      "sha256": "2722dd93007fecacbcff2e6aedd7f182857ca91e6959280c7e125a48f7151d73",
+      "url": "../../../docs/execucao/evidencias/verba-atomica.json"
+    },
+    {
+      "arquivo": "src/lib/roles.ts",
+      "sha256": "006f7a95906c2510d8bf1415cceeb95bddaf43493c8e99f7fe194cf3d05dc249",
+      "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/blob/6f1c5f94f612c13071b8dbe61b500b915e50b123/src/lib/roles.ts"
+    },
+    {
+      "arquivo": "src/lib/rbac/route-matrix.ts",
+      "sha256": "234c34cd58b58d43a19857d147ecb55c8fbd488e723da238fabf9c1d13bb7d5c",
+      "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/blob/6f1c5f94f612c13071b8dbe61b500b915e50b123/src/lib/rbac/route-matrix.ts"
+    },
+    {
+      "arquivo": "tests/sicoob/route-access-scenarios.test.tsx",
+      "sha256": "1cc21a1cdd41b861780fbe810b941bee9655d89881eaf6d50c9953ba16d31b14",
+      "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/blob/6f1c5f94f612c13071b8dbe61b500b915e50b123/tests/sicoob/route-access-scenarios.test.tsx"
+    },
+    {
+      "arquivo": "src/routes/config/sicoob.ts",
+      "sha256": "09a1be11801c67d28438303857aac2227ac8050b22db3f7b6d592ca7452f6afb",
+      "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/blob/6f1c5f94f612c13071b8dbe61b500b915e50b123/src/routes/config/sicoob.ts"
+    },
+    {
+      "arquivo": "src/routes/config/sicoob-rbac.ts",
+      "sha256": "2c24add63c0ab1dff888a662019886703359c2d8fc39a1592d7abf5bd10a8055",
+      "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/blob/6f1c5f94f612c13071b8dbe61b500b915e50b123/src/routes/config/sicoob-rbac.ts"
+    },
+    {
+      "arquivo": "src/components/layout/ProtectedRoute.tsx",
+      "sha256": "1d6d46db0187f4585b6ecf3759d81e9981d1b93382e4a9435f35fce0b3c225ef",
+      "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/blob/6f1c5f94f612c13071b8dbe61b500b915e50b123/src/components/layout/ProtectedRoute.tsx"
+    },
+    {
+      "arquivo": "src/components/layout/SicoobRoute.tsx",
+      "sha256": "173d686492df8ad44ba3b14b70560625a787f8b161d8b0c0a54ed42a1189fa7e",
+      "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/blob/6f1c5f94f612c13071b8dbe61b500b915e50b123/src/components/layout/SicoobRoute.tsx"
+    },
+    {
+      "arquivo": "src/lib/auth/invoke-full-scope.ts",
+      "sha256": "c23508fd90441d0c83519204b2112acb0bf69ba4e9a8464690089ab01ae8672e",
+      "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/blob/6f1c5f94f612c13071b8dbe61b500b915e50b123/src/lib/auth/invoke-full-scope.ts"
+    },
+    {
+      "arquivo": "src/pages/Auth.tsx",
+      "sha256": "8b564384d3689697258b2c91781f845321839016fdc554b53c74b9ab3d94d0cc",
+      "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/blob/6f1c5f94f612c13071b8dbe61b500b915e50b123/src/pages/Auth.tsx"
+    },
+    {
+      "arquivo": "src/pages/auth/AuthBranding.tsx",
+      "sha256": "c8599dc5d9fa003f33a47be3b60a7ff5a06cb479dbc402f71fdac13f47c8777b",
+      "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/blob/6f1c5f94f612c13071b8dbe61b500b915e50b123/src/pages/auth/AuthBranding.tsx"
+    },
+    {
+      "arquivo": "tests/components/pages/Auth.test.tsx",
+      "sha256": "9b83c9115cd453e192621444edb42a529a16dac8e9e12950d754fb1d1f4bb7e0",
+      "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/blob/6f1c5f94f612c13071b8dbe61b500b915e50b123/tests/components/pages/Auth.test.tsx"
+    },
+    {
+      "arquivo": "scripts/check-eslint-baseline.mjs",
+      "sha256": "112dec097321cc0ea58b3a49cf8aa5312bd9b760212705ef337d882cae7ab90a",
+      "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/blob/6f1c5f94f612c13071b8dbe61b500b915e50b123/scripts/check-eslint-baseline.mjs"
+    },
+    {
+      "arquivo": "scripts/check-typecheck-baseline.mjs",
+      "sha256": "f33c71a7398407dced73d525fafa729daab7fbf038959073af184594d07370f1",
+      "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/blob/6f1c5f94f612c13071b8dbe61b500b915e50b123/scripts/check-typecheck-baseline.mjs"
+    },
+    {
+      "arquivo": "docs/execucao/evidencias/gates-depois.tap",
+      "sha256": "8c0db7e7733094ce348230e8579da6761e98560a65263649eae7520e9c4f4017",
+      "url": "../../../docs/execucao/evidencias/gates-depois.tap"
+    },
+    {
+      "arquivo": "docs/execucao/evidencias/cenarios-integrados.tap",
+      "sha256": "b1a5bccde4b598acb5577a43c7214a958b9fea14b535ba6e8a55aa440df380b3",
+      "url": "../../../docs/execucao/evidencias/cenarios-integrados.tap"
+    },
+    {
+      "arquivo": "docs/execucao/revisao-implementacao/ci.json",
+      "sha256": "5007310c52fe1e07c74c3506c6385ea4671deeeefd803b37ee9fb6b5158d2189",
+      "url": "../../../docs/execucao/revisao-implementacao/ci.json"
+    },
+    {
+      "arquivo": "docs/execucao/revisao-implementacao/resumo-codeql.json",
+      "sha256": "9209f27670498be46f1c61d89dd323ebfa9861e47bef99631d7377dedaf7337c",
+      "url": "../../../docs/execucao/revisao-implementacao/resumo-codeql.json"
+    },
+    {
+      "arquivo": ".github/workflows/e2e.yml",
+      "sha256": "d3738ffe8abf02d1427aad671f2e2d9100c0b3bc50e37f59d196df647edc021d",
+      "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/blob/6f1c5f94f612c13071b8dbe61b500b915e50b123/.github/workflows/e2e.yml"
+    },
+    {
+      "arquivo": "docs/DR.md",
+      "sha256": "f7d1d5d75b1b7d42941b126fb58834f276fc1579ce6c8f515314d7b302a28176",
+      "url": "../../../docs/DR.md"
+    },
+    {
+      "arquivo": "docs/OBSERVABILITY.md",
+      "sha256": "708f5d9221a34d20596a525390d9476f50fc5fa74a90cb1903df06cf161ca598",
+      "url": "../../../docs/OBSERVABILITY.md"
+    },
+    {
+      "arquivo": "docs/SECURITY_RUNBOOK.md",
+      "sha256": "ab2c9eb699a615af5105f37d808bfb3242d8a3259a9c75e686277fd90f65bef3",
+      "url": "../../../docs/SECURITY_RUNBOOK.md"
+    },
+    {
+      "arquivo": "src/components/layout/Header.tsx",
+      "sha256": "c5fc5bd68759149795f693af866c8022fd82310721ba70aad85b0ad432eb78ea",
+      "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/blob/6f1c5f94f612c13071b8dbe61b500b915e50b123/src/components/layout/Header.tsx"
+    },
+    {
+      "arquivo": "src/components/layout/SidebarReorganized.tsx",
+      "sha256": "e6eac9dcfa498eee679392677cc07d403c21d436818a9b9fa0f41b8c267328bb",
+      "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/blob/6f1c5f94f612c13071b8dbe61b500b915e50b123/src/components/layout/SidebarReorganized.tsx"
+    },
+    {
+      "arquivo": "src/hooks/useSearch.ts",
+      "sha256": "d93befb3cdc9b0f82234f21b86aba58ee39c203cc06dd8ad7b6bf5cb0ad3c54c",
+      "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/blob/6f1c5f94f612c13071b8dbe61b500b915e50b123/src/hooks/useSearch.ts"
+    },
+    {
+      "arquivo": "src/utils/product-search.ts",
+      "sha256": "8ca4de1ec6599b0e7dcb5f34de7adfdbdec8a763dc8ad14f9a6fed3bcb44a228",
+      "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/blob/6f1c5f94f612c13071b8dbe61b500b915e50b123/src/utils/product-search.ts"
+    },
+    {
+      "arquivo": "tests/hooks/useSearch.test.ts",
+      "sha256": "8e388ccacc3459625cb5b35aa9c5e3c012d99e59f510f5a1a62e184e9ad4f597",
+      "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/blob/6f1c5f94f612c13071b8dbe61b500b915e50b123/tests/hooks/useSearch.test.ts"
+    },
+    {
+      "arquivo": "src/components/catalog/CatalogHeader.tsx",
+      "sha256": "6aa067e5d3df9908004436e7cdf84c89f7147566c3377fadf2e3ba99cabff6d6",
+      "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/blob/6f1c5f94f612c13071b8dbe61b500b915e50b123/src/components/catalog/CatalogHeader.tsx"
+    },
+    {
+      "arquivo": "src/hooks/catalog/useCatalogFilters.ts",
+      "sha256": "5aeb3bd5eda29f6e0ce7e289f89450574b7b29346af88ace6ee6610a46e0e9d9",
+      "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/blob/6f1c5f94f612c13071b8dbe61b500b915e50b123/src/hooks/catalog/useCatalogFilters.ts"
+    },
+    {
+      "arquivo": "src/components/catalog/CatalogActiveFilters.tsx",
+      "sha256": "e2d0349a281617168fe2a322f4be32a8fcf1b9e2a09c3a74475f5afa6be841ec",
+      "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/blob/6f1c5f94f612c13071b8dbe61b500b915e50b123/src/components/catalog/CatalogActiveFilters.tsx"
+    },
+    {
+      "arquivo": "tests/components/catalog/CatalogStorefrontExperience.test.tsx",
+      "sha256": "67f10757a88a17095f2b6d0e7769b6efa421fb034758eed69e6017ddd9f1013c",
+      "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/blob/6f1c5f94f612c13071b8dbe61b500b915e50b123/tests/components/catalog/CatalogStorefrontExperience.test.tsx"
+    },
+    {
+      "arquivo": "src/hooks/sicoob/useAIOrderPredictor.ts",
+      "sha256": "0e757fbec37087f896999893533951876ccfb5e3c91186c382279830bc655008",
+      "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/blob/6f1c5f94f612c13071b8dbe61b500b915e50b123/src/hooks/sicoob/useAIOrderPredictor.ts"
+    },
+    {
+      "arquivo": "src/pages/sicoob/orders/OrdersPage.tsx",
+      "sha256": "20337ffab655774729ff61439c800cc8624a08ef1c9386925199b7e8aecce28a",
+      "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/blob/6f1c5f94f612c13071b8dbe61b500b915e50b123/src/pages/sicoob/orders/OrdersPage.tsx"
+    },
+    {
+      "arquivo": "src/services/sicoob/statsService.ts",
+      "sha256": "78d9a8250377ae6aab5f3c80c115f1011ebf446426dc598b3190e338952ef98f",
+      "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/blob/6f1c5f94f612c13071b8dbe61b500b915e50b123/src/services/sicoob/statsService.ts"
+    },
+    {
+      "arquivo": "src/hooks/useNotifications.ts",
+      "sha256": "648dca598c395e90a43be5c7819640ff73ead748c99ec125402b1f28caa3fb67",
+      "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/blob/6f1c5f94f612c13071b8dbe61b500b915e50b123/src/hooks/useNotifications.ts"
+    },
+    {
+      "arquivo": "src/hooks/useNotificationOmnichannel.ts",
+      "sha256": "346f77f6e48175783c80c3800c9ff9eae6bfa7664e79b162c0ab27dab9607b44",
+      "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/blob/6f1c5f94f612c13071b8dbe61b500b915e50b123/src/hooks/useNotificationOmnichannel.ts"
+    },
+    {
+      "arquivo": "src/pages/sicoob/StorefrontDemoPage.tsx",
+      "sha256": "00ceb408383ba210411172b61d605970fdd593aab36ec38fd96260422e88c0e9",
+      "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/blob/6f1c5f94f612c13071b8dbe61b500b915e50b123/src/pages/sicoob/StorefrontDemoPage.tsx"
+    },
+    {
+      "arquivo": "docs/execucao/evidencias/visual/demo-resultado.json",
+      "sha256": "89e2258ced14aedcf8c6551750b68254f081f10bc866926702e9956c40aa9ea3",
+      "url": "../../../docs/execucao/evidencias/visual/demo-resultado.json"
+    },
+    {
+      "arquivo": "docs/execucao/ativos-imagegen.json",
+      "sha256": "c195f455f682f175350865ae24820916b95a9bf8ceacb678629da2ae5984f990",
+      "url": "../../../docs/execucao/ativos-imagegen.json"
+    },
+    {
+      "arquivo": "src/index.css",
+      "sha256": "92df54cf65fd921768f657f2ee9e197e60d720b1bb997ee80c6d9a8498926d82",
+      "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/blob/6f1c5f94f612c13071b8dbe61b500b915e50b123/src/index.css"
+    },
+    {
+      "arquivo": "tailwind.config.ts",
+      "sha256": "6d2c1e16552813bc0086ecd0a6e4fa9f62fa388febdea20ad5a6b5d85f8e8f19",
+      "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/blob/6f1c5f94f612c13071b8dbe61b500b915e50b123/tailwind.config.ts"
+    },
+    {
+      "arquivo": "docs/ACCESSIBILITY.md",
+      "sha256": "10cde3bb2bbda9f3f87f5154eda26319b4c020c605b8c95c13ebb5229f1ee1ad",
+      "url": "../../../docs/ACCESSIBILITY.md"
+    },
+    {
+      "arquivo": "src/components/ui/button.tsx",
+      "sha256": "04f79dd6a2f6046c459aa73a9e914d18909f03881fd137314866fa85d4fcac33",
+      "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/blob/6f1c5f94f612c13071b8dbe61b500b915e50b123/src/components/ui/button.tsx"
+    },
+    {
+      "arquivo": "src/components/ui/dialog.tsx",
+      "sha256": "f4bbfd718249a7daaeb57381dc7b8ae3ae704be1bb876355260a6d93529ccdf4",
+      "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/blob/6f1c5f94f612c13071b8dbe61b500b915e50b123/src/components/ui/dialog.tsx"
+    },
+    {
+      "arquivo": "docs/execucao/evidencias/visual/resultado.json",
+      "sha256": "8081d9bb18e2ea84da34a53f7247f9430160f690416ea21ef0c93ab64bd836d2",
+      "url": "../../../docs/execucao/evidencias/visual/resultado.json"
+    },
+    {
+      "arquivo": "docs/execucao/evidencias/visual/login-390.png",
+      "sha256": "b489ed0d2b66f90a678d2ffcb733436f5f2ab4f4ccd55e428cf9bccd6a06481e",
+      "url": "../../../docs/execucao/evidencias/visual/login-390.png"
+    },
+    {
+      "arquivo": "src/pages/ProductDetail.tsx",
+      "sha256": "55aa0ef4990274185ff91b850d5723021bdebd9d439f842edfe22dfc6e05d102",
+      "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/blob/6f1c5f94f612c13071b8dbe61b500b915e50b123/src/pages/ProductDetail.tsx"
+    },
+    {
+      "arquivo": "src/pages/product-detail/ProductDetailHero.tsx",
+      "sha256": "9107e9a730882beea979d3639ce1bbb8267c905fc24811e8a4085ab94764f6f7",
+      "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/blob/6f1c5f94f612c13071b8dbe61b500b915e50b123/src/pages/product-detail/ProductDetailHero.tsx"
+    },
+    {
+      "arquivo": "src/pages/PersonalizationSimulator.tsx",
+      "sha256": "582c4a081844338fff4dd7b98cfb5521bfca83e9282e6408ab6854b4d8881f67",
+      "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/blob/6f1c5f94f612c13071b8dbe61b500b915e50b123/src/pages/PersonalizationSimulator.tsx"
+    },
+    {
+      "arquivo": "src/components/kit-builder/PersonalizationConfig.tsx",
+      "sha256": "79138b6ddb5762ac37618b0e2f4ee50e85fde87c35d4c52aa863e02b5af7a422",
+      "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/blob/6f1c5f94f612c13071b8dbe61b500b915e50b123/src/components/kit-builder/PersonalizationConfig.tsx"
+    },
+    {
+      "arquivo": "src/lib/external-db/techniques.ts",
+      "sha256": "a5e4ea7174df8dbbab23efb8daddddf16fb23eae3b66852bf68c5c65f90e1521",
+      "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/blob/6f1c5f94f612c13071b8dbe61b500b915e50b123/src/lib/external-db/techniques.ts"
+    },
+    {
+      "arquivo": "src/pages/ComparePage.tsx",
+      "sha256": "0790a7b9eeee645e36ad4ea24ad7652e9ec67309d9435ce5de7beca2e3c3ca11",
+      "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/blob/6f1c5f94f612c13071b8dbe61b500b915e50b123/src/pages/ComparePage.tsx"
+    },
+    {
+      "arquivo": "src/hooks/useSupplierComparison.ts",
+      "sha256": "375f67d4650fbdb71ebb495ec2a255692e6e522230b638a9d363f753d16e9e7c",
+      "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/blob/6f1c5f94f612c13071b8dbe61b500b915e50b123/src/hooks/useSupplierComparison.ts"
+    },
+    {
+      "arquivo": "src/components/compare/ComparisonMobileView.tsx",
+      "sha256": "acb5d2ddd41df046632b09a9951bf0f13723c5c15066314511fb050081532ac7",
+      "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/blob/6f1c5f94f612c13071b8dbe61b500b915e50b123/src/components/compare/ComparisonMobileView.tsx"
+    },
+    {
+      "arquivo": "src/hooks/useFavoriteLists.ts",
+      "sha256": "4633a14377d46235898e351df8595ce5d092b73732400168f6f5ca243d14d351",
+      "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/blob/6f1c5f94f612c13071b8dbe61b500b915e50b123/src/hooks/useFavoriteLists.ts"
+    },
+    {
+      "arquivo": "src/hooks/useKitShare.ts",
+      "sha256": "6b72b2c65ea154abf2f2500b20a10f4c15566ca284bf9f2866ec620628baf81f",
+      "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/blob/6f1c5f94f612c13071b8dbe61b500b915e50b123/src/hooks/useKitShare.ts"
+    },
+    {
+      "arquivo": "src/stores/useFavoritesStore.ts",
+      "sha256": "ef25d08e647c3fac7e712ce600e93b84c898abf341b1b44ea3290a914b0f5ebe",
+      "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/blob/6f1c5f94f612c13071b8dbe61b500b915e50b123/src/stores/useFavoritesStore.ts"
+    },
+    {
+      "arquivo": "src/pages/admin/AdminCampanhasPage.tsx",
+      "sha256": "e1dc079e908033ec57b4e6e22da453a6e46d517b0db5b370720c5ce4c3742f74",
+      "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/blob/6f1c5f94f612c13071b8dbe61b500b915e50b123/src/pages/admin/AdminCampanhasPage.tsx"
+    },
+    {
+      "arquivo": "src/components/mockup/ArtFileUpload.tsx",
+      "sha256": "2c0afa3e1605b4f7b1ee1d96226b0ea60ee1bd85f88a5ceacd74f898fdf66bc1",
+      "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/blob/6f1c5f94f612c13071b8dbe61b500b915e50b123/src/components/mockup/ArtFileUpload.tsx"
+    },
+    {
+      "arquivo": "src/components/magic-up/MagicUpBrandKitPanel.tsx",
+      "sha256": "d6289f2fe5747b686d3f05f194d066bb376579e808fa341e0c7adf28e1376402",
+      "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/blob/6f1c5f94f612c13071b8dbe61b500b915e50b123/src/components/magic-up/MagicUpBrandKitPanel.tsx"
+    },
+    {
+      "arquivo": "src/components/orders/PilotApprovalPanel.tsx",
+      "sha256": "6d033ae80584c5764b17ea0087eaaba71626b0cbb3ea7fc1db8ffc0439507c06",
+      "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/blob/6f1c5f94f612c13071b8dbe61b500b915e50b123/src/components/orders/PilotApprovalPanel.tsx"
+    },
+    {
+      "arquivo": "src/hooks/usePilotApprovals.ts",
+      "sha256": "245b5c370f2a101d76cee6f7e94e5bb2b8642a5c0d8c9d6f4e14670b08066967",
+      "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/blob/6f1c5f94f612c13071b8dbe61b500b915e50b123/src/hooks/usePilotApprovals.ts"
+    },
+    {
+      "arquivo": "src/pages/KitBuilderPage.tsx",
+      "sha256": "23be035395c4347e202ae83f86c862834e1ef8bf5b1c4d52865df1a3b7902494",
+      "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/blob/6f1c5f94f612c13071b8dbe61b500b915e50b123/src/pages/KitBuilderPage.tsx"
+    },
+    {
+      "arquivo": "src/hooks/useKitAutoSave.ts",
+      "sha256": "22c9c240cf0daef20cd10333c0a1ddcbb3d570c7fff1d60e7aea60a7973e3c40",
+      "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/blob/6f1c5f94f612c13071b8dbe61b500b915e50b123/src/hooks/useKitAutoSave.ts"
+    },
+    {
+      "arquivo": "src/hooks/useKitStockValidation.ts",
+      "sha256": "d1ce75d2bc5115c025652e10b0d6d9e7872f575251dbe2e208b049baeab74a5c",
+      "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/blob/6f1c5f94f612c13071b8dbe61b500b915e50b123/src/hooks/useKitStockValidation.ts"
+    },
+    {
+      "arquivo": "src/lib/kit-builder/types.ts",
+      "sha256": "6631351c571f698354979abd97cb02cb4aa35dba345a7c835abaf521976440d6",
+      "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/blob/6f1c5f94f612c13071b8dbe61b500b915e50b123/src/lib/kit-builder/types.ts"
+    },
+    {
+      "arquivo": "src/components/kit-builder/VariantSelector.tsx",
+      "sha256": "3c239267506e9bde7cc7e68dc8f7625cfa9993d8e456c0a326d44827db29eef4",
+      "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/blob/6f1c5f94f612c13071b8dbe61b500b915e50b123/src/components/kit-builder/VariantSelector.tsx"
+    },
+    {
+      "arquivo": "supabase/migrations/20260503000002_sicoob_consolidation_logic.sql",
+      "sha256": "d561ea198b92d48961b6418b0fa22712a89b32a36b08d8e427f848bc8a0adeea",
+      "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/blob/6f1c5f94f612c13071b8dbe61b500b915e50b123/supabase/migrations/20260503000002_sicoob_consolidation_logic.sql"
+    },
+    {
+      "arquivo": "src/pages/sicoob/GestorConsolidatedOrdersPage.tsx",
+      "sha256": "f23d47d97c037db8b43d87d15c9aea4870a9a02cbe22d6719d4be60ef9da1cfe",
+      "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/blob/6f1c5f94f612c13071b8dbe61b500b915e50b123/src/pages/sicoob/GestorConsolidatedOrdersPage.tsx"
+    },
+    {
+      "arquivo": "src/components/cart/CartHeaderButton.tsx",
+      "sha256": "61c3c4af4930e625ca01dffe42d6d642b8507d12bc0faad025993ce82e31db19",
+      "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/blob/6f1c5f94f612c13071b8dbe61b500b915e50b123/src/components/cart/CartHeaderButton.tsx"
+    },
+    {
+      "arquivo": "src/pages/QuoteBuilderPage.tsx",
+      "sha256": "63e6919c8afb3e4703aea8da3778be6a71a0fb7d59c8f270e1050dabe8eceff4",
+      "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/blob/6f1c5f94f612c13071b8dbe61b500b915e50b123/src/pages/QuoteBuilderPage.tsx"
+    },
+    {
+      "arquivo": "src/services/QuoteService.ts",
+      "sha256": "d0fcd32fdc317ffa1478198a93f1b54c4d36e56422c4e56c7f60e7c1d2c48069",
+      "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/blob/6f1c5f94f612c13071b8dbe61b500b915e50b123/src/services/QuoteService.ts"
+    },
+    {
+      "arquivo": "src/hooks/quotes/useQuotes.ts",
+      "sha256": "58ab753d1c95548ff8fa8a69736c25242b5d50324597c5fef60f3317219f6ce0",
+      "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/blob/6f1c5f94f612c13071b8dbe61b500b915e50b123/src/hooks/quotes/useQuotes.ts"
+    },
+    {
+      "arquivo": "src/hooks/useQuoteVersions.ts",
+      "sha256": "affb9fd7c0f21ded73c350cf36b50ac18a5a711d1339d1f4ab8751add0c3c9ce",
+      "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/blob/6f1c5f94f612c13071b8dbe61b500b915e50b123/src/hooks/useQuoteVersions.ts"
+    },
+    {
+      "arquivo": "src/components/quotes/QuoteVersionCompare.tsx",
+      "sha256": "031e88d64756638ac30ef47463efc70774882ea91c16ccc22867871fe508333b",
+      "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/blob/6f1c5f94f612c13071b8dbe61b500b915e50b123/src/components/quotes/QuoteVersionCompare.tsx"
+    },
+    {
+      "arquivo": "src/components/sicoob/orders/OrderLogisticsTab.tsx",
+      "sha256": "7bb556632ea26a28e6cfaf3ce62967c2abbafb13b2c8203ec08501042ff189dc",
+      "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/blob/6f1c5f94f612c13071b8dbe61b500b915e50b123/src/components/sicoob/orders/OrderLogisticsTab.tsx"
+    },
+    {
+      "arquivo": "src/components/orders/OneClickReorder.tsx",
+      "sha256": "10fd624eecd2a2539523cf90ae1ffad34651b5bdc33f94c746fb8e2e7285d845",
+      "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/blob/6f1c5f94f612c13071b8dbe61b500b915e50b123/src/components/orders/OneClickReorder.tsx"
+    },
+    {
+      "arquivo": "src/components/ai/AIChat.tsx",
+      "sha256": "954b5496c4be0462d748ab13d4376b72d2806892863a990dedf58d3594716846",
+      "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/blob/6f1c5f94f612c13071b8dbe61b500b915e50b123/src/components/ai/AIChat.tsx"
+    },
+    {
+      "arquivo": ".lighthouserc.cjs",
+      "sha256": "7ad2c9b9103e3f3075f80ebcedad1b1a82e7b6df759c178f5a1cb54f773bfbc0",
+      "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/blob/6f1c5f94f612c13071b8dbe61b500b915e50b123/.lighthouserc.cjs"
+    },
+    {
+      "arquivo": "scripts/qa/check-bundle-budget.mjs",
+      "sha256": "ee83215145d93b4626c78ba2dbfc5713c2f198f8f8cf818aba8db0efbf2e764a",
+      "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/blob/6f1c5f94f612c13071b8dbe61b500b915e50b123/scripts/qa/check-bundle-budget.mjs"
+    },
+    {
+      "arquivo": "docs/execucao/evidencias/lighthouse-login.json",
+      "sha256": "fe15b3152a14f9dbc75dffdf22d63311697891f2aae526e22bb0fd9565178cd8",
+      "url": "../../../docs/execucao/evidencias/lighthouse-login.json"
+    },
+    {
+      "arquivo": "scripts/revisao/simular-lacunas.mjs",
+      "sha256": "3346d1a8189444ec6ea6766a6add89bf6f5540bd44032093d3382ff4d58651cb",
+      "url": "../../../scripts/revisao/simular-lacunas.mjs"
+    },
+    {
+      "arquivo": "docs/execucao/revisao-implementacao/simulacoes.json",
+      "sha256": "57612d21bb544c774aef5ab3b66178de35e0be9f32620f6c497fb26de58b8930",
+      "url": "../../../docs/execucao/revisao-implementacao/simulacoes.json"
+    },
+    {
+      "arquivo": "docs/execucao/revisao-implementacao/anotacoes.txt",
+      "sha256": "16a971dde01db5aefefb7585a8e28e977733699fd803452a1f0d270b802506ff",
+      "url": "../../../docs/execucao/revisao-implementacao/anotacoes.txt"
+    },
+    {
+      "arquivo": "docs/execucao/revisao-implementacao/achados.json",
+      "sha256": "265de8cfc6adc49b4847fad5fb1e8acbd88ca27722646c0a232a432bd7e9ee4e",
+      "url": "../../../docs/execucao/revisao-implementacao/achados.json"
+    }
+  ]
+}

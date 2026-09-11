@@ -1,0 +1,91 @@
+{
+  "commit": "6f1c5f94f612c13071b8dbe61b500b915e50b123",
+  "consultado_em_utc": "2026-09-11T21:43:19.147916+00:00",
+  "pr": "https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/5",
+  "checks": [
+    {
+      "nome": "Vercel Preview Comments",
+      "conclusao": "success",
+      "inicio": "2026-09-11T20:25:03Z",
+      "fim": "2026-09-11T20:25:03Z",
+      "url": "https://vercel.com/github"
+    },
+    {
+      "nome": "Verba e aprovação transacionais",
+      "conclusao": "success",
+      "inicio": "2026-09-11T20:23:55Z",
+      "fim": "2026-09-11T20:24:13Z",
+      "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/34643989401/job/103410245779"
+    },
+    {
+      "nome": "Entrada e demonstração responsivas",
+      "conclusao": "success",
+      "inicio": "2026-09-11T20:23:55Z",
+      "fim": "2026-09-11T20:25:20Z",
+      "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/34643989401/job/103410245572"
+    },
+    {
+      "nome": "Segurança, contratos e build",
+      "conclusao": "failure",
+      "inicio": "2026-09-11T20:23:54Z",
+      "fim": "2026-09-11T20:28:33Z",
+      "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/34643989419/job/103410245445"
+    },
+    {
+      "nome": "e2e",
+      "conclusao": "cancelled",
+      "inicio": "2026-09-11T20:23:54Z",
+      "fim": "2026-09-11T20:54:47Z",
+      "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/34643989627/job/103410245437"
+    },
+    {
+      "nome": "Gitleaks — Secret Scan",
+      "conclusao": "success",
+      "inicio": "2026-09-11T20:23:54Z",
+      "fim": "2026-09-11T20:24:03Z",
+      "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/34643989531/job/103410245398"
+    },
+    {
+      "nome": "bundle-stats",
+      "conclusao": "success",
+      "inicio": "2026-09-11T20:23:54Z",
+      "fim": "2026-09-11T20:25:45Z",
+      "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/34643989562/job/103410245250"
+    },
+    {
+      "nome": "Analyze (javascript-typescript)",
+      "conclusao": "success",
+      "inicio": "2026-09-11T20:23:54Z",
+      "fim": "2026-09-11T20:31:27Z",
+      "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/34643989511/job/103410245216"
+    },
+    {
+      "nome": "lighthouse",
+      "conclusao": "success",
+      "inicio": "2026-09-11T20:23:54Z",
+      "fim": "2026-09-11T20:26:44Z",
+      "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/34643989461/job/103410245181"
+    },
+    {
+      "nome": "Vercel Agent Review",
+      "conclusao": "neutral",
+      "inicio": "2026-09-11T20:23:48Z",
+      "fim": "2026-09-11T20:23:48Z",
+      "url": "https://vercel.com/github"
+    },
+    {
+      "nome": "Mermaid Diagram Sync Assistant",
+      "conclusao": "skipped",
+      "inicio": "2026-09-11T20:23:46Z",
+      "fim": "2026-09-11T20:23:48Z",
+      "url": "https://www.mermaid.ai"
+    },
+    {
+      "nome": "Supabase Preview",
+      "conclusao": "skipped",
+      "inicio": "2026-09-11T20:23:44Z",
+      "fim": "2026-09-11T20:23:44Z",
+      "url": "https://supabase.com/dashboard/project/cfmzkthhgliqelozlmwu/branches"
+    }
+  ]
+}

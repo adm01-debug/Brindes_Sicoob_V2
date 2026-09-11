@@ -1,0 +1,223 @@
+{
+  "commit": "6f1c5f94f612c13071b8dbe61b500b915e50b123",
+  "origem": "https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/34643989511",
+  "artefato": "codeql-javascript-typescript",
+  "sha256_sarif": "7676253c13e8a8663d344ddd9c4beae1bb4f999b0786224e8dfccb5ab8811b2e",
+  "total_resultados": 26,
+  "regras_distintas": 12,
+  "por_nivel": {
+    "error": 2,
+    "warning": 24
+  },
+  "limite": "Alertas da ferramenta não equivalem a vulnerabilidades exploráveis confirmadas. Há achados em aplicação, funções, scripts e testes.",
+  "resultados": [
+    {
+      "regra": "js/clear-text-storage-of-sensitive-data",
+      "nivel_ferramenta": "error",
+      "severidade_ferramenta": "7.5",
+      "arquivo": "src/components/admin/connections/SecretField.tsx",
+      "linha": 285,
+      "triagem": "Pendente: confirmar alcance, possível falso positivo e correção necessária."
+    },
+    {
+      "regra": "js/incomplete-url-substring-sanitization",
+      "nivel_ferramenta": "warning",
+      "severidade_ferramenta": "7.8",
+      "arquivo": "src/utils/image-utils.ts",
+      "linha": 69,
+      "triagem": "Pendente: confirmar alcance, possível falso positivo e correção necessária."
+    },
+    {
+      "regra": "js/incomplete-sanitization",
+      "nivel_ferramenta": "warning",
+      "severidade_ferramenta": "7.8",
+      "arquivo": "e2e/routes/sicoob/logistica-onda-a.spec.ts",
+      "linha": 52,
+      "triagem": "Pendente: confirmar alcance, possível falso positivo e correção necessária."
+    },
+    {
+      "regra": "js/incomplete-sanitization",
+      "nivel_ferramenta": "warning",
+      "severidade_ferramenta": "7.8",
+      "arquivo": "supabase/functions/_shared/pgrest-filter.ts",
+      "linha": 11,
+      "triagem": "Pendente: confirmar alcance, possível falso positivo e correção necessária."
+    },
+    {
+      "regra": "js/incomplete-sanitization",
+      "nivel_ferramenta": "warning",
+      "severidade_ferramenta": "7.8",
+      "arquivo": "supabase/functions/_shared/pgrest-filter.ts",
+      "linha": 11,
+      "triagem": "Pendente: confirmar alcance, possível falso positivo e correção necessária."
+    },
+    {
+      "regra": "js/incomplete-sanitization",
+      "nivel_ferramenta": "warning",
+      "severidade_ferramenta": "7.8",
+      "arquivo": "supabase/functions/external-db-bridge/index.ts",
+      "linha": 178,
+      "triagem": "Pendente: confirmar alcance, possível falso positivo e correção necessária."
+    },
+    {
+      "regra": "js/incomplete-sanitization",
+      "nivel_ferramenta": "warning",
+      "severidade_ferramenta": "7.8",
+      "arquivo": "supabase/functions/external-db-bridge/index.ts",
+      "linha": 178,
+      "triagem": "Pendente: confirmar alcance, possível falso positivo e correção necessária."
+    },
+    {
+      "regra": "js/insecure-randomness",
+      "nivel_ferramenta": "warning",
+      "severidade_ferramenta": "7.8",
+      "arquivo": "src/components/admin/connections/WebhooksTab.tsx",
+      "linha": 75,
+      "triagem": "Pendente: confirmar alcance, possível falso positivo e correção necessária."
+    },
+    {
+      "regra": "js/shell-command-injection-from-environment",
+      "nivel_ferramenta": "warning",
+      "severidade_ferramenta": "6.3",
+      "arquivo": "tests/admin/route-ref-checker.test.ts",
+      "linha": 26,
+      "triagem": "Pendente: confirmar alcance, possível falso positivo e correção necessária."
+    },
+    {
+      "regra": "js/stack-trace-exposure",
+      "nivel_ferramenta": "warning",
+      "severidade_ferramenta": "5.4",
+      "arquivo": "supabase/functions/bi-share-dossier/index.ts",
+      "linha": 184,
+      "triagem": "Pendente: confirmar alcance, possível falso positivo e correção necessária."
+    },
+    {
+      "regra": "js/stack-trace-exposure",
+      "nivel_ferramenta": "warning",
+      "severidade_ferramenta": "5.4",
+      "arquivo": "supabase/functions/comparison-price-watcher/index.ts",
+      "linha": 107,
+      "triagem": "Pendente: confirmar alcance, possível falso positivo e correção necessária."
+    },
+    {
+      "regra": "js/stack-trace-exposure",
+      "nivel_ferramenta": "warning",
+      "severidade_ferramenta": "5.4",
+      "arquivo": "supabase/functions/crm-db-bridge/index.ts",
+      "linha": 149,
+      "triagem": "Pendente: confirmar alcance, possível falso positivo e correção necessária."
+    },
+    {
+      "regra": "js/stack-trace-exposure",
+      "nivel_ferramenta": "warning",
+      "severidade_ferramenta": "5.4",
+      "arquivo": "supabase/functions/e2e-cleanup/index.ts",
+      "linha": 44,
+      "triagem": "Pendente: confirmar alcance, possível falso positivo e correção necessária."
+    },
+    {
+      "regra": "js/stack-trace-exposure",
+      "nivel_ferramenta": "warning",
+      "severidade_ferramenta": "5.4",
+      "arquivo": "supabase/functions/github-fix-config/index.ts",
+      "linha": 166,
+      "triagem": "Pendente: confirmar alcance, possível falso positivo e correção necessária."
+    },
+    {
+      "regra": "js/stack-trace-exposure",
+      "nivel_ferramenta": "warning",
+      "severidade_ferramenta": "5.4",
+      "arquivo": "supabase/functions/mcp-keys-issue/index.ts",
+      "linha": 114,
+      "triagem": "Pendente: confirmar alcance, possível falso positivo e correção necessária."
+    },
+    {
+      "regra": "js/stack-trace-exposure",
+      "nivel_ferramenta": "warning",
+      "severidade_ferramenta": "5.4",
+      "arquivo": "supabase/functions/quote-sync/index.ts",
+      "linha": 228,
+      "triagem": "Pendente: confirmar alcance, possível falso positivo e correção necessária."
+    },
+    {
+      "regra": "js/stack-trace-exposure",
+      "nivel_ferramenta": "warning",
+      "severidade_ferramenta": "5.4",
+      "arquivo": "supabase/functions/sync-quote-bitrix/index.ts",
+      "linha": 322,
+      "triagem": "Pendente: confirmar alcance, possível falso positivo e correção necessária."
+    },
+    {
+      "regra": "js/regex/missing-regexp-anchor",
+      "nivel_ferramenta": "warning",
+      "severidade_ferramenta": "7.8",
+      "arquivo": "e2e/flows/p0/02-catalog-degraded.spec.ts",
+      "linha": 28,
+      "triagem": "Pendente: confirmar alcance, possível falso positivo e correção necessária."
+    },
+    {
+      "regra": "js/regex/missing-regexp-anchor",
+      "nivel_ferramenta": "warning",
+      "severidade_ferramenta": "7.8",
+      "arquivo": "tests/sicoob/route-access-scenarios.test.tsx",
+      "linha": 59,
+      "triagem": "Pendente: confirmar alcance, possível falso positivo e correção necessária."
+    },
+    {
+      "regra": "js/missing-origin-check",
+      "nivel_ferramenta": "warning",
+      "severidade_ferramenta": "5",
+      "arquivo": "public/sw.js",
+      "linha": 47,
+      "triagem": "Pendente: confirmar alcance, possível falso positivo e correção necessária."
+    },
+    {
+      "regra": "js/remote-property-injection",
+      "nivel_ferramenta": "warning",
+      "severidade_ferramenta": "7.5",
+      "arquivo": "src/lib/auth/auth-debug.ts",
+      "linha": 128,
+      "triagem": "Pendente: confirmar alcance, possível falso positivo e correção necessária."
+    },
+    {
+      "regra": "js/remote-property-injection",
+      "nivel_ferramenta": "warning",
+      "severidade_ferramenta": "7.5",
+      "arquivo": "src/lib/auth/auth-debug.ts",
+      "linha": 132,
+      "triagem": "Pendente: confirmar alcance, possível falso positivo e correção necessária."
+    },
+    {
+      "regra": "js/http-to-file-access",
+      "nivel_ferramenta": "warning",
+      "severidade_ferramenta": "6.3",
+      "arquivo": "scripts/validate-lovable-sync-target.mjs",
+      "linha": 147,
+      "triagem": "Pendente: confirmar alcance, possível falso positivo e correção necessária."
+    },
+    {
+      "regra": "js/http-to-file-access",
+      "nivel_ferramenta": "warning",
+      "severidade_ferramenta": "6.3",
+      "arquivo": "scripts/validate-lovable-sync-target.mjs",
+      "linha": 159,
+      "triagem": "Pendente: confirmar alcance, possível falso positivo e correção necessária."
+    },
+    {
+      "regra": "js/file-system-race",
+      "nivel_ferramenta": "warning",
+      "severidade_ferramenta": "7.7",
+      "arquivo": "scripts/test-audit-scripts.mjs",
+      "linha": 47,
+      "triagem": "Pendente: confirmar alcance, possível falso positivo e correção necessária."
+    },
+    {
+      "regra": "js/user-controlled-bypass",
+      "nivel_ferramenta": "error",
+      "severidade_ferramenta": "7.8",
+      "arquivo": "src/pages/SSOCallbackPage.tsx",
+      "linha": 53,
+      "triagem": "Pendente: confirmar alcance, possível falso positivo e correção necessária."
+    }
+  ]
+}

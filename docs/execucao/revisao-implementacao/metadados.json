@@ -1,0 +1,37 @@
+{
+  "data": "2026-09-11",
+  "commit_codigo_auditado": "6f1c5f94f612c13071b8dbe61b500b915e50b123",
+  "sha256_plano_original": "50c5d83d7af3d34bb560ddfc90a270b722cb24068463a4c94cac752f6387e9f6",
+  "etapas_revisadas": 100,
+  "subetapas_revisadas": 1000,
+  "classificacoes": {
+    "L": "Evidência local suficiente no escopo descrito",
+    "P": "Implementação ou atendimento parcial",
+    "N": "Atendimento não localizado ou não demonstrado",
+    "V": "Validação externa necessária, sem comprovação"
+  },
+  "contagens": {
+    "L": 76,
+    "P": 622,
+    "V": 145,
+    "N": 157
+  },
+  "etapas_formalmente_concluidas": 0,
+  "subetapas_baixadas_no_checklist": 0,
+  "achados_priorizados": 16,
+  "prioridades": {
+    "P0": 10,
+    "P1": 5,
+    "P2": 1
+  },
+  "metodo": "Leitura dos 1.000 requisitos e diagnóstico individual, cruzados com documentação, código e testes existentes; inspeção dirigida de integrações; seis simulações de lacunas com módulos reais e dependências simuladas; consulta da CI do commit indicado.",
+  "limites": [
+    "Cobertura documental de 1.000 requisitos não significa 1.000 comportamentos executados ou homologados.",
+    "As referências por etapa são contexto verificável, não prova automática de que cada ação completa foi atendida.",
+    "N significa não localizado/não demonstrado no material revisado; não é prova de inexistência absoluta no banco ou em processo externo.",
+    "L reconhece evidência local delimitada; não concede aceite formal, homologação Sicoob ou produção.",
+    "Nenhum percentual de itens classificado nesta revisão é uma nota de qualidade ou percentual de implantação.",
+    "Supabase próprio, privilégios da origem, tráfego real, pesquisa com participantes e aceite de marca/política continuam sem comprovação operacional.",
+    "Grafo anterior apresentou inconsistências; nenhuma conclusão depende exclusivamente de aresta ou busca sem resultado."
+  ]
+}

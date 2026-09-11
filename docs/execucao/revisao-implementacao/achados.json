@@ -1,0 +1,353 @@
+[
+  {
+    "id": "A01",
+    "titulo": "Logística omite o estado anterior e anuncia conclusão antes de confirmar o pedido",
+    "prioridade": "P0",
+    "evidencia_tipo": "reproduzido_localmente",
+    "referencias": [
+      "src/components/sicoob/orders/OrderLogisticsTab.tsx:38",
+      "src/components/sicoob/orders/OrderLogisticsTab.tsx:78",
+      "src/services/sicoob/orderService.ts:119",
+      "src/hooks/sicoob/useSicoobOrder.ts:38"
+    ],
+    "subetapas": [
+      "E028.08",
+      "E070.08",
+      "E074.04",
+      "E076.04"
+    ],
+    "diagnostico": "As duas ações chamam updateStatus.mutate sem currentStatus. O serviço exige esse valor e rejeita antes da rede. No upload, o toast positivo não aguarda a mutation. A atualização de logística pode ocorrer antes da falha de status.",
+    "reproducao": "Em ambiente segregado, abrir pedido elegível e confirmar rastreio ou foto. A simulação A01 reproduz a rejeição do serviço sem acessar bancos.",
+    "condicao_fechamento": "Tornar currentStatus obrigatório no contrato tipado, transmitir estado lido, aguardar confirmação e impedir sucesso parcial silencioso. Testar rastreio, foto, erro e concorrência após reconciliar o modelo A02.",
+    "estado": "Aberto",
+    "validado_em_producao": false
+  },
+  {
+    "id": "A02",
+    "titulo": "Extensões financeiras e logísticas usam pedidos de outro modelo",
+    "prioridade": "P0",
+    "evidencia_tipo": "contradicao_estatica",
+    "referencias": [
+      "src/pages/sicoob/orders/OrderDetailPage.tsx:150",
+      "src/pages/sicoob/orders/OrderDetailPage.tsx:658",
+      "src/services/OrderService.ts:87",
+      "supabase/migrations/20260502175334_93cdfc03-97b2-4de9-9e60-5152452316b5.sql:13",
+      "supabase/migrations/20260502174252_a88e3c13-46b8-4ce4-b1b8-c8500d390f3d.sql:100"
+    ],
+    "subetapas": [
+      "E011.06",
+      "E070.01",
+      "E074.04",
+      "E078.02"
+    ],
+    "diagnostico": "A tela carrega sicoob_orders, mas transmite seu ID aos hooks legados. Migrations de order_logistics/order_invoices/order_payments referenciam public.orders. Não foi localizado adaptador de reconciliação nessa passagem. O schema realmente implantado permanece desconhecido.",
+    "reproducao": "Criar somente um sicoob_order num banco segregado com o schema reconciliado e tentar incluir logística/nota/pagamento. Verificar relação e FK; não executar escrita no banco mestre de catálogo.",
+    "condicao_fechamento": "Definir um agregado canônico e reconciliar FKs, serviços, RLS e dados antes de remendar telas isoladas. Homologar cada extensão com pedidos Sicoob de duas cooperativas.",
+    "estado": "Aberto",
+    "validado_em_producao": false
+  },
+  {
+    "id": "A03",
+    "titulo": "Recompra usa serviço legado e navega para rota inexistente",
+    "prioridade": "P0",
+    "evidencia_tipo": "reproduzido_localmente",
+    "referencias": [
+      "src/components/orders/OneClickReorder.tsx:27",
+      "src/routes/config/sicoob.ts:8",
+      "src/services/OrderService.ts:355",
+      "src/services/sicoob/orderService.ts:240"
+    ],
+    "subetapas": [
+      "E014.05",
+      "E079.01",
+      "E079.04",
+      "E079.10"
+    ],
+    "diagnostico": "O botão chama useOrders/OrderService legado e navega para /pedidos/:id/editar, ausente do mapa de rotas. Há também métodos de recompra Sicoob, mas esse botão não os utiliza. As duplicações copiadas não reconfirmam preço/estoque.",
+    "reproducao": "A simulação A03 aciona o handler real com serviço substituído e captura /pedidos/novo-pedido/editar; inspeção do mapa não encontra esse prefixo.",
+    "condicao_fechamento": "Usar serviço canônico, criar rascunho transacional, reconfirmar variante/preço/estoque e encaminhar para rota existente. Testar produto inativo, preço alterado e endereço novo.",
+    "estado": "Aberto",
+    "validado_em_producao": false
+  },
+  {
+    "id": "A04",
+    "titulo": "Autosave de kit indica salvamento mesmo quando o banco retorna erro",
+    "prioridade": "P0",
+    "evidencia_tipo": "reproduzido_localmente",
+    "referencias": [
+      "src/hooks/useKitAutoSave.ts:60",
+      "src/hooks/useKitAutoSave.ts:82",
+      "src/hooks/useKitAutoSave.ts:115"
+    ],
+    "subetapas": [
+      "E027.09",
+      "E028.08",
+      "E055.09",
+      "E057.10"
+    ],
+    "diagnostico": "Respostas error do Supabase não são inspecionadas no update/insert. lastSavedAt é atualizado mesmo com data=null/error. O snapshot avança antes da confirmação, prejudicando nova tentativa sem alteração.",
+    "reproducao": "A simulação A04 devolve erro controlado no update e constata que lastSavedAt recebe uma data.",
+    "condicao_fechamento": "Inspecionar error, separar salvando/salvo/falhou, atualizar snapshot apenas após confirmação e oferecer recuperação. Testar update, insert, desconexão, navegação e repetição sem duplicar kit.",
+    "estado": "Aberto",
+    "validado_em_producao": false
+  },
+  {
+    "id": "A05",
+    "titulo": "Validação de kit soma cores diferentes e oculta erro de consulta",
+    "prioridade": "P0",
+    "evidencia_tipo": "reproduzido_localmente",
+    "referencias": [
+      "src/hooks/useKitStockValidation.ts:33",
+      "src/hooks/useKitStockValidation.ts:62"
+    ],
+    "subetapas": [
+      "E055.03",
+      "E055.07",
+      "E073.08",
+      "E085.02"
+    ],
+    "diagnostico": "O hook agrupa estoque por product_id, ignorando a variante escolhida; também não retorna error/isError. A consulta tem limit=500 sem evidência de paginação completa. Disponibilidade não está garantida pela ausência de alertas.",
+    "reproducao": "A05: verde=0, azul=100 e pedido de 50 verdes retorna hasStockIssues=false. A05b: consulta com erro e data undefined também retorna false, sem estado de erro.",
+    "condicao_fechamento": "Validar por identificador estável de variante, agregar demanda repetida, tratar paginação e falha explicitamente. Reconfirmar no serviço do portal sem escrever no catálogo externo.",
+    "estado": "Aberto",
+    "validado_em_producao": false
+  },
+  {
+    "id": "A06",
+    "titulo": "Telas reais exibem previsões e presença sem fonte operacional",
+    "prioridade": "P1",
+    "evidencia_tipo": "confirmado_por_leitura",
+    "referencias": [
+      "src/hooks/sicoob/useAIOrderPredictor.ts:23",
+      "src/pages/sicoob/orders/OrdersPage.tsx:400",
+      "src/pages/sicoob/orders/OrdersPage.tsx:415",
+      "src/pages/sicoob/orders/OrderDetailPage.tsx:119",
+      "src/pages/sicoob/orders/OrderDetailPage.tsx:366",
+      "src/services/sicoob/statsService.ts:115"
+    ],
+    "subetapas": [
+      "E009.10",
+      "E026.07",
+      "E042.07",
+      "E089.08"
+    ],
+    "diagnostico": "Há probabilidades fixas de 94/87/82%, alegação de 12 PAs, previsão de receita por multiplicador 1,4 + 25.000, meta fixa de 500.000 e contador de gestores baseado em Math.random. Consultas de estatísticas ignoram error e podem mostrar zero em indisponibilidade.",
+    "reproducao": "Seguir a importação AIOrderPredictor na rota real /sicoob/pedidos e o intervalo do detalhe. Nenhum desses cálculos comprova probabilidade, presença ou meta da cooperativa.",
+    "condicao_fechamento": "Remover projeções/presença sem fonte; dados reais devem informar escopo, período, atualização e base. Distinguir indisponível de zero e conciliar indicadores com pedidos.",
+    "estado": "Aberto",
+    "validado_em_producao": false
+  },
+  {
+    "id": "A07",
+    "titulo": "Versionamento de orçamento não é uma operação atômica",
+    "prioridade": "P0",
+    "evidencia_tipo": "risco_por_fluxo_estatico",
+    "referencias": [
+      "src/hooks/useQuoteVersions.ts:119",
+      "src/hooks/useQuoteVersions.ts:137",
+      "src/hooks/useQuoteVersions.ts:213"
+    ],
+    "subetapas": [
+      "E059.01",
+      "E059.04",
+      "E059.10",
+      "E068.09"
+    ],
+    "diagnostico": "O cliente consulta máximo+1, desmarca as versões anteriores, cria outra quote e só depois grava version/is_latest_version. Chamadas intermediárias não inspecionam todos os erros. Duas sessões ou falha intermediária podem deixar numeração/versão vigente incoerentes; constraints reais não foram consultadas.",
+    "reproducao": "Simular duas sessões criando revisão e falhar após desmarcar a versão atual num ambiente segregado. Achado por inspeção; concorrência dessa rotina ainda não executada nesta revisão.",
+    "condicao_fechamento": "Mover numeração, snapshot, substituição e auditoria para uma transação com controle de versão. Não alterar aprovação histórica; invalidar decisões conforme regra explícita.",
+    "estado": "Aberto",
+    "validado_em_producao": false
+  },
+  {
+    "id": "A08",
+    "titulo": "Troca de organização pode manter papel do contexto anterior",
+    "prioridade": "P0",
+    "evidencia_tipo": "risco_por_fluxo_estatico",
+    "referencias": [
+      "src/contexts/OrganizationContext.tsx:117",
+      "src/contexts/OrganizationContext.tsx:131"
+    ],
+    "subetapas": [
+      "E012.05",
+      "E025.05",
+      "E025.08",
+      "E025.10"
+    ],
+    "diagnostico": "currentOrg muda antes da consulta assíncrona do papel. Erro ou resposta fora de ordem não limpa/invalida o papel anterior. Não há proteção de rascunho nem reconciliação integral de cache nesse fluxo. Isso comprova incoerência possível de interface, não bypass de RLS em produção.",
+    "reproducao": "Em teste controlado, atrasar a resposta de um vínculo, trocar novamente e fazer a primeira resposta chegar por último; também simular erro ao consultar o novo papel.",
+    "condicao_fechamento": "Publicar contexto e competência como um estado consistente, negar ações durante troca, descartar respostas antigas e isolar cache por usuário/organização/PA. Testar revogação e duas trocas rápidas.",
+    "estado": "Aberto",
+    "validado_em_producao": false
+  },
+  {
+    "id": "A09",
+    "titulo": "Histórico de busca fica compartilhado entre sessões no mesmo navegador",
+    "prioridade": "P1",
+    "evidencia_tipo": "confirmado_por_leitura",
+    "referencias": [
+      "src/hooks/useSearch.ts:8",
+      "src/hooks/useSearch.ts:34",
+      "src/contexts/AuthContext.tsx:167",
+      "src/hooks/useFavoriteLists.ts:55"
+    ],
+    "subetapas": [
+      "E023.04",
+      "E025.05",
+      "E044.09",
+      "E050.04"
+    ],
+    "diagnostico": "search-history é uma chave global e não está na limpeza de logout. A UI nova expõe o histórico legado. Favoritos também usam chave de consulta sem usuário; seu alcance exige teste separado, pois existem filtros de usuário no servidor.",
+    "reproducao": "Buscar um termo na conta A, sair e entrar como B no mesmo navegador; verificar sugestões/histórico. Não é necessário usar dados pessoais no cenário.",
+    "condicao_fechamento": "Isolar histórico por contexto e limpar estado em memória/persistido na troca; revisar favoritos, comparações e vistos recentemente com testes entre contas.",
+    "estado": "Aberto",
+    "validado_em_producao": false
+  },
+  {
+    "id": "A10",
+    "titulo": "Lista de redação comercial não cobre custos de personalização",
+    "prioridade": "P0",
+    "evidencia_tipo": "reproduzido_localmente",
+    "referencias": [
+      "supabase/functions/_shared/catalog-redaction.ts:2",
+      "supabase/functions/_shared/external-db-aliases.ts:156",
+      "supabase/functions/_shared/external-db-config.ts:48",
+      "supabase/functions/external-db-bridge/index.ts:923"
+    ],
+    "subetapas": [
+      "E003.07",
+      "E048.01",
+      "E086.06"
+    ],
+    "diagnostico": "A lista remove seis nomes de campos, mas preserva setup_cost e unit_cost. O alias de técnicas constrói setup_cost; a allowlist também contém variant_cost_tiers e tabelas comerciais internas. Não foi verificada exposição na implantação remota.",
+    "reproducao": "A10 aplica a função real a objeto sintético e confirma a preservação de setup_cost/unit_cost aninhados.",
+    "condicao_fechamento": "Definir DTO positivo de campos comerciais permitidos e revisar tabelas, aliases, relações e RPCs por papel. Testar respostas reais sanitizadas sem exportar segredos ou custos restritos.",
+    "estado": "Aberto",
+    "validado_em_producao": false
+  },
+  {
+    "id": "A11",
+    "titulo": "Página legada de campanhas possui exportação com colisão de nome",
+    "prioridade": "P2",
+    "evidencia_tipo": "confirmado_por_leitura",
+    "referencias": [
+      "src/pages/admin/AdminCampanhasPage.tsx:131",
+      "src/pages/admin/AdminCampanhasPage.tsx:136"
+    ],
+    "subetapas": [
+      "E051.01",
+      "E090.02",
+      "E090.04"
+    ],
+    "diagnostico": "O parâmetro format ('xlsx' ou 'csv') sombreia format do date-fns e é chamado como função. Com datas, a falha ocorre antes do try. A página não foi localizada no registro atual de rotas; não se afirma defeito exposto ao comprador.",
+    "reproducao": "Ao reaproveitar o componente em teste isolado, exportar campanha com data; verificar TypeError por tentativa de chamar string.",
+    "condicao_fechamento": "Antes de ativar/reutilizar, renomear parâmetro, revisar exportação CSV e testar arquivo com datas, vírgulas, aspas e quebras de linha. Integrar apenas ao fluxo de campanha definido.",
+    "estado": "Aberto",
+    "validado_em_producao": false
+  },
+  {
+    "id": "A12",
+    "titulo": "Auditoria e notificação de outros status podem falhar sem bloquear a alteração",
+    "prioridade": "P1",
+    "evidencia_tipo": "confirmado_por_leitura",
+    "referencias": [
+      "src/services/sicoob/orderService.ts:147",
+      "src/services/sicoob/orderService.ts:170"
+    ],
+    "subetapas": [
+      "E029.09",
+      "E068.02",
+      "E068.09",
+      "E070.09"
+    ],
+    "diagnostico": "Fora das RPCs críticas, update do pedido e insert de auditoria são operações separadas. Supabase retorna error sem necessariamente lançar exceção; catch não basta. Email usa endereço do ator e não uma matriz de destinatários por evento.",
+    "reproducao": "Simular sucesso de update e erro de insert/invoke; conferir status sem trilha/notificação. Essa sequência foi inspecionada, não executada remotamente.",
+    "condicao_fechamento": "Persistir transição e auditoria crítica juntas; usar fila transacional para notificações, idempotência e destinatários corretos. Falha de envio não deve apagar evento nem aparentar entrega.",
+    "estado": "Aberto",
+    "validado_em_producao": false
+  },
+  {
+    "id": "A13",
+    "titulo": "Análise CodeQL possui 26 alertas sem triagem conclusiva",
+    "prioridade": "P1",
+    "evidencia_tipo": "evidencia_ci",
+    "referencias": [
+      ".github/workflows/codeql.yml:1"
+    ],
+    "subetapas": [
+      "E013.06",
+      "E019.02",
+      "E020.04",
+      "E086.09"
+    ],
+    "diagnostico": "O job concluiu a análise e disponibilizou SARIF com 26 resultados de 12 regras. Inclui runtime, scripts e testes; alertas não equivalem a 26 vulnerabilidades exploráveis. Code scanning remoto não está habilitado neste repositório e upload foi desativado.",
+    "reproducao": "Conferir resumo-codeql.json e o artefato codeql-javascript-typescript do run 34643989511.",
+    "condicao_fechamento": "Triar regra, alcance, autorização, falso positivo e responsabilidade. Registrar correção ou justificativa por resultado; manter análise com falha explícita conforme política de severidade acordada.",
+    "estado": "Aberto",
+    "validado_em_producao": false
+  },
+  {
+    "id": "A14",
+    "titulo": "Qualidade e regressão E2E falharam no candidato auditado",
+    "prioridade": "P0",
+    "evidencia_tipo": "evidencia_ci",
+    "referencias": [
+      "scripts/check-eslint-baseline.mjs:1",
+      ".github/workflows/e2e.yml:1"
+    ],
+    "subetapas": [
+      "E019.05",
+      "E090.05",
+      "E095.02"
+    ],
+    "diagnostico": "Quality Gate falha em max-lines-per-function durante ESLint; causa raiz não confirmada. E2E registra falhas em rotas públicas e termina cancelado no limite de 30 minutos. Smoke aprovado contém somente cinco cenários públicos mais fixture; 33 foram ignorados.",
+    "reproducao": "Consultar runs 34643989419 e 34643989627 no commit 6f1c5f9; inspecionar etapas e artefatos, sem considerar skips como aprovação.",
+    "condicao_fechamento": "Reproduzir lint nas mesmas condições da CI, corrigir regressões/fixtures com diagnóstico e executar jornada autenticada com contas de homologação. Não liberar apenas por aumentar timeout ou afrouxar gates.",
+    "estado": "Aberto",
+    "validado_em_producao": false
+  },
+  {
+    "id": "A15",
+    "titulo": "Aprovação financeira ainda não verifica toda a política institucional",
+    "prioridade": "P0",
+    "evidencia_tipo": "confirmado_por_leitura",
+    "referencias": [
+      "supabase/migrations/20260911143000_sicoob_order_budget_atomicity.sql:147",
+      "src/services/sicoob/approvalService.ts:26"
+    ],
+    "subetapas": [
+      "E018.04",
+      "E018.05",
+      "E018.06",
+      "E064.07",
+      "E065.07"
+    ],
+    "diagnostico": "RPCs locais já validam identidade, relação, estado, saldo e repetição. Ainda faltam vínculo ativo explícito, impedimento de autoaprovação conforme política, versão imutável da proposta/arte e competência específica de marca. Política vigente de cada cooperativa não foi confirmada.",
+    "reproducao": "Inspecionar sicoob_actor_can_approve e pré-condições das RPCs. Ensaiar revogação de vínculo, proposta substituída e proibição local de autoaprovar após confirmar a política.",
+    "condicao_fechamento": "Preservar a correção transacional existente e acrescentar precondições versionadas no servidor, com casos positivos e negativos por cooperativa.",
+    "estado": "Aberto",
+    "validado_em_producao": false
+  },
+  {
+    "id": "A16",
+    "titulo": "Consolidação não implementa distribuição e recebimento por destino",
+    "prioridade": "P1",
+    "evidencia_tipo": "confirmado_por_leitura",
+    "referencias": [
+      "supabase/migrations/20260503000002_sicoob_consolidation_logic.sql:1",
+      "src/components/sicoob/orders/OrderLogisticsTab.tsx:16"
+    ],
+    "subetapas": [
+      "E056.02",
+      "E056.03",
+      "E074.03",
+      "E076.03",
+      "E078.05"
+    ],
+    "diagnostico": "A consolidação registra agrupamento e contém atualização de orders como comentário de trabalho futuro. Isso não implementa alocação de quantidade por destino, remessa parcial, conferência e conciliação financeira. A UI logística opera no pedido inteiro.",
+    "reproducao": "Revisar a rotina de consolidação e percorrer o modelo disponível procurando vínculo item-destino-remessa-recebimento; o ensaio de três destinos não foi demonstrado.",
+    "condicao_fechamento": "Após A02, modelar alocação e saldos por item/destino, reconciliação de frete/recebimento e eventos idempotentes. Homologar três PAs e entrega parcial antes do piloto.",
+    "estado": "Aberto",
+    "validado_em_producao": false
+  }
+]

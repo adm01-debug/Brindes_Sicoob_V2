@@ -14,13 +14,14 @@
     "duracao_segundos": 16.9
   },
   "cenarios_publicos_aprovados": [
-    "fixture sem credencial",
     "tela de login",
     "recuperacao de senha",
     "rota inexistente publica",
     "credenciais invalidas",
     "recuperacao sem token"
   ],
-  "motivo_dos_cenarios_ignorados": "Contas e segredos de homologacao autenticada ausentes no ambiente local.",
-  "resultado_final": "aprovado"
+  "preparacoes_aprovadas": ["fixture sem credencial"],
+  "limite_da_cobertura": "Cinco cenários públicos e uma preparação de ambiente. Os 33 ignorados não contam como aprovados; incluem verificações dependentes de credenciais/configuração e não comprovam o fluxo autenticado.",
+  "motivo_dos_cenarios_ignorados": "Pré-condições e credenciais ausentes conforme os guards dos testes; consultar a suíte para o motivo individual.",
+  "resultado_final": "aprovado_no_escopo_publico_executado"
 }

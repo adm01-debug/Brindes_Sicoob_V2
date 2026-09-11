@@ -313,12 +313,12 @@ Cada etapa deve mostrar estado, responsável, próximo passo e bloqueio. O compr
 
 ### P0 — antes de homologação
 
-- [x] Expor histórico de busca com seleção e limpeza.
+- [ ] Expor histórico de busca com seleção e limpeza. Interface implementada; a revisão encontrou armazenamento global sem isolamento por usuário/cooperativa (A09).
 - [x] Permitir entrada por faixa de orçamento no catálogo.
 - [x] Compactar atalhos de intenção e orçamento no mobile.
 - [x] Manter catálogo externo protegido por contrato somente leitura.
-- [x] Remover custo e margem das respostas ao comprador.
-- [x] Garantir orçamento/pedido atômico com versão e idempotência.
+- [ ] Remover custo e margem das respostas ao comprador. A lista local não cobre `setup_cost` e `unit_cost` (A10).
+- [ ] Garantir orçamento/pedido atômico com versão e idempotência. Aprovação e verba foram protegidas; criação/versionamento de orçamento ainda não são uma transação integral (A07).
 - [x] Bloquear indexação do portal privado e remover sitemap provisório.
 - [ ] Confirmar privilégios somente leitura da identidade no banco de catálogo.
 - [ ] Executar login, busca, primeiro orçamento e aprovação em homologação real.
