@@ -38,21 +38,16 @@ export default defineConfig(({ mode }) => ({
     sourcemap: mode === 'production' ? false : true,
     minify: 'esbuild',
     target: 'esnext',
-    chunkSizeWarningLimit: 600, // Reduced for stricter CI bundle analysis
+    chunkSizeWarningLimit: 600,
 
     reportCompressedSize: true,
     
     rollupOptions: {
       output: {
         manualChunks(id) {
-          // Admin, Quotes, Sicoob — isolando rotas pesadas
-          if (id.includes('src/pages/admin/') || id.includes('src/pages/Admin/')) return 'admin-pages';
-          if (id.includes('src/pages/quotes/') || id.includes('src/pages/Quotes/')) return 'quotes-pages';
-          if (id.includes('src/pages/sicoob/') || id.includes('src/pages/Sicoob/')) return 'sicoob-pages';
-          
-          // Kit Builder & Trends — Heavy modules that were causing double-import warnings
-          if (id.includes('src/lib/kit-builder/') || id.includes('src/pages/KitBuilderPage.tsx')) return 'kit-builder';
-          if (id.includes('src/pages/trends/')) return 'trends-module';
+          // As páginas já usam imports dinâmicos. Forçar diretórios inteiros em
+          // chunks únicos reunia toda a administração em 1,5 MB e criava ciclos.
+          // O Rollup preserva agora os limites naturais de cada rota.
 
           // Core React & Router (Shared vendor)
           if (id.includes('node_modules/react/') || id.includes('node_modules/react-dom/') || id.includes('node_modules/scheduler/')) {

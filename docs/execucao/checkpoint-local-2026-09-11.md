@@ -60,6 +60,7 @@ Este registro separa o que foi demonstrado e testado localmente do que ainda dep
 | Erros nos arquivos TypeScript alterados | 0 |
 | Regressões de ESLint nos arquivos alterados | 0; 12 erros herdados removidos |
 | Sintaxe dos workflows GitHub Actions | aprovada pelo `actionlint` |
+| Maior chunk JavaScript bruto | 680,2 KB; abaixo do limite de 800 KB |
 | Build de produção | aprovado |
 
 Os registros detalhados estão em [evidencias](evidencias/), inclusive [resultado visual da loja](evidencias/visual/demo-resultado.json), [resultado visual do login](evidencias/visual/resultado.json), [rotas e permissões](evidencias/rotas-e-permissoes.json), [simulação de verba](evidencias/verba-atomica.json) e [auditoria pública da Promo Gifts](evidencias/promo-gifts-auditoria-publica.json).
@@ -76,7 +77,7 @@ A análise do produto concorrente e do repositório de referência está em [ben
 - Marca, políticas comerciais, alçadas e textos precisam do aceite dos responsáveis Sicoob e da cooperativa piloto.
 - Acessibilidade automatizada não substitui teste por teclado, leitor de tela, zoom e participantes reais.
 - Desempenho de laboratório e métricas de uso real ainda precisam ser medidos no domínio definitivo.
-- O build permanece com avisos de chunks circulares e um bundle administrativo acima de 1,5 MB antes de gzip; a próxima rodada de desempenho deve remover ciclos e medir o efeito em aparelhos modestos.
+- A composição automática por rota eliminou os chunks circulares observados e reduziu o antigo bundle administrativo de 1,55 MB. Permanecem três avisos acima de 500 KB brutos (`icons`, `pdf` e busca por voz), todos abaixo do limite bloqueante de 800 KB; a próxima rodada deve medir e reduzir o efeito deles em aparelhos modestos.
 - A varredura ampla do Vitest revelou dívida legada e coleta indevida de specs E2E/Deno no comando genérico. O gate crítico usado pela CI está verde, mas a suíte histórica integral ainda precisa de triagem por domínio antes de poder servir como gate único.
 
 Essas dependências não anulam as correções locais. Elas delimitam com precisão o que ainda precisa de validação externa antes de qualquer publicação ou nota final.
