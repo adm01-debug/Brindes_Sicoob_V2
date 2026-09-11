@@ -1,3 +1,4 @@
+import { createReadOnlyCatalogFetch } from "../_shared/external-read-only.ts";
 import { getCorsHeaders, handleCorsPreflightIfNeeded } from '../_shared/cors.ts';
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 import { authenticateRequest, authErrorResponse } from '../_shared/auth.ts';
@@ -834,7 +835,7 @@ ${topProducts.length > 0
     if (!EXT_URL || !EXT_KEY) {
       console.error("External DB env vars not set — cannot fetch products");
     } else if (expansion.intent === "product_search" || expansion.intent === "proposal" || expansion.searchTerms.length > 0 || fallbackTerms.length > 0) {
-      const extClient = createClient(EXT_URL, EXT_KEY);
+      const extClient = createClient(EXT_URL, EXT_KEY, { global: { fetch: createReadOnlyCatalogFetch() } });
       const PRODUCT_COLS = "id, name, sku, sale_price, primary_image_url, category_id, supplier_id, description, brand, gender, is_kit, stock_quantity, min_quantity, tags, active";
 
       // ── Resolve category IDs from names (DB-level join) ──
@@ -1091,7 +1092,7 @@ ${generalPool.map(p => buildProductDescription(p)).join("\n\n")}
       const EXT_URL2 = Deno.env.get("EXTERNAL_SUPABASE_URL");
       const EXT_KEY2 = Deno.env.get("EXTERNAL_SUPABASE_SERVICE_KEY");
       if (EXT_URL2 && EXT_KEY2) {
-        const extClient = createClient(EXT_URL2, EXT_KEY2);
+        const extClient = createClient(EXT_URL2, EXT_KEY2, { global: { fetch: createReadOnlyCatalogFetch() } });
         let q = extClient
           .from("products")
           .select("id, name, sku, sale_price, primary_image_url, category_id, description, brand, stock_quantity")

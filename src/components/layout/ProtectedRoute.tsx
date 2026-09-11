@@ -1,9 +1,10 @@
+import { PermissionsError } from "./PermissionsError";
 import { type ReactNode, forwardRef } from "react";
 import { Navigate, useLocation, Outlet } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
-type RequiredRole = "dev" | "supervisor" | "agente" | "gestor_compras" | "gerente_pa" | "vendedor";
+import { hasRequiredRole, type RequiredRole } from "@/lib/access/role-policy";
 
 interface ProtectedRouteProps {
   children?: ReactNode;
@@ -21,7 +22,7 @@ export const ProtectedRoute = forwardRef<HTMLDivElement, ProtectedRouteProps>(fu
   requireAdmin = false,
   requireDev = false,
 }, ref) {
-  const { user, isDev, isSupervisorOrAbove, isLoading, profile, rolesLoaded } = useAuth();
+  const { user, roles, isLoading, rolesLoaded, rolesError } = useAuth();
   const location = useLocation();
 
   if (isLoading || (user && !rolesLoaded)) {
@@ -35,6 +36,8 @@ export const ProtectedRoute = forwardRef<HTMLDivElement, ProtectedRouteProps>(fu
     );
   }
 
+  if (user && rolesError) return <PermissionsError />;
+
   if (!user) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
@@ -43,26 +46,9 @@ export const ProtectedRoute = forwardRef<HTMLDivElement, ProtectedRouteProps>(fu
   const required: RequiredRole | undefined =
     requiredRole ?? (requireDev ? "dev" : requireAdmin ? "supervisor" : undefined);
 
-  if (required === "dev" && !isDev) {
+  if (!hasRequiredRole(roles, required)) {
     return <Navigate to="/403" replace />;
   }
-  
-  const role = profile?.role;
-
-  if (required === "gestor_compras" && role !== "gestor_compras" && !isDev) {
-    return <Navigate to="/403" replace />;
-  }
-  if (required === "supervisor" && !isSupervisorOrAbove) {
-    return <Navigate to="/403" replace />;
-  }
-  if (required === "gerente_pa" && role !== "gerente_pa" && !isSupervisorOrAbove) {
-    return <Navigate to="/403" replace />;
-  }
-  if (required === "vendedor" && role !== "vendedor" && role !== "gerente_pa" && !isSupervisorOrAbove) {
-    return <Navigate to="/403" replace />;
-  }
-
-  // 'agente' = qualquer usuário autenticado, sem checagem extra.
 
   // Retorno único: Outlet (Layout Route) ou children. Sem forwardRef:
   // Router não passa refs para `element={<ProtectedRoute />}`.

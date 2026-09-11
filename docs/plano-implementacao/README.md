@@ -33,6 +33,6 @@ O catálogo `doufsxqlfjyuvxuezpln` permanece exclusivamente de consulta. O banco
 
 ## Base da proposta
 
-O plano usa o [diagnóstico versionado do projeto](https://github.com/adm01-debug/Brindes_Sicoob_V2/blob/ec5cfaf5c2de844458c0105d8ad40c35f1eb9c14/docs/pesquisa/2026-09-11/dossie.md), os documentos fornecidos, referências de marca e fontes de usabilidade, acessibilidade e desempenho. As políticas comerciais e os ativos de marca exigem validação vigente por cooperativa, conforme as etapas correspondentes.
+O plano usa o [diagnóstico versionado do projeto](https://github.com/adm01-debug/Brindes_Sicoob_V2/blob/ec5cfaf5c2de844458c0105d8ad40c35f1eb9c14/docs/pesquisa/2026-09-11/dossie.md), os documentos fornecidos, referências de marca e fontes de usabilidade, acessibilidade e desempenho. O [benchmark da Promo Gifts V4](../pesquisa/2026-09-11/benchmark-promo-gifts-v4.md) complementa a execução com padrões de catálogo, orçamento e kits classificados para adoção, adaptação ou rejeição. As políticas comerciais e os ativos de marca exigem validação vigente por cooperativa, conforme as etapas correspondentes.
 
-**Esta entrega conclui a elaboração do plano. As 1.000 subetapas de implementação permanecem pendentes.**
+**Esta entrega conclui a elaboração do plano.** O checklist-base mantém as 1.000 subetapas inicialmente pendentes para impedir baixa sem evidência. A implementação local já realizada está registrada no [checkpoint de execução](../execucao/checkpoint-local-2026-09-11.md); cada item só deve ser baixado no controle oficial depois da atribuição de responsável, revisor e evidência exigida pelo próprio plano.

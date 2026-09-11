@@ -1,9 +1,0 @@
-{
-  "extends": "./tsconfig.app.json",
-  "include": [
-    "src/components/filters/InlineColorGroupFilter.tsx",
-    "src/components/products/FutureStockModal.tsx",
-    "src/components/quotes/AdminTemplatesManager.tsx",
-    "src/data/mockData.ts"
-  ]
-}

@@ -19,7 +19,7 @@ export type BridgeOperation =
   | `rpc:${string}` 
   | `auth:${string}`
   | 'handshake'
-  | 'health';
+  | 'health' | 'ping' | 'invoke';
 
 export interface BridgeCallSample {
   id: number;

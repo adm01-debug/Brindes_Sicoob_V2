@@ -1,0 +1,16 @@
+{
+  "geradoEm": "2026-09-11",
+  "ferramenta": "image_gen integrada",
+  "arquivos": {
+    "public/brand/store/hero-brindes-v1.webp": "Fotografia publicitária de brindes corporativos sustentáveis, com espaço negativo para conteúdo e sem marcas ou texto.",
+    "src/assets/demo/produtos-grid-v1.webp": "Grade 2x2 de fotos de produto sem marcas: garrafa, mochila, caderno com caneta e kit café. Carregada apenas pela demonstração local."
+  },
+  "uso": "O hero é uma composição conceitual da vitrine do catálogo; a grade 2x2 é exclusiva da demonstração local. Nenhum dos ativos representa produto, preço, estoque ou disponibilidade do catálogo real.",
+  "restricoesDoPrompt": [
+    "sem logotipos",
+    "sem texto",
+    "sem pessoas",
+    "sem marca d'água",
+    "paleta verde petróleo, verde esmeralda, kraft e off-white"
+  ]
+}

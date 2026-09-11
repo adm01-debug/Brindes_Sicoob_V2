@@ -294,7 +294,7 @@ export function CatalogContent({
     </SparklineSalesProvider>
   ) : (
     <SparklineSalesProvider productIds={sparklineProductIds}>
-      <div className={`${CONTAINER_CLASS} p-4`}>
+      <div className="rounded-2xl bg-background">
         <ProductGrid
           {...sharedProps}
           products={paginatedProducts}
@@ -303,6 +303,16 @@ export function CatalogContent({
           onProductClick={(id) => selectionMode ? sel.toggleSelect(id) : navigate(`/produto/${id}`)}
           onViewProduct={handleViewProduct}
           onShareProduct={handleShareProduct}
+        />
+        <VirtualFooter
+          hasMore={hasMoreProducts}
+          loadMoreRef={loadMoreRef}
+          productsCount={paginatedProducts.length}
+          totalEstimate={totalEstimate}
+          filteredCount={filteredProducts.length}
+          isLoadingMore={isLoadingMore}
+          itemsPerPage={itemsPerPage}
+          skeletonType="grid"
         />
       </div>
     </SparklineSalesProvider>

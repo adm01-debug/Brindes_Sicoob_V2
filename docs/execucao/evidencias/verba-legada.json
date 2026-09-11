@@ -1,0 +1,15 @@
+{
+  "ambiente": "PostgreSQL 17.6 descartável, --network none; somente dados sintéticos",
+  "fontes": [
+    "supabase/migrations/20260502152357_35e058ba-a7e7-43e4-80a4-a67de8324edf.sql",
+    "supabase/migrations/20260503214537_09eeff12-930b-4f92-a558-752c279e8ee9.sql",
+    "supabase/migrations/20260503214557_f7ee25b6-d301-487d-9004-564116dc4100.sql"
+  ],
+  "pedido": 100,
+  "debito_esperado": 100,
+  "debito_observado": 200.0,
+  "consumido_apos_cancelamento_esperado": 0,
+  "consumido_apos_cancelamento_observado": 100.0,
+  "falha_reproduzida": true,
+  "producao_verificada": false
+}

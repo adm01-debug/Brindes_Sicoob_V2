@@ -9,15 +9,13 @@ export const ALLOWED_RPCS = [
   'fn_get_product_print_areas',
   'fn_get_product_print_areas_v2',
   'fn_get_product_customization_options',
-  'fn_link_product_print_areas',
-  'fn_backfill_product_print_areas',
   'fn_get_customization_price',
   'fn_get_customization_price_v2',
   'fn_find_fornecedor_price_table',
   'get_category_descendants',
 ] as const;
 
-// Tabelas relacionadas a PRODUTOS (CRUD completo)
+// Tabelas de produtos disponíveis exclusivamente para consulta no portal.
 export const PRODUCT_TABLES = [
   'products',
   'categories',
@@ -139,7 +137,7 @@ export type CompanyTable = typeof COMPANY_TABLES[number];
 
 // Permissões por grupo
 export const PERMISSIONS: Record<ResourceGroup, Operation[]> = {
-  products: ['select', 'insert', 'update', 'delete', 'upsert', 'batch_insert'],
+  products: ['select'],
   companies: ['select'],
   views: ['select'],
 };

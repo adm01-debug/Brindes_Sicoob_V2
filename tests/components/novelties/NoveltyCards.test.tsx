@@ -26,8 +26,8 @@ vi.mock("@/components/common/SelectionCheckbox", () => ({
 const baseProduct = {
   product_id: "np-1",
   id: "np-1",
-  name: "Copo Personalizado",
-  price: 12.99,
+  product_name: "Copo Personalizado",
+  base_price: 12.99,
   stock_quantity: 80,
   stock_status: "in-stock" as const,
   detected_at: new Date(Date.now() - 10 * 86400000).toISOString(), // 10 days ago (not fresh)
@@ -95,7 +95,7 @@ describe("NoveltyGridCard — label changes (PR)", () => {
     const { NoveltyGridCard } = await import("@/components/novelties/NoveltyCards");
     const productWithFornecedorName = {
       ...baseProduct,
-      name: "Brinde do Fornecedor Premium",
+      product_name: "Brinde do Fornecedor Premium",
     };
     renderWithProviders(
       <NoveltyGridCard {...baseCardProps} product={productWithFornecedorName as any} />

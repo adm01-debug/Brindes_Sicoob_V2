@@ -26,8 +26,8 @@ vi.mock("@/components/common/SelectionCheckbox", () => ({
 const baseProduct = {
   product_id: "rp-1",
   id: "rp-1",
-  name: "Garrafa de Alumínio",
-  price: 29.9,
+  product_name: "Garrafa de Alumínio",
+  base_price: 29.9,
   stock_quantity: 500,
   stock_status: "in-stock" as const,
   replenished_at: new Date(Date.now() - 5 * 86400000).toISOString(),

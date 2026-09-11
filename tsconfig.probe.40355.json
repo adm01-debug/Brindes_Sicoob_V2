@@ -1,8 +1,0 @@
-{
-  "extends": "./tsconfig.app.json",
-  "include": [
-    "src/pages/MockupGenerator.tsx",
-    "src/components/mockup/MockupProductSelector.tsx",
-    "src/components/mockup/MockupHistoryPanel.tsx"
-  ]
-}

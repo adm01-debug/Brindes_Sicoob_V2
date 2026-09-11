@@ -6,6 +6,16 @@ import { defineRoute } from "@/lib/router-utils";
  * Refatoradas para excelência técnica 10/10
  */
 export const publicRoutes = [
+  ...(import.meta.env.DEV ? [
+    defineRoute({
+      path: "/loja-demo",
+      component: lazyWithRetry(() => import("@/pages/sicoob/StorefrontDemoPage")),
+    }),
+    defineRoute({
+      path: "/demonstracao",
+      component: lazyWithRetry(() => import("@/pages/sicoob/DemoPortalPage")),
+    }),
+  ] : []),
   defineRoute({ 
     path: "/login", 
     component: lazyWithRetry(() => import("@/pages/Auth")) 

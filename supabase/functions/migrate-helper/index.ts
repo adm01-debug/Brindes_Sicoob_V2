@@ -1,35 +1,6 @@
-// Edge function temporária para migração de banco.
-// Cole em: Cloud > Edge Functions > migrate-helper > View code
-// Após a migração, remova esta função.
-
-const ACCESS_KEY = "910ed3c6620a69c0482c0dc85825f20b7f80da356ec8585e";
-const cors = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, apikey, content-type, x-access-key",
-  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-};
-
-Deno.serve(async (req) => {
-  if (req.method === "OPTIONS") return new Response(null, { headers: cors });
-  const key = req.headers.get("x-access-key");
-  if (key !== ACCESS_KEY) return new Response(JSON.stringify({ error: "unauthorized" }), { status: 401, headers: { ...cors, "Content-Type": "application/json" } });
-
-  const url = new URL(req.url);
-  const action = url.searchParams.get("action") || "ping";
-
-  try {
-    if (action === "ping") {
-      return new Response(JSON.stringify({ ok: true, project_ref: Deno.env.get("SUPABASE_URL") }), { headers: { ...cors, "Content-Type": "application/json" } });
-    }
-    if (action === "credentials") {
-      return new Response(JSON.stringify({
-        url: Deno.env.get("SUPABASE_URL"),
-        service_role: Deno.env.get("SUPABASE_SERVICE_ROLE_KEY"),
-        db_url: Deno.env.get("SUPABASE_DB_URL"),
-      }), { headers: { ...cors, "Content-Type": "application/json" } });
-    }
-    return new Response(JSON.stringify({ error: "unknown_action" }), { status: 400, headers: { ...cors, "Content-Type": "application/json" } });
-  } catch (e) {
-    return new Response(JSON.stringify({ error: String(e) }), { status: 500, headers: { ...cors, "Content-Type": "application/json" } });
-  }
-});
+// Mantém uma resposta inerte para substituir a versão antiga ao publicar.
+// Este endpoint não deve ler variáveis, credenciais, cabeçalhos ou dados.
+Deno.serve(() => new Response(
+  JSON.stringify({ error: "endpoint_desativado", message: "Esta ferramenta foi desativada." }),
+  { status: 410, headers: { "Content-Type": "application/json", "Cache-Control": "no-store" } },
+));

@@ -89,7 +89,7 @@ html[data-scroll-locked] body {
     --brand-hover: 175 100% 30%;
     --brand-active: 175 100% 26%;
     --brand-glow: 175 100% 42%;
-    --brand-foreground: 0 0% 100%;
+    --brand-foreground: 190 100% 13%;
     --brand-soft: 175 100% 38%;
 
     /* ===== CORES SECUNDÁRIAS (VERDE MÉDIO — #00875A) ===== */
@@ -322,7 +322,7 @@ html[data-scroll-locked] body {
     --brand-hover: 175 90% 38%;
     --brand-active: 175 90% 32%;
     --brand-glow: 175 100% 50%;
-    --brand-foreground: 0 0% 100%;
+    --brand-foreground: 190 100% 9%;
     --brand-soft: 175 90% 45%;
 
     /* ===== CORES SECUNDÁRIAS (VERDE MÉDIO — dark) ===== */

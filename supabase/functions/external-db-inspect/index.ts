@@ -1,3 +1,5 @@
+import { authorize } from "../_shared/authorize.ts";
+import { createReadOnlyCatalogFetch } from "../_shared/external-read-only.ts";
 import { getCorsHeaders } from '../_shared/cors.ts';
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 import { z } from "https://esm.sh/zod@3.23.8";
@@ -8,20 +10,12 @@ const BodySchema = z.object({
   tableName: z.string().trim().min(1).max(100).regex(/^[a-z_][a-z0-9_]*$/i, 'Invalid table name').optional(),
 });
 
-const corsHeadersRef: { current: Record<string, string> } = { current: {} };
-
-function jsonResponse(body: unknown, status = 200) {
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: { ...corsHeadersRef.current, 'Content-Type': 'application/json' },
-  });
-}
-
 Deno.serve(async (req) => {
-  corsHeadersRef.current = getCorsHeaders(req);
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeadersRef.current });
-  }
+  const corsHeaders = getCorsHeaders(req);
+  const jsonResponse = (body: unknown, status = 200) => new Response(JSON.stringify(body), {
+    status, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+  });
+  if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders });
 
   try {
     // Anti-scraping: bot UA check + rate limit por IP (camada externa antes do auth)
@@ -30,37 +24,11 @@ Deno.serve(async (req) => {
       maxRequests: 30,
       windowSeconds: 60,
       blockSeconds: 1800,
-    }, corsHeadersRef.current);
+    }, corsHeaders);
     if (!protection.allowed) return protection.blockResponse!;
 
-    // Auth guard: require authenticated admin user
-    const authHeader = req.headers.get('Authorization');
-    if (!authHeader?.startsWith('Bearer ')) {
-      return jsonResponse({ error: 'Unauthorized' }, 401);
-    }
-
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
-    const supabaseAuth = createClient(supabaseUrl, supabaseAnonKey, {
-      global: { headers: { Authorization: authHeader } },
-    });
-
-    const { data: { user }, error: userError } = await supabaseAuth.auth.getUser();
-    if (userError || !user) {
-      return jsonResponse({ error: 'Unauthorized' }, 401);
-    }
-
-    // Require admin role
-    const { data: roleData } = await supabaseAuth
-      .from('user_roles')
-      .select('role')
-      .eq('user_id', user.id)
-      .eq('role', 'admin')
-      .maybeSingle();
-
-    if (!roleData) {
-      return jsonResponse({ error: 'Forbidden: admin role required' }, 403);
-    }
+    const actor = await authorize(req, { requireRole: "dev" });
+    if (!actor.ok) return actor.response;
 
     // Validate body
     let rawBody: unknown = {};
@@ -79,10 +47,10 @@ Deno.serve(async (req) => {
     const externalKey = Deno.env.get('EXTERNAL_SUPABASE_SERVICE_KEY');
     if (!externalUrl || !externalKey) {
       console.warn('[external-db-inspect] EXTERNAL_SUPABASE_URL/KEY not configured — returning empty payload');
-      return jsonResponse({ data: [], records: [], count: 0, _unconfigured: true, _message: 'Banco externo não configurado' }, 200);
+      return jsonResponse({ error: 'CATALOG_NOT_CONFIGURED', message: 'Catálogo indisponível' }, 503);
     }
 
-    const externalSupabase = createClient(externalUrl, externalKey);
+    const externalSupabase = createClient(externalUrl, externalKey, { global: { fetch: createReadOnlyCatalogFetch() } });
 
     // Inspect specific table columns
     if (mode === 'columns' && tableName) {

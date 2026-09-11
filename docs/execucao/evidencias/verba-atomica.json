@@ -1,0 +1,30 @@
+{
+  "ambiente": "PostgreSQL 17.6 descartável, --network none; somente dados sintéticos",
+  "migracao": "supabase/migrations/20260911143000_sicoob_order_budget_atomicity.sql",
+  "producao_verificada": false,
+  "idempotencia": {
+    "apos_confirmar_e_avancar": "100.00",
+    "apos_cancelar": "0.00",
+    "imutabilidade": "validada"
+  },
+  "concorrencia": {
+    "retornos": [
+      3,
+      0
+    ],
+    "debito": "600.00",
+    "pedidos_confirmados": 1
+  },
+  "aprovacao": {
+    "identidade_forjada": "bloqueada",
+    "fora_de_escopo": "bloqueada",
+    "estado": "approved|confirmed|200.00",
+    "repeticao": "bloqueada"
+  },
+  "confirmacao_direta": {
+    "dentro_da_alcada": "confirmed|00000000-0000-4000-8000-000000000020",
+    "estado_desatualizado": "bloqueado",
+    "acima_da_alcada": "bloqueado"
+  },
+  "resultado": "aprovado"
+}

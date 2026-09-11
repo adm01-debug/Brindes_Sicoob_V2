@@ -29,6 +29,7 @@ import { SharePreviewDialog } from "./share/SharePreviewDialog";
 import { ProductCardImage } from "./ProductCardImage";
 import { ProductCardActions } from "./ProductCardActions";
 import { PriceFreshnessBadge } from "./PriceFreshnessBadge";
+import { QuickAddToQuote } from "./QuickAddToQuote";
 
 export interface ProductCardProps {
   product: Product;
@@ -307,10 +308,22 @@ export const ProductCard = memo(forwardRef<HTMLElement, ProductCardProps>(functi
 
         <div className="pt-1.5 sm:pt-2 border-t border-border/30">
           <div className="flex items-center justify-between mb-0.5">
-            <span className="text-[9px] sm:text-[10px] text-muted-foreground font-medium uppercase tracking-wider">Vendas no Fornecedor 30d</span>
+            <span className="text-[9px] sm:text-[10px] text-muted-foreground font-medium uppercase tracking-wider">Vendas 30d</span>
           </div>
           <ProductSparkline productId={product.id} />
         </div>
+
+        <QuickAddToQuote
+          productId={product.id}
+          productName={product.name}
+          productSku={product.sku || undefined}
+          productImageUrl={product.og_image_url || product.images[0]}
+          productPrice={product.price}
+          minQuantity={product.minQuantity || 1}
+          labelOverride="Adicionar ao orçamento"
+          iconOverride="cart"
+          className="min-h-11 w-full rounded-full bg-[#00464d] font-bold text-white shadow-sm hover:bg-[#00383e]"
+        />
       </div>
 
       {/* Dialogs */}

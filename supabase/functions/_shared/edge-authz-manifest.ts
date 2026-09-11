@@ -48,6 +48,7 @@ export interface AuthzEntry {
 
 export const EDGE_AUTHZ_MANIFEST: Record<string, AuthzEntry> = {
   // ---------------- Públicas por design ----------------
+  "migrate-helper": { category: "public", rationale: "Função desativada: retorna somente HTTP 410, sem acesso a ambiente ou banco" },
   "kit-public-view": { category: "public", rationale: "Visualização de kit por token público" },
   "quote-public-view": { category: "public", rationale: "Aprovação de orçamento por token" },
   "favorites-public-react": { category: "public", rationale: "Reactions anônimas em lista pública" },
@@ -61,7 +62,7 @@ export const EDGE_AUTHZ_MANIFEST: Record<string, AuthzEntry> = {
   "get-visitor-info": { category: "public", rationale: "Geo/IP do visitante para anti-fraude" },
   "verify-email": { category: "public", rationale: "Verificação de email no signup público" },
   "log-login-attempt": { category: "public", rationale: "Telemetria de login (anti-bruteforce)" },
-  "auth-integrity-check": { category: "public", rationale: "Verificação de existência de usuários de teste (login rápido)" },
+  "auth-integrity-check": { category: "dev", rationale: "Diagnóstico restrito à administração técnica" },
   "rate-limit-check": { category: "public", rationale: "Rate-limit consult anonymous" },
   "commemorative-dates": { category: "public", rationale: "Calendário público" },
   "categories-api": { category: "public", rationale: "Catálogo de categorias público" },
@@ -86,7 +87,7 @@ export const EDGE_AUTHZ_MANIFEST: Record<string, AuthzEntry> = {
 
   // ---------------- Cron / service-to-service ----------------
   "cleanup-notifications": { category: "service", rationale: "pg_cron diário" },
-  "cleanup-novelties": { category: "service", rationale: "pg_cron diário" },
+  "cleanup-novelties": { category: "public", rationale: "Função inerte: responde 410 sem acessar dados ou segredos" },
   "collections-watcher": { category: "service", rationale: "pg_cron — price drop watcher" },
   "favorites-watcher": { category: "service", rationale: "pg_cron — price drop watcher" },
   "comparison-price-watcher": { category: "service", rationale: "pg_cron — price drop watcher" },

@@ -130,7 +130,7 @@ export function QuickAddToQuote({
         )}
       </PopoverTrigger>
 
-      <PopoverContent className="w-80 p-4 relative" align="end" onClick={(e) => e.stopPropagation()} onPointerDown={(e) => e.stopPropagation()}>
+      <PopoverContent className="relative w-[min(20rem,calc(100vw-1rem))] p-4" align="end" onClick={(e) => e.stopPropagation()} onPointerDown={(e) => e.stopPropagation()}>
         <button
           aria-label="Fechar"
           className="absolute top-2 right-2 h-6 w-6 flex items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors z-10"
@@ -159,7 +159,7 @@ export function QuickAddToQuote({
           /* Step 3: Quantity + Add */
           <div className="space-y-3">
             <div>
-              <h4 className="font-medium text-sm mb-1 pr-6">Adicionar ao carrinho</h4>
+              <h4 className="font-medium text-sm mb-1 pr-6">Adicionar ao orçamento</h4>
               <p className="text-xs text-muted-foreground line-clamp-1">{productName}</p>
               {activeCart && (
                 <p className="text-[10px] text-primary mt-1 font-medium truncate">→ {activeCart.company_name}</p>
@@ -232,7 +232,7 @@ export function QuickAddToQuote({
               ) : (
                 <>
                   <ShoppingCart className="h-4 w-4" />
-                  Adicionar ao Carrinho
+                  Adicionar ao orçamento
                 </>
               )}
             </Button>

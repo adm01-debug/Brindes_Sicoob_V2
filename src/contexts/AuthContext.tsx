@@ -36,6 +36,7 @@ interface AuthContextType {
   isSupervisor: boolean;
   isAgente: boolean;
   isSupervisorOrAbove: boolean; // dev OR supervisor OR gestor_compras
+  canManage: boolean;
   // IDs organizacionais
   cooperativaId: string | null;
   paId: string | null;
@@ -47,8 +48,9 @@ interface AuthContextType {
   nextAAL: 'aal1' | 'aal2' | null;
   hasMFA: boolean;
   mfaRequired: boolean;
-  /** True quando user_roles foi carregado com sucesso (≥1 role). False = ainda carregando ou falhou. */
+  /** Consulta de papéis encerrada; rolesError diferencia falha de ausência de papéis. */
   rolesLoaded: boolean;
+  rolesError: string | null;
   refreshAAL: () => Promise<void>;
   // Métodos
   signUp: (email: string, password: string, fullName: string) => Promise<{ error: Error | null }>;
@@ -66,7 +68,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   
-  const { userRoles, rolesLoaded, fetchRoles, clearRoles } = useUserRoles();
+  const { userRoles, rolesLoaded, rolesError, fetchRoles, clearRoles } = useUserRoles();
   const { profile, fetchProfile, clearProfile } = useUserProfile();
   const { currentAAL, nextAAL, hasMFA, fetchAAL, clearAAL } = useAuthAAL();
 
@@ -342,6 +344,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     role,
     isDev,
     isGestorCompras,
+    isCompradorSingular,
     isGerentePa,
     isVendedor,
     isSupervisor,
@@ -357,6 +360,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     hasMFA,
     mfaRequired: nextAAL === 'aal2' && currentAAL !== 'aal2',
     rolesLoaded,
+    rolesError,
     refreshAAL: fetchAAL,
     signUp,
     signIn,
@@ -364,9 +368,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     refreshProfile,
     refreshSession,
   }), [
-    user, session, profile, isLoading, userRoles, role, isDev, isGestorCompras, 
-    isGerentePa, isVendedor, isSupervisor, isAgente, isSupervisorOrAbove, 
-    canManage, cooperativaId, paId, currentAAL, nextAAL, hasMFA, rolesLoaded, 
+    user, session, profile, isLoading, userRoles, role, isDev, isGestorCompras, isCompradorSingular, rolesError,
+    isGerentePa, isVendedor, isSupervisor, isAgente, isSupervisorOrAbove,
+    canManage, cooperativaId, paId, currentAAL, nextAAL, hasMFA, rolesLoaded,
     fetchAAL, refreshSession
   ]);
 

@@ -11,6 +11,7 @@ export const sicoobRbacRoutes = [
   defineRoute({ path: "/dashboard-pa", component: lazyWithRetry(() => import("@/pages/sicoob/PADashboardPage")) }),
   
   // Módulo Gestor Singular
+  defineRoute({ path: "/gestor/compras", component: lazyWithRetry(() => import("@/pages/GestorCompras")) }),
   defineRoute({ path: "/gestor", component: lazyWithRetry(() => import("@/pages/sicoob/GestorDashboardPage")) }),
   defineRoute({ path: "/gestor/agregados", component: lazyWithRetry(() => import("@/pages/sicoob/GestorConsolidatedOrdersPage")) }),
   defineRoute({ path: "/gestor/aprovacoes", component: lazyWithRetry(() => import("@/pages/sicoob/GestorApprovalsPage")) }),
@@ -23,6 +24,4 @@ export const sicoobRbacRoutes = [
   defineRoute({ path: "/relatorios/sicoob", component: lazyWithRetry(() => import("@/pages/sicoob/reports/SicoobReportsPage")) }),
   defineRoute({ path: "/kpis/sicoob", component: lazyWithRetry(() => import("@/pages/sicoob/reports/SicoobKpiPage")) }),
   
-  // QA e Auditoria Sicoob
-  defineRoute({ path: "/sicoob/qa/preflight", component: lazyWithRetry(() => import("@/pages/admin/qa/PreflightPage")) }),
 ] as const;

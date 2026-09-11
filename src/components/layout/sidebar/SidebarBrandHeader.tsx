@@ -10,11 +10,11 @@ export const SidebarBrandHeader = forwardRef<HTMLDivElement, SidebarBrandHeaderP
     if (isCollapsed) {
       return (
         <div ref={ref} className="flex items-center justify-center px-2 py-3 mb-2">
-          <div className="w-10 h-10 rounded-lg bg-white flex items-center justify-center shadow-sm overflow-hidden p-1">
+          <div className="w-10 h-10 rounded-lg bg-[#003641] flex items-center justify-center shadow-sm overflow-hidden p-1.5">
             <img 
-              src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/ca/Sicoob_logo.svg/2560px-Sicoob_logo.svg.png" 
+              src="/brand/sicoob-logo.png"
               alt="Sicoob" 
-              className="w-full h-full object-contain"
+              className="h-full w-full object-cover object-left"
             />
           </div>
         </div>
@@ -24,11 +24,11 @@ export const SidebarBrandHeader = forwardRef<HTMLDivElement, SidebarBrandHeaderP
     return (
       <div ref={ref} className="px-4 py-4 mb-2">
         <div className="flex items-center gap-3 min-w-0">
-          <div className="w-10 h-10 rounded-lg bg-white flex items-center justify-center shrink-0 shadow-sm overflow-hidden p-1.5">
+          <div className="w-10 h-10 rounded-lg bg-[#003641] flex items-center justify-center shrink-0 shadow-sm overflow-hidden p-1.5">
             <img 
-              src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/ca/Sicoob_logo.svg/2560px-Sicoob_logo.svg.png" 
+              src="/brand/sicoob-logo.png"
               alt="Sicoob" 
-              className="w-full h-full object-contain"
+              className="h-full w-full object-cover object-left"
             />
           </div>
           <div className="flex flex-col min-w-0">

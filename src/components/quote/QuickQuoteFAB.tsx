@@ -54,8 +54,8 @@ const quickActions: QuickAction[] = [
   },
   {
     id: "cart",
-    label: "Carrinho",
-    description: "Orçamento rápido",
+    label: "Meu orçamento",
+    description: "Revisar seleção",
     icon: ShoppingCart,
     href: "__open_cart__",
     color: "bg-primary/60 text-primary-foreground",

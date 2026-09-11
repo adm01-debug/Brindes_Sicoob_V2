@@ -60,11 +60,6 @@ jobs:
       - name: 🏷  Validar tags @smoke no spec do gate
         run: node scripts/check-smoke-tags.mjs
 
-      - name: Run E2E smoke (gate determinístico — 1 teste/feature, sequencial)
-        id: e2e_smoke
-        run: npx playwright test --project=chromium-smoke --max-failures=3
-        continue-on-error: true
-
       # ─── SMOKE: fail-fast agressivo ─────────────────────────────────────
       # `--max-failures=1` para na PRIMEIRA falha (gate determinístico —
       # qualquer falha do smoke invalida o run; rodar mais é desperdício).

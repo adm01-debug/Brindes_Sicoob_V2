@@ -6,6 +6,7 @@ import { defineRoute } from "@/lib/router-utils";
  * Refatoradas para excelência técnica 10/10
  */
 export const adminRoutes = [
+  defineRoute({ path: "/admin/sicoob", component: lazyWithRetry(() => import("@/pages/admin/sicoob/SicoobManagementPage")) }),
   defineRoute({ 
     path: "/admin/usuarios", 
     component: lazyWithRetry(() => import("@/pages/RolesPage")) 

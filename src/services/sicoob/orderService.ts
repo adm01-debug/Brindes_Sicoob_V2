@@ -117,22 +117,33 @@ export const sicoobOrderService = {
   },
 
   async updateOrderStatus(orderId: string, status: string, currentStatus?: string, observations?: string): Promise<void> {
-    if (currentStatus && !canSicoobTransitionTo(currentStatus as OrderStatus, status as OrderStatus)) {
+    if (!currentStatus) {
+      throw new Error("O status atual é obrigatório para evitar uma atualização concorrente.");
+    }
+    if (!canSicoobTransitionTo(currentStatus as OrderStatus, status as OrderStatus)) {
       throw new Error(`Transição de status inválida: de ${currentStatus} para ${status}`);
     }
 
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error("Usuário não autenticado");
 
-    const { error } = await supabase
-      .from("sicoob_orders")
-      .update({ 
-        status, 
-        updated_at: new Date().toISOString(),
-        ...(status === 'confirmed' ? { approved_by: user.id, approved_at: new Date().toISOString() } : {})
-      })
-      .eq("id", orderId);
-    if (error) throw error;
+    if (status === 'confirmed') {
+      const { error } = await supabase.rpc('confirm_sicoob_order', {
+        p_order_id: orderId,
+        p_expected_status: currentStatus,
+      });
+      if (error) throw error;
+    } else {
+      const { data, error } = await supabase
+        .from("sicoob_orders")
+        .update({ status, updated_at: new Date().toISOString() })
+        .eq("id", orderId)
+        .eq("status", currentStatus)
+        .select("id")
+        .maybeSingle();
+      if (error) throw error;
+      if (!data) throw new Error("O pedido mudou; atualize a página e tente novamente.");
+    }
 
     // Registrar evento de auditoria se houver observações ou mudança de status
     try {
@@ -200,7 +211,14 @@ export const sicoobOrderService = {
   async approveOrdersBulk(orderIds: string[]): Promise<{ successes: string[], failures: { id: string, reason: string }[] }> {
     const results = await Promise.allSettled(
       orderIds.map(async (id) => {
-        await this.updateOrderStatus(id, 'confirmed');
+        const { data: order, error } = await supabase
+          .from('sicoob_orders')
+          .select('status')
+          .eq('id', id)
+          .maybeSingle();
+        if (error) throw error;
+        if (!order) throw new Error('Pedido não encontrado ou fora do seu escopo.');
+        await this.updateOrderStatus(id, 'confirmed', order.status);
         return id;
       })
     );

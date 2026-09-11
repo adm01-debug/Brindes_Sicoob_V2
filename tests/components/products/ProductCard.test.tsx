@@ -6,7 +6,8 @@ import { screen } from "@testing-library/react";
 import { renderWithProviders } from "../render-helpers";
 import React from "react";
 
-vi.mock("@/utils/image-utils", () => ({
+vi.mock("@/utils/image-utils", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/utils/image-utils")>()),
   getCdnUrl: vi.fn((url: string) => url),
   getSrcSet: vi.fn(() => ""),
 }));
@@ -16,7 +17,9 @@ vi.mock("@/components/collections/AddToCollectionModal", () => ({
 }));
 
 vi.mock("@/components/products/QuickAddToQuote", () => ({
-  QuickAddToQuote: () => null,
+  QuickAddToQuote: ({ labelOverride }: { labelOverride?: string }) => (
+    <button type="button">{labelOverride || "Orçar"}</button>
+  ),
 }));
 
 vi.mock("@/components/products/ProductQuickView", () => ({
@@ -24,7 +27,9 @@ vi.mock("@/components/products/ProductQuickView", () => ({
 }));
 
 vi.mock("@/components/products/ProductCategoryBadges", () => ({
-  ProductCategoryBadges: () => null,
+  ProductCategoryBadges: ({ category }: { category?: { name?: string } }) => (
+    category?.name ? <span>{category.name}</span> : null
+  ),
 }));
 
 vi.mock("@/components/products/NoveltyBadge", () => ({
@@ -40,7 +45,8 @@ vi.mock("@/lib/supplier-colors", () => ({
   getSupplierColors: vi.fn().mockReturnValue({ bg: "#fff", text: "#000" }),
 }));
 
-vi.mock("@/utils/color-image-resolver", () => ({
+vi.mock("@/utils/color-image-resolver", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/utils/color-image-resolver")>()),
   resolveColorImage: vi.fn().mockReturnValue(null),
   resolveColorStock: vi.fn().mockReturnValue(null),
   getActiveColorName: vi.fn().mockReturnValue(null),
@@ -133,6 +139,7 @@ describe("ProductCard", () => {
     const { ProductCard } = await import("@/components/products/ProductCard");
     renderWithProviders(<ProductCard product={mockProduct as any} />);
     expect(screen.getByText("Caneta Premium")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /adicionar ao orçamento/i })).toBeInTheDocument();
   });
 
   it("renders with favorite state", async () => {

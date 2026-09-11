@@ -38,7 +38,6 @@ const NotificationBell = lazyWithRetry(() => import("@/components/notifications/
 const DiscountApprovalHeaderBadge = lazyWithRetry(() => import("@/components/admin/DiscountApprovalHeaderBadge").then(m => ({ default: m.DiscountApprovalHeaderBadge })));
 const GlobalSearchPalette = lazyWithRetry(() => import("@/components/search/GlobalSearchPalette").then(m => ({ default: m.GlobalSearchPalette })));
 const CartHeaderButton = lazyWithRetry(() => import("@/components/cart/CartHeaderButton").then(m => ({ default: m.CartHeaderButton })));
-const MiniCart = lazyWithRetry(() => import("@/components/cart/MiniCart").then(m => ({ default: m.MiniCart })));
 
 
 
@@ -140,11 +139,11 @@ export function Header({ onMenuToggle, searchQuery, onSearchChange }: HeaderProp
               <BackButton variant="ghost" size="icon" showLabel={false} className="h-9 w-9 rounded-full" />
             ) : (
 
-              <div className="flex items-center mr-1 ml-1">
+              <div className="ml-1 mr-1 flex h-9 items-center rounded-lg bg-[#003641] px-2.5">
                 <img 
-                  src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/ca/Sicoob_logo.svg/2560px-Sicoob_logo.svg.png" 
+                  src="/brand/sicoob-logo.png"
                   alt="Sicoob" 
-                  className="h-6 w-auto object-contain"
+                  className="h-5 w-auto object-contain"
                 />
               </div>
             )}
@@ -200,7 +199,6 @@ export function Header({ onMenuToggle, searchQuery, onSearchChange }: HeaderProp
           <div className="flex items-center gap-0.5">
             <Suspense fallback={<div className="h-8 w-8 rounded-full bg-muted/20 animate-pulse" />}>
               <CartHeaderButton />
-              <MiniCart />
               <DiscountApprovalHeaderBadge />
               <NotificationBell />
               <div className="hidden md:block">

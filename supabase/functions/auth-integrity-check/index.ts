@@ -1,3 +1,4 @@
+import { authorize } from "../_shared/authorize.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { createStructuredLogger } from "../_shared/structured-logger.ts";
 import { getOrCreateRequestId } from "../_shared/request-id.ts";
@@ -16,8 +17,10 @@ Deno.serve(async (req) => {
   const log = createStructuredLogger({ fn: "auth-integrity-check", requestId, req });
 
   try {
+    const actor = await authorize(req, { requireRole: "dev" });
+    if (!actor.ok) return actor.response;
     const { emails } = await req.json();
-    if (!emails || !Array.isArray(emails)) {
+    if (!Array.isArray(emails) || emails.length > 20 || !emails.every(email => typeof email === "string" && email.length <= 254)) {
       throw new Error("Emails array is required");
     }
 
@@ -55,8 +58,9 @@ Deno.serve(async (req) => {
       status: 200,
     }));
   } catch (err) {
-    log.error("check_failed", { err: err.message });
-    return log.respond(new Response(JSON.stringify({ error: err.message }), {
+    const message = err instanceof Error ? err.message : "Falha no diagnóstico";
+    log.error("check_failed", { err: message });
+    return log.respond(new Response(JSON.stringify({ error: "Falha no diagnóstico de autenticação" }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 400,
     }));

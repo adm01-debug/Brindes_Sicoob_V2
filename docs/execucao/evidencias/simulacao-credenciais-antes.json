@@ -1,0 +1,25 @@
+{
+  "ambiente": "VM local sem rede e com variáveis sintéticas",
+  "codigo_base": "d75459d28",
+  "casos": [
+    {
+      "cenario": "sem chave",
+      "status": 401,
+      "campos_retornados": [
+        "error"
+      ],
+      "exporta_credenciais": false
+    },
+    {
+      "cenario": "chave fixa obtida do próprio código",
+      "status": 200,
+      "campos_retornados": [
+        "url",
+        "service_role",
+        "db_url"
+      ],
+      "exporta_credenciais": true
+    }
+  ],
+  "conclusao": "Falha reproduzida: possuir o código basta para acessar a exportação de credenciais."
+}

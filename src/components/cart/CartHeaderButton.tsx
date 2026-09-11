@@ -64,7 +64,7 @@ export function CartHeaderButton() {
                 size="icon"
                 data-testid="cart-trigger"
                 className="relative h-8 w-8 rounded-full text-muted-foreground hover:text-foreground hover:bg-primary/10 transition-all duration-200"
-               aria-label="Carrinho"><ShoppingCart className="h-[17px] w-[17px]" strokeWidth={1.75} />
+               aria-label="Meu orçamento"><ShoppingCart className="h-[17px] w-[17px]" strokeWidth={1.75} />
                 {totalItems > 0 && (
                   <span className="absolute -top-0.5 -right-0.5 h-4 min-w-4 px-1 flex items-center justify-center text-[9px] font-bold rounded-full bg-primary text-primary-foreground shadow-sm animate-in zoom-in-50">
                     {totalItems > 99 ? "99+" : totalItems}
@@ -75,13 +75,13 @@ export function CartHeaderButton() {
           </span>
         </TooltipTrigger>
         <TooltipContent className="bg-card border-border text-xs">
-          Carrinho de Orçamentos <kbd className="ml-1.5 px-1 py-0.5 bg-muted rounded text-[9px] font-mono">Alt+O</kbd>
+          Orçamentos em preparação <kbd className="ml-1.5 px-1 py-0.5 bg-muted rounded text-[9px] font-mono">Alt+O</kbd>
         </TooltipContent>
       </Tooltip>
 
       <PopoverContent
         data-testid="cart-drawer"
-        className="w-[420px] p-0 rounded-xl border-border/50 shadow-xl overflow-hidden"
+        className="w-[min(420px,calc(100vw-1rem))] overflow-hidden rounded-xl border-border/50 p-0 shadow-xl"
         align="end"
         sideOffset={8}
         onCloseAutoFocus={() => setShowPicker(false)}
@@ -97,7 +97,7 @@ export function CartHeaderButton() {
               className="p-4"
             >
               <div className="flex items-center justify-between mb-3">
-                <h3 className="font-display text-sm font-semibold">Novo Carrinho</h3>
+                <h3 className="font-display text-sm font-semibold">Novo orçamento</h3>
                 <Button
                   variant="ghost"
                   size="icon" aria-label="Fechar"
@@ -126,7 +126,7 @@ export function CartHeaderButton() {
                   <div className="h-7 w-7 rounded-lg bg-primary/10 flex items-center justify-center">
                     <ShoppingCart className="h-3.5 w-3.5 text-primary" />
                   </div>
-                  <h3 className="font-display font-semibold text-sm">Carrinhos</h3>
+                  <h3 className="font-display font-semibold text-sm">Orçamentos em preparação</h3>
                   <button
                     className="text-[10px] text-muted-foreground hover:text-primary font-medium underline-offset-2 hover:underline transition-colors"
                     onClick={() => { setOpen(false); navigate("/carrinhos"); }}
@@ -155,9 +155,9 @@ export function CartHeaderButton() {
                   <div className="w-14 h-14 mx-auto mb-3 rounded-2xl bg-muted/30 flex items-center justify-center">
                     <Package className="h-7 w-7 text-muted-foreground/50" />
                   </div>
-                  <p className="text-sm font-medium mb-1">Nenhum carrinho</p>
+                  <p className="text-sm font-medium mb-1">Nenhum orçamento iniciado</p>
                   <p className="text-xs text-muted-foreground mb-4 max-w-[220px] mx-auto">
-                    Crie um carrinho vinculado a uma empresa para coletar produtos
+                    Inicie um orçamento para reunir produtos e quantidades
                   </p>
                   <Button
                     size="sm"
@@ -165,7 +165,7 @@ export function CartHeaderButton() {
                     onClick={() => setShowPicker(true)}
                   >
                     <Plus className="h-3.5 w-3.5" />
-                    Criar Carrinho
+                    Iniciar orçamento
                   </Button>
                 </div>
               ) : (
@@ -236,6 +236,7 @@ export function CartHeaderButton() {
                                     <TooltipTrigger asChild>
                                       <button
                                         className="h-7 w-7 flex items-center justify-center rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
+                                        aria-label={`Limpar seleção de ${cart.company_name}`}
                                         onClick={(e) => {
                                           e.stopPropagation();
                                           cart.items.forEach((item) => removeItem(item.id));
@@ -244,7 +245,7 @@ export function CartHeaderButton() {
                                         <Eraser className="h-3.5 w-3.5" />
                                       </button>
                                     </TooltipTrigger>
-                                    <TooltipContent side="top" className="text-[11px]">Limpar itens</TooltipContent>
+                                    <TooltipContent side="top" className="text-[11px]">Limpar seleção</TooltipContent>
                                   </Tooltip>
                                 )}
                                 {/* Excluir carrinho */}
@@ -252,6 +253,7 @@ export function CartHeaderButton() {
                                   <TooltipTrigger asChild>
                                     <button
                                       className="h-7 w-7 flex items-center justify-center rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100"
+                                      aria-label={`Excluir orçamento de ${cart.company_name}`}
                                       style={{ opacity: isActive ? 1 : undefined }}
                                       onClick={(e) => {
                                         e.stopPropagation();
@@ -261,7 +263,7 @@ export function CartHeaderButton() {
                                       <Trash2 className="h-3.5 w-3.5" />
                                     </button>
                                   </TooltipTrigger>
-                                  <TooltipContent side="top" className="text-[11px]">Excluir carrinho</TooltipContent>
+                                  <TooltipContent side="top" className="text-[11px]">Excluir orçamento em preparação</TooltipContent>
                                 </Tooltip>
                               </div>
                             </div>
@@ -277,7 +279,7 @@ export function CartHeaderButton() {
                                     {item.product_image_url ? (
                                       <img
                                         src={item.product_image_url}
-                                        alt="Logo da empresa"
+                                        alt={`Foto de ${item.product_name}`}
                                         className="w-9 h-9 rounded-lg object-contain bg-background border border-border/30 flex-shrink-0 p-0.5 mt-0.5" loading="lazy" />
                                     ) : (
                                       <div className="w-9 h-9 rounded-lg bg-muted/40 flex-shrink-0 flex items-center justify-center mt-0.5">
@@ -299,6 +301,7 @@ export function CartHeaderButton() {
                                         <div className="flex items-center gap-0 border border-border/50 rounded-md overflow-hidden">
                                           <button
                                             className="h-6 w-6 flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors"
+                                            aria-label={`Diminuir quantidade de ${item.product_name}`}
                                             onClick={(e) => {
                                               e.stopPropagation();
                                               if (item.quantity <= 1) {
@@ -319,6 +322,7 @@ export function CartHeaderButton() {
                                           </span>
                                           <button
                                             className="h-6 w-6 flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors"
+                                            aria-label={`Aumentar quantidade de ${item.product_name}`}
                                             onClick={(e) => {
                                               e.stopPropagation();
                                               updateItemQuantity(item.id, item.quantity + 1);
@@ -333,6 +337,7 @@ export function CartHeaderButton() {
                                     {/* Remove button */}
                                     <button
                                       className="h-5 w-5 flex items-center justify-center opacity-0 group-hover/item:opacity-100 text-muted-foreground hover:text-destructive transition-all flex-shrink-0 rounded mt-0.5"
+                                      aria-label={`Remover ${item.product_name} do orçamento`}
                                       onClick={(e) => {
                                         e.stopPropagation();
                                         removeItem(item.id);

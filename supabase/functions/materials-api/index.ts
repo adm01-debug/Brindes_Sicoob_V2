@@ -1,3 +1,4 @@
+import { createReadOnlyCatalogFetch } from "../_shared/external-read-only.ts";
 import { getCorsHeaders } from '../_shared/cors.ts';
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 import { z } from '../_shared/zod-validate.ts';
@@ -72,14 +73,14 @@ Deno.serve(async (req) => {
       );
     }
 
-    const externalSupabase = createClient(externalUrl, externalKey);
+    const externalSupabase = createClient(externalUrl, externalKey, { global: { fetch: createReadOnlyCatalogFetch() } });
     let result;
 
     switch (action) {
       case 'groups': {
         // Tentar buscar grupos de materiais via RPC segura
         try {
-          const { data, error } = await externalSupabase.rpc('get_all_material_groups_safe');
+          const { data, error } = await externalSupabase.rpc('get_all_material_groups_safe', {}, { get: true });
           if (!error && data) {
             result = { groups: data, count: data?.length || 0 };
             break;
@@ -128,7 +129,7 @@ Deno.serve(async (req) => {
       case 'types': {
         // Tentar buscar tipos via RPC segura
         try {
-          const { data, error } = await externalSupabase.rpc('get_all_material_types_safe');
+          const { data, error } = await externalSupabase.rpc('get_all_material_types_safe', {}, { get: true });
           if (!error && data) {
             result = { types: data, count: data?.length || 0 };
             break;
@@ -179,7 +180,7 @@ Deno.serve(async (req) => {
         try {
           const { data, error } = await externalSupabase.rpc('get_material_types_by_group_slug', {
             p_group_slug: groupId
-          });
+          }, { get: true });
           if (!error && data) {
             result = { types: data, count: data?.length || 0, groupSlug: groupId };
             break;
@@ -229,7 +230,7 @@ Deno.serve(async (req) => {
       case 'complete': {
         // Tentar buscar materiais completos via RPC
         try {
-          const { data, error } = await externalSupabase.rpc('get_materials_complete_safe');
+          const { data, error } = await externalSupabase.rpc('get_materials_complete_safe', {}, { get: true });
           if (!error && data) {
             result = { materials: data, count: data?.length || 0 };
             break;
@@ -408,7 +409,7 @@ Deno.serve(async (req) => {
         }
 
         // Buscar todos e filtrar (RPC não tem busca por texto)
-        const { data, error } = await externalSupabase.rpc('get_materials_complete_safe');
+        const { data, error } = await externalSupabase.rpc('get_materials_complete_safe', {}, { get: true });
 
         if (error) {
           console.error('Error searching materials:', error);

@@ -240,8 +240,9 @@ export async function callAiWithFallback(options: {
       
       console.warn(`[ai-usage] Model ${model} failed with status ${response.status}. Trying fallback...`);
     } catch (error) {
-      console.error(`[ai-usage] Model ${model} threw error:`, error.message);
-      lastError = error;
+      const failure = error instanceof Error ? error : new Error(String(error));
+      console.error(`[ai-usage] Model ${model} threw error:`, failure.message);
+      lastError = failure;
       if (error instanceof QuotaExceededError) throw error; // Quota is per user, not per model
     }
   }

@@ -18,7 +18,7 @@ export const FLOW_GREETINGS = [
 export function getRandomGreeting(name: string): string {
   const greeting = getGreeting();
   const template = FLOW_GREETINGS[Math.floor(Math.random() * FLOW_GREETINGS.length)];
-  return template.replace("{greeting}", greeting).replace("{name}", name);
+  return (template ?? "{greeting}, {name}!").replace("{greeting}", greeting).replace("{name}", name);
 }
 
 /**
@@ -69,7 +69,7 @@ export function getDefaultRouteByRole(role: AppRole | null): string {
       return "/gestor/orcamentos";
     case "gerente_pa":
     case "comprador_pac":
-      return "/sicoob/painel-pa";
+      return "/dashboard-pa";
     case "vendedor":
       return "/sicoob/vendas";
     default:
