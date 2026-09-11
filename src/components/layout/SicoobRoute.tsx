@@ -7,10 +7,10 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 interface SicoobRouteProps {
   children?: React.ReactNode;
-  allowedRoles?: string[];
+  allowedRoles?: readonly string[];
 }
 
-function routeRolesFor(pathname: string, explicitRoles?: string[]): string[] {
+function routeRolesFor(pathname: string, explicitRoles?: readonly string[]): readonly string[] {
   if (explicitRoles) return explicitRoles;
   return Object.entries(SICOOB_ROUTE_ACCESS).find(([path]) => matchPath({ path, end: true }, pathname))?.[1] ?? [];
 }

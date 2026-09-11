@@ -13,7 +13,7 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 async function scanRls() {
   console.log('🔍 Iniciando varredura de segurança RLS...');
 
-  const { data: tables, error } = await supabase.rpc('check_tables_rls' as any);
+  const { data: tables, error } = await supabase.rpc('check_tables_rls');
 
   if (error) {
     // If RPC doesn't exist, use direct SQL via psql-like query if possible
@@ -31,7 +31,7 @@ async function scanRls() {
     return;
   }
 
-  const insecure = (tables as any[]).filter(t => !t.relrowsecurity);
+  const insecure = tables.filter(t => !t.relrowsecurity);
   
   if (insecure.length > 0) {
     console.error('🚨 AVISO: Tabelas detectadas SEM RLS habilitado:');

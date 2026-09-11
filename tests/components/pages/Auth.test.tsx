@@ -19,7 +19,14 @@ vi.mock('@/hooks/useIPValidation', () => ({ useIPValidation: () => ({
 }) }));
 vi.mock('@/lib/diagnostics', () => ({ diagnostics: { log: vi.fn() } }));
 vi.mock('@/integrations/supabase/client', () => ({
-  supabase: { auth: { getSession: mocks.session }, functions: { invoke: vi.fn() } },
+  supabase: {
+    auth: { getSession: mocks.session },
+    functions: { invoke: vi.fn() },
+    from: vi.fn(() => ({
+      select: vi.fn().mockReturnThis(),
+      order: vi.fn().mockResolvedValue({ data: [], error: null }),
+    })),
+  },
 }));
 import Auth from '@/pages/Auth';
 

@@ -1,15 +1,14 @@
-import { Fragment } from "react";
+import { Fragment, lazy, Suspense } from "react";
 import { createRoot } from "react-dom/client";
 import { HelmetProvider } from "react-helmet-async";
 import { registerServiceWorker } from "@/lib/sw-register";
 import { installGlobalErrorHandlers } from "@/lib/error-reporter";
 import { initSentry } from "@/lib/sentry";
 import EnhancedErrorBoundary from "@/components/errors/EnhancedErrorBoundary";
+import AuthEntry from "./AuthEntry";
 import "@/lib/diagnostics"; // Initialize diagnostics early
 import { setupPreviewAutoReload } from "@/lib/preview-auto-reload";
 import { injectRequestId } from "@/lib/request-id-injection";
-// Web Vitals is loaded dynamically
-import App from "./App.tsx";
 import "./index.css";
 
 
@@ -22,9 +21,18 @@ installGlobalErrorHandlers();
 // Inject traceability headers
 injectRequestId();
 
-// Start Core Web Vitals monitoring (deferred)
+// A coleta usa PerformanceObserver com buffer e pode iniciar depois do paint.
+// Isso impede que telemetria concorra com a tela de autenticação.
 if (import.meta.env.PROD) {
-  import("@/lib/telemetry/webVitals").then(({ reportWebVitals }) => reportWebVitals());
+  const startWebVitals = () => {
+    import("@/lib/telemetry/webVitals").then(({ reportWebVitals }) => reportWebVitals());
+  };
+  const requestIdleCallback = Reflect.get(window, "requestIdleCallback") as Window["requestIdleCallback"] | undefined;
+  if (typeof requestIdleCallback === "function") {
+    requestIdleCallback.call(window, startWebVitals, { timeout: 5_000 });
+  } else {
+    globalThis.setTimeout(startWebVitals, 3_000);
+  }
 }
 
 // Inicializa auto-reload para erros de pré-condição (412) no preview
@@ -36,15 +44,34 @@ if (!rootElement) {
   throw new Error('❌ Elemento root não encontrado no DOM');
 }
 
-// O overlay BridgeMetrics agora é montado DENTRO do <App /> (após o
-// AuthProvider) para poder ser gateado por papel `dev` + SSOT
-// `shouldShowDevInfraMessages`. Em build de produção, o componente
-// retorna null no topo e o chunk é tree-shaken pelo bundler.
+const authEntryPaths = new Set([
+  "/login",
+  "/reset-password",
+  "/verificacao",
+  "/sso/callback",
+]);
+
+// O shell público de autenticação fica isolado do aplicativo interno. Assim,
+// login e recuperação não baixam módulos de catálogo, PDF, BI ou administração.
+const RootApplication = authEntryPaths.has(window.location.pathname)
+  ? AuthEntry
+  : lazy(() => import("./App"));
+
 createRoot(rootElement).render(
   <Fragment>
     <HelmetProvider>
       <EnhancedErrorBoundary>
-        <App />
+        <Suspense
+          fallback={(
+            <main
+              className="min-h-screen bg-[#003641]"
+              role="status"
+              aria-label="Carregando portal"
+            />
+          )}
+        >
+          <RootApplication />
+        </Suspense>
       </EnhancedErrorBoundary>
     </HelmetProvider>
   </Fragment>
@@ -53,10 +80,7 @@ createRoot(rootElement).render(
 // Sinalizar que a renderização inicial ocorreu para remover o splash screen do HTML
 requestAnimationFrame(() => {
   const splash = document.getElementById('initial-splash');
-  if (splash) {
-    splash.classList.add('fade-out');
-    setTimeout(() => splash.remove(), 400);
-  }
+  splash?.remove();
 });
 
 // Registrar Service Worker para PWA (apenas em produção para evitar cache issues no preview)

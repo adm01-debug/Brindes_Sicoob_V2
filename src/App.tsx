@@ -120,6 +120,7 @@ const App = () => {
                         <Route path="/configuracoes" element={<Navigate to="/admin/usuarios" replace />} />
                         <Route path="/perfil" element={<Navigate to="/admin/usuarios" replace />} />
                         <Route path="/403" element={<RouteSuspense><ForbiddenPage /></RouteSuspense>} />
+                        <Route path="*" element={<RouteSuspense><NotFound /></RouteSuspense>} />
 
                         {/* Protected Routes */}
                         <Route element={<ProtectedRoute />}>
@@ -171,8 +172,6 @@ const App = () => {
                             <Route path="/notificacoes" element={<RouteSuspense><NotificationsPage /></RouteSuspense>} />
                             <Route path="/pedidos/:id/auditoria" element={<RouteSuspense><OrderAuditPage /></RouteSuspense>} />
 
-                            {/* Fallback */}
-                            <Route path="*" element={<RouteSuspense><NotFound /></RouteSuspense>} />
                           </Route>
                         </Route>
                       </Routes>

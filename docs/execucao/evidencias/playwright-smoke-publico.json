@@ -1,0 +1,26 @@
+{
+  "data": "2026-09-11",
+  "ferramenta": "Playwright",
+  "projeto": "chromium-smoke",
+  "servidor": {
+    "gerenciado_pelo_playwright": true,
+    "host": "127.0.0.1",
+    "porta": 18082
+  },
+  "resultado": {
+    "aprovados": 6,
+    "falhos": 0,
+    "ignorados": 33,
+    "duracao_segundos": 16.9
+  },
+  "cenarios_publicos_aprovados": [
+    "fixture sem credencial",
+    "tela de login",
+    "recuperacao de senha",
+    "rota inexistente publica",
+    "credenciais invalidas",
+    "recuperacao sem token"
+  ],
+  "motivo_dos_cenarios_ignorados": "Contas e segredos de homologacao autenticada ausentes no ambiente local.",
+  "resultado_final": "aprovado"
+}

@@ -22,6 +22,7 @@
  *
  * Envs:
  *   E2E_BASE_URL    URL do servidor já rodando (pula webServer)
+ *   E2E_PORT        porta do servidor local gerenciado (default 8080)
  *   E2E_HEADLESS    "false" para forçar headed; default true
  *   E2E_RETRIES     número absoluto de retries (sobrescreve CI/local)
  */
@@ -34,6 +35,8 @@ const __dirname = path.dirname(__filename);
 
 const STORAGE_STATE = path.resolve(__dirname, "e2e/.auth/storageState.json");
 const ARTIFACTS_DIR = path.resolve(__dirname, "e2e-artifacts");
+const LOCAL_PORT = Math.max(1, Number.parseInt(process.env.E2E_PORT ?? "8080", 10) || 8080);
+const LOCAL_URL = `http://127.0.0.1:${LOCAL_PORT}`;
 
 const HEADLESS = process.env.E2E_HEADLESS
   ? process.env.E2E_HEADLESS.toLowerCase() !== "false"
@@ -71,7 +74,7 @@ export default defineConfig({
         ["json", { outputFile: "playwright-report/results.json" }],
       ],
   use: {
-    baseURL: process.env.E2E_BASE_URL ?? "http://localhost:5173",
+    baseURL: process.env.E2E_BASE_URL ?? LOCAL_URL,
     headless: HEADLESS,
     testIdAttribute: "data-testid",
     trace: "retain-on-failure",
@@ -173,8 +176,10 @@ export default defineConfig({
   webServer: process.env.E2E_BASE_URL
     ? undefined
     : {
-        command: "npm run dev",
-        url: "http://localhost:5173",
+        // Exporta a configuração pública versionada antes do Vite dev. Usar
+        // `--mode production` ativaria Service Worker durante os testes.
+        command: `bash -c 'set -a; source .env.production; set +a; exec npm run dev -- --host 127.0.0.1 --port ${LOCAL_PORT}'`,
+        url: LOCAL_URL,
         reuseExistingServer: !process.env.CI,
         timeout: 120_000,
         stdout: "pipe",

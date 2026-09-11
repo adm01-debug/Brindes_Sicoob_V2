@@ -59,32 +59,10 @@ export default defineConfig(({ mode }) => ({
             return 'data-vendor';
           }
 
-          // Charts (Very heavy)
-          if (id.includes('node_modules/recharts/') || id.includes('node_modules/d3-')) {
-            return 'charts-vendor';
-          }
-
-          // UI & Icons (Radix is fine, lucide is big)
-          if (id.includes('node_modules/lucide-react/')) {
-            return 'icons-vendor';
-          }
-          
-          if (id.includes('node_modules/@radix-ui/')) {
-            return 'ui-vendor';
-          }
-
-          // Utilities (Forms, Dates, PDF, DnD)
-          if (id.includes('node_modules/jspdf') || id.includes('node_modules/html2canvas')) {
-            return 'pdf-vendor';
-          }
-
-          if (id.includes('node_modules/date-fns/')) {
-            return 'date-vendor';
-          }
-          
-          if (id.includes('node_modules/framer-motion/')) {
-            return 'motion-vendor';
-          }
+          // Bibliotecas utilizadas apenas em rotas (PDF, gráficos, ícones,
+          // Radix, datas e animações) permanecem no particionamento natural
+          // do Rollup. Agrupá-las aqui promovia dependências privadas para a
+          // entrada pública e fazia o login baixar módulos que não utiliza.
         },
       },
     },
@@ -93,6 +71,17 @@ export default defineConfig(({ mode }) => ({
   server: {
     port: 8080,
     host: "::",
+    watch: {
+      // Evidências geradas pelo Playwright não são código-fonte. Observá-las
+      // causava recargas da página durante o próprio smoke.
+      ignored: [
+        '**/e2e-artifacts/**',
+        '**/playwright-report/**',
+        '**/test-results/**',
+        '**/.lighthouseci/**',
+        '**/bundle-stats/**',
+      ],
+    },
     headers: {
       'Cache-Control': 'no-store',
     },
