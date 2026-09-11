@@ -9,6 +9,7 @@ O dossiê reúne diagnóstico do projeto, pesquisa institucional, concorrência,
 - [Auditoria técnica A](anexos/auditoria-tecnica-a.md) e [auditoria técnica B](anexos/auditoria-tecnica-b.md)
 - [Perfis profissionais e roteiro de validação](anexos/perfis-profissionais.md)
 - [Mapa de dependências e limitações](anexos/mapa-dependencias.md)
+- [CI posterior à abertura do PR](anexos/ci-posterior.md)
 
 Os resultados distinguem código localizado, execução observada e hipóteses. Nenhum item do backlog foi implementado nesta análise. Produção com tráfego real não foi comprovada. O catálogo externo permanece exclusivamente de consulta; não houve gravação em nenhum banco.
 
