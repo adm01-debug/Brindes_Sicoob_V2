@@ -1,0 +1,72 @@
+[
+  {
+    "id": "R01",
+    "titulo": "Diagnóstico do portal Sicoob e anexos",
+    "origem": "Pesquisa do projeto, 11/09/2026",
+    "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/blob/ec5cfaf5c2de844458c0105d8ad40c35f1eb9c14/docs/pesquisa/2026-09-11/dossie.md",
+    "uso": "Reaproveitamento, riscos, políticas locais e perfis funcionais; não certifica produção."
+  },
+  {
+    "id": "R02",
+    "titulo": "Guia da marca Sicoob",
+    "origem": "Março/2023; versão vigente a confirmar",
+    "url": "https://portalcredicope.com.br/uploads/DOCUMENTOS/GUIA_DA_MARCA_-SICOOB_marco_23.pdf",
+    "uso": "Direção visual; a etapa 31 exige validação atual dos ativos e da especificação."
+  },
+  {
+    "id": "R03",
+    "titulo": "Heurísticas de usabilidade de Jakob Nielsen",
+    "origem": "NN/g; revisão de 30/01/2024",
+    "url": "https://www.nngroup.com/articles/ten-usability-heuristics/",
+    "uso": "Revisão de clareza, consistência, controle, prevenção e recuperação de erros."
+  },
+  {
+    "id": "R04",
+    "titulo": "WCAG 2.2",
+    "origem": "W3C; referência normativa consultada em 11/09/2026",
+    "url": "https://www.w3.org/TR/WCAG22/",
+    "uso": "Meta de conformidade AA; exige verificar todos os critérios aplicáveis, não apenas automação."
+  },
+  {
+    "id": "R05",
+    "titulo": "Contraste mínimo de texto",
+    "origem": "W3C WAI; consultado em 11/09/2026",
+    "url": "https://www.w3.org/WAI/WCAG22/Understanding/contrast-minimum",
+    "uso": "4,5:1 para texto normal e 3:1 para texto grande, com exceções normativas."
+  },
+  {
+    "id": "R06",
+    "titulo": "Contraste de informação não textual",
+    "origem": "W3C WAI; consultado em 11/09/2026",
+    "url": "https://www.w3.org/WAI/WCAG22/Understanding/non-text-contrast.html",
+    "uso": "Verificação de informação visual essencial de controles e gráficos."
+  },
+  {
+    "id": "R07",
+    "titulo": "Tamanho mínimo de alvo de interação",
+    "origem": "W3C WAI; consultado em 11/09/2026",
+    "url": "https://www.w3.org/WAI/WCAG22/Understanding/target-size-minimum",
+    "uso": "Mínimo de 24 × 24 CSS px ou condições de exceção; 44 px é preferência proposta para ações principais."
+  },
+  {
+    "id": "R08",
+    "titulo": "Foco não encoberto",
+    "origem": "W3C WAI; consultado em 11/09/2026",
+    "url": "https://www.w3.org/WAI/WCAG22/Understanding/focus-not-obscured-minimum.html",
+    "uso": "Evitar que conteúdo fixo esconda o componente com foco, observadas as condições do critério."
+  },
+  {
+    "id": "R09",
+    "titulo": "Web Vitals",
+    "origem": "Google web.dev; consultado em 11/09/2026",
+    "url": "https://web.dev/articles/vitals",
+    "uso": "Referências de campo: LCP 2,5 s, INP 200 ms e CLS 0,1 no percentil 75; laboratório é outra evidência."
+  },
+  {
+    "id": "R10",
+    "titulo": "Concluir múltiplas tarefas",
+    "origem": "GOV.UK Design System; consultado em 11/09/2026",
+    "url": "https://design-system.service.gov.uk/patterns/complete-multiple-tasks/",
+    "uso": "Organização de tarefas e estados; aplicação adaptada às jornadas institucionais do portal."
+  }
+]
