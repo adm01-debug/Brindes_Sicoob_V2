@@ -1,0 +1,60 @@
+{
+  "versao": "1.0",
+  "data": "2026-09-11",
+  "etapas": 100,
+  "subetapas": 1000,
+  "estado_inicial": "Todas pendentes",
+  "hash_definicao": "c2af109f32b68a1a4830bf2a4b3fd784bec787b900002f7f0393b05038d6a69b",
+  "blocos": [
+    {
+      "numero": 1,
+      "nome": "Diagnóstico e estratégia",
+      "saida": "Contexto, pesquisa e políticas conhecidos; riscos iniciais contidos."
+    },
+    {
+      "numero": 2,
+      "nome": "Fundamentos e segurança",
+      "saida": "Dados, acesso, transações e ambiente demonstrados."
+    },
+    {
+      "numero": 3,
+      "nome": "Estrutura e conteúdo",
+      "saida": "Navegação, linguagem e fluxos compreendidos pelos participantes."
+    },
+    {
+      "numero": 4,
+      "nome": "Sistema visual",
+      "saida": "Marca, componentes e acessibilidade aplicados de forma consistente."
+    },
+    {
+      "numero": 5,
+      "nome": "Catálogo e decisão",
+      "saida": "Comprador encontra, avalia e seleciona produtos com informação confiável."
+    },
+    {
+      "numero": 6,
+      "nome": "Campanhas e propostas",
+      "saida": "Campanha, distribuição, arte e custo compõem uma proposta verificável."
+    },
+    {
+      "numero": 7,
+      "nome": "Governança e aprovações",
+      "saida": "Decisões respeitam política, versão, alçada e verba."
+    },
+    {
+      "numero": 8,
+      "nome": "Execução e pós-compra",
+      "saida": "Produção, entrega, ocorrência e conciliação têm responsáveis e evidências."
+    },
+    {
+      "numero": 9,
+      "nome": "Qualidade e validação",
+      "saida": "Jornadas críticas homologadas, com falhas impeditivas resolvidas."
+    },
+    {
+      "numero": 10,
+      "nome": "Produção e expansão",
+      "saida": "Compras reais concluídas, segunda cooperativa validada e operação transferida."
+    }
+  ]
+}
