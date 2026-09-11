@@ -20,11 +20,25 @@ def command(args, *, stdin=None, check=True):
 
 
 def sql(statement, *, check=True):
-    return command(
-        ["docker", "exec", "-i", CONTAINER, "psql", "-U", "postgres", "-v", "ON_ERROR_STOP=1", "-At"],
-        stdin=statement,
-        check=check,
-    )
+    # O runner pode aceitar o primeiro pg_isready enquanto o processo ainda
+    # conclui a inicialização. O psql usa código 2 apenas para falha de conexão;
+    # erros SQL usam outro código e não devem ser repetidos.
+    response = None
+    for _ in range(20):
+        response = command(
+            ["docker", "exec", "-i", CONTAINER, "psql", "-U", "postgres", "-v", "ON_ERROR_STOP=1", "-At"],
+            stdin=statement,
+            check=False,
+        )
+        if response.returncode != 2:
+            break
+        time.sleep(0.5)
+
+    if check and response.returncode != 0:
+        raise RuntimeError(
+            f"psql falhou com código {response.returncode}: {response.stderr.strip()}"
+        )
+    return response
 
 
 def actor_sql(actor, statement, *, check=True):
@@ -43,7 +57,7 @@ try:
         "--network", "none", "-e", "POSTGRES_HOST_AUTH_METHOD=trust",
         "postgres:17.6-alpine",
     ])
-    for _ in range(60):
+    for _ in range(120):
         if command(["docker", "exec", CONTAINER, "pg_isready", "-U", "postgres"], check=False).returncode == 0:
             break
         time.sleep(0.25)
