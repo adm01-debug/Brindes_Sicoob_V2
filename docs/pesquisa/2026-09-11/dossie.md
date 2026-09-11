@@ -42,12 +42,12 @@ O README ainda descreve uma plataforma de vendedores, enquanto documentos Sicoob
 | `npx vite build` diagnóstico | Compilou em 32,43 segundos | Confirma empacotamento; não substitui os gates |
 | `npm run typecheck` | 1.259 diagnósticos em 456 arquivos | Dívida preexistente; baseline registra 1.261 |
 | Recorte de cinco arquivos de testes | 12 testes passaram e cinco falharam | Falhas concentradas no mock de permissões de `ProtectedRoute` |
-| GitHub Actions | Execução consultada não iniciou por limite de orçamento | Não é evidência de testes remotos executados |
+| GitHub Actions | Execução anterior bloqueada por orçamento; no PR #3, gate de autorização e builds falharam | Evidências de momentos diferentes; detalhes no anexo de CI |
 | Último deployment GitHub consultado | Tentativa Vercel de 05/09/2026 com estado de falha | Produção efetiva e tráfego não comprovados |
 | Consulta de leitura à ponte externa | HTTP 200 com `_unconfigured: true` e nenhuma linha | A integração não está configurada efetivamente nesse caminho |
 | Consultas anônimas limitadas a quatro tabelas do portal | HTTP 200, nenhuma linha visível | Não prova ausência de dados nem isolamento entre cooperativas |
 
-O typecheck não piorou por arquivo em relação ao baseline consultado, mas um baseline permite acompanhar dívida, não elimina os erros. O recorte de testes não representa a suíte completa. Alguns testes chamados de integração constroem uma matriz de permissões em memória e não acessam RLS real. A causa de orçamento do Actions está registrada no job; não deve ser atribuída automaticamente ao código ou ao YAML.[^36][^37]
+O typecheck não piorou por arquivo em relação ao baseline consultado, mas um baseline permite acompanhar dívida, não elimina os erros. O recorte de testes não representa a suíte completa. Alguns testes chamados de integração constroem uma matriz de permissões em memória e não acessam RLS real. A execução antiga bloqueada por orçamento e as falhas posteriores do PR são eventos distintos; o [anexo de CI](anexos/ci-posterior.md) registra os logs que confirmaram o bloqueio de `migrate-helper` e dos builds.[^36][^37]
 
 A inspeção local de uma compilação de produção mostrou acesso rápido de teste exposto no login, perfis com erro, botão de correção, logo externa sem carregar e botão Google embora o provedor esteja desativado na configuração consultada. O cadastro público também está desativado. A tela móvel de login não apresentou rolagem horizontal na largura de 390 px; isso não equivale a uma auditoria móvel de todas as jornadas.
 

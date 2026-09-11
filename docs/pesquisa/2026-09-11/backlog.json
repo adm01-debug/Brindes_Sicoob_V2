@@ -113,7 +113,7 @@
     "tema": "Qualidade",
     "entrega": "Restabelecer execução dos gates",
     "reaproveitamento": "Workflows atuais",
-    "mudanca": "Resolver bloqueio de orçamento pelo responsável e reparar paths/steps inconsistentes",
+    "mudanca": "Confirmar capacidade de execução e reparar paths/steps inconsistentes; tratar falhas reais dos gates sem desativá-los",
     "criterio_de_aceite": "CI executa checks aplicáveis e publica resultados reais; ausência de configuração obrigatória falha explicitamente",
     "dependencias": "B01",
     "evidencias": "A11;D11;36",
