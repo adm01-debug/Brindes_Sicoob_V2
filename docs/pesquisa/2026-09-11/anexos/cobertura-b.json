@@ -1,0 +1,1546 @@
+{
+  "data": "2026-09-11",
+  "base_commit_informado_pelo_principal": "d75459d28",
+  "escopo": "81 arquivos da lista documentos-repo-2.json",
+  "total_previsto": 81,
+  "total_concluido": 81,
+  "totais_por_tipo": {
+    "texto": 73,
+    "pdf_texto": 6,
+    "imagem": 2
+  },
+  "leitura_previa": [
+    "README.md",
+    "docs/SCOPE_ALIGNMENT.md"
+  ],
+  "limites": [
+    "Conferência seletiva de código somente leitura",
+    "Nenhum acesso a banco de produção por este agente",
+    "PDFs repetidos tratados por comparação integral e leitura dos deltas",
+    "Nenhuma certificação de segurança ou prontidão operacional inferida de relatórios históricos"
+  ],
+  "arquivos": [
+    {
+      "indice": 0,
+      "arquivo": ".github/ISSUE_TEMPLATE/bug_report.yml",
+      "caminho_relativo": ".github/ISSUE_TEMPLATE/bug_report.yml",
+      "tipo": "texto",
+      "sha256": "407ee73c46ce0303db04cefc0e8cc6bfd5d8a14b431725d6dfc7e7670dd970e0",
+      "sha256_texto_extraido": "407ee73c46ce0303db04cefc0e8cc6bfd5d8a14b431725d6dfc7e7670dd970e0",
+      "linhas_texto_ou_extraido": 64,
+      "lote": 1,
+      "cobertura": "concluida",
+      "metodo": "leitura integral do texto",
+      "duplicata_binaria_de": null,
+      "conceito": "Triagem de defeitos",
+      "avaliacao": "Formulário útil, mas opções Bitrix, n8n, Evolution e Bling conservam o contexto do vendedor e não cobrem cooperativa, PA, verba e aprovação.",
+      "achados": [
+        "D10"
+      ]
+    },
+    {
+      "indice": 1,
+      "arquivo": ".github/ISSUE_TEMPLATE/feature_request.yml",
+      "caminho_relativo": ".github/ISSUE_TEMPLATE/feature_request.yml",
+      "tipo": "texto",
+      "sha256": "40626a2910e546529b7ac4cc618ed79d2aea0bfc7d38f1c992acb3c474fa1aea",
+      "sha256_texto_extraido": "40626a2910e546529b7ac4cc618ed79d2aea0bfc7d38f1c992acb3c474fa1aea",
+      "linhas_texto_ou_extraido": 46,
+      "lote": 1,
+      "cobertura": "concluida",
+      "metodo": "leitura integral do texto",
+      "duplicata_binaria_de": null,
+      "conceito": "Propostas de funcionalidades",
+      "avaliacao": "Modelo reutilizável; precisa de impacto sobre comprador e cooperativa, não apenas integrações comerciais legadas.",
+      "achados": [
+        "D10"
+      ]
+    },
+    {
+      "indice": 2,
+      "arquivo": ".github/dependabot.yml",
+      "caminho_relativo": ".github/dependabot.yml",
+      "tipo": "texto",
+      "sha256": "76a41b3f30dc7e62d0f6aa15bb58b9547290bdc744d63cf7a424a9ea6017f0c9",
+      "sha256_texto_extraido": "76a41b3f30dc7e62d0f6aa15bb58b9547290bdc744d63cf7a424a9ea6017f0c9",
+      "linhas_texto_ou_extraido": 51,
+      "lote": 1,
+      "cobertura": "concluida",
+      "metodo": "leitura integral do texto",
+      "duplicata_binaria_de": null,
+      "conceito": "Atualizações de dependências",
+      "avaliacao": "Automação semanal é base aproveitável. A presença da configuração não demonstra atualizações aplicadas nem elimina vulnerabilidades.",
+      "achados": [
+        "D11"
+      ]
+    },
+    {
+      "indice": 3,
+      "arquivo": ".github/workflows/branch-protection-sentinel.yml",
+      "caminho_relativo": ".github/workflows/branch-protection-sentinel.yml",
+      "tipo": "texto",
+      "sha256": "b411ed3b4dc5261d0c0e53402ae3c3131042604c98bbe6d6076b629c9aa4f3b7",
+      "sha256_texto_extraido": "b411ed3b4dc5261d0c0e53402ae3c3131042604c98bbe6d6076b629c9aa4f3b7",
+      "linhas_texto_ou_extraido": 66,
+      "lote": 1,
+      "cobertura": "concluida",
+      "metodo": "leitura integral do texto",
+      "duplicata_binaria_de": null,
+      "conceito": "Sentinela de proteção de branch",
+      "avaliacao": "Executa após push e usa heurística de mensagem/autoria. Não demonstra bloqueio preventivo nas regras remotas do GitHub.",
+      "achados": [
+        "D11"
+      ]
+    },
+    {
+      "indice": 4,
+      "arquivo": ".github/workflows/ci.yml",
+      "caminho_relativo": ".github/workflows/ci.yml",
+      "tipo": "texto",
+      "sha256": "2ca03886a5f255cb9a7fa662d35c1fbe1e77e9640da4f25fecf5a9e8b43ee4d6",
+      "sha256_texto_extraido": "2ca03886a5f255cb9a7fa662d35c1fbe1e77e9640da4f25fecf5a9e8b43ee4d6",
+      "linhas_texto_ou_extraido": 57,
+      "lote": 1,
+      "cobertura": "concluida",
+      "metodo": "leitura integral do texto",
+      "duplicata_binaria_de": null,
+      "conceito": "Integração contínua",
+      "avaliacao": "Pipeline existente é aproveitável; baseline de typecheck e ferramentas configuradas não provam execução bem-sucedida. Falha remota por orçamento Actions foi verificada pelo principal.",
+      "achados": [
+        "D11"
+      ]
+    },
+    {
+      "indice": 5,
+      "arquivo": ".github/workflows/db-performance-audit.yml",
+      "caminho_relativo": ".github/workflows/db-performance-audit.yml",
+      "tipo": "texto",
+      "sha256": "83ec3088b2c8094cf456d55cf1133c4291225b613ccd4313aae55626fcbfe545",
+      "sha256_texto_extraido": "83ec3088b2c8094cf456d55cf1133c4291225b613ccd4313aae55626fcbfe545",
+      "linhas_texto_ou_extraido": 22,
+      "lote": 1,
+      "cobertura": "concluida",
+      "metodo": "leitura integral do texto",
+      "duplicata_binaria_de": null,
+      "conceito": "Auditoria de desempenho do banco",
+      "avaliacao": "Agendamento mensal e uso de secrets declarados. Nenhuma execução ou medição do banco vivo foi feita nesta auditoria documental.",
+      "achados": [
+        "D11"
+      ]
+    },
+    {
+      "indice": 6,
+      "arquivo": ".github/workflows/lighthouse.yml",
+      "caminho_relativo": ".github/workflows/lighthouse.yml",
+      "tipo": "texto",
+      "sha256": "58727cc9c97fcb96553b0ae1ac368f91c05d3a9a4ab2e5d42f05b65eb0010683",
+      "sha256_texto_extraido": "58727cc9c97fcb96553b0ae1ac368f91c05d3a9a4ab2e5d42f05b65eb0010683",
+      "linhas_texto_ou_extraido": 31,
+      "lote": 1,
+      "cobertura": "concluida",
+      "metodo": "leitura integral do texto",
+      "duplicata_binaria_de": null,
+      "conceito": "Medição Lighthouse",
+      "avaliacao": "Workflow existe; a configuração não comprova notas de acessibilidade, desempenho ou aprovação de jornadas autenticadas.",
+      "achados": [
+        "D11"
+      ]
+    },
+    {
+      "indice": 7,
+      "arquivo": ".github/workflows/security.yml",
+      "caminho_relativo": ".github/workflows/security.yml",
+      "tipo": "texto",
+      "sha256": "8700ed260dee421c17bdfd5d6077f58808547c88400696322911c9377a394825",
+      "sha256_texto_extraido": "8700ed260dee421c17bdfd5d6077f58808547c88400696322911c9377a394825",
+      "linhas_texto_ou_extraido": 36,
+      "lote": 1,
+      "cobertura": "concluida",
+      "metodo": "leitura integral do texto",
+      "duplicata_binaria_de": null,
+      "conceito": "Busca de segredos",
+      "avaliacao": "Workflow de Gitleaks agrega valor, mas não equivale a uma auditoria completa de autenticação, autorização e isolamento.",
+      "achados": [
+        "D11"
+      ]
+    },
+    {
+      "indice": 8,
+      "arquivo": ".hermes.md",
+      "caminho_relativo": ".hermes.md",
+      "tipo": "texto",
+      "sha256": "2d4d64d80ebeca6bd9c8748847806485e9f6ea646bae021e8787e8a870767950",
+      "sha256_texto_extraido": "2d4d64d80ebeca6bd9c8748847806485e9f6ea646bae021e8787e8a870767950",
+      "linhas_texto_ou_extraido": 31,
+      "lote": 1,
+      "cobertura": "concluida",
+      "metodo": "leitura integral do texto",
+      "duplicata_binaria_de": null,
+      "conceito": "Contexto operacional Hermes",
+      "avaliacao": "Registra projeto privado e regras de trabalho; não é especificação de produto nem prova operacional.",
+      "achados": [
+        "D10"
+      ]
+    },
+    {
+      "indice": 9,
+      "arquivo": ".lovable/memory/features/collections-public-share-system.md",
+      "caminho_relativo": ".lovable/memory/features/collections-public-share-system.md",
+      "tipo": "texto",
+      "sha256": "e93e9e285597edb34072057956eafd307958d85049e718be0ec53b7ca28ee316",
+      "sha256_texto_extraido": "e93e9e285597edb34072057956eafd307958d85049e718be0ec53b7ca28ee316",
+      "linhas_texto_ou_extraido": 19,
+      "lote": 1,
+      "cobertura": "concluida",
+      "metodo": "leitura integral do texto",
+      "duplicata_binaria_de": null,
+      "conceito": "Coleções compartilhadas",
+      "avaliacao": "Token público com validade de 30 dias e limitação de reações. Boa hipótese para colaboração de marketing; revisão de escopo e dados do token continua necessária.",
+      "achados": [
+        "D12"
+      ]
+    },
+    {
+      "indice": 10,
+      "arquivo": ".lovable/memory/features/favorites-roadmap.md",
+      "caminho_relativo": ".lovable/memory/features/favorites-roadmap.md",
+      "tipo": "texto",
+      "sha256": "0fa3829ef67b61dcdaaf572bd0ac65d8e78c56a459a77b8c39e3b9ad6dc47c9a",
+      "sha256_texto_extraido": "0fa3829ef67b61dcdaaf572bd0ac65d8e78c56a459a77b8c39e3b9ad6dc47c9a",
+      "linhas_texto_ou_extraido": 49,
+      "lote": 1,
+      "cobertura": "concluida",
+      "metodo": "leitura integral do texto",
+      "duplicata_binaria_de": null,
+      "conceito": "Evolução de favoritos",
+      "avaliacao": "Listas, desfazer, variantes e exportação são reutilizáveis. Notas 10/10 e tamanhos de toque divergentes não substituem teste de uso.",
+      "achados": [
+        "D08",
+        "D12"
+      ]
+    },
+    {
+      "indice": 11,
+      "arquivo": ".lovable/memory/features/quote-system-master-spec.md",
+      "caminho_relativo": ".lovable/memory/features/quote-system-master-spec.md",
+      "tipo": "texto",
+      "sha256": "751f5b5cb65f89fa408e1791594ed3c2c1fbd50e26487d6ac9337d08a68fbf25",
+      "sha256_texto_extraido": "751f5b5cb65f89fa408e1791594ed3c2c1fbd50e26487d6ac9337d08a68fbf25",
+      "linhas_texto_ou_extraido": 50,
+      "lote": 1,
+      "cobertura": "concluida",
+      "metodo": "leitura integral do texto",
+      "duplicata_binaria_de": null,
+      "conceito": "Especificação do orçamento comercial",
+      "avaliacao": "Fluxo em quatro etapas e conversão em pedido, com dependências Bitrix. Precisa ser separado da requisição interna, aprovação de verba e arte da cooperativa.",
+      "achados": [
+        "D05",
+        "D10",
+        "D12"
+      ]
+    },
+    {
+      "indice": 12,
+      "arquivo": ".lovable/memory/infrastructure/hardening-roadmap.md",
+      "caminho_relativo": ".lovable/memory/infrastructure/hardening-roadmap.md",
+      "tipo": "texto",
+      "sha256": "d7431ee3fa1363468f3a16d80961a5d929c2b32f840f68f50ed83bf0abf8efd7",
+      "sha256_texto_extraido": "d7431ee3fa1363468f3a16d80961a5d929c2b32f840f68f50ed83bf0abf8efd7",
+      "linhas_texto_ou_extraido": 69,
+      "lote": 1,
+      "cobertura": "concluida",
+      "metodo": "leitura integral do texto",
+      "duplicata_binaria_de": null,
+      "conceito": "Roteiro de endurecimento de segurança",
+      "avaliacao": "Declara ondas completas e nota 10/10; o baseline de produção ainda registra lacunas. Tratar como histórico de intenção, não certificação.",
+      "achados": [
+        "D03",
+        "D07"
+      ]
+    },
+    {
+      "indice": 13,
+      "arquivo": ".lovable/memory/security/production-hardening-baseline.md",
+      "caminho_relativo": ".lovable/memory/security/production-hardening-baseline.md",
+      "tipo": "texto",
+      "sha256": "612c584da8e96b7b1dc6bcc63b11e67998fc49c78b96b32ece8c3ab9123bff77",
+      "sha256_texto_extraido": "612c584da8e96b7b1dc6bcc63b11e67998fc49c78b96b32ece8c3ab9123bff77",
+      "linhas_texto_ou_extraido": 58,
+      "lote": 1,
+      "cobertura": "concluida",
+      "metodo": "leitura integral do texto",
+      "duplicata_binaria_de": null,
+      "conceito": "Baseline de segurança de produção",
+      "avaliacao": "Admite rate limit incompleto, pendências em backend e referências públicas para buckets privados. Retenção de logs diverge do runbook.",
+      "achados": [
+        "D03",
+        "D07",
+        "D10"
+      ]
+    },
+    {
+      "indice": 14,
+      "arquivo": "AGENTS.md",
+      "caminho_relativo": "AGENTS.md",
+      "tipo": "texto",
+      "sha256": "adc82ac33c65a8063e43bdd02040addb3536624d22e4073c70093dfbaa802da5",
+      "sha256_texto_extraido": "adc82ac33c65a8063e43bdd02040addb3536624d22e4073c70093dfbaa802da5",
+      "linhas_texto_ou_extraido": 59,
+      "lote": 1,
+      "cobertura": "concluida",
+      "metodo": "leitura integral do texto",
+      "duplicata_binaria_de": null,
+      "conceito": "Regras dos agentes",
+      "avaliacao": "Exige worktree, diagnóstico e prontidão com tráfego real. É a regra operacional aplicável; contradiz o checkout direto do guia de contribuição.",
+      "achados": [
+        "D10"
+      ]
+    },
+    {
+      "indice": 15,
+      "arquivo": "CONTRIBUTING.md",
+      "caminho_relativo": "CONTRIBUTING.md",
+      "tipo": "texto",
+      "sha256": "af0694c5c40a542f129ca9a203b39bf4c29e4d7ad8b1674591e4f9a015be80be",
+      "sha256_texto_extraido": "af0694c5c40a542f129ca9a203b39bf4c29e4d7ad8b1674591e4f9a015be80be",
+      "linhas_texto_ou_extraido": 111,
+      "lote": 1,
+      "cobertura": "concluida",
+      "metodo": "leitura integral do texto",
+      "duplicata_binaria_de": null,
+      "conceito": "Guia de contribuição",
+      "avaliacao": "Fluxo e revisão são úteis; instrução git checkout -b nas linhas 13–18 conflita com AGENTS.md. Não foi executada.",
+      "achados": [
+        "D10"
+      ]
+    },
+    {
+      "indice": 16,
+      "arquivo": "SECURITY.md",
+      "caminho_relativo": "SECURITY.md",
+      "tipo": "texto",
+      "sha256": "0cc6c8a83420f0f119efc0e158ee2682aa13747333fcb975a17eade6cf27e6f2",
+      "sha256_texto_extraido": "0cc6c8a83420f0f119efc0e158ee2682aa13747333fcb975a17eade6cf27e6f2",
+      "linhas_texto_ou_extraido": 49,
+      "lote": 1,
+      "cobertura": "concluida",
+      "metodo": "leitura integral do texto",
+      "duplicata_binaria_de": null,
+      "conceito": "Divulgação de vulnerabilidades",
+      "avaliacao": "Política de comunicação e prazos é útil. Não comprova correção dentro desses prazos nem cobertura do portal Sicoob.",
+      "achados": [
+        "D07"
+      ]
+    },
+    {
+      "indice": 17,
+      "arquivo": "audit_report.pdf",
+      "caminho_relativo": "audit_report.pdf",
+      "tipo": "pdf_texto",
+      "sha256": "4870298d9a924366894663d4613bd3c226170459b6e1c1f2b5d0a66066eb3b7e",
+      "sha256_texto_extraido": "6db2ee2598c579b3819ef262fa5d853a409a72d17e17eb11dfd6b3c71278d7d5",
+      "linhas_texto_ou_extraido": 217,
+      "lote": 1,
+      "cobertura": "concluida",
+      "metodo": "extração integral pdftotext -layout e leitura do texto",
+      "duplicata_binaria_de": null,
+      "conceito": "Relatório resumido em PDF",
+      "avaliacao": "Quatro páginas de autoavaliação com nota máxima e alegações de segurança bancária. Não apresenta ensaios reproduzíveis que sustentem a certificação declarada.",
+      "achados": [
+        "D03"
+      ]
+    },
+    {
+      "indice": 18,
+      "arquivo": "docs/02_INTEGRACAO_FRONTEND_REACT.md",
+      "caminho_relativo": "docs/02_INTEGRACAO_FRONTEND_REACT.md",
+      "tipo": "texto",
+      "sha256": "c6889e11094d592be2967b4a6831554b720e853075e7772333420686e84a2a13",
+      "sha256_texto_extraido": "c6889e11094d592be2967b4a6831554b720e853075e7772333420686e84a2a13",
+      "linhas_texto_ou_extraido": 844,
+      "lote": 1,
+      "cobertura": "concluida",
+      "metodo": "leitura integral do texto",
+      "duplicata_binaria_de": null,
+      "conceito": "Tutorial de integração React",
+      "avaliacao": "Exemplos de OrganizationContext, owner/admin/member, filtros e CRUD. Trechos imperativos mostram tutorial; não comprovam implementação nem autorização no servidor.",
+      "achados": [
+        "D01",
+        "D02",
+        "D05"
+      ]
+    },
+    {
+      "indice": 19,
+      "arquivo": "docs/04_EXPLICACAO_DAS_POLICIES.md",
+      "caminho_relativo": "docs/04_EXPLICACAO_DAS_POLICIES.md",
+      "tipo": "texto",
+      "sha256": "5c5904d28dea24b6e7aee7a7f16c220fab9167ef80411012000de87ec4e41c79",
+      "sha256_texto_extraido": "5c5904d28dea24b6e7aee7a7f16c220fab9167ef80411012000de87ec4e41c79",
+      "linhas_texto_ou_extraido": 945,
+      "lote": 1,
+      "cobertura": "concluida",
+      "metodo": "leitura integral do texto",
+      "duplicata_binaria_de": null,
+      "conceito": "Explicação das políticas RLS",
+      "avaliacao": "Mistura escopo por usuário e organização com dados acessíveis a todos autenticados. Deve ser confrontada com SQL implantado, não usada como prova de isolamento.",
+      "achados": [
+        "D01",
+        "D05",
+        "D07"
+      ]
+    },
+    {
+      "indice": 20,
+      "arquivo": "docs/ACCESSIBILITY.md",
+      "caminho_relativo": "docs/ACCESSIBILITY.md",
+      "tipo": "texto",
+      "sha256": "10cde3bb2bbda9f3f87f5154eda26319b4c020c605b8c95c13ebb5229f1ee1ad",
+      "sha256_texto_extraido": "10cde3bb2bbda9f3f87f5154eda26319b4c020c605b8c95c13ebb5229f1ee1ad",
+      "linhas_texto_ou_extraido": 144,
+      "lote": 1,
+      "cobertura": "concluida",
+      "metodo": "leitura integral do texto",
+      "duplicata_binaria_de": null,
+      "conceito": "Guia de acessibilidade",
+      "avaliacao": "Boas orientações de semântica, teclado e WCAG 2.1 AA; são critérios, não evidência de conformidade de todas as telas.",
+      "achados": [
+        "D08"
+      ]
+    },
+    {
+      "indice": 21,
+      "arquivo": "docs/API.md",
+      "caminho_relativo": "docs/API.md",
+      "tipo": "texto",
+      "sha256": "9284f48935b59ba18272a3e8da771e9cd0430ae97ddebef9c8436ad26ba01f9e",
+      "sha256_texto_extraido": "9284f48935b59ba18272a3e8da771e9cd0430ae97ddebef9c8436ad26ba01f9e",
+      "linhas_texto_ou_extraido": 236,
+      "lote": 1,
+      "cobertura": "concluida",
+      "metodo": "leitura integral do texto",
+      "duplicata_binaria_de": null,
+      "conceito": "Documentação da API",
+      "avaliacao": "Referências de 2025 e integrações legadas, cotas e exigência global de JWT. Diverge de rotas públicas e pendências de rate limit.",
+      "achados": [
+        "D02",
+        "D07",
+        "D10"
+      ]
+    },
+    {
+      "indice": 22,
+      "arquivo": "docs/AUDIT_FRONTEND_DATABASE.md",
+      "caminho_relativo": "docs/AUDIT_FRONTEND_DATABASE.md",
+      "tipo": "texto",
+      "sha256": "b8262a207523d3e4badcc21aaaf37ae9f3a65fa5dd4353201e22b7aa56d1e229",
+      "sha256_texto_extraido": "b8262a207523d3e4badcc21aaaf37ae9f3a65fa5dd4353201e22b7aa56d1e229",
+      "linhas_texto_ou_extraido": 518,
+      "lote": 2,
+      "cobertura": "concluida",
+      "metodo": "leitura integral do texto",
+      "duplicata_binaria_de": null,
+      "conceito": "Auditoria anterior frontend e banco",
+      "avaliacao": "O próprio texto registra projeto nmojwpihnslkssljowjh, falha de acesso MCP e análise de migrações. Achados não se transferem automaticamente ao cfm atual.",
+      "achados": [
+        "D03",
+        "D07"
+      ]
+    },
+    {
+      "indice": 23,
+      "arquivo": "docs/AUTH_PASSKEYS.md",
+      "caminho_relativo": "docs/AUTH_PASSKEYS.md",
+      "tipo": "texto",
+      "sha256": "5bcae2abe5131a1bfcf530300d557dd77fa18b628a5530ea5b86b3a565b4c459",
+      "sha256_texto_extraido": "5bcae2abe5131a1bfcf530300d557dd77fa18b628a5530ea5b86b3a565b4c459",
+      "linhas_texto_ou_extraido": 50,
+      "lote": 2,
+      "cobertura": "concluida",
+      "metodo": "leitura integral do texto",
+      "duplicata_binaria_de": null,
+      "conceito": "Autenticação por passkeys",
+      "avaliacao": "Documento admite ausência de validação do servidor e integração nativa. A interface atual ainda anuncia sucesso sem criar sessão Supabase.",
+      "achados": [
+        "D06"
+      ]
+    },
+    {
+      "indice": 24,
+      "arquivo": "docs/CASOS_TESTE_E2E_POR_PAPEL.md",
+      "caminho_relativo": "docs/CASOS_TESTE_E2E_POR_PAPEL.md",
+      "tipo": "texto",
+      "sha256": "7ae1493003c6753571d319f5cb4da0ba365bd580a91e43b10a0b0aee28acdeb2",
+      "sha256_texto_extraido": "7ae1493003c6753571d319f5cb4da0ba365bd580a91e43b10a0b0aee28acdeb2",
+      "linhas_texto_ou_extraido": 40,
+      "lote": 2,
+      "cobertura": "concluida",
+      "metodo": "leitura integral do texto",
+      "duplicata_binaria_de": null,
+      "conceito": "Casos de teste por papel",
+      "avaliacao": "Casos de PA e gestor são direção útil, porém há placeholders e estados divergentes. Aprovação em massa documentada não corresponde à tela atual.",
+      "achados": [
+        "D04",
+        "D05",
+        "D11"
+      ]
+    },
+    {
+      "indice": 25,
+      "arquivo": "docs/CONFIGURACAO_LOCALE_PT_BR.md",
+      "caminho_relativo": "docs/CONFIGURACAO_LOCALE_PT_BR.md",
+      "tipo": "texto",
+      "sha256": "66105086085fbd86117dd02b93e33bead91ccd21b2b4ae169b2885e255939bdc",
+      "sha256_texto_extraido": "66105086085fbd86117dd02b93e33bead91ccd21b2b4ae169b2885e255939bdc",
+      "linhas_texto_ou_extraido": 513,
+      "lote": 2,
+      "cobertura": "concluida",
+      "metodo": "leitura integral do texto",
+      "duplicata_binaria_de": null,
+      "conceito": "Configuração de idioma e região",
+      "avaliacao": "Define pt-BR e BRL exclusivos; contradiz relatórios que afirmam internacionalização concluída. Contém instruções de implementação.",
+      "achados": [
+        "D03",
+        "D08",
+        "D10"
+      ]
+    },
+    {
+      "indice": 26,
+      "arquivo": "docs/DARK_MODE.md",
+      "caminho_relativo": "docs/DARK_MODE.md",
+      "tipo": "texto",
+      "sha256": "65b5b091a5794baf0232d3e6bf40056d0878f4f578c2b27837788457ab50bd90",
+      "sha256_texto_extraido": "65b5b091a5794baf0232d3e6bf40056d0878f4f578c2b27837788457ab50bd90",
+      "linhas_texto_ou_extraido": 79,
+      "lote": 2,
+      "cobertura": "concluida",
+      "metodo": "leitura integral do texto",
+      "duplicata_binaria_de": null,
+      "conceito": "Modo escuro",
+      "avaliacao": "Documenta tokens e práticas reutilizáveis, mas afirma 100% sem resultados. A paleta legada não estabelece conformidade com identidade Sicoob.",
+      "achados": [
+        "D08"
+      ]
+    },
+    {
+      "indice": 27,
+      "arquivo": "docs/DEPLOYMENT.md",
+      "caminho_relativo": "docs/DEPLOYMENT.md",
+      "tipo": "texto",
+      "sha256": "fda38ff0296bc1d664085b3efe880033f80ee8a59ee567ee71057e3324423a04",
+      "sha256_texto_extraido": "fda38ff0296bc1d664085b3efe880033f80ee8a59ee567ee71057e3324423a04",
+      "linhas_texto_ou_extraido": 40,
+      "lote": 2,
+      "cobertura": "concluida",
+      "metodo": "leitura integral do texto",
+      "duplicata_binaria_de": null,
+      "conceito": "Guia de implantação",
+      "avaliacao": "Receita genérica de PostgreSQL, Redis e comando de deploy; precisa ser reconciliada com Supabase e Lovable efetivamente usados.",
+      "achados": [
+        "D10",
+        "D11"
+      ]
+    },
+    {
+      "indice": 28,
+      "arquivo": "docs/E2E_SMOKE_COVERAGE.md",
+      "caminho_relativo": "docs/E2E_SMOKE_COVERAGE.md",
+      "tipo": "texto",
+      "sha256": "d41468a54a15a1b46925c6e16248cc3df94f445703037c028460b1410a476318",
+      "sha256_texto_extraido": "d41468a54a15a1b46925c6e16248cc3df94f445703037c028460b1410a476318",
+      "linhas_texto_ou_extraido": 40,
+      "lote": 2,
+      "cobertura": "concluida",
+      "metodo": "leitura integral do texto",
+      "duplicata_binaria_de": null,
+      "conceito": "Cobertura de smoke E2E",
+      "avaliacao": "Percentual de 85% sem denominador e evidência executável vinculada. Smoke de navegação não demonstra compra e aprovação completas.",
+      "achados": [
+        "D11"
+      ]
+    },
+    {
+      "indice": 29,
+      "arquivo": "docs/EDGE_FUNCTIONS_DRIFT.md",
+      "caminho_relativo": "docs/EDGE_FUNCTIONS_DRIFT.md",
+      "tipo": "texto",
+      "sha256": "31a9931725f43d28b014c57ca8031d3db48628d5f14ee55be0eb4fbf433473a2",
+      "sha256_texto_extraido": "31a9931725f43d28b014c57ca8031d3db48628d5f14ee55be0eb4fbf433473a2",
+      "linhas_texto_ou_extraido": 14,
+      "lote": 2,
+      "cobertura": "concluida",
+      "metodo": "leitura integral do texto",
+      "duplicata_binaria_de": null,
+      "conceito": "Deriva de Edge Functions",
+      "avaliacao": "Contagens declaradas 89 e 92 coexistem com nenhuma ausência; não fornecem uma reconciliação por função e projeto atual.",
+      "achados": [
+        "D10",
+        "D11"
+      ]
+    },
+    {
+      "indice": 30,
+      "arquivo": "docs/FIXTURES_E2E_POR_PAPEL.md",
+      "caminho_relativo": "docs/FIXTURES_E2E_POR_PAPEL.md",
+      "tipo": "texto",
+      "sha256": "c22c28a0903ba5d738a5eb8b5a1769799b6363f831f883feb206f90945121e23",
+      "sha256_texto_extraido": "c22c28a0903ba5d738a5eb8b5a1769799b6363f831f883feb206f90945121e23",
+      "linhas_texto_ou_extraido": 18,
+      "lote": 2,
+      "cobertura": "concluida",
+      "metodo": "leitura integral do texto",
+      "duplicata_binaria_de": null,
+      "conceito": "Fixtures por papel",
+      "avaliacao": "Seeds e usuários de teste de PA e gestor contêm exemplos incompletos. Não são evidência de execução nem prontidão de dados.",
+      "achados": [
+        "D04",
+        "D05",
+        "D11"
+      ]
+    },
+    {
+      "indice": 31,
+      "arquivo": "docs/FUNCIONALIDADES_E_FERRAMENTAS.md",
+      "caminho_relativo": "docs/FUNCIONALIDADES_E_FERRAMENTAS.md",
+      "tipo": "texto",
+      "sha256": "82323d26adaba05809081abbcf7efaa57e1f8755f019918b35c02cdd21081510",
+      "sha256_texto_extraido": "82323d26adaba05809081abbcf7efaa57e1f8755f019918b35c02cdd21081510",
+      "linhas_texto_ou_extraido": 1297,
+      "lote": 2,
+      "cobertura": "concluida",
+      "metodo": "leitura integral do texto",
+      "duplicata_binaria_de": null,
+      "conceito": "Inventário amplo de funcionalidades",
+      "avaliacao": "Mapa extenso do legado é útil para localizar componentes. CRM, gamificação e ferramentas do vendedor excedem o escopo Sicoob.",
+      "achados": [
+        "D10",
+        "D12"
+      ]
+    },
+    {
+      "indice": 32,
+      "arquivo": "docs/HOOKS_USAGE_GUIDE.md",
+      "caminho_relativo": "docs/HOOKS_USAGE_GUIDE.md",
+      "tipo": "texto",
+      "sha256": "9615d9070811f16d76b84e5d863d4fa89c1dcea32efcdcdd8b4d75898aeecb5a",
+      "sha256_texto_extraido": "9615d9070811f16d76b84e5d863d4fa89c1dcea32efcdcdd8b4d75898aeecb5a",
+      "linhas_texto_ou_extraido": 121,
+      "lote": 2,
+      "cobertura": "concluida",
+      "metodo": "leitura integral do texto",
+      "duplicata_binaria_de": null,
+      "conceito": "Guia de hooks",
+      "avaliacao": "Abstrações CRUD e paginação são aproveitáveis seletivamente; exemplos de criação de produto conflitam com catálogo externo somente consulta.",
+      "achados": [
+        "D02",
+        "D12"
+      ]
+    },
+    {
+      "indice": 33,
+      "arquivo": "docs/INVENTARIO_FUNCIONALIDADES_v2.md",
+      "caminho_relativo": "docs/INVENTARIO_FUNCIONALIDADES_v2.md",
+      "tipo": "texto",
+      "sha256": "9795af7358c9996d3422aff75a0bdbd19c60572f6a045983f258d3abf5fb408b",
+      "sha256_texto_extraido": "9795af7358c9996d3422aff75a0bdbd19c60572f6a045983f258d3abf5fb408b",
+      "linhas_texto_ou_extraido": 74,
+      "lote": 2,
+      "cobertura": "concluida",
+      "metodo": "leitura integral do texto",
+      "duplicata_binaria_de": null,
+      "conceito": "Inventário de funcionalidades versão 2",
+      "avaliacao": "Declara modo dual, três bancos, cache, 80 tabelas e 90 funções. Mistura inventário e alegações 100%; conflita com o recorte de dois bancos.",
+      "achados": [
+        "D02",
+        "D03",
+        "D10"
+      ]
+    },
+    {
+      "indice": 34,
+      "arquivo": "docs/MOBILE.md",
+      "caminho_relativo": "docs/MOBILE.md",
+      "tipo": "texto",
+      "sha256": "319337ddb7dc5f136c4c63e634c6e00aef702e072aa9baf6eab27667cbce5b86",
+      "sha256_texto_extraido": "319337ddb7dc5f136c4c63e634c6e00aef702e072aa9baf6eab27667cbce5b86",
+      "linhas_texto_ou_extraido": 99,
+      "lote": 2,
+      "cobertura": "concluida",
+      "metodo": "leitura integral do texto",
+      "duplicata_binaria_de": null,
+      "conceito": "Guia mobile",
+      "avaliacao": "Critérios de responsividade e toque úteis. Declaração de 100% não vem acompanhada de jornadas, aparelhos ou evidências suficientes.",
+      "achados": [
+        "D08",
+        "D11"
+      ]
+    },
+    {
+      "indice": 35,
+      "arquivo": "docs/NOTIFICATION_SYSTEM.md",
+      "caminho_relativo": "docs/NOTIFICATION_SYSTEM.md",
+      "tipo": "texto",
+      "sha256": "a853e3612e51e25cc876ab9bba50ad3cb23b50786139c4a136e8c19c3319b01b",
+      "sha256_texto_extraido": "a853e3612e51e25cc876ab9bba50ad3cb23b50786139c4a136e8c19c3319b01b",
+      "linhas_texto_ou_extraido": 308,
+      "lote": 2,
+      "cobertura": "concluida",
+      "metodo": "leitura integral do texto",
+      "duplicata_binaria_de": null,
+      "conceito": "Sistema de notificações",
+      "avaliacao": "Promete núcleo 100% e múltiplos canais; alguns estão apenas estruturados. O emissor inspecionado grava sucesso de push sem envio de push.",
+      "achados": [
+        "D07",
+        "D09"
+      ]
+    },
+    {
+      "indice": 36,
+      "arquivo": "docs/ONBOARDING.md",
+      "caminho_relativo": "docs/ONBOARDING.md",
+      "tipo": "texto",
+      "sha256": "96948c6eedebb8b9e038448ce43ae3b2b24136c9417b827a42bd3822bf9d7ef1",
+      "sha256_texto_extraido": "96948c6eedebb8b9e038448ce43ae3b2b24136c9417b827a42bd3822bf9d7ef1",
+      "linhas_texto_ou_extraido": 60,
+      "lote": 2,
+      "cobertura": "concluida",
+      "metodo": "leitura integral do texto",
+      "duplicata_binaria_de": null,
+      "conceito": "Onboarding técnico",
+      "avaliacao": "Ajuda a localizar o legado, mas mantém 50 funções, caminhos antigos e acesso dependente de Lovable. Requer alinhamento com ambiente atual.",
+      "achados": [
+        "D10"
+      ]
+    },
+    {
+      "indice": 37,
+      "arquivo": "docs/PERFORMANCE_AUDIT.md",
+      "caminho_relativo": "docs/PERFORMANCE_AUDIT.md",
+      "tipo": "texto",
+      "sha256": "7f9228384582a5e223e7ec955bf86a285ae69dcdcc69fe4321f7b26614f405c6",
+      "sha256_texto_extraido": "7f9228384582a5e223e7ec955bf86a285ae69dcdcc69fe4321f7b26614f405c6",
+      "linhas_texto_ou_extraido": 64,
+      "lote": 2,
+      "cobertura": "concluida",
+      "metodo": "leitura integral do texto",
+      "duplicata_binaria_de": null,
+      "conceito": "Auditoria de desempenho",
+      "avaliacao": "Afirma p95 e ganhos sem planos EXPLAIN e registros de execução associados. Paralelismo não prova ausência de N+1.",
+      "achados": [
+        "D03",
+        "D11"
+      ]
+    },
+    {
+      "indice": 38,
+      "arquivo": "docs/POSTMORTEM_TEMPLATE.md",
+      "caminho_relativo": "docs/POSTMORTEM_TEMPLATE.md",
+      "tipo": "texto",
+      "sha256": "90e4b9154a0a62526314acf58a00e493136cb3ade5b4d549a452943d17a29d9d",
+      "sha256_texto_extraido": "90e4b9154a0a62526314acf58a00e493136cb3ade5b4d549a452943d17a29d9d",
+      "linhas_texto_ou_extraido": 46,
+      "lote": 2,
+      "cobertura": "concluida",
+      "metodo": "leitura integral do texto",
+      "duplicata_binaria_de": null,
+      "conceito": "Modelo de post-mortem",
+      "avaliacao": "Estrutura reutilizável para incidentes futuros; é modelo, não registro de incidente nem comprovação de processo operante.",
+      "achados": [
+        "D11"
+      ]
+    },
+    {
+      "indice": 39,
+      "arquivo": "docs/README.md",
+      "caminho_relativo": "docs/README.md",
+      "tipo": "texto",
+      "sha256": "74e766208308e00dc1e277513245a4201c0149b23b2af673dc3a744fc4c44865",
+      "sha256_texto_extraido": "74e766208308e00dc1e277513245a4201c0149b23b2af673dc3a744fc4c44865",
+      "linhas_texto_ou_extraido": 127,
+      "lote": 2,
+      "cobertura": "concluida",
+      "metodo": "leitura integral do texto",
+      "duplicata_binaria_de": null,
+      "conceito": "Índice da documentação",
+      "avaliacao": "Índice antigo e referências Promo Brindes; útil como mapa, insuficiente como fonte única atual do Sicoob.",
+      "achados": [
+        "D10"
+      ]
+    },
+    {
+      "indice": 40,
+      "arquivo": "docs/RUNBOOK.md",
+      "caminho_relativo": "docs/RUNBOOK.md",
+      "tipo": "texto",
+      "sha256": "09c880449b6b2eda7133257a56225d38e7c380b515e53da2ef74b172b4206550",
+      "sha256_texto_extraido": "09c880449b6b2eda7133257a56225d38e7c380b515e53da2ef74b172b4206550",
+      "linhas_texto_ou_extraido": 211,
+      "lote": 2,
+      "cobertura": "concluida",
+      "metodo": "leitura integral do texto",
+      "duplicata_binaria_de": null,
+      "conceito": "Runbook de operação",
+      "avaliacao": "Checklist útil, porém backups, PITR e contatos não foram verificados. Exclusão de logs após 90 dias diverge de retenções em outros documentos.",
+      "achados": [
+        "D07",
+        "D10",
+        "D11"
+      ]
+    },
+    {
+      "indice": 41,
+      "arquivo": "docs/RUNBOOK_CONNECTIONS.md",
+      "caminho_relativo": "docs/RUNBOOK_CONNECTIONS.md",
+      "tipo": "texto",
+      "sha256": "65e005d93592b4ababd4e15db826d60a42bc834b3eed8d3284f2ba7e2a9957c4",
+      "sha256_texto_extraido": "65e005d93592b4ababd4e15db826d60a42bc834b3eed8d3284f2ba7e2a9957c4",
+      "linhas_texto_ou_extraido": 188,
+      "lote": 2,
+      "cobertura": "concluida",
+      "metodo": "leitura integral do texto",
+      "duplicata_binaria_de": null,
+      "conceito": "Runbook de conexões",
+      "avaliacao": "Descreve segredos no banco com fallback de ambiente e diagnóstico. Cache em memória e dependências CRM exigem revisão para dois bancos.",
+      "achados": [
+        "D02",
+        "D07",
+        "D10"
+      ]
+    },
+    {
+      "indice": 42,
+      "arquivo": "docs/SECURITY.md",
+      "caminho_relativo": "docs/SECURITY.md",
+      "tipo": "texto",
+      "sha256": "b26b4eb0bce4e677336a1690741872d0f1fdf4fbdd3ebc8507db136270df87a6",
+      "sha256_texto_extraido": "b26b4eb0bce4e677336a1690741872d0f1fdf4fbdd3ebc8507db136270df87a6",
+      "linhas_texto_ou_extraido": 22,
+      "lote": 2,
+      "cobertura": "concluida",
+      "metodo": "leitura integral do texto",
+      "duplicata_binaria_de": null,
+      "conceito": "Política técnica de segurança",
+      "avaliacao": "Guia genérico em inglês, referências GDPR e rotação de 90 dias. Não mapeia requisitos LGPD nem prova controles implementados.",
+      "achados": [
+        "D07",
+        "D10"
+      ]
+    },
+    {
+      "indice": 43,
+      "arquivo": "docs/SECURITY_PLAN.md",
+      "caminho_relativo": "docs/SECURITY_PLAN.md",
+      "tipo": "texto",
+      "sha256": "7bab23146b3171baab42c09654d1dc9d7853694742710b25e273dcb97432fba9",
+      "sha256_texto_extraido": "7bab23146b3171baab42c09654d1dc9d7853694742710b25e273dcb97432fba9",
+      "linhas_texto_ou_extraido": 25,
+      "lote": 2,
+      "cobertura": "concluida",
+      "metodo": "leitura integral do texto",
+      "duplicata_binaria_de": null,
+      "conceito": "Plano de segurança",
+      "avaliacao": "Pentest e monitoramento são planos; rotação semestral diverge de 90 dias. Domínio legado e SLOs precisam de dono e ambiente atuais.",
+      "achados": [
+        "D07",
+        "D10",
+        "D11"
+      ]
+    },
+    {
+      "indice": 44,
+      "arquivo": "docs/SKINS_INVENTORY.md",
+      "caminho_relativo": "docs/SKINS_INVENTORY.md",
+      "tipo": "texto",
+      "sha256": "8493bf5f1ed042117eeaede359b51f970ae857c2a44ad341969e8920e22330f5",
+      "sha256_texto_extraido": "8493bf5f1ed042117eeaede359b51f970ae857c2a44ad341969e8920e22330f5",
+      "linhas_texto_ou_extraido": 44,
+      "lote": 3,
+      "cobertura": "concluida",
+      "metodo": "leitura integral do texto",
+      "duplicata_binaria_de": null,
+      "conceito": "Inventário de temas visuais",
+      "avaliacao": "Múltiplas skins, inclusive gamer e neon, não representam identidade Sicoob. Sistema de tokens pode ser reaproveitado após definição oficial.",
+      "achados": [
+        "D08"
+      ]
+    },
+    {
+      "indice": 45,
+      "arquivo": "docs/SLO.md",
+      "caminho_relativo": "docs/SLO.md",
+      "tipo": "texto",
+      "sha256": "e18b4af06bd0974e6d1096980027f0fe797553f4439fbecc6688988f0f5d5bad",
+      "sha256_texto_extraido": "e18b4af06bd0974e6d1096980027f0fe797553f4439fbecc6688988f0f5d5bad",
+      "linhas_texto_ou_extraido": 28,
+      "lote": 3,
+      "cobertura": "concluida",
+      "metodo": "leitura integral do texto",
+      "duplicata_binaria_de": null,
+      "conceito": "Objetivos de nível de serviço",
+      "avaliacao": "Metas 99,9% e latência são objetivos. Contagem de HTTP menor que 500 pode considerar bloqueios de negócio bem-sucedidos.",
+      "achados": [
+        "D11"
+      ]
+    },
+    {
+      "indice": 46,
+      "arquivo": "docs/adr/0001-ssot-external-db.md",
+      "caminho_relativo": "docs/adr/0001-ssot-external-db.md",
+      "tipo": "texto",
+      "sha256": "8f5e03395d8158c714fe2bf2f36e8b0349ea0a0ec50b15b7d94f729f901aa56e",
+      "sha256_texto_extraido": "8f5e03395d8158c714fe2bf2f36e8b0349ea0a0ec50b15b7d94f729f901aa56e",
+      "linhas_texto_ou_extraido": 19,
+      "lote": 3,
+      "cobertura": "concluida",
+      "metodo": "leitura integral do texto",
+      "duplicata_binaria_de": null,
+      "conceito": "Decisão de fonte única externa",
+      "avaliacao": "Justifica não duplicar cadastro mestre; princípio aproveitável. Assume produtos e empresas externos e três bancos, extrapolando o pedido atual.",
+      "achados": [
+        "D02",
+        "D10"
+      ]
+    },
+    {
+      "indice": 47,
+      "arquivo": "docs/adr/0003-zod-edge-functions.md",
+      "caminho_relativo": "docs/adr/0003-zod-edge-functions.md",
+      "tipo": "texto",
+      "sha256": "91a549da8cd3682fc379f8387c2f99a46fc30ea952009268ee02abe13e413ce5",
+      "sha256_texto_extraido": "91a549da8cd3682fc379f8387c2f99a46fc30ea952009268ee02abe13e413ce5",
+      "linhas_texto_ou_extraido": 24,
+      "lote": 3,
+      "cobertura": "concluida",
+      "metodo": "leitura integral do texto",
+      "duplicata_binaria_de": null,
+      "conceito": "Validação Zod nas funções",
+      "avaliacao": "Validação de forma é aproveitável. Alegação 100% de funções não comprova autorização, escopo organizacional ou estado de negócio.",
+      "achados": [
+        "D01",
+        "D07"
+      ]
+    },
+    {
+      "indice": 48,
+      "arquivo": "docs/adr/0005-resilience-circuit-breaker.md",
+      "caminho_relativo": "docs/adr/0005-resilience-circuit-breaker.md",
+      "tipo": "texto",
+      "sha256": "8114da89e0e8607c568d9efc471328a9c188e224aaf42263cd120e65ff25ff76",
+      "sha256_texto_extraido": "8114da89e0e8607c568d9efc471328a9c188e224aaf42263cd120e65ff25ff76",
+      "linhas_texto_ou_extraido": 19,
+      "lote": 3,
+      "cobertura": "concluida",
+      "metodo": "leitura integral do texto",
+      "duplicata_binaria_de": null,
+      "conceito": "Resiliência por circuit breaker",
+      "avaliacao": "Explicita limitação por instância e parâmetros; documentação de trade-off mais confiável que notas absolutas. Pode preservar adaptador de leitura.",
+      "achados": [
+        "D02",
+        "D12"
+      ]
+    },
+    {
+      "indice": 49,
+      "arquivo": "docs/adr/0007-three-database-architecture.md",
+      "caminho_relativo": "docs/adr/0007-three-database-architecture.md",
+      "tipo": "texto",
+      "sha256": "c43e65dafa01b8e0f018432c0d9b5ef018d581a752c49c4c7f449ea4027a470c",
+      "sha256_texto_extraido": "c43e65dafa01b8e0f018432c0d9b5ef018d581a752c49c4c7f449ea4027a470c",
+      "linhas_texto_ou_extraido": 23,
+      "lote": 3,
+      "cobertura": "concluida",
+      "metodo": "leitura integral do texto",
+      "duplicata_binaria_de": null,
+      "conceito": "Arquitetura de três bancos",
+      "avaliacao": "ADR aceito em maio mantém Bitrix como terceiro banco, embora SCOPE_ALIGNMENT exclua CRM e usuário determine dois bancos.",
+      "achados": [
+        "D02",
+        "D10"
+      ]
+    },
+    {
+      "indice": 50,
+      "arquivo": "docs/adr/0009-expand-contract-migrations.md",
+      "caminho_relativo": "docs/adr/0009-expand-contract-migrations.md",
+      "tipo": "texto",
+      "sha256": "b6eb88797d0c8c170cfec45b3268e70d8e8d64bde7ce7302f779d80e57e90a8e",
+      "sha256_texto_extraido": "b6eb88797d0c8c170cfec45b3268e70d8e8d64bde7ce7302f779d80e57e90a8e",
+      "linhas_texto_ou_extraido": 34,
+      "lote": 3,
+      "cobertura": "concluida",
+      "metodo": "leitura integral do texto",
+      "duplicata_binaria_de": null,
+      "conceito": "Migrações expand-contract",
+      "avaliacao": "Proposta útil para mudanças seguras. Status proposto não permite afirmar migrações sem indisponibilidade já operantes.",
+      "achados": [
+        "D11"
+      ]
+    },
+    {
+      "indice": 51,
+      "arquivo": "docs/architecture/ER_DIAGRAM.md",
+      "caminho_relativo": "docs/architecture/ER_DIAGRAM.md",
+      "tipo": "texto",
+      "sha256": "ecf9b474cf13fd0537536ee9a9e5f46808890e888740c359b252cbc8d96f73c8",
+      "sha256_texto_extraido": "ecf9b474cf13fd0537536ee9a9e5f46808890e888740c359b252cbc8d96f73c8",
+      "linhas_texto_ou_extraido": 42,
+      "lote": 3,
+      "cobertura": "concluida",
+      "metodo": "leitura integral do texto",
+      "duplicata_binaria_de": null,
+      "conceito": "Diagrama entidade-relacionamento",
+      "avaliacao": "Descreve singulares, pontos de atendimento e verbas, mas diverge de nomes de tabelas e papéis usados no serviço e em migrações concorrentes.",
+      "achados": [
+        "D04",
+        "D05"
+      ]
+    },
+    {
+      "indice": 52,
+      "arquivo": "docs/audits/AUDITORIA_ENTERPRISE_FINAL.md",
+      "caminho_relativo": "docs/audits/AUDITORIA_ENTERPRISE_FINAL.md",
+      "tipo": "texto",
+      "sha256": "c11bed6d33fb91ed3d3fb1ab7456a0585b4230b3207cca255b2e32878ba74d68",
+      "sha256_texto_extraido": "c11bed6d33fb91ed3d3fb1ab7456a0585b4230b3207cca255b2e32878ba74d68",
+      "linhas_texto_ou_extraido": 81,
+      "lote": 3,
+      "cobertura": "concluida",
+      "metodo": "leitura integral do texto",
+      "duplicata_binaria_de": null,
+      "conceito": "Auditoria enterprise final",
+      "avaliacao": "Nota 10/10, MFA, blockchain e internacionalização declarados concluídos; contradiz checklist de outros relatórios e documentação específica.",
+      "achados": [
+        "D03"
+      ]
+    },
+    {
+      "indice": 53,
+      "arquivo": "docs/audits/AUDIT_EXPORT_FILTERED.md",
+      "caminho_relativo": "docs/audits/AUDIT_EXPORT_FILTERED.md",
+      "tipo": "texto",
+      "sha256": "884073e8c4e6468359f865f1670edd84d0b5d3f0868f934887ef27cfc2a904b3",
+      "sha256_texto_extraido": "884073e8c4e6468359f865f1670edd84d0b5d3f0868f934887ef27cfc2a904b3",
+      "linhas_texto_ou_extraido": 40,
+      "lote": 3,
+      "cobertura": "concluida",
+      "metodo": "leitura integral do texto",
+      "duplicata_binaria_de": null,
+      "conceito": "Exportação filtrada de auditoria",
+      "avaliacao": "Descreve quatro recursos de exportação e cold storage, sem evidência de commit completa. Potencial reutilização depende de validação de acesso.",
+      "achados": [
+        "D03",
+        "D07",
+        "D12"
+      ]
+    },
+    {
+      "indice": 54,
+      "arquivo": "docs/audits/DOSSIA_AUDITORIA_ENTERPRISE_V5.md",
+      "caminho_relativo": "docs/audits/DOSSIA_AUDITORIA_ENTERPRISE_V5.md",
+      "tipo": "texto",
+      "sha256": "07cd5d21b0c0e9708abe93e343b2ef66906659905ddafd15d394b870c17769b4",
+      "sha256_texto_extraido": "07cd5d21b0c0e9708abe93e343b2ef66906659905ddafd15d394b870c17769b4",
+      "linhas_texto_ou_extraido": 233,
+      "lote": 3,
+      "cobertura": "concluida",
+      "metodo": "leitura integral do texto",
+      "duplicata_binaria_de": null,
+      "conceito": "Dossiê enterprise versão 5",
+      "avaliacao": "Tabela RLS marcada integralmente aprovada e vínculos sem evidência específica por tabela. RLS habilitado não equivale a isolamento validado.",
+      "achados": [
+        "D01",
+        "D03"
+      ]
+    },
+    {
+      "indice": 55,
+      "arquivo": "docs/audits/FINAL_ENTERPRISE_AUDIT_REPORT.md",
+      "caminho_relativo": "docs/audits/FINAL_ENTERPRISE_AUDIT_REPORT.md",
+      "tipo": "texto",
+      "sha256": "48a7230fc39f5c7678499f48f6ef3cb1644af5f0625d3d02ca34a3a1e50b4c82",
+      "sha256_texto_extraido": "48a7230fc39f5c7678499f48f6ef3cb1644af5f0625d3d02ca34a3a1e50b4c82",
+      "linhas_texto_ou_extraido": 110,
+      "lote": 3,
+      "cobertura": "concluida",
+      "metodo": "leitura integral do texto",
+      "duplicata_binaria_de": null,
+      "conceito": "Relatório enterprise final detalhado",
+      "avaliacao": "Alega certificação e integridade, mas blockchain permanece pendente no checklist e hash é abreviado. Não constitui certificação independente.",
+      "achados": [
+        "D03"
+      ]
+    },
+    {
+      "indice": 56,
+      "arquivo": "docs/deploy-flow.md",
+      "caminho_relativo": "docs/deploy-flow.md",
+      "tipo": "texto",
+      "sha256": "76e59bc28ba0ae02f6c6e8a8270eec57c01397ad06b240bd353c6e7e3ea88378",
+      "sha256_texto_extraido": "76e59bc28ba0ae02f6c6e8a8270eec57c01397ad06b240bd353c6e7e3ea88378",
+      "linhas_texto_ou_extraido": 91,
+      "lote": 3,
+      "cobertura": "concluida",
+      "metodo": "leitura integral do texto",
+      "duplicata_binaria_de": null,
+      "conceito": "Fluxo de deploy",
+      "avaliacao": "Revisão, rollback e PR são práticas aproveitáveis. Regras de branch e pipeline remoto precisam ser verificadas no GitHub.",
+      "achados": [
+        "D10",
+        "D11"
+      ]
+    },
+    {
+      "indice": 57,
+      "arquivo": "docs/security/RLS_MATRIX.md",
+      "caminho_relativo": "docs/security/RLS_MATRIX.md",
+      "tipo": "texto",
+      "sha256": "e36558f0e2127c936910e52691c95f791717c27e7a7eb85368832aea37d3ef1c",
+      "sha256_texto_extraido": "e36558f0e2127c936910e52691c95f791717c27e7a7eb85368832aea37d3ef1c",
+      "linhas_texto_ou_extraido": 170,
+      "lote": 3,
+      "cobertura": "concluida",
+      "metodo": "leitura integral do texto",
+      "duplicata_binaria_de": null,
+      "conceito": "Matriz de acesso RLS",
+      "avaliacao": "75 cenários de vendedor, admin, supervisor e anônimo; falta matriz entre duas cooperativas e PAs. INSERT de orders diverge do README de testes RLS.",
+      "achados": [
+        "D01",
+        "D05",
+        "D11"
+      ]
+    },
+    {
+      "indice": 58,
+      "arquivo": "docs/testing/CONTRACT_TESTS_PACT.md",
+      "caminho_relativo": "docs/testing/CONTRACT_TESTS_PACT.md",
+      "tipo": "texto",
+      "sha256": "dfd8937f6897c35df2a3d4ceb3b094f303d1a36fce82439201f372b9c27ba579",
+      "sha256_texto_extraido": "dfd8937f6897c35df2a3d4ceb3b094f303d1a36fce82439201f372b9c27ba579",
+      "linhas_texto_ou_extraido": 60,
+      "lote": 3,
+      "cobertura": "concluida",
+      "metodo": "leitura integral do texto",
+      "duplicata_binaria_de": null,
+      "conceito": "Testes de contrato Pact",
+      "avaliacao": "Documento explicitamente futuro, dependências não instaladas; foco Bitrix não é prioridade do portal de compras Sicoob.",
+      "achados": [
+        "D10",
+        "D11"
+      ]
+    },
+    {
+      "indice": 59,
+      "arquivo": "e2e/README.md",
+      "caminho_relativo": "e2e/README.md",
+      "tipo": "texto",
+      "sha256": "a51fe38490423d5e7699ffcfa84b9f0f12101a60da2ea66d197f477fd32998f3",
+      "sha256_texto_extraido": "a51fe38490423d5e7699ffcfa84b9f0f12101a60da2ea66d197f477fd32998f3",
+      "linhas_texto_ou_extraido": 194,
+      "lote": 3,
+      "cobertura": "concluida",
+      "metodo": "leitura integral do texto",
+      "duplicata_binaria_de": null,
+      "conceito": "Guia E2E",
+      "avaliacao": "Informa skips sem credenciais e que orçamento apenas abre construtor. Boa honestidade de limite; não demonstra compra completa.",
+      "achados": [
+        "D11"
+      ]
+    },
+    {
+      "indice": 60,
+      "arquivo": "e2e/routes/README.md",
+      "caminho_relativo": "e2e/routes/README.md",
+      "tipo": "texto",
+      "sha256": "12d2c28c91f6e4a21ffa84d87c2cedc414c7a3f8585992aca10b447ce159ee4f",
+      "sha256_texto_extraido": "12d2c28c91f6e4a21ffa84d87c2cedc414c7a3f8585992aca10b447ce159ee4f",
+      "linhas_texto_ou_extraido": 45,
+      "lote": 3,
+      "cobertura": "concluida",
+      "metodo": "leitura integral do texto",
+      "duplicata_binaria_de": null,
+      "conceito": "E2E de rotas com mocks",
+      "avaliacao": "Testes interceptam API e focam oito cenários nominais. Não verificam banco, políticas ou transações reais.",
+      "achados": [
+        "D01",
+        "D11"
+      ]
+    },
+    {
+      "indice": 61,
+      "arquivo": "infra/README.md",
+      "caminho_relativo": "infra/README.md",
+      "tipo": "texto",
+      "sha256": "fddfe98bd6af21262418c9e0f38f4d1f971c50c3ae15fc4e4a7efd482348acab",
+      "sha256_texto_extraido": "fddfe98bd6af21262418c9e0f38f4d1f971c50c3ae15fc4e4a7efd482348acab",
+      "linhas_texto_ou_extraido": 17,
+      "lote": 3,
+      "cobertura": "concluida",
+      "metodo": "leitura integral do texto",
+      "duplicata_binaria_de": null,
+      "conceito": "Infraestrutura como código",
+      "avaliacao": "README declara migração futura para Terraform. Não demonstra infraestrutura já provisionada por código.",
+      "achados": [
+        "D11"
+      ]
+    },
+    {
+      "indice": 62,
+      "arquivo": "public/AUDIT_ENTERPRISE_FINAL.pdf",
+      "caminho_relativo": "public/AUDIT_ENTERPRISE_FINAL.pdf",
+      "tipo": "pdf_texto",
+      "sha256": "4957888d9f6d3bb5537b2370656e83e93f6877db3d59f58f8607c49f7576135b",
+      "sha256_texto_extraido": "e5fa9dc5b4eedf25598f606643fe0042e7083cfa7316c0f6eda488373b7ce1e4",
+      "linhas_texto_ou_extraido": 1808,
+      "lote": 3,
+      "cobertura": "concluida",
+      "metodo": "extração integral pdftotext -layout e leitura do texto",
+      "duplicata_binaria_de": null,
+      "conceito": "PDF público da auditoria enterprise",
+      "avaliacao": "Mesmo binário do PDF 20a6b98b1; contém métricas não reais, checklist positivo e muitos links com erro. Duplicação não amplia evidência.",
+      "achados": [
+        "D03",
+        "D13"
+      ]
+    },
+    {
+      "indice": 63,
+      "arquivo": "public/images/promo-brindes-logo-v2.png",
+      "caminho_relativo": "public/images/promo-brindes-logo-v2.png",
+      "tipo": "imagem",
+      "sha256": "a6500f1ec237458463157c340c7bde072abce380c074bfc8468cdb1328b0b2cf",
+      "sha256_texto_extraido": null,
+      "linhas_texto_ou_extraido": null,
+      "lote": 3,
+      "cobertura": "concluida",
+      "metodo": "inspeção visual do PNG",
+      "duplicata_binaria_de": null,
+      "conceito": "Marca Promo Brindes em PNG",
+      "avaliacao": "Inspeção visual mostra marca manuscrita Promo Brindes com desenho de presente. Não é identidade Sicoob; duplica src/assets.",
+      "achados": [
+        "D08"
+      ]
+    },
+    {
+      "indice": 64,
+      "arquivo": "public/placeholder.svg",
+      "caminho_relativo": "public/placeholder.svg",
+      "tipo": "texto",
+      "sha256": "64badf7aabda0b9630b87020ffb6095cb858ccbcf66b355c2aa08b1063954d3b",
+      "sha256_texto_extraido": "64badf7aabda0b9630b87020ffb6095cb858ccbcf66b355c2aa08b1063954d3b",
+      "linhas_texto_ou_extraido": 1,
+      "lote": 3,
+      "cobertura": "concluida",
+      "metodo": "leitura integral do SVG e inspeção visual após renderização Chromium",
+      "duplicata_binaria_de": null,
+      "conceito": "Imagem genérica de placeholder",
+      "avaliacao": "SVG lido e renderizado: área cinza com ícone genérico de imagem, sem conteúdo de produto nem marca. Recurso de fallback.",
+      "achados": [
+        "D08"
+      ]
+    },
+    {
+      "indice": 65,
+      "arquivo": "public/reports/AUDIT_REPORT_20a6b98b1.pdf",
+      "caminho_relativo": "public/reports/AUDIT_REPORT_20a6b98b1.pdf",
+      "tipo": "pdf_texto",
+      "sha256": "4957888d9f6d3bb5537b2370656e83e93f6877db3d59f58f8607c49f7576135b",
+      "sha256_texto_extraido": "e5fa9dc5b4eedf25598f606643fe0042e7083cfa7316c0f6eda488373b7ce1e4",
+      "linhas_texto_ou_extraido": 1808,
+      "lote": 3,
+      "cobertura": "concluida",
+      "metodo": "extração integral e confirmação de duplicata binária SHA-256 do item 62",
+      "duplicata_binaria_de": "public/AUDIT_ENTERPRISE_FINAL.pdf",
+      "conceito": "PDF público 20a6b98b1",
+      "avaliacao": "Duplicata binária exata de public/AUDIT_ENTERPRISE_FINAL.pdf. Foi extraído e confirmado por SHA-256; não é auditoria independente.",
+      "achados": [
+        "D03",
+        "D13"
+      ]
+    },
+    {
+      "indice": 66,
+      "arquivo": "public/reports/AUDIT_REPORT_37d88d6bf.pdf",
+      "caminho_relativo": "public/reports/AUDIT_REPORT_37d88d6bf.pdf",
+      "tipo": "pdf_texto",
+      "sha256": "225e6c4d99e86f04030f80e3201bf2c13f92bbd54aa1880a7dfc2736cc94019d",
+      "sha256_texto_extraido": "c94bb1e4d4d21267114682b5164778dc72fef15fdcef6c77294ceb31e6bb9a36",
+      "linhas_texto_ou_extraido": 756,
+      "lote": 4,
+      "cobertura": "concluida",
+      "metodo": "extração integral pdftotext -layout e leitura do texto",
+      "duplicata_binaria_de": null,
+      "conceito": "PDF público 37d88d6bf",
+      "avaliacao": "Versão com 98,2%, 1164 componentes, 196 testes e links inválidos; lacunas de logs e criptografia ainda pendentes.",
+      "achados": [
+        "D03",
+        "D13"
+      ]
+    },
+    {
+      "indice": 67,
+      "arquivo": "public/reports/AUDIT_REPORT_3b0427aef.pdf",
+      "caminho_relativo": "public/reports/AUDIT_REPORT_3b0427aef.pdf",
+      "tipo": "pdf_texto",
+      "sha256": "6bd0cdc181b306515dcca76b1ced622c616359d2dc83c57214b4d0fed90195b7",
+      "sha256_texto_extraido": "ac3b3344689a9241c911c68d91b9087fdf655d6a0176c562f325f09025b502ef",
+      "linhas_texto_ou_extraido": 1809,
+      "lote": 4,
+      "cobertura": "concluida",
+      "metodo": "extração integral e comparação integral normalizada com PDF-base; leitura de todas as diferenças",
+      "duplicata_binaria_de": null,
+      "conceito": "PDF público 3b0427aef",
+      "avaliacao": "Comparado integralmente ao PDF-base normalizado: metadados, contagem e estado de lacunas diferem. Conteúdo repetido não confirma correção.",
+      "achados": [
+        "D03",
+        "D13"
+      ]
+    },
+    {
+      "indice": 68,
+      "arquivo": "public/reports/AUDIT_REPORT_6a6993b3a.pdf",
+      "caminho_relativo": "public/reports/AUDIT_REPORT_6a6993b3a.pdf",
+      "tipo": "pdf_texto",
+      "sha256": "dd0a525cea1602a98d690976682c7b0dcb4935e4674e59e9003c392f027a5ad2",
+      "sha256_texto_extraido": "297791d93b85ef8b98da96c085421464b03420caf13a9cf05d740c0f3cc3dada",
+      "linhas_texto_ou_extraido": 1808,
+      "lote": 4,
+      "cobertura": "concluida",
+      "metodo": "extração integral e comparação integral normalizada com PDF-base; leitura de todas as diferenças",
+      "duplicata_binaria_de": null,
+      "conceito": "PDF público 6a6993b3a",
+      "avaliacao": "Comparação integral ao PDF-base mostra essencialmente metadados de execução diferentes. Preserva fragilidades de evidência.",
+      "achados": [
+        "D03",
+        "D13"
+      ]
+    },
+    {
+      "indice": 69,
+      "arquivo": "public/reports/AUDIT_REPORT_892fa9f31.md",
+      "caminho_relativo": "public/reports/AUDIT_REPORT_892fa9f31.md",
+      "tipo": "texto",
+      "sha256": "d538a118c011550c25a32ff7c280494f9827035b2f3058c2de0d9f9ad6dbf4ad",
+      "sha256_texto_extraido": "d538a118c011550c25a32ff7c280494f9827035b2f3058c2de0d9f9ad6dbf4ad",
+      "linhas_texto_ou_extraido": 422,
+      "lote": 4,
+      "cobertura": "concluida",
+      "metodo": "leitura integral do texto",
+      "duplicata_binaria_de": null,
+      "conceito": "Relatório público 892fa9f31",
+      "avaliacao": "Métricas Reais marcado negativo, cobertura 98,2%, RLS 100% e validações Sim com links 404. Código do gerador confirma valores padrão.",
+      "achados": [
+        "D03",
+        "D13"
+      ]
+    },
+    {
+      "indice": 70,
+      "arquivo": "public/reports/AUDIT_REPORT_afc944619.md",
+      "caminho_relativo": "public/reports/AUDIT_REPORT_afc944619.md",
+      "tipo": "texto",
+      "sha256": "b66671059e37fac6923cc6bea9525927711c6bbeaeffe9fa3b7c6192ab0187fb",
+      "sha256_texto_extraido": "b66671059e37fac6923cc6bea9525927711c6bbeaeffe9fa3b7c6192ab0187fb",
+      "linhas_texto_ou_extraido": 422,
+      "lote": 4,
+      "cobertura": "concluida",
+      "metodo": "comparação integral com versão-base lida e leitura de todas as diferenças",
+      "duplicata_binaria_de": null,
+      "conceito": "Relatório público afc944619",
+      "avaliacao": "Comparação integral ao 892fa9f31: diferenças de metadados. Mesmas afirmações e falhas de rastreabilidade.",
+      "achados": [
+        "D03",
+        "D13"
+      ]
+    },
+    {
+      "indice": 71,
+      "arquivo": "public/reports/AUDIT_REPORT_b342d62cb.md",
+      "caminho_relativo": "public/reports/AUDIT_REPORT_b342d62cb.md",
+      "tipo": "texto",
+      "sha256": "0f40252c1bb577fa08ab6d951825cbcfba7c4d890a8c3f5cfe6c8189fc50b6a8",
+      "sha256_texto_extraido": "0f40252c1bb577fa08ab6d951825cbcfba7c4d890a8c3f5cfe6c8189fc50b6a8",
+      "linhas_texto_ou_extraido": 422,
+      "lote": 4,
+      "cobertura": "concluida",
+      "metodo": "comparação integral com versão-base lida e leitura de todas as diferenças",
+      "duplicata_binaria_de": null,
+      "conceito": "Relatório público b342d62cb",
+      "avaliacao": "Difere do 892fa9f31 em metadados e cobertura de 88,4%. Não há ensaio anexado que explique ou valide a alteração.",
+      "achados": [
+        "D03",
+        "D13"
+      ]
+    },
+    {
+      "indice": 72,
+      "arquivo": "public/reports/AUDIT_REPORT_d9912d316.md",
+      "caminho_relativo": "public/reports/AUDIT_REPORT_d9912d316.md",
+      "tipo": "texto",
+      "sha256": "8ecfe2e4a93dc2bd64664dd21f771ae6fda6cf799b1bbe18274637c9b54baa10",
+      "sha256_texto_extraido": "8ecfe2e4a93dc2bd64664dd21f771ae6fda6cf799b1bbe18274637c9b54baa10",
+      "linhas_texto_ou_extraido": 422,
+      "lote": 4,
+      "cobertura": "concluida",
+      "metodo": "comparação integral com versão-base lida e leitura de todas as diferenças",
+      "duplicata_binaria_de": null,
+      "conceito": "Relatório público d9912d316",
+      "avaliacao": "Muda metadados, componentes para 1168 e lacunas para mitigadas/implementadas; gerador possui essas resoluções fixas.",
+      "achados": [
+        "D03",
+        "D13"
+      ]
+    },
+    {
+      "indice": 73,
+      "arquivo": "public/reports/AUDIT_REPORT_e3392dc9c.md",
+      "caminho_relativo": "public/reports/AUDIT_REPORT_e3392dc9c.md",
+      "tipo": "texto",
+      "sha256": "225c9bfd45e8d4c5e9394bb798e7698a67e11d1608653e0c57d57d2c0c0eea7b",
+      "sha256_texto_extraido": "225c9bfd45e8d4c5e9394bb798e7698a67e11d1608653e0c57d57d2c0c0eea7b",
+      "linhas_texto_ou_extraido": 231,
+      "lote": 4,
+      "cobertura": "concluida",
+      "metodo": "leitura integral do texto",
+      "duplicata_binaria_de": null,
+      "conceito": "Relatório público e3392dc9c",
+      "avaliacao": "Versão anterior com a mesma matriz de 171 tabelas e sem seção extensa de falhas. Ausência da seção não prova links válidos.",
+      "achados": [
+        "D03",
+        "D13"
+      ]
+    },
+    {
+      "indice": 74,
+      "arquivo": "public/reports/AUDIT_REPORT_e6b40b200.md",
+      "caminho_relativo": "public/reports/AUDIT_REPORT_e6b40b200.md",
+      "tipo": "texto",
+      "sha256": "109cf9a677d0a71c5182df0995af0d15d387b2bc89dc4108cd73a07f79eaba3c",
+      "sha256_texto_extraido": "109cf9a677d0a71c5182df0995af0d15d387b2bc89dc4108cd73a07f79eaba3c",
+      "linhas_texto_ou_extraido": 422,
+      "lote": 4,
+      "cobertura": "concluida",
+      "metodo": "comparação integral com versão-base lida e leitura de todas as diferenças",
+      "duplicata_binaria_de": null,
+      "conceito": "Relatório público e6b40b200",
+      "avaliacao": "Comparação integral com d9912d316: metadados e contagem de componentes para 1164. Sem novo ensaio demonstrado.",
+      "achados": [
+        "D03",
+        "D13"
+      ]
+    },
+    {
+      "indice": 75,
+      "arquivo": "public/reports/AUDIT_REPORT_ea7691634.md",
+      "caminho_relativo": "public/reports/AUDIT_REPORT_ea7691634.md",
+      "tipo": "texto",
+      "sha256": "8999468f1de3b6423758ffa35151f73a9ede7d2247889f2593df028f3f66b70a",
+      "sha256_texto_extraido": "8999468f1de3b6423758ffa35151f73a9ede7d2247889f2593df028f3f66b70a",
+      "linhas_texto_ou_extraido": 422,
+      "lote": 4,
+      "cobertura": "concluida",
+      "metodo": "comparação integral com versão-base lida e leitura de todas as diferenças",
+      "duplicata_binaria_de": null,
+      "conceito": "Relatório público ea7691634",
+      "avaliacao": "Comparação integral com d9912d316: metadados. As conclusões não constituem validação independente.",
+      "achados": [
+        "D03",
+        "D13"
+      ]
+    },
+    {
+      "indice": 76,
+      "arquivo": "public/reports/AUDIT_REPORT_f9c1c233d.md",
+      "caminho_relativo": "public/reports/AUDIT_REPORT_f9c1c233d.md",
+      "tipo": "texto",
+      "sha256": "8ae706165c86a674f1ffe5f21a1bdc33e7963dd5a40131f6c7574f45627c1a06",
+      "sha256_texto_extraido": "8ae706165c86a674f1ffe5f21a1bdc33e7963dd5a40131f6c7574f45627c1a06",
+      "linhas_texto_ou_extraido": 422,
+      "lote": 4,
+      "cobertura": "concluida",
+      "metodo": "comparação integral com versão-base lida e leitura de todas as diferenças",
+      "duplicata_binaria_de": null,
+      "conceito": "Relatório público f9c1c233d",
+      "avaliacao": "Comparação integral com d9912d316: metadados. Preserva RLS 100% e problemas de prova por tabela.",
+      "achados": [
+        "D03",
+        "D13"
+      ]
+    },
+    {
+      "indice": 77,
+      "arquivo": "public/robots.txt",
+      "caminho_relativo": "public/robots.txt",
+      "tipo": "texto",
+      "sha256": "3b4bcd7e7a3760ab7eaa6415ec5edc251f99d5839f524f1e64d0ce9f2e1eb72c",
+      "sha256_texto_extraido": "3b4bcd7e7a3760ab7eaa6415ec5edc251f99d5839f524f1e64d0ce9f2e1eb72c",
+      "linhas_texto_ou_extraido": 16,
+      "lote": 4,
+      "cobertura": "concluida",
+      "metodo": "leitura integral do texto",
+      "duplicata_binaria_de": null,
+      "conceito": "Indexação pública",
+      "avaliacao": "robots permite rastreio e aponta sitemap em host legado vamos-build-awesome. Não protege relatórios rotulados confidenciais em public/.",
+      "achados": [
+        "D08",
+        "D13"
+      ]
+    },
+    {
+      "indice": 78,
+      "arquivo": "reports/AUDIT_REPORT_733ce6c62.md",
+      "caminho_relativo": "reports/AUDIT_REPORT_733ce6c62.md",
+      "tipo": "texto",
+      "sha256": "5821e476310bc5d1f8c8ea3b2480b242f82b2d96b00adb4b85a600676be9c85e",
+      "sha256_texto_extraido": "5821e476310bc5d1f8c8ea3b2480b242f82b2d96b00adb4b85a600676be9c85e",
+      "linhas_texto_ou_extraido": 212,
+      "lote": 4,
+      "cobertura": "concluida",
+      "metodo": "leitura integral do texto",
+      "duplicata_binaria_de": null,
+      "conceito": "Relatório histórico 733ce6c62",
+      "avaliacao": "Versão mais antiga com matriz repetitiva e declaração de zero lacunas críticas; não pode ser usada para desconsiderar achados atuais.",
+      "achados": [
+        "D03"
+      ]
+    },
+    {
+      "indice": 79,
+      "arquivo": "src/assets/logo-promobrindes.png",
+      "caminho_relativo": "src/assets/logo-promobrindes.png",
+      "tipo": "imagem",
+      "sha256": "a6500f1ec237458463157c340c7bde072abce380c074bfc8468cdb1328b0b2cf",
+      "sha256_texto_extraido": null,
+      "linhas_texto_ou_extraido": null,
+      "lote": 4,
+      "cobertura": "concluida",
+      "metodo": "confirmação SHA-256 de duplicata binária da imagem inspecionada no item 63",
+      "duplicata_binaria_de": "public/images/promo-brindes-logo-v2.png",
+      "conceito": "Marca Promo Brindes duplicada",
+      "avaliacao": "SHA-256 idêntico à imagem de public/images. Inspeção visual equivalente: marca do fornecedor, não do Sicoob.",
+      "achados": [
+        "D08"
+      ]
+    },
+    {
+      "indice": 80,
+      "arquivo": "tests/rls/README.md",
+      "caminho_relativo": "tests/rls/README.md",
+      "tipo": "texto",
+      "sha256": "5ecc5fcf67ce37d3d6cda0177ec9c52cb7cab94cc951fb7e4818b43f4e132121",
+      "sha256_texto_extraido": "5ecc5fcf67ce37d3d6cda0177ec9c52cb7cab94cc951fb7e4818b43f4e132121",
+      "linhas_texto_ou_extraido": 34,
+      "lote": 4,
+      "cobertura": "concluida",
+      "metodo": "leitura integral do texto",
+      "duplicata_binaria_de": null,
+      "conceito": "Testes RLS documentados",
+      "avaliacao": "Somente anônimo, vendedor e admin, execução dependente de credenciais. Falta escopo entre cooperativas e PAs; INSERT de orders contradiz a matriz.",
+      "achados": [
+        "D01",
+        "D05",
+        "D11"
+      ]
+    }
+  ]
+}

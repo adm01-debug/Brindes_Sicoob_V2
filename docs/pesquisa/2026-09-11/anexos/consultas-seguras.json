@@ -1,0 +1,40 @@
+[
+  {
+    "tabela": "sicoob_orders",
+    "status": 200,
+    "registros_visiveis_anonimo": 0
+  },
+  {
+    "tabela": "profiles",
+    "status": 200,
+    "registros_visiveis_anonimo": 0
+  },
+  {
+    "tabela": "cooperativas",
+    "status": 200,
+    "registros_visiveis_anonimo": 0
+  },
+  {
+    "tabela": "postos_atendimento",
+    "status": 200,
+    "registros_visiveis_anonimo": 0
+  },
+  {
+    "ponte": "external-db-bridge",
+    "status": 200,
+    "resposta": {
+      "chaves": [
+        "records",
+        "data",
+        "count",
+        "_unconfigured",
+        "_message",
+        "_details",
+        "request_id"
+      ],
+      "registros": 0,
+      "nao_configurado": true,
+      "erro": null
+    }
+  }
+]
