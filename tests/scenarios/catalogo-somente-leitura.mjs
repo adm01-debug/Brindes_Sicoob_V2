@@ -53,7 +53,7 @@ for (const path of ['products?select=id', 'rpc/get_category_descendants?category
   });
 }
 
-test('remove custo e margem em qualquer profundidade sem alterar a origem', () => {
+test('remove custo, margem e fornecedor interno sem alterar a origem', () => {
   const original = {
     id: 'produto-sintetico',
     sale_price: 42,
@@ -65,9 +65,9 @@ test('remove custo e margem em qualquer profundidade sem alterar a origem', () =
   assert.deepEqual(safe, {
     id: 'produto-sintetico',
     sale_price: 42,
-    supplier: { name: 'Fornecedor' },
     variants: [{ color: 'verde' }],
   });
+  assert.equal('supplier' in safe, false);
   assert.equal(original.cost_price, 21);
 });
 

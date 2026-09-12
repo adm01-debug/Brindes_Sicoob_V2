@@ -23,6 +23,8 @@
 .vscode/*
 coverage/
 dist
+!vendor/pptxgenjs-browser/dist/
+!vendor/pptxgenjs-browser/dist/pptxgen.es.js
 dist-ssr
 lerna-debug.log*
 logs
