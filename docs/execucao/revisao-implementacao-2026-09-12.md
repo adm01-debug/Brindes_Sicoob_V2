@@ -86,9 +86,12 @@ As reproduções históricas ficam fora da suíte normal do produto; executam ap
 
 Todos os checks executáveis consultados do candidato `cfbcd8f` passaram. Supabase Preview ficou ignorado. A coleta preserva nomes, horários, commit e links dos jobs no [registro de CI](revisao-implementacao-2026-09-12/ci.json).
 
+Na publicação desta auditoria, o hook local `pre-push` executou `npm run typecheck` e falhou nos erros globais já existentes em `src/`. O diff confirmou que código de produto, migrations, testes do produto, dependências e workflows permaneceram idênticos ao candidato. O envio da documentação e executores foi realizado sem repetir esse hook, mantendo os checks remotos e a PR aberta. Isso não converte a checagem global em aprovada; ela continua pendente. [Registro do hook local](revisao-implementacao-2026-09-12/hook-local.json).
+
 | Verificação | Resultado observado | Limite |
 |---|---|---|
 | Qualidade, contratos e build | Sucesso | Comparadores toleram dívida histórica; não significa lint/tipos globais zerados. |
+| Typecheck global no hook local | Falhou | Erros preexistentes de `src/`; o commit da auditoria não os corrige. |
 | Verba/aprovação e entrada/demo | Sucesso | Cenários isolados e telas delimitadas; não percorrem compra real completa. |
 | Smoke E2E | 6 passados, 33 ignorados | Ignorados não contam como aprovados. |
 | E2E shard 1 | 40 passados, 2 flaky | Dois casos precisaram de retry. |

@@ -1,0 +1,17 @@
+{
+  "data": "2026-09-12",
+  "commit_documentacao_na_tentativa": "ce5cb06ed9744050aacc21c15e5825562627f1fd",
+  "commit_codigo_produto": "cfbcd8f14f023d385ae4329a3ac037c1b19c7b17",
+  "hook": ".husky/pre-push",
+  "comando_iniciado": "npm run typecheck",
+  "resultado": "Falhou; hook retornou código 2 e git push retornou 1",
+  "exemplos_de_diagnosticos": [
+    "src/components/admin/DiscountApprovalQueue.tsx:118 — TS18048",
+    "src/components/admin/DiscountManagementPanel.tsx:234 — TS2532",
+    "src/utils/kitPdfGenerator.ts:303 — TS2322"
+  ],
+  "verificacao_de_escopo": "git diff --name-only cfbcd8f14f023d385ae4329a3ac037c1b19c7b17 HEAD -- src supabase tests e2e .github package.json package-lock.json retornou vazio",
+  "tratamento": "Envio somente da documentação e executores com HUSKY=0 na chamada de push; nenhum arquivo de hook ou workflow modificado; PR mantida aberta",
+  "typecheck_global_aprovado": false,
+  "limite": "Baseline de CI do candidato passou, mas não substitui typecheck global sem erros. Esta auditoria não corrige dívida histórica."
+}
