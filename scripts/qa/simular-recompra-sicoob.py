@@ -4,6 +4,7 @@ import json
 import subprocess
 import time
 import uuid
+from postgres_ready import wait_for_postgres
 
 CONTAINER = "sicoob-recompra-" + uuid.uuid4().hex[:10]
 ROOT = Path(__file__).resolve().parents[2]
@@ -76,12 +77,7 @@ try:
         "docker", "run", "--rm", "-d", "--name", CONTAINER,
         "--network", "none", "-e", "POSTGRES_HOST_AUTH_METHOD=trust", "postgres:16-alpine",
     ])
-    for _ in range(120):
-        if command(["docker", "exec", CONTAINER, "pg_isready", "-U", "postgres"], check=False).returncode == 0:
-            break
-        time.sleep(0.25)
-    else:
-        raise RuntimeError("PostgreSQL descartável não iniciou")
+    wait_for_postgres(command, CONTAINER)
 
     sql(FIXTURE.read_text())
     sql(MIGRATION.read_text())
