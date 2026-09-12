@@ -273,6 +273,12 @@ DECLARE
     ELSE NULLIF(to_jsonb(NEW) ->> 'order_id', '')::uuid
   END;
 BEGIN
+  IF TG_TABLE_NAME = 'sicoob_order_items' THEN
+    PERFORM 1
+      FROM public.sicoob_orders o
+     WHERE o.id IN (v_old_order_id, v_new_order_id)
+     FOR UPDATE;
+  END IF;
   IF EXISTS (
     SELECT 1
       FROM public.sicoob_orders o
@@ -297,3 +303,9 @@ COMMENT ON COLUMN public.sicoob_orders.approval_policy_snapshot IS
   'Fotografia imutável da política aplicada na primeira submissão do pedido.';
 COMMENT ON FUNCTION public.capture_sicoob_order_approval_policy() IS
   'Captura e protege a política efetivamente aplicada ao pedido.';
+
+DROP TRIGGER IF EXISTS tr_freeze_sicoob_order_total_pending_approval ON public.sicoob_orders;
+CREATE TRIGGER tr_freeze_sicoob_order_scope_pending_approval
+BEFORE UPDATE OF total_amount, pa_id, cooperative_id, created_at ON public.sicoob_orders
+FOR EACH ROW
+EXECUTE FUNCTION public.freeze_sicoob_order_while_approval_pending();

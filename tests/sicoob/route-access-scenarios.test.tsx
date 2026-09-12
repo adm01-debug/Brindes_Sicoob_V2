@@ -23,7 +23,8 @@ describe('Cenários reais dos guards de compras', () => {
   it.each([
     ['/pa/verba','comprador_pac'], ['/dashboard-pa','gerente_pa'], ['/sicoob/pedidos','comprador_pac'],
     ['/sicoob/pedidos/pedido-teste','vendedor'], ['/gestor/aprovacoes','gestor_compras'],
-    ['/gestor','comprador_singular'], ['/vendedor/dashboard','vendedor'],
+    ['/gestor','comprador_singular'], ['/gestor/agregados','gerente_pa'],
+    ['/gestor/agregados','comprador_pac'], ['/vendedor/dashboard','vendedor'],
   ])('%s permite o papel atribuído %s', (path, role) => {
     mostrar(path, [role]);
     expect(screen.getByText('Conteúdo autorizado')).toBeInTheDocument();

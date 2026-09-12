@@ -24,13 +24,7 @@ export const useOrderInvoices = (orderId?: string) => {
         .order("created_at", { ascending: false });
       if (queryError) throw queryError;
 
-      return Promise.all((data || []).map(async invoice => {
-        const { data: signed, error: signedError } = await supabase.storage
-          .from('sicoob-order-documents')
-          .createSignedUrl(invoice.file_path, 300);
-        if (signedError) throw signedError;
-        return { ...invoice, file_url: signed.signedUrl };
-      }));
+      return data || [];
     },
     enabled: !!orderId,
   });
@@ -54,9 +48,29 @@ export const useOrderInvoices = (orderId?: string) => {
       queryClient.invalidateQueries({ queryKey: ["order-audit", orderId] });
       toast.success("Nota fiscal adicionada");
     },
-    onError: async (_mutationError, values) => {
-      await supabase.storage.from('sicoob-order-documents').remove([values.file_path]);
-      toast.error('Não foi possível vincular a nota fiscal ao pedido.');
+    onError: async (mutationError, values) => {
+      // Uma resposta perdida pode ocorrer depois do commit da RPC. Confirme que
+      // o arquivo ficou órfão antes de tentar removê-lo.
+      const { data: linkedInvoice, error: lookupError } = await supabase
+        .from('sicoob_order_invoices')
+        .select('id')
+        .eq('file_path', values.file_path)
+        .maybeSingle();
+      if (linkedInvoice || lookupError) {
+        toast.error('Não foi possível confirmar o vínculo da nota fiscal.', {
+          description: lookupError
+            ? 'O arquivo foi preservado para evitar perda. Atualize a página antes de tentar novamente.'
+            : 'O vínculo já existe. Atualize a página para consultar a nota.',
+        });
+        return;
+      }
+
+      const { error: cleanupError } = await supabase.storage.from('sicoob-order-documents').remove([values.file_path]);
+      toast.error('Não foi possível vincular a nota fiscal ao pedido.', {
+        description: cleanupError
+          ? `O arquivo órfão não pôde ser removido: ${cleanupError.message}`
+          : mutationError instanceof Error ? mutationError.message : undefined,
+      });
     },
   });
 
@@ -89,11 +103,19 @@ export const useOrderInvoices = (orderId?: string) => {
       }
       
       return data.path;
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Upload error:", err);
       throw err;
     }
   };
 
-  return { invoices, isLoading, error, addInvoice, uploadFile };
+  const getInvoiceDownloadUrl = async (filePath: string) => {
+    const { data, error: signedError } = await supabase.storage
+      .from('sicoob-order-documents')
+      .createSignedUrl(filePath, 300);
+    if (signedError) throw signedError;
+    return data.signedUrl;
+  };
+
+  return { invoices, isLoading, error, addInvoice, uploadFile, getInvoiceDownloadUrl };
 };

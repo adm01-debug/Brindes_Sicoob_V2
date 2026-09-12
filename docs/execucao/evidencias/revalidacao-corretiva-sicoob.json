@@ -15,16 +15,20 @@
       "tbt_ms": 0,
       "bundle_publico_gzip": "reduzido de aproximadamente 92 KB para 57 KB"
     },
-    "lint_baseline": "aprovado; drift positivo observado",
-    "typecheck_baseline": "aprovado; drift positivo observado",
+    "lint_baseline": "aprovado; 47 erros eliminados em relação a origin/main nos arquivos avaliados",
+    "typecheck_baseline": "aprovado; 1214 diagnósticos históricos, igual ao baseline, sem regressões nos arquivos alterados",
     "unitarios_alterados": "68/68 aprovados na rodada final agrupada",
+    "regressoes_complementares": "38/38 aprovadas em oito arquivos de teste",
     "regressoes_auditoria": "44/44 aprovadas",
-    "postgres": ["politica_aprovada", "recompra_aprovada", "financeiro_arte_aprovado", "consolidacao_aprovada"],
+    "postgres": ["verba_aprovada", "eventos_status_aprovados", "politica_aprovada", "versionamento_aprovado", "recompra_aprovada", "financeiro_arte_aprovado", "consolidacao_aprovada"],
     "deno_pgrest": "5/5 aprovadas",
+    "deno_recompra": "edge sicoob-reorder aprovada no deno check",
     "edge_authorization": "102/102 declaradas e enforced",
     "codeql_remoto": "2031 fontes e 10 workflows analisados; primeiro SARIF encontrou um js/user-controlled-bypass no callback SSO, corrigido com motivos fechados e mensagens fixas; painel do GitHub permanece desabilitado",
     "e2e_publico": "6/6 happy e 6/6 timeout aprovados",
     "regressao_login": "8/8 em Vitest e 3/3 em Chromium",
+    "pwa_producao_local": "1/1 em Chromium; Service Worker ativo, manifesto e fallback precacheados e rota desconhecida atendida offline",
+    "revisao_de_codigo": "62 apontamentos reavaliados; achados ainda válidos tratados no candidato local e aguardando confirmação no novo SHA do PR",
     "vitest_global": "não aprovado: 141 falhas, 5177 aprovados, 104 ignorados, 31 snapshots falhos"
   },
   "pendencias_obrigatorias": [

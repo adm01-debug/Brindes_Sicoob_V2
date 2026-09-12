@@ -92,7 +92,12 @@ const navGroups: NavGroup[] = [
       { icon: Package, label: "Pedidos", href: "/sicoob/pedidos" },
       { icon: LayoutGrid, label: "Acompanhamento", href: "/sicoob/pedidos/kanban" },
       { icon: Truck, label: "Logística & POD", href: "/sicoob/logistica" },
-      { icon: Layers, label: "Agregados", href: "/gestor/agregados", adminOnly: true },
+      {
+        icon: Layers,
+        label: "Agregados e recebimentos",
+        href: "/gestor/agregados",
+        allowedRoles: ['dev', 'supervisor', 'gestor_compras', 'comprador_singular', 'gerente_pa', 'comprador_pac'],
+      },
     ],
   },
   {
@@ -199,7 +204,7 @@ export const SidebarReorganized = React.forwardRef<HTMLElement, SidebarProps>(
   const navigate = useNavigate();
   const [isCollapsed, setIsCollapsed] = useState(false);
   
-  const { isAdmin, isDev, isGestorCompras, isCompradorSingular, isSupervisorOrAbove } = useAuth();
+  const { isAdmin, isDev, isGestorCompras, isCompradorSingular, isSupervisorOrAbove, roles } = useAuth();
 
   const isItemActive = useCallback((href: string, exact?: boolean) =>
     isNavItemActive(location.pathname, href, exact), [location.pathname]);
@@ -343,18 +348,19 @@ export const SidebarReorganized = React.forwardRef<HTMLElement, SidebarProps>(
   //    desenvolvedor os marque erroneamente como `adminOnly`.
   const isItemVisible = useCallback(
     (
-      item: { href?: string; adminOnly?: boolean; devOnly?: boolean },
+      item: { href?: string; adminOnly?: boolean; devOnly?: boolean; allowedRoles?: readonly string[] },
     ): boolean => {
       const href = item.href ?? "";
       // 1) Flags declarativas
       if (item.devOnly && !isDev) return false;
       if (item.adminOnly && !isSupervisorOrAbove) return false;
+      if (item.allowedRoles && !roles.some((role) => item.allowedRoles?.includes(role))) return false;
       // 2) SSOT por path (defesa contra flags faltantes/erradas)
       if (href && isDevOnlyPath(href) && !isDev) return false;
       if (href && isAdminOnlyPath(href) && !isSupervisorOrAbove) return false;
       return true;
     },
-    [isDev, isSupervisorOrAbove],
+    [isDev, isSupervisorOrAbove, roles],
   );
 
   const filteredGroups = useMemo(

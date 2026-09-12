@@ -39,6 +39,10 @@ def actor_sql(actor, statement, *, check=True):
     return sql(f"SET request.jwt.claim.sub = '{actor}';\n{statement}", check=check)
 
 
+def rls_actor_sql(actor, statement, *, check=True):
+    return sql(f"SET ROLE authenticated;\nSET request.jwt.claim.sub = '{actor}';\n{statement}\nRESET ROLE;", check=check)
+
+
 def scalar(response):
     values = [line for line in response.stdout.splitlines() if line and line != "SET"]
     if not values:
@@ -68,7 +72,23 @@ try:
       INSERT INTO auth.users VALUES ('{CREATOR}'), ('{APPROVER}');
       INSERT INTO public.user_roles VALUES ('{APPROVER}', 'supervisor');
       INSERT INTO public.sicoob_orders VALUES ('{ORDER}', '{CREATOR}', 'confirmed', 125.50, true);
+      GRANT USAGE ON SCHEMA public, storage TO authenticated;
+      GRANT SELECT ON public.sicoob_orders TO authenticated;
+      GRANT SELECT, INSERT, DELETE ON storage.objects TO authenticated;
     """)
+
+    assert scalar(sql("""
+      SELECT has_function_privilege(
+        'authenticated', 'public.sicoob_actor_can_manage_fulfillment(uuid,uuid)', 'EXECUTE'
+      )::text;
+    """)) == "true"
+    rls_actor_sql(CREATOR, f"""
+      INSERT INTO storage.objects (bucket_id, name, owner)
+      VALUES ('sicoob-order-documents', '{ORDER}/invoices/orfao.pdf', '{CREATOR}');
+      DELETE FROM storage.objects
+      WHERE bucket_id='sicoob-order-documents' AND name='{ORDER}/invoices/orfao.pdf';
+    """)
+    assert scalar(sql("SELECT count(*) FROM storage.objects;")) == "0"
 
     invoice_id = scalar(actor_sql(CREATOR, f"""
       SELECT public.add_sicoob_order_invoice(
@@ -81,16 +101,46 @@ try:
     """))
     assert invoice == f"{ORDER}|NF-0001|125.50|{ORDER}/invoices/nota.pdf", invoice
     assert scalar(sql("SELECT public FROM storage.buckets WHERE id='sicoob-order-documents';")) == "f"
-    result["documentos"] = "nota vinculada ao pedido Sicoob e bucket privado preservado"
+    assert scalar(sql("""
+      SELECT count(*) FROM pg_policies
+      WHERE schemaname='storage' AND tablename='objects'
+        AND policyname='sicoob_order_documents_delete_orphan_invoice' AND cmd='DELETE';
+    """)) == "1"
+    result["documentos"] = "nota vinculada ao pedido Sicoob; bucket privado e remoção restrita de órfão preservados"
 
-    payment_id = scalar(actor_sql(CREATOR, f"""
+    unauthorized_payment = actor_sql(CREATOR, f"""
+      SELECT public.record_sicoob_order_payment(
+        '{ORDER}', 1, 125.50, CURRENT_DATE, 'pending', '{invoice_id}', 'boleto', 'ERP-0001', NULL
+      );
+    """, check=False)
+    assert unauthorized_payment.returncode != 0 and "não pode registrar" in unauthorized_payment.stderr
+
+    sql(f"INSERT INTO public.user_roles VALUES ('{CREATOR}', 'gestor_compras');")
+    assert scalar(sql(f"SELECT public.sicoob_actor_can_manage_finance('{CREATOR}', '{ORDER}')::text;")) == "true"
+    sql(f"DELETE FROM public.user_roles WHERE user_id = '{CREATOR}';")
+
+    initial_refund = actor_sql(APPROVER, f"""
+      SELECT public.record_sicoob_order_payment(
+        '{ORDER}', 1, 125.50, CURRENT_DATE, 'refunded', '{invoice_id}', 'boleto', 'ERP-0001', NULL
+      );
+    """, check=False)
+    assert initial_refund.returncode != 0 and "Dados da parcela" in initial_refund.stderr
+
+    payment_id = scalar(actor_sql(APPROVER, f"""
       SELECT public.record_sicoob_order_payment(
         '{ORDER}', 1, 125.50, CURRENT_DATE, 'pending', '{invoice_id}', 'boleto', 'ERP-0001', NULL
       );
     """))
-    actor_sql(CREATOR, f"""
+    update_without_version = actor_sql(APPROVER, f"""
       SELECT public.record_sicoob_order_payment(
         '{ORDER}', 1, 125.50, CURRENT_DATE, 'paid', '{invoice_id}', 'boleto', 'ERP-0001', NULL
+      );
+    """, check=False)
+    assert update_without_version.returncode != 0 and "versão atual" in update_without_version.stderr
+    pending_version = scalar(sql(f"SELECT updated_at FROM public.sicoob_order_payments WHERE id='{payment_id}';"))
+    actor_sql(APPROVER, f"""
+      SELECT public.record_sicoob_order_payment(
+        '{ORDER}', 1, 125.50, CURRENT_DATE, 'paid', '{invoice_id}', 'boleto', 'ERP-0001', '{pending_version}'
       );
     """)
     payment = scalar(sql(f"""
@@ -100,19 +150,40 @@ try:
     assert payment == "paid|125.50|true|ERP-0001", payment
     direct_payment_tamper = sql(f"UPDATE public.sicoob_order_payments SET amount=1 WHERE id='{payment_id}';", check=False)
     assert direct_payment_tamper.returncode != 0 and "fluxo financeiro formal" in direct_payment_tamper.stderr
-    paid_rewrite = actor_sql(CREATOR, f"""
+    paid_rewrite = actor_sql(APPROVER, f"""
       SELECT public.record_sicoob_order_payment(
-        '{ORDER}', 1, 100, CURRENT_DATE, 'paid', '{invoice_id}', 'boleto', 'ERP-0001', NULL
+        '{ORDER}', 1, 100, CURRENT_DATE, 'paid', '{invoice_id}', 'boleto', 'ERP-0001',
+        (SELECT updated_at FROM public.sicoob_order_payments WHERE id='{payment_id}')
       );
     """, check=False)
     assert paid_rewrite.returncode != 0 and "Parcela liquidada" in paid_rewrite.stderr
-    over_total = actor_sql(CREATOR, f"""
+    over_total = actor_sql(APPROVER, f"""
       SELECT public.record_sicoob_order_payment(
         '{ORDER}', 2, 1, CURRENT_DATE, 'pending', NULL, NULL, 'ERP-0002', NULL
       );
     """, check=False)
     assert over_total.returncode != 0 and "supera o valor" in over_total.stderr
-    result["pagamentos"] = "parcela conciliada por RPC; soma limitada ao pedido; registro liquidado e escrita direta protegidos"
+    paid_at = scalar(sql(f"SELECT paid_at FROM public.sicoob_order_payments WHERE id='{payment_id}';"))
+    actor_sql(APPROVER, f"""
+      SELECT public.refund_sicoob_order_payment(
+        '{payment_id}', 'Cobrança duplicada identificada',
+        (SELECT updated_at FROM public.sicoob_order_payments WHERE id='{payment_id}')
+      );
+    """)
+    refund = scalar(sql(f"""
+      SELECT status || '|' || (paid_at = '{paid_at}'::timestamptz)::text || '|'
+        || (refunded_at IS NOT NULL)::text || '|' || (refunded_by = '{APPROVER}')::text || '|' || refund_reason
+      FROM public.sicoob_order_payments WHERE id='{payment_id}';
+    """))
+    assert refund == "refunded|true|true|true|Cobrança duplicada identificada", refund
+    repeated_refund = actor_sql(APPROVER, f"""
+      SELECT public.refund_sicoob_order_payment(
+        '{payment_id}', 'Tentativa duplicada de estorno',
+        (SELECT updated_at FROM public.sicoob_order_payments WHERE id='{payment_id}')
+      );
+    """, check=False)
+    assert repeated_refund.returncode != 0 and "Somente uma parcela paga" in repeated_refund.stderr
+    result["pagamentos"] = "ator sem papel financeiro recusado e gestor de compras reconhecido; criação em estornado e sobrescrita sem versão recusadas; soma limitada; estorno formal preservou quitação e gravou motivo, data e ator"
 
     artwork1 = scalar(actor_sql(CREATOR, f"""
       SELECT public.create_sicoob_order_artwork_version(
@@ -142,7 +213,13 @@ try:
     assert direct_tamper.returncode != 0 and "imutável" in direct_tamper.stderr
     actor_sql(APPROVER, f"SELECT public.decide_sicoob_order_artwork('{artwork2}', 'approved', NULL);")
     sql(f"UPDATE public.sicoob_orders SET status='logistic' WHERE id='{ORDER}';")
-    result["arte"] = "autoaprovação recusada; versões e identidade preservadas; produção bloqueada até aprovação da versão vigente"
+    late_artwork = actor_sql(CREATOR, f"""
+      SELECT public.create_sicoob_order_artwork_version(
+        '{ORDER}', '{ORDER}/artwork/v3.pdf', '{HASH1}', '{{"brand":"Sicoob","logo":"v3"}}'::jsonb
+      );
+    """, check=False)
+    assert late_artwork.returncode != 0 and "após o início" in late_artwork.stderr
+    result["arte"] = "autoaprovação recusada; versões e identidade preservadas; produção bloqueada sem aprovação e nova arte recusada após logística"
 
     result["resultado"] = "aprovado"
     evidence = ROOT / "docs/execucao/evidencias/financeiro-arte-sicoob.json"

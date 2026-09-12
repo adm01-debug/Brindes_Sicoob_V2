@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type ChangeEvent } from "react";
 import { useOrderInvoices } from "@/hooks/orders/extensions";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -15,12 +15,13 @@ interface OrderInvoicesManagerProps {
 }
 
 export function OrderInvoicesManager({ orderId }: OrderInvoicesManagerProps) {
-  const { invoices, isLoading, addInvoice, uploadFile } = useOrderInvoices(orderId);
+  const { invoices, isLoading, addInvoice, uploadFile, getInvoiceDownloadUrl } = useOrderInvoices(orderId);
   const [isUploading, setIsUploading] = useState(false);
+  const [downloadingId, setDownloadingId] = useState<string | null>(null);
   const [invoiceNumber, setInvoiceNumber] = useState("");
   const [accessKey, setAccessKey] = useState("");
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -43,6 +44,25 @@ export function OrderInvoicesManager({ orderId }: OrderInvoicesManagerProps) {
       toast.error(error instanceof Error ? error.message : "Erro ao enviar nota fiscal");
     } finally {
       setIsUploading(false);
+    }
+  };
+
+  const handleDownload = async (invoiceId: string, filePath: string) => {
+    const downloadWindow = window.open('about:blank', '_blank');
+    try {
+      setDownloadingId(invoiceId);
+      const signedUrl = await getInvoiceDownloadUrl(filePath);
+      if (downloadWindow) {
+        downloadWindow.opener = null;
+        downloadWindow.location.replace(signedUrl);
+      } else {
+        window.location.assign(signedUrl);
+      }
+    } catch (error: unknown) {
+      downloadWindow?.close();
+      toast.error(error instanceof Error ? error.message : 'Não foi possível preparar o download.');
+    } finally {
+      setDownloadingId(null);
     }
   };
 
@@ -131,13 +151,16 @@ export function OrderInvoicesManager({ orderId }: OrderInvoicesManagerProps) {
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  {nf.file_url && (
-                    <Button variant="ghost" size="icon" asChild>
-                      <a href={nf.file_url} target="_blank" rel="noreferrer" title="Baixar">
-                        <Download className="h-4 w-4" />
-                      </a>
-                    </Button>
-                  )}
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    title="Baixar"
+                    aria-label={`Baixar nota fiscal ${nf.invoice_number}`}
+                    disabled={downloadingId === nf.id}
+                    onClick={() => handleDownload(nf.id, nf.file_path)}
+                  >
+                    <Download className="h-4 w-4" />
+                  </Button>
                   {nf.access_key && (
                     <Badge variant="secondary" className="hidden sm:flex text-[10px] font-mono">
                       {nf.access_key.slice(0, 4)}...{nf.access_key.slice(-4)}

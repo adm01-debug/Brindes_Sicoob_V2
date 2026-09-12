@@ -2,8 +2,8 @@
   "ambiente": "PostgreSQL 16 descartável, --network none; somente dados sintéticos",
   "migracao": "supabase/migrations/20260912190000_sicoob_consolidation_distribution.sql",
   "producao_verificada": false,
-  "criacao": "dois pedidos vinculados atomicamente; repetição idempotente; lote inválido sem órfãos",
-  "distribuicao": "itens distribuídos integralmente por PA; despacho exige alocação; escrita direta bloqueada",
-  "recebimento": "parciais acumulados por destino; excesso e ator externo recusados; avaria preservada em evento imutável",
+  "criacao": "vendedor de outra Singular recusado; dois pedidos vinculados atomicamente; repetição idempotente limitada ao mesmo ator e conteúdo; lote inválido sem órfãos",
+  "distribuicao": "itens distribuídos integralmente por PA; despacho moveu lote e pedidos para logística; PA enxergou somente seu destino; escrita direta bloqueada",
+  "recebimento": "retry idempotente não duplicou quantidades; parciais acumulados por destino; excesso e ator externo recusados; quitação integral concluiu os pedidos; avaria preservada em evento imutável",
   "resultado": "aprovado"
 }

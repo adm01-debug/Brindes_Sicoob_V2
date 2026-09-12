@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type ChangeEvent } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,7 +7,6 @@ import { Progress } from "@/components/ui/progress";
 import { FileText, Upload, FileCode, Download, AlertCircle } from "lucide-react";
 import { useOrderInvoices } from "@/hooks/orders/extensions";
 import { toast } from "sonner";
-import { Badge } from "@/components/ui/badge";
 
 interface OrderInvoicesTabProps {
   orderId: string;
@@ -16,12 +15,34 @@ interface OrderInvoicesTabProps {
 type Invoice = NonNullable<ReturnType<typeof useOrderInvoices>["invoices"]>[number];
 
 export function OrderInvoicesTab({ orderId }: OrderInvoicesTabProps) {
-  const { invoices, addInvoice, uploadFile, isLoading, error } = useOrderInvoices(orderId);
+  const { invoices, addInvoice, uploadFile, getInvoiceDownloadUrl, isLoading, error } = useOrderInvoices(orderId);
   const [invoiceNumber, setInvoiceNumber] = useState("");
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
+  const [downloadingId, setDownloadingId] = useState<string | null>(null);
 
-  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>, type: 'xml' | 'pdf') => {
+  const handleDownload = async (invoice: Invoice) => {
+    const downloadWindow = window.open('about:blank', '_blank');
+    try {
+      setDownloadingId(invoice.id);
+      const signedUrl = await getInvoiceDownloadUrl(invoice.file_path);
+      if (downloadWindow) {
+        downloadWindow.opener = null;
+        downloadWindow.location.replace(signedUrl);
+      } else {
+        window.location.assign(signedUrl);
+      }
+    } catch (downloadError) {
+      downloadWindow?.close();
+      toast.error('Não foi possível preparar o download.', {
+        description: downloadError instanceof Error ? downloadError.message : undefined,
+      });
+    } finally {
+      setDownloadingId(null);
+    }
+  };
+
+  const handleFileUpload = async (event: ChangeEvent<HTMLInputElement>, type: 'xml' | 'pdf') => {
     const file = event.target.files?.[0];
     if (!file) return;
 
@@ -39,8 +60,8 @@ export function OrderInvoicesTab({ orderId }: OrderInvoicesTabProps) {
       
       setUploadProgress(100);
       setInvoiceNumber("");
-    } catch (error: any) {
-      toast.error("Erro no upload: " + error.message);
+    } catch (uploadError: unknown) {
+      toast.error("Erro no upload: " + (uploadError instanceof Error ? uploadError.message : 'falha desconhecida'));
     } finally {
       setIsUploading(false);
       setTimeout(() => setUploadProgress(0), 1000);
@@ -115,12 +136,20 @@ export function OrderInvoicesTab({ orderId }: OrderInvoicesTabProps) {
         </CardContent>
       </Card>
 
-      <InvoiceList invoices={invoices} />
+      <InvoiceList invoices={invoices} downloadingId={downloadingId} onDownload={handleDownload} />
     </div>
   );
 }
 
-function InvoiceList({ invoices }: { invoices: Invoice[] | undefined }) {
+function InvoiceList({
+  invoices,
+  downloadingId,
+  onDownload,
+}: {
+  invoices: Invoice[] | undefined;
+  downloadingId: string | null;
+  onDownload: (invoice: Invoice) => void;
+}) {
   if (!invoices?.length) {
     return (
       <div className="p-12 text-center border-2 border-dashed rounded-lg text-muted-foreground">
@@ -149,10 +178,14 @@ function InvoiceList({ invoices }: { invoices: Invoice[] | undefined }) {
                 </p>
               </div>
             </div>
-            <Button variant="ghost" size="icon" asChild>
-              <a href={invoice.file_url} target="_blank" rel="noopener noreferrer">
-                <Download className="h-4 w-4" />
-              </a>
+            <Button
+              variant="ghost"
+              size="icon"
+              aria-label={`Baixar nota fiscal ${invoice.invoice_number}`}
+              disabled={downloadingId === invoice.id}
+              onClick={() => onDownload(invoice)}
+            >
+              <Download className="h-4 w-4" />
             </Button>
           </CardContent>
         </Card>

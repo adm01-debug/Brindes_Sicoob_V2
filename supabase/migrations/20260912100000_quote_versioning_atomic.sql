@@ -59,7 +59,17 @@ BEGIN
   END IF;
 
   IF v_source.seller_id IS DISTINCT FROM v_actor_id
-    AND NOT public.can_manage_quotes(v_actor_id) THEN
+    AND NOT (
+      public.can_manage_quotes(v_actor_id)
+      AND (
+        EXISTS (
+          SELECT 1 FROM public.user_roles ur
+          WHERE ur.user_id = v_actor_id AND ur.role::text IN ('admin', 'dev')
+        )
+        OR v_source.organization_id IS NULL
+        OR v_source.organization_id IN (SELECT public.get_user_org_ids(v_actor_id))
+      )
+    ) THEN
     RAISE EXCEPTION USING
       ERRCODE = '42501',
       MESSAGE = 'Você não possui permissão para versionar este orçamento.';
@@ -155,7 +165,7 @@ BEGIN
     v_source.singular_id,
     'draft',
     v_source.subtotal,
-    v_source.suggested_modifications,
+    NULL,
     v_source.tags,
     v_source.total,
     v_source.total_cost,
@@ -199,7 +209,7 @@ BEGIN
       v_source_item.kit_group_id,
       v_source_item.kit_name,
       v_source_item.notes,
-      v_source_item.price_confirmed_at,
+      NULL,
       v_source_item.product_id,
       v_source_item.product_image_url,
       v_source_item.product_name,

@@ -26,6 +26,9 @@ CREATE TABLE IF NOT EXISTS public.sicoob_order_payments (
   amount numeric(14,2) NOT NULL CHECK (amount > 0),
   due_date date NOT NULL,
   paid_at timestamptz,
+  refunded_at timestamptz,
+  refunded_by uuid REFERENCES auth.users(id),
+  refund_reason text,
   payment_method text,
   external_reference text,
   status text NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'paid', 'overdue', 'cancelled', 'refunded')),
@@ -34,8 +37,46 @@ CREATE TABLE IF NOT EXISTS public.sicoob_order_payments (
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now(),
   UNIQUE (order_id, installment_number),
-  CHECK ((status = 'paid' AND paid_at IS NOT NULL) OR status <> 'paid')
+  CHECK ((status = 'paid' AND paid_at IS NOT NULL) OR status <> 'paid'),
+  CONSTRAINT sicoob_order_payments_refund_audit_check CHECK (
+    (status = 'refunded' AND refunded_at IS NOT NULL AND refunded_by IS NOT NULL AND length(trim(refund_reason)) >= 10)
+    OR (status <> 'refunded' AND refunded_at IS NULL AND refunded_by IS NULL AND refund_reason IS NULL)
+  )
 );
+
+ALTER TABLE public.sicoob_order_payments
+  ADD COLUMN IF NOT EXISTS refunded_at timestamptz,
+  ADD COLUMN IF NOT EXISTS refunded_by uuid REFERENCES auth.users(id),
+  ADD COLUMN IF NOT EXISTS refund_reason text;
+
+-- Registros legados que já nasceram como `refunded` recebem uma marca explícita
+-- de migração; novas ocorrências só podem passar pelo RPC formal abaixo.
+UPDATE public.sicoob_order_payments
+   SET refunded_at = COALESCE(refunded_at, paid_at, updated_at, created_at),
+       refunded_by = COALESCE(refunded_by, updated_by),
+       refund_reason = COALESCE(NULLIF(trim(refund_reason), ''), 'Migração de estorno legado sem motivo registrado')
+ WHERE status = 'refunded'
+   AND (refunded_at IS NULL OR refunded_by IS NULL OR length(trim(COALESCE(refund_reason, ''))) < 10);
+UPDATE public.sicoob_order_payments
+   SET refunded_at = NULL, refunded_by = NULL, refund_reason = NULL
+ WHERE status <> 'refunded'
+   AND (refunded_at IS NOT NULL OR refunded_by IS NOT NULL OR refund_reason IS NOT NULL);
+
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint
+    WHERE conrelid = 'public.sicoob_order_payments'::regclass
+      AND conname = 'sicoob_order_payments_refund_audit_check'
+  ) THEN
+    ALTER TABLE public.sicoob_order_payments
+      ADD CONSTRAINT sicoob_order_payments_refund_audit_check CHECK (
+        (status = 'refunded' AND refunded_at IS NOT NULL AND refunded_by IS NOT NULL AND length(trim(refund_reason)) >= 10)
+        OR (status <> 'refunded' AND refunded_at IS NULL AND refunded_by IS NULL AND refund_reason IS NULL)
+      );
+  END IF;
+END
+$$;
 
 CREATE UNIQUE INDEX IF NOT EXISTS ux_sicoob_order_payment_external_reference
   ON public.sicoob_order_payments(order_id, external_reference)
@@ -99,6 +140,13 @@ FOR INSERT TO authenticated WITH CHECK (
   AND name ~ '^[0-9a-fA-F-]+/artwork/.+\.(pdf|png|jpg|jpeg|webp)$'
   AND public.sicoob_actor_can_manage_fulfillment(auth.uid(), split_part(name, '/', 1)::uuid)
 );
+CREATE POLICY "sicoob_order_documents_delete_orphan_invoice" ON storage.objects
+FOR DELETE TO authenticated USING (
+  bucket_id = 'sicoob-order-documents'
+  AND owner = auth.uid()
+  AND name ~ '^[0-9a-fA-F-]+/invoices/.+\.(pdf|xml)$'
+  AND public.sicoob_actor_can_manage_fulfillment(auth.uid(), split_part(name, '/', 1)::uuid)
+);
 
 CREATE OR REPLACE FUNCTION public.add_sicoob_order_invoice(
   p_order_id uuid,
@@ -144,7 +192,7 @@ SECURITY DEFINER
 SET search_path = public
 AS $$
 BEGIN
-  IF current_setting('app.sicoob_payment_operation', true) IS DISTINCT FROM 'record' THEN
+  IF COALESCE(current_setting('app.sicoob_payment_operation', true), '') NOT IN ('record', 'refund') THEN
     RAISE EXCEPTION USING ERRCODE = '42501', MESSAGE = 'Pagamentos só podem ser alterados pelo fluxo financeiro formal.';
   END IF;
   IF TG_OP = 'DELETE' THEN
@@ -160,6 +208,24 @@ BEGIN
   END IF;
   RETURN NEW;
 END;
+$$;
+
+CREATE OR REPLACE FUNCTION public.sicoob_actor_can_manage_finance(
+  p_actor_id uuid,
+  p_order_id uuid
+)
+RETURNS boolean
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path = public
+AS $$
+  SELECT public.sicoob_actor_can_manage_fulfillment(p_actor_id, p_order_id)
+    AND EXISTS (
+      SELECT 1 FROM public.user_roles ur
+      WHERE ur.user_id = p_actor_id
+        AND ur.role::text IN ('dev', 'supervisor', 'admin', 'manager', 'gestor_compras', 'comprador_singular')
+    );
 $$;
 
 DROP TRIGGER IF EXISTS tr_protect_sicoob_order_payment ON public.sicoob_order_payments;
@@ -190,11 +256,11 @@ DECLARE
   v_payment_id uuid;
   v_active_total numeric;
 BEGIN
-  IF v_actor_id IS NULL OR NOT public.sicoob_actor_can_manage_fulfillment(v_actor_id, p_order_id) THEN
+  IF v_actor_id IS NULL OR NOT public.sicoob_actor_can_manage_finance(v_actor_id, p_order_id) THEN
     RAISE EXCEPTION USING ERRCODE = '42501', MESSAGE = 'Você não pode registrar pagamentos neste pedido.';
   END IF;
   IF p_installment_number <= 0 OR p_amount <= 0 OR p_due_date IS NULL
-     OR p_status NOT IN ('pending', 'paid', 'cancelled', 'refunded') THEN
+     OR p_status NOT IN ('pending', 'paid', 'cancelled') THEN
     RAISE EXCEPTION USING ERRCODE = '22023', MESSAGE = 'Dados da parcela são inválidos.';
   END IF;
 
@@ -217,6 +283,9 @@ BEGIN
     FROM public.sicoob_order_payments
    WHERE order_id = p_order_id AND installment_number = p_installment_number
    FOR UPDATE;
+  IF FOUND AND p_expected_updated_at IS NULL THEN
+    RAISE EXCEPTION USING ERRCODE = '40001', MESSAGE = 'A parcela já existe; informe a versão atual antes de alterar.';
+  END IF;
   IF FOUND AND p_expected_updated_at IS NOT NULL
      AND v_existing.updated_at IS DISTINCT FROM p_expected_updated_at THEN
     RAISE EXCEPTION USING ERRCODE = '40001', MESSAGE = 'A parcela mudou; atualize a página antes de salvar.';
@@ -265,6 +334,51 @@ BEGIN
     updated_at = now()
   RETURNING id INTO v_payment_id;
   RETURN v_payment_id;
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION public.refund_sicoob_order_payment(
+  p_payment_id uuid,
+  p_reason text,
+  p_expected_updated_at timestamptz
+)
+RETURNS void
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+  v_actor_id uuid := auth.uid();
+  v_order_id uuid;
+  v_payment public.sicoob_order_payments%ROWTYPE;
+BEGIN
+  IF v_actor_id IS NULL OR length(trim(COALESCE(p_reason, ''))) < 10 OR p_expected_updated_at IS NULL THEN
+    RAISE EXCEPTION USING ERRCODE = '22023', MESSAGE = 'Motivo e versão atual da parcela são obrigatórios para o estorno.';
+  END IF;
+  SELECT order_id INTO v_order_id FROM public.sicoob_order_payments WHERE id = p_payment_id;
+  IF NOT FOUND THEN RAISE EXCEPTION USING ERRCODE = 'P0002', MESSAGE = 'Parcela não encontrada.'; END IF;
+  IF NOT public.sicoob_actor_can_manage_finance(v_actor_id, v_order_id) THEN
+    RAISE EXCEPTION USING ERRCODE = '42501', MESSAGE = 'Você não pode estornar pagamentos deste pedido.';
+  END IF;
+
+  PERFORM pg_advisory_xact_lock(hashtextextended(v_order_id::text || ':finance', 0));
+  SELECT * INTO v_payment FROM public.sicoob_order_payments WHERE id = p_payment_id FOR UPDATE;
+  IF v_payment.updated_at IS DISTINCT FROM p_expected_updated_at THEN
+    RAISE EXCEPTION USING ERRCODE = '40001', MESSAGE = 'A parcela mudou; atualize a página antes de estornar.';
+  END IF;
+  IF v_payment.status <> 'paid' THEN
+    RAISE EXCEPTION USING ERRCODE = '23514', MESSAGE = 'Somente uma parcela paga pode ser estornada.';
+  END IF;
+
+  PERFORM set_config('app.sicoob_payment_operation', 'refund', true);
+  UPDATE public.sicoob_order_payments
+     SET status = 'refunded',
+         refunded_at = now(),
+         refunded_by = v_actor_id,
+         refund_reason = trim(p_reason),
+         updated_by = v_actor_id,
+         updated_at = now()
+   WHERE id = p_payment_id;
 END;
 $$;
 
@@ -321,6 +435,7 @@ DECLARE
   v_actor_id uuid := auth.uid();
   v_artwork_id uuid;
   v_version integer;
+  v_order_status text;
 BEGIN
   IF v_actor_id IS NULL OR NOT public.sicoob_actor_can_manage_fulfillment(v_actor_id, p_order_id) THEN
     RAISE EXCEPTION USING ERRCODE = '42501', MESSAGE = 'Você não pode enviar arte para este pedido.';
@@ -333,6 +448,11 @@ BEGIN
   END IF;
 
   PERFORM pg_advisory_xact_lock(hashtextextended(p_order_id::text || ':artwork', 0));
+  SELECT status INTO v_order_status FROM public.sicoob_orders WHERE id = p_order_id FOR UPDATE;
+  IF NOT FOUND THEN RAISE EXCEPTION USING ERRCODE = 'P0002', MESSAGE = 'Pedido não encontrado.'; END IF;
+  IF v_order_status NOT IN ('draft', 'pending', 'waiting_approval', 'escalated_to_board', 'confirmed') THEN
+    RAISE EXCEPTION USING ERRCODE = '23514', MESSAGE = 'A arte não pode ser substituída após o início da produção ou logística.';
+  END IF;
   SELECT COALESCE(max(version), 0) + 1 INTO v_version
     FROM public.sicoob_order_artwork_versions WHERE order_id = p_order_id;
   PERFORM set_config('app.sicoob_artwork_operation', 'version', true);
@@ -417,12 +537,16 @@ FOR EACH ROW EXECUTE FUNCTION public.require_sicoob_artwork_before_production();
 
 REVOKE ALL ON FUNCTION public.add_sicoob_order_invoice(uuid, text, text, text, numeric, text, date) FROM PUBLIC;
 REVOKE ALL ON FUNCTION public.record_sicoob_order_payment(uuid, integer, numeric, date, text, uuid, text, text, timestamptz) FROM PUBLIC;
+REVOKE ALL ON FUNCTION public.refund_sicoob_order_payment(uuid, text, timestamptz) FROM PUBLIC;
 REVOKE ALL ON FUNCTION public.protect_sicoob_order_payment() FROM PUBLIC;
+REVOKE ALL ON FUNCTION public.sicoob_actor_can_manage_finance(uuid, uuid) FROM PUBLIC;
 REVOKE ALL ON FUNCTION public.create_sicoob_order_artwork_version(uuid, text, text, jsonb) FROM PUBLIC;
 REVOKE ALL ON FUNCTION public.decide_sicoob_order_artwork(uuid, text, text) FROM PUBLIC;
 REVOKE ALL ON FUNCTION public.protect_sicoob_order_artwork_version() FROM PUBLIC;
 REVOKE ALL ON FUNCTION public.require_sicoob_artwork_before_production() FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.add_sicoob_order_invoice(uuid, text, text, text, numeric, text, date) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.sicoob_actor_can_manage_fulfillment(uuid, uuid) TO authenticated;
 GRANT EXECUTE ON FUNCTION public.record_sicoob_order_payment(uuid, integer, numeric, date, text, uuid, text, text, timestamptz) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.refund_sicoob_order_payment(uuid, text, timestamptz) TO authenticated;
 GRANT EXECUTE ON FUNCTION public.create_sicoob_order_artwork_version(uuid, text, text, jsonb) TO authenticated;
 GRANT EXECUTE ON FUNCTION public.decide_sicoob_order_artwork(uuid, text, text) TO authenticated;

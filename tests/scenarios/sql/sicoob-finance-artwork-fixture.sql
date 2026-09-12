@@ -15,6 +15,7 @@ CREATE TABLE storage.objects (
   name text,
   owner uuid
 );
+ALTER TABLE storage.objects ENABLE ROW LEVEL SECURITY;
 INSERT INTO storage.buckets VALUES ('sicoob-order-documents', 'sicoob-order-documents', false);
 
 CREATE TABLE public.sicoob_orders (
@@ -27,10 +28,13 @@ CREATE TABLE public.sicoob_orders (
 CREATE TABLE public.user_roles (user_id uuid, role text);
 
 CREATE FUNCTION public.sicoob_actor_can_manage_fulfillment(p_actor_id uuid, p_order_id uuid)
-RETURNS boolean LANGUAGE sql STABLE AS $$
+RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER SET search_path = public AS $$
   SELECT EXISTS (SELECT 1 FROM public.sicoob_orders WHERE id = p_order_id AND created_by = p_actor_id)
       OR EXISTS (SELECT 1 FROM public.user_roles WHERE user_id = p_actor_id AND role = 'supervisor')
 $$;
+
+CREATE POLICY storage_owner_read ON storage.objects
+FOR SELECT TO authenticated USING (owner = auth.uid());
 
 CREATE FUNCTION public.assert_sicoob_approval_actor(
   p_actor_id uuid, p_order_id uuid, p_requester_id uuid DEFAULT NULL, p_board_only boolean DEFAULT false

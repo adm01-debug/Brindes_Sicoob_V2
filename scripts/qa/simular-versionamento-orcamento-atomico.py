@@ -15,6 +15,9 @@ MIGRATIONS = [
 FIXTURE = ROOT / "tests/scenarios/sql/quote-versionamento-atomico-fixture.sql"
 SELLER = "11111111-1111-1111-1111-111111111111"
 OUTSIDER = "22222222-2222-2222-2222-222222222222"
+SUPERVISOR = "33333333-3333-3333-3333-333333333333"
+ORG_A = "44444444-aaaa-aaaa-aaaa-aaaaaaaaaaaa"
+ORG_B = "55555555-bbbb-bbbb-bbbb-bbbbbbbbbbbb"
 SOURCE_A = "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"
 SOURCE_B = "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb"
 CHAIN_ROOT = "cccccccc-cccc-cccc-cccc-cccccccccccc"
@@ -87,6 +90,10 @@ try:
     """)
     for migration in MIGRATIONS:
         sql(migration.read_text())
+    sql(f"""
+      INSERT INTO public.user_roles VALUES ('{SUPERVISOR}', 'supervisor');
+      INSERT INTO public.organization_members VALUES ('{SUPERVISOR}', '{ORG_B}');
+    """)
 
     chain_after_migration = scalar(sql(f"""
       SELECT count(*) || '|'
@@ -170,11 +177,12 @@ try:
       INSERT INTO public.quotes (
         id, quote_number, seller_id, client_name, status, subtotal, discount_percent,
         discount_amount, total, notes, payment_terms, delivery_time, shipping_type,
-        shipping_cost, negotiation_markup_percent, real_subtotal, real_discount_percent, tags
+        shipping_cost, negotiation_markup_percent, real_subtotal, real_discount_percent, tags,
+        organization_id, suggested_modifications
       ) VALUES (
         '{SOURCE_A}', '10011/26', '{SELLER}', 'Cooperativa Teste', 'sent', 100, 10,
         10, 90, 'versão original', '30 dias', '15 dias', 'transportadora', 15, 5, 95,
-        5.26, ARRAY['campanha']
+        5.26, ARRAY['campanha'], '{ORG_A}', '{{"ajuste":"cliente"}}'::jsonb
       );
       SELECT setval('public.test_quote_number_sequence', 10011, true);
       WITH inserted_item AS (
@@ -208,11 +216,34 @@ try:
       GROUP BY q.id;
     """).stdout.strip()
     assert copied == f"2|draft|{SOURCE_A}|1|1|1|1146", copied
+    reset_decisions = scalar(sql(f"""
+      SELECT (q.suggested_modifications IS NULL)::text || '|'
+        || bool_and(i.price_confirmed_at IS NULL)::text
+      FROM public.quotes q JOIN public.quote_items i ON i.quote_id=q.id
+      WHERE q.id='{new_quote_id}' GROUP BY q.id;
+    """))
+    assert reset_decisions == "true|true", reset_decisions
     assert sql(f"""
       SELECT count(*) || '|' || count(*) FILTER (WHERE is_latest_version)
       FROM public.quotes
       WHERE id = '{SOURCE_A}' OR parent_quote_id = '{SOURCE_A}';
     """).stdout.strip() == "2|1"
+
+    delete_latest = actor_sql(SELLER, f"DELETE FROM public.quotes WHERE id = '{new_quote_id}';", check=False)
+    assert delete_latest.returncode != 0 and "versão vigente não pode ser excluída" in delete_latest.stderr
+    soft_delete_latest = actor_sql(
+        SELLER,
+        f"UPDATE public.quotes SET deleted_at = now() WHERE id = '{new_quote_id}';",
+        check=False,
+    )
+    assert soft_delete_latest.returncode != 0 and "versão vigente não pode ser excluída" in soft_delete_latest.stderr
+    assert sql(f"""
+      SELECT count(*) || '|' || count(*) FILTER (WHERE is_latest_version)
+      FROM public.quotes
+      WHERE id = '{SOURCE_A}' OR parent_quote_id = '{SOURCE_A}';
+    """).stdout.strip() == "2|1"
+    cross_org = actor_sql(SUPERVISOR, f"SELECT public.create_quote_version_atomic('{new_quote_id}');", check=False)
+    assert cross_org.returncode != 0 and "não possui permissão" in cross_org.stderr
 
     stale = actor_sql(SELLER, f"SELECT public.create_quote_version_atomic('{SOURCE_A}');", check=False)
     assert stale.returncode != 0 and "mais recente" in stale.stderr
@@ -223,6 +254,9 @@ try:
         "itens_personalizacoes_auditoria_e_subtotal": "1|1|1|1146",
         "versao_obsoleta": "bloqueada",
         "ator_sem_escopo": "bloqueado",
+        "exclusao_da_versao_vigente": "exclusões física e lógica bloqueadas sem quebrar a família",
+        "supervisor_fora_da_organizacao": "bloqueado",
+        "decisoes_da_versao_anterior": "sugestões e confirmação de preço limpas",
     }
 
     actor_sql(SELLER, f"""

@@ -1,42 +1,11 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 import { getCorsHeaders, handleCorsPreflightIfNeeded } from "../_shared/cors.ts";
-
-interface SourceItem {
-  id: string;
-  product_id: string | null;
-  product_name: string;
-  quantity: number;
-  variant_id: string | null;
-  color_name: string | null;
-  color_hex: string | null;
-  size_code: string | null;
-}
-
-interface CatalogProduct {
-  id: string;
-  name: string;
-  sku: string | null;
-  sale_price: number | null;
-  base_price?: number | null;
-  primary_image_url: string | null;
-  image_url?: string | null;
-  is_active: boolean | null;
-  active?: boolean | null;
-  stock_quantity: number | null;
-  min_quantity: number | null;
-}
-
-interface CatalogVariant {
-  id: string;
-  product_id: string;
-  sku: string | null;
-  color_name: string | null;
-  color_hex: string | null;
-  size_code: string | null;
-  stock_quantity: number | null;
-  selected_thumbnail: string | null;
-  is_active: boolean | null;
-}
+import {
+  buildVerifiedReorderItems,
+  type CatalogProduct,
+  type CatalogVariant,
+  type SourceItem,
+} from "./catalog.ts";
 
 function json(req: Request, body: Record<string, unknown>, status = 200): Response {
   return new Response(JSON.stringify(body), {
@@ -105,14 +74,13 @@ Deno.serve(async (req) => {
       body: {
         table: "products",
         operation: "select",
-        select: "id,name,sku,sale_price,primary_image_url,is_active,active,stock_quantity,min_quantity",
+        select: "id,name,sku,sale_price,base_price,primary_image_url,is_active,active,stock_quantity,min_quantity",
         filters: { id: productIds },
         limit: Math.min(productIds.length, 100),
       },
     });
     if (productBridge.error) throw productBridge.error;
     const products = bridgeRecords<CatalogProduct>(productBridge.data);
-    const productsById = new Map(products.map(product => [product.id, product]));
 
     const variantIds = [...new Set(items.map(item => item.variant_id).filter((id): id is string => Boolean(id)))];
     let variants: CatalogVariant[] = [];
@@ -121,7 +89,7 @@ Deno.serve(async (req) => {
         body: {
           table: "product_variants",
           operation: "select",
-          select: "id,product_id,sku,color_name,color_hex,size_code,stock_quantity,selected_thumbnail,is_active",
+          select: "id,product_id,sku,sale_price,color_name,color_hex,size_code,stock_quantity,selected_thumbnail,is_active",
           filters: { id: variantIds },
           limit: Math.min(variantIds.length, 100),
         },
@@ -130,42 +98,8 @@ Deno.serve(async (req) => {
       variants = bridgeRecords<CatalogVariant>(variantBridge.data);
     }
 
-    const variantsById = new Map(variants.map(variant => [variant.id, variant]));
     const checkedAt = new Date().toISOString();
-    const currentItems = items.map(item => {
-      const product = item.product_id ? productsById.get(item.product_id) : undefined;
-      if (!product || product.is_active === false || product.active === false) {
-        throw new Error(`O produto “${item.product_name}” não está mais disponível no catálogo.`);
-      }
-      const price = Number(product.sale_price ?? product.base_price ?? 0);
-      if (!Number.isFinite(price) || price <= 0) throw new Error(`O produto “${product.name}” está sem preço vigente.`);
-      const minimum = Number(product.min_quantity ?? 1);
-      if (item.quantity < minimum) throw new Error(`A quantidade mínima vigente de “${product.name}” é ${minimum}.`);
-
-      const variant = item.variant_id ? variantsById.get(item.variant_id) : undefined;
-      if (item.variant_id && (!variant || variant.product_id !== product.id || variant.is_active === false)) {
-        throw new Error(`A variante de “${product.name}” não está mais disponível.`);
-      }
-      const stock = Number(variant ? variant.stock_quantity : product.stock_quantity);
-      if (!Number.isFinite(stock) || stock < item.quantity) throw new Error(`Estoque insuficiente para “${product.name}”.`);
-
-      return {
-        source_order_item_id: item.id,
-        product_id: product.id,
-        product_sku: variant?.sku || product.sku,
-        product_name: product.name,
-        product_image_url: variant?.selected_thumbnail || product.primary_image_url || product.image_url || null,
-        quantity: item.quantity,
-        unit_price: price,
-        minimum_quantity: minimum,
-        source_variant_id: variant?.id || null,
-        source_variant_sku: variant?.sku || null,
-        color_name: variant?.color_name || item.color_name,
-        color_hex: variant?.color_hex || item.color_hex,
-        size_code: variant?.size_code || item.size_code,
-        catalog_checked_at: checkedAt,
-      };
-    });
+    const currentItems = buildVerifiedReorderItems(items, products, variants, checkedAt);
 
     const adminClient = createClient(supabaseUrl, serviceKey, { auth: { persistSession: false } });
     const { data: quoteId, error: reorderError } = await adminClient.rpc("reorder_sicoob_order_as_quote", {

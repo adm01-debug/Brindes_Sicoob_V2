@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState, type ReactNode } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { AlertCircle, CheckCircle2, Layers, Loader2, PackageCheck, Truck } from "lucide-react";
 import { toast } from "sonner";
@@ -13,6 +13,9 @@ import { Progress } from "@/components/ui/progress";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { formatCurrency } from "@/lib/format";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { normalizeAssignedRoles } from "@/lib/access/role-policy";
+import { getConsolidationIntent, getDeliveryReceiptIntent } from "@/lib/sicoob/consolidation-intent";
 
 interface Allocation {
   id: string;
@@ -69,8 +72,17 @@ function progressOf(consolidation: Consolidation) {
   return { expected, accounted, percent: expected > 0 ? Math.min(100, (accounted / expected) * 100) : 0 };
 }
 
+function ManagementOnly({ allowed, children }: { allowed: boolean; children: ReactNode }) {
+  return allowed ? <>{children}</> : null;
+}
+
 export default function GestorConsolidatedOrdersPage() {
   const queryClient = useQueryClient();
+  const { roles } = useAuth();
+  const normalizedRoles = normalizeAssignedRoles(roles);
+  const canManage = normalizedRoles.some((role) => ['dev', 'supervisor', 'gestor_compras', 'comprador_singular'].includes(role));
+  const createIntentRef = useRef<{ signature: string; key: string } | null>(null);
+  const receiptIntentRef = useRef<{ signature: string; key: string } | null>(null);
   const [createOpen, setCreateOpen] = useState(false);
   const [selectedOrders, setSelectedOrders] = useState<Set<string>>(new Set());
   const [sellerId, setSellerId] = useState("");
@@ -114,6 +126,7 @@ export default function GestorConsolidatedOrdersPage() {
       if (error) throw error;
       return (data ?? []) as unknown as EligibleOrder[];
     },
+    enabled: canManage,
   });
 
   const sellersQuery = useQuery({
@@ -123,6 +136,7 @@ export default function GestorConsolidatedOrdersPage() {
       if (error) throw error;
       return data ?? [];
     },
+    enabled: canManage,
   });
 
   const invalidate = async () => {
@@ -135,10 +149,11 @@ export default function GestorConsolidatedOrdersPage() {
   const createMutation = useMutation({
     mutationFn: async () => {
       if (selectedOrders.size === 0 || !sellerId) throw new Error("Selecione pedidos e um vendedor.");
+      createIntentRef.current = getConsolidationIntent(createIntentRef.current, sellerId, [...selectedOrders]);
       const { data, error } = await supabase.rpc("create_sicoob_order_consolidation", {
         p_order_ids: [...selectedOrders],
         p_seller_id: sellerId,
-        p_idempotency_key: crypto.randomUUID(),
+        p_idempotency_key: createIntentRef.current.key,
       });
       if (error) throw error;
       if (!data) throw new Error("O banco não confirmou a consolidação.");
@@ -149,6 +164,7 @@ export default function GestorConsolidatedOrdersPage() {
       setCreateOpen(false);
       setSelectedOrders(new Set());
       setSellerId("");
+      createIntentRef.current = null;
       toast.success("Pedidos consolidados e distribuídos por destino.");
     },
     onError: (error) => toast.error(error instanceof Error ? error.message : "Não foi possível consolidar os pedidos."),
@@ -169,8 +185,16 @@ export default function GestorConsolidatedOrdersPage() {
   const receiptMutation = useMutation({
     mutationFn: async () => {
       if (!receiptAllocation) throw new Error("Selecione um item de destino.");
+      receiptIntentRef.current = getDeliveryReceiptIntent(receiptIntentRef.current, {
+        allocationId: receiptAllocation.id,
+        received,
+        damaged,
+        missing,
+        notes,
+      });
       const { data, error } = await supabase.rpc("record_sicoob_delivery_receipt", {
         p_allocation_id: receiptAllocation.id,
+        p_idempotency_key: receiptIntentRef.current.key,
         p_received_quantity: received,
         p_damaged_quantity: damaged,
         p_missing_quantity: missing,
@@ -186,6 +210,7 @@ export default function GestorConsolidatedOrdersPage() {
       setDamaged(0);
       setMissing(0);
       setNotes("");
+      receiptIntentRef.current = null;
       toast.success("Recebimento registrado com rastreabilidade.");
     },
     onError: (error) => toast.error(error instanceof Error ? error.message : "Não foi possível registrar o recebimento."),
@@ -223,9 +248,11 @@ export default function GestorConsolidatedOrdersPage() {
           <h1 className="font-display text-3xl font-bold tracking-tight text-sicoob-green-dark">Agregados da Singular</h1>
           <p className="text-muted-foreground">Consolide pedidos, distribua por PA e acompanhe recebimentos e divergências.</p>
         </div>
-        <Button className="gap-2" onClick={() => setCreateOpen(true)}>
-          <Layers className="h-4 w-4" /> Nova consolidação
-        </Button>
+        <ManagementOnly allowed={canManage}>
+          <Button className="gap-2" onClick={() => setCreateOpen(true)}>
+            <Layers className="h-4 w-4" /> Nova consolidação
+          </Button>
+        </ManagementOnly>
       </div>
 
       {(consolidationsQuery.error || eligibleOrdersQuery.error || sellersQuery.error) && (
@@ -247,13 +274,17 @@ export default function GestorConsolidatedOrdersPage() {
         isLoading={consolidationsQuery.isLoading}
         isDispatching={dispatchMutation.isPending}
         onDispatch={(id) => dispatchMutation.mutate(id)}
+        canDispatch={canManage}
         onReceive={(allocation, remaining) => {
           setReceiptAllocation(allocation);
           setReceived(remaining);
         }}
       />
 
-      <Dialog open={createOpen} onOpenChange={setCreateOpen}>
+      <Dialog open={createOpen} onOpenChange={(open) => {
+        setCreateOpen(open);
+        if (!open && !createMutation.isPending) createIntentRef.current = null;
+      }}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle>Nova consolidação</DialogTitle>
@@ -279,7 +310,7 @@ export default function GestorConsolidatedOrdersPage() {
             </Select>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setCreateOpen(false)}>Cancelar</Button>
+            <Button variant="outline" onClick={() => { setCreateOpen(false); createIntentRef.current = null; }}>Cancelar</Button>
             <Button
               onClick={() => createMutation.mutate()}
               disabled={createMutation.isPending || selectedOrders.size === 0 || !sellerId}
@@ -290,7 +321,12 @@ export default function GestorConsolidatedOrdersPage() {
         </DialogContent>
       </Dialog>
 
-      <Dialog open={Boolean(receiptAllocation)} onOpenChange={(open) => { if (!open) setReceiptAllocation(null); }}>
+      <Dialog open={Boolean(receiptAllocation)} onOpenChange={(open) => {
+        if (!open && !receiptMutation.isPending) {
+          setReceiptAllocation(null);
+          receiptIntentRef.current = null;
+        }
+      }}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Registrar recebimento</DialogTitle>
@@ -315,7 +351,7 @@ export default function GestorConsolidatedOrdersPage() {
             <Input id="receipt-notes" value={notes} onChange={(event) => setNotes(event.target.value)} placeholder="Obrigatória para avaria ou falta" />
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setReceiptAllocation(null)}>Cancelar</Button>
+            <Button variant="outline" onClick={() => { setReceiptAllocation(null); receiptIntentRef.current = null; }}>Cancelar</Button>
             <Button onClick={() => receiptMutation.mutate()} disabled={receiptMutation.isPending}>Registrar recebimento</Button>
           </DialogFooter>
         </DialogContent>
@@ -359,12 +395,14 @@ function ConsolidationList({
   isLoading,
   isDispatching,
   onDispatch,
+  canDispatch,
   onReceive,
 }: {
   consolidations: Consolidation[];
   isLoading: boolean;
   isDispatching: boolean;
   onDispatch: (id: string) => void;
+  canDispatch: boolean;
   onReceive: (allocation: Allocation, remaining: number) => void;
 }) {
   if (isLoading) return <div className="flex justify-center py-16"><Loader2 className="h-7 w-7 animate-spin text-muted-foreground" /></div>;
@@ -377,6 +415,7 @@ function ConsolidationList({
       consolidation={consolidation}
       isDispatching={isDispatching}
       onDispatch={onDispatch}
+      canDispatch={canDispatch}
       onReceive={onReceive}
     />
   ))}</>;
@@ -386,11 +425,13 @@ function ConsolidationCard({
   consolidation,
   isDispatching,
   onDispatch,
+  canDispatch,
   onReceive,
 }: {
   consolidation: Consolidation;
   isDispatching: boolean;
   onDispatch: (id: string) => void;
+  canDispatch: boolean;
   onReceive: (allocation: Allocation, remaining: number) => void;
 }) {
   const progress = progressOf(consolidation);
@@ -407,7 +448,7 @@ function ConsolidationCard({
             {consolidation.order_count} pedido(s) · {formatCurrency(Number(consolidation.total_value))} · {consolidation.sicoob_delivery_destinations.length} destino(s)
           </CardDescription>
         </div>
-        {consolidation.status === "pending_seller" && (
+        {canDispatch && consolidation.status === "pending_seller" && (
           <Button size="sm" className="gap-2" onClick={() => onDispatch(consolidation.id)} disabled={isDispatching}>
             <Truck className="h-4 w-4" /> Confirmar despacho
           </Button>

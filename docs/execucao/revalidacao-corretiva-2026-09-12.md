@@ -4,6 +4,8 @@ Esta rodada voltou aos 20 achados da auditoria, simulou falhas de concorrência,
 
 O checklist original de 100 etapas e 1.000 subetapas permanece como inventário histórico. A classificação anterior não é reescrita retroativamente: esta é a evidência delta produzida depois daquela revisão.
 
+Uma revisão complementar reavaliou os **62 apontamentos de código recebidos no PR**, conferindo cada um contra a implementação atual. O candidato passou a cobrir, entre outros pontos, escopo organizacional no versionamento, invariância da versão vigente, idempotência semântica, autorização financeira, estorno auditável, URLs assinadas renováveis, isolamento de recebimentos por PA, sincronização logística, preço e estoque agregados por variante, registro de login inválido e fallback PWA executado sobre build de produção. Esses ajustes estão tratados no código e nos simuladores locais; a confirmação remota depende do novo SHA e dos gates do PR.
+
 ## Resultado por achado
 
 | Achado | Situação atual | Evidência e limite |
@@ -45,14 +47,16 @@ O checklist original de 100 etapas e 1.000 subetapas permanece como inventário 
 |---|---|
 | Build de produção e `npm audit` do gate | Aprovado. |
 | Performance do login | Bundle público reduzido de ~92 KB para ~57 KB gzip; Lighthouse local 3/3 aprovado, LCP entre 2.128 ms e 2.264 ms, performance 0,97 e TBT 0 ms. |
-| ESLint por baseline | Aprovado; 42 erros a menos que a referência. |
-| TypeScript por baseline | Aprovado; 32 diagnósticos a menos que a referência na execução completa. |
+| ESLint por baseline | Aprovado; 47 erros a menos que `origin/main` nos arquivos avaliados. |
+| TypeScript por baseline | Aprovado; 1.214 diagnósticos históricos, exatamente o baseline, e nenhuma regressão nos arquivos alterados. |
 | Testes unitários alterados | 68/68 aprovados na rodada final agrupada. |
+| Regressões complementares do fechamento | 38/38 aprovadas em oito arquivos de teste. |
 | Regressões dirigidas da auditoria | 44/44 aprovadas. |
 | Sanitização PostgREST em Deno | 5/5 aprovadas. |
 | Autorização de Edge Functions | 102/102 funções declaradas e com mecanismo de enforcement. |
 | CodeQL remoto | Varredura concluída e SARIF preservado; o único alerta da primeira execução foi corrigido no callback SSO. A publicação no painel permanece indisponível enquanto code scanning estiver desabilitado no repositório. |
-| Simulações PostgreSQL | Política, recompra, financeiro/arte e consolidação aprovadas em PostgreSQL 16 isolado. |
+| Simulações PostgreSQL | Sete cenários aprovados: verba, eventos de status, política, versionamento, recompra, financeiro/arte e consolidação. |
+| PWA em produção local | 1/1 aprovado em Chromium: Service Worker ativo, shell precacheado e fallback offline real. |
 | E2E público reforçado | 6/6 happy paths e 6/6 estados de timeout aprovados em Chromium. |
 | Regressão funcional do login otimizado | 8/8 em Vitest e 3/3 em Chromium; validação acessível e recuperação de senha sob demanda. |
 | Suíte Vitest global | Não aprovada: 141 testes e 31 snapshots falharam, com 5.177 testes aprovados e 104 ignorados. A dívida global preexistente impede usar essa suíte como aceite final. |
@@ -64,6 +68,8 @@ Os JSONs em [evidências](evidencias/) registram os cenários SQL. Nenhuma simul
 - [x] Diagnóstico e simulações adversariais executados antes do fechamento.
 - [x] A01, A02, A03, A04, A06–A12, A16–A18 e A20 corrigidos no candidato local.
 - [x] Build, lint, tipos, testes dirigidos, Deno, autorização de edges e SQL executados.
+- [x] Todos os 62 apontamentos de revisão de código reavaliados e seus achados ainda válidos tratados no candidato local.
+- [x] Fallback offline da PWA validado sem atalho ou skip em build de produção.
 - [x] Projeto Supabase local apontado para o banco próprio `cfmzkthhgliqelozlmwu`.
 - [ ] Implementar validação servidor da conversão de kit em orçamento e definir a semântica de reserva no catálogo somente leitura (A05).
 - [ ] Publicar migrations e Edge Functions no projeto próprio e repetir os testes via API/RLS reais.

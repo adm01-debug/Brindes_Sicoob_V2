@@ -8,7 +8,7 @@ import { defineRoute } from "@/lib/router-utils";
 export const productRoutes = [
   defineRoute({
     path: "/produtos",
-    component: lazyWithRetry(() => import("@/pages/Index"))
+    component: lazyWithRetry(() => import("@/pages/FiltersPage"))
   }),
   defineRoute({ 
     path: "/produto/:id", 

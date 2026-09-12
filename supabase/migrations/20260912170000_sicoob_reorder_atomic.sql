@@ -92,6 +92,7 @@ DECLARE
   v_quote_id uuid;
   v_total numeric(14,2) := 0;
   v_checked_at timestamptz;
+  v_stable_items jsonb;
   v_pa_name text;
 BEGIN
   IF v_actor_id IS NULL THEN
@@ -165,7 +166,10 @@ BEGIN
     RAISE EXCEPTION USING ERRCODE = '42501', MESSAGE = 'Você não pode refazer este pedido.';
   END IF;
 
-  v_payload_hash := encode(digest(p_items::text, 'sha256'), 'hex');
+  SELECT jsonb_agg(item - 'catalog_checked_at' ORDER BY item ->> 'source_order_item_id')
+    INTO v_stable_items
+    FROM jsonb_array_elements(p_items) AS source(item);
+  v_payload_hash := encode(digest(v_stable_items::text, 'sha256'), 'hex');
   PERFORM pg_advisory_xact_lock(
     hashtextextended(v_actor_id::text || ':' || p_order_id::text || ':' || trim(p_idempotency_key), 0)
   );

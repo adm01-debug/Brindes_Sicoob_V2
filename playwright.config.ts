@@ -65,7 +65,6 @@ const INTEGRATION_SPECS = [
   /mockup-generate\.spec\.ts/,
   /onboarding-tour\.spec\.ts/,
   /order-status-rbac\.spec\.ts/,
-  /pwa-resilience\.spec\.ts/,
   /rbac-navigation\.spec\.ts/,
   /search-stability\.spec\.ts/,
 ];

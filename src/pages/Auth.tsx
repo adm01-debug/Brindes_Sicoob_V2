@@ -115,7 +115,7 @@ export default function Auth() {
         void import("@/lib/diagnostics").then(({ diagnostics }) => {
           diagnostics.log("error", "Auth", `Erro no signIn: ${error.message}`);
         });
-        void logLoginAttempt(data.email, null, false, error.message);
+        await logLoginAttempt(data.email, null, false, error.message);
 
         
         if (error.message.includes("Invalid login credentials")) {

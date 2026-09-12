@@ -93,7 +93,11 @@ function handle(e: BridgeStatusEvent) {
 export function startColdStartRecorder(): () => void {
   if (started) return () => undefined;
   started = true;
-  return onBridgeStatus(handle);
+  const unsubscribe = onBridgeStatus(handle);
+  return () => {
+    unsubscribe();
+    started = false;
+  };
 }
 
 export function getColdStartIncidents(): ColdStartIncident[] {

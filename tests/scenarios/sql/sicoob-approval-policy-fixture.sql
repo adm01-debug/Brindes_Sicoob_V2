@@ -82,6 +82,18 @@ CREATE TABLE public.sicoob_order_history (
   created_at timestamptz NOT NULL DEFAULT now()
 );
 
+-- Reproduz o gatilho legado que reescrevia `pending` fora das RPCs formais.
+CREATE FUNCTION public.determine_sicoob_order_flow_status()
+RETURNS trigger LANGUAGE plpgsql AS $$
+BEGIN
+  IF NEW.status = 'pending' THEN NEW.status := 'waiting_approval'; END IF;
+  RETURN NEW;
+END;
+$$;
+CREATE TRIGGER trigger_sicoob_order_flow_intelligence
+BEFORE INSERT OR UPDATE OF status ON public.sicoob_orders
+FOR EACH ROW EXECUTE FUNCTION public.determine_sicoob_order_flow_status();
+
 CREATE TABLE public.workspace_notifications (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id uuid NOT NULL,

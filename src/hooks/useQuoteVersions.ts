@@ -64,14 +64,24 @@ async function loadQuoteVersions(targetQuoteId: string): Promise<QuoteVersion[]>
   }));
 }
 
-async function createAndLoadQuoteVersion(
+export async function createAndLoadQuoteVersion(
   sourceQuoteId: string,
   fetchQuote: (quoteId: string) => Promise<Quote | null>,
   fetchVersions: (targetQuoteId?: string) => Promise<void>,
-): Promise<Quote> {
+): Promise<Quote | Pick<Quote, 'id'>> {
   const newQuoteId = await quoteVersionService.createAtomicVersion(sourceQuoteId);
-  const newQuote = await fetchQuote(newQuoteId);
-  if (!newQuote) throw new Error('A nova versão foi criada, mas não pôde ser carregada.');
+  let newQuote: Quote | null = null;
+  try {
+    newQuote = await fetchQuote(newQuoteId);
+  } catch (loadError) {
+    console.error('A versão foi criada, mas a recarga imediata falhou:', loadError);
+  }
+  if (!newQuote) {
+    toast.success('Nova versão criada', {
+      description: 'Abrindo o orçamento criado para concluir a atualização dos dados.',
+    });
+    return { id: newQuoteId };
+  }
 
   toast.success(`Versão ${newQuote.version} criada!`, {
     description: `Novo orçamento ${newQuote.quote_number}.`,
@@ -105,7 +115,7 @@ export function useQuoteVersions(quoteId?: string) {
   );
 
   const createNewVersion = useCallback(
-    async (sourceQuoteId: string): Promise<Quote | null> => {
+    async (sourceQuoteId: string): Promise<Quote | Pick<Quote, 'id'> | null> => {
       if (!user) {
         toast.error('Usuário não autenticado');
         return null;

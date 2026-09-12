@@ -24,7 +24,8 @@ BEGIN
   END IF;
 
   IF NEW.status IS DISTINCT FROM OLD.status THEN
-    IF (NEW.status = 'approved' AND v_operation IS DISTINCT FROM 'approve')
+    IF NEW.status = 'pending'
+       OR (NEW.status = 'approved' AND v_operation IS DISTINCT FROM 'approve')
        OR (NEW.status = 'rejected' AND v_operation IS DISTINCT FROM 'reject') THEN
       RAISE EXCEPTION USING ERRCODE = '42501', MESSAGE = 'O resultado da aprovação exige RPC de decisão formal.';
     END IF;

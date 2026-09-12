@@ -11,6 +11,8 @@
   "dentro_da_alcada": "preparação formal, confirmação do gestor e débito único validados; confirmação iniciada em pending registra as duas etapas na mesma transação",
   "acesso_rpc": "as RPCs novas são executáveis por authenticated e indisponíveis para anon",
   "solicitacao_formal": "alçada é derivada do orçamento do PA; política específica prevalece, sua fotografia é imutável e valor/itens permanecem congelados após confirmação e em transferências",
+  "rejeicao": "motivo da decisão formal propagado ao histórico canônico do pedido",
+  "cancelamento": "solicitação pendente encerrada atomicamente e reabertura direta bloqueada",
   "impedimentos": "autoaprovação e vínculo inativo foram recusados no servidor",
   "escalacao": "a mesma solicitação é elevada sem duplicação; somente Central ativa decide",
   "resultado": "aprovado"

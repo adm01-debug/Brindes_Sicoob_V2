@@ -12,7 +12,10 @@
     "nova_versao": "criada",
     "itens_personalizacoes_auditoria_e_subtotal": "1|1|1|1146",
     "versao_obsoleta": "bloqueada",
-    "ator_sem_escopo": "bloqueado"
+    "ator_sem_escopo": "bloqueado",
+    "exclusao_da_versao_vigente": "exclusões física e lógica bloqueadas sem quebrar a família",
+    "supervisor_fora_da_organizacao": "bloqueado",
+    "decisoes_da_versao_anterior": "sugestões e confirmação de preço limpas"
   },
   "falha_intermediaria": "rollback preservou somente a origem vigente",
   "concorrencia": {

@@ -8294,6 +8294,7 @@ export type Database = {
           allocation_id: string
           damaged_quantity: number
           id: string
+          idempotency_key: string
           missing_quantity: number
           notes: string | null
           received_at: string
@@ -8304,6 +8305,7 @@ export type Database = {
           allocation_id: string
           damaged_quantity?: number
           id?: string
+          idempotency_key: string
           missing_quantity?: number
           notes?: string | null
           received_at?: string
@@ -8314,6 +8316,7 @@ export type Database = {
           allocation_id?: string
           damaged_quantity?: number
           id?: string
+          idempotency_key?: string
           missing_quantity?: number
           notes?: string | null
           received_at?: string
@@ -8440,6 +8443,9 @@ export type Database = {
           order_id: string
           paid_at: string | null
           payment_method: string | null
+          refund_reason: string | null
+          refunded_at: string | null
+          refunded_by: string | null
           status: string
           updated_at: string
           updated_by: string
@@ -8456,6 +8462,9 @@ export type Database = {
           order_id: string
           paid_at?: string | null
           payment_method?: string | null
+          refund_reason?: string | null
+          refunded_at?: string | null
+          refunded_by?: string | null
           status?: string
           updated_at?: string
           updated_by: string
@@ -8472,6 +8481,9 @@ export type Database = {
           order_id?: string
           paid_at?: string | null
           payment_method?: string | null
+          refund_reason?: string | null
+          refunded_at?: string | null
+          refunded_by?: string | null
           status?: string
           updated_at?: string
           updated_by?: string
@@ -9638,6 +9650,10 @@ export type Database = {
         }
         Returns: string
       }
+      refund_sicoob_order_payment: {
+        Args: { p_expected_updated_at: string; p_payment_id: string; p_reason: string }
+        Returns: undefined
+      }
       allocate_sicoob_consolidation_by_order_pa: {
         Args: { p_consolidation_id: string }
         Returns: number
@@ -9657,6 +9673,7 @@ export type Database = {
       record_sicoob_delivery_receipt: {
         Args: {
           p_allocation_id: string
+          p_idempotency_key: string
           p_damaged_quantity?: number
           p_missing_quantity?: number
           p_notes?: string | null

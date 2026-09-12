@@ -33,20 +33,43 @@ FOR ALL
 TO authenticated
 USING (
   EXISTS (
-    SELECT 1
-      FROM public.user_roles ur
+    SELECT 1 FROM public.user_roles ur
+      JOIN public.profiles p ON p.user_id = ur.user_id OR p.id = ur.user_id
      WHERE ur.user_id = auth.uid()
        AND ur.role::text IN ('admin', 'dev', 'supervisor')
+       AND p.is_active IS TRUE
+       AND p.deleted_at IS NULL
   )
 )
 WITH CHECK (
   EXISTS (
-    SELECT 1
-      FROM public.user_roles ur
+    SELECT 1 FROM public.user_roles ur
+      JOIN public.profiles p ON p.user_id = ur.user_id OR p.id = ur.user_id
      WHERE ur.user_id = auth.uid()
        AND ur.role::text IN ('admin', 'dev', 'supervisor')
+       AND p.is_active IS TRUE
+       AND p.deleted_at IS NULL
   )
 );
+
+-- Remove automações legadas antes de normalizar solicitações históricas.
+DROP TRIGGER IF EXISTS on_approval_request_created ON public.sicoob_approval_requests;
+DROP TRIGGER IF EXISTS on_approval_status_change ON public.sicoob_approval_requests;
+
+WITH ranked_pending AS (
+  SELECT id, row_number() OVER (PARTITION BY order_id ORDER BY created_at DESC, id DESC) AS position
+  FROM public.sicoob_approval_requests
+  WHERE status = 'pending'
+)
+UPDATE public.sicoob_approval_requests r
+   SET status = 'rejected',
+       rejection_reason = COALESCE(NULLIF(trim(r.rejection_reason), ''), 'Solicitação duplicada encerrada durante migração'),
+       updated_at = now()
+  FROM ranked_pending ranked
+ WHERE ranked.id = r.id AND ranked.position > 1;
+
+CREATE UNIQUE INDEX IF NOT EXISTS ux_sicoob_approval_one_pending_per_order
+  ON public.sicoob_approval_requests(order_id) WHERE status = 'pending';
 
 ALTER TABLE public.sicoob_orders
   ADD COLUMN IF NOT EXISTS approval_policy_id uuid REFERENCES public.sicoob_approval_policies(id),
@@ -174,6 +197,49 @@ $$;
 
 REVOKE ALL ON FUNCTION public.sicoob_actor_can_approve(uuid, uuid, boolean) FROM PUBLIC;
 
+CREATE OR REPLACE FUNCTION public.sicoob_actor_can_request_approval(
+  p_actor_id uuid,
+  p_order_id uuid
+)
+RETURNS boolean
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path = public
+AS $$
+  SELECT EXISTS (
+    SELECT 1
+    FROM public.sicoob_orders o
+    JOIN public.profiles p ON p.user_id = p_actor_id OR p.id = p_actor_id
+    WHERE o.id = p_order_id
+      AND p.is_active IS TRUE
+      AND p.deleted_at IS NULL
+      AND (
+        o.created_by = p_actor_id
+        OR EXISTS (
+          SELECT 1 FROM public.user_roles ur
+          WHERE ur.user_id = p_actor_id AND ur.role::text IN ('admin', 'dev', 'supervisor')
+        )
+        OR (
+          p.cooperativa_id = o.cooperative_id
+          AND EXISTS (
+            SELECT 1 FROM public.user_roles ur
+            WHERE ur.user_id = p_actor_id AND ur.role::text IN ('gestor_compras', 'comprador_singular')
+          )
+        )
+        OR (
+          p.pa_id = o.pa_id
+          AND EXISTS (
+            SELECT 1 FROM public.user_roles ur
+            WHERE ur.user_id = p_actor_id AND ur.role::text IN ('gerente_pa', 'comprador_pac')
+          )
+        )
+      )
+  );
+$$;
+
+REVOKE ALL ON FUNCTION public.sicoob_actor_can_request_approval(uuid, uuid) FROM PUBLIC;
+
 CREATE OR REPLACE FUNCTION public.assert_sicoob_approval_actor(
   p_actor_id uuid,
   p_order_id uuid,
@@ -269,6 +335,10 @@ $$;
 
 REVOKE ALL ON FUNCTION public.guard_sicoob_approval_status_transition() FROM PUBLIC;
 
+-- O gatilho histórico reescrevia `pending` depois das guardas formais e podia
+-- inserir o pedido no fluxo protegido sem solicitação nem snapshot.
+DROP TRIGGER IF EXISTS trigger_sicoob_order_flow_intelligence ON public.sicoob_orders;
+
 DROP TRIGGER IF EXISTS tr_guard_sicoob_approval_status_transition ON public.sicoob_orders;
 CREATE TRIGGER tr_guard_sicoob_approval_status_transition
 BEFORE UPDATE OF status ON public.sicoob_orders
@@ -297,7 +367,8 @@ BEGIN
   END IF;
 
   IF NEW.status IS DISTINCT FROM OLD.status THEN
-    IF (NEW.status = 'approved' AND v_operation IS DISTINCT FROM 'approve')
+    IF NEW.status = 'pending'
+       OR (NEW.status = 'approved' AND v_operation IS DISTINCT FROM 'approve')
        OR (NEW.status = 'rejected' AND v_operation IS DISTINCT FROM 'reject') THEN
       RAISE EXCEPTION USING ERRCODE = '42501', MESSAGE = 'O resultado da aprovação exige RPC de decisão formal.';
     END IF;
@@ -433,6 +504,16 @@ BEGIN
       MESSAGE = 'Use a RPC específica para preparar, solicitar, decidir ou escalar uma aprovação.';
   END IF;
 
+  IF v_new_status = 'cancelled' THEN
+    PERFORM set_config('app.sicoob_approval_operation', 'reject', true);
+    UPDATE public.sicoob_approval_requests
+       SET status = 'rejected',
+           approver_id = auth.uid(),
+           rejection_reason = 'Pedido cancelado: ' || COALESCE(NULLIF(trim(p_comment), ''), 'sem observação adicional'),
+           updated_at = now()
+     WHERE order_id = p_order_id AND status = 'pending';
+  END IF;
+
   PERFORM set_config('app.sicoob_order_status_comment', COALESCE(p_comment, ''), true);
 
   UPDATE public.sicoob_orders
@@ -457,7 +538,7 @@ CREATE OR REPLACE FUNCTION public.prepare_sicoob_order_confirmation(
 )
 RETURNS void
 LANGUAGE plpgsql
-SECURITY INVOKER
+SECURITY DEFINER
 SET search_path = public
 AS $$
 DECLARE
@@ -477,6 +558,9 @@ BEGIN
 
   IF NOT FOUND OR v_order.status IS DISTINCT FROM p_expected_status OR v_order.status <> 'pending' THEN
     RAISE EXCEPTION USING ERRCODE = 'P0002', MESSAGE = 'O pedido mudou ou não está disponível para preparação.';
+  END IF;
+  IF NOT public.sicoob_actor_can_request_approval(v_actor_id, v_order.id) THEN
+    RAISE EXCEPTION USING ERRCODE = '42501', MESSAGE = 'Usuário fora do escopo do pedido.';
   END IF;
 
   SELECT limite_alcada INTO v_limit
@@ -511,7 +595,7 @@ CREATE OR REPLACE FUNCTION public.request_sicoob_order_approval(
 )
 RETURNS uuid
 LANGUAGE plpgsql
-SECURITY INVOKER
+SECURITY DEFINER
 SET search_path = public
 AS $$
 DECLARE
@@ -541,6 +625,9 @@ BEGIN
 
   IF NOT FOUND OR v_order.status IS DISTINCT FROM trim(p_expected_status) THEN
     RAISE EXCEPTION USING ERRCODE = 'P0002', MESSAGE = 'O pedido mudou ou não está disponível; atualize a página e tente novamente.';
+  END IF;
+  IF NOT public.sicoob_actor_can_request_approval(v_actor_id, v_order.id) THEN
+    RAISE EXCEPTION USING ERRCODE = '42501', MESSAGE = 'Usuário fora do escopo do pedido.';
   END IF;
 
   SELECT limite_alcada INTO v_threshold
@@ -780,6 +867,7 @@ BEGIN
 
   PERFORM public.assert_sicoob_approval_actor(v_actor_id, v_order.id, v_request.requester_id, v_order.status = 'escalated_to_board');
   PERFORM set_config('app.sicoob_approval_operation', 'reject', true);
+  PERFORM set_config('app.sicoob_order_status_comment', trim(p_reason), true);
 
   UPDATE public.sicoob_approval_requests
      SET status = 'rejected', approver_id = v_actor_id, rejection_reason = trim(p_reason), updated_at = now()

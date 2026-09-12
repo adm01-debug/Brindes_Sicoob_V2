@@ -291,7 +291,7 @@ export const Sel = {
   // ---------- App genérico ----------
   app: {
     /** Toast da aplicação, exposto pelo componente de UI para testes estáveis. */
-    toast: "[data-testid=\"app-toast\"]",
+    toast: "[data-testid=\"app-toast\"], [data-sonner-toast]",
     errorBanner: TID("app-error-banner"),
     /** Tela 404 (NotFound page). */
     notFound: TID("app-not-found"),

@@ -30,6 +30,9 @@ SELF_ORDER = "eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee"
 INACTIVE_ORDER = "ffffffff-ffff-ffff-ffff-ffffffffffff"
 ESCALATED_ORDER = "99999999-9999-9999-9999-999999999999"
 DIRECT_LOW_ORDER = "aaaaaaaa-1111-1111-1111-111111111111"
+REJECTED_ORDER = "aaaaaaaa-2222-2222-2222-222222222222"
+CANCELLED_ORDER = "aaaaaaaa-3333-3333-3333-333333333333"
+LEGACY_DUP_ORDER = "aaaaaaaa-4444-4444-4444-444444444444"
 
 
 def command(args, *, stdin=None, check=True):
@@ -54,6 +57,10 @@ def sql(statement, *, check=True):
 
 def actor_sql(actor, statement, *, check=True):
     return sql(f"SET request.jwt.claim.sub = '{actor}';\n{statement}", check=check)
+
+
+def rls_actor_sql(actor, statement, *, check=True):
+    return sql(f"SET ROLE authenticated;\nSET request.jwt.claim.sub = '{actor}';\n{statement}\nRESET ROLE;", check=check)
 
 
 def scalar(response):
@@ -83,6 +90,19 @@ try:
         raise RuntimeError("PostgreSQL descartável não iniciou")
 
     sql(FIXTURE.read_text())
+    sql(f"""
+      ALTER TABLE public.sicoob_orders DISABLE TRIGGER trigger_sicoob_order_flow_intelligence;
+      INSERT INTO public.sicoob_orders (id, created_by, status, total_amount)
+      VALUES ('{LEGACY_DUP_ORDER}', '{CREATOR}', 'pending', 10);
+      ALTER TABLE public.sicoob_orders ENABLE TRIGGER trigger_sicoob_order_flow_intelligence;
+      ALTER TABLE public.sicoob_approval_requests DISABLE TRIGGER on_approval_request_created;
+      INSERT INTO public.sicoob_approval_requests
+        (order_id, requester_id, request_reason, amount_at_request, threshold_at_request, created_at)
+      VALUES
+        ('{LEGACY_DUP_ORDER}', '{CREATOR}', 'Legado duplicado um', 10, 100, now() - interval '1 minute'),
+        ('{LEGACY_DUP_ORDER}', '{CREATOR}', 'Legado duplicado dois', 10, 100, now());
+      ALTER TABLE public.sicoob_approval_requests ENABLE TRIGGER on_approval_request_created;
+    """)
     for migration in MIGRATIONS:
         sql(migration.read_text())
 
@@ -94,6 +114,19 @@ try:
          AND NOT tgisinternal;
     """))
     assert legacy_trigger_count == "0", legacy_trigger_count
+    flow_trigger_count = scalar(sql("""
+      SELECT count(*) FROM pg_trigger
+      WHERE tgrelid = 'public.sicoob_orders'::regclass
+        AND tgname = 'trigger_sicoob_order_flow_intelligence'
+        AND NOT tgisinternal;
+    """))
+    assert flow_trigger_count == "0", flow_trigger_count
+    normalized_pending = scalar(sql(f"""
+      SELECT count(*) FILTER (WHERE status='pending') || '|'
+        || count(*) FILTER (WHERE status='rejected')
+      FROM public.sicoob_approval_requests WHERE order_id='{LEGACY_DUP_ORDER}';
+    """))
+    assert normalized_pending == "1|1", normalized_pending
 
     rpc_privileges = scalar(sql("""
       SELECT
@@ -116,7 +149,7 @@ try:
         ('{SUPERVISOR}', NULL, NULL, true);
       INSERT INTO public.user_roles (user_id, role) VALUES
         ('{PA_MANAGER}', 'gerente_pa'),
-        ('{INACTIVE_MANAGER}', 'gerente_pa'),
+        ('{INACTIVE_MANAGER}', 'gerente_pa'), ('{INACTIVE_MANAGER}', 'supervisor'),
         ('{SELF_MANAGER}', 'gerente_pa'),
         ('{SUPERVISOR}', 'supervisor');
       INSERT INTO public.sicoob_approval_policies (
@@ -131,10 +164,22 @@ try:
         ('{SELF_ORDER}', '{PA}', '{COOPERATIVE}', '{SELF_MANAGER}', 'pending', 800),
         ('{INACTIVE_ORDER}', '{PA}', '{COOPERATIVE}', '{CREATOR}', 'pending', 800),
         ('{ESCALATED_ORDER}', '{PA}', '{COOPERATIVE}', '{CREATOR}', 'pending', 800),
+        ('{REJECTED_ORDER}', '{PA}', '{COOPERATIVE}', '{CREATOR}', 'pending', 800),
+        ('{CANCELLED_ORDER}', '{PA}', '{COOPERATIVE}', '{CREATOR}', 'pending', 800),
         ('{DIRECT_LOW_ORDER}', '{PA}', '{COOPERATIVE}', '{CREATOR}', 'pending', 100);
       INSERT INTO public.sicoob_order_items (order_id, product_name, quantity, unit_price, total_price)
       VALUES ('{HIGH_ORDER}', 'Caneca sintética', 1, 800, 800);
+      GRANT USAGE ON SCHEMA public TO authenticated;
+      GRANT SELECT ON public.user_roles, public.profiles TO authenticated;
+      GRANT SELECT, UPDATE ON public.sicoob_approval_policies TO authenticated;
     """)
+
+    inactive_policy_change = rls_actor_sql(INACTIVE_MANAGER, f"""
+      UPDATE public.sicoob_approval_policies SET is_active=false
+      WHERE cooperative_id='{COOPERATIVE}';
+    """, check=False)
+    assert inactive_policy_change.returncode == 0
+    assert scalar(sql(f"SELECT is_active::text FROM public.sicoob_approval_policies WHERE cooperative_id='{COOPERATIVE}';")) == "true"
 
     actor_sql(CREATOR, f"""
       SELECT public.prepare_sicoob_order_confirmation(
@@ -216,6 +261,11 @@ try:
     """))
     assert request_snapshot == "800.00|500.00|coop-v2026.1|waiting_approval|coop-v2026.1", request_snapshot
 
+    scope_change = sql(f"UPDATE public.sicoob_orders SET cooperative_id='{LEGACY_DUP_ORDER}' WHERE id='{HIGH_ORDER}';", check=False)
+    period_change = sql(f"UPDATE public.sicoob_orders SET created_at=created_at + interval '1 month' WHERE id='{HIGH_ORDER}';", check=False)
+    assert scope_change.returncode != 0 and "Pedido submetido" in scope_change.stderr
+    assert period_change.returncode != 0 and "Pedido submetido" in period_change.stderr
+
     frozen_total = sql(f"UPDATE public.sicoob_orders SET total_amount = 801 WHERE id = '{HIGH_ORDER}';", check=False)
     frozen_item = sql(f"UPDATE public.sicoob_order_items SET quantity = 2 WHERE order_id = '{HIGH_ORDER}';", check=False)
     frozen_request = sql(f"UPDATE public.sicoob_approval_requests SET amount_at_request = 1 WHERE id = '{request_id}';", check=False)
@@ -250,6 +300,50 @@ try:
     assert policy_mutation.returncode != 0 and "nova versão" in policy_mutation.stderr
     result["solicitacao_formal"] = "alçada é derivada do orçamento do PA; política específica prevalece, sua fotografia é imutável e valor/itens permanecem congelados após confirmação e em transferências"
 
+    rejected_request_id = scalar(actor_sql(CREATOR, f"""
+      SELECT public.request_sicoob_order_approval(
+        '{REJECTED_ORDER}', 'pending', 'Campanha recusada na análise formal', 500, false
+      );
+    """))
+    actor_sql(PA_MANAGER, f"""
+      SELECT public.reject_sicoob_order(
+        '{rejected_request_id}', '{REJECTED_ORDER}', '{PA_MANAGER}', 'Identidade visual fora do manual vigente'
+      );
+    """)
+    rejected_history = scalar(sql(f"""
+      SELECT r.status || '|' || o.status || '|' || h.comment
+      FROM public.sicoob_approval_requests r
+      JOIN public.sicoob_orders o ON o.id = r.order_id
+      JOIN LATERAL (
+        SELECT comment FROM public.sicoob_order_history
+        WHERE order_id = o.id AND new_status = 'rejected'
+        ORDER BY created_at DESC LIMIT 1
+      ) h ON true
+      WHERE r.id = '{rejected_request_id}';
+    """))
+    assert rejected_history == "rejected|rejected|Identidade visual fora do manual vigente", rejected_history
+    result["rejeicao"] = "motivo da decisão formal propagado ao histórico canônico do pedido"
+
+    cancelled_request_id = scalar(actor_sql(CREATOR, f"""
+      SELECT public.request_sicoob_order_approval(
+        '{CANCELLED_ORDER}', 'pending', 'Solicitação que será cancelada formalmente', 500, false
+      );
+    """))
+    actor_sql(CREATOR, f"""
+      SELECT public.transition_sicoob_order_status(
+        '{CANCELLED_ORDER}', 'waiting_approval', 'cancelled', 'Cancelado pelo solicitante'
+      );
+    """)
+    cancelled_state = scalar(sql(f"""
+      SELECT o.status || '|' || r.status || '|' || r.rejection_reason
+      FROM public.sicoob_orders o JOIN public.sicoob_approval_requests r ON r.order_id=o.id
+      WHERE r.id='{cancelled_request_id}';
+    """))
+    assert cancelled_state == "cancelled|rejected|Pedido cancelado: Cancelado pelo solicitante", cancelled_state
+    reopen_request = sql(f"UPDATE public.sicoob_approval_requests SET status='pending' WHERE id='{cancelled_request_id}';", check=False)
+    assert reopen_request.returncode != 0 and "decisão formal" in reopen_request.stderr
+    result["cancelamento"] = "solicitação pendente encerrada atomicamente e reabertura direta bloqueada"
+
     self_request_id = scalar(actor_sql(SELF_MANAGER, f"""
       SELECT public.request_sicoob_order_approval(
         '{SELF_ORDER}', 'pending', 'Pedido do próprio gestor para teste de impedimento', 500, false
@@ -260,6 +354,12 @@ try:
     """, check=False)
     assert self_approval.returncode != 0 and "não permite decidir o próprio pedido" in self_approval.stderr
 
+    inactive_request = actor_sql(INACTIVE_MANAGER, f"""
+      SELECT public.request_sicoob_order_approval(
+        '{INACTIVE_ORDER}', 'pending', 'Tentativa com vínculo inativo no escopo', 500, false
+      );
+    """, check=False)
+    assert inactive_request.returncode != 0 and "fora do escopo" in inactive_request.stderr
     inactive_request_id = scalar(actor_sql(CREATOR, f"""
       SELECT public.request_sicoob_order_approval(
         '{INACTIVE_ORDER}', 'pending', 'Pedido para validar vínculo revogado do aprovador', 500, false

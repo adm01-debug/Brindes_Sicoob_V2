@@ -9,6 +9,9 @@ export interface OrderPayment {
   amount: number;
   due_date: string;
   paid_at: string | null;
+  refunded_at: string | null;
+  refunded_by: string | null;
+  refund_reason: string | null;
   payment_method: string | null;
   external_reference: string | null;
   updated_at: string;
@@ -18,7 +21,7 @@ export interface RecordOrderPaymentInput {
   installmentNumber: number;
   amount: number;
   dueDate: string;
-  status: 'pending' | 'paid' | 'cancelled' | 'refunded';
+  status: 'pending' | 'paid' | 'cancelled';
   invoiceId?: string | null;
   paymentMethod?: string | null;
   externalReference?: string | null;
@@ -32,7 +35,7 @@ export function useOrderPayments(orderId?: string) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('sicoob_order_payments')
-        .select('id, status, installment_number, amount, due_date, paid_at, payment_method, external_reference, updated_at')
+        .select('id, status, installment_number, amount, due_date, paid_at, refunded_at, refunded_by, refund_reason, payment_method, external_reference, updated_at')
         .eq('order_id', orderId!)
         .order('installment_number');
       if (error) throw error;
@@ -73,5 +76,24 @@ export function useOrderPayments(orderId?: string) {
     },
   });
 
-  return { payments: query.data, isLoading: query.isLoading, error: query.error, recordPayment };
+  const refundPayment = useMutation({
+    mutationFn: async (input: { paymentId: string; reason: string; expectedUpdatedAt: string }) => {
+      const { error } = await supabase.rpc('refund_sicoob_order_payment', {
+        p_payment_id: input.paymentId,
+        p_reason: input.reason,
+        p_expected_updated_at: input.expectedUpdatedAt,
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['sicoob-order-payments', orderId] });
+      queryClient.invalidateQueries({ queryKey: ['order-audit', orderId] });
+      toast.success('Estorno registrado com rastreabilidade');
+    },
+    onError: (mutationError) => {
+      toast.error(mutationError instanceof Error ? mutationError.message : 'Não foi possível estornar a parcela.');
+    },
+  });
+
+  return { payments: query.data, isLoading: query.isLoading, error: query.error, recordPayment, refundPayment };
 }

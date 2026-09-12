@@ -112,9 +112,10 @@ try:
         '{ORDER}', $payload${first_payload}$payload$::jsonb, 'recompra-teste-0001', '{CREATOR}'
       );
     """))
+    retried_payload = payload(checked="now() + interval '1 second'")
     same_quote_id = scalar(actor_sql(CREATOR, f"""
       SELECT public.reorder_sicoob_order_as_quote(
-        '{ORDER}', $payload${first_payload}$payload$::jsonb, 'recompra-teste-0001', '{CREATOR}'
+        '{ORDER}', $payload${retried_payload}$payload$::jsonb, 'recompra-teste-0001', '{CREATOR}'
       );
     """))
     assert same_quote_id == quote_id
@@ -130,7 +131,7 @@ try:
     assert persisted == f"true|{PA}|{COOPERATIVE}|{ORG}|50.00|1", persisted
     assert scalar(sql("SELECT count(*) FROM public.quotes;")) == "1"
     result["atomicidade_e_hierarquia"] = "orçamento e item gravados juntos; PA não foi escrito em client_id; hierarquia veio do pedido"
-    result["idempotencia"] = "repetição com a mesma chave e conteúdo devolveu o mesmo orçamento sem duplicar"
+    result["idempotencia"] = "repetição com a mesma chave e nova data de consulta devolveu o mesmo orçamento sem duplicar"
 
     changed_payload = payload(price=26)
     changed = actor_sql(CREATOR, f"""

@@ -223,7 +223,8 @@ export default function OrderDetailPage() {
       previousStatus: orderData.status,
       isEscalated: true,
     }, {
-      onSuccess: () => {
+      onSuccess: async () => {
+        await refetchOrder();
         setIsEscalateDialogOpen(false);
         setRequestReason("");
       }
@@ -331,7 +332,9 @@ export default function OrderDetailPage() {
             </div>
           </div>
           <div className="ml-auto flex gap-2">
-            <OneClickReorder orderId={id!} variant="outline" className="h-9 border-sicoob-green/30 text-sicoob-green-dark hover:bg-sicoob-green/5" />
+            {orderData.status === 'completed' && (
+              <OneClickReorder orderId={id!} variant="outline" className="h-9 border-sicoob-green/30 text-sicoob-green-dark hover:bg-sicoob-green/5" />
+            )}
             
             <div className="flex flex-col gap-1">
               <Button 
@@ -348,7 +351,7 @@ export default function OrderDetailPage() {
               </div>
             </div>
 
-            {activeRequest && canApprove ? (
+            {(activeRequest || orderData.status === 'waiting_approval') && canApprove ? (
               <>
                 <Button 
                   variant="outline" 
@@ -373,7 +376,7 @@ export default function OrderDetailPage() {
                   confirmDisabled={rejectionReason.length < 10}
                 />
 
-                {orderData.status !== 'escalated_to_board' && (
+                {activeRequest && orderData.status !== 'escalated_to_board' && (
                   <>
                     <Button 
                       variant="outline" 

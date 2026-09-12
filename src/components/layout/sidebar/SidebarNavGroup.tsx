@@ -10,6 +10,7 @@ import { useRBAC } from "@/hooks/useRBAC";
 import { getPrefetchHandlers } from "@/lib/routePrefetch";
 import { isDevOnlyPath, isAdminOnlyPath } from "@/lib/navigation/restricted-routes";
 import { isNavItemActive } from "@/lib/navigation/active-match";
+import type { AppRole } from "@/types/users";
 
 export interface NavItem {
   icon: React.ComponentType<{ className?: string }>;
@@ -17,6 +18,7 @@ export interface NavItem {
   href: string;
   tourId?: string;
   adminOnly?: boolean;
+  allowedRoles?: readonly AppRole[];
   /** Restrito ao papel `dev` — rotas técnicas/infra. */
   devOnly?: boolean;
   requiredPermission?: { action: string; resource: string };
@@ -58,7 +60,7 @@ export const SidebarNavGroup = forwardRef<HTMLDivElement, SidebarNavGroupProps>(
   isMobileSidebarOpen,
 }, _ref) {
   const location = useLocation();
-  const { isAdmin, isDev } = useAuth();
+  const { isAdmin, isDev, roles } = useAuth();
   const { hasPermission } = useRBAC();
 
   const isItemActive = (href: string, exact?: boolean) => {
@@ -96,6 +98,7 @@ export const SidebarNavGroup = forwardRef<HTMLDivElement, SidebarNavGroupProps>(
     // 1) Flags declarativas
     if (item.devOnly && !isDev) return null;
     if (item.adminOnly && !isAdmin) return null;
+    if (item.allowedRoles && !roles.some((role) => item.allowedRoles?.includes(role))) return null;
     // 2) Defense-in-depth: SSOT por path. Garante que mesmo um item sem flag
     //    devOnly/adminOnly seja escondido se sua rota for técnica/admin e o
     //    usuário não tiver o papel — supervisor sem dev nunca enxerga rotas dev.

@@ -9,10 +9,18 @@ CREATE FUNCTION auth.uid() RETURNS uuid
 LANGUAGE sql STABLE
 AS $$ SELECT NULLIF(current_setting('request.jwt.claim.sub', true), '')::uuid $$;
 
+CREATE TABLE public.user_roles (user_id uuid, role text);
+CREATE TABLE public.organization_members (user_id uuid, organization_id uuid);
+
 CREATE FUNCTION public.can_manage_quotes(_user_id uuid DEFAULT auth.uid())
 RETURNS boolean
 LANGUAGE sql STABLE
-AS $$ SELECT false $$;
+AS $$ SELECT EXISTS (SELECT 1 FROM public.user_roles WHERE user_id = _user_id AND role IN ('supervisor', 'admin', 'manager')) $$;
+
+CREATE FUNCTION public.get_user_org_ids(_user_id uuid)
+RETURNS SETOF uuid
+LANGUAGE sql STABLE
+AS $$ SELECT organization_id FROM public.organization_members WHERE user_id = _user_id $$;
 
 CREATE SEQUENCE public.test_quote_number_sequence START 10001;
 

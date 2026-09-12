@@ -31,6 +31,10 @@ export function useOrderPilotApprovals(orderId?: string) {
       }));
     },
     enabled: Boolean(orderId),
+    staleTime: 4 * 60_000,
+    refetchInterval: 4 * 60_000,
+    refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
   });
 
   const updateApprovalStatus = useMutation({

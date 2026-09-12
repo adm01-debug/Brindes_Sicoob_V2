@@ -47,6 +47,7 @@ CREATE TABLE IF NOT EXISTS public.sicoob_delivery_allocations (
 
 CREATE TABLE IF NOT EXISTS public.sicoob_delivery_receipt_events (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  idempotency_key uuid NOT NULL,
   allocation_id uuid NOT NULL REFERENCES public.sicoob_delivery_allocations(id) ON DELETE RESTRICT,
   received_quantity integer NOT NULL DEFAULT 0 CHECK (received_quantity >= 0),
   damaged_quantity integer NOT NULL DEFAULT 0 CHECK (damaged_quantity >= 0),
@@ -57,6 +58,16 @@ CREATE TABLE IF NOT EXISTS public.sicoob_delivery_receipt_events (
   CHECK (received_quantity + damaged_quantity + missing_quantity > 0),
   CHECK ((damaged_quantity + missing_quantity = 0) OR length(trim(COALESCE(notes, ''))) >= 10)
 );
+
+ALTER TABLE public.sicoob_delivery_receipt_events
+  ADD COLUMN IF NOT EXISTS idempotency_key uuid;
+UPDATE public.sicoob_delivery_receipt_events
+   SET idempotency_key = gen_random_uuid()
+ WHERE idempotency_key IS NULL;
+ALTER TABLE public.sicoob_delivery_receipt_events
+  ALTER COLUMN idempotency_key SET NOT NULL;
+CREATE UNIQUE INDEX IF NOT EXISTS ux_sicoob_delivery_receipt_idempotency
+  ON public.sicoob_delivery_receipt_events(idempotency_key);
 
 CREATE INDEX IF NOT EXISTS idx_consolidation_orders_group ON public.order_consolidation_orders(consolidation_id);
 CREATE INDEX IF NOT EXISTS idx_delivery_destinations_group ON public.sicoob_delivery_destinations(consolidation_id);
@@ -108,7 +119,7 @@ AS $$
     SELECT 1
     FROM public.profiles p
     WHERE (p.user_id = p_actor_id OR p.id = p_actor_id)
-      AND (p.is_active IS TRUE OR p.is_active IS NULL)
+      AND p.is_active IS TRUE
       AND (p.deleted_at IS NULL)
       AND (
         EXISTS (
@@ -127,11 +138,119 @@ AS $$
   );
 $$;
 
+CREATE OR REPLACE FUNCTION public.sicoob_actor_can_receive_consolidation(
+  p_actor_id uuid,
+  p_consolidation_id uuid
+)
+RETURNS boolean
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path = public
+AS $$
+  SELECT EXISTS (
+    SELECT 1
+    FROM public.profiles p
+    JOIN public.sicoob_delivery_destinations d ON d.pa_id = p.pa_id
+    WHERE (p.user_id = p_actor_id OR p.id = p_actor_id)
+      AND d.consolidation_id = p_consolidation_id
+      AND p.is_active IS TRUE
+      AND p.deleted_at IS NULL
+      AND EXISTS (
+        SELECT 1 FROM public.user_roles ur
+        WHERE ur.user_id = p_actor_id
+          AND ur.role::text IN ('gerente_pa', 'comprador_pac')
+      )
+  );
+$$;
+
+CREATE OR REPLACE FUNCTION public.sicoob_actor_can_receive_destination(
+  p_actor_id uuid,
+  p_destination_id uuid
+)
+RETURNS boolean
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path = public
+AS $$
+  SELECT EXISTS (
+    SELECT 1
+    FROM public.profiles p
+    JOIN public.sicoob_delivery_destinations d ON d.pa_id = p.pa_id
+    WHERE (p.user_id = p_actor_id OR p.id = p_actor_id)
+      AND d.id = p_destination_id
+      AND p.is_active IS TRUE
+      AND p.deleted_at IS NULL
+      AND EXISTS (
+        SELECT 1 FROM public.user_roles ur
+        WHERE ur.user_id = p_actor_id
+          AND ur.role::text IN ('gerente_pa', 'comprador_pac')
+      )
+  );
+$$;
+
+CREATE OR REPLACE FUNCTION public.sicoob_actor_can_view_all_consolidation(
+  p_actor_id uuid,
+  p_consolidation_id uuid
+)
+RETURNS boolean
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path = public
+AS $$
+  SELECT EXISTS (
+    SELECT 1 FROM public.order_consolidations c
+    WHERE c.id = p_consolidation_id
+      AND (
+        c.vendedor_id = p_actor_id
+        OR public.sicoob_actor_can_manage_consolidation(p_actor_id, c.singular_id)
+      )
+  );
+$$;
+
 DROP POLICY IF EXISTS "Admins and Gestores can view consolidations" ON public.order_consolidations;
 CREATE POLICY "consolidations_read_in_scope" ON public.order_consolidations
 FOR SELECT TO authenticated USING (
   vendedor_id = auth.uid()
   OR public.sicoob_actor_can_manage_consolidation(auth.uid(), singular_id)
+  OR public.sicoob_actor_can_receive_consolidation(auth.uid(), id)
+);
+
+DROP POLICY IF EXISTS "consolidation_orders_read_via_group" ON public.order_consolidation_orders;
+CREATE POLICY "consolidation_orders_read_in_scope" ON public.order_consolidation_orders
+FOR SELECT TO authenticated USING (
+  public.sicoob_actor_can_view_all_consolidation(auth.uid(), consolidation_id)
+);
+DROP POLICY IF EXISTS "delivery_destinations_read_via_group" ON public.sicoob_delivery_destinations;
+CREATE POLICY "delivery_destinations_read_in_scope" ON public.sicoob_delivery_destinations
+FOR SELECT TO authenticated USING (
+  public.sicoob_actor_can_view_all_consolidation(auth.uid(), consolidation_id)
+  OR public.sicoob_actor_can_receive_destination(auth.uid(), id)
+);
+DROP POLICY IF EXISTS "delivery_allocations_read_via_destination" ON public.sicoob_delivery_allocations;
+CREATE POLICY "delivery_allocations_read_in_scope" ON public.sicoob_delivery_allocations
+FOR SELECT TO authenticated USING (
+  public.sicoob_actor_can_receive_destination(auth.uid(), destination_id)
+  OR EXISTS (
+    SELECT 1 FROM public.sicoob_delivery_destinations d
+    WHERE d.id = destination_id
+      AND public.sicoob_actor_can_view_all_consolidation(auth.uid(), d.consolidation_id)
+  )
+);
+DROP POLICY IF EXISTS "delivery_receipts_read_via_allocation" ON public.sicoob_delivery_receipt_events;
+CREATE POLICY "delivery_receipts_read_in_scope" ON public.sicoob_delivery_receipt_events
+FOR SELECT TO authenticated USING (
+  EXISTS (
+    SELECT 1 FROM public.sicoob_delivery_allocations a
+    JOIN public.sicoob_delivery_destinations d ON d.id = a.destination_id
+    WHERE a.id = allocation_id
+      AND (
+        public.sicoob_actor_can_receive_destination(auth.uid(), d.id)
+        OR public.sicoob_actor_can_view_all_consolidation(auth.uid(), d.consolidation_id)
+      )
+  )
 );
 
 CREATE OR REPLACE FUNCTION public.get_sicoob_consolidation_sellers()
@@ -148,7 +267,7 @@ BEGIN
   SELECT cooperativa_id INTO v_cooperative_id
   FROM public.profiles
   WHERE (user_id = v_actor_id OR id = v_actor_id)
-    AND (is_active IS TRUE OR is_active IS NULL)
+    AND is_active IS TRUE
     AND deleted_at IS NULL
   LIMIT 1;
   IF v_actor_id IS NULL OR v_cooperative_id IS NULL
@@ -160,8 +279,8 @@ BEGIN
   FROM public.user_roles ur
   LEFT JOIN public.profiles p ON p.user_id = ur.user_id OR p.id = ur.user_id
   WHERE ur.role::text = 'vendedor'
-    AND (p.cooperativa_id = v_cooperative_id OR p.cooperativa_id IS NULL)
-    AND (p.is_active IS TRUE OR p.is_active IS NULL)
+    AND p.cooperativa_id = v_cooperative_id
+    AND p.is_active IS TRUE
     AND p.deleted_at IS NULL
   ORDER BY 2;
 END;
@@ -236,6 +355,7 @@ AS $$
 DECLARE
   v_actor_id uuid := auth.uid();
   v_consolidation_id uuid;
+  v_existing_group public.order_consolidations%ROWTYPE;
   v_cooperative_id uuid;
   v_count integer;
   v_total numeric;
@@ -247,15 +367,23 @@ BEGIN
     RAISE EXCEPTION USING ERRCODE = '22023', MESSAGE = 'A lista de pedidos contém duplicidades.';
   END IF;
 
-  SELECT id INTO v_consolidation_id
+  SELECT * INTO v_existing_group
     FROM public.order_consolidations WHERE idempotency_key = p_idempotency_key;
-  IF FOUND THEN RETURN v_consolidation_id; END IF;
-
-  IF NOT EXISTS (
-    SELECT 1 FROM public.user_roles
-     WHERE user_id = p_seller_id AND role::text = 'vendedor'
-  ) THEN
-    RAISE EXCEPTION USING ERRCODE = '23503', MESSAGE = 'Vendedor informado não possui vínculo ativo.';
+  IF FOUND THEN
+    IF v_existing_group.consolidated_by IS DISTINCT FROM v_actor_id
+       OR v_existing_group.vendedor_id IS DISTINCT FROM p_seller_id
+       OR (SELECT count(*) FROM public.order_consolidation_orders co
+            WHERE co.consolidation_id = v_existing_group.id) <> cardinality(p_order_ids)
+       OR EXISTS (
+         SELECT 1 FROM public.order_consolidation_orders co
+          WHERE co.consolidation_id = v_existing_group.id
+            AND NOT (co.order_id = ANY(p_order_ids))
+       ) THEN
+      RAISE EXCEPTION USING
+        ERRCODE = '22023',
+        MESSAGE = 'A chave de idempotência já foi usada por outro usuário ou conteúdo.';
+    END IF;
+    RETURN v_existing_group.id;
   END IF;
 
   PERFORM 1 FROM public.sicoob_orders WHERE id = ANY(p_order_ids) FOR UPDATE;
@@ -281,6 +409,20 @@ BEGIN
   END IF;
   IF NOT public.sicoob_actor_can_manage_consolidation(v_actor_id, v_cooperative_id) THEN
     RAISE EXCEPTION USING ERRCODE = '42501', MESSAGE = 'Usuário fora do escopo da consolidação.';
+  END IF;
+  IF NOT EXISTS (
+    SELECT 1
+    FROM public.profiles p
+    WHERE (p.user_id = p_seller_id OR p.id = p_seller_id)
+      AND p.cooperativa_id = v_cooperative_id
+      AND p.is_active IS TRUE
+      AND p.deleted_at IS NULL
+      AND EXISTS (
+        SELECT 1 FROM public.user_roles ur
+        WHERE ur.user_id = p_seller_id AND ur.role::text = 'vendedor'
+      )
+  ) THEN
+    RAISE EXCEPTION USING ERRCODE = '23503', MESSAGE = 'Vendedor informado não possui vínculo ativo nesta Singular.';
   END IF;
 
   PERFORM set_config('app.sicoob_consolidation_operation', 'create', true);
@@ -391,13 +533,31 @@ BEGIN
     RAISE EXCEPTION USING ERRCODE = '23514', MESSAGE = 'Todos os itens precisam de um destino antes do despacho.';
   END IF;
   PERFORM set_config('app.sicoob_consolidation_operation', 'dispatch', true);
+  PERFORM set_config('app.sicoob_order_status_comment', 'Despachado no lote consolidado ' || p_consolidation_id::text || '.', true);
+  UPDATE public.sicoob_orders o
+     SET status = 'logistic', updated_at = now()
+    FROM public.order_consolidation_orders co
+   WHERE co.consolidation_id = p_consolidation_id
+     AND co.order_id = o.id
+     AND o.status = 'confirmed';
+  IF NOT FOUND OR EXISTS (
+    SELECT 1
+      FROM public.order_consolidation_orders co
+      JOIN public.sicoob_orders o ON o.id = co.order_id
+     WHERE co.consolidation_id = p_consolidation_id
+       AND o.status <> 'logistic'
+  ) THEN
+    RAISE EXCEPTION USING ERRCODE = '40001', MESSAGE = 'Um pedido do lote mudou; atualize a página.';
+  END IF;
   UPDATE public.order_consolidations SET status = 'sent', updated_at = now()
    WHERE id = p_consolidation_id;
 END;
 $$;
 
+DROP FUNCTION IF EXISTS public.record_sicoob_delivery_receipt(uuid, integer, integer, integer, text);
 CREATE OR REPLACE FUNCTION public.record_sicoob_delivery_receipt(
   p_allocation_id uuid,
+  p_idempotency_key uuid,
   p_received_quantity integer DEFAULT 0,
   p_damaged_quantity integer DEFAULT 0,
   p_missing_quantity integer DEFAULT 0,
@@ -416,10 +576,28 @@ DECLARE
   v_has_issues boolean;
   v_all_complete boolean;
   v_destination_pa_id uuid;
+  v_existing_event public.sicoob_delivery_receipt_events%ROWTYPE;
 BEGIN
-  IF p_received_quantity < 0 OR p_damaged_quantity < 0 OR p_missing_quantity < 0
+  IF p_idempotency_key IS NULL
+     OR p_received_quantity < 0 OR p_damaged_quantity < 0 OR p_missing_quantity < 0
      OR p_received_quantity + p_damaged_quantity + p_missing_quantity <= 0 THEN
     RAISE EXCEPTION USING ERRCODE = '22023', MESSAGE = 'Informe ao menos uma quantidade positiva.';
+  END IF;
+
+  PERFORM pg_advisory_xact_lock(hashtextextended('sicoob-delivery-receipt:' || p_idempotency_key::text, 0));
+  SELECT * INTO v_existing_event
+    FROM public.sicoob_delivery_receipt_events
+   WHERE idempotency_key = p_idempotency_key;
+  IF FOUND THEN
+    IF v_existing_event.allocation_id IS DISTINCT FROM p_allocation_id
+       OR v_existing_event.received_quantity IS DISTINCT FROM p_received_quantity
+       OR v_existing_event.damaged_quantity IS DISTINCT FROM p_damaged_quantity
+       OR v_existing_event.missing_quantity IS DISTINCT FROM p_missing_quantity
+       OR v_existing_event.notes IS DISTINCT FROM NULLIF(trim(p_notes), '')
+       OR v_existing_event.received_by IS DISTINCT FROM v_actor_id THEN
+      RAISE EXCEPTION USING ERRCODE = '22023', MESSAGE = 'A chave de idempotência já foi usada com outro recebimento.';
+    END IF;
+    RETURN v_existing_event.id;
   END IF;
   IF p_damaged_quantity + p_missing_quantity > 0
      AND length(trim(COALESCE(p_notes, ''))) < 10 THEN
@@ -443,7 +621,7 @@ BEGIN
        SELECT 1 FROM public.profiles p
        WHERE (p.user_id = v_actor_id OR p.id = v_actor_id)
          AND p.pa_id = v_destination_pa_id
-         AND (p.is_active IS TRUE OR p.is_active IS NULL)
+         AND p.is_active IS TRUE
          AND p.deleted_at IS NULL
          AND EXISTS (
            SELECT 1 FROM public.user_roles ur
@@ -459,9 +637,9 @@ BEGIN
 
   PERFORM set_config('app.sicoob_consolidation_operation', 'receive', true);
   INSERT INTO public.sicoob_delivery_receipt_events (
-    allocation_id, received_quantity, damaged_quantity, missing_quantity, notes, received_by
+    idempotency_key, allocation_id, received_quantity, damaged_quantity, missing_quantity, notes, received_by
   ) VALUES (
-    p_allocation_id, p_received_quantity, p_damaged_quantity, p_missing_quantity,
+    p_idempotency_key, p_allocation_id, p_received_quantity, p_damaged_quantity, p_missing_quantity,
     NULLIF(trim(p_notes), ''), v_actor_id
   ) RETURNING id INTO v_event_id;
   UPDATE public.sicoob_delivery_allocations SET
@@ -486,20 +664,45 @@ BEGIN
     received_at = CASE WHEN v_all_complete THEN now() ELSE NULL END,
     updated_at = now()
   WHERE id = v_group.id;
+  IF v_all_complete THEN
+    PERFORM set_config('app.sicoob_order_status_comment', 'Recebimento integral do lote consolidado ' || v_group.id::text || '.', true);
+    UPDATE public.sicoob_orders o
+       SET status = 'completed', updated_at = now()
+      FROM public.order_consolidation_orders co
+     WHERE co.consolidation_id = v_group.id
+       AND co.order_id = o.id
+       AND o.status = 'logistic';
+    IF NOT FOUND OR EXISTS (
+      SELECT 1
+        FROM public.order_consolidation_orders co
+        JOIN public.sicoob_orders o ON o.id = co.order_id
+       WHERE co.consolidation_id = v_group.id
+         AND o.status <> 'completed'
+    ) THEN
+      RAISE EXCEPTION USING ERRCODE = '40001', MESSAGE = 'Um pedido do lote mudou; atualize a página.';
+    END IF;
+  END IF;
   RETURN v_event_id;
 END;
 $$;
 
 REVOKE ALL ON FUNCTION public.sicoob_actor_can_manage_consolidation(uuid, uuid) FROM PUBLIC;
+REVOKE ALL ON FUNCTION public.sicoob_actor_can_receive_consolidation(uuid, uuid) FROM PUBLIC;
+REVOKE ALL ON FUNCTION public.sicoob_actor_can_receive_destination(uuid, uuid) FROM PUBLIC;
+REVOKE ALL ON FUNCTION public.sicoob_actor_can_view_all_consolidation(uuid, uuid) FROM PUBLIC;
 REVOKE ALL ON FUNCTION public.get_sicoob_consolidation_sellers() FROM PUBLIC;
 REVOKE ALL ON FUNCTION public.protect_sicoob_consolidation_records() FROM PUBLIC;
 REVOKE ALL ON FUNCTION public.protect_sicoob_order_consolidation_link() FROM PUBLIC;
 REVOKE ALL ON FUNCTION public.create_sicoob_order_consolidation(uuid[], uuid, uuid) FROM PUBLIC;
 REVOKE ALL ON FUNCTION public.allocate_sicoob_consolidation_by_order_pa(uuid) FROM PUBLIC;
 REVOKE ALL ON FUNCTION public.dispatch_sicoob_order_consolidation(uuid) FROM PUBLIC;
-REVOKE ALL ON FUNCTION public.record_sicoob_delivery_receipt(uuid, integer, integer, integer, text) FROM PUBLIC;
+REVOKE ALL ON FUNCTION public.record_sicoob_delivery_receipt(uuid, uuid, integer, integer, integer, text) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.create_sicoob_order_consolidation(uuid[], uuid, uuid) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.sicoob_actor_can_manage_consolidation(uuid, uuid) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.sicoob_actor_can_receive_consolidation(uuid, uuid) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.sicoob_actor_can_receive_destination(uuid, uuid) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.sicoob_actor_can_view_all_consolidation(uuid, uuid) TO authenticated;
 GRANT EXECUTE ON FUNCTION public.get_sicoob_consolidation_sellers() TO authenticated;
 GRANT EXECUTE ON FUNCTION public.allocate_sicoob_consolidation_by_order_pa(uuid) TO authenticated;
 GRANT EXECUTE ON FUNCTION public.dispatch_sicoob_order_consolidation(uuid) TO authenticated;
-GRANT EXECUTE ON FUNCTION public.record_sicoob_delivery_receipt(uuid, integer, integer, integer, text) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.record_sicoob_delivery_receipt(uuid, uuid, integer, integer, integer, text) TO authenticated;
