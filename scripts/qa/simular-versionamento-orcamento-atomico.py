@@ -10,6 +10,7 @@ ROOT = Path(__file__).resolve().parents[2]
 MIGRATIONS = [
     ROOT / "supabase/migrations/20260912100000_quote_versioning_atomic.sql",
     ROOT / "supabase/migrations/20260912130000_quote_versioning_family_roots.sql",
+    ROOT / "supabase/migrations/20260912150000_quote_versioning_cycle_lock.sql",
 ]
 FIXTURE = ROOT / "tests/scenarios/sql/quote-versionamento-atomico-fixture.sql"
 SELLER = "11111111-1111-1111-1111-111111111111"
@@ -20,6 +21,8 @@ CHAIN_ROOT = "cccccccc-cccc-cccc-cccc-cccccccccccc"
 CHAIN_MIDDLE = "dddddddd-dddd-dddd-dddd-dddddddddddd"
 CHAIN_TIP = "eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee"
 CHAIN_CHILD = "ffffffff-ffff-ffff-ffff-ffffffffffff"
+CYCLE_A = "11111111-aaaa-aaaa-aaaa-aaaaaaaaaaaa"
+CYCLE_B = "22222222-bbbb-bbbb-bbbb-bbbbbbbbbbbb"
 
 
 def command(args, *, stdin=None, check=True):
@@ -109,6 +112,59 @@ try:
     """)
     assert scalar(sql(f"SELECT parent_quote_id::text FROM public.quotes WHERE id = '{CHAIN_CHILD}';")) == CHAIN_ROOT
     result["cadeia_historica"] = "cadeia multinível normalizada para a raiz; nova versão e inserção administrativa preservam o pai canônico"
+
+    sql(f"""
+      INSERT INTO public.quotes (
+        id, quote_number, seller_id, client_name, total, version, parent_quote_id, is_latest_version
+      ) VALUES
+        ('{CYCLE_A}', '90010/26', '{SELLER}', 'Cooperativa Ciclo A', 10, 1, NULL, false),
+        ('{CYCLE_B}', '90011/26', '{SELLER}', 'Cooperativa Ciclo B', 10, 1, NULL, false);
+    """)
+    cycle_processes = []
+    for child_id, parent_id in ((CYCLE_A, CYCLE_B), (CYCLE_B, CYCLE_A)):
+        process = subprocess.Popen(
+            ["docker", "exec", "-i", CONTAINER, "psql", "-U", "postgres", "-v", "ON_ERROR_STOP=1", "-At"],
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+        )
+        process.stdin.write(
+            "BEGIN;\n"
+            f"UPDATE public.quotes SET parent_quote_id = '{parent_id}' WHERE id = '{child_id}';\n"
+            "SELECT pg_sleep(0.2);\n"
+            "COMMIT;"
+        )
+        process.stdin.close()
+        cycle_processes.append(process)
+
+    cycle_statuses = []
+    for process in cycle_processes:
+        process.wait(timeout=20)
+        cycle_statuses.append(process.returncode)
+    assert sorted(cycle_statuses) == [0, 3], cycle_statuses
+    cycle_state = scalar(sql(f"""
+      WITH RECURSIVE ancestry AS (
+        SELECT q.id AS source_id, q.parent_quote_id AS next_id, ARRAY[q.id] AS path, false AS has_cycle
+        FROM public.quotes q
+        WHERE q.id IN ('{CYCLE_A}', '{CYCLE_B}')
+
+        UNION ALL
+
+        SELECT ancestry.source_id, parent.parent_quote_id, ancestry.path || parent.id,
+          parent.id = ANY(ancestry.path)
+        FROM ancestry
+        JOIN public.quotes parent ON parent.id = ancestry.next_id
+        WHERE NOT ancestry.has_cycle
+      )
+      SELECT
+        (SELECT count(*) FROM public.quotes
+          WHERE id IN ('{CYCLE_A}', '{CYCLE_B}') AND parent_quote_id IS NULL)
+        || '|'
+        || (SELECT count(*) FROM ancestry WHERE has_cycle);
+    """))
+    assert cycle_state == "1|0", cycle_state
+    result["concorrencia_de_ciclo"] = "duas transações inversas resultaram em um único commit e nenhuma cadeia cíclica"
 
     actor_sql(SELLER, f"""
       INSERT INTO public.quotes (

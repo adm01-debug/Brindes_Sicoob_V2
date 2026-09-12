@@ -78,8 +78,10 @@ real como concluídos.
 - `git diff --check`: sem erro de whitespace.
 - Ensaio reproduzível em PostgreSQL 16 descartável e sem rede: migração aplicada;
   cópia de item/personalização/auditoria, origem obsoleta, ator fora do escopo,
-  rollback por falha intermediária e concorrência foram exercitados. O cenário
-  concorrente teve retornos `0` e `3`, com duas versões e apenas uma vigente.
+  rollback por falha intermediária, concorrência e reparentamento inverso foram
+  exercitados. Os cenários concorrentes tiveram retornos `0` e `3`: uma
+  família com duas versões e apenas uma vigente, e uma tentativa de ciclo sem
+  ciclo persistente.
   A evidência está em
   [versionamento-orcamento-atomico.json](evidencias/versionamento-orcamento-atomico.json)
   e o executor em
@@ -114,9 +116,10 @@ real como concluídos.
   `20260912110000_sicoob_order_status_events.sql`,
   `20260912120000_sicoob_approval_policy_guards.sql`,
   `20260912130000_quote_versioning_family_roots.sql` e
-  `20260912140000_sicoob_approval_confirmation_followup.sql`, ao projeto
-  Supabase `cfmzkthhgliqelozlmwu`, regenerar os tipos do Supabase e executar
-  teste de RLS com perfis reais autorizados.
+  `20260912140000_sicoob_approval_confirmation_followup.sql` e
+  `20260912150000_quote_versioning_cycle_lock.sql`, ao projeto Supabase
+  `cfmzkthhgliqelozlmwu`, regenerar os tipos do Supabase e executar teste de
+  RLS com perfis reais autorizados.
 - O `supabase db lint --local` não pôde executar porque o Postgres local em
   `127.0.0.1:54322` não está ativo. Nenhum serviço local foi iniciado para não
   alterar o ambiente compartilhado.

@@ -119,6 +119,13 @@ BEGIN
       MESSAGE = 'Uma versão de orçamento não pode ser pai de si mesma.';
   END IF;
 
+  -- O UPDATE já bloqueia a linha filha. Bloquear também o pai evita que duas
+  -- transações invertam a relação entre raízes distintas e formem um ciclo.
+  PERFORM 1
+  FROM public.quotes
+  WHERE id = NEW.parent_quote_id
+  FOR UPDATE;
+
   WITH RECURSIVE ancestry AS (
     SELECT q.id, q.parent_quote_id, ARRAY[q.id] AS path
     FROM public.quotes q

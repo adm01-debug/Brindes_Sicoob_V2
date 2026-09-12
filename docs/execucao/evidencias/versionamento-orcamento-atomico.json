@@ -2,10 +2,12 @@
   "ambiente": "PostgreSQL 16 descartável, --network none; somente dados sintéticos",
   "migracoes": [
     "supabase/migrations/20260912100000_quote_versioning_atomic.sql",
-    "supabase/migrations/20260912130000_quote_versioning_family_roots.sql"
+    "supabase/migrations/20260912130000_quote_versioning_family_roots.sql",
+    "supabase/migrations/20260912150000_quote_versioning_cycle_lock.sql"
   ],
   "producao_verificada": false,
   "cadeia_historica": "cadeia multinível normalizada para a raiz; nova versão e inserção administrativa preservam o pai canônico",
+  "concorrencia_de_ciclo": "duas transações inversas resultaram em um único commit e nenhuma cadeia cíclica",
   "copia_e_autorizacao": {
     "nova_versao": "criada",
     "itens_personalizacoes_auditoria_e_subtotal": "1|1|1|1146",
