@@ -1,5 +1,6 @@
 import { useState, useMemo, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
 // import { MainLayout } from "@/components/layout/MainLayout";
 import { PageSEO } from "@/components/seo/PageSEO";
 import { Button } from "@/components/ui/button";
@@ -105,6 +106,7 @@ const canTransitionTo = (current: OrderStatus, next: OrderStatus) => {
 export default function OrderDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { profile, isSupervisorOrAbove, isGerentePa } = useAuth();
   
   const [_unused_MessageSquare, set_unused_MessageSquare] = useState(MessageSquare);
@@ -213,6 +215,7 @@ export default function OrderDetailPage() {
         await sicoobApprovalService.rejectOrderWithoutApproval(id!, orderData.status, rejectionReason);
         toast.success("Pedido rejeitado");
         await refetchOrder();
+        await queryClient.invalidateQueries({ queryKey: ["sicoob_order_history", id] });
         setIsRejectDialogOpen(false);
         setRejectionReason("");
       } catch (error) {

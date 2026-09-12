@@ -304,7 +304,8 @@ BEGIN
   END IF;
 
   IF NEW.approver_id IS DISTINCT FROM OLD.approver_id
-     AND v_operation NOT IN ('approve', 'reject') THEN
+     AND v_operation IS DISTINCT FROM 'approve'
+     AND v_operation IS DISTINCT FROM 'reject' THEN
     RAISE EXCEPTION USING ERRCODE = '42501', MESSAGE = 'O aprovador só pode ser definido na decisão formal.';
   END IF;
 
@@ -635,6 +636,7 @@ DECLARE
   v_order public.sicoob_orders%ROWTYPE;
   v_limit numeric;
   v_policy record;
+  v_initial_status text;
 BEGIN
   IF v_actor_id IS NULL THEN
     RAISE EXCEPTION USING ERRCODE = '42501', MESSAGE = 'Autenticação necessária.';
@@ -644,7 +646,8 @@ BEGIN
   IF NOT FOUND THEN
     RAISE EXCEPTION USING ERRCODE = 'P0002', MESSAGE = 'Pedido não encontrado.';
   END IF;
-  IF v_order.status IS DISTINCT FROM p_expected_status OR v_order.status <> 'waiting_approval' THEN
+  IF v_order.status IS DISTINCT FROM p_expected_status
+     OR v_order.status NOT IN ('pending', 'waiting_approval') THEN
     RAISE EXCEPTION USING ERRCODE = '40001', MESSAGE = 'O pedido mudou; atualize a página antes de confirmar.';
   END IF;
   IF EXISTS (SELECT 1 FROM public.sicoob_approval_requests WHERE order_id = v_order.id AND status = 'pending') THEN
@@ -663,7 +666,23 @@ BEGIN
   END IF;
 
   SELECT * INTO v_policy FROM public.get_sicoob_order_approval_policy(v_order.id);
+  v_initial_status := v_order.status;
+
+  -- Uma confirmação iniciada em pending preserva as duas etapas formais no
+  -- histórico, mas as executa em uma única transação e sob o mesmo bloqueio.
+  IF v_order.status = 'pending' THEN
+    PERFORM set_config('app.sicoob_approval_operation', 'prepare', true);
+    PERFORM set_config('app.sicoob_order_status_comment', 'Preparado para confirmação dentro da alçada.', true);
+    UPDATE public.sicoob_orders
+       SET status = 'waiting_approval',
+           approval_policy_id = COALESCE(v_order.approval_policy_id, v_policy.policy_id),
+           approval_policy_version = COALESCE(v_order.approval_policy_version, v_policy.policy_version),
+           updated_at = now()
+     WHERE id = v_order.id;
+  END IF;
+
   PERFORM set_config('app.sicoob_approval_operation', 'confirm', true);
+  PERFORM set_config('app.sicoob_order_status_comment', 'Confirmado dentro da alçada.', true);
   UPDATE public.sicoob_orders
      SET status = 'confirmed',
          approved_by = v_actor_id,
@@ -674,7 +693,7 @@ BEGIN
    WHERE id = v_order.id;
 
   INSERT INTO public.sicoob_manager_audit (manager_id, order_id, action, details)
-  VALUES (v_actor_id, v_order.id, 'confirm_within_limit', jsonb_build_object('previous_status', v_order.status, 'policy_version', v_policy.policy_version));
+  VALUES (v_actor_id, v_order.id, 'confirm_within_limit', jsonb_build_object('previous_status', v_initial_status, 'policy_version', v_policy.policy_version));
 END;
 $$;
 

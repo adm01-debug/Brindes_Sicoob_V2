@@ -13,6 +13,7 @@ MIGRATIONS = [
     ROOT / "supabase/migrations/20260911143000_sicoob_order_budget_atomicity.sql",
     ROOT / "supabase/migrations/20260912110000_sicoob_order_status_events.sql",
     ROOT / "supabase/migrations/20260912120000_sicoob_approval_policy_guards.sql",
+    ROOT / "supabase/migrations/20260912140000_sicoob_approval_confirmation_followup.sql",
 ]
 
 CREATOR = "11111111-1111-1111-1111-111111111111"
@@ -27,6 +28,7 @@ HIGH_ORDER = "dddddddd-dddd-dddd-dddd-dddddddddddd"
 SELF_ORDER = "eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee"
 INACTIVE_ORDER = "ffffffff-ffff-ffff-ffff-ffffffffffff"
 ESCALATED_ORDER = "99999999-9999-9999-9999-999999999999"
+DIRECT_LOW_ORDER = "aaaaaaaa-1111-1111-1111-111111111111"
 
 
 def command(args, *, stdin=None, check=True):
@@ -124,7 +126,8 @@ try:
         ('{HIGH_ORDER}', '{PA}', '{COOPERATIVE}', '{CREATOR}', 'pending', 800),
         ('{SELF_ORDER}', '{PA}', '{COOPERATIVE}', '{SELF_MANAGER}', 'pending', 800),
         ('{INACTIVE_ORDER}', '{PA}', '{COOPERATIVE}', '{CREATOR}', 'pending', 800),
-        ('{ESCALATED_ORDER}', '{PA}', '{COOPERATIVE}', '{CREATOR}', 'pending', 800);
+        ('{ESCALATED_ORDER}', '{PA}', '{COOPERATIVE}', '{CREATOR}', 'pending', 800),
+        ('{DIRECT_LOW_ORDER}', '{PA}', '{COOPERATIVE}', '{CREATOR}', 'pending', 100);
       INSERT INTO public.sicoob_order_items (order_id, product_name, quantity, unit_price, total_price)
       VALUES ('{HIGH_ORDER}', 'Caneca sintética', 1, 800, 800);
     """)
@@ -165,7 +168,21 @@ try:
       FROM public.sicoob_orders WHERE id = '{LOW_ORDER}';
     """))
     assert low_confirmed == f"confirmed|{PA_MANAGER}|100.00", low_confirmed
-    result["dentro_da_alcada"] = "preparação formal, confirmação do gestor e débito único validados"
+    actor_sql(PA_MANAGER, f"SELECT public.confirm_sicoob_order('{DIRECT_LOW_ORDER}', 'pending');")
+    direct_confirmed = scalar(sql(f"""
+      SELECT o.status || '|' || o.approved_by::text || '|'
+        || (SELECT count(*) FROM public.sicoob_order_history
+              WHERE order_id = '{DIRECT_LOW_ORDER}'
+                AND previous_status = 'pending' AND new_status = 'waiting_approval') || '|'
+        || (SELECT count(*) FROM public.sicoob_order_history
+              WHERE order_id = '{DIRECT_LOW_ORDER}'
+                AND previous_status = 'waiting_approval' AND new_status = 'confirmed') || '|'
+        || (SELECT verba_consumida::text FROM public.pa_budgets WHERE pa_id = '{PA}')
+      FROM public.sicoob_orders o
+      WHERE o.id = '{DIRECT_LOW_ORDER}';
+    """))
+    assert direct_confirmed == f"confirmed|{PA_MANAGER}|1|1|200.00", direct_confirmed
+    result["dentro_da_alcada"] = "preparação formal, confirmação do gestor e débito único validados; confirmação iniciada em pending registra as duas etapas na mesma transação"
     result["acesso_rpc"] = "as RPCs novas são executáveis por authenticated e indisponíveis para anon"
 
     request_id = scalar(actor_sql(CREATOR, f"""
@@ -186,9 +203,11 @@ try:
     frozen_total = sql(f"UPDATE public.sicoob_orders SET total_amount = 801 WHERE id = '{HIGH_ORDER}';", check=False)
     frozen_item = sql(f"UPDATE public.sicoob_order_items SET quantity = 2 WHERE order_id = '{HIGH_ORDER}';", check=False)
     frozen_request = sql(f"UPDATE public.sicoob_approval_requests SET amount_at_request = 1 WHERE id = '{request_id}';", check=False)
+    direct_approver = sql(f"UPDATE public.sicoob_approval_requests SET approver_id = '{PA_MANAGER}' WHERE id = '{request_id}';", check=False)
     assert frozen_total.returncode != 0 and "aprovação pendente" in frozen_total.stderr, frozen_total.stderr
     assert frozen_item.returncode != 0 and "aprovação pendente" in frozen_item.stderr, frozen_item.stderr
     assert frozen_request.returncode != 0 and "imutáveis" in frozen_request.stderr, frozen_request.stderr
+    assert direct_approver.returncode != 0 and "aprovador só pode" in direct_approver.stderr, direct_approver.stderr
 
     actor_sql(PA_MANAGER, f"SELECT public.approve_sicoob_order('{request_id}', '{HIGH_ORDER}', '{PA_MANAGER}');")
     high_approved = scalar(sql(f"""

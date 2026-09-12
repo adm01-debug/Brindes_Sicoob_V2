@@ -95,8 +95,9 @@ real como concluídos.
   linha preservadas, mais caso sem campanhas.
 - Ensaio de política de aprovação em PostgreSQL 16 descartável e sem rede:
   confirmação dentro da alçada, alçada obtida do servidor, congelamento de
-  valor/itens/solicitação, autoaprovação, vínculo revogado, escalação e bypass
-  de status foram exercitados. A evidência está em
+  valor/itens/solicitação, confirmação atômica iniciada em pendência,
+  autoaprovação, vínculo revogado, escalação e bypass de status foram
+  exercitados. A evidência está em
   [politica-aprovacao-sicoob.json](evidencias/politica-aprovacao-sicoob.json) e
   o executor em
   [simular-politica-aprovacao-sicoob.py](../../scripts/qa/simular-politica-aprovacao-sicoob.py).
@@ -110,9 +111,12 @@ real como concluídos.
 
 - Aplicar as migrações pendentes, inclusive
   `20260912100000_quote_versioning_atomic.sql` e
-  `20260912110000_sicoob_order_status_events.sql`, ao projeto Supabase
-  `cfmzkthhgliqelozlmwu`, regenerar os tipos do Supabase e executar teste de
-  RLS com perfis reais autorizados.
+  `20260912110000_sicoob_order_status_events.sql`,
+  `20260912120000_sicoob_approval_policy_guards.sql`,
+  `20260912130000_quote_versioning_family_roots.sql` e
+  `20260912140000_sicoob_approval_confirmation_followup.sql`, ao projeto
+  Supabase `cfmzkthhgliqelozlmwu`, regenerar os tipos do Supabase e executar
+  teste de RLS com perfis reais autorizados.
 - O `supabase db lint --local` não pôde executar porque o Postgres local em
   `127.0.0.1:54322` não está ativo. Nenhum serviço local foi iniciado para não
   alterar o ambiente compartilhado.

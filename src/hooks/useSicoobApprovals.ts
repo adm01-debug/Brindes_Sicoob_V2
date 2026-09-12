@@ -127,7 +127,7 @@ export const useApprovalRequests = (orderId?: string) => {
       // 1. Definir transições permitidas (SSOT com o Kanban)
       const ALLOWED_TRANSITIONS: Record<string, string[]> = {
         draft: ["pending", "cancelled"],
-        pending: ["waiting_approval", "cancelled"],
+        pending: ["waiting_approval", "confirmed", "cancelled"],
         waiting_approval: ["confirmed", "rejected", "escalated_to_board", "cancelled"],
         escalated_to_board: ["confirmed", "rejected", "cancelled"],
         confirmed: ["logistic", "cancelled"],

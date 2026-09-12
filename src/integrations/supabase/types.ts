@@ -7863,6 +7863,60 @@ export type Database = {
         }
         Relationships: []
       }
+      sicoob_approval_policies: {
+        Row: {
+          cooperative_id: string | null
+          created_at: string
+          effective_from: string
+          effective_until: string | null
+          forbid_self_approval: boolean
+          id: string
+          is_active: boolean
+          require_active_membership: boolean
+          updated_at: string
+          version: string
+        }
+        Insert: {
+          cooperative_id?: string | null
+          created_at?: string
+          effective_from?: string
+          effective_until?: string | null
+          forbid_self_approval?: boolean
+          id?: string
+          is_active?: boolean
+          require_active_membership?: boolean
+          updated_at?: string
+          version: string
+        }
+        Update: {
+          cooperative_id?: string | null
+          created_at?: string
+          effective_from?: string
+          effective_until?: string | null
+          forbid_self_approval?: boolean
+          id?: string
+          is_active?: boolean
+          require_active_membership?: boolean
+          updated_at?: string
+          version?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sicoob_approval_policies_cooperative_id_fkey"
+            columns: ["cooperative_id"]
+            isOneToOne: false
+            referencedRelation: "cooperativas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sicoob_approval_policies_cooperative_id_fkey"
+            columns: ["cooperative_id"]
+            isOneToOne: false
+            referencedRelation: "v_sicoob_hierarchy"
+            referencedColumns: ["singular_id"]
+          },
+        ]
+      }
       sicoob_approval_requests: {
         Row: {
           amount_at_request: number
@@ -8177,6 +8231,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "v_sicoob_hierarchy"
             referencedColumns: ["singular_id"]
+          },
+          {
+            foreignKeyName: "sicoob_orders_approval_policy_id_fkey"
+            columns: ["approval_policy_id"]
+            isOneToOne: false
+            referencedRelation: "sicoob_approval_policies"
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "sicoob_orders_pa_id_fkey"

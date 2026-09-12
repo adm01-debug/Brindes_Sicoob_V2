@@ -21,7 +21,7 @@ export const ORDER_STATUS_OPTIONS = Object.keys(ORDER_STATUS_CONFIG) as OrderSta
 
 export const SICOOB_VALID_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
   draft: ["pending", "cancelled"],
-  pending: ["waiting_approval", "cancelled"],
+  pending: ["waiting_approval", "confirmed", "cancelled"],
   waiting_approval: ["confirmed", "rejected", "escalated_to_board", "cancelled"],
   escalated_to_board: ["confirmed", "rejected", "cancelled"],
   confirmed: ["logistic", "cancelled"],
