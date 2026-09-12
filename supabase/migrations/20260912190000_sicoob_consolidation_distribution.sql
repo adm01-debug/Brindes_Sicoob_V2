@@ -664,7 +664,10 @@ BEGIN
     received_at = CASE WHEN v_all_complete THEN now() ELSE NULL END,
     updated_at = now()
   WHERE id = v_group.id;
-  IF v_all_complete THEN
+  -- Quantidades avariadas ou faltantes encerram a conferência física do lote,
+  -- mas não caracterizam entrega concluída. O pedido permanece em logística
+  -- até que a divergência seja resolvida pelo fluxo operacional.
+  IF v_all_complete AND NOT v_has_issues THEN
     PERFORM set_config('app.sicoob_order_status_comment', 'Recebimento integral do lote consolidado ' || v_group.id::text || '.', true);
     UPDATE public.sicoob_orders o
        SET status = 'completed', updated_at = now()

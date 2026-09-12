@@ -4,6 +4,6 @@
   "producao_verificada": false,
   "criacao": "vendedor de outra Singular recusado; dois pedidos vinculados atomicamente; repetição idempotente limitada ao mesmo ator e conteúdo; lote inválido sem órfãos",
   "distribuicao": "itens distribuídos integralmente por PA; despacho moveu lote e pedidos para logística; PA enxergou somente seu destino; escrita direta bloqueada",
-  "recebimento": "retry idempotente não duplicou quantidades; parciais acumulados por destino; excesso e ator externo recusados; quitação integral concluiu os pedidos; avaria preservada em evento imutável",
+  "recebimento": "retry idempotente não duplicou quantidades; parciais acumulados por destino; excesso e ator externo recusados; divergência manteve os pedidos em logística; avaria preservada em evento imutável",
   "resultado": "aprovado"
 }

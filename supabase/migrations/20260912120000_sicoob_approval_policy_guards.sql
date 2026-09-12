@@ -428,6 +428,38 @@ BEFORE UPDATE ON public.sicoob_approval_requests
 FOR EACH ROW
 EXECUTE FUNCTION public.protect_sicoob_approval_request();
 
+-- A policy histórica comparava profiles.id com auth.uid(), embora a identidade
+-- autenticada esteja em profiles.user_id. O solicitante também precisa poder
+-- encerrar sua própria pendência quando cancela o pedido pela RPC formal.
+DROP POLICY IF EXISTS "Approvers can update status" ON public.sicoob_approval_requests;
+CREATE POLICY "Approvers can update status"
+ON public.sicoob_approval_requests
+FOR UPDATE TO authenticated
+USING (
+  requester_id = auth.uid()
+  OR EXISTS (
+    SELECT 1
+      FROM public.profiles p
+      JOIN public.user_roles ur ON ur.user_id = p.user_id
+     WHERE p.user_id = auth.uid()
+       AND p.is_active IS TRUE
+       AND p.deleted_at IS NULL
+       AND ur.role::text IN ('supervisor', 'dev', 'gestor_compras', 'gerente_pa')
+  )
+)
+WITH CHECK (
+  requester_id = auth.uid()
+  OR EXISTS (
+    SELECT 1
+      FROM public.profiles p
+      JOIN public.user_roles ur ON ur.user_id = p.user_id
+     WHERE p.user_id = auth.uid()
+       AND p.is_active IS TRUE
+       AND p.deleted_at IS NULL
+       AND ur.role::text IN ('supervisor', 'dev', 'gestor_compras', 'gerente_pa')
+  )
+);
+
 CREATE OR REPLACE FUNCTION public.freeze_sicoob_order_while_approval_pending()
 RETURNS trigger
 LANGUAGE plpgsql

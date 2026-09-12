@@ -1,10 +1,14 @@
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 CREATE ROLE authenticated NOLOGIN;
 CREATE ROLE anon NOLOGIN;
+CREATE ROLE service_role NOLOGIN;
 CREATE SCHEMA auth;
 CREATE FUNCTION auth.uid() RETURNS uuid
 LANGUAGE sql STABLE
 AS $$ SELECT NULLIF(current_setting('request.jwt.claim.sub', true), '')::uuid $$;
+CREATE FUNCTION auth.jwt() RETURNS jsonb
+LANGUAGE sql STABLE
+AS $$ SELECT jsonb_build_object('role', NULLIF(current_setting('request.jwt.claim.role', true), '')) $$;
 CREATE TABLE auth.users (id uuid PRIMARY KEY);
 
 CREATE SCHEMA storage;

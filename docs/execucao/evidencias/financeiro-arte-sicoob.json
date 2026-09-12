@@ -4,6 +4,6 @@
   "producao_verificada": false,
   "documentos": "nota vinculada ao pedido Sicoob; bucket privado e remoção restrita de órfão preservados",
   "pagamentos": "ator sem papel financeiro recusado e gestor de compras reconhecido; criação em estornado e sobrescrita sem versão recusadas; soma limitada; estorno formal preservou quitação e gravou motivo, data e ator",
-  "arte": "autoaprovação recusada; versões e identidade preservadas; produção bloqueada sem aprovação e nova arte recusada após logística",
+  "arte": "chamada autenticada com identidade forjada recusada; hash e fotografia aceitos somente do verificador servidor; repetição idempotente; autoaprovação recusada; versões preservadas; produção bloqueada sem aprovação e nova arte recusada após logística",
   "resultado": "aprovado"
 }

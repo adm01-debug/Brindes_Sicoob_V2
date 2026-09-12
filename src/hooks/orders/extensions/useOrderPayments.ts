@@ -28,6 +28,19 @@ export interface RecordOrderPaymentInput {
   expectedUpdatedAt?: string | null;
 }
 
+const SICOOB_FINANCIAL_TIME_ZONE = 'America/Sao_Paulo';
+
+export function getSicoobFinancialDate(date = new Date()): string {
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone: SICOOB_FINANCIAL_TIME_ZONE,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).formatToParts(date);
+  const value = (type: Intl.DateTimeFormatPartTypes) => parts.find(part => part.type === type)?.value;
+  return `${value('year')}-${value('month')}-${value('day')}`;
+}
+
 export function useOrderPayments(orderId?: string) {
   const queryClient = useQueryClient();
   const query = useQuery({
@@ -39,7 +52,7 @@ export function useOrderPayments(orderId?: string) {
         .eq('order_id', orderId!)
         .order('installment_number');
       if (error) throw error;
-      const today = new Date().toISOString().slice(0, 10);
+      const today = getSicoobFinancialDate();
       return (data || []).map(payment => ({
         ...payment,
         status: payment.status === 'pending' && payment.due_date < today ? 'overdue' : payment.status,

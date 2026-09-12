@@ -9,6 +9,7 @@ export interface OrderPilotApproval {
   photo_url: string | null;
   feedback: string | null;
   identity_snapshot: Record<string, unknown>;
+  is_latest: boolean;
 }
 
 export function useOrderPilotApprovals(orderId?: string) {
@@ -18,7 +19,7 @@ export function useOrderPilotApprovals(orderId?: string) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('sicoob_order_artwork_versions')
-        .select('id, version, status, file_path, feedback, identity_snapshot')
+        .select('id, version, status, file_path, feedback, identity_snapshot, is_latest')
         .eq('order_id', orderId!)
         .order('version', { ascending: false });
       if (error) throw error;

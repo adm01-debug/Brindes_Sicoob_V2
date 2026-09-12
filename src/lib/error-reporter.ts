@@ -35,6 +35,7 @@ type DeferredColdStart = {
 const COLD_START_DEFER_MS = 8000;
 const COLD_START_BUFFER: DeferredColdStart[] = [];
 let bridgeListenerInstalled = false;
+let globalErrorHandlersInstalled = false;
 
 function installBridgeListenerOnce() {
   if (bridgeListenerInstalled) return;
@@ -206,6 +207,8 @@ export function reportError(error: Error, metadata?: Record<string, unknown>) {
  * Install global error listeners for unhandled errors and promise rejections.
  */
 export function installGlobalErrorHandlers() {
+  if (globalErrorHandlersInstalled) return;
+  globalErrorHandlersInstalled = true;
   installBridgeListenerOnce();
   window.addEventListener('error', (event) => {
     reportError(event.error || new Error(event.message), {

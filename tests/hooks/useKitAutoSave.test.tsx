@@ -1,5 +1,6 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
 import { act, renderHook } from '@testing-library/react';
+import { useState } from 'react';
 
 const maybeSingle = vi.fn();
 const select = vi.fn(() => ({ maybeSingle }));
@@ -7,9 +8,13 @@ const secondEq = vi.fn(() => ({ select }));
 const update = vi.fn(() => ({
   eq: vi.fn(() => ({ eq: secondEq })),
 }));
+const single = vi.fn();
+const insert = vi.fn(() => ({
+  select: vi.fn(() => ({ single })),
+}));
 
 vi.mock('@/integrations/supabase/client', () => ({
-  supabase: { from: vi.fn(() => ({ update })) },
+  supabase: { from: vi.fn(() => ({ update, insert })) },
 }));
 
 vi.mock('@/contexts/AuthContext', () => ({
@@ -105,5 +110,42 @@ describe('useKitAutoSave', () => {
     expect(update).toHaveBeenCalledTimes(2);
     expect(update.mock.calls[1]?.[0]).toMatchObject({ name: 'Estado mais recente' });
     expect(result.current.lastSaveError).toBeNull();
+  });
+
+  it('preserva a edição enfileirada quando o pai adota o ID recém-criado', async () => {
+    let resolveCreation: ((value: { data: { id: string }; error: null }) => void) | undefined;
+    single.mockImplementationOnce(() => new Promise(resolve => { resolveCreation = resolve; }));
+    maybeSingle.mockResolvedValueOnce({ data: { id: 'kit-criado' }, error: null });
+
+    const { result, rerender } = renderHook(
+      ({ kit }) => {
+        const [kitId, setKitId] = useState<string>();
+        return {
+          kitId,
+          autoSave: useKitAutoSave(kit, 1, kitId, setKitId),
+        };
+      },
+      { initialProps: { kit: initialKit } },
+    );
+
+    rerender({ kit: { ...initialKit, name: 'Estado inicial enviado' } });
+    await act(async () => { await vi.advanceTimersByTimeAsync(5_000); });
+    expect(insert).toHaveBeenCalledTimes(1);
+
+    rerender({ kit: { ...initialKit, name: 'Edição feita durante a criação' } });
+    await act(async () => { await vi.advanceTimersByTimeAsync(5_000); });
+    expect(update).not.toHaveBeenCalled();
+
+    await act(async () => {
+      resolveCreation?.({ data: { id: 'kit-criado' }, error: null });
+      await Promise.resolve();
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    expect(result.current.kitId).toBe('kit-criado');
+    expect(update).toHaveBeenCalledTimes(1);
+    expect(update.mock.calls[0]?.[0]).toMatchObject({ name: 'Edição feita durante a criação' });
+    expect(result.current.autoSave.lastSaveError).toBeNull();
   });
 });

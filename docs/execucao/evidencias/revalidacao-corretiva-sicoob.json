@@ -24,13 +24,13 @@
     "postgres": ["verba_aprovada", "eventos_status_aprovados", "politica_aprovada", "versionamento_aprovado", "recompra_aprovada", "kit_orcamento_aprovado", "financeiro_arte_aprovado", "consolidacao_aprovada"],
     "deno_pgrest": "5/5 aprovadas",
     "deno_recompra": "edge sicoob-reorder aprovada no deno check",
-    "edge_authorization": "103/103 declaradas e enforced",
-    "codeql_remoto": "predecessor 06bf7021d aprovado e SARIF preservado com zero resultados; delta de kit aguarda novo gate; painel do GitHub permanece desabilitado",
+    "edge_authorization": "104/104 declaradas e enforced",
+    "codeql_remoto": "SHA 7be43b816 aprovado e SARIF inspecionado com zero resultados; último delta corretivo aguarda novo gate; painel do GitHub permanece desabilitado",
     "e2e_publico": "6/6 happy e 6/6 timeout aprovados",
     "regressao_login": "8/8 em Vitest e 3/3 em Chromium",
     "pwa_producao_local": "1/1 em Chromium; Service Worker ativo, manifesto e fallback precacheados e rota desconhecida atendida offline",
-    "revisao_de_codigo": "62/62 discussões resolvidas no GitHub após revalidação no SHA 06bf7021d",
-    "vitest_global": "aprovado: 1427/1427 arquivos; 5401 testes aprovados, zero falhas, 113 condicionais ignorados e 34/34 snapshots íntegros"
+    "revisao_de_codigo": "69/69 achados revalidados e corrigidos; 62 discussões anteriores resolvidas e sete correções finais aguardando push para resolução remota",
+    "vitest_global": "aprovado: 1433/1433 suítes; 5407 testes aprovados, zero falhas, 113 condicionais ignorados e 34/34 snapshots íntegros"
   },
   "pendencias_obrigatorias": [
     "A05: definir com o catálogo externo a semântica de reserva; conversão servidor já implementada",

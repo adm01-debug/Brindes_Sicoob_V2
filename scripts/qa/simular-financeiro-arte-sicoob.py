@@ -17,6 +17,18 @@ HASH1 = "a" * 64
 HASH2 = "b" * 64
 
 
+def artwork_identity(path, digest):
+    return json.dumps({
+        "bucket": "sicoob-order-documents",
+        "path": path,
+        "sha256": digest,
+        "byte_size": 128,
+        "content_type": "application/pdf",
+        "verified_at": "2026-09-12T12:00:00.000Z",
+        "verifier": "sicoob-artwork-register",
+    }, separators=(",", ":"))
+
+
 def command(args, *, stdin=None, check=True):
     return subprocess.run(args, input=stdin, text=True, capture_output=True, check=check)
 
@@ -38,6 +50,10 @@ def sql(statement, *, check=True):
 
 def actor_sql(actor, statement, *, check=True):
     return sql(f"SET request.jwt.claim.sub = '{actor}';\n{statement}", check=check)
+
+
+def service_sql(statement, *, check=True):
+    return sql(f"SET request.jwt.claim.role = 'service_role';\n{statement}", check=check)
 
 
 def rls_actor_sql(actor, statement, *, check=True):
@@ -78,6 +94,20 @@ try:
     assert scalar(sql("""
       SELECT has_function_privilege(
         'authenticated', 'public.sicoob_actor_can_manage_fulfillment(uuid,uuid)', 'EXECUTE'
+      )::text;
+    """)) == "true"
+    assert scalar(sql("""
+      SELECT has_function_privilege(
+        'authenticated',
+        'public.create_sicoob_order_artwork_version(uuid,uuid,text,text,jsonb)',
+        'EXECUTE'
+      )::text;
+    """)) == "false"
+    assert scalar(sql("""
+      SELECT has_function_privilege(
+        'service_role',
+        'public.create_sicoob_order_artwork_version(uuid,uuid,text,text,jsonb)',
+        'EXECUTE'
       )::text;
     """)) == "true"
     rls_actor_sql(CREATOR, f"""
@@ -183,20 +213,39 @@ try:
     assert repeated_refund.returncode != 0 and "Somente uma parcela paga" in repeated_refund.stderr
     result["pagamentos"] = "ator sem papel financeiro recusado e gestor de compras reconhecido; criação em estornado e sobrescrita sem versão recusadas; soma limitada; estorno formal preservou quitação e gravou motivo, data e ator"
 
-    artwork1 = scalar(actor_sql(CREATOR, f"""
+    artwork_path1 = f"{ORDER}/artwork/v1.pdf"
+    forged_artwork = actor_sql(CREATOR, f"""
       SELECT public.create_sicoob_order_artwork_version(
-        '{ORDER}', '{ORDER}/artwork/v1.pdf', '{HASH1}', '{{"brand":"Sicoob","logo":"v1"}}'::jsonb
+        '{CREATOR}', '{ORDER}', '{artwork_path1}', '{HASH1}',
+        '{artwork_identity(artwork_path1, HASH1)}'::jsonb
+      );
+    """, check=False)
+    assert forged_artwork.returncode != 0 and "verificador interno" in forged_artwork.stderr
+    artwork1 = scalar(service_sql(f"""
+      SELECT public.create_sicoob_order_artwork_version(
+        '{CREATOR}', '{ORDER}', '{artwork_path1}', '{HASH1}',
+        '{artwork_identity(artwork_path1, HASH1)}'::jsonb
       );
     """))
+    artwork1_retry = scalar(service_sql(f"""
+      SELECT public.create_sicoob_order_artwork_version(
+        '{CREATOR}', '{ORDER}', '{artwork_path1}', '{HASH1}',
+        '{artwork_identity(artwork_path1, HASH1)}'::jsonb
+      );
+    """))
+    assert artwork1_retry == artwork1
+    assert scalar(sql(f"SELECT count(*) FROM public.sicoob_order_artwork_versions WHERE order_id='{ORDER}';")) == "1"
     self_decision = actor_sql(CREATOR, f"""
       SELECT public.decide_sicoob_order_artwork('{artwork1}', 'approved', NULL);
     """, check=False)
     assert self_decision.returncode != 0 and "Aprovador inválido" in self_decision.stderr
     actor_sql(APPROVER, f"SELECT public.decide_sicoob_order_artwork('{artwork1}', 'approved', NULL);")
 
-    artwork2 = scalar(actor_sql(CREATOR, f"""
+    artwork_path2 = f"{ORDER}/artwork/v2.pdf"
+    artwork2 = scalar(service_sql(f"""
       SELECT public.create_sicoob_order_artwork_version(
-        '{ORDER}', '{ORDER}/artwork/v2.pdf', '{HASH2}', '{{"brand":"Sicoob","logo":"v2"}}'::jsonb
+        '{CREATOR}', '{ORDER}', '{artwork_path2}', '{HASH2}',
+        '{artwork_identity(artwork_path2, HASH2)}'::jsonb
       );
     """))
     versions = scalar(sql(f"""
@@ -211,13 +260,15 @@ try:
     assert direct_tamper.returncode != 0 and "imutável" in direct_tamper.stderr
     actor_sql(APPROVER, f"SELECT public.decide_sicoob_order_artwork('{artwork2}', 'approved', NULL);")
     sql(f"UPDATE public.sicoob_orders SET status='logistic' WHERE id='{ORDER}';")
-    late_artwork = actor_sql(CREATOR, f"""
+    artwork_path3 = f"{ORDER}/artwork/v3.pdf"
+    late_artwork = service_sql(f"""
       SELECT public.create_sicoob_order_artwork_version(
-        '{ORDER}', '{ORDER}/artwork/v3.pdf', '{HASH1}', '{{"brand":"Sicoob","logo":"v3"}}'::jsonb
+        '{CREATOR}', '{ORDER}', '{artwork_path3}', '{HASH1}',
+        '{artwork_identity(artwork_path3, HASH1)}'::jsonb
       );
     """, check=False)
     assert late_artwork.returncode != 0 and "após o início" in late_artwork.stderr
-    result["arte"] = "autoaprovação recusada; versões e identidade preservadas; produção bloqueada sem aprovação e nova arte recusada após logística"
+    result["arte"] = "chamada autenticada com identidade forjada recusada; hash e fotografia aceitos somente do verificador servidor; repetição idempotente; autoaprovação recusada; versões preservadas; produção bloqueada sem aprovação e nova arte recusada após logística"
 
     result["resultado"] = "aprovado"
     evidence = ROOT / "docs/execucao/evidencias/financeiro-arte-sicoob.json"

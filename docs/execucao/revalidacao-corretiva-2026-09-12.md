@@ -4,16 +4,16 @@ Esta rodada voltou aos 20 achados da auditoria, simulou falhas de concorrência,
 
 O checklist original de 100 etapas e 1.000 subetapas permanece como inventário histórico. A classificação anterior não é reescrita retroativamente: esta é a evidência delta produzida depois daquela revisão.
 
-Uma revisão complementar reavaliou os **62 apontamentos de código recebidos no PR**, conferindo cada um contra a implementação atual. O candidato passou a cobrir, entre outros pontos, escopo organizacional no versionamento, invariância da versão vigente, idempotência semântica, autorização financeira, estorno auditável, URLs assinadas renováveis, isolamento de recebimentos por PA, sincronização logística, preço e estoque agregados por variante, registro de login inválido e fallback PWA executado sobre build de produção. As 62 discussões foram resolvidas no GitHub. Os gates remotos do predecessor `06bf7021d` passaram, exceto o bloqueio explícito das credenciais E2E ausentes; o delta de conversão de kit exige nova execução remota após o push.
+Uma revisão complementar reavaliou os **69 apontamentos de código recebidos no PR**, conferindo cada um contra a implementação atual. O candidato passou a cobrir, entre outros pontos, escopo organizacional no versionamento, invariância da versão vigente, idempotência semântica, autorização financeira, estorno auditável, URLs assinadas renováveis, isolamento de recebimentos por PA, sincronização logística, preço e estoque agregados por variante, registro de login inválido e fallback PWA executado sobre build de produção. As 62 discussões anteriores foram resolvidas no GitHub. Os sete achados adicionais foram corrigidos e validados localmente neste delta; sua resolução remota depende do novo push.
 
 ## Resultado por achado
 
 | Achado | Situação atual | Evidência e limite |
 |---|---|---|
 | A01 — logística canônica | Corrigido localmente | Fluxo canônico e documentos privados já estavam corrigidos; falta aplicação e operação real. |
-| A02 — financeiro e piloto | Corrigido localmente | Tabelas Sicoob próprias para notas, parcelas e versões de arte; RPCs protegem autorização, soma, liquidação, versão, decisão e produção sem arte aprovada. |
+| A02 — financeiro e piloto | Corrigido localmente | Tabelas Sicoob próprias para notas, parcelas e versões de arte; vencimento usa o calendário de Brasília; a Edge autenticada calcula hash e fotografia do objeto privado, e a RPC de registro é exclusiva de `service_role`, atômica e idempotente. |
 | A03 — recompra | Corrigido localmente | A consulta de preço/estoque saiu do navegador e foi para `sicoob-reorder`; a RPC é exclusiva de `service_role`, atômica e idempotente. Catálogo e produção ainda precisam estar publicados. |
-| A04 — autosave | Corrigido localmente | Zero linhas é erro; gravações concorrentes são serializadas; respostas de outro usuário/kit são descartadas. |
+| A04 — autosave | Corrigido localmente | Zero linhas é erro; gravações concorrentes são serializadas; respostas de outro usuário/kit são descartadas; adotar o ID recém-criado preserva edições que já estavam na fila. |
 | A05 — estoque de kit | Parcial | A conversão agora passa pela Edge Function autenticada `sicoob-kit-quote`: demanda duplicada é agregada por produto/variante, preço/estoque/técnica são reconsultados, e orçamento, itens e personalizações são gravados por RPC atômica e idempotente. O catálogo externo somente leitura ainda não reserva estoque; a semântica operacional dessa reserva depende de contrato externo. |
 | A06 — indicadores | Corrigido localmente | Dashboards consultam fontes reais, propagam erro, distinguem ausência de configuração e removeram lotes, GPS, metas e percentuais fabricados. |
 | A07 — versionamento | Corrigido localmente | RPC transacional, raiz de família, bloqueio de ciclos e testes já estavam implementados. |
@@ -22,7 +22,7 @@ Uma revisão complementar reavaliou os **62 apontamentos de código recebidos no
 | A10 — redação comercial | Corrigido localmente | Redação recursiva e contrato somente leitura cobertos por regressão. |
 | A11 — exportação | Corrigido localmente | CSV de campanhas já estava corrigido; exportação Sicoob também deixou de expor colunas fictícias e passou a escapar células. |
 | A12 — eventos | Corrigido localmente | Mudanças de status e notificações in-app são transacionais. |
-| A13 — CodeQL | Código corrigido; painel externo pendente | O CodeQL remoto analisou o predecessor `06bf7021d` e preservou um SARIF com zero resultados; o delta atual aguarda o novo gate remoto. A primeira varredura havia identificado um `js/user-controlled-bypass` no tratamento de erro do callback SSO, já corrigido com motivos fechados e mensagens fixas. O painel recusou a publicação porque code scanning está desabilitado no repositório privado; o workflow publica quando `CODEQL_UPLOAD_ENABLED=true`. |
+| A13 — CodeQL | Código corrigido; painel externo pendente | O CodeQL remoto analisou `7be43b816` e preservou um SARIF com zero resultados; o último delta corretivo aguarda novo gate remoto. A primeira varredura havia identificado um `js/user-controlled-bypass` no tratamento de erro do callback SSO, já corrigido com motivos fechados e mensagens fixas. O painel recusou a publicação porque code scanning está desabilitado no repositório privado; o workflow publica quando `CODEQL_UPLOAD_ENABLED=true`. |
 | A14 — CI autenticada | Configurado; execução externa pendente | O workflow agora falha se as quatro credenciais E2E não existirem e não pula silenciosamente o gate autenticado. Falta executar com secrets e dados de homologação. |
 | A15 — política institucional | Parcial | Snapshot, precedência, vínculo ativo, alçada e autoaprovação estão protegidos. Delegações e aceite formal da política por cooperativa dependem dos responsáveis Sicoob. |
 | A16 — distribuição | Corrigido localmente | Consolidação vincula pedidos atomicamente, distribui por PA/item, exige alocação antes do despacho e registra recebimento parcial, avaria e falta em eventos imutáveis. |
@@ -42,6 +42,8 @@ Uma revisão complementar reavaliou os **62 apontamentos de código recebidos no
 - Página pública com resposta correta, conteúdo errado, backend lento e erro acionável.
 - Conversão de kit com preço do navegador adulterado, duas linhas consumindo o mesmo saldo, técnica de outro produto, perda de resposta após commit e falha forçada entre cabeçalho e item.
 - Preview Vercel legítimo e tentativa de origem `*.vercel.app` pertencente a outro projeto.
+- Recebimento integralmente avariado sem concluir pedido, cancelamento com aprovação pendente sob RLS, versão de arte substituída sem ações e vencimento no intervalo entre 21h e meia-noite em Brasília.
+- Primeira criação de kit lenta com edição enfileirada, erro assíncrono durante o bootstrap e registro de arte com hash forjado pelo cliente.
 
 ## Evidências executadas
 
@@ -56,14 +58,14 @@ Uma revisão complementar reavaliou os **62 apontamentos de código recebidos no
 | Suíte ampliada do Kit Builder | 167/167 aprovados em 12 arquivos. |
 | Regressões dirigidas da auditoria | 44/44 aprovadas. |
 | Sanitização PostgREST em Deno | 5/5 aprovadas. |
-| Autorização de Edge Functions | 103/103 funções declaradas e com mecanismo de enforcement. |
-| CodeQL remoto | Varredura do predecessor `06bf7021d` concluída e SARIF preservado com zero resultados; o delta atual aguarda novo gate remoto. A publicação no painel permanece indisponível enquanto code scanning estiver desabilitado no repositório. |
+| Autorização de Edge Functions | 104/104 funções declaradas e com mecanismo de enforcement. |
+| CodeQL remoto | Varredura de `7be43b816` concluída e SARIF inspecionado com zero resultados; o último delta corretivo aguarda novo gate remoto. A publicação no painel permanece indisponível enquanto code scanning estiver desabilitado no repositório. |
 | Simulações PostgreSQL | Oito cenários aprovados: verba, eventos de status, política, versionamento, recompra, conversão de kit, financeiro/arte e consolidação. |
 | Catálogo do Kit Builder | Falha de consulta deixa de carregar produtos fictícios; a UI informa o erro e oferece nova tentativa. CORS aceita somente os domínios Vercel do projeto. |
 | PWA em produção local | 1/1 aprovado em Chromium: Service Worker ativo, shell precacheado e fallback offline real. |
 | E2E público reforçado | 6/6 happy paths e 6/6 estados de timeout aprovados em Chromium. |
 | Regressão funcional do login otimizado | 8/8 em Vitest e 3/3 em Chromium; validação acessível e recuperação de senha sob demanda. |
-| Suíte Vitest global | Aprovada: 1.427/1.427 arquivos; 5.401 testes aprovados, zero falhas, 113 condicionais ignorados e 34/34 snapshots íntegros. |
+| Suíte Vitest global | Aprovada: 1.433/1.433 suítes; 5.407 testes aprovados, zero falhas, 113 condicionais ignorados e 34/34 snapshots íntegros. |
 
 Os JSONs em [evidências](evidencias/) registram os cenários SQL. Nenhuma simulação acessou os bancos remotos, aplicou migration, publicou Edge Function ou alterou dados reais.
 
@@ -73,7 +75,7 @@ Os JSONs em [evidências](evidencias/) registram os cenários SQL. Nenhuma simul
 - [x] A01, A02, A03, A04, A06–A12, A16–A18 e A20 corrigidos no candidato local.
 - [x] Build, lint, tipos, testes dirigidos, Deno, autorização de edges e SQL executados.
 - [x] Dívida executável da suíte Vitest global corrigida: zero falhas em 1.427 arquivos e 5.401 testes aprovados.
-- [x] Todos os 62 apontamentos de revisão de código reavaliados e seus achados ainda válidos tratados no candidato local.
+- [x] Todos os 69 apontamentos de revisão de código reavaliados e seus achados ainda válidos tratados no candidato local.
 - [x] Fallback offline da PWA validado sem atalho ou skip em build de produção.
 - [x] Projeto Supabase local apontado para o banco próprio `cfmzkthhgliqelozlmwu`.
 - [x] Implementar validação servidor, preço vigente e persistência atômica da conversão de kit em orçamento (A05).

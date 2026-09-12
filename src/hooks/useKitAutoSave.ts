@@ -50,6 +50,16 @@ function requirePersistedKitId(
   return result.data.id;
 }
 
+function isCreatedKitAdoption(
+  userId: string | undefined,
+  currentKitId: string | undefined,
+  persistedKitId: string | null,
+  currentScope: string,
+): boolean {
+  if (!userId || !currentKitId) return false;
+  return currentKitId === persistedKitId && currentScope === `${userId}:new`;
+}
+
 export function useKitAutoSave(
   kitState: KitState,
   kitQuantity: number,
@@ -176,6 +186,21 @@ export function useKitAutoSave(
   useEffect(() => {
     const nextScope = `${user?.id ?? 'anon'}:${currentKitId ?? 'new'}`;
     if (scopeRef.current === nextScope) return;
+
+    // O pai adota o ID que esta própria instância acabou de criar. Essa
+    // passagem de `new` para o ID persistido continua sendo o mesmo kit e não
+    // pode invalidar uma alteração que já esteja aguardando na fila.
+    const adoptsCreatedKit = isCreatedKitAdoption(
+      user?.id,
+      currentKitId,
+      kitIdRef.current,
+      scopeRef.current,
+    );
+    if (adoptsCreatedKit) {
+      scopeRef.current = nextScope;
+      return;
+    }
+
     scopeRef.current = nextScope;
     scopeGenerationRef.current += 1;
     if (timerRef.current) clearTimeout(timerRef.current);

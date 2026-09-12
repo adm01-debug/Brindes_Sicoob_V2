@@ -165,9 +165,11 @@ try:
         ('{DIRECT_LOW_ORDER}', '{PA}', '{COOPERATIVE}', '{CREATOR}', 'pending', 100);
       INSERT INTO public.sicoob_order_items (order_id, product_name, quantity, unit_price, total_price)
       VALUES ('{HIGH_ORDER}', 'Caneca sintética', 1, 800, 800);
-      GRANT USAGE ON SCHEMA public TO authenticated;
+      GRANT USAGE ON SCHEMA public, auth TO authenticated;
+      GRANT EXECUTE ON FUNCTION auth.uid() TO authenticated;
       GRANT SELECT ON public.user_roles, public.profiles TO authenticated;
       GRANT SELECT, UPDATE ON public.sicoob_approval_policies TO authenticated;
+      GRANT SELECT, UPDATE ON public.sicoob_approval_requests, public.sicoob_orders TO authenticated;
     """)
 
     inactive_policy_change = rls_actor_sql(INACTIVE_MANAGER, f"""
@@ -325,7 +327,7 @@ try:
         '{CANCELLED_ORDER}', 'pending', 'Solicitação que será cancelada formalmente', 500, false
       );
     """))
-    actor_sql(CREATOR, f"""
+    rls_actor_sql(CREATOR, f"""
       SELECT public.transition_sicoob_order_status(
         '{CANCELLED_ORDER}', 'waiting_approval', 'cancelled', 'Cancelado pelo solicitante'
       );

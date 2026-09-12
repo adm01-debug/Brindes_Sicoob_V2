@@ -34,7 +34,8 @@ export function OrderPilotApprovalsTab({ orderId }: OrderPilotApprovalsTabProps)
     });
   };
 
-  const getStatusBadge = (status: string) => {
+  const getStatusBadge = (status: string, isLatest: boolean) => {
+    if (!isLatest && status === 'pending') return <Badge variant="secondary">Substituída</Badge>;
     switch (status) {
       case 'approved': return <Badge variant="success">Aprovado</Badge>;
       case 'rejected': return <Badge variant="destructive">Rejeitado</Badge>;
@@ -66,7 +67,7 @@ export function OrderPilotApprovalsTab({ orderId }: OrderPilotApprovalsTabProps)
                   <ImageIcon className="h-5 w-5 text-muted-foreground" />
                   Arte / Piloto de Produção — versão {approval.version}
                 </CardTitle>
-                {getStatusBadge(approval.status)}
+                {getStatusBadge(approval.status, approval.is_latest)}
               </div>
             </CardHeader>
             <CardContent className="space-y-6">
@@ -81,7 +82,7 @@ export function OrderPilotApprovalsTab({ orderId }: OrderPilotApprovalsTabProps)
                 )}
               </div>
 
-              {approval.status === 'pending' && (
+              {approval.status === 'pending' && approval.is_latest && (
                 <div className="space-y-4 pt-4 border-t">
                   <div className="space-y-2">
                     <div className="flex items-center gap-2 text-sm font-medium">

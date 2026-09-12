@@ -9625,6 +9625,7 @@ export type Database = {
       }
       create_sicoob_order_artwork_version: {
         Args: {
+          p_actor_id: string
           p_file_path: string
           p_file_sha256: string
           p_identity_snapshot: Json

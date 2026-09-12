@@ -198,10 +198,10 @@ try:
       );
     """))
     assert scalar(sql(f"SELECT status FROM public.order_consolidations WHERE id='{consolidation}';")) == "received_with_issues"
-    assert scalar(sql(f"SELECT string_agg(status, ',' ORDER BY id) FROM public.sicoob_orders WHERE consolidation_id='{consolidation}';")) == "completed,completed"
+    assert scalar(sql(f"SELECT string_agg(status, ',' ORDER BY id) FROM public.sicoob_orders WHERE consolidation_id='{consolidation}';")) == "logistic,logistic"
     immutable = sql(f"UPDATE public.sicoob_delivery_receipt_events SET notes='alterado indevidamente' WHERE id='{event_id}';", check=False)
     assert immutable.returncode != 0 and "imutáveis" in immutable.stderr
-    result["recebimento"] = "retry idempotente não duplicou quantidades; parciais acumulados por destino; excesso e ator externo recusados; quitação integral concluiu os pedidos; avaria preservada em evento imutável"
+    result["recebimento"] = "retry idempotente não duplicou quantidades; parciais acumulados por destino; excesso e ator externo recusados; divergência manteve os pedidos em logística; avaria preservada em evento imutável"
 
     result["resultado"] = "aprovado"
     evidence = ROOT / "docs/execucao/evidencias/consolidacao-sicoob.json"

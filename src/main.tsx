@@ -4,11 +4,13 @@ import { HelmetProvider } from "react-helmet-async";
 import EnhancedErrorBoundary from "@/components/errors/EnhancedErrorBoundary";
 import AuthEntry from "./AuthEntry";
 import { injectRequestId } from "@/lib/request-id-injection";
+import { installGlobalErrorHandlers } from "@/lib/error-reporter";
 import "./index.css";
 
 
 // Inject traceability headers
 injectRequestId();
+installGlobalErrorHandlers();
 
 // A coleta usa PerformanceObserver com buffer e pode iniciar depois do paint.
 // Isso impede que telemetria concorra com a tela de autenticação.
@@ -22,7 +24,6 @@ if (import.meta.env.PROD) {
 // Os imports dinâmicos preservam a proteção sem onerar a primeira tela pública.
 globalThis.setTimeout(() => {
   void import("@/lib/sentry").then(({ initSentry }) => initSentry());
-  void import("@/lib/error-reporter").then(({ installGlobalErrorHandlers }) => installGlobalErrorHandlers());
   void import("@/lib/preview-auto-reload").then(({ setupPreviewAutoReload }) => setupPreviewAutoReload());
   void import("@/lib/diagnostics");
 }, 3_000);

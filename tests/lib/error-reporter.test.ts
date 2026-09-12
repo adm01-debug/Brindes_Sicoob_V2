@@ -42,8 +42,10 @@ describe('error-reporter', () => {
     const { installGlobalErrorHandlers } = await import('@/lib/error-reporter');
     const addSpy = vi.spyOn(window, 'addEventListener');
     installGlobalErrorHandlers();
+    installGlobalErrorHandlers();
     expect(addSpy).toHaveBeenCalledWith('error', expect.any(Function));
     expect(addSpy).toHaveBeenCalledWith('unhandledrejection', expect.any(Function));
+    expect(addSpy).toHaveBeenCalledTimes(2);
     addSpy.mockRestore();
   });
 });
