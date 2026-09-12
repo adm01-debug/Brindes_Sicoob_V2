@@ -20,6 +20,7 @@ import {
   setMobileViewport,
   waitRouteReady,
 } from "./_shared";
+import { ALL_ROUTES } from "./_catalog";
 
 export interface PublicTokenRouteSpec {
   /** Nome legível, usado no describe. Ex.: "/proposta/:token". */
@@ -30,6 +31,8 @@ export interface PublicTokenRouteSpec {
   edgeFnName: string;
   /** Body de sucesso. */
   successBody: unknown;
+  /** Conteúdo específico que prova que o payload de sucesso chegou à tela. */
+  successCopy: RegExp;
   /** RegExp para encontrar mensagem de "não encontrado/inválido". */
   notFoundCopy?: RegExp;
   /** Mock do carregamento inicial; use para telas que consultam REST diretamente. */
@@ -70,9 +73,7 @@ export function buildPublicTokenSuite(spec: PublicTokenRouteSpec) {
       await mockLoad(page, "success");
       await gotoAndSettle(page, spec.buildPath("VALID_TOKEN"));
       await waitRouteReady(page);
-      // pelo menos um heading visível
-      const hasHeading = await page.locator("h1, h2, h3").first().isVisible().catch(() => false);
-      expect(hasHeading).toBe(true);
+      await expect(page.getByText(spec.successCopy).first()).toBeVisible({ timeout: 8_000 });
     });
 
     test("token inválido: 404 mostra mensagem", async ({ page }) => {
@@ -105,9 +106,14 @@ export function buildPublicTokenSuite(spec: PublicTokenRouteSpec) {
     test("timeout: edge function lenta não trava render", async ({ page }) => {
       await mockLoad(page, "timeout");
       await gotoAndSettle(page, spec.buildPath("SLOW"));
-      // A página deve renderizar ao menos um skeleton/loading antes do timeout
       await page.waitForLoadState("domcontentloaded");
-      expect(await page.locator("body").isVisible()).toBe(true);
+      await expect(
+        page
+          .locator('[role="status"], [aria-busy="true"], .animate-pulse, .animate-spin')
+          .or(page.getByText(/carregando|aguarde|processando|tentando/i))
+          .or(page.getByRole("alert"))
+          .first(),
+      ).toBeVisible({ timeout: 8_000 });
     });
 
     test("5xx: erro do backend mostra alerta", async ({ page }) => {
@@ -152,6 +158,7 @@ export interface AuthedRouteSpec {
 }
 
 export function buildAuthedRouteSuite(spec: AuthedRouteSpec) {
+  const catalogEntry = ALL_ROUTES.find(entry => entry.path === spec.path);
   const route = spec.primary.kind === "fn"
     ? new RegExp(`/functions/v1/${spec.primary.key}(\\?|$|/)`)
     : new RegExp(`/rest/v1/${spec.primary.key}(\\?|$)`);
@@ -178,6 +185,8 @@ export function buildAuthedRouteSuite(spec: AuthedRouteSpec) {
       await waitRouteReady(page);
       if (spec.happyAssert) {
         await spec.happyAssert(page);
+      } else if (catalogEntry?.titleSlug) {
+        await expect(page.getByTestId(`page-title-${catalogEntry.titleSlug}`)).toBeVisible();
       } else {
         const heading = await page.locator("h1, h2, h3").first().isVisible().catch(() => false);
         expect(heading).toBe(true);
@@ -212,7 +221,13 @@ export function buildAuthedRouteSuite(spec: AuthedRouteSpec) {
       });
       await gotoAndSettle(page, spec.path);
       await page.waitForLoadState("domcontentloaded");
-      expect(await page.locator("body").isVisible()).toBe(true);
+      await expect(
+        page
+          .locator('[role="status"], [aria-busy="true"], .animate-pulse, .animate-spin')
+          .or(page.getByText(/carregando|aguarde|processando|tentando/i))
+          .or(page.getByRole("alert"))
+          .first(),
+      ).toBeVisible({ timeout: 8_000 });
     });
 
     test("5xx: serviço indisponível mostra alerta", async ({ page }) => {

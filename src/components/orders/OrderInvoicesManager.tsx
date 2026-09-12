@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { FileText, Plus, FileUp, Loader2, Download, ExternalLink, Trash2 } from "lucide-react";
+import { FileText, FileUp, Loader2, Download } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { toast } from "sonner";
@@ -26,19 +26,21 @@ export function OrderInvoicesManager({ orderId }: OrderInvoicesManagerProps) {
 
     setIsUploading(true);
     try {
-      const publicUrl = await uploadFile(file, `nf_${Date.now()}_${file.name}`);
+      const filePath = await uploadFile(file);
+      const fileType = file.name.toLowerCase().endsWith(".xml") ? "xml" : "pdf";
       
       await addInvoice.mutateAsync({
-        invoice_number: invoiceNumber || "NF-E",
+        invoice_number: invoiceNumber.trim(),
         access_key: accessKey || null,
-        file_url: publicUrl,
+        file_path: filePath,
+        file_type: fileType,
       });
 
       setInvoiceNumber("");
       setAccessKey("");
       toast.success("Nota fiscal enviada com sucesso!");
-    } catch (error: any) {
-      toast.error(error.message || "Erro ao enviar nota fiscal");
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : "Erro ao enviar nota fiscal");
     } finally {
       setIsUploading(false);
     }
@@ -83,7 +85,7 @@ export function OrderInvoicesManager({ orderId }: OrderInvoicesManagerProps) {
               <Button 
                 variant="outline" 
                 className="w-full relative overflow-hidden" 
-                disabled={isUploading}
+                disabled={isUploading || !invoiceNumber.trim()}
               >
                 {isUploading ? (
                   <>
@@ -101,7 +103,7 @@ export function OrderInvoicesManager({ orderId }: OrderInvoicesManagerProps) {
                   className="absolute inset-0 opacity-0 cursor-pointer" 
                   accept=".pdf,.xml"
                   onChange={handleFileUpload}
-                  disabled={isUploading}
+                  disabled={isUploading || !invoiceNumber.trim()}
                 />
               </Button>
             </div>

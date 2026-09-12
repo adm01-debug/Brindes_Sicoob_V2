@@ -103,6 +103,15 @@ function validateFilters(filters: Record<string, unknown> | undefined | null): A
   const violations: Array<{ field: string; reason: string; receivedType: string; sample: string }> = [];
 
   for (const [key, value] of Object.entries(filters)) {
+    if (!/^_?[a-z][a-z0-9_]*$/i.test(key)) {
+      violations.push({
+        field: key,
+        reason: 'filter field must be a simple SQL identifier',
+        receivedType: typeof value,
+        sample: key.slice(0, 120),
+      });
+      continue;
+    }
     if (value === null || value === undefined || value === '') continue;
 
     const t = typeof value;
@@ -175,7 +184,7 @@ export function applyFilters(
 
     // Name prefix search: matches products whose name STARTS with the term (case insensitive)
     if (key === '_name_prefix' && typeof value === 'string') {
-      const escaped = value.replace(/%/g, '\\%').replace(/_/g, '\\_');
+      const escaped = sanitizeIlikeValue(value);
       query = query.ilike('name', `${escaped}%`);
       return;
     }
@@ -239,7 +248,7 @@ export function applyFilters(
       }
 
       if (['name', 'description', 'title', 'razao_social', 'nome_fantasia', 'nome', 'descricao'].includes(key)) {
-        query = query.ilike(key, `%${value}%`);
+        query = query.ilike(key, `%${sanitizeIlikeValue(value)}%`);
       } else {
         query = query.eq(key, value);
       }

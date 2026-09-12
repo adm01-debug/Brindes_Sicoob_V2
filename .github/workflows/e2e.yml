@@ -1,8 +1,7 @@
 name: E2E (Playwright)
 
-# Job opcional: roda os specs públicos sempre; specs autenticados só se
-# E2E_USER_EMAIL/E2E_USER_PASSWORD estiverem configurados como secrets do repo.
-# Artefatos (relatório HTML, screenshots, vídeos, traces) são publicados.
+# Gate de release: exige as contas de homologação e executa jornadas públicas
+# e autenticadas. Artefatos (HTML, screenshots, vídeos e traces) são publicados.
 
 on:
   push:
@@ -39,6 +38,14 @@ jobs:
 
       - name: Install deps
         run: npm ci --no-audit --no-fund
+
+      - name: Exigir credenciais da jornada autenticada
+        shell: bash
+        run: |
+          if [[ -z "$E2E_USER_EMAIL" || -z "$E2E_USER_PASSWORD" || -z "$E2E_ADMIN_EMAIL" || -z "$E2E_ADMIN_PASSWORD" ]]; then
+            echo "::error title=Credenciais E2E ausentes::Configure E2E_USER_EMAIL, E2E_USER_PASSWORD, E2E_ADMIN_EMAIL e E2E_ADMIN_PASSWORD nos secrets do repositório."
+            exit 1
+          fi
 
       - name: Cache Playwright browsers
         uses: actions/cache@v5
@@ -114,9 +121,7 @@ jobs:
       # apontando o spec exato; `list` deixa o log human-readable.
       - name: 🧲 Run E2E header-sticky gate (fail-fast por rota/viewport)
         id: e2e_header_sticky
-        # O spec navega por rotas protegidas. Sem a conta E2E, o Playwright
-        # exclui corretamente esses fluxos em vez de simular uma sessão.
-        if: steps.e2e_smoke.outcome == 'success' && env.E2E_USER_EMAIL != '' && env.E2E_USER_PASSWORD != ''
+        if: steps.e2e_smoke.outcome == 'success'
         run: |
           npx playwright test \
             e2e/flows/22-header-sticky.spec.ts \

@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, useCallback, useRef, type ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useRecentlyViewedStore } from "@/stores/useRecentlyViewedStore";
 // HMR: ensure this module re-binds to the latest AuthContext singleton after edits.
 
 export interface Organization {
@@ -35,7 +36,7 @@ interface OrganizationContextType {
 
 const OrganizationContext = createContext<OrganizationContextType | null>(null);
 
-const ORG_STORAGE_KEY = "selected_org_id";
+const orgStorageKey = (userId: string) => `selected_org_id:${userId}`;
 
 export function OrganizationProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
@@ -43,10 +44,13 @@ export function OrganizationProvider({ children }: { children: ReactNode }) {
   const [currentOrg, setCurrentOrg] = useState<Organization | null>(null);
   const [currentRole, setCurrentRole] = useState<OrgMember["role"] | null>(null);
   const membershipsRef = useRef<Map<string, OrgMember["role"]>>(new Map());
+  const requestVersionRef = useRef(0);
   const [isLoading, setIsLoading] = useState(true);
 
   const fetchOrganizations = useCallback(async () => {
-    if (!user) {
+    const requestVersion = ++requestVersionRef.current;
+    const userId = user?.id;
+    if (!userId) {
       setOrganizations([]);
       setCurrentOrg(null);
       setCurrentRole(null);
@@ -56,20 +60,26 @@ export function OrganizationProvider({ children }: { children: ReactNode }) {
     }
 
     setIsLoading(true);
+    setOrganizations([]);
+    setCurrentOrg(null);
+    setCurrentRole(null);
+    membershipsRef.current = new Map();
     try {
       // Fetch orgs via members join
       const { data: members, error: membersError } = await supabase
         .from("organization_members")
         .select("organization_id, role")
-        .eq("user_id", user.id);
+        .eq("user_id", userId);
 
       if (membersError) throw membersError;
+      if (requestVersion !== requestVersionRef.current) return;
 
       if (!members || members.length === 0) {
         setOrganizations([]);
         setCurrentOrg(null);
         setCurrentRole(null);
         membershipsRef.current = new Map();
+        useRecentlyViewedStore.getState().setScope(`user:${userId}`);
         setIsLoading(false);
         return;
       }
@@ -83,6 +93,7 @@ export function OrganizationProvider({ children }: { children: ReactNode }) {
         .eq("is_active", true);
 
       if (orgsError) throw orgsError;
+      if (requestVersion !== requestVersionRef.current) return;
 
       const orgList = (orgs || []) as Organization[];
       const rolesByOrg = new Map<string, OrgMember["role"]>();
@@ -93,7 +104,8 @@ export function OrganizationProvider({ children }: { children: ReactNode }) {
       setOrganizations(orgList);
 
       // Restore saved org or pick first, ensuring the user actually belongs to it
-      const savedOrgId = localStorage.getItem(ORG_STORAGE_KEY);
+      localStorage.removeItem("selected_org_id");
+      const savedOrgId = localStorage.getItem(orgStorageKey(userId));
       const savedOrg = orgList.find((o) => o.id === savedOrgId);
       const selected = savedOrg || orgList[0] || null;
 
@@ -101,19 +113,30 @@ export function OrganizationProvider({ children }: { children: ReactNode }) {
 
       if (selected) {
         setCurrentRole(rolesByOrg.get(selected.id) || null);
-        localStorage.setItem(ORG_STORAGE_KEY, selected.id);
+        localStorage.setItem(orgStorageKey(userId), selected.id);
+        useRecentlyViewedStore.getState().setScope(`user:${userId}:org:${selected.id}`);
       } else {
-        localStorage.removeItem(ORG_STORAGE_KEY);
+        localStorage.removeItem(orgStorageKey(userId));
+        useRecentlyViewedStore.getState().setScope(`user:${userId}`);
       }
     } catch (err) {
+      if (requestVersion !== requestVersionRef.current) return;
       console.error("Failed to fetch organizations:", err);
+      setOrganizations([]);
+      setCurrentOrg(null);
+      setCurrentRole(null);
+      membershipsRef.current = new Map();
+      useRecentlyViewedStore.getState().setScope(`user:${userId}`);
     } finally {
-      setIsLoading(false);
+      if (requestVersion === requestVersionRef.current) setIsLoading(false);
     }
-  }, [user]);
+  }, [user?.id]);
 
   useEffect(() => {
     fetchOrganizations();
+    return () => {
+      requestVersionRef.current += 1;
+    };
   }, [fetchOrganizations]);
 
   const switchOrganization = useCallback(
@@ -130,10 +153,13 @@ export function OrganizationProvider({ children }: { children: ReactNode }) {
         if (!role) return;
         setCurrentRole(role);
         setCurrentOrg(org);
-        localStorage.setItem(ORG_STORAGE_KEY, orgId);
+        if (user?.id) {
+          localStorage.setItem(orgStorageKey(user.id), orgId);
+          useRecentlyViewedStore.getState().setScope(`user:${user.id}:org:${orgId}`);
+        }
       }
     },
-    [organizations, currentOrg?.id]
+    [organizations, currentOrg?.id, user?.id]
   );
 
   const createOrganization = useCallback(
@@ -151,13 +177,16 @@ export function OrganizationProvider({ children }: { children: ReactNode }) {
         return null;
       }
 
+      // A leitura seguinte seleciona a organização recém-criada a partir da
+      // chave do próprio usuário; chamar switchOrganization aqui usaria a
+      // lista do render anterior, pois a atualização de estado é assíncrona.
+      localStorage.setItem(orgStorageKey(user.id), orgId);
       await fetchOrganizations();
-      switchOrganization(orgId);
 
       // Return the org from the freshly fetched list
       return organizations.find((o) => o.id === orgId) || ({ id: orgId, name, slug } as Organization);
     },
-    [user, fetchOrganizations, switchOrganization, organizations]
+    [user, fetchOrganizations, organizations]
   );
 
   return (

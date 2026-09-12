@@ -14,6 +14,7 @@ buildPublicTokenSuite({
   buildPath: t => `/comparar-publica/${t}`,
   edgeFnName: "comparisons-public-react",
   successBody: comparison,
+  successCopy: /Cooperativa E2E/,
   notFoundCopy: /link indisponível|não encontrada|inválido|expirado/i,
   mockLoad: (page, scenario) => mockPublicRestResource(
     page,

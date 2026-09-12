@@ -65,4 +65,23 @@ describe('useKitStockValidation', () => {
       expect.objectContaining({ reason: 'variant_required' }),
     ]));
   });
+
+  it('soma a necessidade de linhas que consomem a mesma variante', async () => {
+    invokeExternalDb.mockResolvedValue({
+      records: [
+        { id: 'vermelha', product_id: 'produto-1', stock_quantity: 10, color_name: 'Vermelha' },
+      ],
+    });
+
+    const line = { ...item, quantity: 6, selectedVariantId: 'vermelha' };
+    const { result } = renderHook(
+      () => useKitStockValidation([line, { ...line }], null, 1),
+      { wrapper },
+    );
+
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+    expect(result.current.alerts).toEqual([
+      expect.objectContaining({ required: 12, available: 10, deficit: 2 }),
+    ]);
+  });
 });

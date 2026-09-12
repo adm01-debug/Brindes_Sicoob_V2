@@ -1,0 +1,9 @@
+{
+  "ambiente": "PostgreSQL 16 descartável, --network none; somente dados sintéticos",
+  "migracao": "supabase/migrations/20260912180000_sicoob_finance_artwork.sql",
+  "producao_verificada": false,
+  "documentos": "nota vinculada ao pedido Sicoob e bucket privado preservado",
+  "pagamentos": "parcela conciliada por RPC; soma limitada ao pedido; registro liquidado e escrita direta protegidos",
+  "arte": "autoaprovação recusada; versões e identidade preservadas; produção bloqueada até aprovação da versão vigente",
+  "resultado": "aprovado"
+}

@@ -8,5 +8,6 @@ buildPublicTokenSuite({
     valid: true,
     payload: { clientId: "c1", clientName: "Cooperativa E2E", ramoAtividade: null, sellerId: "s1", iat: 1, exp: 4_102_444_800 },
   },
+  successCopy: /Cooperativa E2E/,
   notFoundCopy: /link inválido|expirado/i,
 });

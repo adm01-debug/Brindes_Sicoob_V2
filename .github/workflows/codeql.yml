@@ -33,6 +33,7 @@ jobs:
         with:
           languages: ${{ matrix.language }}
           queries: security-extended
+          config-file: ./.github/codeql/codeql-config.yml
 
       - name: Autobuild
         uses: github/codeql-action/autobuild@v3
@@ -42,7 +43,7 @@ jobs:
         with:
           category: "/language:${{ matrix.language }}"
           output: sarif-results
-          upload: never
+          upload: always
 
       - name: Preservar resultado SARIF
         if: always()

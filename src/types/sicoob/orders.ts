@@ -66,6 +66,12 @@ export interface SicoobOrderItem {
   product_name: string;
   product_sku: string;
   product_image_url?: string;
+  variant_id?: string;
+  variant_sku?: string;
+  color_name?: string;
+  color_hex?: string;
+  size_code?: string;
+  personalization_snapshot?: Record<string, unknown>;
   quantity: number;
   unit_price: number;
   total_price: number;

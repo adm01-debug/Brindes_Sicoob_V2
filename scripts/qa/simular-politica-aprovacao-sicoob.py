@@ -14,6 +14,7 @@ MIGRATIONS = [
     ROOT / "supabase/migrations/20260912110000_sicoob_order_status_events.sql",
     ROOT / "supabase/migrations/20260912120000_sicoob_approval_policy_guards.sql",
     ROOT / "supabase/migrations/20260912140000_sicoob_approval_confirmation_followup.sql",
+    ROOT / "supabase/migrations/20260912160000_sicoob_approval_policy_snapshot.sql",
 ]
 
 CREATOR = "11111111-1111-1111-1111-111111111111"
@@ -121,6 +122,9 @@ try:
       INSERT INTO public.sicoob_approval_policies (
         cooperative_id, version, forbid_self_approval, require_active_membership
       ) VALUES ('{COOPERATIVE}', 'coop-v2026.1', true, true);
+      INSERT INTO public.sicoob_approval_policies (
+        cooperative_id, version, effective_from, forbid_self_approval, require_active_membership
+      ) VALUES (NULL, 'global-v2026.9', now() + interval '1 millisecond', false, false);
       INSERT INTO public.sicoob_orders (id, pa_id, cooperative_id, created_by, status, total_amount) VALUES
         ('{LOW_ORDER}', '{PA}', '{COOPERATIVE}', '{CREATOR}', 'pending', 100),
         ('{HIGH_ORDER}', '{PA}', '{COOPERATIVE}', '{CREATOR}', 'pending', 800),
@@ -139,17 +143,24 @@ try:
     """)
     low_prepared = scalar(sql(f"""
       SELECT status || '|' || approval_policy_version || '|'
+        || (approval_policy_snapshot ->> 'version') || '|'
         || (SELECT count(*) FROM public.sicoob_approval_requests WHERE order_id = '{LOW_ORDER}')
       FROM public.sicoob_orders WHERE id = '{LOW_ORDER}';
     """))
-    assert low_prepared == "waiting_approval|coop-v2026.1|0", low_prepared
+    assert low_prepared == "waiting_approval|coop-v2026.1|coop-v2026.1|0", low_prepared
+    pending_policy_tamper = sql(f"""
+      UPDATE public.sicoob_orders
+         SET approval_policy_version = 'forjada'
+       WHERE id = '{HIGH_ORDER}';
+    """, check=False)
+    assert pending_policy_tamper.returncode != 0 and "transição formal" in pending_policy_tamper.stderr
     low_frozen = sql(f"UPDATE public.sicoob_orders SET total_amount = 101 WHERE id = '{LOW_ORDER}';", check=False)
     direct_request = actor_sql(CREATOR, f"""
       INSERT INTO public.sicoob_approval_requests (
         order_id, requester_id, request_reason, amount_at_request, threshold_at_request
       ) VALUES ('{LOW_ORDER}', '{CREATOR}', 'Tentativa de inserção sem RPC formal', 100, 500);
     """, check=False)
-    assert low_frozen.returncode != 0 and "Pedido preparado" in low_frozen.stderr, low_frozen.stderr
+    assert low_frozen.returncode != 0 and "Pedido submetido" in low_frozen.stderr, low_frozen.stderr
     assert direct_request.returncode != 0 and "RPC formal" in direct_request.stderr, direct_request.stderr
 
     bypass_rpc = actor_sql(CREATOR, f"""
@@ -168,6 +179,11 @@ try:
       FROM public.sicoob_orders WHERE id = '{LOW_ORDER}';
     """))
     assert low_confirmed == f"confirmed|{PA_MANAGER}|100.00", low_confirmed
+    confirmed_item_insert = sql(f"""
+      INSERT INTO public.sicoob_order_items (order_id, product_name, quantity, unit_price, total_price)
+      VALUES ('{LOW_ORDER}', 'Inclusão tardia', 1, 1, 1);
+    """, check=False)
+    assert confirmed_item_insert.returncode != 0 and "Pedido submetido" in confirmed_item_insert.stderr
     actor_sql(PA_MANAGER, f"SELECT public.confirm_sicoob_order('{DIRECT_LOW_ORDER}', 'pending');")
     direct_confirmed = scalar(sql(f"""
       SELECT o.status || '|' || o.approved_by::text || '|'
@@ -204,8 +220,8 @@ try:
     frozen_item = sql(f"UPDATE public.sicoob_order_items SET quantity = 2 WHERE order_id = '{HIGH_ORDER}';", check=False)
     frozen_request = sql(f"UPDATE public.sicoob_approval_requests SET amount_at_request = 1 WHERE id = '{request_id}';", check=False)
     direct_approver = sql(f"UPDATE public.sicoob_approval_requests SET approver_id = '{PA_MANAGER}' WHERE id = '{request_id}';", check=False)
-    assert frozen_total.returncode != 0 and "aprovação pendente" in frozen_total.stderr, frozen_total.stderr
-    assert frozen_item.returncode != 0 and "aprovação pendente" in frozen_item.stderr, frozen_item.stderr
+    assert frozen_total.returncode != 0 and "Pedido submetido" in frozen_total.stderr, frozen_total.stderr
+    assert frozen_item.returncode != 0 and "Pedido submetido" in frozen_item.stderr, frozen_item.stderr
     assert frozen_request.returncode != 0 and "imutáveis" in frozen_request.stderr, frozen_request.stderr
     assert direct_approver.returncode != 0 and "aprovador só pode" in direct_approver.stderr, direct_approver.stderr
 
@@ -220,7 +236,19 @@ try:
       WHERE r.id = '{request_id}';
     """))
     assert high_approved == "approved|confirmed|1", high_approved
-    result["solicitacao_formal"] = "alçada é derivada do orçamento do PA; valor, itens e dados submetidos ficam congelados; gatilho legado removido"
+    reparent_confirmed_item = sql(f"""
+      UPDATE public.sicoob_order_items
+         SET order_id = '{SELF_ORDER}'
+       WHERE order_id = '{HIGH_ORDER}';
+    """, check=False)
+    assert reparent_confirmed_item.returncode != 0 and "Pedido submetido" in reparent_confirmed_item.stderr
+    policy_mutation = sql(f"""
+      UPDATE public.sicoob_approval_policies
+         SET forbid_self_approval = false
+       WHERE cooperative_id = '{COOPERATIVE}';
+    """, check=False)
+    assert policy_mutation.returncode != 0 and "nova versão" in policy_mutation.stderr
+    result["solicitacao_formal"] = "alçada é derivada do orçamento do PA; política específica prevalece, sua fotografia é imutável e valor/itens permanecem congelados após confirmação e em transferências"
 
     self_request_id = scalar(actor_sql(SELF_MANAGER, f"""
       SELECT public.request_sicoob_order_approval(
@@ -269,6 +297,18 @@ try:
     actor_sql(SUPERVISOR, f"""
       SELECT public.approve_sicoob_order('{escalated_request_id}', '{ESCALATED_ORDER}', '{SUPERVISOR}');
     """)
+    sql(f"""
+      UPDATE public.sicoob_approval_policies
+         SET is_active = false, effective_until = now() + interval '1 minute'
+       WHERE cooperative_id = '{COOPERATIVE}';
+    """)
+    frozen_policy = scalar(sql(f"""
+      SELECT policy_version || '|'
+        || forbid_self_approval::text || '|'
+        || require_active_membership::text
+        FROM public.get_sicoob_order_approval_policy('{HIGH_ORDER}');
+    """))
+    assert frozen_policy == "coop-v2026.1|true|true", frozen_policy
     result["escalacao"] = "a mesma solicitação é elevada sem duplicação; somente Central ativa decide"
 
     result["resultado"] = "aprovado"

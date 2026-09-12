@@ -1,5 +1,7 @@
 # Achados e condições de fechamento — 12/09/2026
 
+> **Snapshot histórico:** os estados abaixo descrevem o candidato anterior. Consulte a [revalidação corretiva posterior](../revalidacao-corretiva-2026-09-12.md) para o estado atual, as correções locais, as simulações e os cinco grupos ainda pendentes.
+
 As prioridades indicam risco para a liberação; nenhuma correção local equivale a produção. Títulos históricos são preservados no JSON para rastrear o escopo original.
 
 ## A01 · P0 · Logística canônica corrigida localmente, aguardando homologação real

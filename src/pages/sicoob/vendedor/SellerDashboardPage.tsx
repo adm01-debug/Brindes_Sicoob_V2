@@ -1,17 +1,14 @@
 import React from "react";
 // import { MainLayout } from "@/components/layout/MainLayout";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Users, ShoppingBag, Target, TrendingUp, Calendar, ArrowRight, UserPlus, Briefcase, Loader2 } from "lucide-react";
+import { Users, ShoppingBag, TrendingUp, Calendar, ArrowRight, UserPlus, Briefcase, Loader2, AlertCircle } from "lucide-react";
 import { useSellerDashboardStats } from "@/hooks/sicoob/useSellerDashboardStats";
 import { formatCurrency } from "@/lib/format";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { Progress } from "@/components/ui/progress";
 
 export default function SellerDashboardPage() {
-  const { data: stats, isLoading } = useSellerDashboardStats();
-
-  const goalProgress = stats ? (stats.monthlySales / stats.salesGoal) * 100 : 0;
+  const { data: stats, isLoading, isError, error } = useSellerDashboardStats();
 
   return (
     <>
@@ -34,6 +31,15 @@ export default function SellerDashboardPage() {
             </Button>
           </div>
         </div>
+
+        {isError && (
+          <Card className="border-destructive/40 bg-destructive/5">
+            <CardContent className="flex items-center gap-3 py-4 text-sm text-destructive">
+              <AlertCircle className="h-5 w-5" />
+              {error instanceof Error ? error.message : 'Indicadores indisponíveis no momento.'}
+            </CardContent>
+          </Card>
+        )}
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           <Card className="border-[1.5px]">
@@ -60,17 +66,14 @@ export default function SellerDashboardPage() {
 
           <Card className="border-[1.5px] md:col-span-2 bg-primary/5 border-primary/20">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-sicoob-green-dark">Meta Mensal de Vendas</CardTitle>
-              <Target className="h-4 w-4 text-primary" />
+              <CardTitle className="text-sm font-medium text-sicoob-green-dark">Vendas concluídas no mês</CardTitle>
+              <TrendingUp className="h-4 w-4 text-primary" />
             </CardHeader>
             <CardContent className="space-y-3">
-              <div className="flex justify-between items-end">
-                <div className="text-2xl font-bold text-sicoob-green-dark">
-                  {formatCurrency(stats?.monthlySales || 0)} 
-                </div>
-                <div className="text-sm font-bold text-sicoob-green-dark">{goalProgress.toFixed(0)}%</div>
+              <div className="text-2xl font-bold text-sicoob-green-dark">
+                {formatCurrency(stats?.monthlySales || 0)}
               </div>
-              <Progress value={goalProgress} className="h-2" indicatorClassName="bg-sicoob-green" />
+              <p className="text-xs text-muted-foreground">Somente pedidos concluídos desta carteira.</p>
             </CardContent>
           </Card>
         </div>
@@ -100,9 +103,6 @@ export default function SellerDashboardPage() {
                         </div>
                       </div>
                       <div className="flex items-center gap-4">
-                        <div className={`text-sm font-medium ${client.grow.startsWith('+') ? 'text-status-delivered' : 'text-destructive'}`}>
-                          {client.grow}
-                        </div>
                         <Button variant="ghost" size="icon" asChild>
                           <Link to="/clientes">
                             <ArrowRight className="h-4 w-4" />

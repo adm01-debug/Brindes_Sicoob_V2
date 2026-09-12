@@ -1,0 +1,30 @@
+{
+  "data": "2026-09-12",
+  "ambiente": "worktree isolado; PostgreSQL 16 descartável; Vitest/jsdom; Deno; Chromium local",
+  "producao_verificada": false,
+  "achados": {
+    "corrigidos_localmente": ["A01", "A02", "A03", "A04", "A06", "A07", "A08", "A09", "A10", "A11", "A12", "A16", "A17", "A18", "A20"],
+    "parciais_ou_externos": ["A05", "A13", "A14", "A15", "A19"]
+  },
+  "validacoes": {
+    "build_producao": "aprovado",
+    "lint_baseline": "aprovado; drift positivo observado",
+    "typecheck_baseline": "aprovado; drift positivo observado",
+    "unitarios_alterados": "68/68 aprovados na rodada final agrupada",
+    "regressoes_auditoria": "44/44 aprovadas",
+    "postgres": ["politica_aprovada", "recompra_aprovada", "financeiro_arte_aprovado", "consolidacao_aprovada"],
+    "deno_pgrest": "5/5 aprovadas",
+    "edge_authorization": "102/102 declaradas e enforced",
+    "e2e_publico": "6/6 happy e 6/6 timeout aprovados",
+    "vitest_global": "não aprovado: 141 falhas, 5177 aprovados, 104 ignorados, 31 snapshots falhos"
+  },
+  "pendencias_obrigatorias": [
+    "A05: contrato servidor para converter kit e semântica de reserva",
+    "A13: nova varredura CodeQL remota",
+    "A14/A19: E2E autenticado e persistido em homologação",
+    "A15: aceite institucional e delegações",
+    "aplicar e homologar migrations/edges no banco próprio",
+    "resolver a dívida da suíte global",
+    "deploy, smoke e tráfego real"
+  ]
+}

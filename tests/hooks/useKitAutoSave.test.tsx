@@ -1,9 +1,11 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
 import { act, renderHook } from '@testing-library/react';
 
-const updateResult = vi.fn();
+const maybeSingle = vi.fn();
+const select = vi.fn(() => ({ maybeSingle }));
+const secondEq = vi.fn(() => ({ select }));
 const update = vi.fn(() => ({
-  eq: vi.fn(() => ({ eq: updateResult })),
+  eq: vi.fn(() => ({ eq: secondEq })),
 }));
 
 vi.mock('@/integrations/supabase/client', () => ({
@@ -41,8 +43,8 @@ describe('useKitAutoSave', () => {
   afterEach(() => vi.useRealTimers());
 
   it('não confirma salvamento quando o Supabase retorna erro e permite nova tentativa', async () => {
-    updateResult.mockResolvedValueOnce({ error: new Error('banco indisponível') });
-    updateResult.mockResolvedValueOnce({ error: null });
+    maybeSingle.mockResolvedValueOnce({ data: null, error: new Error('banco indisponível') });
+    maybeSingle.mockResolvedValueOnce({ data: { id: 'kit-1' }, error: null });
 
     const { result, rerender } = renderHook(
       ({ kit }) => useKitAutoSave(kit, 1, 'kit-1'),
@@ -58,5 +60,50 @@ describe('useKitAutoSave', () => {
     await act(async () => { result.current.retry(); await Promise.resolve(); });
     expect(result.current.lastSaveError).toBeNull();
     expect(result.current.lastSavedAt).toBeInstanceOf(Date);
+  });
+
+  it('trata zero linhas atualizadas como falha de permissão ou concorrência', async () => {
+    maybeSingle.mockResolvedValue({ data: null, error: null });
+
+    const { result, rerender } = renderHook(
+      ({ kit }) => useKitAutoSave(kit, 1, 'kit-inexistente'),
+      { initialProps: { kit: initialKit } },
+    );
+
+    rerender({ kit: { ...initialKit, name: 'Alteração sem persistência' } });
+    await act(async () => { await vi.advanceTimersByTimeAsync(5_000); });
+
+    expect(result.current.lastSaveError).toContain('não foi encontrado');
+    expect(result.current.lastSavedAt).toBeNull();
+  });
+
+  it('serializa gravações concorrentes e persiste por último o estado mais recente', async () => {
+    let resolveFirst: ((value: { data: { id: string }; error: null }) => void) | undefined;
+    maybeSingle.mockImplementationOnce(() => new Promise(resolve => { resolveFirst = resolve; }));
+    maybeSingle.mockResolvedValueOnce({ data: { id: 'kit-1' }, error: null });
+
+    const { result, rerender } = renderHook(
+      ({ kit }) => useKitAutoSave(kit, 1, 'kit-1'),
+      { initialProps: { kit: initialKit } },
+    );
+
+    rerender({ kit: { ...initialKit, name: 'Primeira alteração' } });
+    await act(async () => { await vi.advanceTimersByTimeAsync(5_000); });
+    expect(update).toHaveBeenCalledTimes(1);
+
+    rerender({ kit: { ...initialKit, name: 'Estado mais recente' } });
+    await act(async () => { await vi.advanceTimersByTimeAsync(5_000); });
+    expect(update).toHaveBeenCalledTimes(1);
+
+    await act(async () => {
+      resolveFirst?.({ data: { id: 'kit-1' }, error: null });
+      await Promise.resolve();
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    expect(update).toHaveBeenCalledTimes(2);
+    expect(update.mock.calls[1]?.[0]).toMatchObject({ name: 'Estado mais recente' });
+    expect(result.current.lastSaveError).toBeNull();
   });
 });

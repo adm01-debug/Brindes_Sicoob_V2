@@ -1,0 +1,7 @@
+name: "Código executável do portal"
+
+paths-ignore:
+  - "vendor/**"
+  - "e2e/**"
+  - "tests/**"
+  - "scripts/**"

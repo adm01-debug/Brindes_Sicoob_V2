@@ -9,5 +9,6 @@ buildPublicTokenSuite({
     organization: null,
     token: { id: "t1", client_name: null },
   },
+  successCopy: /\[E2E\] Kit Demo/,
   notFoundCopy: /link indisponível|inválido|expirado/i,
 });

@@ -5,5 +5,6 @@ buildPublicTokenSuite({
   buildPath: t => `/approve/${t}`,
   edgeFnName: "quote-public-view",
   successBody: { quote: { id: "q-1", quote_number: "Q-001", items: [] }, seller: null, token: {} },
+  successCopy: /Q-001/,
   notFoundCopy: /proposta não encontrada|inválido|expirado/i,
 });

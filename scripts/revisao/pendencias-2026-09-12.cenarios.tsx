@@ -1,16 +1,22 @@
-/** Auditoria histórica: expectativas de falha só executam pela configuração explícita. */
+/** Regressões dirigidas para as lacunas S07–S09 encontradas na auditoria. */
 import React, { type ReactNode } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, renderHook, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import type { KitItem, KitState } from '@/lib/kit-builder';
 
-const { invokeExternalDb, updateResult } = vi.hoisted(() => ({
-  invokeExternalDb: vi.fn(), updateResult: vi.fn(),
+const { invokeExternalDb, maybeSingle } = vi.hoisted(() => ({
+  invokeExternalDb: vi.fn(), maybeSingle: vi.fn(),
 }));
 vi.mock('@/lib/external-db/bridge', () => ({ invokeExternalDb }));
 vi.mock('@/integrations/supabase/client', () => ({
-  supabase: { from: () => ({ update: () => ({ eq: () => ({ eq: updateResult }) }) }) },
+  supabase: {
+    from: () => ({
+      update: () => ({
+        eq: () => ({ eq: () => ({ select: () => ({ maybeSingle }) }) }),
+      }),
+    }),
+  },
 }));
 vi.mock('@/contexts/AuthContext', () => ({ useAuth: () => ({ user: { id: 'usuario-sintetico' } }) }));
 vi.mock('sonner', () => ({ toast: { error: vi.fn() } }));
@@ -31,25 +37,26 @@ const item: KitItem = {
   selectedVariantId: 'verde', isReplaceable: true, allowedVariantIds: ['verde'],
 };
 
-describe('Lacunas reproduzidas em módulos reais, com dependências simuladas', () => {
+describe('Regressões das lacunas S07–S09, com dependências simuladas', () => {
   beforeEach(() => { vi.clearAllMocks(); localStorage.clear(); });
   afterEach(() => { vi.useRealTimers(); });
 
-  it('S07: duas linhas de seis unidades aceitam o mesmo estoque de dez', async () => {
+  it('S07: agrega duas linhas antes de comparar com o estoque da variante', async () => {
     invokeExternalDb.mockResolvedValue({ records: [
       { id: 'verde', product_id: item.id, stock_quantity: 10, color_name: 'Verde' },
     ] });
     const { result } = renderHook(() => useKitStockValidation([item, { ...item }], null, 1), { wrapper });
     await waitFor(() => expect(result.current.isLoading).toBe(false));
     expect(result.current.error).toBeNull();
-    expect(result.current.hasStockIssues).toBe(false);
-    // A entrada sintética pede 12; o hook compara cada linha isoladamente.
-    expect(item.quantity * 2).toBeGreaterThan(10);
+    expect(result.current.hasStockIssues).toBe(true);
+    expect(result.current.alerts).toEqual([
+      expect.objectContaining({ itemId: item.id, required: 12, available: 10, deficit: 2 }),
+    ]);
   });
 
-  it('S08: update com zero linhas afetadas ainda anuncia kit salvo', async () => {
+  it('S08: update com zero linhas afetadas é tratado como falha', async () => {
     vi.useFakeTimers();
-    updateResult.mockResolvedValue({ error: null, data: [], count: 0 });
+    maybeSingle.mockResolvedValue({ error: null, data: null });
     const inicial = {
       name: 'Kit sintético', kitType: 'montado', box: null, items: [item],
       personalization: { box: { enabled: false }, items: {} },
@@ -60,19 +67,20 @@ describe('Lacunas reproduzidas em módulos reais, com dependências simuladas', 
     );
     rerender({ kit: { ...inicial, name: 'Alteração sem persistência' } });
     await act(async () => { await vi.advanceTimersByTimeAsync(5000); });
-    expect(updateResult).toHaveBeenCalledOnce();
-    expect(result.current.lastSaveError).toBeNull();
-    expect(result.current.lastSavedAt).toBeInstanceOf(Date);
+    expect(maybeSingle).toHaveBeenCalledOnce();
+    expect(result.current.lastSaveError).toContain('não foi encontrado');
+    expect(result.current.lastSavedAt).toBeNull();
   });
 
-  it('S09: remover a chave no logout não limpa o store de vistos em memória', () => {
+  it('S09: reset de logout limpa o escopo, memória e armazenamento', () => {
     vi.useFakeTimers();
-    useRecentlyViewedStore.getState().clearRecentlyViewed();
+    useRecentlyViewedStore.getState().setScope('user:u1:org:a');
     useRecentlyViewedStore.getState().addToRecentlyViewed('produto-da-cooperativa-anterior');
-    localStorage.removeItem('recently-viewed-products');
-    expect(localStorage.getItem('recently-viewed-products')).toBeNull();
-    expect(useRecentlyViewedStore.getState().items[0].productId).toBe('produto-da-cooperativa-anterior');
-    useRecentlyViewedStore.getState().clearRecentlyViewed();
+    const key = 'recently-viewed-products:user%3Au1%3Aorg%3Aa';
+    expect(localStorage.getItem(key)).not.toBeNull();
+    useRecentlyViewedStore.getState().reset();
+    expect(localStorage.getItem(key)).toBeNull();
+    expect(useRecentlyViewedStore.getState()).toMatchObject({ items: [], itemCount: 0, scopeKey: null });
     vi.runOnlyPendingTimers();
   });
 });

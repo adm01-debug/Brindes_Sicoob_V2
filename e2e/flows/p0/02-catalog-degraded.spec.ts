@@ -25,7 +25,10 @@ test.describe("P0 — Catálogo degradado", () => {
   });
 
   test.skip("Cloudflare Stream offline: vídeo cai pra imagem sem erro no console", async ({ page }) => {
-    await page.route(/videodelivery\.net/, route => route.fulfill({ status: 530, body: "" }));
+    await page.route(
+      (url) => url.hostname === "videodelivery.net" || url.hostname.endsWith(".videodelivery.net"),
+      route => route.fulfill({ status: 530, body: "" }),
+    );
     const errors: string[] = [];
     page.on("pageerror", e => errors.push(e.message));
     await page.goto("/produto/exemplo");

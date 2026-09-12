@@ -1,5 +1,7 @@
 # Revisão do plano e da implementação — 12/09/2026
 
+> **Atualização posterior:** a execução corretiva dos achados abaixo está documentada em [Revalidação corretiva do plano](revalidacao-corretiva-2026-09-12.md). As contagens desta página são o snapshot histórico anterior às novas correções e foram preservadas para não reescrever a evidência retroativamente.
+
 **Ainda não implementamos todas as melhorias.** A revisão reconhece avanços verificáveis e identifica funções parciais, funções sem implementação demonstrada e dependências externas. Não há evidência para declarar 10/10, compra integral homologada ou implantação concluída.
 
 Código auditado: [`cfbcd8f14f023d385ae4329a3ac037c1b19c7b17`](https://github.com/adm01-debug/Brindes_Sicoob_V2/commit/cfbcd8f14f023d385ae4329a3ac037c1b19c7b17), na [PR #6](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/6). A revisão anterior, de `6f1c5f9`, foi preservada como registro histórico. Esta auditoria altera documentação e executores de revisão; não modifica o produto nem aplica migrations remotas.

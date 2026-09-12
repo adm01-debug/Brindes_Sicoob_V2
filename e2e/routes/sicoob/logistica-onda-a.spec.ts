@@ -49,7 +49,7 @@ test.describe("Sicoob • Logística Onda A — gestor_compras (acesso permitido
     test(`acessa ${r.href} e renderiza título "${r.title}"`, async ({ page }) => {
       await gotoAndSettle(page, r.href);
       await waitForRouteIdle(page);
-      await expect(page).toHaveURL(new RegExp(r.href.replace(/\//g, "\\/")));
+      await expect(page).toHaveURL((url) => url.pathname === r.href);
       await expect(page.locator("h1").first()).toContainText(r.title);
     });
   }

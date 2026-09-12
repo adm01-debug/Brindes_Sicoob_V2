@@ -11,6 +11,7 @@ import { authService } from "@/services/authService";
 import { useUserRoles } from "@/hooks/auth/useUserRoles";
 import { useUserProfile } from "@/hooks/auth/useUserProfile";
 import { useAuthAAL } from "@/hooks/auth/useAuthAAL";
+import { useRecentlyViewedStore } from "@/stores/useRecentlyViewedStore";
 
 
 import { type AppRole, type Profile } from "@/types/users";
@@ -130,6 +131,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setUser(session?.user ?? null);
 
         if (session?.user) {
+          useRecentlyViewedStore.getState().setScope(`user:${session.user.id}`);
           // Show greeting on login
           if (event === 'SIGNED_IN') {
             const displayName = session.user.user_metadata?.full_name
@@ -158,6 +160,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           clearRoles();
           clearAAL();
           setIsLoading(false);
+          useRecentlyViewedStore.getState().reset();
           
           // Limpeza automática de dados sensíveis da sessão
           try {
@@ -186,8 +189,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setUser(session?.user ?? null);
 
       if (session?.user) {
+        useRecentlyViewedStore.getState().setScope(`user:${session.user.id}`);
         fetchUserData(session.user.id);
       } else {
+        useRecentlyViewedStore.getState().reset();
         setIsLoading(false);
       }
     });
@@ -283,6 +288,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       clearProfile();
       clearRoles();
       clearAAL();
+      useRecentlyViewedStore.getState().reset();
       // Permite prewarm no próximo login (mesma aba)
       import('@/lib/external-db-prewarm').then(m => m.resetPrewarmSession()).catch(() => {});
       log.info('ok');

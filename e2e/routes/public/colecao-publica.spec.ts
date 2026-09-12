@@ -17,6 +17,7 @@ buildPublicTokenSuite({
   buildPath: t => `/colecao-publica/${t}`,
   edgeFnName: "collections-public-react",
   successBody: collection,
+  successCopy: /Coleção E2E/,
   notFoundCopy: /link indisponível|não encontrada|inválido|expirado/i,
   mockLoad: (page, scenario) => mockPublicRestResource(
     page,

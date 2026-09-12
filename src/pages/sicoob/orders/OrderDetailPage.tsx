@@ -19,7 +19,6 @@ import {
   CreditCard,
   Image as ImageIcon,
   History,
-  Layout,
   ArrowUpCircle,
   ShieldCheck,
   ClipboardCheck,
@@ -76,18 +75,10 @@ import { OrderActionDialog } from "@/components/sicoob/orders/OrderActionDialog"
 import { OrderItemsHistory } from "@/components/sicoob/orders/OrderItemsHistory";
 import { SLABadge } from "@/components/sicoob/orders/SLABadge";
 import { OrderHistoryTimeline } from "@/components/orders/OrderHistoryTimeline";
-import { 
-  useOrderInvoices, 
-  useOrderPayments, 
-  useOrderPilotApprovals,
-  useOrderComments,
-  useOrderTemplates
-} from "@/hooks/orders/extensions";
 import { OrderLogisticsTab } from "@/components/sicoob/orders/OrderLogisticsTab";
 import { OrderInvoicesTab } from "@/components/sicoob/orders/OrderInvoicesTab";
 import { OrderPaymentsTab } from "@/components/sicoob/orders/OrderPaymentsTab";
 import { OrderPilotApprovalsTab } from "@/components/sicoob/orders/OrderPilotApprovalsTab";
-import { OrderTemplatesTab } from "@/components/sicoob/orders/OrderTemplatesTab";
 import { OrderCommentsTab } from "@/components/sicoob/orders/OrderCommentsTab";
 import { OrderBudgetIntelligence } from "@/components/sicoob/orders/OrderBudgetIntelligence";
 import { LogisticsCommandCenter } from "@/components/sicoob/orders/LogisticsCommandCenter";
@@ -129,12 +120,6 @@ export default function OrderDetailPage() {
   const { addItem, removeItem } = useSicoobOrderItems(id);
   const updateOrderStatusMutation = useUpdateSicoobOrderStatus();
   
-  // Extension hooks
-  const { invoices, addInvoice, uploadFile } = useOrderInvoices(id);
-  const { payments } = useOrderPayments(id);
-  const { approvals, updateApprovalStatus } = useOrderPilotApprovals(id);
-  
-
   const activeRequest = useMemo(() => 
     requests?.find(r => r.status === 'pending'), 
   [requests]);
@@ -297,7 +282,7 @@ export default function OrderDetailPage() {
   const allowedTabs = useMemo(() => {
     const tabs = ["status", "logistics", "invoices", "timeline", "comments"];
     if (isSupervisorOrAbove) {
-      tabs.push("payments", "approvals", "templates");
+      tabs.push("payments", "approvals");
     }
     return tabs;
   }, [isSupervisorOrAbove]);
@@ -555,12 +540,6 @@ export default function OrderDetailPage() {
                     Aprovações de Piloto
                   </TabsTrigger>
                 )}
-                {allowedTabs.includes("templates") && (
-                  <TabsTrigger value="templates" className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none bg-transparent px-0 pb-2 h-auto">
-                    <Layout className="h-4 w-4 mr-2" />
-                    Templates
-                  </TabsTrigger>
-                )}
                 {allowedTabs.includes("timeline") && (
                   <TabsTrigger value="timeline" className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none bg-transparent px-0 pb-2 h-auto">
                     <History className="h-4 w-4 mr-2" />
@@ -588,11 +567,11 @@ export default function OrderDetailPage() {
                         </div>
                         <div className="flex justify-between items-center text-sm">
                           <span className="text-muted-foreground">Integridade</span>
-                          <Badge variant="outline" className="h-5 bg-sicoob-green/10 text-sicoob-green border-sicoob-green/20">VERIFICADO</Badge>
+                          <Badge variant="outline" className="h-5">Protegida por regras transacionais</Badge>
                         </div>
                         <div className="flex justify-between items-center text-sm">
-                          <span className="text-muted-foreground">Versão BPMN</span>
-                          <span className="font-medium">v2.4.1-stable</span>
+                          <span className="text-muted-foreground">Política aplicada</span>
+                          <span className="font-medium">{orderData?.approval_policy_version || 'Não registrada'}</span>
                         </div>
                         <div className="flex justify-between items-center text-sm">
                           <span className="text-muted-foreground">Última Modificação</span>
@@ -655,11 +634,6 @@ export default function OrderDetailPage() {
                 </TabsContent>
               )}
               
-              {allowedTabs.includes("templates") && (
-                <TabsContent value="templates" className="pt-6">
-                  <OrderTemplatesTab orderId={id!} />
-                </TabsContent>
-              )}
 
               {allowedTabs.includes("timeline") && (
                 <TabsContent value="timeline" className="pt-6">

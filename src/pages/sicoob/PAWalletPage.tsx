@@ -26,6 +26,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
 
 export default function PAWalletPage() {
   const { user, profile } = useAuth();
@@ -75,6 +77,7 @@ export default function PAWalletPage() {
 
   const spentPercent = budget ? (Number(budget.verba_consumida) / Number(budget.verba_total)) * 100 : 0;
   const remaining = budget ? Number(budget.verba_total) - Number(budget.verba_consumida) : 0;
+  const currentPeriod = format(new Date(), "MMMM 'de' yyyy", { locale: ptBR });
 
   return (
     <>
@@ -86,7 +89,7 @@ export default function PAWalletPage() {
           </div>
           <div className="flex items-center gap-2 bg-muted/50 px-4 py-2 rounded-full border border-border/40">
             <Calendar className="w-4 h-4 text-primary" />
-            <span className="text-sm font-medium">Maio, 2026</span>
+            <span className="text-sm font-medium capitalize">{currentPeriod}</span>
           </div>
         </div>
 
@@ -97,7 +100,7 @@ export default function PAWalletPage() {
               <Wallet className="w-4 h-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{formatCurrency(budget?.monthly_limit || 0)}</div>
+              <div className="text-2xl font-bold">{formatCurrency(Number(budget?.verba_total || 0))}</div>
               <p className="text-xs text-muted-foreground mt-1">Limite total aprovado pela Singular</p>
             </CardContent>
           </Card>

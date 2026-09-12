@@ -1,0 +1,10 @@
+{
+  "ambiente": "PostgreSQL 16 descartável, --network none; somente dados sintéticos",
+  "migracao": "supabase/migrations/20260912170000_sicoob_reorder_atomic.sql",
+  "producao_verificada": false,
+  "atomicidade_e_hierarquia": "orçamento e item gravados juntos; PA não foi escrito em client_id; hierarquia veio do pedido",
+  "idempotencia": "repetição com a mesma chave e conteúdo devolveu o mesmo orçamento sem duplicar",
+  "guardas": "RPC indisponível ao navegador; conteúdo divergente, usuário fora do escopo e consulta de catálogo vencida foram recusados",
+  "rollback": "falha forçada no item não deixou cabeçalho nem registro idempotente órfão",
+  "resultado": "aprovado"
+}

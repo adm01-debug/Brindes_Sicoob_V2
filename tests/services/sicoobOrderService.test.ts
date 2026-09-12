@@ -4,6 +4,7 @@ const mocks = vi.hoisted(() => ({
   rpc: vi.fn(),
   getUser: vi.fn(),
   from: vi.fn(),
+  invoke: vi.fn(),
 }));
 
 vi.mock("@/integrations/supabase/client", () => ({
@@ -11,6 +12,7 @@ vi.mock("@/integrations/supabase/client", () => ({
     auth: { getUser: mocks.getUser },
     rpc: mocks.rpc,
     from: mocks.from,
+    functions: { invoke: mocks.invoke },
   },
 }));
 
@@ -20,6 +22,20 @@ beforeEach(() => {
   vi.clearAllMocks();
   mocks.getUser.mockResolvedValue({ data: { user: { id: "gestor-1", email: "gestor@cooperativa.test" } } });
   mocks.rpc.mockResolvedValue({ data: null, error: null });
+  mocks.invoke.mockResolvedValue({ data: { quoteId: "orcamento-1" }, error: null });
+});
+
+describe("sicoobOrderService.reorderOrder", () => {
+  it("delega a revalidação de catálogo à Edge Function autenticada", async () => {
+    await expect(sicoobOrderService.reorderOrder("pedido-1", "chave-idempotente-1"))
+      .resolves.toBe("orcamento-1");
+
+    expect(mocks.invoke).toHaveBeenCalledExactlyOnceWith("sicoob-reorder", {
+      body: { orderId: "pedido-1", idempotencyKey: "chave-idempotente-1" },
+    });
+    expect(mocks.rpc).not.toHaveBeenCalled();
+    expect(mocks.from).not.toHaveBeenCalled();
+  });
 });
 
 describe("sicoobOrderService.updateOrderStatus", () => {

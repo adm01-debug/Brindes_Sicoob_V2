@@ -1,4 +1,4 @@
-project_id = "hgbzltfwozdkcudofypy"
+project_id = "cfmzkthhgliqelozlmwu"
 
 [functions.migrate-helper]
 verify_jwt = false

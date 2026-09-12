@@ -15,6 +15,7 @@ buildPublicTokenSuite({
   buildPath: t => `/lista-publica/${t}`,
   edgeFnName: "favorites-public-react",
   successBody: list,
+  successCopy: /Lista E2E/,
   notFoundCopy: /lista não encontrada|inválido|expirado/i,
   mockLoad: async (page, scenario) => {
     await mockRestTable(page, "favorite_items", 200, []);

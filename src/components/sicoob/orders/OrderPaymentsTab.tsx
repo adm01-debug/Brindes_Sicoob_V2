@@ -1,15 +1,55 @@
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { CreditCard, Calendar, CheckCircle2, Clock, AlertCircle } from "lucide-react";
+import { CreditCard, Calendar, CheckCircle2, Clock, AlertCircle, Plus } from "lucide-react";
 import { useOrderPayments } from "@/hooks/orders/extensions";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "sonner";
 
 interface OrderPaymentsTabProps {
   orderId: string;
 }
 
 export function OrderPaymentsTab({ orderId }: OrderPaymentsTabProps) {
-  const { payments, isLoading } = useOrderPayments(orderId);
+  const { isSupervisorOrAbove } = useAuth();
+  const { payments, isLoading, error, recordPayment } = useOrderPayments(orderId);
+  const [installmentNumber, setInstallmentNumber] = useState(1);
+  const [amount, setAmount] = useState('');
+  const [dueDate, setDueDate] = useState('');
+  const [status, setStatus] = useState<'pending' | 'paid'>('pending');
+  const [paymentMethod, setPaymentMethod] = useState('');
+  const [externalReference, setExternalReference] = useState('');
+
+  const handleRecord = async () => {
+    const numericAmount = Number(amount.replace(',', '.'));
+    if (!Number.isInteger(installmentNumber) || installmentNumber <= 0 || !Number.isFinite(numericAmount) || numericAmount <= 0 || !dueDate) {
+      toast.error('Informe parcela, valor e vencimento válidos.');
+      return;
+    }
+    try {
+      await recordPayment.mutateAsync({
+        installmentNumber,
+        amount: numericAmount,
+        dueDate,
+        status,
+        paymentMethod: paymentMethod.trim() || null,
+        externalReference: externalReference.trim() || null,
+      });
+      setAmount('');
+      setDueDate('');
+      setPaymentMethod('');
+      setExternalReference('');
+      setInstallmentNumber(Math.max(installmentNumber, ...(payments ?? []).map(payment => payment.installment_number)) + 1);
+      setStatus('pending');
+    } catch {
+      // O mutation já exibe a mensagem normalizada e mantém o formulário.
+    }
+  };
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -25,6 +65,8 @@ export function OrderPaymentsTab({ orderId }: OrderPaymentsTabProps) {
       case 'paid': return 'Pago';
       case 'pending': return 'Pendente';
       case 'overdue': return 'Atrasado';
+      case 'cancelled': return 'Cancelado';
+      case 'refunded': return 'Estornado';
       default: return status;
     }
   };
@@ -52,8 +94,63 @@ export function OrderPaymentsTab({ orderId }: OrderPaymentsTabProps) {
     );
   }
 
+  if (error) {
+    return (
+      <div className="flex items-center justify-center gap-2 rounded-lg border border-destructive/40 bg-destructive/5 p-8 text-sm text-destructive">
+        <AlertCircle className="h-5 w-5" /> Não foi possível carregar os pagamentos.
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
+      {isSupervisorOrAbove && (
+        <Card className="border-[1.5px]">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <Plus className="h-5 w-5" /> Registrar parcela
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+              <div className="space-y-2">
+                <Label htmlFor="payment-installment">Parcela</Label>
+                <Input id="payment-installment" type="number" min={1} step={1} value={installmentNumber} onChange={event => setInstallmentNumber(Number(event.target.value))} />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="payment-amount">Valor</Label>
+                <Input id="payment-amount" inputMode="decimal" placeholder="0,00" value={amount} onChange={event => setAmount(event.target.value)} />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="payment-due-date">Vencimento</Label>
+                <Input id="payment-due-date" type="date" value={dueDate} onChange={event => setDueDate(event.target.value)} />
+              </div>
+              <div className="space-y-2">
+                <Label>Situação</Label>
+                <Select value={status} onValueChange={(value: 'pending' | 'paid') => setStatus(value)}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="pending">Pendente</SelectItem>
+                    <SelectItem value="paid">Pago</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="payment-method">Meio de pagamento</Label>
+                <Input id="payment-method" placeholder="Ex.: boleto, PIX" value={paymentMethod} onChange={event => setPaymentMethod(event.target.value)} />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="payment-reference">Referência externa</Label>
+                <Input id="payment-reference" placeholder="ID da conciliação" value={externalReference} onChange={event => setExternalReference(event.target.value)} />
+              </div>
+            </div>
+            <Button type="button" onClick={handleRecord} disabled={recordPayment.isPending}>
+              {recordPayment.isPending ? 'Registrando…' : 'Registrar parcela'}
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {payments?.length === 0 ? (
           <div className="col-span-full py-16 flex flex-col items-center justify-center border-2 border-dashed rounded-xl bg-muted/30 text-center animate-in fade-in zoom-in duration-300">
