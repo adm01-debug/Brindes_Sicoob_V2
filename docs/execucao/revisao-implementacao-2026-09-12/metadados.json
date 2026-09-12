@@ -1,0 +1,170 @@
+{
+  "data": "2026-09-12",
+  "commit_codigo_auditado": "cfbcd8f14f023d385ae4329a3ac037c1b19c7b17",
+  "commit_anterior": "6f1c5f94f612c13071b8dbe61b500b915e50b123",
+  "sha256_plano_original": "50c5d83d7af3d34bb560ddfc90a270b722cb24068463a4c94cac752f6387e9f6",
+  "etapas_revisadas_documentalmente": 100,
+  "subetapas_revisadas_documentalmente": 1000,
+  "diagnosticos_reescritos": 126,
+  "diagnosticos_historicos_mantidos": 874,
+  "mudancas_de_classificacao": [
+    {
+      "id": "E003.07",
+      "antes": "P",
+      "agora": "L"
+    },
+    {
+      "id": "E008.08",
+      "antes": "N",
+      "agora": "P"
+    },
+    {
+      "id": "E008.09",
+      "antes": "N",
+      "agora": "P"
+    },
+    {
+      "id": "E018.05",
+      "antes": "N",
+      "agora": "P"
+    },
+    {
+      "id": "E019.05",
+      "antes": "P",
+      "agora": "L"
+    },
+    {
+      "id": "E019.10",
+      "antes": "P",
+      "agora": "L"
+    },
+    {
+      "id": "E023.04",
+      "antes": "P",
+      "agora": "L"
+    },
+    {
+      "id": "E059.01",
+      "antes": "P",
+      "agora": "L"
+    },
+    {
+      "id": "E059.06",
+      "antes": "N",
+      "agora": "P"
+    },
+    {
+      "id": "E059.10",
+      "antes": "N",
+      "agora": "P"
+    },
+    {
+      "id": "E064.09",
+      "antes": "P",
+      "agora": "L"
+    },
+    {
+      "id": "E066.05",
+      "antes": "N",
+      "agora": "P"
+    },
+    {
+      "id": "E068.03",
+      "antes": "N",
+      "agora": "P"
+    },
+    {
+      "id": "E068.09",
+      "antes": "P",
+      "agora": "L"
+    },
+    {
+      "id": "E069.04",
+      "antes": "P",
+      "agora": "L"
+    },
+    {
+      "id": "E070.05",
+      "antes": "P",
+      "agora": "L"
+    },
+    {
+      "id": "E070.09",
+      "antes": "P",
+      "agora": "L"
+    },
+    {
+      "id": "E074.04",
+      "antes": "P",
+      "agora": "L"
+    },
+    {
+      "id": "E075.02",
+      "antes": "P",
+      "agora": "L"
+    },
+    {
+      "id": "E079.03",
+      "antes": "N",
+      "agora": "P"
+    },
+    {
+      "id": "E079.04",
+      "antes": "N",
+      "agora": "P"
+    },
+    {
+      "id": "E079.05",
+      "antes": "N",
+      "agora": "P"
+    },
+    {
+      "id": "E079.10",
+      "antes": "N",
+      "agora": "P"
+    },
+    {
+      "id": "E099.04",
+      "antes": "N",
+      "agora": "P"
+    }
+  ],
+  "classificacoes": {
+    "L": "Evidência local suficiente no escopo descrito",
+    "P": "Implementação ou atendimento parcial",
+    "N": "Atendimento não localizado ou não demonstrado",
+    "V": "Validação externa necessária, sem comprovação"
+  },
+  "contagens": {
+    "L": 88,
+    "P": 622,
+    "V": 145,
+    "N": 145
+  },
+  "contagens_anteriores": {
+    "L": 76,
+    "P": 622,
+    "V": 145,
+    "N": 157
+  },
+  "etapas_formalmente_concluidas": 0,
+  "subetapas_baixadas_no_checklist": 0,
+  "achados_priorizados": 20,
+  "estados_achados": {
+    "Corrigido localmente no escopo original": 6,
+    "Parcial": 8,
+    "Aberto": 6
+  },
+  "metodo": "Releitura dos 1.000 requisitos e 32 melhorias; auditoria longitudinal a partir do diagnóstico de 11/09, diff de código até cfbcd8f, inspeção dirigida de implementações, 37 regressões, nove reproduções de lacunas e consulta da CI/SARIF atuais.",
+  "limites": [
+    "Cobertura documental de 1.000 requisitos não equivale a 1.000 comportamentos executados.",
+    "Diagnósticos históricos mantidos estão identificados; referências contextuais e hashes não são prova automática de implementação ou nova inspeção de cada linha.",
+    "L reconhece evidência local delimitada, sem aceite formal, implantação ou tráfego real.",
+    "N significa não localizado/não demonstrado nos materiais; não prova inexistência absoluta de processo ou schema remoto.",
+    "SQL usa fixture mínima e quatro migrations com escritas postgres; não comprova explorabilidade de RLS/API remota.",
+    "Três testes de lacunas usam módulos reais e dependências simuladas; testes verdes reproduzem defeitos conhecidos, não aprovam o produto.",
+    "CI exclui projetos autenticados sem credenciais; oito flaky, 33 skips no smoke e 13 alertas SARIF não são homologação.",
+    "Políticas, marca, participantes, duas cooperativas reais, schema implantado e produção permanecem sem aceite comprovado.",
+    "Os dados originais do catálogo externo não foram alterados; esta revisão não aplicou migrations nem publicou o produto."
+  ]
+}

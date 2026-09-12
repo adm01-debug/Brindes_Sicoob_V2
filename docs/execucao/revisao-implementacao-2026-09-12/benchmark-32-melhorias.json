@@ -1,0 +1,464 @@
+[
+  {
+    "id": "B01",
+    "melhoria": "Expor histórico de busca com seleção e limpeza.",
+    "etapas": [
+      "E023",
+      "E044",
+      "E025"
+    ],
+    "situacao": "Local delimitado",
+    "diagnostico": "Histórico principal agora segmentado por usuário/cooperativa/PA, com seleção e limpeza testadas. Não inclui vistos recentemente.",
+    "conclusao_formal": false,
+    "situacao_anterior": "Parcial",
+    "diagnostico_anterior": "UI pronta; histórico global precisa de isolamento e limpeza entre contas. A09.",
+    "melhoria_historica": "Expor histórico de busca com seleção e limpeza. Interface implementada; a revisão encontrou armazenamento global sem isolamento por usuário/cooperativa (A09)."
+  },
+  {
+    "id": "B02",
+    "melhoria": "Permitir entrada por faixa de orçamento no catálogo.",
+    "etapas": [
+      "E024",
+      "E043"
+    ],
+    "situacao": "Local delimitado",
+    "diagnostico": "Atalhos por orçamento unitário implementados; não representam custo entregue firme.",
+    "conclusao_formal": false,
+    "situacao_anterior": "Local delimitado",
+    "diagnostico_anterior": "Atalhos por orçamento unitário implementados; não representam custo entregue firme.",
+    "melhoria_historica": "Permitir entrada por faixa de orçamento no catálogo."
+  },
+  {
+    "id": "B03",
+    "melhoria": "Compactar atalhos de intenção e orçamento no mobile.",
+    "etapas": [
+      "E032",
+      "E043"
+    ],
+    "situacao": "Local delimitado",
+    "diagnostico": "Trilhos móveis compactos implementados; sem homologação com aparelhos reais.",
+    "conclusao_formal": false,
+    "situacao_anterior": "Local delimitado",
+    "diagnostico_anterior": "Trilhos móveis compactos implementados; sem homologação com aparelhos reais.",
+    "melhoria_historica": "Compactar atalhos de intenção e orçamento no mobile."
+  },
+  {
+    "id": "B04",
+    "melhoria": "Manter catálogo externo protegido por contrato somente leitura.",
+    "etapas": [
+      "E003"
+    ],
+    "situacao": "Local delimitado",
+    "diagnostico": "Contrato local bloqueia escrita; privilégio mínimo da identidade remota não confirmado.",
+    "conclusao_formal": false,
+    "situacao_anterior": "Local delimitado",
+    "diagnostico_anterior": "Contrato local bloqueia escrita; privilégio mínimo da identidade remota não confirmado.",
+    "melhoria_historica": "Manter catálogo externo protegido por contrato somente leitura."
+  },
+  {
+    "id": "B05",
+    "melhoria": "Remover custo e margem das respostas ao comprador.",
+    "etapas": [
+      "E003",
+      "E048",
+      "E086"
+    ],
+    "situacao": "Local delimitado",
+    "diagnostico": "Redação recursiva de custos/margem/fornecedor corrigida e testada; ACL e respostas reais da origem ainda não homologadas.",
+    "conclusao_formal": false,
+    "situacao_anterior": "Parcial",
+    "diagnostico_anterior": "Seis campos removidos; setup_cost/unit_cost persistem. A10.",
+    "melhoria_historica": "Remover custo e margem das respostas ao comprador. A lista local não cobre `setup_cost` e `unit_cost` (A10)."
+  },
+  {
+    "id": "B06",
+    "melhoria": "Garantir orçamento/pedido atômico com versão e idempotência.",
+    "etapas": [
+      "E017",
+      "E018",
+      "E059",
+      "E061"
+    ],
+    "situacao": "Parcial",
+    "diagnostico": "Versão de proposta e status/verba são transacionais. Recompra/criação integral continuam separadas; política e composição aprovadas têm lacunas S01–S06.",
+    "conclusao_formal": false,
+    "situacao_anterior": "Parcial",
+    "diagnostico_anterior": "Verba/aprovação transacionais; versionamento e envio integral ainda incompletos. A07/A15.",
+    "melhoria_historica": "Garantir orçamento/pedido atômico com versão e idempotência. Aprovação e verba foram protegidas; criação/versionamento de orçamento ainda não são uma transação integral (A07)."
+  },
+  {
+    "id": "B07",
+    "melhoria": "Bloquear indexação do portal privado e remover sitemap provisório.",
+    "etapas": [
+      "E026",
+      "E087"
+    ],
+    "situacao": "Local delimitado",
+    "diagnostico": "Noindex, robots e retirada de sitemap aplicados no código revisado.",
+    "conclusao_formal": false,
+    "situacao_anterior": "Local delimitado",
+    "diagnostico_anterior": "Noindex, robots e retirada de sitemap aplicados no código revisado.",
+    "melhoria_historica": "Bloquear indexação do portal privado e remover sitemap provisório."
+  },
+  {
+    "id": "B08",
+    "melhoria": "Confirmar privilégios somente leitura da identidade no banco de catálogo.",
+    "etapas": [
+      "E003",
+      "E096"
+    ],
+    "situacao": "Validação externa",
+    "diagnostico": "ACL da identidade no mestre não foi inspecionada administrativamente.",
+    "conclusao_formal": false,
+    "situacao_anterior": "Validação externa",
+    "diagnostico_anterior": "ACL da identidade no mestre não foi inspecionada administrativamente.",
+    "melhoria_historica": "Confirmar privilégios somente leitura da identidade no banco de catálogo."
+  },
+  {
+    "id": "B09",
+    "melhoria": "Executar login, busca, primeiro orçamento e aprovação em homologação real.",
+    "etapas": [
+      "E015",
+      "E091"
+    ],
+    "situacao": "Validação externa",
+    "diagnostico": "CI passou, mas projetos autenticados são excluídos sem credenciais. Login→compra→aprovação com schema real não foi homologado.",
+    "conclusao_formal": false,
+    "situacao_anterior": "Validação externa",
+    "diagnostico_anterior": "Sem jornada autenticada real comprovada; E2E remoto falha. A14.",
+    "melhoria_historica": "Executar login, busca, primeiro orçamento e aprovação em homologação real."
+  },
+  {
+    "id": "B10",
+    "melhoria": "Validar política de verba, alçada, arte e cancelamento com responsáveis.",
+    "etapas": [
+      "E008",
+      "E017",
+      "E065",
+      "E069"
+    ],
+    "situacao": "Validação externa",
+    "diagnostico": "Documentos históricos não substituem política vigente e aceite local.",
+    "conclusao_formal": false,
+    "situacao_anterior": "Validação externa",
+    "diagnostico_anterior": "Documentos históricos não substituem política vigente e aceite local.",
+    "melhoria_historica": "Validar política de verba, alçada, arte e cancelamento com responsáveis."
+  },
+  {
+    "id": "B11",
+    "melhoria": "Revisar toda a jornada real por teclado, zoom 200/400% e leitor de tela.",
+    "etapas": [
+      "E081"
+    ],
+    "situacao": "Parcial",
+    "diagnostico": "Axe em amostras locais; teclado, zoom e leitor da compra inteira não homologados.",
+    "conclusao_formal": false,
+    "situacao_anterior": "Parcial",
+    "diagnostico_anterior": "Axe em amostras locais; teclado, zoom e leitor da compra inteira não homologados.",
+    "melhoria_historica": "Revisar toda a jornada real por teclado, zoom 200/400% e leitor de tela."
+  },
+  {
+    "id": "B12",
+    "melhoria": "Definir SLA e origem do dado de preço, estoque e prazo mostrados ao comprador.",
+    "etapas": [
+      "E007",
+      "E043",
+      "E073"
+    ],
+    "situacao": "Validação externa",
+    "diagnostico": "SLA e responsabilidade por dados comerciais ainda não confirmados.",
+    "conclusao_formal": false,
+    "situacao_anterior": "Validação externa",
+    "diagnostico_anterior": "SLA e responsabilidade por dados comerciais ainda não confirmados.",
+    "melhoria_historica": "Definir SLA e origem do dado de preço, estoque e prazo mostrados ao comprador."
+  },
+  {
+    "id": "B13",
+    "melhoria": "Levar seleção de cor ao card com estoque por variante.",
+    "etapas": [
+      "E035",
+      "E043",
+      "E046"
+    ],
+    "situacao": "Parcial",
+    "diagnostico": "Cores existentes; card por variante e validade de estoque precisam de contrato íntegro.",
+    "conclusao_formal": false,
+    "situacao_anterior": "Parcial",
+    "diagnostico_anterior": "Cores existentes; card por variante e validade de estoque precisam de contrato íntegro.",
+    "melhoria_historica": "Levar seleção de cor ao card com estoque por variante."
+  },
+  {
+    "id": "B14",
+    "melhoria": "Criar vistos recentemente por usuário.",
+    "etapas": [
+      "E025",
+      "E050"
+    ],
+    "situacao": "Parcial",
+    "diagnostico": "Chave global; logout remove storage, mas não limpa store em memória (S09). Falta segregação por usuário/cooperativa e ciclo de sessão real.",
+    "conclusao_formal": false,
+    "situacao_anterior": "Parcial",
+    "diagnostico_anterior": "Store de vistos existe, mas chave global; revisar usuário, organização e logout.",
+    "melhoria_historica": "Criar vistos recentemente por usuário."
+  },
+  {
+    "id": "B15",
+    "melhoria": "Ajustar comparação às dimensões de decisão Sicoob.",
+    "etapas": [
+      "E049",
+      "E060"
+    ],
+    "situacao": "Parcial",
+    "diagnostico": "Comparador de produtos existe; decisão institucional exige dimensões e cotações equivalentes.",
+    "conclusao_formal": false,
+    "situacao_anterior": "Parcial",
+    "diagnostico_anterior": "Comparador de produtos existe; decisão institucional exige dimensões e cotações equivalentes.",
+    "melhoria_historica": "Ajustar comparação às dimensões de decisão Sicoob."
+  },
+  {
+    "id": "B16",
+    "melhoria": "Criar autosave e recuperação do orçamento com estado explícito.",
+    "etapas": [
+      "E027",
+      "E055",
+      "E057"
+    ],
+    "situacao": "Parcial",
+    "diagnostico": "Erro explícito de autosave corrigido; S08 ainda reproduz falso salvo sem linha atualizada. Recuperação do orçamento integral e concorrência pendentes.",
+    "conclusao_formal": false,
+    "situacao_anterior": "Parcial",
+    "diagnostico_anterior": "Há autosave de kit; falha silenciosa reproduzida. Recuperação de orçamento integral pendente. A04.",
+    "melhoria_historica": "Criar autosave e recuperação do orçamento com estado explícito."
+  },
+  {
+    "id": "B17",
+    "melhoria": "Exibir validade do preço e timestamp da consulta de estoque.",
+    "etapas": [
+      "E043",
+      "E046",
+      "E073"
+    ],
+    "situacao": "Parcial",
+    "diagnostico": "Componentes de atualidade existem; timestamp e reconfirmação não uniformes.",
+    "conclusao_formal": false,
+    "situacao_anterior": "Parcial",
+    "diagnostico_anterior": "Componentes de atualidade existem; timestamp e reconfirmação não uniformes.",
+    "melhoria_historica": "Exibir validade do preço e timestamp da consulta de estoque."
+  },
+  {
+    "id": "B18",
+    "melhoria": "Implementar modelos de kit por ocasião e faixa de orçamento.",
+    "etapas": [
+      "E051",
+      "E055"
+    ],
+    "situacao": "Parcial",
+    "diagnostico": "Templates de kits existem; curadoria por orçamento precisa de validação comercial e estoque.",
+    "conclusao_formal": false,
+    "situacao_anterior": "Parcial",
+    "diagnostico_anterior": "Templates de kits existem; curadoria por orçamento precisa de validação comercial e estoque.",
+    "melhoria_historica": "Implementar modelos de kit por ocasião e faixa de orçamento."
+  },
+  {
+    "id": "B19",
+    "melhoria": "Validar capacidade de embalagem, preço e estoque do kit no servidor.",
+    "etapas": [
+      "E047",
+      "E055"
+    ],
+    "situacao": "Não demonstrado",
+    "diagnostico": "Validação integral de capacidade, preço e estoque no servidor não demonstrada. Cliente respeita variante escolhida, mas demanda repetida não é agregada (S07).",
+    "conclusao_formal": false,
+    "situacao_anterior": "Não demonstrado",
+    "diagnostico_anterior": "Cálculos clientes não substituem validação completa no servidor.",
+    "melhoria_historica": "Validar capacidade de embalagem, preço e estoque do kit no servidor."
+  },
+  {
+    "id": "B20",
+    "melhoria": "Criar resumo fixo desktop e barra de ação mobile sem cobrir conteúdo.",
+    "etapas": [
+      "E032",
+      "E057"
+    ],
+    "situacao": "Parcial",
+    "diagnostico": "Kit possui resumos responsivos; cobertura da solicitação completa e foco ainda parcial.",
+    "conclusao_formal": false,
+    "situacao_anterior": "Parcial",
+    "diagnostico_anterior": "Kit possui resumos responsivos; cobertura da solicitação completa e foco ainda parcial.",
+    "melhoria_historica": "Criar resumo fixo desktop e barra de ação mobile sem cobrir conteúdo."
+  },
+  {
+    "id": "B21",
+    "melhoria": "Exibir linha do tempo única de orçamento, verba, arte, pedido e entrega.",
+    "etapas": [
+      "E059",
+      "E068",
+      "E070"
+    ],
+    "situacao": "Parcial",
+    "diagnostico": "Status/histórico/avisos Sicoob são atômicos; notas legadas, piloto/pagamentos provisórios e ausência de destinos impedem linha única completa.",
+    "conclusao_formal": false,
+    "situacao_anterior": "Parcial",
+    "diagnostico_anterior": "Históricos existem em modelos distintos; linha canônica completa ausente.",
+    "melhoria_historica": "Exibir linha do tempo única de orçamento, verba, arte, pedido e entrega."
+  },
+  {
+    "id": "B22",
+    "melhoria": "Implementar compartilhamento seguro e expirável para aprovação.",
+    "etapas": [
+      "E013",
+      "E050",
+      "E065"
+    ],
+    "situacao": "Parcial",
+    "diagnostico": "Rotas canônicas corrigidas e mocks públicos passam; asserções genéricas, revogação e isolamento real ainda não sustentam aceite.",
+    "conclusao_formal": false,
+    "situacao_anterior": "Parcial",
+    "diagnostico_anterior": "Tokens, validade e revogação existem; escopo e decisão formal não homologados.",
+    "melhoria_historica": "Implementar compartilhamento seguro e expirável para aprovação."
+  },
+  {
+    "id": "B23",
+    "melhoria": "Adicionar métricas do funil sem dados fictícios.",
+    "etapas": [
+      "E009",
+      "E089"
+    ],
+    "situacao": "Parcial",
+    "diagnostico": "Dados artificiais saíram de pedidos; statsService conserva meta/fallback e agregados têm valores fixos. Funil real ainda não conciliado.",
+    "conclusao_formal": false,
+    "situacao_anterior": "Parcial",
+    "diagnostico_anterior": "Persistem números fixos, projeção artificial e contador aleatório. A06.",
+    "melhoria_historica": "Adicionar métricas do funil sem dados fictícios."
+  },
+  {
+    "id": "B24",
+    "melhoria": "Medir Core Web Vitals no domínio de homologação.",
+    "etapas": [
+      "E084",
+      "E098"
+    ],
+    "situacao": "Parcial",
+    "diagnostico": "Shell pesado saiu do login e Lighthouse CI passou; faltam jornadas autenticadas, domínio alvo e métricas de campo.",
+    "conclusao_formal": false,
+    "situacao_anterior": "Parcial",
+    "diagnostico_anterior": "Lighthouse local/CI mede login; domínio de homologação e campo ainda pendentes.",
+    "melhoria_historica": "Medir Core Web Vitals no domínio de homologação."
+  },
+  {
+    "id": "B25",
+    "melhoria": "Recomendações por ocasião, histórico e regras comerciais explicáveis.",
+    "etapas": [
+      "E022",
+      "E044",
+      "E089"
+    ],
+    "situacao": "Parcial",
+    "diagnostico": "Sugestões existentes; histórico e regras explicáveis não validados pelo público.",
+    "conclusao_formal": false,
+    "situacao_anterior": "Parcial",
+    "diagnostico_anterior": "Sugestões existentes; histórico e regras explicáveis não validados pelo público.",
+    "melhoria_historica": "Recomendações por ocasião, histórico e regras comerciais explicáveis."
+  },
+  {
+    "id": "B26",
+    "melhoria": "Estoque futuro com níveis de confiança.",
+    "etapas": [
+      "E073",
+      "E089"
+    ],
+    "situacao": "Não demonstrado",
+    "diagnostico": "Forecast na interface não comprova modelo validado nem intervalo de confiança.",
+    "conclusao_formal": false,
+    "situacao_anterior": "Não demonstrado",
+    "diagnostico_anterior": "Forecast na interface não comprova modelo validado nem intervalo de confiança.",
+    "melhoria_historica": "Estoque futuro com níveis de confiança."
+  },
+  {
+    "id": "B27",
+    "melhoria": "Recompra com nova consulta de preço e disponibilidade.",
+    "etapas": [
+      "E079"
+    ],
+    "situacao": "Parcial",
+    "diagnostico": "Serviço/rota corrigidos e nova consulta de preço/estoque-base realizada no código. Variante, mínimo, múltiplo, endereço e criação atômica continuam pendentes.",
+    "conclusao_formal": false,
+    "situacao_anterior": "Parcial",
+    "diagnostico_anterior": "Duplicação existe; botão usa legado, rota inválida e preços antigos. A03.",
+    "melhoria_historica": "Recompra com nova consulta de preço e disponibilidade."
+  },
+  {
+    "id": "B28",
+    "melhoria": "Modelos de campanha salvos pela cooperativa.",
+    "etapas": [
+      "E051",
+      "E052"
+    ],
+    "situacao": "Parcial",
+    "diagnostico": "Campanha genérica existe; modelo por cooperativa com marcos/destinos incompleto.",
+    "conclusao_formal": false,
+    "situacao_anterior": "Parcial",
+    "diagnostico_anterior": "Campanha genérica existe; modelo por cooperativa com marcos/destinos incompleto.",
+    "melhoria_historica": "Modelos de campanha salvos pela cooperativa."
+  },
+  {
+    "id": "B29",
+    "melhoria": "Assistente de briefing para kits e campanhas.",
+    "etapas": [
+      "E051",
+      "E055"
+    ],
+    "situacao": "Não demonstrado",
+    "diagnostico": "Não foi demonstrado assistente de briefing institucional com dados e restrições suficientes.",
+    "conclusao_formal": false,
+    "situacao_anterior": "Não demonstrado",
+    "diagnostico_anterior": "Não foi demonstrado assistente de briefing institucional com dados e restrições suficientes.",
+    "melhoria_historica": "Assistente de briefing para kits e campanhas."
+  },
+  {
+    "id": "B30",
+    "melhoria": "Mockup assistido com versionamento de arte.",
+    "etapas": [
+      "E053",
+      "E054",
+      "E065"
+    ],
+    "situacao": "Parcial",
+    "diagnostico": "Mockups existentes; prova técnica e versão imutável vinculada ao aceite não asseguradas.",
+    "conclusao_formal": false,
+    "situacao_anterior": "Parcial",
+    "diagnostico_anterior": "Mockups existentes; prova técnica e versão imutável vinculada ao aceite não asseguradas.",
+    "melhoria_historica": "Mockup assistido com versionamento de arte."
+  },
+  {
+    "id": "B31",
+    "melhoria": "Entrega distribuída entre unidades com reconciliação de quantidades.",
+    "etapas": [
+      "E056",
+      "E074",
+      "E076",
+      "E078"
+    ],
+    "situacao": "Não demonstrado",
+    "diagnostico": "Página usa lotes fixos, RPC só cria grupo e remessa é única por pedido. Divisão/reconciliação por destino ainda não implementada (A16).",
+    "conclusao_formal": false,
+    "situacao_anterior": "Não demonstrado",
+    "diagnostico_anterior": "Consolidação não equivale a distribuição por destino e conciliação. A16.",
+    "melhoria_historica": "Entrega distribuída entre unidades com reconciliação de quantidades."
+  },
+  {
+    "id": "B32",
+    "melhoria": "Personalização do catálogo por cooperativa sem bifurcar código.",
+    "etapas": [
+      "E008",
+      "E025",
+      "E099"
+    ],
+    "situacao": "Parcial",
+    "diagnostico": "Políticas por cooperativa existem, mas snapshot/precedência falham (S01–S04). Troca explícita de papel foi corrigida; carregamento de contexto continua sujeito a resposta antiga.",
+    "conclusao_formal": false,
+    "situacao_anterior": "Parcial",
+    "diagnostico_anterior": "Membership existe; política/curadoria por cooperativa e troca segura ainda incompletas. A08.",
+    "melhoria_historica": "Personalização do catálogo por cooperativa sem bifurcar código."
+  }
+]

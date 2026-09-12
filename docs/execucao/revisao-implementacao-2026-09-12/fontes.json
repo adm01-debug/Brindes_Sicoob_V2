@@ -1,0 +1,1354 @@
+[
+  {
+    "arquivo": ".github/workflows/codeql.yml",
+    "sha256": "32c4b43dd29d095c6e7738676e825776c07a6aff2040156113f5ace46c0b6963",
+    "bytes": 1186,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": false,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": ".github/workflows/e2e.yml",
+    "sha256": "c3023cee3a0ebcc920992adad2935914e707a6e9c5e1c2fa4e7da37975e66cb9",
+    "bytes": 10757,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": true,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": ".lighthouserc.cjs",
+    "sha256": "7ad2c9b9103e3f3075f80ebcedad1b1a82e7b6df759c178f5a1cb54f773bfbc0",
+    "bytes": 789,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": false,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "README.md",
+    "sha256": "ed6bf591af0d2b6b91e5605a7c79950217b155bcbfd9f51b18bb24dcf3daa731",
+    "bytes": 12940,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": false,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "docs/ACCESSIBILITY.md",
+    "sha256": "10cde3bb2bbda9f3f87f5154eda26319b4c020c605b8c95c13ebb5229f1ee1ad",
+    "bytes": 2570,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": false,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "docs/DR.md",
+    "sha256": "f7d1d5d75b1b7d42941b126fb58834f276fc1579ce6c8f515314d7b302a28176",
+    "bytes": 1710,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": false,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "docs/OBSERVABILITY.md",
+    "sha256": "708f5d9221a34d20596a525390d9476f50fc5fa74a90cb1903df06cf161ca598",
+    "bytes": 7803,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": false,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "docs/README.md",
+    "sha256": "74e766208308e00dc1e277513245a4201c0149b23b2af673dc3a744fc4c44865",
+    "bytes": 4603,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": false,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "docs/SECURITY.md",
+    "sha256": "b26b4eb0bce4e677336a1690741872d0f1fdf4fbdd3ebc8507db136270df87a6",
+    "bytes": 452,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": false,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "docs/SECURITY_RUNBOOK.md",
+    "sha256": "ab2c9eb699a615af5105f37d808bfb3242d8a3259a9c75e686277fd90f65bef3",
+    "bytes": 3281,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": false,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "docs/execucao/ativos-imagegen.json",
+    "sha256": "c195f455f682f175350865ae24820916b95a9bf8ceacb678629da2ae5984f990",
+    "bytes": 842,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": false,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "docs/execucao/checkpoint-local-2026-09-11.md",
+    "sha256": "b986a85b40debb28d29825d45dad1c5e5e60ca12bb1a09ebd97c46de26f4ae16",
+    "bytes": 8471,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": true,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "docs/execucao/evidencias/cenarios-integrados.tap",
+    "sha256": "b1a5bccde4b598acb5577a43c7214a958b9fea14b535ba6e8a55aa440df380b3",
+    "bytes": 6367,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": false,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "docs/execucao/evidencias/eventos-status-sicoob.json",
+    "sha256": "959f1e11100cac13f08f98cceac1b511970d136c9534b53ac91568794fefeba6",
+    "bytes": 954,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": true,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "docs/execucao/evidencias/gates-depois.tap",
+    "sha256": "8c0db7e7733094ce348230e8579da6761e98560a65263649eae7520e9c4f4017",
+    "bytes": 1334,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": false,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "docs/execucao/evidencias/lighthouse-login.json",
+    "sha256": "fe15b3152a14f9dbc75dffdf22d63311697891f2aae526e22bb0fd9565178cd8",
+    "bytes": 1668,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": true,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "docs/execucao/evidencias/verba-atomica.json",
+    "sha256": "2722dd93007fecacbcff2e6aedd7f182857ca91e6959280c7e125a48f7151d73",
+    "bytes": 834,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": false,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "docs/execucao/evidencias/versionamento-orcamento-atomico.json",
+    "sha256": "a438b4d55aae6f608863d1183f703aaf39b1aa7940f83b16a3d479281340fee3",
+    "bytes": 1030,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": true,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "docs/execucao/evidencias/visual/demo-resultado.json",
+    "sha256": "89e2258ced14aedcf8c6551750b68254f081f10bc866926702e9956c40aa9ea3",
+    "bytes": 2452,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": false,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "docs/execucao/evidencias/visual/login-390.png",
+    "sha256": "b489ed0d2b66f90a678d2ffcb733436f5f2ab4f4ccd55e428cf9bccd6a06481e",
+    "bytes": 49515,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": false,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "docs/execucao/evidencias/visual/resultado.json",
+    "sha256": "8081d9bb18e2ea84da34a53f7247f9430160f690416ea21ef0c93ab64bd836d2",
+    "bytes": 1585,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": false,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "docs/execucao/revisao-implementacao-2026-09-12/atualizacoes.txt",
+    "sha256": "6b15132b2edb5bee0606ff11645cfda5f669a4fd8db96eb14878fa348023ccc0",
+    "bytes": 26076,
+    "conteudo_igual_ao_commit_codigo": false,
+    "alterado_desde_revisao_anterior": true,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "docs/execucao/revisao-implementacao-2026-09-12/ci.json",
+    "sha256": "330206ac340fb32c3c534962769f4c8e48ff5fcd9ae91b3e589d4dd5c1d2f368",
+    "bytes": 9238,
+    "conteudo_igual_ao_commit_codigo": false,
+    "alterado_desde_revisao_anterior": true,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "docs/execucao/revisao-implementacao-2026-09-12/resumo-codeql.json",
+    "sha256": "3660b4b6136aabc033f72cddd5960e154cb4284726c8807521575a7af0a603ea",
+    "bytes": 4374,
+    "conteudo_igual_ao_commit_codigo": false,
+    "alterado_desde_revisao_anterior": true,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "docs/execucao/revisao-implementacao-2026-09-12/simulacoes.json",
+    "sha256": "378c431a2cce78d104deabfc7a7fb061028ff988c5d200b86192b14b54d4a864",
+    "bytes": 2923,
+    "conteudo_igual_ao_commit_codigo": false,
+    "alterado_desde_revisao_anterior": true,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "docs/execucao/revisao-implementacao-2026-09-12/testes-dirigidos.json",
+    "sha256": "4926c6468ef18267406175dde795ee879764b03da083b8d2f77866d47e3516ad",
+    "bytes": 11122,
+    "conteudo_igual_ao_commit_codigo": false,
+    "alterado_desde_revisao_anterior": true,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "docs/execucao/revisao-implementacao/achados.json",
+    "sha256": "265de8cfc6adc49b4847fad5fb1e8acbd88ca27722646c0a232a432bd7e9ee4e",
+    "bytes": 18959,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": true,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "docs/execucao/revisao-implementacao/anotacoes.txt",
+    "sha256": "16a971dde01db5aefefb7585a8e28e977733699fd803452a1f0d270b802506ff",
+    "bytes": 75345,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": true,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "docs/execucao/revisao-implementacao/ci.json",
+    "sha256": "5007310c52fe1e07c74c3506c6385ea4671deeeefd803b37ee9fb6b5158d2189",
+    "bytes": 3179,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": true,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "docs/execucao/revisao-implementacao/resumo-codeql.json",
+    "sha256": "9209f27670498be46f1c61d89dd323ebfa9861e47bef99631d7377dedaf7337c",
+    "bytes": 8663,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": true,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "docs/execucao/revisao-implementacao/simulacoes.json",
+    "sha256": "57612d21bb544c774aef5ab3b66178de35e0be9f32620f6c497fb26de58b8930",
+    "bytes": 2018,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": true,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "docs/execucao/validacao-do-plano.md",
+    "sha256": "2990f6c13e3394c4e69e25e26f702b8544e8c480dd9249943e78e94932cd334b",
+    "bytes": 9360,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": false,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "docs/pesquisa/2026-09-11/anexos/auditoria-tecnica-a.md",
+    "sha256": "f56c33532dbc91ef62d6e16b27c5167cd6c896dc686840d7ab9228b449cd53c3",
+    "bytes": 28244,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": false,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "docs/pesquisa/2026-09-11/anexos/auditoria-tecnica-b.md",
+    "sha256": "6f751785963804cb41996261672f9965f2b6e685f5600390801999a09a21383d",
+    "bytes": 45744,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": false,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "docs/pesquisa/2026-09-11/anexos/documentos-fornecidos.md",
+    "sha256": "5d099ea2e00092a0037419d7669b8236d4a4134adb3cb4038086d33dee307b92",
+    "bytes": 55720,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": false,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "docs/pesquisa/2026-09-11/anexos/perfis-profissionais.md",
+    "sha256": "f2acb378ee2cc70d4bdf7e76179dcba385b954060e144109768aa064a93eca37",
+    "bytes": 12177,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": false,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "docs/pesquisa/2026-09-11/benchmark-promo-gifts-v4.md",
+    "sha256": "9e18dfdc964eaf8a95ee6b69f506fefe534e1a5fb6a3f216d2ecba94bfcdc0a2",
+    "bytes": 32277,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": true,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "docs/pesquisa/2026-09-11/dossie.md",
+    "sha256": "90894cb36bbcbb7952ed1e66e0344a3fcdd7ffc18fc772ace12977a2048b5058",
+    "bytes": 47810,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": false,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "docs/plano-implementacao/README.md",
+    "sha256": "f8cea026982877391eee558c240d82cd4c194466b89cc905dce29c9859b53ba9",
+    "bytes": 6026,
+    "conteudo_igual_ao_commit_codigo": false,
+    "alterado_desde_revisao_anterior": true,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "docs/plano-implementacao/plano.json",
+    "sha256": "50c5d83d7af3d34bb560ddfc90a270b722cb24068463a4c94cac752f6387e9f6",
+    "bytes": 255523,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": false,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "e2e/flows/26-complete-flow.spec.ts",
+    "sha256": "c5566b029ddd7fd580ab7693703605347d33411eebd85dc966750c3a220d8a89",
+    "bytes": 659,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": true,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "e2e/routes/_factories.ts",
+    "sha256": "04bc73d9bb2cafaa6cc2318bfa25038c14218585f973f7cbc81b15011a0ba36b",
+    "bytes": 9981,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": true,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "playwright.config.ts",
+    "sha256": "67e5a19e3ffd97bb8d59b9d4f9ea8f9b4599fb1e469cc6a2aa15b127ee08a4b7",
+    "bytes": 9441,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": true,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "scripts/check-eslint-baseline.mjs",
+    "sha256": "112dec097321cc0ea58b3a49cf8aa5312bd9b760212705ef337d882cae7ab90a",
+    "bytes": 7119,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": false,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "scripts/check-typecheck-baseline.mjs",
+    "sha256": "f33c71a7398407dced73d525fafa729daab7fbf038959073af184594d07370f1",
+    "bytes": 4268,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": false,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "scripts/qa/check-bundle-budget.mjs",
+    "sha256": "ee83215145d93b4626c78ba2dbfc5713c2f198f8f8cf818aba8db0efbf2e764a",
+    "bytes": 2447,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": false,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "scripts/revisao/gerar-revisao-2026-09-12.py",
+    "sha256": "0ad95a01f59f412d28c4271e284471eabc13b8738dfe86a4cb7d8e64f76eb364",
+    "bytes": 35262,
+    "conteudo_igual_ao_commit_codigo": false,
+    "alterado_desde_revisao_anterior": true,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "scripts/revisao/pendencias-2026-09-12.cenarios.tsx",
+    "sha256": "305375b396c490a598de6723822751a02e2f33f5352db46ab50b827729b7f70f",
+    "bytes": 3953,
+    "conteudo_igual_ao_commit_codigo": false,
+    "alterado_desde_revisao_anterior": true,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "scripts/revisao/simular-lacunas.mjs",
+    "sha256": "3346d1a8189444ec6ea6766a6add89bf6f5540bd44032093d3382ff4d58651cb",
+    "bytes": 6922,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": true,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "scripts/revisao/simular-pendencias-2026-09-12.py",
+    "sha256": "b08e176984e5776fe0df25c0a1ea5b5dd9404a482ae3c77c1a3250d206beeb2f",
+    "bytes": 8029,
+    "conteudo_igual_ao_commit_codigo": false,
+    "alterado_desde_revisao_anterior": true,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "scripts/revisao/vitest-pendencias-2026-09-12.config.ts",
+    "sha256": "1748a09890b7a2e5d7241a49eb1abc0c7cf68f13f0306e0df49df4c87bc14186",
+    "bytes": 797,
+    "conteudo_igual_ao_commit_codigo": false,
+    "alterado_desde_revisao_anterior": true,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "src/App.tsx",
+    "sha256": "90662e0a602c48c9e30745228f7cc693cdcce955275a835c8b34ae35697365ab",
+    "bytes": 8543,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": true,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "src/components/ai/AIChat.tsx",
+    "sha256": "954b5496c4be0462d748ab13d4376b72d2806892863a990dedf58d3594716846",
+    "bytes": 12793,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": false,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "src/components/cart/CartHeaderButton.tsx",
+    "sha256": "61c3c4af4930e625ca01dffe42d6d642b8507d12bc0faad025993ce82e31db19",
+    "bytes": 22234,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": false,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "src/components/catalog/CatalogActiveFilters.tsx",
+    "sha256": "e2d0349a281617168fe2a322f4be32a8fcf1b9e2a09c3a74475f5afa6be841ec",
+    "bytes": 4874,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": false,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "src/components/catalog/CatalogContent.tsx",
+    "sha256": "1fd400890576d000896569d95b4cb2874c10aca9946e21336d6dad91247eec48",
+    "bytes": 18743,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": false,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "src/components/catalog/CatalogHeader.tsx",
+    "sha256": "6a2bd562a13532a2150a1af8149d8ac6d45e8de28c322851a043c7661e8b42e7",
+    "bytes": 7570,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": true,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "src/components/catalog/CatalogStorefrontHero.tsx",
+    "sha256": "e96796e77b99264bd955fa4cf5c7ccb167aa31b623be01acd72cefb04f3fc65d",
+    "bytes": 8552,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": false,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "src/components/compare/ComparisonMobileView.tsx",
+    "sha256": "acb5d2ddd41df046632b09a9951bf0f13723c5c15066314511fb050081532ac7",
+    "bytes": 4338,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": false,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "src/components/kit-builder/KitSummary.tsx",
+    "sha256": "2ab9841be7ddb0b374bb5a4853065688fe731c969031bfffca349d3e68bec02b",
+    "bytes": 5611,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": true,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "src/components/kit-builder/PersonalizationConfig.tsx",
+    "sha256": "79138b6ddb5762ac37618b0e2f4ee50e85fde87c35d4c52aa863e02b5af7a422",
+    "bytes": 17779,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": false,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "src/components/kit-builder/VariantSelector.tsx",
+    "sha256": "e48011ab6b97200cf525626dac8921b7fe2826d177ee84992d59364fc4c86631",
+    "bytes": 9202,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": true,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "src/components/layout/AuthenticatedShell.tsx",
+    "sha256": "5f561cd415a8ea8f09dd2607c34be78d6433272f957ff7ff3af7c5f4d3821e23",
+    "bytes": 1518,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": true,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "src/components/layout/Header.tsx",
+    "sha256": "c5fc5bd68759149795f693af866c8022fd82310721ba70aad85b0ad432eb78ea",
+    "bytes": 19332,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": false,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "src/components/layout/ProtectedRoute.tsx",
+    "sha256": "1d6d46db0187f4585b6ecf3759d81e9981d1b93382e4a9435f35fce0b3c225ef",
+    "bytes": 2230,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": false,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "src/components/layout/SicoobRoute.tsx",
+    "sha256": "173d686492df8ad44ba3b14b70560625a787f8b161d8b0c0a54ed42a1189fa7e",
+    "bytes": 1708,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": false,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "src/components/layout/SidebarReorganized.tsx",
+    "sha256": "e6eac9dcfa498eee679392677cc07d403c21d436818a9b9fa0f41b8c267328bb",
+    "bytes": 17970,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": false,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "src/components/magic-up/MagicUpBrandKitPanel.tsx",
+    "sha256": "d6289f2fe5747b686d3f05f194d066bb376579e808fa341e0c7adf28e1376402",
+    "bytes": 4609,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": false,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "src/components/mockup/ArtFileUpload.tsx",
+    "sha256": "2c0afa3e1605b4f7b1ee1d96226b0ea60ee1bd85f88a5ceacd74f898fdf66bc1",
+    "bytes": 8008,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": false,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "src/components/orders/OneClickReorder.tsx",
+    "sha256": "561e117bb00e028e1f91801134fb9f697707ce6d34f853a370cea600560140e9",
+    "bytes": 1768,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": true,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "src/components/orders/PilotApprovalPanel.tsx",
+    "sha256": "6d033ae80584c5764b17ea0087eaaba71626b0cbb3ea7fc1db8ffc0439507c06",
+    "bytes": 7647,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": false,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "src/components/quotes/QuoteVersionCompare.tsx",
+    "sha256": "031e88d64756638ac30ef47463efc70774882ea91c16ccc22867871fe508333b",
+    "bytes": 13106,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": false,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "src/components/sicoob/orders/LogisticsCommandCenter.tsx",
+    "sha256": "33e3dfe5f6ccb435d5d01ee579b060c6cb85d31c893e3e06213ef24b7ce66c60",
+    "bytes": 7666,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": false,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "src/components/sicoob/orders/OrderLogisticsTab.tsx",
+    "sha256": "57636a0d9061932abb58e995581b1e6afec4a547c6f521c2dd9cc613b22a4240",
+    "bytes": 8437,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": true,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "src/components/ui/button.tsx",
+    "sha256": "04f79dd6a2f6046c459aa73a9e914d18909f03881fd137314866fa85d4fcac33",
+    "bytes": 3504,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": false,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "src/components/ui/dialog.tsx",
+    "sha256": "f4bbfd718249a7daaeb57381dc7b8ae3ae704be1bb876355260a6d93529ccdf4",
+    "bytes": 4988,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": false,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "src/contexts/AuthContext.tsx",
+    "sha256": "0075c4152294276ee11e8d35654fe335bdf556c187a8801b4ee099df67ed801b",
+    "bytes": 14187,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": false,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "src/contexts/OrganizationContext.tsx",
+    "sha256": "629cfb250f703d17bcbdb1ed2e7c1f3dd64a0d3955b625a122982801d3823200",
+    "bytes": 5755,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": true,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "src/hooks/catalog/useCatalogFilters.ts",
+    "sha256": "5aeb3bd5eda29f6e0ce7e289f89450574b7b29346af88ace6ee6610a46e0e9d9",
+    "bytes": 1876,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": false,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "src/hooks/catalog/useCatalogSearchState.ts",
+    "sha256": "0187914d6d443dee140c343ee3b96e857f194b68228c154785080fad18701c3e",
+    "bytes": 1013,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": true,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "src/hooks/orders/extensions/index.ts",
+    "sha256": "ff49eb0b4f7c848af2ec2a837d43f93acf50c894c75447ed89c1697b2a5a10fb",
+    "bytes": 1193,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": false,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "src/hooks/orders/extensions/useOrderInvoices.ts",
+    "sha256": "ac630c139d0938830533c083cd9b9615de1de04dc99d17740d4ef459ef972151",
+    "bytes": 2417,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": false,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "src/hooks/orders/useOrders.ts",
+    "sha256": "0ffbda2e8c16328b9690deab71e8ec59cdda55a9f6bce5f7d69e3e07e8c61bf8",
+    "bytes": 5146,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": false,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "src/hooks/quotes/useQuotes.ts",
+    "sha256": "58ab753d1c95548ff8fa8a69736c25242b5d50324597c5fef60f3317219f6ce0",
+    "bytes": 11864,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": false,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "src/hooks/sicoob/useAIOrderPredictor.ts",
+    "sha256": "0e757fbec37087f896999893533951876ccfb5e3c91186c382279830bc655008",
+    "bytes": 1243,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": false,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "src/hooks/useFavoriteLists.ts",
+    "sha256": "4633a14377d46235898e351df8595ce5d092b73732400168f6f5ca243d14d351",
+    "bytes": 15992,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": false,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "src/hooks/useKitAutoSave.ts",
+    "sha256": "d3beb17ce7713bbb60f61474c2bc8c6b7c9e3fef0dc7fe1935e1b807fe4b373b",
+    "bytes": 5482,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": true,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "src/hooks/useKitBuilder.ts",
+    "sha256": "61b30ab38f92c002943e1823feee733dd3b8159418cdc9d9e2f690c13799930e",
+    "bytes": 13255,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": true,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "src/hooks/useKitShare.ts",
+    "sha256": "6b72b2c65ea154abf2f2500b20a10f4c15566ca284bf9f2866ec620628baf81f",
+    "bytes": 4550,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": false,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "src/hooks/useKitStockValidation.ts",
+    "sha256": "50ab7f40aab357fa36d1928e801f48cd69c67c410b0791dafaf0bd635d0b33f2",
+    "bytes": 3793,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": true,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "src/hooks/useNotificationOmnichannel.ts",
+    "sha256": "346f77f6e48175783c80c3800c9ff9eae6bfa7664e79b162c0ab27dab9607b44",
+    "bytes": 1943,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": false,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "src/hooks/useNotifications.ts",
+    "sha256": "648dca598c395e90a43be5c7819640ff73ead748c99ec125402b1f28caa3fb67",
+    "bytes": 1654,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": false,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "src/hooks/usePilotApprovals.ts",
+    "sha256": "245b5c370f2a101d76cee6f7e94e5bb2b8642a5c0d8c9d6f4e14670b08066967",
+    "bytes": 3115,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": false,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "src/hooks/useQuoteVersions.ts",
+    "sha256": "9f9730b58cc7e7293ccabe39c41a2788fca65beedc20e49e51b0ca0d40ceafaa",
+    "bytes": 4167,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": true,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "src/hooks/useSearch.ts",
+    "sha256": "415fa0d11ccd0d5b885404c48d12862ac7813904c18bc91e5361bb0194d72313",
+    "bytes": 6465,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": true,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "src/hooks/useSupplierComparison.ts",
+    "sha256": "375f67d4650fbdb71ebb495ec2a255692e6e522230b638a9d363f753d16e9e7c",
+    "bytes": 3897,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": false,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "src/index.css",
+    "sha256": "92df54cf65fd921768f657f2ee9e197e60d720b1bb997ee80c6d9a8498926d82",
+    "bytes": 55407,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": false,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "src/lib/auth/invoke-full-scope.ts",
+    "sha256": "c23508fd90441d0c83519204b2112acb0bf69ba4e9a8464690089ab01ae8672e",
+    "bytes": 5921,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": false,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "src/lib/external-db/techniques.ts",
+    "sha256": "a5e4ea7174df8dbbab23efb8daddddf16fb23eae3b66852bf68c5c65f90e1521",
+    "bytes": 6017,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": false,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "src/lib/kit-builder/types.ts",
+    "sha256": "a82f327d39e3d910389521c6a8895cc34a03e4df9cf966f7fbbf6bee50d0da57",
+    "bytes": 6191,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": true,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "src/lib/rbac/route-matrix.ts",
+    "sha256": "234c34cd58b58d43a19857d147ecb55c8fbd488e723da238fabf9c1d13bb7d5c",
+    "bytes": 9904,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": false,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "src/lib/roles.ts",
+    "sha256": "006f7a95906c2510d8bf1415cceeb95bddaf43493c8e99f7fe194cf3d05dc249",
+    "bytes": 4161,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": false,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "src/pages/Auth.tsx",
+    "sha256": "dbf0dcac1cf5b9a7553403d08afc1b3043dd924ad29a100f8b8f8ef2cb983a40",
+    "bytes": 18810,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": true,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "src/pages/ComparePage.tsx",
+    "sha256": "0790a7b9eeee645e36ad4ea24ad7652e9ec67309d9435ce5de7beca2e3c3ca11",
+    "bytes": 14984,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": false,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "src/pages/KitBuilderPage.tsx",
+    "sha256": "d152c3240fb8fe3de609af61d89cc0e0c5068d8f00ed7b98e4b6997271d027ed",
+    "bytes": 33081,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": true,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "src/pages/PersonalizationSimulator.tsx",
+    "sha256": "582c4a081844338fff4dd7b98cfb5521bfca83e9282e6408ab6854b4d8881f67",
+    "bytes": 3646,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": false,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "src/pages/ProductDetail.tsx",
+    "sha256": "55aa0ef4990274185ff91b850d5723021bdebd9d439f842edfe22dfc6e05d102",
+    "bytes": 13802,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": false,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "src/pages/PublicQuoteApprovalPage.tsx",
+    "sha256": "d75ce283f4f4023c30708a79179d8799d6e347e92ddff0d0704cef7c1b0e7851",
+    "bytes": 11256,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": true,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "src/pages/QuoteBuilderPage.tsx",
+    "sha256": "63e6919c8afb3e4703aea8da3778be6a71a0fb7d59c8f270e1050dabe8eceff4",
+    "bytes": 17661,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": false,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "src/pages/ResetPassword.tsx",
+    "sha256": "90bf47e039f266e881b451f2cb8cf3b0fd91351e631dff2d4af68f86c57a5201",
+    "bytes": 10963,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": true,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "src/pages/admin/AdminCampanhasPage.tsx",
+    "sha256": "3fadbbd6e89af4c39da20d69e75b476a06673975b65f230b934b02ea575640ae",
+    "bytes": 17215,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": true,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "src/pages/admin/sicoob/tabs/UserAssignmentTab.tsx",
+    "sha256": "327dc52c5a21e13b205c622289ac5a8a80982bef9a0fed0469744c4056076011",
+    "bytes": 10145,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": false,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "src/pages/auth/AuthBranding.tsx",
+    "sha256": "c8599dc5d9fa003f33a47be3b60a7ff5a06cb479dbc402f71fdac13f47c8777b",
+    "bytes": 2551,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": false,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "src/pages/product-detail/ProductDetailHero.tsx",
+    "sha256": "9107e9a730882beea979d3639ce1bbb8267c905fc24811e8a4085ab94764f6f7",
+    "bytes": 21558,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": false,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "src/pages/sicoob/GestorConsolidatedOrdersPage.tsx",
+    "sha256": "f23d47d97c037db8b43d87d15c9aea4870a9a02cbe22d6719d4be60ef9da1cfe",
+    "bytes": 7706,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": false,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "src/pages/sicoob/StorefrontDemoPage.tsx",
+    "sha256": "00ceb408383ba210411172b61d605970fdd593aab36ec38fd96260422e88c0e9",
+    "bytes": 27120,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": false,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "src/pages/sicoob/orders/OrderDetailPage.tsx",
+    "sha256": "27764243dacebfc454f54827ddfbc1f895c411a9fef8793c136f16f63fe6b661",
+    "bytes": 34135,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": true,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "src/pages/sicoob/orders/OrdersPage.tsx",
+    "sha256": "cd865b2c930498f2a0573d0e3f90005bb0ab32c2c163dd614949b63feec2433f",
+    "bytes": 38685,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": true,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "src/routes/config/admin.ts",
+    "sha256": "7fca443cc7d8304645deff871283e1713fef191c1127654040360b752fc02886",
+    "bytes": 2239,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": true,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "src/routes/config/products.ts",
+    "sha256": "599a7918c91478e13d87656d43000e706b3311f457e964630055b33d922d628c",
+    "bytes": 2286,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": true,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "src/routes/config/public.ts",
+    "sha256": "95bc97de21c553b7a83092d92a2edcbe6e0c7c3453265b6e1a28dedbc78de072",
+    "bytes": 2741,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": true,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "src/routes/config/quotes.ts",
+    "sha256": "c3218292325ff8019b937976c4ffb1b155aebf315f1afcac75633cb0e8c53e17",
+    "bytes": 1757,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": true,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "src/routes/config/sicoob-rbac.ts",
+    "sha256": "2c24add63c0ab1dff888a662019886703359c2d8fc39a1592d7abf5bd10a8055",
+    "bytes": 1653,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": false,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "src/routes/config/sicoob.ts",
+    "sha256": "09a1be11801c67d28438303857aac2227ac8050b22db3f7b6d592ca7452f6afb",
+    "bytes": 850,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": false,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "src/services/OrderService.ts",
+    "sha256": "f9d802fed7aba3396bc343c2c17cebc15943ac515525ae95656b33b5076be711",
+    "bytes": 15472,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": false,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "src/services/QuoteService.ts",
+    "sha256": "d0fcd32fdc317ffa1478198a93f1b54c4d36e56422c4e56c7f60e7c1d2c48069",
+    "bytes": 12337,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": false,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "src/services/quotes/quoteVersionService.ts",
+    "sha256": "eaed9760aa5243b14bf16a19fcc8df013c03f2d0fe4f9f31ff10e612fce7c056",
+    "bytes": 1526,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": true,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "src/services/sicoob/approvalService.ts",
+    "sha256": "ba83eacdd6c1f2e670c5e2b24f89508e3bc8ccbafc0bd792e2293581c47e7157",
+    "bytes": 2795,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": true,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "src/services/sicoob/budgetService.ts",
+    "sha256": "83dd3fb43ff5d3b1e8579025d2a0d25e1acd5fc9703a9261093bf8eb7cac7ee0",
+    "bytes": 1177,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": false,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "src/services/sicoob/fulfillmentService.ts",
+    "sha256": "854cef793f8f5eb67544dd11e637abaabe720718d8a1af975316b4656b7b4a0a",
+    "bytes": 1784,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": true,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "src/services/sicoob/orderService.ts",
+    "sha256": "d41d9132eb2b7ca12c74cc51d554af5c25e41f533b0d855666e4fdcb0d5800e2",
+    "bytes": 12963,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": true,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "src/services/sicoob/statsService.ts",
+    "sha256": "78d9a8250377ae6aab5f3c80c115f1011ebf446426dc598b3190e338952ef98f",
+    "bytes": 3998,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": false,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "src/services/sicoob/userService.ts",
+    "sha256": "99de5c176ee0088ddce25a1292a60c0e9020947aa3e553d3d244b0758c71e016",
+    "bytes": 924,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": false,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "src/stores/useFavoritesStore.ts",
+    "sha256": "ef25d08e647c3fac7e712ce600e93b84c898abf341b1b44ea3290a914b0f5ebe",
+    "bytes": 3108,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": false,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "src/stores/useRecentlyViewedStore.ts",
+    "sha256": "8502d315363f2d283038994c2d60602f4839d8173eb8c53852dd64390dbaa30d",
+    "bytes": 2213,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": false,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "src/types/sicoob/orders.ts",
+    "sha256": "9342e769ad9ccfeab84c47f50b00427330a69e533f63beebf4b193e5c4b77d86",
+    "bytes": 3902,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": true,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "src/utils/campaignExport.ts",
+    "sha256": "1bcad948844c90222f82c2cd0ba1c3b7fc1a821eb16f5617b50791c9ac08eb8e",
+    "bytes": 610,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": true,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "src/utils/product-search.ts",
+    "sha256": "8ca4de1ec6599b0e7dcb5f34de7adfdbdec8a763dc8ad14f9a6fed3bcb44a228",
+    "bytes": 6386,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": false,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "supabase/config.toml",
+    "sha256": "44587f6ff4549b2dbd085233a7f2c9ccdecd48e106839d096234b4369765d0ed",
+    "bytes": 83,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": false,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "supabase/functions/_shared/catalog-redaction.ts",
+    "sha256": "a64f772872faf18cb0abc4f9bdc7c6257dad9ff0701c0c7b03fd6e5f5b271b5b",
+    "bytes": 1154,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": true,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "supabase/functions/_shared/edge-authz-manifest.ts",
+    "sha256": "a63dce72337f5b5feb6e5af93c5d1713b4cb48c65fed18e9cac46d2fd9fd001f",
+    "bytes": 13228,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": false,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "supabase/functions/_shared/external-db-config.ts",
+    "sha256": "1ec2a4501dde4e3f7e76a4f8f2f5082a9c758817868056ddc0edb238b883aed2",
+    "bytes": 5795,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": false,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "supabase/functions/external-db-bridge/index.ts",
+    "sha256": "c7d42184f2db0d86f65cdf04d3223d8489c25cff5213cad2887303a9888a859f",
+    "bytes": 85789,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": false,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "supabase/functions/migrate-helper/index.ts",
+    "sha256": "88fc996845be9c97ec00d8c7fe65f3e12a7c21e6b4dd22468f7d4573e887d7ec",
+    "bytes": 383,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": false,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "supabase/migrations/20260502174252_a88e3c13-46b8-4ce4-b1b8-c8500d390f3d.sql",
+    "sha256": "2a00ab271e8d3d7d1a3cdf05fd7ef0861071ec01cd9fd00805962e15cedb5f35",
+    "bytes": 19942,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": false,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "supabase/migrations/20260502175334_93cdfc03-97b2-4de9-9e60-5152452316b5.sql",
+    "sha256": "277d117294637215cc685356b16be7a7238177a1c29fc798477c34aff397ff9b",
+    "bytes": 5353,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": false,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "supabase/migrations/20260503000002_sicoob_consolidation_logic.sql",
+    "sha256": "d561ea198b92d48961b6418b0fa22712a89b32a36b08d8e427f848bc8a0adeea",
+    "bytes": 1824,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": false,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "supabase/migrations/20260911143000_sicoob_order_budget_atomicity.sql",
+    "sha256": "3a3e188bea7bfbc21c624a6a4c9faa7b57bba3e866817ab00853312daa6854f9",
+    "bytes": 12945,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": false,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "supabase/migrations/20260912090000_sicoob_fulfillment.sql",
+    "sha256": "53725f3fa4ff947da5e297438360d41ed62ef97b174258b323f5d5055afc58c0",
+    "bytes": 8605,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": true,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "supabase/migrations/20260912100000_quote_versioning_atomic.sql",
+    "sha256": "ea0ae5b558d7cbd4cc65e04df47129d655e2bb4223f49e94c8b574d0a56a9748",
+    "bytes": 7246,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": true,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "supabase/migrations/20260912110000_sicoob_order_status_events.sql",
+    "sha256": "0cdc2c081a1ca01aa85a0c68eff52590ef661f40dd9d35cdc23249f12dba167f",
+    "bytes": 11272,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": true,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "supabase/migrations/20260912120000_sicoob_approval_policy_guards.sql",
+    "sha256": "9846ae876b56a169a6d7c39662a31c1b4a599da845307d283e213b0cf5cca5af",
+    "bytes": 31747,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": true,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "supabase/migrations/20260912130000_quote_versioning_family_roots.sql",
+    "sha256": "396c5dd51dbf9c6978eafe7b8c4100b30d147e134161330015dfabdd111e996c",
+    "bytes": 5509,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": true,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "supabase/migrations/20260912140000_sicoob_approval_confirmation_followup.sql",
+    "sha256": "dc7472488054b5f15844b67d70cc3b7e8b9aa903d4140a0ca48b31f3d3fed545",
+    "bytes": 5401,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": true,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "supabase/migrations/20260912150000_quote_versioning_cycle_lock.sql",
+    "sha256": "20a5228e3e841c36a3545e7d458b2c51a0265ead4ef2d0dc6b32f67da7863b62",
+    "bytes": 1650,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": true,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "tailwind.config.ts",
+    "sha256": "6d2c1e16552813bc0086ecd0a6e4fa9f62fa388febdea20ad5a6b5d85f8e8f19",
+    "bytes": 11933,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": false,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "tests/components/catalog/CatalogStorefrontExperience.test.tsx",
+    "sha256": "67f10757a88a17095f2b6d0e7769b6efa421fb034758eed69e6017ddd9f1013c",
+    "bytes": 2660,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": false,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "tests/components/pages/Auth.test.tsx",
+    "sha256": "9b83c9115cd453e192621444edb42a529a16dac8e9e12950d754fb1d1f4bb7e0",
+    "bytes": 4931,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": false,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "tests/functions/catalog-redaction.test.ts",
+    "sha256": "cf9f1a8ca2cd977f95614a25351aa85bacdfd35879b75fee25a752857aa4d42f",
+    "bytes": 791,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": true,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "tests/hooks/useKitAutoSave.test.tsx",
+    "sha256": "262ccacbe4a717c300c4889cf68fba0389b9285c8a6c2965383fa3b5f90ea052",
+    "bytes": 2139,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": true,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "tests/hooks/useKitStockValidation.test.tsx",
+    "sha256": "36b9d46f0df06b19a537ce1b8283ee49608eabcfeece6bd53a0966633c6c05a5",
+    "bytes": 2373,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": true,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "tests/hooks/useSearch.test.ts",
+    "sha256": "c52abc11998b4b94749e24e91d68de8df50b444ae529da214e7a3958a3582f28",
+    "bytes": 7034,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": true,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "tests/scenarios/catalogo-somente-leitura.mjs",
+    "sha256": "80345efc74b6ac27d45bb8b1bc8a3d18c5b3536af5f400ba6284b8c6e74e6897",
+    "bytes": 4334,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": true,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "tests/security/edge-authz-bypass.test.ts",
+    "sha256": "58921944fcf55bb8406ba025d9e9d4b11d9522c0ada8b0398d0f706ee99c9a5e",
+    "bytes": 2218,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": false,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "tests/services/quoteVersionService.test.ts",
+    "sha256": "79f7087f46c7839279fc071d9880932f223a8c63c80f7cc5efd9f0589d89b7d4",
+    "bytes": 1711,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": true,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "tests/services/sicoobFulfillmentService.test.ts",
+    "sha256": "ed282dbf5219661cf7909c5263d9d600f39c8bf353f0c9b0604074c295d08295",
+    "bytes": 1424,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": true,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "tests/services/sicoobOrderService.test.ts",
+    "sha256": "a053c3b70e67e8031e521bb295e10c7f723b02b8cdc1b26fbb1b4f41697aef18",
+    "bytes": 4337,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": true,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "tests/sicoob/route-access-scenarios.test.tsx",
+    "sha256": "1cc21a1cdd41b861780fbe810b941bee9655d89881eaf6d50c9953ba16d31b14",
+    "bytes": 3404,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": false,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  },
+  {
+    "arquivo": "tests/utils/campaignExport.test.ts",
+    "sha256": "24fb4ddf098be86e9427e8cdf874f8f3a15f6057ed51fac9f30159465718452e",
+    "bytes": 681,
+    "conteudo_igual_ao_commit_codigo": true,
+    "alterado_desde_revisao_anterior": true,
+    "papel": "Referência contextual ou evidência dirigida; ver diagnóstico e limites, não comprovação automática."
+  }
+]

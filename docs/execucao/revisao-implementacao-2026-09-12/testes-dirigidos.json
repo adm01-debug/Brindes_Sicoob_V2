@@ -1,0 +1,252 @@
+{
+  "commit_codigo": "cfbcd8f14f023d385ae4329a3ac037c1b19c7b17",
+  "ambiente": "Vitest/jsdom local; módulos reais com dependências simuladas",
+  "comando": "npx vitest run --config scripts/revisao/vitest-pendencias-2026-09-12.config.ts --reporter=json --outputFile=/tmp/sicoob-audit-20260912/vitest.json",
+  "regressoes_aprovadas": 37,
+  "lacunas_reproduzidas": 3,
+  "falhas_do_executor": 0,
+  "limites": "S07 usa duas linhas sintéticas do mesmo SKU; não demonstra que a interface permite criá-las. S08 simula resposta sem linhas; não acessa banco real. S09 executa remoção da chave usada no logout; não simula sessão inteira. Reproduções de falhas estão fora do glob da suíte normal; somente a configuração explícita de auditoria as executa.",
+  "resultados": [
+    {
+      "arquivo": "scripts/revisao/pendencias-2026-09-12.cenarios.tsx",
+      "cenario": "Lacunas reproduzidas em módulos reais, com dependências simuladas S07: duas linhas de seis unidades aceitam o mesmo estoque de dez",
+      "resultado": "passed",
+      "natureza": "lacuna reproduzida"
+    },
+    {
+      "arquivo": "scripts/revisao/pendencias-2026-09-12.cenarios.tsx",
+      "cenario": "Lacunas reproduzidas em módulos reais, com dependências simuladas S08: update com zero linhas afetadas ainda anuncia kit salvo",
+      "resultado": "passed",
+      "natureza": "lacuna reproduzida"
+    },
+    {
+      "arquivo": "scripts/revisao/pendencias-2026-09-12.cenarios.tsx",
+      "cenario": "Lacunas reproduzidas em módulos reais, com dependências simuladas S09: remover a chave no logout não limpa o store de vistos em memória",
+      "resultado": "passed",
+      "natureza": "lacuna reproduzida"
+    },
+    {
+      "arquivo": "tests/functions/catalog-redaction.test.ts",
+      "cenario": "redactInternalCatalogFields remove custos, margem e fornecedor em qualquer nível da resposta",
+      "resultado": "passed",
+      "natureza": "regressão de correção existente"
+    },
+    {
+      "arquivo": "tests/hooks/useKitAutoSave.test.tsx",
+      "cenario": "useKitAutoSave não confirma salvamento quando o Supabase retorna erro e permite nova tentativa",
+      "resultado": "passed",
+      "natureza": "regressão de correção existente"
+    },
+    {
+      "arquivo": "tests/hooks/useKitStockValidation.test.tsx",
+      "cenario": "useKitStockValidation valida apenas o estoque da variante escolhida, sem somar outras cores",
+      "resultado": "passed",
+      "natureza": "regressão de correção existente"
+    },
+    {
+      "arquivo": "tests/hooks/useKitStockValidation.test.tsx",
+      "cenario": "useKitStockValidation exige variante antes de permitir orçamento para item substituível",
+      "resultado": "passed",
+      "natureza": "regressão de correção existente"
+    },
+    {
+      "arquivo": "tests/hooks/useSearch.test.ts",
+      "cenario": "useSearch Histórico isola o histórico por escopo de usuário e cooperativa",
+      "resultado": "passed",
+      "natureza": "regressão de correção existente"
+    },
+    {
+      "arquivo": "tests/hooks/useSearch.test.ts",
+      "cenario": "useSearch Histórico adiciona termo ao histórico",
+      "resultado": "passed",
+      "natureza": "regressão de correção existente"
+    },
+    {
+      "arquivo": "tests/hooks/useSearch.test.ts",
+      "cenario": "useSearch Histórico remove duplicatas do histórico (case-insensitive)",
+      "resultado": "passed",
+      "natureza": "regressão de correção existente"
+    },
+    {
+      "arquivo": "tests/hooks/useSearch.test.ts",
+      "cenario": "useSearch Histórico limita histórico a 10 itens",
+      "resultado": "passed",
+      "natureza": "regressão de correção existente"
+    },
+    {
+      "arquivo": "tests/hooks/useSearch.test.ts",
+      "cenario": "useSearch Histórico remove termo específico do histórico",
+      "resultado": "passed",
+      "natureza": "regressão de correção existente"
+    },
+    {
+      "arquivo": "tests/hooks/useSearch.test.ts",
+      "cenario": "useSearch Histórico limpa todo o histórico",
+      "resultado": "passed",
+      "natureza": "regressão de correção existente"
+    },
+    {
+      "arquivo": "tests/hooks/useSearch.test.ts",
+      "cenario": "useSearch Histórico não adiciona strings vazias ao histórico",
+      "resultado": "passed",
+      "natureza": "regressão de correção existente"
+    },
+    {
+      "arquivo": "tests/hooks/useSearch.test.ts",
+      "cenario": "useSearch Busca e relevância retorna resultados para query válida",
+      "resultado": "passed",
+      "natureza": "regressão de correção existente"
+    },
+    {
+      "arquivo": "tests/hooks/useSearch.test.ts",
+      "cenario": "useSearch Busca e relevância prioriza \"starts with\" sobre \"contains\"",
+      "resultado": "passed",
+      "natureza": "regressão de correção existente"
+    },
+    {
+      "arquivo": "tests/hooks/useSearch.test.ts",
+      "cenario": "useSearch Busca e relevância busca por SKU exato tem prioridade máxima",
+      "resultado": "passed",
+      "natureza": "regressão de correção existente"
+    },
+    {
+      "arquivo": "tests/hooks/useSearch.test.ts",
+      "cenario": "useSearch Busca e relevância não retorna resultados para query < 2 caracteres",
+      "resultado": "passed",
+      "natureza": "regressão de correção existente"
+    },
+    {
+      "arquivo": "tests/hooks/useSearch.test.ts",
+      "cenario": "useSearch Busca e relevância retorna histórico quando query está vazia",
+      "resultado": "passed",
+      "natureza": "regressão de correção existente"
+    },
+    {
+      "arquivo": "tests/hooks/useSearch.test.ts",
+      "cenario": "useSearch Busca e relevância limita produtos a no máximo 6 resultados",
+      "resultado": "passed",
+      "natureza": "regressão de correção existente"
+    },
+    {
+      "arquivo": "tests/hooks/useSearch.test.ts",
+      "cenario": "useSearch Quick suggestions retorna sugestões rápidas",
+      "resultado": "passed",
+      "natureza": "regressão de correção existente"
+    },
+    {
+      "arquivo": "tests/hooks/useSearch.test.ts",
+      "cenario": "useSearch Quick suggestions cada sugestão tem label e icon",
+      "resultado": "passed",
+      "natureza": "regressão de correção existente"
+    },
+    {
+      "arquivo": "tests/services/quoteVersionService.test.ts",
+      "cenario": "quoteVersionService delega a cópia da versão para o RPC transacional",
+      "resultado": "passed",
+      "natureza": "regressão de correção existente"
+    },
+    {
+      "arquivo": "tests/services/quoteVersionService.test.ts",
+      "cenario": "quoteVersionService propaga a falha sem declarar uma nova versão",
+      "resultado": "passed",
+      "natureza": "regressão de correção existente"
+    },
+    {
+      "arquivo": "tests/services/quoteVersionService.test.ts",
+      "cenario": "quoteVersionService normaliza o erro simples retornado pelo PostgREST para preservar a mensagem na interface",
+      "resultado": "passed",
+      "natureza": "regressão de correção existente"
+    },
+    {
+      "arquivo": "tests/services/quoteVersionService.test.ts",
+      "cenario": "quoteVersionService recusa resposta vazia do banco",
+      "resultado": "passed",
+      "natureza": "regressão de correção existente"
+    },
+    {
+      "arquivo": "tests/services/sicoobApprovalService.test.ts",
+      "cenario": "sicoobApprovalService.rejectOrderWithoutApproval registra a rejeição sem solicitação pela RPC auditável",
+      "resultado": "passed",
+      "natureza": "regressão de correção existente"
+    },
+    {
+      "arquivo": "tests/services/sicoobFulfillmentService.test.ts",
+      "cenario": "sicoobFulfillmentService envia estado esperado e caminho privado ao RPC transacional",
+      "resultado": "passed",
+      "natureza": "regressão de correção existente"
+    },
+    {
+      "arquivo": "tests/services/sicoobFulfillmentService.test.ts",
+      "cenario": "sicoobFulfillmentService não trata resposta vazia como atualização bem-sucedida",
+      "resultado": "passed",
+      "natureza": "regressão de correção existente"
+    },
+    {
+      "arquivo": "tests/services/sicoobOrderService.test.ts",
+      "cenario": "sicoobOrderService.updateOrderStatus confirma pelo RPC transacional com comparação do estado atual",
+      "resultado": "passed",
+      "natureza": "regressão de correção existente"
+    },
+    {
+      "arquivo": "tests/services/sicoobOrderService.test.ts",
+      "cenario": "sicoobOrderService.updateOrderStatus delega uma confirmação iniciada em pendência à RPC atômica",
+      "resultado": "passed",
+      "natureza": "regressão de correção existente"
+    },
+    {
+      "arquivo": "tests/services/sicoobOrderService.test.ts",
+      "cenario": "sicoobOrderService.updateOrderStatus prepara pedido dentro da alçada pela RPC própria",
+      "resultado": "passed",
+      "natureza": "regressão de correção existente"
+    },
+    {
+      "arquivo": "tests/services/sicoobOrderService.test.ts",
+      "cenario": "sicoobOrderService.updateOrderStatus escala sem usar a transição genérica",
+      "resultado": "passed",
+      "natureza": "regressão de correção existente"
+    },
+    {
+      "arquivo": "tests/services/sicoobOrderService.test.ts",
+      "cenario": "sicoobOrderService.updateOrderStatus recusa rejeição sem o fluxo que registra o motivo",
+      "resultado": "passed",
+      "natureza": "regressão de correção existente"
+    },
+    {
+      "arquivo": "tests/services/sicoobOrderService.test.ts",
+      "cenario": "sicoobOrderService.updateOrderStatus recusa atualização sem estado atual antes de chamar o banco",
+      "resultado": "passed",
+      "natureza": "regressão de correção existente"
+    },
+    {
+      "arquivo": "tests/services/sicoobOrderService.test.ts",
+      "cenario": "sicoobOrderService.updateOrderStatus recusa transição inválida antes de chamar o banco",
+      "resultado": "passed",
+      "natureza": "regressão de correção existente"
+    },
+    {
+      "arquivo": "tests/services/sicoobOrderService.test.ts",
+      "cenario": "sicoobOrderService.updateOrderStatus usa RPC transacional para status comuns e encaminha a observação",
+      "resultado": "passed",
+      "natureza": "regressão de correção existente"
+    },
+    {
+      "arquivo": "tests/services/sicoobOrderService.test.ts",
+      "cenario": "sicoobOrderService.updateOrderStatus propaga falha da transição sem tentar efeitos adicionais no cliente",
+      "resultado": "passed",
+      "natureza": "regressão de correção existente"
+    },
+    {
+      "arquivo": "tests/utils/campaignExport.test.ts",
+      "cenario": "campaignRowsToCsv preserva vírgulas, aspas e quebras de linha em campos de campanha",
+      "resultado": "passed",
+      "natureza": "regressão de correção existente"
+    },
+    {
+      "arquivo": "tests/utils/campaignExport.test.ts",
+      "cenario": "campaignRowsToCsv gera um arquivo UTF-8 válido mesmo sem campanhas",
+      "resultado": "passed",
+      "natureza": "regressão de correção existente"
+    }
+  ],
+  "inicio_execucao_epoch_ms": 1789231129013
+}

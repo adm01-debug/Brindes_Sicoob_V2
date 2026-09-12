@@ -1,0 +1,19 @@
+{
+  "resultado": "Estrutura e rastreabilidade verificadas; não é aceite de implementação",
+  "etapas": 100,
+  "subetapas": 1000,
+  "dez_por_etapa": true,
+  "ids_unicos": true,
+  "acoes_criterios_entregaveis_dependencias_preservados": true,
+  "checklist_original_sha256": "50c5d83d7af3d34bb560ddfc90a270b722cb24068463a4c94cac752f6387e9f6",
+  "checklist_original_inalterado": true,
+  "conclusoes_formais": 0,
+  "benchmark": 32,
+  "fontes_existentes_com_hash": 169,
+  "contagens": {
+    "L": 88,
+    "P": 622,
+    "V": 145,
+    "N": 145
+  }
+}

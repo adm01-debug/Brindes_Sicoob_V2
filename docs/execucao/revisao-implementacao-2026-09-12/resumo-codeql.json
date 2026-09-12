@@ -1,0 +1,122 @@
+{
+  "run": 34704620415,
+  "commit_codigo": "cfbcd8f14f023d385ae4329a3ac037c1b19c7b17",
+  "sarif_sha256": "a09fbd04e999c3590acdfc163b5a0806e1e5a15c4119347388d8c52ca54d9647",
+  "total": 13,
+  "por_regra": {
+    "js/incomplete-url-substring-sanitization": 1,
+    "js/incomplete-sanitization": 6,
+    "js/insecure-randomness": 1,
+    "js/regex/missing-regexp-anchor": 2,
+    "js/missing-origin-check": 1,
+    "js/file-system-race": 1,
+    "js/user-controlled-bypass": 1
+  },
+  "resultados": [
+    {
+      "regra": "js/incomplete-url-substring-sanitization",
+      "nivel": "warning",
+      "severidade_seguranca": "7.8",
+      "arquivo": "src/utils/image-utils.ts",
+      "linha": 69,
+      "triagem": "Pendente; alerta não equivale a vulnerabilidade confirmada"
+    },
+    {
+      "regra": "js/incomplete-sanitization",
+      "nivel": "warning",
+      "severidade_seguranca": "7.8",
+      "arquivo": "e2e/routes/sicoob/logistica-onda-a.spec.ts",
+      "linha": 52,
+      "triagem": "Pendente; alerta não equivale a vulnerabilidade confirmada"
+    },
+    {
+      "regra": "js/incomplete-sanitization",
+      "nivel": "warning",
+      "severidade_seguranca": "7.8",
+      "arquivo": "supabase/functions/_shared/pgrest-filter.ts",
+      "linha": 11,
+      "triagem": "Pendente; alerta não equivale a vulnerabilidade confirmada"
+    },
+    {
+      "regra": "js/incomplete-sanitization",
+      "nivel": "warning",
+      "severidade_seguranca": "7.8",
+      "arquivo": "supabase/functions/_shared/pgrest-filter.ts",
+      "linha": 11,
+      "triagem": "Pendente; alerta não equivale a vulnerabilidade confirmada"
+    },
+    {
+      "regra": "js/incomplete-sanitization",
+      "nivel": "warning",
+      "severidade_seguranca": "7.8",
+      "arquivo": "supabase/functions/external-db-bridge/index.ts",
+      "linha": 178,
+      "triagem": "Pendente; alerta não equivale a vulnerabilidade confirmada"
+    },
+    {
+      "regra": "js/incomplete-sanitization",
+      "nivel": "warning",
+      "severidade_seguranca": "7.8",
+      "arquivo": "supabase/functions/external-db-bridge/index.ts",
+      "linha": 178,
+      "triagem": "Pendente; alerta não equivale a vulnerabilidade confirmada"
+    },
+    {
+      "regra": "js/incomplete-sanitization",
+      "nivel": "warning",
+      "severidade_seguranca": "7.8",
+      "arquivo": "vendor/pptxgenjs-browser/dist/pptxgen.es.js",
+      "linha": 6965,
+      "triagem": "Pendente; alerta não equivale a vulnerabilidade confirmada"
+    },
+    {
+      "regra": "js/insecure-randomness",
+      "nivel": "warning",
+      "severidade_seguranca": "7.8",
+      "arquivo": "vendor/pptxgenjs-browser/dist/pptxgen.es.js",
+      "linha": 3915,
+      "triagem": "Pendente; alerta não equivale a vulnerabilidade confirmada"
+    },
+    {
+      "regra": "js/regex/missing-regexp-anchor",
+      "nivel": "warning",
+      "severidade_seguranca": "7.8",
+      "arquivo": "e2e/flows/p0/02-catalog-degraded.spec.ts",
+      "linha": 28,
+      "triagem": "Pendente; alerta não equivale a vulnerabilidade confirmada"
+    },
+    {
+      "regra": "js/regex/missing-regexp-anchor",
+      "nivel": "warning",
+      "severidade_seguranca": "7.8",
+      "arquivo": "tests/sicoob/route-access-scenarios.test.tsx",
+      "linha": 59,
+      "triagem": "Pendente; alerta não equivale a vulnerabilidade confirmada"
+    },
+    {
+      "regra": "js/missing-origin-check",
+      "nivel": "warning",
+      "severidade_seguranca": "5",
+      "arquivo": "public/sw.js",
+      "linha": 47,
+      "triagem": "Pendente; alerta não equivale a vulnerabilidade confirmada"
+    },
+    {
+      "regra": "js/file-system-race",
+      "nivel": "warning",
+      "severidade_seguranca": "7.7",
+      "arquivo": "scripts/test-audit-scripts.mjs",
+      "linha": 47,
+      "triagem": "Pendente; alerta não equivale a vulnerabilidade confirmada"
+    },
+    {
+      "regra": "js/user-controlled-bypass",
+      "nivel": "error",
+      "severidade_seguranca": "7.8",
+      "arquivo": "src/pages/SSOCallbackPage.tsx",
+      "linha": 53,
+      "triagem": "Pendente; alerta não equivale a vulnerabilidade confirmada"
+    }
+  ],
+  "limites": "13 resultados no SARIF atual; 26 no snapshot histórico. Diferença de contagem não comprova correção individual sem comparar caminhos e triagem. Resultado coletado do workflow da PR; contagem não é declaração de varredura global sem alertas."
+}

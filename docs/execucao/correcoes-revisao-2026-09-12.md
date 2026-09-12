@@ -4,6 +4,15 @@ Este registro complementa a revisão histórica de 11/09/2026. Ele não altera o
 diagnóstico daquele commit e não declara produção, migração remota ou tráfego
 real como concluídos.
 
+**Reavaliação posterior do candidato `cfbcd8f`:** a
+[revisão das 1.000 subetapas](revisao-implementacao-2026-09-12.md) encontrou
+limites adicionais. A versão de política registrada ainda é mutável; o vínculo
+ativo verificado é o de `profiles`, sem consulta a `organization_members`.
+A exclusão do rascunho na recompra é uma tentativa compensatória cujo erro
+não é verificado. Autosave ainda pode indicar salvo sem linha atualizada,
+e estoque de linhas repetidas não é agregado. As correções abaixo permanecem
+válidas nos casos dirigidos descritos, mas não encerram os fluxos completos.
+
 ## Correções implementadas neste lote
 
 - **Logística Sicoob:** criada a migração `20260912090000_sicoob_fulfillment.sql`,
