@@ -1,7 +1,11 @@
 {
   "ambiente": "PostgreSQL 16 descartável, --network none; somente dados sintéticos",
-  "migracao": "supabase/migrations/20260912100000_quote_versioning_atomic.sql",
+  "migracoes": [
+    "supabase/migrations/20260912100000_quote_versioning_atomic.sql",
+    "supabase/migrations/20260912130000_quote_versioning_family_roots.sql"
+  ],
   "producao_verificada": false,
+  "cadeia_historica": "cadeia multinível normalizada para a raiz; nova versão e inserção administrativa preservam o pai canônico",
   "copia_e_autorizacao": {
     "nova_versao": "criada",
     "itens_personalizacoes_auditoria_e_subtotal": "1|1|1|1146",
@@ -10,7 +14,10 @@
   },
   "falha_intermediaria": "rollback preservou somente a origem vigente",
   "concorrencia": {
-    "retornos_psql": [0, 3],
+    "retornos_psql": [
+      0,
+      3
+    ],
     "familia_resultante": "2 versões, 1 vigente"
   },
   "resultado": "aprovado"

@@ -28,6 +28,17 @@ describe('quoteVersionService', () => {
     await expect(quoteVersionService.createAtomicVersion('versao-1')).rejects.toBe(failure);
   });
 
+  it('normaliza o erro simples retornado pelo PostgREST para preservar a mensagem na interface', async () => {
+    rpc.mockResolvedValue({
+      data: null,
+      error: { code: '40001', message: 'Uma versão mais recente já foi criada.', details: null, hint: null },
+    });
+
+    await expect(quoteVersionService.createAtomicVersion('versao-1')).rejects.toThrow(
+      /versão mais recente já foi criada/i,
+    );
+  });
+
   it('recusa resposta vazia do banco', async () => {
     rpc.mockResolvedValue({ data: null, error: null });
 

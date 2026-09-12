@@ -56,6 +56,16 @@ real como concluídos.
   inserção de solicitação, que possuía referências incompatíveis com o esquema
   atual e podia reverter a transação. Os cenários isolados instalam uma versão
   sentinela desse gatilho antes das migrações e só passam se ele for removido.
+- **Famílias de orçamento:** criada a migração
+  `20260912130000_quote_versioning_family_roots.sql` para achatar cadeias
+  históricas de `parent_quote_id` na raiz canônica, reaplicar a unicidade de
+  versão vigente por família e impedir novas cadeias ou ciclos. O ensaio agora
+  começa com uma cadeia de três níveis e valida a normalização, uma nova versão
+  e uma inserção administrativa.
+- **Erros e estados da interface:** erros simples retornados pela RPC de
+  versionamento agora são convertidos em `Error`, preservando a mensagem no
+  aviso ao usuário. O mapa visual de pedidos passou a incluir `cancelled`, que
+  já era uma transição válida no servidor.
 - **Entrada:** a verificação visual agora aguarda o carregamento efetivo de ao
   menos uma marca Sicoob antes de medir a tela. Assim, ela não falha por uma
   corrida de carregamento nem aceita uma página sem logo.
@@ -90,6 +100,9 @@ real como concluídos.
   [politica-aprovacao-sicoob.json](evidencias/politica-aprovacao-sicoob.json) e
   o executor em
   [simular-politica-aprovacao-sicoob.py](../../scripts/qa/simular-politica-aprovacao-sicoob.py).
+- O ensaio de eventos também valida a matriz completa dos avisos de uma
+  solicitação de alçada: destinatários, origem, pedido, estados anterior e
+  novo, e ator da transição.
 - Teste visual local: login, demonstração e loja em 1440, 390 e 320 px, sem
   rolagem horizontal, erros de execução ou violações automatizadas de WCAG.
 

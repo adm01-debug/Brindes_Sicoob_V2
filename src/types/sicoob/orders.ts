@@ -14,6 +14,7 @@ export const ORDER_STATUS_CONFIG: Record<OrderStatus, StatusConfig> = {
   logistic: { label: "Logística", className: "bg-status-transit/10 text-status-transit border-status-transit/20" },
   rejected: { label: "Rejeitado", className: "bg-destructive/10 text-destructive border-destructive/20" },
   completed: { label: "Concluído", className: "bg-status-completed/10 text-status-completed border-status-completed/20" },
+  cancelled: { label: "Cancelado", className: "bg-muted text-muted-foreground border-border/40" },
 };
 
 export const ORDER_STATUS_OPTIONS = Object.keys(ORDER_STATUS_CONFIG) as OrderStatus[];

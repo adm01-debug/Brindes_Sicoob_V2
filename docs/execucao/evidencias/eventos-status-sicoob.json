@@ -7,7 +7,7 @@
     "destinatarios": "gerente do PA e supervisor; o ator não recebe aviso redundante"
   },
   "repeticao_idempotente": "reenvio com o status já aplicado não duplicou histórico nem aviso",
-  "solicitacao_de_alcada": "pedido, solicitação, histórico e avisos gravados no mesmo commit; gatilho legado removido",
+  "solicitacao_de_alcada": "pedido, solicitação, histórico e avisos canônicos completos gravados no mesmo commit; gatilho legado removido",
   "concorrencia": {
     "retornos_psql": [
       0,

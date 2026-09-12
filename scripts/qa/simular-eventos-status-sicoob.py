@@ -147,7 +147,22 @@ try:
       SELECT comment FROM public.sicoob_order_history WHERE order_id = '{ORDER_B}';
     """))
     assert history_comment == "Solicitação de aprovação: Investimento necessário para a campanha regional"
-    result["solicitacao_de_alcada"] = "pedido, solicitação, histórico e avisos gravados no mesmo commit; gatilho legado removido"
+    approval_notification = scalar(sql(f"""
+      SELECT string_agg(
+        user_id::text || '|' || (metadata ->> 'source') || '|' || (metadata ->> 'order_id') || '|'
+          || (metadata ->> 'previous_status') || '|' || (metadata ->> 'new_status') || '|'
+          || (metadata ->> 'actor_id'),
+        ',' ORDER BY user_id::text
+      )
+      FROM public.workspace_notifications
+      WHERE metadata ->> 'order_id' = '{ORDER_B}';
+    """))
+    expected_notification = (
+      f"{PA_MANAGER}|sicoob_order_status|{ORDER_B}|pending|waiting_approval|{CREATOR},"
+      f"{SUPERVISOR}|sicoob_order_status|{ORDER_B}|pending|waiting_approval|{CREATOR}"
+    )
+    assert approval_notification == expected_notification, approval_notification
+    result["solicitacao_de_alcada"] = "pedido, solicitação, histórico e avisos canônicos completos gravados no mesmo commit; gatilho legado removido"
 
     concurrent = []
     for _ in range(2):

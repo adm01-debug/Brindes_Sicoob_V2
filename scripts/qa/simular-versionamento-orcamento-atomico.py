@@ -7,12 +7,19 @@ import uuid
 
 CONTAINER = "sicoob-versionamento-orcamento-" + uuid.uuid4().hex[:10]
 ROOT = Path(__file__).resolve().parents[2]
-MIGRATION = ROOT / "supabase/migrations/20260912100000_quote_versioning_atomic.sql"
+MIGRATIONS = [
+    ROOT / "supabase/migrations/20260912100000_quote_versioning_atomic.sql",
+    ROOT / "supabase/migrations/20260912130000_quote_versioning_family_roots.sql",
+]
 FIXTURE = ROOT / "tests/scenarios/sql/quote-versionamento-atomico-fixture.sql"
 SELLER = "11111111-1111-1111-1111-111111111111"
 OUTSIDER = "22222222-2222-2222-2222-222222222222"
 SOURCE_A = "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"
 SOURCE_B = "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb"
+CHAIN_ROOT = "cccccccc-cccc-cccc-cccc-cccccccccccc"
+CHAIN_MIDDLE = "dddddddd-dddd-dddd-dddd-dddddddddddd"
+CHAIN_TIP = "eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee"
+CHAIN_CHILD = "ffffffff-ffff-ffff-ffff-ffffffffffff"
 
 
 def command(args, *, stdin=None, check=True):
@@ -49,7 +56,7 @@ def scalar(response):
 
 result = {
     "ambiente": "PostgreSQL 16 descartável, --network none; somente dados sintéticos",
-    "migracao": str(MIGRATION.relative_to(ROOT)),
+    "migracoes": [str(migration.relative_to(ROOT)) for migration in MIGRATIONS],
     "producao_verificada": False,
 }
 
@@ -67,7 +74,41 @@ try:
         raise RuntimeError("PostgreSQL descartável não iniciou")
 
     sql(FIXTURE.read_text())
-    sql(MIGRATION.read_text())
+    sql(f"""
+      INSERT INTO public.quotes (
+        id, quote_number, seller_id, client_name, total, version, parent_quote_id, is_latest_version
+      ) VALUES
+        ('{CHAIN_ROOT}', '90001/26', '{SELLER}', 'Cooperativa Cadeia', 10, 1, NULL, true),
+        ('{CHAIN_MIDDLE}', '90002/26', '{SELLER}', 'Cooperativa Cadeia', 10, 2, '{CHAIN_ROOT}', true),
+        ('{CHAIN_TIP}', '90003/26', '{SELLER}', 'Cooperativa Cadeia', 10, 3, '{CHAIN_MIDDLE}', true);
+    """)
+    for migration in MIGRATIONS:
+        sql(migration.read_text())
+
+    chain_after_migration = scalar(sql(f"""
+      SELECT count(*) || '|'
+        || count(*) FILTER (WHERE is_latest_version) || '|'
+        || count(*) FILTER (WHERE id = '{CHAIN_ROOT}' AND parent_quote_id IS NULL) || '|'
+        || count(*) FILTER (WHERE id <> '{CHAIN_ROOT}' AND parent_quote_id = '{CHAIN_ROOT}')
+      FROM public.quotes
+      WHERE id IN ('{CHAIN_ROOT}', '{CHAIN_MIDDLE}', '{CHAIN_TIP}');
+    """))
+    assert chain_after_migration == "3|1|1|2", chain_after_migration
+
+    chain_new_quote_id = scalar(actor_sql(SELLER, f"SELECT public.create_quote_version_atomic('{CHAIN_TIP}');"))
+    chain_copy = scalar(sql(f"""
+      SELECT version || '|' || parent_quote_id::text
+      FROM public.quotes WHERE id = '{chain_new_quote_id}';
+    """))
+    assert chain_copy == f"4|{CHAIN_ROOT}", chain_copy
+
+    sql(f"""
+      INSERT INTO public.quotes (
+        id, quote_number, seller_id, client_name, total, version, parent_quote_id, is_latest_version
+      ) VALUES ('{CHAIN_CHILD}', '90004/26', '{SELLER}', 'Cooperativa Cadeia', 10, 5, '{CHAIN_TIP}', false);
+    """)
+    assert scalar(sql(f"SELECT parent_quote_id::text FROM public.quotes WHERE id = '{CHAIN_CHILD}';")) == CHAIN_ROOT
+    result["cadeia_historica"] = "cadeia multinível normalizada para a raiz; nova versão e inserção administrativa preservam o pai canônico"
 
     actor_sql(SELLER, f"""
       INSERT INTO public.quotes (
@@ -75,11 +116,11 @@ try:
         discount_amount, total, notes, payment_terms, delivery_time, shipping_type,
         shipping_cost, negotiation_markup_percent, real_subtotal, real_discount_percent, tags
       ) VALUES (
-        '{SOURCE_A}', '10001/26', '{SELLER}', 'Cooperativa Teste', 'sent', 100, 10,
+        '{SOURCE_A}', '10011/26', '{SELLER}', 'Cooperativa Teste', 'sent', 100, 10,
         10, 90, 'versão original', '30 dias', '15 dias', 'transportadora', 15, 5, 95,
         5.26, ARRAY['campanha']
       );
-      SELECT setval('public.test_quote_number_sequence', 10001, true);
+      SELECT setval('public.test_quote_number_sequence', 10011, true);
       WITH inserted_item AS (
         INSERT INTO public.quote_items (
           quote_id, product_id, product_name, product_sku, quantity, unit_price,
@@ -130,8 +171,8 @@ try:
 
     actor_sql(SELLER, f"""
       INSERT INTO public.quotes (id, quote_number, seller_id, client_name, subtotal, total)
-      VALUES ('{SOURCE_B}', '10003/26', '{SELLER}', 'Cooperativa Falha', 50, 50);
-      SELECT setval('public.test_quote_number_sequence', 10003, true);
+      VALUES ('{SOURCE_B}', '10013/26', '{SELLER}', 'Cooperativa Falha', 50, 50);
+      SELECT setval('public.test_quote_number_sequence', 10013, true);
       WITH inserted_item AS (
         INSERT INTO public.quote_items (quote_id, product_id, product_name, quantity, unit_price)
         VALUES ('{SOURCE_B}', 'produto-2', 'Copo Sicoob', 1, 50)
