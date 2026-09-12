@@ -22,13 +22,14 @@
     "postgres": ["politica_aprovada", "recompra_aprovada", "financeiro_arte_aprovado", "consolidacao_aprovada"],
     "deno_pgrest": "5/5 aprovadas",
     "edge_authorization": "102/102 declaradas e enforced",
+    "codeql_remoto": "2031 fontes e 10 workflows analisados; SARIF gerado; painel do GitHub recusou publicação porque code scanning está desabilitado",
     "e2e_publico": "6/6 happy e 6/6 timeout aprovados",
     "regressao_login": "8/8 em Vitest e 3/3 em Chromium",
     "vitest_global": "não aprovado: 141 falhas, 5177 aprovados, 104 ignorados, 31 snapshots falhos"
   },
   "pendencias_obrigatorias": [
     "A05: contrato servidor para converter kit e semântica de reserva",
-    "A13: nova varredura CodeQL remota",
+    "A13: habilitar code scanning e publicar/encerrar alertas do SARIF no painel",
     "A14/A19: E2E autenticado e persistido em homologação",
     "A15: aceite institucional e delegações",
     "aplicar e homologar migrations/edges no banco próprio",

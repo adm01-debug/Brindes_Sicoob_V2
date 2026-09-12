@@ -43,7 +43,9 @@ jobs:
         with:
           category: "/language:${{ matrix.language }}"
           output: sarif-results
-          upload: always
+          # A análise e o SARIF devem existir mesmo quando o painel de code
+          # scanning não está habilitado para este repositório privado.
+          upload: never
 
       - name: Preservar resultado SARIF
         if: always()
@@ -53,3 +55,10 @@ jobs:
           path: sarif-results/*.sarif
           if-no-files-found: error
           retention-days: 14
+
+      - name: Publicar resultado no painel de segurança
+        if: vars.CODEQL_UPLOAD_ENABLED == 'true'
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: sarif-results
+          category: "/language:${{ matrix.language }}"

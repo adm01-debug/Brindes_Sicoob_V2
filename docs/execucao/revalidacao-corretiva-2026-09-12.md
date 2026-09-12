@@ -20,7 +20,7 @@ O checklist original de 100 etapas e 1.000 subetapas permanece como inventário 
 | A10 — redação comercial | Corrigido localmente | Redação recursiva e contrato somente leitura cobertos por regressão. |
 | A11 — exportação | Corrigido localmente | CSV de campanhas já estava corrigido; exportação Sicoob também deixou de expor colunas fictícias e passou a escapar células. |
 | A12 — eventos | Corrigido localmente | Mudanças de status e notificações in-app são transacionais. |
-| A13 — CodeQL | Corrigido localmente; varredura remota pendente | Alertas alcançáveis foram corrigidos; terceiros/testes foram separados do escopo de produção; SARIF voltou a ser publicado. O alerta SSO é fluxo OAuth intencional: o código descartável é validado pelo provedor e pelo verificador PKCE. |
+| A13 — CodeQL | Varredura remota executada; painel externo pendente | O CodeQL remoto analisou 2.026 arquivos TypeScript, 4 JavaScript, 10 workflows e 1 HTML e gerou o SARIF. O painel recusou a publicação porque code scanning está desabilitado no repositório privado; o workflow preserva o SARIF como artefato e publica quando `CODEQL_UPLOAD_ENABLED=true`. O alerta SSO é fluxo OAuth intencional: o código descartável é validado pelo provedor e pelo verificador PKCE. |
 | A14 — CI autenticada | Configurado; execução externa pendente | O workflow agora falha se as quatro credenciais E2E não existirem e não pula silenciosamente o gate autenticado. Falta executar com secrets e dados de homologação. |
 | A15 — política institucional | Parcial | Snapshot, precedência, vínculo ativo, alçada e autoaprovação estão protegidos. Delegações e aceite formal da política por cooperativa dependem dos responsáveis Sicoob. |
 | A16 — distribuição | Corrigido localmente | Consolidação vincula pedidos atomicamente, distribui por PA/item, exige alocação antes do despacho e registra recebimento parcial, avaria e falta em eventos imutáveis. |
@@ -51,6 +51,7 @@ O checklist original de 100 etapas e 1.000 subetapas permanece como inventário 
 | Regressões dirigidas da auditoria | 44/44 aprovadas. |
 | Sanitização PostgREST em Deno | 5/5 aprovadas. |
 | Autorização de Edge Functions | 102/102 funções declaradas e com mecanismo de enforcement. |
+| CodeQL remoto | Varredura concluída e SARIF gerado; publicação no painel indisponível enquanto code scanning estiver desabilitado no repositório. |
 | Simulações PostgreSQL | Política, recompra, financeiro/arte e consolidação aprovadas em PostgreSQL 16 isolado. |
 | E2E público reforçado | 6/6 happy paths e 6/6 estados de timeout aprovados em Chromium. |
 | Regressão funcional do login otimizado | 8/8 em Vitest e 3/3 em Chromium; validação acessível e recuperação de senha sob demanda. |
@@ -67,7 +68,7 @@ Os JSONs em [evidências](evidencias/) registram os cenários SQL. Nenhuma simul
 - [ ] Implementar validação servidor da conversão de kit em orçamento e definir a semântica de reserva no catálogo somente leitura (A05).
 - [ ] Publicar migrations e Edge Functions no projeto próprio e repetir os testes via API/RLS reais.
 - [ ] Configurar os quatro secrets E2E e executar as jornadas autenticadas com duas cooperativas segregadas (A14/A19).
-- [ ] Executar o novo CodeQL remoto e encerrar os alertas no painel com a triagem registrada (A13).
+- [ ] Habilitar code scanning no repositório, definir `CODEQL_UPLOAD_ENABLED=true` e encerrar os alertas do SARIF no painel (A13).
 - [ ] Obter aceite de marca, alçadas, delegações, jurídico/LGPD e operação logística/financeira com responsáveis nominais (A15).
 - [ ] Corrigir ou formalmente isolar a dívida da suíte Vitest global e obter CI integralmente verde.
 - [ ] Homologar compra completa com catálogo, orçamento, aprovação, arte, pagamento, produção, distribuição e recebimento persistidos.
