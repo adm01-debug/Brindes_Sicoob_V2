@@ -39,6 +39,9 @@ real como concluídos.
   outra pessoa age e inclui responsáveis de PA/cooperativa e Central nas etapas
   de análise. A chamada de e-mail feita pelo navegador foi removida: não havia
   confirmação de entrega e ela endereçava o ator, não o destinatário.
+- **Exportação de campanhas:** o parâmetro que sombreava `format` foi renomeado
+  e a exportação CSV passou a escapar aspas, vírgulas e quebras de linha, usar
+  BOM UTF-8 e liberar a URL temporária após o download.
 
 ## Evidência local
 
@@ -61,6 +64,8 @@ real como concluídos.
   [eventos-status-sicoob.json](evidencias/eventos-status-sicoob.json) e o
   executor em
   [simular-eventos-status-sicoob.py](../../scripts/qa/simular-eventos-status-sicoob.py).
+- Teste unitário de exportação de campanhas: CSV com vírgula, aspas e quebra de
+  linha preservadas, mais caso sem campanhas.
 
 ## Dependências externas ainda necessárias
 

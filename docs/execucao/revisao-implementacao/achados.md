@@ -191,7 +191,7 @@ A lista remove seis nomes de campos, mas preserva setup_cost e unit_cost. O alia
 
 ## A11 — Página legada de campanhas possui exportação com colisão de nome
 
-**P2 · confirmado por leitura · Aberto**
+**P2 · corrigido localmente; pendente de validação na interface**
 
 O parâmetro format ('xlsx' ou 'csv') sombreia format do date-fns e é chamado como função. Com datas, a falha ocorre antes do try. A página não foi localizada no registro atual de rotas; não se afirma defeito exposto ao comprador.
 
@@ -204,7 +204,13 @@ O parâmetro format ('xlsx' ou 'csv') sombreia format do date-fns e é chamado c
 
 **Reprodução / conferência:** Ao reaproveitar o componente em teste isolado, exportar campanha com data; verificar TypeError por tentativa de chamar string.
 
-**Condição de fechamento:** Antes de ativar/reutilizar, renomear parâmetro, revisar exportação CSV e testar arquivo com datas, vírgulas, aspas e quebras de linha. Integrar apenas ao fluxo de campanha definido.
+**Correção local (12/09/2026):** `handleExport` passou a usar
+`exportFormat`, preservando a função `format` do `date-fns` para datas e nomes
+de arquivo. O CSV foi extraído para um utilitário com BOM UTF-8 e escape de
+aspas, vírgulas e quebras de linha; os casos especiais têm teste unitário.
+
+**Condição de fechamento:** Validar os botões XLSX e CSV no navegador com uma
+campanha real em homologação, incluindo datas e os caracteres especiais.
 
 ## A12 — Auditoria e notificação de outros status podem falhar sem bloquear a alteração
 
