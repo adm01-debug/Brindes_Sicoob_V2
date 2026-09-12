@@ -99,10 +99,10 @@ export default [
       'sonarjs/no-identical-functions': 'error',
       'sonarjs/prefer-immediate-return': 'warn',
       'complexity': ['error', 10],
-      // O ESLint 9.39.x acessa uma linha inexistente em funções que terminam
-      // no EOF quando skipBlankLines está ativo (Node 24.20). A regra segue
-      // como aviso, mas sem esse caminho defeituoso do próprio linter.
-      'max-lines-per-function': ['warn', { max: 50, skipBlankLines: false, skipComments: true }],
+      // O ESLint 9.39.x pode acessar uma linha inexistente em funções que
+      // terminam no EOF ao filtrar comentários ou linhas vazias (Node 24.20).
+      // A regra continua ativa como aviso usando a contagem física estável.
+      'max-lines-per-function': ['warn', { max: 50, skipBlankLines: false, skipComments: false }],
       'max-depth': ['error', 4],
       'max-params': ['warn', 4],
 
