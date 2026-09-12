@@ -72,3 +72,19 @@ CREATE TABLE public.sicoob_approval_requests (
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now()
 );
+
+-- Modelo mínimo do gatilho legado: se a migração não o remover, qualquer
+-- solicitação formal falha. Assim o ensaio cobre o cutover de notificação.
+CREATE FUNCTION public.notify_approval_request()
+RETURNS trigger
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  RAISE EXCEPTION 'gatilho legado de solicitação ainda está ativo';
+END;
+$$;
+
+CREATE TRIGGER on_approval_request_created
+AFTER INSERT ON public.sicoob_approval_requests
+FOR EACH ROW
+EXECUTE FUNCTION public.notify_approval_request();

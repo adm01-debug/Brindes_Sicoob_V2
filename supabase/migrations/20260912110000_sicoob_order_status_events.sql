@@ -3,6 +3,12 @@
 -- deste fluxo: o histórico Sicoob é sicoob_order_history e a interface lê
 -- workspace_notifications para avisos in-app.
 
+-- A notificação legada da inserção contém referências incompatíveis com o
+-- esquema atual e disputa a mesma responsabilidade do evento canônico abaixo.
+-- Sem removê-la, uma nova solicitação pode abortar a transação inteira.
+DROP TRIGGER IF EXISTS on_approval_request_created ON public.sicoob_approval_requests;
+DROP FUNCTION IF EXISTS public.notify_approval_request();
+
 CREATE OR REPLACE FUNCTION public.record_sicoob_order_status_event()
 RETURNS trigger
 LANGUAGE plpgsql
@@ -81,13 +87,17 @@ BEGIN
     FOR v_recipient_id IN
       WITH recipients AS (
         SELECT NEW.created_by AS user_id
+          FROM public.profiles requester
+         WHERE requester.user_id = NEW.created_by
+           AND requester.is_active IS TRUE
+           AND requester.deleted_at IS NULL
 
         UNION
 
         SELECT ur.user_id
           FROM public.user_roles ur
-          LEFT JOIN public.profiles p ON p.user_id = ur.user_id
-         WHERE COALESCE(p.is_active, true)
+          JOIN public.profiles p ON p.user_id = ur.user_id
+         WHERE p.is_active IS TRUE
            AND p.deleted_at IS NULL
            AND (
              (
@@ -140,7 +150,14 @@ BEGIN
 
   IF v_sla_became_critical
     AND NEW.created_by IS NOT NULL
-    AND NEW.created_by IS DISTINCT FROM v_actor_id THEN
+    AND NEW.created_by IS DISTINCT FROM v_actor_id
+    AND EXISTS (
+      SELECT 1
+        FROM public.profiles requester
+       WHERE requester.user_id = NEW.created_by
+         AND requester.is_active IS TRUE
+         AND requester.deleted_at IS NULL
+    ) THEN
     INSERT INTO public.workspace_notifications (
       user_id,
       title,

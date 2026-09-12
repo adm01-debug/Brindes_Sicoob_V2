@@ -110,6 +110,22 @@ CREATE TABLE public.sicoob_approval_requests (
   updated_at timestamptz NOT NULL DEFAULT now()
 );
 
+-- O banco legado tinha um gatilho concorrente de notificação nesta inserção.
+-- Ele deve desaparecer antes de as RPCs formais criarem a solicitação.
+CREATE FUNCTION public.notify_approval_request()
+RETURNS trigger
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  RAISE EXCEPTION 'gatilho legado de solicitação ainda está ativo';
+END;
+$$;
+
+CREATE TRIGGER on_approval_request_created
+AFTER INSERT ON public.sicoob_approval_requests
+FOR EACH ROW
+EXECUTE FUNCTION public.notify_approval_request();
+
 CREATE TABLE public.sicoob_manager_audit (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   manager_id uuid NOT NULL,

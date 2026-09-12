@@ -73,8 +73,17 @@ try:
 
     sql(FIXTURE.read_text())
     sql(MIGRATION.read_text())
+    legacy_trigger_count = scalar(sql("""
+      SELECT count(*)
+        FROM pg_trigger
+       WHERE tgrelid = 'public.sicoob_approval_requests'::regclass
+         AND tgname = 'on_approval_request_created'
+         AND NOT tgisinternal;
+    """))
+    assert legacy_trigger_count == "0", legacy_trigger_count
     sql(f"""
       INSERT INTO public.profiles (user_id, cooperativa_id, pa_id) VALUES
+        ('{CREATOR}', '{COOPERATIVE}', '{PA}'),
         ('{PA_MANAGER}', '{COOPERATIVE}', '{PA}'),
         ('{SUPERVISOR}', NULL, NULL),
         ('{OUTSIDER}', '{COOPERATIVE}', NULL);
@@ -138,7 +147,7 @@ try:
       SELECT comment FROM public.sicoob_order_history WHERE order_id = '{ORDER_B}';
     """))
     assert history_comment == "Solicitação de aprovação: Investimento necessário para a campanha regional"
-    result["solicitacao_de_alcada"] = "pedido, solicitação, histórico e avisos gravados no mesmo commit"
+    result["solicitacao_de_alcada"] = "pedido, solicitação, histórico e avisos gravados no mesmo commit; gatilho legado removido"
 
     concurrent = []
     for _ in range(2):

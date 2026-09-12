@@ -399,6 +399,8 @@ EXECUTE FUNCTION public.freeze_sicoob_order_while_approval_pending();
 -- O gatilho histórico de solicitações duplica o aviso da transição canônica
 -- do pedido e pode divergir dela. O histórico e as notificações passam a ter
 -- uma única origem em record_sicoob_order_status_event.
+DROP TRIGGER IF EXISTS on_approval_request_created ON public.sicoob_approval_requests;
+DROP FUNCTION IF EXISTS public.notify_approval_request();
 DROP TRIGGER IF EXISTS on_approval_status_change ON public.sicoob_approval_requests;
 
 CREATE OR REPLACE FUNCTION public.transition_sicoob_order_status(

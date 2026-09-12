@@ -115,7 +115,7 @@ export const sicoobOrderService = {
       query = query.or(`order_number.ilike.%${term}%,notes.ilike.%${term}%,tracking_code.ilike.%${term}%`);
     }
 
-    const { data: profile } = await supabase.from("profiles").select("role, pa_id, cooperativa_id").eq("id", user.id).single();
+    const { data: profile } = await supabase.from("profiles").select("role, pa_id, cooperativa_id").eq("user_id", user.id).single();
 
     if (profile?.role === 'gestor_pa' && profile.pa_id) {
       query = query.eq("pa_id", profile.pa_id);
@@ -297,7 +297,7 @@ export const sicoobOrderService = {
       };
     }));
 
-    const { data: profile } = await supabase.from("profiles").select("organization_id").eq("id", user.id).single();
+    const { data: profile } = await supabase.from("profiles").select("organization_id").eq("user_id", user.id).single();
     const subtotal = currentItems.reduce((sum, item) => sum + item.subtotal, 0);
 
     // Cria o rascunho apenas após revalidar todos os itens. O novo orçamento

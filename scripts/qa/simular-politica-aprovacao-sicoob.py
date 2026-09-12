@@ -83,6 +83,15 @@ try:
     for migration in MIGRATIONS:
         sql(migration.read_text())
 
+    legacy_trigger_count = scalar(sql("""
+      SELECT count(*)
+        FROM pg_trigger
+       WHERE tgrelid = 'public.sicoob_approval_requests'::regclass
+         AND tgname = 'on_approval_request_created'
+         AND NOT tgisinternal;
+    """))
+    assert legacy_trigger_count == "0", legacy_trigger_count
+
     rpc_privileges = scalar(sql("""
       SELECT
         has_function_privilege('authenticated', 'public.prepare_sicoob_order_confirmation(uuid, text, text)', 'EXECUTE')::text
@@ -192,7 +201,7 @@ try:
       WHERE r.id = '{request_id}';
     """))
     assert high_approved == "approved|confirmed|1", high_approved
-    result["solicitacao_formal"] = "alçada é derivada do orçamento do PA; valor, itens e dados submetidos ficam congelados"
+    result["solicitacao_formal"] = "alçada é derivada do orçamento do PA; valor, itens e dados submetidos ficam congelados; gatilho legado removido"
 
     self_request_id = scalar(actor_sql(SELF_MANAGER, f"""
       SELECT public.request_sicoob_order_approval(

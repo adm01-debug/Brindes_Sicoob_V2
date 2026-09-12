@@ -8,7 +8,7 @@
   "producao_verificada": false,
   "dentro_da_alcada": "preparação formal, confirmação do gestor e débito único validados",
   "acesso_rpc": "as RPCs novas são executáveis por authenticated e indisponíveis para anon",
-  "solicitacao_formal": "alçada é derivada do orçamento do PA; valor, itens e dados submetidos ficam congelados",
+  "solicitacao_formal": "alçada é derivada do orçamento do PA; valor, itens e dados submetidos ficam congelados; gatilho legado removido",
   "impedimentos": "autoaprovação e vínculo inativo foram recusados no servidor",
   "escalacao": "a mesma solicitação é elevada sem duplicação; somente Central ativa decide",
   "resultado": "aprovado"

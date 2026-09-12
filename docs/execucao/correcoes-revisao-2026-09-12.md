@@ -52,6 +52,10 @@ real como concluídos.
   A escalação reutiliza a solicitação pendente, sem criar duas filas para o mesmo
   pedido. O gatilho legado de notificação da solicitação foi removido para não
   duplicar a notificação canônica da mudança de status.
+- **Cutover de notificações de alçada:** removido também o gatilho legado de
+  inserção de solicitação, que possuía referências incompatíveis com o esquema
+  atual e podia reverter a transação. Os cenários isolados instalam uma versão
+  sentinela desse gatilho antes das migrações e só passam se ele for removido.
 - **Entrada:** a verificação visual agora aguarda o carregamento efetivo de ao
   menos uma marca Sicoob antes de medir a tela. Assim, ela não falha por uma
   corrida de carregamento nem aceita uma página sem logo.
