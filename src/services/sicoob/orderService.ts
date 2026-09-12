@@ -1,6 +1,11 @@
 import { supabase } from "@/integrations/supabase/client";
-import { canSicoobTransitionTo } from "@/types/sicoob/orders";
-import type { SicoobOrder, SicoobOrderItem, SicoobOrderItemLog, OrderStatus } from "@/types/sicoob/orders";
+import {
+  canSicoobTransitionTo,
+  type OrderStatus,
+  type SicoobOrder,
+  type SicoobOrderItem,
+  type SicoobOrderItemLog,
+} from "@/types/sicoob/orders";
 import { fetchPromobrindProductById, getProductPrice } from "@/lib/external-db";
 
 /**
@@ -136,66 +141,13 @@ export const sicoobOrderService = {
       });
       if (error) throw error;
     } else {
-      const { data, error } = await supabase
-        .from("sicoob_orders")
-        .update({ status, updated_at: new Date().toISOString() })
-        .eq("id", orderId)
-        .eq("status", currentStatus)
-        .select("id")
-        .maybeSingle();
+      const { error } = await supabase.rpc('transition_sicoob_order_status', {
+        p_order_id: orderId,
+        p_expected_status: currentStatus,
+        p_new_status: status,
+        p_comment: observations || null,
+      });
       if (error) throw error;
-      if (!data) throw new Error("O pedido mudou; atualize a página e tente novamente.");
-    }
-
-    // Registrar evento de auditoria se houver observações ou mudança de status
-    try {
-      await supabase.from('order_audit_events').insert({
-        order_id: orderId,
-        event_type: 'status_change',
-        old_value: { fulfillment_status: currentStatus },
-        new_value: { fulfillment_status: status },
-        observations: observations,
-        created_by: user.id,
-        actor_role: 'system_action' // Isso pode ser dinâmico dependendo do perfil
-      });
-    } catch (auditErr) {
-      console.warn("Falha ao registrar auditoria:", auditErr);
-    }
-
-    // Gatilho de notificação e registro
-    try {
-      const order = await this.getOrderById(orderId);
-      
-      // Call standard transactional email function if exists
-      try {
-        await supabase.functions.invoke('send-transactional-email', {
-          body: {
-            event_type: 'sicoob_order_status_change',
-            recipient_email: user?.email, 
-            recipient_name: user?.email?.split('@')[0],
-            data: {
-              order_number: orderId.slice(0, 8),
-              new_status: status,
-              action_url: `${window.location.origin}/sicoob/pedidos/${orderId}`
-            }
-          }
-        });
-      } catch (e) {
-        console.warn("Edge function not available yet");
-      }
-
-      // In-app notification
-      await supabase.from('notifications').insert({
-        user_id: order.created_by,
-        title: "Status do Pedido Sicoob Atualizado",
-        message: `Seu pedido #${order.order_number || orderId.slice(0, 8)} mudou para ${status}`,
-        type: 'info',
-        category: 'status',
-        source_entity_id: orderId,
-        action_url: `/sicoob/pedidos/${orderId}`
-      });
-    } catch (err) {
-      console.warn("Falha ao processar notificações:", err);
     }
   },
 

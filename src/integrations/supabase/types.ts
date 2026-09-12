@@ -9702,6 +9702,16 @@ export type Database = {
         }
         Returns: undefined
       }
+      request_sicoob_order_approval: {
+        Args: {
+          p_expected_status: string
+          p_is_escalated?: boolean
+          p_order_id: string
+          p_reason: string
+          p_threshold: number
+        }
+        Returns: string
+      }
       repair_ownership_orphans: {
         Args: {
           _dry_run?: boolean
@@ -9728,6 +9738,15 @@ export type Database = {
         Returns: number
       }
       retry_failed_webhook_deliveries: { Args: never; Returns: Json }
+      transition_sicoob_order_status: {
+        Args: {
+          p_comment?: string | null
+          p_expected_status: string
+          p_new_status: string
+          p_order_id: string
+        }
+        Returns: undefined
+      }
       search_products_semantic: {
         Args: { _limit?: number; _products: Json; _query: string }
         Returns: {

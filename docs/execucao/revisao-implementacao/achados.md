@@ -208,7 +208,7 @@ O parâmetro format ('xlsx' ou 'csv') sombreia format do date-fns e é chamado c
 
 ## A12 — Auditoria e notificação de outros status podem falhar sem bloquear a alteração
 
-**P1 · confirmado por leitura · Aberto**
+**P1 · corrigido localmente; pendente de aplicação e validação remota**
 
 Fora das RPCs críticas, update do pedido e insert de auditoria são operações separadas. Supabase retorna error sem necessariamente lançar exceção; catch não basta. Email usa endereço do ator e não uma matriz de destinatários por evento.
 
@@ -221,7 +221,17 @@ Fora das RPCs críticas, update do pedido e insert de auditoria são operações
 
 **Reprodução / conferência:** Simular sucesso de update e erro de insert/invoke; conferir status sem trilha/notificação. Essa sequência foi inspecionada, não executada remotamente.
 
-**Condição de fechamento:** Persistir transição e auditoria crítica juntas; usar fila transacional para notificações, idempotência e destinatários corretos. Falha de envio não deve apagar evento nem aparentar entrega.
+**Correção local (12/09/2026):** a migração
+`20260912110000_sicoob_order_status_events.sql` substitui os efeitos no
+cliente por gatilho transacional no histórico canônico e em
+`workspace_notifications`, que é a fonte da interface in-app. Transições
+comuns e solicitações de alçada passaram a usar RPCs com comparação do estado.
+O cenário descartável exercitou destinatários, repetição, concorrência e
+rollback quando a notificação falha. O envio de e-mail do navegador foi
+removido porque não havia trabalhador de entrega nem confirmação de resultado.
+
+**Condição de fechamento:** Aplicar a migração no Supabase Sicoob, regenerar
+tipos e validar RLS/destinatários com perfis reais de PA, cooperativa e Central.
 
 ## A13 — Análise CodeQL possui 26 alertas sem triagem conclusiva
 

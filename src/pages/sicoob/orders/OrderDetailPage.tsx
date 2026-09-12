@@ -74,7 +74,7 @@ import { OrderStatusBadge } from "@/components/sicoob/orders/OrderStatusBadge";
 import { OrderActionDialog } from "@/components/sicoob/orders/OrderActionDialog";
 import { OrderItemsHistory } from "@/components/sicoob/orders/OrderItemsHistory";
 import { SLABadge } from "@/components/sicoob/orders/SLABadge";
-import { OrderAuditTimeline } from "@/components/sicoob/orders/OrderAuditTimeline";
+import { OrderHistoryTimeline } from "@/components/orders/OrderHistoryTimeline";
 import { 
   useOrderInvoices, 
   useOrderPayments, 
@@ -156,7 +156,6 @@ export default function OrderDetailPage() {
     createRequest.mutate({
       orderId: id!,
       reason: requestReason,
-      amount: orderTotal,
       threshold: threshold,
       previousStatus: orderData.status
     }, {
@@ -230,7 +229,8 @@ export default function OrderDetailPage() {
     updateOrderStatusMutation.mutate({ 
       orderId: id!, 
       status: 'escalated_to_board', 
-      currentStatus: orderData?.status 
+      currentStatus: orderData?.status,
+      observations: requestReason,
     }, {
       onSuccess: () => {
         setIsEscalateDialogOpen(false);
@@ -662,7 +662,7 @@ export default function OrderDetailPage() {
                       <CardTitle className="text-sm">Status Timeline</CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <OrderAuditTimeline orderId={id!} />
+                      <OrderHistoryTimeline orderId={id!} />
                     </CardContent>
                   </Card>
                 </TabsContent>

@@ -46,7 +46,7 @@ export const useUpdateSicoobOrderStatus = () => {
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["sicoob_order", variables.orderId] });
       queryClient.invalidateQueries({ queryKey: ["sicoob_orders_list"] });
-      queryClient.invalidateQueries({ queryKey: ["order_audit", variables.orderId] });
+      queryClient.invalidateQueries({ queryKey: ["sicoob_order_history", variables.orderId] });
       toast.success("Status do pedido atualizado com sucesso!");
     },
     onError: (err: any) => {

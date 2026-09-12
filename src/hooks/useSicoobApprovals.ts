@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { sicoobApprovalService } from "@/services/sicoob/approvalService";
+import { sicoobOrderService } from "@/services/sicoob/orderService";
 
 export interface ApprovalRequest {
   id: string;
@@ -22,21 +23,8 @@ export interface ApprovalRequest {
 }
 
 export const useApprovalRequests = (orderId?: string) => {
-  const { profile, isAdmin, isSupervisorOrAbove, isGerentePa } = useAuth();
+  const { isAdmin, isSupervisorOrAbove, isGerentePa } = useAuth();
   const queryClient = useQueryClient();
-
-  const recordHistory = async (orderId: string, prevStatus: string, newStatus: string, comment?: string) => {
-    const { error } = await supabase
-      .from("sicoob_order_history")
-      .insert({
-        order_id: orderId,
-        user_id: profile?.id,
-        previous_status: prevStatus,
-        new_status: newStatus,
-        comment: comment || null,
-      });
-    if (error) console.error("Error recording history:", error);
-  };
 
   const { data: requests, isLoading } = useQuery({
     queryKey: ["approval_requests", orderId],
@@ -73,40 +61,17 @@ export const useApprovalRequests = (orderId?: string) => {
     mutationFn: async (payload: { 
       orderId: string; 
       reason: string; 
-      amount: number; 
       threshold: number;
       previousStatus: string;
       isEscalated?: boolean;
     }) => {
-      const targetStatus = payload.isEscalated ? 'escalated_to_board' : 'waiting_approval';
-      
-      const { error: requestError } = await supabase
-        .from("sicoob_approval_requests")
-        .insert({
-          order_id: payload.orderId,
-          requester_id: profile?.id,
-          request_reason: payload.reason,
-          amount_at_request: payload.amount,
-          threshold_at_request: payload.threshold,
-          status: 'pending',
-          metadata: payload.isEscalated ? { escalated: true, level: 'board' } : {}
-        });
-
-      if (requestError) throw requestError;
-
-      const { error: orderError } = await supabase
-        .from("sicoob_orders")
-        .update({ status: targetStatus })
-        .eq("id", payload.orderId);
-
-      if (orderError) throw orderError;
-
-      await recordHistory(
-        payload.orderId, 
-        payload.previousStatus, 
-        targetStatus, 
-        `Solicitação de aprovação ${payload.isEscalated ? '(Diretoria)' : '(Gestor)'}: ${payload.reason}`
-      );
+      await sicoobApprovalService.requestOrderApproval({
+        orderId: payload.orderId,
+        expectedStatus: payload.previousStatus,
+        reason: payload.reason,
+        threshold: payload.threshold,
+        isEscalated: payload.isEscalated,
+      });
     },
 
     onSuccess: () => {
@@ -189,18 +154,11 @@ export const useApprovalRequests = (orderId?: string) => {
         throw new Error("Apenas a Diretoria/Central pode aprovar pedidos em alçada superior.");
       }
 
-      const { error: orderError } = await supabase
-        .from("sicoob_orders")
-        .update({ status: payload.newStatus })
-        .eq("id", payload.orderId);
-
-      if (orderError) throw orderError;
-
-      await recordHistory(
+      await sicoobOrderService.updateOrderStatus(
         payload.orderId,
-        payload.previousStatus,
         payload.newStatus,
-        payload.comment
+        payload.previousStatus,
+        payload.comment,
       );
     },
     onSuccess: () => {

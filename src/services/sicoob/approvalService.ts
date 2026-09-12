@@ -1,6 +1,25 @@
 import { supabase } from "@/integrations/supabase/client";
 
 export const sicoobApprovalService = {
+  async requestOrderApproval(params: {
+    orderId: string;
+    expectedStatus: string;
+    reason: string;
+    threshold: number;
+    isEscalated?: boolean;
+  }): Promise<string> {
+    const { data, error } = await supabase.rpc('request_sicoob_order_approval', {
+      p_order_id: params.orderId,
+      p_expected_status: params.expectedStatus,
+      p_reason: params.reason,
+      p_threshold: params.threshold,
+      p_is_escalated: params.isEscalated ?? false,
+    });
+
+    if (error) throw error;
+    return data;
+  },
+
   async listPendingApprovals() {
     const { data, error } = await supabase
       .from('sicoob_approval_requests')

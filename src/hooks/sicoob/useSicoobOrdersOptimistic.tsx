@@ -1,14 +1,11 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { sicoobOrderService } from "@/services/sicoob/orderService";
-import { OrderStatus, ORDER_STATUS_CONFIG } from "@/types/sicoob/orders";
+import { ORDER_STATUS_CONFIG, type OrderStatus } from "@/types/sicoob/orders";
 import { toast } from "sonner";
-import { useUndoStack } from "@/hooks/useUndoStack";
 import { Zap } from "lucide-react";
-import React from "react";
 
 export function useSicoobOrdersOptimistic() {
   const queryClient = useQueryClient();
-  const { push } = useUndoStack();
 
   const updateStatusMutation = useMutation({
     mutationFn: async ({ 
@@ -52,24 +49,11 @@ export function useSicoobOrdersOptimistic() {
       queryClient.setQueryData(["sicoob_orders_list_kanban"], context?.previousKanbanOrders);
       toast.error("Erro na sincronização", { description: (err as any).message });
     },
-    onSuccess: (data, variables) => {
-      const { orderId, newStatus, oldStatus } = variables;
-      
-      // Adicionar à pilha de Undo
-      push({
-        id: `status-${orderId}-${Date.now()}`,
-        label: `Alteração de status do pedido #${orderId.slice(0, 8)}`,
-        undo: async () => {
-          await sicoobOrderService.updateOrderStatus(orderId, oldStatus, newStatus, "Desfeito pelo usuário");
-          queryClient.invalidateQueries({ queryKey: ["sicoob_orders_list"] });
-          queryClient.invalidateQueries({ queryKey: ["sicoob_orders_list_kanban"] });
-          toast.info("Ação desfeita com sucesso");
-        }
-      });
-
+    onSuccess: (_, variables) => {
+      const { newStatus } = variables;
       toast.success("Movimentação Concluída", {
         icon: <Zap className="h-4 w-4 text-sicoob-green" />,
-        description: `Pedido agora em "${ORDER_STATUS_CONFIG[newStatus].label}". Ctrl+Z para desfazer.`
+        description: `Pedido agora em "${ORDER_STATUS_CONFIG[newStatus].label}".`
       });
     },
     onSettled: () => {

@@ -30,6 +30,15 @@ real como concluídos.
   auditoria no mesmo commit e transforma a nova versão em rascunho, sem carregar
   aprovação, resposta do cliente ou integração da versão anterior. O hook usa
   exclusivamente essa RPC.
+- **Status e aprovações Sicoob:** a migração
+  `20260912110000_sicoob_order_status_events.sql` moveu histórico, comentário
+  e notificação in-app para a mesma transação do status. Ela não usa
+  `order_audit_events`, cuja relação histórica é do domínio legado. Mudanças
+  comuns usam RPC com comparação de estado; solicitações de alçada criam o
+  pedido e a solicitação no mesmo commit. A matriz avisa o solicitante quando
+  outra pessoa age e inclui responsáveis de PA/cooperativa e Central nas etapas
+  de análise. A chamada de e-mail feita pelo navegador foi removida: não havia
+  confirmação de entrega e ela endereçava o ator, não o destinatário.
 
 ## Evidência local
 
@@ -45,11 +54,19 @@ real como concluídos.
   [versionamento-orcamento-atomico.json](evidencias/versionamento-orcamento-atomico.json)
   e o executor em
   [simular-versionamento-orcamento-atomico.py](../../scripts/qa/simular-versionamento-orcamento-atomico.py).
+- Ensaio reproduzível para eventos de status em PostgreSQL 16 descartável e sem
+  rede: histórico e destinatários, repetição idempotente, solicitação de alçada,
+  concorrência, falha de notificação com rollback e autenticação foram
+  exercitados. A evidência está em
+  [eventos-status-sicoob.json](evidencias/eventos-status-sicoob.json) e o
+  executor em
+  [simular-eventos-status-sicoob.py](../../scripts/qa/simular-eventos-status-sicoob.py).
 
 ## Dependências externas ainda necessárias
 
 - Aplicar as migrações pendentes, inclusive
-  `20260912100000_quote_versioning_atomic.sql`, ao projeto Supabase
+  `20260912100000_quote_versioning_atomic.sql` e
+  `20260912110000_sicoob_order_status_events.sql`, ao projeto Supabase
   `cfmzkthhgliqelozlmwu`, regenerar os tipos do Supabase e executar teste de
   RLS com perfis reais autorizados.
 - O `supabase db lint --local` não pôde executar porque o Postgres local em
@@ -57,3 +74,7 @@ real como concluídos.
   alterar o ambiente compartilhado.
 - Validar a recompra contra o catálogo externo com produto, preço e estoque
   reais; o código trata indisponibilidade como bloqueio seguro.
+- O lint do repositório continua com dívida anterior fora deste lote: na última
+  execução focalizada, a página de detalhe Sicoob e hooks antigos ainda falham
+  por complexidade, `any`, imports não usados e uma chamada condicional de hook.
+  Os testes focados e a checagem de tipos dos arquivos alterados passaram.
