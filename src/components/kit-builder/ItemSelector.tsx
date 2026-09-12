@@ -4,10 +4,11 @@
  */
 
 import { useState, useMemo } from 'react';
-import { Search, AlertTriangle, X, Package } from 'lucide-react';
+import { Search, AlertTriangle, X, Package, RefreshCw } from 'lucide-react';
 import { SelectedItemsBadges } from './SelectedItemsBadges';
 import { ItemCard } from './ItemCard';
 import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import { ItemCardSkeleton } from './KitCardSkeleton';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Switch } from '@/components/ui/switch';
@@ -24,6 +25,8 @@ interface ItemSelectorProps {
   items: ItemWithCompatibility[];
   selectedItems: KitItem[];
   isLoading: boolean;
+  error?: Error | null;
+  onRetry?: () => void;
   filters: ItemFilters;
   onFiltersChange: (filters: ItemFilters) => void;
   onAddItem: (item: KitItem) => CompatibilityResult;
@@ -34,10 +37,28 @@ interface ItemSelectorProps {
   boxSelected: boolean;
 }
 
+function CatalogLoadError({ error, onRetry }: Pick<ItemSelectorProps, 'error' | 'onRetry'>) {
+  if (!error) return null;
+  return (
+    <div className="rounded-xl border border-destructive/30 bg-destructive/5 p-6 text-center">
+      <AlertTriangle className="mx-auto mb-3 h-10 w-10 text-destructive" />
+      <p className="font-medium">Não foi possível consultar os produtos</p>
+      <p className="mt-1 text-sm text-muted-foreground">A composição foi interrompida para não usar preço ou estoque fictício.</p>
+      {onRetry && <Button variant="outline" size="sm" className="mt-4" onClick={onRetry}><RefreshCw className="mr-2 h-4 w-4" />Tentar novamente</Button>}
+    </div>
+  );
+}
+
+function catalogVisibility(error: Error | null | undefined): string {
+  return error ? 'hidden' : '';
+}
+
 export function ItemSelector({
   items,
   selectedItems,
   isLoading,
+  error,
+  onRetry,
   filters,
   onFiltersChange,
   onAddItem,
@@ -141,7 +162,8 @@ export function ItemSelector({
         onReorder={onReorder}
       />
 
-      <ScrollArea className="h-[50vh] pr-4">
+      <CatalogLoadError error={error} onRetry={onRetry} />
+      <ScrollArea className={`h-[50vh] pr-4 ${catalogVisibility(error)}`}>
         {isLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
             {[1, 2, 3, 4, 5, 6].map(i => (

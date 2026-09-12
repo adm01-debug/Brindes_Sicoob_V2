@@ -4,7 +4,7 @@
  */
 
 import { useState, useMemo } from 'react';
-import { Search, Package, Check, Ruler, Box, SlidersHorizontal, X } from 'lucide-react';
+import { Search, Package, Check, Ruler, Box, SlidersHorizontal, X, AlertTriangle, RefreshCw } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -23,6 +23,8 @@ interface BoxSelectorProps {
   boxes: KitBox[];
   selectedBox: KitBox | null;
   isLoading: boolean;
+  error?: Error | null;
+  onRetry?: () => void;
   filters: BoxFilters;
   onFiltersChange: (filters: BoxFilters) => void;
   onSelect: (box: KitBox) => void;
@@ -33,6 +35,8 @@ export function BoxSelector({
   boxes,
   selectedBox,
   isLoading,
+  error,
+  onRetry,
   filters,
   onFiltersChange,
   onSelect,
@@ -238,7 +242,14 @@ export function BoxSelector({
 
       {/* Box list */}
       <ScrollArea className="h-[50vh] pr-4">
-        {isLoading ? (
+        {error ? (
+          <div className="rounded-xl border border-destructive/30 bg-destructive/5 p-6 text-center">
+            <AlertTriangle className="mx-auto mb-3 h-10 w-10 text-destructive" />
+            <p className="font-medium">Não foi possível consultar as embalagens</p>
+            <p className="mt-1 text-sm text-muted-foreground">Nenhum produto ilustrativo foi usado. Tente consultar o catálogo novamente.</p>
+            {onRetry && <Button variant="outline" size="sm" className="mt-4" onClick={onRetry}><RefreshCw className="mr-2 h-4 w-4" />Tentar novamente</Button>}
+          </div>
+        ) : isLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {[1, 2, 3, 4].map(i => (
               <BoxCardSkeleton key={i} />

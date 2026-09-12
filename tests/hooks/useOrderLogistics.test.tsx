@@ -1,5 +1,5 @@
 import { renderHook } from "@testing-library/react";
-import { useOrderLogistics } from "../useOrderExtensions";
+import { useOrderLogistics } from "@/hooks/orders/extensions";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { describe, it, expect, vi } from "vitest";
 

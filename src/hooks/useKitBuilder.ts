@@ -56,6 +56,10 @@ export function useKitBuilder() {
     availableItems,
     isLoadingBoxes,
     isLoadingItems,
+    boxesError,
+    itemsError,
+    refetchBoxes,
+    refetchItems,
     boxFilters,
     itemFilters,
     setBoxFilters,
@@ -174,7 +178,7 @@ export function useKitBuilder() {
     const existingIndex = selectedItems.findIndex(i => i.id === item.id);
     if (existingIndex >= 0) {
       const updatedItems = [...selectedItems];
-      const newQuantity = updatedItems[existingIndex].quantity + 1;
+      const newQuantity = updatedItems[existingIndex]!.quantity + 1;
       
       const result = checkItemFits(
         { ...item, quantity: 1 },
@@ -185,7 +189,7 @@ export function useKitBuilder() {
 
       if (result.fits) {
         updatedItems[existingIndex] = {
-          ...updatedItems[existingIndex],
+          ...updatedItems[existingIndex]!,
           quantity: newQuantity,
         };
         setSelectedItems(updatedItems);
@@ -308,7 +312,7 @@ export function useKitBuilder() {
     const steps: KitBuilderStep[] = ['box', 'items', 'personalization', 'summary'];
     const currentIndex = steps.indexOf(currentStep);
     if (currentIndex < steps.length - 1) {
-      setCurrentStep(steps[currentIndex + 1]);
+      setCurrentStep(steps[currentIndex + 1]!);
     }
   }, [currentStep]);
 
@@ -316,7 +320,7 @@ export function useKitBuilder() {
     const steps: KitBuilderStep[] = ['box', 'items', 'personalization', 'summary'];
     const currentIndex = steps.indexOf(currentStep);
     if (currentIndex > 0) {
-      setCurrentStep(steps[currentIndex - 1]);
+      setCurrentStep(steps[currentIndex - 1]!);
     }
   }, [currentStep]);
 
@@ -324,7 +328,7 @@ export function useKitBuilder() {
     setSelectedItems(prev => {
       const next = [...prev];
       const [moved] = next.splice(fromIndex, 1);
-      next.splice(toIndex, 0, moved);
+      if (moved) next.splice(toIndex, 0, moved);
       return next;
     });
   }, []);
@@ -411,6 +415,10 @@ export function useKitBuilder() {
     availableItems: filteredItems,
     isLoadingBoxes,
     isLoadingItems,
+    boxesError,
+    itemsError,
+    refetchBoxes,
+    refetchItems,
     boxFilters,
     setBoxFilters,
     itemFilters,

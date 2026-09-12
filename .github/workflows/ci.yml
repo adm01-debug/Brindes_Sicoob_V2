@@ -45,7 +45,7 @@ jobs:
       - name: Executar cenários de arquitetura e segurança
         run: npm run test:scenarios
 
-      - name: Executar testes críticos de sessão, acesso e pedidos
+      - name: Executar testes críticos de sessão, acesso, pedidos e kits
         run: >-
           npx vitest run
           tests/components/pages/Auth.test.tsx
@@ -55,6 +55,10 @@ jobs:
           tests/hooks/useUserRoles-race.test.tsx
           tests/sicoob/route-access-scenarios.test.tsx
           tests/services/sicoobOrderService.test.ts
+          tests/hooks/useKitStockValidation.test.tsx
+          tests/pages/kit-builder/useKitBuilderQuote.test.ts
+          tests/edge-functions/sicoob-kit-quote-catalog.test.ts
+          tests/edge-functions/cors.test.ts
 
       - uses: denoland/setup-deno@v2
         with:
@@ -70,6 +74,8 @@ jobs:
           deno check supabase/functions/health-check/index.ts
           deno check supabase/functions/expert-chat/index.ts
           deno check supabase/functions/auth-integrity-check/index.ts
+          deno check supabase/functions/sicoob-reorder/index.ts
+          deno check supabase/functions/sicoob-kit-quote/index.ts
 
       - name: Simular atomicidade da verba em PostgreSQL descartável
         run: python3 scripts/qa/simular-verba-atomica.py

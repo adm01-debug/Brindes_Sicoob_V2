@@ -5,6 +5,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { screen } from "@testing-library/react";
 import { renderWithProviders } from "../render-helpers";
 import React from "react";
+import { AriaLiveProvider } from "@/components/a11y/AriaLive";
 
 vi.mock("@/components/layout/MainLayout", () => ({
   MainLayout: ({ children }: { children: React.ReactNode }) => <div data-testid="main-layout">{children}</div>,
@@ -56,7 +57,7 @@ describe("MagicUp", () => {
 
   it("renders without crashing", async () => {
     const { default: MagicUp } = await import("@/pages/MagicUp");
-    renderWithProviders(<MagicUp />);
-    expect(screen.getByTestId("main-layout")).toBeInTheDocument();
+    renderWithProviders(<AriaLiveProvider><MagicUp /></AriaLiveProvider>);
+    expect(screen.getByRole("heading", { name: /Magic Up/i })).toBeInTheDocument();
   });
 });

@@ -3450,7 +3450,7 @@ describe("MagicUpVariationComparator — empate total de scores (determinismo)",
     expect(onSelectWinner).not.toHaveBeenCalled();
   });
 
-  it("roving tabindex: apenas card ativo tem tabIndex=0; demais cards tabIndex=-1; ativo migra ao mudar activeIndex", async () => {
+  it("mantém todos os cards no fluxo de Tab e também oferece navegação rápida por setas", async () => {
     const user = userEvent.setup();
     const navVariations: VariationItem[] = [
       { id: "rv-1", imageUrl: "https://example.com/rv1.png", qualityScore: 80 } as VariationItem,
@@ -3475,31 +3475,8 @@ describe("MagicUpVariationComparator — empate total de scores (determinismo)",
     }
 
     render(<ControlledWrapper />);
-    const total = navVariations.length;
-
-    const getCardTabIndices = (): number[] => {
-      return Array.from({ length: total }, (_, i) => {
-        const card = screen.getByRole("button", {
-          name: new RegExp(`^Selecionar variação ${i + 1}`),
-        });
-        return card.tabIndex;
-      });
-    };
-
-    const expectRovingState = (oneBasedActiveIndex: number) => {
-      const tabIndices = getCardTabIndices();
-      const zeros = tabIndices.filter((t) => t === 0);
-      expect(zeros).toHaveLength(1);
-      expect(tabIndices[oneBasedActiveIndex - 1]).toBe(0);
-      tabIndices.forEach((t, i) => {
-        if (i !== oneBasedActiveIndex - 1) {
-          expect(t).toBe(-1);
-        }
-      });
-    };
-
-    // Estado inicial: card 1 ativo
-    expectRovingState(1);
+    const cards = screen.getAllByRole("button", { name: /^Selecionar variação/ });
+    expect(cards.map((card) => card.tabIndex)).toEqual([0, 0, 0]);
 
     // Tab a partir do botão "before" entra no card ATIVO (card 1)
     const beforeBtn = screen.getByTestId("before");
@@ -3509,42 +3486,25 @@ describe("MagicUpVariationComparator — empate total de scores (determinismo)",
     const card1 = screen.getByRole("button", { name: /^Selecionar variação 1/ });
     expect(card1).toHaveFocus();
 
-    // Tab a partir do card ativo SAI do grupo (não cicla para outro card de seleção)
+    // O fluxo natural visita também o CTA de vencedor de cada card.
     await user.tab();
-    const cardsAfterTab = screen.getAllByRole("button", { name: /^Selecionar variação/ });
-    cardsAfterTab.forEach((c) => {
-      expect(c).not.toHaveFocus();
-    });
+    expect(screen.getByRole("button", { name: /Marcar variação 1 como vencedora/ })).toHaveFocus();
+    await user.tab();
+    expect(cards[1]).toHaveFocus();
 
-    // ArrowRight: card 1 → card 2; tabIndex migra
+    // Setas alteram a seleção e movem foco sem retirar os demais cards do Tab.
     card1.focus();
     await user.keyboard("{ArrowRight}");
-    expectRovingState(2);
+    expect(cards[1]).toHaveFocus();
+    expect(cards[1]).toHaveAttribute("aria-pressed", "true");
+    expect(cards.map((card) => card.tabIndex)).toEqual([0, 0, 0]);
 
-    // ArrowRight: card 2 → card 3; tabIndex migra
-    await user.keyboard("{ArrowRight}");
-    expectRovingState(3);
-
-    // End: → último
+    // Home e End continuam disponíveis para navegação eficiente.
     await user.keyboard("{End}");
-    expectRovingState(total);
-
-    // Home: → primeiro
-    await user.keyboard("{Home}");
-    expectRovingState(1);
-
-    // Após Home, Tab a partir de "before" deve entrar no card 1 (ativo)
-    beforeBtn.focus();
-    await user.tab();
-    expect(card1).toHaveFocus();
-
-    // Mude activeIndex para 2 via setas e valide que Tab agora entra no card 2
+    expect(cards[2]).toHaveFocus();
+    expect(cards[2]).toHaveAttribute("aria-pressed", "true");
     await user.keyboard("{ArrowRight}");
-    expectRovingState(2);
-    beforeBtn.focus();
-    await user.tab();
-    const card2 = screen.getByRole("button", { name: /^Selecionar variação 2/ });
-    expect(card2).toHaveFocus();
+    expect(card1).toHaveFocus();
   });
 
   describe("ativação por Enter/Espaço nos botões", () => {

@@ -55,6 +55,26 @@ vi.mock('@/components/admin/telemetry/TelemetryCharts', () => ({
   ),
 }));
 
+// Os painéis lazy têm suítes próprias. Aqui isolamos o shell de telemetria
+// para evitar que textos e botões internos contaminem as consultas da página.
+vi.mock('@/components/admin/telemetry/ProductsListingLatencyAlert', () => ({ ProductsListingLatencyAlert: () => null }));
+vi.mock('@/components/admin/telemetry/ResolveProductsSelectComparisonCard', () => ({ ResolveProductsSelectComparisonCard: () => null }));
+vi.mock('@/components/admin/telemetry/HighLimitTelemetryCard', () => ({ HighLimitTelemetryCard: () => null }));
+vi.mock('@/components/admin/telemetry/OptimizationMetricsCards', () => ({ OptimizationMetricsCards: () => null }));
+vi.mock('@/components/admin/telemetry/RegressionGuardrailBanner', () => ({ RegressionGuardrailBanner: () => null }));
+vi.mock('@/components/admin/telemetry/OptimizationQueuePanel', () => ({ OptimizationQueuePanel: () => null }));
+vi.mock('@/components/admin/telemetry/PlatformFailureCards', () => ({ PlatformFailureCards: () => null }));
+vi.mock('@/components/admin/telemetry/PlatformFailureAlertBanner', () => ({ PlatformFailureAlertBanner: () => null }));
+vi.mock('@/components/admin/telemetry/AppHealthDashboard', () => ({ AppHealthDashboard: () => null }));
+vi.mock('@/components/admin/telemetry/ColdStartRetriesPanel', () => ({ ColdStartRetriesPanel: () => null }));
+vi.mock('@/components/admin/telemetry/BridgesLiveCard', () => ({ BridgesLiveCard: () => null }));
+vi.mock('@/components/admin/telemetry/BridgeAlertsCard', () => ({ BridgeAlertsCard: () => null }));
+vi.mock('@/components/admin/telemetry/ColdVsWarmCrmCard', () => ({ ColdVsWarmCrmCard: () => null }));
+vi.mock('@/components/admin/telemetry/BreakerStatusCard', () => ({ BreakerStatusCard: () => null }));
+vi.mock('@/components/admin/telemetry/EdgeFunctionLogsPanel', () => ({ EdgeFunctionLogsPanel: () => null }));
+vi.mock('@/components/admin/telemetry/AppLogsTable', () => ({ AppLogsTable: () => null }));
+vi.mock('@/components/admin/telemetry/InstrumentationToggleButton', () => ({ InstrumentationToggleButton: () => null }));
+
 // Mock MainLayout
 vi.mock('@/components/layout/MainLayout', () => ({
   MainLayout: ({ children }: any) => <div data-testid="main-layout">{children}</div>,
@@ -180,10 +200,10 @@ describe('AdminTelemetriaPage - Rendering', () => {
     }, { timeout: 15000 });
   });
 
-  it('renders inside MainLayout', async () => {
+  it('delega o MainLayout para a composição de rotas, sem duplicá-lo', async () => {
     setupSupabaseMock([]);
     render(<AdminTelemetriaPage />);
-    expect(screen.getByTestId('main-layout')).toBeInTheDocument();
+    expect(screen.queryByTestId('main-layout')).not.toBeInTheDocument();
   });
 
   it('renders all 4 stat cards', async () => {

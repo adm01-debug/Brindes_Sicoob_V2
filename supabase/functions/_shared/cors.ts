@@ -7,6 +7,7 @@ const EXACT_ALLOWED_ORIGINS = new Set([
   'https://fe8e4c8b-66f6-4a3b-bbec-0366e2d42e04.lovableproject.com',
   'https://promogifts.com.br',
   'https://www.promogifts.com.br',
+  'https://brindes-sicoob-v2.vercel.app',
   'http://localhost:5173',
   'http://localhost:8080',
   'http://localhost:3000',
@@ -16,6 +17,9 @@ const EXACT_ALLOWED_ORIGINS = new Set([
 ]);
 
 const ALLOWED_ORIGIN_PATTERNS = [
+  // Previews gerados pelo projeto Brindes Sicoob na Vercel. O prefixo
+  // específico impede que qualquer outro projeto *.vercel.app seja aceito.
+  /^https:\/\/brindes-sicoob-v2(?:-[a-z0-9-]+)?\.vercel\.app$/i,
   /^https:\/\/[a-z0-9-]+\.lovable\.app$/i,
   /^https:\/\/[a-z0-9-]+\.lovableproject\.com$/i,
   /^http:\/\/localhost(?::\d+)?$/i,

@@ -11,11 +11,16 @@
 import { describe, it, expect, beforeAll, afterAll, vi } from "vitest";
 import { render, screen, fireEvent, within } from "@testing-library/react";
 import { useState } from "react";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import { QuoteBuilderSummaryColumn } from "@/components/quotes/QuoteBuilderSummaryColumn";
 import type { QuoteItem } from "@/hooks/useQuotes";
 
 vi.mock("sonner", () => ({
   toast: { success: vi.fn(), error: vi.fn() },
+}));
+
+vi.mock("@/contexts/AuthContext", () => ({
+  useAuth: () => ({ isGerentePa: false }),
 }));
 
 const FIXED_NOW = new Date("2026-04-24T12:00:00.000Z").getTime();
@@ -82,7 +87,8 @@ function Harness({ initial }: { initial: QuoteItem[] }) {
       ),
     );
   return (
-    <QuoteBuilderSummaryColumn
+    <TooltipProvider>
+      <QuoteBuilderSummaryColumn
       items={items}
       activeItemIndex={null}
       setActiveItemIndex={() => {}}
@@ -104,7 +110,8 @@ function Harness({ initial }: { initial: QuoteItem[] }) {
       onSave={() => {}}
       confirmItemPrice={confirmItemPrice}
       confirmAllStalePrices={confirmAllStalePrices}
-    />
+      />
+    </TooltipProvider>
   );
 }
 
@@ -153,7 +160,7 @@ describe("QuoteBuilderSummaryColumn — Confirmar todos (com diálogo)", () => {
     // "Preço pode estar defasado", aging usa "Atualizado há Nd". Validamos
     // que o item stale (90d) ainda tem o badge amber.
     expect(
-      screen.getAllByLabelText(/preço pode estar defasado/i, { selector: "span" }),
+      screen.getAllByLabelText(/preço possivelmente defasado/i, { selector: "span", hidden: true }),
     ).toHaveLength(1);
   });
 
@@ -173,7 +180,7 @@ describe("QuoteBuilderSummaryColumn — Confirmar todos (com diálogo)", () => {
     // Chip e badge stale continuam intactos (1 stale + 1 aging)
     expect(screen.getByRole("button", { name: /preço a confirmar/i })).toBeInTheDocument();
     expect(
-      screen.getAllByLabelText(/preço pode estar defasado/i, { selector: "span" }),
+      screen.getAllByLabelText(/preço possivelmente defasado/i, { selector: "span" }),
     ).toHaveLength(1);
   });
 
@@ -214,7 +221,7 @@ describe("QuoteBuilderSummaryColumn — Confirmar todos (com diálogo)", () => {
     expect(screen.queryByRole("button", { name: /confirmar todos/i })).not.toBeInTheDocument();
     // Nenhum badge stale/aging restante (todos viraram pill verde "Confirmado")
     expect(
-      screen.queryByLabelText(/preço pode estar defasado/i, { selector: "span" }),
+      screen.queryByLabelText(/preço possivelmente defasado/i, { selector: "span" }),
     ).not.toBeInTheDocument();
   });
 

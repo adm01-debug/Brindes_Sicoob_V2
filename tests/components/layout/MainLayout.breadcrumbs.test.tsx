@@ -1,12 +1,11 @@
 /**
  * Tests for MainLayout — covers the PR change:
- *   Added <PersistentBreadcrumbs className="mb-4" showBackButton /> inside a
- *   print:hidden wrapper in the main content area.
+ *   Mantém <PersistentBreadcrumbs /> na barra sticky do layout.
  *
  * Verifies:
  * - PersistentBreadcrumbs is rendered inside MainLayout
  * - The breadcrumbs wrapper has the print:hidden class
- * - The component is not rendered in the print:hidden section when className prop is passed
+ * - Os wrappers lazy que recebem children preservam o conteúdo do layout
  */
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { screen } from "@testing-library/react";
@@ -17,7 +16,17 @@ import React from "react";
 
 vi.mock("@/lib/lazyWithRetry", () => ({
   lazyWithRetry: (factory: () => Promise<{ default: React.ComponentType }>) => {
-    // Return a simple stub instead of lazy loading
+    const source = factory.toString();
+    if (source.includes("PersistentBreadcrumbs")) {
+      return ({ className, showBackButton }: { className?: string; showBackButton?: boolean }) => (
+        <nav data-testid="persistent-breadcrumbs" className={className} data-show-back-button={showBackButton ? "true" : "false"}>
+          Breadcrumbs
+        </nav>
+      );
+    }
+    if (source.includes("PageTransition") || source.includes("GlobalCommandBar")) {
+      return ({ children }: { children?: React.ReactNode }) => <>{children}</>;
+    }
     const Stub = () => null;
     return Stub;
   },
@@ -75,7 +84,7 @@ describe("MainLayout — PersistentBreadcrumbs (PR)", () => {
     expect(screen.getByTestId("persistent-breadcrumbs")).toBeInTheDocument();
   });
 
-  it("renders PersistentBreadcrumbs with mb-4 className", async () => {
+  it("renders PersistentBreadcrumbs with the current compact layout classes", async () => {
     const { MainLayout } = await import("@/components/layout/MainLayout");
     renderWithProviders(
       <MainLayout>
@@ -84,7 +93,7 @@ describe("MainLayout — PersistentBreadcrumbs (PR)", () => {
     );
 
     const breadcrumbs = screen.getByTestId("persistent-breadcrumbs");
-    expect(breadcrumbs).toHaveClass("mb-4");
+    expect(breadcrumbs).toHaveClass("py-0.5", "flex-1");
   });
 
   it("renders PersistentBreadcrumbs with showBackButton=true", async () => {
@@ -108,7 +117,7 @@ describe("MainLayout — PersistentBreadcrumbs (PR)", () => {
     );
 
     const breadcrumbs = screen.getByTestId("persistent-breadcrumbs");
-    const wrapper = breadcrumbs.parentElement;
+    const wrapper = breadcrumbs.closest('[data-testid="breadcrumb-bar"]');
     expect(wrapper).not.toBeNull();
     expect(wrapper?.className).toContain("print:hidden");
   });

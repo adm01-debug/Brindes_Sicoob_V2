@@ -16,7 +16,7 @@ exports[`MagicUpVariationComparator snapshots > snapshot — empate de scores [7
     </p>
     <div
       aria-label="Melhor score entre variações: 90"
-      class="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80"
+      class="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 hover:scale-105 select-none hover:shadow-sm border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80"
     >
       Melhor score: 
       90
@@ -81,7 +81,7 @@ exports[`MagicUpVariationComparator snapshots > snapshot — empate de scores [7
       >
         <button
           aria-label="Marcar variação 1 como vencedora"
-          class="inline-flex items-center justify-center gap-2 whitespace-nowrap font-medium ring-offset-background transition-all duration-200 focus-visible:outline-none disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 touch-manipulation active:scale-[0.98] hover:bg-accent hover:text-accent-foreground rounded-md px-3 min-h-[36px] h-6 w-full text-[11px] focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:bg-muted disabled:text-muted-foreground disabled:opacity-100"
+          class="inline-flex items-center justify-center gap-2 whitespace-nowrap font-medium ring-offset-background transition-all duration-300 focus-visible:outline-none disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 touch-manipulation focus-within:ring-2 hover:bg-accent hover:text-accent-foreground active:scale-95 rounded-md px-3 min-h-[36px] h-6 w-full text-[11px] focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:bg-muted disabled:text-muted-foreground disabled:opacity-100"
           data-testid="variation-winner-button-1"
           data-variation-index="0"
         >
@@ -117,7 +117,7 @@ exports[`MagicUpVariationComparator snapshots > snapshot — empate de scores [7
           />
           <div
             aria-label="Melhor score"
-            class="inline-flex items-center rounded-full border px-2.5 py-0.5 font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent bg-primary text-primary-foreground hover:bg-primary/80 absolute left-1 top-1 text-[10px]"
+            class="inline-flex items-center rounded-full border px-2.5 py-0.5 font-semibold transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 hover:scale-105 select-none hover:shadow-sm border-transparent bg-brand text-brand-foreground hover:bg-brand/80 absolute left-1 top-1 text-[10px]"
           >
             Melhor score
           </div>
@@ -148,7 +148,7 @@ exports[`MagicUpVariationComparator snapshots > snapshot — empate de scores [7
       >
         <button
           aria-label="Marcar variação 2 como vencedora"
-          class="inline-flex items-center justify-center gap-2 whitespace-nowrap font-medium ring-offset-background transition-all duration-200 focus-visible:outline-none disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 touch-manipulation active:scale-[0.98] hover:bg-accent hover:text-accent-foreground rounded-md px-3 min-h-[36px] h-6 w-full text-[11px] focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:bg-muted disabled:text-muted-foreground disabled:opacity-100"
+          class="inline-flex items-center justify-center gap-2 whitespace-nowrap font-medium ring-offset-background transition-all duration-300 focus-visible:outline-none disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 touch-manipulation focus-within:ring-2 hover:bg-accent hover:text-accent-foreground active:scale-95 rounded-md px-3 min-h-[36px] h-6 w-full text-[11px] focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:bg-muted disabled:text-muted-foreground disabled:opacity-100"
           data-testid="variation-winner-button-2"
           data-variation-index="1"
         >
@@ -209,7 +209,7 @@ exports[`MagicUpVariationComparator snapshots > snapshot — empate de scores [7
       >
         <button
           aria-label="Marcar variação 3 como vencedora"
-          class="inline-flex items-center justify-center gap-2 whitespace-nowrap font-medium ring-offset-background transition-all duration-200 focus-visible:outline-none disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 touch-manipulation active:scale-[0.98] hover:bg-accent hover:text-accent-foreground rounded-md px-3 min-h-[36px] h-6 w-full text-[11px] focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:bg-muted disabled:text-muted-foreground disabled:opacity-100"
+          class="inline-flex items-center justify-center gap-2 whitespace-nowrap font-medium ring-offset-background transition-all duration-300 focus-visible:outline-none disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 touch-manipulation focus-within:ring-2 hover:bg-accent hover:text-accent-foreground active:scale-95 rounded-md px-3 min-h-[36px] h-6 w-full text-[11px] focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:bg-muted disabled:text-muted-foreground disabled:opacity-100"
           data-testid="variation-winner-button-3"
           data-variation-index="2"
         >
@@ -237,7 +237,7 @@ exports[`MagicUpVariationComparator snapshots > snapshot — estado base com 3 v
     </p>
     <div
       aria-label="Melhor score entre variações: 92"
-      class="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80"
+      class="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 hover:scale-105 select-none hover:shadow-sm border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80"
     >
       Melhor score: 
       92
@@ -302,7 +302,7 @@ exports[`MagicUpVariationComparator snapshots > snapshot — estado base com 3 v
       >
         <button
           aria-label="Marcar variação 1 como vencedora"
-          class="inline-flex items-center justify-center gap-2 whitespace-nowrap font-medium ring-offset-background transition-all duration-200 focus-visible:outline-none disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 touch-manipulation active:scale-[0.98] hover:bg-accent hover:text-accent-foreground rounded-md px-3 min-h-[36px] h-6 w-full text-[11px] focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:bg-muted disabled:text-muted-foreground disabled:opacity-100"
+          class="inline-flex items-center justify-center gap-2 whitespace-nowrap font-medium ring-offset-background transition-all duration-300 focus-visible:outline-none disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 touch-manipulation focus-within:ring-2 hover:bg-accent hover:text-accent-foreground active:scale-95 rounded-md px-3 min-h-[36px] h-6 w-full text-[11px] focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:bg-muted disabled:text-muted-foreground disabled:opacity-100"
           data-testid="variation-winner-button-1"
           data-variation-index="0"
         >
@@ -363,7 +363,7 @@ exports[`MagicUpVariationComparator snapshots > snapshot — estado base com 3 v
       >
         <button
           aria-label="Marcar variação 2 como vencedora"
-          class="inline-flex items-center justify-center gap-2 whitespace-nowrap font-medium ring-offset-background transition-all duration-200 focus-visible:outline-none disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 touch-manipulation active:scale-[0.98] hover:bg-accent hover:text-accent-foreground rounded-md px-3 min-h-[36px] h-6 w-full text-[11px] focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:bg-muted disabled:text-muted-foreground disabled:opacity-100"
+          class="inline-flex items-center justify-center gap-2 whitespace-nowrap font-medium ring-offset-background transition-all duration-300 focus-visible:outline-none disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 touch-manipulation focus-within:ring-2 hover:bg-accent hover:text-accent-foreground active:scale-95 rounded-md px-3 min-h-[36px] h-6 w-full text-[11px] focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:bg-muted disabled:text-muted-foreground disabled:opacity-100"
           data-testid="variation-winner-button-2"
           data-variation-index="1"
         >
@@ -399,7 +399,7 @@ exports[`MagicUpVariationComparator snapshots > snapshot — estado base com 3 v
           />
           <div
             aria-label="Melhor score"
-            class="inline-flex items-center rounded-full border px-2.5 py-0.5 font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent bg-primary text-primary-foreground hover:bg-primary/80 absolute left-1 top-1 text-[10px]"
+            class="inline-flex items-center rounded-full border px-2.5 py-0.5 font-semibold transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 hover:scale-105 select-none hover:shadow-sm border-transparent bg-brand text-brand-foreground hover:bg-brand/80 absolute left-1 top-1 text-[10px]"
           >
             Melhor score
           </div>
@@ -430,7 +430,7 @@ exports[`MagicUpVariationComparator snapshots > snapshot — estado base com 3 v
       >
         <button
           aria-label="Marcar variação 3 como vencedora"
-          class="inline-flex items-center justify-center gap-2 whitespace-nowrap font-medium ring-offset-background transition-all duration-200 focus-visible:outline-none disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 touch-manipulation active:scale-[0.98] hover:bg-accent hover:text-accent-foreground rounded-md px-3 min-h-[36px] h-6 w-full text-[11px] focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:bg-muted disabled:text-muted-foreground disabled:opacity-100"
+          class="inline-flex items-center justify-center gap-2 whitespace-nowrap font-medium ring-offset-background transition-all duration-300 focus-visible:outline-none disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 touch-manipulation focus-within:ring-2 hover:bg-accent hover:text-accent-foreground active:scale-95 rounded-md px-3 min-h-[36px] h-6 w-full text-[11px] focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:bg-muted disabled:text-muted-foreground disabled:opacity-100"
           data-testid="variation-winner-button-3"
           data-variation-index="2"
         >
@@ -458,7 +458,7 @@ exports[`MagicUpVariationComparator snapshots > snapshot — scores ausentes exi
     </p>
     <div
       aria-label="Melhor score entre variações: indisponível"
-      class="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80"
+      class="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 hover:scale-105 select-none hover:shadow-sm border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80"
     >
       Melhor score: 
       —
@@ -523,7 +523,7 @@ exports[`MagicUpVariationComparator snapshots > snapshot — scores ausentes exi
       >
         <button
           aria-label="Marcar variação 1 como vencedora"
-          class="inline-flex items-center justify-center gap-2 whitespace-nowrap font-medium ring-offset-background transition-all duration-200 focus-visible:outline-none disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 touch-manipulation active:scale-[0.98] hover:bg-accent hover:text-accent-foreground rounded-md px-3 min-h-[36px] h-6 w-full text-[11px] focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:bg-muted disabled:text-muted-foreground disabled:opacity-100"
+          class="inline-flex items-center justify-center gap-2 whitespace-nowrap font-medium ring-offset-background transition-all duration-300 focus-visible:outline-none disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 touch-manipulation focus-within:ring-2 hover:bg-accent hover:text-accent-foreground active:scale-95 rounded-md px-3 min-h-[36px] h-6 w-full text-[11px] focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:bg-muted disabled:text-muted-foreground disabled:opacity-100"
           data-testid="variation-winner-button-1"
           data-variation-index="0"
         >
@@ -584,7 +584,7 @@ exports[`MagicUpVariationComparator snapshots > snapshot — scores ausentes exi
       >
         <button
           aria-label="Marcar variação 2 como vencedora"
-          class="inline-flex items-center justify-center gap-2 whitespace-nowrap font-medium ring-offset-background transition-all duration-200 focus-visible:outline-none disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 touch-manipulation active:scale-[0.98] hover:bg-accent hover:text-accent-foreground rounded-md px-3 min-h-[36px] h-6 w-full text-[11px] focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:bg-muted disabled:text-muted-foreground disabled:opacity-100"
+          class="inline-flex items-center justify-center gap-2 whitespace-nowrap font-medium ring-offset-background transition-all duration-300 focus-visible:outline-none disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 touch-manipulation focus-within:ring-2 hover:bg-accent hover:text-accent-foreground active:scale-95 rounded-md px-3 min-h-[36px] h-6 w-full text-[11px] focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:bg-muted disabled:text-muted-foreground disabled:opacity-100"
           data-testid="variation-winner-button-2"
           data-variation-index="1"
         >
@@ -645,7 +645,7 @@ exports[`MagicUpVariationComparator snapshots > snapshot — scores ausentes exi
       >
         <button
           aria-label="Marcar variação 3 como vencedora"
-          class="inline-flex items-center justify-center gap-2 whitespace-nowrap font-medium ring-offset-background transition-all duration-200 focus-visible:outline-none disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 touch-manipulation active:scale-[0.98] hover:bg-accent hover:text-accent-foreground rounded-md px-3 min-h-[36px] h-6 w-full text-[11px] focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:bg-muted disabled:text-muted-foreground disabled:opacity-100"
+          class="inline-flex items-center justify-center gap-2 whitespace-nowrap font-medium ring-offset-background transition-all duration-300 focus-visible:outline-none disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 touch-manipulation focus-within:ring-2 hover:bg-accent hover:text-accent-foreground active:scale-95 rounded-md px-3 min-h-[36px] h-6 w-full text-[11px] focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:bg-muted disabled:text-muted-foreground disabled:opacity-100"
           data-testid="variation-winner-button-3"
           data-variation-index="2"
         >
@@ -673,7 +673,7 @@ exports[`MagicUpVariationComparator snapshots > snapshot — variação ativa em
     </p>
     <div
       aria-label="Melhor score entre variações: 92"
-      class="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80"
+      class="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 hover:scale-105 select-none hover:shadow-sm border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80"
     >
       Melhor score: 
       92
@@ -737,7 +737,7 @@ exports[`MagicUpVariationComparator snapshots > snapshot — variação ativa em
       >
         <button
           aria-label="Marcar variação 1 como vencedora"
-          class="inline-flex items-center justify-center gap-2 whitespace-nowrap font-medium ring-offset-background transition-all duration-200 focus-visible:outline-none disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 touch-manipulation active:scale-[0.98] hover:bg-accent hover:text-accent-foreground rounded-md px-3 min-h-[36px] h-6 w-full text-[11px] focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:bg-muted disabled:text-muted-foreground disabled:opacity-100"
+          class="inline-flex items-center justify-center gap-2 whitespace-nowrap font-medium ring-offset-background transition-all duration-300 focus-visible:outline-none disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 touch-manipulation focus-within:ring-2 hover:bg-accent hover:text-accent-foreground active:scale-95 rounded-md px-3 min-h-[36px] h-6 w-full text-[11px] focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:bg-muted disabled:text-muted-foreground disabled:opacity-100"
           data-testid="variation-winner-button-1"
           data-variation-index="0"
         >
@@ -799,7 +799,7 @@ exports[`MagicUpVariationComparator snapshots > snapshot — variação ativa em
       >
         <button
           aria-label="Marcar variação 2 como vencedora"
-          class="inline-flex items-center justify-center gap-2 whitespace-nowrap font-medium ring-offset-background transition-all duration-200 focus-visible:outline-none disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 touch-manipulation active:scale-[0.98] hover:bg-accent hover:text-accent-foreground rounded-md px-3 min-h-[36px] h-6 w-full text-[11px] focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:bg-muted disabled:text-muted-foreground disabled:opacity-100"
+          class="inline-flex items-center justify-center gap-2 whitespace-nowrap font-medium ring-offset-background transition-all duration-300 focus-visible:outline-none disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 touch-manipulation focus-within:ring-2 hover:bg-accent hover:text-accent-foreground active:scale-95 rounded-md px-3 min-h-[36px] h-6 w-full text-[11px] focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:bg-muted disabled:text-muted-foreground disabled:opacity-100"
           data-testid="variation-winner-button-2"
           data-variation-index="1"
         >
@@ -835,7 +835,7 @@ exports[`MagicUpVariationComparator snapshots > snapshot — variação ativa em
           />
           <div
             aria-label="Melhor score"
-            class="inline-flex items-center rounded-full border px-2.5 py-0.5 font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent bg-primary text-primary-foreground hover:bg-primary/80 absolute left-1 top-1 text-[10px]"
+            class="inline-flex items-center rounded-full border px-2.5 py-0.5 font-semibold transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 hover:scale-105 select-none hover:shadow-sm border-transparent bg-brand text-brand-foreground hover:bg-brand/80 absolute left-1 top-1 text-[10px]"
           >
             Melhor score
           </div>
@@ -866,7 +866,7 @@ exports[`MagicUpVariationComparator snapshots > snapshot — variação ativa em
       >
         <button
           aria-label="Marcar variação 3 como vencedora"
-          class="inline-flex items-center justify-center gap-2 whitespace-nowrap font-medium ring-offset-background transition-all duration-200 focus-visible:outline-none disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 touch-manipulation active:scale-[0.98] hover:bg-accent hover:text-accent-foreground rounded-md px-3 min-h-[36px] h-6 w-full text-[11px] focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:bg-muted disabled:text-muted-foreground disabled:opacity-100"
+          class="inline-flex items-center justify-center gap-2 whitespace-nowrap font-medium ring-offset-background transition-all duration-300 focus-visible:outline-none disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 touch-manipulation focus-within:ring-2 hover:bg-accent hover:text-accent-foreground active:scale-95 rounded-md px-3 min-h-[36px] h-6 w-full text-[11px] focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:bg-muted disabled:text-muted-foreground disabled:opacity-100"
           data-testid="variation-winner-button-3"
           data-variation-index="2"
         >

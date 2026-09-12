@@ -71,7 +71,7 @@ export const OptimizedImage = React.forwardRef<HTMLImageElement, OptimizedImageP
           sizes={sizes}
           loading={priority ? "eager" : "lazy"}
           decoding={priority ? "sync" : "async"}
-          fetchPriority={priority ? "high" : "low"}
+          {...{ fetchpriority: priority ? "high" : "low" }}
           className={cn(
             "h-full w-full object-contain transition-all duration-500",
             loaded ? "opacity-100 scale-100" : "opacity-0 scale-[1.02]",

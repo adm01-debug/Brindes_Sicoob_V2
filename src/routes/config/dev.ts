@@ -27,6 +27,18 @@ export const devRoutes = [
     path: "/admin/conexoes", 
     component: lazyWithRetry(() => import("@/pages/admin/AdminConexoesPage")) 
   }),
+  defineRoute({
+    path: "/admin/conexoes/status",
+    component: lazyWithRetry(() => import("@/pages/admin/AdminConexoesPage")),
+  }),
+  defineRoute({
+    path: "/admin/external-db",
+    component: lazyWithRetry(() => import("@/pages/admin/AdminExternalDbPage")),
+  }),
+  defineRoute({
+    path: "/external-db-test",
+    component: lazyWithRetry(() => import("@/pages/ExternalDatabaseTest")),
+  }),
   defineRoute({ 
     path: "/admin/prompts-ia", 
     component: lazyWithRetry(() => import("@/pages/admin/AdminPromptsIAPage")) 

@@ -1,124 +1,154 @@
-/**
- * Testes — useKitBuilderQuote
- *
- * Garante que o hook envia `seller_id = user.id` no INSERT em `quotes`
- * quando o usuário cria um orçamento a partir do Kit Builder. Também
- * verifica que sem usuário autenticado nenhuma mutação é disparada.
- */
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { act, renderHook } from "@testing-library/react";
-import { createSupabaseMock } from "../../helpers/supabase-mock";
-import type { KitState } from "@/hooks/useKitBuilder";
+import { act, renderHook } from '@testing-library/react';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import type { KitState } from '@/hooks/useKitBuilder';
+import { buildKitQuotePayload } from '@/pages/kit-builder/kitQuoteRequest';
 
-vi.mock("@/lib/logger", () => ({ logger: { error: vi.fn(), warn: vi.fn(), info: vi.fn() } }));
-vi.mock("sonner", () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
-vi.mock("react-router-dom", () => ({ useNavigate: () => vi.fn() }));
-vi.mock("@/lib/kit-builder", () => ({
-  calculateTotalKitPrice: () => ({ total: 250 }),
-}));
+vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 
-const USER_ID = "vendedor-uuid-7";
+const USER_ID = '11111111-1111-1111-1111-111111111111';
 
 const KIT_STATE: KitState = {
   isValid: true,
-  kitType: "premium",
-  name: "Kit teste",
-  identity: { color: "#fff", icon: "star", tag: "PROMO" },
+  kitType: 'montado',
+  name: 'Kit teste',
+  identity: { color: '#fff', icon: 'star', tag: 'PROMO' },
   box: {
-    id: "box-1",
-    name: "Caixa A",
-    sku: "BOX-A",
-    imageUrl: null,
+    id: 'box-1',
+    name: 'Caixa A',
+    sku: 'BOX-A',
+    imageUrl: 'https://catalogo.invalid/caixa.webp',
     price: 50,
     internalWidth: 30,
     internalHeight: 20,
     internalDepth: 10,
-  } as KitState["box"],
+  } as KitState['box'],
   items: [
-    { id: "item-1", name: "Caneta", sku: "PEN", imageUrl: null, price: 10, quantity: 5, isOptional: false, selectedColor: null } as KitState["items"][number],
+    {
+      id: 'item-1',
+      name: 'Caneta adulterável no navegador',
+      sku: 'PEN-CLIENTE',
+      imageUrl: 'https://catalogo.invalid/caneta.webp',
+      price: 0.01,
+      quantity: 5,
+      isOptional: false,
+      selectedVariantId: 'variant-1',
+      selectedColor: { name: 'Verde', hex: '#00A091' },
+    } as KitState['items'][number],
   ],
-  personalization: { box: { enabled: false }, items: {} } as KitState["personalization"],
+  personalization: {
+    box: { enabled: false },
+    items: {
+      'item-1': {
+        enabled: true,
+        techniqueId: 'tech-1',
+        techniqueName: 'Nome do cliente',
+        colors: 2,
+        width: 3,
+        height: 2,
+        estimatedPrice: 0.01,
+      },
+    },
+  },
   volumeUsagePercent: 80,
 } as KitState;
 
-describe("useKitBuilderQuote — payloads", () => {
-  let mock: ReturnType<typeof createSupabaseMock>;
+describe('contrato de conversão do Kit Builder', () => {
+  it('envia somente IDs, quantidades e parâmetros; preço e descrição vêm do servidor', () => {
+    const payload = buildKitQuotePayload(KIT_STATE, 3, 'idempotencia-0001');
+    expect(payload.lines).toEqual([
+      expect.objectContaining({ lineId: 'box', productId: 'box-1', unitsPerKit: 1, kind: 'box' }),
+      expect.objectContaining({
+        lineId: 'item:0',
+        productId: 'item-1',
+        variantId: 'variant-1',
+        unitsPerKit: 5,
+        kind: 'item',
+        personalization: { techniqueId: 'tech-1', colors: 2, width: 3, height: 2 },
+      }),
+    ]);
+    const serialized = JSON.stringify(payload);
+    expect(serialized).not.toContain('0.01');
+    expect(serialized).not.toContain('Caneta adulterável');
+    expect(serialized).not.toContain('PEN-CLIENTE');
+    expect(serialized).not.toContain('catalogo.invalid');
+  });
+
+  it('recusa personalização habilitada sem técnica', () => {
+    const invalid = {
+      ...KIT_STATE,
+      personalization: { ...KIT_STATE.personalization, items: { 'item-1': { enabled: true } } },
+    } as KitState;
+    expect(() => buildKitQuotePayload(invalid, 1, 'idempotencia-0002')).toThrow('Selecione a técnica');
+  });
+});
+
+describe('useKitBuilderQuote', () => {
+  const navigate = vi.fn();
+  let invoke: ReturnType<typeof vi.fn>;
+  let from: ReturnType<typeof vi.fn>;
 
   beforeEach(() => {
     vi.resetModules();
+    navigate.mockReset();
+    invoke = vi.fn().mockResolvedValue({
+      data: { quoteId: 'quote-1', quoteNumber: 'ORC-001', stockReserved: false },
+      error: null,
+    });
+    from = vi.fn();
   });
 
   afterEach(() => {
-    vi.doUnmock("@/integrations/supabase/client");
-    vi.doUnmock("@/contexts/AuthContext");
+    vi.doUnmock('@/integrations/supabase/client');
+    vi.doUnmock('@/contexts/AuthContext');
+    vi.doUnmock('react-router-dom');
     vi.clearAllMocks();
   });
 
-  async function loadHook(opts: { user: { id: string } | null }) {
-    mock = createSupabaseMock({
-      insertReturn: (table, payload) => {
-        if (table === "quotes") return { id: "new-quote-id", quote_number: "ORC-001" };
-        if (table === "quote_items") {
-          const arr = payload as Array<Record<string, unknown>>;
-          return arr.map((p, i) => ({ id: `qi-${i}`, product_id: p.product_id }));
-        }
-        return { id: `mock-${table}` };
-      },
-    });
-    vi.doMock("@/integrations/supabase/client", () => ({ supabase: mock.client }));
-    vi.doMock("@/contexts/AuthContext", () => ({ useAuth: () => ({ user: opts.user }) }));
-    const mod = await import("@/pages/kit-builder/useKitBuilderQuote");
+  async function loadHook(user: { id: string } | null) {
+    vi.doMock('@/integrations/supabase/client', () => ({
+      supabase: { functions: { invoke }, from },
+    }));
+    vi.doMock('@/contexts/AuthContext', () => ({ useAuth: () => ({ user }) }));
+    vi.doMock('react-router-dom', () => ({ useNavigate: () => navigate }));
+    const mod = await import('@/pages/kit-builder/useKitBuilderQuote');
     return mod.useKitBuilderQuote;
   }
 
-  it("inclui seller_id = user.id no INSERT em quotes", async () => {
-    const useHook = await loadHook({ user: { id: USER_ID } });
+  it('usa a Edge Function e não grava tabelas diretamente', async () => {
+    const useHook = await loadHook({ id: USER_ID });
     const { result } = renderHook(() => useHook());
 
-    await act(async () => {
-      await result.current.handleAddToQuote(KIT_STATE, 3);
-    });
+    await act(async () => result.current.handleAddToQuote(KIT_STATE, 3));
 
-    const quoteIns = mock.calls.insert.find((c) => c.table === "quotes");
-    expect(quoteIns).toBeDefined();
-    expect(quoteIns!.payload).toMatchObject({
-      seller_id: USER_ID,
-      status: "draft",
-      subtotal: 250,
-      total: 250,
+    expect(invoke).toHaveBeenCalledWith('sicoob-kit-quote', {
+      body: expect.objectContaining({ kitName: 'Kit teste', kitQuantity: 3 }),
     });
-    expect((quoteIns!.payload as { seller_id: string }).seller_id).toBe(USER_ID);
+    expect(from).not.toHaveBeenCalled();
+    expect(navigate).toHaveBeenCalledWith('/orcamentos/quote-1');
   });
 
-  it("não dispara mutações quando usuário não está autenticado", async () => {
-    const useHook = await loadHook({ user: null });
+  it('reutiliza a chave após perda de resposta para impedir orçamento duplicado', async () => {
+    invoke
+      .mockResolvedValueOnce({ data: null, error: new Error('Falha de rede após commit') })
+      .mockResolvedValueOnce({ data: { quoteId: 'quote-1', quoteNumber: 'ORC-001' }, error: null });
+    const useHook = await loadHook({ id: USER_ID });
     const { result } = renderHook(() => useHook());
 
-    await act(async () => {
-      await result.current.handleAddToQuote(KIT_STATE, 1);
-    });
+    await act(async () => result.current.handleAddToQuote(KIT_STATE, 3));
+    await act(async () => result.current.handleAddToQuote(KIT_STATE, 3));
 
-    expect(mock.calls.insert).toHaveLength(0);
-    expect(mock.calls.update).toHaveLength(0);
-    expect(mock.calls.delete).toHaveLength(0);
+    const firstKey = invoke.mock.calls[0][1].body.idempotencyKey;
+    const secondKey = invoke.mock.calls[1][1].body.idempotencyKey;
+    expect(secondKey).toBe(firstKey);
   });
 
-  it("quote_items são inseridos ligados ao quote criado (sem seller_id direto)", async () => {
-    const useHook = await loadHook({ user: { id: USER_ID } });
+  it('não chama a Edge Function sem sessão', async () => {
+    const useHook = await loadHook(null);
     const { result } = renderHook(() => useHook());
 
-    await act(async () => {
-      await result.current.handleAddToQuote(KIT_STATE, 2);
-    });
+    await act(async () => result.current.handleAddToQuote(KIT_STATE, 1));
 
-    const itemsIns = mock.calls.insert.find((c) => c.table === "quote_items");
-    expect(itemsIns).toBeDefined();
-    const arr = itemsIns!.payload as Array<Record<string, unknown>>;
-    // todos os items apontam ao quote criado
-    for (const it of arr) {
-      expect(it.quote_id).toBe("new-quote-id");
-      // seller_id é herdado por FK no banco — não deve estar no item
-      expect(it).not.toHaveProperty("seller_id");
-    }
+    expect(invoke).not.toHaveBeenCalled();
+    expect(from).not.toHaveBeenCalled();
   });
 });

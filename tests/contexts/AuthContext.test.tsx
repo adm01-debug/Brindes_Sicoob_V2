@@ -20,6 +20,10 @@ vi.mock('@/integrations/supabase/client', () => {
   return {
     supabase: {
       auth: {
+        mfa: {
+          getAuthenticatorAssuranceLevel: vi.fn().mockResolvedValue({ data: { currentLevel: 'aal1', nextLevel: 'aal1' } }),
+          listFactors: vi.fn().mockResolvedValue({ data: { totp: [] } }),
+        },
         onAuthStateChange: vi.fn((cb: any) => {
           // Store callback in module-scoped variable
           (globalThis as any).__authCb = cb;
@@ -54,7 +58,7 @@ function AuthConsumer() {
       <span data-testid="role">{auth.role ?? 'none'}</span>
       <span data-testid="isAdmin">{String(auth.isAdmin)}</span>
       <span data-testid="canManage">{String(auth.canManage)}</span>
-      <span data-testid="isSeller">{String(auth.isSeller)}</span>
+      <span data-testid="isSeller">{String(auth.isVendedor)}</span>
     </div>
   );
 }
@@ -116,8 +120,7 @@ describe('AuthContext', () => {
       if (table === 'user_roles') {
         return {
           select: vi.fn().mockReturnThis(),
-          eq: vi.fn().mockReturnThis(),
-          single: vi.fn().mockResolvedValue({ data: { role: 'admin' }, error: null }),
+          eq: vi.fn().mockResolvedValue({ data: [{ role: 'admin' }], error: null }),
         } as any;
       }
       return { select: vi.fn().mockReturnThis(), eq: vi.fn().mockReturnThis(), single: vi.fn().mockResolvedValue({ data: null, error: null }) } as any;
@@ -147,7 +150,7 @@ describe('AuthContext', () => {
     });
   });
 
-  it('defaults to vendedor when role fetch fails', async () => {
+  it('falha de forma fechada quando a consulta de papéis falha', async () => {
     const mockUser = { id: 'user-2', email: 'seller@test.com' };
     const mockSession = { user: mockUser };
 
@@ -170,8 +173,7 @@ describe('AuthContext', () => {
       if (table === 'user_roles') {
         return {
           select: vi.fn().mockReturnThis(),
-          eq: vi.fn().mockReturnThis(),
-          single: vi.fn().mockResolvedValue({ data: null, error: { message: 'not found' } }),
+          eq: vi.fn().mockResolvedValue({ data: null, error: { message: 'not found' } }),
         } as any;
       }
       return { select: vi.fn().mockReturnThis(), eq: vi.fn().mockReturnThis(), single: vi.fn().mockResolvedValue({ data: null, error: null }) } as any;
@@ -191,8 +193,8 @@ describe('AuthContext', () => {
 
     await waitFor(() => {
       expect(screen.getByTestId('loading').textContent).toBe('false');
-      expect(screen.getByTestId('role').textContent).toBe('vendedor');
-      expect(screen.getByTestId('isSeller').textContent).toBe('true');
+      expect(screen.getByTestId('role').textContent).toBe('none');
+      expect(screen.getByTestId('isSeller').textContent).toBe('false');
     }, { timeout: 3000 });
   });
 });

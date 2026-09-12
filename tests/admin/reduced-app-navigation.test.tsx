@@ -36,6 +36,9 @@ const authState = {
   mfaRequired: true,
   currentAAL: "aal2" as const,
   role: "dev" as const,
+  roles: ["dev"],
+  rolesLoaded: true,
+  rolesError: null,
 };
 
 vi.mock("@/contexts/AuthContext", () => ({
@@ -149,6 +152,7 @@ describe("Reduced App integration — navegação não emite ref warning", () =>
       isLoading: false, canManage: true, isDev: true,
       isSupervisorOrAbove: true, hasMFA: true, mfaRequired: true,
       currentAAL: "aal2", role: "dev",
+      roles: ["dev"], rolesLoaded: true, rolesError: null,
     });
   });
 
@@ -219,7 +223,7 @@ describe("Reduced App integration — navegação não emite ref warning", () =>
   });
 
   it("usuário não-dev em rota dev → DevAccessDeniedPage sem warning", async () => {
-    Object.assign(authState, { isDev: false, role: "supervisor" });
+    Object.assign(authState, { isDev: false, role: "supervisor", roles: ["supervisor"] });
     render(<ReducedApp initial="/admin/telemetria" />);
     // Sob não-dev a rota Dev cai no DevAccessDeniedPage (mockado).
     screen.getByText("access-denied");
@@ -231,6 +235,7 @@ describe("Reduced App integration — navegação não emite ref warning", () =>
       user: null, canManage: false, isDev: false,
       isSupervisorOrAbove: false, hasMFA: false, mfaRequired: false,
       currentAAL: "aal1", role: "agente",
+      roles: ["agente"], rolesLoaded: true, rolesError: null,
     });
     render(<ReducedApp initial="/admin/usuarios" />);
     screen.getByTestId("page-login");

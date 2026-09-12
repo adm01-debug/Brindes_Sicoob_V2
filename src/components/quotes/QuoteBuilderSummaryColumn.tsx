@@ -2,7 +2,7 @@
  * QuoteBuilderSummaryColumn — Coluna 3: Resumo com cards de itens, desconto e CTAs
  */
 
-import { useState, useMemo } from "react";
+import { Fragment, useState, useMemo } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -231,7 +231,7 @@ export function QuoteBuilderSummaryColumn({
                 const isSelected = selectedIndexes.has(idx);
                 
                 return (
-                  <React.Fragment key={idx}>
+                  <Fragment key={idx}>
                     {showGroupHeader && (
                       <div className="flex items-center justify-between px-3 py-1.5 bg-emerald-500/10 border border-emerald-500/20 rounded-lg mb-2 mt-1 shadow-sm">
                         <span className="flex items-center gap-1.5 text-[10px] font-bold text-emerald-700 uppercase tracking-wider">
@@ -370,7 +370,7 @@ export function QuoteBuilderSummaryColumn({
                       </div>
                     )}
                     </div>
-                  </React.Fragment>
+                  </Fragment>
                 );
               })}
             </div>
@@ -595,8 +595,8 @@ export function QuoteBuilderSummaryColumn({
         variant="warning"
         title="Confirmar preços com o fornecedor?"
         description={`Você está confirmando que validou ${staleCount} preço(s) diretamente com o(s) fornecedor(es). O alerta de preço defasado será removido destes itens neste orçamento.`}
-        confirmText={`Confirmar ${staleCount} preço${staleCount === 1 ? '' : 's'}`}
-        cancelText="Cancelar"
+        confirmLabel={`Confirmar ${staleCount} preço${staleCount === 1 ? '' : 's'}`}
+        cancelLabel="Cancelar"
         onConfirm={() => {
           confirmAllStalePrices?.();
           setConfirmAllOpen(false);

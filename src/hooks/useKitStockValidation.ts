@@ -25,6 +25,11 @@ interface VariantStock {
   color_name: string | null;
 }
 
+interface ProductStock {
+  id: string;
+  stock_quantity: number | null;
+}
+
 export function useKitStockValidation(
   items: KitItem[],
   box: KitBox | null,
@@ -41,17 +46,29 @@ export function useKitStockValidation(
   const { data: stockData, isLoading, error, refetch, dataUpdatedAt } = useQuery({
     queryKey: ['kit-stock-validation', productIds.join(','), selectedVariantIds.join(',')],
     queryFn: async () => {
-      if (productIds.length === 0) return [];
+      if (productIds.length === 0) return { variants: [], products: [] };
 
-      const result = await invokeExternalDb<VariantStock>({
-        table: 'product_variants',
-        operation: 'select',
-        select: 'id, product_id, stock_quantity, color_name',
-        filters: { product_id: productIds, is_active: true },
-        limit: 500,
-      });
+      const [variantResult, productResult] = await Promise.all([
+        invokeExternalDb<VariantStock>({
+          table: 'product_variants',
+          operation: 'select',
+          select: 'id, product_id, stock_quantity, color_name',
+          filters: { product_id: productIds, is_active: true },
+          limit: 500,
+        }),
+        invokeExternalDb<ProductStock>({
+          table: 'products',
+          operation: 'select',
+          select: 'id, stock_quantity',
+          filters: { id: productIds, active: true },
+          limit: productIds.length,
+        }),
+      ]);
 
-      return result.records;
+      return {
+        variants: variantResult.records ?? [],
+        products: productResult.records ?? [],
+      };
     },
     enabled: productIds.length > 0,
     staleTime: 0,
@@ -63,7 +80,15 @@ export function useKitStockValidation(
   const stockByProduct = new Map<string, number>();
   const stockByVariant = new Map<string, number>();
   if (stockData) {
-    for (const v of stockData) {
+    for (const product of stockData.products) {
+      stockByProduct.set(product.id, product.stock_quantity ?? 0);
+    }
+    const productsWithVariants = new Set<string>();
+    for (const v of stockData.variants) {
+      if (!productsWithVariants.has(v.product_id)) {
+        productsWithVariants.add(v.product_id);
+        stockByProduct.set(v.product_id, 0);
+      }
       const current = stockByProduct.get(v.product_id) || 0;
       stockByProduct.set(v.product_id, current + (v.stock_quantity ?? 0));
       stockByVariant.set(v.id, v.stock_quantity ?? 0);

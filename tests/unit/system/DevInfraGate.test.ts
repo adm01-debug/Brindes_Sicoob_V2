@@ -24,6 +24,7 @@ describe('DevInfraGate', () => {
     gate.subscribe(listener);
     
     gate.invalidateCache();
+    vi.advanceTimersByTime(50);
     
     expect(listener).toHaveBeenCalledTimes(1);
   });
@@ -38,6 +39,7 @@ describe('DevInfraGate', () => {
       newValue: 'true'
     });
     window.dispatchEvent(event);
+    vi.advanceTimersByTime(50);
     
     expect(listener).toHaveBeenCalledTimes(1);
   });
@@ -56,14 +58,15 @@ describe('DevInfraGate', () => {
   });
 
   it('should return cached value until invalidated', () => {
-    gate.shouldShow(true);
+    gate.shouldShow(['dev']);
     expect(mockProvider.getFlag).toHaveBeenCalledTimes(1);
     
-    gate.shouldShow(true);
+    gate.shouldShow(['dev']);
     expect(mockProvider.getFlag).toHaveBeenCalledTimes(1); // Cached
     
     gate.invalidateCache();
-    gate.shouldShow(true);
+    vi.advanceTimersByTime(50);
+    gate.shouldShow(['dev']);
     expect(mockProvider.getFlag).toHaveBeenCalledTimes(2); // Re-evaluated
   });
 });

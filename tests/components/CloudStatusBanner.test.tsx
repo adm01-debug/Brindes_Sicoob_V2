@@ -77,7 +77,7 @@ describe('CloudStatusBanner — visibilidade por papel e criticidade', () => {
 
     // Test down
     setStatus('down');
-    rerender(<CloudStatusBanner />);
+    rerender(<CloudStatusBanner key="down" />);
     expect(screen.getByText(/Backend indisponível/i)).toBeInTheDocument();
   });
 

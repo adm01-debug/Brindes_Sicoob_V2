@@ -25,7 +25,7 @@ describe('getSupplierColors', () => {
 
   it('returns default colors for unknown supplier', () => {
     const colors = getSupplierColors('Unknown Supplier');
-    expect(colors.hex).toBe('#f97316');
+    expect(colors.hex).toBe('#FFBB00');
   });
 
   it('is case insensitive', () => {

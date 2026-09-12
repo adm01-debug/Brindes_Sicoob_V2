@@ -1,11 +1,10 @@
 import { PermissionsError } from "./PermissionsError";
-import { type ReactNode, useState, useEffect, forwardRef } from "react";
+import { type ReactNode, useState, useEffect } from "react";
 import { Navigate, Outlet } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { MfaEnrollmentDialog } from "@/components/security/MfaEnrollmentDialog";
 import { MfaChallengeDialog } from "@/components/security/MfaChallengeDialog";
-import { toast } from "sonner";
 import { hasRequiredRole } from "@/lib/access/role-policy";
 
 interface AdminRouteProps {
@@ -14,7 +13,7 @@ interface AdminRouteProps {
   requiredRole?: "dev" | "gestor_compras" | "supervisor";
 }
 
-export const AdminRoute = forwardRef<HTMLDivElement, AdminRouteProps>(function AdminRoute({ children, requiredRole }, ref) {
+export function AdminRoute({ children, requiredRole }: AdminRouteProps) {
   const { user, roles, rolesLoaded, rolesError, isLoading, currentAAL, hasMFA, mfaRequired } = useAuth();
   const [enrollOpen, setEnrollOpen] = useState(false);
   const hasAccess = hasRequiredRole(roles, requiredRole ?? "supervisor");
@@ -75,7 +74,5 @@ export const AdminRoute = forwardRef<HTMLDivElement, AdminRouteProps>(function A
     );
   }
 
-  return children ? <div ref={ref}>{children}</div> : <div ref={ref}><Outlet /></div>;
-});
-
-AdminRoute.displayName = 'AdminRoute';
+  return children ?? <Outlet />;
+}

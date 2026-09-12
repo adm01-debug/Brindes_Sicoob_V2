@@ -62,6 +62,7 @@ CREATE TABLE public.quotes (
   subtotal numeric NOT NULL DEFAULT 0,
   total numeric NOT NULL DEFAULT 0,
   notes text,
+  internal_notes text,
   organization_id uuid,
   pa_id uuid,
   singular_id uuid,
@@ -80,7 +81,28 @@ CREATE TABLE public.quote_items (
   color_name text,
   color_hex text,
   size_code text,
+  notes text,
+  kit_group_id text,
+  kit_name text,
+  source_variant_id text,
+  source_variant_sku text,
+  catalog_checked_at timestamptz,
   sort_order integer DEFAULT 0
+);
+CREATE TABLE public.quote_item_personalizations (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  quote_item_id uuid NOT NULL REFERENCES public.quote_items(id) ON DELETE CASCADE,
+  technique_id text,
+  technique_name text,
+  colors_count integer,
+  width_cm numeric,
+  height_cm numeric,
+  personalized_quantity integer,
+  setup_cost numeric DEFAULT 0,
+  unit_cost numeric DEFAULT 0,
+  total_cost numeric DEFAULT 0,
+  notes text,
+  created_at timestamptz DEFAULT now()
 );
 
 CREATE FUNCTION public.set_quote_hierarchy()

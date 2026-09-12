@@ -126,6 +126,11 @@ export const EDGE_AUTHZ_MANIFEST: Record<string, AuthzEntry> = {
     rationale: "Revalida usuário, pedido e catálogo antes de chamar a RPC interna de recompra",
     enforcedBy: "custom",
   },
+  "sicoob-kit-quote": {
+    category: "authenticated",
+    rationale: "Revalida usuário, composição, estoque, preço e personalização antes de chamar a RPC interna de orçamento do kit",
+    enforcedBy: "custom",
+  },
   "generate-ad-image": { category: "authenticated", rationale: "Magic Up Ads do user" },
   "generate-ad-prompt": { category: "authenticated", rationale: "Magic Up Ads do user" },
   "generate-mockup": { category: "authenticated", rationale: "Mockup IA do user" },

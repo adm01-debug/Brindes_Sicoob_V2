@@ -1,6 +1,7 @@
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
+import { useEffect, useMemo, useState } from "react";
 
 const STORAGE_KEY = "product-grid-columns";
 
@@ -39,15 +40,20 @@ interface ColumnOption {
   label: string;
   cols: number;
   rows: number;
+  minWidth: number;
 }
 
 const columnOptions: ColumnOption[] = [
-  { value: 3, label: "3 colunas", cols: 3, rows: 2 },
-  { value: 4, label: "4 colunas", cols: 4, rows: 2 },
-  { value: 5, label: "5 colunas", cols: 5, rows: 2 },
-  { value: 6, label: "6 colunas", cols: 3, rows: 3 },
-  { value: 8, label: "8 colunas", cols: 4, rows: 3 },
+  { value: 3, label: "3 colunas", cols: 3, rows: 2, minWidth: 0 },
+  { value: 4, label: "4 colunas", cols: 4, rows: 2, minWidth: 768 },
+  { value: 5, label: "5 colunas", cols: 5, rows: 2, minWidth: 1024 },
+  { value: 6, label: "6 colunas", cols: 3, rows: 3, minWidth: 1280 },
+  { value: 8, label: "8 colunas", cols: 4, rows: 3, minWidth: 1536 },
 ];
+
+function getViewportWidth(): number {
+  return typeof window === "undefined" ? 1024 : window.innerWidth;
+}
 
 function getDefaultColumns(): ColumnCount {
   try {
@@ -71,7 +77,24 @@ interface ColumnSelectorProps {
 }
 
 export function ColumnSelector({ value, onChange, className }: ColumnSelectorProps) {
-  const available = columnOptions;
+  const [screenWidth, setScreenWidth] = useState(getViewportWidth);
+  const available = useMemo(
+    () => columnOptions.filter((option) => screenWidth >= option.minWidth),
+    [screenWidth],
+  );
+
+  useEffect(() => {
+    const onResize = () => setScreenWidth(window.innerWidth);
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
+
+  useEffect(() => {
+    const maxAvailable = available[available.length - 1]?.value;
+    if (maxAvailable && value > maxAvailable) onChange(maxAvailable);
+  }, [available, onChange, value]);
+
+  if (available.length <= 1) return null;
 
   return (
     <div className={cn(

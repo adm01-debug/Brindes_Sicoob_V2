@@ -3,7 +3,7 @@
  * Covers: rendering, data aggregation, bucket calculations, edge cases
  */
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen } from '../test-utils';
+import { fireEvent, render, screen } from '../test-utils';
 
 // Mock recharts to avoid canvas rendering issues
 vi.mock('recharts', () => ({
@@ -61,7 +61,7 @@ describe('TelemetryCharts - Rendering', () => {
     const rows = makeRows(5);
     render(<TelemetryCharts rows={rows} timeFilter="24h" />);
     expect(screen.getByText('Alertas ao Longo do Tempo')).toBeInTheDocument();
-    expect(screen.getByText('Duração Média / Máxima (ms)')).toBeInTheDocument();
+    expect(screen.getByText('Latência (ms)')).toBeInTheDocument();
   });
 
   it('renders bar chart for table distribution', () => {
@@ -290,6 +290,7 @@ describe('TelemetryCharts - Area Data Keys', () => {
   it('renders maxMs area', () => {
     const rows = makeRows(3);
     render(<TelemetryCharts rows={rows} timeFilter="24h" />);
+    fireEvent.click(screen.getByLabelText('Duração Máxima'));
     expect(screen.getByTestId('area-maxMs')).toBeInTheDocument();
   });
 
@@ -334,7 +335,7 @@ describe('TelemetryCharts - Edge Cases', () => {
   it('handles 0ms duration', () => {
     const rows = makeRows(5, { duration_ms: 0 });
     render(<TelemetryCharts rows={rows} timeFilter="24h" />);
-    expect(screen.getByText('Duração Média / Máxima (ms)')).toBeInTheDocument();
+    expect(screen.getByText('Latência (ms)')).toBeInTheDocument();
   });
 
   it('handles all severity types', () => {

@@ -25,9 +25,20 @@ function parseMaterials(materials: unknown): string[] {
 
 function parseTagList(value: unknown): string[] {
   if (!value) return [];
-  if (Array.isArray(value)) return value.filter((v): v is string => typeof v === 'string');
+  if (Array.isArray(value)) {
+    return value
+      .filter((v): v is string => typeof v === 'string')
+      .map((value) => value.trim())
+      .filter(Boolean);
+  }
+  if (typeof value === 'string') {
+    return value
+      .split(/[,;|]/)
+      .map((tag) => tag.trim())
+      .filter(Boolean);
+  }
   if (typeof value === 'object' && value !== null) {
-    return Object.keys(value);
+    return Object.keys(value).map((tag) => tag.trim()).filter(Boolean);
   }
   return [];
 }

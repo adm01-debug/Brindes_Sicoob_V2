@@ -1,4 +1,4 @@
-import { defineConfig } from 'vitest/config';
+import { configDefaults, defineConfig } from 'vitest/config';
 import path from 'path';
 
 export default defineConfig({
@@ -6,6 +6,14 @@ export default defineConfig({
     globals: true,
     environment: 'jsdom',
     setupFiles: './src/test/setup.ts',
+    // Playwright e Deno têm executores próprios. Coletá-los pelo Vitest gerava
+    // centenas de falsos negativos antes de qualquer asserção ser executada.
+    exclude: [
+      ...configDefaults.exclude,
+      'e2e/**',
+      'supabase/functions/**/*.test.ts',
+      'tests/e2e/rbac-dev-technical-routes.test.ts',
+    ],
     alias: {
       '@': path.resolve(__dirname, './src'),
     },
