@@ -8,6 +8,13 @@
   },
   "validacoes": {
     "build_producao": "aprovado",
+    "lighthouse_login": {
+      "resultado": "3/3 aprovado",
+      "performance": 0.97,
+      "lcp_ms": [2127.82, 2263.58, 2260.38],
+      "tbt_ms": 0,
+      "bundle_publico_gzip": "reduzido de aproximadamente 92 KB para 57 KB"
+    },
     "lint_baseline": "aprovado; drift positivo observado",
     "typecheck_baseline": "aprovado; drift positivo observado",
     "unitarios_alterados": "68/68 aprovados na rodada final agrupada",
@@ -16,6 +23,7 @@
     "deno_pgrest": "5/5 aprovadas",
     "edge_authorization": "102/102 declaradas e enforced",
     "e2e_publico": "6/6 happy e 6/6 timeout aprovados",
+    "regressao_login": "8/8 em Vitest e 3/3 em Chromium",
     "vitest_global": "não aprovado: 141 falhas, 5177 aprovados, 104 ignorados, 31 snapshots falhos"
   },
   "pendencias_obrigatorias": [

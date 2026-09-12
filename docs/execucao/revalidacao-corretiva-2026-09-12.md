@@ -44,6 +44,7 @@ O checklist original de 100 etapas e 1.000 subetapas permanece como inventário 
 | Verificação | Resultado local |
 |---|---|
 | Build de produção e `npm audit` do gate | Aprovado. |
+| Performance do login | Bundle público reduzido de ~92 KB para ~57 KB gzip; Lighthouse local 3/3 aprovado, LCP entre 2.128 ms e 2.264 ms, performance 0,97 e TBT 0 ms. |
 | ESLint por baseline | Aprovado; 42 erros a menos que a referência. |
 | TypeScript por baseline | Aprovado; 32 diagnósticos a menos que a referência na execução completa. |
 | Testes unitários alterados | 68/68 aprovados na rodada final agrupada. |
@@ -52,6 +53,7 @@ O checklist original de 100 etapas e 1.000 subetapas permanece como inventário 
 | Autorização de Edge Functions | 102/102 funções declaradas e com mecanismo de enforcement. |
 | Simulações PostgreSQL | Política, recompra, financeiro/arte e consolidação aprovadas em PostgreSQL 16 isolado. |
 | E2E público reforçado | 6/6 happy paths e 6/6 estados de timeout aprovados em Chromium. |
+| Regressão funcional do login otimizado | 8/8 em Vitest e 3/3 em Chromium; validação acessível e recuperação de senha sob demanda. |
 | Suíte Vitest global | Não aprovada: 141 testes e 31 snapshots falharam, com 5.177 testes aprovados e 104 ignorados. A dívida global preexistente impede usar essa suíte como aceite final. |
 
 Os JSONs em [evidências](evidencias/) registram os cenários SQL. Nenhuma simulação acessou os bancos remotos, aplicou migration, publicou Edge Function ou alterou dados reais.

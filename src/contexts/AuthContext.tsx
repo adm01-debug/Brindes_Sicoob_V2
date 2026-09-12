@@ -4,7 +4,6 @@ import { supabase, supabaseUrl } from "@/integrations/supabase/client";
 import { logger } from "@/lib/logger";
 import { createClientLogger } from "@/lib/telemetry/structuredLogger";
 import { checkLoginAllowed, recordFailedAttempt, clearLoginAttempts } from "@/hooks/useLoginRateLimit";
-import { toast } from "sonner";
 import { authDebug, authDebugError, summarizeSession, summarizeUser } from "@/lib/auth/auth-debug";
 import { getRandomGreeting, getHighestRole } from "@/lib/auth/auth-utils";
 import { authService } from "@/services/authService";
@@ -140,10 +139,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
               || 'Usuário';
             const firstName = displayName.split(' ')[0];
 
-            toast.success(`🤖 Flow`, {
-              description: getRandomGreeting(firstName),
-              duration: 3000,
-              closeButton: true,
+            void import("sonner").then(({ toast }) => {
+              toast.success(`🤖 Flow`, {
+                description: getRandomGreeting(firstName),
+                duration: 3000,
+                closeButton: true,
+              });
             });
           }
 

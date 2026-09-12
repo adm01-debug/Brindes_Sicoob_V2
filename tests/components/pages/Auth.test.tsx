@@ -75,6 +75,6 @@ describe('Entrada institucional', () => {
   it('permite abrir a recuperação de senha', async () => {
     const user = userEvent.setup(); renderizar();
     await user.click(screen.getByRole('button', { name: 'Esqueci minha senha' }));
-    expect(screen.getByTestId('forgot-password-screen')).toBeVisible();
+    await waitFor(() => expect(screen.getByTestId('forgot-password-screen')).toBeVisible());
   });
 });
