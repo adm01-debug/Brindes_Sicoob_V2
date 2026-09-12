@@ -11,6 +11,7 @@ import {
   authDebugUrl,
   summarizeSession,
 } from '@/lib/auth/auth-debug';
+import { buildSsoFailurePath, type SsoFailureReason } from '@/lib/auth/sso-errors';
 
 /**
  * Callback do login social.
@@ -38,11 +39,8 @@ export default function SSOCallbackPage() {
     authDebugUrl('sso-callback');
 
     const error = searchParams.get('error');
-    const errorDescription = searchParams.get('error_description');
     if (error) {
-      authDebugError('sso-callback', 'provider returned error in query', { error, errorDescription });
-      logger.error('[sso-callback] provider returned error', { error, errorDescription });
-      navigate('/login?error=' + encodeURIComponent(errorDescription || error), { replace: true });
+      navigate(buildSsoFailurePath('provider'), { replace: true });
       return;
     }
 
@@ -51,10 +49,7 @@ export default function SSOCallbackPage() {
     const hashParams = new URLSearchParams(hash);
     const hashError = hashParams.get('error');
     if (hashError) {
-      const desc = hashParams.get('error_description') || hashError;
-      authDebugError('sso-callback', 'provider returned error in hash', { error: hashError, desc });
-      logger.error('[sso-callback] hash error', { error: hashError, desc });
-      navigate('/login?error=' + encodeURIComponent(desc), { replace: true });
+      navigate(buildSsoFailurePath('provider'), { replace: true });
       return;
     }
 
@@ -76,10 +71,10 @@ export default function SSOCallbackPage() {
       navigate('/', { replace: true });
     };
 
-    const goLogin = (reason: string) => {
+    const goLogin = (reason: SsoFailureReason) => {
       if (cancelled) return;
       authDebug('sso-callback', 'goLogin', { reason });
-      navigate('/login?error=' + encodeURIComponent(reason), { replace: true });
+      navigate(buildSsoFailurePath(reason), { replace: true });
     };
 
     const run = async () => {
@@ -93,7 +88,7 @@ export default function SSOCallbackPage() {
           if (exchangeError) {
             authDebugError('sso-callback', 'exchangeCodeForSession failed', exchangeError);
             logger.error('[sso-callback] exchangeCodeForSession failed', { message: exchangeError.message });
-            goLogin(exchangeError.message);
+            goLogin('exchange');
             return;
           }
           authDebug('sso-callback', 'exchangeCodeForSession ok', summarizeSession(exData?.session ?? null));
@@ -128,7 +123,7 @@ export default function SSOCallbackPage() {
               void goHome();
             } else {
               logger.warn('[sso-callback] no session after timeout');
-              goLogin('Sessão não estabelecida. Tente novamente.');
+              goLogin('timeout');
             }
           });
         }, 8000);
@@ -136,7 +131,7 @@ export default function SSOCallbackPage() {
         const message = err instanceof Error ? err.message : 'Erro inesperado';
         authDebugError('sso-callback', 'unexpected error in run()', err);
         logger.error('[sso-callback] unexpected error', { message });
-        goLogin(message);
+        goLogin('unexpected');
       }
     };
 

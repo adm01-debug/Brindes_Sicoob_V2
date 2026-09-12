@@ -18,6 +18,7 @@ import {
   type LoginCredentials,
   type LoginFieldErrors,
 } from "@/lib/auth/login-validation";
+import { getSsoFailureMessage, SSO_ERROR_QUERY_PARAM } from "@/lib/auth/sso-errors";
 
 import { safeInternalPath } from "@/lib/auth/safe-internal-path";
 import { getDefaultRouteByRole } from "@/lib/auth/auth-utils";
@@ -76,13 +77,16 @@ export default function Auth() {
   const [fieldErrors, setFieldErrors] = useState<LoginFieldErrors>({});
   const emailInputRef = useRef<HTMLInputElement | null>(null);
 
-  // Captura `?error=` vindo do SSOCallbackPage (Google falhou) e exibe o
-  // banner de fallback. Limpa o param da URL para não persistir.
+  // Exibe uma mensagem controlada para falhas SSO e remove os parâmetros para
+  // que dados fornecidos pela URL nunca sejam refletidos nem persistam.
   useEffect(() => {
-    const err = searchParams.get("error");
-    if (err) {
-      setSocialError(err);
+    const reason = searchParams.get(SSO_ERROR_QUERY_PARAM);
+    const hasLegacyError = searchParams.has("error");
+    const message = getSsoFailureMessage(reason, hasLegacyError);
+    if (message) {
+      setSocialError(message);
       const next = new URLSearchParams(searchParams);
+      next.delete(SSO_ERROR_QUERY_PARAM);
       next.delete("error");
       setSearchParams(next, { replace: true });
     }
