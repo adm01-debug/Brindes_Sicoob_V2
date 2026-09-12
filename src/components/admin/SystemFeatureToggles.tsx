@@ -98,7 +98,7 @@ export function SystemFeatureToggles() {
           <FeatureToggle 
             icon={<Package className="h-4 w-4" />}
             label="Sistema de Carrinho (B2C/Legado)"
-            description="Exibe MiniCart e CartHeader para fluxo não-Sicoob."
+            description="Controla o carrinho legado B2C; o portal Sicoob usa a jornada de orçamento."
             enabled={features.feature_cart_system}
             onToggle={() => toggleFeature('feature_cart_system')}
           />

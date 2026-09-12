@@ -2,22 +2,25 @@ import { useState, useCallback, useEffect } from "react";
 import { useSearch } from "@/hooks/useSearch";
 import type { Product } from "@/hooks/useProducts";
 
-export function useCatalogSearchState(realProducts: Product[], searchQueryFromUrl: string) {
+export function useCatalogSearchState(realProducts: Product[], searchQueryFromUrl: string, historyScope?: string) {
   const [searchQuery, setSearchQuery] = useState(searchQueryFromUrl);
   const [isSearching, setIsSearching] = useState(false);
 
-  const { suggestions, quickSuggestions, history, addToHistory } = useSearch(realProducts);
+  const { suggestions, quickSuggestions, history, addToHistory, clearHistory } = useSearch(realProducts, historyScope);
 
   useEffect(() => {
     setSearchQuery(searchQueryFromUrl);
   }, [searchQueryFromUrl]);
 
-  const handleSearch = useCallback((query: string) => {
-    setIsSearching(true);
-    setSearchQuery(query);
-    if (query) addToHistory(query);
-    setTimeout(() => setIsSearching(false), 300);
-  }, [addToHistory]);
+  const handleSearch = useCallback(
+    (query: string) => {
+      setIsSearching(true);
+      setSearchQuery(query);
+      if (query) addToHistory(query);
+      setTimeout(() => setIsSearching(false), 300);
+    },
+    [addToHistory],
+  );
 
   return {
     searchQuery,
@@ -27,5 +30,6 @@ export function useCatalogSearchState(realProducts: Product[], searchQueryFromUr
     suggestions,
     quickSuggestions,
     history,
+    clearHistory,
   };
 }

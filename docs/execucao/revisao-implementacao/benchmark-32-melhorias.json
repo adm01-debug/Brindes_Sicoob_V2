@@ -1,0 +1,368 @@
+[
+  {
+    "id": "B01",
+    "melhoria": "Expor histórico de busca com seleção e limpeza. Interface implementada; a revisão encontrou armazenamento global sem isolamento por usuário/cooperativa (A09).",
+    "etapas": [
+      "E023",
+      "E044",
+      "E025"
+    ],
+    "situacao": "Parcial",
+    "diagnostico": "UI pronta; histórico global precisa de isolamento e limpeza entre contas. A09.",
+    "conclusao_formal": false
+  },
+  {
+    "id": "B02",
+    "melhoria": "Permitir entrada por faixa de orçamento no catálogo.",
+    "etapas": [
+      "E024",
+      "E043"
+    ],
+    "situacao": "Local delimitado",
+    "diagnostico": "Atalhos por orçamento unitário implementados; não representam custo entregue firme.",
+    "conclusao_formal": false
+  },
+  {
+    "id": "B03",
+    "melhoria": "Compactar atalhos de intenção e orçamento no mobile.",
+    "etapas": [
+      "E032",
+      "E043"
+    ],
+    "situacao": "Local delimitado",
+    "diagnostico": "Trilhos móveis compactos implementados; sem homologação com aparelhos reais.",
+    "conclusao_formal": false
+  },
+  {
+    "id": "B04",
+    "melhoria": "Manter catálogo externo protegido por contrato somente leitura.",
+    "etapas": [
+      "E003"
+    ],
+    "situacao": "Local delimitado",
+    "diagnostico": "Contrato local bloqueia escrita; privilégio mínimo da identidade remota não confirmado.",
+    "conclusao_formal": false
+  },
+  {
+    "id": "B05",
+    "melhoria": "Remover custo e margem das respostas ao comprador. A lista local não cobre `setup_cost` e `unit_cost` (A10).",
+    "etapas": [
+      "E003",
+      "E048",
+      "E086"
+    ],
+    "situacao": "Parcial",
+    "diagnostico": "Seis campos removidos; setup_cost/unit_cost persistem. A10.",
+    "conclusao_formal": false
+  },
+  {
+    "id": "B06",
+    "melhoria": "Garantir orçamento/pedido atômico com versão e idempotência. Aprovação e verba foram protegidas; criação/versionamento de orçamento ainda não são uma transação integral (A07).",
+    "etapas": [
+      "E017",
+      "E018",
+      "E059",
+      "E061"
+    ],
+    "situacao": "Parcial",
+    "diagnostico": "Verba/aprovação transacionais; versionamento e envio integral ainda incompletos. A07/A15.",
+    "conclusao_formal": false
+  },
+  {
+    "id": "B07",
+    "melhoria": "Bloquear indexação do portal privado e remover sitemap provisório.",
+    "etapas": [
+      "E026",
+      "E087"
+    ],
+    "situacao": "Local delimitado",
+    "diagnostico": "Noindex, robots e retirada de sitemap aplicados no código revisado.",
+    "conclusao_formal": false
+  },
+  {
+    "id": "B08",
+    "melhoria": "Confirmar privilégios somente leitura da identidade no banco de catálogo.",
+    "etapas": [
+      "E003",
+      "E096"
+    ],
+    "situacao": "Validação externa",
+    "diagnostico": "ACL da identidade no mestre não foi inspecionada administrativamente.",
+    "conclusao_formal": false
+  },
+  {
+    "id": "B09",
+    "melhoria": "Executar login, busca, primeiro orçamento e aprovação em homologação real.",
+    "etapas": [
+      "E015",
+      "E091"
+    ],
+    "situacao": "Validação externa",
+    "diagnostico": "Sem jornada autenticada real comprovada; E2E remoto falha. A14.",
+    "conclusao_formal": false
+  },
+  {
+    "id": "B10",
+    "melhoria": "Validar política de verba, alçada, arte e cancelamento com responsáveis.",
+    "etapas": [
+      "E008",
+      "E017",
+      "E065",
+      "E069"
+    ],
+    "situacao": "Validação externa",
+    "diagnostico": "Documentos históricos não substituem política vigente e aceite local.",
+    "conclusao_formal": false
+  },
+  {
+    "id": "B11",
+    "melhoria": "Revisar toda a jornada real por teclado, zoom 200/400% e leitor de tela.",
+    "etapas": [
+      "E081"
+    ],
+    "situacao": "Parcial",
+    "diagnostico": "Axe em amostras locais; teclado, zoom e leitor da compra inteira não homologados.",
+    "conclusao_formal": false
+  },
+  {
+    "id": "B12",
+    "melhoria": "Definir SLA e origem do dado de preço, estoque e prazo mostrados ao comprador.",
+    "etapas": [
+      "E007",
+      "E043",
+      "E073"
+    ],
+    "situacao": "Validação externa",
+    "diagnostico": "SLA e responsabilidade por dados comerciais ainda não confirmados.",
+    "conclusao_formal": false
+  },
+  {
+    "id": "B13",
+    "melhoria": "Levar seleção de cor ao card com estoque por variante.",
+    "etapas": [
+      "E035",
+      "E043",
+      "E046"
+    ],
+    "situacao": "Parcial",
+    "diagnostico": "Cores existentes; card por variante e validade de estoque precisam de contrato íntegro.",
+    "conclusao_formal": false
+  },
+  {
+    "id": "B14",
+    "melhoria": "Criar vistos recentemente por usuário.",
+    "etapas": [
+      "E025",
+      "E050"
+    ],
+    "situacao": "Parcial",
+    "diagnostico": "Store de vistos existe, mas chave global; revisar usuário, organização e logout.",
+    "conclusao_formal": false
+  },
+  {
+    "id": "B15",
+    "melhoria": "Ajustar comparação às dimensões de decisão Sicoob.",
+    "etapas": [
+      "E049",
+      "E060"
+    ],
+    "situacao": "Parcial",
+    "diagnostico": "Comparador de produtos existe; decisão institucional exige dimensões e cotações equivalentes.",
+    "conclusao_formal": false
+  },
+  {
+    "id": "B16",
+    "melhoria": "Criar autosave e recuperação do orçamento com estado explícito.",
+    "etapas": [
+      "E027",
+      "E055",
+      "E057"
+    ],
+    "situacao": "Parcial",
+    "diagnostico": "Há autosave de kit; falha silenciosa reproduzida. Recuperação de orçamento integral pendente. A04.",
+    "conclusao_formal": false
+  },
+  {
+    "id": "B17",
+    "melhoria": "Exibir validade do preço e timestamp da consulta de estoque.",
+    "etapas": [
+      "E043",
+      "E046",
+      "E073"
+    ],
+    "situacao": "Parcial",
+    "diagnostico": "Componentes de atualidade existem; timestamp e reconfirmação não uniformes.",
+    "conclusao_formal": false
+  },
+  {
+    "id": "B18",
+    "melhoria": "Implementar modelos de kit por ocasião e faixa de orçamento.",
+    "etapas": [
+      "E051",
+      "E055"
+    ],
+    "situacao": "Parcial",
+    "diagnostico": "Templates de kits existem; curadoria por orçamento precisa de validação comercial e estoque.",
+    "conclusao_formal": false
+  },
+  {
+    "id": "B19",
+    "melhoria": "Validar capacidade de embalagem, preço e estoque do kit no servidor.",
+    "etapas": [
+      "E047",
+      "E055"
+    ],
+    "situacao": "Não demonstrado",
+    "diagnostico": "Cálculos clientes não substituem validação completa no servidor.",
+    "conclusao_formal": false
+  },
+  {
+    "id": "B20",
+    "melhoria": "Criar resumo fixo desktop e barra de ação mobile sem cobrir conteúdo.",
+    "etapas": [
+      "E032",
+      "E057"
+    ],
+    "situacao": "Parcial",
+    "diagnostico": "Kit possui resumos responsivos; cobertura da solicitação completa e foco ainda parcial.",
+    "conclusao_formal": false
+  },
+  {
+    "id": "B21",
+    "melhoria": "Exibir linha do tempo única de orçamento, verba, arte, pedido e entrega.",
+    "etapas": [
+      "E059",
+      "E068",
+      "E070"
+    ],
+    "situacao": "Parcial",
+    "diagnostico": "Históricos existem em modelos distintos; linha canônica completa ausente.",
+    "conclusao_formal": false
+  },
+  {
+    "id": "B22",
+    "melhoria": "Implementar compartilhamento seguro e expirável para aprovação.",
+    "etapas": [
+      "E013",
+      "E050",
+      "E065"
+    ],
+    "situacao": "Parcial",
+    "diagnostico": "Tokens, validade e revogação existem; escopo e decisão formal não homologados.",
+    "conclusao_formal": false
+  },
+  {
+    "id": "B23",
+    "melhoria": "Adicionar métricas do funil sem dados fictícios.",
+    "etapas": [
+      "E009",
+      "E089"
+    ],
+    "situacao": "Parcial",
+    "diagnostico": "Persistem números fixos, projeção artificial e contador aleatório. A06.",
+    "conclusao_formal": false
+  },
+  {
+    "id": "B24",
+    "melhoria": "Medir Core Web Vitals no domínio de homologação.",
+    "etapas": [
+      "E084",
+      "E098"
+    ],
+    "situacao": "Parcial",
+    "diagnostico": "Lighthouse local/CI mede login; domínio de homologação e campo ainda pendentes.",
+    "conclusao_formal": false
+  },
+  {
+    "id": "B25",
+    "melhoria": "Recomendações por ocasião, histórico e regras comerciais explicáveis.",
+    "etapas": [
+      "E022",
+      "E044",
+      "E089"
+    ],
+    "situacao": "Parcial",
+    "diagnostico": "Sugestões existentes; histórico e regras explicáveis não validados pelo público.",
+    "conclusao_formal": false
+  },
+  {
+    "id": "B26",
+    "melhoria": "Estoque futuro com níveis de confiança.",
+    "etapas": [
+      "E073",
+      "E089"
+    ],
+    "situacao": "Não demonstrado",
+    "diagnostico": "Forecast na interface não comprova modelo validado nem intervalo de confiança.",
+    "conclusao_formal": false
+  },
+  {
+    "id": "B27",
+    "melhoria": "Recompra com nova consulta de preço e disponibilidade.",
+    "etapas": [
+      "E079"
+    ],
+    "situacao": "Parcial",
+    "diagnostico": "Duplicação existe; botão usa legado, rota inválida e preços antigos. A03.",
+    "conclusao_formal": false
+  },
+  {
+    "id": "B28",
+    "melhoria": "Modelos de campanha salvos pela cooperativa.",
+    "etapas": [
+      "E051",
+      "E052"
+    ],
+    "situacao": "Parcial",
+    "diagnostico": "Campanha genérica existe; modelo por cooperativa com marcos/destinos incompleto.",
+    "conclusao_formal": false
+  },
+  {
+    "id": "B29",
+    "melhoria": "Assistente de briefing para kits e campanhas.",
+    "etapas": [
+      "E051",
+      "E055"
+    ],
+    "situacao": "Não demonstrado",
+    "diagnostico": "Não foi demonstrado assistente de briefing institucional com dados e restrições suficientes.",
+    "conclusao_formal": false
+  },
+  {
+    "id": "B30",
+    "melhoria": "Mockup assistido com versionamento de arte.",
+    "etapas": [
+      "E053",
+      "E054",
+      "E065"
+    ],
+    "situacao": "Parcial",
+    "diagnostico": "Mockups existentes; prova técnica e versão imutável vinculada ao aceite não asseguradas.",
+    "conclusao_formal": false
+  },
+  {
+    "id": "B31",
+    "melhoria": "Entrega distribuída entre unidades com reconciliação de quantidades.",
+    "etapas": [
+      "E056",
+      "E074",
+      "E076",
+      "E078"
+    ],
+    "situacao": "Não demonstrado",
+    "diagnostico": "Consolidação não equivale a distribuição por destino e conciliação. A16.",
+    "conclusao_formal": false
+  },
+  {
+    "id": "B32",
+    "melhoria": "Personalização do catálogo por cooperativa sem bifurcar código.",
+    "etapas": [
+      "E008",
+      "E025",
+      "E099"
+    ],
+    "situacao": "Parcial",
+    "diagnostico": "Membership existe; política/curadoria por cooperativa e troca segura ainda incompletas. A08.",
+    "conclusao_formal": false
+  }
+]

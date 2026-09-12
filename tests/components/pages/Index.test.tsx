@@ -166,6 +166,7 @@ describe("Index Page", () => {
   it("renders without crashing", async () => {
     const { default: Index } = await import("@/pages/Index");
     renderWithProviders(<Index />);
-    expect(screen.getByTestId("main-layout")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /brindes que aproximam pessoas/i })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /encontre o brinde certo/i })).toBeInTheDocument();
   });
 });

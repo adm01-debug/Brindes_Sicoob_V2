@@ -1,3 +1,4 @@
+import { createReadOnlyCatalogFetch } from "../_shared/external-read-only.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 
 const corsHeaders = {
@@ -39,9 +40,9 @@ Deno.serve(async (req) => {
     // Ignore placeholder values
     const isPlaceholder = (val?: string) => !val || val.includes("PLACEHOLDER") || val === "undefined";
 
-    if (!isPlaceholder(extUrl) && !isPlaceholder(extKey)) {
-      const extClient = createClient(extUrl, extKey);
-      const { error } = await extClient.from("produto").select("id").limit(1);
+    if (extUrl && extKey && !isPlaceholder(extUrl) && !isPlaceholder(extKey)) {
+      const extClient = createClient(extUrl, extKey, { global: { fetch: createReadOnlyCatalogFetch() } });
+      const { error } = await extClient.from("products").select("id").limit(1);
       checks.external_db = {
         status: error ? "degraded" : "healthy",
         latency_ms: Date.now() - extStart,

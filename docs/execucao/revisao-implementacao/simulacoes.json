@@ -1,0 +1,43 @@
+{
+  "escopo": "Simulação local com código real transpilado e dependências controladas; não equivale a E2E, SQL remoto ou exploração em produção.",
+  "cenarios": 6,
+  "resultados": [
+    {
+      "id": "A01",
+      "descricao": "Serviço de status rejeita o contrato usado pela aba de logística",
+      "resultado": "lacuna_reproduzida",
+      "observado": "Rejeição antes de qualquer acesso ao banco quando currentStatus é omitido."
+    },
+    {
+      "id": "A04",
+      "descricao": "Autosave sinaliza salvo apesar de erro retornado pelo Supabase",
+      "resultado": "lacuna_reproduzida",
+      "observado": "lastSavedAt recebe uma data mesmo com data=null e error preenchido; nenhuma rede utilizada."
+    },
+    {
+      "id": "A05",
+      "descricao": "Estoque de outra cor cobre indevidamente a falta da variante selecionada",
+      "resultado": "lacuna_reproduzida",
+      "observado": "50 unidades solicitadas; verde=0 e azul=100; hook retorna hasStockIssues=false."
+    },
+    {
+      "id": "A05b",
+      "descricao": "Erro na consulta de estoque não aparece no contrato retornado ao consumidor",
+      "resultado": "lacuna_reproduzida",
+      "observado": "Consulta com erro retorna alertas vazios sem expor error/isError; isso não comprova estoque disponível."
+    },
+    {
+      "id": "A10",
+      "descricao": "Redação de campos não remove custos retornados pelos aliases do catálogo",
+      "resultado": "lacuna_reproduzida",
+      "observado": "A lista remove cost_price, mas preserva setup_cost/unit_cost; alcance remoto e política comercial ainda precisam de validação."
+    },
+    {
+      "id": "A03",
+      "descricao": "Componente de recompra navega para destino sem registro no mapa de rotas",
+      "resultado": "lacuna_reproduzida",
+      "observado": "O componente usa useOrders legado e gera /pedidos/novo-pedido/editar; nenhuma rota com esse prefixo foi encontrada em src/routes/config."
+    }
+  ],
+  "commit_codigo_auditado": "6f1c5f94f612c13071b8dbe61b500b915e50b123"
+}

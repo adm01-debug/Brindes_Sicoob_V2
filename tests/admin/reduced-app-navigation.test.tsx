@@ -103,7 +103,7 @@ function ReducedApp({
   onNavigateReady?: (n: ReturnType<typeof useNavigate>) => void;
 }) {
   return (
-    <MemoryRouter initialEntries={[initial]} future={{ v7_relativeSplatPath: true }}>
+    <MemoryRouter initialEntries={[initial]}>
       <Suspense fallback={<div>loading…</div>}>
         {onNavigateReady && <NavigationProbe onReady={onNavigateReady} />}
         <Routes>

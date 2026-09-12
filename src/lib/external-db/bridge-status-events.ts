@@ -54,7 +54,9 @@ export function onBridgeStatus(fn: Listener): () => void {
   return () => listeners.delete(fn);
 }
 
-export function emitBridgeStatus(e: Omit<BridgeStatusEvent, 'ts'> & { ts?: number }): void {
+type WithoutTimestamp<T> = T extends BridgeStatusEvent ? Omit<T, 'ts'> & { ts?: number } : never;
+
+export function emitBridgeStatus(e: WithoutTimestamp<BridgeStatusEvent>): void {
   const event: BridgeStatusEvent = {
     ...e,
     ts: e.ts ?? Date.now(),

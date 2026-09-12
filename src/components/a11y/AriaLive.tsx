@@ -119,9 +119,10 @@ export const AriaLiveProvider = forwardRef<HTMLDivElement, { children: ReactNode
           {statusMessage}
         </div>
 
-        {/* Progress announcements */}
+        {/* Atualizações de progresso são mensagens de status; a barra visual
+            correspondente carrega os valores aria-valuemin/max/now. */}
         <div
-          role="progressbar"
+          role="status"
           aria-live="polite"
           aria-atomic="true"
           className="sr-only"

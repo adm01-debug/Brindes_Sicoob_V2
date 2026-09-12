@@ -1,0 +1,852 @@
+{
+  "total_arquivos": 81,
+  "pdfs": 8,
+  "paginas_pdf": 146,
+  "lotes": [
+    {
+      "lote": 1,
+      "quantidade": 22
+    },
+    {
+      "lote": 2,
+      "quantidade": 22
+    },
+    {
+      "lote": 3,
+      "quantidade": 20
+    },
+    {
+      "lote": 4,
+      "quantidade": 17
+    }
+  ],
+  "limites": "Sem acesso aos bancos/deploy e sem testes de produção. Repetições comparadas integralmente em disco; status de documentos não convertido em comprovação operacional. Tokens de extração não instrumentados: campos input_tokens/output_tokens em zero.",
+  "arquivos": [
+    {
+      "arquivo": ".coderabbit.yaml",
+      "lote": 1,
+      "status": "lido",
+      "metodo": "leitura textual integral",
+      "bytes": 3397,
+      "sha256": "cc0983d952af20ce29cfbfddcd4d91cbefe7ca63e79cfd4c5ecd0671d105c7b6",
+      "linhas": 105,
+      "resumo": "Revisão automatizada em pt-BR prioriza segredos, SQL destrutivo e segurança de funções. Ainda identifica Promo_Gifts."
+    },
+    {
+      "arquivo": ".github/ISSUE_TEMPLATE/config.yml",
+      "lote": 1,
+      "status": "lido",
+      "metodo": "leitura textual integral",
+      "bytes": 419,
+      "sha256": "4e25bf845ae3cbe249dcee369149a14c2fddbfa3f1f25ef398b08753b07a786a",
+      "linhas": 8,
+      "resumo": "Links de contribuição e vulnerabilidades direcionam ao repositório legado Promo_Gifts."
+    },
+    {
+      "arquivo": ".github/PULL_REQUEST_TEMPLATE.md",
+      "lote": 1,
+      "status": "lido",
+      "metodo": "leitura textual integral",
+      "bytes": 1303,
+      "sha256": "d299ab0a4439262da2b7f978c3d78ea6a183ab85fcc34eb2212cb1393d5fdce2",
+      "linhas": 50,
+      "resumo": "Modelo de PR enumera Bitrix24, n8n, Evolution, Bling e Cloudflare; exige teste, rollback e revisão."
+    },
+    {
+      "arquivo": ".github/pull_request_template.md",
+      "lote": 1,
+      "status": "lido",
+      "metodo": "leitura textual integral",
+      "bytes": 1351,
+      "sha256": "d46f7e5e3c085f3de20a363d345454d871ca77e28f8a13a1c312ba334a3957d5",
+      "linhas": 38,
+      "resumo": "Segundo modelo de PR exige testes, RLS, Zod, tokens visuais e memória mem://."
+    },
+    {
+      "arquivo": ".github/workflows/bundle-check.yml",
+      "lote": 1,
+      "status": "lido",
+      "metodo": "leitura textual integral",
+      "bytes": 1376,
+      "sha256": "af8951366f7296eaaee840090521c6980401dea927581c3bbe8e3167a62ef1a1",
+      "linhas": 48,
+      "resumo": "CI constrói projeto e avisa acima de 500KB; falha acima de 800KB por arquivo JS."
+    },
+    {
+      "arquivo": ".github/workflows/codeql.yml",
+      "lote": 1,
+      "status": "lido",
+      "metodo": "leitura textual integral",
+      "bytes": 865,
+      "sha256": "636feda846ea8551b9db453c40b241c41cdecf2acbdda485f7057d4ccb2301bc",
+      "linhas": 43,
+      "resumo": "CodeQL JavaScript/TypeScript executa por push, PR e cron semanal com security-extended."
+    },
+    {
+      "arquivo": ".github/workflows/e2e.yml",
+      "lote": 1,
+      "status": "lido",
+      "metodo": "leitura textual integral",
+      "bytes": 9149,
+      "sha256": "932a71e72368de5f429eeeed32baa47207a69b18f43a2e48bd27ce702ae23627",
+      "linhas": 211,
+      "resumo": "Pipeline Playwright executa smoke, sticky e regressão; dois passos compartilham id e2e_smoke."
+    },
+    {
+      "arquivo": ".github/workflows/security-compliance.yml",
+      "lote": 1,
+      "status": "lido",
+      "metodo": "leitura textual integral",
+      "bytes": 2296,
+      "sha256": "4f7d329385ed903e473fc262dd23a634303fa1e9e1661bd1308d31fd162349ff",
+      "linhas": 72,
+      "resumo": "Auditoria usa service role em scanners e geradores e exporta relatórios; o passo PDF apenas copia Markdown."
+    },
+    {
+      "arquivo": ".github/workflows/sicoob-ci.yml",
+      "lote": 1,
+      "status": "lido",
+      "metodo": "leitura textual integral",
+      "bytes": 3152,
+      "sha256": "89c7cb9e399c20f12736590dac902f45e846235e224499c6e29280cf7c150176",
+      "linhas": 101,
+      "resumo": "Gate Sicoob ignora testes de banco quando SUPABASE_DB_URL não existe; gatilhos não incluem migrations."
+    },
+    {
+      "arquivo": ".lovable/memory/features/business-intelligence-module.md",
+      "lote": 1,
+      "status": "lido",
+      "metodo": "leitura textual integral",
+      "bytes": 5012,
+      "sha256": "71c8ca7e53b2ae529e7234b18785ed76a08e6ccbf5ac6251c358014ae9e17cb1",
+      "linhas": 69,
+      "resumo": "BI comercial mistura dados de orçamentos, RPCs e amostras simuladas; gera dossiê de cinco páginas e identifica indicador real/simulado."
+    },
+    {
+      "arquivo": ".lovable/memory/features/collections-roadmap.md",
+      "lote": 1,
+      "status": "lido",
+      "metodo": "leitura textual integral",
+      "bytes": 2625,
+      "sha256": "761ba13142ae52eb61145f543249029c3fcae03282056de3cdff849af5aec816",
+      "linhas": 59,
+      "resumo": "Coleções incluem lixeira, preço salvo, alerta de redução, reação pública e exportações; cron ainda depende de configuração."
+    },
+    {
+      "arquivo": ".lovable/memory/features/kit-library-system.md",
+      "lote": 1,
+      "status": "lido",
+      "metodo": "leitura textual integral",
+      "bytes": 6692,
+      "sha256": "2cdf7651591701aaf64d7b73a90c3de886e08b292ef9066f3be50e194aeb8ab2",
+      "linhas": 61,
+      "resumo": "Biblioteca de kits próprios e sugeridos inclui clonagem, identidade, colaboração, links públicos e métricas; papéis seguem vendedor/admin."
+    },
+    {
+      "arquivo": ".lovable/memory/features/simulation-price-source-badge.md",
+      "lote": 1,
+      "status": "lido",
+      "metodo": "leitura textual integral",
+      "bytes": 838,
+      "sha256": "af054ab3178c0dd33fe3c54a83ded4c33cb7cde2d0dee781a3adfab2cc194773",
+      "linhas": 16,
+      "resumo": "Badge distingue cálculo RPC oficial de estimativa fallback, com horário e confirmação antes de fechar orçamento."
+    },
+    {
+      "arquivo": ".lovable/memory/integrations/connections-hub.md",
+      "lote": 1,
+      "status": "lido",
+      "metodo": "leitura textual integral",
+      "bytes": 4212,
+      "sha256": "07d88b3f2fff9727ff0ee2cf152b4753c3c3a2b1dcc078c8ed6bf9d501d1708f",
+      "linhas": 39,
+      "resumo": "Hub de conexões descreve bancos, Bitrix, n8n, MCP e webhooks com retries e healthchecks; quantidade declarada de tabelas diverge da lista."
+    },
+    {
+      "arquivo": ".lovable/plan/remoção-da-edge-function-migrate-helper-2026-08-16.md",
+      "lote": 1,
+      "status": "lido",
+      "metodo": "leitura textual integral",
+      "bytes": 2616,
+      "sha256": "8ae16e4e4cf8170a9c5ad74d042cf7624513147f6c65ac693ac134f0a9244d46",
+      "linhas": 31,
+      "resumo": "Plano de 16/08/2026 registra exposição de service role e DB URL por migrate-helper; recomenda excluir deploy, rotacionar e investigar logs. Código atual ainda contém a função."
+    },
+    {
+      "arquivo": "CHANGELOG.md",
+      "lote": 1,
+      "status": "lido",
+      "metodo": "leitura textual integral",
+      "bytes": 2959,
+      "sha256": "15fcd29b18ce396986d914730ba4c5086ba0202e75498e1aef242dcd1c07e9c7",
+      "linhas": 76,
+      "resumo": "Changelog declara hardening 10/10, precisão financeira, plataforma fechada, IA e integrações; referências de releases apontam outro repositório."
+    },
+    {
+      "arquivo": "README.md",
+      "lote": 1,
+      "status": "lido",
+      "metodo": "leitura textual integral",
+      "bytes": 12940,
+      "sha256": "ed6bf591af0d2b6b91e5605a7c79950217b155bcbfd9f51b18bb24dcf3daa731",
+      "linhas": 355,
+      "resumo": "README define plataforma B2B de vendedores Promo Brindes, catálogo, IA, CRM e arquitetura multi-tenant; declara RLS 100% sem evidência atual."
+    },
+    {
+      "arquivo": "SICOOB_TESTING.md",
+      "lote": 1,
+      "status": "lido",
+      "metodo": "leitura textual integral",
+      "bytes": 1668,
+      "sha256": "9cb28a80e73d74f782a894e9f5daf1ada751efd4d34154510cac7c6dc568c5ac",
+      "linhas": 35,
+      "resumo": "Seed Sicoob documenta Central, Singular, PA e gestor com quatro papéis sicoob_* e senha padrão comum."
+    },
+    {
+      "arquivo": "docs/01_CRIAR_PRIMEIRA_ORGANIZATION.md",
+      "lote": 1,
+      "status": "lido",
+      "metodo": "leitura textual integral",
+      "bytes": 10831,
+      "sha256": "7b7310bc6eca1845d57a2cc3b98ee7d4ee1b0ba224d52f0ec827542d82a87d24",
+      "linhas": 439,
+      "resumo": "Onboarding manual SQL cria organização e owner, associa categorias e insere produto; sucesso de INSERT é tratado indevidamente como prova de RLS."
+    },
+    {
+      "arquivo": "docs/03_ARQUITETURA_DO_SISTEMA.md",
+      "lote": 1,
+      "status": "lido",
+      "metodo": "leitura textual integral",
+      "bytes": 16079,
+      "sha256": "36608f9e70ae3d65326bb3e6b073fda21d452621127751a2cc9b121e3459dcdd",
+      "linhas": 586,
+      "resumo": "Arquitetura Gifts Store propõe organizações independentes, owner/admin/member, RLS, produtos próprios, Bitrix e OrganizationContext."
+    },
+    {
+      "arquivo": "docs/05_ROADMAP_PROXIMOS_PASSOS.md",
+      "lote": 1,
+      "status": "lido",
+      "metodo": "leitura textual integral",
+      "bytes": 11811,
+      "sha256": "3ff1dfb930d4f683a937bd5e2de36dacae2dea6afdf3b372bd6deff0b847fdd5",
+      "linhas": 727,
+      "resumo": "Roadmap de oito semanas marca fases como concluídas e depois pendentes no MoSCoW; assume pagamentos, CRM, PWA e monitoramento prontos."
+    },
+    {
+      "arquivo": "docs/ANALISE_109_TABELAS_BANCO_EXTERNO.md",
+      "lote": 1,
+      "status": "lido",
+      "metodo": "leitura textual integral",
+      "bytes": 23769,
+      "sha256": "2c7e2813c12912dfd1f6c48cb7db6a6e4c47eadd91c0cf7ac2174e9716e56c3b",
+      "linhas": 431,
+      "resumo": "Inventário externo de janeiro descreve 109 objetos e dados de produto, variantes, estoques, cores, técnicas, preço por quantidade e CRM. Contagens históricas não verificadas."
+    },
+    {
+      "arquivo": "docs/API_DEPENDENCY_MAP.md",
+      "lote": 2,
+      "status": "lido",
+      "metodo": "leitura textual integral",
+      "bytes": 2940,
+      "sha256": "5694bfbb2365556863b69b55cb7592c007946878d440bf8fd901dd984516f283",
+      "linhas": 148,
+      "resumo": "Mapa de dependências separa orders e sicoob_orders mas ainda descreve OrdersPage Sicoob como mock a migrar."
+    },
+    {
+      "arquivo": "docs/AUDIT_FRONTEND_DATABASE_summary.md",
+      "lote": 2,
+      "status": "lido",
+      "metodo": "leitura textual integral",
+      "bytes": 1303,
+      "sha256": "d8ad75303401dca8d4c8953c4c4492e05d469252b92e0743f0a6e4e807a33826",
+      "linhas": 27,
+      "resumo": "Sumário declara zero achados e RLS integral ao mesmo tempo que informa ausência de acesso MCP e análise apenas de migrations."
+    },
+    {
+      "arquivo": "docs/BRANCH_PROTECTION.md",
+      "lote": 2,
+      "status": "lido",
+      "metodo": "leitura textual integral",
+      "bytes": 2942,
+      "sha256": "f3518f141dfecfa4afab94de7793146e08a560b8b8374b42c4a117a9c8bac12e",
+      "linhas": 83,
+      "resumo": "Guia de proteção da main direciona Promo_Gifts; status alvo, não evidência; teste sugere force-push real, inadequado como validação segura."
+    },
+    {
+      "arquivo": "docs/CI_CD.md",
+      "lote": 2,
+      "status": "lido",
+      "metodo": "leitura textual integral",
+      "bytes": 1679,
+      "sha256": "bd919fd67ff1cf744b290be3b77dbe3929ef7d97c9a58b02e8b9d3d53fe3da0a",
+      "linhas": 39,
+      "resumo": "CI/CD descreve quality.yml, release semântico e domínios Promo Gifts; diverge de README e quality.yml está ausente."
+    },
+    {
+      "arquivo": "docs/CONNECTORS_INVENTORY.md",
+      "lote": 2,
+      "status": "lido",
+      "metodo": "leitura textual integral",
+      "bytes": 1844,
+      "sha256": "c61859ba61cb9ab29f2115c938152f1c81aeb2d467979d84a008e3cbd408a6fd",
+      "linhas": 39,
+      "resumo": "Inventário do Hub inclui catálogo externo como SSOT, CRM, Bitrix, n8n, MCP e webhooks assinados."
+    },
+    {
+      "arquivo": "docs/DATA_DICTIONARY.md",
+      "lote": 2,
+      "status": "lido",
+      "metodo": "leitura textual integral",
+      "bytes": 4974,
+      "sha256": "f1cb66ed9aaa95a892d1987ae4d99cd55ad83ec3d227cd52d6fa7bc2c5a88cbf",
+      "linhas": 98,
+      "resumo": "Dicionário abril lista 63 tabelas e multi-tenant preparado pouco usado; papéis e orçamento seguem vendedores, sem dicionário completo Sicoob."
+    },
+    {
+      "arquivo": "docs/DR.md",
+      "lote": 2,
+      "status": "lido",
+      "metodo": "leitura textual integral",
+      "bytes": 1710,
+      "sha256": "f7d1d5d75b1b7d42941b126fb58834f276fc1579ce6c8f515314d7b302a28176",
+      "linhas": 36,
+      "resumo": "DR fixa RTO 2h/RPO24h e declara PITR sete dias, versionamento e réplica regional sem comprovantes de execução."
+    },
+    {
+      "arquivo": "docs/EDGE_FUNCTIONS.md",
+      "lote": 2,
+      "status": "lido",
+      "metodo": "leitura textual integral",
+      "bytes": 6632,
+      "sha256": "4ca3390f11113bb30e79ebcb973edb36d1c43de00c3f1880be11c11e595e089e",
+      "linhas": 95,
+      "resumo": "Catálogo de 50 funções abril mistura funções públicas, JWT e service e descreve categories/materials como CRUD apesar do código de leitura."
+    },
+    {
+      "arquivo": "docs/EXCEL_INTEGRATION_GUIDE.md",
+      "lote": 2,
+      "status": "lido",
+      "metodo": "leitura textual integral",
+      "bytes": 3750,
+      "sha256": "4b217801ef755edfd8905fa745cafc06c29d079fe4d7871207e38ee76832f50f",
+      "linhas": 139,
+      "resumo": "Guia fornece implementação manual do ExportExcelButton para orçamentos, pedidos e clientes."
+    },
+    {
+      "arquivo": "docs/FORM_VALIDATION.md",
+      "lote": 2,
+      "status": "lido",
+      "metodo": "leitura textual integral",
+      "bytes": 239,
+      "sha256": "830cd221849f914fded2875adacb92674443b0d61916a5c9ebe11b18e8fcc80f",
+      "linhas": 4,
+      "resumo": "Documento contém apenas exemplo de useForm/zodResolver; não especifica regras de negócio ou evidência de validação."
+    },
+    {
+      "arquivo": "docs/GO_LIVE_CHECKLIST.md",
+      "lote": 2,
+      "status": "lido",
+      "metodo": "leitura textual integral",
+      "bytes": 1384,
+      "sha256": "1d4741203fd03f63f75490f922cd2d16a1a74e03cafbba48b07dadf5c9fc19f0",
+      "linhas": 32,
+      "resumo": "Checklist de lançamento Sicoob permanece sem marcações, responsável ou data; exige RLS, verbas, aprovação, observabilidade e backup."
+    },
+    {
+      "arquivo": "docs/HOTFIX_PROCEDURE.md",
+      "lote": 2,
+      "status": "lido",
+      "metodo": "leitura textual integral",
+      "bytes": 1134,
+      "sha256": "87f8a350b84620c2b577180eb1cbc8a88e7b8b5f59c6310e9790e16ad7b28952",
+      "linhas": 24,
+      "resumo": "Runbook de hotfix define P0, reprodução, smoke, PR, observação pós-deploy e post-mortem."
+    },
+    {
+      "arquivo": "docs/MAGIC_UP_ONDA5_A11Y.md",
+      "lote": 2,
+      "status": "lido",
+      "metodo": "leitura textual integral",
+      "bytes": 4875,
+      "sha256": "12f4c4f7a15b521f86addd4d2c9885001c47c950bd52fe2417a35bb894803ef4",
+      "linhas": 80,
+      "resumo": "Diretriz de acessibilidade Magic Up define foco, disabled, alvos 44px e testes de classes/axe; alcance é módulo específico."
+    },
+    {
+      "arquivo": "docs/MODULES.md",
+      "lote": 2,
+      "status": "lido",
+      "metodo": "leitura textual integral",
+      "bytes": 1996,
+      "sha256": "5c87d324a1648788c9bd69d3a5893763f31f41ea4d6df5f98a5ea19bd54efd59",
+      "linhas": 40,
+      "resumo": "Índice mem:// centraliza módulos e inclui cor Sicoob, MFA e SSOT; recursos não portáveis para repositório isolado."
+    },
+    {
+      "arquivo": "docs/OBSERVABILITY.md",
+      "lote": 2,
+      "status": "lido",
+      "metodo": "leitura textual integral",
+      "bytes": 7803,
+      "sha256": "708f5d9221a34d20596a525390d9476f50fc5fa74a90cb1903df06cf161ca598",
+      "linhas": 170,
+      "resumo": "Observabilidade descreve request_id, logs, Sentry e alertas; termina com placeholder keep existing code."
+    },
+    {
+      "arquivo": "docs/PERFORMANCE.md",
+      "lote": 2,
+      "status": "lido",
+      "metodo": "leitura textual integral",
+      "bytes": 859,
+      "sha256": "309597c063a211e679eebf952e95ed4aabcc3542e274f62a0e796fea121f0382",
+      "linhas": 28,
+      "resumo": "Metas de desempenho incluem virtualização, cache Redis e Lighthouse; declara medição Web Vitals externa sem relatório de campo."
+    },
+    {
+      "arquivo": "docs/POLITICA_IDIOMA_PT_BR.md",
+      "lote": 2,
+      "status": "lido",
+      "metodo": "leitura textual integral",
+      "bytes": 5676,
+      "sha256": "ed3a0702f7846d289ccb7d0db4a3d6765157303f5b706ed75eb9d176d60ee244",
+      "linhas": 231,
+      "resumo": "Política pt-BR de Gifts Store proíbe idiomas/moedas adicionais e expansão internacional, contradiz auditorias de multinacionalidade."
+    },
+    {
+      "arquivo": "docs/RBAC_HELPERS.md",
+      "lote": 2,
+      "status": "lido",
+      "metodo": "leitura textual integral",
+      "bytes": 2699,
+      "sha256": "bfb911f57b138dbd7033ffeb028d53f614f6e32a1e87a6543c3766332c604206",
+      "linhas": 45,
+      "resumo": "Helpers RBAC usam dev/supervisor e aliases admin/manager; concede conexões a supervisor+, diferindo de ADR dev-only."
+    },
+    {
+      "arquivo": "docs/ROUTES.md",
+      "lote": 2,
+      "status": "lido",
+      "metodo": "leitura textual integral",
+      "bytes": 5200,
+      "sha256": "a6340f40db65968884961ba294b04434cebdc9aa6fdcf624e1248f108cced42e",
+      "linhas": 113,
+      "resumo": "Mapa de rotas preserva catálogo e ferramentas e seis rotas Sicoob; omite rotas adicionais de PA/gestor hoje presentes no código."
+    },
+    {
+      "arquivo": "docs/RUNBOOKS/CREDENTIAL_ROTATION.md",
+      "lote": 2,
+      "status": "lido",
+      "metodo": "leitura textual integral",
+      "bytes": 5378,
+      "sha256": "a68e8f32bfb199607d333f752137d92845fff6a84c1d1b1b4838d68f4e8783ee",
+      "linhas": 124,
+      "resumo": "Runbook de exposição de .env legado permanece aguardando execução; projeto Supabase não corresponde aos dois indicados pelo usuário."
+    },
+    {
+      "arquivo": "docs/SCOPE_ALIGNMENT.md",
+      "lote": 2,
+      "status": "lido",
+      "metodo": "leitura textual integral",
+      "bytes": 3524,
+      "sha256": "38233f2f4927812a0eace27cdc25e0b4229d681fb8806cae84e8296eb86d686a",
+      "linhas": 63,
+      "resumo": "Escopo Sicoob mapeia catálogo, mockups, workflow, verba e RBAC, exclui CRM/gamificação; mantém diretriz final focada no vendedor."
+    },
+    {
+      "arquivo": "docs/SECURITY_ALERTS.md",
+      "lote": 2,
+      "status": "lido",
+      "metodo": "leitura textual integral",
+      "bytes": 3864,
+      "sha256": "5c24dc84c9a2fb8d1abc6016b20894ef102f637c5cc45d322225de659975f115",
+      "linhas": 94,
+      "resumo": "Alertas GitHub diferenciam workflow de ativação UI; links e status tratam repositório Promo_Gifts."
+    },
+    {
+      "arquivo": "docs/SECURITY_RUNBOOK.md",
+      "lote": 3,
+      "status": "lido",
+      "metodo": "leitura textual integral",
+      "bytes": 3281,
+      "sha256": "ab2c9eb699a615af5105f37d808bfb3242d8a3259a9c75e686277fd90f65bef3",
+      "linhas": 65,
+      "resumo": "Runbook Security Center descreve ações admin de token/IP/logout e MFA; conflita com separação posterior dev/admin."
+    },
+    {
+      "arquivo": "docs/SLA_REVIEW.md",
+      "lote": 3,
+      "status": "lido",
+      "metodo": "leitura textual integral",
+      "bytes": 939,
+      "sha256": "425e379faff1f698b43a2601a0c2dc0be6830178a6b7e412b4040fad904eb8dc",
+      "linhas": 21,
+      "resumo": "SLA Q2 estabelece metas e afirma SMS/relatório automático, sem evidências de configuração ou medição."
+    },
+    {
+      "arquivo": "docs/TESTING.md",
+      "lote": 3,
+      "status": "lido",
+      "metodo": "leitura textual integral",
+      "bytes": 417,
+      "sha256": "2a1ed322898f8ef7c179e2820385a3df1a2f6d1425d4b385e3b14e3cabc5aaf3",
+      "linhas": 31,
+      "resumo": "Guia genérico lista comandos unit/e2e/coverage e boas práticas; não comprova execução."
+    },
+    {
+      "arquivo": "docs/adr/0002-rls-first-security.md",
+      "lote": 3,
+      "status": "lido",
+      "metodo": "leitura textual integral",
+      "bytes": 973,
+      "sha256": "0889e5090db12fdb7df9f9d97fcacc1281a1907ac5863a6e90f95f8e48270731",
+      "linhas": 19,
+      "resumo": "ADR exige autorização no banco, user_roles como fonte e teste anon/vendedor/admin; não abrange ainda todos os papéis Sicoob."
+    },
+    {
+      "arquivo": "docs/adr/0004-closed-platform-policy.md",
+      "lote": 3,
+      "status": "lido",
+      "metodo": "leitura textual integral",
+      "bytes": 718,
+      "sha256": "0a2596025679f6f32ff68051a9cc684c1144bb3e6af44df15d87fbdbfcf57ced",
+      "linhas": 17,
+      "resumo": "ADR plataforma fechada define vendedores convidados e recuperação manual por aprovação admin."
+    },
+    {
+      "arquivo": "docs/adr/0006-dev-vs-admin-roles.md",
+      "lote": 3,
+      "status": "lido",
+      "metodo": "leitura textual integral",
+      "bytes": 1320,
+      "sha256": "cce5143063c8aa639efe7cf6a605f91c929e9125a991ae0313d74b0880b2d60b",
+      "linhas": 19,
+      "resumo": "ADR separa operação comercial admin e infraestrutura dev; telemetria/conexões devem ser técnicas."
+    },
+    {
+      "arquivo": "docs/adr/0008-unified-soft-delete-policy.md",
+      "lote": 3,
+      "status": "lido",
+      "metodo": "leitura textual integral",
+      "bytes": 1762,
+      "sha256": "9f83425defc851a84bece64fd845e192bcfed264b97762fea5cac8e6998ee735",
+      "linhas": 25,
+      "resumo": "ADR de soft-delete está em Proposta e reconhece exclusões heterogêneas; não é controle já implantado."
+    },
+    {
+      "arquivo": "docs/architecture/C4_CONTEXT.md",
+      "lote": 3,
+      "status": "lido",
+      "metodo": "leitura textual integral",
+      "bytes": 2350,
+      "sha256": "9dd0f5162253b2b049130154653b8c8d335702091f1f20aba3be1bc0d325671e",
+      "linhas": 80,
+      "resumo": "C4 modela vendedor/admin e cliente final aprovador, Bitrix/n8n e dois bancos externos; não modela comprador/marketing cooperativa."
+    },
+    {
+      "arquivo": "docs/audits/AUDITORIA_ENTERPRISE_14052026.md",
+      "lote": 3,
+      "status": "lido",
+      "metodo": "leitura textual integral",
+      "bytes": 6055,
+      "sha256": "a21960d6936887c27dbd46103f551b29c3b2ed076cb35cba5e0a239282ad04a8",
+      "linhas": 81,
+      "resumo": "Auditoria 14/05 dá 9,8/10, RLS100%, MFA pendente e multinacionalidade planejada; classificação bancária não é certificação."
+    },
+    {
+      "arquivo": "docs/audits/AUDIT_ENTERPRISE_FINAL.md",
+      "lote": 3,
+      "status": "lido",
+      "metodo": "leitura textual integral",
+      "bytes": 36775,
+      "sha256": "a3229e964f8c336bf0c4c39d387fc087d201202b6639e501de529fcb0a76d3ad",
+      "linhas": 231,
+      "resumo": "Dossiê 09/05 marca 171 tabelas PASSED com mesma migration, afirma isolamento completo, blockchain e PII implementados."
+    },
+    {
+      "arquivo": "docs/audits/AUDIT_INVENTORY_DETAILED.md",
+      "lote": 3,
+      "status": "lido",
+      "metodo": "leitura textual integral",
+      "bytes": 5045,
+      "sha256": "1ac5f119221e99c6256fbbb5e33feaba88e9b44303a063356f81ae60472fc090",
+      "linhas": 94,
+      "resumo": "Inventário 15/05 dá 10/10 e cobertura80,2%; recomenda otimização que na própria seção anterior diz já concluída."
+    },
+    {
+      "arquivo": "docs/audits/ENTERPRISE_AUDIT_REPORT_V6.md",
+      "lote": 3,
+      "status": "lido",
+      "metodo": "leitura textual integral",
+      "bytes": 3535,
+      "sha256": "b6daea0dfbcb070257b9e852892cecf54662255185f1f87cf6f63b8f8d31dd38",
+      "linhas": 75,
+      "resumo": "Auditoria V6 afirma isolamento e precisão100%, 171 tabelas e 99 funções; registra zero logs de auditoria e generaliza autenticação."
+    },
+    {
+      "arquivo": "docs/audits/audit_report.md",
+      "lote": 3,
+      "status": "lido",
+      "metodo": "leitura textual integral",
+      "bytes": 5969,
+      "sha256": "c11bed6d33fb91ed3d3fb1ab7456a0585b4230b3207cca255b2e32878ba74d68",
+      "linhas": 81,
+      "resumo": "Auditoria atualizada a10/10 marca MFA e multinacionalidade concluídos sem evidência, contradiz política pt-BR."
+    },
+    {
+      "arquivo": "docs/order-workflow.md",
+      "lote": 3,
+      "status": "lido",
+      "metodo": "leitura textual integral",
+      "bytes": 1520,
+      "sha256": "984bf8cb0558d2363e62bdca27b64d10678cc9a94d1f6cfa2889892264c1eefa",
+      "linhas": 34,
+      "resumo": "Workflow diferencia nove estados de orders e ciclo resumido Sicoob; ambos dependem de triggers e eventos de auditoria."
+    },
+    {
+      "arquivo": "docs/security/SELLER_SCOPE_CHECKER.md",
+      "lote": 3,
+      "status": "lido",
+      "metodo": "leitura textual integral",
+      "bytes": 1818,
+      "sha256": "1369252b8009a967c5e90d018d7f5c09e0f13d6b57281516fb13c2870c048fd4",
+      "linhas": 53,
+      "resumo": "Checker de escopo vendedor verifica queries de quotes/orders/discount_requests e admite comentário de exceção; não comprova RLS."
+    },
+    {
+      "arquivo": "docs/testing/STRICT_REF_WARNING_GATE.md",
+      "lote": 3,
+      "status": "lido",
+      "metodo": "leitura textual integral",
+      "bytes": 2705,
+      "sha256": "0e5191a5290b5c64494e3a83d5e0976fc79ed607fbd8c3aa14f4cb901b6b93b5",
+      "linhas": 66,
+      "resumo": "Gate de ref warning captura console do Vitest e pode tornar erro de refs bloqueante; não equivale à acessibilidade global."
+    },
+    {
+      "arquivo": "e2e/flows/p0/README.md",
+      "lote": 3,
+      "status": "lido",
+      "metodo": "leitura textual integral",
+      "bytes": 856,
+      "sha256": "41b4b82ef96184360b8bcd66d4683741f28f39cd17a2053c852bfaeda01f735b",
+      "linhas": 16,
+      "resumo": "README P0 descreve cinco fluxos de resiliência como test.skip; há cenários ativos posteriores não contemplados por este README."
+    },
+    {
+      "arquivo": "index.html",
+      "lote": 3,
+      "status": "lido",
+      "metodo": "leitura textual integral",
+      "bytes": 5089,
+      "sha256": "2fe97e6f366098c736fb326332370cf17cc359de7bbcdc72f3f666adcdcd4260",
+      "linhas": 104,
+      "resumo": "HTML tem marca Sicoob, autor Promo Brindes, domínio Lovable e banco cfm; splash está no head com div excedente."
+    },
+    {
+      "arquivo": "public/AUDIT_ENTERPRISE_FINAL.md",
+      "lote": 3,
+      "status": "lido",
+      "metodo": "leitura integral das seções e comparação computacional integral das 171 linhas repetidas com representante docs/audits/AUDIT_ENTERPRISE_FINAL.md",
+      "bytes": 69294,
+      "sha256": "cba9a8d58e2cb3a2a6ec5500d115cab19a79c534132a482c35801d546cb5b66b",
+      "linhas": 422,
+      "resumo": "Dossiê público exibe cobertura98,2% com Métricas Reais ❌,171 PASSED e175 links404; gerado pelo builder com valores estáticos."
+    },
+    {
+      "arquivo": "public/favicon.svg",
+      "lote": 3,
+      "status": "lido",
+      "metodo": "leitura integral SVG e inspeção visual da renderização",
+      "bytes": 629,
+      "sha256": "2e65400b8c1b3867739b9194f52d95c2055eb1cc5031bb82354ff4624ae3e3b4",
+      "linhas": 10,
+      "resumo": "SVG representa caixa de presente branca em quadrado azul #3B82F6; não é símbolo oficial Sicoob."
+    },
+    {
+      "arquivo": "public/images/promo-brindes-logo.png",
+      "lote": 4,
+      "status": "lido",
+      "metodo": "inspeção visual com view_image",
+      "bytes": 39344,
+      "sha256": "a6500f1ec237458463157c340c7bde072abce380c074bfc8468cdb1328b0b2cf",
+      "linhas": null,
+      "resumo": "Imagem contém logotipo Promo Brindes em caligrafia preta e laço sobre moldura de caixa, sem marca Sicoob."
+    },
+    {
+      "arquivo": "public/reports/AUDIT_REPORT_20a6b98b1.md",
+      "lote": 4,
+      "status": "lido",
+      "metodo": "leitura integral das seções e comparação computacional integral das 171 linhas repetidas com representante docs/audits/AUDIT_ENTERPRISE_FINAL.md",
+      "bytes": 69294,
+      "sha256": "cba9a8d58e2cb3a2a6ec5500d115cab19a79c534132a482c35801d546cb5b66b",
+      "linhas": 422,
+      "resumo": "Cópia byte a byte de public/AUDIT_ENTERPRISE_FINAL.md,171 PASSED e175 links404."
+    },
+    {
+      "arquivo": "public/reports/AUDIT_REPORT_37d88d6bf.md",
+      "lote": 4,
+      "status": "lido",
+      "metodo": "leitura integral das seções e comparação computacional integral das 171 linhas repetidas com representante docs/audits/AUDIT_ENTERPRISE_FINAL.md",
+      "bytes": 38196,
+      "sha256": "761590b9f8398a307f82107e56135acdbd92222ecdb1ca730526f4a4b16c743a",
+      "linhas": 237,
+      "resumo": "Dossiê37d88d6bf declara98,2%,1164 TSX e196 testes; todos links de evidência falham e lacunas PII/auditoria pendem."
+    },
+    {
+      "arquivo": "public/reports/AUDIT_REPORT_3b0427aef.md",
+      "lote": 4,
+      "status": "lido",
+      "metodo": "leitura integral das seções e comparação computacional integral das 171 linhas repetidas com representante docs/audits/AUDIT_ENTERPRISE_FINAL.md",
+      "bytes": 69250,
+      "sha256": "7a942c2b6a8637c0e5fa3ca281edc9e521e63e8369e98009b7677585f3ad9ca5",
+      "linhas": 422,
+      "resumo": "Dossiê3b0427aef tem98,2% não real,1164 TSX,50 testes,175 links404 e lacunas pendentes."
+    },
+    {
+      "arquivo": "public/reports/AUDIT_REPORT_6a6993b3a.md",
+      "lote": 4,
+      "status": "lido",
+      "metodo": "leitura integral das seções e comparação computacional integral das 171 linhas repetidas com representante docs/audits/AUDIT_ENTERPRISE_FINAL.md",
+      "bytes": 69294,
+      "sha256": "1c95d02a74032a4153f49f2ba93f6af92b815c48dea4ae2eb42d8a3847ca2a7e",
+      "linhas": 422,
+      "resumo": "Dossiê6a6993b3a tem98,2% não real,1168 TSX,50 testes e lacunas reclassificadas mitigadas sem teste funcional."
+    },
+    {
+      "arquivo": "public/reports/AUDIT_REPORT_890ebdb88.md",
+      "lote": 4,
+      "status": "lido",
+      "metodo": "leitura integral das seções e comparação computacional integral das 171 linhas repetidas com representante docs/audits/AUDIT_ENTERPRISE_FINAL.md",
+      "bytes": 36700,
+      "sha256": "626e870191a145b21372ddcfc0d6f399f85bf9618a02b2cbad2f60407a2809b5",
+      "linhas": 231,
+      "resumo": "Dossiê890ebdb88 tem171 PASSED e mesma migration para todos; PII e segregação administrativa pendentes."
+    },
+    {
+      "arquivo": "public/reports/AUDIT_REPORT_892fa9f31.pdf",
+      "lote": 4,
+      "status": "lido",
+      "metodo": "pdftotext raw e layout; leitura integral do representante e comparação integral das variantes",
+      "bytes": 880430,
+      "sha256": "75f481abdb4b6088e3fc9e4430ce1978e2cf12180b45e5729ffcb08e661debd8",
+      "linhas": 2662,
+      "resumo": "PDF20 páginas892fa9f31 replica dossiê com98,2%,171 PASSED,175 links404 e lacunas pendentes.",
+      "paginas": 20,
+      "texto_sha256": "82e526262d80c0f8c2e78f9fd5b6cb2c4ea14fa3f5d0167cf0a9b352f532235d"
+    },
+    {
+      "arquivo": "public/reports/AUDIT_REPORT_afc944619.pdf",
+      "lote": 4,
+      "status": "lido",
+      "metodo": "pdftotext raw e layout; leitura integral do representante e comparação integral das variantes",
+      "bytes": 880217,
+      "sha256": "274484b0c1090779cc9793dd48da22b65e858df8f6353a38cc9726afda7fd2c9",
+      "linhas": 2662,
+      "resumo": "PDF20 páginasafc944619 difere do892fa9f31 apenas em metadados de versão/data/links.",
+      "paginas": 20,
+      "texto_sha256": "6e0c8a6fb7222a697e273104010152ad22937a53486ce59e94c371503d086a6b"
+    },
+    {
+      "arquivo": "public/reports/AUDIT_REPORT_b342d62cb.pdf",
+      "lote": 4,
+      "status": "lido",
+      "metodo": "pdftotext raw e layout; leitura integral do representante e comparação integral das variantes",
+      "bytes": 880392,
+      "sha256": "164cb6a8f33de637c7fa54a9ff5229b6dc4ed1a412d3ea5917abd063c2002d2c",
+      "linhas": 2662,
+      "resumo": "PDF20 páginasb342d62cb difere por cobertura88,4% e metadados; não comprova medição de cobertura.",
+      "paginas": 20,
+      "texto_sha256": "bbfe429cc55cef3380a307767fac6ca8fcbd970de0dcea886a8a1666030b37aa"
+    },
+    {
+      "arquivo": "public/reports/AUDIT_REPORT_d9912d316.pdf",
+      "lote": 4,
+      "status": "lido",
+      "metodo": "pdftotext raw e layout; leitura integral do representante e comparação integral das variantes",
+      "bytes": 880519,
+      "sha256": "b053e2f00eb130f2df5097e61a16d11f2ec070573eeb08339ee6193a0b4946aa",
+      "linhas": 2666,
+      "resumo": "PDF20 páginasd9912d316 passa1168 TSX e lacunas mitigadas; mantém171 PASSED e175 links404.",
+      "paginas": 20,
+      "texto_sha256": "b44d0e8e8b04b2c44733456330a2e885e576661deefccb69bf6af99a38fc603b"
+    },
+    {
+      "arquivo": "public/reports/AUDIT_REPORT_e3392dc9c.pdf",
+      "lote": 4,
+      "status": "lido",
+      "metodo": "pdftotext raw e layout; leitura integral do representante e comparação integral das variantes",
+      "bytes": 528340,
+      "sha256": "d31699c2ca789c3f8c56cca39718325720177206ae2b562f010181109aa78eeb",
+      "linhas": 217,
+      "resumo": "PDF6 páginase3392dc9c lista171 tabelas aprovadas, mesma data de migration, lacunas PII/logs pendentes.",
+      "paginas": 6,
+      "texto_sha256": "79495b09255c7354ec715810f1b3134b7a6a992283b6fc2d64f002faf7e37c96"
+    },
+    {
+      "arquivo": "public/reports/AUDIT_REPORT_e6b40b200.pdf",
+      "lote": 4,
+      "status": "lido",
+      "metodo": "pdftotext raw e layout; leitura integral do representante e comparação integral das variantes",
+      "bytes": 880507,
+      "sha256": "27550eabb0efe4c0bf7f4e1d5d71da88c631cd5e5b2ad78d66cf38850a08e08b",
+      "linhas": 2666,
+      "resumo": "PDF20 páginase6b40b200 mantém1164 TSX mas muda lacunas para mitigadas e PII AES-GCM; mesmos resultados repetidos.",
+      "paginas": 20,
+      "texto_sha256": "33e07f11ab338fc2dac4593e64d2dbc3d223004521c7cd6223dea94af2b3aa80"
+    },
+    {
+      "arquivo": "public/reports/AUDIT_REPORT_ea7691634.pdf",
+      "lote": 4,
+      "status": "lido",
+      "metodo": "pdftotext raw e layout; leitura integral do representante e comparação integral das variantes",
+      "bytes": 880519,
+      "sha256": "3475812a352f8bc9062c58686479e59568261ebe627120235d10905203ea7dee",
+      "linhas": 2666,
+      "resumo": "PDF20 páginasea7691634 replica resultados com1168 TSX e lacunas mitigadas.",
+      "paginas": 20,
+      "texto_sha256": "78487b5c8dfff0c8e6fa69b45100fa3bac932a07f1e90ffbbe4b9c7ed8794637"
+    },
+    {
+      "arquivo": "public/reports/AUDIT_REPORT_f9c1c233d.pdf",
+      "lote": 4,
+      "status": "lido",
+      "metodo": "pdftotext raw e layout; leitura integral do representante e comparação integral das variantes",
+      "bytes": 880519,
+      "sha256": "b0559e15b355867eca0befdfd334e64f141d7cf1135c0e310aa800bb7467a30f",
+      "linhas": 2666,
+      "resumo": "PDF20 páginasf9c1c233d replica resultados com1168 TSX e lacunas mitigadas.",
+      "paginas": 20,
+      "texto_sha256": "a89af564e8a24e0c331ec85e377ada3f1fd0a793ce5dad39e67942245cd7dd21"
+    },
+    {
+      "arquivo": "reports/AUDIT_REPORT_631165be8.md",
+      "lote": 4,
+      "status": "lido",
+      "metodo": "leitura integral das seções e comparação computacional integral das 171 linhas repetidas com representante docs/audits/AUDIT_ENTERPRISE_FINAL.md",
+      "bytes": 36700,
+      "sha256": "55821323ac0e58803e1db0c2a84a671dfc712dfac4cc513703027e5a7cc952b9",
+      "linhas": 231,
+      "resumo": "Dossiê631165be8 em reports marca blockchain/logs/PII pendentes enquanto docs/audits para mesmo ID os marca concluídos."
+    },
+    {
+      "arquivo": "service_map.txt",
+      "lote": 4,
+      "status": "lido",
+      "metodo": "leitura textual integral",
+      "bytes": 23851,
+      "sha256": "d2c0676e1b1b019e713d97796945f1857ca93df370179fba05d17abce4a72648",
+      "linhas": 175,
+      "resumo": "Mapa textual de chamadas lista leituras/escritas em legado e Sicoob; aproxima dependências, sem afirmar execução ou autorização."
+    },
+    {
+      "arquivo": "tests/p0/README.md",
+      "lote": 4,
+      "status": "lido",
+      "metodo": "leitura textual integral",
+      "bytes": 2389,
+      "sha256": "6eb90d37ac0dffd1a6319dc7a614c2b9896aef5c779d6af47fb55b0b7b14e6db",
+      "linhas": 36,
+      "resumo": "README P0 documenta esqueletos pulados de auth, integrações e integridade; critérios de aceite exigem implementação antes de ativar."
+    }
+  ]
+}

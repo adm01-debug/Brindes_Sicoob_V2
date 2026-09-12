@@ -9114,6 +9114,10 @@ export type Database = {
         Args: { p_manager_id: string; p_order_id: string; p_request_id: string }
         Returns: undefined
       }
+      confirm_sicoob_order: {
+        Args: { p_expected_status: string; p_order_id: string }
+        Returns: undefined
+      }
       archive_old_admin_audit_logs: { Args: never; Returns: number }
       audit_all_rls_compliance: { Args: never; Returns: Json }
       audit_ownership_orphans: {

@@ -1,36 +1,63 @@
-import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { PageSEO } from "@/components/seo/PageSEO";
-import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
+import { Link, useNavigate, useSearchParams, useLocation, type NavigateFunction } from "react-router-dom";
 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Eye, EyeOff, Loader2, Gift, Mail, Lock, ShieldAlert, Globe, Wifi, AlertTriangle } from "lucide-react";
+import { Eye, EyeOff, Loader2, Mail, Lock, ShieldAlert, AlertTriangle } from "lucide-react";
 import { AuthBrandingPanel } from "./auth/AuthBranding";
-import { 
-  Button, 
-  Input, 
-  Label, 
-  Card, 
-  CardContent, 
-  CardHeader 
-} from "@/components/ui";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth, type AppRole } from "@/contexts/AuthContext";
 import { ForgotPasswordForm } from "@/components/auth/ForgotPasswordForm";
 import { useIPValidation } from "@/hooks/useIPValidation";
-import { PasskeyLogin } from "@/components/auth/PasskeyLogin";
-import { SocialLoginButtons } from "@/components/auth/SocialLoginButtons";
 import { supabase } from "@/integrations/supabase/client";
-import { QuickTestLogin } from "@/components/auth/QuickTestLogin";
 
 import { loginSchema, type LoginFormData } from "@/lib/validations";
 
 type LoginForm = LoginFormData;
 
-import { diagnostics } from "@/lib";
+import { diagnostics } from "@/lib/diagnostics";
 
-// ContinuousRockets and AuthBrandingPanel extracted to ./auth/AuthBranding.tsx
+import { safeInternalPath } from "@/lib/auth/safe-internal-path";
+import { getDefaultRouteByRole } from "@/lib/auth/auth-utils";
+
+interface RedirectSource {
+  from?: { pathname?: string; search?: string; hash?: string };
+}
+
+function requestedPath(searchParams: URLSearchParams, state: unknown): string | null {
+  const from = (state as RedirectSource | null)?.from;
+  const restored = from?.pathname ? `${from.pathname}${from.search ?? ""}${from.hash ?? ""}` : null;
+  return searchParams.get("redirect") ?? restored;
+}
+
+function mayRedirect(hasUser: boolean, authLoading: boolean, rolesLoaded: boolean, role: AppRole | null, isSubmitting: boolean, ipBlocked: boolean): boolean {
+  return hasUser && !authLoading && rolesLoaded && Boolean(role) && !isSubmitting && !ipBlocked;
+}
+
+function useAuthenticatedRedirect(options: {
+  hasUser: boolean;
+  authLoading: boolean;
+  rolesLoaded: boolean;
+  role: AppRole | null;
+  isSubmitting: boolean;
+  ipBlocked: boolean;
+  searchParams: URLSearchParams;
+  location: { pathname: string; state: unknown };
+  navigate: NavigateFunction;
+}) {
+  const { hasUser, authLoading, rolesLoaded, role, isSubmitting, ipBlocked, searchParams, location, navigate } = options;
+  useEffect(() => {
+    if (!mayRedirect(hasUser, authLoading, rolesLoaded, role, isSubmitting, ipBlocked)) return;
+    const destination = safeInternalPath(requestedPath(searchParams, location.state), getDefaultRouteByRole(role));
+    if (location.pathname !== destination) navigate(destination, { replace: true });
+  }, [hasUser, authLoading, rolesLoaded, role, isSubmitting, ipBlocked, searchParams, location.state, location.pathname, navigate]);
+}
 
 export default function Auth() {
 
@@ -38,15 +65,13 @@ export default function Auth() {
   const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
   const { toast } = useToast();
-  const { user, isLoading: authLoading, signIn, signOut, role, isAuthenticated, roles } = useAuth();
-  const { validateIPForAuthenticatedUser, logLoginAttempt, fetchCurrentIP } = useIPValidation();
+  const { user, isLoading: authLoading, signIn, signOut, role, rolesLoaded } = useAuth();
+  const { validateIPForAuthenticatedUser, logLoginAttempt } = useIPValidation();
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [ipBlocked, setIpBlocked] = useState(false);
   const [blockedIP, setBlockedIP] = useState<string | null>(null);
-  const [currentIP, setCurrentIP] = useState<string | null>(null);
-  const [geoLocation, setGeoLocation] = useState<string | null>(null);
   // Fallback social → email/senha: mensagem amigável quando OAuth falha.
   const [socialError, setSocialError] = useState<string | null>(null);
   const emailInputRef = useRef<HTMLInputElement | null>(null);
@@ -63,51 +88,13 @@ export default function Auth() {
     }
   }, [searchParams, setSearchParams]);
 
-  const handleSocialError = useCallback((message: string) => {
-    setSocialError(message);
-    const timer = setTimeout(() => emailInputRef.current?.focus(), 50);
-    return () => clearTimeout(timer);
-  }, []);
-
   const focusEmailFallback = useCallback(() => {
     emailInputRef.current?.focus();
     emailInputRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
   }, []);
 
-  // Fetch IP and geolocation via edge function (works in preview + production)
-  useEffect(() => {
-    const loadIPInfo = async () => {
-      try {
-        const { data, error } = await supabase.functions.invoke('get-visitor-info');
-        if (!error && data) {
-          if (data.ip) setCurrentIP(data.ip);
-          if (data.city) setGeoLocation(`${data.city}, ${data.country_code}`);
-        }
-      } catch {
-        // silent fail
-      }
-    };
-    loadIPInfo();
-  }, []);
-
-  // Redirect if already logged in - using role-based routing
-  useEffect(() => {
-    if (user && !authLoading && role) {
-      const redirectPath = searchParams.get("redirect");
-      
-      // If it's just the root or empty, apply role-based default
-      if (!redirectPath || redirectPath === "/" || redirectPath === "") {
-        import("@/lib/auth/auth-utils").then(({ getDefaultRouteByRole }) => {
-          const defaultRoute = getDefaultRouteByRole(role);
-          if (location.pathname !== defaultRoute) {
-            navigate(defaultRoute, { replace: true });
-          }
-        });
-      } else {
-        navigate(redirectPath, { replace: true });
-      }
-    }
-  }, [user, authLoading, navigate, role, searchParams, location.pathname]);
+  // Só redireciona após carregar papéis e encerrar a validação da entrada.
+  useAuthenticatedRedirect({ hasUser: Boolean(user), authLoading, rolesLoaded, role, isSubmitting, ipBlocked, searchParams, location, navigate });
 
   const loginForm = useForm<LoginForm>({
     resolver: zodResolver(loginSchema),
@@ -115,7 +102,7 @@ export default function Auth() {
   });
 
   const handleLogin = async (data: LoginForm) => {
-    diagnostics.log('info', 'Auth', `Iniciando login para ${data.email}`);
+    diagnostics.log('info', 'Auth', 'Iniciando autenticação');
     setIsSubmitting(true);
 
     setIpBlocked(false);
@@ -148,7 +135,7 @@ export default function Auth() {
       const userId = sessionData?.session?.user?.id;
 
       if (userId) {
-        diagnostics.log('info', 'Auth', `Validando IP para usuário ${userId}`);
+        diagnostics.log('info', 'Auth', 'Validando restrições de acesso');
         const ipValidation = await validateIPForAuthenticatedUser(userId);
 
         
@@ -179,7 +166,7 @@ export default function Auth() {
       
       // The useEffect for [user, role] will handle the automatic redirection
       // once the AuthContext updates the role after signIn.
-    } catch (error) {
+    } catch {
       toast({
         variant: "destructive",
         title: "Erro inesperado",
@@ -199,38 +186,32 @@ export default function Auth() {
   }
 
   return (
-    <main className="min-h-screen flex bg-background" role="main" aria-label="Autenticação">
+    <main className="min-h-screen flex bg-[#F7FAFA] dark:bg-background" role="main" aria-label="Autenticação">
       <PageSEO
         title="Login"
         description="Acesse o Portal de Compras Sicoob. Faça login para gerenciar seus orçamentos e produtos."
         path="/login"
-        jsonLd={{
-          "@context": "https://schema.org",
-          "@type": "WebPage",
-          "name": "Login — Portal Sicoob",
-          "description": "Página de autenticação do Portal de Compras Sicoob.",
-          "url": "https://vamos-build-awesome.lovable.app/login"
-        }}
+        noIndex
       />
       {/* Left side - Branding */}
       <AuthBrandingPanel />
 
       {/* Right side - Auth Form */}
-      <div className="flex-1 flex items-center justify-center p-6 lg:p-12">
-        <div className="w-full max-w-md space-y-8 animate-fade-in">
+      <div className="flex-1 flex items-center justify-center px-5 py-10 sm:px-8 lg:p-12">
+        <div className="w-full max-w-md space-y-8">
           {/* Mobile Logo */}
           <div className="text-center lg:hidden space-y-3">
-            <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-white shadow-xl p-3 border border-border/40 mx-auto">
-              <img 
-                src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/ca/Sicoob_logo.svg/2560px-Sicoob_logo.svg.png" 
-                alt="Sicoob" 
-                className="w-full h-full object-contain"
+            <div className="inline-flex items-center justify-center rounded-xl bg-[#003641] px-6 py-4 mx-auto">
+              <img
+                src="/brand/sicoob-logo.png"
+                alt="Sicoob"
+                width={180} height={40} className="h-auto w-44 object-contain"
               />
             </div>
             <div>
-              <h1 className="font-display text-2xl font-bold text-foreground">
-                Portal Sicoob
-              </h1>
+              <p className="font-display text-2xl font-bold text-foreground">
+                Portal de brindes
+              </p>
               <p className="text-sm text-muted-foreground">
                 Portal de Compras
               </p>
@@ -273,7 +254,7 @@ export default function Auth() {
           )}
 
           {/* Auth Card */}
-          <Card className={`border-border/60 bg-card shadow-2xl ring-1 ring-border/20 backdrop-blur-sm ${ipBlocked ? 'opacity-50 pointer-events-none' : ''}`}>
+          <Card className={`border-border/70 bg-card shadow-sm ${ipBlocked ? 'opacity-50 pointer-events-none' : ''}`}>
             {showForgotPassword ? (
               <CardContent className="pt-6 pb-6">
                 <ForgotPasswordForm onBack={() => setShowForgotPassword(false)} />
@@ -282,8 +263,8 @@ export default function Auth() {
             <>
               <CardHeader className="pb-4">
                 <div className="text-center space-y-1">
-                  <h2 className="text-xl font-semibold font-display text-foreground">Bem-vindo de volta</h2>
-                  <p className="text-sm text-muted-foreground">Entre com suas credenciais para continuar</p>
+                  <h1 className="text-2xl font-semibold font-display tracking-tight text-foreground">Acesse seu portal</h1>
+                  <p className="text-sm text-muted-foreground">Use seu e-mail de trabalho e sua senha.</p>
                 </div>
               </CardHeader>
 
@@ -297,7 +278,7 @@ export default function Auth() {
                       <div className="flex items-start gap-2">
                         <AlertTriangle className="h-4 w-4 mt-0.5 text-warning shrink-0" />
                         <div className="flex-1 space-y-1">
-                          <p className="font-medium">Não consegui te autenticar pelo Google.</p>
+                          <p className="font-medium">Não foi possível concluir a autenticação.</p>
                           <p className="text-xs text-muted-foreground break-words">{socialError}</p>
                         </div>
                       </div>
@@ -305,7 +286,7 @@ export default function Auth() {
                         <Button
                           type="button"
                           size="sm"
-                          variant="orange"
+                          variant="default"
                           className="h-8 text-xs"
                           onClick={focusEmailFallback}
                           data-testid="social-fallback-use-email"
@@ -325,17 +306,22 @@ export default function Auth() {
                     </div>
                   )}
 
-                  <form onSubmit={loginForm.handleSubmit(handleLogin)} className="space-y-4" data-testid="login-form">
+                  <form onSubmit={loginForm.handleSubmit(handleLogin)} className="space-y-5" noValidate aria-busy={isSubmitting} data-testid="login-form">
                     <div className="space-y-2">
-                      <Label htmlFor="login-email" className="text-foreground">Email</Label>
+                      <Label htmlFor="login-email" className="text-foreground">E-mail de trabalho</Label>
                       <div className="relative">
                         <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                         <Input
                           id="login-email"
                           data-testid="login-email-input"
                           type="email"
-                          placeholder="seu@email.com"
-                          className="pl-10 bg-input border-border focus:border-primary focus:ring-primary"
+                          placeholder="nome@cooperativa.com.br"
+                          autoComplete="username"
+                          autoCapitalize="none"
+                          spellCheck={false}
+                          aria-invalid={!!loginForm.formState.errors.email}
+                          aria-describedby={loginForm.formState.errors.email ? "login-email-error" : undefined}
+                          className="h-12 pl-10 bg-input border-border focus:border-primary focus:ring-primary"
                           {...loginForm.register("email")}
                           ref={(el) => {
                             loginForm.register("email").ref(el);
@@ -344,7 +330,7 @@ export default function Auth() {
                         />
                       </div>
                       {loginForm.formState.errors.email && (
-                        <p className="text-sm text-destructive" data-testid="login-error-msg">
+                        <p className="text-sm text-destructive" id="login-email-error" role="alert" data-testid="login-error-msg">
                           {loginForm.formState.errors.email.message}
                         </p>
                       )}
@@ -358,13 +344,17 @@ export default function Auth() {
                           id="login-password"
                           data-testid="login-password-input"
                           type={showPassword ? "text" : "password"}
+                          autoComplete="current-password"
+                          aria-invalid={!!loginForm.formState.errors.password}
+                          aria-describedby={loginForm.formState.errors.password ? "login-password-error" : undefined}
                           placeholder="••••••••"
-                          className="pl-10 pr-10 bg-input border-border focus:border-primary focus:ring-primary"
+                          className="h-12 pl-10 pr-14 bg-input border-border focus:border-primary focus:ring-primary"
                           {...loginForm.register("password")}
                         />
                         <button
                           type="button"
                           data-testid="login-password-toggle"
+                          aria-pressed={showPassword}
                           onClick={() => setShowPassword(!showPassword)}
                           className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-primary transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center -mr-2"
                           aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
@@ -373,7 +363,7 @@ export default function Auth() {
                         </button>
                       </div>
                       {loginForm.formState.errors.password && (
-                        <p className="text-sm text-destructive">
+                        <p id="login-password-error" role="alert" className="text-sm text-destructive">
                           {loginForm.formState.errors.password.message}
                         </p>
                       )}
@@ -384,7 +374,7 @@ export default function Auth() {
                         type="button"
                         data-testid="login-forgot-link"
                         variant="link"
-                        className="p-0 h-auto text-sm text-primary hover:text-primary/80"
+                        className="min-h-11 px-0 text-sm text-primary hover:text-primary/80"
                         onClick={() => setShowForgotPassword(true)}
                       >
                         Esqueci minha senha
@@ -395,7 +385,7 @@ export default function Auth() {
                       type="submit" 
                       data-testid="login-submit"
                       variant="default"
-                      className="w-full h-12 text-base font-semibold shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 transition-all duration-300"
+                      className="w-full h-12 text-base font-semibold"
                       disabled={isSubmitting}
                     >
                       {isSubmitting ? (
@@ -408,60 +398,27 @@ export default function Auth() {
                       )}
                     </Button>
 
-                    <div className="relative">
-                      <div className="absolute inset-0 flex items-center">
-                        <span className="w-full border-t border-border" />
-                      </div>
-                      <div className="relative flex justify-center text-xs uppercase">
-                        <span className="bg-card px-2 text-muted-foreground">ou</span>
-                      </div>
-                    </div>
-
-                    <SocialLoginButtons onError={handleSocialError} />
-
-                    <PasskeyLogin
-                      email={loginForm.watch("email")}
-                      disabled={isSubmitting}
-                      onSuccess={async (userId) => {
-                        toast({
-                          title: "Autenticação biométrica",
-                          description: "Autenticado com sucesso via passkey!",
-                        });
-                        navigate("/");
-                      }}
-                    />
                   </form>
+
+                  {import.meta.env.DEV && (
+                    <div className="border-t border-border pt-5 text-center">
+                      <p className="mb-3 text-xs leading-relaxed text-muted-foreground">
+                        Quer avaliar a experiência antes de conectar o ambiente?
+                      </p>
+                      <Button asChild type="button" variant="outline" className="h-auto min-h-11 w-full whitespace-normal border-[#007A70]/35 py-2 text-center leading-tight text-[#005E55] hover:bg-[#EAF8F6]">
+                        <Link to="/loja-demo">Explorar loja demonstrativa</Link>
+                      </Button>
+                    </div>
+                  )}
               </CardContent>
             </>
             )}
           </Card>
 
-          {/* Login Rápido para Testes */}
-          <QuickTestLogin />
-
-          {/* IP/Location Widget */}
-          {currentIP && (
-            <div className="flex items-center justify-center gap-3 mx-auto px-5 py-2.5 rounded-full bg-card/80 backdrop-blur-md border border-border/60 shadow-md max-w-fit opacity-0" style={{ animation: 'scale-fade-in 0.5s ease-out 600ms forwards' }}>
-              <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                <Globe className="h-3.5 w-3.5 text-primary" />
-                <span className="font-mono">{currentIP}</span>
-              </div>
-              {geoLocation && (
-                <>
-                  <div className="w-px h-4 bg-border" />
-                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                    <Wifi className="h-3.5 w-3.5 text-success" />
-                    <span>{geoLocation}</span>
-                  </div>
-                </>
-              )}
-            </div>
-          )}
-
           <p className="text-center text-xs text-muted-foreground">
             Acesso restrito a usuários autorizados.
             <br />
-            Contate o administrador para obter suas credenciais.
+            Para solicitar acesso, procure o responsável por compras da sua cooperativa.
           </p>
         </div>
       </div>

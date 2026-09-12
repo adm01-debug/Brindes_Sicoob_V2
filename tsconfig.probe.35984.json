@@ -1,8 +1,0 @@
-{
-  "extends": "./tsconfig.app.json",
-  "include": [
-    "src/hooks/useSimulation.ts",
-    "src/lib/external-db/products-detail.ts",
-    "src/lib/external-db/products.ts"
-  ]
-}

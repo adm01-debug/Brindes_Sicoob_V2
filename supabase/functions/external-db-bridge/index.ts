@@ -32,12 +32,15 @@ import { retrySupabaseCall } from "../_shared/retry-backoff.ts";
 import { AsyncLocalStorage } from "node:async_hooks";
 import { getOrCreateRequestId, REQUEST_ID_HEADER } from "../_shared/request-id.ts";
 import { resolveCredential } from "../_shared/credentials.ts";
+import { authorize, type AuthorizeResult } from "../_shared/authorize.ts";
+import { createReadOnlyCatalogFetch, isReadOnlyCatalogRequest } from "../_shared/external-read-only.ts";
+import { redactInternalCatalogFields } from "../_shared/catalog-redaction.ts";
 
 const breaker = getBreaker("external-db");
 
 // Contexto async por-request — propaga requestId para jsonResponse() sem
 // precisar passar como argumento por toda a árvore de handlers.
-const requestCtx = new AsyncLocalStorage<{ requestId: string }>();
+const requestCtx = new AsyncLocalStorage<{ requestId: string; actor?: Extract<AuthorizeResult, { ok: true }> }>();
 function currentRequestId(): string | undefined {
   return requestCtx.getStore()?.requestId;
 }
@@ -463,6 +466,10 @@ Deno.serve((req) => {
 
     const body = parsed.data as Record<string, unknown>;
 
+    if (!isReadOnlyCatalogRequest(body)) {
+      return jsonResponse({ error: 'CATALOG_READ_ONLY', message: 'O catálogo externo permite somente consultas.' }, 403, corsHeaders);
+    }
+
     // ============================================
     // PING (keep-alive — sem DB I/O, sem auth, sem breaker)
     // Ping é diagnóstico/warm-up — deve responder mesmo com circuito aberto.
@@ -470,6 +477,10 @@ Deno.serve((req) => {
     if (body.operation === 'ping') {
       return jsonResponse({ ok: true, ts: Date.now(), warm: true }, 200, corsHeaders);
     }
+
+    const actor = await authorize(req, { requireRole: 'agente' });
+    if (!actor.ok) return actor.response;
+    requestCtx.getStore()!.actor = actor;
 
     // Circuit breaker só barra operações reais (após parse do body).
     if (!breaker.canRequest()) {
@@ -513,14 +524,13 @@ Deno.serve((req) => {
     const totalDuration = Math.round(performance.now() - requestStartTime);
     const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
     console.error(`❌ [telemetry] [req_id=${requestId}] Request failed after ${totalDuration}ms: ${errorMessage}`);
-    // Devolve 200 + flag fallback para o cliente acionar retry/degradação
-    // sem que o supabase-js trate como exceção fatal e a UI quebre.
+    // Falha operacional não pode ser interpretada como consulta vazia bem-sucedida.
     return jsonResponse({
       error: 'SERVICE_FAILED',
-      message: errorMessage,
+      message: 'O catálogo está temporariamente indisponível. Tente novamente em instantes.',
       fallback: true,
       request_id: requestId,
-    }, 200, corsHeaders);
+    }, 503, corsHeaders);
   }
   });
 });
@@ -538,6 +548,19 @@ async function handleBatch(body: any, req: Request, corsHeaders: Record<string, 
     return jsonResponse({ error: 'Batch limited to 10 queries max' }, 400, corsHeaders);
   }
 
+  // O lote recebe a mesma autorização da consulta individual, antes do cache.
+  const actor = requestCtx.getStore()?.actor;
+  for (const query of queries) {
+    const alias = resolveTableAlias(String(query.table), query.filters as Record<string, unknown> | undefined, query.orderBy as { column: string; ascending?: boolean } | undefined, query.select as string | undefined);
+    query.table = alias.table;
+    query.filters = alias.filters;
+    query.orderBy = alias.orderBy;
+    query.select = alias.select;
+    if (SENSITIVE_TABLES.has(alias.table) && !['dev', 'supervisor'].includes(actor?.role ?? '')) {
+      return jsonResponse({ error: 'Acesso restrito a dados internos do catálogo.' }, 403, corsHeaders);
+    }
+  }
+
   const externalSupabaseOrResp = await getExternalClient(corsHeaders);
   if (externalSupabaseOrResp instanceof Response) return externalSupabaseOrResp;
   // Narrow estável dentro de closures async (TS perde narrow em vars que mudam globalmente).
@@ -553,7 +576,7 @@ async function handleBatch(body: any, req: Request, corsHeaders: Record<string, 
       const rawLimit = (q.limit as number) || 500;
       const qOffset = (q.offset as number) || 0;
       const qLimit = computeSafeLimit(rawLimit, qTable, hasSearch, qOffset, qSelect);
-      const qCacheKey = q.cacheKey as string | undefined;
+      const qCacheKey = buildCacheKey(qTable, { ...q, operation: 'select' });
       const qCountMode = q.countMode as string | undefined;
 
       if (qCacheKey) {
@@ -700,7 +723,7 @@ async function handleRpc(body: any, corsHeaders: Record<string, string>) {
 
   console.log(`RPC: ${rpcName}`, rpcParams);
   const rpcStart = performance.now();
-  const { data: rpcDataRaw, error: rpcError } = await externalSupabase.rpc(rpcName, rpcParams || {});
+  const { data: rpcDataRaw, error: rpcError } = await externalSupabase.rpc(rpcName, rpcParams || {}, { get: true });
   const rpcDuration = Math.round(performance.now() - rpcStart);
   const rpcData = rpcDataRaw as Record<string, unknown> | unknown[] | null;
 
@@ -782,43 +805,14 @@ async function handleCrud(body: any, req: Request, corsHeaders: Record<string, s
   const isReadOperation = operation === 'select';
   const isPublicTable = PRODUCT_TABLES.includes(table as ProductTable) || PRODUCT_VIEWS.includes(table as ProductView);
   const isSensitive = SENSITIVE_TABLES.has(table);
+  const actor = requestCtx.getStore()?.actor;
+  if (isSensitive && !['dev', 'supervisor'].includes(actor?.role ?? '')) {
+    return jsonResponse({ error: 'Acesso restrito a dados internos do catálogo.' }, 403, corsHeaders);
+  }
   const allowPublicAccess = isReadOperation && isPublicTable && !isSensitive;
 
-  const authHeader = req.headers.get('Authorization');
-  let userId: string | null = null;
-  let userRole = 'public';
-
-  // ⚡ FAST-PATH: skip auth entirely for anonymous reads on public catalog tables.
-  // Saves ~150–300ms per request (no getUser RTT, no user_roles lookup).
-  // Write operations and sensitive tables ALWAYS go through full auth below.
-  const isWriteOp = ['insert', 'update', 'delete', 'upsert', 'batch_insert'].includes(operation);
-  const skipAuth = allowPublicAccess && !isWriteOp && (!authHeader || !authHeader.startsWith('Bearer '));
-
-  if (!skipAuth && authHeader?.startsWith('Bearer ')) {
-    const localSupabase = createClient(
-      Deno.env.get('SUPABASE_URL')!,
-      Deno.env.get('SUPABASE_ANON_KEY')!,
-      { global: { headers: { Authorization: authHeader } } }
-    );
-    // getClaims is faster than getUser — verifies JWT locally without server RTT.
-    const token = authHeader.replace('Bearer ', '');
-    const { data: claimsData, error: claimsError } = await localSupabase.auth.getClaims(token);
-
-    if (claimsData?.claims?.sub && !claimsError) {
-      userId = claimsData.claims.sub;
-      const localService = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
-      const { data: userRoles, error: roleError } = await localService.from('user_roles').select('role').eq('user_id', userId);
-      if (roleError) console.error('Error fetching user roles:', roleError);
-      userRole = userRoles?.[0]?.role || 'vendedor';
-    } else if (!allowPublicAccess) {
-      console.error('Auth failed:', claimsError?.message);
-    }
-  }
-
-  if (!allowPublicAccess && !userId) {
-    console.error(`Authentication required: table=${table}, operation=${operation}, sensitive=${isSensitive}`);
-    return jsonResponse({ error: 'Autenticação necessária' }, 401, corsHeaders);
-  }
+  const userId = actor?.user.id;
+  if (!userId) return jsonResponse({ error: 'Autenticação necessária' }, 401, corsHeaders);
 
   console.log(`Operation: ${operation} on table: ${table} (public: ${allowPublicAccess})`);
 
@@ -836,15 +830,6 @@ async function handleCrud(body: any, req: Request, corsHeaders: Record<string, s
 
   if (!PERMISSIONS[resourceGroup].includes(operation)) {
     return jsonResponse({ error: `Operação '${operation}' não permitida para '${resourceGroup}'`, allowed: PERMISSIONS[resourceGroup] }, 403, corsHeaders);
-  }
-
-  if (['insert', 'update', 'delete', 'upsert', 'batch_insert'].includes(operation)) {
-    if (!['admin', 'gerente', 'vendedor'].includes(userRole)) {
-      return jsonResponse({ error: 'Permissão insuficiente para esta operação' }, 403, corsHeaders);
-    }
-    if (userRole === 'vendedor' && operation === 'delete') {
-      return jsonResponse({ error: 'Vendedores não podem excluir registros' }, 403, corsHeaders);
-    }
   }
 
   // Determina elegibilidade de cache cedo (antes de tocar BD).
@@ -932,6 +917,10 @@ async function handleCrud(body: any, req: Request, corsHeaders: Record<string, s
   } else if (totalDuration >= SLOW_QUERY_THRESHOLD_MS) {
     console.warn(`🟡 [telemetry] Total request ${operation}:${table} took ${totalDuration}ms (SLOW)`);
   }
+
+  // O cache é compartilhado pelo isolate. Remova dados comerciais internos
+  // antes de armazenar ou responder, independentemente do papel solicitante.
+  result = redactInternalCatalogFields(result);
 
   // CACHE WRITE: armazena resposta para próximas requisições
   if (isCacheable && cacheKey) {
@@ -1045,7 +1034,7 @@ async function handleSelect(externalSupabase: any, table: string, opts: any) {
   if (table === 'products' && filters && (filters.category_id || filters.main_category_id)) {
     const catId = (filters.category_id || filters.main_category_id) as string;
     try {
-      const { data: desc, error: descErr } = await externalSupabase.rpc('get_category_descendants', { category_uuid: catId });
+      const { data: desc, error: descErr } = await externalSupabase.rpc('get_category_descendants', { category_uuid: catId }, { get: true });
       if (!descErr && Array.isArray(desc)) {
         categoryDescendants = desc as string[];
         console.log(`Category ${catId} has ${categoryDescendants.length} descendants`);
@@ -1500,9 +1489,9 @@ async function handleBatchInsert(externalSupabase: any, table: string, opts: any
 
 function jsonResponse(body: unknown, status: number, corsHeaders: Record<string, string>) {
   const reqId = currentRequestId();
-  let finalBody: unknown = body;
-  if (reqId && body && typeof body === "object" && !Array.isArray(body)) {
-    finalBody = { ...(body as Record<string, unknown>), request_id: reqId };
+  let finalBody: unknown = redactInternalCatalogFields(body);
+  if (reqId && finalBody && typeof finalBody === "object" && !Array.isArray(finalBody)) {
+    finalBody = { ...(finalBody as Record<string, unknown>), request_id: reqId };
   }
   const headers: Record<string, string> = { ...corsHeaders, 'Content-Type': 'application/json' };
   if (reqId) headers[REQUEST_ID_HEADER] = reqId;
@@ -1617,6 +1606,7 @@ function buildExternalClient(url: string, key: string): ServiceClient {
   return castSupabaseClient(createClient(url, key, {
     db: { schema: 'public' },
     global: {
+      fetch: createReadOnlyCatalogFetch(),
       headers: {
         'x-connection-timeout': '15000',
         // Increase PostgREST statement timeout to 25s to avoid premature cancellation
@@ -1636,17 +1626,15 @@ async function getExternalClient(corsHeaders: Record<string, string>) {
     resolveCredential("EXTERNAL_PROMOBRIND_SERVICE_ROLE_KEY"),
   ]);
   if (!externalUrl || !externalKey) {
-    console.warn('[external-db-bridge] EXTERNAL_PROMOBRIND_URL/KEY not configured (DB or env) — returning empty payload');
+    console.warn('[external-db-bridge] EXTERNAL_PROMOBRIND_URL/KEY not configured (DB or env) — consulta indisponível');
     return jsonResponse(
       {
-        records: [],
-        data: [],
-        count: 0,
+        error: 'CATALOG_NOT_CONFIGURED',
         _unconfigured: true,
         _message: 'Banco externo não configurado',
         _details: 'Verifique EXTERNAL_PROMOBRIND_URL e as chaves salvas em Conexões. Valores placeholder/inválidos são descartados.',
       },
-      200,
+      503,
       corsHeaders,
     );
   }
@@ -1687,7 +1675,7 @@ function warmupExternalClient(): Promise<void> {
 warmupExternalClient();
 
 // Default lightweight columns for products table to avoid fetching heavy JSONB columns
-const PRODUCTS_LIGHTWEIGHT_SELECT = 'id,name,sku,sale_price,cost_price,primary_image_url,category_id,main_category_id,supplier_id,supplier_reference,description,short_description,brand,is_active,active,stock_quantity,min_quantity,created_at,updated_at,is_featured,is_bestseller,is_new,is_on_sale,is_kit';
+const PRODUCTS_LIGHTWEIGHT_SELECT = 'id,name,sku,sale_price,primary_image_url,category_id,main_category_id,supplier_id,supplier_reference,description,short_description,brand,is_active,active,stock_quantity,min_quantity,created_at,updated_at,is_featured,is_bestseller,is_new,is_on_sale,is_kit';
 
 // ============================================
 // PRODUCTS SELECT RESOLVER — single source of truth for the lightweight rule

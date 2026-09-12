@@ -29,6 +29,7 @@ interface VariantOption {
 }
 
 export interface VariantSelectionData {
+  id: string;
   color: { name: string; hex?: string };
   size?: string;
   sku?: string;
@@ -135,6 +136,7 @@ export function VariantSelector({
 
   const handleSelect = (variant: VariantOption) => {
     onSelectVariant(itemId, {
+      id: variant.id,
       color: {
         name: variant.color_name || 'Padrão',
         hex: variant.color_hex || undefined,

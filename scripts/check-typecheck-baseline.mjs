@@ -6,8 +6,7 @@
  * `noUncheckedIndexedAccess` é zerada arquivo a arquivo.
  *
  * Como funciona:
- *   - Roda o typecheck completo (`tsgo --noEmit -p tsconfig.app.json`,
- *     com fallback para `tsc`) e conta erros por arquivo.
+ *   - Roda o typecheck completo (`tsc --noEmit -p tsconfig.app.json` local) e conta erros por arquivo.
  *   - Compara com `.typecheck-baseline.json`.
  *   - FALHA se: (a) algum arquivo passou a ter MAIS erros que o baseline,
  *     ou (b) um arquivo novo (fora do baseline) introduziu erros.
@@ -25,16 +24,28 @@ const BASELINE_PATH = ".typecheck-baseline.json";
 const UPDATE = process.argv.includes("--update");
 
 function runTypecheck() {
-  for (const bin of ["tsgo", "tsc"]) {
-    const res = spawnSync("npx", [bin, "--noEmit", "-p", "tsconfig.app.json"], {
-      encoding: "utf8",
-      maxBuffer: 128 * 1024 * 1024,
-    });
-    if (res.error) continue;
-    return `${res.stdout ?? ""}${res.stderr ?? ""}`;
+  const compiler = "node_modules/typescript/bin/tsc";
+  if (!existsSync(compiler)) {
+    console.error("Compilador TypeScript local ausente. Instale as dependências antes de verificar.");
+    process.exit(2);
   }
-  console.error("Não foi possível executar tsgo/tsc.");
-  process.exit(2);
+  const result = spawnSync(process.execPath, [compiler, "--noEmit", "--pretty", "false", "-p", "tsconfig.app.json"], {
+    encoding: "utf8",
+    maxBuffer: 128 * 1024 * 1024,
+  });
+  const output = `${result.stdout ?? ""}${result.stderr ?? ""}`;
+  if (result.error || result.signal || (result.status !== 0 && !/error TS\d+/.test(output))) {
+    console.error("O compilador não concluiu uma verificação válida. Nenhum resultado de tipagem será presumido.");
+    console.error(output.slice(-3000));
+    process.exit(2);
+  }
+  // Erros globais/configuração não podem desaparecer por não terem arquivo.
+  if (output.split("\n").some(line => /error TS\d+/.test(line) && !/^.+\.(?:ts|tsx)\(\d+,\d+\):/.test(line))) {
+    console.error("Erro de configuração ou diagnóstico não contabilizável do TypeScript.");
+    console.error(output.slice(-3000));
+    process.exit(2);
+  }
+  return output;
 }
 
 const out = runTypecheck();

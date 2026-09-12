@@ -70,7 +70,7 @@ export function SellerCartProvider({ children }: { children: ReactNode }) {
       const result = await createCartMutation.mutateAsync(input);
       if (result) {
         setActiveCartId(result.id);
-        toast.success(`Carrinho criado para ${input.company_name}`);
+        toast.success(`Orçamento iniciado para ${input.company_name}`);
       }
       return result;
     } catch {
@@ -87,8 +87,8 @@ export function SellerCartProvider({ children }: { children: ReactNode }) {
 
   const addToActiveCart = useCallback((item: AddToCartInput) => {
     if (!resolvedActiveCartId) {
-      toast.error("Selecione uma empresa antes de adicionar produtos", {
-        description: "Crie um carrinho vinculado a uma empresa primeiro.",
+      toast.error("Selecione uma cooperativa ou unidade antes de adicionar produtos", {
+        description: "Inicie um orçamento vinculado à cooperativa ou unidade solicitante.",
       });
       return;
     }
@@ -96,7 +96,7 @@ export function SellerCartProvider({ children }: { children: ReactNode }) {
       { cartId: resolvedActiveCartId, item },
       {
         onSuccess: () => {
-          toast.success(`${item.product_name} adicionado ao carrinho`, {
+          toast.success(`${item.product_name} adicionado ao orçamento`, {
             description: activeCart?.company_name,
           });
         },

@@ -1,0 +1,46 @@
+TAP version 13
+# Subtest: compilador ausente bloqueia verificação e atualização do baseline
+ok 1 - compilador ausente bloqueia verificação e atualização do baseline
+  ---
+  duration_ms: 33.404876
+  type: 'test'
+  ...
+# Subtest: processo interrompido sem diagnóstico bloqueia verificação e atualização do baseline
+ok 2 - processo interrompido sem diagnóstico bloqueia verificação e atualização do baseline
+  ---
+  duration_ms: 55.28875
+  type: 'test'
+  ...
+# Subtest: erro global de configuração bloqueia verificação e atualização do baseline
+ok 3 - erro global de configuração bloqueia verificação e atualização do baseline
+  ---
+  duration_ms: 74.009678
+  type: 'test'
+  ...
+# Subtest: diagnóstico conhecido é contado e não piora o baseline
+ok 4 - diagnóstico conhecido é contado e não piora o baseline
+  ---
+  duration_ms: 62.205554
+  type: 'test'
+  ...
+# Subtest: erro em arquivo novo é regressão e bloqueia o gate
+ok 5 - erro em arquivo novo é regressão e bloqueia o gate
+  ---
+  duration_ms: 51.301064
+  type: 'test'
+  ...
+# Subtest: auditoria indisponível não vira aprovação
+ok 6 - auditoria indisponível não vira aprovação
+  ---
+  duration_ms: 28.127914
+  type: 'test'
+  ...
+1..6
+# tests 6
+# suites 0
+# pass 6
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 364.088721

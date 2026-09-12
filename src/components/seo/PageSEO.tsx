@@ -11,45 +11,55 @@ interface PageSEOProps {
   jsonLd?: Record<string, unknown>;
 }
 
-const BASE_URL = "https://vamos-build-awesome.lovable.app";
+const BASE_URL = typeof window === "undefined" ? "" : window.location.origin;
 const SITE_NAME = "Portal de Compras Sicoob";
-const DEFAULT_DESC = "Portal oficial de compras do Sicoob. Catálogo centralizado de produtos, brindes e itens institucionais.";
-const DEFAULT_OG_IMAGE = "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/e1261250-c70e-4278-b09c-68f108f6f3fb/id-preview-c11a0001--1be35a65-1f65-4c2b-9a79-7d563930aacd.lovable.app-1773315238298.png";
+const DEFAULT_DESC = "Portal de brindes para cooperativas Sicoob. Catálogo centralizado de produtos, brindes e itens institucionais.";
+
+interface OptionalSeoTagsProps {
+  noIndex?: boolean;
+  image?: string;
+  url?: string;
+  jsonLd?: Record<string, unknown>;
+}
+
+function OptionalSeoTags({ noIndex, image, url, jsonLd }: OptionalSeoTagsProps) {
+  return (
+    <Helmet>
+      {noIndex && <meta name="robots" content="noindex, nofollow" />}
+      {image && <meta property="og:image" content={image} />}
+      {url && <meta property="og:url" content={url} />}
+      <meta name="twitter:card" content={image ? "summary_large_image" : "summary"} />
+      {image && <meta name="twitter:image" content={image} />}
+      {url && <link rel="canonical" href={url} />}
+      {jsonLd && <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>}
+    </Helmet>
+  );
+}
 
 export const PageSEO = React.forwardRef<HTMLElement, PageSEOProps>(function PageSEO({ title, description, path, noIndex, ogImage, ogType, jsonLd }, _ref) {
   const fullTitle = `${title} | ${SITE_NAME}`;
   const desc = description || DEFAULT_DESC;
   const url = path ? `${BASE_URL}${path}` : undefined;
-  const image = ogImage || DEFAULT_OG_IMAGE;
+  const image = ogImage;
 
   return (
-    <Helmet>
-      <title>{fullTitle}</title>
-      <meta name="description" content={desc} />
-      {noIndex && <meta name="robots" content="noindex, nofollow" />}
+    <>
+      <Helmet>
+        <title>{fullTitle}</title>
+        <meta name="description" content={desc} />
 
-      {/* Open Graph */}
-      <meta property="og:title" content={fullTitle} />
-      <meta property="og:description" content={desc} />
-      <meta property="og:type" content={ogType || "website"} />
-      <meta property="og:site_name" content={SITE_NAME} />
-      <meta property="og:image" content={image} />
-      <meta property="og:locale" content="pt_BR" />
-      {url && <meta property="og:url" content={url} />}
+        {/* Open Graph */}
+        <meta property="og:title" content={fullTitle} />
+        <meta property="og:description" content={desc} />
+        <meta property="og:type" content={ogType || "website"} />
+        <meta property="og:site_name" content={SITE_NAME} />
+        <meta property="og:locale" content="pt_BR" />
 
-      {/* Twitter */}
-      <meta name="twitter:card" content="summary_large_image" />
-      <meta name="twitter:title" content={fullTitle} />
-      <meta name="twitter:description" content={desc} />
-      <meta name="twitter:image" content={image} />
-
-      {url && <link rel="canonical" href={url} />}
-
-      {jsonLd && (
-        <script type="application/ld+json">
-          {JSON.stringify(jsonLd)}
-        </script>
-      )}
-    </Helmet>
+        {/* Twitter */}
+        <meta name="twitter:title" content={fullTitle} />
+        <meta name="twitter:description" content={desc} />
+      </Helmet>
+      <OptionalSeoTags noIndex={noIndex} image={image} url={url} jsonLd={jsonLd} />
+    </>
   );
 });

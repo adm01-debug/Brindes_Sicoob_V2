@@ -1,0 +1,30 @@
+{
+  "pagina": "consulta.html",
+  "itens": 1000,
+  "busca_por_etapa": 10,
+  "filtros": {
+    "L": 76,
+    "P": 622,
+    "N": 157,
+    "V": 145
+  },
+  "sem_resultado_validado": true,
+  "detalhes_por_teclado": true,
+  "viewports": [
+    {
+      "largura": 1440,
+      "overflow": false
+    },
+    {
+      "largura": 390,
+      "overflow": false
+    },
+    {
+      "largura": 320,
+      "overflow": false
+    }
+  ],
+  "links_locais_ausentes": [],
+  "erros_javascript": [],
+  "limite": "Verificação da consulta documental; não comprova acessibilidade nem funcionalidades do portal de compras."
+}

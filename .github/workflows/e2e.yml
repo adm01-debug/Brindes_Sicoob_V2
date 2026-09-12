@@ -32,7 +32,7 @@ jobs:
 
       - uses: actions/setup-node@v6
         with:
-          node-version: "20"
+          node-version: "24"
           cache: "npm"
 
       - name: Install deps
@@ -59,11 +59,6 @@ jobs:
       # gate (project chromium-smoke usa `grep: /@smoke/`). Falha CI cedo.
       - name: 🏷  Validar tags @smoke no spec do gate
         run: node scripts/check-smoke-tags.mjs
-
-      - name: Run E2E smoke (gate determinístico — 1 teste/feature, sequencial)
-        id: e2e_smoke
-        run: npx playwright test --project=chromium-smoke --max-failures=3
-        continue-on-error: true
 
       # ─── SMOKE: fail-fast agressivo ─────────────────────────────────────
       # `--max-failures=1` para na PRIMEIRA falha (gate determinístico —

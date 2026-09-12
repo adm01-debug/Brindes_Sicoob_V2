@@ -1,52 +1,64 @@
 import { useState, useCallback, useRef } from 'react';
-import { type AppRole } from '@/contexts/AuthContext';
+import type { AppRole } from '@/types/users';
 import { authService } from '@/services/authService';
-import { authDebug, authDebugError } from '@/lib/auth/auth-debug';
+import { authDebugError } from '@/lib/auth/auth-debug';
+import { normalizeAssignedRoles } from '@/lib/access/role-policy';
+
+async function queryRolesWithRetry(userId: string, requestIsCurrent: () => boolean) {
+  let result = await authService.queryRoles(userId);
+  if (result.error || result.data?.length) return result;
+
+  await new Promise(resolve => setTimeout(resolve, 500));
+  if (!requestIsCurrent()) return null;
+  result = await authService.queryRoles(userId);
+  return result;
+}
 
 export function useUserRoles() {
   const [userRoles, setUserRoles] = useState<AppRole[]>([]);
   const [rolesLoaded, setRolesLoaded] = useState(false);
-  const fetchPromiseRef = useRef<Promise<void> | null>(null);
+  const [rolesError, setRolesError] = useState<string | null>(null);
+  const generation = useRef(0);
+  const pending = useRef<{ userId: string; promise: Promise<void> } | null>(null);
 
-  const fetchRoles = useCallback(async (userId: string) => {
-    if (!userId) return;
-    if (fetchPromiseRef.current) return fetchPromiseRef.current;
+  const fetchRoles = useCallback((userId: string): Promise<void> => {
+    if (!userId) return Promise.resolve();
+    if (pending.current?.userId === userId) return pending.current.promise;
+    const request = ++generation.current;
+    setUserRoles([]);
+    setRolesLoaded(false);
+    setRolesError(null);
 
-    const doFetch = async () => {
+    const promise = (async () => {
       try {
-        let result = await authService.queryRoles(userId);
-        
-        // Retry logic for potential eventual consistency in Edge Auth
-        if (!result.error && (!result.data || result.data.length === 0)) {
-          await new Promise((r) => setTimeout(r, 500));
-          result = await authService.queryRoles(userId);
-        }
-
-        if (result.data) {
-          const roles = result.data.map((r) => r.role as AppRole);
-          setUserRoles(prev => {
-             // Deep equality check to prevent redundant state updates
-             if (prev.length === roles.length && prev.every((v, i) => v === roles[i])) return prev;
-             return roles;
-          });
-          setRolesLoaded(true);
-        }
+        const result = await queryRolesWithRetry(userId, () => request === generation.current);
+        if (!result) return;
+        if (result.error) throw result.error;
+        if (request !== generation.current) return;
+        setUserRoles(normalizeAssignedRoles((result.data ?? []).map(row => row.role)));
       } catch (error) {
-        authDebugError("useUserRoles", "Failed to fetch roles", error);
+        if (request !== generation.current) return;
+        authDebugError('useUserRoles', 'Falha ao consultar permissões', error);
+        setRolesError('Não foi possível carregar suas permissões. Tente novamente.');
       } finally {
-        fetchPromiseRef.current = null;
+        if (request === generation.current) {
+          setRolesLoaded(true);
+          pending.current = null;
+        }
       }
-    };
-
-    fetchPromiseRef.current = doFetch();
-    return fetchPromiseRef.current;
+    })();
+    pending.current = { userId, promise };
+    return promise;
   }, []);
 
   const clearRoles = useCallback(() => {
+    // Uma resposta da sessão anterior não pode restaurar seus privilégios.
+    generation.current++;
+    pending.current = null;
     setUserRoles([]);
     setRolesLoaded(false);
-    fetchPromiseRef.current = null;
+    setRolesError(null);
   }, []);
 
-  return { userRoles, rolesLoaded, fetchRoles, clearRoles };
+  return { userRoles, rolesLoaded, rolesError, fetchRoles, clearRoles };
 }

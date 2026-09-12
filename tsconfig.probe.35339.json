@@ -1,7 +1,0 @@
-{
-  "extends": "./tsconfig.app.json",
-  "include": [
-    "src/_repro/main.tsx",
-    "src/lib/lazyWithRetry.ts"
-  ]
-}

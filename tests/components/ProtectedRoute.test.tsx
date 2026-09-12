@@ -11,10 +11,10 @@ vi.mock('@/contexts/AuthContext', () => ({
 
 function renderWithRouter(ui: React.ReactElement, initialRoute = '/protected') {
   return render(
-    <MemoryRouter initialEntries={[initialRoute]} future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+    <MemoryRouter initialEntries={[initialRoute]}>
       <Routes>
         <Route path="/login" element={<div>Login Page</div>} />
-        <Route path="/" element={<div>Home Page</div>} />
+        <Route path="/403" element={<div>Acesso negado</div>} />
         <Route path="/protected" element={ui} />
       </Routes>
     </MemoryRouter>
@@ -24,6 +24,9 @@ function renderWithRouter(ui: React.ReactElement, initialRoute = '/protected') {
 function authMock(overrides: Record<string, unknown> = {}) {
   return {
     user: null,
+    roles: ['agente'],
+    rolesLoaded: true,
+    rolesError: null,
     isLoading: false,
     isDev: false,
     isSupervisor: false,
@@ -65,13 +68,13 @@ describe('ProtectedRoute', () => {
     renderWithRouter(
       <ProtectedRoute requireAdmin><div>Admin Only</div></ProtectedRoute>
     );
-    expect(screen.getByText('Home Page')).toBeInTheDocument();
+    expect(screen.getByText('Acesso negado')).toBeInTheDocument();
     expect(screen.queryByText('Admin Only')).not.toBeInTheDocument();
   });
 
   it('renders children when requireAdmin=true and user is supervisor', () => {
     mockUseAuth.mockReturnValue(
-      authMock({ user: { id: '123' }, isSupervisor: true, isSupervisorOrAbove: true })
+      authMock({ user: { id: '123' }, roles: ['supervisor'], isSupervisor: true, isSupervisorOrAbove: true })
     );
     renderWithRouter(
       <ProtectedRoute requireAdmin><div>Admin Content</div></ProtectedRoute>
@@ -81,17 +84,17 @@ describe('ProtectedRoute', () => {
 
   it('redirects when requiredRole="dev" and user is only supervisor', () => {
     mockUseAuth.mockReturnValue(
-      authMock({ user: { id: '123' }, isSupervisor: true, isSupervisorOrAbove: true })
+      authMock({ user: { id: '123' }, roles: ['supervisor'], isSupervisor: true, isSupervisorOrAbove: true })
     );
     renderWithRouter(
       <ProtectedRoute requiredRole="dev"><div>Dev Only</div></ProtectedRoute>
     );
-    expect(screen.getByText('Home Page')).toBeInTheDocument();
+    expect(screen.getByText('Acesso negado')).toBeInTheDocument();
   });
 
   it('renders when requiredRole="dev" and user is dev', () => {
     mockUseAuth.mockReturnValue(
-      authMock({ user: { id: '123' }, isDev: true, isSupervisorOrAbove: true })
+      authMock({ user: { id: '123' }, roles: ['dev'], isDev: true, isSupervisorOrAbove: true })
     );
     renderWithRouter(
       <ProtectedRoute requiredRole="dev"><div>Dev Content</div></ProtectedRoute>

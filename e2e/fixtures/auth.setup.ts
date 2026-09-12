@@ -5,10 +5,12 @@
 import { test as setup } from "@playwright/test";
 import fs from "node:fs";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 
 import { loginViaUI } from "../helpers/auth";
 
-const STORAGE = path.resolve(__dirname, "../.auth/storageState.json");
+const CURRENT_DIR = path.dirname(fileURLToPath(import.meta.url));
+const STORAGE = path.resolve(CURRENT_DIR, "../.auth/storageState.json");
 
 setup("authenticate", async ({ page }) => {
   fs.mkdirSync(path.dirname(STORAGE), { recursive: true });

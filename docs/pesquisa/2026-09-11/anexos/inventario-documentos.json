@@ -1,0 +1,911 @@
+{
+  "analisado_em": "2026-09-11",
+  "escopo": "Documentos fornecidos; pesquisa externa e auditoria do código são frentes separadas.",
+  "total_arquivos": 13,
+  "total_pdfs": 12,
+  "total_paginas_pdf": 298,
+  "total_planilhas": 1,
+  "arquivos_ignorados": "Metadados Windows :Zone.Identifier",
+  "referencias_paginas": "Números iniciados em 1 correspondem às páginas físicas do PDF, não à numeração editorial.",
+  "metodo_e_limitacao": "Todos os PDFs tiveram extração integral de texto; output.pdf recebeu OCR integral. Inspeção visual seletiva nos demais; todas as páginas de output.pdf foram vistas. Seções financeiras do relatório de 2007 foram triadas, sem auditoria contábil.",
+  "documentos": [
+    {
+      "id": "doc01",
+      "arquivo": "ARKnA15FLk5gh10.pdf",
+      "caminho": "/home/joaquim_ataides/projetos/Brindes Sicoob V2 - Docs/ARKnA15FLk5gh10.pdf",
+      "titulo_identificado": "Almoxarifado Virtual da UFMA",
+      "instituicao": "UFMA; BR Supply",
+      "classe": "Benchmark de outra organização",
+      "paginas": 20,
+      "data_conteudo": "Não declarada no conteúdo; PDF gerado em 27/07/2021",
+      "base_data": "Metadados de criação/modificação, sem prova de vigência contratual em 2026",
+      "metadados_pdf": "Title:           Manual_almox\nCreator:         Adobe Illustrator 25.3 (Windows)\nProducer:        Adobe PDF library 15.00\nCreationDate:    Tue Jul 27 12:52:03 2021 -03\nModDate:         Tue Jul 27 13:52:04 2021 -03\nCustom Metadata: yes\nMetadata Stream: yes\nTagged:          no\nUserProperties:  no\nSuspects:        no\nForm:            none\nJavaScript:      no\nPages:           20\nEncrypted:       no\nPage size:       566.93 x 793.7 pts\nPage rot:        0\nFile size:       14118017 bytes\nOptimized:       yes\nPDF version:     1.6\n",
+      "atualidade": "Histórico; inadequado como regra Sicoob",
+      "metodo": "Extração nativa de todas as páginas; inspeção visual das páginas indicadas.",
+      "paginas_inspecionadas_visualmente": [
+        1,
+        5,
+        7,
+        10,
+        12,
+        17
+      ],
+      "caracteres_texto_nativo": 21328,
+      "fatos": [
+        {
+          "chave": "janela_ufma",
+          "rotulo": "Janela mensal da UFMA",
+          "local": "p.5",
+          "evidencia": "Pedidos e aprovações de 1 a 20; entrega até dia 15 do mês seguinte.",
+          "implicacao": "Permitir calendário configurável por organização e contrato; não fixar esta janela para cooperativas.",
+          "tipo": "concept"
+        },
+        {
+          "chave": "carrinho_contextual",
+          "rotulo": "Carrinho com local, verba e prazo",
+          "local": "p.8–10",
+          "evidencia": "Conferência de faturamento, entrega, itens, quantidades, valor total; verba disponível/consumida e previsão de entrega; salvar carrinho e PDF.",
+          "implicacao": "Mostrar destino, orçamento e prazo antes da confirmação; persistir rascunhos por cooperativa/PA.",
+          "tipo": "concept"
+        },
+        {
+          "chave": "cancelamento_auditado",
+          "rotulo": "Cancelamento antes da aprovação",
+          "local": "p.11",
+          "evidencia": "Cancelamento direto apenas enquanto aguarda aprovação; exige motivo; notificações ao solicitante e aprovadores.",
+          "implicacao": "Definir cancelamento por fase e registrar motivo, ator e evento; para brindes, avaliar adicionalmente liberação da arte/produção.",
+          "tipo": "concept"
+        },
+        {
+          "chave": "aprovacao_devolucao",
+          "rotulo": "Aprovação e devolução ao solicitante",
+          "local": "p.12, inspeção visual",
+          "evidencia": "Tela distingue aprovar, reprovar, devolver ao solicitante, adicionar item e atualizar dados.",
+          "implicacao": "Devolução para ajuste deve ser um estado explícito, diferente de rejeição definitiva.",
+          "tipo": "concept"
+        },
+        {
+          "chave": "rastreio_recebimento",
+          "rotulo": "Rastreio, ateste e ocorrência",
+          "local": "p.14–18",
+          "evidencia": "Relatórios de pedidos/notas/consumo/preços; rastreio até entrega; p.16 indica 15 dias para ocorrência; p.17 mostra ateste total/parcial e contestação; SAC aceita anexos.",
+          "implicacao": "Modelar recebimento parcial e divergência por item; vincular fotos, notas fiscais e atendimento ao pedido.",
+          "tipo": "concept"
+        }
+      ],
+      "limites": [
+        "Telas contêm dados de demonstração, como UA São Paulo, valores e prazo de sete dias. A política específica da p.5 prevalece como evidência institucional; não tomar números de mockup como contrato.",
+        "O texto extraído contém placeholders de logotipo que não aparecem como marca final na visualização."
+      ],
+      "sha256": "915caf53c2d46815062d4a7a69ae87a1475ac676cbb39a3b48ba5bfe55de93a4",
+      "tamanho_bytes": 14118017
+    },
+    {
+      "id": "doc02",
+      "arquivo": "Cartilha-do-Cooperado-janeiro.pdf",
+      "caminho": "/home/joaquim_ataides/projetos/Brindes Sicoob V2 - Docs/Cartilha-do-Cooperado-janeiro.pdf",
+      "titulo_identificado": "Manual do Cooperado — Sicoob Metropolitano",
+      "instituicao": "Sicoob Metropolitano; Sicoob Central Unicoob",
+      "classe": "Contexto institucional Sicoob, sem política de compras",
+      "paginas": 37,
+      "data_conteudo": "Janeiro de 2019",
+      "base_data": "Data explícita no expediente, p.36; criação do PDF em 10/04/2019",
+      "metadados_pdf": "Creator:         Adobe InDesign CC 14.0 (Windows)\nProducer:        Adobe PDF Library 15.0\nCreationDate:    Wed Apr 10 08:49:47 2019 -03\nModDate:         Wed Apr 10 08:49:51 2019 -03\nCustom Metadata: no\nMetadata Stream: yes\nTagged:          no\nUserProperties:  no\nSuspects:        no\nForm:            none\nJavaScript:      no\nPages:           37\nEncrypted:       no\nPage size:       419.528 x 595.276 pts\nPage rot:        0\nFile size:       651140 bytes\nOptimized:       yes\nPDF version:     1.7\n",
+      "atualidade": "Histórico; princípios úteis, números, contatos, organograma e aplicações exigem atualização",
+      "metodo": "Extração nativa de todas as páginas; inspeção visual das páginas indicadas.",
+      "paginas_inspecionadas_visualmente": [
+        1,
+        3,
+        9,
+        20,
+        34,
+        36
+      ],
+      "caracteres_texto_nativo": 67653,
+      "fatos": [
+        {
+          "chave": "cooperado_comunidade",
+          "rotulo": "Cooperado e desenvolvimento da comunidade",
+          "local": "p.3,6–7,16,19,37",
+          "evidencia": "O cooperado participa e é tratado como dono; gestão democrática, cooperação, transparência, educação e desenvolvimento comunitário aparecem no material.",
+          "implicacao": "Usar linguagem de cooperativa e cooperado, atendimento próximo e informações claras; evitar reduzir o portal a uma loja genérica.",
+          "tipo": "concept"
+        },
+        {
+          "chave": "governanca_marca",
+          "rotulo": "Governança sistêmica da marca",
+          "local": "p.12–13",
+          "evidencia": "Documento distingue confederação, centrais, singulares e pontos de atendimento; atribui à confederação diretrizes de comunicação, marketing e uso da marca.",
+          "implicacao": "Separar identidade sistêmica de personalização local; manter biblioteca de artes com versão e aprovação institucional.",
+          "tipo": "concept"
+        },
+        {
+          "chave": "assembleias_calendario",
+          "rotulo": "Assembleias e calendário cooperativista",
+          "local": "p.11 e p.14",
+          "evidencia": "Datas do cooperativismo e eventos AGO, AGE e pré-assembleias; AGO descrita nos primeiros quatro meses, com participação de delegados.",
+          "implicacao": "Criar campanhas por assembleia e evento, com data desejada e janela de produção; confirmar calendário de cada singular.",
+          "tipo": "concept"
+        },
+        {
+          "chave": "educacao_voluntariado",
+          "rotulo": "Educação, voluntariado e interesse comunitário",
+          "local": "p.17–18",
+          "evidencia": "Instituto Sicoob, Cooperjovem, cooperativas mirins, concurso cultural, educação financeira/ambiental e voluntariado.",
+          "implicacao": "Curadoria por objetivo educativo/social, kits por público e evidência verificável de sustentabilidade.",
+          "tipo": "concept"
+        },
+        {
+          "chave": "segmentos_locais",
+          "rotulo": "Segmentação local de relacionamento",
+          "local": "p.15, p.33",
+          "evidencia": "Menciona espaços para empreendedor, moda, mulher e jovens e rede em PR/SP; a p.33 distingue futuras inaugurações de 2019.",
+          "implicacao": "Segmentar campanhas por objetivo e contexto da cooperativa; não transformar rede histórica em cadastro atual de PAs.",
+          "tipo": "concept"
+        },
+        {
+          "chave": "creditos_profissionais",
+          "rotulo": "Áreas de planejamento, marketing e eventos",
+          "local": "p.36",
+          "evidencia": "Expediente atribui produção à Área de Planejamento e Desenvolvimento do Metropolitano e Comunicação, Marketing e Eventos da Central Unicoob.",
+          "implicacao": "Áreas são pistas documentais para entrevistas; nomes do expediente não comprovam cargos atuais.",
+          "tipo": "concept"
+        }
+      ],
+      "limites": [
+        "São 37 páginas de PDF contendo páginas editoriais duplas (por exemplo PDF p.12 = páginas impressas 22–23); referências deste relatório usam página do PDF.",
+        "Não é manual oficial vigente de identidade visual; não contém especificação confiável de tokens digitais ou direitos de aplicação da marca.",
+        "Inclui produtos e contatos de 2019; não publicar como informação financeira ou operacional atual."
+      ],
+      "sha256": "9a29c3f4c6a52c5526ba632b8fdba3aa8144199dff6c75038b03372e0fee1256",
+      "tamanho_bytes": 651140
+    },
+    {
+      "id": "doc03",
+      "arquivo": "Exercício findo em 31 de dezembro de 2007.pdf",
+      "caminho": "/home/joaquim_ataides/projetos/Brindes Sicoob V2 - Docs/Exercício findo em 31 de dezembro de 2007.pdf",
+      "titulo_identificado": "Relatório Anual 2007",
+      "instituicao": "Banco Cooperativo do Brasil — Bancoob",
+      "classe": "Contexto histórico financeiro/institucional",
+      "paginas": 46,
+      "data_conteudo": "Exercício findo em 31/12/2007",
+      "base_data": "Título interno, demonstrações p.29 e parecer p.41; geração 11/04/2008, modificação 15/06/2012",
+      "metadados_pdf": "Creator:         Adobe InDesign CS3 (5.0.2)\nProducer:        Adobe PDF Library 8.0\nCreationDate:    Fri Apr 11 09:29:37 2008 -03\nModDate:         Fri Jun 15 09:48:11 2012 -03\nCustom Metadata: no\nMetadata Stream: yes\nTagged:          no\nUserProperties:  no\nSuspects:        no\nForm:            none\nJavaScript:      no\nPages:           46\nEncrypted:       no\nPage size:       1190.55 x 841.89 pts (A3)\nPage rot:        0\nFile size:       7849568 bytes\nOptimized:       no\nPDF version:     1.6\n",
+      "atualidade": "Histórico remoto; baixa utilidade para decisões atuais de portal",
+      "metodo": "Extração nativa de todas as páginas; inspeção visual das páginas indicadas.",
+      "paginas_inspecionadas_visualmente": [
+        1,
+        2,
+        8,
+        31,
+        45
+      ],
+      "caracteres_texto_nativo": 349886,
+      "fatos": [
+        {
+          "chave": "bancoob_historico",
+          "rotulo": "Bancoob e cooperativas acionistas em 2007",
+          "local": "p.7–8,43–45",
+          "evidencia": "Retrato institucional, organograma e relação de centrais acionistas; indicadores explicitamente referentes àquele exercício.",
+          "implicacao": "Preservar apenas contexto histórico; não importar dirigentes, telefones, número de cooperativas ou estrutura de 2007 para o cadastro atual.",
+          "tipo": "concept"
+        },
+        {
+          "chave": "estrategia_historica",
+          "rotulo": "Estratégia Bancoob 2008–2010",
+          "local": "p.9–11",
+          "evidencia": "Mapa estratégico de qualidade, competitividade, força da marca, processos, governança, capacitação e responsabilidade socioambiental.",
+          "implicacao": "Há afinidade conceitual com eficiência e transparência; não é fonte de requisitos atuais de compras.",
+          "tipo": "concept"
+        },
+        {
+          "chave": "relatorio_financeiro",
+          "rotulo": "Demonstrações e notas históricas",
+          "local": "p.24–41",
+          "evidencia": "Relatório da administração, demonstrações financeiras, notas explicativas e parecer dos auditores.",
+          "implicacao": "Não usar números financeiros históricos para TAM, orçamento de brindes, capacidade de gasto ou perfil de comprador em 2026.",
+          "tipo": "concept"
+        },
+        {
+          "chave": "divergencia_cabecalho",
+          "rotulo": "Cabeçalho temporal divergente",
+          "local": "p.31–40",
+          "evidencia": "Notas explicativas exibem cabeçalho 2006 e 2005, enquanto várias tabelas e o parecer tratam de 2007 e 2006.",
+          "implicacao": "Priorizar o exercício comprovado pelo documento e registrar inconsistência editorial; não presumir atualização do conteúdo pela data do arquivo.",
+          "tipo": "rationale"
+        }
+      ],
+      "limites": [
+        "Extração de texto em todas as 46 páginas e triagem de todas as seções; aprofundamento concentrado no contexto institucional. Não foi realizada auditoria contábil nem validação dos demonstrativos.",
+        "Documento bilíngue, em páginas duplas, com extração entrelaçada de colunas; evitar citar transcrições longas sem consulta visual."
+      ],
+      "sha256": "23952bac3f728bed3b883dd54d0be7f7b1aa7e63ad706aff0dece64ee950d114",
+      "tamanho_bytes": 7849568
+    },
+    {
+      "id": "doc04",
+      "arquivo": "MANUAL DO-COOPERADO_ALIANÇA_WEB_REV00.pdf",
+      "caminho": "/home/joaquim_ataides/projetos/Brindes Sicoob V2 - Docs/MANUAL DO-COOPERADO_ALIANÇA_WEB_REV00.pdf",
+      "titulo_identificado": "Manual do Cooperado — Uma cooperativa para chamar de minha",
+      "instituicao": "Sicoob Aliança; Sicoob Central Unicoob",
+      "classe": "Contexto institucional e linguagem Sicoob",
+      "paginas": 28,
+      "data_conteudo": "Não declarada no conteúdo; PDF gerado em 31/03/2020",
+      "base_data": "Metadados de criação/modificação",
+      "metadados_pdf": "Creator:         Adobe InDesign 15.0 (Windows)\nProducer:        Adobe PDF Library 15.0\nCreationDate:    Tue Mar 31 10:20:19 2020 -03\nModDate:         Tue Mar 31 10:20:37 2020 -03\nCustom Metadata: no\nMetadata Stream: yes\nTagged:          no\nUserProperties:  no\nSuspects:        no\nForm:            none\nJavaScript:      no\nPages:           28\nEncrypted:       no\nPage size:       510.236 x 510.236 pts\nPage rot:        0\nFile size:       3809976 bytes\nOptimized:       yes\nPDF version:     1.7\n",
+      "atualidade": "Histórico; útil para tom e valores, inadequado para métricas atuais",
+      "metodo": "Extração nativa de todas as páginas; inspeção visual das páginas indicadas.",
+      "paginas_inspecionadas_visualmente": [
+        1,
+        6,
+        13,
+        15
+      ],
+      "caracteres_texto_nativo": 12947,
+      "fatos": [
+        {
+          "chave": "pertencimento",
+          "rotulo": "Pertencimento e transformação comunitária",
+          "local": "p.1,6,8–9,24",
+          "evidencia": "Apresenta vínculo de pertencimento, sociedade de pessoas, gestão democrática e desenvolvimento local.",
+          "implicacao": "Mensagem do portal pode associar cada campanha à finalidade para cooperados e comunidade.",
+          "tipo": "concept"
+        },
+        {
+          "chave": "principios_alianca",
+          "rotulo": "Princípios e valores cooperativistas",
+          "local": "p.11–15",
+          "evidencia": "Ética, transparência, respeito, cooperativismo, direitos/deveres e os sete princípios; autonomia e interesse comunitário.",
+          "implicacao": "Tornar escolhas de compra e aprovações explicáveis; suportar autonomia da singular dentro da governança de marca.",
+          "tipo": "concept"
+        },
+        {
+          "chave": "eixos_instituto",
+          "rotulo": "Eixos do Instituto Sicoob no documento",
+          "local": "p.14–17",
+          "evidencia": "Cooperativismo/empreendedorismo, cidadania financeira e desenvolvimento sustentável.",
+          "implicacao": "Criar coleções temáticas e kits educativos com descrição de uso, evitando alegação ambiental sem comprovação.",
+          "tipo": "concept"
+        },
+        {
+          "chave": "identidade_alianca",
+          "rotulo": "Expressão visual do Sicoob Aliança",
+          "local": "p.1,6,13,15, inspeção visual",
+          "evidencia": "Combina verde escuro, turquesa, verde-limão, branco, formas orgânicas e triângulos; há roxo em títulos/capa.",
+          "implicacao": "Usar como referência de expressão histórica; escolher paleta e tipografia final somente a partir do manual oficial vigente.",
+          "tipo": "concept"
+        }
+      ],
+      "limites": [
+        "Números da p.5 e informações de canais/produtos p.18–25 pertencem ao contexto do arquivo; não foram verificados como atuais.",
+        "Documento apresenta a cooperativa Aliança; sua linguagem e campanhas não implicam padronização obrigatória para todas as singulares."
+      ],
+      "sha256": "cc73271f23392116167f30dcb922f8a8ee8ce389b5cfd32df5fa6bccf1e55fbe",
+      "tamanho_bytes": 3809976
+    },
+    {
+      "id": "doc05",
+      "arquivo": "Manual-do-Fornecedor-SICOOB-Centro-1.pdf",
+      "caminho": "/home/joaquim_ataides/projetos/Brindes Sicoob V2 - Docs/Manual-do-Fornecedor-SICOOB-Centro-1.pdf",
+      "titulo_identificado": "Manual do Fornecedor Sicoob Centro",
+      "instituicao": "Sicoob Centro",
+      "classe": "Política de uma cooperativa Sicoob",
+      "paginas": 6,
+      "data_conteudo": "Sem vigência declarada; PDF gerado em 12/08/2021",
+      "base_data": "Metadados de criação; documento não identifica revisão ou data de vigência",
+      "metadados_pdf": "Title:           Microsoft Word - Manual-do-Fornecedor-SC\nAuthor:          christopher.farias\nProducer:        Microsoft: Print To PDF\nCreationDate:    Thu Aug 12 11:41:11 2021 -03\nModDate:         Thu Aug 12 11:41:11 2021 -03\nCustom Metadata: no\nMetadata Stream: no\nTagged:          no\nUserProperties:  no\nSuspects:        no\nForm:            none\nJavaScript:      no\nPages:           6\nEncrypted:       no\nPage size:       595.32 x 841.92 pts (A4)\nPage rot:        0\nFile size:       807389 bytes\nOptimized:       no\nPDF version:     1.7\n",
+      "atualidade": "Fonte local mais forte sobre compras; confirmar versão antes de parametrizar",
+      "metodo": "Extração nativa de todas as páginas; inspeção visual das páginas indicadas.",
+      "paginas_inspecionadas_visualmente": [
+        1,
+        5,
+        6
+      ],
+      "caracteres_texto_nativo": 9257,
+      "fatos": [
+        {
+          "chave": "preferencia_local",
+          "rotulo": "Preferência por cooperado, PME e economia regional",
+          "local": "p.2",
+          "evidencia": "Preferência de até 5% para empresas cooperadas e 5% para pequenas/microempresas de Rondônia, cumuláveis até 10%; desempate considera porte, reciprocidade e tempo de filiação.",
+          "implicacao": "Representar qualificações e critérios configuráveis por cooperativa; não aplicar percentuais como regra de todo Sicoob.",
+          "tipo": "concept"
+        },
+        {
+          "chave": "cotacao_registrada",
+          "rotulo": "Cotação registrada e prazo de resposta",
+          "local": "p.3",
+          "evidencia": "Cotações por e-mail para registro; retorno em três dias úteis; comunicação de aprovação/reprovação a todos participantes; aproveitamento de orçamento anterior até 90 dias.",
+          "implicacao": "Versionar propostas, registrar validade e eventos de decisão; permitir prazo e vigência por organização, sem importar limites históricos automaticamente.",
+          "tipo": "concept"
+        },
+        {
+          "chave": "proposta_completa",
+          "rotulo": "Conteúdo mínimo da proposta",
+          "local": "p.3",
+          "evidencia": "Proposta inclui quantidade, modelo, marca, preço, garantia, forma de pagamento, prazo de retorno e previsão de entrega.",
+          "implicacao": "PDF/link comercial deve conter especificação completa, preço discriminado, validade, pagamento, entrega e condições de personalização.",
+          "tipo": "concept"
+        },
+        {
+          "chave": "qualificacao_fornecedor",
+          "rotulo": "Qualificação e regularidade do fornecedor",
+          "local": "p.3–4",
+          "evidencia": "Regularidade municipal, estadual, federal e trabalhista; critérios técnicos, profissionais, éticos, qualidade, localização, associação e sustentabilidade.",
+          "implicacao": "Disponibilizar dossiê comercial e documentos com validade e acesso controlado; evitar exigir dados pessoais não necessários à operação.",
+          "tipo": "concept"
+        },
+        {
+          "chave": "avaliacao_compra",
+          "rotulo": "Pontuação no ato da compra",
+          "local": "p.5",
+          "evidencia": "Produto sustentável e menor preço recebem 20 pontos cada; cooperativa, certificações/declaração ambiental e associado ativo recebem 10 cada; outros seis critérios de cinco pontos completam a tabela.",
+          "implicacao": "Permitir comparar custo, conformidade, prazo e evidência ambiental; nenhum selo deve ser atribuído automaticamente por material ou nome do item.",
+          "tipo": "concept"
+        },
+        {
+          "chave": "avaliacao_desempenho",
+          "rotulo": "Avaliação anual do fornecedor",
+          "local": "p.6",
+          "evidencia": "Fornecedores com pelo menos cinco compras anuais são avaliados; qualidade material/serviço soma 40%, relacionamento 20% e outros quatro itens 10% cada; mínimo três estrelas.",
+          "implicacao": "Conectar histórico de prazo, qualidade, atendimento e documentação a avaliação do fornecedor; ponderação deve ser configurável.",
+          "tipo": "concept"
+        },
+        {
+          "chave": "condicao_pagamento",
+          "rotulo": "Condição de pagamento documentada",
+          "local": "p.3",
+          "evidencia": "Pagamento no prazo acordado; compra à vista descrita como D+5 dias úteis após apresentação de nota fiscal ou comprovantes.",
+          "implicacao": "Explicitar condição acordada na proposta/pedido; não presumir cartão, Pix imediato ou D+5 universal.",
+          "tipo": "concept"
+        }
+      ],
+      "limites": [
+        "O emitente é Sicoob Centro, não Confederação/Centro Cooperativo Sicoob. A política inclui critérios regionais de Rondônia.",
+        "Não há no arquivo autorização para aplicar regras a outras cooperativas, catálogo homologado de brindes, API, SSO ou política sistêmica de presente."
+      ],
+      "sha256": "bc09b4282e45606930e22bf228752dd68052e9b7438d690f5f38f94e4aae863c",
+      "tamanho_bytes": 807389
+    },
+    {
+      "id": "doc06",
+      "arquivo": "Opcoes_Brindes_Campanha_SICOOB_Dia_da_Secretaria.pdf",
+      "caminho": "/home/joaquim_ataides/projetos/Brindes Sicoob V2 - Docs/Opcoes_Brindes_Campanha_SICOOB_Dia_da_Secretaria.pdf",
+      "titulo_identificado": "Opções Campanha Sicoob Dia da Secretária",
+      "instituicao": "Campanha identificada como Sicoob; unidade emissora não comprovada",
+      "classe": "Catálogo histórico de campanha Sicoob",
+      "paginas": 3,
+      "data_conteudo": "Não declarada no corpo; PDF gerado em 09/09/2013",
+      "base_data": "Metadados PowerPoint",
+      "metadados_pdf": "Title:           Apresentação do PowerPoint\nAuthor:          Cleusirene Vieira dos Santos Oliveira\nCreator:         Microsoft® PowerPoint® 2010\nProducer:        Microsoft® PowerPoint® 2010\nCreationDate:    Mon Sep  9 09:14:33 2013 -03\nModDate:         Mon Sep  9 09:14:33 2013 -03\nCustom Metadata: no\nMetadata Stream: no\nTagged:          yes\nUserProperties:  no\nSuspects:        no\nForm:            none\nJavaScript:      no\nPages:           3\nEncrypted:       no\nPage size:       720 x 540 pts\nPage rot:        0\nFile size:       408644 bytes\nOptimized:       no\nPDF version:     1.5\n",
+      "atualidade": "Histórico remoto; demonstra ocasião e atributos, não catálogo/estoque atual",
+      "metodo": "Extração nativa de todas as páginas; inspeção visual das páginas indicadas.",
+      "paginas_inspecionadas_visualmente": [
+        1,
+        2,
+        3
+      ],
+      "caracteres_texto_nativo": 2739,
+      "fatos": [
+        {
+          "chave": "campanha_secretaria",
+          "rotulo": "Campanha de relacionamento por ocasião",
+          "local": "p.1–3",
+          "evidencia": "Seis opções: nécessaire, porta-bolsa, porta-batom, espelho, kit higiene bucal e porta-cartões.",
+          "implicacao": "Organizar descoberta por campanha/objetivo e permitir kit por faixa de investimento sem reproduzir estereótipos como regra do público.",
+          "tipo": "concept"
+        },
+        {
+          "chave": "atributos_personalizacao",
+          "rotulo": "Ficha de brinde e personalização",
+          "local": "p.2–3",
+          "evidencia": "Códigos, materiais, aplicações, embalagem, quantidade por pacote; baixo-relevo, gravação e aplicação monocromática.",
+          "implicacao": "Separar produto, variante, unidade comercial, técnica, área de personalização, embalagem e conteúdo do kit.",
+          "tipo": "concept"
+        },
+        {
+          "chave": "unidade_comercial",
+          "rotulo": "Unidade versus pacote",
+          "local": "p.2",
+          "evidencia": "Porta-batom apresentado em pacote de cinco unidades; outros itens em unidade.",
+          "implicacao": "Exibir unidade de compra e quantidade total entregável; validar múltiplos e conversões no orçamento.",
+          "tipo": "concept"
+        },
+        {
+          "chave": "qualidade_descricao",
+          "rotulo": "Descrições que exigem saneamento",
+          "local": "p.2",
+          "evidencia": "Nécessaire intitulada em nylon, mas diferenciais citam PVC transparente.",
+          "implicacao": "Normalizar atributos com fonte de produto verificável e sinalizar conflito em vez de inventar composição.",
+          "tipo": "rationale"
+        }
+      ],
+      "limites": [
+        "Não há preços neste PDF. Códigos 024xxx não foram associados aos IDs do banco de produtos.",
+        "Uso antigo do logo não constitui licença ou aprovação da personalização no novo portal."
+      ],
+      "sha256": "a88cf42970670ec0d3d2b10e14cc13d9c7b53bca26837bc807aaa9400cff61b1",
+      "tamanho_bytes": 408644
+    },
+    {
+      "id": "doc07",
+      "arquivo": "Portal de Compras SAPORE.pdf",
+      "caminho": "/home/joaquim_ataides/projetos/Brindes Sicoob V2 - Docs/Portal de Compras SAPORE.pdf",
+      "titulo_identificado": "Portal de Compras SAPORE — Guia de início rápido",
+      "instituicao": "SAPORE; BR Supply",
+      "classe": "Benchmark histórico de cliente BR Supply",
+      "paginas": 13,
+      "data_conteudo": "Não declarada no corpo; PDF gerado em 22/05/2012",
+      "base_data": "Metadados de criação",
+      "metadados_pdf": "Title:           Manual Basico Sapore.cdr\nAuthor:          alexandre.cembranel\nCreator:         CorelDRAW\nProducer:        Corel PDF Engine Version 3.0.0.576\nCreationDate:    Tue May 22 15:36:29 2012 -03\nModDate:         Tue May 22 15:36:29 2012 -03\nCustom Metadata: no\nMetadata Stream: no\nTagged:          no\nUserProperties:  no\nSuspects:        no\nForm:            none\nJavaScript:      no\nPages:           13\nEncrypted:       no\nPage size:       595.276 x 841.89 pts (A4)\nPage rot:        0\nFile size:       1174306 bytes\nOptimized:       yes\nPDF version:     1.3\n",
+      "atualidade": "Histórico; relevante ao processo, interface e navegadores obsoletos",
+      "metodo": "Extração nativa de todas as páginas; inspeção visual das páginas indicadas.",
+      "paginas_inspecionadas_visualmente": [
+        1,
+        7,
+        9,
+        10
+      ],
+      "caracteres_texto_nativo": 13656,
+      "fatos": [
+        {
+          "chave": "catalogo_por_perfil",
+          "rotulo": "Catálogo por cliente/usuário e preço contratado",
+          "local": "p.4",
+          "evidencia": "Catálogos disponíveis variam por cliente/usuário; indicador de preço contratado.",
+          "implicacao": "Definir visibilidade comercial e contratos por cooperativa, sem confundir preço consultado no banco com preço final da proposta.",
+          "tipo": "concept"
+        },
+        {
+          "chave": "locais_geridos",
+          "rotulo": "Locais de entrega controlados pelo gestor",
+          "local": "p.5–7",
+          "evidencia": "Gestor define locais autorizados; carrinho confirma destino; restrições de verba e pedido mínimo podem ser parametrizadas por usuário/local.",
+          "implicacao": "Associar usuário a organizações/PAs e endereços permitidos; validar no servidor o contexto escolhido.",
+          "tipo": "concept"
+        },
+        {
+          "chave": "alcadas_parametrizadas",
+          "rotulo": "Uma ou mais alçadas de aprovação",
+          "local": "p.8–10",
+          "evidencia": "Número de aprovadores depende da parametrização do gestor; aprovador pode alterar itens/quantidades; histórico e notificações registram mudanças; rejeição exige motivo.",
+          "implicacao": "Separar solicitação, aprovação financeira e aprovação de arte; alterações relevantes invalidam aprovações anteriores.",
+          "tipo": "concept"
+        },
+        {
+          "chave": "atendimento_parcial",
+          "rotulo": "Faturamento e atendimento parciais",
+          "local": "p.9",
+          "evidencia": "Estados distinguem liberação comercial, integração WMS, separação, faturamento, atendimento total e parcial; parcial pode gerar duas notas.",
+          "implicacao": "Modelar entregas/notas por remessa e quantidades atendidas por item; status global sozinho é insuficiente.",
+          "tipo": "concept"
+        },
+        {
+          "chave": "recompra_programacao",
+          "rotulo": "Recompra e programação",
+          "local": "p.6 e p.9",
+          "evidencia": "Salvar carrinho, programação de repetição e copiar itens de pedido para novo carrinho.",
+          "implicacao": "Recomprar com revalidação de estoque, preço, prazo e versão da arte.",
+          "tipo": "concept"
+        },
+        {
+          "chave": "conferencia_entrega",
+          "rotulo": "Conferência e divergência na entrega",
+          "local": "p.11–12",
+          "evidencia": "NF, consumo e rastreio; checklist de volumes, especificações, quantidades e integridade; documentação de divergência.",
+          "implicacao": "Oferecer recebimento guiado por item, evidência fotográfica e atendimento vinculado.",
+          "tipo": "concept"
+        }
+      ],
+      "limites": [
+        "Regras são da implantação SAPORE de 2012. Referências a IE6, Firefox 3.6 e tarja SSL-EV não são requisitos técnicos atuais.",
+        "O documento não comprova a existência atual das mesmas telas ou integrações no BR Supply."
+      ],
+      "sha256": "358927255e7a1c75b532ea5d5253d203eabed051b1af881d8d2ef223c0be1ce7",
+      "tamanho_bytes": 1174306
+    },
+    {
+      "id": "doc08",
+      "arquivo": "Presentes Final de Ano - Br Supply.pdf",
+      "caminho": "/home/joaquim_ataides/projetos/Brindes Sicoob V2 - Docs/Presentes Final de Ano - Br Supply.pdf",
+      "titulo_identificado": "Presentes Final de Ano — catálogo 2017",
+      "instituicao": "BR Supply",
+      "classe": "Benchmark histórico de brindes personalizados",
+      "paginas": 40,
+      "data_conteudo": "Campanha 2017, preços válidos até outubro/2017 ou enquanto durar estoque",
+      "base_data": "Título do arquivo-fonte nos metadados e validade explícita p.39; criação 31/07/2017",
+      "metadados_pdf": "Title:           Projeto Brindes Final de Ano Clientes 2017 - 205x285cm_12_07.cdr\nAuthor:          Robson Nervo - Br Supply\nCreator:         CorelDRAW X7\nProducer:        Corel PDF Engine Version 17.1.0.572\nCreationDate:    Mon Jul 31 11:21:49 2017 -03\nModDate:         Mon Jul 31 11:21:49 2017 -03\nCustom Metadata: no\nMetadata Stream: no\nTagged:          no\nUserProperties:  no\nSuspects:        no\nForm:            none\nJavaScript:      no\nPages:           40\nEncrypted:       no\nPage size:       581.102 x 807.874 pts\nPage rot:        0\nFile size:       4401064 bytes\nOptimized:       yes\nPDF version:     1.5\n",
+      "atualidade": "Expirado para preço, estoque, códigos, mínimo e SLA",
+      "metodo": "Extração nativa de todas as páginas; inspeção visual das páginas indicadas.",
+      "paginas_inspecionadas_visualmente": [
+        1,
+        4,
+        5,
+        10,
+        34,
+        36,
+        37,
+        38,
+        39
+      ],
+      "caracteres_texto_nativo": 26905,
+      "fatos": [
+        {
+          "chave": "curadoria_campanha",
+          "rotulo": "Curadoria por ocasião e investimento",
+          "local": "p.3–4,36–37",
+          "evidencia": "Distingue presentes corporativos e Natal; resumo ordenado por investimento.",
+          "implicacao": "Criar coleções por ocasião, público e orçamento, sempre recalculadas a partir do catálogo autorizado atual.",
+          "tipo": "concept"
+        },
+        {
+          "chave": "personalizacao_completa",
+          "rotulo": "Personalização de produto e embalagem",
+          "local": "p.6–27,30–35",
+          "evidencia": "Itens apresentam foto, código, descrição, cores, mínimo e logomarca; alguns incluem embalagem temática, cartão e kits alimentícios.",
+          "implicacao": "Precificar composição completa: produto + técnica + preparação + embalagem + montagem + frete; mostrar inclusão/exclusão.",
+          "tipo": "concept"
+        },
+        {
+          "chave": "minimos_variantes",
+          "rotulo": "Quantidade mínima e variantes",
+          "local": "p.6–27,34–37",
+          "evidencia": "Exemplos históricos mostram mínimos de 150, 200, 500 e 1.000 unidades, tamanhos P/M/G/GG e cores.",
+          "implicacao": "Modelar mínimo e múltiplo por produto/técnica/fornecedor; não copiar quantidades históricas para o banco atual.",
+          "tipo": "concept"
+        },
+        {
+          "chave": "prazo_decomposto",
+          "rotulo": "Prazo de produção, processamento e transporte",
+          "local": "p.38",
+          "evidencia": "Tabela separa produção de 25 dias, processamento de um dia e transporte regional, resultando em 31 a 41 dias no catálogo.",
+          "implicacao": "Mostrar composição do prazo e dependência de arte aprovada; estimar atendimento antes da data do evento com premissas atuais.",
+          "tipo": "concept"
+        },
+        {
+          "chave": "validade_expirada",
+          "rotulo": "Validade comercial encerrada em outubro de 2017",
+          "local": "p.39",
+          "evidencia": "Validade dos preços termina em outubro/2017 ou término do estoque.",
+          "implicacao": "Impedir ingestão como tabela comercial vigente e jamais usar os valores como referência de mercado atual.",
+          "tipo": "rationale"
+        },
+        {
+          "chave": "conflito_sku",
+          "rotulo": "Inconsistência de descrição e código",
+          "local": "p.20,25,37",
+          "evidencia": "Código 100016 é conjunto champanheira com espumante na p.20, mas o resumo p.37 o rotula como caixa de som; caixa de som na p.25 usa 100021.",
+          "implicacao": "Reconciliar por identificador e fonte; uma importação textual cega herdaria erro de produto.",
+          "tipo": "rationale"
+        }
+      ],
+      "limites": [
+        "É catálogo genérico BR Supply, sem prova de acordo comercial com Sicoob ou execução das ofertas em 2026.",
+        "Fotografias e modelos de arte são referências de análise, sem reprodução de assets no código."
+      ],
+      "sha256": "7af3acd6f6ccf4e2a91eb8556e89582b9f5a87d9d51677d7dd0bf3fc215a8aa7",
+      "tamanho_bytes": 4401064
+    },
+    {
+      "id": "doc09",
+      "arquivo": "manual-avn-brs-v1-2.pdf",
+      "caminho": "/home/joaquim_ataides/projetos/Brindes Sicoob V2 - Docs/manual-avn-brs-v1-2.pdf",
+      "titulo_identificado": "Manual do Usuário BRSUPPLY versão 1.2 — AVN",
+      "instituicao": "Almoxarifado Virtual Nacional; Central de Compras do Ministério da Economia; BR Supply",
+      "classe": "Benchmark de contratação pública",
+      "paginas": 47,
+      "data_conteudo": "Sem data de publicação identificável",
+      "base_data": "PDF não possui CreationDate/ModDate; versão 1.2 e menção institucional não permitem datar com precisão",
+      "metadados_pdf": "Custom Metadata: no\nMetadata Stream: no\nTagged:          no\nUserProperties:  no\nSuspects:        no\nForm:            none\nJavaScript:      no\nPages:           47\nEncrypted:       no\nPage size:       595.5 x 842.25 pts (A4)\nPage rot:        0\nFile size:       14639887 bytes\nOptimized:       no\nPDF version:     1.3\n",
+      "atualidade": "Vigência não estabelecida; regras contratuais públicas não se aplicam automaticamente ao Sicoob",
+      "metodo": "Extração nativa de todas as páginas; inspeção visual das páginas indicadas.",
+      "paginas_inspecionadas_visualmente": [
+        1,
+        5,
+        6,
+        10,
+        13,
+        16,
+        33,
+        44
+      ],
+      "caracteres_texto_nativo": 31303,
+      "fatos": [
+        {
+          "chave": "escopo_sem_personalizacao",
+          "rotulo": "AVN exclui produtos personalizados",
+          "local": "p.4 e p.16",
+          "evidencia": "Material de consumo administrativo; exclui permanentes, personalizados, copa e limpeza.",
+          "implicacao": "Aproveitar governança de pedidos; não importar escopo de catálogo que exclui justamente brindes personalizados.",
+          "tipo": "rationale"
+        },
+        {
+          "chave": "perfis_avn",
+          "rotulo": "Solicitante, aprovador, gestor setorial e administrador",
+          "local": "p.5–6,19–20,41–44",
+          "evidencia": "Papéis têm responsabilidades diferentes; solicitante/aprovador podem atuar em mais de uma unidade; hierarquia consultável.",
+          "implicacao": "Representar permissões por ação e associação usuário-organização; papel do fornecedor é distinto do gestor da cooperativa.",
+          "tipo": "concept"
+        },
+        {
+          "chave": "minimo_regional_avn",
+          "rotulo": "Mínimos e janelas regionais do AVN",
+          "local": "p.7–8",
+          "evidencia": "Mínimos de R$500 Norte/Nordeste e R$300 demais; datas de entrega dependem de quinzena de aprovação e região.",
+          "implicacao": "Configurar regras comerciais e calendários quando contratados; não adotar valores ou quinzenas como padrão Sicoob.",
+          "tipo": "concept"
+        },
+        {
+          "chave": "ateste_conteste",
+          "rotulo": "Ateste, conteste e entrega corretiva",
+          "local": "p.9–15 e p.29–38",
+          "evidencia": "Solicitante contesta em três dias úteis; aprovador tem janela de cinco; fornecedor responde em dois; contestação pode escalar ao administrador e gerar entrega corretiva.",
+          "implicacao": "Separar entrega física de aceite e conclusão; registrar ocorrência por item com responsável, prazo e reentrega.",
+          "tipo": "concept"
+        },
+        {
+          "chave": "bloqueio_pendencia",
+          "rotulo": "Bloqueio por pendência de ateste",
+          "local": "p.9,33,36",
+          "evidencia": "Unidades do aprovador podem ficar bloqueadas para novos pedidos até regularização da pendência.",
+          "implicacao": "Não habilitar bloqueio em cascata sem regra de negócio explicitamente validada; exibir pendências e seus efeitos com clareza.",
+          "tipo": "rationale"
+        },
+        {
+          "chave": "revisao_pedido",
+          "rotulo": "Revisão e justificativa de reprovação",
+          "local": "p.24–28",
+          "evidencia": "Aprovador pode alterar, incluir ou excluir; remover único item cancela pedido; recusa exige justificativa e aviso eletrônico.",
+          "implicacao": "Exigir trilha de versão e reapresentação do total após alterações; evitar remoção silenciosa de item aprovado.",
+          "tipo": "concept"
+        },
+        {
+          "chave": "relatorios_hierarquia",
+          "rotulo": "Hierarquia e exportação de dados",
+          "local": "p.34,39–46",
+          "evidencia": "Acompanhamento de etapas, relatório de hierarquia e exportação inclusive XLSX.",
+          "implicacao": "Fornecer exportação e visibilidade por escopo de organização, com filtros de PA/campanha/período.",
+          "tipo": "concept"
+        }
+      ],
+      "limites": [
+        "CPF/SIAPE/SIORG e CATMAT são requisitos daquele sistema público; não importar para o cadastro Sicoob.",
+        "Não há evidência de relacionamento direto deste AVN com cooperativas Sicoob."
+      ],
+      "sha256": "8cc9aa93715e9b69bb12d385c18ce3b936390ebe03275eebdaaeaaf8f5fd377f",
+      "tamanho_bytes": 14639887
+    },
+    {
+      "id": "doc10",
+      "arquivo": "manual_IFRO.pdf",
+      "caminho": "/home/joaquim_ataides/projetos/Brindes Sicoob V2 - Docs/manual_IFRO.pdf",
+      "titulo_identificado": "Almoxarifado Virtual do IFRO",
+      "instituicao": "IFRO; BR Supply",
+      "classe": "Benchmark de outra organização",
+      "paginas": 20,
+      "data_conteudo": "Não declarada no conteúdo; PDF gerado em 27/07/2021",
+      "base_data": "Metadados de criação/modificação",
+      "metadados_pdf": "Title:           manual_IFRO\nCreator:         Adobe Illustrator 25.3 (Windows)\nProducer:        Adobe PDF library 15.00\nCreationDate:    Tue Jul 27 13:01:30 2021 -03\nModDate:         Tue Jul 27 14:01:30 2021 -03\nCustom Metadata: yes\nMetadata Stream: yes\nTagged:          no\nUserProperties:  no\nSuspects:        no\nForm:            none\nJavaScript:      no\nPages:           20\nEncrypted:       no\nPage size:       566.93 x 793.7 pts\nPage rot:        0\nFile size:       13999734 bytes\nOptimized:       yes\nPDF version:     1.6\n",
+      "atualidade": "Histórico; implantação distinta da UFMA",
+      "metodo": "Extração nativa de todas as páginas; inspeção visual das páginas indicadas.",
+      "paginas_inspecionadas_visualmente": [
+        1,
+        5,
+        7,
+        12
+      ],
+      "caracteres_texto_nativo": 21323,
+      "fatos": [
+        {
+          "chave": "janela_ifro",
+          "rotulo": "Janela mensal do IFRO",
+          "local": "p.5",
+          "evidencia": "Pedidos/aprovação de 1 a 10; entrega até dia 30 do mesmo mês.",
+          "implicacao": "A divergência em relação à UFMA prova necessidade de política por contrato, mesmo com telas quase iguais.",
+          "tipo": "concept"
+        },
+        {
+          "chave": "fluxo_ifro",
+          "rotulo": "Fluxo completo de compra IFRO",
+          "local": "p.7–15",
+          "evidencia": "Catálogo, carrinho, conferência, PDF, cancelamento com motivo antes de aprovação, aprovar/reprovar/devolver, relatórios e rastreio.",
+          "implicacao": "Benchmark funcional de paridade operacional; não confundir o estilo verde do IFRO com identidade Sicoob.",
+          "tipo": "concept"
+        },
+        {
+          "chave": "recebimento_ifro",
+          "rotulo": "Prazo de ocorrência e atendimento IFRO",
+          "local": "p.16–18",
+          "evidencia": "Ocorrências em até 15 dias; ateste de nota; SAC com tipo de ocorrência, ajuda contextual e anexos.",
+          "implicacao": "Anexos e ajuda contextual reduzem retrabalho; prazo de ocorrência deve vir de contrato vigente.",
+          "tipo": "concept"
+        }
+      ],
+      "limites": [
+        "Telas reaproveitam dados e valores de demonstração do manual UFMA; não são medições reais.",
+        "Cliente é Instituto Federal de Rondônia, não Sicoob Centro apesar da coincidência geográfica."
+      ],
+      "sha256": "4d9c85810468ca30284956dcb282955b435d8e68cb88b40543dad8be02e3e62d",
+      "tamanho_bytes": 13999734
+    },
+    {
+      "id": "doc11",
+      "arquivo": "manual_ifsuldeminas.pdf",
+      "caminho": "/home/joaquim_ataides/projetos/Brindes Sicoob V2 - Docs/manual_ifsuldeminas.pdf",
+      "titulo_identificado": "Portal de Suprimentos IFSULDEMINAS",
+      "instituicao": "Instituto Federal do Sul de Minas Gerais; BR Supply",
+      "classe": "Benchmark de outra organização",
+      "paginas": 18,
+      "data_conteudo": "Não declarada no conteúdo; PDF gerado em 26/05/2020",
+      "base_data": "Metadados de criação/modificação",
+      "metadados_pdf": "Title:           manual_ifsuldeminas\nCreator:         Adobe Illustrator CC 23.0 (Windows)\nProducer:        Adobe PDF library 15.00\nCreationDate:    Tue May 26 09:41:13 2020 -03\nModDate:         Tue May 26 10:41:14 2020 -03\nCustom Metadata: yes\nMetadata Stream: yes\nTagged:          no\nUserProperties:  no\nSuspects:        no\nForm:            none\nJavaScript:      no\nPages:           18\nEncrypted:       no\nPage size:       566.93 x 793.7 pts\nPage rot:        0\nFile size:       13526083 bytes\nOptimized:       yes\nPDF version:     1.5\n",
+      "atualidade": "Histórico; prazo de ocorrência difere dos manuais UFMA/IFRO",
+      "metodo": "Extração nativa de todas as páginas; inspeção visual das páginas indicadas.",
+      "paginas_inspecionadas_visualmente": [
+        1,
+        5,
+        7,
+        10
+      ],
+      "caracteres_texto_nativo": 20268,
+      "fatos": [
+        {
+          "chave": "fluxo_ifsul",
+          "rotulo": "Carrinho contextual e aprovação IFSULDEMINAS",
+          "local": "p.5–10",
+          "evidencia": "Busca, quantidade, local de entrega, verba, conferência, PDF e aprovação/retorno ao solicitante.",
+          "implicacao": "Priorizar tarefa de compra com contexto fixado; interface precisa mostrar organização/PA ativo em toda a jornada.",
+          "tipo": "concept"
+        },
+        {
+          "chave": "gestao_ifsul",
+          "rotulo": "Relatórios, rastreio e atendimento",
+          "local": "p.11–16",
+          "evidencia": "Relatórios de pedidos/NF/consumo/preço, rastreio, recebimento e SAC com anexos.",
+          "implicacao": "Dar autonomia ao comprador para consultar status e documentos sem depender de contato manual.",
+          "tipo": "concept"
+        },
+        {
+          "chave": "prazo_ocorrencia_ifsul",
+          "rotulo": "Ocorrência em 30 dias no IFSULDEMINAS",
+          "local": "p.14",
+          "evidencia": "Texto indica atendimento de ocorrências dentro de 30 dias após entrega, com ressalva no conhecimento.",
+          "implicacao": "Os 30 dias conflitam com 15 dias UFMA/IFRO; preservar a regra como configuração institucional, não norma universal.",
+          "tipo": "concept"
+        }
+      ],
+      "limites": [
+        "Documento não define política Sicoob. Algumas páginas têm texto importante incorporado em imagem.",
+        "Seu sumário associa aprovação à p.7, mas a seção visual de aprovação aparece na p.10; usar página real do PDF como evidência."
+      ],
+      "sha256": "f907f7ef5b272f9aeb485d9130125826ac0dfc800991fdb7964139c42260cfe2",
+      "tamanho_bytes": 13526083
+    },
+    {
+      "id": "doc12",
+      "arquivo": "output.pdf",
+      "caminho": "/home/joaquim_ataides/projetos/Brindes Sicoob V2 - Docs/output.pdf",
+      "titulo_identificado": "Portal de Suprimentos Magazine Luiza",
+      "instituicao": "Magazine Luiza; BR Supply",
+      "classe": "Benchmark de outra organização, arquivo rasterizado",
+      "paginas": 20,
+      "data_conteudo": "Data editorial desconhecida; captura/conversão em 31/07/2022",
+      "base_data": "Metadados identificam yumpudownload.com; tela de rastreio p.15 contém exemplo de 05/05/2017, que não data a publicação",
+      "metadados_pdf": "Author:          https://yumpudownload.com\nCreator:         https://yumpudownload.com\nProducer:        https://yumpudownload.com\nCreationDate:    Sun Jul 31 13:32:24 2022 -03\nModDate:         Sun Jul 31 13:32:24 2022 -03\nCustom Metadata: no\nMetadata Stream: no\nTagged:          no\nUserProperties:  no\nSuspects:        no\nForm:            none\nJavaScript:      no\nPages:           20\nEncrypted:       no\nPage size:       567.062 x 794.483 pts\nPage rot:        0\nFile size:       2763819 bytes\nOptimized:       no\nPDF version:     1.3\n",
+      "atualidade": "Histórico; não é documento Sicoob e não comprova produto BR Supply atual",
+      "metodo": "PDF rasterizado: OCR em português de todas as 20 páginas e inspeção visual das 20 páginas.",
+      "paginas_inspecionadas_visualmente": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20
+      ],
+      "caracteres_texto_nativo": 20,
+      "fatos": [
+        {
+          "chave": "portal_magalu",
+          "rotulo": "Portal de Suprimentos Magazine Luiza",
+          "local": "p.1,5,7,20, inspeção visual/OCR",
+          "evidencia": "Capa, introdução e endereço de acesso identificam Magazine Luiza; contracapa BR Supply.",
+          "implicacao": "Renomear descritivamente no catálogo de referências; não tratar output.pdf como arquivo Sicoob.",
+          "tipo": "rationale"
+        },
+        {
+          "chave": "janela_magalu",
+          "rotulo": "Janela de pedidos Magalu",
+          "local": "p.6, inspeção visual/OCR",
+          "evidencia": "Pedido 1–10, aprovação 11–15 e distribuição 19–30; quadro separado indica SLA matriz/CD Canoas de cinco dias úteis.",
+          "implicacao": "Suportar calendários e exceções por destino quando contratados; não inferir abrangência nacional da regra específica do mapa.",
+          "tipo": "concept"
+        },
+        {
+          "chave": "verba_programacao_magalu",
+          "rotulo": "Verbas, carrinhos e entregas programadas",
+          "local": "p.9–14, inspeção visual/OCR",
+          "evidencia": "Saldo de verba, salvar carrinho, programação, revisão de local, histórico de login, pedidos e relatórios.",
+          "implicacao": "Comprador precisa ver contexto financeiro e reutilizar configuração com atualização de preço/estoque.",
+          "tipo": "concept"
+        },
+        {
+          "chave": "ocorrencia_magalu",
+          "rotulo": "Atendimento com evidência e recebimento",
+          "local": "p.15–18, inspeção visual/OCR",
+          "evidencia": "Rastreio, recebimento/recusa, ocorrência em 30 dias, solicitações de boleto e prioridade; fotos de avaria e etiquetas.",
+          "implicacao": "Oferecer fluxo de pós-venda ligado a pedido/NF/itens; registrar prioridade por data de evento e justificativa.",
+          "tipo": "concept"
+        }
+      ],
+      "limites": [
+        "OCR tem erros em números, e-mails e telas pequenas; o conteúdo de maior relevância foi confirmado visualmente.",
+        "A data de conversão não é a data de publicação; o exemplo de 2017 não sustenta vigência das regras."
+      ],
+      "sha256": "138197cb28f24fb7f0178117c1302bb3f34181e753dea6c601363124de2885a9",
+      "tamanho_bytes": 2763819
+    },
+    {
+      "id": "planilha",
+      "arquivo": "Portal de Compras - Sicoob.xlsx",
+      "caminho": "/home/joaquim_ataides/projetos/Brindes Sicoob V2 - Docs/Portal de Compras - Sicoob.xlsx",
+      "titulo_identificado": "Portal de Compras - Sicoob",
+      "instituicao": "Coleção particular fornecida pelo usuário",
+      "classe": "Índice de referências de benchmark",
+      "paginas": null,
+      "data_conteudo": "Conteúdo sem data; criado em 31/07/2022 e modificado em 29/12/2025",
+      "base_data": "docProps/core.xml: created 2022-07-31T14:03:09Z; modified 2025-12-29T21:29:42Z",
+      "atualidade": "Lista de links; atualização do arquivo não valida os sites nem implica endosso Sicoob",
+      "metodo": "Leitura integral do contêiner OOXML: metadados, abas, strings e células; uma aba, seis células não vazias.",
+      "paginas_inspecionadas_visualmente": [],
+      "abas": [
+        "Planilha1"
+      ],
+      "celulas": {
+        "A1": "https://www.shopcoopera.com.br/",
+        "A2": "https://www.brsupply.com.br/supply-manager-personalize/",
+        "B2": "https://www.supplymanager.com.br/manager/Login/Index?ReturnUrl=%2Fmanager",
+        "C2": "Conseguir acesso ao Supply Manager para copiar ideias e padrões",
+        "A3": "https://www.youtube.com/c/BrSupplySuprimentosCorporativos",
+        "A4": "https://www.oceanob2b.com/"
+      },
+      "fatos": [
+        {
+          "chave": "benchmarks_listados",
+          "rotulo": "Cinco links de benchmark",
+          "local": "Planilha1!A1:A4 e B2",
+          "evidencia": "Shopcoopera, página Personalize da BR Supply, login Supply Manager, canal YouTube BR Supply e Oceano B2B.",
+          "implicacao": "Usar como trilha de pesquisa pública; não confundir referência salva com fonte atualmente verificada.",
+          "tipo": "concept"
+        },
+        {
+          "chave": "nota_acesso",
+          "rotulo": "Anotação sobre acesso ao Supply Manager",
+          "local": "Planilha1!C2",
+          "evidencia": "A célula contém uma intenção de obter acesso para estudar ideias/padrões.",
+          "implicacao": "Tratar como conteúdo documental, sem credenciais, autorização de acesso restrito ou instrução para contornar login.",
+          "tipo": "rationale"
+        }
+      ],
+      "limites": [
+        "Não há requisitos detalhados, produtos, preços, quantidades, segmentação de compradores ou credenciais na planilha.",
+        "Nenhum login ou contato com terceiros foi realizado nesta análise."
+      ],
+      "sha256": "1f6aa255a34ec4f40a93cc5fd58edfd2c820fb3aa5b64fb64a1864850ae466c4",
+      "tamanho_bytes": 9690
+    }
+  ]
+}

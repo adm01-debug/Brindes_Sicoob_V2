@@ -75,7 +75,7 @@ async function testCompliance() {
   // 4. Double check metadata policies
   const { data: policies } = await admin.rpc('run_sql_query', { 
     sql: "SELECT policyname FROM pg_policies WHERE tablename = 'quotes';" 
-  } as any);
+  });
 
   const hasRls = policies?.some(p => p.policyname.includes('org_members'));
   

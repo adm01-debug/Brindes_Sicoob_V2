@@ -3,7 +3,7 @@ import { RotateCcw, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
-import { useOrders } from "@/hooks/orders/useOrders";
+import { sicoobOrderService } from "@/services/sicoob/orderService";
 
 interface Props {
   orderId: string;
@@ -18,21 +18,22 @@ interface Props {
 export function OneClickReorder({ orderId, variant = "outline", className, showLabel = true }: Props) {
   const [isProcessing, setIsProcessing] = useState(false);
   const navigate = useNavigate();
-  const { duplicateOrder } = useOrders();
 
   const handleReorder = async (e: React.MouseEvent) => {
     e.stopPropagation();
     setIsProcessing(true);
     try {
-      const newOrder = await duplicateOrder(orderId);
-      if (newOrder?.id) {
-        toast.success("Pedido duplicado com sucesso!", {
-          description: "Você foi redirecionado para o novo rascunho."
+      const newQuoteId = await sicoobOrderService.reorderOrder(orderId);
+      if (newQuoteId) {
+        toast.success("Orçamento de recompra criado", {
+          description: "Preço e estoque foram revalidados antes de abrir o rascunho."
         });
-        navigate(`/pedidos/${newOrder.id}/editar`);
+        navigate(`/orcamentos/${newQuoteId}/editar`);
       }
     } catch (error) {
-      toast.error("Erro ao processar recompra");
+      toast.error("Não foi possível criar a recompra", {
+        description: error instanceof Error ? error.message : "Tente novamente em alguns instantes.",
+      });
     } finally {
       setIsProcessing(false);
     }

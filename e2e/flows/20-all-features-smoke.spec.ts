@@ -296,13 +296,18 @@ test.describe("@smoke Rotas públicas (gate de CI)", () => {
   test("95 · /reset-password sem token não habilita reset", async ({ page }) => {
     await page.goto("/reset-password");
     await page.waitForLoadState("domcontentloaded");
-    const invalid = await page
-      .getByText(/inválido|expirado|link.+inválido/i)
-      .first()
-      .isVisible()
-      .catch(() => false);
-    const redirected = /\/login/.test(page.url());
-    expect(invalid || redirected, "recovery sem token deve negar acesso").toBeTruthy();
+    await expect
+      .poll(async () => {
+        if (/\/login/.test(page.url())) return true;
+        return page
+          .getByRole("heading", { name: /link inválido ou expirado/i })
+          .isVisible()
+          .catch(() => false);
+      }, {
+        message: "recovery sem token deve negar acesso",
+        timeout: 8_000,
+      })
+      .toBeTruthy();
   });
 });
 
@@ -355,5 +360,4 @@ test.describe("@smoke RLS guard (gate de CI)", () => {
     }
   });
 });
-
 

@@ -1,0 +1,15 @@
+{
+  "ambiente": "configuração real carregada localmente, sem rede",
+  "operacoes_de_escrita_admitidas": [
+    "insert",
+    "update",
+    "delete",
+    "upsert",
+    "batch_insert"
+  ],
+  "rpcs_com_efeito_de_escrita_admitidas": [
+    "fn_link_product_print_areas",
+    "fn_backfill_product_print_areas"
+  ],
+  "lote_consulta_antes_de_checagem_de_sensibilidade": true
+}

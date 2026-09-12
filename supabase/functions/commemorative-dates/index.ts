@@ -1,3 +1,4 @@
+import { createReadOnlyCatalogFetch } from "../_shared/external-read-only.ts";
 import { getCorsHeaders } from '../_shared/cors.ts';
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 import { z } from "https://esm.sh/zod@3.23.8";
@@ -61,12 +62,12 @@ Deno.serve(async (req) => {
       );
     }
 
-    const externalSupabase = createClient(externalUrl, externalKey);
+    const externalSupabase = createClient(externalUrl, externalKey, { global: { fetch: createReadOnlyCatalogFetch() } });
     let result;
 
     switch (action) {
       case 'get_active_dates': {
-        const { data, error } = await externalSupabase.rpc('get_active_commemorative_dates');
+        const { data, error } = await externalSupabase.rpc('get_active_commemorative_dates', {}, { get: true });
         if (error) {
           return new Response(JSON.stringify({ error: error.message }),
             { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
@@ -79,7 +80,7 @@ Deno.serve(async (req) => {
         const daysAhead = params?.days_ahead || 60;
         const { data, error } = await externalSupabase.rpc('get_upcoming_commemorative_dates', {
           p_days_ahead: daysAhead
-        });
+        }, { get: true });
         if (error) {
           return new Response(JSON.stringify({ error: error.message }),
             { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
@@ -101,7 +102,7 @@ Deno.serve(async (req) => {
           p_slug: slug,
           p_limit: limit,
           p_include_all_colors: includeAllColors
-        });
+        }, { get: true });
         if (error) {
           return new Response(JSON.stringify({ error: error.message }),
             { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });

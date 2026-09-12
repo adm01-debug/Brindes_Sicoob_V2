@@ -1,3 +1,4 @@
+import { PermissionsError } from "./PermissionsError";
 import { type ReactNode, useState, useEffect, forwardRef } from "react";
 import { Navigate, Outlet } from "react-router-dom";
 import { Loader2 } from "lucide-react";
@@ -5,22 +6,24 @@ import { useAuth } from "@/contexts/AuthContext";
 import { MfaEnrollmentDialog } from "@/components/security/MfaEnrollmentDialog";
 import { MfaChallengeDialog } from "@/components/security/MfaChallengeDialog";
 import { toast } from "sonner";
+import { hasRequiredRole } from "@/lib/access/role-policy";
 
 interface AdminRouteProps {
   children?: ReactNode;
-  /** Papel mínimo para acessar. Se omitido, qualquer um com canManage acessa. */
+  /** Administração técnica por padrão; papel de negócio deve ser explícito. */
   requiredRole?: "dev" | "gestor_compras" | "supervisor";
 }
 
 export const AdminRoute = forwardRef<HTMLDivElement, AdminRouteProps>(function AdminRoute({ children, requiredRole }, ref) {
-  const { user, canManage, isDev, isGestorCompras, isSupervisor, isLoading, currentAAL, hasMFA, mfaRequired } = useAuth();
+  const { user, roles, rolesLoaded, rolesError, isLoading, currentAAL, hasMFA, mfaRequired } = useAuth();
   const [enrollOpen, setEnrollOpen] = useState(false);
+  const hasAccess = hasRequiredRole(roles, requiredRole ?? "supervisor");
 
   useEffect(() => {
-    if (canManage && !hasMFA && !isLoading) setEnrollOpen(true);
-  }, [canManage, hasMFA, isLoading]);
+    if (hasAccess && !hasMFA && !isLoading && rolesLoaded) setEnrollOpen(true);
+  }, [hasAccess, hasMFA, isLoading, rolesLoaded]);
 
-  if (isLoading) {
+  if (isLoading || (user && !rolesLoaded)) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -28,16 +31,11 @@ export const AdminRoute = forwardRef<HTMLDivElement, AdminRouteProps>(function A
     );
   }
 
+  if (user && rolesError) return <PermissionsError />;
+
   if (!user) {
     return <Navigate to="/login" replace />;
   }
-
-  // Verificação de permissão baseada no role exigido ou canManage genérico
-  const hasAccess = requiredRole 
-    ? (requiredRole === "dev" ? isDev : 
-       requiredRole === "gestor_compras" ? (isGestorCompras || isDev) : 
-       (isSupervisor || isGestorCompras || isDev))
-    : canManage;
 
   if (!hasAccess) {
     // Audit failed access attempt

@@ -52,6 +52,15 @@ const ROLE_RANK: Record<AppRole, number> = {
   dev: 3,
 };
 
+// Papel de negócio não concede administração técnica. Valores desconhecidos
+// são ignorados; comparar `undefined` com um número permitiria o acesso.
+function technicalRole(value: string): AppRole | null {
+  if (value === "dev") return "dev";
+  if (["supervisor", "admin", "manager"].includes(value)) return "supervisor";
+  if (["agente", "vendedor", "gestor_compras", "comprador_singular", "gerente_pa", "comprador_pac"].includes(value)) return "agente";
+  return null;
+}
+
 function jsonResponse(
   body: unknown,
   status: number,
@@ -133,14 +142,17 @@ export async function authorize(
     };
   }
 
-  const userRoles = (roles ?? []).map((r) => r.role as AppRole);
-  const highestRole: AppRole | null = userRoles.length
-    ? (userRoles.reduce((acc, r) => (ROLE_RANK[r] > ROLE_RANK[acc] ? r : acc), userRoles[0]) as AppRole)
-    : null;
+  const userRoles = (roles ?? [])
+    .map((r) => technicalRole(r.role))
+    .filter((role): role is AppRole => role !== null);
+  const highestRole = userRoles.reduce<AppRole | null>(
+    (highest, role) => !highest || ROLE_RANK[role] > ROLE_RANK[highest] ? role : highest,
+    null,
+  );
 
   if (opts.requireRole) {
     const requiredRank = ROLE_RANK[opts.requireRole];
-    const userRank = highestRole ? ROLE_RANK[highestRole] : 0;
+    const userRank = highestRole ? (ROLE_RANK[highestRole] ?? 0) : 0;
     if (userRank < requiredRank) {
       return {
         ok: false,

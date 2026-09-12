@@ -1,7 +1,0 @@
-{
-  "extends": "./tsconfig.app.json",
-  "include": [
-    "src/hooks/useWebAuthn.ts",
-    "src/hooks/useMockupGenerator.ts"
-  ]
-}

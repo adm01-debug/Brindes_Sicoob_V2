@@ -1,0 +1,17 @@
+{
+  "ids_unicos": 1000,
+  "acoes_preservadas": 1000,
+  "etapas_com_dez_avaliacoes": 100,
+  "referencias_locais_existentes": 118,
+  "achados_com_ids_validos": 16,
+  "contagens": {
+    "L": 76,
+    "P": 622,
+    "V": 145,
+    "N": 157
+  },
+  "plano_original_inalterado": true,
+  "checklist_original_sem_baixas": true,
+  "html_gerado": true,
+  "verificacao_de_navegador": "Consultar verificacao-visual.json quando disponível."
+}

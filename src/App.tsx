@@ -75,14 +75,11 @@ const ClientDetailPage = lazyWithRetry(() => import("./pages/ClientDetailPage"))
 const TrendsPage = lazyWithRetry(() => import("./pages/TrendsPage"));
 const NotFound = lazyWithRetry(() => import("./pages/NotFound"));
 const NotificationsPage = lazyWithRetry(() => import("./pages/NotificationsPage"));
-const GestorComprasPage = lazyWithRetry(() => import("./pages/GestorCompras"));
 const AdminTemasPage = lazyWithRetry(() => import("./pages/admin/AdminTemasPage"));
 const ColorDocumentationPage = lazyWithRetry(() => import("./pages/admin/ColorDocumentationPage"));
 const ForbiddenPage = lazyWithRetry(() => import("./pages/ForbiddenPage"));
 const OrderAuditPage = lazyWithRetry(() => import("./pages/OrderAuditPage"));
 const TestDashboard = lazyWithRetry(() => import("./pages/TestDashboard"));
-const GestorApprovalsPage = lazyWithRetry(() => import("./pages/GestorApprovalsPage"));
-
 const App = () => {
   useGlobalErrorCatcher();
   useWebVitals({ debug: import.meta.env.DEV });
@@ -99,7 +96,7 @@ const App = () => {
         <AccessibilityProvider>
           <AriaLiveProvider>
             <TooltipProvider>
-              <BrowserRouter future={{ v7_relativeSplatPath: true }}>
+              <BrowserRouter>
                 <AuthProvider>
                   <AppWithAuth>
                     <AppProviders>
@@ -123,6 +120,7 @@ const App = () => {
                         <Route path="/configuracoes" element={<Navigate to="/admin/usuarios" replace />} />
                         <Route path="/perfil" element={<Navigate to="/admin/usuarios" replace />} />
                         <Route path="/403" element={<RouteSuspense><ForbiddenPage /></RouteSuspense>} />
+                        <Route path="*" element={<RouteSuspense><NotFound /></RouteSuspense>} />
 
                         {/* Protected Routes */}
                         <Route element={<ProtectedRoute />}>
@@ -141,20 +139,21 @@ const App = () => {
                               <Route key={r.path} path={r.path} element={<RouteSuspense><r.component /></RouteSuspense>} />
                             ))}
 
-                            <Route path="/admin/temas" element={<RouteSuspense><AdminTemasPage /></RouteSuspense>} />
-
                             {/* Admin & Sicoob Group */}
                             <Route element={<AdminRoute />}>
                               {adminRoutes.map(r => (
                                 <Route key={r.path} path={r.path} element={<RouteSuspense><r.component /></RouteSuspense>} />
                               ))}
                               
-                              <Route element={<SicoobRoute />}>
-                                {sicoobRoutes.map(r => (
-                                  <Route key={r.path} path={r.path} element={<RouteSuspense><r.component /></RouteSuspense>} />
-                                ))}
-                                <Route path="/admin/design-system/colors" element={<RouteSuspense><ColorDocumentationPage /></RouteSuspense>} />
-                              </Route>
+                              <Route path="/admin/design-system/colors" element={<RouteSuspense><ColorDocumentationPage /></RouteSuspense>} />
+                              <Route path="/admin/temas" element={<RouteSuspense><AdminTemasPage /></RouteSuspense>} />
+                              <Route path="/admin/saude-testes" element={<RouteSuspense><TestDashboard /></RouteSuspense>} />
+                            </Route>
+
+                            <Route element={<SicoobRoute />}>
+                              {sicoobRoutes.map(r => (
+                                <Route key={r.path} path={r.path} element={<RouteSuspense><r.component /></RouteSuspense>} />
+                              ))}
                             </Route>
 
                             {/* Dev Tools */}
@@ -171,13 +170,8 @@ const App = () => {
                             <Route path="/clientes/:id" element={<RouteSuspense><ClientDetailPage /></RouteSuspense>} />
                             <Route path="/tendencias" element={<RouteSuspense><TrendsPage /></RouteSuspense>} />
                             <Route path="/notificacoes" element={<RouteSuspense><NotificationsPage /></RouteSuspense>} />
-                            <Route path="/gestor/compras" element={<RouteSuspense><GestorComprasPage /></RouteSuspense>} />
-                            <Route path="/gestor/aprovacoes" element={<RouteSuspense><GestorApprovalsPage /></RouteSuspense>} />
                             <Route path="/pedidos/:id/auditoria" element={<RouteSuspense><OrderAuditPage /></RouteSuspense>} />
-                            <Route path="/admin/saude-testes" element={<RouteSuspense><TestDashboard /></RouteSuspense>} />
 
-                            {/* Fallback */}
-                            <Route path="*" element={<RouteSuspense><NotFound /></RouteSuspense>} />
                           </Route>
                         </Route>
                       </Routes>

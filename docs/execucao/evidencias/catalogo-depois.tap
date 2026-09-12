@@ -1,0 +1,178 @@
+TAP version 13
+# Subtest: bloqueia insert no contrato e nas permissões
+ok 1 - bloqueia insert no contrato e nas permissões
+  ---
+  duration_ms: 0.723169
+  type: 'test'
+  ...
+# Subtest: bloqueia insert oculto em lote
+ok 2 - bloqueia insert oculto em lote
+  ---
+  duration_ms: 0.10641
+  type: 'test'
+  ...
+# Subtest: bloqueia update no contrato e nas permissões
+ok 3 - bloqueia update no contrato e nas permissões
+  ---
+  duration_ms: 0.101092
+  type: 'test'
+  ...
+# Subtest: bloqueia update oculto em lote
+ok 4 - bloqueia update oculto em lote
+  ---
+  duration_ms: 0.831256
+  type: 'test'
+  ...
+# Subtest: bloqueia delete no contrato e nas permissões
+ok 5 - bloqueia delete no contrato e nas permissões
+  ---
+  duration_ms: 0.105048
+  type: 'test'
+  ...
+# Subtest: bloqueia delete oculto em lote
+ok 6 - bloqueia delete oculto em lote
+  ---
+  duration_ms: 0.052715
+  type: 'test'
+  ...
+# Subtest: bloqueia upsert no contrato e nas permissões
+ok 7 - bloqueia upsert no contrato e nas permissões
+  ---
+  duration_ms: 0.061984
+  type: 'test'
+  ...
+# Subtest: bloqueia upsert oculto em lote
+ok 8 - bloqueia upsert oculto em lote
+  ---
+  duration_ms: 0.043641
+  type: 'test'
+  ...
+# Subtest: bloqueia batch_insert no contrato e nas permissões
+ok 9 - bloqueia batch_insert no contrato e nas permissões
+  ---
+  duration_ms: 0.108844
+  type: 'test'
+  ...
+# Subtest: bloqueia batch_insert oculto em lote
+ok 10 - bloqueia batch_insert oculto em lote
+  ---
+  duration_ms: 0.192846
+  type: 'test'
+  ...
+# Subtest: bloqueia truncate no contrato e nas permissões
+ok 11 - bloqueia truncate no contrato e nas permissões
+  ---
+  duration_ms: 0.05604
+  type: 'test'
+  ...
+# Subtest: bloqueia truncate oculto em lote
+ok 12 - bloqueia truncate oculto em lote
+  ---
+  duration_ms: 0.104739
+  type: 'test'
+  ...
+# Subtest: bloqueia execute_sql no contrato e nas permissões
+ok 13 - bloqueia execute_sql no contrato e nas permissões
+  ---
+  duration_ms: 0.041423
+  type: 'test'
+  ...
+# Subtest: bloqueia execute_sql oculto em lote
+ok 14 - bloqueia execute_sql oculto em lote
+  ---
+  duration_ms: 0.04932
+  type: 'test'
+  ...
+# Subtest: preserva contrato de select
+ok 15 - preserva contrato de select
+  ---
+  duration_ms: 0.070898
+  type: 'test'
+  ...
+# Subtest: preserva contrato de ping
+ok 16 - preserva contrato de ping
+  ---
+  duration_ms: 0.022714
+  type: 'test'
+  ...
+# Subtest: preserva contrato de rpc
+ok 17 - preserva contrato de rpc
+  ---
+  duration_ms: 0.051512
+  type: 'test'
+  ...
+# Subtest: lote aceita apenas consultas explícitas ou implícitas
+ok 18 - lote aceita apenas consultas explícitas ou implícitas
+  ---
+  duration_ms: 0.152918
+  type: 'test'
+  ...
+# Subtest: RPCs de associação e preenchimento deixam de ser permitidas
+ok 19 - RPCs de associação e preenchimento deixam de ser permitidas
+  ---
+  duration_ms: 0.04272
+  type: 'test'
+  ...
+# Subtest: transporte impede POST antes de enviar dados
+ok 20 - transporte impede POST antes de enviar dados
+  ---
+  duration_ms: 14.337507
+  type: 'test'
+  ...
+# Subtest: transporte impede PUT antes de enviar dados
+ok 21 - transporte impede PUT antes de enviar dados
+  ---
+  duration_ms: 0.158867
+  type: 'test'
+  ...
+# Subtest: transporte impede PATCH antes de enviar dados
+ok 22 - transporte impede PATCH antes de enviar dados
+  ---
+  duration_ms: 0.118747
+  type: 'test'
+  ...
+# Subtest: transporte impede DELETE antes de enviar dados
+ok 23 - transporte impede DELETE antes de enviar dados
+  ---
+  duration_ms: 0.131828
+  type: 'test'
+  ...
+# Subtest: não encaminha credenciais à origem ou serviço indevido: outro.supabase.co
+ok 24 - não encaminha credenciais à origem ou serviço indevido: outro.supabase.co
+  ---
+  duration_ms: 0.12829
+  type: 'test'
+  ...
+# Subtest: não encaminha credenciais à origem ou serviço indevido: doufsxqlfjyuvxuezpln.supabase.co
+ok 25 - não encaminha credenciais à origem ou serviço indevido: doufsxqlfjyuvxuezpln.supabase.co
+  ---
+  duration_ms: 0.077714
+  type: 'test'
+  ...
+# Subtest: não encaminha credenciais à origem ou serviço indevido: doufsxqlfjyuvxuezpln.supabase.co.atacante.invalid
+ok 26 - não encaminha credenciais à origem ou serviço indevido: doufsxqlfjyuvxuezpln.supabase.co.atacante.invalid
+  ---
+  duration_ms: 0.040423
+  type: 'test'
+  ...
+# Subtest: consulta usa GET e recusa redirecionamento: products?select=id
+ok 27 - consulta usa GET e recusa redirecionamento: products?select=id
+  ---
+  duration_ms: 1.095804
+  type: 'test'
+  ...
+# Subtest: consulta usa GET e recusa redirecionamento: rpc/get_category_descendants?category_uuid=exemplo
+ok 28 - consulta usa GET e recusa redirecionamento: rpc/get_category_descendants?category_uuid=exemplo
+  ---
+  duration_ms: 0.1445
+  type: 'test'
+  ...
+1..28
+# tests 28
+# suites 0
+# pass 28
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 100.276036

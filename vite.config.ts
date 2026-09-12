@@ -38,21 +38,16 @@ export default defineConfig(({ mode }) => ({
     sourcemap: mode === 'production' ? false : true,
     minify: 'esbuild',
     target: 'esnext',
-    chunkSizeWarningLimit: 600, // Reduced for stricter CI bundle analysis
+    chunkSizeWarningLimit: 600,
 
     reportCompressedSize: true,
     
     rollupOptions: {
       output: {
         manualChunks(id) {
-          // Admin, Quotes, Sicoob — isolando rotas pesadas
-          if (id.includes('src/pages/admin/') || id.includes('src/pages/Admin/')) return 'admin-pages';
-          if (id.includes('src/pages/quotes/') || id.includes('src/pages/Quotes/')) return 'quotes-pages';
-          if (id.includes('src/pages/sicoob/') || id.includes('src/pages/Sicoob/')) return 'sicoob-pages';
-          
-          // Kit Builder & Trends — Heavy modules that were causing double-import warnings
-          if (id.includes('src/lib/kit-builder/') || id.includes('src/pages/KitBuilderPage.tsx')) return 'kit-builder';
-          if (id.includes('src/pages/trends/')) return 'trends-module';
+          // As páginas já usam imports dinâmicos. Forçar diretórios inteiros em
+          // chunks únicos reunia toda a administração em 1,5 MB e criava ciclos.
+          // O Rollup preserva agora os limites naturais de cada rota.
 
           // Core React & Router (Shared vendor)
           if (id.includes('node_modules/react/') || id.includes('node_modules/react-dom/') || id.includes('node_modules/scheduler/')) {
@@ -64,32 +59,10 @@ export default defineConfig(({ mode }) => ({
             return 'data-vendor';
           }
 
-          // Charts (Very heavy)
-          if (id.includes('node_modules/recharts/') || id.includes('node_modules/d3-')) {
-            return 'charts-vendor';
-          }
-
-          // UI & Icons (Radix is fine, lucide is big)
-          if (id.includes('node_modules/lucide-react/')) {
-            return 'icons-vendor';
-          }
-          
-          if (id.includes('node_modules/@radix-ui/')) {
-            return 'ui-vendor';
-          }
-
-          // Utilities (Forms, Dates, PDF, DnD)
-          if (id.includes('node_modules/jspdf') || id.includes('node_modules/html2canvas')) {
-            return 'pdf-vendor';
-          }
-
-          if (id.includes('node_modules/date-fns/')) {
-            return 'date-vendor';
-          }
-          
-          if (id.includes('node_modules/framer-motion/')) {
-            return 'motion-vendor';
-          }
+          // Bibliotecas utilizadas apenas em rotas (PDF, gráficos, ícones,
+          // Radix, datas e animações) permanecem no particionamento natural
+          // do Rollup. Agrupá-las aqui promovia dependências privadas para a
+          // entrada pública e fazia o login baixar módulos que não utiliza.
         },
       },
     },
@@ -98,6 +71,17 @@ export default defineConfig(({ mode }) => ({
   server: {
     port: 8080,
     host: "::",
+    watch: {
+      // Evidências geradas pelo Playwright não são código-fonte. Observá-las
+      // causava recargas da página durante o próprio smoke.
+      ignored: [
+        '**/e2e-artifacts/**',
+        '**/playwright-report/**',
+        '**/test-results/**',
+        '**/.lighthouseci/**',
+        '**/bundle-stats/**',
+      ],
+    },
     headers: {
       'Cache-Control': 'no-store',
     },

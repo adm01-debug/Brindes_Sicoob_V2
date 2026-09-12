@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState, useRef, useCallback, type ReactNode, useMemo } from "react";
 import { type User, type Session } from "@supabase/supabase-js";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase, supabaseUrl } from "@/integrations/supabase/client";
 import { logger } from "@/lib/logger";
 import { createClientLogger } from "@/lib/telemetry/structuredLogger";
 import { checkLoginAllowed, recordFailedAttempt, clearLoginAttempts } from "@/hooks/useLoginRateLimit";
@@ -36,6 +36,7 @@ interface AuthContextType {
   isSupervisor: boolean;
   isAgente: boolean;
   isSupervisorOrAbove: boolean; // dev OR supervisor OR gestor_compras
+  canManage: boolean;
   // IDs organizacionais
   cooperativaId: string | null;
   paId: string | null;
@@ -47,8 +48,9 @@ interface AuthContextType {
   nextAAL: 'aal1' | 'aal2' | null;
   hasMFA: boolean;
   mfaRequired: boolean;
-  /** True quando user_roles foi carregado com sucesso (≥1 role). False = ainda carregando ou falhou. */
+  /** Consulta de papéis encerrada; rolesError diferencia falha de ausência de papéis. */
   rolesLoaded: boolean;
+  rolesError: string | null;
   refreshAAL: () => Promise<void>;
   // Métodos
   signUp: (email: string, password: string, fullName: string) => Promise<{ error: Error | null }>;
@@ -61,12 +63,27 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+function hasPersistedSession(): boolean {
+  if (typeof localStorage === "undefined") return true;
+
+  try {
+    const projectRef = new URL(supabaseUrl).hostname.split(".")[0];
+    return Boolean(localStorage.getItem(`sb-${projectRef}-auth-token`));
+  } catch {
+    // Em configuração não convencional, preserva o fluxo conservador.
+    return true;
+  }
+}
+
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  // Sem sessão persistida, o formulário público pode aparecer no primeiro
+  // render; getSession continua confirmando o estado logo abaixo. Usuários com
+  // token salvo mantêm o bloqueio até a sessão e os papéis serem validados.
+  const [isLoading, setIsLoading] = useState(hasPersistedSession);
   
-  const { userRoles, rolesLoaded, fetchRoles, clearRoles } = useUserRoles();
+  const { userRoles, rolesLoaded, rolesError, fetchRoles, clearRoles } = useUserRoles();
   const { profile, fetchProfile, clearProfile } = useUserProfile();
   const { currentAAL, nextAAL, hasMFA, fetchAAL, clearAAL } = useAuthAAL();
 
@@ -342,6 +359,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     role,
     isDev,
     isGestorCompras,
+    isCompradorSingular,
     isGerentePa,
     isVendedor,
     isSupervisor,
@@ -357,6 +375,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     hasMFA,
     mfaRequired: nextAAL === 'aal2' && currentAAL !== 'aal2',
     rolesLoaded,
+    rolesError,
     refreshAAL: fetchAAL,
     signUp,
     signIn,
@@ -364,9 +383,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     refreshProfile,
     refreshSession,
   }), [
-    user, session, profile, isLoading, userRoles, role, isDev, isGestorCompras, 
-    isGerentePa, isVendedor, isSupervisor, isAgente, isSupervisorOrAbove, 
-    canManage, cooperativaId, paId, currentAAL, nextAAL, hasMFA, rolesLoaded, 
+    user, session, profile, isLoading, userRoles, role, isDev, isGestorCompras, isCompradorSingular, rolesError,
+    isGerentePa, isVendedor, isSupervisor, isAgente, isSupervisorOrAbove,
+    canManage, cooperativaId, paId, currentAAL, nextAAL, hasMFA, rolesLoaded,
     fetchAAL, refreshSession
   ]);
 

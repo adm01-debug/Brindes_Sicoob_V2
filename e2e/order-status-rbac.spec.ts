@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test';
 import fs from 'fs';
 import path from 'path';
+import { fileURLToPath } from 'url';
 import * as XLSX from '@e965/xlsx';
 import pdf from 'pdf-parse';
 
@@ -49,7 +50,8 @@ test.describe('Order RBAC and Status Flow E2E', () => {
     await page.click('text=Excel (.xlsx)');
     const download = await downloadPromise;
     
-    const filePath = path.join(__dirname, '../test-results', download.suggestedFilename());
+    const currentDir = path.dirname(fileURLToPath(import.meta.url));
+    const filePath = path.join(currentDir, '../test-results', download.suggestedFilename());
     await download.saveAs(filePath);
 
     const workbook = XLSX.readFile(filePath);

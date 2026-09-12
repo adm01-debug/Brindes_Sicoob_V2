@@ -38,7 +38,6 @@ export function renderHookWithProviders<TResult, TProps>(
         <QueryClientProvider client={queryClient}>
           <MemoryRouter
             initialEntries={[route]}
-            future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
           >
             <TooltipProvider>{children}</TooltipProvider>
           </MemoryRouter>

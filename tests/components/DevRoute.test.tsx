@@ -64,7 +64,6 @@ function renderProtected(initialPath: string) {
     <HelmetProvider>
       <MemoryRouter
         initialEntries={[initialPath]}
-        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
       >
         <PathProbe />
         <Routes>

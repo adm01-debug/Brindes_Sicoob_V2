@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { sicoobApprovalService } from "@/services/sicoob/approvalService";
 
 export interface ApprovalRequest {
   id: string;
@@ -125,33 +126,7 @@ export const useApprovalRequests = (orderId?: string) => {
         throw new Error("Permissão insuficiente para aprovar solicitações.");
       }
 
-      const { error: requestError } = await supabase
-        .from("sicoob_approval_requests")
-        .update({
-          status: 'approved',
-          approver_id: profile?.id,
-        })
-        .eq("id", payload.requestId);
-
-      if (requestError) throw requestError;
-
-      const { error: orderError } = await supabase
-        .from("sicoob_orders")
-        .update({ 
-          status: 'confirmed', 
-          approved_by: profile?.id,
-          approved_at: new Date().toISOString()
-        })
-        .eq("id", payload.orderId);
-
-      if (orderError) throw orderError;
-
-      await recordHistory(
-        payload.orderId, 
-        payload.previousStatus, 
-        'confirmed', 
-        'Solicitação de alçada aprovada por gestor'
-      );
+      await sicoobApprovalService.approveOrder(payload.requestId, payload.orderId);
     },
     onSuccess: () => {
       toast.success("Solicitação aprovada com sucesso");
@@ -170,30 +145,7 @@ export const useApprovalRequests = (orderId?: string) => {
         throw new Error("Permissão insuficiente para rejeitar solicitações.");
       }
 
-      const { error: requestError } = await supabase
-        .from("sicoob_approval_requests")
-        .update({
-          status: 'rejected',
-          approver_id: profile?.id,
-          rejection_reason: payload.reason
-        })
-        .eq("id", payload.requestId);
-
-      if (requestError) throw requestError;
-
-      const { error: orderError } = await supabase
-        .from("sicoob_orders")
-        .update({ status: 'rejected' })
-        .eq("id", payload.orderId);
-
-      if (orderError) throw orderError;
-
-      await recordHistory(
-        payload.orderId, 
-        payload.previousStatus, 
-        'rejected', 
-        `Solicitação de alçada rejeitada: ${payload.reason}`
-      );
+      await sicoobApprovalService.rejectOrder(payload.requestId, payload.orderId, payload.reason);
     },
     onSuccess: () => {
       toast.success("Solicitação rejeitada");

@@ -1,0 +1,63 @@
+{
+  "data": "2026-09-11",
+  "rota": "/login",
+  "ferramenta": "Lighthouse CI 0.13.0",
+  "execucoes": 3,
+  "limites": {
+    "performance_minima": 0.9,
+    "acessibilidade_minima": 0.9,
+    "boas_praticas_minima": 0.9,
+    "seo_minimo": 0.9,
+    "lcp_maximo_ms": 2500,
+    "tbt_maximo_ms": 300,
+    "cls_maximo": 0.1
+  },
+  "resultados": [
+    {
+      "performance": 0.96,
+      "acessibilidade": 1,
+      "boas_praticas": 1,
+      "seo": 0.93,
+      "fcp_ms": 2134,
+      "lcp_ms": 2291,
+      "tbt_ms": 48,
+      "cls": 0,
+      "bytes_transferidos": 269537
+    },
+    {
+      "performance": 0.96,
+      "acessibilidade": 1,
+      "boas_praticas": 1,
+      "seo": 0.93,
+      "fcp_ms": 2130,
+      "lcp_ms": 2286,
+      "tbt_ms": 36,
+      "cls": 0,
+      "bytes_transferidos": 269537
+    },
+    {
+      "performance": 0.93,
+      "acessibilidade": 1,
+      "boas_praticas": 1,
+      "seo": 0.93,
+      "fcp_ms": 2122,
+      "lcp_ms": 2276,
+      "tbt_ms": 22,
+      "cls": 0,
+      "bytes_transferidos": 269537
+    }
+  ],
+  "medianas_calculadas_do_registro_local": {
+    "performance": 0.96,
+    "acessibilidade": 1,
+    "boas_praticas": 1,
+    "seo": 0.93,
+    "fcp_ms": 2130,
+    "lcp_ms": 2286,
+    "tbt_ms": 36,
+    "cls": 0,
+    "bytes_transferidos": 269537
+  },
+  "resultado": "aprovado",
+  "limite_da_evidencia": "Resumo local; não contém os relatórios brutos das três execuções. A configuração não define explicitamente agregação por mediana. A revisão preservou os valores registrados, inclusive performance 0,93 na terceira execução, sem substituir por valor não rastreável. Não comprova desempenho de campo ou de páginas autenticadas."
+}

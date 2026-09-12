@@ -1,40 +1,69 @@
-# E2E Smoke Test Coverage Matrix (v2026-05)
+# Auditoria de cobertura — Smoke E2E
 
-Este documento mapeia os fluxos críticos da plataforma e o status de automação de testes E2E (Playwright).
+> **Gerado automaticamente** por `scripts/e2e-smoke-coverage-doc.mjs` em 2026-09-11.
+> **Não edite à mão** — a fonte de verdade é `e2e/routes/_catalog.ts` + `SMOKE_COVERAGE` em `e2e/flows/20-all-features-smoke.spec.ts`.
 
-## 1. Fluxo de Autenticação
-| ID | Cenário | Status | Tag |
+## Resumo
+
+| Métrica | Valor |
+|---|---|
+| Rotas no catálogo | **57** |
+| Rotas `smoke: true` | **32** |
+| Features autenticadas cobertas | **30** |
+| Smoke público (sem auth) | **2** |
+
+Suíte: [`e2e/flows/20-all-features-smoke.spec.ts`](../e2e/flows/20-all-features-smoke.spec.ts) · Project Playwright: `chromium-smoke` (workers=1, retries=0).
+
+## Smoke autenticado — features × rotas
+
+Ordem do array `SMOKE_COVERAGE`. Numeração bate com os títulos `NN · Nome` no relatório do Playwright.
+
+| # | Feature | Descrição | Rota | Restrição |
+|---|---|---|---|---|
+| `01` | `dashboard-home` | Dashboard inicial | `/` | — |
+| `02` | `dashboard-custom` | Dashboard customizável | `/dashboard` | — |
+| `03` | `catalog` | Catálogo de produtos | `/produtos` | — |
+| `04` | `catalog-filters` | Filtros avançados | `/filtros` | — |
+| `05` | `news` | Novidades | `/novidades` | — |
+| `06` | `trends` | Tendências | `/tendencias` | — |
+| `07` | `favorites` | Favoritos | `/favoritos` | — |
+| `08` | `collections` | Coleções | `/colecoes` | — |
+| `09` | `comparison` | Comparador de produtos | `/comparar` | — |
+| `10` | `carts` | Carrinhos do vendedor | `/carrinhos` | — |
+| `11` | `quotes-list` | Lista de orçamentos | `/orcamentos` | — |
+| `12` | `quotes-dashboard` | Dashboard de orçamentos | `/orcamentos/dashboard` | — |
+| `13` | `quotes-kanban` | Funil (Kanban) de orçamentos | `/orcamentos/kanban` | — |
+| `14` | `quotes-templates` | Templates de orçamento | `/orcamentos/templates` | — |
+| `15` | `quote-new` | Criar novo orçamento (wizard) | `/orcamentos/novo` | — |
+| `16` | `simulator` | Simulador (wizard) | `/simulador` | — |
+| `17` | `price-simulator` | Simulador de preços | `/simulador-precos` | — |
+| `18` | `price-search` | Busca avançada de preço | `/busca-preco` | — |
+| `19` | `stock` | Estoque | `/estoque` | — |
+| `20` | `restock` | Reposição | `/reposicao` | — |
+| `21` | `kit-builder` | Kit Builder | `/montar-kit` | — |
+| `22` | `my-kits` | Meus Kits | `/meus-kits` | — |
+| `23` | `mockup-generator` | Gerador de Mockup | `/mockup-generator` | — |
+| `24` | `mockup-history` | Histórico de Mockups | `/mockups/historico` | — |
+| `25` | `magic-up` | Magic Up (publicidade IA) | `/magic-up` | — |
+| `26` | `commercial-intel` | Inteligência comercial | `/inteligencia-comercial` | — |
+| `27` | `bi` | Business Intelligence | `/ferramentas/bi` | — |
+| `28` | `bi-compare` | BI — Comparador de clientes | `/ferramentas/bi/comparar` | — |
+| `29` | `match` | Match de produtos | `/match` | — |
+| `30` | `dropbox` | Dropbox browser | `/dropbox` | — |
+
+## Smoke público (sem auth)
+
+| # | Feature | Descrição | Rota |
 |---|---|---|---|
-| AUTH-01 | Login com credenciais válidas | ✅ Coberto | `@smoke` |
-| AUTH-02 | Bloqueio após 5 tentativas falhas | ✅ Coberto | `@security` |
-| AUTH-03 | Recuperação de senha em 3 fases | ✅ Coberto | `@auth` |
-| AUTH-04 | Login Social (Google) | ⚠️ Pendente | `@external` |
+| `90` | `login` | Tela de login | `/login` |
+| `91` | `reset-password` | Recuperação de senha | `/reset-password` |
 
-## 2. Fluxo Sicoob (Workflow Alçada)
-| ID | Cenário | Status | Tag |
-|---|---|---|---|
-| SICOOB-01 | Criação de pedido dentro do limite | ✅ Coberto | `@smoke` `@sicoob` |
-| SICOOB-02 | Bloqueio de pedido acima do limite | ✅ Coberto | `@smoke` `@sicoob` |
-| SICOOB-03 | Aprovação de pedido pelo Gestor | ✅ Coberto | `@sicoob` `@manager` |
-| SICOOB-04 | Rejeição de pedido pelo Gestor | ✅ Coberto | `@sicoob` `@manager` |
-| SICOOB-05 | Notificação de status de aprovação | ⚠️ Em progresso | `@notif` |
+## Governança
 
-## 3. Catálogo & Carrinho
-| ID | Cenário | Status | Tag |
-|---|---|---|---|
-| CAT-01 | Busca de produto por palavra-chave | ✅ Coberto | `@smoke` |
-| CAT-02 | Filtro por cor/tamanho | ✅ Coberto | `@catalog` |
-| CAT-03 | Adição de kit personalizado ao carrinho | ✅ Coberto | `@kit` |
-| CAT-04 | Aplicação de desconto por volume | ✅ Coberto | `@pricing` |
+✅ Nenhuma rota `smoke: true` órfã (todas listadas em `SMOKE_COVERAGE`).
 
-## 4. Admin & Telemetria
-| ID | Cenário | Status | Tag |
-|---|---|---|---|
-| ADM-01 | Acesso restrito a rotas admin | ✅ Coberto | `@security` |
-| ADM-02 | Visualização de logs de auditoria | ✅ Coberto | `@audit` |
-| ADM-03 | Configuração de verbas por PA | ✅ Coberto | `@sicoob` |
-| ADM-04 | Exportação de logs CSV/PDF | ✅ Coberto | `@telemetry` |
+✅ Nenhuma feature fantasma em `SMOKE_COVERAGE`.
 
 ---
-**Status Geral: 85% de Cobertura Crítica**
-*Atualizado em: 2026-05-03*
+_Para regenerar:_ `node scripts/e2e-smoke-coverage-doc.mjs`
+_Para validar no CI:_ `node scripts/e2e-smoke-coverage-doc.mjs --check`

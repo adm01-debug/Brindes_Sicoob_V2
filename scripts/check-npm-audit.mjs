@@ -2,22 +2,8 @@ import { execSync } from 'child_process';
 
 console.log('🛡️  SECURITY GATE: Running npm audit...');
 
-/**
- * Allowlist of build-time-only packages whose critical/high advisories do NOT
- * reach the production bundle and cannot be remediated without a breaking
- * toolchain upgrade.
- *
- * - esbuild: pulled transitively by `vite` (a devDependency). Its advisories
- *   (GHSA-67mh-4wv8-2f99 dev-server, GHSA-gv7w-rqvm-qjhr Deno module) only
- *   affect the local dev server / Deno usage, never the shipped assets.
- *   The only available fix forces vite@8, which is incompatible with
- *   @vitejs/plugin-react-swc and lovable-tagger.
- * - lovable-tagger: dev-only Vite plugin; flagged "high" solely because it
- *   depends on esbuild (transitive of the entry above).
- *
- * Real production-runtime vulnerabilities are still enforced below.
- */
-const ALLOWLIST = new Set(['esbuild', 'lovable-tagger']);
+// Sem exceções por pacote: vulnerabilidades altas ou críticas bloqueiam o build.
+const ALLOWLIST = new Set();
 
 function summarize(jsonStr) {
   let audit;
@@ -51,8 +37,8 @@ try {
 
 const result = summarize(raw);
 if (!result) {
-  console.warn('⚠️  Could not parse audit output (likely running under bun). Skipping gate.');
-  process.exit(0);
+  console.error('Falha ao obter auditoria válida. O gate permanece bloqueado.');
+  process.exit(2);
 }
 
 if (result.allowlisted.length > 0) {

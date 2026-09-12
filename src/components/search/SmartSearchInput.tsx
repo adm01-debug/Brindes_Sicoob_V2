@@ -27,6 +27,7 @@ interface SmartSearchInputProps {
   onSearch?: (query: string) => void;
   className?: string;
   autoFocus?: boolean;
+  historyScope?: string;
 }
 
 export const SmartSearchInput = forwardRef<HTMLDivElement, SmartSearchInputProps>(function SmartSearchInput({
@@ -35,6 +36,7 @@ export const SmartSearchInput = forwardRef<HTMLDivElement, SmartSearchInputProps
   onSearch,
   className,
   autoFocus = false,
+  historyScope,
 }, _ref) {
   const navigate = useNavigate();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -47,7 +49,7 @@ export const SmartSearchInput = forwardRef<HTMLDivElement, SmartSearchInputProps
   const {
     query, setQuery, suggestions, quickSuggestions,
     history, addToHistory, removeFromHistory, clearHistory,
-  } = useSearch();
+  } = useSearch([], historyScope);
 
   const debouncedQuery = useDebounce(query, 150);
 

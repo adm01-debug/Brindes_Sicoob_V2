@@ -1,12 +1,8 @@
-import { useState, useMemo, useCallback, useEffect } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 // import { MainLayout } from "@/components/layout/MainLayout";
 import { PageSEO } from "@/components/seo/PageSEO";
 import { Button } from "@/components/ui/button";
-import { 
-  Avatar, 
-  AvatarFallback 
-} from "@/components/ui/avatar";
 import { 
   ArrowLeft, 
   Package, 
@@ -80,7 +76,6 @@ import { OrderItemsHistory } from "@/components/sicoob/orders/OrderItemsHistory"
 import { SLABadge } from "@/components/sicoob/orders/SLABadge";
 import { OrderAuditTimeline } from "@/components/sicoob/orders/OrderAuditTimeline";
 import { 
-  useOrderLogistics, 
   useOrderInvoices, 
   useOrderPayments, 
   useOrderPilotApprovals,
@@ -97,7 +92,6 @@ import { OrderBudgetIntelligence } from "@/components/sicoob/orders/OrderBudgetI
 import { LogisticsCommandCenter } from "@/components/sicoob/orders/LogisticsCommandCenter";
 import { OneClickReorder } from "@/components/orders/OneClickReorder";
 import { OrderAddItemDialog } from "@/components/sicoob/orders/OrderAddItemDialog";
-import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -116,19 +110,6 @@ export default function OrderDetailPage() {
   const [_unused_Badge, set_unused_Badge] = useState(Badge);
   const [_unused_Tooltip, set_unused_Tooltip] = useState(Tooltip);
 
-  const [activeViewers, setActiveViewers] = useState(1);
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setActiveViewers(prev => {
-        const change = Math.random() > 0.5 ? 1 : -1;
-        const newVal = prev + change;
-        return newVal < 1 ? 1 : newVal > 5 ? 5 : newVal;
-      });
-    }, 15000);
-    return () => clearInterval(timer);
-  }, []);
-
   const [requestReason, setRequestReason] = useState("");
   const [rejectionReason, setRejectionReason] = useState("");
   const [isRequestDialogOpen, setIsRequestDialogOpen] = useState(false);
@@ -146,7 +127,6 @@ export default function OrderDetailPage() {
   const updateOrderStatusMutation = useUpdateSicoobOrderStatus();
   
   // Extension hooks
-  const { logistics, updateLogistics } = useOrderLogistics(id);
   const { invoices, addInvoice, uploadFile } = useOrderInvoices(id);
   const { payments } = useOrderPayments(id);
   const { approvals, updateApprovalStatus } = useOrderPilotApprovals(id);
@@ -357,14 +337,6 @@ export default function OrderDetailPage() {
             </div>
             <div className="flex items-center gap-3 mt-1">
                <p className="text-xs text-muted-foreground">ID: <span className="font-mono font-bold">#{orderData.id.slice(0, 8)}</span> • Criado em {new Date(orderData.created_at).toLocaleString('pt-BR')}</p>
-               <Separator orientation="vertical" className="h-3" />
-               <div className="flex items-center gap-1.5">
-                  <div className="flex -space-x-2 mr-2">
-                     <Avatar className="h-5 w-5 border-2 border-background"><AvatarFallback className="text-[6px] bg-indigo-100">JD</AvatarFallback></Avatar>
-                     <Avatar className="h-5 w-5 border-2 border-background"><AvatarFallback className="text-[6px] bg-amber-100">MS</AvatarFallback></Avatar>
-                  </div>
-                  <span className="text-[10px] text-indigo-600 font-bold animate-pulse">{activeViewers} {activeViewers === 1 ? 'gestor visualizando' : 'gestores visualizando'} agora</span>
-               </div>
             </div>
           </div>
           <div className="ml-auto flex gap-2">
@@ -655,7 +627,7 @@ export default function OrderDetailPage() {
 
               {allowedTabs.includes("logistics") && (
                 <TabsContent value="logistics" className="pt-6">
-                  <OrderLogisticsTab orderId={id!} />
+                    <OrderLogisticsTab orderId={id!} orderStatus={orderData.status} />
                 </TabsContent>
               )}
 

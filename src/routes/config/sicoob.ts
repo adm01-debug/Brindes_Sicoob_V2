@@ -5,7 +5,6 @@ import { sicoobRbacRoutes } from "./sicoob-rbac";
 
 export const sicoobRoutes = [
   ...sicoobRbacRoutes,
-  defineRoute({ path: "/admin/sicoob", component: lazyWithRetry(() => import("@/pages/admin/sicoob/SicoobManagementPage")) }),
   defineRoute({ path: "/sicoob/pedidos", component: lazyWithRetry(() => import("@/pages/sicoob/orders/OrdersPage")) }),
   defineRoute({ path: "/sicoob/pedidos/kanban", component: lazyWithRetry(() => import("@/pages/sicoob/orders/OrdersKanbanPage")) }),
   defineRoute({ path: "/sicoob/pedidos/:id", component: lazyWithRetry(() => import("@/pages/sicoob/orders/OrderDetailPage")) }),

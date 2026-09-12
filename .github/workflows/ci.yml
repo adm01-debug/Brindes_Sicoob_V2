@@ -1,57 +1,90 @@
-name: CI Quality Gate
+name: Qualidade contínua
 
 on:
   push:
-    branches: [ main, master, develop ]
+    branches: [main, develop]
   pull_request:
-    branches: [ main, master, develop ]
+    branches: [main, develop]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: qualidade-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  quality-gate:
+  qualidade:
+    name: Segurança, contratos e build
     runs-on: ubuntu-latest
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
-      
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v1
         with:
-          bun-version: latest
+          fetch-depth: 0
 
-      - name: Install Dependencies
-        run: bun install
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
 
-      # Enquanto a dívida de tipagem (strict + noUncheckedIndexedAccess) é
-      # zerada arquivo a arquivo, o gate compara com `.typecheck-baseline.json`:
-      # nenhum arquivo pode piorar e arquivos novos precisam nascer limpos.
-      # Quando o baseline chegar a 0, trocar por `bun run typecheck`.
-      - name: Typecheck (baseline gate)
-        run: bun run typecheck:baseline
+      - name: Instalar dependências reproduzíveis
+        run: npm ci
 
-      - name: Edge Authorization Gate
-        run: node scripts/check-edge-authorization.mjs
+      - name: Bloquear regressões conhecidas de tipagem
+        run: npm run typecheck:baseline
 
-      - name: Unit, Integration & Fuzz Tests
+      - name: Bloquear regressões de lint contra a branch-base
+        run: npm run lint:baseline
+
+      - name: Verificar dependências e autorização das Edge Functions
         run: |
-          bun run test:coverage:ci
-          bun run test:fuzzing
+          npm run check:npm-audit
+          node scripts/check-edge-authorization.mjs
 
-      - name: Webhook Simulation & Load Test
+      - name: Executar cenários de arquitetura e segurança
+        run: npm run test:scenarios
+
+      - name: Executar testes críticos de sessão, acesso e pedidos
+        run: >-
+          npx vitest run
+          tests/components/pages/Auth.test.tsx
+          tests/components/ProtectedRoute.test.tsx
+          tests/components/AdminRoute.test.tsx
+          tests/components/DevRoute.test.tsx
+          tests/hooks/useUserRoles-race.test.tsx
+          tests/sicoob/route-access-scenarios.test.tsx
+          tests/services/sicoobOrderService.test.ts
+
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+
+      - name: Verificar tipos das funções de fronteira alteradas
         run: |
-          bun run test:simulation
-          bun run test:load
+          deno check supabase/functions/external-db-bridge/index.ts
+          deno check supabase/functions/external-db-inspect/index.ts
+          deno check supabase/functions/categories-api/index.ts
+          deno check supabase/functions/materials-api/index.ts
+          deno check supabase/functions/commemorative-dates/index.ts
+          deno check supabase/functions/health-check/index.ts
+          deno check supabase/functions/expert-chat/index.ts
+          deno check supabase/functions/auth-integrity-check/index.ts
+
+      - name: Simular atomicidade da verba em PostgreSQL descartável
+        run: python3 scripts/qa/simular-verba-atomica.py
+
+      - name: Compilar artefato de produção
         env:
-          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
-          WEBHOOK_HMAC_SECRET: ${{ secrets.WEBHOOK_HMAC_SECRET }}
-
-      - name: Edge Function Tests
-        run: deno test --allow-all supabase/functions/tests/
-
-
-
-      - name: Build Check
-        run: bun run build
-
-      - name: E2E Tests (Smoke)
+          VITE_SUPABASE_URL: http://127.0.0.1:59999
+          VITE_SUPABASE_PUBLISHABLE_KEY: chave-sintetica-apenas-para-build
         run: |
-          npx playwright install --with-deps chromium
-          bun run smoke
+          npm run build
+          if grep -R --include='*.js' -F 'Demonstração local · dados fictícios' dist; then
+            echo 'A demonstração local foi incluída no artefato de produção.' >&2
+            exit 1
+          fi
+          if find dist -type f -name 'produtos-grid-v1*' | grep -q .; then
+            echo 'Um ativo com produtos fictícios foi incluído no artefato de produção.' >&2
+            exit 1
+          fi

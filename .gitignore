@@ -41,6 +41,7 @@ e2e/.auth/
 
 # TypeScript incremental build artifacts
 *.tsbuildinfo
+tsconfig.probe.*.json
 
 # Deno lock files — generated por `deno check`/`deno test` localmente.
 # Edge functions são deployadas pelo Lovable Cloud sem necessidade de

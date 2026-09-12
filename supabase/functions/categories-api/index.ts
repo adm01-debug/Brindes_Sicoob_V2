@@ -1,3 +1,4 @@
+import { createReadOnlyCatalogFetch } from "../_shared/external-read-only.ts";
 import { getCorsHeaders } from '../_shared/cors.ts';
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 import { z } from '../_shared/zod-validate.ts';
@@ -22,7 +23,7 @@ Deno.serve(async (req) => {
       throw new Error('Missing external database configuration');
     }
 
-    const externalClient = createClient(externalUrl, externalKey);
+    const externalClient = createClient(externalUrl, externalKey, { global: { fetch: createReadOnlyCatalogFetch() } });
 
     const rawBody = await req.json().catch(() => ({}));
     const parsed = CategoriesRequestSchema.safeParse(rawBody);

@@ -2,10 +2,9 @@ import { ProductCard } from "./ProductCard";
 import { ProductGridSkeleton } from "./ProductCardSkeleton";
 import type { Product } from "@/hooks/useProducts";
 import type { ActiveColorFilter } from "@/utils/color-image-resolver";
-import { useEffect, useState, useRef, useMemo, memo, useCallback } from "react";
+import { useEffect, useState, useRef, memo, useCallback } from "react";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { SelectionCheckbox } from "@/components/common/SelectionCheckbox";
-import { useVirtualizer } from "@tanstack/react-virtual";
 import { cn } from "@/lib/utils";
 
 export interface ProductGridProps {
@@ -142,44 +141,6 @@ export function ProductGrid({
   onToggleSelect,
 }: ProductGridProps) {
   const [isGridVisible, setIsGridVisible] = useState(false);
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  // Determinar número de colunas baseado no viewport (breakpoints Tailwind padrão)
-  const [currentCols, setCurrentCols] = useState(columns);
-  
-  useEffect(() => {
-    let timeoutId: number;
-    const updateCols = () => {
-      const width = window.innerWidth;
-      let newCols = columns;
-      if (width < 640) newCols = 2;
-      else if (width < 1024) newCols = 3;
-      else if (width < 1280) newCols = Math.min(columns, 4);
-      
-      setCurrentCols((prev) => prev !== newCols ? newCols : prev);
-    };
-    
-    updateCols();
-    const handleResize = () => {
-      cancelAnimationFrame(timeoutId);
-      timeoutId = requestAnimationFrame(updateCols);
-    };
-    window.addEventListener('resize', handleResize);
-    return () => {
-      window.removeEventListener('resize', handleResize);
-      cancelAnimationFrame(timeoutId);
-    };
-  }, [columns]);
-
-  const rowCount = useMemo(() => Math.ceil(products.length / currentCols), [products.length, currentCols]);
-  
-  const virtualizer = useVirtualizer({
-    count: rowCount,
-    getScrollElement: () => containerRef.current,
-    estimateSize: () => 480, // Estimativa de altura do card + gap
-    overscan: 3,
-  });
-
   useEffect(() => {
     setIsGridVisible(false);
     const timer = setTimeout(() => setIsGridVisible(true), 50);
@@ -210,66 +171,38 @@ export function ProductGrid({
     );
   }
 
-  const currentCol = currentCols;
-
   return (
     <div 
-      ref={containerRef}
-      className="relative w-full overflow-hidden"
+      className={`grid w-full ${columnClasses[columns] || columnClasses[5]} ${
+        columns >= 8 ? "gap-4" : columns >= 6 ? "gap-5" : "gap-6"
+      }`}
       role="grid"
       aria-label="Catálogo de produtos"
       aria-busy={!isGridVisible}
     >
-      <div
-        style={{
-          height: `${virtualizer.getTotalSize()}px`,
-          width: '100%',
-          position: 'relative',
-        }}
-      >
-        {virtualizer.getVirtualItems().map((virtualRow) => {
-          const startIndex = virtualRow.index * currentCol;
-          const rowProducts = products.slice(startIndex, startIndex + currentCol);
-
-          return (
-            <div
-              key={virtualRow.key}
-              className={`grid ${columnClasses[columns] || columnClasses[5]} absolute top-0 left-0 w-full ${
-                columns >= 8 ? 'gap-x-4 gap-y-8' : columns >= 6 ? 'gap-x-6 gap-y-8' : 'gap-x-8 gap-y-8'
-              }`}
-              role="row"
-              style={{
-                height: `${virtualRow.size}px`,
-                transform: `translateY(${virtualRow.start}px)`,
-              }}
-            >
-              {rowProducts.map((product, colIndex) => (
-                <ProductCardWrapper
-                  key={product.id}
-                  product={product}
-                  index={startIndex + colIndex}
-                  isVisible={isGridVisible}
-                  onClick={onProductClick ? () => onProductClick(product.id) : undefined}
-                  onView={onViewProduct}
-                  onShare={onShareProduct}
-                  onFavorite={onFavoriteProduct}
-                  isFavorited={isFavorite ? isFavorite(product.id) : false}
-                  onToggleFavorite={onToggleFavorite}
-                  isInCompare={isInCompare ? isInCompare(product.id) : false}
-                  onToggleCompare={onToggleCompare}
-                  canAddToCompare={canAddToCompare}
-                  highlightColors={highlightColors}
-                  hideCategoryBadges={hideCategoryBadges}
-                  activeColorFilter={activeColorFilter}
-                  selectionMode={selectionMode}
-                  selectedIds={selectedIds}
-                  onToggleSelect={onToggleSelect}
-                />
-              ))}
-            </div>
-          );
-        })}
-      </div>
+      {products.map((product, index) => (
+        <ProductCardWrapper
+          key={product.id}
+          product={product}
+          index={index}
+          isVisible={isGridVisible}
+          onClick={onProductClick ? () => onProductClick(product.id) : undefined}
+          onView={onViewProduct}
+          onShare={onShareProduct}
+          onFavorite={onFavoriteProduct}
+          isFavorited={isFavorite ? isFavorite(product.id) : false}
+          onToggleFavorite={onToggleFavorite}
+          isInCompare={isInCompare ? isInCompare(product.id) : false}
+          onToggleCompare={onToggleCompare}
+          canAddToCompare={canAddToCompare}
+          highlightColors={highlightColors}
+          hideCategoryBadges={hideCategoryBadges}
+          activeColorFilter={activeColorFilter}
+          selectionMode={selectionMode}
+          selectedIds={selectedIds}
+          onToggleSelect={onToggleSelect}
+        />
+      ))}
     </div>
   );
 }

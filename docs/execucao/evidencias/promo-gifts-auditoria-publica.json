@@ -1,0 +1,62 @@
+{
+  "coletado_em": "2026-09-11",
+  "url": "https://www.promogifts.com.br/",
+  "escopo": "Navegação pública e anônima; nenhuma credencial foi usada",
+  "viewports": [
+    { "largura": 1440, "tipo": "desktop" },
+    { "largura": 390, "tipo": "mobile" },
+    { "largura": 320, "tipo": "mobile estreito" }
+  ],
+  "login": {
+    "destino_spa": "/auth",
+    "altura_aproximada_mobile_px": 1676,
+    "violacoes_axe": [
+      { "id": "color-contrast", "impacto": "serious", "nos": 2 }
+    ],
+    "requisicao_anonima_com_erro": {
+      "endpoint": "get-visitor-info",
+      "status": 403
+    }
+  },
+  "carga_inicial_observada": {
+    "recursos_javascript": 43,
+    "javascript_transferido_kb_aproximado": 158,
+    "javascript_decodificado_kb_aproximado": 487,
+    "css_transferido_kb_aproximado": 57,
+    "css_decodificado_kb_aproximado": 397,
+    "total_transferido_kb_aproximado": 505,
+    "ttfb_ms_aproximado": 41,
+    "load_ms_aproximado": 570,
+    "natureza": "medição pontual de laboratório"
+  },
+  "seo_produto": {
+    "urls_no_sitemap": 7801,
+    "html_direto": "Shell genérico sem nome do produto",
+    "html_para_googlebot": "Shell genérico sem nome do produto",
+    "destino_depois_da_spa": "/auth",
+    "canonical_depois_da_spa": "/auth",
+    "robots_depois_da_spa": "index, follow"
+  },
+  "repositorio": {
+    "checkout_analisado": "ede2e0270555ef5c3a59e5a40454213d60cc17767",
+    "pr": "https://github.com/adm01-debug/Promo_Gifts_V4/pull/1857",
+    "estado_da_ci_na_coleta": "blocked",
+    "arquivos_src_ts_tsx": 2574,
+    "linhas_producao_ts_tsx": 459438,
+    "rotas": 124,
+    "edge_functions": 108,
+    "migrations_sql": 2982,
+    "workflows": 111,
+    "specs_e2e": 567,
+    "marcadores_skip_todo": 551
+  },
+  "dependencias_de_producao": {
+    "vulnerabilidades_altas": 2,
+    "cadeia": "pptxgenjs -> image-size",
+    "avisos": [
+      "GHSA-w3rx-r6r6-pgpr",
+      "GHSA-5p2g-fcmc-qvqq"
+    ]
+  },
+  "observacao": "Resultados temporais devem ser reconferidos; detalhes, método, limites e fontes constam no benchmark associado."
+}

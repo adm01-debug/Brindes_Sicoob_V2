@@ -37,7 +37,13 @@ export function KitSummary({ kitState, kitQuantity, kitName, onKitNameChange, on
   const pricing = calculateTotalKitPrice(box, items, personalization, kitQuantity);
   const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
   const personalizedCount = (personalization.box.enabled ? 1 : 0) + Object.values(personalization.items).filter(p => p.enabled).length;
-  const { alerts: stockAlerts, stockByProduct } = useKitStockValidation(items, box, kitQuantity);
+  const {
+    alerts: stockAlerts,
+    stockByProduct,
+    isLoading: isCheckingStock,
+    error: stockError,
+  } = useKitStockValidation(items, box, kitQuantity);
+  const canCreateQuote = kitState.isValid && !isCheckingStock && !stockError && stockAlerts.length === 0;
 
   return (
     <div className="space-y-6">
@@ -59,10 +65,18 @@ export function KitSummary({ kitState, kitQuantity, kitName, onKitNameChange, on
               {stockAlerts.map(alert => (
                 <li key={alert.itemId} className="text-sm flex items-center justify-between bg-background/50 rounded-lg p-2">
                   <div><p className="font-medium">{alert.isBox ? '📦 ' : ''}{alert.itemName}</p><p className="text-xs text-muted-foreground font-mono">{alert.sku}</p></div>
-                  <div className="text-right"><p className="text-sm"><span className="text-destructive font-bold">{alert.available}</span><span className="text-muted-foreground"> / {alert.required} necessários</span></p><p className="text-xs text-destructive">Faltam {alert.deficit} un.</p></div>
+                  <div className="text-right">{alert.reason === 'variant_required' ? <p className="text-xs text-destructive">Escolha uma cor/tamanho antes de criar o orçamento.</p> : <><p className="text-sm"><span className="text-destructive font-bold">{alert.available}</span><span className="text-muted-foreground"> / {alert.required} necessários</span></p><p className="text-xs text-destructive">Faltam {alert.deficit} un.</p></>}</div>
                 </li>
               ))}
             </ul>
+          </CardContent>
+        </Card>
+      )}
+
+      {stockError && (
+        <Card className="border-destructive bg-destructive/5">
+          <CardContent className="pt-6 text-sm text-destructive">
+            Não foi possível consultar o estoque agora. Tente novamente antes de criar o orçamento.
           </CardContent>
         </Card>
       )}
@@ -78,7 +92,7 @@ export function KitSummary({ kitState, kitQuantity, kitName, onKitNameChange, on
         </Card>
       )}
 
-      <KitActionsBar isValid={kitState.isValid} isAddingToQuote={isAddingToQuote} kitName={kitName} kitTag={kitState.identity?.tag} kitQuantity={kitQuantity} unitPrice={pricing.unitPrice} total={pricing.total} items={items} onAddToQuote={onAddToQuote} onExportPDF={onExportPDF} />
+      <KitActionsBar isValid={canCreateQuote} isAddingToQuote={isAddingToQuote} kitName={kitName} kitTag={kitState.identity?.tag} kitQuantity={kitQuantity} unitPrice={pricing.unitPrice} total={pricing.total} items={items} onAddToQuote={onAddToQuote} onExportPDF={onExportPDF} />
     </div>
   );
 }

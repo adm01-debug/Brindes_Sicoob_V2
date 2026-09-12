@@ -15,9 +15,11 @@ export interface StockAlert {
   available: number;
   deficit: number;
   isBox?: boolean;
+  reason?: 'insufficient_stock' | 'variant_required';
 }
 
 interface VariantStock {
+  id: string;
   product_id: string;
   stock_quantity: number | null;
   color_name: string | null;
@@ -32,16 +34,19 @@ export function useKitStockValidation(
     ...(box ? [box.id] : []),
     ...items.map(i => i.id),
   ];
+  const selectedVariantIds = items
+    .map(item => item.selectedVariantId)
+    .filter((id): id is string => Boolean(id));
 
-  const { data: stockData, isLoading } = useQuery({
-    queryKey: ['kit-stock-validation', productIds.join(',')],
+  const { data: stockData, isLoading, error } = useQuery({
+    queryKey: ['kit-stock-validation', productIds.join(','), selectedVariantIds.join(',')],
     queryFn: async () => {
       if (productIds.length === 0) return [];
 
       const result = await invokeExternalDb<VariantStock>({
         table: 'product_variants',
         operation: 'select',
-        select: 'product_id, stock_quantity, color_name',
+        select: 'id, product_id, stock_quantity, color_name',
         filters: { product_id: productIds, is_active: true },
         limit: 500,
       });
@@ -53,12 +58,15 @@ export function useKitStockValidation(
     refetchOnWindowFocus: false,
   });
 
-  // Aggregate stock per product (sum all variant stocks)
+  // O resumo por produto atende caixas e cards. Para itens com uma variante
+  // selecionada, a disponibilidade abaixo usa exclusivamente o SKU escolhido.
   const stockByProduct = new Map<string, number>();
+  const stockByVariant = new Map<string, number>();
   if (stockData) {
     for (const v of stockData) {
       const current = stockByProduct.get(v.product_id) || 0;
       stockByProduct.set(v.product_id, current + (v.stock_quantity ?? 0));
+      stockByVariant.set(v.id, v.stock_quantity ?? 0);
     }
   }
 
@@ -83,10 +91,28 @@ export function useKitStockValidation(
       }
     }
 
-    // Check item stocks
+    // Itens substituíveis precisam de uma variante explícita. Somar cores ou
+    // tamanhos diferentes mascara a indisponibilidade do SKU pedido.
     for (const item of items) {
-      const available = stockByProduct.get(item.id) ?? 0;
       const required = item.quantity * kitQuantity;
+      const requiresVariant = Boolean(item.isReplaceable && item.allowedVariantIds?.length);
+
+      if (requiresVariant && !item.selectedVariantId) {
+        alerts.push({
+          itemId: item.id,
+          itemName: item.name,
+          sku: item.sku,
+          required,
+          available: 0,
+          deficit: required,
+          reason: 'variant_required',
+        });
+        continue;
+      }
+
+      const available = item.selectedVariantId
+        ? (stockByVariant.get(item.selectedVariantId) ?? 0)
+        : (stockByProduct.get(item.id) ?? 0);
       if (available < required) {
         alerts.push({
           itemId: item.id,
@@ -95,6 +121,7 @@ export function useKitStockValidation(
           required,
           available,
           deficit: required - available,
+          reason: 'insufficient_stock',
         });
       }
     }
@@ -103,6 +130,7 @@ export function useKitStockValidation(
   return {
     alerts,
     isLoading,
+    error,
     stockByProduct,
     hasStockIssues: alerts.length > 0,
   };

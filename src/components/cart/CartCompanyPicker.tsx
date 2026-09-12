@@ -129,7 +129,7 @@ export function CartCompanyPicker({ onCreated, onCancel }: CartCompanyPickerProp
   return (
     <div className="space-y-2">
       <div className="flex items-center gap-2 px-1">
-        <h4 className="text-sm font-semibold flex-1">Nova empresa</h4>
+        <h4 className="text-sm font-semibold flex-1">Selecione a cooperativa ou unidade</h4>
         {onCancel && (
           <Button variant="ghost" size="sm" className="h-6 text-xs" onClick={onCancel}>
             Cancelar
@@ -143,7 +143,7 @@ export function CartCompanyPicker({ onCreated, onCancel }: CartCompanyPickerProp
           ref={inputRef}
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          placeholder="Buscar empresa..."
+          placeholder="Buscar cooperativa ou unidade…"
           className="h-8 pl-8 text-sm"
         />
         {isLoading && (
@@ -167,7 +167,7 @@ export function CartCompanyPicker({ onCreated, onCancel }: CartCompanyPickerProp
               {company.logo_url ? (
                 <img
                   src={company.logo_url}
-                  alt="Logo da empresa"
+                  alt="Logo da cooperativa ou unidade"
                   className="w-6 h-6 rounded object-contain bg-background border border-border flex-shrink-0" loading="lazy" />
               ) : (
                 <div className="w-6 h-6 rounded bg-muted flex items-center justify-center flex-shrink-0">
@@ -186,7 +186,7 @@ export function CartCompanyPicker({ onCreated, onCancel }: CartCompanyPickerProp
           ))}
           {filteredCompanies.length === 0 && !isLoading && (
             <p className="text-xs text-muted-foreground text-center py-4">
-              Nenhuma empresa encontrada
+              Nenhuma cooperativa ou unidade encontrada
             </p>
           )}
         </div>

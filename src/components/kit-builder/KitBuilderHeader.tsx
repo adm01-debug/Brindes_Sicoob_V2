@@ -28,6 +28,8 @@ interface KitBuilderHeaderProps {
   isSaving: boolean;
   isAutoSaving: boolean;
   lastSavedAt: Date | null;
+  autoSaveError?: string | null;
+  onRetryAutoSave?: () => void;
   hasContent: boolean;
   isExistingKit: boolean;
   canUndo: boolean;
@@ -48,7 +50,7 @@ interface KitBuilderHeaderProps {
 }
 
 export function KitBuilderHeader({
-  kitName, onKitNameChange, isValid, isSaving, isAutoSaving, lastSavedAt, hasContent, isExistingKit,
+  kitName, onKitNameChange, isValid, isSaving, isAutoSaving, lastSavedAt, autoSaveError, onRetryAutoSave, hasContent, isExistingKit,
   canUndo, canRedo, identity, onIdentityChange, onSave, onUndo, onRedo, onReset, onAIApply,
   kitState, templateId, currentKitId,
 }: KitBuilderHeaderProps) {
@@ -117,6 +119,11 @@ export function KitBuilderHeader({
                 <Badge variant="outline" className="text-[10px] gap-1 h-5">
                   <Loader2 className="h-2.5 w-2.5 animate-spin" /> Salvando…
                 </Badge>
+              )}
+              {autoSaveError && !isAutoSaving && (
+                <Button variant="outline" size="sm" className="h-5 px-1.5 text-[10px] text-destructive" onClick={onRetryAutoSave}>
+                  Falha ao salvar — tentar novamente
+                </Button>
               )}
               {isValid && hasContent && !isAutoSaving && (
                 <Badge className="text-[10px] gap-1 h-5 bg-success/15 text-success border-success/30 hover:bg-success/20">

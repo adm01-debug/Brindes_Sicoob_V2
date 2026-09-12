@@ -37,7 +37,7 @@ try {
   const scoped = lines.filter((l) => files.some((f) => l.startsWith(f)));
   for (const l of scoped) console.log(l);
   console.log(`\n— ${scoped.length} erro(s) nos arquivos pedidos (${lines.length} no programa inteiro).`);
-  process.exit(scoped.length === 0 ? 0 : 1);
+  process.exitCode = scoped.length === 0 ? 0 : 1;
 } finally {
   try {
     unlinkSync(cfgPath);

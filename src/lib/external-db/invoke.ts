@@ -6,7 +6,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { logger } from "@/lib/logger";
 import { emitBridgeStatus, isColdStartSignal } from './bridge-status-events';
 import { ensureCloudReady, CloudNotReadyError, getCachedCloudStatus } from '@/lib/cloud-status';
-import { recordBridgeCall, estimatePayloadBytes } from '@/lib/telemetry/bridgeCallMetrics';
+import { recordBridgeCall, estimatePayloadBytes, type BridgeOperation } from '@/lib/telemetry/bridgeCallMetrics';
 import { newRequestId, REQUEST_ID_HEADER, newTraceparent, TRACEPARENT_HEADER } from '@/lib/telemetry/requestId';
 import { getCircuitBreaker } from '@/lib/circuit-breaker';
 
@@ -47,14 +47,13 @@ export interface InvokeResult<T> {
   count?: number | null;
   [key: string]: unknown;
 }
-
-
-function deriveExternalOp(body: Record<string, unknown>): { op: string; target?: string } {
+function deriveExternalOp(body: Record<string, unknown>): { op: BridgeOperation; target?: string } {
   const operation = typeof body.operation === 'string' ? body.operation : undefined;
   const table = typeof body.table === 'string' ? body.table : undefined;
   const rpc = typeof body.rpc === 'string' ? body.rpc : undefined;
   if (rpc) return { op: `rpc:${rpc}`, target: rpc };
-  if (operation) return { op: operation, target: table };
+  const supported = new Set<BridgeOperation>(['select', 'insert', 'update', 'delete', 'upsert', 'batch', 'rpc', 'ping']);
+  if (operation && supported.has(operation as BridgeOperation)) return { op: operation as BridgeOperation, target: table };
   return { op: 'invoke', target: table };
 }
 
@@ -96,6 +95,7 @@ function matches(msg: string, patterns: string[]): boolean {
 }
 
 function isNonRetryableError(msg: string): boolean {
+  if (/CATALOG_NOT_CONFIGURED|CATALOG_READ_ONLY/i.test(msg)) return true;
   // 503 é SEMPRE retentável (cold-start de isolate) — vence qualquer match acidental.
   if (/\b503\b/.test(msg) || /service is temporarily unavailable/i.test(msg)) return false;
   if (matches(msg, NON_RETRYABLE_PATTERNS)) return true;
@@ -201,6 +201,14 @@ export async function invokeWithRetry(
     );
 
     if (!error) {
+
+      // Compatibilidade durante o deploy: o bridge antigo retornava HTTP 200
+      // com essas flags. Falha de integração não representa catálogo vazio.
+      if (data && typeof data === 'object' && (data._unconfigured || data.fallback || data.error)) {
+        return finalize({ data: null, error: new Error(data._unconfigured
+          ? 'CATALOG_NOT_CONFIGURED: catálogo indisponível'
+          : String(data.message || data.error || 'Catálogo indisponível')) });
+      }
 
       if (sawColdStart) emitBridgeStatus({ type: 'recovered' });
       return finalize({ data, error: null });

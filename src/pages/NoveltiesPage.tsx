@@ -8,7 +8,7 @@ import { ExpiringNoveltiesWidget } from "@/components/novelties/ExpiringNoveltie
 export default function NoveltiesPage() {
   return (
     <>
-      <PageSEO title="Novidades" description="Confira os produtos mais recentes adicionados ao catálogo oficial do Sicoob." path="/novidades" />
+      <PageSEO title="Novidades" description="Confira os produtos mais recentes adicionados ao catálogo de brindes para cooperativas." path="/novidades" />
       <div className="w-full max-w-[1920px] mx-auto px-3 sm:px-4 lg:px-6 xl:px-8 py-3 sm:py-4 space-y-3 sm:space-y-4 pb-24 md:pb-6 animate-fade-in">
 
         {/* Cabeçalho da página */}

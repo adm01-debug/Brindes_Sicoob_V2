@@ -1,0 +1,93 @@
+[
+  {
+    "alvo": "auth-config",
+    "url": "https://cfmzkthhgliqelozlmwu.supabase.co/auth/v1/settings",
+    "status": 200,
+    "tempo_ms": 1003,
+    "configuracao": {
+      "disable_signup": true,
+      "mailer_autoconfirm": false,
+      "phone_autoconfirm": false,
+      "external": {
+        "anonymous_users": false,
+        "apple": false,
+        "azure": false,
+        "bitbucket": false,
+        "discord": false,
+        "facebook": false,
+        "snapchat": false,
+        "figma": false,
+        "fly": false,
+        "github": false,
+        "gitlab": false,
+        "google": false,
+        "keycloak": false,
+        "kakao": false,
+        "linkedin": false,
+        "linkedin_oidc": false,
+        "notion": false,
+        "spotify": false,
+        "slack": false,
+        "slack_oidc": false,
+        "workos": false,
+        "twitch": false,
+        "twitter": false,
+        "email": true,
+        "phone": false,
+        "zoom": false
+      }
+    }
+  },
+  {
+    "alvo": "products",
+    "url": "https://cfmzkthhgliqelozlmwu.supabase.co/rest/v1/products?select=id&limit=1",
+    "status": 404,
+    "tempo_ms": 1008,
+    "titulo": []
+  },
+  {
+    "alvo": "sicoob_orders",
+    "url": "https://cfmzkthhgliqelozlmwu.supabase.co/rest/v1/sicoob_orders?select=id&limit=1",
+    "status": 200,
+    "tempo_ms": 705,
+    "titulo": []
+  },
+  {
+    "alvo": "profiles",
+    "url": "https://cfmzkthhgliqelozlmwu.supabase.co/rest/v1/profiles?select=id&limit=1",
+    "status": 200,
+    "tempo_ms": 389,
+    "titulo": []
+  },
+  {
+    "alvo": "catalogo-externo",
+    "url": "https://doufsxqlfjyuvxuezpln.supabase.co/rest/v1/",
+    "status": 401,
+    "tempo_ms": 101,
+    "erro": {
+      "message": "No API key found in request",
+      "hint": "No `apikey` request header or url param was found."
+    }
+  },
+  {
+    "alvo": "lovable-readme",
+    "url": "https://criar-together-now.lovable.app",
+    "status": 403,
+    "tempo_ms": 185,
+    "titulo": []
+  },
+  {
+    "alvo": "lovable-index",
+    "url": "https://vamos-build-awesome.lovable.app",
+    "status": 403,
+    "tempo_ms": 182,
+    "titulo": []
+  },
+  {
+    "alvo": "vercel",
+    "url": "https://brindes-sicoob-v2-l25jpzb68-juca1.vercel.app",
+    "status": 200,
+    "tempo_ms": 1460,
+    "titulo": []
+  }
+]

@@ -1,0 +1,47 @@
+{
+  "data": "2026-09-11",
+  "commit": "d75459d28da0c8164c26861cd6358b147930425a",
+  "cobertura": {
+    "documentos_repositorio": 162,
+    "arquivos_fornecidos": 13,
+    "paginas_pdf_fornecidas": 298,
+    "perfis_publicos": 15,
+    "fontes_catalogadas": 38,
+    "backlog": 42
+  },
+  "limites": [
+    "Sem login com compradores reais",
+    "Sem acesso administrativo confirmado aos dois schemas",
+    "Sem gravação em bancos",
+    "Sem comprovação de tráfego em produção",
+    "Grafo com referências não resolvidas e agregação de arestas"
+  ],
+  "validacao": {
+    "data": "2026-09-11",
+    "commit": "d75459d28da0c8164c26861cd6358b147930425a",
+    "typecheck": {
+      "diagnosticos": 1259,
+      "arquivos": 456,
+      "status": "falhou"
+    },
+    "testes_recorte": {
+      "arquivos": 5,
+      "aprovados": 12,
+      "falhas": 5
+    },
+    "npm_audit": {
+      "info": 0,
+      "low": 1,
+      "moderate": 10,
+      "high": 10,
+      "critical": 0,
+      "total": 21
+    },
+    "compilacao_diagnostica": {
+      "comando": "npx vite build",
+      "duracao_segundos": 32.43,
+      "status": "passou",
+      "nao_equivale_build_oficial": true
+    }
+  }
+}

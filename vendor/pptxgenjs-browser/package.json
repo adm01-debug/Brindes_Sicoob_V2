@@ -1,0 +1,28 @@
+{
+  "name": "pptxgenjs",
+  "version": "4.0.1-sicoob.1",
+  "private": true,
+  "type": "module",
+  "license": "MIT",
+  "main": "./dist/pptxgen.es.js",
+  "module": "./dist/pptxgen.es.js",
+  "types": "./types/index.d.ts",
+  "exports": {
+    "types": "./types/index.d.ts",
+    "import": "./dist/pptxgen.es.js",
+    "default": "./dist/pptxgen.es.js"
+  },
+  "browser": {
+    "express": false,
+    "fs": false,
+    "https": false,
+    "image-size": false,
+    "node:fs": false,
+    "node:https": false,
+    "os": false,
+    "path": false
+  },
+  "dependencies": {
+    "jszip": "^3.10.1"
+  }
+}

@@ -1,101 +1,86 @@
-name: Sicoob Module CI
+name: Portal Sicoob
 
 on:
   push:
     branches: [main]
-    paths:
+    paths: &sicoob_paths
+      - 'src/pages/Auth.tsx'
+      - 'src/pages/auth/**'
       - 'src/pages/sicoob/**'
-      - 'src/components/layout/ProtectedRoute*'
-      - 'src/services/sicoob/**'
+      - 'src/components/a11y/**'
+      - 'src/components/layout/**'
+      - 'src/contexts/AuthContext.tsx'
       - 'src/hooks/useSicoob*'
-      - 'supabase/functions/tests/sicoob-*'
-      - 'vitest.config.ts'
+      - 'src/hooks/auth/**'
+      - 'src/lib/access/**'
+      - 'src/lib/auth/**'
+      - 'src/services/sicoob/**'
+      - 'supabase/functions/**'
+      - 'supabase/migrations/**'
+      - 'tests/sicoob/**'
+      - 'tests/services/sicoobOrderService.test.ts'
+      - 'scripts/qa/**'
       - '.github/workflows/sicoob-ci.yml'
   pull_request:
     branches: [main]
-    paths:
-      - 'src/pages/sicoob/**'
-      - 'src/components/layout/ProtectedRoute*'
-      - 'src/services/sicoob/**'
-      - 'src/hooks/useSicoob*'
-      - 'supabase/functions/tests/sicoob-*'
-      - 'vitest.config.ts'
-      - '.github/workflows/sicoob-ci.yml'
+    paths: *sicoob_paths
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sicoob-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  rls-security-gate:
-    name: Sicoob RLS & Security Gate
+  transacoes:
+    name: Verba e aprovação transacionais
     runs-on: ubuntu-latest
     timeout-minutes: 10
-
     steps:
-      - uses: actions/checkout@v6
-
-      - name: Setup Deno
-        uses: denoland/setup-deno@v2
+      - uses: actions/checkout@v4
         with:
-          deno-version: v2.x
+          fetch-depth: 0
+      - name: Executar PostgreSQL isolado e casos concorrentes
+        run: python3 scripts/qa/simular-verba-atomica.py
 
-      - name: Run Sicoob RLS Validation
-        env:
-          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
-        run: |
-          if [ -z "$SUPABASE_DB_URL" ]; then
-            echo "⚠️ SUPABASE_DB_URL not set, skipping DB-level RLS tests"
-            exit 0
-          fi
-          deno test --allow-net --allow-env --allow-read supabase/functions/tests/sicoob-rls-validation_test.ts
-
-      - name: Run Sicoob RLS Coverage (Cross-Role)
-        env:
-          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
-        run: |
-          if [ -z "$SUPABASE_DB_URL" ]; then
-            echo "⚠️ SUPABASE_DB_URL not set, skipping DB-level coverage tests"
-            exit 0
-          fi
-          deno test --allow-net --allow-env --allow-read supabase/functions/tests/sicoob-rls-coverage_test.ts
-
-      - name: Run Sicoob Validation Constraints
-        env:
-          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
-        run: |
-          if [ -z "$SUPABASE_DB_URL" ]; then
-            echo "⚠️ SUPABASE_DB_URL not set, skipping DB-level constraint tests"
-            exit 0
-          fi
-          deno test --allow-net --allow-env --allow-read supabase/functions/tests/sicoob-validation-constraints_test.ts
-
-  frontend-quality-gate:
-    name: Frontend Quality (Unit & E2E)
+  experiencia:
+    name: Entrada e demonstração responsivas
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        test-type: [unit, e2e]
+    timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
-          cache: 'npm'
+          node-version: 24
+          cache: npm
       - run: npm ci
-      
-      - name: Run Unit Tests with Coverage
-        if: matrix.test-type == 'unit'
-        run: npm run test:coverage:ci -- src/components/layout/ProtectedRoute.test.tsx src/services/sicoob/orderService.test.ts src/pages/ForbiddenPage.test.tsx
-
-      - name: Run E2E Sicoob Access Tests
-        if: matrix.test-type == 'e2e'
+      - name: Instalar Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Iniciar servidor local sintético
+        env:
+          VITE_SUPABASE_URL: http://127.0.0.1:59999
+          VITE_SUPABASE_PUBLISHABLE_KEY: chave-sintetica-apenas-para-qa
         run: |
-          npx playwright install --with-deps chromium
-          npm run test:e2e -- e2e/routes/sicoob/vendas-access.spec.ts
-
-      - name: Upload Coverage Artifacts
-        if: matrix.test-type == 'unit' && always()
+          npm run dev -- --host 127.0.0.1 --port 4178 > /tmp/portal-sicoob-vite.log 2>&1 &
+          for tentativa in {1..45}; do
+            if curl --fail --silent http://127.0.0.1:4178/login > /dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat /tmp/portal-sicoob-vite.log
+          exit 1
+      - name: Validar WCAG, responsividade e execução
+        run: |
+          npm run qa:visual:login
+          npm run qa:visual:demo
+      - name: Publicar evidências em caso de falha
+        if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: frontend-unit-coverage-report
-          path: coverage/
+          name: evidencias-visuais-sicoob
+          path: docs/execucao/evidencias/visual/
           retention-days: 7
-
-

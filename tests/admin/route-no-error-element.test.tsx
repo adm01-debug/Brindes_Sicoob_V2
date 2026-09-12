@@ -35,6 +35,9 @@ import { Suspense } from "react";
 const authState = {
   user: { id: "u1", email: "dev@promogifts.test" },
   isLoading: false,
+  roles: ["dev"],
+  rolesLoaded: true,
+  rolesError: null,
   canManage: true,
   isDev: true,
   isSupervisorOrAbove: true,
@@ -100,7 +103,7 @@ function ReducedApp({
   onNavigateReady?: (n: ReturnType<typeof useNavigate>) => void;
 }) {
   return (
-    <MemoryRouter initialEntries={[initial]} future={{ v7_relativeSplatPath: true }}>
+    <MemoryRouter initialEntries={[initial]}>
       <Suspense fallback={<div>loading…</div>}>
         {onNavigateReady && <NavigationProbe onReady={onNavigateReady} />}
         <Routes>

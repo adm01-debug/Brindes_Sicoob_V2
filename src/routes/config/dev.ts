@@ -6,6 +6,7 @@ import { defineRoute } from "@/lib/router-utils";
  * Refatoradas para excelência técnica 10/10
  */
 export const devRoutes = [
+  defineRoute({ path: "/sicoob/qa/preflight", component: lazyWithRetry(() => import("@/pages/admin/qa/PreflightPage")) }),
   defineRoute({ 
     path: "/admin/telemetria", 
     component: lazyWithRetry(() => import("@/pages/admin/AdminTelemetriaPage")) 

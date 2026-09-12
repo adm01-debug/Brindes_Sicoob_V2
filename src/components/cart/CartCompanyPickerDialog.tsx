@@ -158,51 +158,49 @@ export function CartCompanyPickerDialog({ open, onOpenChange, onCreated }: CartC
   const isLoading = loadingLocal || loadingServer;
 
   const renderRow = (company: CompanyItem) => (
-    <button
-      key={company.id}
-      type="button"
-      data-testid="cart-company-picker-select"
-      data-company-id={company.id}
-      className={cn(
-        "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left",
-        "hover:bg-accent/60 transition-colors group"
-      )}
-      onClick={() => handleSelect(company)}
-      disabled={!canCreateCart}
-    >
-      {company.logo_url ? (
-        <img src={company.logo_url} alt="" className="w-9 h-9 rounded-lg object-contain bg-background border border-border/40 flex-shrink-0" loading="lazy" />
-      ) : (
-        <div className="w-9 h-9 rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
-          <Building2 className="h-4 w-4 text-muted-foreground" />
-        </div>
-      )}
-      <div className="min-w-0 flex-1">
-        <p className="text-sm font-medium truncate">{company.name}</p>
-        {company.ramo && <p className="text-[11px] text-muted-foreground truncate">{company.ramo}</p>}
-      </div>
+    <div key={company.id} className="group flex items-center rounded-lg transition-colors hover:bg-accent/60">
+      <button
+        type="button"
+        data-testid="cart-company-picker-select"
+        data-company-id={company.id}
+        className="flex min-w-0 flex-1 items-center gap-3 rounded-lg px-3 py-2.5 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        onClick={() => handleSelect(company)}
+        disabled={!canCreateCart}
+      >
+        {company.logo_url ? (
+          <img src={company.logo_url} alt="" className="w-9 h-9 rounded-lg object-contain bg-background border border-border/40 flex-shrink-0" loading="lazy" />
+        ) : (
+          <span className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-muted">
+            <Building2 className="h-4 w-4 text-muted-foreground" />
+          </span>
+        )}
+        <span className="min-w-0 flex-1">
+          <span className="block truncate text-sm font-medium">{company.name}</span>
+          {company.ramo && <span className="block truncate text-[11px] text-muted-foreground">{company.ramo}</span>}
+        </span>
+      </button>
       <button
         type="button"
         onClick={(e) => toggleFavorite(company, e)}
         className={cn(
-          "h-7 w-7 rounded-md flex items-center justify-center transition-colors flex-shrink-0",
+          "mr-2 flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-md transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
           isFavorite(company.id)
             ? "text-warning"
-            : "text-muted-foreground/40 opacity-0 group-hover:opacity-100 hover:text-warning"
+            : "text-muted-foreground/50 hover:text-warning"
         )}
         aria-label={isFavorite(company.id) ? "Remover dos favoritos" : "Adicionar aos favoritos"}
       >
         <Star className={cn("h-4 w-4", isFavorite(company.id) && "fill-current")} />
       </button>
-    </button>
+    </div>
   );
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[520px] p-0 gap-0">
         <DialogHeader className="px-5 pt-5 pb-3">
-          <DialogTitle className="font-display text-lg">Vincular a uma empresa</DialogTitle>
-          <DialogDescription className="text-xs">Escolha uma empresa para criar o carrinho.</DialogDescription>
+          <DialogTitle className="font-display text-lg">Vincular à cooperativa ou unidade</DialogTitle>
+          <DialogDescription className="text-xs">Escolha para quem este orçamento será preparado.</DialogDescription>
         </DialogHeader>
 
         <Tabs value={tab} onValueChange={(v) => setTab(v as typeof tab)} className="w-full">
@@ -219,7 +217,7 @@ export function CartCompanyPickerDialog({ open, onOpenChange, onCreated }: CartC
               {recents.length > 0 ? (
                 <div className="space-y-0.5">{recents.map(renderRow)}</div>
               ) : (
-                <p className="text-xs text-muted-foreground text-center py-12">Sem empresas recentes ainda.</p>
+                <p className="text-xs text-muted-foreground text-center py-12">Nenhuma cooperativa ou unidade recente.</p>
               )}
             </ScrollArea>
           </TabsContent>
@@ -229,7 +227,7 @@ export function CartCompanyPickerDialog({ open, onOpenChange, onCreated }: CartC
               {favorites.length > 0 ? (
                 <div className="space-y-0.5">{favorites.map(renderRow)}</div>
               ) : (
-                <p className="text-xs text-muted-foreground text-center py-12">Marque empresas como favoritas usando a estrela.</p>
+                <p className="text-xs text-muted-foreground text-center py-12">Marque cooperativas ou unidades como favoritas usando a estrela.</p>
               )}
             </ScrollArea>
           </TabsContent>
@@ -250,7 +248,7 @@ export function CartCompanyPickerDialog({ open, onOpenChange, onCreated }: CartC
               {filteredCompanies.length > 0 ? (
                 <div className="space-y-0.5">{filteredCompanies.map(renderRow)}</div>
               ) : !isLoading ? (
-                <p className="text-xs text-muted-foreground text-center py-12">Nenhuma empresa encontrada.</p>
+                <p className="text-xs text-muted-foreground text-center py-12">Nenhuma cooperativa ou unidade encontrada.</p>
               ) : null}
             </ScrollArea>
           </TabsContent>

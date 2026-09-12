@@ -10,10 +10,10 @@ vi.mock('@/contexts/AuthContext', () => ({
 
 function renderWithRouter(ui: React.ReactElement, initialRoute = '/admin') {
   return render(
-    <MemoryRouter initialEntries={[initialRoute]} future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+    <MemoryRouter initialEntries={[initialRoute]}>
       <Routes>
         <Route path="/login" element={<div>Login Page</div>} />
-        <Route path="/" element={<div>Home Page</div>} />
+        <Route path="/403" element={<div>Acesso negado</div>} />
         <Route path="/admin" element={ui} />
       </Routes>
     </MemoryRouter>
@@ -21,6 +21,9 @@ function renderWithRouter(ui: React.ReactElement, initialRoute = '/admin') {
 }
 
 const baseAuth = {
+  roles: ['supervisor'],
+  rolesLoaded: true,
+  rolesError: null,
   currentAAL: 'aal2' as const,
   hasMFA: true,
   mfaRequired: false,
@@ -42,9 +45,9 @@ describe('AdminRoute', () => {
   });
 
   it('redirects to / when user cannot manage (vendedor)', () => {
-    mockUseAuth.mockReturnValue({ ...baseAuth, user: { id: '123' }, canManage: false, isLoading: false });
+    mockUseAuth.mockReturnValue({ ...baseAuth, user: { id: '123' }, roles: ['vendedor'], canManage: false, isLoading: false });
     renderWithRouter(<AdminRoute><div>Admin Panel</div></AdminRoute>);
-    expect(screen.getByText('Home Page')).toBeInTheDocument();
+    expect(screen.getByText('Acesso negado')).toBeInTheDocument();
   });
 
   it('renders children when admin has MFA and AAL2', () => {
