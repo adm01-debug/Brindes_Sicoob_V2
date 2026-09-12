@@ -14,7 +14,10 @@ on:
 jobs:
   e2e:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    # A regressão reúne 955 testes em 64 arquivos. O smoke e o header são
+    # sequenciais, mas a matriz completa usa dois workers abaixo para concluir
+    # dentro desta janela sem sacrificar a cobertura.
+    timeout-minutes: 40
     env:
       CI: "true"
       # Logs limpos no GitHub Actions: sem códigos ANSI no console output
@@ -137,6 +140,7 @@ jobs:
         run: |
           npx playwright test \
             --grep-invert @smoke \
+            --workers=2 \
             --pass-with-no-tests \
             --reporter=github,line,html,json,junit
         env:
