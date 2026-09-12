@@ -59,6 +59,8 @@ export interface KitItem {
   };
   // Tamanho selecionado
   selectedSize?: string;
+  // ID da variante escolhida. Cor e tamanho não identificam um SKU estocável.
+  selectedVariantId?: string;
   // Quantidade no kit
   quantity: number;
   // Flags de composição (do product_kit_components)

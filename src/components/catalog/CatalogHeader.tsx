@@ -18,6 +18,7 @@ interface CatalogHeaderProps {
   activeFiltersCount?: number;
   searchHistory?: string[];
   onClearSearchHistory?: () => void;
+  historyScope?: string;
 }
 
 function shouldFocusCatalogSearch(event: KeyboardEvent): boolean {
@@ -114,6 +115,7 @@ export function CatalogHeader({
   activeFiltersCount = 0,
   searchHistory = [],
   onClearSearchHistory,
+  historyScope,
 }: CatalogHeaderProps) {
   const hasActiveConstraints = searchQuery.trim().length > 0 || activeFiltersCount > 0;
   const searchRef = useRef<HTMLDivElement>(null);
@@ -163,10 +165,10 @@ export function CatalogHeader({
         )}
 
         <div className="hidden flex-1 sm:block">
-          <SmartSearchInput placeholder="Busque por produto, ocasião, cor ou faixa de preço…  /" onSelect={onSelect} className="w-full" />
+          <SmartSearchInput placeholder="Busque por produto, ocasião, cor ou faixa de preço…  /" onSelect={onSelect} className="w-full" historyScope={historyScope} />
         </div>
         <div className="flex-1 sm:hidden">
-          <SmartSearchInput placeholder="Buscar produtos…" onSelect={onSelect} className="w-full" />
+          <SmartSearchInput placeholder="Buscar produtos…" onSelect={onSelect} className="w-full" historyScope={historyScope} />
         </div>
         <CatalogSearchHistory history={searchHistory} onSelect={onSelect} onClear={onClearSearchHistory} />
       </div>

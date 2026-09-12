@@ -239,6 +239,7 @@ export function useKitBuilder() {
   }, [removeItem, selectedBox, selectedItems]);
 
   const updateItemVariant = useCallback((itemId: string, variantData: {
+    id: string;
     color: { name: string; hex?: string };
     size?: string;
     sku?: string;
@@ -250,6 +251,7 @@ export function useKitBuilder() {
         if (item.id !== itemId) return item;
         return {
           ...item,
+          selectedVariantId: variantData.id,
           selectedColor: variantData.color,
           selectedSize: variantData.size || undefined,
           ...(variantData.sku && { sku: variantData.sku }),

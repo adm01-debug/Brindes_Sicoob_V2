@@ -88,7 +88,7 @@ export default function KitBuilderPage() {
   const { handleAddToQuote, isCreatingQuote } = useKitBuilderQuote();
   useCustomKitsRealtime();
 
-  const { lastSavedAt, isSaving: isAutoSaving, autoSavedKitId } = useKitAutoSave(
+  const { lastSavedAt, isSaving: isAutoSaving, autoSavedKitId, lastSaveError, retry: retryAutoSave } = useKitAutoSave(
     kitState, kitQuantity, currentKitId, (id) => setCurrentKitId(id),
   );
 
@@ -331,6 +331,8 @@ export default function KitBuilderPage() {
           isSaving={isSaving}
           isAutoSaving={isAutoSaving}
           lastSavedAt={lastSavedAt}
+          autoSaveError={lastSaveError}
+          onRetryAutoSave={retryAutoSave}
           hasContent={hasContent}
           isExistingKit={isExistingKit}
           canUndo={canUndo}

@@ -5,8 +5,13 @@ import { CATEGORIES, SUPPLIERS } from "@/data/mockData";
 import { ProductsContext } from "@/contexts/ProductsContext";
 import { createProductFuseOptions, rankProductSearchResults } from "@/utils/product-search";
 
-const HISTORY_KEY = "search-history";
+const HISTORY_KEY_PREFIX = "search-history";
 const MAX_HISTORY = 10;
+
+function getHistoryKey(scope?: string): string {
+  const normalizedScope = (scope || 'public').trim().replace(/[^a-zA-Z0-9:_-]/g, '_');
+  return `${HISTORY_KEY_PREFIX}:${normalizedScope || 'public'}`;
+}
 
 // This hook now relies on ProductsContext for product data
 // Products are passed externally or fetched via context
@@ -20,18 +25,19 @@ export interface SearchResult {
   data?: Product;
 }
 
-export function useSearch(products: Product[] = []) {
+export function useSearch(products: Product[] = [], historyScope?: string) {
   const productsContext = useContext(ProductsContext);
   const [query, setQuery] = useState("");
   const [history, setHistory] = useState<string[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
+  const historyKey = useMemo(() => getHistoryKey(historyScope), [historyScope]);
 
   const availableProducts = products.length > 0 ? products : (productsContext?.products || []);
 
   // Load history from localStorage
   useEffect(() => {
     try {
-      const stored = localStorage.getItem(HISTORY_KEY);
+      const stored = localStorage.getItem(historyKey);
       if (stored) {
         setHistory(JSON.parse(stored));
       }
@@ -39,14 +45,14 @@ export function useSearch(products: Product[] = []) {
       console.error("Error loading search history:", e);
     }
     setIsLoaded(true);
-  }, []);
+  }, [historyKey]);
 
   // Save history to localStorage
   useEffect(() => {
     if (isLoaded) {
-      localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+      localStorage.setItem(historyKey, JSON.stringify(history));
     }
-  }, [history, isLoaded]);
+  }, [history, isLoaded, historyKey]);
 
   const addToHistory = useCallback((term: string) => {
     if (!term.trim()) return;

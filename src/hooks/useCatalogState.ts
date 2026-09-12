@@ -30,11 +30,13 @@ import { useCatalogSearchState } from "./catalog/useCatalogSearchState";
 import { useCatalogSelectionState } from "./catalog/useCatalogSelectionState";
 import { useCatalogStats } from "./catalog/useCatalogStats";
 import { defaultFilters } from "@/components/filters/FilterPanel";
+import { useAuth } from "@/contexts/AuthContext";
 
 export type { ViewMode, SortOption };
 
 export function useCatalogState() {
   const navigate = useNavigate();
+  const { user, cooperativaId, paId } = useAuth();
   const [searchParams] = useSearchParams();
   const { toast } = useToast();
   const { isFavorite, toggleFavorite, favoriteCount } = useFavoritesStore();
@@ -86,7 +88,10 @@ export function useCatalogState() {
     if (realProducts.length > 0) registerProducts(realProducts);
   }, [realProducts, registerProducts]);
 
-  const search = useCatalogSearchState(realProducts, searchQueryFromUrl);
+  const searchHistoryScope = user
+    ? `user:${user.id}:cooperativa:${cooperativaId || 'none'}:pa:${paId || 'none'}`
+    : 'public';
+  const search = useCatalogSearchState(realProducts, searchQueryFromUrl, searchHistoryScope);
 
   // Material & Category filters
   const { productIds: materialFilteredProductIds, hasFilter: hasMaterialFilter, isLoading: isLoadingMaterialFilter } = useProductsByMaterial({
@@ -242,6 +247,7 @@ export function useCatalogState() {
   }, [favQuickAdd, toggleFavorite, toast]);
 
   return {
+    searchHistoryScope,
     ...display,
     ...filterState,
     ...selection,

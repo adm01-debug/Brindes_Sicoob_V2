@@ -1,5 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
-import { SicoobOrder, SicoobOrderItem, SicoobOrderItemLog, OrderStatus, canSicoobTransitionTo } from "@/types/sicoob/orders";
+import { canSicoobTransitionTo } from "@/types/sicoob/orders";
+import type { SicoobOrder, SicoobOrderItem, SicoobOrderItemLog, OrderStatus } from "@/types/sicoob/orders";
+import { fetchPromobrindProductById, getProductPrice } from "@/lib/external-db";
 
 /**
  * Service for Sicoob Orders with authorization checks.
@@ -244,34 +246,72 @@ export const sicoobOrderService = {
     const order = await this.getOrderById(orderId);
     const items = await this.getOrderItems(orderId);
 
-    const { data: profile } = await supabase.from("profiles").select("organization_id").eq("id", user.id).single();
+    if (items.length === 0) {
+      throw new Error('O pedido original não possui itens para recompra.');
+    }
 
-    // Create a new quote from this sicoob order
+    // Recompra não reutiliza preço ou disponibilidade histórica. Cada produto é
+    // consultado no catálogo externo antes de qualquer orçamento ser criado.
+    const currentItems = await Promise.all(items.map(async (item) => {
+      if (!item.product_id) {
+        throw new Error(`O item “${item.product_name}” não possui produto vinculado para validar a recompra.`);
+      }
+
+      const product = await fetchPromobrindProductById(item.product_id);
+      if (!product || product.is_active === false || product.active === false) {
+        throw new Error(`O produto “${item.product_name}” não está mais disponível no catálogo.`);
+      }
+
+      const currentPrice = getProductPrice(product);
+      if (!Number.isFinite(currentPrice) || currentPrice <= 0) {
+        throw new Error(`O produto “${item.product_name}” está sem preço vigente para recompra.`);
+      }
+
+      if (product.stock_quantity === null || product.stock_quantity === undefined || product.stock_quantity < item.quantity) {
+        throw new Error(`Estoque insuficiente para “${item.product_name}”. Consulte outra opção ou reduza a quantidade.`);
+      }
+
+      return {
+        product_id: product.id,
+        product_sku: product.sku,
+        product_name: product.name,
+        product_image_url: product.primary_image_url || product.image_url,
+        quantity: item.quantity,
+        unit_price: currentPrice,
+        subtotal: currentPrice * item.quantity,
+        price_confirmed_at: new Date().toISOString(),
+      };
+    }));
+
+    const { data: profile } = await supabase.from("profiles").select("organization_id").eq("id", user.id).single();
+    const subtotal = currentItems.reduce((sum, item) => sum + item.subtotal, 0);
+
+    // Cria o rascunho apenas após revalidar todos os itens. O novo orçamento
+    // mantém a trilha da origem, mas usa os valores vigentes do catálogo.
     const { data: newQuote, error: qErr } = await supabase.from("quotes").insert({
       client_id: order.pa_id,
-      client_name: (order as any).pa?.nome || order.pa_id,
+      client_name: order.pa?.nome || order.pa_id,
       status: 'draft',
-      notes: `Recompra do pedido Sicoob #${order.order_number || order.id.slice(0, 8)}`,
+      notes: `Recompra do pedido Sicoob #${order.order_number || order.id.slice(0, 8)}. Preço e estoque revalidados em ${new Date().toLocaleString('pt-BR')}.`,
       singular_id: order.cooperative_id,
       organization_id: profile?.organization_id || order.pa_id,
-      total: order.total_amount,
-      subtotal: order.total_amount,
+      seller_id: user.id,
+      total: subtotal,
+      subtotal,
     }).select("id").single();
 
     if (qErr) throw qErr;
 
-    if (items.length > 0) {
-      const quoteItems = items.map(it => ({
+    if (currentItems.length > 0) {
+      const quoteItems = currentItems.map(it => ({
         quote_id: newQuote.id,
-        product_id: it.product_id,
-        product_sku: it.product_sku,
-        product_name: it.product_name,
-        product_image_url: it.product_image_url,
-        quantity: it.quantity,
-        unit_price: it.unit_price,
+        ...it,
       }));
       const { error: iErr } = await supabase.from("quote_items").insert(quoteItems);
-      if (iErr) throw iErr;
+      if (iErr) {
+        await supabase.from('quotes').delete().eq('id', newQuote.id);
+        throw iErr;
+      }
     }
 
     return newQuote.id;

@@ -2,11 +2,11 @@ import { useState, useCallback, useEffect } from "react";
 import { useSearch } from "@/hooks/useSearch";
 import type { Product } from "@/hooks/useProducts";
 
-export function useCatalogSearchState(realProducts: Product[], searchQueryFromUrl: string) {
+export function useCatalogSearchState(realProducts: Product[], searchQueryFromUrl: string, historyScope?: string) {
   const [searchQuery, setSearchQuery] = useState(searchQueryFromUrl);
   const [isSearching, setIsSearching] = useState(false);
 
-  const { suggestions, quickSuggestions, history, addToHistory, clearHistory } = useSearch(realProducts);
+  const { suggestions, quickSuggestions, history, addToHistory, clearHistory } = useSearch(realProducts, historyScope);
 
   useEffect(() => {
     setSearchQuery(searchQueryFromUrl);

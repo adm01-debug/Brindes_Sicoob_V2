@@ -70,6 +70,19 @@ export interface SicoobOrderItem {
   total_price: number;
 }
 
+export interface SicoobOrderShipment {
+  id: string;
+  order_id: string;
+  carrier_name: string | null;
+  tracking_code: string | null;
+  status: 'pending' | 'in_transit' | 'delivered';
+  estimated_delivery: string | null;
+  actual_delivery_at: string | null;
+  delivery_photo_path: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface SicoobBudget {
   id: string;
   pa_id: string;

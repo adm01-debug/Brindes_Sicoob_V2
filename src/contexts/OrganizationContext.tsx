@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, useCallback, useRef, type ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 // HMR: ensure this module re-binds to the latest AuthContext singleton after edits.
@@ -42,6 +42,7 @@ export function OrganizationProvider({ children }: { children: ReactNode }) {
   const [organizations, setOrganizations] = useState<Organization[]>([]);
   const [currentOrg, setCurrentOrg] = useState<Organization | null>(null);
   const [currentRole, setCurrentRole] = useState<OrgMember["role"] | null>(null);
+  const membershipsRef = useRef<Map<string, OrgMember["role"]>>(new Map());
   const [isLoading, setIsLoading] = useState(true);
 
   const fetchOrganizations = useCallback(async () => {
@@ -49,6 +50,7 @@ export function OrganizationProvider({ children }: { children: ReactNode }) {
       setOrganizations([]);
       setCurrentOrg(null);
       setCurrentRole(null);
+      membershipsRef.current = new Map();
       setIsLoading(false);
       return;
     }
@@ -67,6 +69,7 @@ export function OrganizationProvider({ children }: { children: ReactNode }) {
         setOrganizations([]);
         setCurrentOrg(null);
         setCurrentRole(null);
+        membershipsRef.current = new Map();
         setIsLoading(false);
         return;
       }
@@ -82,6 +85,11 @@ export function OrganizationProvider({ children }: { children: ReactNode }) {
       if (orgsError) throw orgsError;
 
       const orgList = (orgs || []) as Organization[];
+      const rolesByOrg = new Map<string, OrgMember["role"]>();
+      for (const member of members) {
+        rolesByOrg.set(member.organization_id, member.role as OrgMember["role"]);
+      }
+      membershipsRef.current = rolesByOrg;
       setOrganizations(orgList);
 
       // Restore saved org or pick first, ensuring the user actually belongs to it
@@ -92,8 +100,7 @@ export function OrganizationProvider({ children }: { children: ReactNode }) {
       setCurrentOrg(selected);
 
       if (selected) {
-        const membership = members.find((m) => m.organization_id === selected.id);
-        setCurrentRole((membership?.role as OrgMember["role"]) || null);
+        setCurrentRole(rolesByOrg.get(selected.id) || null);
         localStorage.setItem(ORG_STORAGE_KEY, selected.id);
       } else {
         localStorage.removeItem(ORG_STORAGE_KEY);
@@ -116,25 +123,17 @@ export function OrganizationProvider({ children }: { children: ReactNode }) {
         // Prevent redundant state updates
         if (currentOrg?.id === orgId) return;
 
+        const role = membershipsRef.current.get(orgId);
+        // A organização e sua permissão vêm da mesma leitura de memberships.
+        // Atualizá-las no mesmo evento evita renderizar a organização nova com
+        // o papel da anterior enquanto uma segunda consulta está em trânsito.
+        if (!role) return;
+        setCurrentRole(role);
         setCurrentOrg(org);
         localStorage.setItem(ORG_STORAGE_KEY, orgId);
-        
-        // Update role asynchronously
-        void (async () => {
-          const { data } = await supabase
-            .from("organization_members")
-            .select("role")
-            .eq("organization_id", orgId)
-            .eq("user_id", user?.id ?? "")
-            .single();
-          
-          if (data) {
-            setCurrentRole((data.role as OrgMember["role"]) || null);
-          }
-        })();
       }
     },
-    [organizations, user, currentOrg?.id]
+    [organizations, currentOrg?.id]
   );
 
   const createOrganization = useCallback(

@@ -17,8 +17,6 @@ import {
   FileSpreadsheet,
   ChevronLeft,
   ChevronRight,
-  TrendingUp,
-  TrendingDown,
   DollarSign,
   ShoppingCart,
   Clock,
@@ -36,8 +34,6 @@ import { toast } from "sonner";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 import * as XLSX from "@e965/xlsx";
-import { Sparkline } from "@/components/ui/Sparkline";
-import { AIOrderPredictor } from "@/components/sicoob/orders/AIOrderPredictor";
 import { Input } from "@/components/ui/input";
 import {
   Card,
@@ -390,51 +386,6 @@ export default function OrdersPage() {
       <PageSEO title="Pedidos Sicoob" description="Gerenciamento de pedidos do ecossistema Sicoob." path="/sicoob/pedidos" noIndex />
 
       <div className="space-y-6 max-w-[1920px] mx-auto w-full">
-        {/* Predictive AI Suggestions */}
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="grid grid-cols-1 lg:grid-cols-3 gap-6 pt-4"
-        >
-           <div className="lg:col-span-2">
-              <AIOrderPredictor />
-           </div>
-           <Card className="bg-sicoob-green-dark border-sicoob-green-dark/20 text-white overflow-hidden shadow-2xl relative group">
-              <div className="absolute top-0 right-0 p-3">
-                 <Badge className="bg-sicoob-green text-sicoob-green-dark border-none text-[8px] animate-pulse">PROJEÇÃO ATIVA</Badge>
-              </div>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-bold flex items-center gap-2 text-sicoob-green-light">
-                  <TrendingUp className="h-4 w-4 text-indigo-400" />
-                  Previsão de Receita (30d)
-                </CardTitle>
-                <CardDescription className="text-slate-400 text-[10px]">Modelagem estatística baseada no funil atual</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-display font-bold text-white mb-2 group-hover:text-indigo-400 transition-colors">
-                  R$ {((stats?.totalRevenueReal || 0) * 1.4 + 25000).toLocaleString('pt-BR', { maximumFractionDigits: 0 })}
-                </div>
-                <div className="h-[60px] w-full flex items-end gap-1 px-1">
-                   {[30, 45, 25, 60, 80, 55, 90, 70, 40, 65, 85, 100].map((h, i) => (
-                     <motion.div 
-                        key={i}
-                        initial={{ height: 0 }}
-                        animate={{ height: `${h}%` }}
-                        transition={{ delay: i * 0.05 }}
-                        className={cn(
-                          "flex-1 rounded-t-sm transition-all duration-500",
-                          i > 8 ? "bg-indigo-500 opacity-100" : "bg-slate-700 opacity-50 group-hover:opacity-70"
-                        )}
-                     />
-                   ))}
-                </div>
-                <p className="text-[9px] text-slate-500 mt-3 flex items-center gap-1">
-                  <Clock className="h-3 w-3" /> Atualizado em tempo real • Confiança de 92%
-                </p>
-              </CardContent>
-           </Card>
-        </motion.div>
-
         {/* Advanced BI/Stats Section */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-4 relative">
           <div className="absolute -top-12 right-0 flex items-center gap-2">
@@ -461,11 +412,8 @@ export default function OrdersPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="flex items-center gap-2 text-[10px] text-sicoob-green font-bold mt-2">
-                  <TrendingUp className="h-3 w-3" /> +12.5% <span className="text-muted-foreground font-normal ml-1">vs mês anterior</span>
-                  <div className="ml-auto opacity-60">
-                    <Sparkline data={[10, 25, 45, 30, 55, 70, 65]} height={15} width={40} />
-                  </div>
+                <div className="flex items-center gap-2 text-[10px] text-muted-foreground mt-2">
+                  Dados consolidados no recorte selecionado
                 </div>
               </CardContent>
             </Card>
@@ -482,8 +430,8 @@ export default function OrdersPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="flex items-center gap-1 text-[10px] text-amber-600 font-bold">
-                  <TrendingDown className="h-3 w-3" /> -2.1% <span className="text-muted-foreground font-normal ml-1">vs média histórica</span>
+                <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
+                  Calculado sobre os pedidos do recorte selecionado
                 </div>
               </CardContent>
             </Card>
@@ -500,8 +448,8 @@ export default function OrdersPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="flex items-center gap-1 text-[10px] text-sicoob-green font-bold">
-                  <TrendingUp className="h-3 w-3" /> +5 <span className="text-muted-foreground font-normal ml-1">pedidos hoje</span>
+                <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
+                  Pedidos encontrados no recorte selecionado
                 </div>
               </CardContent>
             </Card>
@@ -889,7 +837,6 @@ export default function OrdersPage() {
                   <div>
                     <div className="flex items-center justify-between">
                       <div className="text-2xl font-bold text-foreground">R$ {order.total_amount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</div>
-                      <Sparkline data={[50, 40, 60, 45, 70, 55, 65]} height={15} width={40} />
                     </div>
                     <p className="text-[10px] text-muted-foreground mt-1 uppercase tracking-wider font-semibold">
                       {order.pa?.nome || "PA Não Identificado"}

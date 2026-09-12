@@ -38,6 +38,17 @@ describe('useSearch', () => {
   });
 
   describe('Histórico', () => {
+    it('isola o histórico por escopo de usuário e cooperativa', () => {
+      const first = renderHook(() => useSearch([], 'user:ana:cooperativa:1:pa:10'));
+      act(() => first.result.current.addToHistory('caneta ecológica'));
+
+      const second = renderHook(() => useSearch([], 'user:bruno:cooperativa:2:pa:20'));
+      expect(second.result.current.history).toEqual([]);
+
+      const sameScope = renderHook(() => useSearch([], 'user:ana:cooperativa:1:pa:10'));
+      expect(sameScope.result.current.history).toContain('caneta ecológica');
+    });
+
     it('adiciona termo ao histórico', () => {
       const { result } = renderHook(() => useSearch([]));
       act(() => result.current.addToHistory('caneta'));

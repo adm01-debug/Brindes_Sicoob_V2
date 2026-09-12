@@ -67,6 +67,7 @@ export default function Index() {
                 activeFiltersCount={catalog.activeFiltersCount}
                 searchHistory={catalog.history}
                 onClearSearchHistory={catalog.clearHistory}
+                historyScope={catalog.searchHistoryScope}
                 onReset={catalog.resetFilters}
                 onSelect={(result) => {
                   if (result.type === "product") {
