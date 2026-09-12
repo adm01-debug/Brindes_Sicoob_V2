@@ -8,6 +8,68 @@ import {
 } from "@/types/sicoob/orders";
 import { fetchPromobrindProductById, getProductPrice } from "@/lib/external-db";
 
+interface ApprovalTransitionInput {
+  orderId: string;
+  currentStatus: string;
+  observations?: string;
+}
+
+async function prepareOrderConfirmation({ orderId, currentStatus, observations }: ApprovalTransitionInput): Promise<void> {
+  const { error } = await supabase.rpc('prepare_sicoob_order_confirmation', {
+    p_order_id: orderId,
+    p_expected_status: currentStatus,
+    p_comment: observations || null,
+  });
+  if (error) throw error;
+}
+
+async function escalateOrderApproval({ orderId, currentStatus, observations }: ApprovalTransitionInput): Promise<void> {
+  const reason = observations?.trim() || '';
+  if (reason.length < 10) {
+    throw new Error('Informe uma justificativa de escalação com ao menos 10 caracteres.');
+  }
+
+  const { error } = await supabase.rpc('request_sicoob_order_approval', {
+    p_order_id: orderId,
+    p_expected_status: currentStatus,
+    p_reason: reason,
+    p_threshold: 0,
+    p_is_escalated: true,
+  });
+  if (error) throw error;
+}
+
+async function confirmOrderWithinApproval({ orderId, currentStatus }: ApprovalTransitionInput): Promise<void> {
+  const { error } = await supabase.rpc('confirm_sicoob_order', {
+    p_order_id: orderId,
+    p_expected_status: currentStatus,
+  });
+  if (error) throw error;
+}
+
+const approvalTransitionHandlers: Record<string, (input: ApprovalTransitionInput) => Promise<void>> = {
+  waiting_approval: prepareOrderConfirmation,
+  escalated_to_board: escalateOrderApproval,
+  confirmed: confirmOrderWithinApproval,
+};
+
+async function executeApprovalStatusTransition(
+  orderId: string,
+  status: string,
+  currentStatus: string,
+  observations?: string,
+): Promise<boolean> {
+  if (status === 'rejected') {
+    throw new Error('Use a decisão de rejeição para registrar o motivo e preservar a auditoria.');
+  }
+
+  const handler = approvalTransitionHandlers[status];
+  if (!handler) return false;
+
+  await handler({ orderId, currentStatus, observations });
+  return true;
+}
+
 /**
  * Service for Sicoob Orders with authorization checks.
  * Note: RLS on the database is the primary security layer, 
@@ -134,13 +196,13 @@ export const sicoobOrderService = {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error("Usuário não autenticado");
 
-    if (status === 'confirmed') {
-      const { error } = await supabase.rpc('confirm_sicoob_order', {
-        p_order_id: orderId,
-        p_expected_status: currentStatus,
-      });
-      if (error) throw error;
-    } else {
+    const approvalTransitionExecuted = await executeApprovalStatusTransition(
+      orderId,
+      status,
+      currentStatus,
+      observations,
+    );
+    if (!approvalTransitionExecuted) {
       const { error } = await supabase.rpc('transition_sicoob_order_status', {
         p_order_id: orderId,
         p_expected_status: currentStatus,

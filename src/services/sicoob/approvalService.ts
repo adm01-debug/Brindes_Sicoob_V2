@@ -68,6 +68,16 @@ export const sicoobApprovalService = {
     if (error) throw error;
   },
 
+  async rejectOrderWithoutApproval(orderId: string, expectedStatus: string, reason: string) {
+    const { error } = await supabase.rpc('reject_sicoob_order_without_approval', {
+      p_order_id: orderId,
+      p_expected_status: expectedStatus,
+      p_reason: reason,
+    });
+
+    if (error) throw error;
+  },
+
   async listLimitIncreaseRequests(paId: string) {
     const { data, error } = await supabase
       .from("limit_increase_requests")

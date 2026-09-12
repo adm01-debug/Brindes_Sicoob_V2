@@ -42,8 +42,7 @@ export const useApprovalRequests = (orderId?: string) => {
           amount_at_request,
           threshold_at_request,
           created_at,
-          updated_at,
-          requester:profiles!requester_id(display_name)
+          updated_at
         `)
         .order("created_at", { ascending: false });
 

@@ -42,6 +42,19 @@ real como concluídos.
 - **Exportação de campanhas:** o parâmetro que sombreava `format` foi renomeado
   e a exportação CSV passou a escapar aspas, vírgulas e quebras de linha, usar
   BOM UTF-8 e liberar a URL temporária após o download.
+- **Política de aprovação Sicoob:** criada a migração
+  `20260912120000_sicoob_approval_policy_guards.sql`. Ela versiona regras por
+  cooperativa, preserva a versão aplicada ao pedido, exige vínculo ativo,
+  bloqueia autoaprovação, deriva a alçada do orçamento do PA e impede alterações
+  de valor, itens e dados submetidos desde a preparação até a decisão. Transições
+  sensíveis deixam de aceitar a RPC genérica; preparação, solicitação,
+  escalação, aprovação e rejeição passam por operações específicas e auditáveis.
+  A escalação reutiliza a solicitação pendente, sem criar duas filas para o mesmo
+  pedido. O gatilho legado de notificação da solicitação foi removido para não
+  duplicar a notificação canônica da mudança de status.
+- **Entrada:** a verificação visual agora aguarda o carregamento efetivo de ao
+  menos uma marca Sicoob antes de medir a tela. Assim, ela não falha por uma
+  corrida de carregamento nem aceita uma página sem logo.
 
 ## Evidência local
 
@@ -66,6 +79,15 @@ real como concluídos.
   [simular-eventos-status-sicoob.py](../../scripts/qa/simular-eventos-status-sicoob.py).
 - Teste unitário de exportação de campanhas: CSV com vírgula, aspas e quebra de
   linha preservadas, mais caso sem campanhas.
+- Ensaio de política de aprovação em PostgreSQL 16 descartável e sem rede:
+  confirmação dentro da alçada, alçada obtida do servidor, congelamento de
+  valor/itens/solicitação, autoaprovação, vínculo revogado, escalação e bypass
+  de status foram exercitados. A evidência está em
+  [politica-aprovacao-sicoob.json](evidencias/politica-aprovacao-sicoob.json) e
+  o executor em
+  [simular-politica-aprovacao-sicoob.py](../../scripts/qa/simular-politica-aprovacao-sicoob.py).
+- Teste visual local: login, demonstração e loja em 1440, 390 e 320 px, sem
+  rolagem horizontal, erros de execução ou violações automatizadas de WCAG.
 
 ## Dependências externas ainda necessárias
 

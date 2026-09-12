@@ -33,6 +33,42 @@ describe("sicoobOrderService.updateOrderStatus", () => {
     expect(mocks.from).not.toHaveBeenCalled();
   });
 
+  it("prepara pedido dentro da alçada pela RPC própria", async () => {
+    await sicoobOrderService.updateOrderStatus("pedido-1", "waiting_approval", "pending", "Pronto para confirmação");
+
+    expect(mocks.rpc).toHaveBeenCalledExactlyOnceWith("prepare_sicoob_order_confirmation", {
+      p_order_id: "pedido-1",
+      p_expected_status: "pending",
+      p_comment: "Pronto para confirmação",
+    });
+    expect(mocks.from).not.toHaveBeenCalled();
+  });
+
+  it("escala sem usar a transição genérica", async () => {
+    await sicoobOrderService.updateOrderStatus(
+      "pedido-1",
+      "escalated_to_board",
+      "waiting_approval",
+      "Escalação para diretoria por exceder a alçada local",
+    );
+
+    expect(mocks.rpc).toHaveBeenCalledExactlyOnceWith("request_sicoob_order_approval", {
+      p_order_id: "pedido-1",
+      p_expected_status: "waiting_approval",
+      p_reason: "Escalação para diretoria por exceder a alçada local",
+      p_threshold: 0,
+      p_is_escalated: true,
+    });
+    expect(mocks.from).not.toHaveBeenCalled();
+  });
+
+  it("recusa rejeição sem o fluxo que registra o motivo", async () => {
+    await expect(sicoobOrderService.updateOrderStatus("pedido-1", "rejected", "waiting_approval"))
+      .rejects.toThrow(/decisão de rejeição/i);
+
+    expect(mocks.rpc).not.toHaveBeenCalled();
+  });
+
   it("recusa atualização sem estado atual antes de chamar o banco", async () => {
     await expect(sicoobOrderService.updateOrderStatus("pedido-1", "confirmed"))
       .rejects.toThrow(/status atual é obrigatório/i);

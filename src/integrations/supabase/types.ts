@@ -8103,6 +8103,8 @@ export type Database = {
         Row: {
           approved_at: string | null
           approved_by: string | null
+          approval_policy_id: string | null
+          approval_policy_version: string | null
           audit_remaining_budget: number | null
           cooperative_id: string | null
           created_at: string
@@ -8122,6 +8124,8 @@ export type Database = {
         Insert: {
           approved_at?: string | null
           approved_by?: string | null
+          approval_policy_id?: string | null
+          approval_policy_version?: string | null
           audit_remaining_budget?: number | null
           cooperative_id?: string | null
           created_at?: string
@@ -8141,6 +8145,8 @@ export type Database = {
         Update: {
           approved_at?: string | null
           approved_by?: string | null
+          approval_policy_id?: string | null
+          approval_policy_version?: string | null
           audit_remaining_budget?: number | null
           cooperative_id?: string | null
           created_at?: string
@@ -9118,6 +9124,14 @@ export type Database = {
         Args: { p_expected_status: string; p_order_id: string }
         Returns: undefined
       }
+      prepare_sicoob_order_confirmation: {
+        Args: {
+          p_comment?: string | null
+          p_expected_status: string
+          p_order_id: string
+        }
+        Returns: undefined
+      }
       archive_old_admin_audit_logs: { Args: never; Returns: number }
       audit_all_rls_compliance: { Args: never; Returns: Json }
       audit_ownership_orphans: {
@@ -9699,6 +9713,14 @@ export type Database = {
           p_order_id: string
           p_reason: string
           p_request_id: string
+        }
+        Returns: undefined
+      }
+      reject_sicoob_order_without_approval: {
+        Args: {
+          p_expected_status: string
+          p_order_id: string
+          p_reason: string
         }
         Returns: undefined
       }

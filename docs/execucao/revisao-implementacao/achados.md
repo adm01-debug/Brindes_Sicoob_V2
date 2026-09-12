@@ -272,11 +272,13 @@ Quality Gate falha em max-lines-per-function durante ESLint; causa raiz não con
 
 **Condição de fechamento:** Reproduzir lint nas mesmas condições da CI, corrigir regressões/fixtures com diagnóstico e executar jornada autenticada com contas de homologação. Não liberar apenas por aumentar timeout ou afrouxar gates.
 
-## A15 — Aprovação financeira ainda não verifica toda a política institucional
+## A15 — Aprovação financeira: guardas técnicas corrigidas; política institucional pendente
 
-**P0 · confirmado por leitura · Aberto**
+**P0 · corrigido localmente · pendente de política formal e homologação remota**
 
-RPCs locais já validam identidade, relação, estado, saldo e repetição. Ainda faltam vínculo ativo explícito, impedimento de autoaprovação conforme política, versão imutável da proposta/arte e competência específica de marca. Política vigente de cada cooperativa não foi confirmada.
+A migração `20260912120000_sicoob_approval_policy_guards.sql` bloqueia salto direto para aprovação, exige vínculo ativo do decisor, impede que solicitante ou criador decida o próprio pedido e congela valor, itens e dados submetidos enquanto houver solicitação pendente. A alçada gravada na solicitação vem do orçamento do PA, nunca do valor enviado pelo navegador. A política é versionada por cooperativa e sua versão fica no pedido e na solicitação; sem uma versão formal, aplica-se apenas uma base técnica conservadora.
+
+O modelo atual ainda não relaciona pedido Sicoob a versão de arte, nem possui um papel funcional de marketing. Portanto, não é possível declarar validada uma aprovação de marca ou uma política institucional específica sem os documentos e as competências formalmente cadastrados.
 
 **Referências:**
 
@@ -285,9 +287,9 @@ RPCs locais já validam identidade, relação, estado, saldo e repetição. Aind
 
 **Plano:** E018.04, E018.05, E018.06, E064.07, E065.07
 
-**Reprodução / conferência:** Inspecionar sicoob_actor_can_approve e pré-condições das RPCs. Ensaiar revogação de vínculo, proposta substituída e proibição local de autoaprovar após confirmar a política.
+**Reprodução / conferência:** executar `python3 scripts/qa/simular-politica-aprovacao-sicoob.py`. O ensaio usa PostgreSQL 16 descartável e sem rede para cobrir preparação dentro da alçada, alçada derivada no servidor, congelamento de valor/itens, autoaprovação, vínculo inativo, escalação sem duplicação e bypass de status.
 
-**Condição de fechamento:** Preservar a correção transacional existente e acrescentar precondições versionadas no servidor, com casos positivos e negativos por cooperativa.
+**Condição de fechamento:** cadastrar e homologar a política vigente de cada cooperativa, modelar a versão de arte e a competência de marketing que a aprova, aplicar as migrações no Supabase Sicoob e exercer RLS com perfis reais autorizados.
 
 ## A16 — Consolidação não implementa distribuição e recebimento por destino
 

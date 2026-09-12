@@ -42,7 +42,10 @@ jobs:
         with:
           fetch-depth: 0
       - name: Executar PostgreSQL isolado e casos concorrentes
-        run: python3 scripts/qa/simular-verba-atomica.py
+        run: |
+          python3 scripts/qa/simular-verba-atomica.py
+          python3 scripts/qa/simular-eventos-status-sicoob.py
+          python3 scripts/qa/simular-politica-aprovacao-sicoob.py
 
   experiencia:
     name: Entrada e demonstração responsivas

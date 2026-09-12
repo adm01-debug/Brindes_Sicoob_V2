@@ -94,6 +94,7 @@ import { OneClickReorder } from "@/components/orders/OneClickReorder";
 import { OrderAddItemDialog } from "@/components/sicoob/orders/OrderAddItemDialog";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
+import { sicoobApprovalService } from "@/services/sicoob/approvalService";
 
 import { OrderStatus, canSicoobTransitionTo, ORDER_STATUS_CONFIG } from "@/types/sicoob/orders";
 
@@ -121,7 +122,7 @@ export default function OrderDetailPage() {
 
   const { budget, remainingBudget } = usePaBudget(orderData?.pa_id);
   const { threshold, needsApproval } = useApprovalThreshold();
-  const { requests, createRequest, approveRequest, rejectRequest, updateStatus } = useApprovalRequests(id);
+  const { requests, createRequest, approveRequest, rejectRequest } = useApprovalRequests(id);
   const { history: orderHistory } = useSicoobOrderHistory(id);
   const { addItem, removeItem } = useSicoobOrderItems(id);
   const updateOrderStatusMutation = useUpdateSicoobOrderStatus();
@@ -187,14 +188,16 @@ export default function OrderDetailPage() {
     }
   };
 
-  const handleReject = () => {
+  const handleReject = async () => {
+    if (!orderData) return;
+
     if (!rejectionReason.trim() || rejectionReason.length < 10) {
       toast.error("Por favor, informe um motivo com pelo menos 10 caracteres.");
       return;
     }
 
     if (activeRequest) {
-      rejectRequest.mutate({ 
+      rejectRequest.mutate({
         requestId: activeRequest.id, 
         orderId: id!, 
         reason: rejectionReason,
@@ -206,17 +209,16 @@ export default function OrderDetailPage() {
         }
       });
     } else {
-      updateStatus.mutate({
-        orderId: id!,
-        newStatus: 'rejected',
-        previousStatus: orderData.status,
-        comment: rejectionReason
-      }, {
-        onSuccess: () => {
-          setIsRejectDialogOpen(false);
-          setRejectionReason("");
-        }
-      });
+      try {
+        await sicoobApprovalService.rejectOrderWithoutApproval(id!, orderData.status, rejectionReason);
+        toast.success("Pedido rejeitado");
+        await refetchOrder();
+        setIsRejectDialogOpen(false);
+        setRejectionReason("");
+      } catch (error) {
+        const description = error instanceof Error ? error.message : "Não foi possível registrar a rejeição.";
+        toast.error("Erro ao rejeitar pedido", { description });
+      }
     }
   };
 
@@ -226,11 +228,12 @@ export default function OrderDetailPage() {
       return;
     }
 
-    updateOrderStatusMutation.mutate({ 
+    createRequest.mutate({
       orderId: id!, 
-      status: 'escalated_to_board', 
-      currentStatus: orderData?.status,
-      observations: requestReason,
+      reason: requestReason,
+      threshold,
+      previousStatus: orderData.status,
+      isEscalated: true,
     }, {
       onSuccess: () => {
         setIsEscalateDialogOpen(false);

@@ -32,7 +32,7 @@ export function OrderHistoryTimeline({ orderId }: OrderHistoryTimelineProps) {
               <div className="flex-1 pb-4">
                 <div className="flex items-center justify-between mb-1">
                   <span className="text-xs font-bold text-foreground">
-                    {event.new_status || event.status}
+                    {event.new_status}
                   </span>
                   <span className="text-[10px] text-muted-foreground">
                     {event.created_at && format(new Date(event.created_at), "dd MMM, HH:mm", { locale: ptBR })}

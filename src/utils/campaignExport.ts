@@ -6,9 +6,10 @@ function escapeCsvCell(value: unknown): string {
 }
 
 export function campaignRowsToCsv(rows: CampaignExportRow[]): string {
-  if (rows.length === 0) return '\uFEFF';
+  const [firstRow] = rows;
+  if (!firstRow) return '\uFEFF';
 
-  const headers = Object.keys(rows[0]);
+  const headers = Object.keys(firstRow);
   const lines = [
     headers.map(escapeCsvCell).join(','),
     ...rows.map((row) => headers.map((header) => escapeCsvCell(row[header])).join(',')),
