@@ -197,8 +197,8 @@ jobs:
           key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
           restore-keys: playwright-${{ runner.os }}-
 
-      - name: Install Playwright (chromium)
-        run: npx playwright install --with-deps chromium
+      - name: Install Playwright (chromium + webkit)
+        run: npx playwright install --with-deps chromium webkit
 
       # SEM --max-failures: cada shard registra todas as falhas de sua parte.
       # O gate anterior já validou o smoke e a ausência de test.only.

@@ -290,11 +290,8 @@ export const Sel = {
 
   // ---------- App genérico ----------
   app: {
-    /**
-     * Toast da aplicação — usamos a lib `sonner`, cujo `data-sonner-toast` é
-     * contrato público estável. Não há `app-toast` próprio em uso.
-     */
-    toast: "[data-sonner-toast]",
+    /** Toast da aplicação, exposto pelo componente de UI para testes estáveis. */
+    toast: "[data-testid=\"app-toast\"]",
     errorBanner: TID("app-error-banner"),
     /** Tela 404 (NotFound page). */
     notFound: TID("app-not-found"),

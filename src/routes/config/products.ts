@@ -6,6 +6,10 @@ import { defineRoute } from "@/lib/router-utils";
  * Refatoradas para excelência técnica 10/10
  */
 export const productRoutes = [
+  defineRoute({
+    path: "/produtos",
+    component: lazyWithRetry(() => import("@/pages/Index"))
+  }),
   defineRoute({ 
     path: "/produto/:id", 
     component: lazyWithRetry(() => import("@/pages/ProductDetail")) 
@@ -41,5 +45,33 @@ export const productRoutes = [
   defineRoute({ 
     path: "/reposicao", 
     component: lazyWithRetry(() => import("@/pages/ReplenishmentsPage")) 
+  }),
+  defineRoute({
+    path: "/meus-kits",
+    component: lazyWithRetry(() => import("@/pages/KitLibraryPage"))
+  }),
+  defineRoute({
+    path: "/mockups/historico",
+    component: lazyWithRetry(() => import("@/pages/MockupHistoryPage"))
+  }),
+  defineRoute({
+    path: "/tendencias",
+    component: lazyWithRetry(() => import("@/pages/TrendsPage"))
+  }),
+  defineRoute({
+    path: "/inteligencia-comercial",
+    component: lazyWithRetry(() => import("@/pages/CommercialIntelligencePage"))
+  }),
+  defineRoute({
+    path: "/ferramentas/bi",
+    component: lazyWithRetry(() => import("@/pages/BusinessIntelligencePage"))
+  }),
+  defineRoute({
+    path: "/ferramentas/bi/comparar",
+    component: lazyWithRetry(() => import("@/pages/ClientComparatorPage"))
+  }),
+  defineRoute({
+    path: "/dropbox",
+    component: lazyWithRetry(() => import("@/pages/DropboxBrowserPage"))
   }),
 ] as const;

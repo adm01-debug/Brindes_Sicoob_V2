@@ -208,7 +208,11 @@ export default function PublicQuoteApprovalPage() {
               </div>
             </div>
 
+            <Label htmlFor="response-notes" className="sr-only">
+              Observações ou comentários
+            </Label>
             <Textarea
+              id="response-notes"
               placeholder="Observações ou comentários (opcional)..."
               value={state.responseNotes}
               onChange={(e) => state.setResponseNotes(e.target.value)}

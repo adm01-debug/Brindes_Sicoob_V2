@@ -37,10 +37,9 @@ const publicRoutes = [
 
 test.describe('Public Routes — No Auth Required', () => {
   for (const route of publicRoutes) {
-    test(`${route} should NOT redirect to /login`, async ({ page }) => {
+    test(`${route} permanece na rota pública solicitada`, async ({ page }) => {
       await page.goto(route);
-      await page.waitForTimeout(2000);
-      expect(page.url()).not.toMatch(/\/login$/);
+      await expect(page).toHaveURL(new RegExp(`${route}(?:[?#]|$)`));
     });
   }
 });

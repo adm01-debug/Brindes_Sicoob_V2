@@ -6,6 +6,26 @@ import { defineRoute } from "@/lib/router-utils";
  * Refatoradas para excelência técnica 10/10
  */
 export const quoteRoutes = [
+  defineRoute({
+    path: "/orcamentos",
+    component: lazyWithRetry(() => import("@/pages/QuotesListPage"))
+  }),
+  defineRoute({
+    path: "/orcamentos/dashboard",
+    component: lazyWithRetry(() => import("@/pages/QuotesDashboardPage"))
+  }),
+  defineRoute({
+    path: "/orcamentos/lista",
+    component: lazyWithRetry(() => import("@/pages/QuotesListPage"))
+  }),
+  defineRoute({
+    path: "/orcamentos/kanban",
+    component: lazyWithRetry(() => import("@/pages/QuotesKanbanPage"))
+  }),
+  defineRoute({
+    path: "/orcamentos/templates",
+    component: lazyWithRetry(() => import("@/pages/QuoteTemplatesPage"))
+  }),
   defineRoute({ 
     path: "/orcamentos/novo", 
     component: lazyWithRetry(() => import("@/pages/QuoteBuilderPage")) 
@@ -17,6 +37,10 @@ export const quoteRoutes = [
   defineRoute({ 
     path: "/orcamentos/:id", 
     component: lazyWithRetry(() => import("@/pages/QuoteDetailPage")) 
+  }),
+  defineRoute({
+    path: "/orcamentos/:id/editar",
+    component: lazyWithRetry(() => import("@/pages/QuoteBuilderPage"))
   }),
   defineRoute({ 
     path: "/orcamentos/:id/visualizar", 

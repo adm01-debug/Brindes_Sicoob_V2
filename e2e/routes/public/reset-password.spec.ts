@@ -7,11 +7,11 @@ import { basicA11yChecks, setMobileViewport, waitRouteReady } from "../_shared";
 test.describe("/reset-password", () => {
   test.use({ storageState: { cookies: [], origins: [] } });
 
-  test("render: campos de nova senha visíveis", async ({ page }) => {
+  test("sem token: informa que o link de recuperação é inválido", async ({ page }) => {
     await page.goto("/reset-password");
     await waitRouteReady(page);
-    const newPwd = page.locator('input[type="password"]').first();
-    await expect(newPwd).toBeVisible({ timeout: 8000 });
+    const invalidLink = page.getByText(/inválido|expirado|link.+inválido|redireciona/i).first();
+    await expect(invalidLink).toBeVisible({ timeout: 8000 });
   });
 
   test("happy: senha forte válida habilita botão de submeter", async ({ page }) => {

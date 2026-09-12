@@ -26,7 +26,7 @@ test.describe("Navigation & RBAC Integrity", () => {
     test("should redirect anonymous user to login for protected routes", async ({ page }) => {
       const protectedRoutes = ["/dashboard", "/produtos", "/orcamentos", "/admin/usuarios"];
       for (const route of protectedRoutes) {
-        await page.goto(route);
+        await gotoAndSettle(page, route);
         await expect(page).toHaveURL(/\/login/);
       }
     });
@@ -34,8 +34,8 @@ test.describe("Navigation & RBAC Integrity", () => {
     test("should allow access to public routes", async ({ page }) => {
       const publicRoutes = ["/login", "/reset-password"];
       for (const route of publicRoutes) {
-        await page.goto(route);
-        await expect(page).not.toHaveURL(/\/login/);
+        await gotoAndSettle(page, route);
+        await expect(page).toHaveURL(new RegExp(`${route}(?:[?#]|$)`));
         await expect(page.locator("body")).toBeVisible();
       }
     });

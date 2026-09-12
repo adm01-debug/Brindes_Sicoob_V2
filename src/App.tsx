@@ -48,7 +48,6 @@ const OrdersPage = lazyWithRetry(() => import("./pages/OrdersPage").then((module
 const OrderDetailPage = lazyWithRetry(() => import("./pages/OrderDetailPage"));
 const ClientsPage = lazyWithRetry(() => import("./pages/ClientsPage"));
 const ClientDetailPage = lazyWithRetry(() => import("./pages/ClientDetailPage"));
-const TrendsPage = lazyWithRetry(() => import("./pages/TrendsPage"));
 const NotFound = lazyWithRetry(() => import("./pages/NotFound"));
 const NotificationsPage = lazyWithRetry(() => import("./pages/NotificationsPage"));
 const AdminTemasPage = lazyWithRetry(() => import("./pages/admin/AdminTemasPage"));
@@ -140,7 +139,6 @@ const App = () => {
                             <Route path="/pedidos/:id" element={<RouteSuspense><OrderDetailPage /></RouteSuspense>} />
                             <Route path="/clientes" element={<RouteSuspense><ClientsPage /></RouteSuspense>} />
                             <Route path="/clientes/:id" element={<RouteSuspense><ClientDetailPage /></RouteSuspense>} />
-                            <Route path="/tendencias" element={<RouteSuspense><TrendsPage /></RouteSuspense>} />
                             <Route path="/notificacoes" element={<RouteSuspense><NotificationsPage /></RouteSuspense>} />
                             <Route path="/pedidos/:id/auditoria" element={<RouteSuspense><OrderAuditPage /></RouteSuspense>} />
 

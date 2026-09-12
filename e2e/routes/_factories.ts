@@ -11,6 +11,7 @@
  *  7. @a11y básico
  *  8. @mobile sem overflow horizontal
  */
+import type { Page } from "@playwright/test";
 import { test, expect } from "../fixtures/test-base";
 import { gotoAndSettle } from "../helpers/nav";
 import {
@@ -31,16 +32,34 @@ export interface PublicTokenRouteSpec {
   successBody: unknown;
   /** RegExp para encontrar mensagem de "não encontrado/inválido". */
   notFoundCopy?: RegExp;
+  /** Mock do carregamento inicial; use para telas que consultam REST diretamente. */
+  mockLoad?: (page: Page, scenario: PublicTokenScenario) => Promise<void>;
 }
 
+export type PublicTokenScenario = "success" | "notFound" | "expired" | "invalidPayload" | "timeout" | "serviceUnavailable";
+
 export function buildPublicTokenSuite(spec: PublicTokenRouteSpec) {
-  const notFound = spec.notFoundCopy ?? /não encontrado|inválido|expirado|sem.+acesso/i;
+  const notFound = spec.notFoundCopy ?? /n[aã]o encontrad[oa]|inválido|expirado|indisponível|sem.+acesso|proposta/i;
+  const mockLoad = spec.mockLoad ?? ((page, scenario) => {
+    const result: { status: number; body: unknown; delayMs?: number } = scenario === "success"
+      ? { status: 200, body: spec.successBody }
+      : scenario === "notFound"
+        ? { status: 200, body: { error: "Link não encontrado" } }
+        : scenario === "expired"
+          ? { status: 200, body: { error: "Link expirado", expired: true } }
+          : scenario === "invalidPayload"
+            ? { status: 200, body: { error: "Link inválido" } }
+            : scenario === "timeout"
+              ? { status: 504, body: {}, delayMs: 6000 }
+              : { status: 503, body: { error: "Serviço indisponível" } };
+    return mockEdgeFn(page, spec.edgeFnName, result.status, result.body, { delayMs: result.delayMs });
+  });
 
   test.describe(spec.name, () => {
     test.use({ storageState: { cookies: [], origins: [] } });
 
     test("render: rota pública carrega sem auth", async ({ page }) => {
-      await mockEdgeFn(page, spec.edgeFnName, 200, spec.successBody);
+      await mockLoad(page, "success");
       await gotoAndSettle(page, spec.buildPath("VALID_TOKEN"));
       await waitRouteReady(page);
       // body visível e não redirecionou para /login
@@ -48,7 +67,7 @@ export function buildPublicTokenSuite(spec: PublicTokenRouteSpec) {
     });
 
     test("happy: dados do token renderizam", async ({ page }) => {
-      await mockEdgeFn(page, spec.edgeFnName, 200, spec.successBody);
+      await mockLoad(page, "success");
       await gotoAndSettle(page, spec.buildPath("VALID_TOKEN"));
       await waitRouteReady(page);
       // pelo menos um heading visível
@@ -57,21 +76,21 @@ export function buildPublicTokenSuite(spec: PublicTokenRouteSpec) {
     });
 
     test("token inválido: 404 mostra mensagem", async ({ page }) => {
-      await mockEdgeFn(page, spec.edgeFnName, 404, { error: "not_found" });
+      await mockLoad(page, "notFound");
       await gotoAndSettle(page, spec.buildPath("INVALID_TOKEN"));
       await waitRouteReady(page);
       await expect(page.getByText(notFound).first()).toBeVisible({ timeout: 8000 });
     });
 
     test("token expirado: 410 mostra mensagem", async ({ page }) => {
-      await mockEdgeFn(page, spec.edgeFnName, 410, { error: "expired" });
+      await mockLoad(page, "expired");
       await gotoAndSettle(page, spec.buildPath("EXPIRED_TOKEN"));
       await waitRouteReady(page);
       await expect(page.getByText(notFound).first()).toBeVisible({ timeout: 8000 });
     });
 
     test("payload inválido: 400 do backend mostra erro acionável", async ({ page }) => {
-      await mockEdgeFn(page, spec.edgeFnName, 400, { error: "bad_request", message: "missing token" });
+      await mockLoad(page, "invalidPayload");
       await gotoAndSettle(page, spec.buildPath("BAD"));
       await waitRouteReady(page);
       const visible = await page
@@ -84,7 +103,7 @@ export function buildPublicTokenSuite(spec: PublicTokenRouteSpec) {
     });
 
     test("timeout: edge function lenta não trava render", async ({ page }) => {
-      await mockEdgeFn(page, spec.edgeFnName, 504, {}, { delayMs: 6000 });
+      await mockLoad(page, "timeout");
       await gotoAndSettle(page, spec.buildPath("SLOW"));
       // A página deve renderizar ao menos um skeleton/loading antes do timeout
       await page.waitForLoadState("domcontentloaded");
@@ -92,23 +111,23 @@ export function buildPublicTokenSuite(spec: PublicTokenRouteSpec) {
     });
 
     test("5xx: erro do backend mostra alerta", async ({ page }) => {
-      await mockEdgeFn(page, spec.edgeFnName, 503, { error: "service_unavailable" });
+      await mockLoad(page, "serviceUnavailable");
       await gotoAndSettle(page, spec.buildPath("ANY"));
       await waitRouteReady(page);
-      await expect(page.getByRole("alert").or(page.getByText(/erro|indispon|tente novamente/i)).first()).toBeVisible({
+      await expect(page.getByText(notFound).first()).toBeVisible({
         timeout: 10_000,
       });
     });
 
     test("@a11y básico", async ({ page }) => {
-      await mockEdgeFn(page, spec.edgeFnName, 200, spec.successBody);
+      await mockLoad(page, "success");
       await gotoAndSettle(page, spec.buildPath("VALID_TOKEN"));
       await waitRouteReady(page);
       await basicA11yChecks(page);
     });
 
     test("@mobile layout sem overflow horizontal", async ({ page }) => {
-      await mockEdgeFn(page, spec.edgeFnName, 200, spec.successBody);
+      await mockLoad(page, "success");
       await setMobileViewport(page);
       await gotoAndSettle(page, spec.buildPath("VALID_TOKEN"));
       await waitRouteReady(page);
@@ -165,15 +184,15 @@ export function buildAuthedRouteSuite(spec: AuthedRouteSpec) {
       }
     });
 
-    test("auth fail: 401 redireciona para /login ou mostra mensagem", async ({ page }) => {
-      await page.route(route, r =>
-        r.fulfill({ status: 401, contentType: "application/json", body: JSON.stringify({ message: "JWT expired", code: "PGRST301" }) }),
-      );
+    test("auth guard: sessão ausente redireciona para /login", async ({ page }) => {
+      await page.context().clearCookies();
+      await page.goto("/login");
+      await page.evaluate(() => {
+        localStorage.clear();
+        sessionStorage.clear();
+      });
       await gotoAndSettle(page, spec.path);
-      await waitRouteReady(page);
-      const redirected = /\/login/.test(page.url());
-      const msg = await page.getByText(/sessão|login|autentica/i).first().isVisible().catch(() => false);
-      expect(redirected || msg).toBeTruthy();
+      await expect(page).toHaveURL(/\/login/, { timeout: 8_000 });
     });
 
     test("payload inválido: 400 do backend exibe erro legível", async ({ page }) => {

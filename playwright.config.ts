@@ -48,6 +48,28 @@ const RETRIES = process.env.E2E_RETRIES
     ? 2
     : 1;
 
+const HAS_E2E_USER = Boolean(process.env.E2E_USER_EMAIL && process.env.E2E_USER_PASSWORD);
+const AUTHENTICATED_FLOW_IGNORE = HAS_E2E_USER
+  ? [/flows\/20-all-features-smoke\.spec\.ts/]
+  : [/flows\//];
+const AUTHENTICATED_ROUTE_IGNORE = HAS_E2E_USER ? [] : [/./];
+const INTEGRATION_SPECS = [
+  /admin-conexoes-credentials-active-products\.spec\.ts/,
+  /admin-conexoes-zone-collapse\.spec\.ts/,
+  /admin-verbas-audit\.spec\.ts/,
+  /audit-validation\.spec\.ts/,
+  /critical-flows\/.*\.spec\.ts/,
+  /discount-approval\.spec\.ts/,
+  /editor-permissions\.spec\.ts/,
+  /matrix-automated\.spec\.ts/,
+  /mockup-generate\.spec\.ts/,
+  /onboarding-tour\.spec\.ts/,
+  /order-status-rbac\.spec\.ts/,
+  /pwa-resilience\.spec\.ts/,
+  /rbac-navigation\.spec\.ts/,
+  /search-stability\.spec\.ts/,
+];
+
 export default defineConfig({
   testDir: "./e2e",
   globalSetup: path.resolve(__dirname, "e2e/global-setup.ts"),
@@ -110,7 +132,16 @@ export default defineConfig({
     {
       name: "chromium-public",
       use: { ...devices["Desktop Chrome"] },
-      testIgnore: [/fixtures\/auth\.setup\.ts/, /flows\//, /routes\//],
+      testIgnore: [/fixtures\/auth\.setup\.ts/, /flows\//, /routes\//, ...INTEGRATION_SPECS],
+      grepInvert: /@smoke/,
+    },
+    {
+      // Integrações e papéis só são válidos quando a CI possui uma conta E2E.
+      name: "chromium-integration",
+      use: { ...devices["Desktop Chrome"], storageState: STORAGE_STATE },
+      dependencies: ["setup"],
+      testMatch: INTEGRATION_SPECS,
+      testIgnore: AUTHENTICATED_ROUTE_IGNORE,
       grepInvert: /@smoke/,
     },
     {
@@ -120,7 +151,7 @@ export default defineConfig({
       testMatch: /flows\/.*\.spec\.ts/,
       // Smoke roda no project dedicado abaixo (chromium-smoke) para evitar
       // execução duplicada e garantir ordem sequencial determinística.
-      testIgnore: [/flows\/20-all-features-smoke\.spec\.ts/],
+      testIgnore: AUTHENTICATED_FLOW_IGNORE,
       grepInvert: /@smoke/,
     },
     {
@@ -161,6 +192,15 @@ export default defineConfig({
       use: { ...devices["Desktop Chrome"], storageState: STORAGE_STATE },
       dependencies: ["setup"],
       testMatch: /routes\/(app|quotes|admin)\/.*\.spec\.ts/,
+      testIgnore: AUTHENTICATED_ROUTE_IGNORE,
+      grepInvert: /@smoke/,
+    },
+    {
+      // Sem credenciais, as rotas protegidas ainda precisam bloquear a sessão ausente.
+      name: "routes-guards",
+      use: { ...devices["Desktop Chrome"] },
+      testMatch: /routes\/(app|quotes|admin)\/.*\.spec\.ts/,
+      grep: /auth guard:/,
       grepInvert: /@smoke/,
     },
     {
@@ -169,6 +209,7 @@ export default defineConfig({
       use: { ...devices["iPhone 13"], storageState: STORAGE_STATE },
       dependencies: ["setup"],
       testMatch: /routes\/(app|quotes|admin)\/.*\.spec\.ts/,
+      testIgnore: AUTHENTICATED_ROUTE_IGNORE,
       grep: /@mobile/,
       grepInvert: /@smoke/,
     },
@@ -180,7 +221,9 @@ export default defineConfig({
         // `--mode production` ativaria Service Worker durante os testes.
         command: `bash -c 'set -a; source .env.production; set +a; exec npm run dev -- --host 127.0.0.1 --port ${LOCAL_PORT}'`,
         url: LOCAL_URL,
-        reuseExistingServer: !process.env.CI,
+        // Reusar uma porta sem checar sua origem permitia executar a regressão
+        // contra outro projeto local. Use E2E_BASE_URL para um servidor já validado.
+        reuseExistingServer: false,
         timeout: 120_000,
         stdout: "pipe",
         stderr: "pipe",

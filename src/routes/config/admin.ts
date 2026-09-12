@@ -39,5 +39,28 @@ export const adminRoutes = [
     path: "/admin/verbas", 
     component: lazyWithRetry(() => import("@/pages/admin/sicoob/SicoobManagementPage")) 
   }),
+  defineRoute({
+    path: "/admin/limites-desconto",
+    component: lazyWithRetry(() => import("@/pages/admin/SellerDiscountLimitsAdminPage"))
+  }),
+  defineRoute({
+    path: "/admin/permissoes",
+    component: lazyWithRetry(() => import("@/pages/PermissionsPage"))
+  }),
+  defineRoute({
+    path: "/admin/roles",
+    component: lazyWithRetry(() => import("@/pages/RolesPage"))
+  }),
+  defineRoute({
+    path: "/admin/role-permissoes",
+    component: lazyWithRetry(() => import("@/pages/RolePermissionsPage"))
+  }),
+  defineRoute({
+    path: "/admin/video-variantes",
+    component: lazyWithRetry(() => import("@/pages/admin/AdminVideoVariantsPage"))
+  }),
+  defineRoute({
+    path: "/admin/kit-templates",
+    component: lazyWithRetry(() => import("@/pages/admin/KitTemplatesAdminPage"))
+  }),
 ] as const;
-

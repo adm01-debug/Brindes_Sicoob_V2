@@ -44,5 +44,40 @@ export const devRoutes = [
     path: "/admin/qa/preflight", 
     component: lazyWithRetry(() => import("@/pages/admin/qa/PreflightPage")) 
   }),
+  defineRoute({
+    path: "/admin/seguranca/chaves",
+    component: lazyWithRetry(() => import("@/pages/admin/AdminSegurancaChavesPage"))
+  }),
+  defineRoute({
+    path: "/admin/seguranca/migracao-papeis",
+    component: lazyWithRetry(() => import("@/pages/admin/AdminMigracaoPapeisPage"))
+  }),
+  defineRoute({
+    path: "/admin/validade-precos",
+    component: lazyWithRetry(() => import("@/pages/admin/PriceFreshnessSettings"))
+  }),
+  defineRoute({
+    path: "/admin/rate-limit",
+    component: lazyWithRetry(() => import("@/pages/RateLimitDashboardPage"))
+  }),
+  defineRoute({
+    path: "/admin/login-attempts",
+    component: lazyWithRetry(() => import("@/pages/admin/AdminLoginAttemptsPage"))
+  }),
+  defineRoute({
+    path: "/admin/consumo-ia",
+    component: lazyWithRetry(() => import("@/pages/admin/AdminAiUsagePage"))
+  }),
+  defineRoute({
+    path: "/admin/rls-denials",
+    component: lazyWithRetry(() => import("@/pages/admin/RlsDenialsAdminPage"))
+  }),
+  defineRoute({
+    path: "/admin/auditoria-propriedade",
+    component: lazyWithRetry(() => import("@/pages/admin/OwnershipAuditAdminPage"))
+  }),
+  defineRoute({
+    path: "/status",
+    component: lazyWithRetry(() => import("@/pages/SystemStatusPage"))
+  }),
 ] as const;
-
