@@ -23,18 +23,35 @@ real como concluídos.
   cooperativa e PA. A troca de organização aplica papel e organização na mesma
   atualização. Projeções, percentuais e presença de usuários simulados foram
   removidos das telas de pedidos.
+- **Versionamento de orçamentos:** a migração
+  `20260912100000_quote_versioning_atomic.sql` substitui o cálculo de versão no
+  navegador por uma RPC transacional. Ela serializa cada família, garante uma
+  única versão vigente, cria a cópia de itens e personalizações, registra a
+  auditoria no mesmo commit e transforma a nova versão em rascunho, sem carregar
+  aprovação, resposta do cliente ou integração da versão anterior. O hook usa
+  exclusivamente essa RPC.
 
 ## Evidência local
 
-- Testes focados: 26 testes aprovados em 6 arquivos (serviços Sicoob,
-  autosave, estoque por variante, busca e redaction).
+- Testes focados: 29 testes aprovados em 7 arquivos (versionamento, serviços
+  Sicoob, autosave, estoque por variante, busca e redaction).
 - Checagem de tipos dos arquivos alterados: sem erros.
 - `git diff --check`: sem erro de whitespace.
+- Ensaio reproduzível em PostgreSQL 16 descartável e sem rede: migração aplicada;
+  cópia de item/personalização/auditoria, origem obsoleta, ator fora do escopo,
+  rollback por falha intermediária e concorrência foram exercitados. O cenário
+  concorrente teve retornos `0` e `3`, com duas versões e apenas uma vigente.
+  A evidência está em
+  [versionamento-orcamento-atomico.json](evidencias/versionamento-orcamento-atomico.json)
+  e o executor em
+  [simular-versionamento-orcamento-atomico.py](../../scripts/qa/simular-versionamento-orcamento-atomico.py).
 
 ## Dependências externas ainda necessárias
 
-- Aplicar a migração ao projeto Supabase `cfmzkthhgliqelozlmwu`, regenerar os
-  tipos do Supabase e executar teste de RLS com perfis reais autorizados.
+- Aplicar as migrações pendentes, inclusive
+  `20260912100000_quote_versioning_atomic.sql`, ao projeto Supabase
+  `cfmzkthhgliqelozlmwu`, regenerar os tipos do Supabase e executar teste de
+  RLS com perfis reais autorizados.
 - O `supabase db lint --local` não pôde executar porque o Postgres local em
   `127.0.0.1:54322` não está ativo. Nenhum serviço local foi iniciado para não
   alterar o ambiente compartilhado.
