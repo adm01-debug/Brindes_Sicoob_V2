@@ -14,18 +14,17 @@ on:
 jobs:
   e2e:
     runs-on: ubuntu-latest
-    # A regressão reúne 955 testes em 64 arquivos. O smoke e o header são
-    # sequenciais, mas a matriz completa usa dois workers abaixo para concluir
-    # dentro desta janela sem sacrificar a cobertura.
-    timeout-minutes: 40
+    # Gate curto e determinístico. A regressão completa roda em shards no job
+    # seguinte, para não deixar que uma suíte extensa oculte uma falha básica.
+    timeout-minutes: 15
     env:
-      CI: "true"
+      CI: 'true'
       # Logs limpos no GitHub Actions: sem códigos ANSI no console output
       # (relatório HTML continua colorido). Reporters dedicados (github/list)
       # cuidam da formatação amigável.
-      FORCE_COLOR: "0"
+      FORCE_COLOR: '0'
       # Falha imediatamente se algum spec ainda tiver `test.only` esquecido.
-      PWTEST_FORBID_ONLY: "1"
+      PWTEST_FORBID_ONLY: '1'
       E2E_USER_EMAIL: ${{ secrets.E2E_USER_EMAIL }}
       E2E_USER_PASSWORD: ${{ secrets.E2E_USER_PASSWORD }}
       E2E_ADMIN_EMAIL: ${{ secrets.E2E_ADMIN_EMAIL }}
@@ -35,8 +34,8 @@ jobs:
 
       - uses: actions/setup-node@v6
         with:
-          node-version: "24"
-          cache: "npm"
+          node-version: '24'
+          cache: 'npm'
 
       - name: Install deps
         run: npm ci --no-audit --no-fund
@@ -129,17 +128,85 @@ jobs:
           echo "::error title=Header sticky regression::O Header global deixou de ser sticky em alguma rota/viewport. Spec: e2e/flows/22-header-sticky.spec.ts. Causa raiz típica: 'overflow' / 'transform' / 'filter' em ancestral do <header> em src/components/layout/MainLayout.tsx criando scroll container ou stacking context indevido. Veja o artifact 'playwright-report' (screenshot + vídeo + trace) para a rota específica."
           exit 1
 
-      # ─── REGRESSION: registra TUDO ──────────────────────────────────────
-      # SEM --max-failures: queremos diagnóstico completo. SEM --forbid-only
-      # (já validado no smoke). Reporter `line` é compacto e mostra todos
-      # os resultados; `html` para drill-down; `json`/`junit` para tooling.
-      # `--pass-with-no-tests` evita falhar se nenhum spec casar (ex: PR só
-      # mexe em smoke).
-      - name: Run E2E regression (cobertura completa — registra todas as falhas)
-        if: steps.e2e_smoke.outcome == 'success' && steps.e2e_header_sticky.outcome == 'success'
+      - name: Upload Playwright report do gate
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: playwright-report-smoke-gate
+          path: playwright-report
+          retention-days: 7
+
+      - name: Upload smoke summary (markdown + json)
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: e2e-smoke-summary
+          path: |
+            playwright-report/smoke-summary.md
+            playwright-report/smoke-summary.json
+          retention-days: 30
+          if-no-files-found: ignore
+
+      - name: Upload evidências do gate
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: e2e-evidence-smoke-gate
+          path: |
+            e2e-artifacts
+            test-results
+          retention-days: 7
+
+  e2e-regression:
+    name: E2E regression — shard ${{ matrix.shard }}/4
+    needs: e2e
+    if: needs.e2e.result == 'success'
+    runs-on: ubuntu-latest
+    # A simulação local listou 954 casos de regressão exclusivos + o setup
+    # comum, em quatro partes de 239/239/238/238. Cada runner recebe dois
+    # workers, com margem suficiente para a parte mais lenta sem baixar a
+    # cobertura nem mascarar timeout por aumento artificial do limite.
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4]
+    env:
+      CI: 'true'
+      FORCE_COLOR: '0'
+      PWTEST_FORBID_ONLY: '1'
+      E2E_USER_EMAIL: ${{ secrets.E2E_USER_EMAIL }}
+      E2E_USER_PASSWORD: ${{ secrets.E2E_USER_PASSWORD }}
+      E2E_ADMIN_EMAIL: ${{ secrets.E2E_ADMIN_EMAIL }}
+      E2E_ADMIN_PASSWORD: ${{ secrets.E2E_ADMIN_PASSWORD }}
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          cache: 'npm'
+
+      - name: Install deps
+        run: npm ci --no-audit --no-fund
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@v5
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+          restore-keys: playwright-${{ runner.os }}-
+
+      - name: Install Playwright (chromium)
+        run: npx playwright install --with-deps chromium
+
+      # SEM --max-failures: cada shard registra todas as falhas de sua parte.
+      # O gate anterior já validou o smoke e a ausência de test.only.
+      - name: Run E2E regression (shard ${{ matrix.shard }}/4)
         run: |
           npx playwright test \
             --grep-invert @smoke \
+            --shard=${{ matrix.shard }}/4 \
             --workers=2 \
             --pass-with-no-tests \
             --reporter=github,line,html,json,junit
@@ -157,7 +224,7 @@ jobs:
         if: always() && hashFiles('playwright-report/feature-summary.md') != ''
         run: |
           {
-            echo "## 🧪 E2E Feature Summary (regression)"
+            echo "## 🧪 E2E Feature Summary — shard ${{ matrix.shard }}/4"
             echo ""
             cat playwright-report/feature-summary.md
           } >> "$GITHUB_STEP_SUMMARY"
@@ -166,26 +233,15 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v7
         with:
-          name: playwright-report
+          name: playwright-report-shard-${{ matrix.shard }}
           path: playwright-report
           retention-days: 7
-
-      - name: Upload smoke summary (markdown + json)
-        if: always()
-        uses: actions/upload-artifact@v7
-        with:
-          name: e2e-smoke-summary
-          path: |
-            playwright-report/smoke-summary.md
-            playwright-report/smoke-summary.json
-          retention-days: 30
-          if-no-files-found: ignore
 
       - name: Upload feature summary (markdown)
         if: always()
         uses: actions/upload-artifact@v7
         with:
-          name: e2e-feature-summary
+          name: e2e-feature-summary-shard-${{ matrix.shard }}
           path: playwright-report/feature-summary.md
           retention-days: 30
           if-no-files-found: ignore
@@ -194,17 +250,14 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v7
         with:
-          name: e2e-evidence
+          name: e2e-evidence-shard-${{ matrix.shard }}
           path: |
             e2e-artifacts
             test-results
           retention-days: 7
 
-      # Gate final do job: o smoke já falhou cedo (Fail-fast acima), aqui
-      # apenas falhamos se a regression registrou alguma falha. Mensagem
-      # nomeia explicitamente onde olhar.
       - name: 🛑 Fail job se regression registrou falhas
         if: steps.e2e_run.outcome == 'failure'
         run: |
-          echo "::error title=Regression failed::Algumas specs falharam — veja '🧪 E2E Feature Summary' acima, artifacts 'playwright-report' (HTML) e 'e2e-evidence' (screenshots/vídeos/trace)."
+          echo "::error title=Regression failed::Algumas specs do shard ${{ matrix.shard }}/4 falharam — veja o resumo acima e os artifacts do shard (HTML, screenshots, vídeos e trace)."
           exit 1
