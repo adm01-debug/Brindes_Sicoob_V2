@@ -114,7 +114,9 @@ jobs:
       # apontando o spec exato; `list` deixa o log human-readable.
       - name: 🧲 Run E2E header-sticky gate (fail-fast por rota/viewport)
         id: e2e_header_sticky
-        if: steps.e2e_smoke.outcome == 'success'
+        # O spec navega por rotas protegidas. Sem a conta E2E, o Playwright
+        # exclui corretamente esses fluxos em vez de simular uma sessão.
+        if: steps.e2e_smoke.outcome == 'success' && env.E2E_USER_EMAIL != '' && env.E2E_USER_PASSWORD != ''
         run: |
           npx playwright test \
             e2e/flows/22-header-sticky.spec.ts \
