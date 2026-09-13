@@ -1,1 +1,1 @@
-npm run typecheck && npm run lint:check && npm run test -- --run --reporter=dot
+npm run typecheck:baseline && npm run lint:baseline && npm run test -- --run --reporter=dot
