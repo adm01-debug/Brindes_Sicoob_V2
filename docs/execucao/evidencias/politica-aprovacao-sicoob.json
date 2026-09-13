@@ -1,0 +1,19 @@
+{
+  "ambiente": "PostgreSQL 16 descartável, --network none; somente dados sintéticos",
+  "migracoes": [
+    "supabase/migrations/20260911143000_sicoob_order_budget_atomicity.sql",
+    "supabase/migrations/20260912110000_sicoob_order_status_events.sql",
+    "supabase/migrations/20260912120000_sicoob_approval_policy_guards.sql",
+    "supabase/migrations/20260912140000_sicoob_approval_confirmation_followup.sql",
+    "supabase/migrations/20260912160000_sicoob_approval_policy_snapshot.sql"
+  ],
+  "producao_verificada": false,
+  "dentro_da_alcada": "preparação formal, confirmação do gestor e débito único validados; confirmação iniciada em pending registra as duas etapas na mesma transação",
+  "acesso_rpc": "as RPCs novas são executáveis por authenticated e indisponíveis para anon",
+  "solicitacao_formal": "alçada é derivada do orçamento do PA; política específica prevalece, sua fotografia é imutável e valor/itens permanecem congelados após confirmação e em transferências",
+  "rejeicao": "motivo da decisão formal propagado ao histórico canônico do pedido",
+  "cancelamento": "solicitação pendente encerrada atomicamente e reabertura direta bloqueada",
+  "impedimentos": "autoaprovação e vínculo inativo foram recusados no servidor",
+  "escalacao": "a mesma solicitação é elevada sem duplicação; somente Central ativa decide",
+  "resultado": "aprovado"
+}

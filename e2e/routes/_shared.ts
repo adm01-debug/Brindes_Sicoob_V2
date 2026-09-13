@@ -36,6 +36,42 @@ export async function mockEdgeFn(
   });
 }
 
+export async function mockRestTable(
+  page: Page,
+  table: string,
+  status: number,
+  body: unknown,
+  opts: { delayMs?: number } = {},
+) {
+  await page.route(new RegExp(`/rest/v1/${table}(\\?|$)`), async route => {
+    if (opts.delayMs) await new Promise(r => setTimeout(r, opts.delayMs));
+    await route.fulfill({ status, contentType: "application/json", body: JSON.stringify(body) });
+  });
+}
+
+export type PublicResourceScenario = "success" | "notFound" | "expired" | "invalidPayload" | "timeout" | "serviceUnavailable";
+
+export async function mockPublicRestResource(
+  page: Page,
+  table: string,
+  scenario: PublicResourceScenario,
+  successBody: unknown,
+  expiredBody: unknown,
+) {
+  const result: { status: number; body: unknown; delayMs?: number } = scenario === "success"
+    ? { status: 200, body: successBody }
+    : scenario === "expired"
+      ? { status: 200, body: expiredBody }
+      : scenario === "notFound"
+        ? { status: 404, body: { message: "Recurso não encontrado" } }
+        : scenario === "invalidPayload"
+          ? { status: 400, body: { message: "Requisição inválida" } }
+          : scenario === "timeout"
+            ? { status: 504, body: {}, delayMs: 6000 }
+            : { status: 503, body: { message: "Serviço indisponível" } };
+  return mockRestTable(page, table, result.status, result.body, { delayMs: result.delayMs });
+}
+
 export async function mockTimeoutOnFn(page: Page, fnName: string, hangMs = 30_000) {
   await page.route(new RegExp(`/functions/v1/${fnName}(\\?|$|/)`), async route => {
     await new Promise(r => setTimeout(r, hangMs));

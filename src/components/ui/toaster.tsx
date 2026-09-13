@@ -20,7 +20,7 @@ export function Toaster() {
         const Icon = variant ? variantIcons[variant as keyof typeof variantIcons] : null;
         
         return (
-          <Toast key={id} variant={variant} {...props}>
+          <Toast key={id} variant={variant} data-testid="app-toast" {...props}>
             <div className="flex items-start gap-3">
               {/* Ícone baseado na variante */}
               {Icon && (

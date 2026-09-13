@@ -27,8 +27,7 @@ import {
   RotateCcw,
   AlertTriangle,
   History,
-  ShieldCheck,
-  Copy
+  ShieldCheck
 } from "lucide-react";
 import { toast } from "sonner";
 import { jsPDF } from "jspdf";
@@ -72,6 +71,11 @@ import { sicoobCommonService } from "@/services/sicoob/commonService";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { motion } from "framer-motion";
+
+function escapeCsvCell(value: unknown): string {
+  const normalized = value === null || value === undefined ? "" : String(value);
+  return `"${normalized.replace(/"/g, '""')}"`;
+}
 
 export default function OrdersPage() {
   const navigate = useNavigate();
@@ -142,13 +146,11 @@ export default function OrdersPage() {
 
     const criticalSla = orders.filter(o => o.sla_status === 'critical').length;
     
-    // Simple growth calc (comparing with previous 30 days would be ideal, here we mock it for UI)
     return {
       totalRevenue,
       avgTicket,
       totalCount: orders.length,
       criticalSla,
-      totalRevenueReal: totalRevenue,
       statusCounts
     };
   }, [allOrdersForStats.data]);
@@ -160,27 +162,20 @@ export default function OrdersPage() {
   const exportToCSV = async () => {
     setIsExporting('csv');
     try {
-      // Simulate potential timeout/error if requested by testing hooks or environment
-      if (window.location.search.includes('simulate-timeout')) {
-        await new Promise(resolve => setTimeout(resolve, 5000));
-        throw new Error("Timeout na exportação");
-      }
-      
-      const headers = ["ID", "PA", "Singular", "Status", "Total (R$)", "Itens", "Data"];
+      const headers = ["ID", "PA", "Singular", "Status", "Total (R$)", "Data"];
       const rows = filteredOrders.map(o => [
         o.id,
         (o as any).pa?.nome || o.pa_id,
         (o as any).cooperativa?.nome || o.cooperative_id,
         o.status,
         o.total_amount.toFixed(2),
-        "N/A", // Items count would need another join
         o.created_at
       ]);
       
       const csvContent = [
-        headers.join(","),
-        ...rows.map(r => r.join(","))
-      ].join("\n");
+        headers.map(escapeCsvCell).join(","),
+        ...rows.map(r => r.map(escapeCsvCell).join(","))
+      ].join("\r\n");
       
       const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
       const link = document.createElement("a");
@@ -191,10 +186,11 @@ export default function OrdersPage() {
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+      URL.revokeObjectURL(url);
       
       toast.success("Exportação CSV concluída");
-    } catch (error: any) {
-      toast.error("Erro na exportação: " + error.message);
+    } catch (error: unknown) {
+      toast.error("Erro na exportação: " + (error instanceof Error ? error.message : "falha inesperada"));
     } finally {
       setIsExporting(null);
     }
@@ -203,10 +199,6 @@ export default function OrdersPage() {
   const exportToPDF = async () => {
     setIsExporting('pdf');
     try {
-      if (window.location.search.includes('simulate-500')) {
-        throw new Error("Erro interno do servidor (Simulado)");
-      }
-
       const doc = new jsPDF();
       
       // Estilo Enterprise
@@ -239,8 +231,8 @@ export default function OrdersPage() {
 
       doc.save(`pedidos_sicoob_${format(new Date(), 'yyyy-MM-dd')}.pdf`);
       toast.success("Exportação PDF concluída");
-    } catch (error: any) {
-      toast.error("Erro na exportação: " + error.message);
+    } catch (error: unknown) {
+      toast.error("Erro na exportação: " + (error instanceof Error ? error.message : "falha inesperada"));
     } finally {
       setIsExporting(null);
     }
@@ -255,7 +247,6 @@ export default function OrdersPage() {
         "Singular": (o as any).cooperativa?.nome || o.cooperative_id,
         "Status": o.status,
         "Total (R$)": o.total_amount,
-        "Itens": "N/A",
         "Data": format(parseISO(o.created_at), "dd/MM/yyyy")
       }));
 
@@ -265,8 +256,8 @@ export default function OrdersPage() {
       
       XLSX.writeFile(workbook, `pedidos_sicoob_${format(new Date(), 'yyyy-MM-dd')}.xlsx`);
       toast.success("Exportação XLSX concluída");
-    } catch (error: any) {
-      toast.error("Erro na exportação: " + error.message);
+    } catch (error: unknown) {
+      toast.error("Erro na exportação: " + (error instanceof Error ? error.message : "falha inesperada"));
     } finally {
       setIsExporting(null);
     }
@@ -305,17 +296,6 @@ export default function OrdersPage() {
       navigate(`/orcamentos/${newQuoteId}/editar`);
     } catch (error: any) {
       toast.error("Erro ao reordenar: " + error.message);
-    }
-  };
-
-  const handleDuplicate = async (orderId: string, e: React.MouseEvent) => {
-    e.stopPropagation();
-    try {
-      const newId = await sicoobOrderService.duplicateSicoobOrder(orderId);
-      toast.success("Pedido duplicado como Rascunho!");
-      navigate(`/sicoob/pedidos/${newId}`);
-    } catch (err: any) {
-      toast.error("Erro ao duplicar pedido", { description: err.message });
     }
   };
 
@@ -545,7 +525,7 @@ export default function OrdersPage() {
                 </div>
               </PopoverContent>
             </Popover>
-            <Button variant="outline" className="border-indigo-200 text-indigo-700 hover:bg-indigo-50" onClick={() => toast.info("Audit Log em desenvolvimento para 10/10")}>
+            <Button variant="outline" className="border-indigo-200 text-indigo-700 hover:bg-indigo-50" onClick={() => navigate('/gestor/auditoria')}>
               <History className="h-4 w-4 mr-2" />
               Auditoria
             </Button>
@@ -879,15 +859,6 @@ export default function OrdersPage() {
                         Comprar Novamente
                       </Button>
                     )}
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      className="h-7 text-[10px] uppercase font-bold text-indigo-600 hover:text-indigo-700 px-2"
-                      onClick={(e) => handleDuplicate(order.id, e)}
-                    >
-                      <Copy className="h-3.5 w-3.5 mr-1" />
-                      Duplicar
-                    </Button>
                     <ArrowRight className="h-3.5 w-3.5 text-sicoob-green group-hover:translate-x-1 transition-transform" />
                   </div>
                 </CardFooter>

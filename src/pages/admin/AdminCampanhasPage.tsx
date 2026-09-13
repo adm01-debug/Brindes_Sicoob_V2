@@ -16,6 +16,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { format, isWithinInterval, startOfDay, endOfDay } from "date-fns";
 import { logAdminAction } from "@/utils/adminAudit";
+import { campaignRowsToCsv } from "@/utils/campaignExport";
 // XLSX will be loaded dynamically when needed
 
 export default function AdminCampanhasPage() {
@@ -128,7 +129,7 @@ export default function AdminCampanhasPage() {
     });
   }, [campaigns, searchTerm, filters]);
 
-  const handleExport = async (format: 'xlsx' | 'csv') => {
+  const handleExport = async (exportFormat: 'xlsx' | 'csv') => {
     const data = filtered.map(c => ({
       'Nome': c.name,
       'Status': c.status,
@@ -138,7 +139,7 @@ export default function AdminCampanhasPage() {
       'Público-Alvo': c.target_audience || ''
     }));
 
-    if (format === 'xlsx') {
+    if (exportFormat === 'xlsx') {
       try {
         const XLSX = await import('@e965/xlsx');
         const worksheet = XLSX.utils.json_to_sheet(data);
@@ -151,13 +152,16 @@ export default function AdminCampanhasPage() {
         toast.error("Erro ao carregar módulo de exportação");
       }
     } else {
-      const headers = Object.keys(data[0] || {}).join(",");
-      const csvContent = [headers, ...data.map(row => Object.values(row).join(","))].join("\n");
+      const csvContent = campaignRowsToCsv(data);
       const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
       const link = document.createElement("a");
-      link.href = URL.createObjectURL(blob);
+      const url = URL.createObjectURL(blob);
+      link.href = url;
       link.download = `campanhas_admin_${format(new Date(), 'yyyy-MM-dd')}.csv`;
+      document.body.appendChild(link);
       link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
       toast.success("Relatório exportado em CSV");
     }
   };

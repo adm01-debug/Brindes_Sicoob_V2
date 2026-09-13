@@ -1,0 +1,43 @@
+{
+  "data": "2026-09-12",
+  "ambiente": "worktree isolado; PostgreSQL 16 descartável; Vitest/jsdom; Deno; Chromium local",
+  "producao_verificada": false,
+  "achados": {
+    "corrigidos_localmente": ["A01", "A02", "A03", "A04", "A06", "A07", "A08", "A09", "A10", "A11", "A12", "A16", "A17", "A18", "A20"],
+    "parciais_ou_externos": ["A05", "A13", "A14", "A15", "A19"]
+  },
+  "validacoes": {
+    "build_producao": "aprovado",
+    "lighthouse_login": {
+      "resultado": "3/3 aprovado",
+      "performance": 0.97,
+      "lcp_ms": [2127.82, 2263.58, 2260.38],
+      "tbt_ms": 0,
+      "bundle_publico_gzip": "reduzido de aproximadamente 92 KB para 57 KB"
+    },
+    "lint_baseline": "aprovado; 59 erros eliminados em relação a origin/main nos arquivos avaliados",
+    "typecheck_baseline": "aprovado; baseline reduzido de 1214 para 1189 diagnósticos, sem regressões nos arquivos alterados",
+    "unitarios_alterados": "66/66 aprovados na rodada corretiva final dos três arquivos legados",
+    "regressoes_complementares": "38/38 aprovadas em oito arquivos de teste",
+    "regressoes_auditoria": "44/44 aprovadas",
+    "kit_builder": "167/167 testes aprovados; conversão por Edge autenticada e RPC atômica; nenhum preço, nome, SKU ou imagem aceito do navegador",
+    "postgres": ["verba_aprovada", "eventos_status_aprovados", "politica_aprovada", "versionamento_aprovado", "recompra_aprovada", "kit_orcamento_aprovado", "financeiro_arte_aprovado", "consolidacao_aprovada"],
+    "deno_pgrest": "5/5 aprovadas",
+    "deno_recompra": "edge sicoob-reorder aprovada no deno check",
+    "edge_authorization": "104/104 declaradas e enforced",
+    "codeql_remoto": "SHA 7be43b816 aprovado e SARIF inspecionado com zero resultados; último delta corretivo aguarda novo gate; painel do GitHub permanece desabilitado",
+    "e2e_publico": "6/6 happy e 6/6 timeout aprovados",
+    "regressao_login": "8/8 em Vitest e 3/3 em Chromium",
+    "pwa_producao_local": "1/1 em Chromium; Service Worker ativo, manifesto e fallback precacheados e rota desconhecida atendida offline",
+    "revisao_de_codigo": "69/69 achados revalidados e corrigidos; 62 discussões anteriores resolvidas e sete correções finais aguardando push para resolução remota",
+    "vitest_global": "aprovado: 1433/1433 suítes; 5407 testes aprovados, zero falhas, 113 condicionais ignorados e 34/34 snapshots íntegros"
+  },
+  "pendencias_obrigatorias": [
+    "A05: definir com o catálogo externo a semântica de reserva; conversão servidor já implementada",
+    "A13: habilitar code scanning e publicar/encerrar alertas do SARIF no painel",
+    "A14/A19: E2E autenticado e persistido em homologação",
+    "A15: aceite institucional e delegações",
+    "aplicar e homologar migrations/edges no banco próprio",
+    "deploy, smoke e tráfego real"
+  ]
+}

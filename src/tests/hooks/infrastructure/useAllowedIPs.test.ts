@@ -81,7 +81,7 @@ describe('useAllowedIPs', () => {
 
     expect(addResult!.success).toBe(true);
     expect(mockInsert).toHaveBeenCalledWith({
-      user_id: mockUser.id,
+      created_by: mockUser.id,
       ip_address: newIP,
       label: 'Home',
     });

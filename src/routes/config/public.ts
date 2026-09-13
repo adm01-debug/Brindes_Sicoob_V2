@@ -33,27 +33,55 @@ export const publicRoutes = [
     component: lazyWithRetry(() => import("@/pages/SSOCallbackPage")) 
   }),
   defineRoute({ 
-    path: "/public/colecao/:id", 
+    path: "/colecao-publica/:token",
     component: lazyWithRetry(() => import("@/pages/PublicCollectionPage")) 
   }),
   defineRoute({ 
-    path: "/public/orcamento/:id/aprovacao", 
+    path: "/approve/:token",
     component: lazyWithRetry(() => import("@/pages/PublicQuoteApprovalPage")) 
   }),
   defineRoute({ 
-    path: "/public/kit/:id", 
+    path: "/proposta/:token",
+    component: lazyWithRetry(() => import("@/pages/PublicQuoteApprovalPage"))
+  }),
+  defineRoute({
+    path: "/kit/:token",
+    component: lazyWithRetry(() => import("@/pages/PublicKitViewPage"))
+  }),
+  defineRoute({
+    path: "/comparar-publica/:token",
+    component: lazyWithRetry(() => import("@/pages/PublicComparisonPage"))
+  }),
+  defineRoute({
+    path: "/dossie/:token",
+    component: lazyWithRetry(() => import("@/pages/PublicDossierPage"))
+  }),
+  defineRoute({
+    path: "/lista-publica/:token",
+    component: lazyWithRetry(() => import("@/pages/PublicFavoriteListPage"))
+  }),
+  defineRoute({
+    path: "/public/colecao/:token",
+    component: lazyWithRetry(() => import("@/pages/PublicCollectionPage"))
+  }),
+  defineRoute({
+    path: "/public/orcamento/:token/aprovacao",
+    component: lazyWithRetry(() => import("@/pages/PublicQuoteApprovalPage"))
+  }),
+  defineRoute({
+    path: "/public/kit/:token",
     component: lazyWithRetry(() => import("@/pages/PublicKitViewPage")) 
   }),
   defineRoute({ 
-    path: "/public/comparativo/:id", 
+    path: "/public/comparativo/:token",
     component: lazyWithRetry(() => import("@/pages/PublicComparisonPage")) 
   }),
   defineRoute({ 
-    path: "/public/dossie/:id", 
+    path: "/public/dossie/:token",
     component: lazyWithRetry(() => import("@/pages/PublicDossierPage")) 
   }),
   defineRoute({ 
-    path: "/public/favoritos/:id", 
+    path: "/public/favoritos/:token",
     component: lazyWithRetry(() => import("@/pages/PublicFavoriteListPage")) 
   }),
 ] as const;

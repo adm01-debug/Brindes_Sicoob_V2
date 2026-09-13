@@ -65,8 +65,14 @@ export interface CategorizedImages {
  */
 export function getCdnUrl(urlCdn: string, variant: CdnVariant = 'public'): string {
   if (!urlCdn) return '/placeholder.svg';
-  // Only transform Cloudflare Images URLs (imagedelivery.net)
-  if (urlCdn.includes('imagedelivery.net')) {
+  let isCloudflareImages = false;
+  try {
+    const parsed = new URL(urlCdn);
+    isCloudflareImages = parsed.protocol === 'https:' && parsed.hostname === 'imagedelivery.net';
+  } catch {
+    // Caminhos relativos e URLs inválidas seguem para o proxy/fallback.
+  }
+  if (isCloudflareImages) {
     return urlCdn.replace(/\/[^/]+$/, `/${variant}`);
   }
   // Proxy non-Cloudflare URLs (e.g., spotgifts.com.br) to avoid CORS

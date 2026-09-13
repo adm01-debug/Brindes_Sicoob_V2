@@ -12,7 +12,8 @@ import {
   ArrowRight,
   Package,
   Search,
-  LayoutDashboard
+  LayoutDashboard,
+  AlertCircle
 } from "lucide-react";
 import { formatCurrency } from "@/lib/format";
 import { Badge } from "@/components/ui/badge";
@@ -25,7 +26,7 @@ import { HierarchyPath } from "@/components/sicoob/HierarchyPath";
 
 export default function PADashboardPage() {
   const { profile } = useAuth();
-  const { data: stats, isLoading } = usePaDashboardStats();
+  const { data: stats, isLoading, isError, error } = usePaDashboardStats();
 
   const budgetUsed = stats && stats.monthlyLimit > 0 
     ? ((stats.monthlyLimit - stats.availableBudget) / stats.monthlyLimit) * 100 
@@ -59,6 +60,15 @@ export default function PADashboardPage() {
           </div>
         </div>
 
+        {isError && (
+          <Card className="border-destructive/40 bg-destructive/5">
+            <CardContent className="flex items-center gap-3 py-4 text-sm text-destructive">
+              <AlertCircle className="h-5 w-5" />
+              {error instanceof Error ? error.message : 'Indicadores indisponíveis no momento.'}
+            </CardContent>
+          </Card>
+        )}
+
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           <Card className="border-[1.5px] bg-sicoob-green/5 border-sicoob-green/20">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -67,6 +77,9 @@ export default function PADashboardPage() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-sicoob-green-dark">{formatCurrency(stats?.availableBudget || 0)}</div>
+              {stats && !stats.hasConfiguredBudget && (
+                <p className="mt-1 text-xs text-amber-700">Verba ainda não configurada para este PA.</p>
+              )}
               <div className="mt-2 space-y-1">
                 <div className="flex justify-between text-[10px] uppercase font-bold text-muted-foreground">
                   <span>Uso da Verba</span>
@@ -202,4 +215,3 @@ export default function PADashboardPage() {
     </>
   );
 }
-

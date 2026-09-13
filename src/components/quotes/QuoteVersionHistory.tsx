@@ -24,6 +24,8 @@ export function QuoteVersionHistory({ quoteId, currentQuoteId, onCreateVersion }
   const { versions, isLoading, fetchVersions, createNewVersion, hasMultipleVersions } = useQuoteVersions(quoteId);
   const [isCreating, setIsCreating] = useState(false);
   const [showCompare, setShowCompare] = useState(false);
+  const currentVersion = versions.find((version) => version.id === currentQuoteId);
+  const canCreateVersion = !currentVersion || currentVersion.is_latest_version;
 
   useEffect(() => {
     fetchVersions();
@@ -91,14 +93,16 @@ export function QuoteVersionHistory({ quoteId, currentQuoteId, onCreateVersion }
                   size="sm"
                   variant="outline"
                   onClick={handleCreateVersion}
-                  disabled={isCreating}
+                  disabled={isCreating || !canCreateVersion}
                   className="h-7 text-xs gap-1"
                 >
                   <Plus className="h-3 w-3" />
                   Nova Versão
                 </Button>
               </TooltipTrigger>
-              <TooltipContent>Criar nova versão baseada neste orçamento</TooltipContent>
+              <TooltipContent>
+                {canCreateVersion ? 'Criar nova versão baseada neste orçamento' : 'Abra a versão atual para criar uma nova versão'}
+              </TooltipContent>
             </Tooltip>
           </div>
         </div>

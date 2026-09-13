@@ -9,9 +9,8 @@ interface ProductSparklineProps {
 }
 
 /**
- * Mini sparkline SVG showing recent sales activity for a product card.
- * Consumes real data from SparklineSalesProvider context when available,
- * falls back to a deterministic demo seed otherwise.
+ * Mini sparkline SVG com a depleção diária do estoque do fornecedor.
+ * Exibe somente dados reais do SparklineSalesProvider.
  */
 export function ProductSparkline({ productId, className }: ProductSparklineProps) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -155,9 +154,9 @@ export function ProductSparkline({ productId, className }: ProductSparklineProps
         {hoverIndex !== null && (
           <>
             <line
-              x1={coords[hoverIndex].x}
+              x1={coords[hoverIndex]!.x}
               y1={0}
-              x2={coords[hoverIndex].x}
+              x2={coords[hoverIndex]!.x}
               y2={height}
               stroke={color}
               strokeWidth="0.5"
@@ -165,8 +164,8 @@ export function ProductSparkline({ productId, className }: ProductSparklineProps
               opacity="0.6"
             />
             <circle
-              cx={coords[hoverIndex].x}
-              cy={coords[hoverIndex].y}
+              cx={coords[hoverIndex]!.x}
+              cy={coords[hoverIndex]!.y}
               r="3.5"
               fill={color}
               stroke="hsl(var(--card))"
@@ -178,8 +177,8 @@ export function ProductSparkline({ productId, className }: ProductSparklineProps
         {/* Last point dot */}
         {hoverIndex === null && !allZero && (
           <circle
-            cx={coords[coords.length - 1].x}
-            cy={coords[coords.length - 1].y}
+            cx={coords[coords.length - 1]!.x}
+            cy={coords[coords.length - 1]!.y}
             r="2"
             fill={color}
           />
@@ -205,11 +204,11 @@ export function ProductSparkline({ productId, className }: ProductSparklineProps
                 <div className="flex items-center gap-1.5">
                   <Activity className="h-3 w-3 text-muted-foreground" />
                    <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
-                     Vendas no fornecedor · Dia {hoverIndex + 1}
+                     Estoque do fornecedor · Dia {hoverIndex + 1}
                   </span>
                 </div>
                 <span className="text-sm font-bold text-foreground">
-                  {points[hoverIndex]} un
+                  {points[hoverIndex]!} un
                 </span>
               </div>
               {/* Mini bar showing relative to peak */}
@@ -217,7 +216,7 @@ export function ProductSparkline({ productId, className }: ProductSparklineProps
                 <div
                   className="h-full rounded-full transition-all"
                   style={{
-                    width: `${summary.peakDay > 0 ? (points[hoverIndex] / summary.peakDay) * 100 : 0}%`,
+                    width: `${summary.peakDay > 0 ? (points[hoverIndex]! / summary.peakDay) * 100 : 0}%`,
                     backgroundColor: color,
                   }}
                 />
@@ -227,7 +226,7 @@ export function ProductSparkline({ productId, className }: ProductSparklineProps
             {/* Metrics grid */}
             <div className="px-3 py-2 grid grid-cols-2 gap-x-3 gap-y-1.5">
               <TooltipMetric
-                label="Vendas no fornecedor 30d"
+                label="Saídas de estoque 30d"
                 value={`${summary.totalSales.toLocaleString('pt-BR')} un`}
               />
               <TooltipMetric
@@ -315,10 +314,9 @@ export function ProductSparkline({ productId, className }: ProductSparklineProps
               </div>
             </div>
 
-            {/* Source legend — sempre visível para deixar claro de onde vem o dado */}
-            <div className="px-3 py-1.5 bg-muted/40 border-t border-border/40">
-              <span className="text-[9px] text-muted-foreground/70 italic leading-tight block">
-                Proxy: unidades depletadas no estoque do fornecedor (não representa vendas da Brindes Sicoob).
+            <div className="border-t border-border/40 bg-muted/40 px-3 py-1.5">
+              <span className="block text-[9px] italic leading-tight text-muted-foreground/70">
+                Fonte: variação do estoque do fornecedor; não representa pedidos Sicoob.
               </span>
             </div>
 

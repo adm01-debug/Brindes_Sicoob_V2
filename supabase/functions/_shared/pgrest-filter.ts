@@ -8,10 +8,14 @@
  * (`%`, `_`) para que sejam tratados como literais.
  */
 export function sanitizeIlikeValue(value: string): string {
-  return String(value)
-    .replace(/\\/g, '')        // remove barras invertidas pré-existentes
-    .replace(/[(),*]/g, ' ')   // neutraliza chars estruturais do `.or()`
-    .replace(/%/g, '\\%')      // escapa wildcard LIKE
-    .replace(/_/g, '\\_')      // escapa wildcard LIKE
-    .trim();
+  const safe: string[] = [];
+  for (const character of String(value).normalize('NFKC')) {
+    if (character === '\\') continue;
+    if (character === '%' || character === '_') {
+      safe.push(`\\${character}`);
+      continue;
+    }
+    safe.push(/[(),*]/u.test(character) ? ' ' : character);
+  }
+  return safe.join('').trim().slice(0, 160);
 }

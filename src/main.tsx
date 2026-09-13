@@ -1,42 +1,32 @@
 import { Fragment, lazy, Suspense } from "react";
 import { createRoot } from "react-dom/client";
 import { HelmetProvider } from "react-helmet-async";
-import { registerServiceWorker } from "@/lib/sw-register";
-import { installGlobalErrorHandlers } from "@/lib/error-reporter";
-import { initSentry } from "@/lib/sentry";
 import EnhancedErrorBoundary from "@/components/errors/EnhancedErrorBoundary";
 import AuthEntry from "./AuthEntry";
-import "@/lib/diagnostics"; // Initialize diagnostics early
-import { setupPreviewAutoReload } from "@/lib/preview-auto-reload";
 import { injectRequestId } from "@/lib/request-id-injection";
+import { installGlobalErrorHandlers } from "@/lib/error-reporter";
 import "./index.css";
 
 
-// Initialize Sentry FIRST (no-op if VITE_SENTRY_DSN is unset)
-initSentry();
-
-// Install global error handlers for unhandled errors/rejections
-installGlobalErrorHandlers();
-
 // Inject traceability headers
 injectRequestId();
+installGlobalErrorHandlers();
 
 // A coleta usa PerformanceObserver com buffer e pode iniciar depois do paint.
 // Isso impede que telemetria concorra com a tela de autenticação.
 if (import.meta.env.PROD) {
-  const startWebVitals = () => {
-    import("@/lib/telemetry/webVitals").then(({ reportWebVitals }) => reportWebVitals());
-  };
-  const requestIdleCallback = Reflect.get(window, "requestIdleCallback") as Window["requestIdleCallback"] | undefined;
-  if (typeof requestIdleCallback === "function") {
-    requestIdleCallback.call(window, startWebVitals, { timeout: 5_000 });
-  } else {
-    globalThis.setTimeout(startWebVitals, 3_000);
-  }
+  globalThis.setTimeout(() => {
+    void import("@/lib/telemetry/webVitals").then(({ reportWebVitals }) => reportWebVitals());
+  }, 3_000);
 }
 
-// Inicializa auto-reload para erros de pré-condição (412) no preview
-setupPreviewAutoReload();
+// Observabilidade, diagnóstico e recuperação de chunks entram depois do LCP.
+// Os imports dinâmicos preservam a proteção sem onerar a primeira tela pública.
+globalThis.setTimeout(() => {
+  void import("@/lib/sentry").then(({ initSentry }) => initSentry());
+  void import("@/lib/preview-auto-reload").then(({ setupPreviewAutoReload }) => setupPreviewAutoReload());
+  void import("@/lib/diagnostics");
+}, 3_000);
 
 const rootElement = document.getElementById("root");
 
@@ -85,10 +75,13 @@ requestAnimationFrame(() => {
 
 // Registrar Service Worker para PWA (apenas em produção para evitar cache issues no preview)
 if ('serviceWorker' in navigator && import.meta.env.PROD) {
-  registerServiceWorker()
-    .catch(() => {
-      // SW registration failed silently
-    });
+  globalThis.setTimeout(() => {
+    void import("@/lib/sw-register")
+      .then(({ registerServiceWorker }) => registerServiceWorker())
+      .catch(() => {
+        // Falha de registro não deve interromper a navegação.
+      });
+  }, 3_000);
 } else if ('serviceWorker' in navigator && import.meta.env.DEV) {
   // Em dev, desregistrar SWs antigos que possam estar cacheando
   navigator.serviceWorker.getRegistrations().then(registrations => {

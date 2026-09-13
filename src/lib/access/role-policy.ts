@@ -31,7 +31,7 @@ export const SICOOB_ROUTE_ACCESS: Record<string, readonly AppRole[]> = {
   '/dashboard-pa': PA_ROLES,
   '/gestor': MANAGERS,
   '/gestor/compras': MANAGERS,
-  '/gestor/agregados': MANAGERS,
+  '/gestor/agregados': PA_ROLES,
   '/gestor/aprovacoes': MANAGERS,
   '/gestor/auditoria': MANAGERS,
   '/vendedor/dashboard': ['dev', 'supervisor', 'vendedor'],

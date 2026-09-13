@@ -1,0 +1,3 @@
+# Artefato oficial distribuído com quebras de linha preservadas; o hash de
+# procedência é verificado pelos cenários de segurança.
+vendor/pptxgenjs-browser/dist/pptxgen.es.js -text

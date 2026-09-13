@@ -57,7 +57,7 @@ describe("AI Recommendations — JSON parsing (PR inline logic)", () => {
     const result = parseAIResponseContent(validJSON) as typeof validRecommendations;
     expect(result.recommendations).toHaveLength(2);
     expect(result.recommendations[0].productId).toBe("p1");
-    expect(result.insights).toContain("tech");
+    expect(result.insights.toLowerCase()).toContain("tecnologia");
   });
 
   it("strips ```json ... ``` fences and parses correctly", () => {

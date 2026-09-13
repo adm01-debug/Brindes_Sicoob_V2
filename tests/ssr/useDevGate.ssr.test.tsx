@@ -35,8 +35,8 @@ describe('useDevGate SSR', () => {
     }
   });
 
-  it('should use fallback value during SSR when isDev is true', () => {
-    (useAuth as any).mockReturnValue({ isDev: true });
+  it('mantém o gate fechado durante SSR mesmo para dev, até a hidratação validar o cliente', () => {
+    (useAuth as any).mockReturnValue({ roles: ['dev'], isDev: true, isLoading: false });
     
     // Simular ambiente SSR
     const originalWindow = global.window;
@@ -47,14 +47,14 @@ describe('useDevGate SSR', () => {
 
     try {
       const html = renderToString(React.createElement(TestComponent));
-      expect(html).toContain('allowed');
+      expect(html).toContain('denied');
     } finally {
       global.window = originalWindow;
     }
   });
 
   it('should not throw when devInfraGate is accessed in SSR', () => {
-    (useAuth as any).mockReturnValue({ isDev: true });
+    (useAuth as any).mockReturnValue({ roles: ['dev'], isDev: true, isLoading: false });
     
     const originalWindow = global.window;
     // @ts-ignore

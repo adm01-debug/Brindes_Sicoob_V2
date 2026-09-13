@@ -41,6 +41,25 @@ function createSnapshot(kitState: KitState, kitQuantity: number): string {
   });
 }
 
+function requirePersistedKitId(
+  result: { data: { id: string } | null; error: unknown },
+  emptyMessage: string,
+): string {
+  if (result.error) throw result.error;
+  if (!result.data?.id) throw new Error(emptyMessage);
+  return result.data.id;
+}
+
+function isCreatedKitAdoption(
+  userId: string | undefined,
+  currentKitId: string | undefined,
+  persistedKitId: string | null,
+  currentScope: string,
+): boolean {
+  if (!userId || !currentKitId) return false;
+  return currentKitId === persistedKitId && currentScope === `${userId}:new`;
+}
+
 export function useKitAutoSave(
   kitState: KitState,
   kitQuantity: number,
@@ -56,6 +75,10 @@ export function useKitAutoSave(
   const persistedSnapshotRef = useRef<string>('');
   const latestSnapshotRef = useRef<string>('');
   const kitIdRef = useRef<string | null>(currentKitId || null);
+  const scopeRef = useRef(`${user?.id ?? 'anon'}:${currentKitId ?? 'new'}`);
+  const scopeGenerationRef = useRef(0);
+  const saveQueueRef = useRef<Promise<void>>(Promise.resolve());
+  const pendingSavesRef = useRef(0);
   const isFirstRender = useRef(true);
 
   const saveToDb = useCallback(async (snapshot: string) => {
@@ -81,32 +104,44 @@ export function useKitAutoSave(
       updated_at: new Date().toISOString(),
     };
 
+    const operationGeneration = scopeGenerationRef.current;
+    const operationUserId = user.id;
+    const previousSave = saveQueueRef.current;
+    let releaseQueue: () => void = () => undefined;
+    saveQueueRef.current = new Promise<void>((resolve) => { releaseQueue = resolve; });
+    pendingSavesRef.current += 1;
     setIsSaving(true);
     try {
+      await previousSave;
+      if (operationGeneration !== scopeGenerationRef.current) return;
       const kitId = kitIdRef.current;
       if (kitId) {
-        const { error } = await supabase
+        const result = await supabase
           .from('custom_kits')
           .update(payload)
           .eq('id', kitId)
-          .eq('user_id', user.id);
-        if (error) throw error;
+          .eq('user_id', operationUserId)
+          .select('id')
+          .maybeSingle();
+        requirePersistedKitId(result, 'O kit não foi encontrado ou você não tem permissão para atualizá-lo.');
       } else {
-        const { data, error } = await supabase
+        const result = await supabase
           .from('custom_kits')
           .insert(payload)
           .select('id')
           .single();
-        if (error) throw error;
-        if (!data?.id) throw new Error('O kit não retornou um identificador após o salvamento.');
-        kitIdRef.current = data.id;
-        setAutoSavedKitId(data.id);
-        onKitIdCreated?.(data.id);
+        const createdId = requirePersistedKitId(result, 'O kit não retornou um identificador após o salvamento.');
+        kitIdRef.current = createdId;
+        setAutoSavedKitId(createdId);
+        onKitIdCreated?.(createdId);
       }
-      persistedSnapshotRef.current = snapshot;
-      setLastSavedAt(new Date());
-      setLastSaveError(null);
+      if (operationGeneration === scopeGenerationRef.current) {
+        persistedSnapshotRef.current = snapshot;
+        setLastSavedAt(new Date());
+        setLastSaveError(null);
+      }
     } catch (err) {
+      if (operationGeneration !== scopeGenerationRef.current) return;
       logger.warn('[auto-save] Failed:', err);
       const message = err instanceof Error ? err.message : 'Não foi possível salvar o kit automaticamente.';
       setLastSaveError(message);
@@ -114,7 +149,11 @@ export function useKitAutoSave(
         description: 'Tente salvar novamente antes de sair.',
       });
     } finally {
-      setIsSaving(false);
+      releaseQueue();
+      pendingSavesRef.current -= 1;
+      if (operationGeneration === scopeGenerationRef.current) {
+        setIsSaving(pendingSavesRef.current > 0);
+      }
     }
   }, [user?.id, kitState, kitQuantity, onKitIdCreated]);
 
@@ -141,13 +180,39 @@ export function useKitAutoSave(
     };
   }, [kitState, kitQuantity, saveToDb]);
 
-  // Update autoSavedKitId when currentKitId changes externally
+  // Uma troca de usuário/kit invalida timers e respostas pendentes. Gravações
+  // já enviadas terminam no registro de origem, mas nunca contaminam o novo
+  // contexto; a fila mantém a ordem das alterações dentro do mesmo kit.
   useEffect(() => {
-    if (currentKitId) {
-      kitIdRef.current = currentKitId;
-      setAutoSavedKitId(currentKitId);
+    const nextScope = `${user?.id ?? 'anon'}:${currentKitId ?? 'new'}`;
+    if (scopeRef.current === nextScope) return;
+
+    // O pai adota o ID que esta própria instância acabou de criar. Essa
+    // passagem de `new` para o ID persistido continua sendo o mesmo kit e não
+    // pode invalidar uma alteração que já esteja aguardando na fila.
+    const adoptsCreatedKit = isCreatedKitAdoption(
+      user?.id,
+      currentKitId,
+      kitIdRef.current,
+      scopeRef.current,
+    );
+    if (adoptsCreatedKit) {
+      scopeRef.current = nextScope;
+      return;
     }
-  }, [currentKitId]);
+
+    scopeRef.current = nextScope;
+    scopeGenerationRef.current += 1;
+    if (timerRef.current) clearTimeout(timerRef.current);
+    kitIdRef.current = currentKitId || null;
+    setAutoSavedKitId(currentKitId || null);
+    setLastSavedAt(null);
+    setLastSaveError(null);
+    setIsSaving(false);
+    const snapshot = createSnapshot(kitState, kitQuantity);
+    persistedSnapshotRef.current = snapshot;
+    latestSnapshotRef.current = snapshot;
+  }, [currentKitId, user?.id, kitState, kitQuantity]);
 
   const retry = useCallback(() => {
     if (timerRef.current) clearTimeout(timerRef.current);

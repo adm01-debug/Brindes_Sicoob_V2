@@ -1,3 +1,4 @@
+/* global document, innerWidth, window */
 import { chromium } from '@playwright/test';
 import { createRequire } from 'node:module';
 import { mkdir, writeFile } from 'node:fs/promises';
@@ -20,8 +21,13 @@ try {
     await page.goto(`${url}/login`);
     await page.getByRole('heading', { level: 1, name: 'Acesse seu portal' }).waitFor({ timeout: 60000 });
     await page.locator('#initial-splash').waitFor({ state: 'detached', timeout: 15000 });
+    await page.waitForFunction(() => {
+      const logos = [...document.querySelectorAll('img[alt="Sicoob"]')];
+      return logos.length > 0 && logos.every(image => image.complete && image.naturalWidth > 0);
+    }, undefined, { timeout: 15000 });
     const measurements = await page.evaluate(() => ({ overflow: document.documentElement.scrollWidth > innerWidth, logos: [...document.querySelectorAll('img[alt="Sicoob"]')].map(image => ({ complete: image.complete, width: image.naturalWidth })) }));
     assert.equal(measurements.overflow, false, 'Rolagem horizontal na entrada');
+    assert.ok(measurements.logos.length > 0, 'A entrada não exibiu a marca Sicoob');
     assert.ok(measurements.logos.every(image => image.complete && image.width > 0), 'Marca não carregou');
     await page.addScriptTag({ path: require.resolve('axe-core/axe.min.js') });
     const axe = await page.evaluate(async () => window.axe.run(document.querySelector('main'), { runOnly: { type: 'tag', values: ['wcag2a','wcag2aa','wcag21aa','wcag22aa'] } }));

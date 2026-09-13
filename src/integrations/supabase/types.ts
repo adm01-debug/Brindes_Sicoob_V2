@@ -4762,6 +4762,84 @@ export type Database = {
           },
         ]
       }
+      order_consolidations: {
+        Row: {
+          consolidated_by: string | null
+          created_at: string | null
+          id: string
+          idempotency_key: string | null
+          order_count: number
+          received_at: string | null
+          singular_id: string
+          status: string
+          total_value: number
+          updated_at: string | null
+          vendedor_id: string
+        }
+        Insert: {
+          consolidated_by?: string | null
+          created_at?: string | null
+          id?: string
+          idempotency_key?: string | null
+          order_count?: number
+          received_at?: string | null
+          singular_id: string
+          status?: string
+          total_value?: number
+          updated_at?: string | null
+          vendedor_id: string
+        }
+        Update: {
+          consolidated_by?: string | null
+          created_at?: string | null
+          id?: string
+          idempotency_key?: string | null
+          order_count?: number
+          received_at?: string | null
+          singular_id?: string
+          status?: string
+          total_value?: number
+          updated_at?: string | null
+          vendedor_id?: string
+        }
+        Relationships: []
+      }
+      order_consolidation_orders: {
+        Row: {
+          consolidation_id: string
+          created_at: string
+          order_id: string
+          order_total_snapshot: number
+        }
+        Insert: {
+          consolidation_id: string
+          created_at?: string
+          order_id: string
+          order_total_snapshot: number
+        }
+        Update: {
+          consolidation_id?: string
+          created_at?: string
+          order_id?: string
+          order_total_snapshot?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_consolidation_orders_consolidation_id_fkey"
+            columns: ["consolidation_id"]
+            isOneToOne: false
+            referencedRelation: "order_consolidations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_consolidation_orders_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: true
+            referencedRelation: "sicoob_orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       order_items: {
         Row: {
           created_at: string
@@ -6873,6 +6951,7 @@ export type Database = {
       }
       quote_items: {
         Row: {
+          catalog_checked_at: string | null
           color_hex: string | null
           color_name: string | null
           created_at: string
@@ -6890,6 +6969,8 @@ export type Database = {
           quantity: number
           quote_id: string
           size_code: string | null
+          source_variant_id: string | null
+          source_variant_sku: string | null
           sort_order: number | null
           subtotal: number | null
           unit_cost: number | null
@@ -6897,6 +6978,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          catalog_checked_at?: string | null
           color_hex?: string | null
           color_name?: string | null
           created_at?: string
@@ -6914,6 +6996,8 @@ export type Database = {
           quantity?: number
           quote_id: string
           size_code?: string | null
+          source_variant_id?: string | null
+          source_variant_sku?: string | null
           sort_order?: number | null
           subtotal?: number | null
           unit_cost?: number | null
@@ -6921,6 +7005,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          catalog_checked_at?: string | null
           color_hex?: string | null
           color_name?: string | null
           created_at?: string
@@ -6938,6 +7023,8 @@ export type Database = {
           quantity?: number
           quote_id?: string
           size_code?: string | null
+          source_variant_id?: string | null
+          source_variant_sku?: string | null
           sort_order?: number | null
           subtotal?: number | null
           unit_cost?: number | null
@@ -7863,6 +7950,60 @@ export type Database = {
         }
         Relationships: []
       }
+      sicoob_approval_policies: {
+        Row: {
+          cooperative_id: string | null
+          created_at: string
+          effective_from: string
+          effective_until: string | null
+          forbid_self_approval: boolean
+          id: string
+          is_active: boolean
+          require_active_membership: boolean
+          updated_at: string
+          version: string
+        }
+        Insert: {
+          cooperative_id?: string | null
+          created_at?: string
+          effective_from?: string
+          effective_until?: string | null
+          forbid_self_approval?: boolean
+          id?: string
+          is_active?: boolean
+          require_active_membership?: boolean
+          updated_at?: string
+          version: string
+        }
+        Update: {
+          cooperative_id?: string | null
+          created_at?: string
+          effective_from?: string
+          effective_until?: string | null
+          forbid_self_approval?: boolean
+          id?: string
+          is_active?: boolean
+          require_active_membership?: boolean
+          updated_at?: string
+          version?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sicoob_approval_policies_cooperative_id_fkey"
+            columns: ["cooperative_id"]
+            isOneToOne: false
+            referencedRelation: "cooperativas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sicoob_approval_policies_cooperative_id_fkey"
+            columns: ["cooperative_id"]
+            isOneToOne: false
+            referencedRelation: "v_sicoob_hierarchy"
+            referencedColumns: ["singular_id"]
+          },
+        ]
+      }
       sicoob_approval_requests: {
         Row: {
           amount_at_request: number
@@ -8058,36 +8199,366 @@ export type Database = {
           },
         ]
       }
+      sicoob_delivery_allocations: {
+        Row: {
+          damaged_quantity: number
+          destination_id: string
+          id: string
+          missing_quantity: number
+          order_item_id: string
+          quantity: number
+          received_quantity: number
+          updated_at: string
+        }
+        Insert: {
+          damaged_quantity?: number
+          destination_id: string
+          id?: string
+          missing_quantity?: number
+          order_item_id: string
+          quantity: number
+          received_quantity?: number
+          updated_at?: string
+        }
+        Update: {
+          damaged_quantity?: number
+          destination_id?: string
+          id?: string
+          missing_quantity?: number
+          order_item_id?: string
+          quantity?: number
+          received_quantity?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sicoob_delivery_allocations_destination_id_fkey"
+            columns: ["destination_id"]
+            isOneToOne: false
+            referencedRelation: "sicoob_delivery_destinations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sicoob_delivery_allocations_order_item_id_fkey"
+            columns: ["order_item_id"]
+            isOneToOne: false
+            referencedRelation: "sicoob_order_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sicoob_delivery_destinations: {
+        Row: {
+          address_snapshot: Json
+          consolidation_id: string
+          created_at: string
+          destination_name: string
+          id: string
+          pa_id: string
+        }
+        Insert: {
+          address_snapshot: Json
+          consolidation_id: string
+          created_at?: string
+          destination_name: string
+          id?: string
+          pa_id: string
+        }
+        Update: {
+          address_snapshot?: Json
+          consolidation_id?: string
+          created_at?: string
+          destination_name?: string
+          id?: string
+          pa_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sicoob_delivery_destinations_consolidation_id_fkey"
+            columns: ["consolidation_id"]
+            isOneToOne: false
+            referencedRelation: "order_consolidations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sicoob_delivery_destinations_pa_id_fkey"
+            columns: ["pa_id"]
+            isOneToOne: false
+            referencedRelation: "postos_atendimento"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sicoob_delivery_receipt_events: {
+        Row: {
+          allocation_id: string
+          damaged_quantity: number
+          id: string
+          idempotency_key: string
+          missing_quantity: number
+          notes: string | null
+          received_at: string
+          received_by: string
+          received_quantity: number
+        }
+        Insert: {
+          allocation_id: string
+          damaged_quantity?: number
+          id?: string
+          idempotency_key: string
+          missing_quantity?: number
+          notes?: string | null
+          received_at?: string
+          received_by: string
+          received_quantity?: number
+        }
+        Update: {
+          allocation_id?: string
+          damaged_quantity?: number
+          id?: string
+          idempotency_key?: string
+          missing_quantity?: number
+          notes?: string | null
+          received_at?: string
+          received_by?: string
+          received_quantity?: number
+        }
+        Relationships: [{
+          foreignKeyName: "sicoob_delivery_receipt_events_allocation_id_fkey"
+          columns: ["allocation_id"]
+          isOneToOne: false
+          referencedRelation: "sicoob_delivery_allocations"
+          referencedColumns: ["id"]
+        }]
+      }
+      sicoob_order_artwork_versions: {
+        Row: {
+          created_at: string
+          created_by: string
+          decided_at: string | null
+          decided_by: string | null
+          feedback: string | null
+          file_path: string
+          file_sha256: string
+          id: string
+          identity_snapshot: Json
+          is_latest: boolean
+          order_id: string
+          status: string
+          version: number
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          decided_at?: string | null
+          decided_by?: string | null
+          feedback?: string | null
+          file_path: string
+          file_sha256: string
+          id?: string
+          identity_snapshot: Json
+          is_latest?: boolean
+          order_id: string
+          status?: string
+          version: number
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          decided_at?: string | null
+          decided_by?: string | null
+          feedback?: string | null
+          file_path?: string
+          file_sha256?: string
+          id?: string
+          identity_snapshot?: Json
+          is_latest?: boolean
+          order_id?: string
+          status?: string
+          version?: number
+        }
+        Relationships: [{
+          foreignKeyName: "sicoob_order_artwork_versions_order_id_fkey"
+          columns: ["order_id"]
+          isOneToOne: false
+          referencedRelation: "sicoob_orders"
+          referencedColumns: ["id"]
+        }]
+      }
+      sicoob_order_invoices: {
+        Row: {
+          access_key: string | null
+          amount: number | null
+          created_at: string
+          created_by: string
+          file_path: string
+          file_type: string
+          id: string
+          invoice_number: string
+          issued_at: string | null
+          order_id: string
+        }
+        Insert: {
+          access_key?: string | null
+          amount?: number | null
+          created_at?: string
+          created_by: string
+          file_path: string
+          file_type: string
+          id?: string
+          invoice_number: string
+          issued_at?: string | null
+          order_id: string
+        }
+        Update: {
+          access_key?: string | null
+          amount?: number | null
+          created_at?: string
+          created_by?: string
+          file_path?: string
+          file_type?: string
+          id?: string
+          invoice_number?: string
+          issued_at?: string | null
+          order_id?: string
+        }
+        Relationships: [{
+          foreignKeyName: "sicoob_order_invoices_order_id_fkey"
+          columns: ["order_id"]
+          isOneToOne: false
+          referencedRelation: "sicoob_orders"
+          referencedColumns: ["id"]
+        }]
+      }
+      sicoob_order_payments: {
+        Row: {
+          amount: number
+          created_at: string
+          created_by: string
+          due_date: string
+          external_reference: string | null
+          id: string
+          installment_number: number
+          invoice_id: string | null
+          order_id: string
+          paid_at: string | null
+          payment_method: string | null
+          refund_reason: string | null
+          refunded_at: string | null
+          refunded_by: string | null
+          status: string
+          updated_at: string
+          updated_by: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          created_by: string
+          due_date: string
+          external_reference?: string | null
+          id?: string
+          installment_number?: number
+          invoice_id?: string | null
+          order_id: string
+          paid_at?: string | null
+          payment_method?: string | null
+          refund_reason?: string | null
+          refunded_at?: string | null
+          refunded_by?: string | null
+          status?: string
+          updated_at?: string
+          updated_by: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          created_by?: string
+          due_date?: string
+          external_reference?: string | null
+          id?: string
+          installment_number?: number
+          invoice_id?: string | null
+          order_id?: string
+          paid_at?: string | null
+          payment_method?: string | null
+          refund_reason?: string | null
+          refunded_at?: string | null
+          refunded_by?: string | null
+          status?: string
+          updated_at?: string
+          updated_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sicoob_order_payments_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "sicoob_orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sicoob_order_payments_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "sicoob_order_invoices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       sicoob_order_items: {
         Row: {
+          color_hex: string | null
+          color_name: string | null
           created_at: string
           id: string
           order_id: string | null
           product_id: string | null
+          product_image_url: string | null
           product_name: string
+          product_sku: string | null
           quantity: number
           total_price: number
           unit_price: number
+          variant_id: string | null
+          variant_sku: string | null
+          size_code: string | null
+          personalization_snapshot: Json | null
         }
         Insert: {
+          color_hex?: string | null
+          color_name?: string | null
           created_at?: string
           id?: string
           order_id?: string | null
           product_id?: string | null
+          product_image_url?: string | null
           product_name: string
+          product_sku?: string | null
           quantity?: number
           total_price: number
           unit_price: number
+          variant_id?: string | null
+          variant_sku?: string | null
+          size_code?: string | null
+          personalization_snapshot?: Json | null
         }
         Update: {
+          color_hex?: string | null
+          color_name?: string | null
           created_at?: string
           id?: string
           order_id?: string | null
           product_id?: string | null
+          product_image_url?: string | null
           product_name?: string
+          product_sku?: string | null
           quantity?: number
           total_price?: number
           unit_price?: number
+          variant_id?: string | null
+          variant_sku?: string | null
+          size_code?: string | null
+          personalization_snapshot?: Json | null
         }
         Relationships: [
           {
@@ -8103,8 +8574,12 @@ export type Database = {
         Row: {
           approved_at: string | null
           approved_by: string | null
+          approval_policy_id: string | null
+          approval_policy_version: string | null
+          approval_policy_snapshot: Json | null
           audit_remaining_budget: number | null
           cooperative_id: string | null
+          consolidation_id: string | null
           created_at: string
           created_by: string | null
           delivery_address: string | null
@@ -8122,8 +8597,12 @@ export type Database = {
         Insert: {
           approved_at?: string | null
           approved_by?: string | null
+          approval_policy_id?: string | null
+          approval_policy_version?: string | null
+          approval_policy_snapshot?: Json | null
           audit_remaining_budget?: number | null
           cooperative_id?: string | null
+          consolidation_id?: string | null
           created_at?: string
           created_by?: string | null
           delivery_address?: string | null
@@ -8141,8 +8620,12 @@ export type Database = {
         Update: {
           approved_at?: string | null
           approved_by?: string | null
+          approval_policy_id?: string | null
+          approval_policy_version?: string | null
+          approval_policy_snapshot?: Json | null
           audit_remaining_budget?: number | null
           cooperative_id?: string | null
+          consolidation_id?: string | null
           created_at?: string
           created_by?: string | null
           delivery_address?: string | null
@@ -8159,6 +8642,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "sicoob_orders_consolidation_id_fkey"
+            columns: ["consolidation_id"]
+            isOneToOne: false
+            referencedRelation: "order_consolidations"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "sicoob_orders_cooperative_id_fkey"
             columns: ["cooperative_id"]
             isOneToOne: false
@@ -8171,6 +8661,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "v_sicoob_hierarchy"
             referencedColumns: ["singular_id"]
+          },
+          {
+            foreignKeyName: "sicoob_orders_approval_policy_id_fkey"
+            columns: ["approval_policy_id"]
+            isOneToOne: false
+            referencedRelation: "sicoob_approval_policies"
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "sicoob_orders_pa_id_fkey"
@@ -9114,8 +9611,96 @@ export type Database = {
         Args: { p_manager_id: string; p_order_id: string; p_request_id: string }
         Returns: undefined
       }
+      add_sicoob_order_invoice: {
+        Args: {
+          p_access_key?: string | null
+          p_amount?: number | null
+          p_file_path: string
+          p_file_type: string
+          p_invoice_number: string
+          p_issued_at?: string | null
+          p_order_id: string
+        }
+        Returns: string
+      }
+      create_sicoob_order_artwork_version: {
+        Args: {
+          p_actor_id: string
+          p_file_path: string
+          p_file_sha256: string
+          p_identity_snapshot: Json
+          p_order_id: string
+        }
+        Returns: string
+      }
+      decide_sicoob_order_artwork: {
+        Args: { p_artwork_id: string; p_feedback?: string | null; p_status: string }
+        Returns: undefined
+      }
+      record_sicoob_order_payment: {
+        Args: {
+          p_amount: number
+          p_due_date: string
+          p_expected_updated_at?: string | null
+          p_external_reference?: string | null
+          p_installment_number: number
+          p_invoice_id?: string | null
+          p_order_id: string
+          p_payment_method?: string | null
+          p_status?: string
+        }
+        Returns: string
+      }
+      refund_sicoob_order_payment: {
+        Args: { p_expected_updated_at: string; p_payment_id: string; p_reason: string }
+        Returns: undefined
+      }
+      allocate_sicoob_consolidation_by_order_pa: {
+        Args: { p_consolidation_id: string }
+        Returns: number
+      }
+      create_sicoob_order_consolidation: {
+        Args: { p_idempotency_key: string; p_order_ids: string[]; p_seller_id: string }
+        Returns: string
+      }
+      dispatch_sicoob_order_consolidation: {
+        Args: { p_consolidation_id: string }
+        Returns: undefined
+      }
+      get_sicoob_consolidation_sellers: {
+        Args: never
+        Returns: { id: string; name: string }[]
+      }
+      record_sicoob_delivery_receipt: {
+        Args: {
+          p_allocation_id: string
+          p_idempotency_key: string
+          p_damaged_quantity?: number
+          p_missing_quantity?: number
+          p_notes?: string | null
+          p_received_quantity?: number
+        }
+        Returns: string
+      }
+      reorder_sicoob_order_as_quote: {
+        Args: {
+          p_actor_id: string
+          p_idempotency_key: string
+          p_items: Json
+          p_order_id: string
+        }
+        Returns: string
+      }
       confirm_sicoob_order: {
         Args: { p_expected_status: string; p_order_id: string }
+        Returns: undefined
+      }
+      prepare_sicoob_order_confirmation: {
+        Args: {
+          p_comment?: string | null
+          p_expected_status: string
+          p_order_id: string
+        }
         Returns: undefined
       }
       archive_old_admin_audit_logs: { Args: never; Returns: number }
@@ -9702,6 +10287,24 @@ export type Database = {
         }
         Returns: undefined
       }
+      reject_sicoob_order_without_approval: {
+        Args: {
+          p_expected_status: string
+          p_order_id: string
+          p_reason: string
+        }
+        Returns: undefined
+      }
+      request_sicoob_order_approval: {
+        Args: {
+          p_expected_status: string
+          p_is_escalated?: boolean
+          p_order_id: string
+          p_reason: string
+          p_threshold: number
+        }
+        Returns: string
+      }
       repair_ownership_orphans: {
         Args: {
           _dry_run?: boolean
@@ -9728,6 +10331,15 @@ export type Database = {
         Returns: number
       }
       retry_failed_webhook_deliveries: { Args: never; Returns: Json }
+      transition_sicoob_order_status: {
+        Args: {
+          p_comment?: string | null
+          p_expected_status: string
+          p_new_status: string
+          p_order_id: string
+        }
+        Returns: undefined
+      }
       search_products_semantic: {
         Args: { _limit?: number; _products: Json; _query: string }
         Returns: {

@@ -1,10 +1,10 @@
-import { useState } from "react";
+import { useState, type ChangeEvent } from "react";
 import { useOrderInvoices } from "@/hooks/orders/extensions";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { FileText, Plus, FileUp, Loader2, Download, ExternalLink, Trash2 } from "lucide-react";
+import { FileText, FileUp, Loader2, Download } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { toast } from "sonner";
@@ -15,32 +15,54 @@ interface OrderInvoicesManagerProps {
 }
 
 export function OrderInvoicesManager({ orderId }: OrderInvoicesManagerProps) {
-  const { invoices, isLoading, addInvoice, uploadFile } = useOrderInvoices(orderId);
+  const { invoices, isLoading, addInvoice, uploadFile, getInvoiceDownloadUrl } = useOrderInvoices(orderId);
   const [isUploading, setIsUploading] = useState(false);
+  const [downloadingId, setDownloadingId] = useState<string | null>(null);
   const [invoiceNumber, setInvoiceNumber] = useState("");
   const [accessKey, setAccessKey] = useState("");
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     setIsUploading(true);
     try {
-      const publicUrl = await uploadFile(file, `nf_${Date.now()}_${file.name}`);
+      const filePath = await uploadFile(file);
+      const fileType = file.name.toLowerCase().endsWith(".xml") ? "xml" : "pdf";
       
       await addInvoice.mutateAsync({
-        invoice_number: invoiceNumber || "NF-E",
+        invoice_number: invoiceNumber.trim(),
         access_key: accessKey || null,
-        file_url: publicUrl,
+        file_path: filePath,
+        file_type: fileType,
       });
 
       setInvoiceNumber("");
       setAccessKey("");
       toast.success("Nota fiscal enviada com sucesso!");
-    } catch (error: any) {
-      toast.error(error.message || "Erro ao enviar nota fiscal");
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : "Erro ao enviar nota fiscal");
     } finally {
       setIsUploading(false);
+    }
+  };
+
+  const handleDownload = async (invoiceId: string, filePath: string) => {
+    const downloadWindow = window.open('about:blank', '_blank');
+    try {
+      setDownloadingId(invoiceId);
+      const signedUrl = await getInvoiceDownloadUrl(filePath);
+      if (downloadWindow) {
+        downloadWindow.opener = null;
+        downloadWindow.location.replace(signedUrl);
+      } else {
+        window.location.assign(signedUrl);
+      }
+    } catch (error: unknown) {
+      downloadWindow?.close();
+      toast.error(error instanceof Error ? error.message : 'Não foi possível preparar o download.');
+    } finally {
+      setDownloadingId(null);
     }
   };
 
@@ -83,7 +105,7 @@ export function OrderInvoicesManager({ orderId }: OrderInvoicesManagerProps) {
               <Button 
                 variant="outline" 
                 className="w-full relative overflow-hidden" 
-                disabled={isUploading}
+                disabled={isUploading || !invoiceNumber.trim()}
               >
                 {isUploading ? (
                   <>
@@ -101,7 +123,7 @@ export function OrderInvoicesManager({ orderId }: OrderInvoicesManagerProps) {
                   className="absolute inset-0 opacity-0 cursor-pointer" 
                   accept=".pdf,.xml"
                   onChange={handleFileUpload}
-                  disabled={isUploading}
+                  disabled={isUploading || !invoiceNumber.trim()}
                 />
               </Button>
             </div>
@@ -129,13 +151,16 @@ export function OrderInvoicesManager({ orderId }: OrderInvoicesManagerProps) {
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  {nf.file_url && (
-                    <Button variant="ghost" size="icon" asChild>
-                      <a href={nf.file_url} target="_blank" rel="noreferrer" title="Baixar">
-                        <Download className="h-4 w-4" />
-                      </a>
-                    </Button>
-                  )}
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    title="Baixar"
+                    aria-label={`Baixar nota fiscal ${nf.invoice_number}`}
+                    disabled={downloadingId === nf.id}
+                    onClick={() => handleDownload(nf.id, nf.file_path)}
+                  >
+                    <Download className="h-4 w-4" />
+                  </Button>
                   {nf.access_key && (
                     <Badge variant="secondary" className="hidden sm:flex text-[10px] font-mono">
                       {nf.access_key.slice(0, 4)}...{nf.access_key.slice(-4)}

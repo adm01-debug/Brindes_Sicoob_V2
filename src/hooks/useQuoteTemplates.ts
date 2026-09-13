@@ -160,6 +160,8 @@ export function useQuoteTemplates() {
   return {
     templates,
     isLoading,
+    /** @deprecated Use `isLoading`; mantido para consumidores anteriores à padronização. */
+    loading: isLoading,
     isAdmin,
     fetchTemplates,
     createTemplate,

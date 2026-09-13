@@ -59,20 +59,22 @@ function CatalogSearchHistory({ history, onSelect, onClear }: CatalogSearchHisto
     <Popover open={open} onOpenChange={setOpen}>
       <Tooltip>
         <TooltipTrigger asChild>
-          <PopoverTrigger asChild>
-            <Button
-              type="button"
-              variant="outline"
-              size="icon"
-              className="relative h-11 w-11 shrink-0 rounded-xl border-[#c7dcda] text-[#426568] hover:border-[#79cfc6] hover:bg-[#e8f6f3] hover:text-[#006c68]"
-              aria-label={`Abrir ${history.length} buscas recentes`}
-            >
-              <Clock className="h-4 w-4" aria-hidden="true" />
-              <Badge className="pointer-events-none absolute -right-1.5 -top-1.5 flex h-5 min-w-5 items-center justify-center border-2 border-background bg-[#007d74] px-1 text-[9px] text-white">
-                {history.length > 9 ? "9+" : history.length}
-              </Badge>
-            </Button>
-          </PopoverTrigger>
+          <span className="inline-flex">
+            <PopoverTrigger asChild>
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                className="relative h-11 w-11 shrink-0 rounded-xl border-[#c7dcda] text-[#426568] hover:border-[#79cfc6] hover:bg-[#e8f6f3] hover:text-[#006c68]"
+                aria-label={`Abrir ${history.length} buscas recentes`}
+              >
+                <Clock className="h-4 w-4" aria-hidden="true" />
+                <Badge className="pointer-events-none absolute -right-1.5 -top-1.5 flex h-5 min-w-5 items-center justify-center border-2 border-background bg-[#007d74] px-1 text-[9px] text-white">
+                  {history.length > 9 ? "9+" : history.length}
+                </Badge>
+              </Button>
+            </PopoverTrigger>
+          </span>
         </TooltipTrigger>
         <TooltipContent>Buscas recentes</TooltipContent>
       </Tooltip>

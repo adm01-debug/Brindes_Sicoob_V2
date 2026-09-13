@@ -1,63 +1,14 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useCallback } from "react";
 import { type Product } from "@/hooks/useProducts";
-
-const STORAGE_KEY = "recently-viewed-products";
-const MAX_ITEMS = 10;
-
-export interface RecentlyViewedItem {
-  productId: string;
-  viewedAt: string;
-}
+import { useRecentlyViewedStore } from "@/stores/useRecentlyViewedStore";
+export type { RecentlyViewedItem } from "@/stores/useRecentlyViewedStore";
 
 export function useRecentlyViewed() {
-  const [items, setItems] = useState<RecentlyViewedItem[]>([]);
-  const [isLoaded, setIsLoaded] = useState(false);
-  const lastAddedRef = useRef<string | null>(null);
-
-  useEffect(() => {
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored) {
-        setItems(JSON.parse(stored));
-      }
-    } catch (e) {
-      console.error("Error loading recently viewed:", e);
-    }
-    setIsLoaded(true);
-  }, []);
-
-  useEffect(() => {
-    if (isLoaded) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
-    }
-  }, [items, isLoaded]);
-
-  const addToRecentlyViewed = useCallback((productId: string) => {
-    if (lastAddedRef.current === productId) return;
-    lastAddedRef.current = productId;
-
-    setTimeout(() => {
-      if (lastAddedRef.current === productId) {
-        lastAddedRef.current = null;
-      }
-    }, 1000);
-
-    setItems((prev) => {
-      const filtered = prev.filter((item) => item.productId !== productId);
-      return [{ productId, viewedAt: new Date().toISOString() }, ...filtered].slice(
-        0,
-        MAX_ITEMS
-      );
-    });
-  }, []);
-
-  const removeFromRecentlyViewed = useCallback((productId: string) => {
-    setItems((prev) => prev.filter((item) => item.productId !== productId));
-  }, []);
-
-  const clearRecentlyViewed = useCallback(() => {
-    setItems([]);
-  }, []);
+  const items = useRecentlyViewedStore(state => state.items);
+  const isLoaded = useRecentlyViewedStore(state => state.isLoaded);
+  const addToRecentlyViewed = useRecentlyViewedStore(state => state.addToRecentlyViewed);
+  const removeFromRecentlyViewed = useRecentlyViewedStore(state => state.removeFromRecentlyViewed);
+  const clearRecentlyViewed = useRecentlyViewedStore(state => state.clearRecentlyViewed);
 
   const getRecentlyViewedProductsFromMap = useCallback(
     (getProductsByIds: (ids: string[]) => Product[]): Product[] =>

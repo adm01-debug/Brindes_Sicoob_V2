@@ -191,7 +191,7 @@ A lista remove seis nomes de campos, mas preserva setup_cost e unit_cost. O alia
 
 ## A11 — Página legada de campanhas possui exportação com colisão de nome
 
-**P2 · confirmado por leitura · Aberto**
+**P2 · corrigido localmente; pendente de validação na interface**
 
 O parâmetro format ('xlsx' ou 'csv') sombreia format do date-fns e é chamado como função. Com datas, a falha ocorre antes do try. A página não foi localizada no registro atual de rotas; não se afirma defeito exposto ao comprador.
 
@@ -204,11 +204,17 @@ O parâmetro format ('xlsx' ou 'csv') sombreia format do date-fns e é chamado c
 
 **Reprodução / conferência:** Ao reaproveitar o componente em teste isolado, exportar campanha com data; verificar TypeError por tentativa de chamar string.
 
-**Condição de fechamento:** Antes de ativar/reutilizar, renomear parâmetro, revisar exportação CSV e testar arquivo com datas, vírgulas, aspas e quebras de linha. Integrar apenas ao fluxo de campanha definido.
+**Correção local (12/09/2026):** `handleExport` passou a usar
+`exportFormat`, preservando a função `format` do `date-fns` para datas e nomes
+de arquivo. O CSV foi extraído para um utilitário com BOM UTF-8 e escape de
+aspas, vírgulas e quebras de linha; os casos especiais têm teste unitário.
+
+**Condição de fechamento:** Validar os botões XLSX e CSV no navegador com uma
+campanha real em homologação, incluindo datas e os caracteres especiais.
 
 ## A12 — Auditoria e notificação de outros status podem falhar sem bloquear a alteração
 
-**P1 · confirmado por leitura · Aberto**
+**P1 · corrigido localmente; pendente de aplicação e validação remota**
 
 Fora das RPCs críticas, update do pedido e insert de auditoria são operações separadas. Supabase retorna error sem necessariamente lançar exceção; catch não basta. Email usa endereço do ator e não uma matriz de destinatários por evento.
 
@@ -221,7 +227,17 @@ Fora das RPCs críticas, update do pedido e insert de auditoria são operações
 
 **Reprodução / conferência:** Simular sucesso de update e erro de insert/invoke; conferir status sem trilha/notificação. Essa sequência foi inspecionada, não executada remotamente.
 
-**Condição de fechamento:** Persistir transição e auditoria crítica juntas; usar fila transacional para notificações, idempotência e destinatários corretos. Falha de envio não deve apagar evento nem aparentar entrega.
+**Correção local (12/09/2026):** a migração
+`20260912110000_sicoob_order_status_events.sql` substitui os efeitos no
+cliente por gatilho transacional no histórico canônico e em
+`workspace_notifications`, que é a fonte da interface in-app. Transições
+comuns e solicitações de alçada passaram a usar RPCs com comparação do estado.
+O cenário descartável exercitou destinatários, repetição, concorrência e
+rollback quando a notificação falha. O envio de e-mail do navegador foi
+removido porque não havia trabalhador de entrega nem confirmação de resultado.
+
+**Condição de fechamento:** Aplicar a migração no Supabase Sicoob, regenerar
+tipos e validar RLS/destinatários com perfis reais de PA, cooperativa e Central.
 
 ## A13 — Análise CodeQL possui 26 alertas sem triagem conclusiva
 
@@ -256,11 +272,13 @@ Quality Gate falha em max-lines-per-function durante ESLint; causa raiz não con
 
 **Condição de fechamento:** Reproduzir lint nas mesmas condições da CI, corrigir regressões/fixtures com diagnóstico e executar jornada autenticada com contas de homologação. Não liberar apenas por aumentar timeout ou afrouxar gates.
 
-## A15 — Aprovação financeira ainda não verifica toda a política institucional
+## A15 — Aprovação financeira: guardas técnicas corrigidas; política institucional pendente
 
-**P0 · confirmado por leitura · Aberto**
+**P0 · corrigido localmente · pendente de política formal e homologação remota**
 
-RPCs locais já validam identidade, relação, estado, saldo e repetição. Ainda faltam vínculo ativo explícito, impedimento de autoaprovação conforme política, versão imutável da proposta/arte e competência específica de marca. Política vigente de cada cooperativa não foi confirmada.
+A migração `20260912120000_sicoob_approval_policy_guards.sql` bloqueia salto direto para aprovação, exige vínculo ativo do decisor, impede que solicitante ou criador decida o próprio pedido e congela valor, itens e dados submetidos enquanto houver solicitação pendente. A alçada gravada na solicitação vem do orçamento do PA, nunca do valor enviado pelo navegador. A política é versionada por cooperativa e sua versão fica no pedido e na solicitação; sem uma versão formal, aplica-se apenas uma base técnica conservadora.
+
+O modelo atual ainda não relaciona pedido Sicoob a versão de arte, nem possui um papel funcional de marketing. Portanto, não é possível declarar validada uma aprovação de marca ou uma política institucional específica sem os documentos e as competências formalmente cadastrados.
 
 **Referências:**
 
@@ -269,9 +287,9 @@ RPCs locais já validam identidade, relação, estado, saldo e repetição. Aind
 
 **Plano:** E018.04, E018.05, E018.06, E064.07, E065.07
 
-**Reprodução / conferência:** Inspecionar sicoob_actor_can_approve e pré-condições das RPCs. Ensaiar revogação de vínculo, proposta substituída e proibição local de autoaprovar após confirmar a política.
+**Reprodução / conferência:** executar `python3 scripts/qa/simular-politica-aprovacao-sicoob.py`. O ensaio usa PostgreSQL 16 descartável e sem rede para cobrir preparação dentro da alçada, alçada derivada no servidor, congelamento de valor/itens, autoaprovação, vínculo inativo, escalação sem duplicação e bypass de status.
 
-**Condição de fechamento:** Preservar a correção transacional existente e acrescentar precondições versionadas no servidor, com casos positivos e negativos por cooperativa.
+**Condição de fechamento:** cadastrar e homologar a política vigente de cada cooperativa, modelar a versão de arte e a competência de marketing que a aprova, aplicar as migrações no Supabase Sicoob e exercer RLS com perfis reais autorizados.
 
 ## A16 — Consolidação não implementa distribuição e recebimento por destino
 

@@ -67,7 +67,7 @@ export function getSupplierColors(supplierName: string): SupplierColorConfig {
     return SUPPLIER_COLORS.asia;
   }
   
-  // Retorna laranja como padrão
+  // Retorna o amarelo institucional como padrão
   return SUPPLIER_COLORS.default;
 }
 

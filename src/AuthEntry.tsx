@@ -37,14 +37,9 @@ function DeferredNotifications() {
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    const requestIdleCallback = Reflect.get(window, "requestIdleCallback") as Window["requestIdleCallback"] | undefined;
-    const cancelIdleCallback = Reflect.get(window, "cancelIdleCallback") as Window["cancelIdleCallback"] | undefined;
-    if (typeof requestIdleCallback === "function") {
-      const id = requestIdleCallback.call(window, () => setReady(true), { timeout: 1_500 });
-      return () => cancelIdleCallback?.call(window, id);
-    }
-
-    const id = globalThis.setTimeout(() => setReady(true), 1_500);
+    // Toasts não participam do primeiro paint. A espera fixa impede que um
+    // callback ocioso antecipado concorra com o LCP em dispositivos modestos.
+    const id = globalThis.setTimeout(() => setReady(true), 3_000);
     return () => globalThis.clearTimeout(id);
   }, []);
 

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { renderHook, act } from '@testing-library/react';
+import { renderHook, act, waitFor } from '@testing-library/react';
 import { useDevGate } from '@/hooks/useDevGate';
 import { useAuth } from '@/contexts/AuthContext';
 import { devInfraGate } from '@/lib/system/dev-gate/DevInfraGate';
@@ -19,8 +19,8 @@ describe('useDevGate', () => {
     vi.restoreAllMocks();
   });
 
-  it('should reflect changes from devInfraGate automatically', () => {
-    (useAuth as any).mockReturnValue({ isDev: false });
+  it('should reflect changes from devInfraGate automatically', async () => {
+    (useAuth as any).mockReturnValue({ roles: [], isDev: false, isLoading: false });
     
     const { result } = renderHook(() => useDevGate());
     
@@ -40,7 +40,7 @@ describe('useDevGate', () => {
     });
 
     // O hook deve ter atualizado via useSyncExternalStore
-    expect(result.current.isAllowed).toBe(true);
+    await waitFor(() => expect(result.current.isAllowed).toBe(true));
   });
 
   it('should react to isDev changes from auth context', () => {
@@ -49,7 +49,7 @@ describe('useDevGate', () => {
 
     const { rerender, result } = renderHook(
       ({ isDev }) => {
-        (useAuth as any).mockReturnValue({ isDev });
+        (useAuth as any).mockReturnValue({ roles: isDev ? ['dev'] : [], isDev, isLoading: false });
         return useDevGate();
       },
       { initialProps: { isDev: false } }

@@ -25,6 +25,9 @@ const authState = {
   mfaRequired: false,
   currentAAL: "aal1" as const,
   role: "agente" as const,
+  roles: ["agente"],
+  rolesLoaded: true,
+  rolesError: null,
 };
 
 vi.mock("@/contexts/AuthContext", () => ({
@@ -76,6 +79,7 @@ describe("Route guards — React ref warning guard", () => {
       user: null, isLoading: false, canManage: false, isDev: false,
       isSupervisorOrAbove: false, hasMFA: false, mfaRequired: false,
       currentAAL: "aal1", role: "agente",
+      roles: ["agente"], rolesLoaded: true, rolesError: null,
     });
   });
 
@@ -180,6 +184,7 @@ describe("Route guards + EnhancedErrorBoundary — sem warning de ref ao falhar"
       isLoading: false, canManage: true, isDev: true,
       isSupervisorOrAbove: true, hasMFA: true, mfaRequired: true,
       currentAAL: "aal2", role: "dev",
+      roles: ["dev"], rolesLoaded: true, rolesError: null,
     });
   });
 

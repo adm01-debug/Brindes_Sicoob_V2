@@ -1,0 +1,627 @@
+[
+  {
+    "id": "A01",
+    "titulo": "Logística canônica corrigida localmente, aguardando homologação real",
+    "prioridade": "P0",
+    "evidencia_tipo": "Código atual, regressões dirigidas e/ou simulações; limites no diagnóstico",
+    "referencias": [
+      "src/components/sicoob/orders/OrderLogisticsTab.tsx",
+      "src/services/sicoob/fulfillmentService.ts",
+      "supabase/migrations/20260912090000_sicoob_fulfillment.sql",
+      "tests/services/sicoobFulfillmentService.test.ts"
+    ],
+    "subetapas": [
+      "E028.08",
+      "E070.08",
+      "E074.04",
+      "E076.04"
+    ],
+    "diagnostico": "Rastreio e status usam RPC canônica com estado esperado; comprovante privado. Não há evidência de aplicação remota.",
+    "condicao_fechamento": "Aplicar e validar no schema alvo, incluindo falha, arquivo privado e usuário autorizado; aceite operacional.",
+    "estado": "Corrigido localmente no escopo original",
+    "validado_em_producao": false,
+    "diagnostico_historico": "As duas ações chamam updateStatus.mutate sem currentStatus. O serviço exige esse valor e rejeita antes da rede. No upload, o toast positivo não aguarda a mutation. A atualização de logística pode ocorrer antes da falha de status.",
+    "titulo_historico": "Logística omite o estado anterior e anuncia conclusão antes de confirmar o pedido",
+    "referencias_historicas": [
+      "src/components/sicoob/orders/OrderLogisticsTab.tsx:38",
+      "src/components/sicoob/orders/OrderLogisticsTab.tsx:78",
+      "src/services/sicoob/orderService.ts:119",
+      "src/hooks/sicoob/useSicoobOrder.ts:38"
+    ],
+    "reproducao_historica": "Em ambiente segregado, abrir pedido elegível e confirmar rastreio ou foto. A simulação A01 reproduz a rejeição do serviço sem acessar bancos.",
+    "reproducao": "Ver diagnóstico atual e evidências vinculadas; não executar simulador histórico como se retratasse o candidato atual."
+  },
+  {
+    "id": "A02",
+    "titulo": "Notas no modelo legado; pagamentos e piloto provisórios no detalhe Sicoob",
+    "prioridade": "P0",
+    "evidencia_tipo": "Código atual, regressões dirigidas e/ou simulações; limites no diagnóstico",
+    "referencias": [
+      "src/components/sicoob/orders/OrderLogisticsTab.tsx",
+      "src/hooks/orders/extensions/index.ts",
+      "src/hooks/orders/extensions/useOrderInvoices.ts",
+      "src/pages/sicoob/orders/OrderDetailPage.tsx",
+      "src/services/OrderService.ts",
+      "src/services/sicoob/fulfillmentService.ts",
+      "supabase/migrations/20260502175334_93cdfc03-97b2-4de9-9e60-5152452316b5.sql",
+      "supabase/migrations/20260912090000_sicoob_fulfillment.sql",
+      "tests/services/sicoobFulfillmentService.test.ts"
+    ],
+    "subetapas": [
+      "E011.06",
+      "E070.01",
+      "E074.04",
+      "E078.02"
+    ],
+    "diagnostico": "Logística reconciliada. Notas continuam no legado; useOrderPayments retorna [] e useOrderPilotApprovals retorna [] com mutate vazio. Os hooks provisórios são importados pelo detalhe Sicoob.",
+    "condicao_fechamento": "Persistir notas, pagamentos e piloto no domínio correto; remover hooks provisórios; ensaiar conciliação e autorização com dados segregados.",
+    "estado": "Parcial",
+    "validado_em_producao": false,
+    "diagnostico_historico": "A tela carrega sicoob_orders, mas transmite seu ID aos hooks legados. Migrations de order_logistics/order_invoices/order_payments referenciam public.orders. Não foi localizado adaptador de reconciliação nessa passagem. O schema realmente implantado permanece desconhecido.",
+    "titulo_historico": "Extensões financeiras e logísticas usam pedidos de outro modelo",
+    "referencias_historicas": [
+      "src/pages/sicoob/orders/OrderDetailPage.tsx:150",
+      "src/pages/sicoob/orders/OrderDetailPage.tsx:658",
+      "src/services/OrderService.ts:87",
+      "supabase/migrations/20260502175334_93cdfc03-97b2-4de9-9e60-5152452316b5.sql:13",
+      "supabase/migrations/20260502174252_a88e3c13-46b8-4ce4-b1b8-c8500d390f3d.sql:100"
+    ],
+    "reproducao_historica": "Criar somente um sicoob_order num banco segregado com o schema reconciliado e tentar incluir logística/nota/pagamento. Verificar relação e FK; não executar escrita no banco mestre de catálogo.",
+    "reproducao": "Ver diagnóstico atual e evidências vinculadas; não executar simulador histórico como se retratasse o candidato atual."
+  },
+  {
+    "id": "A03",
+    "titulo": "Recompra reconsulta produto-base, mas criação e composição continuam incompletas",
+    "prioridade": "P0",
+    "evidencia_tipo": "Código atual, regressões dirigidas e/ou simulações; limites no diagnóstico",
+    "referencias": [
+      "src/components/orders/OneClickReorder.tsx",
+      "src/routes/config/quotes.ts",
+      "src/services/sicoob/orderService.ts"
+    ],
+    "subetapas": [
+      "E014.05",
+      "E079.01",
+      "E079.04",
+      "E079.10"
+    ],
+    "diagnostico": "Serviço e rota foram corrigidos; preço e estoque-base são consultados. Cabeçalho e itens ainda são inserts separados; cleanup ignora erro. Variante, mínimo, múltiplo e mapeamento de PA não homologados.",
+    "condicao_fechamento": "RPC de criação idempotente, composição/SKU revalidada, rollback integral e ensaio da recompra até aprovação com dados reais segregados.",
+    "estado": "Parcial",
+    "validado_em_producao": false,
+    "diagnostico_historico": "O botão chama useOrders/OrderService legado e navega para /pedidos/:id/editar, ausente do mapa de rotas. Há também métodos de recompra Sicoob, mas esse botão não os utiliza. As duplicações copiadas não reconfirmam preço/estoque.",
+    "titulo_historico": "Recompra usa serviço legado e navega para rota inexistente",
+    "referencias_historicas": [
+      "src/components/orders/OneClickReorder.tsx:27",
+      "src/routes/config/sicoob.ts:8",
+      "src/services/OrderService.ts:355",
+      "src/services/sicoob/orderService.ts:240"
+    ],
+    "reproducao_historica": "A simulação A03 aciona o handler real com serviço substituído e captura /pedidos/novo-pedido/editar; inspeção do mapa não encontra esse prefixo.",
+    "reproducao": "Ver diagnóstico atual e evidências vinculadas; não executar simulador histórico como se retratasse o candidato atual."
+  },
+  {
+    "id": "A04",
+    "titulo": "Autosave trata erro explícito, mas aceita atualização sem linha persistida",
+    "prioridade": "P0",
+    "evidencia_tipo": "Código atual, regressões dirigidas e/ou simulações; limites no diagnóstico",
+    "referencias": [
+      "docs/execucao/revisao-implementacao-2026-09-12/testes-dirigidos.json",
+      "scripts/revisao/pendencias-2026-09-12.cenarios.tsx",
+      "scripts/revisao/vitest-pendencias-2026-09-12.config.ts",
+      "src/components/kit-builder/KitSummary.tsx",
+      "src/hooks/useKitAutoSave.ts",
+      "src/hooks/useKitBuilder.ts",
+      "src/hooks/useKitStockValidation.ts",
+      "tests/hooks/useKitAutoSave.test.tsx",
+      "tests/hooks/useKitStockValidation.test.tsx"
+    ],
+    "subetapas": [
+      "E027.09",
+      "E028.08",
+      "E055.09",
+      "E057.10"
+    ],
+    "diagnostico": "Erro explícito é tratado com retry. S08 reproduz lastSavedAt após resposta sem erro, mas com zero linhas atualizadas. Concorrência e recuperação de sessão não foram encerradas.",
+    "condicao_fechamento": "Exigir confirmação da linha persistida e tratar zero linhas; testar falha, troca de kit, duas gravações fora de ordem e sessão interrompida.",
+    "estado": "Parcial",
+    "validado_em_producao": false,
+    "diagnostico_historico": "Respostas error do Supabase não são inspecionadas no update/insert. lastSavedAt é atualizado mesmo com data=null/error. O snapshot avança antes da confirmação, prejudicando nova tentativa sem alteração.",
+    "titulo_historico": "Autosave de kit indica salvamento mesmo quando o banco retorna erro",
+    "referencias_historicas": [
+      "src/hooks/useKitAutoSave.ts:60",
+      "src/hooks/useKitAutoSave.ts:82",
+      "src/hooks/useKitAutoSave.ts:115"
+    ],
+    "reproducao_historica": "A simulação A04 devolve erro controlado no update e constata que lastSavedAt recebe uma data.",
+    "reproducao": "Ver diagnóstico atual e evidências vinculadas; não executar simulador histórico como se retratasse o candidato atual."
+  },
+  {
+    "id": "A05",
+    "titulo": "Estoque por variante corrigido; demanda repetida e servidor ainda incompletos",
+    "prioridade": "P0",
+    "evidencia_tipo": "Código atual, regressões dirigidas e/ou simulações; limites no diagnóstico",
+    "referencias": [
+      "docs/execucao/revisao-implementacao-2026-09-12/testes-dirigidos.json",
+      "scripts/revisao/pendencias-2026-09-12.cenarios.tsx",
+      "scripts/revisao/vitest-pendencias-2026-09-12.config.ts",
+      "src/components/kit-builder/KitSummary.tsx",
+      "src/hooks/useKitAutoSave.ts",
+      "src/hooks/useKitBuilder.ts",
+      "src/hooks/useKitStockValidation.ts",
+      "tests/hooks/useKitAutoSave.test.tsx",
+      "tests/hooks/useKitStockValidation.test.tsx"
+    ],
+    "subetapas": [
+      "E055.03",
+      "E055.07",
+      "E073.08",
+      "E085.02"
+    ],
+    "diagnostico": "Variante selecionada e erro de consulta foram corrigidos. S07 reproduz demanda sintética repetida sem agregação; hook compara cada linha ao mesmo estoque. Ainda há validação comercial somente cliente.",
+    "condicao_fechamento": "Agregar demanda por SKU, validar relação variante/produto, estoque e restrições no servidor; ensaiar kits persistidos e substituição.",
+    "estado": "Parcial",
+    "validado_em_producao": false,
+    "diagnostico_historico": "O hook agrupa estoque por product_id, ignorando a variante escolhida; também não retorna error/isError. A consulta tem limit=500 sem evidência de paginação completa. Disponibilidade não está garantida pela ausência de alertas.",
+    "titulo_historico": "Validação de kit soma cores diferentes e oculta erro de consulta",
+    "referencias_historicas": [
+      "src/hooks/useKitStockValidation.ts:33",
+      "src/hooks/useKitStockValidation.ts:62"
+    ],
+    "reproducao_historica": "A05: verde=0, azul=100 e pedido de 50 verdes retorna hasStockIssues=false. A05b: consulta com erro e data undefined também retorna false, sem estado de erro.",
+    "reproducao": "Ver diagnóstico atual e evidências vinculadas; não executar simulador histórico como se retratasse o candidato atual."
+  },
+  {
+    "id": "A06",
+    "titulo": "Métricas artificiais e erros convertidos em zero persistem em outros módulos",
+    "prioridade": "P1",
+    "evidencia_tipo": "Código atual, regressões dirigidas e/ou simulações; limites no diagnóstico",
+    "referencias": [
+      "src/components/sicoob/orders/LogisticsCommandCenter.tsx",
+      "src/pages/sicoob/GestorConsolidatedOrdersPage.tsx",
+      "src/pages/sicoob/orders/OrderDetailPage.tsx",
+      "src/pages/sicoob/orders/OrdersPage.tsx",
+      "src/services/sicoob/statsService.ts"
+    ],
+    "subetapas": [
+      "E009.10",
+      "E026.07",
+      "E042.07",
+      "E089.08"
+    ],
+    "diagnostico": "Previsões e contador saíram de pedidos. statsService ainda usa meta fixa, +0% e ignora erros; /gestor/agregados exibe dados fixos. Não há remoção global de métricas fictícias.",
+    "condicao_fechamento": "Substituir mocks ativos por fonte confirmada ou estado indisponível; separar erro de zero; conciliar indicadores e verificar telas por papel.",
+    "estado": "Parcial",
+    "validado_em_producao": false,
+    "diagnostico_historico": "Há probabilidades fixas de 94/87/82%, alegação de 12 PAs, previsão de receita por multiplicador 1,4 + 25.000, meta fixa de 500.000 e contador de gestores baseado em Math.random. Consultas de estatísticas ignoram error e podem mostrar zero em indisponibilidade.",
+    "titulo_historico": "Telas reais exibem previsões e presença sem fonte operacional",
+    "referencias_historicas": [
+      "src/hooks/sicoob/useAIOrderPredictor.ts:23",
+      "src/pages/sicoob/orders/OrdersPage.tsx:400",
+      "src/pages/sicoob/orders/OrdersPage.tsx:415",
+      "src/pages/sicoob/orders/OrderDetailPage.tsx:119",
+      "src/pages/sicoob/orders/OrderDetailPage.tsx:366",
+      "src/services/sicoob/statsService.ts:115"
+    ],
+    "reproducao_historica": "Seguir a importação AIOrderPredictor na rota real /sicoob/pedidos e o intervalo do detalhe. Nenhum desses cálculos comprova probabilidade, presença ou meta da cooperativa.",
+    "reproducao": "Ver diagnóstico atual e evidências vinculadas; não executar simulador histórico como se retratasse o candidato atual."
+  },
+  {
+    "id": "A07",
+    "titulo": "Versionamento transacional corrigido localmente, sem aceite de jornada completa",
+    "prioridade": "P0",
+    "evidencia_tipo": "Código atual, regressões dirigidas e/ou simulações; limites no diagnóstico",
+    "referencias": [
+      "docs/execucao/evidencias/versionamento-orcamento-atomico.json",
+      "src/hooks/useQuoteVersions.ts",
+      "src/services/quotes/quoteVersionService.ts",
+      "supabase/migrations/20260912100000_quote_versioning_atomic.sql",
+      "supabase/migrations/20260912130000_quote_versioning_family_roots.sql",
+      "supabase/migrations/20260912150000_quote_versioning_cycle_lock.sql",
+      "tests/services/quoteVersionService.test.ts"
+    ],
+    "subetapas": [
+      "E059.01",
+      "E059.04",
+      "E059.10",
+      "E068.09"
+    ],
+    "diagnostico": "Versionamento usa RPC transacional com família, concorrência e proteção de ciclos; ensaios SQL e regressão do serviço disponíveis. Não certifica edição direta de proposta/arte aceita.",
+    "condicao_fechamento": "Aplicar migrations no banco próprio e repetir concorrência/rollback via API; validar arte e condições da proposta completa.",
+    "estado": "Corrigido localmente no escopo original",
+    "validado_em_producao": false,
+    "diagnostico_historico": "O cliente consulta máximo+1, desmarca as versões anteriores, cria outra quote e só depois grava version/is_latest_version. Chamadas intermediárias não inspecionam todos os erros. Duas sessões ou falha intermediária podem deixar numeração/versão vigente incoerentes; constraints reais não foram consultadas.",
+    "titulo_historico": "Versionamento de orçamento não é uma operação atômica",
+    "referencias_historicas": [
+      "src/hooks/useQuoteVersions.ts:119",
+      "src/hooks/useQuoteVersions.ts:137",
+      "src/hooks/useQuoteVersions.ts:213"
+    ],
+    "reproducao_historica": "Simular duas sessões criando revisão e falhar após desmarcar a versão atual num ambiente segregado. Achado por inspeção; concorrência dessa rotina ainda não executada nesta revisão.",
+    "reproducao": "Ver diagnóstico atual e evidências vinculadas; não executar simulador histórico como se retratasse o candidato atual."
+  },
+  {
+    "id": "A08",
+    "titulo": "Carregamento de organização ainda conserva contexto obsoleto em falha ou corrida",
+    "prioridade": "P0",
+    "evidencia_tipo": "Código atual, regressões dirigidas e/ou simulações; limites no diagnóstico",
+    "referencias": [
+      "src/contexts/AuthContext.tsx",
+      "src/contexts/OrganizationContext.tsx"
+    ],
+    "subetapas": [
+      "E012.05",
+      "E025.05",
+      "E025.08",
+      "E025.10"
+    ],
+    "diagnostico": "Troca explícita une papel e organização. fetchOrganizations mantém respostas antigas e estado no catch; lista sem organização ativa não zera currentRole. Corrida inferida do fluxo assíncrono, não reproduzida em API real.",
+    "condicao_fechamento": "Descartar respostas de sessão/contexto obsoleto, falhar sem preservar papel antigo e testar revogação/logout/duas respostas fora de ordem.",
+    "estado": "Parcial",
+    "validado_em_producao": false,
+    "diagnostico_historico": "currentOrg muda antes da consulta assíncrona do papel. Erro ou resposta fora de ordem não limpa/invalida o papel anterior. Não há proteção de rascunho nem reconciliação integral de cache nesse fluxo. Isso comprova incoerência possível de interface, não bypass de RLS em produção.",
+    "titulo_historico": "Troca de organização pode manter papel do contexto anterior",
+    "referencias_historicas": [
+      "src/contexts/OrganizationContext.tsx:117",
+      "src/contexts/OrganizationContext.tsx:131"
+    ],
+    "reproducao_historica": "Em teste controlado, atrasar a resposta de um vínculo, trocar novamente e fazer a primeira resposta chegar por último; também simular erro ao consultar o novo papel.",
+    "reproducao": "Ver diagnóstico atual e evidências vinculadas; não executar simulador histórico como se retratasse o candidato atual."
+  },
+  {
+    "id": "A09",
+    "titulo": "Histórico da busca principal segmentado e testado localmente",
+    "prioridade": "P1",
+    "evidencia_tipo": "Código atual, regressões dirigidas e/ou simulações; limites no diagnóstico",
+    "referencias": [
+      "src/components/catalog/CatalogHeader.tsx",
+      "src/hooks/catalog/useCatalogSearchState.ts",
+      "src/hooks/useSearch.ts",
+      "tests/hooks/useSearch.test.ts"
+    ],
+    "subetapas": [
+      "E023.04",
+      "E025.05",
+      "E044.09",
+      "E050.04"
+    ],
+    "diagnostico": "Busca principal usa usuário/cooperativa/PA e tem teste de isolamento. O achado não certifica outros stores: vistos recentemente são tratados em A20.",
+    "condicao_fechamento": "Confirmar busca após troca/logout com duas contas reais e validar retenção de históricos por contexto.",
+    "estado": "Corrigido localmente no escopo original",
+    "validado_em_producao": false,
+    "diagnostico_historico": "search-history é uma chave global e não está na limpeza de logout. A UI nova expõe o histórico legado. Favoritos também usam chave de consulta sem usuário; seu alcance exige teste separado, pois existem filtros de usuário no servidor.",
+    "titulo_historico": "Histórico de busca fica compartilhado entre sessões no mesmo navegador",
+    "referencias_historicas": [
+      "src/hooks/useSearch.ts:8",
+      "src/hooks/useSearch.ts:34",
+      "src/contexts/AuthContext.tsx:167",
+      "src/hooks/useFavoriteLists.ts:55"
+    ],
+    "reproducao_historica": "Buscar um termo na conta A, sair e entrar como B no mesmo navegador; verificar sugestões/histórico. Não é necessário usar dados pessoais no cenário.",
+    "reproducao": "Ver diagnóstico atual e evidências vinculadas; não executar simulador histórico como se retratasse o candidato atual."
+  },
+  {
+    "id": "A10",
+    "titulo": "Redação comercial recursiva corrigida no contrato local",
+    "prioridade": "P0",
+    "evidencia_tipo": "Código atual, regressões dirigidas e/ou simulações; limites no diagnóstico",
+    "referencias": [
+      "supabase/functions/_shared/catalog-redaction.ts",
+      "supabase/functions/external-db-bridge/index.ts",
+      "tests/functions/catalog-redaction.test.ts"
+    ],
+    "subetapas": [
+      "E003.07",
+      "E048.01",
+      "E086.06"
+    ],
+    "diagnostico": "Redação recursiva cobre setup_cost, unit_cost, margem e fornecedor; regressão dirigida aprovada.",
+    "condicao_fechamento": "Confirmar respostas de cada operação do bridge e ACL mínima da identidade remota sem escrita na origem.",
+    "estado": "Corrigido localmente no escopo original",
+    "validado_em_producao": false,
+    "diagnostico_historico": "A lista remove seis nomes de campos, mas preserva setup_cost e unit_cost. O alias de técnicas constrói setup_cost; a allowlist também contém variant_cost_tiers e tabelas comerciais internas. Não foi verificada exposição na implantação remota.",
+    "titulo_historico": "Lista de redação comercial não cobre custos de personalização",
+    "referencias_historicas": [
+      "supabase/functions/_shared/catalog-redaction.ts:2",
+      "supabase/functions/_shared/external-db-aliases.ts:156",
+      "supabase/functions/_shared/external-db-config.ts:48",
+      "supabase/functions/external-db-bridge/index.ts:923"
+    ],
+    "reproducao_historica": "A10 aplica a função real a objeto sintético e confirma a preservação de setup_cost/unit_cost aninhados.",
+    "reproducao": "Ver diagnóstico atual e evidências vinculadas; não executar simulador histórico como se retratasse o candidato atual."
+  },
+  {
+    "id": "A11",
+    "titulo": "Exportação de campanhas corrigida e testada localmente",
+    "prioridade": "P2",
+    "evidencia_tipo": "Código atual, regressões dirigidas e/ou simulações; limites no diagnóstico",
+    "referencias": [
+      "src/pages/admin/AdminCampanhasPage.tsx",
+      "src/utils/campaignExport.ts",
+      "tests/utils/campaignExport.test.ts"
+    ],
+    "subetapas": [
+      "E051.01",
+      "E090.02",
+      "E090.04"
+    ],
+    "diagnostico": "Colisão de nome corrigida; CSV escapa delimitadores/aspas/quebras e possui teste. Não certifica campanha institucional com destinos.",
+    "condicao_fechamento": "Validar download/exportação na jornada autenticada e arquivo aberto com dados permitidos.",
+    "estado": "Corrigido localmente no escopo original",
+    "validado_em_producao": false,
+    "diagnostico_historico": "O parâmetro format ('xlsx' ou 'csv') sombreia format do date-fns e é chamado como função. Com datas, a falha ocorre antes do try. A página não foi localizada no registro atual de rotas; não se afirma defeito exposto ao comprador.",
+    "titulo_historico": "Página legada de campanhas possui exportação com colisão de nome",
+    "referencias_historicas": [
+      "src/pages/admin/AdminCampanhasPage.tsx:131",
+      "src/pages/admin/AdminCampanhasPage.tsx:136"
+    ],
+    "reproducao_historica": "Ao reaproveitar o componente em teste isolado, exportar campanha com data; verificar TypeError por tentativa de chamar string.",
+    "reproducao": "Ver diagnóstico atual e evidências vinculadas; não executar simulador histórico como se retratasse o candidato atual."
+  },
+  {
+    "id": "A12",
+    "titulo": "Eventos de status e notificações in-app tornaram-se transacionais",
+    "prioridade": "P1",
+    "evidencia_tipo": "Código atual, regressões dirigidas e/ou simulações; limites no diagnóstico",
+    "referencias": [
+      "docs/execucao/evidencias/eventos-status-sicoob.json",
+      "src/services/sicoob/orderService.ts",
+      "supabase/migrations/20260912110000_sicoob_order_status_events.sql",
+      "tests/services/sicoobOrderService.test.ts"
+    ],
+    "subetapas": [
+      "E029.09",
+      "E068.02",
+      "E068.09",
+      "E070.09"
+    ],
+    "diagnostico": "Transições canônicas gravam histórico e notificações in-app na mesma transação. Repetição, destinatários e falha com rollback foram simulados.",
+    "condicao_fechamento": "Verificar aplicação real, destinatários autorizados e histórico no schema completo; formalizar canais externos se exigidos.",
+    "estado": "Corrigido localmente no escopo original",
+    "validado_em_producao": false,
+    "diagnostico_historico": "Fora das RPCs críticas, update do pedido e insert de auditoria são operações separadas. Supabase retorna error sem necessariamente lançar exceção; catch não basta. Email usa endereço do ator e não uma matriz de destinatários por evento.",
+    "titulo_historico": "Auditoria e notificação de outros status podem falhar sem bloquear a alteração",
+    "referencias_historicas": [
+      "src/services/sicoob/orderService.ts:147",
+      "src/services/sicoob/orderService.ts:170"
+    ],
+    "reproducao_historica": "Simular sucesso de update e erro de insert/invoke; conferir status sem trilha/notificação. Essa sequência foi inspecionada, não executada remotamente.",
+    "reproducao": "Ver diagnóstico atual e evidências vinculadas; não executar simulador histórico como se retratasse o candidato atual."
+  },
+  {
+    "id": "A13",
+    "titulo": "CodeQL atual possui 13 resultados sem triagem conclusiva",
+    "prioridade": "P1",
+    "evidencia_tipo": "Código atual, regressões dirigidas e/ou simulações; limites no diagnóstico",
+    "referencias": [
+      ".github/workflows/codeql.yml",
+      ".github/workflows/e2e.yml",
+      "docs/execucao/revisao-implementacao-2026-09-12/ci.json",
+      "docs/execucao/revisao-implementacao-2026-09-12/resumo-codeql.json",
+      "docs/execucao/revisao-implementacao-2026-09-12/testes-dirigidos.json",
+      "e2e/flows/26-complete-flow.spec.ts",
+      "e2e/routes/_factories.ts",
+      "playwright.config.ts"
+    ],
+    "subetapas": [
+      "E013.06",
+      "E019.02",
+      "E020.04",
+      "E086.09"
+    ],
+    "diagnostico": "SARIF atual tem 13 resultados; 26 era o snapshot anterior. Workflow com upload:never preserva artefato e não aplica gate de severidade. Contagem menor não prova correções individuais.",
+    "condicao_fechamento": "Triar cada resultado por caminho alcançável, impacto e teste; corrigir ou justificar falsos positivos; definir gate e retenção das evidências.",
+    "estado": "Aberto",
+    "validado_em_producao": false,
+    "diagnostico_historico": "O job concluiu a análise e disponibilizou SARIF com 26 resultados de 12 regras. Inclui runtime, scripts e testes; alertas não equivalem a 26 vulnerabilidades exploráveis. Code scanning remoto não está habilitado neste repositório e upload foi desativado.",
+    "titulo_historico": "Análise CodeQL possui 26 alertas sem triagem conclusiva",
+    "referencias_historicas": [
+      ".github/workflows/codeql.yml:1"
+    ],
+    "reproducao_historica": "Conferir resumo-codeql.json e o artefato codeql-javascript-typescript do run 34643989511.",
+    "reproducao": "Ver diagnóstico atual e evidências vinculadas; não executar simulador histórico como se retratasse o candidato atual."
+  },
+  {
+    "id": "A14",
+    "titulo": "CI passou com lacunas de cobertura e instabilidade",
+    "prioridade": "P0",
+    "evidencia_tipo": "Código atual, regressões dirigidas e/ou simulações; limites no diagnóstico",
+    "referencias": [
+      ".github/workflows/codeql.yml",
+      ".github/workflows/e2e.yml",
+      "docs/execucao/revisao-implementacao-2026-09-12/ci.json",
+      "docs/execucao/revisao-implementacao-2026-09-12/resumo-codeql.json",
+      "docs/execucao/revisao-implementacao-2026-09-12/testes-dirigidos.json",
+      "e2e/flows/26-complete-flow.spec.ts",
+      "e2e/routes/_factories.ts",
+      "playwright.config.ts"
+    ],
+    "subetapas": [
+      "E019.05",
+      "E090.05",
+      "E095.02"
+    ],
+    "diagnostico": "Falhas originais de qualidade/E2E foram corrigidas. CI atual passou, mas smoke ignora 33, projetos autenticados são excluídos sem credenciais e oito casos exigiram retry. Jornada real não homologada.",
+    "condicao_fechamento": "Gate de release deve exigir credenciais de homologação, cenários autenticados e conteúdo persistido; resolver flakiness e registrar escopo executado.",
+    "estado": "Parcial",
+    "validado_em_producao": false,
+    "diagnostico_historico": "Quality Gate falha em max-lines-per-function durante ESLint; causa raiz não confirmada. E2E registra falhas em rotas públicas e termina cancelado no limite de 30 minutos. Smoke aprovado contém somente cinco cenários públicos mais fixture; 33 foram ignorados.",
+    "titulo_historico": "Qualidade e regressão E2E falharam no candidato auditado",
+    "referencias_historicas": [
+      "scripts/check-eslint-baseline.mjs:1",
+      ".github/workflows/e2e.yml:1"
+    ],
+    "reproducao_historica": "Consultar runs 34643989419 e 34643989627 no commit 6f1c5f9; inspecionar etapas e artefatos, sem considerar skips como aprovação.",
+    "reproducao": "Ver diagnóstico atual e evidências vinculadas; não executar simulador histórico como se retratasse o candidato atual."
+  },
+  {
+    "id": "A15",
+    "titulo": "Aprovação financeira ainda não verifica toda a política institucional",
+    "prioridade": "P0",
+    "evidencia_tipo": "Código atual, regressões dirigidas e/ou simulações; limites no diagnóstico",
+    "referencias": [
+      "docs/execucao/revisao-implementacao-2026-09-12/simulacoes.json",
+      "scripts/revisao/simular-pendencias-2026-09-12.py",
+      "supabase/migrations/20260912120000_sicoob_approval_policy_guards.sql",
+      "supabase/migrations/20260912140000_sicoob_approval_confirmation_followup.sql"
+    ],
+    "subetapas": [
+      "E018.04",
+      "E018.05",
+      "E018.06",
+      "E064.07",
+      "E065.07"
+    ],
+    "diagnostico": "Há alçada, profile ativo e autoaprovação no servidor; falta vínculo atual em organization_members, arte/delegação e aceite institucional. S01–S04 refutam snapshot imutável.",
+    "condicao_fechamento": "Resolver A17, verificar vínculo/competência corrente, aplicar política aceita por cooperativa e repetir matriz positiva/negativa real.",
+    "estado": "Parcial",
+    "validado_em_producao": false,
+    "diagnostico_historico": "RPCs locais já validam identidade, relação, estado, saldo e repetição. Ainda faltam vínculo ativo explícito, impedimento de autoaprovação conforme política, versão imutável da proposta/arte e competência específica de marca. Política vigente de cada cooperativa não foi confirmada.",
+    "titulo_historico": "Aprovação financeira ainda não verifica toda a política institucional",
+    "referencias_historicas": [
+      "supabase/migrations/20260911143000_sicoob_order_budget_atomicity.sql:147",
+      "src/services/sicoob/approvalService.ts:26"
+    ],
+    "reproducao_historica": "Inspecionar sicoob_actor_can_approve e pré-condições das RPCs. Ensaiar revogação de vínculo, proposta substituída e proibição local de autoaprovar após confirmar a política.",
+    "reproducao": "Ver diagnóstico atual e evidências vinculadas; não executar simulador histórico como se retratasse o candidato atual."
+  },
+  {
+    "id": "A16",
+    "titulo": "Consolidação não implementa distribuição e recebimento por destino",
+    "prioridade": "P1",
+    "evidencia_tipo": "Código atual, regressões dirigidas e/ou simulações; limites no diagnóstico",
+    "referencias": [
+      "src/pages/sicoob/GestorConsolidatedOrdersPage.tsx",
+      "supabase/migrations/20260503000002_sicoob_consolidation_logic.sql",
+      "supabase/migrations/20260912090000_sicoob_fulfillment.sql"
+    ],
+    "subetapas": [
+      "E056.02",
+      "E056.03",
+      "E074.03",
+      "E076.03",
+      "E078.05"
+    ],
+    "diagnostico": "RPC apenas cria grupo; não vincula pedidos. Página ativa usa dois lotes fixos e botões sem ação. Remessa canônica é única por pedido e não reconcilia itens por destino.",
+    "condicao_fechamento": "Implementar divisão por destino/item, recebimentos parciais, divergências e reconciliação; percorrer três destinos e operador real.",
+    "estado": "Aberto",
+    "validado_em_producao": false,
+    "diagnostico_historico": "A consolidação registra agrupamento e contém atualização de orders como comentário de trabalho futuro. Isso não implementa alocação de quantidade por destino, remessa parcial, conferência e conciliação financeira. A UI logística opera no pedido inteiro.",
+    "titulo_historico": "Consolidação não implementa distribuição e recebimento por destino",
+    "referencias_historicas": [
+      "supabase/migrations/20260503000002_sicoob_consolidation_logic.sql:1",
+      "src/components/sicoob/orders/OrderLogisticsTab.tsx:16"
+    ],
+    "reproducao_historica": "Revisar a rotina de consolidação e percorrer o modelo disponível procurando vínculo item-destino-remessa-recebimento; o ensaio de três destinos não foi demonstrado.",
+    "reproducao": "Ver diagnóstico atual e evidências vinculadas; não executar simulador histórico como se retratasse o candidato atual."
+  },
+  {
+    "id": "A17",
+    "titulo": "Política vinculada não é imutável e fallback pode trocar a regra aplicada",
+    "prioridade": "P0",
+    "evidencia_tipo": "Simulação local delimitada",
+    "referencias": [
+      "supabase/migrations/20260912120000_sicoob_approval_policy_guards.sql",
+      "supabase/migrations/20260912140000_sicoob_approval_confirmation_followup.sql",
+      "docs/execucao/revisao-implementacao-2026-09-12/simulacoes.json",
+      "scripts/revisao/simular-pendencias-2026-09-12.py"
+    ],
+    "subetapas": [
+      "E008.08",
+      "E008.09",
+      "E018.05",
+      "E059.04",
+      "E061.02",
+      "E064.07",
+      "E066.03",
+      "E066.05",
+      "E068.03",
+      "E099.04"
+    ],
+    "diagnostico": "S01–S04: base técnica muda ao publicar política; edição administrativa muda conteúdo/impedimento de referência já usada; global mais recente vence específica; referência do pedido continua editável.",
+    "reproducao": "scripts/revisao/simular-pendencias-2026-09-12.py",
+    "condicao_fechamento": "Congelar conteúdo e referência, definir precedência específica/global, impedir mudança retroativa e repetir S01–S04 com esquema/RLS completo.",
+    "estado": "Aberto",
+    "validado_em_producao": false
+  },
+  {
+    "id": "A18",
+    "titulo": "Trigger de itens não cobre pós-aprovação nem ambos os lados da transferência",
+    "prioridade": "P1",
+    "evidencia_tipo": "Simulação local delimitada",
+    "referencias": [
+      "supabase/migrations/20260912120000_sicoob_approval_policy_guards.sql",
+      "supabase/migrations/20260912140000_sicoob_approval_confirmation_followup.sql",
+      "docs/execucao/revisao-implementacao-2026-09-12/simulacoes.json",
+      "scripts/revisao/simular-pendencias-2026-09-12.py"
+    ],
+    "subetapas": [
+      "E059.04",
+      "E059.06",
+      "E059.10",
+      "E064.07",
+      "E069.04",
+      "E085.06",
+      "E086.09"
+    ],
+    "diagnostico": "S05 altera itens de pedido confirmado para 200 mantendo total aprovado 100. S06 transfere item de pedido em análise para draft. Escritas como postgres demonstram lacuna de invariante; não demonstram permissão de UPDATE ao comprador via RLS.",
+    "reproducao": "scripts/revisao/simular-pendencias-2026-09-12.py",
+    "condicao_fechamento": "Preservar composição após aceite, comparar OLD/NEW.order_id e exigir revisão formal com total consistente; repetir como ator autenticado e escritor privilegiado.",
+    "estado": "Aberto",
+    "validado_em_producao": false
+  },
+  {
+    "id": "A19",
+    "titulo": "Asserções E2E genéricas podem aprovar uma tela sem o conteúdo esperado",
+    "prioridade": "P1",
+    "evidencia_tipo": "Inspeção de asserções e CI",
+    "referencias": [
+      "docs/execucao/revisao-implementacao-2026-09-12/ci.json",
+      "docs/execucao/revisao-implementacao-2026-09-12/resumo-codeql.json",
+      "docs/execucao/revisao-implementacao-2026-09-12/testes-dirigidos.json",
+      ".github/workflows/e2e.yml",
+      ".github/workflows/codeql.yml",
+      "playwright.config.ts",
+      "e2e/routes/_factories.ts",
+      "e2e/flows/26-complete-flow.spec.ts"
+    ],
+    "subetapas": [
+      "E013.05",
+      "E019.07",
+      "E050.08",
+      "E059.07",
+      "E086.04",
+      "E090.05",
+      "E095.02"
+    ],
+    "diagnostico": "Happy público e autenticado padrão aceitam qualquer heading; timeout aceita body. Fluxo 26 percorre catálogo→URL de novo orçamento sem salvar item ou decidir pedido. Além da exclusão autenticada, falta poder de detecção.",
+    "reproducao": "e2e/routes/_factories.ts",
+    "condicao_fechamento": "Exigir identidade e conteúdo do fixture, ação e resultado persistido, verificar mock atingido e estados específicos; uma resposta inválida deve fazer o happy falhar.",
+    "estado": "Aberto",
+    "validado_em_producao": false
+  },
+  {
+    "id": "A20",
+    "titulo": "Vistos recentemente sobrevivem em memória à limpeza da chave no logout",
+    "prioridade": "P1",
+    "evidencia_tipo": "Simulação local delimitada",
+    "referencias": [
+      "src/stores/useRecentlyViewedStore.ts",
+      "src/contexts/AuthContext.tsx",
+      "scripts/revisao/pendencias-2026-09-12.cenarios.tsx",
+      "docs/execucao/revisao-implementacao-2026-09-12/testes-dirigidos.json"
+    ],
+    "subetapas": [
+      "E015.08",
+      "E025.05",
+      "E025.08",
+      "E044.09",
+      "E087.08"
+    ],
+    "diagnostico": "S09 executa o store real e a remoção de chave utilizada pelo logout: lista continua em memória. Chave e store não contêm usuário/cooperativa; a troca de organização não possui isolamento próprio.",
+    "reproducao": "scripts/revisao/pendencias-2026-09-12.cenarios.tsx",
+    "condicao_fechamento": "Segmentar por identidade/contexto, limpar store e timers, testar troca de organização e A→logout→B sem recarregar a SPA.",
+    "estado": "Aberto",
+    "validado_em_producao": false
+  }
+]

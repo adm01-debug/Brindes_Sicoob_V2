@@ -33,6 +33,7 @@ jobs:
         with:
           languages: ${{ matrix.language }}
           queries: security-extended
+          config-file: ./.github/codeql/codeql-config.yml
 
       - name: Autobuild
         uses: github/codeql-action/autobuild@v3
@@ -42,6 +43,8 @@ jobs:
         with:
           category: "/language:${{ matrix.language }}"
           output: sarif-results
+          # A análise e o SARIF devem existir mesmo quando o painel de code
+          # scanning não está habilitado para este repositório privado.
           upload: never
 
       - name: Preservar resultado SARIF
@@ -52,3 +55,10 @@ jobs:
           path: sarif-results/*.sarif
           if-no-files-found: error
           retention-days: 14
+
+      - name: Publicar resultado no painel de segurança
+        if: vars.CODEQL_UPLOAD_ENABLED == 'true'
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: sarif-results
+          category: "/language:${{ matrix.language }}"

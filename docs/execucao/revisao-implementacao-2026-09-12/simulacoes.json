@@ -1,0 +1,68 @@
+{
+  "coletado_em": "2026-09-12T16:27:54.103322+00:00",
+  "commit_codigo": "cfbcd8f14f023d385ae4329a3ac037c1b19c7b17",
+  "ambiente": "PostgreSQL 16 descartável; --network none; dados sintéticos",
+  "limites": "Fixture mínima e quatro migrations; escritas diretas como postgres. Não testa RLS integral, API, schema remoto ou explorabilidade por comprador.",
+  "producao_verificada": false,
+  "resultado": "Seis lacunas reproduzidas; produto não aprovado por este ensaio",
+  "fontes": [
+    {
+      "arquivo": "tests/scenarios/sql/sicoob-approval-policy-fixture.sql",
+      "sha256": "c8bf31ea912ca798b68390b6554d683d62f5bc80e32fd5f81e97161fc1c722ec"
+    },
+    {
+      "arquivo": "supabase/migrations/20260911143000_sicoob_order_budget_atomicity.sql",
+      "sha256": "3a3e188bea7bfbc21c624a6a4c9faa7b57bba3e866817ab00853312daa6854f9"
+    },
+    {
+      "arquivo": "supabase/migrations/20260912110000_sicoob_order_status_events.sql",
+      "sha256": "0cdc2c081a1ca01aa85a0c68eff52590ef661f40dd9d35cdc23249f12dba167f"
+    },
+    {
+      "arquivo": "supabase/migrations/20260912120000_sicoob_approval_policy_guards.sql",
+      "sha256": "9846ae876b56a169a6d7c39662a31c1b4a599da845307d283e213b0cf5cca5af"
+    },
+    {
+      "arquivo": "supabase/migrations/20260912140000_sicoob_approval_confirmation_followup.sql",
+      "sha256": "dc7472488054b5f15844b67d70cc3b7e8b9aa903d4140a0ca48b31f3d3fed545"
+    }
+  ],
+  "casos": [
+    {
+      "id": "S01",
+      "falha_reproduzida": true,
+      "observado": "baseline-tecnica-v1|local-v1",
+      "criterio_nao_atendido": "Publicar política posterior não deve mudar a regra de um pedido já preparado na base técnica."
+    },
+    {
+      "id": "S02",
+      "falha_reproduzida": true,
+      "observado": "false|local-v1|local-v2|true",
+      "criterio_nao_atendido": "A versão vinculada deve preservar conteúdo e impedimentos, inclusive após edição administrativa da política."
+    },
+    {
+      "id": "S03",
+      "falha_reproduzida": true,
+      "observado": "global-v1",
+      "criterio_nao_atendido": "Política específica vigente deve ter precedência sobre fallback global; a precedência precisa de aceite de negócio."
+    },
+    {
+      "id": "S04",
+      "falha_reproduzida": true,
+      "observado": "waiting_approval|global-v1",
+      "criterio_nao_atendido": "Referências da política devem permanecer congeladas durante análise, mesmo para escritores privilegiados."
+    },
+    {
+      "id": "S05",
+      "falha_reproduzida": true,
+      "observado": "confirmed|100.00|200.00",
+      "criterio_nao_atendido": "Itens aprovados não devem mudar sem revisão da despesa, com consistência entre itens e total."
+    },
+    {
+      "id": "S06",
+      "falha_reproduzida": true,
+      "observado": "waiting_approval|0|1",
+      "criterio_nao_atendido": "Reatribuição de item deve validar ambos os pedidos, inclusive o pedido anterior sob análise."
+    }
+  ]
+}

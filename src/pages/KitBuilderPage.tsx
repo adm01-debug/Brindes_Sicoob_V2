@@ -13,7 +13,7 @@ import { downloadKitPDF } from '@/utils/kitPdfGenerator';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { formatCurrency, calculateTotalKitPrice } from '@/lib/kit-builder';
+import { formatCurrency, calculateTotalKitPrice, type ExternalProductForKit } from '@/lib/kit-builder';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -77,7 +77,8 @@ export default function KitBuilderPage() {
 
   const {
     kitState, setKitType, wizardState, kitQuantity, availableBoxes, availableItems,
-    isLoadingBoxes, isLoadingItems, boxFilters, setBoxFilters, itemFilters, setItemFilters,
+    isLoadingBoxes, isLoadingItems, boxesError, itemsError, refetchBoxes, refetchItems,
+    boxFilters, setBoxFilters, itemFilters, setItemFilters,
     setKitName, selectBox, clearBox, addItem, removeItem, updateItemQuantity,
     updateItemVariant, reorderItems, setItemPersonalization, setBoxPersonalization,
     setKitQuantity, setIdentity, goToStep, nextStep, prevStep, resetKit, loadKit,
@@ -204,10 +205,10 @@ export default function KitBuilderPage() {
     hasLoadedProductRef.current = true;
     (async () => {
       try {
-        const result = await invokeExternalDb<any>({ table: 'products', operation: 'select', filters: { id: productIdParam }, select: 'id, name, sku, sale_price, cost_price, primary_image_url, weight_g, width_mm, height_mm, length_mm, width_cm, height_cm, length_cm, materials, is_kit, category_id', limit: 1 });
-        if (result.records?.length > 0) {
-          const product = result.records[0];
-          addItem(transformToKitItem(product as Record<string, unknown>));
+        const result = await invokeExternalDb<ExternalProductForKit>({ table: 'products', operation: 'select', filters: { id: productIdParam }, select: 'id, name, sku, sale_price, base_price, image_url, primary_image_url, weight_g, width_mm, height_mm, length_mm, width_cm, height_cm, length_cm, materials, is_kit, category_id', limit: 1 });
+        const product = result.records?.[0];
+        if (product) {
+          addItem(transformToKitItem(product));
           setKitName(product.name || '');
           toast.success(`"${product.name}" adicionado ao kit!`, { description: 'Selecione uma caixa e continue montando.' });
         } else toast.error('Produto não encontrado no catálogo');
@@ -412,7 +413,7 @@ export default function KitBuilderPage() {
                           <RadioGroup value={kitState.kitType} onValueChange={(v) => setKitType(v as 'montado' | 'original' | 'simples')} className="flex gap-4">
                             {[{ value: 'montado', label: 'Montado', desc: 'Kit montado dentro da caixa, itens arrumados e prontos para presentear.' },
                               { value: 'original', label: 'Original', desc: 'Kit com embalagem original do fornecedor, sem remontagem.' },
-                              { value: 'simples', label: 'Simples', desc: 'Agrupamento de itens sem embalagem especial — apenas os produtos.' }
+                              { value: 'simples', label: 'Simples', desc: 'Produtos organizados em uma embalagem simples.' }
                             ].map(opt => (
                               <TooltipProvider key={opt.value}><Tooltip><TooltipTrigger asChild>
                                 <div className="flex items-center space-x-2"><RadioGroupItem value={opt.value} id={`kit-${opt.value}`} /><Label htmlFor={`kit-${opt.value}`} className="cursor-pointer text-sm">{opt.label}</Label></div>
@@ -420,7 +421,9 @@ export default function KitBuilderPage() {
                             ))}
                           </RadioGroup>
                         </div>
-                        <BoxSelector boxes={availableBoxes} selectedBox={kitState.box} isLoading={isLoadingBoxes} filters={boxFilters} onFiltersChange={setBoxFilters} onSelect={handleSelectBox} onClear={clearBox} />
+                        <BoxSelector boxes={availableBoxes} selectedBox={kitState.box} isLoading={isLoadingBoxes}
+                          error={boxesError} onRetry={() => { void refetchBoxes(); }} filters={boxFilters}
+                          onFiltersChange={setBoxFilters} onSelect={handleSelectBox} onClear={clearBox} />
                       </div>
                     )}
 
@@ -434,6 +437,7 @@ export default function KitBuilderPage() {
                           <p className="text-muted-foreground mt-1">O coração do kit — escolha produtos memoráveis</p>
                         </div>
                         <ItemSelector items={availableItems} selectedItems={kitState.items} isLoading={isLoadingItems}
+                          error={itemsError} onRetry={() => { void refetchItems(); }}
                           filters={itemFilters} onFiltersChange={setItemFilters} onAddItem={handleAddItem} onRemoveItem={handleRemoveItem}
                           onUpdateQuantity={updateItemQuantity} onUpdateVariant={(itemId, data) => updateItemVariant(itemId, data)}
                           onReorder={reorderItems} boxSelected={kitState.box !== null} />

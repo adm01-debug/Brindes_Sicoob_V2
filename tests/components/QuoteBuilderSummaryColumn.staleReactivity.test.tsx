@@ -21,6 +21,10 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QuoteBuilderSummaryColumn } from "@/components/quotes/QuoteBuilderSummaryColumn";
 import type { QuoteItem } from "@/hooks/useQuotes";
 
+vi.mock("@/contexts/AuthContext", () => ({
+  useAuth: () => ({ isGerentePa: false }),
+}));
+
 const FIXED_NOW = new Date("2026-04-24T12:00:00.000Z").getTime();
 const daysAgo = (d: number) =>
   new Date(FIXED_NOW - d * 86400000).toISOString();

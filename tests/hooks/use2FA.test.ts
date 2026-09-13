@@ -40,7 +40,7 @@ describe("use2FA", () => {
     act(() => { pair = result.current.generateSecret("user@test.com"); });
     expect(pair!.secret).toMatch(/^[A-Z2-7]+=*$/); // base32
     expect(pair!.uri).toContain("otpauth://totp/");
-    expect(pair!.uri).toContain("Promo%20Gifts");
+    expect(pair!.uri).toContain("Brindes%20Sicoob");
     expect(result.current.pendingSecret).toBe(pair!.secret);
   });
 

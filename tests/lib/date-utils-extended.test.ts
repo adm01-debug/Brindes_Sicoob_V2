@@ -16,7 +16,12 @@ describe('formatDate — extended', () => {
   });
 
   it('formats ISO string', () => {
-    expect(formatDate('2025-06-15T00:00:00.000Z')).toMatch(/15\/06\/2025/);
+    const instant = new Date('2025-06-15T00:00:00.000Z');
+    const expected = [instant.getDate(), instant.getMonth() + 1]
+      .map((part) => String(part).padStart(2, '0'))
+      .concat(String(instant.getFullYear()))
+      .join('/');
+    expect(formatDate(instant.toISOString())).toBe(expected);
   });
 
   it('formats timestamp', () => {

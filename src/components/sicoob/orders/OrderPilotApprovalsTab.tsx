@@ -8,7 +8,8 @@ import {
   RefreshCw, 
   Clock, 
   Image as ImageIcon,
-  MessageSquare
+  MessageSquare,
+  AlertCircle
 } from "lucide-react";
 import { useOrderPilotApprovals } from "@/hooks/orders/extensions";
 import { Badge } from "@/components/ui/badge";
@@ -19,7 +20,7 @@ interface OrderPilotApprovalsTabProps {
 }
 
 export function OrderPilotApprovalsTab({ orderId }: OrderPilotApprovalsTabProps) {
-  const { approvals, updateApprovalStatus, isLoading } = useOrderPilotApprovals(orderId);
+  const { approvals, updateApprovalStatus, isLoading, error } = useOrderPilotApprovals(orderId);
   const [feedback, setFeedback] = useState("");
 
   const handleAction = (id: string, status: 'approved' | 'rejected' | 'revision') => {
@@ -28,11 +29,13 @@ export function OrderPilotApprovalsTab({ orderId }: OrderPilotApprovalsTabProps)
       return;
     }
 
-    updateApprovalStatus.mutate({ id, status, feedback });
-    setFeedback("");
+    updateApprovalStatus.mutate({ id, status, feedback }, {
+      onSuccess: () => setFeedback(""),
+    });
   };
 
-  const getStatusBadge = (status: string) => {
+  const getStatusBadge = (status: string, isLatest: boolean) => {
+    if (!isLatest && status === 'pending') return <Badge variant="secondary">Substituída</Badge>;
     switch (status) {
       case 'approved': return <Badge variant="success">Aprovado</Badge>;
       case 'rejected': return <Badge variant="destructive">Rejeitado</Badge>;
@@ -43,6 +46,11 @@ export function OrderPilotApprovalsTab({ orderId }: OrderPilotApprovalsTabProps)
   };
 
   if (isLoading) return <div className="p-8 text-center">Carregando aprovações...</div>;
+  if (error) return (
+    <div className="flex items-center justify-center gap-2 rounded-lg border border-destructive/40 bg-destructive/5 p-8 text-sm text-destructive">
+      <AlertCircle className="h-5 w-5" /> Não foi possível carregar as versões de arte.
+    </div>
+  );
 
   return (
     <div className="space-y-6">
@@ -57,9 +65,9 @@ export function OrderPilotApprovalsTab({ orderId }: OrderPilotApprovalsTabProps)
               <div className="flex justify-between items-center">
                 <CardTitle className="text-lg flex items-center gap-2">
                   <ImageIcon className="h-5 w-5 text-muted-foreground" />
-                  Mockup / Piloto de Produção
+                  Arte / Piloto de Produção — versão {approval.version}
                 </CardTitle>
-                {getStatusBadge(approval.status)}
+                {getStatusBadge(approval.status, approval.is_latest)}
               </div>
             </CardHeader>
             <CardContent className="space-y-6">
@@ -74,7 +82,7 @@ export function OrderPilotApprovalsTab({ orderId }: OrderPilotApprovalsTabProps)
                 )}
               </div>
 
-              {approval.status === 'pending' && (
+              {approval.status === 'pending' && approval.is_latest && (
                 <div className="space-y-4 pt-4 border-t">
                   <div className="space-y-2">
                     <div className="flex items-center gap-2 text-sm font-medium">

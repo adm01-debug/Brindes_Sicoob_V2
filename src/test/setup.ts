@@ -1,6 +1,9 @@
 import '@testing-library/jest-dom';
 import { expect, afterEach, vi } from 'vitest';
 import { cleanup } from '@testing-library/react';
+import { toHaveNoViolations } from 'jest-axe';
+
+expect.extend(toHaveNoViolations);
 
 // Define globally needed variables for backend client tests.
 (globalThis as any).__PORTAL_SICOOB_RUNTIME_CONFIG__ = {

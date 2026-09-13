@@ -1,7 +1,7 @@
 import React from 'react';
 import { useSicoobOrderHistory } from '@/hooks/useSicoobOrderHistory';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { History, Clock, User, MessageSquare } from 'lucide-react';
+import { History, Clock } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
@@ -24,7 +24,7 @@ export function OrderHistoryTimeline({ orderId }: OrderHistoryTimelineProps) {
       <CardContent>
         <div className="relative space-y-4">
           <div className="absolute left-3.5 top-2 bottom-2 w-0.5 bg-muted" />
-          {history?.map((event: any, idx: number) => (
+          {history?.map((event, idx) => (
             <div key={event.id || idx} className="relative flex gap-4 pl-9">
               <div className="absolute left-0 h-7 w-7 rounded-full bg-background border-2 border-primary flex items-center justify-center">
                 <Clock className="h-3 w-3 text-primary" />
@@ -32,7 +32,7 @@ export function OrderHistoryTimeline({ orderId }: OrderHistoryTimelineProps) {
               <div className="flex-1 pb-4">
                 <div className="flex items-center justify-between mb-1">
                   <span className="text-xs font-bold text-foreground">
-                    {event.new_status || event.status}
+                    {event.new_status}
                   </span>
                   <span className="text-[10px] text-muted-foreground">
                     {event.created_at && format(new Date(event.created_at), "dd MMM, HH:mm", { locale: ptBR })}
@@ -42,12 +42,6 @@ export function OrderHistoryTimeline({ orderId }: OrderHistoryTimelineProps) {
                   <p className="text-xs text-muted-foreground italic border-l-2 border-muted pl-2 py-1">
                     "{event.comment}"
                   </p>
-                )}
-                {event.created_by_name && (
-                  <div className="flex items-center gap-1 mt-1">
-                    <User className="h-3 w-3 text-muted-foreground" />
-                    <span className="text-[10px] text-muted-foreground">{event.created_by_name}</span>
-                  </div>
                 )}
               </div>
             </div>

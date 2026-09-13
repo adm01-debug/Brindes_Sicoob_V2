@@ -10,12 +10,13 @@ const mocks = vi.hoisted(() => ({
   signIn: vi.fn(), signOut: vi.fn(), toast: vi.fn(),
   auth: { user: null, role: null, isLoading: false, rolesLoaded: true },
   session: vi.fn().mockResolvedValue({ data: { session: null }, error: null }),
+  logLoginAttempt: vi.fn().mockResolvedValue(undefined),
 }));
 vi.mock('@/contexts/AuthContext', () => ({ useAuth: () => ({ ...mocks.auth, signIn: mocks.signIn, signOut: mocks.signOut }) }));
 vi.mock('@/hooks/use-toast', () => ({ useToast: () => ({ toast: mocks.toast }) }));
 vi.mock('@/hooks/useIPValidation', () => ({ useIPValidation: () => ({
   validateIPForAuthenticatedUser: vi.fn().mockResolvedValue({ isAllowed: true, hasRestrictions: false }),
-  logLoginAttempt: vi.fn(),
+  logLoginAttempt: mocks.logLoginAttempt,
 }) }));
 vi.mock('@/lib/diagnostics', () => ({ diagnostics: { log: vi.fn() } }));
 vi.mock('@/integrations/supabase/client', () => ({
@@ -69,12 +70,15 @@ describe('Entrada institucional', () => {
     await user.type(screen.getByLabelText('Senha', { exact: true }), 'senha-sintetica');
     await user.click(screen.getByRole('button', { name: 'Entrar', exact: true }));
     await waitFor(() => expect(mocks.signIn).toHaveBeenCalledExactlyOnceWith('compras@cooperativa.example', 'senha-sintetica'));
+    expect(mocks.logLoginAttempt).toHaveBeenCalledExactlyOnceWith(
+      'compras@cooperativa.example', null, false, 'Invalid login credentials',
+    );
     expect(mocks.toast).toHaveBeenCalledWith(expect.objectContaining({ description: 'Email ou senha incorretos' }));
     expect(screen.getByRole('button', { name: 'Entrar', exact: true })).toBeEnabled();
   });
   it('permite abrir a recuperação de senha', async () => {
     const user = userEvent.setup(); renderizar();
     await user.click(screen.getByRole('button', { name: 'Esqueci minha senha' }));
-    expect(screen.getByTestId('forgot-password-screen')).toBeVisible();
+    await waitFor(() => expect(screen.getByTestId('forgot-password-screen')).toBeVisible());
   });
 });

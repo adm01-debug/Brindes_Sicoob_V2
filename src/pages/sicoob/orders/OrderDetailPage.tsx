@@ -1,5 +1,6 @@
 import { useState, useMemo, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
 // import { MainLayout } from "@/components/layout/MainLayout";
 import { PageSEO } from "@/components/seo/PageSEO";
 import { Button } from "@/components/ui/button";
@@ -18,7 +19,6 @@ import {
   CreditCard,
   Image as ImageIcon,
   History,
-  Layout,
   ArrowUpCircle,
   ShieldCheck,
   ClipboardCheck,
@@ -74,19 +74,11 @@ import { OrderStatusBadge } from "@/components/sicoob/orders/OrderStatusBadge";
 import { OrderActionDialog } from "@/components/sicoob/orders/OrderActionDialog";
 import { OrderItemsHistory } from "@/components/sicoob/orders/OrderItemsHistory";
 import { SLABadge } from "@/components/sicoob/orders/SLABadge";
-import { OrderAuditTimeline } from "@/components/sicoob/orders/OrderAuditTimeline";
-import { 
-  useOrderInvoices, 
-  useOrderPayments, 
-  useOrderPilotApprovals,
-  useOrderComments,
-  useOrderTemplates
-} from "@/hooks/orders/extensions";
+import { OrderHistoryTimeline } from "@/components/orders/OrderHistoryTimeline";
 import { OrderLogisticsTab } from "@/components/sicoob/orders/OrderLogisticsTab";
 import { OrderInvoicesTab } from "@/components/sicoob/orders/OrderInvoicesTab";
 import { OrderPaymentsTab } from "@/components/sicoob/orders/OrderPaymentsTab";
 import { OrderPilotApprovalsTab } from "@/components/sicoob/orders/OrderPilotApprovalsTab";
-import { OrderTemplatesTab } from "@/components/sicoob/orders/OrderTemplatesTab";
 import { OrderCommentsTab } from "@/components/sicoob/orders/OrderCommentsTab";
 import { OrderBudgetIntelligence } from "@/components/sicoob/orders/OrderBudgetIntelligence";
 import { LogisticsCommandCenter } from "@/components/sicoob/orders/LogisticsCommandCenter";
@@ -94,6 +86,7 @@ import { OneClickReorder } from "@/components/orders/OneClickReorder";
 import { OrderAddItemDialog } from "@/components/sicoob/orders/OrderAddItemDialog";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
+import { sicoobApprovalService } from "@/services/sicoob/approvalService";
 
 import { OrderStatus, canSicoobTransitionTo, ORDER_STATUS_CONFIG } from "@/types/sicoob/orders";
 
@@ -104,6 +97,7 @@ const canTransitionTo = (current: OrderStatus, next: OrderStatus) => {
 export default function OrderDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { profile, isSupervisorOrAbove, isGerentePa } = useAuth();
   
   const [_unused_MessageSquare, set_unused_MessageSquare] = useState(MessageSquare);
@@ -121,17 +115,11 @@ export default function OrderDetailPage() {
 
   const { budget, remainingBudget } = usePaBudget(orderData?.pa_id);
   const { threshold, needsApproval } = useApprovalThreshold();
-  const { requests, createRequest, approveRequest, rejectRequest, updateStatus } = useApprovalRequests(id);
+  const { requests, createRequest, approveRequest, rejectRequest } = useApprovalRequests(id);
   const { history: orderHistory } = useSicoobOrderHistory(id);
   const { addItem, removeItem } = useSicoobOrderItems(id);
   const updateOrderStatusMutation = useUpdateSicoobOrderStatus();
   
-  // Extension hooks
-  const { invoices, addInvoice, uploadFile } = useOrderInvoices(id);
-  const { payments } = useOrderPayments(id);
-  const { approvals, updateApprovalStatus } = useOrderPilotApprovals(id);
-  
-
   const activeRequest = useMemo(() => 
     requests?.find(r => r.status === 'pending'), 
   [requests]);
@@ -156,7 +144,6 @@ export default function OrderDetailPage() {
     createRequest.mutate({
       orderId: id!,
       reason: requestReason,
-      amount: orderTotal,
       threshold: threshold,
       previousStatus: orderData.status
     }, {
@@ -188,14 +175,16 @@ export default function OrderDetailPage() {
     }
   };
 
-  const handleReject = () => {
+  const handleReject = async () => {
+    if (!orderData) return;
+
     if (!rejectionReason.trim() || rejectionReason.length < 10) {
       toast.error("Por favor, informe um motivo com pelo menos 10 caracteres.");
       return;
     }
 
     if (activeRequest) {
-      rejectRequest.mutate({ 
+      rejectRequest.mutate({
         requestId: activeRequest.id, 
         orderId: id!, 
         reason: rejectionReason,
@@ -207,17 +196,17 @@ export default function OrderDetailPage() {
         }
       });
     } else {
-      updateStatus.mutate({
-        orderId: id!,
-        newStatus: 'rejected',
-        previousStatus: orderData.status,
-        comment: rejectionReason
-      }, {
-        onSuccess: () => {
-          setIsRejectDialogOpen(false);
-          setRejectionReason("");
-        }
-      });
+      try {
+        await sicoobApprovalService.rejectOrderWithoutApproval(id!, orderData.status, rejectionReason);
+        toast.success("Pedido rejeitado");
+        await refetchOrder();
+        await queryClient.invalidateQueries({ queryKey: ["sicoob_order_history", id] });
+        setIsRejectDialogOpen(false);
+        setRejectionReason("");
+      } catch (error) {
+        const description = error instanceof Error ? error.message : "Não foi possível registrar a rejeição.";
+        toast.error("Erro ao rejeitar pedido", { description });
+      }
     }
   };
 
@@ -227,12 +216,15 @@ export default function OrderDetailPage() {
       return;
     }
 
-    updateOrderStatusMutation.mutate({ 
+    createRequest.mutate({
       orderId: id!, 
-      status: 'escalated_to_board', 
-      currentStatus: orderData?.status 
+      reason: requestReason,
+      threshold,
+      previousStatus: orderData.status,
+      isEscalated: true,
     }, {
-      onSuccess: () => {
+      onSuccess: async () => {
+        await refetchOrder();
         setIsEscalateDialogOpen(false);
         setRequestReason("");
       }
@@ -291,7 +283,7 @@ export default function OrderDetailPage() {
   const allowedTabs = useMemo(() => {
     const tabs = ["status", "logistics", "invoices", "timeline", "comments"];
     if (isSupervisorOrAbove) {
-      tabs.push("payments", "approvals", "templates");
+      tabs.push("payments", "approvals");
     }
     return tabs;
   }, [isSupervisorOrAbove]);
@@ -340,7 +332,9 @@ export default function OrderDetailPage() {
             </div>
           </div>
           <div className="ml-auto flex gap-2">
-            <OneClickReorder orderId={id!} variant="outline" className="h-9 border-sicoob-green/30 text-sicoob-green-dark hover:bg-sicoob-green/5" />
+            {orderData.status === 'completed' && (
+              <OneClickReorder orderId={id!} variant="outline" className="h-9 border-sicoob-green/30 text-sicoob-green-dark hover:bg-sicoob-green/5" />
+            )}
             
             <div className="flex flex-col gap-1">
               <Button 
@@ -357,7 +351,7 @@ export default function OrderDetailPage() {
               </div>
             </div>
 
-            {activeRequest && canApprove ? (
+            {(activeRequest || orderData.status === 'waiting_approval') && canApprove ? (
               <>
                 <Button 
                   variant="outline" 
@@ -382,7 +376,7 @@ export default function OrderDetailPage() {
                   confirmDisabled={rejectionReason.length < 10}
                 />
 
-                {orderData.status !== 'escalated_to_board' && (
+                {activeRequest && orderData.status !== 'escalated_to_board' && (
                   <>
                     <Button 
                       variant="outline" 
@@ -549,12 +543,6 @@ export default function OrderDetailPage() {
                     Aprovações de Piloto
                   </TabsTrigger>
                 )}
-                {allowedTabs.includes("templates") && (
-                  <TabsTrigger value="templates" className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none bg-transparent px-0 pb-2 h-auto">
-                    <Layout className="h-4 w-4 mr-2" />
-                    Templates
-                  </TabsTrigger>
-                )}
                 {allowedTabs.includes("timeline") && (
                   <TabsTrigger value="timeline" className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none bg-transparent px-0 pb-2 h-auto">
                     <History className="h-4 w-4 mr-2" />
@@ -582,11 +570,11 @@ export default function OrderDetailPage() {
                         </div>
                         <div className="flex justify-between items-center text-sm">
                           <span className="text-muted-foreground">Integridade</span>
-                          <Badge variant="outline" className="h-5 bg-sicoob-green/10 text-sicoob-green border-sicoob-green/20">VERIFICADO</Badge>
+                          <Badge variant="outline" className="h-5">Protegida por regras transacionais</Badge>
                         </div>
                         <div className="flex justify-between items-center text-sm">
-                          <span className="text-muted-foreground">Versão BPMN</span>
-                          <span className="font-medium">v2.4.1-stable</span>
+                          <span className="text-muted-foreground">Política aplicada</span>
+                          <span className="font-medium">{orderData?.approval_policy_version || 'Não registrada'}</span>
                         </div>
                         <div className="flex justify-between items-center text-sm">
                           <span className="text-muted-foreground">Última Modificação</span>
@@ -649,11 +637,6 @@ export default function OrderDetailPage() {
                 </TabsContent>
               )}
               
-              {allowedTabs.includes("templates") && (
-                <TabsContent value="templates" className="pt-6">
-                  <OrderTemplatesTab orderId={id!} />
-                </TabsContent>
-              )}
 
               {allowedTabs.includes("timeline") && (
                 <TabsContent value="timeline" className="pt-6">
@@ -662,7 +645,7 @@ export default function OrderDetailPage() {
                       <CardTitle className="text-sm">Status Timeline</CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <OrderAuditTimeline orderId={id!} />
+                      <OrderHistoryTimeline orderId={id!} />
                     </CardContent>
                   </Card>
                 </TabsContent>

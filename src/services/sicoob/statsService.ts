@@ -1,120 +1,87 @@
 import { supabase } from "@/integrations/supabase/client";
 
+function assertQuery(error: { message?: string } | null, label: string): void {
+  if (error) throw new Error(`Não foi possível carregar ${label}: ${error.message || 'erro de consulta'}`);
+}
+
 export const sicoobStatsService = {
   async getPaDashboardStats(paId: string) {
     const now = new Date();
-    
-    // 1. Get current budget
-    const { data: budget } = await supabase
-      .from("pa_budgets")
-      .select("*")
-      .eq("pa_id", paId)
-      .order("ano", { ascending: false })
-      .order("mes", { ascending: false })
-      .limit(1)
-      .maybeSingle();
+    const firstDay = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+    const [budgetResult, activeResult, approvalResult, deliveredResult, recentResult] = await Promise.all([
+      supabase.from("pa_budgets").select("*").eq("pa_id", paId)
+        .order("ano", { ascending: false }).order("mes", { ascending: false }).limit(1).maybeSingle(),
+      supabase.from("sicoob_orders").select("*", { count: "exact", head: true }).eq("pa_id", paId)
+        .in("status", ["pending", "waiting_approval", "confirmed", "logistic"]),
+      supabase.from("sicoob_orders").select("*", { count: "exact", head: true }).eq("pa_id", paId)
+        .in("status", ["waiting_approval", "escalated_to_board"]),
+      supabase.from("sicoob_orders").select("*", { count: "exact", head: true }).eq("pa_id", paId)
+        .eq("status", "completed").gte("updated_at", firstDay),
+      supabase.from("sicoob_orders").select("*").eq("pa_id", paId)
+        .order("created_at", { ascending: false }).limit(5),
+    ]);
 
-    // 2. Get active orders count
-    const { count: activeOrders } = await supabase
-      .from("sicoob_orders")
-      .select("*", { count: "exact", head: true })
-      .eq("pa_id", paId)
-      .in("status", ["pending", "waiting_approval", "confirmed", "logistic"]);
+    assertQuery(budgetResult.error, 'a verba do PA');
+    assertQuery(activeResult.error, 'os pedidos ativos do PA');
+    assertQuery(approvalResult.error, 'as aprovações pendentes do PA');
+    assertQuery(deliveredResult.error, 'as entregas do mês do PA');
+    assertQuery(recentResult.error, 'os pedidos recentes do PA');
 
-    // 3. Get pending approval count
-    const { count: pendingApproval } = await supabase
-      .from("sicoob_orders")
-      .select("*", { count: "exact", head: true })
-      .eq("pa_id", paId)
-      .eq("status", "waiting_approval");
-
-    // 4. Get delivered this month count
-    const { count: deliveredThisMonth } = await supabase
-      .from("sicoob_orders")
-      .select("*", { count: "exact", head: true })
-      .eq("pa_id", paId)
-      .eq("status", "completed")
-      .gte("updated_at", new Date(now.getFullYear(), now.getMonth(), 1).toISOString());
-
-    // 5. Get recent orders
-    const { data: recentOrders } = await supabase
-      .from("sicoob_orders")
-      .select("*")
-      .eq("pa_id", paId)
-      .order("created_at", { ascending: false })
-      .limit(5);
-
+    const budget = budgetResult.data;
     return {
-      availableBudget: budget ? budget.verba_total - budget.verba_consumida : 0,
-      monthlyLimit: budget?.verba_total || 0,
-      activeOrders: activeOrders || 0,
-      pendingApproval: pendingApproval || 0,
-      deliveredThisMonth: deliveredThisMonth || 0,
-      recentOrders: recentOrders || []
+      availableBudget: budget ? Number(budget.verba_total) - Number(budget.verba_consumida) : 0,
+      monthlyLimit: Number(budget?.verba_total || 0),
+      activeOrders: activeResult.count || 0,
+      pendingApproval: approvalResult.count || 0,
+      deliveredThisMonth: deliveredResult.count || 0,
+      recentOrders: recentResult.data || [],
+      hasConfiguredBudget: Boolean(budget),
     };
   },
 
-  async getSellerDashboardStats(sellerId: string) {
-    const { count: clientCount } = await supabase
-      .from("postos_atendimento")
-      .select("*", { count: "exact", head: true });
-
-    const { count: activeOrders } = await supabase
-      .from("sicoob_orders")
-      .select("*", { count: "exact", head: true })
-      .in("status", ["pending", "waiting_approval", "confirmed", "logistic"]);
-
+  async getSellerDashboardStats(sellerUserId: string) {
     const now = new Date();
     const firstDay = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
-    const { data: salesData } = await supabase
-      .from("sicoob_orders")
-      .select("total_amount")
-      .eq("status", "completed")
-      .gte("updated_at", firstDay);
-    
-    const monthlySales = salesData?.reduce((acc, curr) => acc + (Number(curr.total_amount) || 0), 0) || 0;
-
-    const { data: topClientsRaw } = await supabase
-      .from("sicoob_orders")
-      .select("total_amount, pa:postos_atendimento(nome)")
-      .eq("status", "completed")
-      .order("total_amount", { ascending: false })
-      .limit(10);
-
-    const clientMap: Record<string, number> = {};
-    topClientsRaw?.forEach((order: any) => {
-      const name = order.pa?.nome || "PA Desconhecido";
-      clientMap[name] = (clientMap[name] || 0) + Number(order.total_amount);
-    });
-
-    const topClients = Object.entries(clientMap)
-      .map(([name, value]) => ({ name, value, grow: "+0%" }))
-      .sort((a, b) => b.value - a.value)
-      .slice(0, 3);
-
-    const { data: recentHistory } = await supabase
-      .from("sicoob_order_history")
-      .select(`
+    const [portfolioResult, activeResult, salesResult, historyResult] = await Promise.all([
+      supabase.from("sicoob_orders").select("pa_id").eq("created_by", sellerUserId),
+      supabase.from("sicoob_orders").select("*", { count: "exact", head: true })
+        .eq("created_by", sellerUserId).in("status", ["pending", "waiting_approval", "confirmed", "logistic"]),
+      supabase.from("sicoob_orders")
+        .select("total_amount, pa_id, pa:postos_atendimento(nome)")
+        .eq("created_by", sellerUserId).eq("status", "completed").gte("updated_at", firstDay),
+      supabase.from("sicoob_order_history").select(`
         created_at,
         new_status,
-        order:sicoob_orders(order_number, pa:postos_atendimento(nome))
-      `)
-      .order("created_at", { ascending: false })
-      .limit(5);
+        order:sicoob_orders!inner(order_number, created_by, pa:postos_atendimento(nome))
+      `).eq("order.created_by", sellerUserId).order("created_at", { ascending: false }).limit(5),
+    ]);
 
-    const recentActivity = recentHistory?.map((h: any) => ({
-      action: `Status: ${h.new_status}`,
-      client: h.order?.pa?.nome || `Pedido #${h.order?.order_number}`,
-      time: new Date(h.created_at).toLocaleDateString('pt-BR')
-    })) || [];
+    assertQuery(portfolioResult.error, 'a carteira do vendedor');
+    assertQuery(activeResult.error, 'os pedidos ativos do vendedor');
+    assertQuery(salesResult.error, 'as vendas do mês');
+    assertQuery(historyResult.error, 'a atividade recente do vendedor');
+
+    const salesData = salesResult.data || [];
+    const monthlySales = salesData.reduce((sum, order) => sum + Number(order.total_amount || 0), 0);
+    const clientMap: Record<string, number> = {};
+    for (const order of salesData as Array<{ total_amount: number | null; pa?: { nome?: string } | null }>) {
+      const name = order.pa?.nome || "PA não identificado";
+      clientMap[name] = (clientMap[name] || 0) + Number(order.total_amount || 0);
+    }
 
     return {
-      totalClients: clientCount || 0,
-      activeOrders: activeOrders || 0,
+      totalClients: new Set((portfolioResult.data || []).map(order => order.pa_id).filter(Boolean)).size,
+      activeOrders: activeResult.count || 0,
       monthlySales,
-      salesGoal: 500000,
-      topClients,
-      recentActivity
+      salesGoal: null as number | null,
+      topClients: Object.entries(clientMap)
+        .map(([name, value]) => ({ name, value, grow: null as string | null }))
+        .sort((a, b) => b.value - a.value).slice(0, 3),
+      recentActivity: (historyResult.data || []).map((history: any) => ({
+        action: `Status: ${history.new_status}`,
+        client: history.order?.pa?.nome || `Pedido #${history.order?.order_number || 'sem número'}`,
+        time: new Date(history.created_at).toLocaleDateString('pt-BR'),
+      })),
     };
-  }
+  },
 };

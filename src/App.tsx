@@ -1,4 +1,4 @@
-import { useEffect, type ReactNode, Suspense, forwardRef } from "react";
+import { useEffect, type ReactNode, Suspense } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -12,21 +12,11 @@ import { ProtectedRoute } from "@/components/layout/ProtectedRoute";
 import { AdminRoute } from "@/components/layout/AdminRoute";
 import { DevRoute } from "@/components/layout/DevRoute";
 import { SicoobRoute } from "@/components/layout/SicoobRoute";
-import { AppProviders } from "@/components/providers/AppProviders";
 import { AccessibilityProvider, AriaLiveProvider, RouteAnnouncer } from "@/components/a11y";
 import { useGlobalErrorCatcher } from "@/hooks/useErrorHandler";
 import { markBootSuccessful } from "@/lib/chunk-recovery";
 import { getFallback } from "@/components/layout/SkeletonLoaders";
-import { BridgeStatusBanner } from "@/components/system/BridgeStatusBanner";
-import { MainLayout } from "@/components/layout/MainLayout";
-import { CloudStatusBanner } from "@/components/system/CloudStatusBanner";
-import { DevOnlyBridgeOverlay } from "@/components/dev/DevOnlyBridgeOverlay";
-import { AuthDiagnosticsWidget } from "@/components/dev/AuthDiagnosticsWidget";
 import { RouteScrollReset } from "@/components/common/RouteScrollReset";
-import { startBridgeTelemetry } from "@/lib/external-db/bridge-telemetry-client";
-import { startColdStartRecorder } from "@/lib/external-db/cold-start-recorder";
-import { DiagnosticOverlay } from "@/components/dev/DiagnosticOverlay";
-import { diagnostics } from "@/lib/diagnostics";
 import { lazyWithRetry } from "@/lib/lazyWithRetry";
 import { ErrorBoundary } from "@/components/common/ErrorBoundary";
 import { useWebVitals } from "@/hooks/infrastructure/useWebVitals";
@@ -41,23 +31,9 @@ import { sicoobRoutes } from "./routes/config/sicoob";
 
 import "./App.css";
 
-// Log app start
-diagnostics.log('event', 'App', 'Iniciando aplicação...');
-
-startBridgeTelemetry();
-startColdStartRecorder();
-
 const queryClient = createQueryClient();
 
-import { useCatalogPrefetch } from '@/hooks/useCatalogPrefetch';
 import { ThemeInitializer } from '@/components/system/ThemeInitializer';
-
-const AppWithAuth = forwardRef<HTMLDivElement, { children: ReactNode }>(({ children }, ref) => {
-  useCatalogPrefetch();
-  return <div ref={ref}>{children}</div>;
-});
-
-AppWithAuth.displayName = 'AppWithAuth';
 
 const RouteSuspense = ({ children }: { children: ReactNode }) => {
   const { pathname } = useLocation();
@@ -72,7 +48,6 @@ const OrdersPage = lazyWithRetry(() => import("./pages/OrdersPage").then((module
 const OrderDetailPage = lazyWithRetry(() => import("./pages/OrderDetailPage"));
 const ClientsPage = lazyWithRetry(() => import("./pages/ClientsPage"));
 const ClientDetailPage = lazyWithRetry(() => import("./pages/ClientDetailPage"));
-const TrendsPage = lazyWithRetry(() => import("./pages/TrendsPage"));
 const NotFound = lazyWithRetry(() => import("./pages/NotFound"));
 const NotificationsPage = lazyWithRetry(() => import("./pages/NotificationsPage"));
 const AdminTemasPage = lazyWithRetry(() => import("./pages/admin/AdminTemasPage"));
@@ -80,6 +55,8 @@ const ColorDocumentationPage = lazyWithRetry(() => import("./pages/admin/ColorDo
 const ForbiddenPage = lazyWithRetry(() => import("./pages/ForbiddenPage"));
 const OrderAuditPage = lazyWithRetry(() => import("./pages/OrderAuditPage"));
 const TestDashboard = lazyWithRetry(() => import("./pages/TestDashboard"));
+const AuthenticatedShell = lazyWithRetry(() => import("@/components/layout/AuthenticatedShell").then((module) => ({ default: module.AuthenticatedShell })));
+const MainLayout = lazyWithRetry(() => import("@/components/layout/MainLayout").then((module) => ({ default: module.MainLayout })));
 const App = () => {
   useGlobalErrorCatcher();
   useWebVitals({ debug: import.meta.env.DEV });
@@ -98,19 +75,12 @@ const App = () => {
             <TooltipProvider>
               <BrowserRouter>
                 <AuthProvider>
-                  <AppWithAuth>
-                    <AppProviders>
-                      <Toaster />
-                      <Sonner />
-                      <CloudStatusBanner />
-                      <BridgeStatusBanner />
-                      <DevOnlyBridgeOverlay />
-                      <AuthDiagnosticsWidget />
-                      <DiagnosticOverlay />
-                      <RouteScrollReset />
-                      <RouteAnnouncer />
+                  <Toaster />
+                  <Sonner />
+                  <RouteScrollReset />
+                  <RouteAnnouncer />
 
-                      <Routes>
+                  <Routes>
                         {/* Public Routes */}
                         {publicRoutes.map(r => (
                           <Route key={r.path} path={r.path} element={<RouteSuspense><r.component /></RouteSuspense>} />
@@ -124,7 +94,8 @@ const App = () => {
 
                         {/* Protected Routes */}
                         <Route element={<ProtectedRoute />}>
-                          <Route element={<MainLayout />}>
+                          <Route element={<RouteSuspense><AuthenticatedShell /></RouteSuspense>}>
+                          <Route element={<RouteSuspense><MainLayout /></RouteSuspense>}>
                             <Route path="/" element={<RouteSuspense><Index /></RouteSuspense>} />
                             <Route path="/dashboard" element={<RouteSuspense><CustomizableDashboard /></RouteSuspense>} />
 
@@ -168,15 +139,13 @@ const App = () => {
                             <Route path="/pedidos/:id" element={<RouteSuspense><OrderDetailPage /></RouteSuspense>} />
                             <Route path="/clientes" element={<RouteSuspense><ClientsPage /></RouteSuspense>} />
                             <Route path="/clientes/:id" element={<RouteSuspense><ClientDetailPage /></RouteSuspense>} />
-                            <Route path="/tendencias" element={<RouteSuspense><TrendsPage /></RouteSuspense>} />
                             <Route path="/notificacoes" element={<RouteSuspense><NotificationsPage /></RouteSuspense>} />
                             <Route path="/pedidos/:id/auditoria" element={<RouteSuspense><OrderAuditPage /></RouteSuspense>} />
 
                           </Route>
+                          </Route>
                         </Route>
-                      </Routes>
-                    </AppProviders>
-                  </AppWithAuth>
+                  </Routes>
                 </AuthProvider>
               </BrowserRouter>
             </TooltipProvider>

@@ -38,6 +38,6 @@ describe("AdvancedPriceSearchPage", () => {
   it("renders without crashing", async () => {
     const { default: AdvancedPriceSearchPage } = await import("@/pages/AdvancedPriceSearchPage");
     renderWithProviders(<AdvancedPriceSearchPage />);
-    expect(screen.getByTestId("main-layout")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Busca Avançada por Preço" })).toBeInTheDocument();
   });
 });

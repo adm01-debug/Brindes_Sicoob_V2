@@ -31,9 +31,9 @@ export const CloudStatusBanner = memo(function CloudStatusBanner() {
   
   if (!config) return null;
 
-  // Mensagens de infra/backend são restritas a usuários com papel `dev`.
-  // Usuários finais (ex.: setor financeiro) não devem ver avisos técnicos.
-  if (!isAllowed) return null;
+  // O aquecimento é diagnóstico técnico. Falhas críticas precisam permanecer
+  // visíveis para que compradores não continuem operando com o backend fora.
+  if (status === 'warming' && !isAllowed) return null;
 
   const Icon = config.icon;
 

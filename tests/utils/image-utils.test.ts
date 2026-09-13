@@ -59,6 +59,11 @@ describe('image-utils', () => {
       const url = 'https://other-cdn.com/image.jpg';
       expect(getCdnUrl(url)).toBe(url);
     });
+
+    it('não confunde domínio malicioso com o CDN permitido', () => {
+      const url = 'https://imagedelivery.net.atacante.example/abc/img1/public';
+      expect(getCdnUrl(url, 'card')).toBe(url);
+    });
   });
 
   describe('getSrcSet', () => {

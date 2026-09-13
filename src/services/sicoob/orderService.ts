@@ -1,7 +1,73 @@
 import { supabase } from "@/integrations/supabase/client";
-import { canSicoobTransitionTo } from "@/types/sicoob/orders";
-import type { SicoobOrder, SicoobOrderItem, SicoobOrderItemLog, OrderStatus } from "@/types/sicoob/orders";
-import { fetchPromobrindProductById, getProductPrice } from "@/lib/external-db";
+import {
+  canSicoobTransitionTo,
+  type OrderStatus,
+  type SicoobOrder,
+  type SicoobOrderItem,
+  type SicoobOrderItemLog,
+} from "@/types/sicoob/orders";
+
+interface ApprovalTransitionInput {
+  orderId: string;
+  currentStatus: string;
+  observations?: string;
+}
+
+async function prepareOrderConfirmation({ orderId, currentStatus, observations }: ApprovalTransitionInput): Promise<void> {
+  const { error } = await supabase.rpc('prepare_sicoob_order_confirmation', {
+    p_order_id: orderId,
+    p_expected_status: currentStatus,
+    p_comment: observations || null,
+  });
+  if (error) throw error;
+}
+
+async function escalateOrderApproval({ orderId, currentStatus, observations }: ApprovalTransitionInput): Promise<void> {
+  const reason = observations?.trim() || '';
+  if (reason.length < 10) {
+    throw new Error('Informe uma justificativa de escalação com ao menos 10 caracteres.');
+  }
+
+  const { error } = await supabase.rpc('request_sicoob_order_approval', {
+    p_order_id: orderId,
+    p_expected_status: currentStatus,
+    p_reason: reason,
+    p_threshold: 0,
+    p_is_escalated: true,
+  });
+  if (error) throw error;
+}
+
+async function confirmOrderWithinApproval({ orderId, currentStatus }: ApprovalTransitionInput): Promise<void> {
+  const { error } = await supabase.rpc('confirm_sicoob_order', {
+    p_order_id: orderId,
+    p_expected_status: currentStatus,
+  });
+  if (error) throw error;
+}
+
+const approvalTransitionHandlers: Record<string, (input: ApprovalTransitionInput) => Promise<void>> = {
+  waiting_approval: prepareOrderConfirmation,
+  escalated_to_board: escalateOrderApproval,
+  confirmed: confirmOrderWithinApproval,
+};
+
+async function executeApprovalStatusTransition(
+  orderId: string,
+  status: string,
+  currentStatus: string,
+  observations?: string,
+): Promise<boolean> {
+  if (status === 'rejected') {
+    throw new Error('Use a decisão de rejeição para registrar o motivo e preservar a auditoria.');
+  }
+
+  const handler = approvalTransitionHandlers[status];
+  if (!handler) return false;
+
+  await handler({ orderId, currentStatus, observations });
+  return true;
+}
 
 /**
  * Service for Sicoob Orders with authorization checks.
@@ -48,7 +114,7 @@ export const sicoobOrderService = {
       query = query.or(`order_number.ilike.%${term}%,notes.ilike.%${term}%,tracking_code.ilike.%${term}%`);
     }
 
-    const { data: profile } = await supabase.from("profiles").select("role, pa_id, cooperativa_id").eq("id", user.id).single();
+    const { data: profile } = await supabase.from("profiles").select("role, pa_id, cooperativa_id").eq("user_id", user.id).single();
 
     if (profile?.role === 'gestor_pa' && profile.pa_id) {
       query = query.eq("pa_id", profile.pa_id);
@@ -129,73 +195,20 @@ export const sicoobOrderService = {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error("Usuário não autenticado");
 
-    if (status === 'confirmed') {
-      const { error } = await supabase.rpc('confirm_sicoob_order', {
+    const approvalTransitionExecuted = await executeApprovalStatusTransition(
+      orderId,
+      status,
+      currentStatus,
+      observations,
+    );
+    if (!approvalTransitionExecuted) {
+      const { error } = await supabase.rpc('transition_sicoob_order_status', {
         p_order_id: orderId,
         p_expected_status: currentStatus,
+        p_new_status: status,
+        p_comment: observations || null,
       });
       if (error) throw error;
-    } else {
-      const { data, error } = await supabase
-        .from("sicoob_orders")
-        .update({ status, updated_at: new Date().toISOString() })
-        .eq("id", orderId)
-        .eq("status", currentStatus)
-        .select("id")
-        .maybeSingle();
-      if (error) throw error;
-      if (!data) throw new Error("O pedido mudou; atualize a página e tente novamente.");
-    }
-
-    // Registrar evento de auditoria se houver observações ou mudança de status
-    try {
-      await supabase.from('order_audit_events').insert({
-        order_id: orderId,
-        event_type: 'status_change',
-        old_value: { fulfillment_status: currentStatus },
-        new_value: { fulfillment_status: status },
-        observations: observations,
-        created_by: user.id,
-        actor_role: 'system_action' // Isso pode ser dinâmico dependendo do perfil
-      });
-    } catch (auditErr) {
-      console.warn("Falha ao registrar auditoria:", auditErr);
-    }
-
-    // Gatilho de notificação e registro
-    try {
-      const order = await this.getOrderById(orderId);
-      
-      // Call standard transactional email function if exists
-      try {
-        await supabase.functions.invoke('send-transactional-email', {
-          body: {
-            event_type: 'sicoob_order_status_change',
-            recipient_email: user?.email, 
-            recipient_name: user?.email?.split('@')[0],
-            data: {
-              order_number: orderId.slice(0, 8),
-              new_status: status,
-              action_url: `${window.location.origin}/sicoob/pedidos/${orderId}`
-            }
-          }
-        });
-      } catch (e) {
-        console.warn("Edge function not available yet");
-      }
-
-      // In-app notification
-      await supabase.from('notifications').insert({
-        user_id: order.created_by,
-        title: "Status do Pedido Sicoob Atualizado",
-        message: `Seu pedido #${order.order_number || orderId.slice(0, 8)} mudou para ${status}`,
-        type: 'info',
-        category: 'status',
-        source_entity_id: orderId,
-        action_url: `/sicoob/pedidos/${orderId}`
-      });
-    } catch (err) {
-      console.warn("Falha ao processar notificações:", err);
     }
   },
 
@@ -239,116 +252,17 @@ export const sicoobOrderService = {
     return { successes, failures };
   },
 
-  async reorderOrder(orderId: string): Promise<string> {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) throw new Error("Usuário não autenticado");
-
-    const order = await this.getOrderById(orderId);
-    const items = await this.getOrderItems(orderId);
-
-    if (items.length === 0) {
-      throw new Error('O pedido original não possui itens para recompra.');
-    }
-
-    // Recompra não reutiliza preço ou disponibilidade histórica. Cada produto é
-    // consultado no catálogo externo antes de qualquer orçamento ser criado.
-    const currentItems = await Promise.all(items.map(async (item) => {
-      if (!item.product_id) {
-        throw new Error(`O item “${item.product_name}” não possui produto vinculado para validar a recompra.`);
-      }
-
-      const product = await fetchPromobrindProductById(item.product_id);
-      if (!product || product.is_active === false || product.active === false) {
-        throw new Error(`O produto “${item.product_name}” não está mais disponível no catálogo.`);
-      }
-
-      const currentPrice = getProductPrice(product);
-      if (!Number.isFinite(currentPrice) || currentPrice <= 0) {
-        throw new Error(`O produto “${item.product_name}” está sem preço vigente para recompra.`);
-      }
-
-      if (product.stock_quantity === null || product.stock_quantity === undefined || product.stock_quantity < item.quantity) {
-        throw new Error(`Estoque insuficiente para “${item.product_name}”. Consulte outra opção ou reduza a quantidade.`);
-      }
-
-      return {
-        product_id: product.id,
-        product_sku: product.sku,
-        product_name: product.name,
-        product_image_url: product.primary_image_url || product.image_url,
-        quantity: item.quantity,
-        unit_price: currentPrice,
-        subtotal: currentPrice * item.quantity,
-        price_confirmed_at: new Date().toISOString(),
-      };
-    }));
-
-    const { data: profile } = await supabase.from("profiles").select("organization_id").eq("id", user.id).single();
-    const subtotal = currentItems.reduce((sum, item) => sum + item.subtotal, 0);
-
-    // Cria o rascunho apenas após revalidar todos os itens. O novo orçamento
-    // mantém a trilha da origem, mas usa os valores vigentes do catálogo.
-    const { data: newQuote, error: qErr } = await supabase.from("quotes").insert({
-      client_id: order.pa_id,
-      client_name: order.pa?.nome || order.pa_id,
-      status: 'draft',
-      notes: `Recompra do pedido Sicoob #${order.order_number || order.id.slice(0, 8)}. Preço e estoque revalidados em ${new Date().toLocaleString('pt-BR')}.`,
-      singular_id: order.cooperative_id,
-      organization_id: profile?.organization_id || order.pa_id,
-      seller_id: user.id,
-      total: subtotal,
-      subtotal,
-    }).select("id").single();
-
-    if (qErr) throw qErr;
-
-    if (currentItems.length > 0) {
-      const quoteItems = currentItems.map(it => ({
-        quote_id: newQuote.id,
-        ...it,
-      }));
-      const { error: iErr } = await supabase.from("quote_items").insert(quoteItems);
-      if (iErr) {
-        await supabase.from('quotes').delete().eq('id', newQuote.id);
-        throw iErr;
-      }
-    }
-
-    return newQuote.id;
+  async reorderOrder(orderId: string, idempotencyKey = crypto.randomUUID()): Promise<string> {
+    const { data, error } = await supabase.functions.invoke('sicoob-reorder', {
+      body: { orderId, idempotencyKey },
+    });
+    if (error) throw error;
+    const newQuoteId = typeof data?.quoteId === 'string' ? data.quoteId : null;
+    if (!newQuoteId) throw new Error('A recompra não retornou o orçamento criado.');
+    return newQuoteId;
   },
 
   async duplicateSicoobOrder(orderId: string): Promise<string> {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) throw new Error("Usuário não autenticado");
-
-    const order = await this.getOrderById(orderId);
-    const items = await this.getOrderItems(orderId);
-
-    const { data: newOrder, error: oErr } = await supabase.from("sicoob_orders").insert({
-      pa_id: order.pa_id,
-      cooperative_id: order.cooperative_id,
-      status: 'draft',
-      notes: `Duplicado do pedido #${order.order_number || order.id.slice(0, 8)}`,
-      total_amount: order.total_amount,
-      created_by: user.id
-    }).select("id").single();
-
-    if (oErr) throw oErr;
-
-    if (items.length > 0) {
-      const orderItems = items.map(it => ({
-        order_id: newOrder.id,
-        product_id: it.product_id,
-        product_sku: it.product_sku,
-        product_name: it.product_name,
-        product_image_url: it.product_image_url,
-        quantity: it.quantity,
-        unit_price: it.unit_price,
-      }));
-      const { error: iErr } = await supabase.from("sicoob_order_items").insert(orderItems);
-      if (iErr) throw iErr;
-    }
-
-    return newOrder.id;
+    return this.reorderOrder(orderId);
   }
 };

@@ -300,7 +300,7 @@ describe('§5 applyThemePreset (JSDOM)', () => {
   it('escreve --background no <html> para skin clássica', () => {
     applyThemePreset('corporate', 'light');
     const value = document.documentElement.style.getPropertyValue('--background');
-    expect(value).toBe('221 20% 97%');
+    expect(value).toBe('190 20% 97%');
   });
 
   it('escreve --primary diferente para light vs dark do mesmo preset', () => {

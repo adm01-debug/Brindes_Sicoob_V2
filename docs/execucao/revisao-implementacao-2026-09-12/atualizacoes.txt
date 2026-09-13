@@ -1,0 +1,127 @@
+# ID | classificação | grupos de referência | diagnóstico individual atualizado
+E001.06|L|ci|Build e gates do candidato cfbcd8f passaram na CI; há oito casos flaky, 33 skips no smoke e exclusão dos projetos autenticados. Resultados são delimitados ao ambiente e às suítes executadas.
+E003.07|L|redacao|Redação recursiva remove setup_cost, unit_cost, margem e fornecedor no bridge, com teste dirigido. Evidência local do contrato; privilégio e resposta da origem em produção continuam sem homologação.
+E007.07|P|metricas|Preço e estoque têm contratos locais; métricas de pedidos perderam previsões artificiais, mas statsService ainda converte erros em zero e a consolidação usa dados fixos. SLA da origem continua externo.
+E008.05|P|politica|Há política técnica, alçada do PA e impedimento de autoaprovação no servidor; regras de arte, competência e política institucional vigente não foram aceitas. S02 mostra impedimento alterável retroativamente.
+E008.08|P|politica|Tabela versionada e referência no pedido foram adicionadas; S01–S04 mostram que referência não é snapshot imutável. Falta validar a precedência entre regra global e regra específica.
+E008.09|P|politica|Versão fica registrada em pedido/solicitação, mas o resolvedor lê o conteúdo atual da política. S02 reproduz versão registrada divergente da regra aplicada.
+E009.10|P|metricas|Projeções e presença artificiais saíram das telas de pedidos. Consolidação ainda mostra lotes/valores fixos; statsService conserva salesGoal fixo e fallback zero. Indicadores completos não conciliados.
+E010.06|P|metricas|Preditor foi retirado das telas de pedidos; permanecem navegação e módulos de vendedor, além da tela de consolidação com dados fixos. Desativação integral do legado ainda não demonstrada.
+E011.06|P|financeiro,logistica|Logística passou ao domínio sicoob_order_shipments. Notas fiscais ainda usam OrderService/order_invoices vinculado a orders; pagamentos e piloto usados no detalhe são hooks provisórios sem consulta real.
+E012.05|P|organizacao|switchOrganization aplica organização e papel juntos. fetchOrganizations ainda aceita resposta de sessão antiga, mantém estado anterior no catch e não limpa papel quando todas as organizações retornam inativas.
+E012.08|P|politica,organizacao|Aprovação verifica profiles.is_active/deleted_at e user_roles; não consulta organization_members vigente. Não equivale a validar revogação do vínculo organizacional.
+E013.04|P|logistica,financeiro|Comprovante logístico passou a bucket privado e URL assinada. Nota fiscal ainda pede getPublicUrl em order-documents; RLS e arquivos reais entre cooperativas não homologados.
+E013.05|P|rotas,ci|Rotas públicas canônicas registradas e cenários com mocks passam na CI. Asserções genéricas não comprovam conteúdo correto, revogação no servidor nem isolamento real dos tokens.
+E013.06|P|ci|Funções privilegiadas possuem manifesto e testes dirigidos. SARIF atual contém 13 alertas pendentes de triagem; análise verde não é ausência de vulnerabilidades. RLS remoto não inspecionado integralmente.
+E014.05|P|rotas|Foram corrigidas rotas de produto, orçamento, administração e links públicos. Duplicidades, visibilidade por competência e conteúdo de todas as rotas autenticadas ainda não homologados.
+E015.08|P|busca,armazenamento|Histórico da busca principal usa usuário/cooperativa/PA. Vistos recentemente continuam globais e permanecem em memória após limpeza da chave (S09); preservação/limpeza de todos os rascunhos não demonstrada.
+E018.05|P|politica|Autoaprovação é recusada pela política técnica nos casos dirigidos; S02 demonstra que editar a política vinculada pode retirar esse impedimento de pedido em análise. Falta snapshot imutável e aceite institucional.
+E019.04|P|ci|Contratos dos serviços alterados têm regressões dirigidas; o candidato passa no comparador de baseline. A dívida global de tipos/lint permanece e não deve ser chamada de projeto sem erros.
+E019.05|L|ci|Comparadores de baseline de lint e tipos passam no candidato cfbcd8f na CI. Isso reconhece ausência de regressão segundo os comparadores, sem zerar dívida histórica.
+E019.07|P|ci|Sem credenciais, testIgnore exclui projetos autenticados e o gate de cabeçalho não executa. Não há evidência de gate de lançamento que exija a jornada autenticada completa.
+E019.10|L|ci|Relatório vincula commit, comandos, CI, SARIF e simulações locais. Registra separadamente sucesso, tentativas adicionais, ignorados e projetos excluídos.
+E023.04|L|busca|Busca principal usa chave por usuário/cooperativa/PA; testes verificam isolamento, seleção, remoção e limite. Evidência não se estende automaticamente aos vistos recentemente ou à pesquisa global.
+E025.05|P|organizacao,armazenamento|Troca local de papel foi corrigida; consultas antigas do contexto e stores em memória ainda podem sobreviver à mudança de sessão. S09 reproduz a persistência de vistos após limpar a chave.
+E025.08|P|organizacao|A consulta de memberships não tem descarte de resposta antiga; erro conserva contexto anterior. Troca rápida/logout e revogação precisam de testes com respostas fora de ordem e contas segregadas.
+E026.04|P|logistica,financeiro|Mensagens da logística agora dependem da RPC canônica. Notas, pagamentos e piloto não compõem uma jornada operacional persistida e coerente.
+E026.07|P|metricas|Retirados números artificiais das telas de pedidos; tela /gestor/agregados ainda usa lotes, valores e rastreio fixos. Consistência de toda a interface permanece parcial.
+E027.04|P|rotas|Campo de observação da aprovação pública recebeu rótulo e recuperação de senha expõe erro persistente. Rótulos/erros de toda a compra autenticada ainda não revisados por tecnologias assistivas.
+E027.09|P|kit|Autosave preserva erro retornado pelo Supabase e permite retry. S08 reproduz falso salvo com update sem linha afetada; concorrência, troca de kit e recuperação integral de sessão ainda não comprovadas.
+E028.03|P|kit,metricas|Kit diferencia falha de estoque e bloqueia cotação. statsService ainda ignora erros de consulta e retorna zeros/listas vazias; indisponibilidade não está distinguida de ausência em toda a jornada.
+E028.05|P|versoes,kit,recompra|Versionamento de proposta é transacional e kit oferece retry. Recompra continua em inserts separados, sem idempotência e com exclusão compensatória cujo erro é ignorado.
+E028.06|P|versoes,organizacao|RPC de versões recusa origem obsoleta e propaga erro. Respostas antigas de organização e edição concorrente de rascunhos não têm proteção equivalente demonstrada.
+E028.08|P|logistica,kit|Logística aguarda resultado canônico e autosave trata erro explícito. S08 mostra que zero linhas afetadas ainda produz lastSavedAt; fechamento global das mensagens de sucesso é indevido.
+E029.02|P|eventos|Notificações in-app de transições usam solicitante e responsáveis de PA/cooperativa/Central. Competência de arte, delegação e destinatários de entrega distribuída ainda incompletos.
+E029.05|P|eventos|Repetição de transição não duplica eventos/notificações nos cenários SQL. Idempotência de canais externos, criação de orçamento e outros fluxos ainda não demonstrada.
+E029.09|P|eventos|Status, histórico e notificações in-app são uma transação; falha de notificação reverte a transição no ensaio. Entrega externa com fila persistente/retry ainda não implementada integralmente.
+E039.03|P|metricas|Contador aleatório saiu das páginas de pedidos. LogisticsCommandCenter ainda contém animate-pulse, animate-bounce e animate-ping em conteúdo operacional; movimento reduzido e necessidade dos efeitos não validados integralmente.
+E039.06|P|logistica,kit|Erros explícitos de salvamento são apresentados em logística e kit. Update de kit sem linha afetada continua indicando salvo (S08); estados de toda a compra não validados.
+E039.10|P|metricas|Vitrine foi simplificada e presença simulada saiu de pedidos. LogisticsCommandCenter conserva efeitos contínuos e sinal GPS fixo; utilidade, distração e legibilidade ainda precisam de revisão.
+E042.04|P|kit,rotas|Atalhos de nova solicitação e edição existem; autosave agora trata erro explícito, mas S08 mostra falso salvo com zero linhas. Retomada segura do rascunho completo ainda não comprovada.
+E042.06|P|metricas|Presença aleatória e projeções saíram das páginas de pedidos. A tela de agregados segue com lotes/valores fixos, sem ligação operacional comprovada.
+E042.07|P|metricas|Preditor fixo não é mais importado nas telas de pedidos. Não se encerra remoção de dados fictícios enquanto consolidação e fallbacks de dashboard persistem.
+E044.05|P|busca|Estado da consulta usa parâmetros da URL e busca principal possui escopo. Retorno produto→resultados preservando consulta, filtros e posição ainda não foi homologado na jornada autenticada real.
+E044.06|P|busca|Busca aproximada e sugestões existem; seleção e limpeza do histórico foram preservadas. Correção sugerida explícita sem apagar a intenção original permanece incompleta.
+E044.09|P|busca,armazenamento|Busca principal tem escopo; vistos e outras memórias de navegação exigem revisão. Telemetria e retenção não foram homologadas pela operação responsável.
+E046.03|P|kit,recompra|Kit passou a consultar variante selecionada. Recompra consulta produto-base e estoque agregado; o contrato de variante, mínimo e múltiplo não está preservado em todas as jornadas.
+E047.04|P|redacao,kit|Preparação e custos adicionais têm modelagem; redação de custos internos foi corrigida. Explicação comercial de matriz, preparação e extras aplicáveis ainda precisa de validação por técnica e oferta.
+E048.01|P|redacao|Bridge remove custos internos recursivamente. Isso não comprova regra de preço final, tributos, frete e personalização aceita para cada cooperativa.
+E050.08|P|rotas,ci|Rotas públicas e estados de expiração têm cenários com mocks passando. Revogação, tempo do servidor e isolamento de dados compartilhados requerem teste real e asserções de conteúdo específicas.
+E051.08|P|kit,campanhas|Autosave de kit trata erro explícito; exportação de campanha foi corrigida. Recuperação de campanha institucional completa, por organização e com destinos, não demonstrada.
+E055.01|P|kit|Builder permite composição e seleção de variantes. Persistência e validação de toda combinação no servidor não demonstradas; entrada sintética duplicada passa no estoque (S07).
+E055.02|P|kit|Quantidade e variante integram estado e snapshot local. Autosave pode declarar salvo sem linha afetada (S08); ida e volta integral com dados reais não homologada.
+E055.03|P|kit|Demanda é quantidade do item × quantidade de kits por linha. S07 mostra duas linhas do mesmo SKU pedindo 12 unidades contra estoque 10 sem alerta; falta agregação por SKU.
+E055.07|P|kit|Variante escolhida é respeitada, escolha ausente/estoque insuficiente geram alerta e falha bloqueia cotação. Agregação de linhas repetidas e substituição revalidada no servidor permanecem incompletas.
+E055.09|P|kit,versoes|Snapshot de kit inclui variante, cor, tamanho e preço; não equivale a versão imutável de arte/comercial com aceite. S08 impede assegurar persistência de toda revisão.
+E057.08|P|recompra,kit|Recompra reconsulta produto, atividade, preço e estoque-base. Estoque por variante, demanda agregada, mínimo/múltiplo e preço completo precisam de revalidação no servidor.
+E057.10|P|kit,organizacao|Rascunhos têm tratamento de erro explícito, mas S08 ainda reproduz falso salvo. Retomada, mudança de contexto e respostas de gravação fora de ordem não foram homologadas integralmente.
+E058.02|P|redacao,kit|Personalização possui discriminação e bridge passou a remover custos internos. Preparação de produção e preço comercial de cada técnica ainda não foram conciliados numa proposta real.
+E059.01|L|versoes|RPC transacional serializa família, gera número e identificador de versão e garante versão vigente única. Há cenários de cópia, origem obsoleta, concorrência, cadeia e ciclo em PostgreSQL isolado.
+E059.02|P|versoes|Nova versão copia itens e personalizações em transação. Snapshot completo de arte, entrega por destino e todas as condições comerciais ainda não assegurado.
+E059.04|P|versoes,politica|Criação de versão está protegida; ainda falta demonstrar imutabilidade de todas as edições de proposta/arte já aceitas e consistência com a política congelada.
+E059.06|P|versoes|Nova versão nasce rascunho sem aprovação/resposta/integracão anterior. Alteração direta de condições e invalidação de aceite de arte não estão protegidas integralmente.
+E059.07|P|rotas,versoes|Links usam rotas canônicas e versionamento transacional. Expiração/revogação e conteúdo correto de tokens reais ainda não homologados.
+E059.10|P|versoes|Rollback, concorrência e família de versões foram simulados no banco descartável. Cenário completo de proposta, arquivo de arte e aceite por participantes ainda não executado.
+E061.02|P|politica|Pedido registra ID e versão de política, mas S01–S04 mostram mudança retroativa. Política vigente, arte e destino ainda precisam compor snapshot estável e aceito.
+E061.07|P|eventos,recompra|Solicitação de alçada e mudança de estado são transacionais. Criação integral de orçamento/itens na recompra continua separada e sem idempotência.
+E061.09|P|kit|Autosave sinaliza erro e permite nova tentativa. S08 confirma falso salvo sem linha atualizada; perda de sessão, respostas fora de ordem e todos os campos da solicitação permanecem sem cobertura integral.
+E064.07|P|politica|Servidor valida ator, papel, profile ativo e alçada. Vínculo atual em organization_members, competência de arte e snapshot imutável não estão garantidos.
+E064.09|L|eventos|Resultado de status financeiro, histórico e avisos in-app são gravados juntos; fixture valida solicitante e responsáveis por PA/cooperativa/Central. Evidência local, sem comprovação de entrega externa.
+E065.01|P|financeiro|Painel e modelos de piloto existem, mas o detalhe Sicoob importa hook que retorna lista vazia. Produto, técnica, posição e dimensão ainda não compõem prova persistida disponível nessa jornada.
+E065.04|P|financeiro|Há componentes de comentário/status no legado; o mutate de piloto importado no detalhe Sicoob não executa nenhuma ação. Revisão formal com persistência e trilha ainda incompleta.
+E065.08|P|financeiro|Modelos legados possuem status, mas useOrderPilotApprovals usado pelo detalhe retorna [] e mutate vazio. Não há comprovação de aceite/rejeição nessa tela com identidade, data e versão.
+E066.03|P|politica|Valor submetido fica registrado, mas conteúdo da política vinculada é mutável. S02 altera impedimento mantendo referência histórica divergente; não há snapshot completo da regra.
+E066.05|P|politica|Bloqueio técnico de autoaprovação existe e foi ensaiado. S02 demonstra retirada retroativa do impedimento; a regra institucional e sua imutabilidade permanecem pendentes.
+E068.02|P|eventos|Transições Sicoob registram ator, estado, horário e comentário no servidor. Histórico único incluindo arte, notas, pagamentos e destinos ainda incompleto.
+E068.03|P|politica|Metadados da política constam de pedido e auditoria. Regra aplicada pode divergir da versão registrada; delegação de competência ainda não demonstrada.
+E068.09|L|eventos|Falha sintética no evento/notificação crítica reverte a mudança de status na mesma transação. Evidência delimita transições canônicas, sem certificar todos os eventos legados.
+E069.04|L|versoes|RPC cria versão rascunho e conserva a anterior, com cópia e auditoria atômicas. Casos de falha e concorrência foram exercitados; não valida todas as edições diretas de arte aceita.
+E069.09|P|eventos,versoes|Transições confirmadas emitem avisos in-app. Divulgação de revisão de arte, oferta e destinos aos responsáveis ainda não cobre toda a jornada.
+E070.03|P|logistica,financeiro|Logística referencia sicoob_orders; notas usam domínio legado e pagamentos/piloto continuam provisórios. Passagem comercial e operação completa ainda não reconciliadas.
+E070.05|L|eventos|Transições canônicas de status registram evento, ator e horário na mesma transação. Ensaios locais verificam histórico e rollback.
+E070.08|P|eventos,organizacao|Mutations de status atualizam dados após retorno da RPC. fetchOrganizations ainda aceita resposta atrasada de outra sessão; consistência de todas as telas e caches não demonstrada.
+E070.09|L|eventos|Avisos in-app derivam das transições confirmadas na mesma transação. Repetição, destinatários e falha com rollback foram ensaiados; canais externos não incluídos nesta evidência.
+E073.02|P|kit,recompra|Kit consulta variante com cache de 60 segundos; recompra consulta estoque-base. Atualidade uniforme, SKU e reserva/reconfirmação comercial por oferta não assegurados.
+E073.08|P|kit|Falha na consulta de estoque agora bloqueia criação no resumo do kit e apresenta mensagem. Escalonamento operacional, responsável e reconfirmação real ainda não definidos.
+E074.04|L|logistica|Transportadora e modalidade manual são persistidas na tabela canônica por RPC com estado esperado. Não representa integração automática nem aceite operacional da transportadora.
+E074.07|P|logistica,distribuicao|Logística canônica registra dados de expedição, mas há uma remessa por pedido. Expedição por destino/item e reconciliação de parciais não implementadas integralmente.
+E075.02|L|logistica|Código de rastreio e transportadora informados são vinculados à remessa canônica. Evidência da gravação manual, sem confirmação automática do evento pela transportadora.
+E076.04|P|logistica,distribuicao|Comprovante privado e identificação temporal existem no modelo canônico. Existência física do objeto, recebedor competente e recebimento por destino/quantidade ainda não homologados.
+E078.02|P|financeiro,logistica|Notas usam OrderService e FK para orders; remessa nova usa sicoob_orders. Não existe vínculo canônico comprovado entre nota, fornecedor, pedido Sicoob e remessa.
+E078.04|P|financeiro|Modelo legado tem estados de pagamento; o hook importado pelo detalhe Sicoob retorna sempre [] sem consulta. Condição acordada e liquidação real não estão integradas nessa jornada.
+E079.01|P|recompra|Botão chama serviço Sicoob e abre /orcamentos/:id/editar. Falta validar mapeamento PA→cliente/organização e criação transacional com dados reais autorizados.
+E079.03|P|recompra|Produto-base inativo, sem preço ou sem estoque é recusado antes do insert. Variante histórica, personalização e todos os componentes do pedido não revalidados.
+E079.04|P|recompra|Preço-base é consultado novamente e grava timestamp. Preço entregue, personalização e validade contratada não compõem oferta firme completa.
+E079.05|P|recompra|Estoque-base é comparado à quantidade solicitada. Não há validação equivalente de variante, mínimo, múltiplo, demanda agregada ou endereço.
+E079.09|P|recompra|Destino de edição agora existe e recebe ID do orçamento novo. Persistência cabeçalho/itens e passagem quote→pedido Sicoob ainda não garantem fluxo integral.
+E079.10|P|recompra,ci|Serviço reconsulta catálogo no código; falta ensaio de recompra autenticada com estoque por variante, endereço e falha entre inserts. A exclusão compensatória ignora o próprio erro.
+E080.08|P|metricas|Preditor fixo saiu das telas de pedidos. Recomendações, consolidação e outros dados calculados ainda não possuem explicação e validação suficientes para toda a jornada.
+E081.10|P|ci,rotas|Ambientes e limites das verificações públicas/entrada/demo estão publicados. Matriz normativa completa por critério, compra autenticada, teclado, leitor de tela e zoom 200/400% ainda não homologada.
+E084.03|L|desempenho|Shell autenticado, telemetria e prefetch foram separados da entrada pública; build e Lighthouse do login passam na CI. Isso não mede desempenho de campo nem todas as rotas de compra.
+E085.02|P|kit|Kit bloqueia erro inicial de estoque, mas usa staleTime de 60 segundos e não reconsulta ao focar a janela. Expiração/refetch com dados antigos visíveis e reconfirmação antes de compra ainda não ensaiadas integralmente.
+E085.06|P|versoes,politica|Concorrência de versão/status foi ensaiada em SQL. Corridas de sessão, edição de itens aprovados e dois usuários navegando na compra completa permanecem sem solução/cobertura integral.
+E085.09|P|kit,versoes|Erros explícitos de autosave e versão são tratados. S08 reproduz falso salvo com zero linhas, S07 disponibilidade indevida em demanda repetida; falhas de toda a jornada não encerradas.
+E086.04|P|rotas,ci|Rotas públicas e mocks de expiração/revogação têm regressão verde. Asserções de conteúdo, replay real e revogação no servidor ainda precisam de homologação.
+E086.06|P|redacao,ci|Redação recursiva de custo/margem/fornecedor foi corrigida e testada. Há 13 resultados CodeQL pendentes de triagem; resposta real e todas as superfícies do navegador não auditadas integralmente.
+E086.09|P|politica,kit,ci|Retestes positivos de correções coexistem com nove lacunas reproduzidas nesta revisão. Invariantes de política/itens e preservação de estado ainda requerem correção e homologação real.
+E087.08|P|busca,armazenamento|Busca principal está segregada; S09 mostra dados de vistos em memória após logout. Telemetria, retenção e minimização completa ainda não aprovadas pelo responsável.
+E089.07|P|metricas|Pedidos perderam previsões fixas, mas consolidação permanece fictícia e statsService usa fallbacks sem distinguir erro. Indicadores de pendência ainda precisam de base operacional reconciliada.
+E089.08|P|metricas|Removidos preditor e presença simulada das páginas de pedidos. Permanecem meta 500000, crescimento +0% no serviço e valores fixos de agregados; não cabe concluir remoção global.
+E090.02|P|campanhas|Colisão de format na exportação foi corrigida; teste valida CSV com aspas, vírgula e quebra de linha. Datas, moedas, quantidades e documentos de toda a jornada ainda não homologados.
+E090.03|P|logistica,financeiro,kit|Persistência logística foi reconciliada. Notas usam legado, piloto/pagamentos são provisórios e autosave aceita update sem linha afetada; mensagens e transações completas ainda divergem.
+E090.04|P|campanhas,versoes|CSV de campanha e versionamento transacional foram corrigidos. Exportações de arte, custos completos e documentos operacionais com versão vigente ainda não homologadas.
+E090.05|P|ci|CI executável passou; smoke tem 6 passados/33 ignorados, shards somam 157 passados sem flake e 8 flaky. Projetos autenticados excluídos não contam como aprovados; setup repetido impede somar como jornadas únicas.
+E090.07|P|desempenho,kit|Login/build/entrada responsiva têm evidência atual. Preservação integral do trabalho falha no caso de zero linhas do autosave; desempenho das jornadas autenticadas e de campo não comprovado.
+E090.09|P|politica,financeiro,recompra,kit|Parte dos defeitos originais foi corrigida. Permanecem modelo financeiro/piloto incompleto, recompra não atômica, política mutável e lacunas de itens/estado reproduzidas nesta revisão.
+E092.05|P|metricas|Elementos artificiais saíram das páginas de pedidos; tela ativa de agregados continua com dados fixos e controles sem ação. Revisão visual e funcional do legado ainda incompleta.
+E095.01|L|ci|Candidato de código auditado fixado em cfbcd8f14f023d385ae4329a3ac037c1b19c7b17, PR #6 aberta. Artefatos de revisão posteriores não alteram o código de produto analisado.
+E095.02|P|ci|Gates executáveis do candidato passam na CI, com flakiness/skips/exclusões documentados. Não equivalem a gates de release completa ou prova do artefato implantado com schema compatível.
+E095.03|P|configuracao|Frontend aponta cfmzkthhgliqelozlmwu; supabase/config.toml ainda registra hgbzltfwozdkcudofypy. A configuração precisa ser reconciliada antes de qualquer migração; origem doufsxqlfjyuvxuezpln segue somente consulta.
+E095.05|P|ci|Gitleaks e build passam. SARIF atual possui 13 resultados ainda sem triagem conclusiva; ausência de segredo não significa ausência de falha de autorização.
+E095.06|L|ci,politica|Relatório registra limites de CI, nove reproduções e funções parciais/ausentes, com impacto e condições de liberação. Não atribui nota 10/10 nem aceite de piloto.
+E096.09|P|ci|PR permanece aberta, sem evidência de lançamento com tráfego real. Bloqueadores de integridade estão documentados; rollback produtivo não foi ensaiado nesta auditoria.
+E099.04|P|politica|Tabela configurável por cooperativa foi criada, sem bifurcação de código. Conteúdo e referência mutáveis, precedência global/específica e política vigente impedem considerar expansão pronta.
+E100.01|L|revisao|Os 1.000 requisitos foram relidos e confrontados com diagnóstico histórico, mudanças do candidato, fontes e ensaios dirigidos. A revisão documental integral não equivale a 1.000 testes de comportamento.
+E100.02|L|revisao|IDs, critérios, dependências e campos formais conferidos. Nenhuma etapa tem dez baixas, responsável nominal, revisor e aceite completo; checklist original preservado.
+E100.04|P|configuracao,revisao|Snapshot atual corrige alegações históricas de falha já resolvida e de conclusão excessiva. README de produto, configuração Supabase e estado publicado ainda não reconciliados integralmente.
+E100.08|L|revisao,politica,financeiro|Próximo ciclo priorizado por lacunas concretas: política/itens, modelo canônico financeiro e arte, recompra/rascunhos, estado de organização, testes autenticados e operação real.

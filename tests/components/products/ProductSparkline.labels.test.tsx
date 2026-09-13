@@ -1,12 +1,7 @@
 /**
  * Tests for ProductSparkline — covers the PR text label changes:
  *
- * Changed labels:
- *   - Tooltip day header: "Vendas no fornecedor · Dia N" → "Mercado · Dia N"
- *   - Tooltip metric label: "Vendas no fornecedor 30d" → "Saídas 30d"
- *
- * Removed section:
- *   - Source legend div with "Proxy: unidades depletadas no estoque do fornecedor..."
+ * Garante que depleção de estoque não seja apresentada como venda ou pedido.
  */
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { screen, fireEvent } from "@testing-library/react";
@@ -26,7 +21,7 @@ vi.mock("@/hooks/useSparklineSales", () => ({
   useSparklineData: vi.fn(() => mockSparklineData),
 }));
 
-describe("ProductSparkline — PR label changes", () => {
+describe("ProductSparkline — origem dos dados", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -56,7 +51,7 @@ describe("ProductSparkline — PR label changes", () => {
     expect(screen.queryByText(/Vendas no fornecedor · Dia/i)).not.toBeInTheDocument();
   });
 
-  it("shows 'Saídas 30d' in tooltip metrics grid (new label)", async () => {
+  it("identifica as saídas de estoque na grade de métricas", async () => {
     const { ProductSparkline } = await import("@/components/products/ProductSparkline");
     renderWithProviders(<ProductSparkline productId="test-product" />);
 
@@ -68,10 +63,10 @@ describe("ProductSparkline — PR label changes", () => {
     }
 
     // New label should be visible
-    expect(screen.getByText("Saídas 30d")).toBeInTheDocument();
+    expect(screen.getByText("Saídas de estoque 30d")).toBeInTheDocument();
   });
 
-  it("shows 'Mercado · Dia N' header in tooltip (new label)", async () => {
+  it("identifica a série como estoque do fornecedor", async () => {
     const { ProductSparkline } = await import("@/components/products/ProductSparkline");
     renderWithProviders(<ProductSparkline productId="test-product" />);
 
@@ -81,22 +76,17 @@ describe("ProductSparkline — PR label changes", () => {
       fireEvent.mouseMove(container, { clientX: 50, clientY: 10 });
     }
 
-    // The tooltip header should contain "Mercado · Dia"
-    const mercadoText = screen.queryByText(/Mercado · Dia \d+/i);
-    expect(mercadoText).toBeInTheDocument();
+    expect(screen.getByText(/Estoque do fornecedor · Dia \d+/i)).toBeInTheDocument();
   });
 
-  it("does NOT contain the removed source legend proxy disclaimer", async () => {
+  it("explica que a métrica não representa pedidos Sicoob", async () => {
     const { ProductSparkline } = await import("@/components/products/ProductSparkline");
     renderWithProviders(<ProductSparkline productId="test-product" />);
 
-    // This text was in the removed source-legend div
-    expect(
-      screen.queryByText(/Proxy: unidades depletadas no estoque do fornecedor/i)
-    ).not.toBeInTheDocument();
+    const container = document.querySelector(".group\\/spark");
+    if (container) fireEvent.mouseEnter(container);
 
-    // Also check partial strings that formed the disclaimer
-    expect(screen.queryByText(/não representa vendas da Promo Brindes/i)).not.toBeInTheDocument();
+    expect(screen.getByText(/não representa pedidos Sicoob/i)).toBeInTheDocument();
   });
 
   it("hides tooltip content when mouse leaves", async () => {
@@ -114,7 +104,7 @@ describe("ProductSparkline — PR label changes", () => {
     }
 
     // After mouse leaves, tooltip data should not be visible
-    expect(screen.queryByText("Saídas 30d")).not.toBeInTheDocument();
+    expect(screen.queryByText("Saídas de estoque 30d")).not.toBeInTheDocument();
   });
 
   it("returns null when product has no real data (no render)", async () => {

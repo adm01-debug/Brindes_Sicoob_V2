@@ -9,7 +9,8 @@ const ALLOWED_CACHES = new Set([CACHE_NAME, RUNTIME_CACHE, IMAGE_CACHE]);
 
 // Arquivos essenciais para cache
 const STATIC_ASSETS = [
-  '/manifest.json'
+  '/manifest.json',
+  '/offline.html'
 ];
 
 // Install: cachear assets estáticos
@@ -45,6 +46,8 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('message', (event) => {
+  if (event.origin !== self.location.origin) return;
+
   if (event.data?.type === 'SKIP_WAITING') {
     self.skipWaiting();
   }
@@ -203,4 +206,3 @@ async function syncQuotes() {
 }
 
 console.log('[SW] Service Worker loaded');
-

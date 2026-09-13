@@ -37,7 +37,13 @@ O plano usa o [diagnóstico versionado do projeto](https://github.com/adm01-debu
 
 **Esta entrega conclui a elaboração do plano.** O checklist-base mantém as 1.000 subetapas inicialmente pendentes para impedir baixa sem evidência. A implementação local já realizada está registrada no [checkpoint de execução](../execucao/checkpoint-local-2026-09-11.md); cada item só deve ser baixado no controle oficial depois da atribuição de responsável, revisor e evidência exigida pelo próprio plano.
 
-## Revisão da implementação — 11/09/2026
+## Revisão atual — 12/09/2026
+
+A [revisão atualizada](../execucao/revisao-implementacao-2026-09-12.md) confronta os 1.000 requisitos e as 32 melhorias do benchmark com o candidato `cfbcd8f`. Resultado: **88 com evidência local delimitada, 622 parciais, 145 não demonstradas/localizadas e 145 dependentes de validação externa**. Nenhuma etapa está formalmente concluída.
+
+Foram atualizados 126 diagnósticos, verificadas 37 regressões e reproduzidas nove lacunas. A CI passou no escopo configurado, com projetos autenticados excluídos, 33 skips no smoke e oito casos flaky. Consulte a [matriz pesquisável atual](../execucao/revisao-implementacao-2026-09-12/consulta.html) e os [20 achados com condições de fechamento](../execucao/revisao-implementacao-2026-09-12/achados.md). O checklist original permanece preservado.
+
+## Revisão histórica — 11/09/2026
 
 A [revisão das 1.000 subetapas](../execucao/revisao-implementacao-2026-09-11.md) confronta o plano com código, evidências locais e CI do commit `6f1c5f9`. O resultado é: **76 com evidência local delimitada, 622 parciais, 157 não demonstradas/localizadas e 145 dependentes de validação externa**. Nenhuma etapa está formalmente encerrada. Esses números não são uma nota de qualidade nem um percentual de implantação.
 

@@ -1,5 +1,5 @@
 import { PermissionsError } from "./PermissionsError";
-import { type ReactNode, forwardRef } from "react";
+import type { ReactNode } from "react";
 import { Navigate, useLocation, Outlet } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
@@ -16,12 +16,12 @@ interface ProtectedRouteProps {
   requireDev?: boolean;
 }
 
-export const ProtectedRoute = forwardRef<HTMLDivElement, ProtectedRouteProps>(function ProtectedRoute({
+export function ProtectedRoute({
   children,
   requiredRole,
   requireAdmin = false,
   requireDev = false,
-}, ref) {
+}: ProtectedRouteProps) {
   const { user, roles, isLoading, rolesLoaded, rolesError } = useAuth();
   const location = useLocation();
 
@@ -50,9 +50,5 @@ export const ProtectedRoute = forwardRef<HTMLDivElement, ProtectedRouteProps>(fu
     return <Navigate to="/403" replace />;
   }
 
-  // Retorno único: Outlet (Layout Route) ou children. Sem forwardRef:
-  // Router não passa refs para `element={<ProtectedRoute />}`.
-  return children ? <div ref={ref}>{children}</div> : <div ref={ref}><Outlet /></div>;
-});
-
-ProtectedRoute.displayName = 'ProtectedRoute';
+  return children ?? <Outlet />;
+}

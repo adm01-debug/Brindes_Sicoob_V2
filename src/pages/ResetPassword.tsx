@@ -36,6 +36,7 @@ export default function ResetPassword() {
   const [isSuccess, setIsSuccess] = useState(false);
   const [isValidToken, setIsValidToken] = useState(false);
   const [isCheckingToken, setIsCheckingToken] = useState(true);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const form = useForm<ResetPasswordFormData>({
     resolver: zodResolver(resetPasswordSchema),
@@ -78,12 +79,14 @@ export default function ResetPassword() {
 
   const handleSubmit = async (data: ResetPasswordFormData) => {
     setIsSubmitting(true);
+    setSubmitError(null);
     try {
       const { error } = await supabase.auth.updateUser({
         password: data.password,
       });
 
       if (error) {
+        setSubmitError('Não foi possível redefinir a senha. Solicite um novo link e tente novamente.');
         toast({
           variant: 'destructive',
           title: 'Erro ao redefinir senha',
@@ -103,6 +106,7 @@ export default function ResetPassword() {
         navigate('/');
       }, 3000);
     } catch (error) {
+      setSubmitError('Não foi possível redefinir a senha. Tente novamente mais tarde.');
       toast({
         variant: 'destructive',
         title: 'Erro inesperado',
@@ -265,6 +269,11 @@ export default function ResetPassword() {
                   'Redefinir senha'
                 )}
               </Button>
+              {submitError && (
+                <p role="alert" className="text-sm text-destructive text-center">
+                  {submitError}
+                </p>
+              )}
             </form>
           </CardContent>
         </Card>

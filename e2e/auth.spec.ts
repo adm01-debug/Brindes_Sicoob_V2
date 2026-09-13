@@ -42,7 +42,7 @@ test.describe("Auth — Login Flow", () => {
     await page.locator(Sel.login.email).fill("user@test.com");
     await page.locator(Sel.login.password).fill("123");
     await clickTestId(page, "login-submit");
-    await expect(page.locator(Sel.login.errorMsg).first()).toBeVisible({
+    await expect(page.getByText(/senha deve ter pelo menos 6 caracteres/i)).toBeVisible({
       timeout: 4_000,
     });
   });

@@ -85,11 +85,15 @@ export interface PromobrindProduct {
   }> | null;
 }
 
-export function getProductImageUrl(product: PromobrindProduct): string | null {
+export function getProductImageUrl(
+  product: Pick<PromobrindProduct, 'primary_image_url' | 'image_url' | 'images'>,
+): string | null {
   return product.primary_image_url || product.image_url || (product.images?.[0] ?? null);
 }
 
-export function getProductPrice(product: PromobrindProduct): number {
+export function getProductPrice(
+  product: Pick<PromobrindProduct, 'sale_price' | 'base_price'>,
+): number {
   return product.sale_price ?? product.base_price ?? 0;
 }
 

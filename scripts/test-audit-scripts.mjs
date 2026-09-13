@@ -1,5 +1,5 @@
 import fs from 'fs';
-import { execSync } from 'child_process';
+import { execFileSync } from 'child_process';
 
 /**
  * Audit Script Consistency Test
@@ -16,7 +16,9 @@ async function testScripts() {
   ];
 
   for (const script of scripts) {
-    if (!fs.existsSync(script)) {
+    try {
+      fs.accessSync(script, fs.constants.R_OK);
+    } catch {
       console.error(`  ❌ Script não encontrado: ${script}`);
       process.exit(1);
     }
@@ -24,7 +26,7 @@ async function testScripts() {
     console.log(`  🏃 Executando: ${script}`);
     try {
       // Run script and check if it crashes
-      execSync(`bun ${script} --status=implementado`, { stdio: 'inherit' });
+      execFileSync('bun', [script, '--status=implementado'], { stdio: 'inherit' });
       console.log(`  ✅ ${script} executado com sucesso.`);
     } catch (e) {
       console.error(`  ❌ ${script} falhou na execução.`);
@@ -40,7 +42,13 @@ async function testScripts() {
   ];
 
   for (const file of outputs) {
-    if (fs.existsSync(file) && fs.statSync(file).size > 100) {
+    let outputSize = 0;
+    try {
+      outputSize = fs.statSync(file).size;
+    } catch {
+      outputSize = 0;
+    }
+    if (outputSize > 100) {
       console.log(`  ✅ Arquivo de saída validado: ${file}`);
       
       // Basic structure check

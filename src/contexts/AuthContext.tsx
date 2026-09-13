@@ -4,13 +4,13 @@ import { supabase, supabaseUrl } from "@/integrations/supabase/client";
 import { logger } from "@/lib/logger";
 import { createClientLogger } from "@/lib/telemetry/structuredLogger";
 import { checkLoginAllowed, recordFailedAttempt, clearLoginAttempts } from "@/hooks/useLoginRateLimit";
-import { toast } from "sonner";
 import { authDebug, authDebugError, summarizeSession, summarizeUser } from "@/lib/auth/auth-debug";
 import { getRandomGreeting, getHighestRole } from "@/lib/auth/auth-utils";
 import { authService } from "@/services/authService";
 import { useUserRoles } from "@/hooks/auth/useUserRoles";
 import { useUserProfile } from "@/hooks/auth/useUserProfile";
 import { useAuthAAL } from "@/hooks/auth/useAuthAAL";
+import { useRecentlyViewedStore } from "@/stores/useRecentlyViewedStore";
 
 
 import { type AppRole, type Profile } from "@/types/users";
@@ -130,6 +130,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setUser(session?.user ?? null);
 
         if (session?.user) {
+          useRecentlyViewedStore.getState().setScope(`user:${session.user.id}`);
           // Show greeting on login
           if (event === 'SIGNED_IN') {
             const displayName = session.user.user_metadata?.full_name
@@ -138,10 +139,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
               || 'Usuário';
             const firstName = displayName.split(' ')[0];
 
-            toast.success(`🤖 Flow`, {
-              description: getRandomGreeting(firstName),
-              duration: 3000,
-              closeButton: true,
+            void import("sonner").then(({ toast }) => {
+              toast.success(`🤖 Flow`, {
+                description: getRandomGreeting(firstName),
+                duration: 3000,
+                closeButton: true,
+              });
             });
           }
 
@@ -158,6 +161,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           clearRoles();
           clearAAL();
           setIsLoading(false);
+          useRecentlyViewedStore.getState().reset();
           
           // Limpeza automática de dados sensíveis da sessão
           try {
@@ -186,8 +190,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setUser(session?.user ?? null);
 
       if (session?.user) {
+        useRecentlyViewedStore.getState().setScope(`user:${session.user.id}`);
         fetchUserData(session.user.id);
       } else {
+        useRecentlyViewedStore.getState().reset();
         setIsLoading(false);
       }
     });
@@ -283,6 +289,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       clearProfile();
       clearRoles();
       clearAAL();
+      useRecentlyViewedStore.getState().reset();
       // Permite prewarm no próximo login (mesma aba)
       import('@/lib/external-db-prewarm').then(m => m.resetPrewarmSession()).catch(() => {});
       log.info('ok');

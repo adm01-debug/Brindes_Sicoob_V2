@@ -1,0 +1,21 @@
+{
+  "ambiente": "PostgreSQL 16 descartável, --network none; somente dados sintéticos",
+  "migracao": "supabase/migrations/20260912110000_sicoob_order_status_events.sql",
+  "producao_verificada": false,
+  "transicao_comum": {
+    "historico": "gravado com ator, estado anterior, estado novo e comentário",
+    "destinatarios": "gerente do PA e supervisor; o ator não recebe aviso redundante"
+  },
+  "repeticao_idempotente": "reenvio com o status já aplicado não duplicou histórico nem aviso",
+  "solicitacao_de_alcada": "pedido, solicitação, histórico e avisos canônicos completos gravados no mesmo commit; gatilho legado removido",
+  "concorrencia": {
+    "retornos_psql": [
+      0,
+      3
+    ],
+    "historico_resultante": "um único evento"
+  },
+  "falha_de_notificacao": "a falha reverteu status e histórico; não há alteração parcial",
+  "autenticacao": "RPC recusou chamada sem identidade autenticada",
+  "resultado": "aprovado"
+}

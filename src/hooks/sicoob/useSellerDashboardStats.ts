@@ -3,14 +3,14 @@ import { sicoobStatsService } from "@/services/sicoob/statsService";
 import { useAuth } from "@/contexts/AuthContext";
 
 export const useSellerDashboardStats = () => {
-  const { profile } = useAuth();
+  const { user } = useAuth();
 
   return useQuery({
-    queryKey: ["seller-dashboard-stats", profile?.id],
+    queryKey: ["seller-dashboard-stats", user?.id],
     queryFn: async () => {
-      if (!profile?.id) return null;
-      return sicoobStatsService.getSellerDashboardStats(profile.id);
+      if (!user?.id) return null;
+      return sicoobStatsService.getSellerDashboardStats(user.id);
     },
-    enabled: !!profile?.id
+    enabled: !!user?.id
   });
 };

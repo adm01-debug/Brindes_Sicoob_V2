@@ -2,7 +2,7 @@ import React from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Users, FileText, CheckCircle2, Clock, Building, ArrowRight, Wallet, TrendingUp, ShieldCheck } from "lucide-react";
+import { AlertCircle, FileText, Clock, Building, ArrowRight, Wallet, TrendingUp, ShieldCheck } from "lucide-react";
 import { formatCurrency } from "@/lib/format";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
@@ -10,6 +10,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Skeleton } from "@/components/ui/skeleton";
 import { SicoobStatusBadge } from "@/components/sicoob/SicoobStatusBadge";
 import { HierarchyPath } from "@/components/sicoob/HierarchyPath";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 export default function GestorDashboardPage() {
   const { user } = useAuth();
@@ -28,60 +29,56 @@ export default function GestorDashboardPage() {
     enabled: !!user?.id
   });
 
-  const { data: stats, isLoading } = useQuery({
+  const { data: stats, isLoading, isError, refetch } = useQuery({
     queryKey: ["sicoob-gestor-stats", profile?.cooperativa_id],
     queryFn: async () => {
       if (!profile?.cooperativa_id) return null;
 
       const now = new Date();
-      const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
-
-      // Get count of PAs
-      const { count: totalPAs } = await supabase
+      const { data: pasData, count: totalPAs, error: pasError } = await supabase
         .from('postos_atendimento')
-        .select('*', { count: 'exact', head: true })
+        .select('id', { count: 'exact' })
         .eq('cooperativa_id', profile.cooperativa_id);
+      if (pasError) throw pasError;
 
-      // Get pending approvals
-      const { count: pendingApprovals } = await supabase
+      const { count: pendingApprovals, error: approvalsError } = await supabase
         .from('sicoob_approval_requests')
-        .select('*', { count: 'exact', head: true })
-        .eq('status', 'pending');
+        .select('id, sicoob_orders!inner(cooperative_id)', { count: 'exact', head: true })
+        .eq('status', 'pending')
+        .eq('sicoob_orders.cooperative_id', profile.cooperativa_id);
+      if (approvalsError) throw approvalsError;
 
-      // Get total spent month (sum of orders approved or pending in current month for this coop)
-      const { data: ordersData } = await supabase
-        .from('sicoob_orders')
-        .select('total_amount')
-        .eq('cooperative_id', profile.cooperativa_id)
-        .gte('created_at', firstDayOfMonth)
-        .neq('status', 'rejected');
+      const paIds = (pasData ?? []).map(pa => pa.id);
+      let budgetsData: Array<{ verba_total: number; verba_consumida: number }> = [];
+      if (paIds.length > 0) {
+        const { data, error } = await supabase
+          .from('pa_budgets')
+          .select('verba_total, verba_consumida')
+          .in('pa_id', paIds)
+          .eq('ano', now.getFullYear())
+          .eq('mes', now.getMonth() + 1);
+        if (error) throw error;
+        budgetsData = data ?? [];
+      }
 
-      const totalSpentMonth = ordersData?.reduce((acc, order) => acc + (Number(order.total_amount) || 0), 0) || 0;
-
-      // Get total budget for the month for this coop
-      const { data: budgetsData } = await supabase
-        .from('pa_budgets')
-        .select('verba_total')
-        .eq('ano', now.getFullYear())
-        .eq('mes', now.getMonth() + 1);
-        // Note: Filter by PAs belonging to this coop if needed, but pa_budgets table doesn't have coop_id directly
-        // Usually we would join with postos_atendimento
-
-      const monthlyBudget = budgetsData?.reduce((acc, b) => acc + (Number(b.verba_total) || 0), 0) || 1000000; // Fallback if no budget set
+      const monthlyBudget = budgetsData.reduce((acc, budget) => acc + Number(budget.verba_total || 0), 0);
+      const totalSpentMonth = budgetsData.reduce((acc, budget) => acc + Number(budget.verba_consumida || 0), 0);
 
       // Recent orders needing approval or just recent
-      const { data: recentOrders } = await supabase
+      const { data: recentOrders, error: recentOrdersError } = await supabase
         .from('sicoob_orders')
         .select('id, total_amount, status, postos_atendimento(nome)')
         .eq('cooperative_id', profile.cooperativa_id)
         .order('created_at', { ascending: false })
         .limit(5);
+      if (recentOrdersError) throw recentOrdersError;
 
       return {
         totalPAs: totalPAs || 0,
         pendingApprovals: pendingApprovals || 0,
         totalSpentMonth,
         monthlyBudget,
+        hasConfiguredBudget: budgetsData.length > 0,
         recentOrders: recentOrders?.map(o => ({
           id: o.id,
           pa: o.postos_atendimento?.nome || "Desconhecido",
@@ -93,7 +90,9 @@ export default function GestorDashboardPage() {
     enabled: !!profile?.cooperativa_id
   });
 
-  const budgetProgress = stats ? (stats.totalSpentMonth / stats.monthlyBudget) * 100 : 0;
+  const budgetProgress = stats?.monthlyBudget
+    ? (stats.totalSpentMonth / stats.monthlyBudget) * 100
+    : 0;
 
   return (
     <>
@@ -121,6 +120,19 @@ export default function GestorDashboardPage() {
           </div>
         </div>
 
+        {isError && (
+          <Alert variant="destructive" role="alert">
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>Não foi possível carregar os indicadores</AlertTitle>
+            <AlertDescription className="flex flex-wrap items-center justify-between gap-3">
+              Os números da Singular não foram substituídos por estimativas. Tente consultar novamente.
+              <Button type="button" variant="outline" size="sm" onClick={() => refetch()}>
+                Tentar novamente
+              </Button>
+            </AlertDescription>
+          </Alert>
+        )}
+
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           <Card className="border-[1.5px]">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -128,7 +140,7 @@ export default function GestorDashboardPage() {
               <Building className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              {isLoading ? <Skeleton className="h-8 w-20" /> : <div className="text-2xl font-bold">{stats?.totalPAs}</div>}
+              {isLoading ? <Skeleton className="h-8 w-20" /> : <div className="text-2xl font-bold">{stats?.totalPAs ?? "—"}</div>}
               <p className="text-xs text-muted-foreground mt-1">Pontos de atendimento ativos</p>
             </CardContent>
           </Card>
@@ -139,7 +151,7 @@ export default function GestorDashboardPage() {
               <Clock className="h-4 w-4 text-status-production" />
             </CardHeader>
             <CardContent>
-              {isLoading ? <Skeleton className="h-8 w-20" /> : <div className="text-2xl font-bold text-status-production">{stats?.pendingApprovals}</div>}
+              {isLoading ? <Skeleton className="h-8 w-20" /> : <div className="text-2xl font-bold text-status-production">{stats?.pendingApprovals ?? "—"}</div>}
               <p className="text-xs text-muted-foreground mt-1 text-status-production/80 font-medium">Requerem sua atenção</p>
             </CardContent>
           </Card>
@@ -154,12 +166,15 @@ export default function GestorDashboardPage() {
                 <Skeleton className="h-8 w-60" />
               ) : (
                 <div className="text-2xl font-bold text-sicoob-green-dark">
-                  {formatCurrency(stats?.totalSpentMonth || 0)} 
-                  <span className="text-sm font-normal text-muted-foreground"> / {formatCurrency(stats?.monthlyBudget || 0)}</span>
+                  {stats?.hasConfiguredBudget ? (
+                    <>{formatCurrency(stats.totalSpentMonth)} <span className="text-sm font-normal text-muted-foreground"> / {formatCurrency(stats.monthlyBudget)}</span></>
+                  ) : (
+                    <span className="text-base font-semibold text-muted-foreground">Verba não configurada para este mês</span>
+                  )}
                 </div>
               )}
               <div className="w-full bg-muted rounded-full h-2">
-                <div className="bg-sicoob-green h-2 rounded-full transition-all duration-500" style={{ width: `${Math.min(100, budgetProgress)}%` }} />
+                <div className="bg-sicoob-green h-2 rounded-full transition-all duration-500" style={{ width: `${Math.max(0, Math.min(100, budgetProgress))}%` }} />
               </div>
             </CardContent>
           </Card>

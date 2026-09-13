@@ -34,6 +34,9 @@ describe("orderService.convertQuoteToOrder — payloads de mutação", () => {
     delivery_time: "5d",
     notes: "n",
     internal_notes: "i",
+    items: [
+      { product_id: "p1", product_sku: "SKU1", product_name: "Prod 1", product_image_url: null, quantity: 2, unit_price: 50 },
+    ],
   };
 
   let mock: ReturnType<typeof createSupabaseMock>;
@@ -44,9 +47,6 @@ describe("orderService.convertQuoteToOrder — payloads de mutação", () => {
       selects: {
         quotes: APPROVED_QUOTE,
         orders: null, // nenhum pedido pré-existente para este quote
-        quote_items: [
-          { product_id: "p1", product_sku: "SKU1", product_name: "Prod 1", product_image_url: null, quantity: 2, unit_price: 50 },
-        ],
       },
       insertReturn: (table) =>
         table === "orders"
@@ -62,8 +62,8 @@ describe("orderService.convertQuoteToOrder — payloads de mutação", () => {
   });
 
   it("inclui seller_id correto no INSERT em orders", async () => {
-    const { convertQuoteToOrder } = await import("@/services/orderService");
-    await convertQuoteToOrder({ quoteId: QUOTE_ID, sellerId: SELLER_ID, organizationId: ORG_ID });
+    const { OrderService } = await import("@/services/OrderService");
+    await OrderService.convertQuoteToOrder({ quoteId: QUOTE_ID, sellerId: SELLER_ID, organizationId: ORG_ID });
 
     const ordersInsert = mock.calls.insert.find((c) => c.table === "orders");
     expect(ordersInsert).toBeDefined();
@@ -82,8 +82,8 @@ describe("orderService.convertQuoteToOrder — payloads de mutação", () => {
 
   it("não vaza seller_id alheio quando chamado com sellerId diferente", async () => {
     const OTHER = "seller-outro-99";
-    const { convertQuoteToOrder } = await import("@/services/orderService");
-    await convertQuoteToOrder({ quoteId: QUOTE_ID, sellerId: OTHER });
+    const { OrderService } = await import("@/services/OrderService");
+    await OrderService.convertQuoteToOrder({ quoteId: QUOTE_ID, sellerId: OTHER });
 
     const ordersInsert = mock.calls.insert.find((c) => c.table === "orders");
     expect((ordersInsert!.payload as { seller_id: string }).seller_id).toBe(OTHER);
@@ -91,8 +91,8 @@ describe("orderService.convertQuoteToOrder — payloads de mutação", () => {
   });
 
   it("UPDATE em quotes filtra por id (não amplia escopo)", async () => {
-    const { convertQuoteToOrder } = await import("@/services/orderService");
-    await convertQuoteToOrder({ quoteId: QUOTE_ID, sellerId: SELLER_ID });
+    const { OrderService } = await import("@/services/OrderService");
+    await OrderService.convertQuoteToOrder({ quoteId: QUOTE_ID, sellerId: SELLER_ID });
 
     const upd = mock.calls.update.find((c) => c.table === "quotes");
     expect(upd).toBeDefined();
@@ -101,8 +101,8 @@ describe("orderService.convertQuoteToOrder — payloads de mutação", () => {
   });
 
   it("propaga organization_id do quote para order_items quando override não é passado", async () => {
-    const { convertQuoteToOrder } = await import("@/services/orderService");
-    await convertQuoteToOrder({ quoteId: QUOTE_ID, sellerId: SELLER_ID });
+    const { OrderService } = await import("@/services/OrderService");
+    await OrderService.convertQuoteToOrder({ quoteId: QUOTE_ID, sellerId: SELLER_ID });
 
     const itemsInsert = mock.calls.insert.find((c) => c.table === "order_items");
     expect(itemsInsert).toBeDefined();
@@ -123,9 +123,9 @@ describe("orderService.convertQuoteToOrder — payloads de mutação", () => {
     vi.doMock("@/integrations/supabase/client", () => ({ supabase: mock.client }));
     vi.resetModules();
 
-    const { convertQuoteToOrder } = await import("@/services/orderService");
+    const { OrderService } = await import("@/services/OrderService");
     await expect(
-      convertQuoteToOrder({ quoteId: QUOTE_ID, sellerId: SELLER_ID }),
+      OrderService.convertQuoteToOrder({ quoteId: QUOTE_ID, sellerId: SELLER_ID }),
     ).rejects.toThrow(/aprovados/i);
 
     expect(mock.calls.insert.find((c) => c.table === "orders")).toBeUndefined();

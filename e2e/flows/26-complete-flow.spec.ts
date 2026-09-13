@@ -1,33 +1,27 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, requireAuth } from "../fixtures/test-base";
+import { loginAs } from "../helpers/auth";
+import { gotoAndSettle } from "../helpers/nav";
 
-test.describe('E2E Complete Freight Quest Flow', () => {
-  test('should go through the entire product to quote lifecycle', async ({ page }) => {
-    // 1. Auth
-    await page.goto('/');
-    // Assuming we have a way to skip real auth in test env or use cookies
-    // For this simulation, we'll check for public elements first
-    
-    await expect(page).toHaveTitle(/Freight/i);
+test.describe("E2E — catálogo até novo orçamento", () => {
+  test.beforeEach(() => requireAuth());
 
-    // 2. Browse Products
-    await page.click('text=Catálogo');
-    await expect(page).toHaveURL(/.*catalog/);
-    
-    // 3. Add to Cart
-    const firstProduct = page.locator('[data-testid="product-card"]').first();
-    await firstProduct.hover();
-    await firstProduct.locator('button:has-text("Adicionar")').click();
-    
-    // 4. Update Quantity
-    await page.click('[data-testid="cart-button"]');
-    await page.locator('[data-testid="cart-item-quantity-input"]').fill('10');
-    
-    // 5. Remove from Cart
-    await page.click('[data-testid="remove-from-cart"]');
-    await expect(page.locator('text=Carrinho vazio')).toBeVisible();
+  test("usuário autenticado valida o catálogo e abre os controles reais do orçamento", async ({ page }) => {
+    await loginAs(page);
+    await gotoAndSettle(page, "/produtos");
+    await expect(page).not.toHaveURL(/\/login/);
+    await expect(page.getByTestId("page-title-produtos")).toBeVisible();
 
-    // 6. Test Error States
-    await page.goto('/invalid-route');
-    await expect(page.locator('text=404')).toBeVisible();
+    const catalogState = page
+      .getByTestId("product-card")
+      .first()
+      .or(page.getByText(/nenhum produto|catálogo vazio|não encontramos/i).first());
+    await expect(catalogState).toBeVisible();
+
+    await gotoAndSettle(page, "/orcamentos/novo");
+    await expect(page).toHaveURL(/\/orcamentos\/novo/);
+    await expect(page.getByTestId("page-title-orcamento-novo")).toHaveText(/Novo Orçamento/);
+    await expect(page.getByText("Itens do Orçamento", { exact: true })).toBeVisible();
+    await expect(page.getByRole("button", { name: /Produto/ }).first()).toBeEnabled();
+    await expect(page.getByText("Resumo", { exact: true }).first()).toBeVisible();
   });
 });

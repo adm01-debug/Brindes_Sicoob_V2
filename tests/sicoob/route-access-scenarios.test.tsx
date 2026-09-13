@@ -23,7 +23,8 @@ describe('Cenários reais dos guards de compras', () => {
   it.each([
     ['/pa/verba','comprador_pac'], ['/dashboard-pa','gerente_pa'], ['/sicoob/pedidos','comprador_pac'],
     ['/sicoob/pedidos/pedido-teste','vendedor'], ['/gestor/aprovacoes','gestor_compras'],
-    ['/gestor','comprador_singular'], ['/vendedor/dashboard','vendedor'],
+    ['/gestor','comprador_singular'], ['/gestor/agregados','gerente_pa'],
+    ['/gestor/agregados','comprador_pac'], ['/vendedor/dashboard','vendedor'],
   ])('%s permite o papel atribuído %s', (path, role) => {
     mostrar(path, [role]);
     expect(screen.getByText('Conteúdo autorizado')).toBeInTheDocument();
@@ -56,7 +57,7 @@ describe('Cenários reais dos guards de compras', () => {
   it('toda rota de negócio possui política e nenhuma rota técnica fica nesse grupo', () => {
     for (const route of sicoobRoutes) {
       expect(SICOOB_ROUTE_ACCESS[route.path]?.length).toBeGreaterThan(0);
-      expect(route.path).not.toMatch(/^\/admin\/|\/qa\//);
+      expect(route.path).not.toMatch(/^(?:\/admin\/|\/qa\/)/);
     }
     expect(new Set(sicoobRoutes.map(route => route.path)).size).toBe(sicoobRoutes.length);
   });

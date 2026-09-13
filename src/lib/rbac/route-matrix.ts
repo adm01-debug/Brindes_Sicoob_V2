@@ -80,9 +80,13 @@ export const RBAC_ROUTES: RbacRouteEntry[] = [
   { path: "/admin/video-variantes", label: "Vídeos por variante", guard: "AdminRoute", role: "admin", mfaAal2: true, category: "admin" },
 
   // ─── Dev / Técnicas (exigem AAL2 + role dev) ──────────────────────────
+  { path: "/sicoob/qa/preflight", label: "Pré-flight Sicoob", guard: "DevRoute", role: "dev", mfaAal2: true, category: "ops" },
+  { path: "/admin/qa/preflight", label: "Pré-flight técnico", guard: "DevRoute", role: "dev", mfaAal2: true, category: "ops" },
+  { path: "/admin/performance", label: "Performance", guard: "DevRoute", role: "dev", mfaAal2: true, rlsHelper: "can_view_telemetry", category: "telemetry" },
   { path: "/admin/seguranca", label: "Segurança", guard: "DevRoute", role: "dev", mfaAal2: true, rlsHelper: "can_view_audit_logs", category: "audit", notes: "admin_audit_log e RLS de baixo nível." },
   { path: "/admin/seguranca-acesso", label: "Acesso & Bots", guard: "DevRoute", role: "dev", mfaAal2: true, rlsHelper: "can_view_audit_logs", category: "audit", notes: "ip_access_control, bot_detection_log, login_attempts." },
   { path: "/admin/seguranca/chaves", label: "Chaves & Secrets (MCP)", guard: "DevRoute", role: "dev", mfaAal2: true, rlsHelper: "is_supervisor_or_above + audit", category: "secrets" },
+  { path: "/admin/seguranca/migracao-papeis", label: "Migração de papéis", guard: "DevRoute", role: "dev", mfaAal2: true, rlsHelper: "can_view_audit_logs", category: "audit" },
   { path: "/admin/conexoes", label: "Conexões externas", guard: "DevRoute", role: "dev", mfaAal2: true, rlsHelper: "can_view_connections / can_manage_connections", category: "connections" },
   { path: "/admin/conexoes/status", label: "Status de conexões", guard: "DevRoute", role: "dev", mfaAal2: true, rlsHelper: "can_view_connections", category: "connections" },
   { path: "/admin/telemetria", label: "Telemetria", guard: "DevRoute", role: "dev", mfaAal2: true, rlsHelper: "can_view_telemetry", category: "telemetry" },
@@ -92,6 +96,8 @@ export const RBAC_ROUTES: RbacRouteEntry[] = [
   { path: "/admin/workflows", label: "Workflows IA", guard: "DevRoute", role: "dev", mfaAal2: true, category: "ai" },
   { path: "/admin/prompts-ia", label: "Prompts IA", guard: "DevRoute", role: "dev", mfaAal2: true, category: "ai" },
   { path: "/admin/consumo-ia", label: "Consumo de IA", guard: "DevRoute", role: "dev", mfaAal2: true, rlsHelper: "can_view_telemetry", category: "ai" },
+  { path: "/admin/rls-denials", label: "Negativas de RLS", guard: "DevRoute", role: "dev", mfaAal2: true, rlsHelper: "can_view_audit_logs", category: "audit" },
+  { path: "/admin/auditoria-propriedade", label: "Auditoria de propriedade", guard: "DevRoute", role: "dev", mfaAal2: true, rlsHelper: "can_view_audit_logs", category: "audit" },
   { path: "/admin/validade-precos", label: "Validade de preços", guard: "DevRoute", role: "dev", mfaAal2: true, category: "ops" },
   { path: "/status", label: "Status do sistema", guard: "DevRoute", role: "dev", mfaAal2: true, category: "ops" },
   { path: "/external-db-test", label: "Teste External DB", guard: "DevRoute", role: "dev", mfaAal2: true, category: "ops" },

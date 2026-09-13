@@ -1,0 +1,28 @@
+{
+  "ambiente": "Chromium local, arquivo estático",
+  "resultado": "Consulta verificada",
+  "casos": [
+    "1.000 registros",
+    "Filtro N:145",
+    "Etapa E055:10",
+    "Busca E065.08:1 e diagnóstico correto",
+    "Sem resultado:estado vazio",
+    "Filtro P:622"
+  ],
+  "larguras": [
+    {
+      "largura": 1440,
+      "rolagem_horizontal": false
+    },
+    {
+      "largura": 390,
+      "rolagem_horizontal": false
+    },
+    {
+      "largura": 320,
+      "rolagem_horizontal": false
+    }
+  ],
+  "erros_js": [],
+  "limites": "Verifica o artefato de revisão; não a aplicação Sicoob nem acessibilidade integral."
+}

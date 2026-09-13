@@ -12,12 +12,17 @@
 import { describe, it, expect, beforeAll, afterAll, vi } from "vitest";
 import { render, screen, fireEvent, within } from "@testing-library/react";
 import { useState } from "react";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import { QuoteBuilderSummaryColumn } from "@/components/quotes/QuoteBuilderSummaryColumn";
 import type { QuoteItem } from "@/hooks/useQuotes";
 
 // O componente importa toast (sonner) — silenciamos para não poluir o stdout.
 vi.mock("sonner", () => ({
   toast: { success: vi.fn(), error: vi.fn() },
+}));
+
+vi.mock("@/contexts/AuthContext", () => ({
+  useAuth: () => ({ isGerentePa: false }),
 }));
 
 const FIXED_NOW = new Date("2026-04-24T12:00:00.000Z").getTime();
@@ -65,7 +70,8 @@ function Harness({ initial }: { initial: QuoteItem[] }) {
     );
   };
   return (
-    <QuoteBuilderSummaryColumn
+    <TooltipProvider>
+      <QuoteBuilderSummaryColumn
       items={items}
       activeItemIndex={null}
       setActiveItemIndex={() => {}}
@@ -86,7 +92,8 @@ function Harness({ initial }: { initial: QuoteItem[] }) {
       calculateItemTotal={(it) => it.quantity * it.unit_price}
       onSave={() => {}}
       confirmItemPrice={confirmItemPrice}
-    />
+      />
+    </TooltipProvider>
   );
 }
 

@@ -121,6 +121,21 @@ export const EDGE_AUTHZ_MANIFEST: Record<string, AuthzEntry> = {
   "elevenlabs-tts": { category: "authenticated", rationale: "TTS do user" },
   "expert-chat": { category: "authenticated", rationale: "Chat IA do user" },
   "external-db-bridge": { category: "authenticated", rationale: "Bridge para BD externo (RBAC interno)" },
+  "sicoob-reorder": {
+    category: "authenticated",
+    rationale: "Revalida usuário, pedido e catálogo antes de chamar a RPC interna de recompra",
+    enforcedBy: "custom",
+  },
+  "sicoob-kit-quote": {
+    category: "authenticated",
+    rationale: "Revalida usuário, composição, estoque, preço e personalização antes de chamar a RPC interna de orçamento do kit",
+    enforcedBy: "custom",
+  },
+  "sicoob-artwork-register": {
+    category: "authenticated",
+    rationale: "Baixa a arte privada sob RLS, calcula sua identidade criptográfica e chama a RPC interna exclusiva de serviço",
+    enforcedBy: "custom",
+  },
   "generate-ad-image": { category: "authenticated", rationale: "Magic Up Ads do user" },
   "generate-ad-prompt": { category: "authenticated", rationale: "Magic Up Ads do user" },
   "generate-mockup": { category: "authenticated", rationale: "Mockup IA do user" },

@@ -125,8 +125,10 @@ describe("useWorkspaceNotifications — prefetch TTL idempotency", () => {
     const useWorkspaceNotifications = await loadHook();
     const { result } = renderHook(() => useWorkspaceNotifications());
 
-    await waitFor(() => expect(limitMock).toHaveBeenCalledTimes(1));
-    expect(result.current.isLoading).toBe(false);
+    await waitFor(() => {
+      expect(limitMock).toHaveBeenCalledTimes(1);
+      expect(result.current.isLoading).toBe(false);
+    });
 
     const baseTime = Date.now();
     vi.spyOn(Date, "now").mockImplementation(() => baseTime + 6_000);

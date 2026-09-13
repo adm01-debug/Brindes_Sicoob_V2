@@ -1,9 +1,7 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { lazy, Suspense, useState, useEffect, useRef, useCallback } from "react";
 import { PageSEO } from "@/components/seo/PageSEO";
 import { Link, useNavigate, useSearchParams, useLocation, type NavigateFunction } from "react-router-dom";
 
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { Eye, EyeOff, Loader2, Mail, Lock, ShieldAlert, AlertTriangle } from "lucide-react";
 import { AuthBrandingPanel } from "./auth/AuthBranding";
 import { Button } from "@/components/ui/button";
@@ -13,18 +11,19 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 
 import { useAuth, type AppRole } from "@/contexts/AuthContext";
-import { ForgotPasswordForm } from "@/components/auth/ForgotPasswordForm";
 import { useIPValidation } from "@/hooks/useIPValidation";
 import { supabase } from "@/integrations/supabase/client";
-
-import { loginSchema, type LoginFormData } from "@/lib/validations";
-
-type LoginForm = LoginFormData;
-
-import { diagnostics } from "@/lib/diagnostics";
+import {
+  validateLoginCredentials,
+  type LoginCredentials,
+  type LoginFieldErrors,
+} from "@/lib/auth/login-validation";
+import { getSsoFailureMessage, SSO_ERROR_QUERY_PARAM } from "@/lib/auth/sso-errors";
 
 import { safeInternalPath } from "@/lib/auth/safe-internal-path";
 import { getDefaultRouteByRole } from "@/lib/auth/auth-utils";
+
+const ForgotPasswordForm = lazy(() => import("@/components/auth/ForgotPasswordForm"));
 
 interface RedirectSource {
   from?: { pathname?: string; search?: string; hash?: string };
@@ -74,15 +73,20 @@ export default function Auth() {
   const [blockedIP, setBlockedIP] = useState<string | null>(null);
   // Fallback social → email/senha: mensagem amigável quando OAuth falha.
   const [socialError, setSocialError] = useState<string | null>(null);
+  const [credentials, setCredentials] = useState<LoginCredentials>({ email: "", password: "" });
+  const [fieldErrors, setFieldErrors] = useState<LoginFieldErrors>({});
   const emailInputRef = useRef<HTMLInputElement | null>(null);
 
-  // Captura `?error=` vindo do SSOCallbackPage (Google falhou) e exibe o
-  // banner de fallback. Limpa o param da URL para não persistir.
+  // Exibe uma mensagem controlada para falhas SSO e remove os parâmetros para
+  // que dados fornecidos pela URL nunca sejam refletidos nem persistam.
   useEffect(() => {
-    const err = searchParams.get("error");
-    if (err) {
-      setSocialError(err);
+    const reason = searchParams.get(SSO_ERROR_QUERY_PARAM);
+    const hasLegacyError = searchParams.has("error");
+    const message = getSsoFailureMessage(reason, hasLegacyError);
+    if (message) {
+      setSocialError(message);
       const next = new URLSearchParams(searchParams);
+      next.delete(SSO_ERROR_QUERY_PARAM);
       next.delete("error");
       setSearchParams(next, { replace: true });
     }
@@ -96,13 +100,10 @@ export default function Auth() {
   // Só redireciona após carregar papéis e encerrar a validação da entrada.
   useAuthenticatedRedirect({ hasUser: Boolean(user), authLoading, rolesLoaded, role, isSubmitting, ipBlocked, searchParams, location, navigate });
 
-  const loginForm = useForm<LoginForm>({
-    resolver: zodResolver(loginSchema),
-    defaultValues: { email: "", password: "" },
-  });
-
-  const handleLogin = async (data: LoginForm) => {
-    diagnostics.log('info', 'Auth', 'Iniciando autenticação');
+  const handleLogin = async (data: LoginCredentials) => {
+    void import("@/lib/diagnostics").then(({ diagnostics }) => {
+      diagnostics.log("info", "Auth", "Iniciando autenticação");
+    });
     setIsSubmitting(true);
 
     setIpBlocked(false);
@@ -111,7 +112,9 @@ export default function Auth() {
       const { error } = await signIn(data.email, data.password);
       
       if (error) {
-        diagnostics.log('error', 'Auth', `Erro no signIn: ${error.message}`);
+        void import("@/lib/diagnostics").then(({ diagnostics }) => {
+          diagnostics.log("error", "Auth", `Erro no signIn: ${error.message}`);
+        });
         await logLoginAttempt(data.email, null, false, error.message);
 
         
@@ -135,7 +138,9 @@ export default function Auth() {
       const userId = sessionData?.session?.user?.id;
 
       if (userId) {
-        diagnostics.log('info', 'Auth', 'Validando restrições de acesso');
+        void import("@/lib/diagnostics").then(({ diagnostics }) => {
+          diagnostics.log("info", "Auth", "Validando restrições de acesso");
+        });
         const ipValidation = await validateIPForAuthenticatedUser(userId);
 
         
@@ -177,13 +182,18 @@ export default function Auth() {
     }
   };
 
-  if (authLoading) {
-    return (
-      <main className="min-h-screen flex items-center justify-center bg-background" role="main" aria-label="Carregando autenticação">
-        <Loader2 className="h-8 w-8 animate-spin text-orange" />
-      </main>
-    );
-  }
+  const handleLoginSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const errors = validateLoginCredentials(credentials);
+    setFieldErrors(errors);
+    if (Object.keys(errors).length > 0) return;
+    void handleLogin(credentials);
+  };
+
+  const updateCredential = (field: keyof LoginCredentials, value: string) => {
+    setCredentials(current => ({ ...current, [field]: value }));
+    setFieldErrors(current => current[field] ? { ...current, [field]: undefined } : current);
+  };
 
   return (
     <main className="min-h-screen flex bg-[#F7FAFA] dark:bg-background" role="main" aria-label="Autenticação">
@@ -257,7 +267,9 @@ export default function Auth() {
           <Card className={`border-border/70 bg-card shadow-sm ${ipBlocked ? 'opacity-50 pointer-events-none' : ''}`}>
             {showForgotPassword ? (
               <CardContent className="pt-6 pb-6">
-                <ForgotPasswordForm onBack={() => setShowForgotPassword(false)} />
+                <Suspense fallback={<div className="min-h-40" role="status" aria-label="Carregando recuperação de senha" />}>
+                  <ForgotPasswordForm onBack={() => setShowForgotPassword(false)} />
+                </Suspense>
               </CardContent>
             ) : (
             <>
@@ -306,7 +318,7 @@ export default function Auth() {
                     </div>
                   )}
 
-                  <form onSubmit={loginForm.handleSubmit(handleLogin)} className="space-y-5" noValidate aria-busy={isSubmitting} data-testid="login-form">
+                  <form onSubmit={handleLoginSubmit} className="space-y-5" noValidate aria-busy={isSubmitting || authLoading} data-testid="login-form">
                     <div className="space-y-2">
                       <Label htmlFor="login-email" className="text-foreground">E-mail de trabalho</Label>
                       <div className="relative">
@@ -319,19 +331,17 @@ export default function Auth() {
                           autoComplete="username"
                           autoCapitalize="none"
                           spellCheck={false}
-                          aria-invalid={!!loginForm.formState.errors.email}
-                          aria-describedby={loginForm.formState.errors.email ? "login-email-error" : undefined}
+                          aria-invalid={!!fieldErrors.email}
+                          aria-describedby={fieldErrors.email ? "login-email-error" : undefined}
                           className="h-12 pl-10 bg-input border-border focus:border-primary focus:ring-primary"
-                          {...loginForm.register("email")}
-                          ref={(el) => {
-                            loginForm.register("email").ref(el);
-                            emailInputRef.current = el;
-                          }}
+                          value={credentials.email}
+                          onChange={event => updateCredential("email", event.target.value)}
+                          ref={emailInputRef}
                         />
                       </div>
-                      {loginForm.formState.errors.email && (
+                      {fieldErrors.email && (
                         <p className="text-sm text-destructive" id="login-email-error" role="alert" data-testid="login-error-msg">
-                          {loginForm.formState.errors.email.message}
+                          {fieldErrors.email}
                         </p>
                       )}
                     </div>
@@ -345,11 +355,12 @@ export default function Auth() {
                           data-testid="login-password-input"
                           type={showPassword ? "text" : "password"}
                           autoComplete="current-password"
-                          aria-invalid={!!loginForm.formState.errors.password}
-                          aria-describedby={loginForm.formState.errors.password ? "login-password-error" : undefined}
+                          aria-invalid={!!fieldErrors.password}
+                          aria-describedby={fieldErrors.password ? "login-password-error" : undefined}
                           placeholder="••••••••"
                           className="h-12 pl-10 pr-14 bg-input border-border focus:border-primary focus:ring-primary"
-                          {...loginForm.register("password")}
+                          value={credentials.password}
+                          onChange={event => updateCredential("password", event.target.value)}
                         />
                         <button
                           type="button"
@@ -362,9 +373,9 @@ export default function Auth() {
                           {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                         </button>
                       </div>
-                      {loginForm.formState.errors.password && (
+                      {fieldErrors.password && (
                         <p id="login-password-error" role="alert" className="text-sm text-destructive">
-                          {loginForm.formState.errors.password.message}
+                          {fieldErrors.password}
                         </p>
                       )}
                     </div>
@@ -386,7 +397,7 @@ export default function Auth() {
                       data-testid="login-submit"
                       variant="default"
                       className="w-full h-12 text-base font-semibold"
-                      disabled={isSubmitting}
+                      disabled={isSubmitting || authLoading}
                     >
                       {isSubmitting ? (
                         <>

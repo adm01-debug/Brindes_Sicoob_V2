@@ -23,6 +23,8 @@
 .vscode/*
 coverage/
 dist
+!vendor/pptxgenjs-browser/dist/
+!vendor/pptxgenjs-browser/dist/pptxgen.es.js
 dist-ssr
 lerna-debug.log*
 logs
@@ -42,6 +44,10 @@ e2e/.auth/
 # TypeScript incremental build artifacts
 *.tsbuildinfo
 tsconfig.probe.*.json
+
+# Bytecode Python gerado pelos simuladores locais.
+__pycache__/
+*.py[cod]
 
 # Deno lock files — generated por `deno check`/`deno test` localmente.
 # Edge functions são deployadas pelo Lovable Cloud sem necessidade de

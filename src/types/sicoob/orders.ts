@@ -14,13 +14,14 @@ export const ORDER_STATUS_CONFIG: Record<OrderStatus, StatusConfig> = {
   logistic: { label: "Logística", className: "bg-status-transit/10 text-status-transit border-status-transit/20" },
   rejected: { label: "Rejeitado", className: "bg-destructive/10 text-destructive border-destructive/20" },
   completed: { label: "Concluído", className: "bg-status-completed/10 text-status-completed border-status-completed/20" },
+  cancelled: { label: "Cancelado", className: "bg-muted text-muted-foreground border-border/40" },
 };
 
 export const ORDER_STATUS_OPTIONS = Object.keys(ORDER_STATUS_CONFIG) as OrderStatus[];
 
 export const SICOOB_VALID_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
   draft: ["pending", "cancelled"],
-  pending: ["waiting_approval", "cancelled"],
+  pending: ["waiting_approval", "confirmed", "cancelled"],
   waiting_approval: ["confirmed", "rejected", "escalated_to_board", "cancelled"],
   escalated_to_board: ["confirmed", "rejected", "cancelled"],
   confirmed: ["logistic", "cancelled"],
@@ -65,6 +66,12 @@ export interface SicoobOrderItem {
   product_name: string;
   product_sku: string;
   product_image_url?: string;
+  variant_id?: string;
+  variant_sku?: string;
+  color_name?: string;
+  color_hex?: string;
+  size_code?: string;
+  personalization_snapshot?: Record<string, unknown>;
   quantity: number;
   unit_price: number;
   total_price: number;

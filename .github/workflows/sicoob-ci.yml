@@ -20,6 +20,10 @@ on:
       - 'tests/sicoob/**'
       - 'tests/services/sicoobOrderService.test.ts'
       - 'scripts/qa/**'
+      - 'e2e/pwa-resilience.spec.ts'
+      - 'playwright.pwa.config.ts'
+      - 'public/sw.js'
+      - 'public/offline.html'
       - '.github/workflows/sicoob-ci.yml'
   pull_request:
     branches: [main]
@@ -42,7 +46,15 @@ jobs:
         with:
           fetch-depth: 0
       - name: Executar PostgreSQL isolado e casos concorrentes
-        run: python3 scripts/qa/simular-verba-atomica.py
+        run: |
+          python3 scripts/qa/simular-verba-atomica.py
+          python3 scripts/qa/simular-eventos-status-sicoob.py
+          python3 scripts/qa/simular-politica-aprovacao-sicoob.py
+          python3 scripts/qa/simular-versionamento-orcamento-atomico.py
+          python3 scripts/qa/simular-recompra-sicoob.py
+          python3 scripts/qa/simular-kit-orcamento-sicoob.py
+          python3 scripts/qa/simular-financeiro-arte-sicoob.py
+          python3 scripts/qa/simular-consolidacao-sicoob.py
 
   experiencia:
     name: Entrada e demonstração responsivas
@@ -77,6 +89,11 @@ jobs:
         run: |
           npm run qa:visual:login
           npm run qa:visual:demo
+      - name: Validar instalação e fallback offline da PWA em build de produção
+        env:
+          VITE_SUPABASE_URL: http://127.0.0.1:59999
+          VITE_SUPABASE_PUBLISHABLE_KEY: chave-sintetica-apenas-para-qa
+        run: npm run test:e2e:pwa
       - name: Publicar evidências em caso de falha
         if: failure()
         uses: actions/upload-artifact@v4
