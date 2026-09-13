@@ -12,6 +12,7 @@ MIGRATIONS = [
     ROOT / "supabase/migrations/20260912100000_quote_versioning_atomic.sql",
     ROOT / "supabase/migrations/20260912130000_quote_versioning_family_roots.sql",
     ROOT / "supabase/migrations/20260912150000_quote_versioning_cycle_lock.sql",
+    ROOT / "supabase/migrations/20260913120001_quote_versioning_atomic_followup.sql",
 ]
 FIXTURE = ROOT / "tests/scenarios/sql/quote-versionamento-atomico-fixture.sql"
 SELLER = "11111111-1111-1111-1111-111111111111"

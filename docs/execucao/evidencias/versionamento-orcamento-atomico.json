@@ -3,7 +3,8 @@
   "migracoes": [
     "supabase/migrations/20260912100000_quote_versioning_atomic.sql",
     "supabase/migrations/20260912130000_quote_versioning_family_roots.sql",
-    "supabase/migrations/20260912150000_quote_versioning_cycle_lock.sql"
+    "supabase/migrations/20260912150000_quote_versioning_cycle_lock.sql",
+    "supabase/migrations/20260913120001_quote_versioning_atomic_followup.sql"
   ],
   "producao_verificada": false,
   "cadeia_historica": "cadeia multinível normalizada para a raiz; nova versão e inserção administrativa preservam o pai canônico",

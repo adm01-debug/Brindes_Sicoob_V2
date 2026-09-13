@@ -10,6 +10,7 @@ ROOT = Path(__file__).resolve().parents[2]
 CONTAINER = "sicoob-consolidation-" + uuid.uuid4().hex[:10]
 FIXTURE = ROOT / "tests/scenarios/sql/sicoob-consolidation-fixture.sql"
 MIGRATION = ROOT / "supabase/migrations/20260912190000_sicoob_consolidation_distribution.sql"
+FOLLOWUP_MIGRATION = ROOT / "supabase/migrations/20260913120004_sicoob_consolidation_distribution_followup.sql"
 MANAGER = "11111111-1111-1111-1111-111111111111"
 SELLER = "22222222-2222-2222-2222-222222222222"
 PA_RECEIVER = "33333333-3333-3333-3333-333333333333"
@@ -79,6 +80,7 @@ try:
 
     sql(FIXTURE.read_text())
     sql(MIGRATION.read_text())
+    sql(FOLLOWUP_MIGRATION.read_text())
     sql(f"""
       INSERT INTO auth.users VALUES ('{MANAGER}'), ('{SELLER}'), ('{PA_RECEIVER}'), ('{OUTSIDER}'), ('{OTHER_SELLER}');
       INSERT INTO public.user_roles VALUES

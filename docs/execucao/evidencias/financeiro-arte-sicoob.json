@@ -3,7 +3,7 @@
   "migracao": "supabase/migrations/20260912180000_sicoob_finance_artwork.sql",
   "producao_verificada": false,
   "documentos": "nota vinculada ao pedido Sicoob; bucket privado e remoção restrita de órfão preservados",
-  "pagamentos": "ator sem papel financeiro recusado e gestor de compras reconhecido; criação em estornado e sobrescrita sem versão recusadas; soma limitada; estorno formal preservou quitação e gravou motivo, data e ator",
+  "pagamentos": "ator sem papel financeiro recusado e gestor de compras reconhecido; criação em estornado e sobrescrita sem versão recusadas; fatura, método e valores de parcela liquidada imutáveis; soma limitada; estorno formal preservou quitação e gravou motivo, data e ator",
   "arte": "chamada autenticada com identidade forjada recusada; hash e fotografia aceitos somente do verificador servidor; repetição idempotente; autoaprovação recusada; versões preservadas; produção bloqueada sem aprovação e nova arte recusada após logística",
   "resultado": "aprovado"
 }
