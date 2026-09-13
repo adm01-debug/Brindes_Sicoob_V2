@@ -54,3 +54,11 @@ __pycache__/
 # pinning reproduzível, e CI sempre faz fresh resolution via deno.json.
 deno.lock
 **/deno.lock
+
+# Saidas geradas por scripts/generate_api_map.js e scripts/api_map.cjs —
+# nao sao fonte, regenerar sob demanda.
+dependencies.json
+api_usage.json
+service_map.txt
+triage-edge-typecheck.json
+audit_report.pdf

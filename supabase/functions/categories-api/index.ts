@@ -2,6 +2,7 @@ import { createReadOnlyCatalogFetch } from "../_shared/external-read-only.ts";
 import { getCorsHeaders } from '../_shared/cors.ts';
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 import { z } from '../_shared/zod-validate.ts';
+import { runBotProtection } from '../_shared/bot-protection.ts';
 
 const CategoriesRequestSchema = z.object({
   action: z.enum(['tree', 'all', 'descendants', 'products_by_categories']),
@@ -16,6 +17,17 @@ Deno.serve(async (req) => {
   }
 
   try {
+    // Anti-scraping: bot UA check + rate limit por IP — mesma politica de
+    // external-db-inspect, ja que esta function tambem le o catalogo externo
+    // com credencial de service role.
+    const protection = await runBotProtection(req, {
+      endpoint: 'categories-api',
+      maxRequests: 60,
+      windowSeconds: 60,
+      blockSeconds: 1800,
+    }, corsHeaders);
+    if (!protection.allowed) return protection.blockResponse!;
+
     const externalUrl = Deno.env.get('EXTERNAL_SUPABASE_URL');
     const externalKey = Deno.env.get('EXTERNAL_SUPABASE_SERVICE_KEY');
 

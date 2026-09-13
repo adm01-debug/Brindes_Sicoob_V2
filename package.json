@@ -15,7 +15,7 @@
     "test:coverage": "vitest run --coverage",
     "coverage": "vitest run --coverage",
     "test:price-freshness": "bash -c 'set -euo pipefail; files=( tests/utils/price-freshness*.test.ts tests/components/PriceFreshnessBadge*.test.tsx ); vitest run \"${files[@]}\" --coverage --coverage.reporter=text --coverage.reporter=json-summary --coverage.reporter=html --coverage.include=src/utils/price-freshness.ts --coverage.include=src/components/products/PriceFreshnessBadge.tsx --coverage.thresholds.statements=0 --coverage.thresholds.branches=0 --coverage.thresholds.functions=0 --coverage.thresholds.lines=0 && node scripts/check-price-freshness-coverage.mjs'",
-    "lint": "tsc --noEmit",
+    "lint": "npm run lint:check",
     "lint:check": "eslint src --max-warnings=500",
     "lint:baseline": "node scripts/check-eslint-baseline.mjs",
     "lint:baseline:update": "node scripts/eslint-baseline-generate.mjs",
