@@ -34,7 +34,7 @@ ver doc de correções), zero regras de proteção em `main`.
 15. Corrigir nomes de scripts de lint mal nomeados. ✅ feito 2026-09-13.
 16. Transformar o baseline de typecheck em ratchet por arquivo (nunca pode piorar).
 17. Zerar os 10 arquivos com mais erros de tipo, começando por `QuoteService.ts`.
-18. Regenerar o baseline de ESLint (atual é de maio) e aplicar o mesmo ratchet.
+18. Regenerar o baseline de ESLint (atual é de maio) e aplicar o mesmo ratchet — **mais urgente do que parecia**: `eslint src` sem filtro encontra hoje 3.388 erros + 2.508 avisos, contra os 2.774 erros totais registrados no baseline de maio. A dívida cresceu nesses 4 meses, não ficou parada.
 19. Reduzir os `any` explícitos, começando por `src/App.tsx` e `src/lib/`.
 20. Trocar `console.*` pelo logger estruturado; `esbuild.drop` como rede de segurança.
 21. Auditar cada `eslint-disable`/`ts-ignore` — exigir motivo ou remover.
