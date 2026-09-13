@@ -7,6 +7,68 @@ export interface SourceItem {
   color_name: string | null;
   color_hex: string | null;
   size_code: string | null;
+  personalization_snapshot: Record<string, unknown> | unknown[] | null;
+}
+
+export interface ReorderPersonalizationRequest {
+  techniqueId: string;
+  colors?: number;
+  width?: number | null;
+  height?: number | null;
+}
+
+export interface VerifiedReorderItem {
+  source_order_item_id: string;
+  product_id: string;
+  product_sku: string | null;
+  product_name: string;
+  product_image_url: string | null;
+  quantity: number;
+  unit_price: number;
+  minimum_quantity: number;
+  source_variant_id: string | null;
+  source_variant_sku: string | null;
+  color_name: string | null;
+  color_hex: string | null;
+  size_code: string | null;
+  catalog_checked_at: string;
+}
+
+function optionalPositiveNumber(value: unknown, field: string): number | undefined {
+  if (value == null || value === '') return undefined;
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed) || parsed <= 0) throw new Error(`A ${field} da personalização histórica é inválida.`);
+  return parsed;
+}
+
+export function personalizationRequestsFromSnapshot(snapshot: SourceItem['personalization_snapshot']): ReorderPersonalizationRequest[] {
+  if (snapshot == null) return [];
+  let entries: unknown[];
+  if (Array.isArray(snapshot)) entries = snapshot;
+  else if (typeof snapshot === 'object' && Array.isArray(snapshot.personalizations)) entries = snapshot.personalizations;
+  else if (typeof snapshot === 'object' && Object.keys(snapshot).length === 0) return [];
+  else entries = [snapshot];
+
+  return entries.map((entry) => {
+    if (!entry || typeof entry !== 'object' || Array.isArray(entry)) {
+      throw new Error('A personalização histórica está incompleta e precisa ser revisada.');
+    }
+    const raw = entry as Record<string, unknown>;
+    const techniqueId = raw.techniqueId ?? raw.technique_id ?? raw.area_id;
+    if (typeof techniqueId !== 'string' || !techniqueId.trim()) {
+      throw new Error('A técnica da personalização histórica precisa ser revisada.');
+    }
+    const colorsValue = optionalPositiveNumber(raw.colors ?? raw.colors_count ?? raw.num_cores, 'quantidade de cores');
+    if (colorsValue !== undefined && !Number.isInteger(colorsValue)) {
+      throw new Error('A quantidade de cores da personalização histórica é inválida.');
+    }
+    return {
+      techniqueId: techniqueId.trim(),
+      colors: colorsValue,
+      width: optionalPositiveNumber(raw.width ?? raw.width_cm ?? raw.largura_cm, 'largura'),
+      height: optionalPositiveNumber(raw.height ?? raw.height_cm ?? raw.altura_cm, 'altura'),
+    };
+  });
 }
 
 export interface CatalogProduct {
@@ -52,7 +114,7 @@ export function buildVerifiedReorderItems(
   products: CatalogProduct[],
   variants: CatalogVariant[],
   checkedAt: string,
-) {
+): VerifiedReorderItem[] {
   const productsById = new Map(products.map((product) => [product.id, product]));
   const variantsById = new Map(variants.map((variant) => [variant.id, variant]));
 

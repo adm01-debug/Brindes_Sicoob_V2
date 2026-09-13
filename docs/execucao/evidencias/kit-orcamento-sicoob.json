@@ -3,7 +3,7 @@
   "migracao": "supabase/migrations/20260912200000_sicoob_kit_quote_atomic.sql",
   "producao_verificada": false,
   "atomicidade_e_total": "cabeçalho, dois itens e personalização persistidos juntos; total servidor de R$ 201,00",
-  "idempotencia": "nova consulta com timestamp diferente devolveu o mesmo orçamento",
+  "idempotencia": "retry após resposta perdida devolveu o mesmo orçamento, mesmo após mudança de timestamp, nome e preço do catálogo",
   "quantidade_minima": "duas linhas abaixo do MOQ individual foram aceitas porque a soma do produto atingiu o mínimo",
   "guardas": "RPC privada; perfil inativo, catálogo vencido, conteúdo divergente e personalização incompatível recusados",
   "rollback": "falha forçada no item não deixou cabeçalho nem idempotência órfãos",

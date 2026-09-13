@@ -23,7 +23,8 @@ CREATE TABLE public.postos_atendimento (
   codigo text NOT NULL,
   endereco text,
   cidade text,
-  uf text
+  uf text,
+  is_active boolean NOT NULL DEFAULT true
 );
 CREATE TABLE public.order_consolidations (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -52,4 +53,3 @@ CREATE TABLE public.sicoob_order_items (
 );
 
 ALTER TABLE public.order_consolidations ENABLE ROW LEVEL SECURITY;
-

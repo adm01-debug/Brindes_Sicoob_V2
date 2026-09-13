@@ -4,6 +4,7 @@ import json
 import subprocess
 import time
 import uuid
+import hashlib
 from postgres_ready import wait_for_postgres
 
 CONTAINER = "sicoob-kit-orcamento-" + uuid.uuid4().hex[:10]
@@ -84,7 +85,11 @@ def personalizations_payload(*, checked=None, quantity=6):
     }]
 
 
-def call_rpc(actor, key, items, personalizations, *, check=True):
+def request_hash(suffix="original"):
+    return hashlib.sha256(f"intencao-estavel:{suffix}".encode()).hexdigest()
+
+
+def call_rpc(actor, key, items, personalizations, *, hash_value=None, check=True):
     kit = json.dumps(kit_payload(), ensure_ascii=False)
     items_json = json.dumps(items, ensure_ascii=False)
     pers_json = json.dumps(personalizations, ensure_ascii=False)
@@ -94,7 +99,8 @@ def call_rpc(actor, key, items, personalizations, *, check=True):
         $items${items_json}$items$::jsonb,
         $pers${pers_json}$pers$::jsonb,
         '{key}',
-        '{actor}'
+        '{actor}',
+        '{hash_value or request_hash()}'
       );
     """, check=check)
 
@@ -124,11 +130,13 @@ try:
     """)
 
     privileges = scalar(sql("""
-      SELECT has_function_privilege('authenticated', 'public.create_sicoob_kit_quote(jsonb,jsonb,jsonb,text,uuid)', 'EXECUTE')::text
-        || '|' || has_function_privilege('anon', 'public.create_sicoob_kit_quote(jsonb,jsonb,jsonb,text,uuid)', 'EXECUTE')::text
-        || '|' || has_function_privilege('service_role', 'public.create_sicoob_kit_quote(jsonb,jsonb,jsonb,text,uuid)', 'EXECUTE')::text;
+      SELECT has_function_privilege('authenticated', 'public.create_sicoob_kit_quote(jsonb,jsonb,jsonb,text,uuid,text)', 'EXECUTE')::text
+        || '|' || has_function_privilege('anon', 'public.create_sicoob_kit_quote(jsonb,jsonb,jsonb,text,uuid,text)', 'EXECUTE')::text
+        || '|' || has_function_privilege('service_role', 'public.create_sicoob_kit_quote(jsonb,jsonb,jsonb,text,uuid,text)', 'EXECUTE')::text
+        || '|' || has_function_privilege('authenticated', 'public.get_sicoob_kit_quote_idempotency(uuid,text,text)', 'EXECUTE')::text
+        || '|' || has_function_privilege('service_role', 'public.get_sicoob_kit_quote_idempotency(uuid,text,text)', 'EXECUTE')::text;
     """))
-    assert privileges == "false|false|true", privileges
+    assert privileges == "false|false|true|false|true", privileges
 
     first = json.loads(scalar(call_rpc(
         ACTOR,
@@ -139,7 +147,7 @@ try:
     retried = json.loads(scalar(call_rpc(
         ACTOR,
         "kit-orcamento-0001",
-        items_payload(checked=checked_at("now() + interval '1 second'")),
+        items_payload(price=25, name="Caneca atualizada", checked=checked_at("now() + interval '1 second'")),
         personalizations_payload(checked=checked_at("now() + interval '1 second'")),
     )))
     assert first["quote_id"] == retried["quote_id"]
@@ -158,7 +166,13 @@ try:
     """))
     assert persisted == f"201.00|{ORG}|{PA}|{COOPERATIVE}|2|1|true", persisted
     result["atomicidade_e_total"] = "cabeçalho, dois itens e personalização persistidos juntos; total servidor de R$ 201,00"
-    result["idempotencia"] = "nova consulta com timestamp diferente devolveu o mesmo orçamento"
+    lookup = json.loads(scalar(sql(f"""
+      SELECT public.get_sicoob_kit_quote_idempotency(
+        '{ACTOR}', 'kit-orcamento-0001', '{request_hash()}'
+      );
+    """)))
+    assert lookup["quote_id"] == first["quote_id"]
+    result["idempotencia"] = "retry após resposta perdida devolveu o mesmo orçamento, mesmo após mudança de timestamp, nome e preço do catálogo"
 
     split_minimum = items_payload()
     split_minimum[1]["quantity"] = 3
@@ -177,6 +191,7 @@ try:
         "kit-orcamento-0001",
         items_payload(price=25),
         personalizations_payload(),
+        hash_value=request_hash("conteudo-alterado"),
         check=False,
     )
     assert changed.returncode != 0 and "conteúdo diferente" in changed.stderr

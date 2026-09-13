@@ -3,10 +3,24 @@ export const MAX_ARTWORK_BYTES = 20 * 1024 * 1024;
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const ARTWORK_PATH = /^[0-9a-f-]{36}\/artwork\/[a-zA-Z0-9][a-zA-Z0-9._-]*\.(pdf|png|jpe?g|webp)$/i;
+const CONTENT_TYPE_BY_EXTENSION: Record<string, readonly string[]> = {
+  pdf: ['application/pdf'],
+  png: ['image/png'],
+  jpg: ['image/jpeg'],
+  jpeg: ['image/jpeg'],
+  webp: ['image/webp'],
+};
 
 export function assertArtworkPath(orderId: string, filePath: string): void {
   if (!UUID.test(orderId) || !ARTWORK_PATH.test(filePath) || !filePath.startsWith(`${orderId}/artwork/`)) {
     throw new Error('O arquivo de arte não pertence ao pedido informado.');
+  }
+}
+
+export function assertArtworkContentType(filePath: string, contentType: string): void {
+  const extension = filePath.split('.').pop()?.toLowerCase() || '';
+  if (!CONTENT_TYPE_BY_EXTENSION[extension]?.includes(contentType.toLowerCase())) {
+    throw new Error('O conteúdo do arquivo não corresponde a um formato de arte permitido.');
   }
 }
 

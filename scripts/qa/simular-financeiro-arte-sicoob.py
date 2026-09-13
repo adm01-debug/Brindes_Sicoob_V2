@@ -185,6 +185,20 @@ try:
       );
     """, check=False)
     assert paid_rewrite.returncode != 0 and "Parcela liquidada" in paid_rewrite.stderr
+    paid_invoice_rewrite = actor_sql(APPROVER, f"""
+      SELECT public.record_sicoob_order_payment(
+        '{ORDER}', 1, 125.50, CURRENT_DATE, 'paid', NULL, 'boleto', 'ERP-0001',
+        (SELECT updated_at FROM public.sicoob_order_payments WHERE id='{payment_id}')
+      );
+    """, check=False)
+    assert paid_invoice_rewrite.returncode != 0 and "Parcela liquidada" in paid_invoice_rewrite.stderr
+    paid_method_rewrite = actor_sql(APPROVER, f"""
+      SELECT public.record_sicoob_order_payment(
+        '{ORDER}', 1, 125.50, CURRENT_DATE, 'paid', '{invoice_id}', 'pix', 'ERP-0001',
+        (SELECT updated_at FROM public.sicoob_order_payments WHERE id='{payment_id}')
+      );
+    """, check=False)
+    assert paid_method_rewrite.returncode != 0 and "Parcela liquidada" in paid_method_rewrite.stderr
     over_total = actor_sql(APPROVER, f"""
       SELECT public.record_sicoob_order_payment(
         '{ORDER}', 2, 1, CURRENT_DATE, 'pending', NULL, NULL, 'ERP-0002', NULL
@@ -211,7 +225,7 @@ try:
       );
     """, check=False)
     assert repeated_refund.returncode != 0 and "Somente uma parcela paga" in repeated_refund.stderr
-    result["pagamentos"] = "ator sem papel financeiro recusado e gestor de compras reconhecido; criação em estornado e sobrescrita sem versão recusadas; soma limitada; estorno formal preservou quitação e gravou motivo, data e ator"
+    result["pagamentos"] = "ator sem papel financeiro recusado e gestor de compras reconhecido; criação em estornado e sobrescrita sem versão recusadas; fatura, método e valores de parcela liquidada imutáveis; soma limitada; estorno formal preservou quitação e gravou motivo, data e ator"
 
     artwork_path1 = f"{ORDER}/artwork/v1.pdf"
     forged_artwork = actor_sql(CREATOR, f"""

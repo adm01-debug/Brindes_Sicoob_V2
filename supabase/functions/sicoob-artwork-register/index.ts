@@ -3,6 +3,7 @@ import { getCorsHeaders, handleCorsPreflightIfNeeded } from '../_shared/cors.ts'
 import {
   ARTWORK_BUCKET,
   MAX_ARTWORK_BYTES,
+  assertArtworkContentType,
   assertArtworkPath,
   buildArtworkIdentity,
   sha256Hex,
@@ -56,6 +57,7 @@ Deno.serve(async (req) => {
     if (file.size <= 0 || file.size > MAX_ARTWORK_BYTES) {
       return json(req, { error: 'O arquivo de arte está vazio ou excede 20 MB.' }, 413);
     }
+    assertArtworkContentType(body.filePath, file.type);
 
     const hash = await sha256Hex(await file.arrayBuffer());
     const identity = buildArtworkIdentity({

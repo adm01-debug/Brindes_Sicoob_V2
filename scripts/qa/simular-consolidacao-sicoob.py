@@ -91,8 +91,8 @@ try:
         ('{OUTSIDER}', '{OUTSIDER}', true, NULL, '{OTHER_COOP}', NULL),
         ('{OTHER_SELLER}', '{OTHER_SELLER}', true, NULL, '{OTHER_COOP}', NULL);
       INSERT INTO public.postos_atendimento VALUES
-        ('{PA1}', '{COOP}', 'PA Centro', '001', 'Rua Um', 'Goiânia', 'GO'),
-        ('{PA2}', '{COOP}', 'PA Norte', '002', 'Rua Dois', 'Goiânia', 'GO');
+        ('{PA1}', '{COOP}', 'PA Centro', '001', 'Rua Um', 'Goiânia', 'GO', true),
+        ('{PA2}', '{COOP}', 'PA Norte', '002', 'Rua Dois', 'Goiânia', 'GO', true);
       INSERT INTO public.sicoob_orders (id, cooperative_id, pa_id, total_amount, status) VALUES
         ('{ORDER1}', '{COOP}', '{PA1}', 100, 'confirmed'),
         ('{ORDER2}', '{COOP}', '{PA2}', 50, 'confirmed'),
@@ -151,6 +151,16 @@ try:
     assert scalar(sql("SELECT count(*) FROM public.order_consolidations;")) == "1"
     result["criacao"] = "vendedor de outra Singular recusado; dois pedidos vinculados atomicamente; repetição idempotente limitada ao mesmo ator e conteúdo; lote inválido sem órfãos"
 
+    sql(f"UPDATE public.postos_atendimento SET is_active=false WHERE id='{PA2}';")
+    invalid_destination = actor_sql(
+        MANAGER,
+        f"SELECT public.allocate_sicoob_consolidation_by_order_pa('{consolidation}');",
+        check=False,
+    )
+    assert invalid_destination.returncode != 0 and "ativos e com endereço completo" in invalid_destination.stderr
+    assert scalar(sql(f"SELECT count(*) FROM public.sicoob_delivery_destinations WHERE consolidation_id='{consolidation}';")) == "2"
+    sql(f"UPDATE public.postos_atendimento SET is_active=true WHERE id='{PA2}';")
+
     allocated = scalar(actor_sql(MANAGER, f"SELECT public.allocate_sicoob_consolidation_by_order_pa('{consolidation}');"))
     assert allocated == "2", allocated
     destinations = scalar(sql(f"""
@@ -160,6 +170,16 @@ try:
       WHERE d.consolidation_id='{consolidation}';
     """))
     assert destinations == "2|15", destinations
+    sql(f"UPDATE public.postos_atendimento SET endereco=' ' WHERE id='{PA2}';")
+    invalid_dispatch = actor_sql(
+        MANAGER,
+        f"SELECT public.dispatch_sicoob_order_consolidation('{consolidation}');",
+        check=False,
+    )
+    assert invalid_dispatch.returncode != 0 and "permanecer ativos" in invalid_dispatch.stderr
+    assert scalar(sql(f"SELECT status FROM public.order_consolidations WHERE id='{consolidation}';")) == "pending_seller"
+    assert scalar(sql(f"SELECT string_agg(status, ',' ORDER BY id) FROM public.sicoob_orders WHERE consolidation_id='{consolidation}';")) == "confirmed,confirmed"
+    sql(f"UPDATE public.postos_atendimento SET endereco='Rua Dois' WHERE id='{PA2}';")
     actor_sql(MANAGER, f"SELECT public.dispatch_sicoob_order_consolidation('{consolidation}');")
     assert scalar(sql(f"SELECT string_agg(status, ',' ORDER BY id) FROM public.sicoob_orders WHERE consolidation_id='{consolidation}';")) == "logistic,logistic"
     receiver_scope = scalar(rls_actor_sql(PA_RECEIVER, f"""
@@ -170,7 +190,7 @@ try:
     assert receiver_scope == "1|1|1", receiver_scope
     direct_change = sql(f"UPDATE public.order_consolidations SET total_value=1 WHERE id='{consolidation}';", check=False)
     assert direct_change.returncode != 0 and "fluxo transacional" in direct_change.stderr
-    result["distribuicao"] = "itens distribuídos integralmente por PA; despacho moveu lote e pedidos para logística; PA enxergou somente seu destino; escrita direta bloqueada"
+    result["distribuicao"] = "PA inativo e endereço incompleto recusados sem mutação parcial; itens distribuídos integralmente; despacho moveu lote e pedidos para logística; PA enxergou somente seu destino; escrita direta bloqueada"
 
     allocation1 = scalar(sql(f"""
       SELECT a.id FROM public.sicoob_delivery_allocations a
