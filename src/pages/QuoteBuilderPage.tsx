@@ -118,8 +118,8 @@ export default function QuoteBuilderPage() {
                   items: s.getTemplateItems(),
                   discount_percent: s.discountType === "percent" ? s.discountValue : 0,
                   notes: s.notes,
-                  payment_terms: s.payment_terms,
-                  delivery_time: s.delivery_time
+                  payment_terms: s.paymentTerms,
+                  delivery_time: s.deliveryTime
                 }}
               />
             )}
@@ -259,8 +259,9 @@ export default function QuoteBuilderPage() {
                       <p className="text-xs mt-1">Pesquise e adicione produtos ao orçamento</p>
                     </div>
                   ) : s.activeItemIndex !== null && s.items[s.activeItemIndex] ? (() => {
-                    const item = s.items[s.activeItemIndex];
                     const idx = s.activeItemIndex;
+                    const item = idx !== null ? s.items[idx] : undefined;
+                    if (idx === null || !item) return null;
                     return (
                       <div className="space-y-3">
                         <DraggableQuoteItems

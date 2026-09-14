@@ -85,6 +85,59 @@ arquivo no repo — os 4 consumidores diretos (`useProducts.ts`,
 sem exercitar esta lógica interna — mesmo gap já registrado para
 `QuoteService.ts`. Baseline total: 1145 → 1129.
 
+**`src/pages/QuoteBuilderPage.tsx` + `src/hooks/useQuoteBuilderState.ts`: 12 → 0
+erros.** Ao contrário dos arquivos anteriores, aqui a maioria dos 12 erros não
+era coerção de tipo — era o hook `useQuoteBuilderState` simplesmente não
+expor (ou expor errado) propriedades que a página já consumia. Achados reais:
+
+- `s.handleProductClick` apontava pra `search.setProductSearchOpen`
+  (`Dispatch<SetStateAction<boolean>>`) mas era usado como
+  `onProductClick: (p: Product) => void` em `QuoteProductSelector` — clicar
+  num produto na busca chamaria `setProductSearchOpen(product)`, passando um
+  objeto onde se esperava `boolean`. Corrigido pra apontar pra
+  `setSelectedProductForColor` (que já existia no hook e é exatamente o setter
+  que abre o seletor de cor/variante do produto clicado).
+- `SaveAsTemplateButton` recebia `payment_terms: s.payment_terms` e
+  `delivery_time: s.delivery_time` — essas chaves não existem no hook, que
+  expõe `paymentTerms`/`deliveryTime` (camelCase). Corrigido pra usar os nomes
+  certos; antes disso, "Salvar como template" sempre gravava `undefined`
+  nesses dois campos.
+- `s.defaultTemplate` não existia — só `s.templates` (array). Adicionado
+  `defaultTemplate = templates.find(t => t.is_default)` no hook.
+- Acesso a `s.items[s.activeItemIndex]` dentro de uma IIFE reindexava o array
+  sem guarda (`noUncheckedIndexedAccess`), apesar do ternário externo já ter
+  checado a existência — a checagem não atravessa o limite da função. Corrigido
+  com guarda local (`if (idx === null || !item) return null;`) antes de usar
+  `item`.
+- `s.confirmAllStalePrices` e `s.hasUnsavedData` não existiam no hook, embora
+  a página e `useUnsavedChangesGuard`/`QuoteBuilderSummaryColumn` já
+  estivessem com toda a UI construída à espera deles — funcionalidades reais,
+  nunca ligadas, não dívida de tipo:
+  - `confirmAllStalePrices`: existe um teste já escrito
+    (`tests/components/QuoteBuilderSummaryColumn.confirmAll.test.tsx`) cujo
+    comentário diz explicitamente "espelha a lógica real do hook" e usa o
+    critério "aging OU stale" (`days >= threshold * 0.5`). Implementado usando
+    `getPriceFreshness(...).shouldWarn` (campo que já existe em
+    `price-freshness.ts` com exatamente essa semântica) em vez de `.isStale`
+    (que só cobre o caso mais severo) — sem essa correção o botão "Confirmar
+    todos" já teria a assinatura de tipo certa mas o comportamento errado.
+  - `hasUnsavedData`: o guard de "sair sem salvar" (`useUnsavedChangesGuard` +
+    `UnsavedChangesDialog`) estava todo importado e renderizado na página, mas
+    recebia `undefined` (`hasUnsavedChanges` nunca dispararia) — o aviso de
+    perda de dados nunca funcionou. Implementado via snapshot: captura o
+    estado do formulário só depois que `loadingQuote` vira `false` (pra não
+    contar os dados recém-carregados de um orçamento existente como "não
+    salvos") e compara contra o estado atual a cada render.
+
+Sem teste dedicado a `useQuoteBuilderState.ts` (hook grande, muitas
+dependências externas — auth, RBAC, Supabase, router — e único consumidor é a
+própria página); os testes de `QuoteBuilderSummaryColumn` (15 testes, já
+existentes) foram usados como validação do contrato de `confirmAllStalePrices`
+e passaram sem alteração. `useQuoteBuilderState.ts` já tinha 6 erros
+pré-existentes (não relacionados, em `applyTemplate`/`getTemplateItems` vs.
+`QuoteTemplateItem`) — confirmados inalterados antes/depois desta correção,
+fora do escopo desta etapa. Baseline total: 1129 → 1117.
+
 ## Achado fora da etapa 17: busca usando dado de negócio hardcoded (não mock de teste)
 
 Verificando a etapa 42 (mockData não deve ir pro bundle de produção), achei algo

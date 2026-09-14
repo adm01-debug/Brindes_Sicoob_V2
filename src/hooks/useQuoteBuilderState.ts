@@ -4,7 +4,7 @@
  * Extrai toda a lógica de estado, cálculos e ações do QuoteBuilderPage.
  */
 
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useRef, useEffect } from "react";
 import { useNavigate, useParams, useSearchParams, useLocation } from "react-router-dom";
 import { useSellerDiscountLimits } from "@/hooks/useSellerDiscountLimits";
 import { useDiscountApproval } from "@/hooks/useDiscountApproval";
@@ -120,6 +120,42 @@ export function useQuoteBuilderState() {
     // Agentes só editam rascunhos ou pendentes (não enviados/aprovados)
     return ["draft", "pending"].includes(currentStatus);
   }, [isEditMode, isSupervisorOrAbove, currentStatus]);
+
+  const defaultTemplate = useMemo(() => templates.find(t => t.is_default), [templates]);
+
+  // Guarda de "alterações não salvas" (useUnsavedChangesGuard): compara o
+  // formulário atual contra um snapshot capturado só depois que o carregamento
+  // inicial termina (loadingQuote vira false) — assim, num orçamento existente,
+  // os dados que acabaram de ser carregados não contam como "não salvos".
+  // formSnapshotRef guarda os valores mais recentes a cada render (sem disparar
+  // efeito) só para o efeito abaixo poder ler o estado "no instante em que
+  // loadingQuote virou false" sem precisar listá-los como dependências.
+  const formSnapshotRef = useRef({
+    clientId, contactId, items, notes, internalNotes, tags, validUntil,
+    paymentTerms, deliveryTime, deliveryMode, deliveryDate, shippingType, shippingCost,
+    discountType, discountValue, negotiationMarkup,
+  });
+  formSnapshotRef.current = {
+    clientId, contactId, items, notes, internalNotes, tags, validUntil,
+    paymentTerms, deliveryTime, deliveryMode, deliveryDate, shippingType, shippingCost,
+    discountType, discountValue, negotiationMarkup,
+  };
+  const initialSnapshotRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (!loadingQuote && initialSnapshotRef.current === null) {
+      initialSnapshotRef.current = JSON.stringify(formSnapshotRef.current);
+    }
+  }, [loadingQuote]);
+
+  const hasUnsavedData = useMemo(() => {
+    if (initialSnapshotRef.current === null) return false;
+    const current = JSON.stringify({
+      clientId, contactId, items, notes, internalNotes, tags, validUntil,
+      paymentTerms, deliveryTime, deliveryMode, deliveryDate, shippingType, shippingCost,
+      discountType, discountValue, negotiationMarkup,
+    });
+    return current !== initialSnapshotRef.current;
+  }, [clientId, contactId, items, notes, internalNotes, tags, validUntil, paymentTerms, deliveryTime, deliveryMode, deliveryDate, shippingType, shippingCost, discountType, discountValue, negotiationMarkup]);
 
   // ── Actions ──
   const toggleExpanded = useCallback((index: number) => {
@@ -325,7 +361,7 @@ export function useQuoteBuilderState() {
   }, [isDraftValid, isFormValid, validationErrors, clientId, contactInfo, companyInfo, discountType, discountValue, totals, notes, internalNotes, validUntil, paymentTerms, deliveryTime, shippingType, shippingCost, isEditMode, quoteId, items, navigate, updateQuote, createQuote, maxDiscountPercent, requestApproval, isGerentePa, userRoles]);
 
   return {
-    navigate, quoteId, isEditMode, loadingQuote, user,
+    navigate, quoteId, isEditMode, loadingQuote, hasUnsavedData, user,
     clientId, setClientId, contactId, setContactId,
     companyInfo, setCompanyInfo, contactInfo, setContactInfo,
     validityDays, setValidityDays, validUntil, setValidUntil,
@@ -342,17 +378,25 @@ export function useQuoteBuilderState() {
     expandedItems, setExpandedItems, activeItemIndex, setActiveItemIndex,
     completedSteps, ...totals,
     validationErrors, isFormValid, isDraftValid,
-    quotesLoading, templates, 
+    quotesLoading, templates, defaultTemplate,
     maxDiscountPercent, isDiscountExceeded,
     formatCurrency, calculateItemPersonalizationTotal, calculateItemTotal,
     toggleExpanded, handlePersonalizationsChange,
-    handleProductClick: search.setProductSearchOpen,
+    handleProductClick: setSelectedProductForColor,
     addProductWithColor, updateItemQuantity, updateItemPrice, removeItem,
     groupItemsIntoKit, ungroupItems, selectedItemIndexes, toggleItemSelection,
     setSelectedItemIndexes,
     confirmItemPrice: (index: number) => {
       const ts = new Date().toISOString();
       setItems(prev => prev.map((item, idx) => idx === index ? { ...item, price_confirmed_at: ts } : item));
+    },
+    confirmAllStalePrices: () => {
+      const ts = new Date().toISOString();
+      setItems(prev => prev.map(item => {
+        if (item.price_confirmed_at) return item;
+        const freshness = getPriceFreshness(item.price_updated_at, item.price_freshness_threshold_days);
+        return freshness.shouldWarn ? { ...item, price_confirmed_at: ts } : item;
+      }));
     },
     applyTemplate, handleSaveQuote, canEdit, getTemplateItems: () => items.map(i => ({
       productId: i.product_id,

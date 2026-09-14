@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-09-14T13:20:36.665Z",
-  "total": 1129,
+  "generatedAt": "2026-09-14T13:35:05.653Z",
+  "total": 1117,
   "files": {
     "src/components/admin/categories/CategoriesManager.tsx": 6,
     "src/components/admin/common/AdminDataTable.tsx": 2,
@@ -403,7 +403,6 @@
     "src/pages/quote-view/QuoteActionHandlers.ts": 5,
     "src/pages/quote-view/QuoteBitrixSync.ts": 6,
     "src/pages/quote-view/useQuoteViewData.ts": 3,
-    "src/pages/QuoteBuilderPage.tsx": 12,
     "src/pages/QuoteDetailPage.tsx": 1,
     "src/pages/quotes-dashboard/useQuotesDashboard.ts": 6,
     "src/pages/QuotesKanbanPage.tsx": 2,
