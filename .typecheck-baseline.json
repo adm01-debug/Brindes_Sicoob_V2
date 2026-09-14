@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-09-14T11:51:48.513Z",
-  "total": 1145,
+  "generatedAt": "2026-09-14T13:20:36.665Z",
+  "total": 1129,
   "files": {
     "src/components/admin/categories/CategoriesManager.tsx": 6,
     "src/components/admin/common/AdminDataTable.tsx": 2,
@@ -346,7 +346,6 @@
     "src/lib/external-db/batch-import.ts": 2,
     "src/lib/external-db/bridge.ts": 1,
     "src/lib/external-db/price-tables.ts": 1,
-    "src/lib/external-db/products-detail.ts": 16,
     "src/lib/forecast.ts": 5,
     "src/lib/kit-og-image.ts": 3,
     "src/lib/pdf/whitelabel-comparison.ts": 2,

@@ -50,7 +50,7 @@ export async function fetchPromobrindProductById(
 ): Promise<PromobrindProduct | null> {
   const result = await fetchProductWithRetry(productId);
 
-  const product = result.records[0] || null;
+  const product = result.records?.[0] || null;
   if (!product) return null;
 
   if (!product.description && product.meta_description) {
@@ -93,7 +93,7 @@ export async function fetchPromobrindProductById(
     select: 'url_cdn, url_original, filename, image_type, is_primary, is_og_image, applies_to_color, display_order, alt_text, title_text, supplier_code',
     filters: { product_id: productId, is_active: true },
     orderBy: { column: 'display_order', ascending: true }, limit: IMAGES_PAGE,
-  }).then(r => r.records).catch(err => {
+  }).then(r => r.records ?? []).catch(err => {
     logger.warn(`[product:${productId}] Não foi possível buscar imagens:`, err);
     return [] as ProductImage[];
   });
@@ -199,7 +199,7 @@ export async function fetchPromobrindProductById(
     table: 'product_variants', operation: 'select',
     select: 'id, color_name, color_hex, color_code, sku, stock_quantity',
     filters: { product_id: productId, is_active: true }, limit: 60,
-  }).then(r => r.records).catch(err => {
+  }).then(r => r.records ?? []).catch(err => {
     logger.warn(`[product:${productId}] Não foi possível buscar variantes:`, err);
     return [] as Variant[];
   });
@@ -215,7 +215,7 @@ export async function fetchPromobrindProductById(
     select: 'id, url_stream, url_hls, url_thumbnail, url_original, source_youtube_id, video_type, display_order, is_primary, title, cloudflare_status',
     filters: { product_id: productId, is_active: true },
     orderBy: { column: 'display_order', ascending: true }, limit: 20,
-  }).then(r => r.records).catch(err => {
+  }).then(r => r.records ?? []).catch(err => {
     logger.warn(`[product:${productId}] Não foi possível buscar vídeos:`, err);
     return [] as Video[];
   });
@@ -237,7 +237,7 @@ export async function fetchPromobrindProductById(
         select: 'id, component_name, component_code, component_product_id, component_sku, quantity, display_order, is_optional, is_packaging, is_replaceable, allows_personalization, material, primary_image_url, height_mm, width_mm, length_mm, weight_g, notes',
         filters: { kit_product_id: productId },
         orderBy: { column: 'display_order', ascending: true }, limit: 50,
-      }).then(r => r.records).catch(err => {
+      }).then(r => r.records ?? []).catch(err => {
         logger.warn(`[product:${productId}] Não foi possível buscar componentes do kit:`, err);
         return [] as KitComponent[];
       })
@@ -262,7 +262,8 @@ export async function fetchPromobrindProductById(
         orderBy: { column: 'display_order', ascending: true },
         limit: IMAGES_PAGE, offset: IMAGES_PAGE,
       });
-      if (more.records.length > 0) imagesAll = [...allProductImages, ...more.records];
+      const moreRecords = more.records ?? [];
+      if (moreRecords.length > 0) imagesAll = [...allProductImages, ...moreRecords];
     } catch (err) {
       logger.warn(`[product:${productId}] Falha paginando imagens (página 2):`, err);
     }
@@ -339,7 +340,7 @@ export async function fetchPromobrindProductById(
           filters: { id: inFilter },
           limit: Math.max(fallbackVariantIds.length, 10),
         });
-        const byId = new Map(fb.records.map(r => [r.id, r]));
+        const byId = new Map((fb.records ?? []).map(r => [r.id, r]));
         for (const c of uniqueColors) {
           if (!c._needsFallback || !c._variantId) continue;
           const r = byId.get(c._variantId);
@@ -393,7 +394,7 @@ export async function fetchPromobrindProductBySku(sku: string): Promise<Promobri
       filters: { sku }, select: PRODUCT_SELECT_FIELDS_LEGACY, limit: 1,
     });
   }
-  return result.records[0] || null;
+  return result.records?.[0] || null;
 }
 
 export async function fetchPromobrindCategories(): Promise<{ id: string; name: string }[]> {
@@ -403,17 +404,17 @@ export async function fetchPromobrindCategories(): Promise<{ id: string; name: s
       limit: 500, orderBy: { column: 'name', ascending: true }, countMode: 'none',
     });
     // Popula cache de imutáveis: economiza chamadas posteriores em telas de detalhe.
-    for (const c of result.records) {
+    for (const c of result.records ?? []) {
       if (c?.id && c?.name) putInCacheSafe('categories', { id: c.id, name: c.name });
     }
-    return result.records;
+    return result.records ?? [];
   } catch {
     const result = await invokeExternalDb<{ category_id: string; main_category_id: string }>({
       table: 'products', operation: 'select',
       filters: { active: true }, select: 'category_id, main_category_id', limit: 1000,
     });
     const uniqueIds = new Set<string>();
-    result.records.forEach(p => {
+    (result.records ?? []).forEach(p => {
       if (p.category_id) uniqueIds.add(p.category_id);
       if (p.main_category_id) uniqueIds.add(p.main_category_id);
     });
@@ -429,7 +430,7 @@ export async function fetchPromobrindColors(): Promise<{ name: string; hex: stri
       filters: { is_active: true }, limit: 5000,
     });
     const uniqueColors = new Map<string, { name: string; hex: string; group?: string }>();
-    result.records.forEach(variant => {
+    (result.records ?? []).forEach(variant => {
       if (variant.color_name && !uniqueColors.has(variant.color_name)) {
         uniqueColors.set(variant.color_name, { name: variant.color_name, hex: variant.color_hex || '#CCCCCC' });
       }

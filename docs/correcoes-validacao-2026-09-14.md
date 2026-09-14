@@ -66,6 +66,25 @@ graça os 13 erros de `useGroupPersonalization.ts` (zerado) sem editar esse
 arquivo — puro efeito colateral de consertar a raiz compartilhada. Mudança
 é só em nível de tipo, zero impacto em runtime.
 
+**`src/lib/external-db/products-detail.ts`: 16 → 0 erros.** Mesma causa raiz
+espalhada pelo arquivo inteiro: `InvokeResult<T>.records` é `T[] | undefined`
+por contrato (`invoke.ts`), mas ~10 pontos tratavam como sempre presente
+(`result.records[0]`, `.then(r => r.records)`, `result.records.forEach(...)`,
+etc.) — inclusive nos 4 fetches paralelos (`imagesPromise`, `variantsPromise`,
+`videosPromise`, `kitPromise`) cujo `.catch` já tinha fallback `[]`; só o
+caminho de sucesso (`.then`) não coeria. Corrigido com `?? []` em cada ponto
+de consumo (mesmo padrão já usado no `.catch` de cada promise e no
+`return data ?? [];` de `useGroupPersonalization.ts`) e `?.[0]` nos dois
+lookups de registro único (`fetchPromobrindProductById`,
+`fetchPromobrindProductBySku`). Zero mudança de comportamento: todo `?? []`
+substitui um `undefined` que já seria tratado como lista vazia downstream
+(`.length`, `.forEach`, `.map`). Nenhum teste unitário dedicado a este
+arquivo no repo — os 4 consumidores diretos (`useProducts.ts`,
+`useCategories.ts`, `ProductPersonalizationRules.tsx`,
+`AdminProductFormPage.tsx`) mockam a função inteira em seus próprios testes,
+sem exercitar esta lógica interna — mesmo gap já registrado para
+`QuoteService.ts`. Baseline total: 1145 → 1129.
+
 ## Achado fora da etapa 17: busca usando dado de negócio hardcoded (não mock de teste)
 
 Verificando a etapa 42 (mockData não deve ir pro bundle de produção), achei algo
