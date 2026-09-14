@@ -12,6 +12,7 @@ MIGRATIONS = [
     ROOT / "supabase/migrations/20260912100000_quote_versioning_atomic.sql",
     ROOT / "supabase/migrations/20260912130000_quote_versioning_family_roots.sql",
     ROOT / "supabase/migrations/20260912150000_quote_versioning_cycle_lock.sql",
+    ROOT / "supabase/migrations/20260913120001_quote_versioning_atomic_followup.sql",
 ]
 FIXTURE = ROOT / "tests/scenarios/sql/quote-versionamento-atomico-fixture.sql"
 SELLER = "11111111-1111-1111-1111-111111111111"
@@ -184,10 +185,11 @@ try:
       WITH inserted_item AS (
         INSERT INTO public.quote_items (
           quote_id, product_id, product_name, product_sku, quantity, unit_price,
-          unit_cost, subtotal, color_name, color_hex, sort_order, display_order, price_confirmed_at
+          unit_cost, subtotal, color_name, color_hex, sort_order, display_order, price_confirmed_at,
+          source_variant_id, source_variant_sku, catalog_checked_at
         ) VALUES (
           '{SOURCE_A}', 'produto-1', 'Mochila Sicoob', 'MOCH-1', 12, 90, 40, 1146,
-          'Verde', '#009C3B', 3, 3, now()
+          'Verde', '#009C3B', 3, 3, now(), 'variante-verde', 'MOCH-1-VD', now()
         ) RETURNING id
       )
       INSERT INTO public.quote_item_personalizations (
@@ -212,6 +214,11 @@ try:
       GROUP BY q.id;
     """).stdout.strip()
     assert copied == f"2|draft|{SOURCE_A}|1|1|1|1146", copied
+    variant_copy = scalar(sql(f"""
+      SELECT source_variant_id || '|' || source_variant_sku || '|' || (catalog_checked_at IS NOT NULL)::text
+      FROM public.quote_items WHERE quote_id='{new_quote_id}';
+    """))
+    assert variant_copy == "variante-verde|MOCH-1-VD|true", variant_copy
     reset_decisions = scalar(sql(f"""
       SELECT (q.suggested_modifications IS NULL)::text || '|'
         || bool_and(i.price_confirmed_at IS NULL)::text
@@ -253,6 +260,7 @@ try:
         "exclusao_da_versao_vigente": "exclusões física e lógica bloqueadas sem quebrar a família",
         "supervisor_fora_da_organizacao": "bloqueado",
         "decisoes_da_versao_anterior": "sugestões e confirmação de preço limpas",
+        "variante_de_origem": "id, SKU e data de consulta preservados",
     }
 
     actor_sql(SELLER, f"""

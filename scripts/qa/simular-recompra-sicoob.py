@@ -4,12 +4,15 @@ import json
 import subprocess
 import time
 import uuid
+import hashlib
 from postgres_ready import wait_for_postgres
 
 CONTAINER = "sicoob-recompra-" + uuid.uuid4().hex[:10]
 ROOT = Path(__file__).resolve().parents[2]
 FIXTURE = ROOT / "tests/scenarios/sql/sicoob-reorder-fixture.sql"
 MIGRATION = ROOT / "supabase/migrations/20260912170000_sicoob_reorder_atomic.sql"
+QUOTE_VERSIONING_FOLLOWUP = ROOT / "supabase/migrations/20260913120001_quote_versioning_atomic_followup.sql"
+FOLLOWUP_MIGRATION = ROOT / "supabase/migrations/20260913120002_sicoob_reorder_atomic_followup.sql"
 
 CREATOR = "11111111-1111-1111-1111-111111111111"
 UNAUTHORIZED = "22222222-2222-2222-2222-222222222222"
@@ -63,7 +66,25 @@ def payload(*, name="Caneca vigente", price=25, checked="now()"):
         "minimum_quantity": 1,
         "source_variant_id": None,
         "catalog_checked_at": checked_value,
+        "personalizations": [{
+            "line_id": ITEM,
+            "technique_id": "laser-atual",
+            "technique_name": "Gravação a laser vigente",
+            "colors_count": 1,
+            "width_cm": 4,
+            "height_cm": 3,
+            "personalized_quantity": 2,
+            "unit_cost": 9,
+            "setup_cost": 10,
+            "total_cost": 18,
+            "position": "Frente",
+            "catalog_checked_at": checked_value,
+        }],
     }])
+
+
+def request_hash(suffix=ORDER):
+    return hashlib.sha256(json.dumps({"source_order_id": suffix}, separators=(",", ":")).encode()).hexdigest()
 
 
 result = {
@@ -81,6 +102,8 @@ try:
 
     sql(FIXTURE.read_text())
     sql(MIGRATION.read_text())
+    sql(QUOTE_VERSIONING_FOLLOWUP.read_text())
+    sql(FOLLOWUP_MIGRATION.read_text())
     sql(f"""
       INSERT INTO public.cooperativas VALUES ('{COOPERATIVE}', 'Cooperativa sintética');
       INSERT INTO public.postos_atendimento VALUES ('{PA}', '{COOPERATIVE}', 'PA sintético');
@@ -91,27 +114,32 @@ try:
       INSERT INTO public.sicoob_orders VALUES
         ('{ORDER}', '{PA}', '{COOPERATIVE}', '{CREATOR}', 'completed', 20, now(), now());
       INSERT INTO public.sicoob_order_items
-        (id, order_id, product_id, product_name, quantity, unit_price, total_price)
-      VALUES ('{ITEM}', '{ORDER}', '{PRODUCT}', 'Caneca histórica', 2, 10, 20);
+        (id, order_id, product_id, product_name, quantity, unit_price, total_price, personalization_snapshot)
+      VALUES (
+        '{ITEM}', '{ORDER}', '{PRODUCT}', 'Caneca histórica', 2, 10, 20,
+        '{{"technique_id":"laser-antigo","colors_count":1,"width_cm":4,"height_cm":3}}'::jsonb
+      );
     """)
 
     rpc_privileges = scalar(sql("""
-      SELECT has_function_privilege('authenticated', 'public.reorder_sicoob_order_as_quote(uuid,jsonb,text,uuid)', 'EXECUTE')::text
-        || '|' || has_function_privilege('anon', 'public.reorder_sicoob_order_as_quote(uuid,jsonb,text,uuid)', 'EXECUTE')::text
-        || '|' || has_function_privilege('service_role', 'public.reorder_sicoob_order_as_quote(uuid,jsonb,text,uuid)', 'EXECUTE')::text;
+      SELECT has_function_privilege('authenticated', 'public.reorder_sicoob_order_as_quote(uuid,jsonb,text,uuid,text)', 'EXECUTE')::text
+        || '|' || has_function_privilege('anon', 'public.reorder_sicoob_order_as_quote(uuid,jsonb,text,uuid,text)', 'EXECUTE')::text
+        || '|' || has_function_privilege('service_role', 'public.reorder_sicoob_order_as_quote(uuid,jsonb,text,uuid,text)', 'EXECUTE')::text
+        || '|' || has_function_privilege('authenticated', 'public.get_sicoob_reorder_idempotency(uuid,uuid,text,text)', 'EXECUTE')::text
+        || '|' || has_function_privilege('service_role', 'public.get_sicoob_reorder_idempotency(uuid,uuid,text,text)', 'EXECUTE')::text;
     """))
-    assert rpc_privileges == "false|false|true", rpc_privileges
+    assert rpc_privileges == "false|false|true|false|true", rpc_privileges
 
     first_payload = payload()
     quote_id = scalar(actor_sql(CREATOR, f"""
       SELECT public.reorder_sicoob_order_as_quote(
-        '{ORDER}', $payload${first_payload}$payload$::jsonb, 'recompra-teste-0001', '{CREATOR}'
+        '{ORDER}', $payload${first_payload}$payload$::jsonb, 'recompra-teste-0001', '{CREATOR}', '{request_hash()}'
       );
     """))
-    retried_payload = payload(checked="now() + interval '1 second'")
+    retried_payload = payload(name="Caneca atualizada", price=26, checked="now() + interval '1 second'")
     same_quote_id = scalar(actor_sql(CREATOR, f"""
       SELECT public.reorder_sicoob_order_as_quote(
-        '{ORDER}', $payload${retried_payload}$payload$::jsonb, 'recompra-teste-0001', '{CREATOR}'
+        '{ORDER}', $payload${retried_payload}$payload$::jsonb, 'recompra-teste-0001', '{CREATOR}', '{request_hash()}'
       );
     """))
     assert same_quote_id == quote_id
@@ -119,27 +147,35 @@ try:
     persisted = scalar(sql(f"""
       SELECT q.client_id IS NULL || '|' || q.pa_id::text || '|' || q.singular_id::text
         || '|' || q.organization_id::text || '|' || q.total::text
-        || '|' || count(qi.id)::text
+        || '|' || count(DISTINCT qi.id)::text || '|' || count(DISTINCT qp.id)::text
+        || '|' || bool_and(qp.technique_id='laser-atual' AND qp.notes LIKE '%reenviada e aprovada%')::text
       FROM public.quotes q JOIN public.quote_items qi ON qi.quote_id = q.id
+      LEFT JOIN public.quote_item_personalizations qp ON qp.quote_item_id = qi.id
       WHERE q.id = '{quote_id}'
       GROUP BY q.id;
     """))
-    assert persisted == f"true|{PA}|{COOPERATIVE}|{ORG}|50.00|1", persisted
+    assert persisted == f"true|{PA}|{COOPERATIVE}|{ORG}|68.00|1|1|true", persisted
     assert scalar(sql("SELECT count(*) FROM public.quotes;")) == "1"
-    result["atomicidade_e_hierarquia"] = "orçamento e item gravados juntos; PA não foi escrito em client_id; hierarquia veio do pedido"
-    result["idempotencia"] = "repetição com a mesma chave e nova data de consulta devolveu o mesmo orçamento sem duplicar"
+    result["atomicidade_e_hierarquia"] = "orçamento, item e personalização reprecificada gravados juntos; PA não foi escrito em client_id; hierarquia veio do pedido; arte marcada para nova aprovação"
+    lookup_quote_id = scalar(sql(f"""
+      SELECT public.get_sicoob_reorder_idempotency(
+        '{CREATOR}', '{ORDER}', 'recompra-teste-0001', '{request_hash()}'
+      );
+    """))
+    assert lookup_quote_id == quote_id
+    result["idempotencia"] = "retry após resposta perdida ignorou mudanças posteriores de nome, preço e data do catálogo e não duplicou o orçamento"
 
     changed_payload = payload(price=26)
     changed = actor_sql(CREATOR, f"""
       SELECT public.reorder_sicoob_order_as_quote(
-        '{ORDER}', $payload${changed_payload}$payload$::jsonb, 'recompra-teste-0001', '{CREATOR}'
+        '{ORDER}', $payload${changed_payload}$payload$::jsonb, 'recompra-teste-0001', '{CREATOR}', '{request_hash("outro-pedido")}'
       );
     """, check=False)
     assert changed.returncode != 0 and "conteúdo diferente" in changed.stderr
 
     unauthorized = actor_sql(UNAUTHORIZED, f"""
       SELECT public.reorder_sicoob_order_as_quote(
-        '{ORDER}', $payload${first_payload}$payload$::jsonb, 'recompra-teste-0002', '{UNAUTHORIZED}'
+        '{ORDER}', $payload${first_payload}$payload$::jsonb, 'recompra-teste-0002', '{UNAUTHORIZED}', '{request_hash()}'
       );
     """, check=False)
     assert unauthorized.returncode != 0 and "não pode refazer" in unauthorized.stderr
@@ -147,7 +183,7 @@ try:
     stale_payload = payload(checked="now() - interval '10 minutes'")
     stale = actor_sql(CREATOR, f"""
       SELECT public.reorder_sicoob_order_as_quote(
-        '{ORDER}', $payload${stale_payload}$payload$::jsonb, 'recompra-teste-0003', '{CREATOR}'
+        '{ORDER}', $payload${stale_payload}$payload$::jsonb, 'recompra-teste-0003', '{CREATOR}', '{request_hash()}'
       );
     """, check=False)
     assert stale.returncode != 0 and "consultados novamente" in stale.stderr
@@ -165,7 +201,7 @@ try:
     failing_payload = payload(name="FALHA FORÇADA")
     failed = actor_sql(CREATOR, f"""
       SELECT public.reorder_sicoob_order_as_quote(
-        '{ORDER}', $payload${failing_payload}$payload$::jsonb, 'recompra-teste-0004', '{CREATOR}'
+        '{ORDER}', $payload${failing_payload}$payload$::jsonb, 'recompra-teste-0004', '{CREATOR}', '{request_hash()}'
       );
     """, check=False)
     assert failed.returncode != 0 and "falha sintética" in failed.stderr

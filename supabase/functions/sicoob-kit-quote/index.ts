@@ -10,6 +10,7 @@ import {
   type VerifiedKitLine,
   type VerifiedKitPersonalization,
 } from './catalog.ts';
+import { hashKitQuoteIntent } from './idempotency.ts';
 
 interface KitQuoteBody {
   kitName?: unknown;
@@ -118,6 +119,28 @@ Deno.serve(async (req) => {
     const productIds = [...new Set(lines.map((line) => line.productId))];
     if (!productIds.length || productIds.length > 50) return json(req, { error: 'Quantidade de produtos inválida.' }, 400);
 
+    // A identidade representa somente a intenção do cliente. Preço, nome,
+    // estoque e timestamps mudam entre consultas e não podem invalidar o retry.
+    const requestHash = await hashKitQuoteIntent({ kitName, kitType, kitQuantity, identityTag, lines });
+    const adminClient = createClient(supabaseUrl, serviceKey, { auth: { persistSession: false } });
+    const existingRequest = await adminClient.rpc('get_sicoob_kit_quote_idempotency', {
+      p_actor_id: authData.user.id,
+      p_idempotency_key: idempotencyKey,
+      p_request_hash: requestHash,
+    });
+    if (existingRequest.error) throw existingRequest.error;
+    if (existingRequest.data) {
+      const existing = existingRequest.data as Record<string, unknown>;
+      return json(req, {
+        quoteId: existing.quote_id,
+        quoteNumber: existing.quote_number,
+        total: existing.total,
+        catalogCheckedAt: null,
+        stockReserved: false,
+        idempotentReplay: true,
+      });
+    }
+
     const [productBridge, variantBridge] = await Promise.all([
       userClient.functions.invoke('external-db-bridge', {
         body: {
@@ -183,7 +206,6 @@ Deno.serve(async (req) => {
       ));
     }
 
-    const adminClient = createClient(supabaseUrl, serviceKey, { auth: { persistSession: false } });
     const { data, error } = await adminClient.rpc('create_sicoob_kit_quote', {
       p_kit: {
         name: kitName,
@@ -195,6 +217,7 @@ Deno.serve(async (req) => {
       p_personalizations: verifiedPersonalizations,
       p_idempotency_key: idempotencyKey,
       p_actor_id: authData.user.id,
+      p_request_hash: requestHash,
     });
     if (error) throw error;
     const result = data && typeof data === 'object' ? data as Record<string, unknown> : {};

@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { buildVerifiedReorderItems, type CatalogProduct, type CatalogVariant, type SourceItem } from '../../supabase/functions/sicoob-reorder/catalog';
+import {
+  buildVerifiedReorderItems,
+  personalizationRequestsFromSnapshot,
+  type CatalogProduct,
+  type CatalogVariant,
+  type SourceItem,
+} from '../../supabase/functions/sicoob-reorder/catalog';
 
 const product: CatalogProduct = {
   id: 'produto-1',
@@ -35,6 +41,7 @@ function source(id: string, quantity: number): SourceItem {
     color_name: null,
     color_hex: null,
     size_code: null,
+    personalization_snapshot: null,
   };
 }
 
@@ -69,5 +76,17 @@ describe('catálogo vigente da recompra Sicoob', () => {
       '2026-09-12T20:00:00.000Z',
     );
     expect(result).toHaveLength(2);
+  });
+});
+
+describe('personalização histórica da recompra', () => {
+  it('normaliza o snapshot para uma nova consulta de técnica e preço', () => {
+    expect(personalizationRequestsFromSnapshot({
+      technique_id: 'laser', colors_count: 2, width_cm: 4, height_cm: 3,
+    })).toEqual([{ techniqueId: 'laser', colors: 2, width: 4, height: 3 }]);
+  });
+
+  it('recusa snapshot com técnica ausente em vez de descartar a personalização', () => {
+    expect(() => personalizationRequestsFromSnapshot({ colors_count: 1 })).toThrow('técnica');
   });
 });

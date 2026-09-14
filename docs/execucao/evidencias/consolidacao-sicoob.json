@@ -3,7 +3,7 @@
   "migracao": "supabase/migrations/20260912190000_sicoob_consolidation_distribution.sql",
   "producao_verificada": false,
   "criacao": "vendedor de outra Singular recusado; dois pedidos vinculados atomicamente; repetição idempotente limitada ao mesmo ator e conteúdo; lote inválido sem órfãos",
-  "distribuicao": "itens distribuídos integralmente por PA; despacho moveu lote e pedidos para logística; PA enxergou somente seu destino; escrita direta bloqueada",
+  "distribuicao": "PA inativo e endereço incompleto recusados sem mutação parcial; itens distribuídos integralmente; despacho moveu lote e pedidos para logística; PA enxergou somente seu destino; escrita direta bloqueada",
   "recebimento": "retry idempotente não duplicou quantidades; parciais acumulados por destino; excesso e ator externo recusados; divergência manteve os pedidos em logística; avaria preservada em evento imutável",
   "resultado": "aprovado"
 }

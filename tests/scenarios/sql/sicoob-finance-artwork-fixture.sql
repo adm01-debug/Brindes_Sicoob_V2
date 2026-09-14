@@ -2,6 +2,14 @@ CREATE EXTENSION IF NOT EXISTS pgcrypto;
 CREATE ROLE authenticated NOLOGIN;
 CREATE ROLE anon NOLOGIN;
 CREATE ROLE service_role NOLOGIN;
+-- Espelha o bootstrap real do Supabase (fora do controle de versao do app):
+-- grant amplo por padrao, RLS e quem restringe por linha. Necessario aqui
+-- porque a policy de storage.objects sicoob_order_documents_delete_orphan_artwork
+-- (20260913120003_sicoob_finance_artwork_followup.sql) le
+-- sicoob_order_artwork_versions diretamente como authenticated, nao so via
+-- RPC SECURITY DEFINER.
+ALTER DEFAULT PRIVILEGES IN SCHEMA public
+  GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO authenticated, anon, service_role;
 CREATE SCHEMA auth;
 CREATE FUNCTION auth.uid() RETURNS uuid
 LANGUAGE sql STABLE

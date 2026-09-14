@@ -10,6 +10,7 @@ ROOT = Path(__file__).resolve().parents[2]
 CONTAINER = "sicoob-finance-art-" + uuid.uuid4().hex[:10]
 FIXTURE = ROOT / "tests/scenarios/sql/sicoob-finance-artwork-fixture.sql"
 MIGRATION = ROOT / "supabase/migrations/20260912180000_sicoob_finance_artwork.sql"
+FOLLOWUP_MIGRATION = ROOT / "supabase/migrations/20260913120003_sicoob_finance_artwork_followup.sql"
 CREATOR = "11111111-1111-1111-1111-111111111111"
 APPROVER = "22222222-2222-2222-2222-222222222222"
 ORDER = "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"
@@ -82,6 +83,7 @@ try:
 
     sql(FIXTURE.read_text())
     sql(MIGRATION.read_text())
+    sql(FOLLOWUP_MIGRATION.read_text())
     sql(f"""
       INSERT INTO auth.users VALUES ('{CREATOR}'), ('{APPROVER}');
       INSERT INTO public.user_roles VALUES ('{APPROVER}', 'supervisor');
@@ -185,6 +187,20 @@ try:
       );
     """, check=False)
     assert paid_rewrite.returncode != 0 and "Parcela liquidada" in paid_rewrite.stderr
+    paid_invoice_rewrite = actor_sql(APPROVER, f"""
+      SELECT public.record_sicoob_order_payment(
+        '{ORDER}', 1, 125.50, CURRENT_DATE, 'paid', NULL, 'boleto', 'ERP-0001',
+        (SELECT updated_at FROM public.sicoob_order_payments WHERE id='{payment_id}')
+      );
+    """, check=False)
+    assert paid_invoice_rewrite.returncode != 0 and "Parcela liquidada" in paid_invoice_rewrite.stderr
+    paid_method_rewrite = actor_sql(APPROVER, f"""
+      SELECT public.record_sicoob_order_payment(
+        '{ORDER}', 1, 125.50, CURRENT_DATE, 'paid', '{invoice_id}', 'pix', 'ERP-0001',
+        (SELECT updated_at FROM public.sicoob_order_payments WHERE id='{payment_id}')
+      );
+    """, check=False)
+    assert paid_method_rewrite.returncode != 0 and "Parcela liquidada" in paid_method_rewrite.stderr
     over_total = actor_sql(APPROVER, f"""
       SELECT public.record_sicoob_order_payment(
         '{ORDER}', 2, 1, CURRENT_DATE, 'pending', NULL, NULL, 'ERP-0002', NULL
@@ -211,7 +227,7 @@ try:
       );
     """, check=False)
     assert repeated_refund.returncode != 0 and "Somente uma parcela paga" in repeated_refund.stderr
-    result["pagamentos"] = "ator sem papel financeiro recusado e gestor de compras reconhecido; criação em estornado e sobrescrita sem versão recusadas; soma limitada; estorno formal preservou quitação e gravou motivo, data e ator"
+    result["pagamentos"] = "ator sem papel financeiro recusado e gestor de compras reconhecido; criação em estornado e sobrescrita sem versão recusadas; fatura, método e valores de parcela liquidada imutáveis; soma limitada; estorno formal preservou quitação e gravou motivo, data e ator"
 
     artwork_path1 = f"{ORDER}/artwork/v1.pdf"
     forged_artwork = actor_sql(CREATOR, f"""
