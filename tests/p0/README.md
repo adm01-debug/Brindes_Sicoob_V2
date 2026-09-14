@@ -19,7 +19,7 @@ Todos os testes neste diretório iniciam com `test.skip` / `it.skip` — cada um
 1. Implementar a correção referenciada no comentário `// TODO(P0):`.
 2. Trocar `it.skip` → `it` (ou remover `test.skip(...)`).
 3. Substituir mocks por chamadas reais quando aplicável (ou validar contrato).
-4. Rodar `bun test tests/p0/` e `bunx playwright test e2e/flows/p0/`.
+4. Rodar `npx vitest run tests/p0/` e `npx playwright test e2e/flows/p0/`.
 
 ## Mapeamento P0 → Arquivo
 

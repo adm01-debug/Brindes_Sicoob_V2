@@ -15,33 +15,36 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v1
+      - uses: actions/setup-node@v4
         with:
-          bun-version: latest
+          node-version: 24
+          cache: npm
+
+      - name: Instalar dependências reproduzíveis
+        run: npm ci
 
       - name: Database RLS Scan
         env:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: |
-          bun scripts/scan-rls-security.mjs > reports/rls-status.txt
+          node scripts/scan-rls-security.mjs > reports/rls-status.txt
 
       - name: Cross-Organization Access Test
         env:
           SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: |
-          bun scripts/test-rls-compliance.mjs > reports/rls-cross-check.txt
+          node scripts/test-rls-compliance.mjs > reports/rls-cross-check.txt
 
       - name: Generate Audit Dossier V5
         env:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: |
-          bun scripts/generate-audit-dossier.mjs
-          bun scripts/validate-audit-links.mjs
-          bun scripts/test-audit-scripts.mjs
+          node scripts/generate-audit-dossier.mjs
+          node scripts/validate-audit-links.mjs
+          node scripts/test-audit-scripts.mjs
 
       - name: Generate PDF Report
         run: |
@@ -54,8 +57,8 @@ jobs:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: |
-          bun scripts/audit-export.mjs --status=implementado --module=Segurança
-          bun scripts/audit-export.mjs --status=a-implementar
+          node scripts/audit-export.mjs --status=implementado --module=Segurança
+          node scripts/audit-export.mjs --status=a-implementar
 
       - name: Upload Enterprise Audit Bundle
         uses: actions/upload-artifact@v4

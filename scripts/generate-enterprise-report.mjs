@@ -105,8 +105,8 @@ Justificativa técnica baseada em telemetria e análise de código:
 
 ## 📎 6. EXPORTAÇÃO FILTRADA
 *Para exportar trechos específicos, utilize os scripts:*
-*   \`bun scripts/audit-export.mjs --module=Seguranca\`
-*   \`bun scripts/audit-export.mjs --status=Pending\`
+*   \`node scripts/audit-export.mjs --module=Seguranca\`
+*   \`node scripts/audit-export.mjs --status=Pending\`
 
 ---
 *Gerado por: Lovable AI Enterprise Auditor*

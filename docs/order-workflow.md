@@ -31,4 +31,4 @@ Componentes de UI como `OrderAuditTimeline` consomem estes eventos para exibir a
 
 ## Testes
 - Testes unitários para lógica de transição: `src/hooks/useOrders.test.ts` e `src/types/sicoob/orders.test.ts`.
-- Rodar com: `bun test`
+- Rodar com: `npx vitest run`

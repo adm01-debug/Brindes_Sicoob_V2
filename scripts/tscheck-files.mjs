@@ -2,8 +2,9 @@
 /**
  * tscheck-files
  * --------------------------------------------------------------
- * Typecheck rápido de um subconjunto de arquivos, reaproveitando as
- * mesmas flags de `tsconfig.app.json` (strict + noUncheckedIndexedAccess).
+ * Typecheck de um subconjunto de arquivos, reaproveitando as mesmas
+ * flags de `tsconfig.app.json` (strict + noUncheckedIndexedAccess) sem
+ * rodar o projeto inteiro.
  *
  * Uso:
  *   node scripts/tscheck-files.mjs src/hooks/useX.ts src/pages/Y.tsx
@@ -11,6 +12,13 @@
  * Observação: o programa gerado inclui os arquivos pedidos e tudo que eles
  * importam, então erros de dependências também aparecem — filtre pelo caminho
  * que estiver corrigindo.
+ *
+ * Nota (2026-09-14): chamava `npx tsgo`, um pacote que não existe no
+ * registro do npm (404) — o script sempre reportava "0 erro(s)" pra
+ * qualquer arquivo, sempre, porque a saída era o erro do npx, não do
+ * TypeScript. Corrigido para `npx tsc` (o compilador real, já é
+ * devDependency do projeto). Mais lento que o `tsgo` prometia ser, mas
+ * pelo menos correto — ver docs/correcoes-validacao-2026-09-13.md.
  */
 import { writeFileSync, unlinkSync } from "node:fs";
 import { spawnSync } from "node:child_process";
@@ -28,7 +36,7 @@ writeFileSync(
 );
 
 try {
-  const res = spawnSync("npx", ["tsgo", "--noEmit", "-p", cfgPath], {
+  const res = spawnSync("npx", ["tsc", "--noEmit", "--pretty", "false", "-p", cfgPath], {
     encoding: "utf8",
     maxBuffer: 64 * 1024 * 1024,
   });

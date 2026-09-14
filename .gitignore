@@ -62,3 +62,8 @@ api_usage.json
 service_map.txt
 triage-edge-typecheck.json
 audit_report.pdf
+
+# Gerenciador de pacotes padronizado em npm (ver docs/plano-melhorias-50-etapas.md
+# etapa 08) — se alguem rodar bun localmente por engano, o lock nao entra no repo.
+bun.lock
+bun.lockb

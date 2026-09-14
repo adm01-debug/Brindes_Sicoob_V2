@@ -87,6 +87,8 @@ Checklist mínimo:
 - Backup antes de DROP em tabela `_backup_<original>_YYYYMMDD`.
 - RLS ON em qualquer tabela nova.
 - **Rollback**: Toda migration deve ser testada para reversão. Mantenha os comandos SQL de "Down" documentados no corpo do Pull Request.
+- **Imutabilidade**: uma migration já mesclada em `main` nunca é editada, mesmo que ainda não tenha rodado em produção — o Supabase rastreia migration aplicada por *nome de arquivo*, não por conteúdo, então editar o arquivo não reaplica nada e cria drift silencioso entre o disco e o schema real. Precisa corrigir ou complementar algo já mesclado? Crie uma migration nova com o delta. `node scripts/check-migration-immutability.mjs` (rodado em CI) bloqueia isso automaticamente comparando contra `origin/main`.
+- Nome do arquivo: `YYYYMMDDHHMMSS_verbo_objeto.sql`, descritivo — evite o UUID genérico que algumas ferramentas geram por padrão.
 
 ### Bitrix24
 - `crm.item.get` com `entityTypeId=4` para Smart Companies (não usar `crm.company.get`)

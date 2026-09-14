@@ -2,9 +2,10 @@
 
 > Versão em texto do plano publicado como artifact em 2026-09-13
 > (https://claude.ai/code/artifact/71600452-aedf-447a-8da3-580ac2050a2e).
-> Ver também [correcoes-validacao-2026-09-13.md](./correcoes-validacao-2026-09-13.md)
-> para o que mudou depois que cada etapa de risco foi verificada contra o código real
-> antes de ser executada — várias premissas abaixo foram corrigidas ou descartadas lá.
+> Ver também [correcoes-validacao-2026-09-13.md](./correcoes-validacao-2026-09-13.md) e
+> [correcoes-validacao-2026-09-14.md](./correcoes-validacao-2026-09-14.md) para o que mudou
+> depois que cada etapa de risco foi verificada contra o código real antes de ser
+> executada — várias premissas abaixo foram corrigidas ou descartadas lá.
 
 Diagnóstico de origem (2026-09-13): `main` local 11 commits atrás de `origin/main`
 (desde resolvido — ver histórico do commit que trouxe este arquivo), 29 arquivos
@@ -22,21 +23,21 @@ ver doc de correções), zero regras de proteção em `main`.
 
 ## Fase 1 — Governança do repositório (semana 1)
 7. Ativar proteção de branch em `main` (PR obrigatório, checks obrigatórios, sem force-push).
-8. Um só gerenciador de pacotes — **corrigido**: exige migrar 5 workflows de npm para bun antes de remover qualquer lockfile; não é uma etapa de deletar arquivo.
+8. Um só gerenciador de pacotes — ✅ feito 2026-09-14: `ci.yml` já tinha migrado pra npm no PR #6; convertido `security-compliance.yml` (o único ainda em bun, e que nunca tinha rodado com sucesso mesmo antes disso — faltava instalar dependências) e removido `bun.lock`.
 9. Tirar artefatos gerados (`dependencies.json`, `api_usage.json`, `service_map.txt`, etc.) do controle de versão. ✅ feito 2026-09-13.
 10. Tirar PDFs grandes de `public/` para fora do bundle servido. ✅ feito 2026-09-13.
 11. Impedir volta de arquivos de sonda (`tsconfig.probe.*`) — **já resolvido** upstream, sem ação necessária.
 12. Convenção de commits aplicada por hook + isolar edições automáticas (Lovable) do fluxo direto em `main` — **pendente de confirmação**: como o Lovable interage com este repositório.
 13. Consolidar os três diretórios de teste (`tests/`, `src/tests/`, `src/test/`) numa convenção só.
-14. Política de migrations: nome padronizado, revisão obrigatória, imutabilidade após merge.
+14. Política de migrations: nome padronizado, revisão obrigatória, imutabilidade após merge. ✅ feito 2026-09-14: `scripts/check-migration-immutability.mjs` (gate em `ci.yml`) + seção nova em `CONTRIBUTING.md`.
 
 ## Fase 2 — Dívida de tipos e lint (semanas 2–5, contínuo)
 15. Corrigir nomes de scripts de lint mal nomeados. ✅ feito 2026-09-13.
-16. Transformar o baseline de typecheck em ratchet por arquivo (nunca pode piorar).
-17. Zerar os 10 arquivos com mais erros de tipo, começando por `QuoteService.ts`.
-18. Regenerar o baseline de ESLint (atual é de maio) e aplicar o mesmo ratchet — **mais urgente do que parecia**: `eslint src` sem filtro encontra hoje 3.388 erros + 2.508 avisos, contra os 2.774 erros totais registrados no baseline de maio. A dívida cresceu nesses 4 meses, não ficou parada.
+16. Transformar o baseline de typecheck em ratchet por arquivo — **já implementado**: `check-typecheck-baseline.mjs` já falha por arquivo individual, não por total agregado. Nenhuma ação necessária.
+17. Zerar os 10 arquivos com mais erros de tipo, começando por `QuoteService.ts`. 🔄 em andamento: `QuoteService.ts` ✅ zerado 2026-09-14 (15→0, baseline 1189→1174). Faltam 9.
+18. Regenerar o baseline de ESLint — **prioridade rebaixada**: `fetch-depth: 0` em todo workflow relevante garante que o gate real (`lint:baseline`) sempre usa diff contra `origin/main`, nunca o snapshot desatualizado. Regenerar ainda vale pra dashboard (etapa 50), não é mais um gate quebrado.
 19. Reduzir os `any` explícitos, começando por `src/App.tsx` e `src/lib/`.
-20. Trocar `console.*` pelo logger estruturado; `esbuild.drop` como rede de segurança.
+20. Trocar `console.*` pelo logger estruturado — **prioridade rebaixada**: `vite.config.ts` já usa `esbuild.pure` pra eliminar `console.log/debug/info` do bundle de produção (mantém `warn`/`error` de propósito). Resíduo real no `dist/` é código de biblioteca vendorizada, não nosso. Migração pra logger continua válida como qualidade/observabilidade, não como vazamento de dado.
 21. Auditar cada `eslint-disable`/`ts-ignore` — exigir motivo ou remover.
 22. Tratar `types.ts` gerado com detecção de drift em CI.
 23. Quebrar os arquivos acima de 700 linhas em `pages/sicoob/orders/` e afins.

@@ -37,6 +37,9 @@ jobs:
       - name: Bloquear regressões de lint contra a branch-base
         run: npm run lint:baseline
 
+      - name: Bloquear edição de migration já mesclada
+        run: node scripts/check-migration-immutability.mjs
+
       - name: Verificar dependências e autorização das Edge Functions
         run: |
           npm run check:npm-audit

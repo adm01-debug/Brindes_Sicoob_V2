@@ -5,7 +5,7 @@ import path from 'path';
  * Script para evitar regressão de cores hardcoded em caminhos Sicoob.
  * Padrão: text-emerald, bg-amber, text-red, text-blue, etc.
  * 
- * Rodar via: bun scripts/check-sicoob-hardcoded-colors.mjs
+ * Rodar via: node scripts/check-sicoob-hardcoded-colors.mjs
  */
 
 const FORBIDDEN_PATTERNS = [

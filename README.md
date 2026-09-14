@@ -95,7 +95,7 @@ O sistema passa por auditorias regulares de segurança, performance e integridad
 ### Pré-requisitos
 
 - Node.js 18+
-- npm / bun
+- npm
 
 ### Instalação
 
