@@ -1,7 +1,8 @@
 import { useState, useEffect, useMemo, useCallback, useContext } from "react";
 import Fuse from "fuse.js";
 import { type Product } from "@/hooks/useProducts";
-import { CATEGORIES, SUPPLIERS } from "@/data/mockData";
+import { useExternalCategoriesQuery } from "@/hooks/useExternalCategoriesQuery";
+import { useSuppliers } from "@/hooks/useSuppliers";
 import { ProductsContext } from "@/contexts/ProductsContext";
 import { createProductFuseOptions, rankProductSearchResults } from "@/utils/product-search";
 
@@ -33,6 +34,15 @@ export function useSearch(products: Product[] = [], historyScope?: string) {
   const historyKey = useMemo(() => getHistoryKey(historyScope), [historyScope]);
 
   const availableProducts = products.length > 0 ? products : (productsContext?.products || []);
+
+  // Categorias e fornecedores do catálogo real — antes vinham de listas
+  // hardcoded em @/data/mockData (nomes reais como "BRINDES SICOOB", "XBZ
+  // Brindes" congelados no código-fonte, nunca refletindo altas/baixas/
+  // renomeações reais). useSuppliers() já existe especificamente pra
+  // substituir isso ("Substitui o uso de SUPPLIERS do mockData") mas
+  // useSearch nunca tinha sido migrado. Ver docs/correcoes-validacao-2026-09-14.md.
+  const { data: externalCategories } = useExternalCategoriesQuery();
+  const { suppliers: externalSuppliers } = useSuppliers();
 
   // Load history from localStorage
   useEffect(() => {
@@ -77,18 +87,18 @@ export function useSearch(products: Product[] = [], historyScope?: string) {
   })), [availableProducts]);
 
   // Criar instância Fuse.js para busca fuzzy de categorias
-  const categoryFuse = useMemo(() => new Fuse(CATEGORIES, {
+  const categoryFuse = useMemo(() => new Fuse(externalCategories ?? [], {
     keys: ['name'],
     threshold: 0.35,
     ignoreLocation: true,
-  }), []);
+  }), [externalCategories]);
 
   // Criar instância Fuse.js para busca fuzzy de fornecedores
-  const supplierFuse = useMemo(() => new Fuse(SUPPLIERS, {
+  const supplierFuse = useMemo(() => new Fuse(externalSuppliers, {
     keys: ['name'],
     threshold: 0.35,
     ignoreLocation: true,
-  }), []);
+  }), [externalSuppliers]);
 
   // Generate suggestions based on query - usando busca fuzzy
   const suggestions = useMemo((): SearchResult[] => {
@@ -153,16 +163,15 @@ export function useSearch(products: Product[] = [], historyScope?: string) {
 
     matchingCategories.forEach((result) => {
       const category = result.item;
-      const productCount = availableProducts.filter((p) => 
-        p.category_id === String(category.id) || 
-        parseInt(p.category_id || '0') === category.id
+      const productCount = availableProducts.filter((p) =>
+        p.category_id === category.id
       ).length;
       results.push({
         type: "category",
-        id: String(category.id),
+        id: category.id,
         label: category.name,
         sublabel: `${productCount} produtos`,
-        icon: category.icon || "📁",
+        icon: "📁",
       });
     });
 

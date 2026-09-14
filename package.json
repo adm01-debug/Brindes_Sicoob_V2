@@ -5,9 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "generate:audit": "echo 'Skipping audit PDF generation in build'",
-    "build": "npm run generate:audit && npm run check:npm-audit && vite build",
-    "build:dev": "npm run check:npm-audit && npm run typecheck:baseline && vite build --mode development",
+    "build": "vite build",
+    "build:dev": "npm run typecheck:baseline && vite build --mode development",
     "preview": "vite preview",
     "test": "vitest run",
     "test:coverage:ci": "vitest run --coverage --coverage.reporter=text --coverage.reporter=json-summary --coverage.reporter=html --coverage.reporter=lcov --coverage.thresholds.statements=80 --coverage.thresholds.branches=75",

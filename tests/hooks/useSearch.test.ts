@@ -1,5 +1,33 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
+// useSearch buscava categorias/fornecedores de @/data/mockData (dado
+// hardcoded e desatualizado, ex.: "BRINDES SICOOB" e "XBZ Brindes"
+// congelados no código-fonte). Migrado pra useExternalCategoriesQuery/
+// useSuppliers (catálogo real) — ver docs/correcoes-validacao-2026-09-14.md.
+// Mock direto dos dois hooks: nenhum precisa de QueryClientProvider no
+// teste porque a implementação real de useQuery nunca roda.
+vi.mock('@/hooks/useExternalCategoriesQuery', () => ({
+  useExternalCategoriesQuery: () => ({
+    data: [
+      { id: 'cat-1', name: 'Canetas' },
+      { id: 'cat-2', name: 'Garrafas Térmicas' },
+    ],
+    isLoading: false,
+  }),
+}));
+
+vi.mock('@/hooks/useSuppliers', () => ({
+  useSuppliers: () => ({
+    suppliers: [
+      { id: 'sup-1', name: 'BIC' },
+      { id: 'sup-2', name: 'Stanley' },
+    ],
+    isLoading: false,
+    error: null,
+    refetch: vi.fn(),
+  }),
+}));
+
 // Mock localStorage
 const localStorageMock = (() => {
   let store: Record<string, string> = {};
@@ -159,6 +187,27 @@ describe('useSearch', () => {
       act(() => result.current.setQuery('caneta'));
       const productResults = result.current.suggestions.filter(s => s.type === 'product');
       expect(productResults.length).toBeLessThanOrEqual(7); // 6 + possible SKU exact
+    });
+  });
+
+  describe('Categorias e fornecedores (catálogo real, não mockData)', () => {
+    it('sugere categoria do catálogo real (useExternalCategoriesQuery), não a lista hardcoded antiga', () => {
+      const { result } = renderHook(() => useSearch([]));
+      act(() => result.current.setQuery('caneta'));
+      const categoryResults = result.current.suggestions.filter(s => s.type === 'category');
+      expect(categoryResults.map(c => c.label)).toContain('Canetas');
+      // "BRINDES SICOOB" era uma categoria da lista antiga hardcoded em
+      // @/data/mockData — não deve mais aparecer, pois não veio do mock.
+      expect(categoryResults.map(c => c.label)).not.toContain('BRINDES SICOOB');
+    });
+
+    it('sugere fornecedor do catálogo real (useSuppliers), não a lista hardcoded antiga', () => {
+      const { result } = renderHook(() => useSearch([]));
+      act(() => result.current.setQuery('bic'));
+      const supplierResults = result.current.suggestions.filter(s => s.type === 'supplier');
+      expect(supplierResults.map(s => s.label)).toContain('BIC');
+      // "XBZ Brindes" era um fornecedor da lista antiga hardcoded.
+      expect(supplierResults.map(s => s.label)).not.toContain('XBZ Brindes');
     });
   });
 
