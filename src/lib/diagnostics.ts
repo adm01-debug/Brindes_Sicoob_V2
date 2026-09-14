@@ -21,7 +21,7 @@ export interface AppHealthStatus {
   lastCheck: number;
 }
 
-class DiagnosticsManager {
+export class DiagnosticsManager {
   private logs: DiagnosticLog[] = [];
   private maxLogs = 1000;
   private subscribers: ((log: DiagnosticLog) => void)[] = [];
@@ -34,7 +34,6 @@ class DiagnosticsManager {
 
   constructor() {
     if (typeof window !== 'undefined') {
-      // @ts-ignore
       window.__DIAGNOSTICS__ = this;
       console.log('🔍 Sicoob Diagnostic Engine v2 initialized. [OND-018-HEALTH]');
     }
