@@ -30,8 +30,16 @@ export interface UntypedQueryBuilder<T> {
 /**
  * Access a Supabase table that doesn't exist in the generated types.
  * Returns a fully typed query builder for the provided row shape `T`.
+ *
+ * `T extends object` (não `Record<string, unknown>`): a constraint anterior
+ * exigia que T tivesse um index signature implícito, o que uma interface
+ * comum (`interface Foo { id: string }`) nunca satisfaz estruturalmente —
+ * rejeitava exatamente o uso documentado acima (`untypedFrom<MyType>`,
+ * MyType sendo uma interface). T só aparece em posições `Partial<T>`/`T[]`
+ * neste arquivo, nunca com acesso por índice, então a constraint nunca
+ * cumpriu função nenhuma além de barrar o caso de uso pretendido.
  */
-export function untypedFrom<T extends Record<string, unknown> = Record<string, unknown>>(
+export function untypedFrom<T extends object = Record<string, unknown>>(
   table: string
 ): UntypedQueryBuilder<T> {
   return supabase.from(table as never) as UntypedQueryBuilder<T>;
