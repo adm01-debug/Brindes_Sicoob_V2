@@ -34,7 +34,7 @@ ver doc de correções), zero regras de proteção em `main`.
 ## Fase 2 — Dívida de tipos e lint (semanas 2–5, contínuo)
 15. Corrigir nomes de scripts de lint mal nomeados. ✅ feito 2026-09-13.
 16. Transformar o baseline de typecheck em ratchet por arquivo — **já implementado**: `check-typecheck-baseline.mjs` já falha por arquivo individual, não por total agregado. Nenhuma ação necessária.
-17. Zerar os 10 arquivos com mais erros de tipo, começando por `QuoteService.ts`. 🔄 em andamento: `QuoteService.ts` ✅ zerado 2026-09-14 (15→0, baseline 1189→1174). Faltam 9.
+17. Zerar os 10 arquivos com mais erros de tipo, começando por `QuoteService.ts`. 🔄 em andamento: `QuoteService.ts` ✅ (15→0), `CompanyContactSelector.tsx` ✅ (14→0), `useGroupPersonalization.ts` ✅ (13→0, de graça via correção do `untypedFrom<T>` em `supabase-untyped.ts`). Baseline total: 1189→1145. Faltam ~7 dos 10 originais (a lista muda conforme os fixes cascateiam por arquivos compartilhados).
 18. Regenerar o baseline de ESLint — **prioridade rebaixada**: `fetch-depth: 0` em todo workflow relevante garante que o gate real (`lint:baseline`) sempre usa diff contra `origin/main`, nunca o snapshot desatualizado. Regenerar ainda vale pra dashboard (etapa 50), não é mais um gate quebrado.
 19. Reduzir os `any` explícitos, começando por `src/App.tsx` e `src/lib/`.
 20. Trocar `console.*` pelo logger estruturado — **prioridade rebaixada**: `vite.config.ts` já usa `esbuild.pure` pra eliminar `console.log/debug/info` do bundle de produção (mantém `warn`/`error` de propósito). Resíduo real no `dist/` é código de biblioteca vendorizada, não nosso. Migração pra logger continua válida como qualidade/observabilidade, não como vazamento de dado.
@@ -59,13 +59,13 @@ ver doc de correções), zero regras de proteção em `main`.
 35. Verificar se os thresholds de cobertura (80%/75%) refletem a realidade medida.
 36. Política de flaky: quarentena com prazo de 14 dias, não supressão silenciosa.
 37. Consolidar os 10 workflows em ~4, com setup comum extraído.
-38. Desacoplar `build` de `npm audit` (rede não deve poder quebrar deploy).
+38. Desacoplar `build` de `npm audit` (rede não deve poder quebrar deploy). ✅ feito 2026-09-14.
 39. Testes de invariante (pgTAP ou `tests/scenarios`) para as migrations atômicas de Sicoob.
 40. Decidir o destino dos simuladores Python em `scripts/qa/`.
 
 ## Fase 5 — Performance e build (semana 5)
 41. Orçamento de bundle com número que falha, não só warning.
-42. Garantir que `mockData.ts`/telas de dev não vão pro bundle de produção.
+42. Garantir que `mockData.ts`/telas de dev não vão pro bundle de produção — **achado mais sério do que bundle size**: `useSearch.ts` (busca central, 4 consumidores) usava `CATEGORIES`/`SUPPLIERS` de mockData com nomes reais de negócio hardcoded ("BRINDES SICOOB", "XBZ Brindes") em vez do catálogo real. ✅ corrigido 2026-09-14 (migrado pra `useSuppliers()`/`useExternalCategoriesQuery()`). `PUBLICO_ALVO`/`DATAS_COMEMORATIVAS`/`ENDOMARKETING`/`NICHOS`/`FAIXAS_PRECO` (mesmo arquivo) investigados e confirmados como taxonomia fixa legítima — sem bug, só nomenclatura de arquivo confusa.
 43. Justificar ou substituir `vendor/pptxgenjs-browser`.
 44. Carregar sob demanda o painel admin de conexões.
 45. Lighthouse com thresholds que realmente falham o CI.

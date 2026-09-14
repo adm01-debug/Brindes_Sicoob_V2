@@ -45,3 +45,65 @@ compartilhados, pra não alterar contrato de outros consumidores desses tipos:
 
 Nenhum teste unitário dedicado a `QuoteService.ts` foi encontrado no repo — gap
 separado, fora do escopo desta correção pontual.
+
+**`src/components/quotes/CompanyContactSelector.tsx`: 14 → 0 erros.** Dois
+padrões: `noUncheckedIndexedAccess` em array já checado por `.length` (TS não
+propaga a narrativa — trocado por desestruturação `const [c] = data; if (!c)
+return null;`), e um mismatch arquitetural real entre `SelectedContactInfo`
+(campos via `undefined`, pensado pro callback público) e `ContactOption` (campos
+via `null`, o que os subcomponentes `ContactDropdown`/`SingleContactDisplay`
+sempre esperaram — eles mesmos já convertem `null→undefined` só no boundary do
+callback). A query usava o tipo errado; corrigido pra `ContactOption[]`. Uma
+non-null assertion justificada e comentada (`contacts[0]!`) onde o ramo do
+ternário já garante o comprimento.
+
+**`src/lib/supabase-untyped.ts` (`untypedFrom<T>`): constraint genérica
+corrigida — achado de alto impacto.** `T extends Record<string, unknown>`
+exigia index signature implícito, que uma interface comum nunca satisfaz
+estruturalmente — rejeitava o próprio caso de uso documentado no cabeçalho do
+arquivo. Usado por 13 arquivos. Corrigido pra `T extends object`. Resolveu de
+graça os 13 erros de `useGroupPersonalization.ts` (zerado) sem editar esse
+arquivo — puro efeito colateral de consertar a raiz compartilhada. Mudança
+é só em nível de tipo, zero impacto em runtime.
+
+## Achado fora da etapa 17: busca usando dado de negócio hardcoded (não mock de teste)
+
+Verificando a etapa 42 (mockData não deve ir pro bundle de produção), achei algo
+mais sério do que "bundle grande": `src/hooks/useSearch.ts` — a busca central do
+app, usada por 4 componentes/hooks — importava `CATEGORIES`/`SUPPLIERS` de
+`@/data/mockData` com **nomes reais de negócio congelados no código-fonte**
+("BRINDES SICOOB", "XBZ Brindes", "Stricker Brasil", "Asia Import"). Não é dado
+fictício de teste — é dado de referência real, desatualizado desde que foi
+escrito, sem nenhum jeito de refletir uma categoria ou fornecedor novo/removido
+no catálogo real.
+
+`useSuppliers()` já existe especificamente pra isso (o próprio comentário do
+hook diz *"Substitui o uso de SUPPLIERS do mockData"*) e outros 3 arquivos já o
+usam — só `useSearch.ts` ficou pra trás numa migração incompleta. Corrigido pra
+usar `useSuppliers()` + `useExternalCategoriesQuery()` (mesmos hooks React
+Query já usados em outros lugares do catálogo). Adicionados 2 testes que provam
+a correção diretamente (nome do catálogo mockado aparece, nome antigo
+hardcoded não aparece mais). Ver commit `3708ad53a`.
+
+Investigado também `PUBLICO_ALVO`/`DATAS_COMEMORATIVAS`/`ENDOMARKETING`/
+`NICHOS`/`FAIXAS_PRECO` (mesmo arquivo, `ProductMarketingSection.tsx` consome o
+primeiro trio): são taxonomias fixas de classificação/marketing, não ligadas ao
+catálogo vivo (fornecedor/categoria mudam conforme o negócio cresce; "Dia dos
+Pais" ou "Dia do Advogado" não mudam). Hardcode aqui é uma escolha legítima, não
+o mesmo bug de `CATEGORIES`/`SUPPLIERS` — só está mal nomeado (misturado num
+arquivo chamado "mockData.ts" junto com `PRODUCTS`/clientes genuinamente
+fictícios). Sem ação necessária; renomear/separar o arquivo é cosmético, não
+prioritário.
+
+## Etapa 38 (desacoplar build de npm audit)
+
+Confirmado o mesmo problema do plano original: `"build": "npm run
+generate:audit && npm run check:npm-audit && vite build"` fazia o build de
+produção depender de uma chamada de rede ao registro do npm. `ci.yml` já roda
+`check:npm-audit` num passo próprio e independente (não precisa do embutido em
+`build`); `lighthouse.yml`/`bundle-check.yml` chamam `npm run build` sem passo
+de audit próprio — perdem a cobertura incidental que ganhavam de graça, mas
+essa não é a função deles (bundle size / lighthouse, não segurança). Corrigido:
+`build` agora é só `vite build`; `generate:audit` (echo no-op) removido;
+`build:dev` manteve `typecheck:baseline` (não depende de rede, sem motivo pra
+tirar). Testado: `npm run build` roda limpo, mesma composição de chunks.
