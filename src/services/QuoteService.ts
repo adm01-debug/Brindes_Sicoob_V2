@@ -1,11 +1,91 @@
 import { supabase } from "@/integrations/supabase/client";
 import { applySellerScope } from "@/lib/auth/apply-seller-scope";
+import type { SalesScope } from "@/lib/auth/visibility-scope";
+import type { Json } from "@/integrations/supabase/types";
 import { Quote, QuoteItem, QuoteItemPersonalization, PersonalizationTechnique } from "@/hooks/quotes/quoteTypes";
 import { calculateQuoteTotals, buildInsertPayload, buildUpdatePayload, buildItemsInsertPayload, buildPersonalizationsInsertPayload } from "@/hooks/quotes/quoteHelpers";
 import { logger } from "@/lib/logger";
 
+/**
+ * Normaliza uma linha crua de `quote_items` (colunas nulas no banco) para o
+ * tipo de domínio `QuoteItem` (campos opcionais, sem `null`). Extraído de
+ * `QuoteService.getById` só para manter a complexidade ciclomática do método
+ * sob o limite do lint — a lógica em si é reta, sem ramificação real.
+ */
+function mapDbQuoteItemRow(
+  item: Record<string, unknown> & { id: string; product_id: string | null },
+  allPersonalizations: Array<Record<string, unknown>>,
+): QuoteItem {
+  return {
+    ...item,
+    product_id: item.product_id ?? "",
+    notes: (item.notes as string | null | undefined) ?? undefined,
+    sort_order: (item.sort_order as number | null | undefined) ?? undefined,
+    color_hex: (item.color_hex as string | null | undefined) ?? undefined,
+    color_name: (item.color_name as string | null | undefined) ?? undefined,
+    product_image_url: (item.product_image_url as string | null | undefined) ?? undefined,
+    product_sku: (item.product_sku as string | null | undefined) ?? undefined,
+    subtotal: (item.subtotal as number | null | undefined) ?? undefined,
+    unit_cost: (item.unit_cost as number | null | undefined) ?? undefined,
+    personalizations: allPersonalizations.filter(
+      (p) => p.quote_item_id === item.id,
+    ) as unknown as QuoteItemPersonalization[],
+  } as QuoteItem;
+}
+
+/**
+ * Traduz uma linha de `orders` (colunas nulas no banco) pros campos de
+ * cliente/entrega de `Partial<Quote>` (opcionais, sem `null`). Extraído de
+ * `QuoteService.reorderFromOrder` só para manter a complexidade ciclomática
+ * do método sob o limite do lint.
+ */
+function mapOrderToQuoteFields(order: {
+  client_id: string | null;
+  client_name: string | null;
+  client_email: string | null;
+  client_phone: string | null;
+  client_company: string | null;
+  payment_terms: string | null;
+  delivery_time: string | null;
+  shipping_type: string | null;
+  order_number: string;
+}): Partial<Quote> {
+  return {
+    client_id: order.client_id ?? undefined,
+    client_name: order.client_name ?? undefined,
+    client_email: order.client_email ?? undefined,
+    client_phone: order.client_phone ?? undefined,
+    client_company: order.client_company ?? undefined,
+    payment_terms: order.payment_terms ?? undefined,
+    delivery_time: order.delivery_time ?? undefined,
+    shipping_type: order.shipping_type ?? undefined,
+    notes: `Recompra do pedido #${order.order_number}.`,
+    status: 'draft',
+  };
+}
+
+/** Mesma ideia acima, para uma linha de `order_items` virar `QuoteItem`. */
+function mapOrderItemToQuoteItem(item: {
+  product_id: string | null;
+  product_sku: string | null;
+  product_name: string | null;
+  product_image_url: string | null;
+  quantity: number | null;
+  unit_price: number | null;
+}): QuoteItem {
+  return {
+    product_id: item.product_id ?? "",
+    product_sku: item.product_sku ?? undefined,
+    product_name: item.product_name ?? "",
+    product_image_url: item.product_image_url ?? undefined,
+    quantity: item.quantity ?? 0,
+    unit_price: item.unit_price ?? 0,
+    personalizations: [],
+  };
+}
+
 export class QuoteService {
-  static async list(params: { userId: string, scope: string, orgId: string | null }): Promise<Quote[]> {
+  static async list(params: { userId: string, scope: SalesScope, orgId: string | null }): Promise<Quote[]> {
     let q = supabase.from("quotes").select("*").order("created_at", { ascending: false }).limit(500);
     q = applySellerScope(q, { scope: params.scope, userId: params.userId });
     
@@ -49,10 +129,7 @@ export class QuoteService {
         allPersonalizations = (persData || []) as Array<Record<string, unknown>>;
       }
 
-      const items: QuoteItem[] = (itemsData || []).map((item) => ({
-        ...item,
-        personalizations: (allPersonalizations as any[]).filter(p => p.quote_item_id === item.id) as QuoteItemPersonalization[],
-      }));
+      const items: QuoteItem[] = (itemsData || []).map((item) => mapDbQuoteItemRow(item, allPersonalizations));
 
       return { ...quoteData, items } as Quote;
     } catch (err) {
@@ -183,10 +260,12 @@ export class QuoteService {
     if (!original) throw new Error("Orçamento original não encontrado");
 
     // Clean sensitive/metadata for the new quote
-    const { 
-      id, created_at, updated_at, quote_number, status, 
-      total, subtotal, discount_amount, converted_at,
-      ...cleanQuote 
+    // (converted_at nunca existiu na tabela quotes nem no tipo Quote —
+    //  removido daqui; ver docs/correcoes-validacao-2026-09-13.md)
+    const {
+      id, created_at, updated_at, quote_number, status,
+      total, subtotal, discount_amount,
+      ...cleanQuote
     } = original;
     
     const newQuote: Partial<Quote> = {
@@ -210,28 +289,8 @@ export class QuoteService {
     const { data: items, error: itemsErr } = await supabase.from("order_items").select("*").eq("order_id", orderId);
     if (itemsErr) throw itemsErr;
 
-    const newQuote: Partial<Quote> = {
-      client_id: order.client_id,
-      client_name: order.client_name,
-      client_email: order.client_email,
-      client_phone: order.client_phone,
-      client_company: order.client_company,
-      payment_terms: order.payment_terms,
-      delivery_time: order.delivery_time,
-      shipping_type: order.shipping_type,
-      notes: `Recompra do pedido #${order.order_number}.`,
-      status: 'draft'
-    };
-
-    const quoteItems: QuoteItem[] = (items || []).map(item => ({
-      product_id: item.product_id,
-      product_sku: item.product_sku,
-      product_name: item.product_name,
-      product_image_url: item.product_image_url,
-      quantity: item.quantity,
-      unit_price: item.unit_price,
-      personalizations: []
-    }));
+    const newQuote = mapOrderToQuoteFields(order);
+    const quoteItems: QuoteItem[] = (items || []).map(mapOrderItemToQuoteItem);
 
     return this.create({
       quote: newQuote,
@@ -252,7 +311,7 @@ export class QuoteService {
     for (let i = 0; i < items.length; i++) {
       const item = items[i];
       const insertedItem = insertedItems?.[i];
-      if (item.personalizations?.length && insertedItem) {
+      if (item && item.personalizations?.length && insertedItem) {
         const persPayload = buildPersonalizationsInsertPayload(item.personalizations, insertedItem.id);
         const { error: pErr } = await supabase.from("quote_item_personalizations").insert(persPayload);
         if (pErr) {
@@ -273,10 +332,14 @@ export class QuoteService {
     newValue?: string;
     metadata?: Record<string, unknown>;
   }) {
-    // Captura IP e UA do lado do cliente se não for fornecido
-    const clientMetadata = {
-      ip: params.metadata?.ip || 'client',
-      user_agent: params.metadata?.user_agent || (typeof navigator !== 'undefined' ? navigator.userAgent : 'unknown'),
+    // Captura IP e UA do lado do cliente se não for fornecido. Anotação
+    // explícita de tipo evita que o spread de Record<string, unknown> logo
+    // abaixo confunda a inferência dos campos ip/user_agent (o TS chega a
+    // inferir `{}` pra eles sem a anotação — quirk de spread + index
+    // signature).
+    const clientMetadata: Record<string, unknown> = {
+      ip: params.metadata?.ip ?? 'client',
+      user_agent: params.metadata?.user_agent ?? (typeof navigator !== 'undefined' ? navigator.userAgent : 'unknown'),
       timestamp: new Date().toISOString(),
       ...(params.metadata || {})
     };
@@ -289,7 +352,7 @@ export class QuoteService {
       field_changed: params.fieldChanged || null,
       old_value: params.oldValue || null,
       new_value: params.newValue || null,
-      metadata: clientMetadata,
+      metadata: clientMetadata as Json,
     });
   }
 
@@ -321,7 +384,7 @@ export class QuoteService {
     // 2. Link quotes to it
     const { error: updErr } = await supabase
       .from("quotes")
-      .update({ consolidation_id: consolidation.id } as any)
+      .update({ consolidation_id: consolidation.id })
       .in("id", params.quoteIds);
 
     if (updErr) throw updErr;

@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-09-12T22:59:09.189Z",
-  "total": 1189,
+  "generatedAt": "2026-09-14T11:10:44.513Z",
+  "total": 1174,
   "files": {
     "src/components/admin/categories/CategoriesManager.tsx": 6,
     "src/components/admin/common/AdminDataTable.tsx": 2,
@@ -428,7 +428,6 @@
     "src/services/admin/UserService.ts": 1,
     "src/services/materialService.ts": 4,
     "src/services/OrderService.ts": 6,
-    "src/services/QuoteService.ts": 15,
     "src/services/sicoob/budgetService.ts": 5,
     "src/services/sicoob/orderService.ts": 3,
     "src/stores/useNavigationStore.ts": 2,
