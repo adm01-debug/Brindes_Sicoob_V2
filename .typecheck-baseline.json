@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-09-14T13:35:05.653Z",
-  "total": 1117,
+  "generatedAt": "2026-09-14T16:51:50.003Z",
+  "total": 1107,
   "files": {
     "src/components/admin/categories/CategoriesManager.tsx": 6,
     "src/components/admin/common/AdminDataTable.tsx": 2,
@@ -431,7 +431,6 @@
     "src/utils/color-group-hex.ts": 1,
     "src/utils/color-matching.ts": 1,
     "src/utils/color-variant-carousel.ts": 1,
-    "src/utils/excelExport.ts": 2,
-    "src/utils/kitPdfGenerator.ts": 10
+    "src/utils/excelExport.ts": 2
   }
 }

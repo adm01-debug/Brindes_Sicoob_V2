@@ -4,7 +4,7 @@
  * price breakdown, and personalization details.
  */
 
-import jsPDF from 'jspdf';
+import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import {
   type KitState,
@@ -35,8 +35,9 @@ const GREEN = [16, 185, 129] as const;
 function hexToRgb(hex?: string): readonly [number, number, number] | null {
   if (!hex) return null;
   const m = hex.replace('#', '').match(/^([0-9a-f]{6})$/i);
-  if (!m) return null;
-  const n = parseInt(m[1], 16);
+  const captured = m?.[1];
+  if (!captured) return null;
+  const n = parseInt(captured, 16);
   return [(n >> 16) & 255, (n >> 8) & 255, n & 255] as const;
 }
 
@@ -185,14 +186,14 @@ function drawCompositionTable(doc: jsPDF, kitState: KitState, y: number): number
     body: rows,
     theme: 'striped',
     headStyles: {
-      fillColor: PRIMARY as unknown as number[],
-      textColor: WHITE as unknown as number[],
+      fillColor: [...PRIMARY],
+      textColor: [...WHITE],
       fontSize: 8,
       fontStyle: 'bold',
     },
     bodyStyles: {
       fontSize: 7.5,
-      textColor: GRAY_800 as unknown as number[],
+      textColor: [...GRAY_800],
     },
     alternateRowStyles: {
       fillColor: [248, 250, 252],
@@ -253,14 +254,14 @@ function drawPersonalizationDetails(
     body: entries.map((e) => [e.name, e.technique, e.colors, e.dimensions, e.price]),
     theme: 'grid',
     headStyles: {
-      fillColor: [99, 102, 241] as number[],
-      textColor: WHITE as unknown as number[],
+      fillColor: [99, 102, 241],
+      textColor: [...WHITE],
       fontSize: 8,
       fontStyle: 'bold',
     },
     bodyStyles: {
       fontSize: 7.5,
-      textColor: GRAY_800 as unknown as number[],
+      textColor: [...GRAY_800],
     },
     margin: { left: 14, right: 14 },
   });
@@ -293,14 +294,14 @@ function drawPriceBreakdown(
     body: rows,
     theme: 'striped',
     headStyles: {
-      fillColor: GRAY_800 as unknown as number[],
-      textColor: WHITE as unknown as number[],
+      fillColor: [...GRAY_800],
+      textColor: [...WHITE],
       fontSize: 8,
       fontStyle: 'bold',
     },
     bodyStyles: {
       fontSize: 7.5,
-      textColor: GRAY_800 as unknown as number[],
+      textColor: [...GRAY_800],
     },
     columnStyles: {
       1: { halign: 'center', cellWidth: 18 },

@@ -138,6 +138,52 @@ pré-existentes (não relacionados, em `applyTemplate`/`getTemplateItems` vs.
 `QuoteTemplateItem`) — confirmados inalterados antes/depois desta correção,
 fora do escopo desta etapa. Baseline total: 1129 → 1117.
 
+**`src/utils/kitPdfGenerator.ts`: 10 → 0 erros.** Três causas distintas, todas
+puramente de tipo (mudança de comportamento zero, confirmado abaixo):
+
+- `hexToRgb`: `m[1]` (grupo de captura do regex) é `string | undefined` sob
+  `noUncheckedIndexedAccess`, mas o regex `^([0-9a-f]{6})$` garante que, se
+  `m` deu match, o grupo 1 sempre existe — o `undefined` nunca acontece na
+  prática. Corrigido com uma guarda local (`const captured = m?.[1]; if
+  (!captured) return null;`) que só formaliza uma garantia que já era
+  verdadeira, sem mudar o caminho de execução.
+- 9 ocorrências de `fillColor`/`textColor: PRIMARY as unknown as number[]`
+  (e variantes com `GRAY_800`/`WHITE`/literal inline) — cast pro tipo ERRADO.
+  O tipo real esperado por `jspdf-autotable` é `Color = [number, number,
+  number] | number | string | false` (uma tupla de 3, não um array de
+  tamanho livre); `PRIMARY` etc. são `readonly [n,n,n]` (`as const`), que não
+  satisfazem a tupla mutável diretamente — daí o cast, só que pro tipo
+  errado. Corrigido pra `[...PRIMARY]` (spread cria uma tupla mutável nova,
+  mesmos 3 números, sem cast nenhum) — o mesmo padrão que já funcionava sem
+  erro 2 linhas abaixo (`alternateRowStyles: { fillColor: [248, 250, 252] }`,
+  array literal direto, nunca precisou de cast).
+- 3 ocorrências de `doc.lastAutoTable` (`Property 'lastAutoTable' does not
+  exist on type 'jsPDF'`) — **falso-positivo do `tscheck-files.mjs`, não erro
+  real**: o projeto já tem `src/types/jspdf-autotable.d.ts` fazendo a
+  augmentation certa (`declare module "jspdf" { interface jsPDF {
+  lastAutoTable: {...} } }`), e o baseline do projeto inteiro (fonte da
+  verdade) já contava só 10 erros pra este arquivo, não 13 — confirmando que
+  esses 3 nunca existiram no build real. Causa raiz: `tscheck-files.mjs`
+  monta um tsconfig temporário com `include: files` (só os arquivos pedidos),
+  o que **descarta os `.d.ts` ambientes de `src/types/`** do programa
+  (eles não são importados por ninguém, só pegos pelo glob `include`
+  original). Reproduzido também em `src/lib/bi/dossierPdfGenerator.ts` e
+  `src/utils/productPdfExport.ts` (baseline: 0 erros reais pra
+  `lastAutoTable`, mas o `tscheck-files.mjs` isolado acusava erro nos três).
+  **Corrigido na ferramenta** (`scripts/tscheck-files.mjs`): o tsconfig
+  temporário agora sempre inclui `src/**/*.d.ts` junto dos arquivos pedidos.
+  Verificado: os três arquivos voltam a reportar corretamente (0, 0 e 0 dos
+  erros de `lastAutoTable` respectivamente). Troquei também o import de
+  `jsPDF` neste arquivo de `import jsPDF from 'jspdf'` (default) pra `import
+  { jsPDF } from 'jspdf'` (nomeado, mesmo estilo dos dois arquivos que já
+  funcionavam) — não era estritamente necessário (a augmentation vale pra
+  qualquer estilo de import, já que os dois se referem à mesma classe), mas
+  deixa o arquivo consistente com o padrão que comprovadamente funciona.
+
+Sem teste dedicado a `kitPdfGenerator.ts` (único consumidor:
+`KitBuilderPage.tsx`, sem teste próprio também) — mesmo gap já registrado
+para outros arquivos desta etapa. Baseline total: 1117 → 1107.
+
 ## Achado fora da etapa 17: busca usando dado de negócio hardcoded (não mock de teste)
 
 Verificando a etapa 42 (mockData não deve ir pro bundle de produção), achei algo

@@ -19,9 +19,18 @@
  * TypeScript. Corrigido para `npx tsc` (o compilador real, já é
  * devDependency do projeto). Mais lento que o `tsgo` prometia ser, mas
  * pelo menos correto — ver docs/correcoes-validacao-2026-09-13.md.
+ *
+ * Nota (2026-09-14, 2ª): `include: files` substituía o `include: ["src"]`
+ * do tsconfig.app.json, derrubando do programa os `.d.ts` ambientes
+ * (`src/types/*.d.ts`) que fazem `declare module` augmentation (ex.:
+ * jspdf-autotable.d.ts para `doc.lastAutoTable`). Resultado: falso-positivo
+ * — arquivos que usam essa augmentation reportavam erro aqui mas
+ * compilavam limpos no projeto inteiro (baseline). Corrigido: sempre inclui
+ * todo `src/**\/*.d.ts` junto dos arquivos pedidos.
  */
 import { writeFileSync, unlinkSync } from "node:fs";
 import { spawnSync } from "node:child_process";
+import { globSync } from "node:fs";
 
 const files = process.argv.slice(2).filter(Boolean);
 if (files.length === 0) {
@@ -29,10 +38,15 @@ if (files.length === 0) {
   process.exit(2);
 }
 
+const ambientDeclarations = globSync("src/**/*.d.ts");
 const cfgPath = `tsconfig.probe.${process.pid}.json`;
 writeFileSync(
   cfgPath,
-  JSON.stringify({ extends: "./tsconfig.app.json", include: files }, null, 2),
+  JSON.stringify(
+    { extends: "./tsconfig.app.json", include: [...new Set([...files, ...ambientDeclarations])] },
+    null,
+    2,
+  ),
 );
 
 try {
