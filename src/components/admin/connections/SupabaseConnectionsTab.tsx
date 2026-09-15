@@ -29,7 +29,7 @@ const ENVS = [
     description: "Banco principal do sistema. Gerenciado automaticamente pelo Lovable.",
   },
   {
-    key: "promobrind", name: "Catálogo Promobrind",
+    key: "promobrind", name: "Catálogo Promobrind", readOnly: false,
     envKey: "promobrind" as const,
     urlSecret: "EXTERNAL_PROMOBRIND_URL",
     anonSecret: "EXTERNAL_PROMOBRIND_ANON_KEY",
@@ -37,7 +37,7 @@ const ENVS = [
     description: "Banco SSOT de produtos, fornecedores e categorias.",
   },
   {
-    key: "crm", name: "CRM Promobrind",
+    key: "crm", name: "CRM Promobrind", readOnly: false,
     envKey: "crm" as const,
     urlSecret: "EXTERNAL_CRM_URL",
     anonSecret: "EXTERNAL_CRM_ANON_KEY",
@@ -176,7 +176,7 @@ export function SupabaseConnectionsTab() {
                       open={!!timelineOpenByEnv[env.key]}
                       onOpenChange={(v) => setTimelineOpenByEnv((cur) => ({ ...cur, [env.key]: v }))}
                     />
-                    <RefreshFromDbButton onRefreshed={list} />
+                    <RefreshFromDbButton onRefreshed={() => { void list(); }} />
                     <Button
                       size="sm"
                       variant="ghost"

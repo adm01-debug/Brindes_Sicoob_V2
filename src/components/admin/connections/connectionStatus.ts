@@ -17,7 +17,7 @@ export interface ResolveStatusInput {
   /** Resolved service-role secret (or undefined if missing). */
   service?: SecretLite;
   /** Last connection-test result (null if never tested). */
-  last?: { ok: boolean } | null;
+  last?: { ok: boolean | null } | null;
 }
 
 /**

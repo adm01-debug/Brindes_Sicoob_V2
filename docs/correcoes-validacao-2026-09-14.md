@@ -225,3 +225,38 @@ essa não é a função deles (bundle size / lighthouse, não segurança). Corri
 `build` agora é só `vite build`; `generate:audit` (echo no-op) removido;
 `build:dev` manteve `typecheck:baseline` (não depende de rede, sem motivo pra
 tirar). Testado: `npm run build` roda limpo, mesma composição de chunks.
+
+## `SupabaseConnectionsTab.tsx` + `connectionStatus.ts` (etapa 17, 8 → 0 erros)
+
+Três causas reais, nenhuma delas cosmética:
+
+- **`ENVS` como union heterogênea**: o array `as const` tem 3 objetos; só o
+  primeiro (`local`) declara `readOnly: true`. Os outros dois (`promobrind`,
+  `crm`) não declaram a chave `readOnly` nenhuma — não é `readOnly: false`,
+  é a propriedade **ausente**. TypeScript infere uma union de 3 shapes
+  distintos, e `env.readOnly` só existe no primeiro membro — todo acesso a
+  `env.readOnly` no `.map()` (6 ocorrências) dava TS2339. Corrigido
+  adicionando `readOnly: false` explícito nos outros dois objetos, alinhando
+  o shape dos 3 membros da union.
+- **`ResolveStatusInput.last` mais estrito que o dado real**:
+  `connectionStatus.ts` declarava `last?: { ok: boolean } | null`, mas o tipo
+  real passado (`LastTestInfo`, de `LastTestLine.tsx`) tem `ok: boolean |
+  null` (fica `null` antes do primeiro teste rodar). Corrigido widening o
+  tipo do parâmetro pra `{ ok: boolean | null } | null` — sem mudança de
+  comportamento, porque a única leitura do campo é `last?.ok === false`, e
+  `null === false` já era `false` antes e continua sendo.
+- **`onRefreshed={list}` incompatível por causa da assinatura de retorno**:
+  `RefreshFromDbButton.onRefreshed` é `() => void | Promise<void>`; `list`
+  (de `useSecretsManager`) é `(names?: string[]) => Promise<SecretStatus[]>`.
+  A regra especial do TypeScript que permite qualquer retorno quando o alvo é
+  `void` puro não se aplica a uniões como `void | Promise<void>` — por isso
+  `onSaved={list}` (que tem alvo `() => void` puro, em `SecretField.tsx`)
+  compila e este não. Corrigido envolvendo a chamada: `onRefreshed={() => {
+  void list(); }}` (mesmo padrão fire-and-forget já usado no
+  `useEffect(() => { list(); }, [list])` da linha 60 do próprio arquivo).
+
+Verificado: `tests/components/admin/connections/connectionStatus.test.ts`
+(8 testes, cobre `resolveSupabaseConnectionStatus` diretamente) passa sem
+alteração — o widening de tipo não muda nenhum caso testado. Sem teste
+dedicado pro componente `SupabaseConnectionsTab.tsx` em si (mesmo gap já
+registrado para outros arquivos desta etapa). Baseline total: 1107 → 1099.
