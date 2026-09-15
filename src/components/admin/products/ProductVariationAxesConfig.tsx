@@ -189,6 +189,7 @@ export function ProductVariationAxesConfig({ productId, gender, onGenderChange }
       {/* Variant-based axes */}
       {VARIANT_AXES.map(axis => {
         const state = axisState[axis.key];
+        if (!state) return null;
         const isExpanded = expandedAxis === axis.key;
         const AxisIcon = axis.icon;
 

@@ -260,3 +260,32 @@ Verificado: `tests/components/admin/connections/connectionStatus.test.ts`
 alteração — o widening de tipo não muda nenhum caso testado. Sem teste
 dedicado pro componente `SupabaseConnectionsTab.tsx` em si (mesmo gap já
 registrado para outros arquivos desta etapa). Baseline total: 1107 → 1099.
+
+## `ProductVariationAxesConfig.tsx` (etapa 17, 8 → 0 erros)
+
+Causa única, repetida em 8 pontos do mesmo bloco JSX: `axisState` é montado por
+um `useMemo` que itera `VARIANT_AXES` (array fixo de 3 eixos: cor, tamanho,
+capacidade) construindo `Record<string, { active: boolean; values: string[] }>`
+— uma chave por eixo. Mais abaixo, dentro do JSX, um `.map()` separado sobre
+esse mesmo `VARIANT_AXES` reindexa `axisState[axis.key]` pra renderizar cada
+card de eixo. Como são dois loops distintos sobre o mesmo array, o TypeScript
+não consegue provar que as chaves usadas pra indexar são exatamente as mesmas
+que foram usadas pra popular — mesmo sendo garantido em runtime (mesmo array,
+mesma ordem, mesma função de chave) — e sob `noUncheckedIndexedAccess` o
+resultado do índice é `{ active: boolean; values: string[] } | undefined`.
+Todo uso de `state.active`/`state.values` no restante do bloco (6 acessos, até
+a linha 273) herdava o `TS18048 'state' is possibly 'undefined'`.
+
+Corrigido com uma guarda local logo após a indexação, mesmo padrão já usado em
+`QuoteBuilderPage.tsx` nesta mesma etapa:
+
+```tsx
+const state = axisState[axis.key];
+if (!state) return null;
+```
+
+Formaliza uma garantia que já era verdadeira (nunca dispara em runtime, já que
+as chaves vêm do mesmo `VARIANT_AXES`) sem alterar nenhum caminho de execução.
+
+Sem teste dedicado a `ProductVariationAxesConfig.tsx` no repo — mesmo gap já
+registrado para outros arquivos desta etapa. Baseline total: 1099 → 1091.
