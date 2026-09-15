@@ -289,3 +289,35 @@ as chaves vêm do mesmo `VARIANT_AXES`) sem alterar nenhum caminho de execução
 
 Sem teste dedicado a `ProductVariationAxesConfig.tsx` no repo — mesmo gap já
 registrado para outros arquivos desta etapa. Baseline total: 1099 → 1091.
+
+## `ConfigurationPanelV6.tsx` (etapa 17, 8 → 0 erros)
+
+Diferente dos arquivos anteriores desta etapa, aqui os `T | undefined` do
+`noUncheckedIndexedAccess` refletem um risco real, não uma garantia perdida
+por limite de escopo. `CustomizationPriceResponseV6` (tipo do retorno de
+`fn_get_customization_price`) declara `faixa`, `num_cores`, `preco_unitario`,
+`valor_gravacao`, `setup_total` e `total_cobrado` como opcionais de propósito
+— são campos `requiredFields` no `PRICE_CONTRACT` (`rpc-contracts.ts`), mas
+`validateRpcPayload` (`rpc-validator.ts`) só **loga** um aviso em dev quando
+o payload real vem incompleto (visto nos próprios logs de teste desta sessão:
+"Payload de fn_get_customization_price faltando campos: ..."), nunca bloqueia
+`setPrice(result)` em `useCustomizationPrice.ts`. Ou seja: um payload
+incompleto do backend chega inteiro ao componente, e o componente chamava
+`.toFixed()` direto nesses campos — um `TypeError: Cannot read properties of
+undefined` real em produção se o RPC alguma vez omitir um desses campos, não
+hipotético.
+
+Corrigido com fallback defensivo, não supressão de tipo:
+
+- `price.faixa`: bloco inteiro (`Faixa: X a Y peças`) agora só renderiza
+  `{price.faixa && (...)}` — sem faixa, sem essa linha, em vez de "Faixa:
+  undefined a undefined".
+- `num_cores`, `preco_unitario`, `valor_gravacao`, `setup_total`,
+  `total_cobrado`: derivados uma vez em consts locais (`price?.campo ?? 0`)
+  logo após o hook, reusadas em todos os pontos de leitura — campo ausente
+  vira `R$ 0,00` em vez de crashar a tela inteira de configuração.
+
+Sem teste dedicado a `ConfigurationPanelV6.tsx` no repo — mesmo gap já
+registrado para outros arquivos desta etapa; `tests/hooks/useGravacaoPriceV2.test.ts`
+(8 testes, cobre o adapter que alimenta este fluxo) passa sem alteração.
+Baseline total: 1091 → 1083.

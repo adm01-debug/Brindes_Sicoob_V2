@@ -57,6 +57,15 @@ export function ConfigurationPanelV6({ technique, quantity, onPriceCalculated }:
   const onPriceCalculatedRef = useRef(onPriceCalculated);
   onPriceCalculatedRef.current = onPriceCalculated;
 
+  // fn_get_customization_price são campos required pelo PRICE_CONTRACT, mas o
+  // validador só loga um aviso em drift (não bloqueia) — payload real pode
+  // vir incompleto, então tratamos como 0 em vez de deixar .toFixed() quebrar.
+  const priceNumCores = price?.num_cores ?? 0;
+  const pricePrecoUnitario = price?.preco_unitario ?? 0;
+  const priceValorGravacao = price?.valor_gravacao ?? 0;
+  const priceSetupTotal = price?.setup_total ?? 0;
+  const priceTotalCobrado = price?.total_cobrado ?? 0;
+
   // Notify parent when price or dimensions change
   useEffect(() => {
     const dims = technique.usa_dimensao ? { width: larguraNum, height: alturaNum } : undefined;
@@ -184,9 +193,11 @@ export function ConfigurationPanelV6({ technique, quantity, onPriceCalculated }:
               <p>Gravação: {larguraNum} × {alturaNum} cm</p>
             )}
             <p>Quantidade: {price.quantidade} peças</p>
-            <p>Faixa: {price.faixa.qtd_min} a {price.faixa.qtd_max} peças</p>
-            {price.num_cores > 1 && (
-              <p>Cores: {price.num_cores}</p>
+            {price.faixa && (
+              <p>Faixa: {price.faixa.qtd_min} a {price.faixa.qtd_max} peças</p>
+            )}
+            {priceNumCores > 1 && (
+              <p>Cores: {priceNumCores}</p>
             )}
           </div>
 
@@ -194,27 +205,27 @@ export function ConfigurationPanelV6({ technique, quantity, onPriceCalculated }:
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">Preço unitário:</span>
               <span className="font-semibold text-primary">
-                R$ {price.preco_unitario.toFixed(2)}
+                R$ {pricePrecoUnitario.toFixed(2)}
               </span>
             </div>
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">Gravação ({price.quantidade}×):</span>
               <span className="font-medium text-foreground">
-                R$ {price.valor_gravacao.toFixed(2)}
+                R$ {priceValorGravacao.toFixed(2)}
               </span>
             </div>
-            {price.setup_total > 0 && (
+            {priceSetupTotal > 0 && (
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">Setup:</span>
                 <span className="font-medium text-foreground">
-                  R$ {price.setup_total.toFixed(2)}
+                  R$ {priceSetupTotal.toFixed(2)}
                 </span>
               </div>
             )}
             <div className="flex justify-between text-sm font-bold border-t border-border/50 pt-1">
               <span className="text-foreground">TOTAL:</span>
               <span className="text-primary">
-                R$ {price.total_cobrado.toFixed(2)}
+                R$ {priceTotalCobrado.toFixed(2)}
               </span>
             </div>
           </div>
