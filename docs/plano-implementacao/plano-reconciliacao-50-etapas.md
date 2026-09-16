@@ -452,6 +452,8 @@ Convenções de comando: `SUPABASE_PROJECT=cfmzkthhgliqelozlmwu`; consultas via 
 
 Restam ~190 funções com `EXECUTE` para `authenticated` (não `anon`) não auditadas individualmente — helpers de leitura (`is_admin`, `has_role`) ou já cobertas pela lógica interna de autorização das RPCs Sicoob revisadas na Fase 3; risco residual baixo, fica como item de baixa prioridade.
 
+**Achado adicional, mesma classe de bug, escopo muito maior (16/09/2026, sessão de execução exaustiva):** o mesmo padrão de "grant direto nunca revogado" existe para `TRUNCATE` em **195 das 214 tabelas de `public`** — concedido por padrão via `ALTER DEFAULT PRIVILEGES` do papel `postgres`/`supabase_admin` deste projeto Supabase. `TRUNCATE` **não é coberto por RLS no Postgres** (diferente de INSERT/UPDATE/DELETE/SELECT), então nenhuma policy o restringe, mesmo em tabelas com RLS bem configurado — incluindo a própria `admin_audit_log`. PostgREST não expõe TRUNCATE via REST, então a exposição real depende de outro caminho de SQL direto (o mesmo tipo de buraco que a `inspect_query_plan` original tinha). Corrigido em `20260916160000_revoke_truncate_schema_wide.sql`: `REVOKE TRUNCATE` nas 195 tabelas + `ALTER DEFAULT PRIVILEGES FOR ROLE postgres` para que tabelas futuras não herdem o grant. Reverificado: 0 tabelas restantes com TRUNCATE para `anon`/`authenticated`.
+
 **Depende de:** 7 · **Risco se pulada:** escalada de privilégio via `search_path` ou `EXECUTE` público.
 **Objetivo:** cada função `SECURITY DEFINER` tem `SET search_path = ''` (1 hoje sem), nenhuma função sensível com `EXECUTE` para `public`/`anon`.
 **Ações:** ampliar `npm run check:security-definer-acl` para cobrir `proconfig`; `ALTER FUNCTION ... SET search_path = ''`; `REVOKE EXECUTE ... FROM public, anon` onde indevido; revisar `ALTER DEFAULT PRIVILEGES` para novas funções.
@@ -540,6 +542,8 @@ Restam ~190 funções com `EXECUTE` para `authenticated` (não `anon`) não audi
 
 ### Etapa 40 — Partições de `admin_audit_log` e automação ✅ (aplicado em 16/09/2026)
 **Status real:** 9 novas partições criadas (2026-07 até 2027-03, 18 no total). As 5 linhas presas na partição `DEFAULT` foram realocadas (retiradas antes de criar as partições — a ordem inversa causa `ERRO 23514`, corrigido durante a execução). Função `ensure_admin_audit_log_partitions(3)` + job `pg_cron` mensal criados para não repetir o problema.
+
+**Autocrítica registrada (16/09/2026):** ao verificar mais tarde, achei que as 9 partições criadas aqui (`y2026_m07`…`y2027_m03`) tinham ficado **sem RLS e sem policy nenhuma** — diferente de todas as partições irmãs mais antigas (`y2024`…`y2026_m06`), que corretamente têm RLS + 2 policies cada. Eu esqueci esse passo ao escrever a migration original desta etapa. Pior: a função `ensure_admin_audit_log_partitions()` (criada na mesma etapa, para automatizar via cron) tinha o mesmo defeito — cada partição nova criada automaticamente todo mês repetiria o bug para sempre. Corrigido em duas migrations: `20260916160000` (RLS+policies retroativos nas 9 partições) e `20260916170000` (reescreve a função para sempre ligar RLS + policies + revogar TRUNCATE em cada partição nova). Testado: re-chamada da função contra as 15 partições existentes roda sem erro (idempotente).
 
 **Depende de:** 13 · **Risco se pulada:** partição `DEFAULT` cresce indefinidamente e degrada consultas.
 **Objetivo:** criar `y2026_m07`…`y2026_m12` e `y2027_m01`…`m03`; mover as 3 linhas de `_default`; job mensal que cria N+3 meses.
