@@ -1,5 +1,18 @@
 -- Reconciliação 16/09/2026 — endurecimento de segurança aplicado em produção.
 -- Registrado aqui como documentação as-built (já executado via SQL Editor).
+--
+-- ATENÇÃO (revisão pós-validação por agentes especializados): a primeira
+-- versão deste arquivo usava `REVOKE ALL ... FROM PUBLIC`. Nesse projeto
+-- Supabase, novas funções recebem GRANT EXECUTE explícito e direto para
+-- anon/authenticated/service_role na criação — não dependem do papel
+-- PUBLIC. `REVOKE ... FROM PUBLIC` não remove esse grant direto, então a
+-- primeira tentativa NÃO teve efeito real (confirmado com
+-- has_function_privilege('anon', ...)). Esta versão revoga explicitamente
+-- de `anon`/`authenticated` por nome. As migrations originais do Sicoob
+-- (20260912170000, 20260912200000, 20260912180000 e seus follow-ups) têm
+-- o mesmo padrão para as RPCs de service_role — corrigido aqui também,
+-- já que ele permitia falsificação de identidade (as RPCs recebem
+-- p_actor_id como parâmetro, não derivam de auth.uid()).
 
 -- 1) RLS em tabelas que estavam completamente abertas para anon/authenticated.
 ALTER TABLE public.notification_templates ENABLE ROW LEVEL SECURITY;
@@ -50,51 +63,79 @@ CREATE POLICY "authenticated_read_price_history" ON public.price_history
 FOR SELECT TO authenticated USING (true);
 
 -- 5) ACL de funcoes SECURITY DEFINER: 177/203 estavam com EXECUTE liberado
---    para PUBLIC (inclui anonimo). Duas eram vulnerabilidades criticas:
---    inspect_query_plan executava SQL arbitrario via EXPLAIN sem nenhuma
---    autenticacao; cleanup_test_auth_orphans deletava qualquer usuario de
---    auth.users sem checagem. As demais sao rotinas internas/cron/teste
---    sem uso legitimo por cliente.
-REVOKE ALL ON FUNCTION public.inspect_query_plan(text) FROM PUBLIC;
-REVOKE ALL ON FUNCTION public.cleanup_test_auth_orphans(uuid[]) FROM PUBLIC;
+--    (direto, nao via PUBLIC) para anon. Duas eram vulnerabilidades
+--    criticas: inspect_query_plan executava SQL arbitrario via EXPLAIN sem
+--    nenhuma autenticacao; cleanup_test_auth_orphans deletava qualquer
+--    usuario de auth.users sem checagem. As demais sao rotinas internas/
+--    cron/teste sem uso legitimo por cliente. Revogado explicitamente de
+--    anon E authenticated (nao bastava revogar de PUBLIC — ver nota acima).
+REVOKE EXECUTE ON FUNCTION public.inspect_query_plan(text) FROM anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.cleanup_test_auth_orphans(uuid[]) FROM anon, authenticated;
 
-REVOKE ALL ON FUNCTION public.archive_old_admin_audit_logs() FROM PUBLIC;
-REVOKE ALL ON FUNCTION public.audit_all_rls_compliance() FROM PUBLIC;
-REVOKE ALL ON FUNCTION public.audit_sicoob_rls_policies() FROM PUBLIC;
-REVOKE ALL ON FUNCTION public.auto_block_extreme_offenders() FROM PUBLIC;
-REVOKE ALL ON FUNCTION public.auto_revoke_orphan_full_keys(text) FROM PUBLIC;
-REVOKE ALL ON FUNCTION public.cleanup_discount_test_data() FROM PUBLIC;
-REVOKE ALL ON FUNCTION public.cleanup_expired_collection_trash() FROM PUBLIC;
-REVOKE ALL ON FUNCTION public.cleanup_expired_favorite_trash() FROM PUBLIC;
-REVOKE ALL ON FUNCTION public.cleanup_expired_public_comparisons() FROM PUBLIC;
-REVOKE ALL ON FUNCTION public.cleanup_expired_step_up() FROM PUBLIC;
-REVOKE ALL ON FUNCTION public.cleanup_old_notifications() FROM PUBLIC;
-REVOKE ALL ON FUNCTION public.cleanup_rate_limits() FROM PUBLIC;
-REVOKE ALL ON FUNCTION public.cleanup_security_logs() FROM PUBLIC;
-REVOKE ALL ON FUNCTION public.cleanup_webhook_logs() FROM PUBLIC;
-REVOKE ALL ON FUNCTION public.notify_hardening_regression() FROM PUBLIC;
-REVOKE ALL ON FUNCTION public.snapshot_hardening_status() FROM PUBLIC;
-REVOKE ALL ON FUNCTION public.sync_external_connections_from_credentials() FROM PUBLIC;
-REVOKE ALL ON FUNCTION public.sync_external_connections_from_credentials(text, text, uuid) FROM PUBLIC;
-REVOKE ALL ON FUNCTION public.seed_discount_test_users() FROM PUBLIC;
-REVOKE ALL ON FUNCTION public.seed_qa_scenario(text) FROM PUBLIC;
-REVOKE ALL ON FUNCTION public.provision_qa_accounts() FROM PUBLIC;
-REVOKE ALL ON FUNCTION public.get_test_auth_integrity(text[]) FROM PUBLIC;
-REVOKE ALL ON FUNCTION public.record_mcp_access_violation(uuid, text, text, text, uuid, text, text, text, jsonb) FROM PUBLIC;
+REVOKE EXECUTE ON FUNCTION public.archive_old_admin_audit_logs() FROM anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.audit_all_rls_compliance() FROM anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.audit_sicoob_rls_policies() FROM anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.auto_block_extreme_offenders() FROM anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.auto_revoke_orphan_full_keys(text) FROM anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.cleanup_discount_test_data() FROM anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.cleanup_expired_collection_trash() FROM anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.cleanup_expired_favorite_trash() FROM anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.cleanup_expired_public_comparisons() FROM anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.cleanup_expired_step_up() FROM anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.cleanup_old_notifications() FROM anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.cleanup_rate_limits() FROM anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.cleanup_security_logs() FROM anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.cleanup_webhook_logs() FROM anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.notify_hardening_regression() FROM anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.snapshot_hardening_status() FROM anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.seed_discount_test_users() FROM anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.provision_qa_accounts() FROM anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.get_test_auth_integrity(text[]) FROM anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.record_mcp_access_violation(uuid, text, text, text, uuid, text, text, text, jsonb) FROM anon, authenticated;
 
--- Recursos reais do app: exigem login (authenticated), mas nao devem
+-- Achadas em uso real pelo frontend autenticado (painel admin de conexões
+-- e ferramenta de QA) — tira de anon, mantem/restaura authenticated.
+REVOKE EXECUTE ON FUNCTION public.sync_external_connections_from_credentials() FROM anon;
+GRANT EXECUTE ON FUNCTION public.sync_external_connections_from_credentials() TO authenticated;
+REVOKE EXECUTE ON FUNCTION public.sync_external_connections_from_credentials(text, text, uuid) FROM anon;
+GRANT EXECUTE ON FUNCTION public.sync_external_connections_from_credentials(text, text, uuid) TO authenticated;
+REVOKE EXECUTE ON FUNCTION public.seed_qa_scenario(text) FROM anon;
+GRANT EXECUTE ON FUNCTION public.seed_qa_scenario(text) TO authenticated;
+
+-- Recursos reais do app — precisam de login (authenticated), mas nao devem
 -- ficar abertos a visitante anonimo.
-REVOKE ALL ON FUNCTION public.send_notification(uuid, text, text, text, text, text, jsonb) FROM PUBLIC;
+REVOKE EXECUTE ON FUNCTION public.send_notification(uuid, text, text, text, text, text, jsonb) FROM anon;
 GRANT EXECUTE ON FUNCTION public.send_notification(uuid, text, text, text, text, text, jsonb) TO authenticated;
 
-REVOKE ALL ON FUNCTION public.ensure_default_favorite_list(uuid) FROM PUBLIC;
+REVOKE EXECUTE ON FUNCTION public.ensure_default_favorite_list(uuid) FROM anon;
 GRANT EXECUTE ON FUNCTION public.ensure_default_favorite_list(uuid) TO authenticated;
 
-REVOKE ALL ON FUNCTION public.acquire_ai_quota(uuid, text, text) FROM PUBLIC;
+REVOKE EXECUTE ON FUNCTION public.acquire_ai_quota(uuid, text, text) FROM anon;
 GRANT EXECUTE ON FUNCTION public.acquire_ai_quota(uuid, text, text) TO authenticated;
 
-REVOKE ALL ON FUNCTION public.create_organization_with_owner(text, text) FROM PUBLIC;
+REVOKE EXECUTE ON FUNCTION public.create_organization_with_owner(text, text) FROM anon;
 GRANT EXECUTE ON FUNCTION public.create_organization_with_owner(text, text) TO authenticated;
 
-REVOKE ALL ON FUNCTION public.generate_sicoob_performance_report(text, text) FROM PUBLIC;
+REVOKE EXECUTE ON FUNCTION public.generate_sicoob_performance_report(text, text) FROM anon;
 GRANT EXECUTE ON FUNCTION public.generate_sicoob_performance_report(text, text) TO authenticated;
+
+-- 6) RPCs Sicoob de service_role que recebem p_actor_id como parametro
+--    explicito (nao usam auth.uid() internamente): se anon/authenticated
+--    pudessem chamar direto, davam pra forjar identidade de outro usuario.
+--    As migrations originais so faziam REVOKE FROM PUBLIC (insuficiente).
+REVOKE EXECUTE ON FUNCTION public.reorder_sicoob_order_as_quote(uuid, jsonb, text, uuid, text) FROM anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.create_sicoob_kit_quote(jsonb, jsonb, jsonb, text, uuid, text) FROM anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.create_sicoob_order_artwork_version(uuid, uuid, text, text, jsonb) FROM anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.get_sicoob_reorder_idempotency(uuid, uuid, text, text) FROM anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.get_sicoob_kit_quote_idempotency(uuid, text, text) FROM anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.ensure_admin_audit_log_partitions(integer) FROM anon, authenticated;
+
+-- 7) Consistência de ON DELETE entre tabelas irmãs do mesmo pedido Sicoob:
+--    sicoob_order_shipments usava CASCADE enquanto invoices/payments/
+--    artwork (mesma referência a sicoob_orders) usam RESTRICT — um pedido
+--    com remessa registrada mas sem NF/pagamento/arte podia ser deletado
+--    apagando silenciosamente o histórico de entrega.
+ALTER TABLE public.sicoob_order_shipments
+  DROP CONSTRAINT IF EXISTS sicoob_order_shipments_order_id_fkey,
+  ADD CONSTRAINT sicoob_order_shipments_order_id_fkey
+    FOREIGN KEY (order_id) REFERENCES public.sicoob_orders(id) ON DELETE RESTRICT;
