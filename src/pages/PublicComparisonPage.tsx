@@ -6,6 +6,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { supabase } from "@/integrations/supabase/client";
+import { fetchPromobrindProducts } from "@/lib/external-db";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { GitCompare, Sparkles, Heart, Package } from "lucide-react";
@@ -82,12 +83,20 @@ export default function PublicComparisonPage() {
 
       const productIds = [...new Set(items.map(i => i.productId))];
       if (productIds.length > 0) {
-        const { data: prods } = await supabase
-          .from("products")
-          .select("id, name, price, images, sku")
-          .in("id", productIds);
+        // Produtos vêm do catálogo externo (Promobrind), não do banco operacional —
+        // a tabela local "products" não existe. Ver docs/execucao/evidencias/products_companies_fix_20260917.md
+        const prods = await fetchPromobrindProducts({
+          filters: { id: productIds },
+          limit: productIds.length,
+        }).catch(() => []);
         const pMap = new Map<string, ProductDetail>();
-        (prods ?? []).forEach((p: ProductDetail) => pMap.set(p.id, p));
+        prods.forEach(p => pMap.set(p.id, {
+          id: p.id,
+          name: p.name,
+          price: p.sale_price ?? null,
+          images: p.images,
+          sku: p.sku,
+        }));
         setProducts(pMap);
       }
 

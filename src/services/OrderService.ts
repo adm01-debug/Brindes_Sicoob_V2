@@ -254,13 +254,13 @@ export class OrderService {
     const filePath = `pilots/${fileName}`;
 
     const { error: uploadError } = await supabase.storage
-      .from('personalization')
+      .from('personalization-images')
       .upload(filePath, file);
 
     if (uploadError) throw uploadError;
 
     const { data: { publicUrl } } = supabase.storage
-      .from('personalization')
+      .from('personalization-images')
       .getPublicUrl(filePath);
       
     return publicUrl;

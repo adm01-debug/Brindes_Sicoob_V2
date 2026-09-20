@@ -62,7 +62,7 @@ export default function AuditEvidenceDashboard() {
     queryKey: ["rls-denials-timeline"],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("rls_denial_logs")
+        .from("rls_denial_log")
         .select("*")
         .order("created_at", { ascending: false })
         .limit(50);

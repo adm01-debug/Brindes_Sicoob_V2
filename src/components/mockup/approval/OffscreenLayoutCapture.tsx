@@ -92,7 +92,7 @@ export function OffscreenLayoutCapture({ request, onCaptured }: OffscreenLayoutC
         const fileName = `layout-${Date.now()}.jpg`;
         const storagePath = `${request.userId}/mockup-layouts/${fileName}`;
         const { error: uploadError } = await supabase.storage
-          .from("mockup-assets")
+          .from("mockup-art-files")
           .upload(storagePath, blob, { contentType: "image/jpeg", upsert: true });
 
         if (uploadError) {
@@ -101,7 +101,7 @@ export function OffscreenLayoutCapture({ request, onCaptured }: OffscreenLayoutC
         }
 
         const { data: urlData } = supabase.storage
-          .from("mockup-assets")
+          .from("mockup-art-files")
           .getPublicUrl(storagePath);
 
         // Update DB record

@@ -50,14 +50,31 @@ linhas, sem bug real.
 | `user_2fa_settings` | `AdminSegurancaPage.tsx` em `/admin/seguranca`, via `TwoFactorSetup.tsx` e `SecuritySettingsCard.tsx` | Funcionalidade de 2FA sem tabela de apoio | Feature de segurança — desenho de tabela (segredo TOTP, método, status verificado) e RLS exigem cuidado extra, não é apropriado inventar sozinho sob pressão de "executar tudo" |
 | `personalization_techniques` | `AdminPromptsIAPage.tsx`, via `MockupPromptManager.tsx` | Sem tabela de apoio para técnicas de personalização de IA | Preciso entender o formato de dado esperado (prompt templates? categorias?) antes de criar o schema |
 
-## Ainda não verificados (fora do escopo desta rodada)
-`personalization_simulations` (`useSimulation.ts`), `sales_goals`
-(`useSalesGoals.ts`) — são componentes, não páginas, e precisariam de mais
-um salto na cadeia de importação pra confirmar alcançabilidade contra
-`src/routes/config/*.ts`. Não verificados por tempo.
+## Triagem completa em 17/09/2026 — últimos 2 itens resolvidos
 
-**Não fechado como 0 órfãos** — restam 5 achados reais confirmados ao vivo
-sem correção (todos exigem decisão de produto/arquitetura, não são
-conserto mecânico), 2 não verificados, e os ~318 nomes fora da amostra
-original de 277 referências nunca varridos. Script
-`check-runtime-refs.mjs` não escrito.
+- **`sales_goals`** (`useSalesGoalsCard.tsx`) — **código morto confirmado**: zero
+  importadores em todo o repo (nem precisou checar rota).
+- **`personalization_simulations`** (`useSimulation.ts`) — **ao vivo**, via
+  `KitBuilderPage` (roteada em `tools.ts`). Achado adicional: o `SELECT`
+  usa `.select('*, bitrix_clients (id, name, ramo)')` — um embed do
+  PostgREST que depende de uma FK real para `bitrix_clients`, que também
+  não existe. Criar só `personalization_simulations` não resolveria o
+  carregamento de simulações salvas (o embed quebraria); os dois ficam
+  como **um item só**, amarrado à mesma decisão pendente de `bitrix_clients`
+  (linha da tabela acima).
+- **`personalization_techniques`** (`MockupPromptManager.tsx`) — confirmado
+  que usa o client **local** (`supabase.from(...)`), diferente de
+  `useSimulation.ts` (que busca técnicas via `invokeExternalDb` no catálogo
+  externo, corretamente). Suspeita forte: é o mesmo padrão da Etapa 9 —
+  tabela local pré-migração para o catálogo externo, nunca limpa. O
+  provável conserto real não é criar a tabela vazia (ficaria sem dado
+  nenhum pra listar), é redirecionar este componente para o catálogo
+  externo como o simulador já faz — mas isso é mudança de comportamento,
+  não conserto mecânico.
+
+**Fechamento da Etapa 26:** as 10 referências reais da amostra original
+(277 nomes) estão 100% triadas — 4 corrigidas, 6 documentadas com decisão
+pendente (2 delas amarradas na mesma causa: `bitrix_clients`). Continua
+faltando: aplicar as decisões pendentes, o script
+`check-runtime-refs.mjs` no CI, e varrer os ~318 nomes fora da amostra
+original.
