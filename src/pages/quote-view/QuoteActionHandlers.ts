@@ -95,10 +95,10 @@ export async function handleSyncBitrix(params: {
     filename = `proposta-${(quote.quote_number || quote.id).replace(/\s+/g, "")}.pdf`;
     const storagePath = `quotes/${quote.id}/${filename}`;
     const { error: uploadError } = await supabase.storage
-      .from("art-files")
+      .from("proposals")
       .upload(storagePath, blob, { contentType: "application/pdf", upsert: true });
     if (!uploadError) {
-      const { data: urlData } = supabase.storage.from("art-files").getPublicUrl(storagePath);
+      const { data: urlData } = supabase.storage.from("proposals").getPublicUrl(storagePath);
       pdfStorageUrl = urlData.publicUrl;
     }
   } catch (pdfErr) {

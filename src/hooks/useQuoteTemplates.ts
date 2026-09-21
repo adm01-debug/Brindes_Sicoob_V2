@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { fetchPromobrindProducts } from "@/lib/external-db";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -128,23 +129,24 @@ export function useQuoteTemplates() {
     if (!items || items.length === 0) return [];
     
     try {
+      // Produtos vêm do catálogo externo (Promobrind), não do banco operacional —
+      // a tabela local "products" não existe. Ver docs/execucao/evidencias/products_companies_fix_20260917.md
       const productIds = items.map(i => i.productId);
-      const { data, error } = await supabase
-        .from("products")
-        .select("id, name, price")
-        .in("id", productIds);
-
-      if (error) throw error;
+      const data = await fetchPromobrindProducts({
+        filters: { id: productIds },
+        limit: productIds.length,
+      });
 
       return items.map(item => {
         const product = data?.find(p => p.id === item.productId);
+        const currentPrice = product?.sale_price ?? 0;
         return {
           productId: item.productId,
           productName: item.productName,
           unitPrice: item.unitPrice,
-          currentPrice: product?.price || 0,
+          currentPrice,
           isValid: !!product,
-          priceChanged: product ? product.price !== item.unitPrice : false
+          priceChanged: product ? currentPrice !== item.unitPrice : false
         };
       });
     } catch (err) {

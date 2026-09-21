@@ -9,10 +9,15 @@ DROP TABLE IF EXISTS public.admin_audit_log_archive;
 
 -- 2) Cria partições até 2027-03 (paravam em 2026-06) e realoca linhas
 --    que estavam presas na partição DEFAULT.
+-- NOTA (achado pela validação pós-implementação): o teste original usava
+-- 'public.admin_audit_log_y2026_m07'::regclass, que lança erro fatal
+-- (relation does not exist) em vez de retornar NULL quando a partição
+-- ainda não existe — quebraria esta migration num ambiente novo, antes
+-- mesmo de avaliar a condição. to_regclass() é o equivalente seguro:
+-- retorna NULL em vez de erro.
 DO $$
 BEGIN
-  IF NOT EXISTS (SELECT 1 FROM pg_inherits WHERE inhparent = 'public.admin_audit_log'::regclass
-                 AND inhrelid = 'public.admin_audit_log_y2026_m07'::regclass) THEN
+  IF to_regclass('public.admin_audit_log_y2026_m07') IS NULL THEN
     CREATE TEMP TABLE _moved_audit_rows ON COMMIT DROP AS
       SELECT * FROM public.admin_audit_log_default;
     DELETE FROM public.admin_audit_log_default;

@@ -8,7 +8,7 @@
 import { supabase } from "@/integrations/supabase/client";
 
 /**
- * Upload a base64 image to the mockup-assets bucket.
+ * Upload a base64 image to the mockup-art-files bucket.
  * Returns the public URL of the uploaded file.
  */
 export async function uploadLogoToStorage(
@@ -38,7 +38,7 @@ export async function uploadLogoToStorage(
     const filePath = `${userId}/logos/${Date.now()}-${safeName}.${extension}`;
 
     const { error: uploadError } = await supabase.storage
-      .from("mockup-assets")
+      .from("mockup-art-files")
       .upload(filePath, blob, {
         contentType: mimeType,
         upsert: false,
@@ -50,7 +50,7 @@ export async function uploadLogoToStorage(
     }
 
     const { data: urlData } = supabase.storage
-      .from("mockup-assets")
+      .from("mockup-art-files")
       .getPublicUrl(filePath);
 
     return urlData?.publicUrl || null;

@@ -40,6 +40,9 @@ jobs:
       - name: Bloquear edição de migration já mesclada
         run: node scripts/check-migration-immutability.mjs
 
+      - name: Bloquear referências de runtime sem objeto correspondente no banco
+        run: node scripts/db/check-runtime-refs.mjs
+
       - name: Verificar dependências e autorização das Edge Functions
         run: |
           npm run check:npm-audit

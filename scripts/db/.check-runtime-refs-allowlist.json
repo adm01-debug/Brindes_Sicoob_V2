@@ -1,0 +1,22 @@
+{
+  "_comment": "Exceções conhecidas em 17/09/2026 (auditoria tripla + plano de correções em docs/plano-implementacao/plano-correcoes-auditoria-50-etapas-20260917.md). Cada entrada tem migration já escrita no repositório esperando aplicação (Fase C do plano, Etapas 9-11), ou é uma decisão de arquitetura pendente registrada. Remover a entrada daqui assim que a etapa correspondente fechar — deixar aqui sem revisão é reintroduzir o mesmo risco que o script existe para evitar.",
+  "entries": {
+    "bitrix_clients": "migration 20251214185703_ccfe43ae-... (+ 12 migrations relacionadas) não aplicada — plano de correções Etapa 9",
+    "bitrix_deals": "idem bitrix_clients — Etapa 9",
+    "bitrix_sync_logs": "idem bitrix_clients — Etapa 9",
+    "create_quote_version_atomic": "migration 20260912100000 + followup 20260913120001 não aplicadas — plano de correções Etapa 10",
+    "check_rls_enabled": "migration 20260504135425_5d8d01fd-... não aplicada — plano de correções Etapa 11",
+    "get_enum_values": "idem check_rls_enabled — Etapa 11",
+    "roles": "decisão de arquitetura pendente — Etapa 26 do plano principal (app usa enum Postgres, não tabela)",
+    "sicoob_budgets": "possível rename para cooperativa_budgets, a confirmar — plano de correções Etapa 14",
+    "user_2fa_settings": "decisão de arquitetura pendente — Etapa 26 do plano principal",
+    "personalization_techniques": "decisão de arquitetura pendente (deveria usar catálogo externo) — Etapa 26 do plano principal",
+    "personalization_simulations": "amarrado a bitrix_clients (embed PostgREST) — Etapa 26 do plano principal",
+    "error_logs": "decisão pendente considerando Sentry já integrado — plano de correções Etapa 18",
+    "companies": "código morto em whitelabel-comparison.ts, decisão de corrigir vs remover — plano de correções Etapa 15",
+    "mockup-assets": "typo de bucket, correção mecânica pendente — plano de correções Etapa 16 (deveria ser mockup-art-files)",
+    "personalization": "typo de bucket, correção mecânica pendente — plano de correções Etapa 16 (deveria ser personalization-images)",
+    "set_config": "chamada a função pg_catalog nunca exposta via PostgREST, não é backlog de migration — plano de correções Etapa 17",
+    "sales_goals": "código morto confirmado (zero importadores de useSalesGoals.ts) — Etapa 26 do plano principal, sem ação necessária"
+  }
+}

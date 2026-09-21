@@ -1,0 +1,41 @@
+# Alerta diário: versão aplicada em supabase_migrations.schema_migrations sem
+# arquivo local correspondente em supabase/migrations|migrations_archive.
+#
+# Pré-requisitos ainda não atendidos nesta sessão (ver scripts/db/
+# check-migration-ledger-drift.mjs e Etapa 29 de docs/plano-implementacao/
+# plano-correcoes-auditoria-50-etapas-20260917.md):
+#   1. Adicionar `pg` como devDependency em package.json.
+#   2. Cadastrar o secret SUPABASE_DB_URL (connection string direta ao
+#      Postgres) — já previsto na Etapa 3 do plano principal, ainda não
+#      executada. Sem os dois, este job falha na conexão, não silenciosamente.
+name: Migration ledger drift
+
+on:
+  schedule:
+    - cron: '0 6 * * *' # diário, 06:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  drift-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Instalar dependências
+        run: npm ci
+
+      - name: Comparar ledger remoto contra arquivos locais
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: node scripts/db/check-migration-ledger-drift.mjs

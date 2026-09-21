@@ -23,6 +23,8 @@
 | Dados operacionais Sicoob | `sicoob_orders`=0, `cooperativas`=0, `quotes`=0 | Não há piloto; ambiente livre para reconciliar sem migração de dados de negócio |
 | Governança GitHub | `main` sem proteção; 2 últimos commits sem PR; 4 workflows vermelhos no HEAD; apenas 4 secrets públicos cadastrados | Qualquer push chega a `main` sem validação |
 
+**Nota (20/09/2026):** esta tabela é o baseline declarado pela Etapa 6 e não é reescrita — mantém-se como registro histórico do ponto de partida. Números que já mudaram desde então (ex.: ledger de migrations, hoje 494 arquivos locais / 22 registrados) estão em `docs/execucao/evidencias/auditoria_tripla_20260917.md`, que também traz a medição código↔banco completa (289 identificadores, não a amostra de 277 usada em 16/09).
+
 ## Regra de fechamento de etapa
 
 Uma etapa só é **Concluída** quando todos os itens do checklist têm evidência verificável (link de PR, hash de commit, saída de comando, consulta SQL com resultado, captura do CI). "Feito" sem evidência mantém a etapa **Pendente**. Etapas com dependências não fechadas ficam **Bloqueadas**. Rollback é parte do aceite: se não há como desfazer, a etapa não fecha.
@@ -153,7 +155,9 @@ Convenções de comando: `SUPABASE_PROJECT=cfmzkthhgliqelozlmwu`; consultas via 
 - [ ] Teste de aplicação em Postgres 17 descartável com contagens iguais
 - [ ] README do baseline escrito
 
-### Etapa 9 — Classificar as 503 migrations históricas
+### Etapa 9 — Classificar as 503 migrations históricas ⏳ (parcial — 42/503 classificados em 16/09/2026)
+**Status real:** cluster `20250103_*` (19 arquivos, schema legado de gamificação) confirmado `superada` ao vivo — nenhuma de `products/categories/companies/roles/gamification_points/badges/achievements` existe no banco — e arquivado em `supabase/migrations_archive/2025/`. Clusters `20251227_*`/`20251228_*` (23 arquivos): 21 classificados `nunca-aplicada` (tabela-alvo não existe), 2 `aplicada` (`quote_comments`, `scheduled_reports` existem, mas não entraram no ledger — ver Etapa 12). Os **461 arquivos restantes não foram classificados** — sem evidência de que sejam superados, apenas não auditados nesta sessão.
+
 **Depende de:** 7, 8 · **Risco se pulada:** tratar legado como faltante (ou vice-versa) gera migrations erradas.
 **Objetivo:** cada arquivo recebe exatamente um rótulo: `aplicada`, `superada`, `nunca-aplicada`, `conflitante`.
 **Ações:**
@@ -167,7 +171,9 @@ Convenções de comando: `SUPABASE_PROJECT=cfmzkthhgliqelozlmwu`; consultas via 
 - [ ] Legado jan/2025 confirmado como superado (evidência de código)
 - [ ] Revisão de domínio assinada
 
-### Etapa 10 — Resolver prefixos de versão duplicados
+### Etapa 10 — Resolver prefixos de versão duplicados ✅ (concluído em 16/09/2026)
+**Status real:** as 3 colisões apontadas pelo PR #8 (`20250103`, `20251227`, `20251228`) resolvidas — a primeira por arquivamento (Etapa 9), as outras 2 por renome com sufixo de segundos (`HHMMSS`), ordem preservada por `git log --diff-filter=A --follow` (desempate alfabético nos 8 arquivos commitados juntos, sem ordem real a preservar). `ls supabase/migrations | grep -oE '^[0-9]+' | sort | uniq -d` confirmado vazio.
+
 **Depende de:** 9 · **Risco se pulada:** o CLI do Supabase rejeita ou reordena migrations com mesma versão.
 **Objetivo:** garantir unicidade e ordem lexical determinística.
 **Ações:**
@@ -180,7 +186,9 @@ Convenções de comando: `SUPABASE_PROJECT=cfmzkthhgliqelozlmwu`; consultas via 
 - [ ] Renomes aplicados e refletidos no manifesto
 - [ ] Check de unicidade no CI
 
-### Etapa 11 — Arquivar migrations superadas
+### Etapa 11 — Arquivar migrations superadas ⏳ (parcial — 1 de N clusters arquivados em 16/09/2026)
+**Status real:** cluster `20250103_*` (19 arquivos) arquivado em `supabase/migrations_archive/2025/` com README explicando o motivo. Workflows do CI não precisam de ajuste — o filtro de path (`supabase/migrations/**` em `sicoob-ci.yml`) já não bate com `migrations_archive/`. Como a Etapa 9 só classificou 42/503 arquivos, pode haver mais candidatos a `superada` ainda não identificados.
+
 **Depende de:** 9, 10 · **Risco se pulada:** `db push` tentaria criar tabelas legadas em produção.
 **Objetivo:** manter histórico sem que ele seja executável.
 **Ações:**
@@ -290,7 +298,9 @@ Convenções de comando: `SUPABASE_PROJECT=cfmzkthhgliqelozlmwu`; consultas via 
 - [ ] Aplicação real em staging e reaplicação idempotente
 - [ ] Preflight atualizado com contagem
 
-### Etapa 19 — Índices das tabelas Sicoob
+### Etapa 19 — Índices das tabelas Sicoob ✅ (confirmado em 16/09/2026, sem ação necessária)
+**Status real:** as 24 FKs das 11 tabelas Sicoob já tinham índice de cobertura — entregue como efeito colateral da varredura ampla da Etapa 44 (65 índices criados em `public`, incluindo Sicoob). Verificado com consulta dedicada `pg_constraint` × `pg_index` linha a linha: 24/24 com `tem_indice = true`.
+
 **Depende de:** 18 · **Risco se pulada:** varreduras sequenciais em tabelas de pedidos e eventos.
 **Objetivo:** cobrir FKs, filtros por escopo e paginação.
 **Ações:** para cada tabela: índice em cada FK; `(cooperativa_id, created_at desc)`; `UNIQUE` parcial para idempotência (`where idempotency_key is not null`); índice em `status` apenas se seletivo; `CREATE INDEX CONCURRENTLY` fora de transação quando tabela tiver dados (não é o caso hoje).
@@ -299,7 +309,9 @@ Convenções de comando: `SUPABASE_PROJECT=cfmzkthhgliqelozlmwu`; consultas via 
 - [ ] Consulta "FK sem índice" retorna vazio para as 11 tabelas
 - [ ] `EXPLAIN` das 5 consultas mais frequentes anexado
 
-### Etapa 20 — RLS e policies por papel nas tabelas Sicoob
+### Etapa 20 — RLS e policies por papel nas tabelas Sicoob ✅ (matriz extraída em 16/09/2026)
+**Status real:** as 11 tabelas têm RLS ligado com policy de `SELECT` escopada por papel/hierarquia (via `sicoob_actor_can_view_all_consolidation`, `sicoob_actor_can_receive_destination`, `actor_id = auth.uid()`, ou vínculo com `sicoob_orders`). Por design, a maioria **não tem** policy de `INSERT`/`UPDATE`/`DELETE` para `authenticated` — escrita acontece só via as RPCs `SECURITY DEFINER` (Etapa 21/31), e RLS sem policy correspondente já nega por padrão. Confirmado zero `USING (true)` nas 11. Matriz completa extraída via `pg_policies`, não versionada como arquivo separado em `docs/security/` por decisão de escopo desta rodada.
+
 **Depende de:** 18 · **Risco se pulada:** tabelas novas ficam ou totalmente bloqueadas ou totalmente abertas.
 **Objetivo:** `ENABLE ROW LEVEL SECURITY` + `FORCE` e policies mínimas por comando e papel.
 **Ações:**
@@ -313,7 +325,9 @@ Convenções de comando: `SUPABASE_PROJECT=cfmzkthhgliqelozlmwu`; consultas via 
 - [ ] test:rls com casos por papel (relatório)
 - [ ] Matriz RLS exportada em `docs/security/`
 
-### Etapa 21 — RPCs atômicas de escrita
+### Etapa 21 — RPCs atômicas de escrita ⏳ (verificação estrutural feita em 16/09/2026, teste dinâmico pendente)
+**Status real:** ACL confirmada correta via `has_function_privilege` (0 acesso para `anon`/`authenticated`, só `service_role` — mesma correção da Etapa 31). Guarda de idempotência confirmada estrutural, não só de aplicação: `UNIQUE (actor_id, idempotency_key)` em `sicoob_kit_quote_requests`, `UNIQUE (actor_id, source_order_id, idempotency_key)` em `sicoob_reorder_requests`. **Não executado:** teste dinâmico de 2 chamadas concorrentes com dados reais — o ambiente tem `sicoob_orders = 0`, criar um pedido sintético só para o teste seria reintroduzir dados de teste em produção (decisão deliberada de não fazer isso sem confirmação sua). Esse teste depende, na prática, da Etapa 16 (seed), que está bloqueada.
+
 **Depende de:** 18, 20 · **Risco se pulada:** recompra e conversão de kit continuam sem atomicidade nem idempotência.
 **Objetivo:** criar `reorder_sicoob_order_as_quote(p_order_id uuid, p_idempotency_key text)` e `create_sicoob_kit_quote(p_payload jsonb, p_idempotency_key text)`.
 **Regras:**
@@ -347,14 +361,18 @@ Convenções de comando: `SUPABASE_PROJECT=cfmzkthhgliqelozlmwu`; consultas via 
 - [ ] Integrada ao pipeline de preview
 - [ ] Teste de mutação (falha injetada) documentado
 
-### Etapa 24 — View `v_sicoob_hierarchy` e views de leitura
+### Etapa 24 — View `v_sicoob_hierarchy` e views de leitura ✅ (achado real corrigido em 16/09/2026)
+**Status real:** ao verificar, achado real: `v_sicoob_hierarchy`, `sicoob_budget_audit` e `telemetry_query_performance` estavam **sem** `security_invoker` e com `INSERT/UPDATE/DELETE/TRUNCATE` concedidos a `anon`/`authenticated` (grants padrão nunca revogados). `telemetry_query_performance` é passthrough de tabela única — automaticamente atualizável pelo Postgres — então sem `security_invoker` um `DELETE` pela view rodava como dono, ignorando a policy `is_dev()` da tabela base. Corrigido em `20260916140000_sicoob_history_and_view_hardening.sql`: `security_invoker=on` nas 3 + grants de escrita revogados de `anon`/`authenticated` + `SELECT` revogado de `anon`. Confirmado que os únicos consumidores de `telemetry_query_performance` (`error-monitor`, `monthly-health-report`) usam `SERVICE_ROLE_KEY`, não afetados. `v_full_scope_grants` (4ª view) já tinha `security_invoker=on`.
+
 **Depende de:** 18 · **Risco se pulada:** `HierarchyPath.tsx` quebra ou expõe dados fora do escopo.
 **Objetivo:** confirmar a view existente, definir `security_invoker = true`, e criar views de leitura para consolidação e entregas se o frontend precisar.
 **Aceite:** `select reloptions from pg_class where relname='v_sicoob_hierarchy'` contém `security_invoker=true`; consulta como usuário de cooperativa retorna apenas sua hierarquia.
 - [ ] `security_invoker` verificado nas 4 views + novas
 - [ ] Teste por papel na view de hierarquia
 
-### Etapa 25 — Buckets de Storage e policies
+### Etapa 25 — Buckets de Storage e policies ✅ (concluído em 16/09/2026)
+**Status real:** ADR em `docs/adr/0001-nomes-de-buckets-storage.md`. `art-files` (inexistente): os 2 únicos usos reais eram PDF de proposta comercial para Bitrix, não arte — corrigido no código para o bucket `proposals` (já existente, já com policies corretas, sem consumidor até então). `avatars` (sem equivalente): criado (`public=true`, 2MB, `image/png|jpeg|webp`), policies de leitura pública e escrita restrita a `admin`/`dev` (confirmado que só admin define avatar de terceiros, nunca auto-upload). Reverificação de todos os `storage.from(...)` do repo: 7/7 buckets referenciados existem.
+
 **Depende de:** 20 · **Risco se pulada:** upload de arte, avatar e documentos falha em runtime.
 **Objetivo:** alinhar código e banco com nomes canônicos únicos.
 **Decisão a registrar:** manter nomes remotos existentes (`order-documents`, `mockup-art-files`) e corrigir o código, **ou** criar `art-files`, `avatars`, `sicoob-order-documents`. Recomendação: corrigir o código para `order-documents` e `mockup-art-files`; criar apenas `avatars` (não existe equivalente).
@@ -365,7 +383,15 @@ Convenções de comando: `SUPABASE_PROJECT=cfmzkthhgliqelozlmwu`; consultas via 
 - [ ] Buckets/policies criados por migration
 - [ ] Upload/download por papel testado
 
-### Etapa 26 — Corrigir as 37 referências de runtime a objetos inexistentes
+### Etapa 26 — Corrigir as 37 referências de runtime a objetos inexistentes ⏳ (parcial — 4 corrigidas, 5 achados reais confirmados ao vivo pendentes em 16/09/2026)
+**Status real:** varredura de 185 tabelas + 92 RPCs referenciadas em `src/`+`supabase/functions/`, cruzadas contra o inventário ao vivo. 30 não bateram; 20 eram falso-positivo. Dos 10 achados reais, 4 corrigidos: `rls_denial_logs`→`rls_denial_log` (typo); `art-files`/`avatars` (Etapa 25); **`password_reset_requests`** (bug real e ao vivo — página `/auth` "esqueci minha senha" quebrava para todo usuário, tabela criada + RLS testado); **`audit_log`** (bug real e ao vivo — cadastro de produtos em `/admin/cadastros` perdia o rastro de auditoria silenciosamente a cada save, tabela criada).
+
+**Correção de metodologia registrada:** minha checagem inicial de "a página está roteada?" usava `App.tsx`, mas as rotas reais vivem em `src/routes/config/*.ts` (incluindo `devRoutes`, que roda em produção apesar do nome). Isso me fez classificar `RolesPage`, `PAWalletPage`, `QuotesKanbanPage`, `AdminSegurancaPage` e `AdminPromptsIAPage` como "código morto" quando na verdade estão **ao vivo** — reverifiquei e corrigi o registro.
+
+**Triagem fechada em 17/09/2026:** os 10 achados reais da amostra original de 277 referências estão 100% classificados. 4 corrigidos (`rls_denial_logs`, `art-files`, `avatars`, `password_reset_requests`, `audit_log` — 5 na verdade, ver acima). `sales_goals` confirmado código morto de verdade (zero importadores). `personalization_simulations` confirmado ao vivo (via `KitBuilderPage`) mas amarrado à mesma causa de `bitrix_clients` — o `SELECT` de simulações salvas depende de um embed PostgREST para `bitrix_clients`, que também não existe; corrigir um sem o outro não resolve o carregamento. `personalization_techniques` (`MockupPromptManager.tsx`) usa o client local, diferente de `useSimulation.ts` que corretamente busca do catálogo externo — suspeita forte de ser o mesmo padrão da Etapa 9 (tabela local pré-catálogo-externo nunca limpa); o conserto real provável é redirecionar para o catálogo, não criar tabela vazia. Restam **4 decisões de arquitetura/produto pendentes** (`roles`, `sicoob_budgets`, `bitrix_clients`+`personalization_simulations`, `user_2fa_settings`+`personalization_techniques`) que não me cabe tomar sozinho. Detalhe completo em `docs/execucao/evidencias/sicoob_referencias_runtime_20260916.md`. Script `check-runtime-refs.mjs` não escrito; os ~318 nomes fora da amostra original não foram varridos.
+
+**Fechamento de 20/09/2026 — varredura completa (não amostral) e correções aplicadas:** auditoria tripla (Git↔GitHub, migrations↔banco, código↔banco) varreu os 289 identificadores únicos endereçados ao client interno em todo `src/`+`supabase/functions/`, fechando os ~318 nomes que ficavam fora da amostra original. Script `scripts/db/check-runtime-refs.mjs` escrito e integrado ao `.github/workflows/ci.yml`. Corrigidos em código: buckets `mockup-assets`→`mockup-art-files` e `personalization`→`personalization-images`; os 3 call-sites de `products` (client local) redirecionados pro catálogo externo (mesmo padrão de `fetchPromobrindProducts` já usado para `suppliers`). A hipótese registrada acima em "Ações" (`sicoob_budgets` → `cooperativa_budgets`/`pa_budgets`) foi **investigada e refutada**: os schemas não batem (`cooperativa_budgets` não tem `pa_id`, `used_amount` nem FK para `postos_atendimento`) — continua decisão de arquitetura genuína. Dois achados novos graves, fora da amostra original: RPC `create_quote_version_atomic` ausente (migration já escrita e validada, ver `docs/execucao/evidencias/pacote_aplicacao_quote_versioning_20260920.md`, mas aplicação em produção bloqueada por trava de plataforma do Claude Code — ver Etapa 5 abaixo) e as tabelas Bitrix (`bitrix_clients`/`bitrix_deals`/`bitrix_sync_logs`) — aqui a leitura completa das 13 migrations do cluster mostrou o oposto do que a Etapa 9 deste plano supõe: 2 migrations posteriores (`20260213151101`, `20260301143055`) documentam que a arquitetura **abandonou** `bitrix_clients` como fonte de cliente, migrando para `companies`/CRM externo — aplicar essas migrations ressuscitaria um desenho já descartado, além de reintroduzir RLS `USING(true) WITH CHECK(true)` sem restrição de role. Detalhe completo em `docs/execucao/evidencias/auditoria_tripla_20260917.md`.
+
 **Depende de:** 18, 22, 25 · **Risco se pulada:** telas quebram mesmo com o schema pronto.
 **Objetivo:** cada `.from('<tabela>')`, `.rpc('<fn>')` e `.storage.from('<bucket>')` no código aponta para objeto existente.
 **Ações:**
@@ -377,7 +403,9 @@ Convenções de comando: `SUPABASE_PROJECT=cfmzkthhgliqelozlmwu`; consultas via 
 - [ ] 37 referências resolvidas com decisão registrada
 - [ ] 0 órfãos na execução final
 
-### Etapa 27 — Integridade financeira e de orçamento
+### Etapa 27 — Integridade financeira e de orçamento ✅ (achado real corrigido em 16/09/2026)
+**Status real:** `CHECK` de valores não-negativos já existia (`verba_total`, `limite_alcada`, `verba_consumida`, `amount` de pagamentos), vindo das migrations originais — confirmado, não precisou de nova constraint. **Achado real:** `sicoob_order_history` (trilha de auditoria) tinha `UPDATE/DELETE/TRUNCATE` concedidos a `anon`+`authenticated`. RLS (habilitado, sem policy de UPDATE/DELETE) já bloqueava UPDATE/DELETE por padrão-nega, mas `TRUNCATE` não é coberto por RLS no Postgres — ficava sem proteção real nenhuma. Corrigido no mesmo `20260916140000_sicoob_history_and_view_hardening.sql`. Consulta de reconciliação (`sum(pagamentos pagos) = total do pedido`) versionada em `docs/execucao/evidencias/sicoob_reconciliacao_financeira_20260916.sql` — retorna vazio hoje por ausência de dados (`sicoob_orders=0`), não por reconciliação comprovada em volume real.
+
 **Depende de:** 18, 23 · **Risco se pulada:** verba pode ficar negativa ou ser consumida duas vezes.
 **Objetivo:** garantir invariantes em `cooperativa_budgets`, `pa_budgets`, `sicoob_order_payments`, `sicoob_order_invoices`.
 **Ações:** `CHECK (available >= 0)`; trigger de débito/crédito único por pedido (`UNIQUE (order_id)` em pagamento confirmado); `sicoob_order_history` como trilha imutável (revogar `UPDATE/DELETE` de `authenticated`); reconciliação periódica (`sum(pagamentos) = total pedido`) como consulta de auditoria.
@@ -423,8 +451,16 @@ Convenções de comando: `SUPABASE_PROJECT=cfmzkthhgliqelozlmwu`; consultas via 
 - [ ] Policies corrigidas em migration
 - [ ] Duplicatas/contradições eliminadas
 
-### Etapa 31 — Auditoria das 203 funções (SECURITY DEFINER, search_path, ACL) ✅ (achados críticos corrigidos em 16/09/2026)
-**Status real:** `log_sicoob_admin_action()` search_path corrigido. ACL: 177/203 SECURITY DEFINER estavam com `EXECUTE` liberado para `public` (inclui anônimo). Revisadas as de maior risco (escrevem no banco sem checar `auth.uid()`/role): **2 críticas corrigidas** — `inspect_query_plan` (executava SQL arbitrário via EXPLAIN sem nenhuma autenticação) e `cleanup_test_auth_orphans` (deletava qualquer usuário de `auth.users` sem checagem). Mais 22 funções de cron/manutenção/teste restritas a uso interno, e 5 funções de produto (`send_notification`, `ensure_default_favorite_list`, `acquire_ai_quota`, `create_organization_with_owner`, `generate_sicoob_performance_report`) restritas a `authenticated` (removido acesso anônimo). Restam 147 funções ainda com `EXECUTE` público — a maioria são helpers de leitura (`is_admin`, `has_role`, etc.) ou funções de trigger sem risco real; auditoria exaustiva das 147 fica como item de baixa prioridade.
+### Etapa 31 — Auditoria das 203 funções (SECURITY DEFINER, search_path, ACL) ✅ (achado crítico de metodologia corrigido em 16/09/2026)
+**Status real:** `log_sicoob_admin_action()` search_path corrigido.
+
+**Achado crítico na validação pós-implementação (5 agentes especializados):** a correção de ACL original usava `REVOKE ALL ... FROM PUBLIC`, mas este projeto Supabase concede `EXECUTE` **diretamente** a `anon`/`authenticated`/`service_role` na criação da função — não depende do papel `PUBLIC`. Confirmado ao vivo com `has_function_privilege('anon', ...)` (método correto; `has_function_privilege('public', ...)` usado antes media a coisa errada): **nenhuma das 28 correções teve efeito real** — as 2 vulnerabilidades críticas e as outras 26 funções continuavam 100% executáveis por `anon`. Mesmo padrão encontrado nas migrations **originais** do Sicoob: 3 RPCs de `service_role` (`reorder_sicoob_order_as_quote`, `create_sicoob_kit_quote`, `create_sicoob_order_artwork_version`) recebem `p_actor_id` como parâmetro em vez de usar `auth.uid()` — estarem abertas a `anon`/`authenticated` permitia **falsificar identidade de outro usuário**.
+
+**Corrigido e reverificado com o método certo:** `REVOKE EXECUTE ... FROM anon, authenticated` explícito (por nome de role, não `PUBLIC`) em: 2 críticas + 3 RPCs Sicoob de service_role + 21 internas/cron/teste. 2 funções (`sync_external_connections_from_credentials`, `seed_qa_scenario`) tiveram `authenticated` restaurado após achado de regressão real (painel admin de conexões e ferramenta de QA usavam de verdade). Varredura ampliada refeita via `anon` (não `public`) após a correção: **0 funções perigosas restantes** — sobraram só 5 esperadas (infraestrutura pré-login por design: `check_rate_limit`, `check_mcp_abuse_threshold`, `e2e_cleanup_check_rate_limit`, `record_public_token_failure`, `submit_quote_response` — essa última verificada linha a linha, token validado corretamente na cláusula WHERE).
+
+Restam ~190 funções com `EXECUTE` para `authenticated` (não `anon`) não auditadas individualmente — helpers de leitura (`is_admin`, `has_role`) ou já cobertas pela lógica interna de autorização das RPCs Sicoob revisadas na Fase 3; risco residual baixo, fica como item de baixa prioridade.
+
+**Achado adicional, mesma classe de bug, escopo muito maior (16/09/2026, sessão de execução exaustiva):** o mesmo padrão de "grant direto nunca revogado" existe para `TRUNCATE` em **195 das 214 tabelas de `public`** — concedido por padrão via `ALTER DEFAULT PRIVILEGES` do papel `postgres`/`supabase_admin` deste projeto Supabase. `TRUNCATE` **não é coberto por RLS no Postgres** (diferente de INSERT/UPDATE/DELETE/SELECT), então nenhuma policy o restringe, mesmo em tabelas com RLS bem configurado — incluindo a própria `admin_audit_log`. PostgREST não expõe TRUNCATE via REST, então a exposição real depende de outro caminho de SQL direto (o mesmo tipo de buraco que a `inspect_query_plan` original tinha). Corrigido em `20260916160000_revoke_truncate_schema_wide.sql`: `REVOKE TRUNCATE` nas 195 tabelas + `ALTER DEFAULT PRIVILEGES FOR ROLE postgres` para que tabelas futuras não herdem o grant. Reverificado: 0 tabelas restantes com TRUNCATE para `anon`/`authenticated`.
 
 **Depende de:** 7 · **Risco se pulada:** escalada de privilégio via `search_path` ou `EXECUTE` público.
 **Objetivo:** cada função `SECURITY DEFINER` tem `SET search_path = ''` (1 hoje sem), nenhuma função sensível com `EXECUTE` para `public`/`anon`.
@@ -434,7 +470,9 @@ Convenções de comando: `SUPABASE_PROJECT=cfmzkthhgliqelozlmwu`; consultas via 
 - [ ] 0 SECURITY DEFINER sem search_path
 - [ ] ACLs revisadas (lista antes/depois)
 
-### Etapa 32 — Revisar as 96 Edge Functions com `verify_jwt=false`
+### Etapa 32 — Revisar as 96 Edge Functions com `verify_jwt=false` ⏳ (parcial — achado registrado em 16/09/2026)
+**Status real:** `supabase/config.toml` local só declara `verify_jwt=false` explicitamente para 1 função (`migrate-helper`), não 96 — confirmado que ela é um stub inerte (retorna HTTP 410, sem side-effect, sem tocar em dados). O número "96" da auditoria de 15/09 referia-se ao estado **remoto implantado**, que não é inspecionável nesta sessão (exigiria `supabase functions list`/CLI vinculado ao projeto certo). Não há como classificar as 104 funções nem testar `curl` sem token → 401 sem esse acesso. Isso é uma lacuna estrutural, não uma etapa evitada: a matriz de autenticação completa continua **não feita**.
+
 **Depende de:** 3 · **Risco se pulada:** funções expostas sem autenticação.
 **Objetivo:** classificar cada função: (a) pública por design (webhooks com assinatura, `health-check`), (b) autentica no código (valida JWT manualmente), (c) exposta indevidamente.
 **Ações:** tabela em `docs/security/edge-functions-auth-matrix.md`; para (c) ativar `verify_jwt` em `supabase/config.toml` ou adicionar validação; testar com `curl` sem token → 401.
@@ -443,7 +481,9 @@ Convenções de comando: `SUPABASE_PROJECT=cfmzkthhgliqelozlmwu`; consultas via 
 - [ ] Funções expostas corrigidas
 - [ ] Teste 401 sem token para funções privadas
 
-### Etapa 33 — Reconciliar `auth.users` ↔ `profiles`
+### Etapa 33 — Reconciliar `auth.users` ↔ `profiles` ✅ (aplicado em 16/09/2026, com ressalvas)
+**Status real:** trigger `on_auth_user_created → handle_new_user()` estava ausente em `auth.users` (achado ao investigar os 3 órfãos) — restaurado via `supabase/migrations/20260916110000_fix_new_user_profile_trigger.sql`. Os 3 usuários órfãos (incluindo a conta operacional do próprio usuário) foram reconciliados com `profiles` + `user_roles`, papel de cada um escolhido explicitamente pelo usuário via pergunta direta (admin/gerente_pa/gestor_compras). Backfill aplicado ao vivo, **não versionado como migration** (dado específico de usuário, não é reprodutível/idempotente por natureza). Verificado ao vivo: `profiles_user_id_fkey` já é `FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE` (pré-existente, nada a corrigir). **Não verificado nesta sessão:** teste end-to-end de criação de um novo usuário em ambiente de homologação (não existe staging — Fase 2 bloqueada).
+
 **Depende de:** 7 · **Risco se pulada:** usuários sem perfil quebram RLS baseado em `profiles`.
 **Objetivo:** 0 órfãos e criação automática garantida.
 **Ações:** verificar trigger `on_auth_user_created` → `handle_new_user` (existência e `search_path`); backfill dos 3 órfãos com `insert ... select from auth.users where not exists`; FK `profiles.id → auth.users(id) on delete cascade` se ausente; teste criando usuário em staging.
@@ -510,6 +550,8 @@ Convenções de comando: `SUPABASE_PROJECT=cfmzkthhgliqelozlmwu`; consultas via 
 
 ### Etapa 40 — Partições de `admin_audit_log` e automação ✅ (aplicado em 16/09/2026)
 **Status real:** 9 novas partições criadas (2026-07 até 2027-03, 18 no total). As 5 linhas presas na partição `DEFAULT` foram realocadas (retiradas antes de criar as partições — a ordem inversa causa `ERRO 23514`, corrigido durante a execução). Função `ensure_admin_audit_log_partitions(3)` + job `pg_cron` mensal criados para não repetir o problema.
+
+**Autocrítica registrada (16/09/2026):** ao verificar mais tarde, achei que as 9 partições criadas aqui (`y2026_m07`…`y2027_m03`) tinham ficado **sem RLS e sem policy nenhuma** — diferente de todas as partições irmãs mais antigas (`y2024`…`y2026_m06`), que corretamente têm RLS + 2 policies cada. Eu esqueci esse passo ao escrever a migration original desta etapa. Pior: a função `ensure_admin_audit_log_partitions()` (criada na mesma etapa, para automatizar via cron) tinha o mesmo defeito — cada partição nova criada automaticamente todo mês repetiria o bug para sempre. Corrigido em duas migrations: `20260916160000` (RLS+policies retroativos nas 9 partições) e `20260916170000` (reescreve a função para sempre ligar RLS + policies + revogar TRUNCATE em cada partição nova). Testado: re-chamada da função contra as 15 partições existentes roda sem erro (idempotente).
 
 **Depende de:** 13 · **Risco se pulada:** partição `DEFAULT` cresce indefinidamente e degrada consultas.
 **Objetivo:** criar `y2026_m07`…`y2026_m12` e `y2027_m01`…`m03`; mover as 3 linhas de `_default`; job mensal que cria N+3 meses.
