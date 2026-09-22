@@ -25,9 +25,9 @@ interface Category {
   slug: string;
   description: string | null;
   parent_id: string | null;
-  sort_order: number;
-  is_active: boolean;
-  created_at?: string;
+  sort_order: number | null;
+  is_active: boolean | null;
+  created_at?: string | null;
 }
 
 export function CategoriesManager() {
@@ -59,7 +59,7 @@ export function CategoriesManager() {
     fetchCategories();
   }, []);
 
-  const handleSave = async (formData: Omit<Category, 'id' | 'is_active'>) => {
+  const handleSave = async (formData: CategoryFormData) => {
     setIsLoading(true);
     try {
       if (editingCategory) {
@@ -317,17 +317,25 @@ export function CategoriesManager() {
   );
 }
 
+interface CategoryFormData {
+  name: string;
+  slug: string;
+  description: string;
+  parent_id: string | null;
+  sort_order: number;
+}
+
 interface CategoryFormDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   category: Category | null;
-  onSave: (formData: any) => Promise<void>;
+  onSave: (formData: CategoryFormData) => Promise<void>;
   categories: Category[];
   isLoading: boolean;
 }
 
 function CategoryFormDialog({ open, onOpenChange, category, onSave, categories, isLoading }: CategoryFormDialogProps) {
-  const [formData, setFormData] = useState<Partial<Category>>({
+  const [formData, setFormData] = useState<CategoryFormData>({
     name: '',
     slug: '',
     description: '',

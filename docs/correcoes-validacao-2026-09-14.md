@@ -1237,3 +1237,65 @@ baseline 917, 7 arquivos melhoraram); `--update` travou o ganho (917
 mesma limitação de acesso desta sessão (sem ambiente rodando pra
 smoke-test visual), mas o fix é puramente de nomes reais confirmados
 no schema gerado, sem lógica nova.
+
+## `src/components/admin/categories/CategoriesManager.tsx` (etapa 17, 6 → 0 erros — abre o tier de 6 erros, drift de nulidade + tipagem solta em cascata)
+
+1. **`Category` local com nulidade errada** (linha 49, `setCategories(data
+   || [])`): a interface local declarava `sort_order: number`,
+   `is_active: boolean` e `created_at?: string` (todos não-nuláveis),
+   mas a tabela real `product_categories` (`types.ts`, linha 5951) tem
+   `sort_order: number | null`, `is_active: boolean | null` e
+   `created_at: string | null` — TS rejeitava a atribuição direta do
+   retorno da query. Corrigido alargando os 3 campos pra bater com o
+   schema real (`created_at` nunca é lido em nenhum outro ponto do
+   arquivo — grep confirmou zero uso, então o alargamento não muda
+   nenhum comportamento existente).
+
+2. **`CategoryTreeDiagram.tsx` com `Category` própria e incompatível**
+   (linha 303, `onEdit={(cat) => setEditingCategory(cat)}`): o
+   componente compartilhado declarava sua própria interface `Category`
+   local (`{id, name, slug, parent_id, [key: string]: any}`) — a
+   assinatura de índice `[key: string]: any` não adiciona propriedades
+   nomeadas ao tipo, então `cat` (inferido como essa `Category` "pobre")
+   não tinha `description`/`sort_order`/`is_active` exigidos por
+   `setEditingCategory` (que espera a `Category` completa de
+   `CategoriesManager.tsx`). Corrigido tornando o componente genérico
+   (`CategoryTreeDiagram<T extends TreeCategory>`, com `TreeCategory`
+   contendo só os 4 campos que o componente realmente usa
+   internamente) — agora `T` é inferido do `categories` passado pelo
+   chamador, e `onEdit` devolve o tipo exato do chamador em vez de um
+   tipo inventado. Sem outros consumidores do componente (grep
+   confirmou uso único em `CategoriesManager.tsx`), zero risco de
+   quebrar outro call site.
+
+3. **`Partial<Category>` como estado de formulário** (linhas 359, 364,
+   369, 423, dentro de `CategoryFormDialog`): o `formData` usava
+   `useState<Partial<Category>>(...)` mesmo sempre inicializando com
+   valores concretos (nunca `undefined`) — todo campo lido
+   (`formData.name.trim()`, `validateSlug(formData.slug)`,
+   `formData.sort_order < 0`, `value={formData.description}`) TS
+   tratava como possivelmente `undefined`/`null`, embora o invariante
+   real do componente garanta que não é. Mesmo padrão de bug de tipo já
+   visto várias vezes nesta etapa (guarda estrutural que o TS não
+   propaga). Corrigido com uma interface dedicada `CategoryFormData`
+   (`{name: string; slug: string; description: string; parent_id:
+   string | null; sort_order: number}`) — reflete exatamente o shape
+   real do estado, sem optionals fantasmas — e `CategoryFormDialogProps.onSave`
+   trocado de `(formData: any) => Promise<void>` pro tipo preciso
+   `(formData: CategoryFormData) => Promise<void>`. `handleSave` (em
+   `CategoriesManager`) também retipado de `Omit<Category, 'id' |
+   'is_active'>` pra `CategoryFormData` diretamente — mais simples e
+   sem depender do `Omit` genérico, já que o formulário nunca envia
+   `is_active`.
+
+Verificado: `tscheck-files.mjs` → 0 erros nos 2 arquivos tocados (15 no
+programa inteiro, não relacionados). `check-eslint-baseline.mjs` →
+zero regressão (drift positivo: 2 erros de lint eliminados de graça).
+Sem teste dedicado pra `CategoriesManager.tsx`/`CategoryTreeDiagram.tsx`.
+`npm run typecheck:baseline` → zero regressão (891 vs. baseline 897, 1
+arquivo melhorou — só 1, não 2, porque `CategoryTreeDiagram.tsx` não
+tinha erro próprio antes, só recebia o vazamento de tipo de quem o
+chamava); `--update` travou o ganho (897 → 891 erros, 394 → 393
+arquivos). **Não verificado em runtime** — mesma limitação de acesso
+desta sessão, mas os 3 fixes são puramente de tipagem (nulidade real
+do schema + generics), sem mudança de lógica de negócio.

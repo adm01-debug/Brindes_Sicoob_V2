@@ -6,28 +6,27 @@ import { Input } from "@/components/ui/input";
 import { ChevronRight, ChevronDown, Folder, FolderOpen, Pencil, Search, Maximize2, Minimize2, ChevronRightIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-interface Category {
+interface TreeCategory {
   id: string;
   name: string;
   slug: string;
   parent_id: string | null;
-  [key: string]: any;
 }
 
-interface CategoryTreeDiagramProps {
-  categories: Category[];
-  onEdit: (category: Category) => void;
+interface CategoryTreeDiagramProps<T extends TreeCategory> {
+  categories: T[];
+  onEdit: (category: T) => void;
 }
 
-export function CategoryTreeDiagram({ categories, onEdit }: CategoryTreeDiagramProps) {
+export function CategoryTreeDiagram<T extends TreeCategory>({ categories, onEdit }: CategoryTreeDiagramProps<T>) {
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
 
   const breadcrumbs = useMemo(() => {
     if (!selectedNodeId) return [];
-    
-    const path: Category[] = [];
+
+    const path: T[] = [];
     let current = categories.find(c => c.id === selectedNodeId);
     
     while (current) {
