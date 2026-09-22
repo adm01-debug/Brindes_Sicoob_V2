@@ -1,4 +1,5 @@
 import { getCorsHeaders } from "../_shared/cors.ts";
+import { authorize } from "../_shared/authorize.ts";
 /**
  * ownership-repair — executa a tentativa de reparo dos órfãos detectados
  * pelo último relatório de `ownership-audit`. Apenas admins/devs.
@@ -8,7 +9,6 @@ import { getCorsHeaders } from "../_shared/cors.ts";
  *
  * Retorna o resumo da RPC `repair_ownership_orphans` + os logs gravados.
  */
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 import { castRpcResult } from "../_shared/supabase-client-adapter.ts";
 
 // Module-scope CORS headers — atribuído per-request no handler.
@@ -24,20 +24,9 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: getCorsHeaders(req) });
 
   try {
-    const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
-    const ANON = Deno.env.get("SUPABASE_ANON_KEY")!;
-
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader) return json({ error: "missing_auth" }, 401);
-
-    // Cliente com JWT do usuário — RPC valida internamente has_role()
-    const userClient = createClient(SUPABASE_URL, ANON, {
-      global: { headers: { Authorization: authHeader } },
-      auth: { persistSession: false, autoRefreshToken: false },
-    });
-
-    const { data: userData, error: uErr } = await userClient.auth.getUser();
-    if (uErr || !userData.user) return json({ error: "unauthorized" }, 401);
+    const auth = await authorize(req, { requireRole: "supervisor", enforceServerSide: true });
+    if (!auth.ok) return auth.response;
+    const userClient = auth.supabaseUser;
 
     let body: { report_id?: string; dry_run?: boolean; triggered_by?: string } = {};
     try { body = await req.json(); } catch { /* sem body */ }

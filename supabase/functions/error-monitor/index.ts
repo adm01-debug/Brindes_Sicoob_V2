@@ -1,6 +1,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.42.7"
 import { createStructuredLogger } from "../_shared/structured-logger.ts";
 import { getOrCreateRequestId } from "../_shared/request-id.ts";
+import { authorize } from "../_shared/authorize.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -15,6 +16,9 @@ Deno.serve(async (req) => {
   const requestId = getOrCreateRequestId(req);
   const log = createStructuredLogger({ fn: "error-monitor", requestId, req });
   log.info("monitor_start");
+
+  const auth = await authorize(req, { requireRole: "supervisor", enforceServerSide: true });
+  if (!auth.ok) return log.respond(auth.response);
 
   try {
     const supabaseClient = createClient(
@@ -74,8 +78,9 @@ Deno.serve(async (req) => {
     }));
 
   } catch (error) {
-    log.error("monitor_failed", { err: error.message });
-    return log.respond(new Response(JSON.stringify({ error: error.message }), {
+    const message = error instanceof Error ? error.message : String(error);
+    log.error("monitor_failed", { err: message });
+    return log.respond(new Response(JSON.stringify({ error: message }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 500
     }));

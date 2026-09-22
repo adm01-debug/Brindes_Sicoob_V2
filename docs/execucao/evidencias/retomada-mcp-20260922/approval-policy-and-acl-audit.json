@@ -1,0 +1,157 @@
+{
+  "date": "2026-09-22",
+  "project_ref": "cfmzkthhgliqelozlmwu",
+  "environment": "construcao",
+  "source": "pg_catalog e ledger via MCP administrativo",
+  "ledger_without_statements": {
+    "versions": 18,
+    "expected_objects": {
+      "relations": 20,
+      "functions": 49,
+      "triggers": 21,
+      "indexes": 84
+    },
+    "before_repair": {
+      "relations_present": 20,
+      "functions_present": 47,
+      "triggers_present": 18,
+      "indexes_present": 84
+    },
+    "missing_functions": [
+      "capture_sicoob_order_approval_policy",
+      "protect_sicoob_approval_policy_version"
+    ],
+    "missing_triggers": [
+      "tr_capture_sicoob_order_approval_policy",
+      "tr_freeze_sicoob_order_scope_pending_approval",
+      "tr_protect_sicoob_approval_policy_version"
+    ],
+    "after_repair": {
+      "relations_present": 20,
+      "functions_present": 49,
+      "triggers_present": 21,
+      "indexes_present": 84
+    },
+    "limitation": "Presença estrutural não comprova equivalência integral dos corpos SQL."
+  },
+  "repair_migration": {
+    "version": "20260922161000",
+    "file": "supabase/migrations/20260922161000_repair_sicoob_approval_policy_snapshot.sql",
+    "md5": "df94a5ab5978a91b5e673028adf1f0c6",
+    "ledger_hash_matches": true,
+    "rollback_test": {
+      "captured_version": "qa-policy-snapshot-v1",
+      "preserved_total": "100.00",
+      "preserved_pa": true,
+      "policy_mutation_denied": true,
+      "total_mutation_denied": true,
+      "pa_mutation_denied": true,
+      "persisted_test_orders": 0,
+      "persisted_test_policies": 0
+    }
+  },
+  "acl_migration": {
+    "version": "20260922162000",
+    "file": "supabase/migrations/20260922162000_sicoob_workflow_function_acl.sql",
+    "md5": "14f1ebb683e165d84da747be5a0eef5a",
+    "ledger_hash_matches": true,
+    "before": {
+      "function_signatures": 48,
+      "anon_executable": 43
+    },
+    "after": {
+      "function_signatures": 48,
+      "anon_executable": 0,
+      "authenticated_executable": 17,
+      "service_role_executable": 48
+    }
+  },
+  "secrets_in_artifact": false,
+  "global_trigger_function_acl": {
+    "version": "20260922163000",
+    "file": "supabase/migrations/20260922163000_revoke_trigger_function_rpc_access.sql",
+    "md5": "f0a16d493e4a56e7878d6524bb2656de",
+    "ledger_hash_matches": true,
+    "before": {
+      "trigger_functions": 80,
+      "anon_executable": 63,
+      "authenticated_executable": 63
+    },
+    "after": {
+      "trigger_functions": 80,
+      "anon_executable": 0,
+      "authenticated_executable": 0,
+      "service_role_executable": 80
+    },
+    "remaining_security_definer_executable_by_anon": 96
+  },
+  "anonymous_security_definer_acl": {
+    "baseline_after_trigger_acl": {
+      "nontrigger_security_definer_functions": 166,
+      "anon_executable": 96
+    },
+    "broad_restriction": {
+      "version": "20260922164000",
+      "file": "supabase/migrations/20260922164000_restrict_anonymous_security_definer_rpcs.sql",
+      "md5": "89286c4c82dc5d3879b432a1c0c6948f",
+      "ledger_hash_matches": true,
+      "anon_executable_after": 20
+    },
+    "actor_scope": {
+      "version": "20260922165000",
+      "file": "supabase/migrations/20260922165000_scope_public_role_helpers_to_actor.sql",
+      "md5": "4329da94c3ea89820f7fef07b1169a4e",
+      "ledger_hash_matches": true,
+      "helpers_guarded": 9,
+      "rollback_test": {
+        "anonymous_third_party_role_denied": true,
+        "anonymous_third_party_organizations_empty": true,
+        "authenticated_own_role_allowed": true,
+        "service_role_cross_actor_allowed": true
+      }
+    },
+    "final_tightening": {
+      "version": "20260922166000",
+      "file": "supabase/migrations/20260922166000_tighten_anonymous_security_definer_allowlist.sql",
+      "md5": "2dd3c7db219ccf7d856163ee4edeb090",
+      "ledger_hash_matches": true,
+      "anon_executable_after": 15,
+      "authenticated_executable_after": 122,
+      "service_role_executable_after": 166,
+      "removed_from_anon": [
+        "consume_step_up_token",
+        "log_full_scope_grant",
+        "log_rls_denial",
+        "record_public_token_failure",
+        "search_products_semantic"
+      ]
+    },
+    "remaining_anon_functions": [
+      "can_manage",
+      "can_view_all_sales",
+      "current_user_cooperativa_id",
+      "current_user_pa_id",
+      "get_quote_token_by_value",
+      "get_user_cooperative_id",
+      "get_user_org_ids",
+      "get_user_pa_id",
+      "has_role",
+      "is_admin",
+      "is_dev",
+      "is_kit_collaborator",
+      "is_kit_owner",
+      "is_supervisor_or_above",
+      "submit_quote_response"
+    ],
+    "remaining_rationale": "Treze helpers são usados por policies com role public e foram limitados ao próprio auth.uid() quando recebem UUID; duas RPCs atendem o fluxo público de aprovação por token.",
+    "gate_alignment": {
+      "version": "20260922167000",
+      "file": "supabase/migrations/20260922167000_align_security_definer_acl_gate.sql",
+      "md5": "889620e3687cd7bd0d9d07e745c31731",
+      "ledger_hash_matches": true,
+      "security_definer_public_execute_after": 0,
+      "audit_security_definer_acl_violations_after": 0,
+      "reviewed_anon_allowlist_size": 15
+    }
+  }
+}
