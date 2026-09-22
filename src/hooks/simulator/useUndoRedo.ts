@@ -39,7 +39,7 @@ export function useUndoableReducer<S, A extends { type: string }>(
       switch (action.type) {
         case '__UNDO__': {
           if (history.past.length === 0) return history;
-          const previous = history.past[history.past.length - 1];
+          const previous = history.past[history.past.length - 1]!;
           return {
             past: history.past.slice(0, -1),
             present: previous,
@@ -48,7 +48,7 @@ export function useUndoableReducer<S, A extends { type: string }>(
         }
         case '__REDO__': {
           if (history.future.length === 0) return history;
-          const next = history.future[0];
+          const next = history.future[0]!;
           return {
             past: [...history.past, history.present].slice(-MAX_HISTORY),
             present: next,
@@ -87,11 +87,11 @@ export function useUndoableReducer<S, A extends { type: string }>(
   }, []);
 
   const undo = useCallback(() => {
-    historyDispatch({ type: '__UNDO__' } as unknown);
+    historyDispatch({ type: '__UNDO__' });
   }, []);
 
   const redo = useCallback(() => {
-    historyDispatch({ type: '__REDO__' } as unknown);
+    historyDispatch({ type: '__REDO__' });
   }, []);
 
   return {

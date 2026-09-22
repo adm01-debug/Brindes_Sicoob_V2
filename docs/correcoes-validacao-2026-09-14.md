@@ -2768,3 +2768,21 @@ Esse hook é consumido por `AuthContext.tsx` (linha 88), que calcula `mfaRequire
 - `typecheck:baseline`: 545 → 541 (322 arquivos), travado via `--update`.
 
 **Recomendação:** validar manualmente em produção/staging que o fluxo de step-up MFA (usuário com fator TOTP verificado, política exigindo `aal2`) agora bloqueia corretamente ações sensíveis até a segunda etapa de autenticação ser completada — esse comportamento estava quebrado antes desta correção.
+
+## useUndoRedo.ts (etapa 17)
+
+**Arquivo:** `src/hooks/simulator/useUndoRedo.ts`
+
+**Erros originais (4×):** TS2322×2 (linhas 45, 54 — `history.past[...]`/`history.future[0]` possivelmente `undefined` atribuído a `present: S`), TS2345×2 (linhas 90, 94 — `historyDispatch({ type: '__UNDO__' } as unknown)`/`as unknown` não atribuível ao parâmetro esperado).
+
+**Diagnóstico:**
+- Linhas 45/54: acesso estruturalmente seguro — ambos protegidos por early-return no bloco anterior (`if (history.past.length === 0) return history;` / `if (history.future.length === 0) return history;`), garantindo que o índice acessado existe.
+- Linhas 90/94: causa raiz é o próprio cast `as unknown` — o literal `{ type: '__UNDO__' }` já é diretamente atribuível ao parâmetro esperado de `historyDispatch` (inferido do `useReducer` como `A | { type: '__UNDO__' } | { type: '__REDO__' }`); o `as unknown` alargava o tipo para `unknown` e então quebrava a atribuição de volta — o cast nunca deveria ter existido.
+
+**Fix aplicado:** asserção de não-nulo nos dois acessos estruturalmente seguros (`history.past[...]!`, `history.future[0]!`); remoção do cast `as unknown` desnecessário nas duas chamadas de `historyDispatch`.
+
+**Validação:**
+- `tscheck-files.mjs`: 4 → 0 erros (0 no programa inteiro).
+- `check-eslint-baseline.mjs`: 0 regressões (3335 erros globais, referência `origin/main` em `839095c1c5`).
+- Teste dedicado `tests/hooks/useUndoRedo.test.ts`: 10/10 passou.
+- `typecheck:baseline`: 541 → 537 (321 arquivos), travado via `--update`.
