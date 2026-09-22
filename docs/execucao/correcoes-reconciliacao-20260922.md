@@ -201,8 +201,8 @@ as trata como prontas. Este projeto está em construção, conforme orientação
 | 9 | Aberta: Bitrix exige contrato atualizado e teste; não aplicar cluster histórico indiscriminadamente |
 | 10 | Parcial: pacote de versionamento existe; RPC ausente na API de 22/09; aplicação remota pendente |
 | 11 | Local: helpers reescritos e health-check testado; aplicação/publicação remotas pendentes |
-| 12 | Parcial: novos controles testados em SQL; auditoria remota por função ainda necessária |
-| 13 | Parcial: inventários anteriores e novas referências identificados; classificação integral não concluída |
+| 12 | Parcial: pacote Sicoob reauditado; 43 grants anônimos removidos, 17 RPCs de frontend autenticadas e helpers fechados. Restam as demais funções fora deste pacote |
+| 13 | Parcial: 468/468 migrations fora do ledger classificadas estaticamente; revisão semântica e ordem de dependências continuam obrigatórias |
 | 14 | Código da base já usa `cooperativa_budgets`/`pa_budgets`; homologação por período pendente |
 | 15 | Parcial: webhook corrigido; restam dois usos de products em mockups e companies sem consumidor |
 | 16 | Buckets antigos não aparecem no gate atual; upload autenticado ponta a ponta ainda pendente |
