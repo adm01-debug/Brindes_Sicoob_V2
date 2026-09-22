@@ -2221,3 +2221,23 @@ erros (364 → 362 arquivos).
 - `check-eslint-baseline.mjs`: 0 regressões (referência origin/main 4ecd791e1a); 3342 erros globais (sem alteração).
 - Teste dedicado: não encontrado (nenhum teste em `tests/` importa `personalization/calculators`).
 - `typecheck:baseline`: 658 → 653 (349 arquivos), travado via `--update`.
+
+## DevInfraGate.ts (etapa 17)
+
+**Arquivo:** `src/lib/system/dev-gate/DevInfraGate.ts`
+**Erros:** 5× (`TS2322`×2 + `TS2345` + `TS2532`×2).
+
+**Diagnóstico:**
+- **Bug real (linha 8):** `DEFAULT_ALLOWED_ROLES` incluía o literal `'admin'`, que não é um `AppRole` válido — o tipo `AppRole` (`src/lib/roles.ts`) é `dev | gestor_compras | comprador_singular | gerente_pa | comprador_pac | agente | vendedor | supervisor`. `'admin'` é apenas um alias legado mapeado para `'supervisor'` em `ROLE_ALIASES` (não aplicado em nenhum ponto do código — roles vindas de `useAuth()` já chegam tipadas como `AppRole`, nunca contendo a string `'admin'`). O valor era código morto/inalcançável. Corrigido removendo `'admin'` do array (permissão de `'supervisor'` já cobre a intenção original).
+- **4 acessos por índice estruturalmente seguros sob `noUncheckedIndexedAccess`:**
+  - `DefaultAccessPolicy.hasAccess()`: `userRoles[i]` dentro de `for (let i = 0; i < len; i++)`.
+  - `generateCacheKey()`: `roles[0]` guardado por `if (len === 1) return roles[0];`.
+  - `generateCacheKey()`: `roles[i]`/`roles[i+1]` dentro de `for (let i = 0; i < len - 1; i++)`, garantindo `i+1 < len`.
+
+**Correção:** remoção do literal inválido `'admin'` + non-null assertions nos 3 pontos de acesso por índice (4 ocorrências).
+
+**Validação:**
+- `tscheck-files.mjs`: 0 erro(s) nos arquivos pedidos (14→9 no programa da sonda, os 5 deste arquivo eliminados).
+- `check-eslint-baseline.mjs`: 0 regressões (referência origin/main fdec5ef996); 3342 erros globais (sem alteração).
+- Testes dedicados: 7 arquivos / 25 testes (`DevInfraGate.test.ts` ×2, `DevInfraGateSSR/Matrix/Stability/Hydration/ErrorResilience.test.tsx`) — todos passaram, confirmando que nenhum teste dependia do literal `'admin'` removido.
+- `typecheck:baseline`: 653 → 648 (348 arquivos), travado via `--update`.

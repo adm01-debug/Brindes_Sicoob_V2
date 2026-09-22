@@ -5,7 +5,7 @@ import type { AppRole } from '@/contexts/AuthContext';
 /**
  * Roles que possuem permissão intrínseca para acessar ferramentas de infraestrutura.
  */
-export const DEFAULT_ALLOWED_ROLES: AppRole[] = ['dev', 'supervisor', 'admin'];
+export const DEFAULT_ALLOWED_ROLES: AppRole[] = ['dev', 'supervisor'];
 
 /**
  * Interface que define a política de acesso baseada em roles.
@@ -30,7 +30,7 @@ class DefaultAccessPolicy implements AccessPolicy {
     if (len === 0) return false;
     // Otimização: Loop for tradicional é ligeiramente mais rápido que .some() em arrays pequenos
     for (let i = 0; i < len; i++) {
-      if (this.allowedRoles.has(userRoles[i])) return true;
+      if (this.allowedRoles.has(userRoles[i]!)) return true;
     }
     return false;
   }
@@ -140,12 +140,12 @@ export class DevInfraGate {
   private generateCacheKey(roles: AppRole[]): string {
     const len = roles.length;
     if (len === 0) return '';
-    if (len === 1) return roles[0];
+    if (len === 1) return roles[0]!;
     // Otimização: Evitar sort se o array já estiver ordenado (caso comum em orquestração de roles)
     // Se precisarmos ordenar, fazemos uma cópia para não mutar o input
     let isSorted = true;
     for (let i = 0; i < len - 1; i++) {
-      if (roles[i] > roles[i + 1]) {
+      if (roles[i]! > roles[i + 1]!) {
         isSorted = false;
         break;
       }
