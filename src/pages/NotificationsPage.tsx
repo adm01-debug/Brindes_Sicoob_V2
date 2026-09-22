@@ -58,7 +58,7 @@ export default function NotificationsPage() {
             notifications.map((n) => (
               <div 
                 key={n.id} 
-                className={`p-4 rounded-xl border transition-all flex gap-4 items-start ${n.read ? 'bg-background border-border/40 opacity-70' : 'bg-primary/5 border-primary/20 shadow-sm'}`}
+                className={`p-4 rounded-xl border transition-all flex gap-4 items-start ${n.is_read ? 'bg-background border-border/40 opacity-70' : 'bg-primary/5 border-primary/20 shadow-sm'}`}
               >
                 <div className="mt-1">
                   {n.category === 'status' ? <Info className="h-5 w-5 text-primary" /> : 
@@ -68,7 +68,7 @@ export default function NotificationsPage() {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
                     <h3 className="text-sm font-bold truncate">{n.title}</h3>
-                    {!n.read && <Badge variant="primary" className="h-2 w-2 p-0 rounded-full" />}
+                    {!n.is_read && <Badge variant="default" className="h-2 w-2 p-0 rounded-full" />}
                   </div>
                   <p className="text-xs text-muted-foreground mb-2 line-clamp-2">{n.message}</p>
                   <div className="flex items-center justify-between">
@@ -76,13 +76,13 @@ export default function NotificationsPage() {
                       {formatDistanceToNow(new Date(n.created_at), { addSuffix: true, locale: ptBR })}
                     </span>
                     <div className="flex items-center gap-2">
-                      {!n.read && (
+                      {!n.is_read && (
                         <Button variant="ghost" size="sm" className="h-7 text-[10px]" onClick={() => markAsRead(n.id)}>
                           Marcar como lida
                         </Button>
                       )}
                       {n.action_url && (
-                        <Button variant="secondary" size="sm" className="h-7 text-[10px]" onClick={() => navigate(n.action_url)}>
+                        <Button variant="secondary" size="sm" className="h-7 text-[10px]" onClick={() => navigate(n.action_url!)}>
                           Ver Detalhes
                         </Button>
                       )}

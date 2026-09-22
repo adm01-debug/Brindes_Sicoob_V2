@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-09-22T20:52:46.033Z",
-  "total": 633,
+  "generatedAt": "2026-09-22T21:00:56.715Z",
+  "total": 628,
   "files": {
     "src/components/admin/common/AdminDataTable.tsx": 2,
     "src/components/admin/connections/Bitrix24Tab.tsx": 1,
@@ -322,7 +322,6 @@
     "src/pages/GestorOrcamentos.tsx": 1,
     "src/pages/Index.tsx": 1,
     "src/pages/magic-up/MagicUpConfigPanel.tsx": 2,
-    "src/pages/NotificationsPage.tsx": 5,
     "src/pages/OrdersPage.tsx": 2,
     "src/pages/PermissionsPage.tsx": 1,
     "src/pages/PublicComparisonPage.tsx": 1,

@@ -2299,3 +2299,35 @@ erros (364 → 362 arquivos).
 - `check-eslint-baseline.mjs`: 0 regressões (referência origin/main 1c37076eb6); 3341 erros globais (sem alteração).
 - Teste dedicado: não encontrado.
 - `typecheck:baseline`: 638 → 633 (345 arquivos), travado via `--update`.
+
+## NotificationsPage.tsx (etapa 17)
+
+**Arquivo:** `src/pages/NotificationsPage.tsx`
+**Erros:** 5× (`TS2339`×3 + `TS2322` + `TS2769`).
+
+**Diagnóstico:**
+- **Linhas 61, 71, 79:** o componente lia `n.read`, mas `WorkspaceNotification`
+  (`src/hooks/useWorkspaceNotifications.tsx`) define o campo como `is_read: boolean`.
+  `read` nunca existiu no tipo — **bug real**, não falso-positivo do TS: a lógica de
+  destaque visual de não-lidas e o botão "Marcar como lida" nunca funcionavam
+  corretamente (a expressão `n.read` sempre avaliava `undefined`).
+- **Linha 71:** `<Badge variant="primary" .../>` — `primary` não é uma variante
+  válida de `badgeVariants` (`src/components/ui/badge.tsx`); as opções são
+  `default | secondary | destructive | outline | accent | success | warning`.
+- **Linha 85:** `navigate(n.action_url)` — `action_url` é `string | null` no tipo;
+  o guard externo `{n.action_url && (...)}` não propaga a narrow para dentro do
+  arrow function do `onClick` (TS não estreita member expressions através de
+  fronteiras de função).
+
+**Correção:**
+- Linhas 61/71/79: `n.read` → `n.is_read` (nome correto do campo).
+- Linha 71: `variant="primary"` → `variant="default"` (variante brand/primária
+  real do Badge).
+- Linha 85: `navigate(n.action_url!)` — non-null assertion justificada pelo guard
+  de renderização `{n.action_url && (...)}` que envolve o botão.
+
+**Validação:**
+- `tscheck-files.mjs`: 0 erro(s) nos arquivos pedidos (5 eliminados).
+- `check-eslint-baseline.mjs`: 0 regressões (referência origin/main 7c52a93e8b); 3341 erros globais (sem alteração).
+- Teste dedicado: não encontrado.
+- `typecheck:baseline`: 633 → 628 (344 arquivos), travado via `--update`.
