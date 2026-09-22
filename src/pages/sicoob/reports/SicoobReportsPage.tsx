@@ -20,6 +20,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { OrderStatusBadge } from "@/components/sicoob/orders/OrderStatusBadge";
+import type { OrderStatus } from "@/types/sicoob/orders";
 import { toast } from "sonner";
 
 const REPORTS = [
@@ -102,14 +103,14 @@ export default function SicoobReportsPage() {
         format(new Date(o.created_at), "dd/MM/yyyy"),
         `#${o.order_number || o.id.slice(0, 8)}`,
         o.status.toUpperCase(),
-        `R$ ${o.total_amount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`
+        `R$ ${(o.total_amount || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`
       ]);
 
       autoTable(doc, {
         startY: 40,
         head: [["Data", "Pedido", "Status", "Valor"]],
         body: tableData,
-        headStyles: { fillStyle: 'fill', fillColor: [0, 54, 65] },
+        headStyles: { fillColor: [0, 54, 65] },
         foot: [["", "TOTAL", "", `R$ ${totalSpent.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`]],
         footStyles: { fillColor: [240, 240, 240], textColor: [0, 54, 65], fontStyle: 'bold' }
       });
@@ -285,7 +286,7 @@ export default function SicoobReportsPage() {
                         <TableRow key={order.id}>
                           <TableCell className="text-xs">{new Date(order.created_at).toLocaleDateString('pt-BR')}</TableCell>
                           <TableCell className="font-mono text-xs">#{order.order_number || order.id.slice(0, 8)}</TableCell>
-                          <TableCell><OrderStatusBadge status={order.status} className="text-[10px] uppercase" /></TableCell>
+                          <TableCell><OrderStatusBadge status={order.status as OrderStatus} className="text-[10px] uppercase" /></TableCell>
                           <TableCell className="text-right font-medium">{formatCurrency(order.total_amount)}</TableCell>
                         </TableRow>
                       ))

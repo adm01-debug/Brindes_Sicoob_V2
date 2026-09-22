@@ -1886,3 +1886,34 @@ e reconfirmado `tscheck-files.mjs` → 0 erros nos 2 arquivos contra o
 `types.ts` novo antes de recomputar o baseline global. Baseline de
 typecheck do projeto atualizado pra refletir o estado combinado (esta
 correção + PR #12): 746 erros em 368 arquivos.
+
+## SicoobReportsPage.tsx (etapa 17)
+
+3 erros de tipo, causas independentes:
+
+1. Linha 105 — `o.total_amount.toLocaleString(...)` no export de PDF.
+   `total_amount` é `number | null` na tabela real `sicoob_orders`, mas
+   tratado como sempre-presente. Corrigido com fallback `(o.total_amount ||
+   0)`, mesmo padrão já usado no cálculo de `totalSpent` (linha 78) do
+   próprio arquivo.
+2. Linha 112 — `headStyles: { fillStyle: 'fill', fillColor: [...] }` na
+   chamada de `autoTable`. `fillStyle` não existe no tipo `Partial<Styles>`
+   do `jspdf-autotable` (confirmado em `node_modules/jspdf-autotable/dist/
+   index.d.ts`) — provável confusão com a propriedade `fillStyle` da API
+   Canvas do browser. Removido: não tinha efeito funcional real, já que
+   `fillColor` já define a cor de preenchimento do cabeçalho da tabela.
+3. Linha 288 — `<OrderStatusBadge status={order.status} />`. A coluna
+   `status` de `sicoob_orders` é `string` solto no banco (sem enum/check
+   constraint refletido no `types.ts`), mas o componente `OrderStatusBadge`
+   exige `status: OrderStatus` (união fechada de 9 valores em
+   `@/types/sicoob/orders.ts`). Corrigido com cast `order.status as
+   OrderStatus` — mesmo padrão de confiança já usado em
+   `services/sicoob/orderService.ts:191` (`currentStatus as OrderStatus`),
+   já que todo o app assume os valores da coluna como membros da união
+   (`ORDER_STATUS_CONFIG`, `SICOOB_VALID_TRANSITIONS`).
+
+Verificado: `tscheck-files.mjs` → 0 erros no arquivo (12 → 9 no programa
+inteiro). `check-eslint-baseline.mjs` → zero regressão (referência já em
+`bee873b314`, confirmando que o push anterior chegou). Nenhum teste
+dedicado encontrado para esta página. Baseline de typecheck do projeto
+atualizado: 746 → 743 erros (368 → 367 arquivos).

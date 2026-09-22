@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-09-22T16:09:49.500Z",
-  "total": 746,
+  "generatedAt": "2026-09-22T16:17:57.315Z",
+  "total": 743,
   "files": {
     "src/components/admin/common/AdminDataTable.tsx": 2,
     "src/components/admin/common/ImportExportManager.tsx": 4,
@@ -357,7 +357,6 @@
     "src/pages/sicoob/GestorDashboardPage.tsx": 2,
     "src/pages/sicoob/orders/OrdersPage.tsx": 1,
     "src/pages/sicoob/PADashboardPage.tsx": 1,
-    "src/pages/sicoob/reports/SicoobReportsPage.tsx": 3,
     "src/pages/SystemStatusPage.tsx": 4,
     "src/services/admin/UserService.ts": 1,
     "src/services/materialService.ts": 4,
