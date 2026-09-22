@@ -596,3 +596,124 @@ lint) — a asserção é o fix mínimo real, já que o invariante do `while` j�
 garante o índice válido.
 
 Sem teste dedicado no repo pra nenhum dos 5 arquivos.
+
+## `GestorApprovalsPage.tsx` (+ variante `sicoob/`) (etapa 17, 10 → 0 erros — achado: embed PostgREST quebrado em produção)
+
+**Achado real de bug de produção** (mesma categoria do achado anterior em
+`useExternalCompanies()`): as duas páginas de aprovação usavam sintaxe de
+embed do PostgREST para trazer nome/e-mail do aprovador/criador junto com
+a query principal:
+
+```ts
+// src/pages/GestorApprovalsPage.tsx
+.select(`*, order:order_id(...), approver:approver_id(full_name, email)`)
+
+// src/services/sicoob/approvalService.ts
+.select(`*, sicoob_orders (..., profiles:created_by (full_name))`)
+```
+
+O TS acusava `SelectQueryError<"could not find the relation between X
+and Y">` — não é um incômodo de tipagem, é o gerador de tipos do Supabase
+confirmando que a relação não existe no cache de embeds do PostgREST.
+Confirmado via migration original
+(`20260504211355_...715f426eade7.sql`): `approver_id UUID REFERENCES
+auth.users(id)` — a FK aponta pra `auth.users`, schema interno do
+Supabase, que o PostgREST não embute (cross-schema) e que nem expõe
+`full_name`/`email` como colunas públicas. Mesmo padrão confirmado pra
+`sicoob_orders.created_by` (sem entrada em `Relationships` no
+`types.ts`). Ou seja: os embeds `approver:approver_id(...)` e
+`profiles:created_by(...)` muito provavelmente nunca funcionaram em
+runtime — sempre retornaram vazio/null silenciosamente.
+
+**Fix aplicado** (decisão de dev sênior, sem pausar pra perguntar: é
+correção de código de aplicação, não migration de schema — não há
+mudança de arquitetura nem dado destrutivo envolvido): removido o embed
+quebrado da query principal e adicionada uma segunda busca em
+`public.profiles` (que tem `user_id UUID REFERENCES auth.users(id)`,
+`full_name`, `email`) filtrada pelos ids únicos de aprovador/criador já
+retornados na primeira query, com merge no client via `Map`. Aplicado
+nos dois locais (`GestorApprovalsPage.tsx` e
+`sicoobApprovalService.listPendingApprovals()`), preservando o shape
+consumido pelos componentes (`h.approver?.full_name`,
+`req.sicoob_orders?.profiles?.full_name`).
+
+Optou-se por **não** criar migration adicionando FK
+`order_approval_history.approver_id → profiles.user_id` (ou equivalente
+pra `sicoob_orders.created_by`) porque isso seria mudança de schema em
+produção — fora do escopo de "zerar erros de tipo" e um trade-off de
+arquitetura que merece decisão própria, não implícita numa etapa de
+type-fix.
+
+Demais erros do lote (não relacionados ao embed):
+- `TS2769` (`format(new Date(h.created_at), ...)`) — `created_at` é
+  `string | null` no tipo gerado (embora NOT NULL na prática, com
+  default `now()`). Extraída função `toSafeDate()` no topo do arquivo
+  em vez de inline `h.created_at ?? 0` — inline elevava a complexidade
+  ciclomática de 2 arrow functions de 10→11 (limite do lint), function
+  extraída não conta como branch adicional.
+- `TS2345` (`formatCurrency(h.subtotal_at_time)`, `number | null` não
+  assinalável a `number`) — trocado o import de `formatCurrency` de
+  `@/lib/utils` (deprecated, `value: number`) pra `@/lib/format`
+  (`value: number | null | undefined`), já o padrão usado no resto do
+  código (ex.: `ExportFavoritesButton.tsx`).
+- `TS2322` (`title={h.reason}` / `title={req.request_reason}`, `string |
+  null` não assinalável a `string | undefined`) — `?? undefined` nos 2
+  pontos.
+
+Verificado: `tscheck-files.mjs` nos 3 arquivos → 0 erros (9 no programa
+inteiro, era 19 antes). `check-eslint-baseline.mjs` → 1ª tentativa
+acusou regressão de `complexity` (+2, ver acima), corrigida com a
+extração de `toSafeDate()`; 2ª verificação → zero regressão. Teste
+dedicado `tests/services/sicoobApprovalService.test.ts` (só cobre
+`rejectOrderWithoutApproval`, não exercita `listPendingApprovals`) → 1/1
+passou.
+
+## `src/pages/sicoob/orders/OrderDetailPage.tsx` (etapa 17, 8 → 0 erros — achado: dead code + drift de tipo hand-written)
+
+Três causas raiz distintas, nenhuma delas incômodo de tipagem — todas
+bugs reais de código:
+
+**1. Dead code disfarçado de "uso" pra enganar lint de import não
+usado**:
+
+```ts
+const [_unused_MessageSquare, set_unused_MessageSquare] = useState(MessageSquare);
+const [_unused_Badge, set_unused_Badge] = useState(Badge);
+const [_unused_Tooltip, set_unused_Tooltip] = useState(Tooltip);
+```
+
+Passar um componente React (tipo função) pro `useState` faz o TS cair no
+overload de lazy-initializer (`() => S`) e falhar (`TS2345`, componente
+exige props pra ser chamado, não há `S` válido). Confirmado via grep que
+`MessageSquare` e `Badge` são usados de verdade como JSX em outros
+pontos do arquivo (imports ficam); `Tooltip` (diferente de
+`TooltipContent`/`TooltipProvider`/`TooltipTrigger`) não tinha nenhum
+uso real — bloco inteiro deletado, import de `Tooltip` removido também.
+
+**2. `TS18048` (`orderData` possivelmente `undefined`) em 3 handlers**
+(`handleRequestApproval`, `handleApprove`, `handleEscalate`) que
+acessavam `orderData.status` sem guarda — enquanto `handleReject`, no
+mesmo arquivo, já tinha `if (!orderData) return;` no topo. Aplicado o
+mesmo guard-clause nos 3 handlers, por consistência e porque os handlers
+podem legitimamente ser chamados antes do load completar.
+
+**3. Drift de tipo em interface hand-written vs. schema real do banco**:
+`SicoobOrder` (`src/types/sicoob/orders.ts`) não tinha o campo
+`approval_policy_version`, presente na tabela real (`sicoob_orders`,
+adicionado pelas migrations `20260912120000_sicoob_approval_policy_guards.sql`
+e `20260915143442_sicoob_reconciliation_baseline.sql`) e no `types.ts`
+gerado (`Row.approval_policy_version: string | null`). Como
+`sicoobOrderService.getOrderById()` faz `.select("*")` e depois `return
+data as SicoobOrder`, o campo sempre existiu em runtime — só faltava no
+tipo hand-written. Adicionado `approval_policy_version?: string | null;`
+na interface, terceira instância confirmada de "types.ts drift" nesta
+sessão (depois de `use2FA.ts`/`user_2fa_settings` e dos embeds quebrados
+do lote anterior).
+
+Verificado: `tscheck-files.mjs` em `OrderDetailPage.tsx` +
+`src/types/sicoob/orders.ts` + `src/pages/OrderDetailPage.tsx` → 0 erros
+nos arquivos-alvo (72 no programa inteiro, era 80). `check-eslint-baseline.mjs`
+→ "Drift positivo: 3 erro(s) eliminado(s)", zero regressão. Teste
+dedicado `tests/services/sicoobOrderService.test.ts` → 10/10 passou (não
+existe teste dedicado pra `OrderDetailPage.tsx`/`useSicoobOrder.ts`
+componente/hook em si).

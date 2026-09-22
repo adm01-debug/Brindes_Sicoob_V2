@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency } from "@/lib/format";
 import { Check, X, Eye, ShieldCheck, AlertCircle, Clock, Download, FileJson, Calendar as CalendarIcon, History, Settings } from "lucide-react";
 import { toast } from "sonner";
 import { Link } from "react-router-dom";
@@ -33,6 +33,11 @@ import { ptBR } from "date-fns/locale";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+
+/** created_at é NOT NULL na prática (default now()), mas o tipo gerado é nullable. */
+function toSafeDate(value: string | null): Date {
+  return new Date(value ?? 0);
+}
 
 export default function GestorApprovalsPage() {
   const { user } = useAuth();
@@ -67,8 +72,7 @@ export default function GestorApprovalsPage() {
         .from("order_approval_history")
         .select(`
           *,
-          order:order_id(order_number, client_name, client_company),
-          approver:approver_id(full_name, email)
+          order:order_id(order_number, client_name, client_company)
         `)
         .order("created_at", { ascending: false });
 
@@ -78,10 +82,30 @@ export default function GestorApprovalsPage() {
       if (dateRange.to) {
         query = query.lte("created_at", dateRange.to.toISOString());
       }
-      
+
       const { data, error } = await query;
       if (error) throw error;
-      return data;
+
+      // approver_id referencia auth.users(id), sem FK para profiles — o PostgREST
+      // não consegue embutir `approver:approver_id(...)`. Busca-se profiles à parte.
+      const approverIds = Array.from(
+        new Set((data ?? []).map((h) => h.approver_id).filter((id): id is string => !!id))
+      );
+      const approverMap = new Map<string, { full_name: string | null; email: string | null }>();
+      if (approverIds.length > 0) {
+        const { data: approvers } = await supabase
+          .from("profiles")
+          .select("user_id, full_name, email")
+          .in("user_id", approverIds);
+        for (const a of approvers ?? []) {
+          approverMap.set(a.user_id, { full_name: a.full_name, email: a.email });
+        }
+      }
+
+      return (data ?? []).map((h) => ({
+        ...h,
+        approver: h.approver_id ? approverMap.get(h.approver_id) ?? null : null,
+      }));
     }
   });
 
@@ -94,7 +118,7 @@ export default function GestorApprovalsPage() {
     const headers = ["ID Pedido", "Data", "Decisão", "Subtotal", "Limite na Época", "Aprovador", "Motivo"];
     const rows = approvalHistory.map(h => [
       h.order?.order_number || h.order_id,
-      format(new Date(h.created_at), "dd/MM/yyyy HH:mm"),
+      format(toSafeDate(h.created_at), "dd/MM/yyyy HH:mm"),
       h.decision === 'approved' ? 'Aprovado' : 'Reprovado',
       h.subtotal_at_time,
       h.threshold_at_time || "N/A",
@@ -305,7 +329,7 @@ export default function GestorApprovalsPage() {
                         approvalHistory?.map((h) => (
                           <TableRow key={h.id} className="text-sm">
                             <TableCell className="text-xs text-muted-foreground">
-                              {format(new Date(h.created_at), "dd/MM/yy HH:mm")}
+                              {format(toSafeDate(h.created_at), "dd/MM/yy HH:mm")}
                             </TableCell>
                             <TableCell className="font-medium">#{h.order?.order_number}</TableCell>
                             <TableCell>
@@ -322,7 +346,7 @@ export default function GestorApprovalsPage() {
                             <TableCell className="text-xs">
                               {h.approver?.full_name || h.approver?.email || "Sistema"}
                             </TableCell>
-                            <TableCell className="text-right text-xs max-w-[200px] truncate" title={h.reason}>
+                            <TableCell className="text-right text-xs max-w-[200px] truncate" title={h.reason ?? undefined}>
                               {h.reason}
                             </TableCell>
                           </TableRow>

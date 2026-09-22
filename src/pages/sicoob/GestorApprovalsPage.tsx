@@ -128,7 +128,7 @@ export default function GestorApprovalsPage() {
                           <TableCell className="font-semibold text-sicoob-green-dark">
                             {formatCurrency(req.amount_at_request)}
                           </TableCell>
-                          <TableCell className="max-w-[200px] truncate text-sm" title={req.request_reason}>
+                          <TableCell className="max-w-[200px] truncate text-sm" title={req.request_reason ?? undefined}>
                             {req.request_reason}
                           </TableCell>
                           <TableCell>

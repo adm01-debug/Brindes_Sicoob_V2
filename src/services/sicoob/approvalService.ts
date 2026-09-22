@@ -29,16 +29,47 @@ export const sicoobApprovalService = {
           id,
           total_amount,
           status,
+          created_by,
           postos_atendimento (nome),
-          created_at,
-          profiles:created_by (full_name)
+          created_at
         )
       `)
       .eq('status', 'pending')
       .order('created_at', { ascending: false });
 
     if (error) throw error;
-    return data;
+
+    // sicoob_orders.created_by referencia auth.users(id), sem FK para profiles —
+    // o PostgREST não consegue embutir `profiles:created_by(...)`. Busca-se à parte.
+    const creatorIds = Array.from(
+      new Set(
+        (data ?? [])
+          .map((r) => r.sicoob_orders?.created_by)
+          .filter((id): id is string => !!id)
+      )
+    );
+    const profileMap = new Map<string, { full_name: string | null }>();
+    if (creatorIds.length > 0) {
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('user_id, full_name')
+        .in('user_id', creatorIds);
+      for (const p of profiles ?? []) {
+        profileMap.set(p.user_id, { full_name: p.full_name });
+      }
+    }
+
+    return (data ?? []).map((r) => ({
+      ...r,
+      sicoob_orders: r.sicoob_orders
+        ? {
+            ...r.sicoob_orders,
+            profiles: r.sicoob_orders.created_by
+              ? profileMap.get(r.sicoob_orders.created_by) ?? null
+              : null,
+          }
+        : null,
+    }));
   },
 
   async approveOrder(requestId: string, orderId: string) {

@@ -53,6 +53,7 @@ export interface SicoobOrder {
   updated_at: string;
   approved_by?: string;
   approved_at?: string;
+  approval_policy_version?: string | null;
   sla_status?: 'normal' | 'warning' | 'critical';
   sla_deadline?: string;
   pa?: { nome: string };

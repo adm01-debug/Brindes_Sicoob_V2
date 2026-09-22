@@ -56,11 +56,10 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { 
-  Tooltip, 
-  TooltipContent, 
-  TooltipProvider, 
-  TooltipTrigger 
+import {
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger
 } from "@/components/ui/tooltip";
 import { 
   Select, 
@@ -100,10 +99,6 @@ export default function OrderDetailPage() {
   const queryClient = useQueryClient();
   const { profile, isSupervisorOrAbove, isGerentePa } = useAuth();
   
-  const [_unused_MessageSquare, set_unused_MessageSquare] = useState(MessageSquare);
-  const [_unused_Badge, set_unused_Badge] = useState(Badge);
-  const [_unused_Tooltip, set_unused_Tooltip] = useState(Tooltip);
-
   const [requestReason, setRequestReason] = useState("");
   const [rejectionReason, setRejectionReason] = useState("");
   const [isRequestDialogOpen, setIsRequestDialogOpen] = useState(false);
@@ -136,6 +131,7 @@ export default function OrderDetailPage() {
   const isOverBudget = orderTotal > remainingBudget;
 
   const handleRequestApproval = async () => {
+    if (!orderData) return;
     if (!requestReason.trim()) {
       toast.error("Por favor, informe o motivo da solicitação");
       return;
@@ -155,6 +151,7 @@ export default function OrderDetailPage() {
   };
 
   const handleApprove = () => {
+    if (!orderData) return;
     if (isOverBudget) {
       toast.error("Saldo de verba insuficiente para este pedido");
       return;
@@ -211,6 +208,7 @@ export default function OrderDetailPage() {
   };
 
   const handleEscalate = () => {
+    if (!orderData) return;
     if (!requestReason.trim()) {
       toast.error("Informe o motivo da escalação.");
       return;
