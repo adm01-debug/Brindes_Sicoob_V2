@@ -127,14 +127,14 @@ export function PdfGenerationDialog({
 
     setStage("generating");
     setProgress(0);
-    setProgressLabel(PROGRESS_STEPS[0].label);
+    setProgressLabel(PROGRESS_STEPS[0]!.label);
 
     try {
       // Step 1: Montando layout
       setProgress(10);
       await new Promise((r) => setTimeout(r, 300));
-      setProgress(PROGRESS_STEPS[0].pct);
-      setProgressLabel(PROGRESS_STEPS[1].label);
+      setProgress(PROGRESS_STEPS[0]!.pct);
+      setProgressLabel(PROGRESS_STEPS[1]!.label);
 
       // Step 2: Renderizando
       await new Promise((r) => setTimeout(r, 200));
@@ -143,8 +143,8 @@ export function PdfGenerationDialog({
       const blob = await generateProposalPDFv2(proposalDataWithMeta as any, pdfOptions);
 
       // Step 3: Finalizando
-      setProgress(PROGRESS_STEPS[1].pct);
-      setProgressLabel(PROGRESS_STEPS[2].label);
+      setProgress(PROGRESS_STEPS[1]!.pct);
+      setProgressLabel(PROGRESS_STEPS[2]!.label);
       await new Promise((r) => setTimeout(r, 300));
       setProgress(100);
 

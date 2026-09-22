@@ -69,8 +69,8 @@ function getNextTier(qty: number) {
 
 function getCurrentTierLabel(qty: number) {
   for (let i = QUANTITY_TIERS.length - 1; i >= 0; i--) {
-    if (qty >= QUANTITY_TIERS[i].min) {
-      const t = QUANTITY_TIERS[i];
+    if (qty >= QUANTITY_TIERS[i]!.min) {
+      const t = QUANTITY_TIERS[i]!;
       return t.max ? `${t.min}-${t.max}` : `${t.min}+`;
     }
   }

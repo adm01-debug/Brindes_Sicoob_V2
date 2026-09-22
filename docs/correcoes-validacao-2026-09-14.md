@@ -2073,3 +2073,21 @@ probe). `check-eslint-baseline.mjs` → zero regressão (referência
 1 erro de lint eliminado de graça). Nenhum teste dedicado encontrado para
 os 2 arquivos. Baseline de typecheck do projeto atualizado: 727 → 717
 erros (364 → 362 arquivos).
+
+## PdfGenerationDialog.tsx + QuoteItemDetailSheet.tsx + WorkflowStepCard.tsx (etapa 17)
+
+**Arquivos:** `src/components/quotes/PdfGenerationDialog.tsx`, `src/components/quotes/QuoteItemDetailSheet.tsx`, `src/components/workflows/WorkflowStepCard.tsx`
+
+**Diagnóstico:** os 3 arquivos compartilham o mesmo padrão raiz — acesso indexado (`arr[i]`) a um array literal fixo, estruturalmente sempre presente no ponto de acesso, mas tipado como possivelmente `undefined` por causa de `noUncheckedIndexedAccess`.
+
+- `PdfGenerationDialog.tsx` (5 erros TS2532, linhas 130/136/137/146/147): `PROGRESS_STEPS` é um array literal fixo de 3 elementos (linhas 41-45); os acessos `PROGRESS_STEPS[0]`, `PROGRESS_STEPS[1]`, `PROGRESS_STEPS[2]` são a índices fixos e válidos dentro do array. Corrigido com asserção não-nula (`!`) em cada acesso.
+- `QuoteItemDetailSheet.tsx` (5 erros, linha 72 e 74×4): `QUANTITY_TIERS` é um array literal fixo de 8 elementos (linhas 8-17); o loop `for (let i = QUANTITY_TIERS.length - 1; i >= 0; i--)` garante `i` sempre dentro do range válido. Corrigido com `!` em `QUANTITY_TIERS[i]!.min` e `const t = QUANTITY_TIERS[i]!;`.
+- `WorkflowStepCard.tsx` (5 erros, linhas 26/38/46/47/52): `STEP_TYPES` é um array literal fixo de 4 elementos; o fallback `STEP_TYPES.find(...) || STEP_TYPES[0]` acessa o índice 0, sempre presente. Corrigido com `STEP_TYPES[0]!`.
+
+**Correção:** asserção não-nula (`!`) pontual em cada acesso estruturalmente garantido, sem alterar lógica de runtime.
+
+**Validação:**
+- `tscheck-files.mjs`: 0 erro(s) em cada um dos 3 arquivos (15 erros eliminados no total).
+- `check-eslint-baseline.mjs`: 0 regressões de lint nos 3 arquivos.
+- Sem testes dedicados para os 3 arquivos (busca por nome de arquivo não retornou spec/test).
+- `typecheck:baseline`: 717 → 702 (359 arquivos), baseline atualizado com `--update`.
