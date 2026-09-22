@@ -2241,3 +2241,21 @@ erros (364 → 362 arquivos).
 - `check-eslint-baseline.mjs`: 0 regressões (referência origin/main fdec5ef996); 3342 erros globais (sem alteração).
 - Testes dedicados: 7 arquivos / 25 testes (`DevInfraGate.test.ts` ×2, `DevInfraGateSSR/Matrix/Stability/Hydration/ErrorResilience.test.tsx`) — todos passaram, confirmando que nenhum teste dependia do literal `'admin'` removido.
 - `typecheck:baseline`: 653 → 648 (348 arquivos), travado via `--update`.
+
+## bridgeCallMetrics.ts (etapa 17)
+
+**Arquivo:** `src/lib/telemetry/bridgeCallMetrics.ts`
+**Erros:** 5× (`TS18048` + `TS2538` + `TS2322` + `TS2532`×2) sob `noUncheckedIndexedAccess`.
+
+**Diagnóstico:** todos os 5 acessos por índice são estruturalmente seguros:
+- `estimatePayloadBytes()` (linha 118): `keys[i]` dentro de `for (let i = 0; i < sampleCount; i++)`, onde `sampleCount = Math.min(keys.length, 5)`.
+- `percentile()` (linha 187): `sortedAsc[idx]` — guard `if (sortedAsc.length === 0) return 0;` garante `sortedAsc.length >= 1`; `idx` é clampado por `Math.min(sortedAsc.length - 1, ...)`.
+- `aggregateByEndpoint()` (linhas 209-210): `arr[0].bridge`/`arr[0].op` — `arr` vem de `groups.get(key)` (Map construído via `else groups.set(key, [s])`), garantindo que todo array no Map tem ao menos 1 elemento.
+
+**Correção:** asserções de non-null (`!`) nos 3 pontos de acesso (5 ocorrências), sem alterar lógica.
+
+**Validação:**
+- `tscheck-files.mjs`: 0 erro(s) nos arquivos pedidos (5 eliminados).
+- `check-eslint-baseline.mjs`: 0 regressões (referência origin/main c24afb02b1); 3342 erros globais (sem alteração).
+- Testes dedicados: 4 arquivos / 8 testes (`BridgeMetricsOverlay-ProdGate.test.tsx`, `useBridgeMetrics.test.ts`, `useBridgeMetricsCleanup.test.ts`, `useBridgeMetricsPerformance.test.ts`) — todos passaram.
+- `typecheck:baseline`: 648 → 643 (347 arquivos), travado via `--update`.

@@ -114,7 +114,7 @@ export function estimatePayloadBytes(value: unknown): number {
       const sampleCount = Math.min(keys.length, 5);
       let sampleBytes = 0;
       for (let i = 0; i < sampleCount; i++) {
-        const key = keys[i];
+        const key = keys[i]!;
         sampleBytes += key.length + estimatePayloadBytes(obj[key]) + 4;
       }
       return Math.round((sampleBytes / sampleCount) * keys.length) + 16;
@@ -184,7 +184,7 @@ export interface BridgeAggregateRow {
 function percentile(sortedAsc: number[], p: number): number {
   if (sortedAsc.length === 0) return 0;
   const idx = Math.min(sortedAsc.length - 1, Math.floor((p / 100) * sortedAsc.length));
-  return sortedAsc[idx];
+  return sortedAsc[idx]!;
 }
 
 export function aggregateByEndpoint(input: readonly BridgeCallSample[]): BridgeAggregateRow[] {
@@ -206,8 +206,8 @@ export function aggregateByEndpoint(input: readonly BridgeCallSample[]): BridgeA
     const lastTs = arr.reduce((acc, s) => Math.max(acc, s.ts), 0);
     rows.push({
       key,
-      bridge: arr[0].bridge,
-      op: arr[0].op,
+      bridge: arr[0]!.bridge,
+      op: arr[0]!.op,
       count: arr.length,
       errors,
       avgMs: Math.round(sumDur / arr.length),
