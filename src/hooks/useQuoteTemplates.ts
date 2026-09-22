@@ -30,14 +30,15 @@ export interface QuoteTemplate {
   is_public: boolean;
   is_default: boolean;
   created_by: string | null;
-  seller_id: string | null;
+  seller_id: string;
   notes: string | null;
   internal_notes: string | null;
   category: string | null;
   validity_days: number | null;
 }
 
-export type CreateTemplateInput = Partial<Omit<QuoteTemplate, 'id' | 'created_at' | 'updated_at'>>;
+export type CreateTemplateInput = Partial<Omit<QuoteTemplate, 'id' | 'created_at' | 'updated_at'>> &
+  Pick<QuoteTemplate, 'name'>;
 
 export function useQuoteTemplates() {
   const { user, profile } = useAuth();
@@ -70,10 +71,13 @@ export function useQuoteTemplates() {
 
       const { data, error } = await supabase
         .from("quote_templates")
-        .insert({ 
-          ...template, 
+        .insert({
+          ...template,
+          // items_data é QuoteTemplateItem[] no app, Json no banco — mesmo
+          // padrão de serialização usado em useKitVariants.ts/useTemplateSnapshot.ts.
+          items_data: template.items_data ? JSON.parse(JSON.stringify(template.items_data)) : template.items_data,
           created_by: user.id,
-          seller_id: user.id 
+          seller_id: user.id
         })
         .select()
         .single();
@@ -93,7 +97,10 @@ export function useQuoteTemplates() {
     try {
       const { data, error } = await supabase
         .from("quote_templates")
-        .update(template)
+        .update({
+          ...template,
+          items_data: template.items_data ? JSON.parse(JSON.stringify(template.items_data)) : template.items_data,
+        })
         .eq("id", id)
         .select()
         .single();

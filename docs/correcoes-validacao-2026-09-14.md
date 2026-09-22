@@ -717,3 +717,46 @@ nos arquivos-alvo (72 no programa inteiro, era 80). `check-eslint-baseline.mjs`
 dedicado `tests/services/sicoobOrderService.test.ts` → 10/10 passou (não
 existe teste dedicado pra `OrderDetailPage.tsx`/`useSicoobOrder.ts`
 componente/hook em si).
+
+## `src/hooks/useQuoteTemplates.ts` (etapa 17, 2 → 0 erros — achado: `items_data` não é `Json`-serializável no tipo + 2 campos com drift de nulidade)
+
+**Causa raiz 1**: `createTemplate`/`updateTemplate` passavam o objeto
+`CreateTemplateInput` (derivado da interface app-level `QuoteTemplate`,
+com `items_data: QuoteTemplateItem[] | null`) direto pro `.insert()`/
+`.update()` do Supabase, cujo tipo gerado espera `items_data?: Json |
+null`. `QuoteTemplateItem` tem `personalizations?:
+QuoteTemplatePersonalization[]`, e `QuoteTemplatePersonalization` tem
+`[key: string]: unknown` — `unknown` não faz parte da união recursiva
+de `Json`, então o TS rejeita a atribuição (corretamente: em tese
+alguém poderia colocar uma função ali, que não serializa). Aplicado o
+mesmo padrão já usado em 3 outros hooks do projeto pro mesmo problema
+(`useKitVariants.ts`, `useTemplateSnapshot.ts`, `useKitAutoSave.ts`):
+`JSON.parse(JSON.stringify(template.items_data))` antes de enviar —
+os dados são sempre serializáveis em runtime (vêm de formulário/estado
+local), só o tipo estático não provava isso.
+
+**Causa raiz 2**: `QuoteTemplate.seller_id` estava tipado `string |
+null`, mas a coluna real (`quote_templates.seller_id`) é `NOT NULL` —
+confirmado no `Row`/`Insert`/`Update` gerados (nenhum tem `| null`).
+Corrigido pra `seller_id: string`.
+
+**Causa raiz 3**: `CreateTemplateInput` (`Partial<Omit<QuoteTemplate,
+...>>`) tornava `name` opcional, mas a coluna é `NOT NULL` sem default
+— `createTemplate({})` sem nome quebraria em runtime só na constraint
+do banco, não no tipo. Corrigido: `CreateTemplateInput = Partial<...> &
+Pick<QuoteTemplate, 'name'>` (nome obrigatório, resto opcional,
+espelhando a constraint real). Efeito colateral positivo: eliminou 2
+erros pré-existentes em `QuoteTemplateForm.tsx`
+(`formData.name is possibly 'undefined'`, linhas 68 e 375) que a
+tipagem antiga permitia mas o form sempre evitava em runtime (guard
+`if (!formData.name.trim()) return;`).
+
+Verificado: `tscheck-files.mjs` em `useQuoteTemplates.ts` isolado → 0
+erros (23 no programa inteiro, era 25). Mesma checagem incluindo
+`QuoteTemplateForm.tsx`/`useQuoteBuilderState.ts` (consumidores)
+confirma via `git stash`: 10 erros antes → 8 depois — os 8 restantes
+são pré-existentes e fora do escopo deste arquivo (não relacionados a
+`items_data`/`seller_id`/`name`), candidatos a uma futura unidade de
+trabalho própria. `check-eslint-baseline.mjs` → zero regressão. Teste
+dedicado `tests/hooks/useQuoteTemplates.test.tsx` → 1/1 passou (smoke
+test, não exercita `createTemplate`/`updateTemplate` diretamente).
