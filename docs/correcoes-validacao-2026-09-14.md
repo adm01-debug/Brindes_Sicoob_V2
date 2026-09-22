@@ -2648,3 +2648,19 @@ O código fazia `result as { products: ExternalProduct[]; count }`, mas `fetchPr
 - `check-eslint-baseline.mjs`: 0 regressões (3336 erros globais, referência `origin/main` em `e95964a00c`).
 - Nenhum teste dedicado encontrado para nenhum dos três arquivos.
 - `typecheck:baseline`: 574 → 569 (329 arquivos), travado via `--update`.
+
+## KitHealthCard.tsx (etapa 17)
+
+**Arquivo:** `src/components/kit-builder/KitHealthCard.tsx`
+
+**Erros originais (4×):** TS2322 (linha 32, `sorted[lo]` possivelmente `undefined` retornado como `number`), TS2532×3 (linha 33, `sorted[lo]`/`sorted[hi]` possivelmente `undefined` em expressão aritmética).
+
+**Diagnóstico:** função `percentile(sorted, p)` — `lo = Math.floor(idx)` e `hi = Math.ceil(idx)`, onde `idx = (p / 100) * (sorted.length - 1)`. Como a função só é chamada com `p` em `{25, 75}` e o guard `if (!sorted.length) return 0;` garante `sorted` não vazio, `idx` está sempre em `[0, sorted.length - 1]`, então tanto `lo` quanto `hi` são sempre índices válidos de `sorted` — acesso estruturalmente seguro sob `noUncheckedIndexedAccess`.
+
+**Fix aplicado:** asserção de não-nulo nos três acessos (`sorted[lo]!`, `sorted[hi]!`, reaproveitado na expressão de interpolação linear).
+
+**Validação:**
+- `tscheck-files.mjs`: 4 → 0 erros (0 no programa inteiro).
+- `check-eslint-baseline.mjs`: 0 regressões (3336 erros globais, referência `origin/main` em `8b9ea1fc40`).
+- Nenhum teste dedicado encontrado para este componente.
+- `typecheck:baseline`: 569 → 565 (328 arquivos), travado via `--update`.
