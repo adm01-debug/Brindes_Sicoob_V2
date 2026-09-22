@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-09-22T21:00:56.715Z",
-  "total": 628,
+  "generatedAt": "2026-09-22T21:30:07.901Z",
+  "total": 623,
   "files": {
     "src/components/admin/common/AdminDataTable.tsx": 2,
     "src/components/admin/connections/Bitrix24Tab.tsx": 1,
@@ -325,7 +325,6 @@
     "src/pages/OrdersPage.tsx": 2,
     "src/pages/PermissionsPage.tsx": 1,
     "src/pages/PublicComparisonPage.tsx": 1,
-    "src/pages/quote-view/QuoteActionHandlers.ts": 5,
     "src/pages/quote-view/useQuoteViewData.ts": 3,
     "src/pages/QuoteDetailPage.tsx": 1,
     "src/pages/QuotesListPage.tsx": 5,

@@ -2331,3 +2331,49 @@ erros (364 → 362 arquivos).
 - `check-eslint-baseline.mjs`: 0 regressões (referência origin/main 7c52a93e8b); 3341 erros globais (sem alteração).
 - Teste dedicado: não encontrado.
 - `typecheck:baseline`: 633 → 628 (344 arquivos), travado via `--update`.
+
+## QuoteActionHandlers.ts (etapa 17)
+
+**Arquivo:** `src/pages/quote-view/QuoteActionHandlers.ts`
+**Erros:** 5× (`TS2345`×3 + `TS2532` + `TS2345` no `setQuote`).
+
+**Diagnóstico:**
+Todos os 5 erros estavam dentro de `handleSyncBitrix` (linhas 50-140), uma
+função exportada mas **nunca importada em lugar nenhum do projeto**
+(confirmado via grep exaustivo em `src/` e `tests/` — o único import do
+módulo, em `useQuoteViewData.ts`, traz apenas `formatCurrency`,
+`calcPersTotal` e `formatCNPJ`). Investigação adicional mostrou que:
+- `handleDownloadPDF` e `buildWhatsAppUrl` (também exportadas aqui) são
+  igualmente código morto — `useQuoteViewData.ts` define suas próprias
+  versões locais (`handleDownloadPDF` linha 144, `handleWhatsAppShare`
+  linha 169), que são as efetivamente usadas por `QuoteViewPage.tsx`.
+- A sincronização real com o Bitrix24 passa por
+  `useQuoteViewData.ts::handleSyncBitrix` (linha 205) → `QuoteBitrixSync.ts`
+  (`syncQuoteToBitrix`) — módulo dedicado, já corrigido em etapa 17 anterior
+  (ver seção `QuoteBitrixSync.ts` acima), com a mesma lógica só que correta
+  (guard de `quote.id` com `quoteId` local, `String(bitrixQuoteIdFromResponse)`
+  em vez de `number`, circuit breaker).
+
+Ou seja: `handleSyncBitrix` neste arquivo é uma versão **desatualizada e
+duplicada** da função que já foi extraída e corrigida em `QuoteBitrixSync.ts`,
+deixada para trás sem uso. Os 5 erros TS eram sintomas de bugs reais
+(`quote.id` opcional usado sem guard; `bitrix_quote_id` atribuído como
+`number` a um campo `string`) dentro de código inalcançável — corrigir esses
+bugs manteria lógica morta e enganosa no código-fonte.
+
+**Correção:**
+Removidas as 3 funções mortas (`handleDownloadPDF`, `buildWhatsAppUrl`,
+`handleSyncBitrix`, ~130 linhas) e os imports que só elas usavam (`supabase`,
+`generateProposalPDFv2`, `downloadPDF`, `ProposalTemplateData`, `Quote`,
+`toast`, `format`/`ptBR`, `logger`). Mantido apenas o que é realmente
+consumido: `calcPersTotal` e o re-export de `formatCurrency`/`formatCNPJ`
+(usados por `useQuoteViewData.ts`, `QuoteTotalsSummary.tsx`,
+`QuoteItemsTable.tsx` etc.).
+
+**Validação:**
+- `tscheck-files.mjs`: 0 erro(s) nos arquivos pedidos (5 eliminados).
+- `check-eslint-baseline.mjs`: 0 regressões (referência origin/main 939000f68d);
+  3341 → 3336 erros globais (drift positivo: 5 erros de lint eliminados junto
+  com o código morto).
+- Teste dedicado: não encontrado.
+- `typecheck:baseline`: 628 → 623 (343 arquivos), travado via `--update`.
