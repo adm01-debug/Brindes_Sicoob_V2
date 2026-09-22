@@ -60,8 +60,8 @@ interface StepContentProps {
   onImagesChange: (imgs: string[]) => void;
   supplierId: string;
   onSupplierChange: (id: string, name?: string, markupPercent?: number | null) => void;
-  skuStatus: string;
-  duplicateName: string | null;
+  skuStatus: 'idle' | 'checking' | 'valid' | 'duplicate';
+  duplicateName: string;
   skuManuallyEdited: boolean;
   onSkuManualEdit: () => void;
   isBoxProduct: boolean;

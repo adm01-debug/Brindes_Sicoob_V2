@@ -781,3 +781,65 @@ indexado. Corrigido com asserção de não-nulo (`!`) nos 7 pontos:
 Verificado: `tscheck-files.mjs` → 0 erros (15 no programa inteiro, era
 22). `check-eslint-baseline.mjs` → zero regressão. Sem teste dedicado
 para este hook.
+
+## `src/components/admin/products/ProductFormStepContent.tsx` (etapa 17, 7 → 0 erros — drift de tipo em prop compartilhada `FormSectionProps` + widening desnecessário local)
+
+Três causas raiz distintas, todas do mesmo gênero (tipo hand-written que
+não reflete a forma real do dado), tocando 3 arquivos:
+
+1. **`skuStatus`/`duplicateName` (linhas 123-124)**: `StepContentProps`
+   declarava `skuStatus: string` e `duplicateName: string | null`, mas a
+   fonte real (`useSkuValidation.ts`) sempre retorna
+   `'idle' | 'checking' | 'valid' | 'duplicate'` (union literal) e
+   `duplicateName: string` (nunca `null` — inicializado como `''`). O
+   widening era desnecessário e quebrava a atribuição pra
+   `ProductInfoSection`, que exige o tipo preciso. Corrigido apertando
+   `StepContentProps` pros tipos reais de origem, em vez de afrouxar o
+   componente-folha.
+
+2. **`FormSectionProps.watch`/`numericProps` (`ProductFormHelpers.tsx`,
+   linhas 128/145/149/158/177 — `ProductDimensionsSection`,
+   `ProductPackagingSection`, `ProductPriceSection`, `ProductFiscalSection`,
+   `ProductSeoSection`)**: a interface compartilhada `FormSectionProps`
+   declarava `watch` como uma assinatura genérica simplificada
+   (`<T extends keyof ProductFormData>(name: T) => ProductFormData[T]`) em
+   vez do tipo real do react-hook-form (`UseFormWatch<ProductFormData>`,
+   que é sobrecarregado — suporta zero args, array de nomes, callback,
+   etc.). O `numericProps` real (definido em `ProductFormFullscreen.tsx`)
+   também não batia: parâmetro `keyof ProductFormData` vs. o
+   `keyof ProductFormData | (string & {})` declarado, e retorno
+   `object` vs. `Record<string, unknown>` exigido. Como o `watch`/
+   `numericProps` reais só são construídos uma vez (em
+   `ProductFormFullscreen.tsx`) e todo consumidor só chama
+   `watch('campo')`/`numericProps('campo')` com uma chave só, a
+   assinatura simplificada nunca trouxe benefício real — só drift.
+   Corrigido trocando `FormSectionProps.watch` por
+   `UseFormWatch<ProductFormData>` (tipo real do react-hook-form) e
+   `numericProps` por `(name: keyof ProductFormData) => object`, iguais
+   ao `FormProps` local já existente em `ProductFormStepContent.tsx`.
+
+3. **Regressão descoberta pelo typecheck completo do projeto** (não
+   aparecia no escopo isolado do arquivo-alvo): apertar o parâmetro de
+   `numericProps` pra `keyof ProductFormData` (removendo o
+   `| (string & {})`) quebrou 2 chamadas em
+   `src/components/admin/products/sections/ProductDimensionsSection.tsx`,
+   que passava `fId` vindo de `.map()` sobre um array de objetos literais
+   sem `as const` — o TS alargava `id: 'height_cm'` etc. pra `string`
+   puro na desestruturação. O `(string & {})` na interface original era
+   uma bengala pra esse widening, não uma decisão de aceitar string
+   arbitrária de propósito. Causa raiz real: os 10 ids usados
+   (`height_cm`, `width_cm`, ..., `internal_diameter_cm`) são todos
+   chaves genuínas de `ProductFormData` (confirmado em
+   `ProductFormSchema.ts`) — só precisavam ficar literais. Corrigido
+   envolvendo os 2 arrays com `as const`.
+
+Verificado: `tscheck-files.mjs` → 0 erros nos 3 arquivos-alvo (41 no
+programa inteiro, era 48; o único erro remanescente em
+`ProductFormHelpers.tsx`, `TS7016` de declaração de tipo faltando pro
+ícone `ruler` do `lucide-react`, é pré-existente — confirmado via
+`git stash`, não foi introduzido por esta correção e está fora de
+escopo). `check-eslint-baseline.mjs` → zero regressão nos 3 arquivos.
+`npm run typecheck:baseline` → zero regressão no projeto inteiro
+(965 vs. baseline 972, 1 arquivo melhorou); `--update` travou o ganho
+(972 → 965 erros, 410 → 409 arquivos). Sem teste dedicado para nenhum
+dos 3 arquivos.
