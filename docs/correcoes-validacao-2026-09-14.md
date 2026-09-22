@@ -2414,3 +2414,27 @@ src/pages/QuotesListPage.tsx(439,23): error TS2554: Expected 1 arguments, but go
 - `npm run typecheck:baseline -- --update` → baseline 623→618 (342 arquivos).
 
 **Nota de risco funcional:** os 3 bugs de export (itens 1 e 2 acima) eram falhas silenciosas em produção — os botões "Excel", "PDF" e "Exportar selecionados" da tela de Orçamentos lançavam exceção e exibiam apenas um toast genérico de erro, sem nunca gerar o arquivo. Recomenda-se validação manual em navegador dessas 3 ações (não realizada nesta sessão, apenas correção estática + typecheck).
+
+## HorizontalStepper.tsx (etapa 17)
+
+**Erros TS originais (4):**
+```
+src/components/admin/products/HorizontalStepper.tsx(58,30): error TS2532: Object is possibly 'undefined'.
+src/components/admin/products/HorizontalStepper.tsx(59,50): error TS2532: Object is possibly 'undefined'.
+src/components/admin/products/HorizontalStepper.tsx(107,24): error TS2532: Object is possibly 'undefined'.
+src/components/admin/products/HorizontalStepper.tsx(133,24): error TS2532: Object is possibly 'undefined'.
+```
+
+**Diagnóstico raiz:** o componente recebe `steps: StepDef[]`, `stepErrors: number[]` e `missingFields: string[][]` como props separadas, esperadas como arrays paralelos (mesmo índice `i` referencia a mesma etapa em todos). Como `noUncheckedIndexedAccess` está ativo e o TypeScript não tem garantia estrutural de que `stepErrors`/`missingFields` têm o mesmo tamanho de `steps` (são props vindas de fora, não um único array desestruturado), todo acesso `stepErrors[i]` e `missingFields[i]` é tipado como `T | undefined`.
+
+**Fix aplicado:** fallback defensivo em vez de non-null assertion, por serem arrays vindos de props (o contrato de paralelismo não é garantido pelo compilador nem pelo runtime caso o componente pai algum dia passe arrays de tamanhos diferentes):
+- `stepErrors[i] > 0` → `(stepErrors[i] ?? 0) > 0`
+- `missingFields[i].length > 0` → `(missingFields[i] ?? []).length > 0`
+- `missingFields[i].length` (badge de contagem) → `(missingFields[i] ?? []).length`
+- `missingFields[i].map(...)` → `(missingFields[i] ?? []).map(...)`
+
+**Validação:**
+- `node scripts/tscheck-files.mjs` → 0 erros (0 no programa inteiro, arquivo isolado sem outras dependências com erro).
+- `node scripts/check-eslint-baseline.mjs` → 0 regressões (referência origin/main a34ba09dd2, 3336 erros globais).
+- Nenhum teste dedicado encontrado para este arquivo.
+- `npm run typecheck:baseline -- --update` → baseline 618→614 (341 arquivos).
