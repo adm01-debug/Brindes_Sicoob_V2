@@ -18,7 +18,7 @@ const statusConfig = {
 };
 
 export function OrderPilotWorkflow({ orderId }: OrderPilotWorkflowProps) {
-  const { data: approvals, createApproval, updateStatus, isLoading } = usePilotApprovals(orderId);
+  const { approvals, createApproval, updateStatus, isLoading } = usePilotApprovals(orderId);
   const [comment, setComment] = useState("");
   const [photoUrl, setPhotoUrl] = useState("");
 
@@ -29,8 +29,8 @@ export function OrderPilotWorkflow({ orderId }: OrderPilotWorkflowProps) {
     createApproval.mutate({
       order_id: orderId,
       status: 'pending',
-      photo_url: photoUrl,
-      comments: comment
+      mockup_url: photoUrl,
+      reviewer_notes: comment
     });
     setComment("");
     setPhotoUrl("");
@@ -47,24 +47,24 @@ export function OrderPilotWorkflow({ orderId }: OrderPilotWorkflowProps) {
         {latestApproval ? (
           <div className="space-y-4">
             <div className="flex items-start gap-4 p-4 rounded-lg border bg-muted/30">
-              {latestApproval.photo_url && (
-                <img 
-                  src={latestApproval.photo_url} 
-                  alt="Piloto" 
-                  className="w-24 h-24 object-cover rounded-md border" 
+              {latestApproval.mockup_url && (
+                <img
+                  src={latestApproval.mockup_url}
+                  alt="Piloto"
+                  className="w-24 h-24 object-cover rounded-md border"
                 />
               )}
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-2">
                   <Badge variant="outline" className={statusConfig[latestApproval.status].color}>
-                    {latestApproval.label || statusConfig[latestApproval.status].label}
+                    {statusConfig[latestApproval.status].label}
                   </Badge>
                   <span className="text-xs text-muted-foreground">
                     {new Date(latestApproval.created_at).toLocaleDateString()}
                   </span>
                 </div>
-                {latestApproval.comments && (
-                  <p className="text-sm text-muted-foreground italic">"{latestApproval.comments}"</p>
+                {latestApproval.reviewer_notes && (
+                  <p className="text-sm text-muted-foreground italic">"{latestApproval.reviewer_notes}"</p>
                 )}
               </div>
             </div>

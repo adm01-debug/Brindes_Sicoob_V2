@@ -2696,3 +2696,20 @@ O código fazia `result as { products: ExternalProduct[]; count }`, mas `fetchPr
 - `check-eslint-baseline.mjs`: 0 regressões (3335 erros globais, referência `origin/main` em `a5737dbbba`).
 - Nenhum teste dedicado encontrado para este componente.
 - `typecheck:baseline`: 561 → 557 (326 arquivos), travado via `--update`.
+
+## OrderPilotWorkflow.tsx (etapa 17)
+
+**Arquivo:** `src/components/orders/OrderPilotWorkflow.tsx`
+
+**Erros originais (4×):** TS2339 (linha 21, propriedade `data` não existe no retorno de `usePilotApprovals`), TS2353 (linha 32, `photo_url` não existe em `Partial<PilotApproval>`), TS7053×2 (linhas 59-60, `statusConfig[latestApproval.status]` com índice implicitamente `any`).
+
+**Diagnóstico — bug real de nomes de campo, não apenas gap de tipagem:** `usePilotApprovals` retorna `{ approvals, isLoading, error, createApproval, updateStatus }` (ver `src/hooks/usePilotApprovals.ts:88-94`), mas o componente desestruturava `{ data: approvals, ... }` — propriedade `data` nunca existiu no retorno do hook. Esse erro raiz também produzia efeito cascata: como a desestruturação falhava, `approvals` (e por consequência `latestApproval`) ficava com tipo `any` implícito, mascarando os TS7053 subsequentes ao indexar `statusConfig` com `latestApproval.status`.
+Adicionalmente, o componente usava nomes de campo que nunca existiram no tipo `PilotApproval`/na tabela `order_pilot_approvals` (ver migration `20260502174252_...`): `photo_url` (campo real: `mockup_url`) e `comments` (campo real: `reviewer_notes`) — tanto no payload de criação (`createApproval.mutate`) quanto na leitura (`latestApproval.photo_url`, `latestApproval.comments`). Havia ainda `latestApproval.label`, um campo que nunca existiu no tipo (sempre `undefined` em runtime, mascarado pelo `any` cascata) — removido por ser código morto redundante com `statusConfig[status].label`.
+
+**Fix aplicado:** desestruturação corrigida para `{ approvals, createApproval, updateStatus, isLoading }`; `photo_url` → `mockup_url` (nos 3 usos: payload de criação, preview de imagem, condicional de exibição); `comments` → `reviewer_notes` (payload de criação e exibição); removida a referência morta a `latestApproval.label`.
+
+**Validação:**
+- `tscheck-files.mjs`: 4 → 0 erros (0 no programa inteiro).
+- `check-eslint-baseline.mjs`: 0 regressões (3335 erros globais, referência `origin/main` em `fec859a22f`).
+- Nenhum teste dedicado encontrado para este componente ou hook.
+- `typecheck:baseline`: 557 → 553 (325 arquivos), travado via `--update`.
