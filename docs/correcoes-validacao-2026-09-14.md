@@ -2680,3 +2680,19 @@ O código fazia `result as { products: ExternalProduct[]; count }`, mas `fetchPr
 - `check-eslint-baseline.mjs`: 0 regressões — **drift positivo**: 1 erro de lint eliminado como efeito colateral (3336 → 3335 erros globais, referência `origin/main` em `3092287f83`).
 - Nenhum teste dedicado encontrado para este componente.
 - `typecheck:baseline`: 565 → 561 (327 arquivos), travado via `--update`.
+
+## TechniqueColorConfigDialog.tsx (etapa 17)
+
+**Arquivo:** `src/components/mockup/TechniqueColorConfigDialog.tsx`
+
+**Erros originais (4×):** TS18048 (linhas 128-129, `color` possivelmente `undefined` ao acessar `color.hex`, `color.selectedPantone`, `color.pantoneMatch?.pantoneCode`, `color.name`).
+
+**Diagnóstico:** em `handleConfirm`, `config.selectedColors = selectedIndices.map((idx) => { const color = detectedColors[idx]; ... })` — sob `noUncheckedIndexedAccess`, `detectedColors[idx]` é `DetectedColor | undefined`. Diferente dos casos anteriores desta etapa, aqui o acesso **não** é estruturalmente seguro: `selectedIndices` é inicializado a partir de `currentConfig?.selectedPantoneIndices` (uma configuração salva em uma sessão anterior), enquanto `detectedColors` é a lista de cores *atual*, vinda de uma nova análise de logo. Se o logo for reanalisado (novo array `detectedColors`, possivelmente com tamanho diferente) e o diálogo reabrir com uma `currentConfig` antiga, `selectedIndices` pode conter índices que não existem mais no array atual — um caso real de dado potencialmente ausente em runtime, não apenas uma lacuna de tipagem.
+
+**Fix aplicado:** guard real em vez de asserção de não-nulo — `selectedIndices.map((idx) => detectedColors[idx]).filter((color): color is DetectedColor => color !== undefined).map((color) => ({ hex: color.hex, pantoneCode: ... }))`. Índices órfãos (referentes a cores que não existem mais) são silenciosamente descartados, preservando o comportamento correto (não é possível reutilizar uma cor que já não está na lista detectada).
+
+**Validação:**
+- `tscheck-files.mjs`: 4 → 0 erros (0 no programa inteiro, após a correção — apenas 1 erro restante no programa, não relacionado a este arquivo).
+- `check-eslint-baseline.mjs`: 0 regressões (3335 erros globais, referência `origin/main` em `a5737dbbba`).
+- Nenhum teste dedicado encontrado para este componente.
+- `typecheck:baseline`: 561 → 557 (326 arquivos), travado via `--update`.

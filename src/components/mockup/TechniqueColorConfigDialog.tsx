@@ -121,14 +121,16 @@ export function TechniqueColorConfigDialog({
     } else if (category === "serigrafia") {
       config.colorCount = colorCount;
       config.selectedPantoneIndices = selectedIndices;
-      // Resolve actual hex + pantoneCode for each selected index so canvas processing can use them
-      config.selectedColors = selectedIndices.map((idx) => {
-        const color = detectedColors[idx];
-        return {
+      // Resolve actual hex + pantoneCode for each selected index so canvas processing can use them.
+      // selectedIndices pode conter índices de uma config salva anteriormente com um detectedColors
+      // diferente (ex.: logo reanalisado) — filtramos entradas que não existem mais no array atual.
+      config.selectedColors = selectedIndices
+        .map((idx) => detectedColors[idx])
+        .filter((color): color is DetectedColor => color !== undefined)
+        .map((color) => ({
           hex: color.hex,
           pantoneCode: color.selectedPantone || color.pantoneMatch?.pantoneCode || color.name,
-        };
-      });
+        }));
     } else {
       config.isFullColor = true;
     }
