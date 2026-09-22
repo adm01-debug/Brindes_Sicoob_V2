@@ -1,0 +1,119 @@
+[
+  {
+    "bucket": "component-media",
+    "status": {
+      "http": 200
+    },
+    "objects": [],
+    "count": 0,
+    "bytes": 0
+  },
+  {
+    "bucket": "exports",
+    "status": {
+      "http": 200
+    },
+    "objects": [],
+    "count": 0,
+    "bytes": 0
+  },
+  {
+    "bucket": "mockup-art-files",
+    "status": {
+      "http": 200
+    },
+    "objects": [],
+    "count": 0,
+    "bytes": 0
+  },
+  {
+    "bucket": "order-documents",
+    "status": {
+      "http": 200
+    },
+    "objects": [],
+    "count": 0,
+    "bytes": 0
+  },
+  {
+    "bucket": "personalization-images",
+    "status": {
+      "http": 200
+    },
+    "objects": [],
+    "count": 0,
+    "bytes": 0
+  },
+  {
+    "bucket": "personalization-images-secondary",
+    "status": {
+      "http": 200
+    },
+    "objects": [],
+    "count": 0,
+    "bytes": 0
+  },
+  {
+    "bucket": "product-videos",
+    "status": {
+      "http": 200
+    },
+    "objects": [],
+    "count": 0,
+    "bytes": 0
+  },
+  {
+    "bucket": "proposals",
+    "status": {
+      "http": 200
+    },
+    "objects": [],
+    "count": 0,
+    "bytes": 0
+  },
+  {
+    "bucket": "qa-evidences",
+    "status": {
+      "http": 200
+    },
+    "objects": [],
+    "count": 0,
+    "bytes": 0
+  },
+  {
+    "bucket": "quarantine",
+    "status": {
+      "http": 200
+    },
+    "objects": [],
+    "count": 0,
+    "bytes": 0
+  },
+  {
+    "bucket": "supplier-logos",
+    "status": {
+      "http": 200
+    },
+    "objects": [],
+    "count": 0,
+    "bytes": 0
+  },
+  {
+    "bucket": "sicoob-order-documents",
+    "status": {
+      "http": 200
+    },
+    "objects": [],
+    "count": 0,
+    "bytes": 0
+  },
+  {
+    "bucket": "avatars",
+    "status": {
+      "http": 200
+    },
+    "objects": [],
+    "count": 0,
+    "bytes": 0
+  }
+]

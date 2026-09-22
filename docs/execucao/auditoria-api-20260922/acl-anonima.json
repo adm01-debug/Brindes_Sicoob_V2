@@ -1,0 +1,31 @@
+{
+  "collected_at": "2026-09-22T13:58:47.067153+00:00",
+  "credential": "publishable, sem sessão de usuário",
+  "method": "GET",
+  "probes": [
+    {
+      "rpc": "get_sicoob_reorder_idempotency",
+      "http": 401,
+      "code": "42501",
+      "message": "permission denied for function get_sicoob_reorder_idempotency"
+    },
+    {
+      "rpc": "get_sicoob_kit_quote_idempotency",
+      "http": 401,
+      "code": "42501",
+      "message": "permission denied for function get_sicoob_kit_quote_idempotency"
+    },
+    {
+      "rpc": "check_sicoob_access_matrix",
+      "http": 404,
+      "code": "42883",
+      "message": "operator does not exist: name[] @> text[]"
+    },
+    {
+      "rpc": "audit_security_definer_acl",
+      "http": 200,
+      "result_type": "list",
+      "result_count": 391
+    }
+  ]
+}
