@@ -24,6 +24,7 @@ dois gates de CI ficam vermelhos. Ninguém tinha essa lista consolidada antes.
 | `ELEVENLABS_API_KEY` | `elevenlabs-scribe-token`, `elevenlabs-tts` | **preencher** |
 | `RESEND_API_KEY` | e-mail da fila de aprovações Sicoob e relatórios | **configuração remota ainda não verificada** |
 | `NOTIFICATION_FROM_EMAIL` | endereço remetente do Resend na fila de aprovações; somente email, sem nome de exibição | **configuração remota ainda não verificada** |
+| `SICOOB_APPROVAL_WORKER_SECRET` | autenticação HTTP dedicada do worker da outbox, sem transmitir a service role | **configuração remota ainda não verificada** |
 | `VIRUSTOTAL_API_KEY` | scan de upload | **preencher** |
 | `GITHUB_PAT` | `github-credentials-test`, `github-fix-config` | **preencher — escopo mínimo necessário** |
 | `LOVABLE_API_KEY` | integração Lovable | **preencher** |
@@ -41,6 +42,12 @@ dois gates de CI ficam vermelhos. Ninguém tinha essa lista consolidada antes.
 | `ALLOW_HTTP_FETCH` | flag de dev (permite fetch não-HTTPS) | **confirmar que é `false`/ausente em produção** |
 | `LOG_CREDENTIAL_RESOLUTION` / `LOG_CRM_BRIDGE_VERBOSE` | flags de debug | **confirmar desligadas em produção** |
 
+O agendamento da outbox exige ainda dois segredos no Supabase Vault:
+`sicoob_project_url` (URL base HTTPS do projeto) e
+`sicoob_approval_worker_secret` (o mesmo valor de
+`SICOOB_APPROVAL_WORKER_SECRET`). Sem ambos, o job permanece inerte, registra
+um aviso e não realiza chamadas externas.
+
 ## Lidos pelo GitHub Actions (`secrets.*`)
 
 | Variável | Workflow | Status |
@@ -48,6 +55,10 @@ dois gates de CI ficam vermelhos. Ninguém tinha essa lista consolidada antes.
 | `E2E_USER_EMAIL` / `E2E_USER_PASSWORD` | `e2e.yml` | ❌ **ausente — causa da falha do PR #6 (etapa 03)** |
 | `E2E_ADMIN_EMAIL` / `E2E_ADMIN_PASSWORD` | `e2e.yml` | ❌ **ausente — idem** |
 | `SUPABASE_SERVICE_ROLE_KEY` | `security-compliance.yml` | ❌ **ausente — causa da falha do job agendado em `main` (etapa 04)** |
+| `SUPABASE_DB_URL` | `migration-ledger-drift.yml` | ❌ **ausente — impede comparar o ledger remoto** |
+| `RLS_TEST_USER_A_EMAIL` / `_PASSWORD` | `security-compliance.yml` | ❌ **ausente — persona autenticada de uma organização isolada** |
+| `RLS_TEST_USER_B_EMAIL` / `_PASSWORD` | `security-compliance.yml` | ❌ **ausente — proprietário da fixture privada** |
+| `RLS_TEST_PRIVATE_QUOTE_B_ID` | `security-compliance.yml` | ❌ **ausente — orçamento privado determinístico da persona B** |
 | `VITE_SUPABASE_URL` | `ci.yml`, `security-compliance.yml` | verificar se está presente |
 | `LHCI_GITHUB_APP_TOKEN` | `lighthouse.yml` | verificar |
 | `GITHUB_TOKEN` | vários (automático do Actions) | automático, não precisa configurar |

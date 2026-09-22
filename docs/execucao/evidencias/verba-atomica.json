@@ -9,8 +9,8 @@
   },
   "concorrencia": {
     "retornos": [
-      3,
-      0
+      0,
+      3
     ],
     "debito": "600.00",
     "pedidos_confirmados": 1

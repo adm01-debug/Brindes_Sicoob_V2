@@ -108,7 +108,7 @@ try:
     confirmed = sql("SELECT count(*) FROM sicoob_orders WHERE id IN ('00000000-0000-4000-8000-000000000102','00000000-0000-4000-8000-000000000103') AND status='confirmed';").stdout.strip()
     assert sorted(statuses) == [0, 3], statuses
     assert consumed == "600.00" and confirmed == "1", (consumed, confirmed)
-    result["concorrencia"] = {"retornos": statuses, "debito": consumed, "pedidos_confirmados": int(confirmed)}
+    result["concorrencia"] = {"retornos": sorted(statuses), "debito": consumed, "pedidos_confirmados": int(confirmed)}
 
     sql(f"""
       UPDATE sicoob_orders SET status='cancelled' WHERE status='confirmed';

@@ -368,28 +368,13 @@ export class QuoteService {
   }
 
   static async consolidate(params: { singularId: string | null, quoteIds: string[], notes: string }) {
-    // 1. Create consolidation record
-    const { data: consolidation, error: consErr } = await supabase
-      .from("quote_consolidations")
-      .insert({
-        singular_id: params.singularId,
-        status: "pending",
-        notes: params.notes
-      })
-      .select()
-      .single();
-
-    if (consErr) throw consErr;
-
-    // 2. Link quotes to it
-    const { error: updErr } = await supabase
-      .from("quotes")
-      .update({ consolidation_id: consolidation.id })
-      .in("id", params.quoteIds);
-
-    if (updErr) throw updErr;
-
-    return consolidation;
+    if (!params.singularId) throw new Error("Singular não identificada para a consolidação.");
+    const { data, error } = await supabase.rpc("consolidate_sicoob_quotes", {
+      p_singular_id: params.singularId,
+      p_quote_ids: params.quoteIds,
+      p_notes: params.notes || null,
+    });
+    if (error) throw error;
+    return data;
   }
 }
-

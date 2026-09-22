@@ -410,99 +410,23 @@ export class OrderService {
     return newOrder as OrderRow;
   }
 
-  static async convertQuoteToOrder({ quoteId, sellerId, organizationId }: ConvertQuoteToOrderParams): Promise<ConvertedOrder> {
+  static async convertQuoteToOrder({ quoteId }: ConvertQuoteToOrderParams): Promise<ConvertedOrder> {
     try {
-      // 1. Fetch the quote
-      const { data: quote, error: qErr } = await supabase
-        .from("quotes")
-        .select("*, items:quote_items(*)")
-        .eq("id", quoteId)
-        .maybeSingle();
-      
-      if (qErr) throw qErr;
-      if (!quote) throw new Error("Orçamento não encontrado");
+      const { data, error } = await supabase.rpc("convert_quote_to_sicoob_order", {
+        p_quote_id: quoteId,
+      });
+      if (error) throw error;
 
-      const validStatuses = ["approved", "approved_singular"];
-      if (!validStatuses.includes(quote.status)) {
-        throw new Error("Apenas orçamentos aprovados pela Singular podem ser oficializados");
+      const order = Array.isArray(data) ? data[0] : data;
+      if (!order?.id || !order?.order_number) {
+        throw new Error("O banco não confirmou a criação do pedido Sicoob");
       }
-
-      // 2. Check if items have price/stock
-      if (!quote.items?.length) {
-        throw new Error("O orçamento não possui itens para oficialização");
-      }
-
-      const hasIncompleteItems = quote.items.some((i: any) => !i.unit_price || i.unit_price <= 0);
-      if (hasIncompleteItems) {
-        throw new Error("Existem itens com preço zerado ou inválido. Por favor, revise o orçamento.");
-      }
-
-      // 3. Check if order already exists
-      const { data: existingOrder, error: eErr } = await supabase
-        .from("orders")
-        .select("id, order_number")
-        .eq("quote_id", quoteId)
-        .maybeSingle();
-      
-      if (eErr) throw eErr;
-      if (existingOrder) {
-        throw new Error(`Este orçamento já foi convertido no pedido #${existingOrder.order_number}`);
-      }
-
-      // 4. Create the order
-      const effectiveOrgId = organizationId || quote.organization_id || null;
-      const { data: order, error: insErr } = await supabase
-        .from("orders")
-        .insert({
-          seller_id: sellerId,
-          organization_id: effectiveOrgId,
-          quote_id: quoteId,
-          client_id: quote.client_id,
-          client_name: quote.client_name,
-          client_email: quote.client_email,
-          client_phone: quote.client_phone,
-          client_company: quote.client_company,
-          subtotal: quote.subtotal,
-          discount_amount: quote.discount_amount,
-          shipping_cost: quote.shipping_cost || 0,
-          shipping_type: quote.shipping_type,
-          total: quote.total,
-          payment_terms: quote.payment_terms,
-          delivery_time: quote.delivery_time,
-          notes: quote.notes,
-          internal_notes: quote.internal_notes,
-          status: "confirmed",
-          fulfillment_status: "unfulfilled",
-        })
-        .select("id, order_number, status, total")
-        .single();
-
-      if (insErr) throw insErr;
-
-      // 5. Copy items
-      const orderItems = quote.items.map((item: any) => ({
-        order_id: order.id,
-        organization_id: effectiveOrgId,
-        product_id: item.product_id,
-        product_sku: item.product_sku,
-        product_name: item.product_name,
-        product_image_url: item.product_image_url,
-        quantity: item.quantity,
-        unit_price: item.unit_price,
-      }));
-
-      const { error: itemInsErr } = await supabase.from("order_items").insert(orderItems);
-      if (itemInsErr) throw itemInsErr;
-
-      // 6. Update quote status
-      const { error: updErr } = await supabase
-        .from("quotes")
-        .update({ status: "converted" })
-        .eq("id", quoteId);
-      
-      if (updErr) throw updErr;
-
-      return { ...order, total: order.total ?? 0 };
+      return {
+        id: order.id,
+        order_number: order.order_number,
+        status: order.status,
+        total: Number(order.total_amount ?? 0),
+      };
     } catch (error: any) {
       logger.error("Error converting quote to order:", error);
       throw error;

@@ -2,3 +2,6 @@ project_id = "cfmzkthhgliqelozlmwu"
 
 [functions.migrate-helper]
 verify_jwt = false
+
+[functions.sicoob-approval-notifications]
+verify_jwt = false

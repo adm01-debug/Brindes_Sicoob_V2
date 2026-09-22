@@ -4,10 +4,10 @@ import { readFileSync } from 'node:fs';
 import vm from 'node:vm';
 import ts from 'typescript';
 
-function carregar({ segredo = 'segredo-sintetico', settings = [], erro = null, statusEntrega = 200, emailConfigurado = false, falhaConfirmacao = false, falhaRede = false, ackInvalido = false, amount = 25 } = {}) {
+function carregar({ segredo = 'segredo-sintetico', settings = [], erro = null, statusEntrega = 200, emailConfigurado = false, falhaConfirmacao = false, falhaRede = false, ackInvalido = false, amount = 25, contratoInvalido = false, eventKind = undefined, estadoInicial = [] } = {}) {
   let handler, clientes = 0;
   const envios = [];
-  const fila = [];
+  const fila = estadoInicial.map(row => ({ ...row }));
   const fonte = readFileSync('supabase/functions/sicoob-approval-notifications/index.ts', 'utf8');
   const codigo = ts.transpileModule(fonte, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText;
   const registros = { sicoob_approval_requests: { requester_id: 'ator-real', amount_at_request: 25, request_reason: 'motivo-real' }, profiles: { pa_id: 'pa-real', full_name: 'Nome real' }, pa_notification_settings: settings };
@@ -15,7 +15,8 @@ function carregar({ segredo = 'segredo-sintetico', settings = [], erro = null, s
     if (erro) return { data: null, error: erro };
     if (name === 'enqueue_sicoob_approval_notifications') {
       for (const [index, setting] of settings.entries()) {
-        if (!fila.some(row => row.id === String(index))) fila.push({ id: String(index), state: 'pending', channel: setting.channel, destination: setting.channel === 'slack' ? setting.webhook_url : setting.recipient_email, payload: { requester_name: 'Nome real', amount, reason: 'motivo-real' }, lease_token: 'reserva-sintetica' });
+        const id = `00000000-0000-4000-8000-${String(index + 1).padStart(12, '0')}`;
+        if (!fila.some(row => row.id === id)) fila.push({ id, state: 'pending', channel: setting.channel, destination: setting.channel === 'slack' ? setting.webhook_url : setting.recipient_email, payload: contratoInvalido ? null : { requester_name: 'Nome real', amount, reason: 'motivo-real', event_kind: eventKind }, lease_token: '99999999-9999-4999-8999-999999999999' });
       }
       return { data: fila.length, error: null };
     }
@@ -30,6 +31,7 @@ function carregar({ segredo = 'segredo-sintetico', settings = [], erro = null, s
       assert.equal(row.state, 'sending');
       row.state = args.p_outcome;
       row.error = args.p_error_code;
+      row.provider = args.p_provider_id;
       return { data: true, error: null };
     }
     if (name === 'get_sicoob_approval_delivery_summary') {
@@ -44,7 +46,7 @@ function carregar({ segredo = 'segredo-sintetico', settings = [], erro = null, s
   } };
   const contexto = {
     exports: {}, Response, URL, AbortSignal,
-    Deno: { env: { get: name => ({ SUPABASE_SERVICE_ROLE_KEY: segredo, SUPABASE_URL: 'https://simulacao.invalid', PUBLIC_APP_URL: 'https://simulacao.invalid', RESEND_API_KEY: emailConfigurado ? 'chave-sintetica' : undefined, NOTIFICATION_FROM_EMAIL: emailConfigurado ? 'portal@example.invalid' : undefined })[name] } },
+    Deno: { env: { get: name => ({ SUPABASE_SERVICE_ROLE_KEY: 'service-role-sintetica', SICOOB_APPROVAL_WORKER_SECRET: segredo, SUPABASE_URL: 'https://simulacao.invalid', PUBLIC_APP_URL: 'https://simulacao.invalid', RESEND_API_KEY: emailConfigurado ? 'chave-sintetica' : undefined, NOTIFICATION_FROM_EMAIL: emailConfigurado ? 'portal@example.invalid' : undefined })[name] } },
     fetch: async (url, opts) => {
       const index=envios.length;
       envios.push({ url, opts });
@@ -87,6 +89,12 @@ test('evento inválido não é declarado entregue', async () => {
   const app = carregar();
   assert.equal((await app.chamar(requisicao(undefined, { type: 'DELETE' }))).status, 400);
   assert.equal(app.envios.length, 0);
+});
+test('solicitação sem canal configurado não é declarada entregue', async () => {
+  const app = carregar();
+  const response = await app.chamar(requisicao());
+  assert.equal(response.status, 503);
+  assert.equal((await response.json()).error, 'nenhum_destino_configurado');
 });
 const slack = { channel: 'slack', webhook_url: 'https://hooks.slack.com/services/sintetico' };
 for (const caso of [
@@ -150,7 +158,7 @@ test('email só confirma depois do aceite do provedor e usa chave de idempotênc
   const app=carregar({ settings: [email], emailConfigurado: true });
   assert.equal((await app.chamar(requisicao())).status,200);
   assert.equal(app.envios[0].url,'https://api.resend.com/emails');
-  assert.equal(app.envios[0].opts.headers['Idempotency-Key'],'sicoob-approval/0');
+  assert.equal(app.envios[0].opts.headers['Idempotency-Key'],'sicoob-approval/00000000-0000-4000-8000-000000000001');
   assert.equal(JSON.parse(app.envios[0].opts.body).to[0],'qa@example.invalid');
 });
 test('falta de configuração de email não impede Slack e não finge sucesso', async () => {
@@ -185,6 +193,14 @@ test('falha de confirmação no banco não anuncia entrega nem reenvia', async (
   await app.chamar(requisicao());
   assert.equal(app.envios.length,1);
 });
+test('linha reservada com contrato inválido falha sem acessar o provedor', async () => {
+  const app=carregar({settings:[slack],contratoInvalido:true});
+  const response=await app.chamar(requisicao());
+  assert.equal(response.status,503);
+  assert.equal(app.envios.length,0);
+  assert.equal(app.fila[0].state,'failed');
+  assert.equal(app.fila[0].error,'invalid_delivery_contract');
+});
 test('worker de fila sem credencial de serviço não envia', async () => {
   const app=carregar({ settings:[slack] });
   assert.equal((await app.chamar(requisicao('usuario',{action:'process_queue'}))).status,401);
@@ -195,4 +211,20 @@ test('worker de fila retoma entregas já registradas', async () => {
   await app.chamar(requisicao()); app.retomar();
   assert.equal((await app.chamar(requisicao(undefined,{action:'process_queue'}))).status,200);
   assert.equal(app.envios.length,2);
+});
+test('worker global não falha para sempre por um erro terminal histórico', async () => {
+  const app=carregar({estadoInicial:[{
+    id:'00000000-0000-4000-8000-000000000099', state:'failed', channel:'slack',
+    destination:'https://hooks.slack.com/services/sintetico', payload:{requester_name:'Nome',amount:25,reason:'motivo'},
+    lease_token:'99999999-9999-4999-8999-999999999999', error:'provider_http_400',
+  }]});
+  const response=await app.chamar(requisicao(undefined,{action:'process_queue'}));
+  assert.equal(response.status,200);
+  assert.equal((await response.json()).success,true);
+  assert.equal(app.envios.length,0);
+});
+test('escalação informa a Diretoria no conteúdo enviado', async () => {
+  const app=carregar({settings:[slack],eventKind:'escalated_to_board'});
+  assert.equal((await app.chamar(requisicao())).status,200);
+  assert.match(app.envios[0].opts.body,/escalada para a Diretoria/);
 });

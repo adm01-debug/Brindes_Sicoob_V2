@@ -47,6 +47,9 @@ export interface SicoobOrder {
   status: OrderStatus;
   total_amount: number;
   notes?: string;
+  source_quote_id?: string | null;
+  source_quote_snapshot?: Record<string, unknown> | null;
+  requires_artwork: boolean;
   delivery_address?: string;
   tracking_code?: string;
   created_at: string;

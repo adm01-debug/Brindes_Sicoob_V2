@@ -5,6 +5,7 @@ import { getCorsHeaders } from "../_shared/cors.ts";
 // target_ref e action_label para rastreabilidade humana.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 import { castRpcResult } from "../_shared/supabase-client-adapter.ts";
+import { deliverStepUpOtp } from "../_shared/step-up-otp-delivery.ts";
 
 // Module-scope CORS headers — atribuído per-request no handler.
 let corsHeaders: Record<string, string> = {};
@@ -184,19 +185,20 @@ Deno.serve(async (req) => {
         return json({ error: "challenge_failed" }, 500);
       }
 
-      // Envia OTP por e-mail (best-effort)
-      let emailDispatched = true;
-      try {
-        await admin.functions.invoke("send-transactional-email", {
-          body: {
-            templateName: "step-up-otp",
-            recipientEmail: user.email,
-            idempotencyKey: `stepup-${row.challenge_id}`,
-            templateData: { otp: row.otp_plain, action, expiresInMinutes: 5 },
-          },
-        });
-      } catch (_) {
-        emailDispatched = false;
+      const delivery = await deliverStepUpOtp({
+        challengeId: row.challenge_id,
+        recipientEmail: user.email ?? "",
+        otp: row.otp_plain,
+        expiresAt: row.expires_at,
+      });
+      if (!delivery.accepted) {
+        // Um desafio sem entrega consumiria o limite horário e jamais poderia ser
+        // concluído. Removê-lo também invalida o OTP caso o resultado do provedor
+        // tenha sido ambíguo.
+        const cleanup = await admin.from("step_up_challenges")
+          .delete()
+          .eq("id", row.challenge_id)
+          .eq("user_id", user.id);
         await audit({
           user_id: user.id,
           event_type: "failed",
@@ -205,11 +207,12 @@ Deno.serve(async (req) => {
           action_label: actionLabel,
           challenge_id: row.challenge_id,
           metadata: {
-            reason: "email_dispatch_failed",
-            otp_preview: row.otp_plain.slice(0, 2) + "****",
+            reason: delivery.errorCode ?? "email_dispatch_failed",
+            challenge_removed: !cleanup.error,
             step: "request",
           },
         });
+        return json({ error: "otp_delivery_unavailable" }, 503);
       }
 
       await audit({
@@ -219,10 +222,10 @@ Deno.serve(async (req) => {
         target_ref: targetRef,
         action_label: actionLabel,
         challenge_id: row.challenge_id,
-        metadata: { email_dispatched: emailDispatched },
+        metadata: { email_dispatched: true, provider_id: delivery.providerId },
       });
 
-      return json({ challenge_id: row.challenge_id, expires_at: row.expires_at });
+      return json({ challenge_id: row.challenge_id, expires_at: row.expires_at, delivery_status: "accepted" });
     }
 
     // ---------- STEP 2: verifica senha ----------

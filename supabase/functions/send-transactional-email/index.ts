@@ -1,246 +1,52 @@
 import { getCorsHeaders } from "../_shared/cors.ts";
 import { withStructuredLogging } from "../_shared/structured-logger.ts";
-/**
- * Edge Function: send-transactional-email
- * Envia emails transacionais para eventos do sistema.
- * Suporta: quote_sent, quote_approved, quote_rejected, order_created.
- */
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 
-interface EmailRequest {
-  event_type: "quote_sent" | "quote_approved" | "quote_rejected" | "order_created" | "sicoob_order_status_change" | "sicoob_order_approval_request";
-  recipient_email: string;
-  recipient_name?: string;
-  data: Record<string, unknown>;
-}
+const supportedEvents = new Set([
+  "quote_sent",
+  "quote_approved",
+  "quote_rejected",
+  "order_created",
+  "sicoob_order_status_change",
+  "sicoob_order_approval_request",
+]);
 
-function buildEmailContent(event: EmailRequest): { subject: string; html: string } {
-  const name = event.recipient_name || "Cliente";
-  
-  switch (event.event_type) {
-    case "quote_sent":
-      return {
-        subject: `Orçamento ${event.data.quote_number || ""} - Promo Gifts`,
-        html: `
-          <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px;">
-            <div style="background: linear-gradient(135deg, #6366f1, #8b5cf6); padding: 24px; border-radius: 12px 12px 0 0; text-align: center;">
-              <h1 style="color: white; margin: 0; font-size: 24px;">Promo Gifts</h1>
-            </div>
-            <div style="background: #ffffff; padding: 32px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 12px 12px;">
-              <h2 style="color: #1f2937; margin-top: 0;">Olá, ${name}!</h2>
-              <p style="color: #4b5563; line-height: 1.6;">
-                Seu orçamento <strong>#${event.data.quote_number || ""}</strong> foi enviado com sucesso.
-              </p>
-              ${event.data.total ? `<p style="color: #4b5563;">Valor total: <strong>R$ ${Number(event.data.total).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</strong></p>` : ""}
-              ${event.data.valid_until ? `<p style="color: #6b7280; font-size: 14px;">Válido até: ${event.data.valid_until}</p>` : ""}
-              ${event.data.approval_url ? `
-                <div style="text-align: center; margin: 24px 0;">
-                  <a href="${event.data.approval_url}" style="background: #6366f1; color: white; padding: 12px 32px; border-radius: 8px; text-decoration: none; font-weight: 600;">
-                    Ver Orçamento
-                  </a>
-                </div>
-              ` : ""}
-              <p style="color: #9ca3af; font-size: 12px; margin-top: 32px; border-top: 1px solid #e5e7eb; padding-top: 16px;">
-                Este email foi enviado automaticamente por Promo Gifts.
-              </p>
-            </div>
-          </div>
-        `,
-      };
-
-    case "quote_approved":
-      return {
-        subject: `✅ Orçamento ${event.data.quote_number || ""} Aprovado!`,
-        html: `
-          <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px;">
-            <div style="background: linear-gradient(135deg, #10b981, #059669); padding: 24px; border-radius: 12px 12px 0 0; text-align: center;">
-              <h1 style="color: white; margin: 0;">✅ Orçamento Aprovado!</h1>
-            </div>
-            <div style="background: #ffffff; padding: 32px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 12px 12px;">
-              <h2 style="color: #1f2937; margin-top: 0;">Parabéns, ${name}!</h2>
-              <p style="color: #4b5563; line-height: 1.6;">
-                O orçamento <strong>#${event.data.quote_number || ""}</strong> 
-                ${event.data.client_name ? `do cliente <strong>${event.data.client_name}</strong>` : ""} 
-                foi aprovado!
-              </p>
-              ${event.data.total ? `<p style="color: #4b5563;">Valor: <strong>R$ ${Number(event.data.total).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</strong></p>` : ""}
-              <p style="color: #9ca3af; font-size: 12px; margin-top: 32px; border-top: 1px solid #e5e7eb; padding-top: 16px;">
-                Promo Gifts — Sistema de Orçamentos
-              </p>
-            </div>
-          </div>
-        `,
-      };
-
-    case "quote_rejected":
-      return {
-        subject: `Orçamento ${event.data.quote_number || ""} - Atualização`,
-        html: `
-          <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px;">
-            <div style="background: linear-gradient(135deg, #f59e0b, #d97706); padding: 24px; border-radius: 12px 12px 0 0; text-align: center;">
-              <h1 style="color: white; margin: 0;">Atualização do Orçamento</h1>
-            </div>
-            <div style="background: #ffffff; padding: 32px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 12px 12px;">
-              <h2 style="color: #1f2937; margin-top: 0;">Olá, ${name}</h2>
-              <p style="color: #4b5563; line-height: 1.6;">
-                O orçamento <strong>#${event.data.quote_number || ""}</strong> não foi aprovado neste momento.
-              </p>
-              ${event.data.notes ? `<p style="color: #6b7280;">Observações: ${event.data.notes}</p>` : ""}
-              <p style="color: #4b5563;">Entre em contato para discutir alternativas.</p>
-              <p style="color: #9ca3af; font-size: 12px; margin-top: 32px; border-top: 1px solid #e5e7eb; padding-top: 16px;">
-                Promo Gifts — Sistema de Orçamentos
-              </p>
-            </div>
-          </div>
-        `,
-      };
-
-    case "order_created":
-      return {
-        subject: `🎉 Pedido ${event.data.order_number || ""} Confirmado!`,
-        html: `
-          <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px;">
-            <div style="background: linear-gradient(135deg, #6366f1, #8b5cf6); padding: 24px; border-radius: 12px 12px 0 0; text-align: center;">
-              <h1 style="color: white; margin: 0;">🎉 Pedido Confirmado!</h1>
-            </div>
-            <div style="background: #ffffff; padding: 32px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 12px 12px;">
-              <h2 style="color: #1f2937; margin-top: 0;">Olá, ${name}!</h2>
-              <p style="color: #4b5563; line-height: 1.6;">
-                Seu pedido <strong>#${event.data.order_number || ""}</strong> foi criado com sucesso!
-              </p>
-              ${event.data.total ? `<p style="color: #4b5563;">Valor total: <strong>R$ ${Number(event.data.total).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</strong></p>` : ""}
-              <p style="color: #9ca3af; font-size: 12px; margin-top: 32px; border-top: 1px solid #e5e7eb; padding-top: 16px;">
-                Promo Gifts — Gestão de Pedidos
-              </p>
-            </div>
-          </div>
-        `,
-      };
-    
-    case "sicoob_order_status_change":
-      return {
-        subject: `🔄 Pedido Sicoob #${event.data.order_number || ""} - Novo Status`,
-        html: `
-          <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eee; padding: 20px;">
-            <h2>Atualização de Pedido</h2>
-            <p>Olá, ${name}!</p>
-            <p>O status do seu pedido <strong>#${event.data.order_number || ""}</strong> foi alterado para: <strong>${event.data.new_status}</strong>.</p>
-            ${event.data.notes ? `<p>Observações: ${event.data.notes}</p>` : ""}
-            <div style="margin-top: 20px;">
-              <a href="${event.data.action_url}" style="background: #004b8d; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Ver Detalhes</a>
-            </div>
-          </div>
-        `
-      };
-
-    case "sicoob_order_approval_request":
-      return {
-        subject: `⚠️ Aprovação Pendente - Pedido Sicoob #${event.data.order_number || ""}`,
-        html: `
-          <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eee; padding: 20px;">
-            <h2>Solicitação de Aprovação</h2>
-            <p>Olá, ${name}!</p>
-            <p>Um novo pedido do <strong>${event.data.pa_name}</strong> requer sua aprovação.</p>
-            <p>Valor total: <strong>R$ ${Number(event.data.total).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</strong></p>
-            <div style="margin-top: 20px;">
-              <a href="${event.data.action_url}" style="background: #004b8d; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Acessar Portal de Compras</a>
-            </div>
-          </div>
-        `
-      };
-
-    default:
-      return {
-        subject: "Notificação - Promo Gifts",
-        html: `<p>Você recebeu uma notificação do sistema Promo Gifts.</p>`,
-      };
-  }
-}
-
-function validatePayload(event: EmailRequest) {
-  const requiredFields: Record<string, string[]> = {
-    quote_sent: ["quote_number", "total", "approval_url"],
-    quote_approved: ["quote_number", "total"],
-    quote_rejected: ["quote_number"],
-    order_created: ["order_number", "total"],
-    sicoob_order_status_change: ["order_number", "new_status", "action_url"],
-    sicoob_order_approval_request: ["order_number", "pa_name", "total", "action_url"]
-  };
-
-  const fields = requiredFields[event.event_type] || [];
-  for (const field of fields) {
-    if (!event.data || event.data[field] === undefined || event.data[field] === null || event.data[field] === "") {
-      throw new Error(`Invalid payload: missing field '${field}' for event '${event.event_type}'`);
-    }
-  }
-}
-
-serve(withStructuredLogging('send-transactional-email', async (req) => {
-  if (req.method === "OPTIONS") {
-    return new Response("ok", { headers: getCorsHeaders(req) });
-  }
-
+serve(withStructuredLogging("send-transactional-email", async (req) => {
   const corsHeaders = getCorsHeaders(req);
+  const json = (body: unknown, status: number) => new Response(JSON.stringify(body), {
+    status,
+    headers: { ...corsHeaders, "Content-Type": "application/json", "Cache-Control": "no-store" },
+  });
+  if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
+  if (req.method !== "POST") return json({ error: "metodo_nao_permitido" }, 405);
 
+  const authHeader = req.headers.get("authorization");
+  if (!authHeader) return json({ error: "nao_autorizado" }, 401);
+  const supabase = createClient(
+    Deno.env.get("SUPABASE_URL") ?? "",
+    Deno.env.get("SUPABASE_ANON_KEY") ?? "",
+    { global: { headers: { Authorization: authHeader } } },
+  );
+  const { data: { user }, error } = await supabase.auth.getUser();
+  if (error || !user) return json({ error: "token_invalido" }, 401);
+
+  let body: Record<string, unknown>;
   try {
-    const authHeader = req.headers.get("authorization");
-    if (!authHeader) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
-    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
-
-    const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-      global: { headers: { Authorization: authHeader } }
-    });
-
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    if (authError || !user) {
-      return new Response(JSON.stringify({ error: "Invalid token" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    const body: EmailRequest = await req.json();
-
-    // 1. Basic Validation
-    if (!body.event_type || !body.recipient_email) {
-      return new Response(JSON.stringify({ error: "Missing event_type or recipient_email" }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    // 2. Schema Hardening
-    try {
-      validatePayload(body);
-    } catch (validationError: any) {
-      return new Response(JSON.stringify({ error: validationError.message }), {
-        status: 422,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    // Este endpoint legado não possui fila ou transporte de email.
-    // Aprovações Sicoob usam a outbox própria, com destinatários do banco.
-    return new Response(
-      JSON.stringify({
-        success: false,
-        error: "email_transacional_sem_entrega",
-        message: "O envio deste email ainda não está implementado.",
-      }),
-      { status: 501, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
-  } catch (error) {
-    return new Response(
-      JSON.stringify({ error: "Internal Server Error during email processing" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+    body = await req.json();
+  } catch {
+    return json({ error: "json_invalido" }, 400);
   }
+  if (typeof body.event_type !== "string" || !supportedEvents.has(body.event_type)
+      || typeof body.recipient_email !== "string") {
+    return json({ error: "payload_invalido" }, 422);
+  }
+
+  // Compatibilidade temporária: este endpoint nunca teve transporte durável.
+  // OTP e aprovações Sicoob usam entregadores próprios, com recibo do provedor.
+  return json({
+    success: false,
+    error: "email_transacional_sem_entrega",
+    message: "O envio deste email ainda não está implementado.",
+  }, 501);
 }));

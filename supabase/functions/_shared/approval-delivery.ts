@@ -3,7 +3,12 @@ export interface ApprovalDelivery {
   channel: string;
   destination: string;
   lease_token: string;
-  payload: { requester_name: string; amount: number; reason: string };
+  payload: {
+    requester_name: string;
+    amount: number;
+    reason: string;
+    event_kind?: 'request_created' | 'escalated_to_board';
+  };
 }
 
 interface DeliveryResult {
@@ -23,7 +28,9 @@ export async function deliverApprovalNotification(delivery: ApprovalDelivery): P
   }
   const amount = delivery.payload.amount;
   if (typeof amount !== 'number' || !Number.isFinite(amount) || amount < 0) return { outcome: 'failed', errorCode: 'invalid_amount' };
-  const text = `Nova solicitação de alçada Sicoob\nSolicitante: ${delivery.payload.requester_name}\nValor: ${amount.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}\nMotivo: ${delivery.payload.reason}`;
+  const escalated = delivery.payload.event_kind === 'escalated_to_board';
+  const title = escalated ? 'Solicitação escalada para a Diretoria' : 'Nova solicitação de alçada Sicoob';
+  const text = `${title}\nSolicitante: ${delivery.payload.requester_name}\nValor: ${amount.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}\nMotivo: ${delivery.payload.reason}`;
   let destination: string;
   let body: Record<string, unknown>;
   const headers: Record<string, string> = { 'Content-Type': 'application/json' };
@@ -36,7 +43,7 @@ export async function deliverApprovalNotification(delivery: ApprovalDelivery): P
       return { outcome: 'failed', errorCode: 'invalid_destination' };
     }
     body = {
-      text: 'Nova solicitação de alçada Sicoob',
+      text: title,
       blocks: [
         { type: 'section', text: { type: 'plain_text', text: text.slice(0, 2800), emoji: false } },
         { type: 'actions', elements: [{ type: 'button', text: { type: 'plain_text', text: 'Acessar aprovações' }, url: appUrl.toString() }] },
@@ -51,7 +58,7 @@ export async function deliverApprovalNotification(delivery: ApprovalDelivery): P
     destination = 'https://api.resend.com/emails';
     headers.Authorization = `Bearer ${apiKey}`;
     headers['Idempotency-Key'] = `sicoob-approval/${delivery.id}`;
-    body = { from, to: [delivery.destination], subject: 'Aprovação pendente — Portal de Brindes Sicoob', text: `${text}\n\n${appUrl}` };
+    body = { from, to: [delivery.destination], subject: `${title} — Portal de Brindes Sicoob`, text: `${text}\n\n${appUrl}` };
   } else {
     return { outcome: 'failed', errorCode: 'unsupported_channel' };
   }
@@ -66,7 +73,7 @@ export async function deliverApprovalNotification(delivery: ApprovalDelivery): P
     }
     if (delivery.channel === 'slack') {
       return (await response.text()).trim() === 'ok'
-        ? { outcome: 'delivered' }
+        ? { outcome: 'delivered', providerId: 'slack:webhook_ack' }
         : { outcome: 'uncertain', errorCode: 'invalid_provider_ack' };
     }
     const data = await response.json();

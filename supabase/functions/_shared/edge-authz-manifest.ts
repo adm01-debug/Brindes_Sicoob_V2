@@ -50,7 +50,7 @@ export const EDGE_AUTHZ_MANIFEST: Record<string, AuthzEntry> = {
   // ---------------- Públicas por design ----------------
   "migrate-helper": { category: "public", rationale: "Função desativada: retorna somente HTTP 410, sem acesso a ambiente ou banco" },
   "kit-public-view": { category: "public", rationale: "Visualização de kit por token público" },
-  "quote-public-view": { category: "public", rationale: "Aprovação de orçamento por token" },
+  "quote-public-view": { category: "public", rationale: "Endpoint legado inerte: retorna 410 sem acessar dados, credenciais ou rede" },
   "favorites-public-react": { category: "public", rationale: "Reactions anônimas em lista pública" },
   "comparisons-public-react": { category: "public", rationale: "Reactions em comparação pública" },
   "collections-public-react": { category: "public", rationale: "Reactions em coleção pública" },
@@ -105,7 +105,7 @@ export const EDGE_AUTHZ_MANIFEST: Record<string, AuthzEntry> = {
   "ownership-audit": { category: "service", rationale: "pg_cron diário — auditoria órfãos" },
   "sicoob-approval-notifications": {
     category: "service",
-    rationale: "Disparada por trigger/DB webhook em sicoob_approval_requests; envia notificações (Slack/e-mail) via service-role",
+    rationale: "Worker periódico da outbox de aprovações; autentica com segredo dedicado e usa a service role somente no banco",
     enforcedBy: "custom",
     skipAnonBypassTest: true,
   },

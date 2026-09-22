@@ -38,11 +38,11 @@ export const publicRoutes = [
   }),
   defineRoute({ 
     path: "/approve/:token",
-    component: lazyWithRetry(() => import("@/pages/PublicQuoteApprovalPage")) 
+    component: lazyWithRetry(() => import("@/pages/QuoteApprovalPage"))
   }),
   defineRoute({ 
     path: "/proposta/:token",
-    component: lazyWithRetry(() => import("@/pages/PublicQuoteApprovalPage"))
+    component: lazyWithRetry(() => import("@/pages/QuoteApprovalPage"))
   }),
   defineRoute({
     path: "/kit/:token",
@@ -66,7 +66,7 @@ export const publicRoutes = [
   }),
   defineRoute({
     path: "/public/orcamento/:token/aprovacao",
-    component: lazyWithRetry(() => import("@/pages/PublicQuoteApprovalPage"))
+    component: lazyWithRetry(() => import("@/pages/QuoteApprovalPage"))
   }),
   defineRoute({
     path: "/public/kit/:token",

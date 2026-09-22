@@ -8893,9 +8893,12 @@ export type Database = {
           is_pilot_order: boolean | null
           notes: string | null
           pa_id: string | null
+          requires_artwork: boolean
           sla_deadline: string | null
           sla_status: string | null
           status: string
+          source_quote_id: string | null
+          source_quote_snapshot: Json | null
           total_amount: number | null
           tracking_code: string | null
           updated_at: string
@@ -8917,9 +8920,12 @@ export type Database = {
           is_pilot_order?: boolean | null
           notes?: string | null
           pa_id?: string | null
+          requires_artwork?: boolean
           sla_deadline?: string | null
           sla_status?: string | null
           status?: string
+          source_quote_id?: string | null
+          source_quote_snapshot?: Json | null
           total_amount?: number | null
           tracking_code?: string | null
           updated_at?: string
@@ -8941,9 +8947,12 @@ export type Database = {
           is_pilot_order?: boolean | null
           notes?: string | null
           pa_id?: string | null
+          requires_artwork?: boolean
           sla_deadline?: string | null
           sla_status?: string | null
           status?: string
+          source_quote_id?: string | null
+          source_quote_snapshot?: Json | null
           total_amount?: number | null
           tracking_code?: string | null
           updated_at?: string
@@ -10134,6 +10143,31 @@ export type Database = {
       confirm_sicoob_order: {
         Args: { p_expected_status: string; p_order_id: string }
         Returns: undefined
+      }
+      consolidate_sicoob_quotes: {
+        Args: { p_notes?: string | null; p_quote_ids: string[]; p_singular_id: string }
+        Returns: Json
+      }
+      convert_quote_to_sicoob_order: {
+        Args: { p_quote_id: string }
+        Returns: {
+          id: string
+          order_number: string
+          status: string
+          total_amount: number
+        }[]
+      }
+      mutate_sicoob_order_item: {
+        Args: {
+          p_action: string
+          p_item_id?: string | null
+          p_order_id: string
+          p_product_id?: string | null
+          p_product_name?: string | null
+          p_quantity?: number | null
+          p_unit_price?: number | null
+        }
+        Returns: number
       }
       prepare_sicoob_order_confirmation: {
         Args: {

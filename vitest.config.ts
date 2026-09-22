@@ -22,11 +22,9 @@ export default defineConfig({
       reporter: ['text', 'json', 'html', 'json-summary'],
       reportsDirectory: './coverage',
       include: [
-        'src/hooks/useOrders.ts',
-        'src/hooks/useOrderExtensions.ts',
-        'src/hooks/useNotificationPreferences.ts',
-        'src/hooks/useExportJobs.ts',
-        'src/utils/orderExportUtils.ts'
+        'src/lib/connection-error-copy.ts',
+        'src/lib/error-kind-inference.ts',
+        'src/utils/price-freshness.ts'
       ],
       thresholds: {
           statements: 80,
