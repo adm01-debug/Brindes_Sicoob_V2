@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-09-22T16:57:04.326Z",
-  "total": 694,
+  "generatedAt": "2026-09-22T17:01:29.078Z",
+  "total": 689,
   "files": {
     "src/components/admin/common/AdminDataTable.tsx": 2,
     "src/components/admin/common/ImportExportManager.tsx": 4,
@@ -223,7 +223,6 @@
     "src/hooks/simulator/useWizardDrafts.ts": 1,
     "src/hooks/simulator/wizardReducer.ts": 1,
     "src/hooks/stock/stockFetcher.ts": 2,
-    "src/hooks/tecnicas/useTabelasPreco.ts": 5,
     "src/hooks/useBulkImportFile.ts": 5,
     "src/hooks/useCatalogPrefetch.ts": 1,
     "src/hooks/useCatalogRealStats.ts": 1,

@@ -48,7 +48,7 @@ export function useTabelasPreco(filtros?: TabelaPrecoFiltros) {
         limit: 500,
       });
 
-      let tabelas = transformRawToTabelas(result.records);
+      let tabelas = transformRawToTabelas(result.records ?? []);
 
       // Filtro de max_colors pós-query
       if (filtros?.maxCores !== undefined) {
@@ -77,7 +77,7 @@ export function useTabelasPorTecnica(nomeTecnica: string | undefined) {
         orderBy: { column: 'max_colors', ascending: true },
       });
 
-      return transformRawToTabelas(result.records);
+      return transformRawToTabelas(result.records ?? []);
     },
     enabled: !!nomeTecnica,
     ...TABELAS_PRECO_QUERY_OPTIONS,
@@ -100,7 +100,7 @@ export function useTabelaPorCodigo(codigoOpcao: string | undefined) {
         limit: 1,
       });
 
-      const tabela = result.records[0];
+      const tabela = result.records?.[0];
       return tabela ? rawToTabelaPrecoTecnica(tabela) : null;
     },
     enabled: !!codigoOpcao,
@@ -122,7 +122,7 @@ export function useNomesTecnicasPreco() {
         filters: { is_active: true },
       });
 
-      const nomes = [...new Set(result.records.map(r => r.customization_type_name))];
+      const nomes = [...new Set((result.records ?? []).map(r => r.customization_type_name))];
       return nomes.sort();
     },
     staleTime: 10 * 60 * 1000,
@@ -145,7 +145,7 @@ export async function buscarTabelaAdequada(
     orderBy: { column: 'max_colors', ascending: true },
   });
 
-  const tabelas = transformRawToTabelas(result.records);
+  const tabelas = transformRawToTabelas(result.records ?? []);
 
   // Encontrar tabela que comporta o número de cores
   let tabelaAdequada = tabelas.find(t => 

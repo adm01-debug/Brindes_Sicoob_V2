@@ -2107,3 +2107,17 @@ erros (364 → 362 arquivos).
 - `check-eslint-baseline.mjs`: 0 regressões de lint.
 - Teste dedicado `tests/integration/simulator-wizard-pricing-parity.test.ts` 5/5 passou.
 - `typecheck:baseline`: 702 → 694 (358 arquivos), baseline atualizado com `--update`.
+
+## useTabelasPreco.ts (etapa 17)
+
+**Arquivo:** `src/hooks/tecnicas/useTabelasPreco.ts`
+
+**Diagnóstico:** mesmo padrão já documentado em `useTecnicasGravacao.ts`/`useReplenishments.ts`/`priceTable.repository.ts`: `InvokeResult<T>.records` (`src/lib/external-db/invoke.ts:46`) é genuinamente opcional (`records?: T[]`), e os 5 acessos (`useTabelasPreco`, `useTabelasPorTecnica`, `useTabelaPorCodigo`, `useNomesTecnicasPreco`, `buscarTabelaAdequada`) tratavam o retorno de `invokeExternalDb()` como sempre populado.
+
+**Correção:** fallback defensivo `?? []` (ou `?.[0]` no acesso pontual de `useTabelaPorCodigo`) nos 5 sites, sem alterar lógica de runtime.
+
+**Validação:**
+- `tscheck-files.mjs`: 0 erro(s) (5 eliminados).
+- `check-eslint-baseline.mjs`: 0 regressões de lint.
+- Sem testes dedicados encontrados.
+- `typecheck:baseline`: 694 → 689 (357 arquivos), baseline atualizado com `--update`.
