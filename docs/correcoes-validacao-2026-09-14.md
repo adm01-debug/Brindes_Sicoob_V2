@@ -966,3 +966,33 @@ typecheck:baseline` → zero regressão (942 vs. baseline 949, 1 arquivo
 melhorou); `--update` travou o ganho (949 → 942 erros, 406 → 405
 arquivos). Sem teste dedicado para `usePrecoCalculation.ts` nem para
 `PricingPanel.tsx`.
+
+## `src/hooks/usePasswordResetRequests.ts` (etapa 17, 7 → 0 erros — drift de tabela ausente do `types.ts` gerado)
+
+Todos os 7 erros vinham de `supabase.from('password_reset_requests')`
+não bater com nenhum overload do client tipado — a tabela existe de
+verdade no banco (migration dedicada
+`supabase/migrations/20260916180000_create_password_reset_requests.sql`,
+criada numa etapa anterior da sessão — etapa 26 — pra corrigir um bug
+real e ao vivo: a página `/auth` de "esqueci minha senha" chamava
+`createRequest()`, que fazia `INSERT` numa tabela que na época nem
+existia, falhando silenciosamente pra todo usuário) mas nunca foi
+regenerada no `src/integrations/supabase/types.ts` — mesmo padrão de
+drift já resolvido em `use2FA.ts`/`user_2fa_settings` mais cedo nesta
+sessão.
+
+Corrigido trocando os 5 usos de `supabase.from('password_reset_requests')`
+por `untypedFrom<PasswordResetRequest>('password_reset_requests')`
+(`src/lib/supabase-untyped.ts`), eliminando também o cast
+`as PasswordResetRequest[]` que existia em `fetchRequests` (agora
+desnecessário, o wrapper já retorna o tipo certo). `supabase` continua
+importado pro uso em `supabase.auth.getUser()`/
+`supabase.auth.resetPasswordForEmail()`, que não mudam. Adicionado
+`password_reset_requests` à union `UntypedTable` (documentação, sem
+efeito em runtime).
+
+Verificado: `tscheck-files.mjs` → 0 erros nos 2 arquivos (0 no
+programa inteiro). `check-eslint-baseline.mjs` → zero regressão. `npm
+run typecheck:baseline` → zero regressão (935 vs. baseline 942, 1
+arquivo melhorou); `--update` travou o ganho (942 → 935 erros, 405 →
+404 arquivos). Sem teste dedicado.

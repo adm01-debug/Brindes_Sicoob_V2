@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { untypedFrom } from '@/lib/supabase-untyped';
 import { useToast } from '@/hooks/use-toast';
 
 export interface PasswordResetRequest {
@@ -21,14 +22,13 @@ export function usePasswordResetRequests() {
 
   const fetchRequests = async () => {
     try {
-      const { data, error } = await supabase
-        .from('password_reset_requests')
+      const { data, error } = await untypedFrom<PasswordResetRequest>('password_reset_requests')
         .select('id, email, user_id, status, requested_at, reviewed_at, reviewed_by, reviewer_notes')
         .order('requested_at', { ascending: false });
 
       if (error) throw error;
-      
-      setRequests((data as PasswordResetRequest[]) || []);
+
+      setRequests(data || []);
       setPendingCount(data?.filter(r => r.status === 'pending').length || 0);
     } catch (error) {
       console.error('Error fetching password reset requests:', error);
@@ -50,8 +50,7 @@ export function usePasswordResetRequests() {
       // Atualizar status
       const { data: { user } } = await supabase.auth.getUser();
       
-      const { error: updateError } = await supabase
-        .from('password_reset_requests')
+      const { error: updateError } = await untypedFrom<PasswordResetRequest>('password_reset_requests')
         .update({
           status: 'approved',
           reviewed_at: new Date().toISOString(),
@@ -91,8 +90,7 @@ export function usePasswordResetRequests() {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       
-      const { error } = await supabase
-        .from('password_reset_requests')
+      const { error } = await untypedFrom<PasswordResetRequest>('password_reset_requests')
         .update({
           status: 'rejected',
           reviewed_at: new Date().toISOString(),
@@ -123,8 +121,7 @@ export function usePasswordResetRequests() {
   const createRequest = async (email: string) => {
     try {
       // Verificar se já existe uma solicitação pendente para este email
-      const { data: existing } = await supabase
-        .from('password_reset_requests')
+      const { data: existing } = await untypedFrom<PasswordResetRequest>('password_reset_requests')
         .select('id')
         .eq('email', email)
         .eq('status', 'pending')
@@ -137,8 +134,7 @@ export function usePasswordResetRequests() {
         };
       }
 
-      const { error } = await supabase
-        .from('password_reset_requests')
+      const { error } = await untypedFrom<PasswordResetRequest>('password_reset_requests')
         .insert({ email });
 
       if (error) throw error;

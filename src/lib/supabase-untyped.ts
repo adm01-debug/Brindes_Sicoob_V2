@@ -52,4 +52,5 @@ export type UntypedTable =
   | "product_component_location_techniques"
   | "product_group_components"
   | "product_group_locations"
-  | "product_group_location_techniques";
+  | "product_group_location_techniques"
+  | "password_reset_requests";
