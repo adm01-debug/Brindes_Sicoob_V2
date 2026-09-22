@@ -170,8 +170,8 @@ async function enrichReplenishments(items: ReplenishmentWithDetails[]): Promise<
       : { records: [] as SupplierRecord[] },
   ]);
 
-  const catMap = new Map(catResult.records.map(c => [c.id, c.name]));
-  const supMap = new Map(supResult.records.map(s => [s.id, { name: s.name, code: s.code ?? null }]));
+  const catMap = new Map((catResult.records ?? []).map(c => [c.id, c.name]));
+  const supMap = new Map((supResult.records ?? []).map(s => [s.id, { name: s.name, code: s.code ?? null }]));
 
   return items.map(n => ({
     ...n,
@@ -205,7 +205,7 @@ export function useReplenishmentsWithDetails(options: UseReplenishmentsOptions =
         limit,
       });
 
-      let items = result.records
+      let items = (result.records ?? [])
         .filter(isReplenishment)
         .map(toReplenishment)
         .filter(n => n.is_active);
@@ -251,7 +251,7 @@ export function useReplenishmentStats() {
       const weekStart = todayStart - 6 * 86_400_000;
       const fifteenDaysStart = todayStart - 14 * 86_400_000;
 
-      const replenishments = repResult.records
+      const replenishments = (repResult.records ?? [])
         .filter(isReplenishment)
         .map(p => ({
           daysRemaining: calcDaysRemaining(p.updated_at),
@@ -294,7 +294,7 @@ export function useReplenishmentStats() {
             filters: { id: topSupplierId },
             limit: 1,
           });
-          topSupplierName = supResult.records[0]?.name ?? null;
+          topSupplierName = supResult.records?.[0]?.name ?? null;
         } catch {
           // Graceful fallback — supplier name unavailable
         }
@@ -332,7 +332,7 @@ export function useReplenishmentCount() {
         limit: 500,
       });
 
-      return result.records.filter(isReplenishment).length;
+      return (result.records ?? []).filter(isReplenishment).length;
     },
     staleTime: 2 * 60 * 1000,
     retry: 2,

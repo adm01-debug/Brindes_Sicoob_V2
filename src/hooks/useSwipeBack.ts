@@ -4,6 +4,7 @@ import { useSmartNavigation } from './useSmartNavigation';
 export function useSwipeBack(enabled = true) {
   const { goBack } = useSmartNavigation();
   const touchStartRef = useRef<number | null>(null);
+  const touchStartYRef = useRef<number | null>(null);
   const touchEndRef = useRef<number | null>(null);
 
   useEffect(() => {
@@ -13,16 +14,20 @@ export function useSwipeBack(enabled = true) {
     const maxVerticalDistance = 30;
 
     const onTouchStart = (e: TouchEvent) => {
+      const touch = e.touches[0];
+      if (!touch) return;
       // Só capturar se começar na borda esquerda (ex: primeiros 30px)
-      if (e.touches[0].clientX < 40) { // Increased hit area for easier swipe
-        touchStartRef.current = e.touches[0].clientX;
-        (touchStartRef as any).current_y = e.touches[0].clientY;
+      if (touch.clientX < 40) { // Increased hit area for easier swipe
+        touchStartRef.current = touch.clientX;
+        touchStartYRef.current = touch.clientY;
         touchEndRef.current = null;
       }
     };
 
     const onTouchMove = (e: TouchEvent) => {
-      touchEndRef.current = e.touches[0].clientX;
+      const touch = e.touches[0];
+      if (!touch) return;
+      touchEndRef.current = touch.clientX;
     };
 
     const onTouchEnd = (e: TouchEvent) => {
@@ -30,13 +35,17 @@ export function useSwipeBack(enabled = true) {
 
       const distance = touchEndRef.current - touchStartRef.current;
       const isRightSwipe = distance > minSwipeDistance;
-      const verticalDistance = Math.abs(e.changedTouches[0].clientY - (touchStartRef.current_y || 0));
+      const changedTouch = e.changedTouches[0];
+      const verticalDistance = changedTouch
+        ? Math.abs(changedTouch.clientY - (touchStartYRef.current ?? 0))
+        : 0;
 
       if (isRightSwipe && verticalDistance < maxVerticalDistance) {
         goBack();
       }
 
       touchStartRef.current = null;
+      touchStartYRef.current = null;
       touchEndRef.current = null;
     };
 

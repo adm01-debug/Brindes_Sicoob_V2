@@ -1644,3 +1644,67 @@ programa inteiro). `check-eslint-baseline.mjs` → zero regressão. Teste
 dedicado `tests/hooks/useQuoteTemplates.test.tsx` → passou (1/1).
 Baseline de typecheck do projeto atualizado: 825 → 819 erros (382 → 381
 arquivos).
+
+## `src/hooks/useReplenishments.ts` (etapa 17, 6 → 0 erros)
+
+**Mesmo padrão de `useTecnicasGravacao.ts`: `InvokeResult<T>.records` genuinamente
+opcional.** Todos os 6 erros eram acessos diretos a `.records` (via
+`invokeExternalDb`) sem considerar que o campo é opcional na resposta da
+ponte HTTP externa. Corrigido com fallback `?? []` em 5 pontos e
+`?.[0]` em 1 ponto (`supResult.records?.[0]?.name`), sem nenhuma
+mudança de comportamento — os dados sempre estavam presentes em
+operação normal, o fallback só cobre o cenário de resposta parcial já
+tratado em `useTecnicasGravacao.ts`.
+
+Verificado: `tscheck-files.mjs` → 0 erros. `check-eslint-baseline.mjs`
+→ zero regressão. Testes dedicados `tests/hooks/useReplenishments.test.ts`
++ `tests/hooks/useReplenishmentsSelectionMode.test.ts` → passaram
+(23/23).
+
+## `src/hooks/useSecretsManager.ts` (etapa 17, 6 → 0 erros)
+
+**Peculiaridade real do compilador TypeScript, não bug de lógica** —
+isolada e confirmada via reprodução mínima (`unknown ?? null` sozinho,
+fora de qualquer contexto deste arquivo, já produz o tipo `{} | null`
+em vez de `unknown | null`, porque o operador `??` remove `null`/
+`undefined` de `unknown` mas o "resto" que sobra é tipado como `{}`, não
+`unknown`). Os 6 erros vinham de `data?.previous_suffix ?? null`,
+`data?.masked_suffix ?? null` e `data?.length ?? value.length`, onde
+`data` tem um índice `[k: string]: unknown` para campos não
+tipados explicitamente. Corrigido com `as` explícito antes do `??`
+(`(data?.previous_suffix as string | null | undefined) ?? null`),
+seguindo o mesmo idioma já usado na linha seguinte do próprio arquivo
+(`data?.secret as SecretStatus | undefined`). Nenhuma mudança de
+comportamento — os campos sempre vieram como `string | null` / `number`
+do edge function `secrets-manager` quando a operação é bem-sucedida,
+conforme o contrato já declarado em `SecretMutationResult`.
+
+Verificado: `tscheck-files.mjs` → 0 erros. `check-eslint-baseline.mjs`
+→ zero regressão (drift positivo: 1 erro de lint eliminado). Nenhum
+teste dedicado encontrado.
+
+## `src/hooks/useSwipeBack.ts` (etapa 17, 6 → 0 erros)
+
+**Bug real de design exposto pela tipagem, não falso positivo.** O
+código usava `(touchStartRef as any).current_y = ...` para pendurar uma
+propriedade extra (`current_y`) diretamente no objeto do ref do React
+— que deveria conter apenas `{ current: number | null }` — e depois lia
+essa mesma propriedade sem nenhum cast (`touchStartRef.current_y`),
+gerando `TS2551: Property 'current_y' does not exist...`. Isso só
+"funcionava" em runtime porque escrita e leitura acessavam o mesmo
+objeto JS dinamicamente tipável, mas é um antipadrão frágil (qualquer
+lib de swipe/gesto real usaria um ref dedicado ou um objeto `{x, y}`).
+Corrigido substituindo o hack por um segundo ref tipado
+(`touchStartYRef = useRef<number | null>(null)`), resetado junto com os
+demais. Os outros 5 erros eram `noUncheckedIndexedAccess` genuíno em
+`e.touches[0]`/`e.changedTouches[0]` (eventos de toque podem, em teoria,
+chegar com listas vazias) — corrigidos com guards de existência
+(`if (!touch) return;`) em vez de asserção não-nula, por ser handler de
+gesto de UI onde uma lista vazia deve simplesmente ser ignorada, não
+forçada.
+
+Verificado: `tscheck-files.mjs` → 0 erros. `check-eslint-baseline.mjs`
+→ zero regressão. Nenhum teste dedicado encontrado.
+
+Baseline de typecheck do projeto atualizado: 819 → 801 erros (381 → 378
+arquivos).

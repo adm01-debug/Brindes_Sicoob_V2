@@ -187,9 +187,9 @@ export function useSecretsManager() {
     return {
       ok: true,
       was_update: !!data?.was_update,
-      previous_suffix: data?.previous_suffix ?? null,
-      masked_suffix: data?.masked_suffix ?? null,
-      length: data?.length ?? value.length,
+      previous_suffix: (data?.previous_suffix as string | null | undefined) ?? null,
+      masked_suffix: (data?.masked_suffix as string | null | undefined) ?? null,
+      length: (data?.length as number | undefined) ?? value.length,
       secret: data?.secret as SecretStatus | undefined,
     };
   }, []);
@@ -210,9 +210,9 @@ export function useSecretsManager() {
     return {
       ok: true,
       was_update: true,
-      previous_suffix: data?.previous_suffix ?? null,
-      masked_suffix: data?.masked_suffix ?? null,
-      length: data?.length ?? value.length,
+      previous_suffix: (data?.previous_suffix as string | null | undefined) ?? null,
+      masked_suffix: (data?.masked_suffix as string | null | undefined) ?? null,
+      length: (data?.length as number | undefined) ?? value.length,
       secret: data?.secret as SecretStatus | undefined,
     };
   }, []);
