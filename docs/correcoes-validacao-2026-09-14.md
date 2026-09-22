@@ -2121,3 +2121,19 @@ erros (364 → 362 arquivos).
 - `check-eslint-baseline.mjs`: 0 regressões de lint.
 - Sem testes dedicados encontrados.
 - `typecheck:baseline`: 694 → 689 (357 arquivos), baseline atualizado com `--update`.
+
+## useBulkImportFile.ts + ImportExportManager.tsx (etapa 17)
+
+**Arquivos:** `src/hooks/useBulkImportFile.ts`, `src/components/admin/common/ImportExportManager.tsx`
+
+**Diagnóstico:** 5 erros TS em `useBulkImportFile.ts`, com uma causa raiz de infraestrutura que afetava um segundo arquivo de graça:
+
+- **`papaparse` sem tipos** (3 erros: `TS7016` na importação + `TS7006` nos parâmetros `results`/`error` dos callbacks de `Papa.parse`): o pacote `papaparse` não expõe `types` no seu `package.json` e o projeto não tinha `@types/papaparse` instalado — diferente de outras libs sem tipos embutidos já cobertas no projeto (`@types/canvas-confetti`, `@types/jszip`, `@types/pdf-parse`, etc.). Corrigido instalando `@types/papaparse` como devDependency, seguindo a mesma convenção. Achado bônus: isso zerou de graça 3 dos 4 erros de `ImportExportManager.tsx`, que também usa `Papa.parse` sem tratamento local.
+- **`workbook.Sheets[workbook.SheetNames[0]]` (linha 68)**: sob `noUncheckedIndexedAccess`, `SheetNames[0]` é `string | undefined`, e usá-lo diretamente como índice é rejeitado (`TS2538`). Corrigido extraindo `firstSheetName` com guard real (`if (!firstSheetName) throw new Error(...)`) — é upload arbitrário do usuário (XLSX pode legitimamente vir sem abas), não um acesso estruturalmente garantido, então guard em vez de asserção. Mesmo padrão exigiu um segundo guard em `workbook.Sheets[firstSheetName]` (retorna `WorkSheet | undefined`), que só apareceu depois de resolver o primeiro (`TS2769` no overload de `sheet_to_json`). O mesmo bug existia em `ImportExportManager.tsx:91-92` (`wb.SheetNames[0]`/`wb.Sheets[wsname]`) — corrigido com os mesmos 2 guards, zerando o erro restante do arquivo.
+- **`updateMapping()` com cast solto** (linha 99): `targetField as string` alargava o campo pra `string`, incompatível com `ColumnMapping.targetField: keyof ProductFormData | ''` (`useProductRegistration.ts:90`). Corrigido trocando o cast pro tipo de destino correto (`targetField as ColumnMapping['targetField']`), sem alterar a assinatura pública da função (consumida por `BulkImportSteps.tsx`/`BulkImportPanel.tsx`, fora do escopo desta etapa).
+
+**Validação:**
+- `tscheck-files.mjs`: 0 erro(s) nos 2 arquivos.
+- `check-eslint-baseline.mjs`: 0 regressões de lint.
+- Sem testes dedicados encontrados.
+- `typecheck:baseline`: 689 → 680 (355 arquivos), baseline atualizado com `--update`.

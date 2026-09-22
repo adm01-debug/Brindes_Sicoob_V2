@@ -89,7 +89,9 @@ export function ImportExportManager({
         const bstr = evt.target?.result;
         const wb = XLSX.read(bstr, { type: 'binary' });
         const wsname = wb.SheetNames[0];
+        if (!wsname) throw new Error('Planilha vazia ou sem abas');
         const ws = wb.Sheets[wsname];
+        if (!ws) throw new Error('Planilha vazia ou sem abas');
         const data = XLSX.utils.sheet_to_json(ws);
         validateData(data);
       } catch (err) {

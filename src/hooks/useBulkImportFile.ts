@@ -65,7 +65,10 @@ export function useBulkImportFile() {
         const XLSX = await getXLSX();
         const buffer = await file.arrayBuffer();
         const workbook = XLSX.read(buffer, { type: 'array' });
-        const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+        const firstSheetName = workbook.SheetNames[0];
+        if (!firstSheetName) throw new Error('Planilha vazia ou sem abas');
+        const firstSheet = workbook.Sheets[firstSheetName];
+        if (!firstSheet) throw new Error('Planilha vazia ou sem abas');
         const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 1 }) as unknown[][];
 
         if (jsonData.length < 2) throw new Error('Arquivo vazio ou sem dados');
@@ -96,7 +99,7 @@ export function useBulkImportFile() {
     setColumnMappings(prev =>
       prev.map(m =>
         m.sourceColumn === sourceColumn
-          ? { ...m, targetField: targetField as string }
+          ? { ...m, targetField: targetField as ColumnMapping['targetField'] }
           : m
       )
     );
