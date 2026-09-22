@@ -549,3 +549,50 @@ consome `MagicUpProduct` via mock) — 4/4 passando. Verificado também que
 `useMagicUpGeneration.ts` não regrediu (`TS2322` em `tags.filter(Boolean)`
 na linha 129 é pré-existente, confirmado via `git stash` — não relacionado
 a esta mudança).
+
+## `FavoritesPage.tsx` (etapa 17, 8 → 0 erros — achado: import de `Product` errado propagado em 4 arquivos)
+
+Causa única, não 8 causas independentes: `useEnrichedFavoriteItems.ts`
+importava `Product` de `@/types/product` (shape de linha crua do banco,
+snake_case, ex. `category_id: number | null`) quando o dado real que
+circula por `product: map.get(item.product_id)` vem de
+`useProductsContext()` → `@/hooks/useProducts` → `@/types/product-catalog`
+(shape de catálogo/UI, camelCase, ex. `category: { id, name }`,
+`stockStatus`, `brand?`). São duas interfaces **genuinamente diferentes**
+com o mesmo nome `Product`, não um alias — confirmado lendo os dois
+arquivos lado a lado. Isso fazia `EnrichedFavoriteItem.product` "vazar" o
+tipo errado, e todo ponto de `FavoritesPage.tsx` que misturava
+`enriched[].product`/`productWithVariant` (tipo errado) com
+`legacyFavoriteProducts` (`getProductsByIds()` direto, tipo certo) virava
+`(Product | Product)[]` — os 8 erros originais eram todos sintoma do mesmo
+import errado.
+
+Corrigido o import em `useEnrichedFavoriteItems.ts` pra
+`@/types/product-catalog`. Isso revelou, em cascata (mesmo bug, mesmo
+padrão, arquivos diferentes — confirmado via grep que cada um tem
+consumidor único), o mesmo import errado em mais 3 componentes que
+recebem produtos favoritados como prop:
+
+- `FavoritesViewHeader.tsx` (`products?: Product[]`)
+- `FavoritePresentationLauncher.tsx` (`products: Product[]`)
+- `ExportFavoritesButton.tsx` (`products: Product[]`, consumido só por
+  `FavoritesViewHeader.tsx`)
+
+Todos corrigidos pro mesmo import certo. Como efeito colateral, 4
+comentários `// @ts-expect-error` que suprimiam acessos a `p.brand`,
+`p.category_name`/`p.category` (campos que só existem no shape de
+catálogo, não no shape de linha crua) ficaram órfãos (`TS2578: Unused
+'@ts-expect-error'`) — removidos, já que o tipo corrigido cobre esses
+campos nativamente.
+
+Achado bônus fora do escopo original (revelado só por já estar editando
+`ExportFavoritesButton.tsx`): `products[i]` num loop `while (i <
+products.length)` (geração de PDF) gerava `TS18048` (`noUncheckedIndexedAccess`)
+em 5 pontos — pré-existente, confirmado via `git stash` antes desta
+mudança. Corrigido com asserção de não-nulo (`products[i]!` + comentário
+do invariante do loop) em vez de guarda `if (!p) continue`, porque a
+guarda elevava a complexidade cognitiva da função de 15→16 (limite do
+lint) — a asserção é o fix mínimo real, já que o invariante do `while` já
+garante o índice válido.
+
+Sem teste dedicado no repo pra nenhum dos 5 arquivos.

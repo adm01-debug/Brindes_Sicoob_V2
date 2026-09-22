@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { useFavoriteListItems, type FavoriteListItem } from "@/hooks/useFavoriteLists";
 import { useProductsContext } from "@/contexts/ProductsContext";
-import type { Product } from "@/types/product";
+import type { Product } from "@/types/product-catalog";
 
 export interface EnrichedFavoriteItem {
   item: FavoriteListItem;

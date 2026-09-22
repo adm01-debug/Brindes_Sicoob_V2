@@ -210,7 +210,6 @@ export default function FavoritesPage() {
       list = list.filter((p) =>
         p.name.toLowerCase().includes(q) ||
         p.sku?.toLowerCase().includes(q) ||
-        // @ts-expect-error - brand pode existir no enriched
         p.brand?.toLowerCase().includes(q)
       );
     }
@@ -246,7 +245,6 @@ export default function FavoritesPage() {
     const prices = source.map((p) => p.price ?? 0).filter((v) => v > 0);
     return {
       total: source.length,
-      // @ts-expect-error - category enriquecida pelo context
       categories: new Set(source.map((p) => p.category?.id ?? p.category_id)).size,
       minPrice: prices.length ? Math.min(...prices) : 0,
       maxPrice: prices.length ? Math.max(...prices) : 0,
