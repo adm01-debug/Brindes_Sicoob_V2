@@ -22,14 +22,15 @@ export async function sendTransactionalEmail(params: SendEmailParams) {
       body: params,
     });
 
-    if (error) {
-      console.error("[TransactionalEmail] Error:", error);
-      return { success: false, error: error.message };
+    // O endpoint antigo retornava success=true sem fila nem transporte.
+    // Exigir recibo também protege o cliente antes da atualização da Edge Function.
+    if (error || data?.success !== true || data?.delivery_status !== "accepted"
+      || typeof data?.provider_id !== "string" || data.provider_id.length === 0) {
+      return { success: false, error: "O serviço não confirmou o envio do email." };
     }
 
     return { success: true, data };
-  } catch (err) {
-    console.error("[TransactionalEmail] Unexpected error:", err);
-    return { success: false, error: "Unexpected error" };
+  } catch {
+    return { success: false, error: "Não foi possível solicitar o envio do email." };
   }
 }

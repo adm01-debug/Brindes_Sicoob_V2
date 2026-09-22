@@ -1,0 +1,17 @@
+{
+  "sessao": "anon, chave publicável",
+  "verificacoes": [
+    {
+      "teste": "leitura_da_fila",
+      "http": 401,
+      "codigo": "42501",
+      "bloqueado": true
+    },
+    {
+      "teste": "reserva_de_entrega",
+      "http": 401,
+      "codigo": "42501",
+      "bloqueado": true
+    }
+  ]
+}

@@ -47,7 +47,7 @@ const LEGACY_ALLOWLIST = new Set([
   "quote-public-view","rate-limit-check","rls-audit",
   "rls-integration-tests","rls-matrix-export","secrets-manager","semantic-search",
   "send-digest","send-notification","send-scheduled-reports",
-  "send-transactional-email","step-up-verify",
+  "step-up-verify",
   "trends-insights","validate-access","verify-email","visual-search",
   "voice-agent","webhook-dispatcher","webhook-inbound",
 ]);

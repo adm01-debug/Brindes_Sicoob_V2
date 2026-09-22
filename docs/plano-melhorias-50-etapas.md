@@ -12,6 +12,11 @@ e verificação real no Supabase](execucao/backend-aprovacao-publica-20260922.md
 O relatório separa correções aplicadas, testes e pendências; não marca este plano
 inteiro como concluído.
 
+Continuação de backend em 22/09/2026: [fila durável de notificações de aprovação,
+concorrência e confirmação de entrega](execucao/notificacoes-duraveis-20260922.md).
+O banco foi atualizado; publicação, configuração de entrega e homologação seguem
+explicitamente separadas da implementação local.
+
 Diagnóstico de origem (2026-09-13): `main` local 11 commits atrás de `origin/main`
 (desde resolvido — ver histórico do commit que trouxe este arquivo), 29 arquivos
 sem commit num worktree secundário, 1.189 erros TypeScript e 2.774 ESLint suprimidos
