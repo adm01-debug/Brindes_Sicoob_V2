@@ -5,6 +5,10 @@ import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 
 export interface QuoteTemplatePersonalization {
+  techniqueId?: string;
+  techniqueName?: string;
+  colorsCount?: number;
+  positionsCount?: number;
   unitCost?: number;
   setupCost?: number;
   [key: string]: unknown;
@@ -13,8 +17,12 @@ export interface QuoteTemplatePersonalization {
 export type QuoteTemplateItem = {
   productId: string;
   productName: string;
+  productSku?: string;
+  productImageUrl?: string;
   quantity: number;
   unitPrice: number;
+  colorName?: string;
+  colorHex?: string;
   personalizations?: QuoteTemplatePersonalization[];
 };
 

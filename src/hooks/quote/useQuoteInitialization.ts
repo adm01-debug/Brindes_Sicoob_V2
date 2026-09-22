@@ -74,6 +74,7 @@ export function useQuoteInitialization({ isEditMode, quoteId, fetchQuote, locati
           setters.setDeliveryTime(quote.delivery_time);
         }
         if (quote.items) setters.setItems(quote.items);
+        if (quote.tags) setters.setTags(quote.tags);
       }
       setters.setLoadingQuote(false);
     });

@@ -80,7 +80,7 @@ export function useQuoteBuilderState() {
       setQuoteNumber, setCurrentStatus, setContactInfo, setCompanyInfo,
       setDiscountType, setDiscountValue, setNegotiationMarkup, setPaymentTerms,
       setShippingType, setShippingCost, setDeliveryMode, setDeliveryDate,
-      setDeliveryTime, setItems, setLoadingQuote, setActiveItemIndex, setExpandedItems
+      setDeliveryTime, setItems, setTags, setLoadingQuote, setActiveItemIndex, setExpandedItems
     }
   });
 
@@ -253,7 +253,7 @@ export function useQuoteBuilderState() {
       quantity: item.quantity, unit_price: item.unitPrice,
       color_name: item.colorName, color_hex: item.colorHex,
       personalizations: item.personalizations?.map(p => ({
-        technique_id: p.techniqueId, technique_name: p.techniqueName,
+        technique_id: p.techniqueId || "", technique_name: p.techniqueName,
         colors_count: p.colorsCount, positions_count: p.positionsCount,
         unit_cost: p.unitCost, setup_cost: p.setupCost,
       })),

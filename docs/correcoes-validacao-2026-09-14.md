@@ -1606,3 +1606,41 @@ quem consome `variantes` estaria mentindo sobre os campos disponíveis.
 Verificado: `tscheck-files.mjs` → 0 erros (14 no programa inteiro).
 `check-eslint-baseline.mjs` → zero regressão. Nenhum teste dedicado
 encontrado.
+
+## `src/hooks/useQuoteBuilderState.ts` + `useQuoteTemplates.ts` + `quote/useQuoteInitialization.ts` (etapa 17, 6 → 0 erros)
+
+**Dois bugs reais de UX escondidos atrás de erros de tipagem, não falsos positivos.**
+
+**Bug A — tags do orçamento nunca restauradas ao editar.** A interface
+`InitParams.setters` em `useQuoteInitialization.ts` já declarava
+`setTags: (v: string[]) => void` como obrigatória, mas (1) o efeito de
+carregamento (`fetchQuote(quoteId).then(...)`) nunca a invocava, e (2)
+`useQuoteBuilderState.ts` nem sequer passava `setTags` no objeto
+`setters` — apesar de `const [tags, setTags] = useState<string[]>([])`
+já existir no mesmo arquivo e `Quote.tags?: string[]` existir no tipo.
+Resultado real de produção: ao abrir um orçamento existente para edição,
+as tags salvas eram descartadas silenciosamente e o campo de tags
+sempre iniciava vazio. Corrigido adicionando `if (quote.tags)
+setters.setTags(quote.tags);` ao efeito, e incluindo `setTags` no
+objeto `setters` passado por `useQuoteBuilderState.ts`.
+
+**Bug B — `QuoteTemplateItem`/`QuoteTemplatePersonalization` com tipos
+defasados em relação ao shape real persistido.** `getTemplateItems()`
+(lado de escrita, mesmo arquivo) já monta e salva objetos com
+`productSku`, `productImageUrl`, `colorName`, `colorHex`, `techniqueId`,
+`techniqueName`, `colorsCount`, `positionsCount` — mas os tipos em
+`useQuoteTemplates.ts` nunca declaravam esses campos, então
+`applyTemplate` (lado de leitura, mesmo arquivo) não compilava ao lê-los
+de volta. Corrigido estendendo `QuoteTemplateItem` e
+`QuoteTemplatePersonalization` com esses campos opcionais, mantendo a
+assinatura de índice `[key: string]: unknown` existente. Como
+`QuoteItemPersonalization.technique_id` é obrigatório (`string`) e a
+origem passa a ser `string | undefined`, adicionado fallback `|| ""` em
+`technique_id: p.techniqueId || ""` em `applyTemplate`, seguindo o
+padrão já usado no mesmo bloco (`product_id: item.productId || ""`).
+
+Verificado: `tscheck-files.mjs` → 0 erros nos 3 arquivos (819 no
+programa inteiro). `check-eslint-baseline.mjs` → zero regressão. Teste
+dedicado `tests/hooks/useQuoteTemplates.test.tsx` → passou (1/1).
+Baseline de typecheck do projeto atualizado: 825 → 819 erros (382 → 381
+arquivos).
