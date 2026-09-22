@@ -1115,3 +1115,57 @@ nenhum gate de CI (não está na lista de `deno check` do `ci.yml`, e
 manual** (`supabase functions deploy admin-audit-hook`) por alguém
 com acesso ao projeto pra entrar em produção — até lá, a trilha de
 auditoria continua sem gravar nada, exatamente como antes deste fix.
+
+## `src/pages/RolesPage.tsx` (etapa 17, 7 → 0 erros — mais um caso de drift schema real vs. tipos gerados, + bug real em `BackButton`)
+
+Causa raiz do `TS2589` ("Type instantiation is excessively deep") na
+linha 38 e dos 3× `TS2769`/`TS2345` seguintes: a tabela `roles`
+**existe de fato no banco** (migração
+`20251231023800_2b909a8a-cd0f-484e-8abf-bc0656fe3b54.sql`, colunas
+`id`/`name`/`description`/`created_at` — exatamente a shape que a
+interface local `Role` já esperava), mas **não está presente em
+`src/integrations/supabase/types.ts`** (o gerado só tem `user_roles`,
+uma tabela diferente). `supabase.from('roles')` contra um `Database`
+que não conhece `'roles'` faz o TS tentar resolver os overloads
+genéricos do query builder contra a união de todas as tabelas
+conhecidas, estourando em "type instantiation excessively deep" —
+mesmo padrão de drift já visto nesta sessão para
+`password_reset_requests` (`usePasswordResetRequests.ts`).
+
+Fix: troquei as 4 chamadas (`select`, `update`, `insert`, `delete`)
+de `supabase.from('roles')` para `untypedFrom<Role>('roles')`
+(`src/lib/supabase-untyped.ts`, wrapper já usado para exatamente este
+cenário), e adicionei `"roles"` à lista de documentação
+`UntypedTable`. Isso também resolveu de graça o `TS2345` da linha 44
+(`ResultOne[]` vs `Role[]` no `setRoles`), já que `data` agora vem
+tipado como `Role[] | null` em vez do tipo degenerado.
+
+O 7º erro (`TS2322` na linha 102, `<BackButton fallbackPath="/admin" />`)
+é um bug separado e real, não drift de schema:
+`BackButtonProps` (`src/components/common/BackButton.tsx`) nunca
+declarou `fallbackPath`, embora `useSmartNavigation().goBack(fallbackPath?, force?)`
+já suportasse esse parâmetro desde sempre — o botão só nunca repassava
+o valor (`onClick={goBack}`, sem argumento). Resultado: em **4
+páginas** que já passavam `fallbackPath` (`RolesPage.tsx`,
+`RolePermissionsPage.tsx`, `PermissionsPage.tsx`,
+`KitBuilderHeader.tsx`), o botão voltar **nunca usava o fallback
+configurado** — sempre caía na lógica de subida hierárquica genérica
+(`/pedidos/123` → `/pedidos`) mesmo quando o dev explicitamente pediu
+pra voltar para `/admin`. Corrigido adicionando `fallbackPath?: string`
+a `BackButtonProps` e trocando o handler para
+`onClick={() => goBack(fallbackPath)}`. Fix mínimo (2 linhas) num
+componente compartilhado que corrige o TS2322 nos 4 arquivos de uma
+vez só e restaura o comportamento de navegação pretendido — confirmado
+via `tscheck-files.mjs` que o `TS2322` desapareceu das outras 3
+páginas também (cada uma ainda tem erros pré-existentes não
+relacionados, fora do escopo desta etapa).
+
+Verificado: `tscheck-files.mjs` → 0 erros em `RolesPage.tsx`,
+`BackButton.tsx` e `supabase-untyped.ts` (2 no programa inteiro,
+pré-existentes/não relacionados). `check-eslint-baseline.mjs` → zero
+regressão. Teste que mocka `BackButton`
+(`tests/components/layout/MainLayout.breadcrumbs.test.tsx`) → 6/6
+passando. `npm run typecheck:baseline` → zero regressão (917 vs.
+baseline 928, 5 arquivos melhoraram: `RolesPage.tsx` + as 3 páginas
+que ganharam o fix de `fallbackPath` + `BackButton.tsx`); `--update`
+travou o ganho (928 → 917 erros, 403 → 400 arquivos).

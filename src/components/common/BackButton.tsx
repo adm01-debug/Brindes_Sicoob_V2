@@ -34,15 +34,17 @@ interface BackButtonProps {
   size?: "default" | "sm" | "lg" | "icon";
   showLabel?: boolean;
   useChevron?: boolean;
+  fallbackPath?: string;
 }
 
 export const BackButton = forwardRef<HTMLButtonElement, BackButtonProps>(
-  function BackButton({ 
-    className, 
-    variant = "ghost", 
-    size = "sm", 
+  function BackButton({
+    className,
+    variant = "ghost",
+    size = "sm",
     showLabel = true,
-    useChevron = false
+    useChevron = false,
+    fallbackPath
   }: BackButtonProps, ref) {
     const { goBack, previousItem, history } = useSmartNavigation();
     const direction = useNavigationStore(s => s.direction);
@@ -79,7 +81,7 @@ export const BackButton = forwardRef<HTMLButtonElement, BackButtonProps>(
               ref={ref}
               variant={variant}
               size={size}
-              onClick={goBack}
+              onClick={() => goBack(fallbackPath)}
               aria-label={ariaLabel}
               className={cn(
                 "gap-1.5 transition-all group shrink-0",

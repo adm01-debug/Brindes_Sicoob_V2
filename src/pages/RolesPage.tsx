@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { untypedFrom } from '@/lib/supabase-untyped';
 import { SidebarProvider, Sidebar, SidebarInset, SidebarTrigger } from '@/components/ui/sidebar';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -35,8 +35,7 @@ export default function RolesPage() {
 
   const fetchRoles = async () => {
     try {
-      const { data, error } = await supabase
-        .from('roles')
+      const { data, error } = await untypedFrom<Role>('roles')
         .select('*')
         .order('name');
 
@@ -52,15 +51,13 @@ export default function RolesPage() {
   const handleSubmit = async () => {
     try {
       if (editingRole) {
-        const { error } = await supabase
-          .from('roles')
+        const { error } = await untypedFrom<Role>('roles')
           .update({ name: formData.name, description: formData.description })
           .eq('id', editingRole.id);
         if (error) throw error;
         toast({ title: 'Role atualizada com sucesso' });
       } else {
-        const { error } = await supabase
-          .from('roles')
+        const { error } = await untypedFrom<Role>('roles')
           .insert({ name: formData.name, description: formData.description });
         if (error) throw error;
         toast({ title: 'Role criada com sucesso' });
@@ -82,7 +79,7 @@ export default function RolesPage() {
 
   const handleDelete = async (id: string) => {
     try {
-      const { error } = await supabase.from('roles').delete().eq('id', id);
+      const { error } = await untypedFrom<Role>('roles').delete().eq('id', id);
       if (error) throw error;
       toast({ title: 'Role excluída com sucesso' });
       fetchRoles();
