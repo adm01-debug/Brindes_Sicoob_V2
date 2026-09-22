@@ -7,13 +7,13 @@ import { useState, useEffect, useMemo, useCallback } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import type { Tables, TablesInsert, TablesUpdate } from "@/integrations/supabase/types";
+import type { TablesInsert, TablesUpdate } from "@/integrations/supabase/types";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAriaLive } from "@/components/a11y";
 import { useProductCustomizationOptionsForMockup } from "@/hooks/useMockupTechniques";
 import { searchCrm, selectCrmById } from "@/lib/crm-db";
 import { getCompanyDisplayName, type CrmCompany } from "@/types/crm";
-import type { PrintAreaWithTechniques } from "@/types/gravacao";
+import type { AreaShape, PrintAreaWithTechniques } from "@/types/gravacao";
 import type { ScenePrompt } from "@/components/magic-up/PromptBank";
 import type { GenerationHistoryItem } from "@/components/magic-up/AdImageResult";
 import { useMagicUpGeneration } from "./useMagicUpGeneration";
@@ -25,7 +25,7 @@ export interface MagicUpProduct {
   id: string;
   name: string;
   sku: string;
-  images: Array<{ url_cdn?: string; url_original?: string; is_primary?: boolean; is_og_image?: boolean; image_type?: string; supplier_code?: string }> | null;
+  images: string[] | null;
   primary_image_url?: string | null;
   og_image_url?: string | null;
 }
@@ -157,7 +157,7 @@ export function useMagicUpState() {
         .order("updated_at", { ascending: false })
         .limit(30);
       if (error) throw error;
-      return (data || []).map((row: Tables<"magic_up_campaigns">) => ({
+      return (data || []).map((row) => ({
         id: row.id,
         title: row.title,
         status: row.status as MagicUpCampaignStatus,
@@ -232,10 +232,27 @@ export function useMagicUpState() {
           invokeExternalDb<Record<string, unknown>>({ table: "product_variants", operation: "select", filters: { product_id: selectedProduct.id }, orderBy: { column: "color_name", ascending: true }, limit: 100 }),
           invokeExternalDb<Record<string, unknown>>({ table: "product_images", operation: "select", filters: { product_id: selectedProduct.id }, orderBy: { column: "display_order", ascending: true }, limit: 100 }),
         ]);
-        const images: ProductImage[] = (imagesResult.records || []).filter((img: Record<string, unknown>) => img.image_type !== "box").map((img: Record<string, unknown>) => ({ url: img.url_cdn || img.url_original || "", supplierCode: img.supplier_code || null, isPrimary: img.is_primary, isOgImage: img.is_og_image || false })).filter((img: ProductImage) => img.url);
+        const images = (imagesResult.records || [])
+          .filter((img: Record<string, unknown>) => img.image_type !== "box")
+          .map((img: Record<string, unknown>): ProductImage => ({
+            url: String(img.url_cdn || img.url_original || ""),
+            supplierCode: (img.supplier_code as string) || null,
+            isPrimary: Boolean(img.is_primary),
+            isOgImage: Boolean(img.is_og_image),
+          }))
+          .filter((img) => img.url);
         setProductImages(images);
         const uniqueColors = new Map<string, ProductColor>();
-        (variantsResult.records || []).forEach((v: Record<string, unknown>) => { if (!v.color_name || uniqueColors.has(v.color_name)) return; uniqueColors.set(v.color_name, { hex: v.color_hex || "#CCCCCC", name: v.color_name, code: v.color_code || "", stock: v.stock_quantity ?? 0 }); });
+        (variantsResult.records || []).forEach((v: Record<string, unknown>) => {
+          const colorName = v.color_name as string | undefined;
+          if (!colorName || uniqueColors.has(colorName)) return;
+          uniqueColors.set(colorName, {
+            hex: (v.color_hex as string) || "#CCCCCC",
+            name: colorName,
+            code: (v.color_code as string) || "",
+            stock: (v.stock_quantity as number) ?? 0,
+          });
+        });
         setColors(Array.from(uniqueColors.values()));
       } catch { setColors([]); setProductImages([]); }
       finally { setLoadingColors(false); }
@@ -250,7 +267,7 @@ export function useMagicUpState() {
       component_name: null, location_name: loc.location_name,
       max_width: Math.max(...loc.options.map(o => o.efetiva_largura_max || 0), 0),
       max_height: Math.max(...loc.options.map(o => o.efetiva_altura_max || 0), 0),
-      unit: "cm", shape: loc.options[0]?.shape || "rectangle",
+      unit: "cm", shape: (loc.options[0]?.shape || "rectangle") as AreaShape,
       is_curved: loc.options.some(o => o.is_curved), is_primary: idx === 0, display_order: loc.location_order,
       techniques: loc.options.map(o => ({ id: o.technique_id, nome: o.tecnica_nome, codigo: o.codigo_tabela })),
     }));
@@ -506,7 +523,7 @@ CENÁRIO: ${effectivePrompt}`;
     creativeControls, setCreativeControls, brandNotes, setBrandNotes,
     brandKit, loadingBrandKit, handleUpdateBrandKit, handleUseBrandLogo, handleAddCurrentLogoToBrandKit, handleSaveBrandKit,
     activeRefinement, handleApplyRefinement, batchQueue, batchRunning, handleSetBatchQueue, handleRunBatchQueue, handleClearBatchQueue,
-    qualityScore, qualityDiagnosis: generation.qualityDiagnosis, curationStatus: generation.curationStatus, copyPack,
+    qualityScore, copyPack,
     effectivePrompt, fullPromptPreview,
     selectedClient, clientSearch, setClientSearch, showClientResults,
     setShowClientResults, clientResults, loadingClients,

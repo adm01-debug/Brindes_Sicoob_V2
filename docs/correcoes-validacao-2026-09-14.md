@@ -490,3 +490,62 @@ Três causas independentes:
    de runtime pré-existente como efeito colateral, não muda a página.
 
 Sem teste dedicado no repo pra nenhum dos dois arquivos.
+
+## `useMagicUpState.ts` (etapa 17, 8 → 0 erros)
+
+Seis causas independentes:
+
+1. **`Tables<>` completo vs. `.select()` com coluna explícita**: o `.map()`
+   da query de `magic_up_campaigns` anotava o parâmetro como
+   `Tables<"magic_up_campaigns">` (linha completa da tabela), mas a query
+   usa `.select("id, title, status, ...")` com lista explícita de colunas —
+   o shape real inferido é mais estreito. Corrigido removendo a anotação e
+   deixando o TS inferir do resultado da query.
+2. **`MagicUpProduct.images` não batia com o dado real**: a interface
+   declarava `images` como array de objetos ricos
+   (`{ url_cdn?, url_original?, is_primary?, ... }`), mas o valor real vem
+   de `fetchPromobrindProducts()` → `PromobrindProduct.images: string[] |
+   null` (confirmado em `src/lib/external-db/product-types.ts`). Grep em
+   `src/pages/magic-up/`, `src/components/magic-up/` e
+   `useMagicUpGeneration.ts` confirmou zero consumidores lendo `.images` no
+   shape rico — corrigido o tipo da interface pra `string[] | null`,
+   batendo com o dado real em vez de forçar o dado no shape errado.
+3. **Cadeia `.filter().map().filter()` sem tipo intermediário**: o `.map()`
+   que monta `ProductImage[]` (a partir de `Record<string, unknown>` vindo
+   do bridge) não tinha o retorno anotado, então o array intermediário
+   ficava com propriedades `unknown`; o `.filter()` seguinte, anotado
+   explicitamente como `(img: ProductImage) =>`, falhava com `TS2769` (nenhum
+   overload bate). Corrigido anotando o retorno do `.map()` como
+   `ProductImage` (com `String()`/`Boolean()`/cast inline pros campos vindos
+   de `unknown`) e deixando o `.filter()` seguinte inferir o parâmetro.
+4. **Chave de `Map<string, T>` vinda de `unknown`**: `v.color_name` (de
+   `Record<string, unknown>`) era usado direto como chave de
+   `Map<string, ProductColor>`, gerando `TS2345: '{}' não é atribuível a
+   'string'`. Corrigido extraindo `color_name` pra uma variável local
+   `string | undefined` antes de usar como chave (mesmo padrão aplicado aos
+   outros campos do objeto `ProductColor`).
+5. **`shape: string` vs. união `AreaShape`**: `printAreas` monta
+   `PrintAreaWithTechniques[]`, cujo campo `shape` exige a união `AreaShape`
+   (`@/types/gravacao`), mas `CustomizationOption.shape` (origem do valor,
+   `useMockupTechniques.ts`) é `string` puro. Corrigido com cast explícito
+   `as AreaShape` na atribuição — o valor real é confiável (vem de uma lista
+   fixa de formas cadastradas), só a tipagem de origem é mais larga.
+6. **Propriedades mortas sobrescritas pelo spread seguinte**: o retorno do
+   hook setava `qualityDiagnosis: generation.qualityDiagnosis` e
+   `curationStatus: generation.curationStatus` explicitamente, mas o mesmo
+   objeto retornado espalha `...generation` logo depois — que já contém as
+   duas chaves idênticas (confirmado via grep no retorno de
+   `useMagicUpGeneration.ts`). O spread sempre vence, então as duas
+   propriedades explícitas eram código morto (`TS2783`). Corrigido
+   removendo as duas, sem mudança de comportamento.
+
+Efeito colateral: a remoção da anotação `Tables<"magic_up_campaigns">`
+deixou o import `Tables` sem uso — removido do import (mantidos
+`TablesInsert`/`TablesUpdate`, ainda usados em outros pontos do arquivo).
+
+Sem teste dedicado pro hook em si. Suíte relacionada
+`tests/hooks/useMagicUpGeneration-onda5.test.tsx` (não tocado, mas
+consome `MagicUpProduct` via mock) — 4/4 passando. Verificado também que
+`useMagicUpGeneration.ts` não regrediu (`TS2322` em `tags.filter(Boolean)`
+na linha 129 é pré-existente, confirmado via `git stash` — não relacionado
+a esta mudança).

@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-09-22T11:03:31.363Z",
-  "total": 1024,
+  "generatedAt": "2026-09-22T11:19:09.188Z",
+  "total": 1016,
   "files": {
     "src/components/admin/categories/CategoriesManager.tsx": 6,
     "src/components/admin/common/AdminDataTable.tsx": 2,
@@ -282,7 +282,6 @@
     "src/hooks/useKitTemplates.ts": 1,
     "src/hooks/useKitUndoRedo.ts": 3,
     "src/hooks/useMagicUpGeneration.ts": 1,
-    "src/hooks/useMagicUpState.ts": 8,
     "src/hooks/useMarketIntelligenceMacro.ts": 4,
     "src/hooks/useMockupTechniques.ts": 3,
     "src/hooks/useNoveltiesSelectionMode.ts": 1,
