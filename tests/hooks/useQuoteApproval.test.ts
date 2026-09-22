@@ -16,8 +16,8 @@ beforeEach(() => {
 
 describe("useQuoteApproval", () => {
   it("generateApprovalLink retorna token e link com /proposta/", async () => {
-    mockFromOnce({
-      data: { id: "t1", quote_id: "q1", token: "abc123", seller_id: "s", client_name: null, client_email: null, status: "pending", expires_at: null, viewed_at: null, responded_at: null, response: null, response_notes: null, created_at: "" },
+    const chain = mockFromOnce({
+      data: { id: "t1", quote_id: "q1", token: "abc123", seller_id: "s", client_name: null, client_email: null, status: "active", expires_at: null, viewed_at: null, responded_at: null, response: null, response_notes: null, created_at: "" },
       error: null,
     });
     const { result } = renderHookWithProviders(() => useQuoteApproval());
@@ -25,6 +25,7 @@ describe("useQuoteApproval", () => {
     await act(async () => { r = await result.current.generateApprovalLink("q1", "Cliente", "c@x.com"); });
     expect(r!.token.token).toBe("abc123");
     expect(r!.link).toContain("/proposta/abc123");
+    expect(chain.insert).toHaveBeenCalledWith(expect.objectContaining({ status: "active", quote_id: "q1" }));
     expect(toast.success).toHaveBeenCalled();
   });
 
@@ -38,7 +39,7 @@ describe("useQuoteApproval", () => {
   });
 
   it("getApprovalStatus retorna o token mais recente", async () => {
-    mockFromOnce({ data: { id: "t1", token: "xyz", status: "viewed" }, error: null });
+    mockFromOnce({ data: { id: "t1", token: "xyz", status: "active" }, error: null });
     const { result } = renderHookWithProviders(() => useQuoteApproval());
     let token: unknown = null;
     await act(async () => { token = await result.current.getApprovalStatus("q1"); });

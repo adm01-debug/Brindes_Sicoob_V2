@@ -6952,6 +6952,7 @@ export type Database = {
           response: string | null
           response_notes: string | null
           seller_id: string
+          signature_data_url: string | null
           signature_hash: string | null
           signed_at: string | null
           signer_document: string | null
@@ -6974,6 +6975,7 @@ export type Database = {
           response?: string | null
           response_notes?: string | null
           seller_id: string
+          signature_data_url?: string | null
           signature_hash?: string | null
           signed_at?: string | null
           signer_document?: string | null
@@ -6996,6 +6998,7 @@ export type Database = {
           response?: string | null
           response_notes?: string | null
           seller_id?: string
+          signature_data_url?: string | null
           signature_hash?: string | null
           signed_at?: string | null
           signer_document?: string | null
@@ -10467,6 +10470,7 @@ export type Database = {
           response: string | null
           response_notes: string | null
           seller_id: string
+          signature_data_url: string | null
           signature_hash: string | null
           signed_at: string | null
           signer_document: string | null
@@ -10484,6 +10488,10 @@ export type Database = {
           isOneToOne: false
           isSetofReturn: true
         }
+      }
+      get_public_quote_approval: {
+        Args: { _token: string }
+        Returns: Json
       }
       get_test_auth_integrity: {
         Args: { test_emails: string[] }
@@ -10818,6 +10826,16 @@ export type Database = {
       snapshot_hardening_status: { Args: never; Returns: Json }
       submit_quote_response: {
         Args: { _response: string; _response_notes?: string; _token: string }
+        Returns: boolean
+      }
+      submit_signed_quote_response: {
+        Args: {
+          _token: string
+          _response: string
+          _signer_name: string
+          _signer_document: string
+          _signature_data_url: string
+        }
         Returns: boolean
       }
       sync_external_connections_from_credentials:

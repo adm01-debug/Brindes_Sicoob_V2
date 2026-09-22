@@ -1,0 +1,54 @@
+{
+  "projeto": "cfmzkthhgliqelozlmwu",
+  "registrado_em": "2026-09-22T20:34:47.700107+00:00",
+  "migration": "supabase/migrations/20260922200000_public_quote_approval_contract.sql",
+  "sha256": "cafcc0991dcf6683d7bcf6b08dd413b1632958db405208345bb513774488aaf0",
+  "dryrun": {
+    "statements": 1,
+    "results": [
+      {
+        "command": null,
+        "rowCount": 1,
+        "fields": [
+          "acl_violations",
+          "anonymous_contract_asserted"
+        ],
+        "rows": [
+          {
+            "acl_violations": 0,
+            "anonymous_contract_asserted": true
+          }
+        ]
+      }
+    ],
+    "notices": []
+  },
+  "verificacao_final": {
+    "statements": 1,
+    "results": [
+      {
+        "command": null,
+        "rowCount": 1,
+        "fields": [
+          "result"
+        ],
+        "rows": [
+          {
+            "result": {
+              "ledger_count": 43,
+              "ledger_exact": true,
+              "tokens_count": 0,
+              "acl_violations": 0,
+              "private_core_anon_denied": true,
+              "anonymous_contract_asserted": true,
+              "row_version_trigger_preserved": true,
+              "business_version_trigger_removed": true
+            }
+          }
+        ]
+      }
+    ],
+    "notices": []
+  },
+  "limites": "Banco de construção. Verificação remota com token inexistente; nenhum orçamento real respondido."
+}

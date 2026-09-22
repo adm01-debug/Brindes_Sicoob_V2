@@ -1,0 +1,21 @@
+{
+  "projeto": "cfmzkthhgliqelozlmwu",
+  "modo": "PostgREST com chave publicável, sem sessão autenticada, token inexistente",
+  "verificacoes": [
+    {
+      "rpc": "get_public_quote_approval",
+      "http_status": 200,
+      "resultado_esperado": true
+    },
+    {
+      "rpc": "submit_quote_response",
+      "http_status": 200,
+      "resultado_esperado": true
+    },
+    {
+      "rpc": "submit_signed_quote_response",
+      "http_status": 200,
+      "resultado_esperado": true
+    }
+  ]
+}

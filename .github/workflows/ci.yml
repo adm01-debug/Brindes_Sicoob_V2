@@ -74,6 +74,10 @@ jobs:
           tests/edge-functions/product-webhook.test.ts
           tests/pages/trends-queries.test.ts
           tests/pages/TrendsKpiCards.test.tsx
+          tests/pages/QuoteApprovalPage.test.tsx
+          tests/hooks/useQuoteApprovalToken.test.ts
+          tests/hooks/useQuoteApproval.test.ts
+          tests/components/admin/connections/ZoneRefreshButton.collapsed.test.tsx
           tests/hooks/useWebAuthn.test.tsx
 
       - uses: denoland/setup-deno@v2
@@ -112,6 +116,9 @@ jobs:
 
       - name: Verificar adoção de logging nas Edge Functions
         run: node scripts/check-edge-structured-logging.mjs
+
+      - name: Simular aprovação pública, RLS e respostas concorrentes
+        run: python3 scripts/qa/simular-aprovacao-publica.py
 
       - name: Compilar artefato de produção
         env:

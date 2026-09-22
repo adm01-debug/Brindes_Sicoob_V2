@@ -4,7 +4,6 @@
 import { useParams } from "react-router-dom";
 import { useState } from "react";
 import { useQuoteApprovalToken } from "@/hooks/useQuoteApprovalToken";
-import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
 import { QuoteApprovalCard } from "@/components/quotes/QuoteApprovalCard";
@@ -14,28 +13,14 @@ import { toast } from "sonner";
 
 export default function QuoteApprovalPage() {
   const { token } = useParams<{ token: string }>();
-  const { data: tokenData, isLoading: loadingToken } = useQuoteApprovalToken(token);
+  const { data: quote, isLoading } = useQuoteApprovalToken(token);
   const [pendingResponse, setPendingResponse] = useState<"approved" | "rejected" | null>(null);
   const [submitted, setSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const { data: quote, isLoading: loadingQuote } = useQuery({
-    queryKey: ["public-quote", tokenData?.quote_id],
-    enabled: !!tokenData?.quote_id,
-    queryFn: async () => {
-      const { data, error } = await supabase
-        // rls-allow: rota pública por approval_token; RLS permite
-        .from("quotes")
-        .select("quote_number, client_name, total, valid_until, status")
-        .eq("id", tokenData!.quote_id)
-        .single();
-      if (error) throw error;
-      return data;
-    },
-  });
+  if (isLoading) return <Skeleton className="max-w-2xl mx-auto mt-12 h-72" />;
 
-  if (loadingToken || loadingQuote) return <Skeleton className="max-w-2xl mx-auto mt-12 h-72" />;
-
-  if (!tokenData || !quote) {
+  if (!quote) {
     return (
       <div className="container mx-auto p-12 text-center">
         <PageSEO title="Link inválido" description="Token de aprovação inválido ou expirado" />
@@ -44,31 +29,28 @@ export default function QuoteApprovalPage() {
     );
   }
 
-  const isResponded = !!tokenData.responded_at || submitted;
+  const isResponded = !!quote.responded_at || submitted;
 
   const handleSign = async (sigData: { name: string; document: string; signatureDataUrl: string }) => {
-    if (!pendingResponse) return;
+    if (!pendingResponse || isSubmitting) return;
+    setIsSubmitting(true);
     try {
-      const { error } = await supabase.rpc("submit_quote_response", {
+      const { data, error } = await supabase.rpc("submit_signed_quote_response", {
         _token: token!,
         _response: pendingResponse,
-        _response_notes: `Assinado por ${sigData.name} (${sigData.document})`,
+        _signer_name: sigData.name,
+        _signer_document: sigData.document,
+        _signature_data_url: sigData.signatureDataUrl,
       });
       if (error) throw error;
-      // Persist signature meta in token row (best-effort)
-      await supabase
-        .from("quote_approval_tokens")
-        .update({
-          signer_name: sigData.name,
-          signer_document: sigData.document,
-          signed_at: new Date().toISOString(),
-        })
-        .eq("token", token!);
+      if (data !== true) throw new Error("O link expirou, foi revogado ou já recebeu uma resposta. Atualize a página.");
 
       setSubmitted(true);
       toast.success("Resposta registrada com sucesso");
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Erro ao registrar");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -87,7 +69,7 @@ export default function QuoteApprovalPage() {
       />
 
       {pendingResponse && !isResponded && (
-        <QuoteSignaturePad onSign={handleSign} />
+        <QuoteSignaturePad onSign={handleSign} isSubmitting={isSubmitting} />
       )}
     </div>
   );

@@ -305,6 +305,7 @@
     "get_industry_top_products",
     "get_platform_failure_metrics",
     "get_query_telemetry_p95",
+    "get_public_quote_approval",
     "get_quote_token_by_value",
     "get_sicoob_consolidation_sellers",
     "get_sicoob_kit_quote_idempotency",
@@ -393,6 +394,7 @@
     "sicoob_actor_can_view_all_consolidation",
     "snapshot_hardening_status",
     "submit_quote_response",
+    "submit_signed_quote_response",
     "sync_external_connections_from_credentials",
     "transition_sicoob_order_status",
     "upsert_sicoob_order_shipment",
@@ -435,7 +437,8 @@
       "20260922165000",
       "20260922166000",
       "20260922167000",
-      "20260922190000"
+      "20260922190000",
+      "20260922200000"
     ],
     "relations": [
       "bitrix_clients",
@@ -462,8 +465,12 @@
       "get_enum_values",
       "normalize_quote_parent_root",
       "protect_latest_quote_version_deletion",
-      "protect_sicoob_approval_policy_version"
+      "protect_sicoob_approval_policy_version",
+      "guard_local_quote_approval_token",
+      "apply_local_quote_approval_response",
+      "get_public_quote_approval",
+      "submit_signed_quote_response"
     ],
-    "checked_at": "2026-09-22T18:37:12.720198+00:00"
+    "checked_at": "2026-09-22T20:29:57Z"
   }
 }

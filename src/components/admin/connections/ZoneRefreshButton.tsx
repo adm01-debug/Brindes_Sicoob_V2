@@ -8,7 +8,7 @@
  *
  * Estado de loading sincroniza com isFetching das queries afetadas.
  */
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { RefreshCw } from "lucide-react";
 import { useIsFetching, useQueryClient } from "@tanstack/react-query";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -36,6 +36,16 @@ export function ZoneRefreshButton({
 }: ZoneRefreshButtonProps) {
   const qc = useQueryClient();
   const [pending, setPending] = useState(false);
+  const mounted = useRef(false);
+  const pendingTimer = useRef<ReturnType<typeof setTimeout>>();
+
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+      clearTimeout(pendingTimer.current);
+    };
+  }, []);
 
   // isFetching agregado para qualquer uma das queryKeys da zona
   const fetchingCount = useIsFetching({
@@ -52,11 +62,14 @@ export function ZoneRefreshButton({
       await Promise.all(
         queryKeys.map((key) => qc.invalidateQueries({ queryKey: key as unknown[] })),
       );
+      if (!mounted.current) return;
       onRefresh?.();
       if (successMessage) toast.success(successMessage, { duration: 2000 });
     } finally {
       // Pequeno delay para o spinner não desaparecer instantaneamente
-      window.setTimeout(() => setPending(false), 250);
+      if (mounted.current) {
+        pendingTimer.current = setTimeout(() => setPending(false), 250);
+      }
     }
   }, [qc, queryKeys, onRefresh, successMessage]);
 

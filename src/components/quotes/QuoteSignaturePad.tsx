@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState } from "react";
 import SignatureCanvas from "react-signature-canvas";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -27,15 +27,6 @@ export function QuoteSignaturePad({ onSign, isSubmitting }: QuoteSignaturePadPro
   const [hasSignature, setHasSignature] = useState(false);
   const [name, setName] = useState("");
   const [document, setDocument] = useState("");
-  const [ipAddress, setIpAddress] = useState<string>("Detectando...");
-
-  useEffect(() => {
-    // Fetch IP address for audit trail
-    fetch("https://api.ipify.org?format=json")
-      .then(res => res.json())
-      .then(data => setIpAddress(data.ip))
-      .catch(() => setIpAddress("Não detectado (offline ou bloqueado)"));
-  }, []);
 
   const clear = () => {
     sigCanvas.current?.clear();
@@ -85,7 +76,6 @@ export function QuoteSignaturePad({ onSign, isSubmitting }: QuoteSignaturePadPro
         document: document.replace(/\D/g, ""), 
         signatureDataUrl: dataUrl,
         metadata: {
-          ip: ipAddress,
           userAgent: navigator.userAgent,
           timestamp: new Date().toISOString()
         }
@@ -161,10 +151,7 @@ export function QuoteSignaturePad({ onSign, isSubmitting }: QuoteSignaturePadPro
           <div className="flex items-start gap-2 p-3 rounded-lg bg-primary/5 border border-primary/10">
             <Info className="h-4 w-4 text-primary mt-0.5 shrink-0" />
             <div className="text-[11px] text-muted-foreground leading-relaxed">
-              <p className="font-semibold text-primary mb-1">Evidências de Integridade:</p>
-              <p>IP: <span className="font-mono">{ipAddress}</span></p>
-              <p>Navegador: <span className="truncate inline-block max-w-[200px] align-bottom">{navigator.userAgent}</span></p>
-              <p>Carimbo de Tempo: <span className="font-mono">{new Date().toLocaleString('pt-BR')}</span></p>
+              <p>Sua resposta, identificação e assinatura serão registradas neste orçamento após a confirmação.</p>
             </div>
           </div>
         </div>
@@ -188,7 +175,7 @@ export function QuoteSignaturePad({ onSign, isSubmitting }: QuoteSignaturePadPro
         </Button>
         
         <p className="text-[10px] text-center text-muted-foreground uppercase tracking-widest font-medium">
-          Assinatura com validade jurídica conforme MP 2.200-2/2001
+          Confira os dados do orçamento antes de confirmar.
         </p>
       </CardContent>
     </Card>
