@@ -1,5 +1,7 @@
 # Execução da reconciliação — 22/09/2026
 
+> Atualização após conexão administrativa: [retomada MCP e situação atual](retomada-mcp-20260922.md). Os números e bloqueios abaixo registram o estado anterior à aplicação no banco de construção.
+
 Ambiente de construção. Base inicial: `60375b545`. Fonte: auditorias reais de
 22/09 e plano corretivo de 50 etapas. O checkout principal tem edições de outro
 trabalho; esta execução usa worktree próprio.

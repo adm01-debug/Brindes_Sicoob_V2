@@ -47,7 +47,8 @@ const defaultMetrics: SecurityMetrics = {
 };
 
 export function useSecurityData(effectiveUserId: string | undefined, isManagingOther: boolean, selectedUserId: string | null) {
-  const { is2FAEnabled, isLoading: is2FALoading } = use2FA(isManagingOther ? selectedUserId! : undefined);
+  const { is2FAEnabled, isLoading: is2FALoading, error: mfaError } = use2FA(isManagingOther ? selectedUserId! : undefined);
+  const mfaStatusAvailable = !isManagingOther && !mfaError;
   const { allowedIPs } = useAllowedIPs();
   const [metrics, setMetrics] = useState<SecurityMetrics>(defaultMetrics);
   const [loginAttempts, setLoginAttempts] = useState<LoginAttempt[]>([]);
@@ -80,7 +81,7 @@ export function useSecurityData(effectiveUserId: string | undefined, isManagingO
       const unreadAlerts = notifs?.filter(n => !n.is_read).length || 0;
 
       let score = 40;
-      if (is2FAEnabled) score += 30;
+      if (mfaStatusAvailable && is2FAEnabled) score += 30;
       if (allowedIPs.length > 0) score += 20;
       if (devicesCount && devicesCount > 0) score += 10;
       if (failedAttempts > 5) score -= 10;
@@ -99,11 +100,11 @@ export function useSecurityData(effectiveUserId: string | undefined, isManagingO
     } finally {
       setIsLoading(false);
     }
-  }, [effectiveUserId, is2FAEnabled, allowedIPs]);
+  }, [effectiveUserId, is2FAEnabled, mfaStatusAvailable, allowedIPs]);
 
   useEffect(() => { if (effectiveUserId) loadSecurityData(); }, [effectiveUserId, loadSecurityData]);
 
-  return { metrics, loginAttempts, notifications, isLoading, is2FAEnabled, is2FALoading, allowedIPs };
+  return { metrics, loginAttempts, notifications, isLoading, is2FAEnabled, is2FALoading, mfaStatusAvailable, allowedIPs };
 }
 
 // Score helpers

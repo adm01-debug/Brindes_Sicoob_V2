@@ -352,15 +352,7 @@ export type Database = {
           updated_at?: string
           client_id?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "personalization_simulations_client_id_fkey"
-            columns: ["client_id"]
-            isOneToOne: false
-            referencedRelation: "bitrix_clients"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       sales_goals: {
         Row: {

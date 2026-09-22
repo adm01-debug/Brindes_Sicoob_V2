@@ -3,7 +3,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { type PersonalizationArea } from "@/components/mockup/MultiAreaManager";
-import { untypedFrom } from "@/lib/supabase-untyped";
 import type { Json } from "@/integrations/supabase/types";
 
 const LOCAL_STORAGE_KEY = "mockup_draft_v1";
@@ -76,82 +75,26 @@ export function useMockupDraft(options: UseMockupDraftOptions = {}) {
       const firstLogo = data.personalizationAreas.find(a => a.logoPreview)?.logoPreview || null;
       const safeLogoData = firstLogo && firstLogo.startsWith("http") ? firstLogo : null;
 
-      // Verify product_id exists in local products table before saving
-      // Products from external DB won't have a matching row, so we skip the FK
-      let safeProductId: string | null = null;
-      if (data.productId) {
-        const { data: productRow } = await untypedFrom<{ id: string }>("products")
-          .select("id")
-          .eq("id", data.productId)
-          .maybeSingle();
-        if (productRow) {
-          safeProductId = data.productId;
-        }
-      }
-
-      // Same check for technique_id
-      let safeTechniqueId: string | null = null;
-      if (data.techniqueId) {
-        const { data: techRow } = await untypedFrom<{ id: string }>("personalization_techniques")
-          .select("id")
-          .eq("id", data.techniqueId)
-          .maybeSingle();
-        if (techRow) {
-          safeTechniqueId = data.techniqueId;
-        }
-      }
-
-      // Same check for client_id
-      let safeClientId: string | null = null;
-      if (data.clientId) {
-        const { data: clientRow } = await untypedFrom<{ id: string }>("bitrix_clients")
-          .select("id")
-          .eq("id", data.clientId)
-          .maybeSingle();
-        if (clientRow) {
-          safeClientId = data.clientId;
-        }
-      }
-
       const payload = {
         user_id: user.id,
         draft_key: draftKey,
-        product_id: safeProductId,
+        product_id: data.productId,
         product_name: data.productName,
-        technique_id: safeTechniqueId,
+        technique_id: data.techniqueId,
         technique_name: data.techniqueName,
-        client_id: safeClientId,
+        client_id: data.clientId,
         client_name: data.clientName,
         personalization_areas: areasWithoutLogos as unknown as Json,
         logo_data: safeLogoData,
         updated_at: new Date().toISOString(),
       };
 
-      // Try upsert first
+      // Os IDs externos são texto sem FK local; preservá-los permite restaurar o rascunho.
       const { error: upsertError } = await supabase
         .from("mockup_drafts")
         .upsert(payload, { onConflict: "user_id,draft_key" });
 
-      if (upsertError) {
-        // If FK violation or conflict, try update-only as fallback
-        if (upsertError.code === "23503" || upsertError.code === "409") {
-          const { product_id, technique_id, client_id, ...safePayload } = payload as Record<string, unknown>;
-          const { error: updateError } = await supabase
-            .from("mockup_drafts")
-            .update({
-              ...safePayload,
-              product_id: null,
-              technique_id: null,
-              client_id: null,
-            })
-            .eq("user_id", user.id)
-            .eq("draft_key", draftKey);
-
-          if (updateError) throw updateError;
-        } else {
-          throw upsertError;
-        }
-      }
+      if (upsertError) throw upsertError;
 
       setLastSaved(new Date());
       setError(null);

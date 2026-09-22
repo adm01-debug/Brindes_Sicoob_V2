@@ -1,138 +1,70 @@
 import { useState } from 'react';
-import { QRCodeSVG } from 'qrcode.react';
-import { Shield, ShieldCheck, ShieldOff, Copy, Check, Loader2 } from 'lucide-react';
+import { Shield, ShieldCheck, ShieldOff, Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
-import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
-import { useToast } from '@/hooks/use-toast';
-import { use2FA } from '@/hooks/use2FA';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { MfaEnrollmentDialog } from '@/components/security/MfaEnrollmentDialog';
+import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { use2FA } from '@/hooks/use2FA';
 
 interface TwoFactorSetupProps {
   targetUserId?: string;
   targetUserEmail?: string;
 }
 
-export function TwoFactorSetup({ targetUserId, targetUserEmail }: TwoFactorSetupProps) {
-  const { user } = useAuth();
-  const { toast } = useToast();
-  const { is2FAEnabled, isLoading, generateSecret, enable2FA, disable2FA } = use2FA(targetUserId);
-  
+export function TwoFactorSetup({ targetUserId }: TwoFactorSetupProps) {
+  const { user, refreshAAL } = useAuth();
   const isManagingOther = !!targetUserId && targetUserId !== user?.id;
-  
-  const [setupMode, setSetupMode] = useState(false);
-  const [disableMode, setDisableMode] = useState(false);
-  const [qrData, setQrData] = useState<{ secret: string; uri: string } | null>(null);
+  const { is2FAEnabled, isLoading, error, refetch } = use2FA(targetUserId);
+  const [enrollOpen, setEnrollOpen] = useState(false);
+  const [disableOpen, setDisableOpen] = useState(false);
   const [verificationCode, setVerificationCode] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [copied, setCopied] = useState(false);
-
-  const handleStartSetup = () => {
-    const email = targetUserEmail || user?.email;
-    if (!email) return;
-    const data = generateSecret(email);
-    setQrData(data);
-    setSetupMode(true);
-  };
-
-  const handleCopySecret = async () => {
-    if (!qrData) return;
-    await navigator.clipboard.writeText(qrData.secret);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
-
-  const handleEnable = async () => {
-    if (verificationCode.length !== 6) return;
-    
-    setIsSubmitting(true);
-    const result = await enable2FA(verificationCode);
-    setIsSubmitting(false);
-
-    if (result.success) {
-      toast({
-        title: '2FA Ativado',
-        description: 'Autenticação de dois fatores foi ativada com sucesso.',
-      });
-      setSetupMode(false);
-      setQrData(null);
-      setVerificationCode('');
-    } else {
-      toast({
-        title: 'Erro',
-        description: result.error || 'Não foi possível ativar o 2FA.',
-        variant: 'destructive',
-      });
-    }
-  };
 
   const handleDisable = async () => {
+    if (verificationCode.length !== 6) return;
     setIsSubmitting(true);
-    
-    // Admin desativando de outro usuário não precisa de token
-    if (isManagingOther) {
-      const result = await disable2FA();
-      setIsSubmitting(false);
-      if (result.success) {
-        toast({
-          title: '2FA Desativado',
-          description: 'Autenticação de dois fatores foi desativada para este usuário.',
-        });
-        setDisableMode(false);
-        setVerificationCode('');
-      } else {
-        toast({
-          title: 'Erro',
-          description: result.error || 'Não foi possível desativar o 2FA.',
-          variant: 'destructive',
-        });
-      }
-      return;
-    }
-    
-    if (verificationCode.length !== 6) { setIsSubmitting(false); return; }
-    
-    const result = await disable2FA(verificationCode);
-    setIsSubmitting(false);
+    try {
+      const { data: factors, error: listError } = await supabase.auth.mfa.listFactors();
+      if (listError) throw listError;
+      const factor = factors.totp.find((item) => item.status === 'verified');
+      if (!factor) throw new Error('Nenhum fator TOTP ativo foi encontrado.');
 
-    if (result.success) {
-      toast({
-        title: '2FA Desativado',
-        description: 'Autenticação de dois fatores foi desativada.',
+      const { data: challenge, error: challengeError } = await supabase.auth.mfa.challenge({ factorId: factor.id });
+      if (challengeError) throw challengeError;
+      const { error: verifyError } = await supabase.auth.mfa.verify({
+        factorId: factor.id,
+        challengeId: challenge.id,
+        code: verificationCode,
       });
-      setDisableMode(false);
+      if (verifyError) throw verifyError;
+
+      const { error: unenrollError } = await supabase.auth.mfa.unenroll({ factorId: factor.id });
+      if (unenrollError) throw unenrollError;
+      await refreshAAL();
+      await refetch();
+      setDisableOpen(false);
       setVerificationCode('');
-    } else {
-      toast({
-        title: 'Erro',
-        description: result.error || 'Não foi possível desativar o 2FA.',
-        variant: 'destructive',
+      toast.success('Autenticação em duas etapas desativada.');
+    } catch (error) {
+      toast.error('Não foi possível desativar o MFA.', {
+        description: error instanceof Error ? error.message : 'Tente novamente.',
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  if (isLoading) {
+  if (isManagingOther) {
     return (
       <Card>
-        <CardContent className="flex items-center justify-center py-8">
-          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-        </CardContent>
+        <CardHeader>
+          <CardTitle>Autenticação em duas etapas</CardTitle>
+          <CardDescription>Por segurança, cada usuário configura ou remove seus próprios fatores na própria conta.</CardDescription>
+        </CardHeader>
       </Card>
     );
   }
@@ -140,193 +72,57 @@ export function TwoFactorSetup({ targetUserId, targetUserEmail }: TwoFactorSetup
   return (
     <Card>
       <CardHeader>
-        <div className="flex items-center gap-2">
-          {is2FAEnabled ? (
-            <ShieldCheck className="h-5 w-5 text-success" />
-          ) : (
-            <Shield className="h-5 w-5 text-muted-foreground" />
-          )}
-          <CardTitle>Autenticação de Dois Fatores (2FA)</CardTitle>
-        </div>
-        <CardDescription>
-          {isManagingOther
-            ? 'Gerencie a autenticação de dois fatores deste usuário.'
-            : 'Adicione uma camada extra de segurança à sua conta usando um aplicativo autenticador.'}
-        </CardDescription>
+        <CardTitle className="flex items-center gap-2">
+          {is2FAEnabled ? <ShieldCheck className="h-5 w-5 text-success" /> : <Shield className="h-5 w-5" />}
+          Autenticação em duas etapas
+        </CardTitle>
+        <CardDescription>Proteja sua conta com um aplicativo autenticador.</CardDescription>
       </CardHeader>
-      <CardContent className="space-y-4">
-        {is2FAEnabled ? (
+      <CardContent>
+        {isLoading ? (
+          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+        ) : error ? (
+          <div className="space-y-3">
+            <p role="alert" className="text-sm text-destructive">Não foi possível consultar o MFA: {error}</p>
+            <Button variant="outline" onClick={() => void refetch()}>Tentar novamente</Button>
+          </div>
+        ) : is2FAEnabled ? (
           <div className="space-y-4">
-            <div className="flex items-center gap-2 text-success bg-success/10 p-3 rounded-lg">
-              <ShieldCheck className="h-5 w-5" />
-              <span className="font-medium">2FA está ativo</span>
-            </div>
-            
-            {isManagingOther ? (
-              <Dialog open={disableMode} onOpenChange={setDisableMode}>
-                <DialogTrigger asChild>
-                  <Button variant="outline" className="text-destructive">
-                    <ShieldOff className="h-4 w-4 mr-2" />
-                    Desativar 2FA (Admin)
-                  </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Desativar 2FA</DialogTitle>
-                    <DialogDescription>
-                      Tem certeza que deseja desativar o 2FA deste usuário? Isso reduzirá a segurança da conta.
-                    </DialogDescription>
-                  </DialogHeader>
-                  <div className="space-y-4 py-4">
-                    <Button
-                      onClick={handleDisable}
-                      disabled={isSubmitting}
-                      className="w-full"
-                      variant="destructive"
-                    >
-                      {isSubmitting ? (
-                        <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                      ) : null}
-                      Confirmar Desativação
-                    </Button>
-                  </div>
-                </DialogContent>
-              </Dialog>
-            ) : (
-              <Dialog open={disableMode} onOpenChange={setDisableMode}>
-                <DialogTrigger asChild>
-                  <Button variant="outline" className="text-destructive">
-                    <ShieldOff className="h-4 w-4 mr-2" />
-                    Desativar 2FA
-                  </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Desativar 2FA</DialogTitle>
-                    <DialogDescription>
-                      Digite o código do seu aplicativo autenticador para confirmar.
-                    </DialogDescription>
-                  </DialogHeader>
-                  <div className="space-y-4 py-4">
-                    <div className="flex justify-center">
-                      <InputOTP
-                        maxLength={6}
-                        value={verificationCode}
-                        onChange={setVerificationCode}
-                      >
-                        <InputOTPGroup>
-                          <InputOTPSlot index={0} />
-                          <InputOTPSlot index={1} />
-                          <InputOTPSlot index={2} />
-                          <InputOTPSlot index={3} />
-                          <InputOTPSlot index={4} />
-                          <InputOTPSlot index={5} />
-                        </InputOTPGroup>
-                      </InputOTP>
-                    </div>
-                    <Button
-                      onClick={handleDisable}
-                      disabled={verificationCode.length !== 6 || isSubmitting}
-                      className="w-full"
-                      variant="destructive"
-                    >
-                      {isSubmitting ? (
-                        <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                      ) : null}
-                      Confirmar Desativação
-                    </Button>
-                  </div>
-                </DialogContent>
-              </Dialog>
-            )}
+            <p className="text-sm text-success">Seu fator TOTP está ativo.</p>
+            <Button variant="outline" className="text-destructive" onClick={() => setDisableOpen(true)}>
+              <ShieldOff className="mr-2 h-4 w-4" />Desativar MFA
+            </Button>
           </div>
         ) : (
-          <Dialog open={setupMode} onOpenChange={(open) => {
-            setSetupMode(open);
-            if (!open) {
-              setQrData(null);
-              setVerificationCode('');
-            }
-          }}>
-            <DialogTrigger asChild>
-              <Button onClick={handleStartSetup}>
-                <Shield className="h-4 w-4 mr-2" />
-                Configurar 2FA
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-md">
-              <DialogHeader>
-                <DialogTitle>Configurar 2FA</DialogTitle>
-                <DialogDescription>
-                  Escaneie o QR code com seu aplicativo autenticador (Google Authenticator, Authy, etc.)
-                </DialogDescription>
-              </DialogHeader>
-              {qrData && (
-                <div className="space-y-6 py-4">
-                  <div className="flex justify-center">
-                    <div className="bg-white p-4 rounded-lg">
-                      <QRCodeSVG value={qrData.uri} size={200} />
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label>Ou digite o código manualmente:</Label>
-                    <div className="flex gap-2">
-                      <Input
-                        value={qrData.secret}
-                        readOnly
-                        className="font-mono text-sm"
-                      />
-                      <Button
-                        variant="outline"
-                        size="icon" aria-label="Confirmar"
-                        onClick={handleCopySecret}
-                      >
-                        {copied ? (
-                          <Check className="h-4 w-4 text-success" />
-                        ) : (
-                          <Copy className="h-4 w-4" />
-                        )}
-                      </Button>
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label>Digite o código de 6 dígitos:</Label>
-                    <div className="flex justify-center">
-                      <InputOTP
-                        maxLength={6}
-                        value={verificationCode}
-                        onChange={setVerificationCode}
-                      >
-                        <InputOTPGroup>
-                          <InputOTPSlot index={0} />
-                          <InputOTPSlot index={1} />
-                          <InputOTPSlot index={2} />
-                          <InputOTPSlot index={3} />
-                          <InputOTPSlot index={4} />
-                          <InputOTPSlot index={5} />
-                        </InputOTPGroup>
-                      </InputOTP>
-                    </div>
-                  </div>
-
-                  <Button
-                    onClick={handleEnable}
-                    disabled={verificationCode.length !== 6 || isSubmitting}
-                    className="w-full"
-                  >
-                    {isSubmitting ? (
-                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                    ) : null}
-                    Ativar 2FA
-                  </Button>
-                </div>
-              )}
-            </DialogContent>
-          </Dialog>
+          <Button onClick={() => setEnrollOpen(true)}><Shield className="mr-2 h-4 w-4" />Configurar MFA</Button>
         )}
       </CardContent>
+      <MfaEnrollmentDialog
+        open={enrollOpen}
+        onOpenChange={(open) => { setEnrollOpen(open); if (!open) void refetch(); }}
+        redirectOnSuccess={false}
+      />
+      <Dialog open={disableOpen} onOpenChange={(open) => { setDisableOpen(open); if (!open) setVerificationCode(''); }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Desativar MFA</DialogTitle>
+            <DialogDescription>Digite o código atual do seu aplicativo autenticador para confirmar.</DialogDescription>
+          </DialogHeader>
+          <Input
+            value={verificationCode}
+            onChange={(event) => setVerificationCode(event.target.value.replace(/\D/g, '').slice(0, 6))}
+            inputMode="numeric"
+            autoComplete="one-time-code"
+            aria-label="Código de verificação"
+            placeholder="000000"
+            className="text-center font-mono text-xl tracking-[0.4em]"
+          />
+          <Button variant="destructive" disabled={verificationCode.length !== 6 || isSubmitting} onClick={handleDisable}>
+            {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            Confirmar desativação
+          </Button>
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 }

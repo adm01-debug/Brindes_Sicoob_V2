@@ -40,11 +40,6 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useRBAC } from "@/hooks/useRBAC";
 
-interface Client {
-  id: string;
-  name: string;
-}
-
 export default function QuotesKanbanPage() {
   const navigate = useNavigate();
   const { quotes, isLoading, fetchQuotes } = useQuotes();
@@ -55,7 +50,6 @@ export default function QuotesKanbanPage() {
   const [selectedSellerId, setSelectedSellerId] = useState<string>("all");
   const [dateRange, setDateRange] = useState<{ from?: Date; to?: Date }>({});
   
-  const [clients, setClients] = useState<Client[]>([]);
   const [sellers, setSellers] = useState<{ id: string; name: string }[]>([]);
   const [selectedQuoteIds, setSelectedQuoteIds] = useState<string[]>([]);
 
@@ -65,17 +59,9 @@ export default function QuotesKanbanPage() {
     );
   };
 
-  // Fetch clients & sellers for filter
+  // Vendedores são carregados separadamente; clientes vêm dos orçamentos visíveis.
   useEffect(() => {
     const fetchData = async () => {
-      // Fetch Clients
-      const { data: clientsData } = await supabase
-        .from("bitrix_clients")
-        .select("id, name")
-        .order("name");
-      setClients(clientsData || []);
-
-      // Fetch Sellers if supervisor
       if (isSupervisorOrAbove) {
         const { data: profilesData } = await supabase
           .from("profiles")
@@ -127,10 +113,8 @@ export default function QuotesKanbanPage() {
 
   const selectedClientName = useMemo(() => {
     if (selectedClientId === "all") return null;
-    return clients.find((c) => c.id === selectedClientId)?.name ||
-      quotesClients.find((c) => c.id === selectedClientId)?.name ||
-      null;
-  }, [selectedClientId, clients, quotesClients]);
+    return quotesClients.find((c) => c.id === selectedClientId)?.name || null;
+  }, [selectedClientId, quotesClients]);
 
   if (isLoading) {
     return (
@@ -199,7 +183,7 @@ export default function QuotesKanbanPage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Todos os clientes</SelectItem>
-                {(clients.length > 0 ? clients : quotesClients).map((client) => (
+                {quotesClients.map((client) => (
                   <SelectItem key={client.id} value={client.id}>
                     {client.name}
                   </SelectItem>

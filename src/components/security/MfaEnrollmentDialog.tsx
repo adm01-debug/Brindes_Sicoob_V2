@@ -19,9 +19,10 @@ interface MfaEnrollmentDialogProps {
   onOpenChange: (open: boolean) => void;
   /** Quando true, fechar diálogo desloga o usuário (uso em gate de admin) */
   enforce?: boolean;
+  redirectOnSuccess?: boolean;
 }
 
-export function MfaEnrollmentDialog({ open, onOpenChange, enforce = false }: MfaEnrollmentDialogProps) {
+export function MfaEnrollmentDialog({ open, onOpenChange, enforce = false, redirectOnSuccess = true }: MfaEnrollmentDialogProps) {
   const { refreshAAL, signOut } = useAuth();
   const navigate = useNavigate();
   const [step, setStep] = useState<"intro" | "qr" | "verify">("intro");
@@ -52,7 +53,7 @@ export function MfaEnrollmentDialog({ open, onOpenChange, enforce = false }: Mfa
 
       const { data, error } = await supabase.auth.mfa.enroll({
         factorType: "totp",
-        friendlyName: `Brindes Sicoob Admin · ${new Date().toLocaleDateString("pt-BR")}`,
+        friendlyName: `Brindes Sicoob · ${new Date().toLocaleDateString("pt-BR")}`,
       });
       if (error) throw error;
       setFactorId(data.id);
@@ -82,7 +83,7 @@ export function MfaEnrollmentDialog({ open, onOpenChange, enforce = false }: Mfa
       toast.success("MFA ativado com sucesso!", { description: "A partir de agora seu acesso administrativo está protegido." });
       await refreshAAL();
       onOpenChange(false);
-      navigate("/admin", { replace: true });
+      if (redirectOnSuccess) navigate("/admin", { replace: true });
     } catch (e) {
       toast.error("Código inválido", { description: e instanceof Error ? e.message : "Tente novamente" });
       setCode("");

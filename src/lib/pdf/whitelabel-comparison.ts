@@ -1,8 +1,9 @@
 /**
  * whitelabel-comparison (C6 #3) — Gera PDF white-label com branding do cliente vinculado.
- * Busca companies.brand_logo_url / brand_color quando há clientId; cai para genérico se ausente.
+ * Busca nome e logo do cliente no CRM externo; cai para genérico se ausente.
  */
-import { supabase } from "@/integrations/supabase/client";
+import { selectCrmById } from "@/lib/crm-db";
+import type { CrmCompany } from "@/types/crm";
 
 export interface ClientBranding {
   name: string | null;
@@ -13,17 +14,14 @@ export interface ClientBranding {
 export async function fetchClientBranding(clientId: string | null): Promise<ClientBranding | null> {
   if (!clientId) return null;
   try {
-    const { data, error } = await supabase
-      .from("companies" as any)
-      .select("name, brand_logo_url, brand_color")
-      .eq("id", clientId)
-      .maybeSingle();
-    if (error || !data) return null;
-    const d = data as any;
+    const company = await selectCrmById<Pick<CrmCompany, "razao_social" | "nome_fantasia" | "title" | "logo_url">>(
+      "companies", clientId, "razao_social,nome_fantasia,title,logo_url"
+    );
+    if (!company) return null;
     return {
-      name: d.name ?? null,
-      logoUrl: d.brand_logo_url ?? null,
-      brandColor: d.brand_color ?? null,
+      name: company.title || company.nome_fantasia || company.razao_social,
+      logoUrl: company.logo_url,
+      brandColor: null,
     };
   } catch { return null; }
 }

@@ -1,79 +1,43 @@
-/**
- * use2FA — testes funcionais (geração TOTP, verifyToken, enable/disable, fetchSettings).
- */
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import "../components/render-helpers";
-import { act, waitFor } from "@testing-library/react";
-import { renderHookWithProviders } from "./_helpers/render-hook-providers";
-import { mockFromOnce, resetSupabaseMocks } from "./_helpers/mock-supabase-builder";
-import { use2FA } from "@/hooks/use2FA";
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import '../components/render-helpers';
+import { waitFor } from '@testing-library/react';
+import { renderHookWithProviders } from './_helpers/render-hook-providers';
+import { supabase } from '@/integrations/supabase/client';
+import { use2FA } from '@/hooks/use2FA';
+
+const listFactors = vi.fn();
 
 beforeEach(() => {
-  resetSupabaseMocks();
+  listFactors.mockReset();
+  Object.assign(supabase.auth, { mfa: { listFactors } });
 });
 
-describe("use2FA", () => {
-  it("carrega settings (null = 2FA não habilitado)", async () => {
-    mockFromOnce({ data: null, error: null });
-    const { result } = renderHookWithProviders(() => use2FA());
-    await waitFor(() => expect(result.current.isLoading).toBe(false));
-    expect(result.current.is2FAEnabled).toBe(false);
-    expect(result.current.settings).toBeNull();
-  });
-
-  it("carrega settings habilitadas", async () => {
-    mockFromOnce({
-      data: { id: "s1", user_id: "test-user-id", is_enabled: true, enabled_at: "2025-01-01", created_at: "2024" },
-      error: null,
-    });
+describe('use2FA', () => {
+  it('reconhece apenas fator TOTP verificado pelo Supabase Auth', async () => {
+    listFactors.mockResolvedValue({ data: { totp: [{ id: 'f1', status: 'verified' }] }, error: null });
     const { result } = renderHookWithProviders(() => use2FA());
     await waitFor(() => expect(result.current.isLoading).toBe(false));
     expect(result.current.is2FAEnabled).toBe(true);
+    expect(listFactors).toHaveBeenCalledOnce();
   });
 
-  it("generateSecret retorna secret base32 e uri otpauth", async () => {
-    mockFromOnce({ data: null, error: null });
+  it('não considera um fator pendente como MFA ativo', async () => {
+    listFactors.mockResolvedValue({ data: { totp: [{ id: 'f1', status: 'unverified' }] }, error: null });
     const { result } = renderHookWithProviders(() => use2FA());
     await waitFor(() => expect(result.current.isLoading).toBe(false));
-
-    let pair: { secret: string; uri: string } | null = null;
-    act(() => { pair = result.current.generateSecret("user@test.com"); });
-    expect(pair!.secret).toMatch(/^[A-Z2-7]+=*$/); // base32
-    expect(pair!.uri).toContain("otpauth://totp/");
-    expect(pair!.uri).toContain("Brindes%20Sicoob");
-    expect(result.current.pendingSecret).toBe(pair!.secret);
+    expect(result.current.is2FAEnabled).toBe(false);
   });
 
-  it("verifyToken rejeita token inválido", async () => {
-    mockFromOnce({ data: null, error: null });
-    const { result } = renderHookWithProviders(() => use2FA());
+  it('não consulta fatores de outro usuário pela sessão atual', async () => {
+    const { result } = renderHookWithProviders(() => use2FA('outro-usuario'));
     await waitFor(() => expect(result.current.isLoading).toBe(false));
-    const ok = result.current.verifyToken("JBSWY3DPEHPK3PXP", "000000");
-    // 000000 quase certamente não é o token válido pra esse instante
-    expect(typeof ok).toBe("boolean");
+    expect(listFactors).not.toHaveBeenCalled();
   });
 
-  it("enable2FA falha sem pendingSecret", async () => {
-    mockFromOnce({ data: null, error: null });
+  it('expõe falha de consulta para não informar falsamente que MFA está inativo', async () => {
+    listFactors.mockResolvedValue({ data: null, error: new Error('indisponível') });
     const { result } = renderHookWithProviders(() => use2FA());
     await waitFor(() => expect(result.current.isLoading).toBe(false));
-    let r: { success: boolean; error?: string } | null = null;
-    await act(async () => { r = await result.current.enable2FA("123456"); });
-    expect(r!.success).toBe(false);
-    expect(r!.error).toContain("pendente");
-  });
-
-  it("disable2FA falha sem token e sem targetUserId", async () => {
-    mockFromOnce({ data: null, error: null });
-    const { result } = renderHookWithProviders(() => use2FA());
-    await waitFor(() => expect(result.current.isLoading).toBe(false));
-
-    // mock select de currentSettings
-    mockFromOnce({ data: { totp_secret: "JBSWY3DPEHPK3PXP" }, error: null });
-
-    let r: { success: boolean; error?: string } | null = null;
-    await act(async () => { r = await result.current.disable2FA(); });
-    expect(r!.success).toBe(false);
-    expect(r!.error).toContain("Código necessário");
+    expect(result.current.error).toBe('indisponível');
   });
 });

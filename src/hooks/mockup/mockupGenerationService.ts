@@ -3,7 +3,6 @@
  * Extracted from useMockupGenerator to reduce hook complexity.
  */
 import { supabase } from "@/integrations/supabase/client";
-import { untypedFrom } from "@/lib/supabase-untyped";
 import { uploadLogoToStorage, downloadImageAsPdfFromUrl } from "@/lib/mockup-storage";
 import { showMockupSuccessToast } from "@/components/mockup/MockupSuccessToast";
 import { toast } from "sonner";
@@ -115,19 +114,6 @@ export async function saveMockupToDb(params: SaveMockupParams): Promise<string |
       logoUrl = uploadedUrl || "";
     }
 
-    // Validate FK targets
-    let safeProductId: string | null = null;
-    if (product.id) {
-      const { data: productRow } = await untypedFrom("products").select("id").eq("id", product.id).maybeSingle();
-      if (productRow) safeProductId = product.id;
-    }
-
-    let safeTechniqueId: string | null = null;
-    if (technique.id) {
-      const { data: techRow } = await untypedFrom("personalization_techniques").select("id").eq("id", technique.id).maybeSingle();
-      if (techRow) safeTechniqueId = technique.id;
-    }
-
     const clientId = client?.id || null;
     const clientName = client?.nome_fantasia || client?.razao_social || client?.name || null;
 
@@ -135,10 +121,10 @@ export async function saveMockupToDb(params: SaveMockupParams): Promise<string |
       seller_id: userId,
       client_id: clientId,
       client_name: clientName,
-      product_id: safeProductId,
+      product_id: product.id,
       product_name: product.name,
       product_sku: product.sku ?? null,
-      technique_id: safeTechniqueId,
+      technique_id: technique.id,
       technique_name: technique.name,
       logo_url: logoUrl,
       mockup_url: mockupUrl,
