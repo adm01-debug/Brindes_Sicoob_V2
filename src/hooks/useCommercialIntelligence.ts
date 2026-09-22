@@ -269,7 +269,7 @@ export function useRevenueTrend(days = 30, categoryId?: string | null, supplierI
 
       if (hasFilter && productIds) {
         const pids = Array.from(productIds).slice(0, 200);
-        if (!pids.length) { const m = new Map<string, RevenuePoint>(); for (let i = 0; i < days; i++) { const d = new Date(since); d.setDate(d.getDate() + i); const k = d.toISOString().split('T')[0]; m.set(k, { date: k, revenue: 0, orders: 0, quotes: 0 }); } return Array.from(m.values()); }
+        if (!pids.length) { const m = new Map<string, RevenuePoint>(); for (let i = 0; i < days; i++) { const d = new Date(since); d.setDate(d.getDate() + i); const k = d.toISOString().split('T')[0]!; m.set(k, { date: k, revenue: 0, orders: 0, quotes: 0 }); } return Array.from(m.values()); }
         const [{ data: oi }, { data: qi }] = await Promise.all([
           supabase.from('order_items').select('quantity, unit_price, created_at').gte('created_at', sinceStr).in('product_id', pids),
           supabase.from('quote_items').select('created_at').gte('created_at', sinceStr).in('product_id', pids),
@@ -289,9 +289,9 @@ export function useRevenueTrend(days = 30, categoryId?: string | null, supplierI
       }
 
       const dateMap = new Map<string, RevenuePoint>();
-      for (let i = 0; i < days; i++) { const d = new Date(since); d.setDate(d.getDate() + i); const k = d.toISOString().split('T')[0]; dateMap.set(k, { date: k, revenue: 0, orders: 0, quotes: 0 }); }
-      orderData.forEach(o => { const k = new Date(o.created_at).toISOString().split('T')[0]; const e = dateMap.get(k); if (e) { e.revenue += (o.quantity ?? 1) * (o.unit_price ?? 0); e.orders += 1; } });
-      quoteData.forEach(q => { const k = new Date(q.created_at).toISOString().split('T')[0]; const e = dateMap.get(k); if (e) e.quotes += 1; });
+      for (let i = 0; i < days; i++) { const d = new Date(since); d.setDate(d.getDate() + i); const k = d.toISOString().split('T')[0]!; dateMap.set(k, { date: k, revenue: 0, orders: 0, quotes: 0 }); }
+      orderData.forEach(o => { const k = new Date(o.created_at).toISOString().split('T')[0]!; const e = dateMap.get(k); if (e) { e.revenue += (o.quantity ?? 1) * (o.unit_price ?? 0); e.orders += 1; } });
+      quoteData.forEach(q => { const k = new Date(q.created_at).toISOString().split('T')[0]!; const e = dateMap.get(k); if (e) e.quotes += 1; });
       return Array.from(dateMap.values()).sort((a, b) => a.date.localeCompare(b.date));
     },
     staleTime: 1000 * 60 * 5,
@@ -361,7 +361,7 @@ export function useCategoryRanking(days = 30, categoryId?: string | null, suppli
       try {
         const { invokeExternalDb } = await import('@/lib/external-db');
         const sinceDate = since.split('T')[0];
-        const result = await invokeExternalDb({ table: 'stock_daily_summary', operation: 'select', select: 'product_id,units_depleted', filters: { 'summary_date': `gte.${sinceDate}` }, limit: 5000 });
+        const result = await invokeExternalDb<Record<string, unknown>>({ table: 'stock_daily_summary', operation: 'select', select: 'product_id,units_depleted', filters: { 'summary_date': `gte.${sinceDate}` }, limit: 5000 });
         (result?.records || []).forEach((snap: Record<string, unknown>) => {
           const cat = productCategoryMap.get(snap.product_id as string); if (!cat) return;
           const e = categoryMap.get(cat.catId) || { categoryId: cat.catId, categoryName: cat.catName, internalRevenue: 0, internalQty: 0, internalOrders: 0, marketDepleted: 0, totalScore: 0 };

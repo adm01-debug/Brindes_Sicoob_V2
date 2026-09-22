@@ -2152,3 +2152,18 @@ erros (364 → 362 arquivos).
 - `check-eslint-baseline.mjs`: 0 regressões de lint.
 - Sem testes dedicados encontrados.
 - `typecheck:baseline`: 680 → 675 (354 arquivos), baseline atualizado com `--update`.
+
+## useCommercialIntelligence.ts (etapa 17)
+
+**Arquivo:** `src/hooks/useCommercialIntelligence.ts`
+
+**Diagnóstico:** 5 erros TS, 2 causas independentes:
+
+- **`.toISOString().split('T')[0]` usado como chave de `Map<string, ...>`** (linhas 272, 292, 293, 294): sob `noUncheckedIndexedAccess`, `.split('T')[0]` é `string | undefined`. O formato ISO 8601 sempre contém exatamente um `'T'` separando data e hora, então o índice `[0]` está estruturalmente garantido. Corrigido com asserção de não-nulo nos 4 pontos.
+- **`invokeExternalDb({...})` sem argumento de tipo** (linha 365, dentro de `useCategoryRanking`): sem `<T>` explícito, `T` não tem como ser inferido dos argumentos e o retorno assume `unknown`, fazendo `result.records` ser `unknown[] | undefined` — incompatível com o callback `.forEach((snap: Record<string, unknown>) => ...)`. Corrigido com `invokeExternalDb<Record<string, unknown>>(...)`, mesmo padrão já usado em `techniques.ts:78` e `price-tables.ts:39`.
+
+**Validação:**
+- `tscheck-files.mjs`: 0 erro(s) (5 eliminados).
+- `check-eslint-baseline.mjs`: 0 regressões de lint.
+- Teste dedicado `tests/components/intelligence/commercial-intelligence.test.ts` 111/111 passou.
+- `typecheck:baseline`: 675 → 670 (353 arquivos), baseline atualizado com `--update`.
