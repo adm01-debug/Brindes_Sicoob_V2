@@ -1,0 +1,101 @@
+[
+  {
+    "headRefName": "execucao/sicoob-reconciliacao-20260916",
+    "headRefOid": "9ed422b517f1814ecbbfac494c0666ea862b460e",
+    "mergedAt": "2026-09-21T10:40:22Z",
+    "number": 11,
+    "state": "MERGED",
+    "title": "fix(sicoob): reconciliação de referências quebradas, migration-baseline órfã e auditoria tripla",
+    "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/11"
+  },
+  {
+    "headRefName": "execucao/sicoob-reconciliacao-20260916",
+    "headRefOid": "6f6a347766a575d146ea25912e0eaf08b204686c",
+    "mergedAt": "2026-09-16T16:02:48Z",
+    "number": 10,
+    "state": "MERGED",
+    "title": "feat(sicoob): reconcilia schema, segurança e operação do banco em produção",
+    "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/10"
+  },
+  {
+    "headRefName": "execucao/sicoob-reconciliacao-20260915",
+    "headRefOid": "0b99ee634bed1a3f849ea11923d8fa421b4fbf1f",
+    "mergedAt": "2026-09-16T17:36:42Z",
+    "number": 9,
+    "state": "MERGED",
+    "title": "chore(sicoob): adiciona preflight de reconciliação",
+    "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/9"
+  },
+  {
+    "headRefName": "audit/sicoob-reconciliation-20260915",
+    "headRefOid": "479ed8ec2f630dd5b80a7fdeabafa846a22778f1",
+    "mergedAt": "2026-09-16T17:40:22Z",
+    "number": 8,
+    "state": "MERGED",
+    "title": "docs(auditoria): reconcilia GitHub e Supabase",
+    "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/8"
+  },
+  {
+    "headRefName": "execucao/sicoob-20260911130857",
+    "headRefOid": "47c474a67b7fce2f2640f31fd032cf195baa8501",
+    "mergedAt": "2026-09-14T20:58:05Z",
+    "number": 7,
+    "state": "MERGED",
+    "title": "feat(sicoob): idempotência real em recompra e conversão de kit",
+    "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/7"
+  },
+  {
+    "headRefName": "execucao/sicoob-20260911130857",
+    "headRefOid": "f26080336d2adeefb67f4f2d9fc91d7d29fe4e6b",
+    "mergedAt": "2026-09-13T11:18:20Z",
+    "number": 6,
+    "state": "MERGED",
+    "title": "Concluir invariantes críticas e revalidar fluxos Sicoob",
+    "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/6"
+  },
+  {
+    "headRefName": "execucao/sicoob-20260911130857",
+    "headRefOid": "53a53baea74e12550fe37be29eaf5347e423ed36",
+    "mergedAt": "2026-09-12T11:44:22Z",
+    "number": 5,
+    "state": "MERGED",
+    "title": "Evoluir portal de compras Sicoob com segurança e experiência de loja",
+    "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/5"
+  },
+  {
+    "headRefName": "plano/sicoob-100-etapas-20260911124638",
+    "headRefOid": "f94a92241d00248b593f1ac9a2596bdd3085b213",
+    "mergedAt": null,
+    "number": 4,
+    "state": "CLOSED",
+    "title": "docs: plano de implementação Sicoob em 100 etapas",
+    "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/4"
+  },
+  {
+    "headRefName": "analise/sicoob-20260911115127",
+    "headRefOid": "ec5cfaf5c2de844458c0105d8ad40c35f1eb9c14",
+    "mergedAt": null,
+    "number": 3,
+    "state": "CLOSED",
+    "title": "docs: diagnóstico e plano do portal de compras Sicoob",
+    "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/3"
+  },
+  {
+    "headRefName": "claude/system-testing-qa-3arq0a",
+    "headRefOid": "70442f281b3ab2f35239b0ec8b52ebb48c265c71",
+    "mergedAt": "2026-06-14T15:05:09Z",
+    "number": 2,
+    "state": "MERGED",
+    "title": "fix(QA): restaura cliente Supabase e corrige erros de import/runtime em todo o app",
+    "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/2"
+  },
+  {
+    "headRefName": "claude/fix-all-bugs-LJn42",
+    "headRefOid": "1b9bc9b38b6a0a01f2bfc4c025c9c1f2cace3c4c",
+    "mergedAt": "2026-05-28T23:20:57Z",
+    "number": 1,
+    "state": "MERGED",
+    "title": "fix: corrige bugs críticos de runtime e restaura o gate de typecheck",
+    "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/1"
+  }
+]
