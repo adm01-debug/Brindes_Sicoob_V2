@@ -2664,3 +2664,19 @@ O código fazia `result as { products: ExternalProduct[]; count }`, mas `fetchPr
 - `check-eslint-baseline.mjs`: 0 regressões (3336 erros globais, referência `origin/main` em `8b9ea1fc40`).
 - Nenhum teste dedicado encontrado para este componente.
 - `typecheck:baseline`: 569 → 565 (328 arquivos), travado via `--update`.
+
+## AdImageResult.tsx (etapa 17)
+
+**Arquivo:** `src/components/magic-up/AdImageResult.tsx`
+
+**Erros originais (4×):** TS2300×2 (linhas 16 e 20, identificador duplicado `MagicUpCurationStatus`), TS2693 (linha 300, `MagicUpCurationStatus` só se refere a um tipo mas é usado como valor), TS7006 (linha 300, parâmetro `status` com tipo implícito `any`).
+
+**Diagnóstico:** colisão real de nomes entre dois imports distintos e legítimos — o arquivo precisa tanto do **tipo** `MagicUpCurationStatus` (de `@/pages/magic-up/magicUpStrategy`, usado para tipar `curationStatus`/`onSetCurationStatus`) quanto do **componente** `MagicUpCurationStatus` (de `./MagicUpCurationStatus`, renderizado como `<MagicUpCurationStatus value={...} onChange={...} />` na linha 300). Como vêm de módulos diferentes, TS não os mescla como faria com uma classe (tipo+valor do mesmo símbolo) — resulta em identificador duplicado. Isso também impedia o TS de inferir corretamente o tipo do parâmetro `status` no callback `onChange` (cascata do import quebrado).
+
+**Fix aplicado:** import do tipo renomeado via alias (`MagicUpCurationStatus as CurationStatus`), mantendo o nome original do componente para o uso em JSX. Atualizadas as 2 declarações de tipo que usavam o nome original (`curationStatus?: CurationStatus`, `onSetCurationStatus?: (status: CurationStatus) => void`).
+
+**Validação:**
+- `tscheck-files.mjs`: 4 → 0 erros (0 no programa inteiro).
+- `check-eslint-baseline.mjs`: 0 regressões — **drift positivo**: 1 erro de lint eliminado como efeito colateral (3336 → 3335 erros globais, referência `origin/main` em `3092287f83`).
+- Nenhum teste dedicado encontrado para este componente.
+- `typecheck:baseline`: 565 → 561 (327 arquivos), travado via `--update`.

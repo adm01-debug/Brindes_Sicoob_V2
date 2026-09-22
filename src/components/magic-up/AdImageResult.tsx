@@ -13,7 +13,7 @@ import {
   Clock, Trash2, ChevronLeft, ChevronRight,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import type { MagicUpCopyPack, MagicUpCurationStatus, MagicUpQualityDiagnosis, MagicUpQualityScore } from "@/pages/magic-up/magicUpStrategy";
+import type { MagicUpCopyPack, MagicUpCurationStatus as CurationStatus, MagicUpQualityDiagnosis, MagicUpQualityScore } from "@/pages/magic-up/magicUpStrategy";
 import { buildQualityDiagnosis } from "@/pages/magic-up/magicUpStrategy";
 import { MagicUpQualityScore as MagicUpQualityScoreCard } from "./MagicUpQualityScore";
 import { MagicUpQualityChecklist } from "./MagicUpQualityChecklist";
@@ -55,8 +55,8 @@ interface AdImageResultProps {
   onToggleHistoryFavorite?: (id: string, current: boolean) => void;
   qualityScore?: MagicUpQualityScore;
   qualityDiagnosis?: MagicUpQualityDiagnosis;
-  curationStatus?: MagicUpCurationStatus;
-  onSetCurationStatus?: (status: MagicUpCurationStatus) => void;
+  curationStatus?: CurationStatus;
+  onSetCurationStatus?: (status: CurationStatus) => void;
   onRunQualityScore?: () => void;
   copyPack?: MagicUpCopyPack;
   aspectRatio?: string;
