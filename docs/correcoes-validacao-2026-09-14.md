@@ -2438,3 +2438,23 @@ src/components/admin/products/HorizontalStepper.tsx(133,24): error TS2532: Objec
 - `node scripts/check-eslint-baseline.mjs` → 0 regressões (referência origin/main a34ba09dd2, 3336 erros globais).
 - Nenhum teste dedicado encontrado para este arquivo.
 - `npm run typecheck:baseline -- --update` → baseline 618→614 (341 arquivos).
+
+## useProductImageGallery.ts (etapa 17)
+
+**Arquivo:** `src/components/admin/products/image-gallery/useProductImageGallery.ts`
+
+**Erros originais (4×):** `TS2345` — argumentos possivelmente `undefined` passados para funções que exigem valor definido, em 4 pontos de acesso a array/`splice`:
+1. `parts[1]` (linha do split de URL do storage) — usado após `if (parts.length < 2) return;`.
+2. `files[i]` (loop de upload) — `i` sempre dentro de `0..files.length-1` pelo próprio `for`.
+3. `moved` (desestruturado de `newImages.splice(idx, 1)` em `handleSetPrimary`) — usado após guarda `if (idx <= 0) return;`.
+4. `moved` (desestruturado de `newImages.splice(dragIndex, 1)` em `handleDrop`) — usado após guarda `if (dragIndex === null || dragIndex === dropIndex) { ...; return; }`.
+
+**Diagnóstico:** em todos os 4 casos, uma guarda precedente já garante estruturalmente que o valor existe — o TypeScript apenas não consegue provar isso por narrowing através de comparações de `.length` ou do tipo array de retorno de `.splice()`. Diferente do caso de `HorizontalStepper.tsx` (props externas sem garantia de paridade de tamanho), aqui a garantia é local e estrutural.
+
+**Fix:** asserção de não-nulo (`!`) em cada um dos 4 acessos, já que o guard clause imediatamente anterior torna a asserção comprovadamente segura.
+
+**Validação:**
+- `tscheck-files.mjs`: 0 erros (0 no programa inteiro).
+- `check-eslint-baseline.mjs`: 0 regressões.
+- Teste dedicado: não encontrado.
+- `typecheck:baseline`: 614 → 610 (340 arquivos), travado via `--update`.

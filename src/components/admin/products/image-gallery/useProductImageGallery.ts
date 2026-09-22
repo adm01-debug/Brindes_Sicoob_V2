@@ -180,7 +180,7 @@ export function useProductImageGallery({ images, onChange, folder, productId }: 
   const removeStorageFileByUrl = useCallback(async (url: string) => {
     const parts = url.split('/personalization-images/');
     if (parts.length < 2) return;
-    await supabase.storage.from('personalization-images').remove([decodeURIComponent(parts[1])]);
+    await supabase.storage.from('personalization-images').remove([decodeURIComponent(parts[1]!)]);
   }, []);
 
   const createExternalImageRecord = useCallback(async (url: string, variantCode: string, imageType: string, shouldBePrimary: boolean): Promise<{ ok: true } | { ok: false; error: string }> => {
@@ -210,7 +210,7 @@ export function useProductImageGallery({ images, onChange, folder, productId }: 
       const uploadedUrls: string[] = [];
       for (let i = 0; i < files.length; i++) {
         setUploadProgress(i + 1);
-        const url = await uploadFile(files[i]);
+        const url = await uploadFile(files[i]!);
         if (url) uploadedUrls.push(url);
       }
       if (uploadedUrls.length === 0) return;
@@ -267,7 +267,7 @@ export function useProductImageGallery({ images, onChange, folder, productId }: 
     if (idx <= 0) return;
     const newImages = [...images];
     const [moved] = newImages.splice(idx, 1);
-    newImages.unshift(moved);
+    newImages.unshift(moved!);
     onChange(newImages);
 
     if (productId) {
@@ -313,7 +313,7 @@ export function useProductImageGallery({ images, onChange, folder, productId }: 
     if (dragIndex === null || dragIndex === dropIndex) { setDragIndex(null); setDragOverIndex(null); return; }
     const newImages = [...images];
     const [moved] = newImages.splice(dragIndex, 1);
-    newImages.splice(dropIndex, 0, moved);
+    newImages.splice(dropIndex, 0, moved!);
     onChange(newImages);
     setDragIndex(null);
     setDragOverIndex(null);
