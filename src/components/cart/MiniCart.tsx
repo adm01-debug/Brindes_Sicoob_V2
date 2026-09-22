@@ -21,7 +21,7 @@ import { Progress } from "@/components/ui/progress";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 export function MiniCart() {
-  const { items, subtotal, totalItemsCount, removeItem, updateQuantity, clearCart, getOptimisticQuantity } = useCart();
+  const { items, subtotal, totalItemsCount, removeItem, updateQuantity, isUpdatingQuantity, clearCart, getOptimisticQuantity } = useCart();
   const { threshold, needsApproval } = useApprovalThreshold(items);
   
   const isOverThreshold = needsApproval(subtotal);
@@ -114,11 +114,11 @@ export function MiniCart() {
                             variant="outline" 
                             size="icon" 
                             className="h-7 w-7"
-                            disabled={updateQuantity.isPending}
+                            disabled={isUpdatingQuantity}
                             onClick={(e) => {
                               e.preventDefault();
                               const currentQty = getOptimisticQuantity(item.id);
-                              updateQuantity.mutate({ itemId: item.id, quantity: currentQty - 1 });
+                              updateQuantity(item.id, currentQty - 1);
                             }}
                           >
                             <Minus className="h-3 w-3" />
@@ -126,15 +126,15 @@ export function MiniCart() {
                           <span className="text-sm w-6 text-center font-medium tabular-nums">
                             {getOptimisticQuantity(item.id)}
                           </span>
-                          <Button 
-                            variant="outline" 
-                            size="icon" 
+                          <Button
+                            variant="outline"
+                            size="icon"
                             className="h-7 w-7"
-                            disabled={updateQuantity.isPending}
+                            disabled={isUpdatingQuantity}
                             onClick={(e) => {
                               e.preventDefault();
                               const currentQty = getOptimisticQuantity(item.id);
-                              updateQuantity.mutate({ itemId: item.id, quantity: currentQty + 1 });
+                              updateQuantity(item.id, currentQty + 1);
                             }}
                           >
                             <Plus className="h-3 w-3" />

@@ -265,6 +265,7 @@ export function useCart() {
     removeItem,
     updateQuantity: debouncedUpdateQuantity, // Use debounced version by default
     forceUpdateQuantity: updateQuantity.mutate, // Expose raw mutation for immediate calls
+    isUpdatingQuantity: updateQuantity.isPending,
     clearCart,
     refetch: cartQuery.refetch,
     getOptimisticQuantity,

@@ -2517,3 +2517,21 @@ O código fazia `result as { products: ExternalProduct[]; count }`, mas `fetchPr
 - `check-eslint-baseline.mjs`: 0 regressões (3336 erros globais, referência `origin/main` em `c4508bbee2`).
 - Nenhum teste dedicado encontrado para este componente.
 - `typecheck:baseline`: 602 → 598 (337 arquivos), travado via `--update`.
+
+## MiniCart.tsx + useCart.ts (etapa 17)
+
+**Arquivos:** `src/components/cart/MiniCart.tsx`, `src/hooks/cart/useCart.ts`
+
+**Erros originais (4× TS2339):** `updateQuantity.isPending` (linhas 117, 133) e `updateQuantity.mutate` (linhas 121, 137) — "Property does not exist on type '(itemId: string, quantity: number) => void'".
+
+**⚠️ Bug real de produção encontrado (não apenas erro de tipo):** o hook `useCart()` expõe `updateQuantity: debouncedUpdateQuantity` — uma função simples `(itemId, quantity) => void` (versão com debounce de 1s para evitar spam no banco), **não** o objeto de mutation do React Query. `MiniCart.tsx` tratava esse valor como se fosse a mutation crua, chamando `.mutate({...})` e lendo `.isPending`. Como `updateQuantity` é uma função (sem essas propriedades), `updateQuantity.mutate` é `undefined` em runtime — clicar em "+"/"-" para alterar quantidade no carrinho lançaria `TypeError: updateQuantity.mutate is not a function`, quebrando a funcionalidade de ajuste de quantidade do carrinho em produção. Confirmado via grep que `MiniCart.tsx` é o único consumidor de `useCart()` que usa esse campo, então o bug era isolado a este componente.
+
+**Fix aplicado:**
+- `useCart.ts`: adicionado `isUpdatingQuantity: updateQuantity.isPending` ao objeto retornado, expondo o estado de pendência da mutation real sem alterar o comportamento de debounce já existente.
+- `MiniCart.tsx`: troca de `disabled={updateQuantity.isPending}` por `disabled={isUpdatingQuantity}` (2 pontos) e de `updateQuantity.mutate({ itemId: item.id, quantity: ... })` por `updateQuantity(item.id, ...)` (2 pontos), chamando a função debounced diretamente como o hook já esperava ser usada.
+
+**Validação:**
+- `tscheck-files.mjs`: 4 → 0 erros em `MiniCart.tsx` (12 no programa inteiro — 1 erro pré-existente em `useCart.ts:79`, já contabilizado no baseline antes desta mudança, sem relação com o fix).
+- `check-eslint-baseline.mjs`: 0 regressões (3336 erros globais, referência `origin/main` em `c4508bbee2`).
+- Nenhum teste dedicado encontrado para `useCart`/`MiniCart`.
+- `typecheck:baseline`: 598 → 594 (336 arquivos), travado via `--update`.
