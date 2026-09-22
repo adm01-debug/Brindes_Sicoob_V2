@@ -1,5 +1,5 @@
 /**
- * useQuoteApprovalToken — useQuery wrapper para get_quote_token_by_value RPC.
+ * Consulta pública mínima por capacidade do token.
  */
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import "../components/render-helpers";
@@ -19,18 +19,18 @@ describe("useQuoteApprovalToken", () => {
     expect(result.current.data).toBeUndefined();
   });
 
-  it("retorna o primeiro item quando RPC devolve array", async () => {
-    mockRpcOnce({ data: [{ token: "abc", quote_id: "q1" }], error: null });
+  it("retorna resumo do orçamento sem consulta anônima à tabela", async () => {
+    mockRpcOnce({ data: { quote_number: "001", total: 100, status: "active" }, error: null });
     const { result } = renderHookWithProviders(() => useQuoteApprovalToken("abc"));
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expect(result.current.data).toEqual({ token: "abc", quote_id: "q1" });
+    expect(result.current.data).toEqual({ quote_number: "001", total: 100, status: "active" });
   });
 
-  it("retorna o objeto direto quando RPC devolve obj", async () => {
-    mockRpcOnce({ data: { token: "abc", quote_id: "q1" }, error: null });
+  it("preserva ausência de dados para token inválido ou expirado", async () => {
+    mockRpcOnce({ data: null, error: null });
     const { result } = renderHookWithProviders(() => useQuoteApprovalToken("abc"));
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expect(result.current.data).toEqual({ token: "abc", quote_id: "q1" });
+    expect(result.current.data).toBeNull();
   });
 
   it("propaga erro como isError", async () => {

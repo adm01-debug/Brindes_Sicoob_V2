@@ -7,6 +7,11 @@
 > depois que cada etapa de risco foi verificada contra o código real antes de ser
 > executada — várias premissas abaixo foram corrigidas ou descartadas lá.
 
+Atualização de backend em 22/09/2026: [aprovação pública, atomicidade, assinatura
+e verificação real no Supabase](execucao/backend-aprovacao-publica-20260922.md).
+O relatório separa correções aplicadas, testes e pendências; não marca este plano
+inteiro como concluído.
+
 Diagnóstico de origem (2026-09-13): `main` local 11 commits atrás de `origin/main`
 (desde resolvido — ver histórico do commit que trouxe este arquivo), 29 arquivos
 sem commit num worktree secundário, 1.189 erros TypeScript e 2.774 ESLint suprimidos

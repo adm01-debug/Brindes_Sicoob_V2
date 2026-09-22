@@ -39,7 +39,7 @@ export function useQuoteApproval() {
             seller_id: user?.id ?? "",
             client_name: clientName ?? null,
             client_email: clientEmail ?? null,
-            status: "pending",
+            status: "active",
           })
           .select()
           .single();

@@ -10,7 +10,7 @@
  *  5. As actions do header NÃO recebem o atributo `hidden` (ficam acessíveis).
  */
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { act, render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { Activity } from "lucide-react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -119,6 +119,40 @@ describe("ZoneRefreshButton — interação com zona colapsada", () => {
     await waitFor(() => {
       expect(onRefresh).toHaveBeenCalledTimes(1);
     });
+  });
+
+  it("cancela o temporizador ao desmontar após a atualização", async () => {
+    vi.useFakeTimers();
+    try {
+      const { unmount } = setup({ collapsed: true });
+      await act(async () => {
+        fireEvent.click(screen.getByRole("button", { name: /atualizar zona teste/i }));
+      });
+      expect(vi.getTimerCount()).toBeGreaterThan(0);
+      unmount();
+      expect(vi.getTimerCount()).toBe(0);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("não agenda efeitos se a invalidação terminar depois da desmontagem", async () => {
+    const onRefresh = vi.fn();
+    const { unmount, invalidateSpy } = setup({ collapsed: true, onRefresh });
+    let resolveInvalidation!: () => void;
+    invalidateSpy.mockImplementation(() => new Promise<void>((resolve) => {
+      resolveInvalidation = resolve;
+    }));
+    fireEvent.click(screen.getByRole("button", { name: /atualizar zona teste/i }));
+    unmount();
+    vi.useFakeTimers();
+    try {
+      await act(async () => resolveInvalidation());
+      expect(onRefresh).not.toHaveBeenCalled();
+      expect(vi.getTimerCount()).toBe(0);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it("o container de actions do header NÃO herda o atributo hidden da zona colapsada", () => {
