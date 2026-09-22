@@ -25,15 +25,16 @@ export function TrendsHeatmap({ days }: TrendsHeatmapProps) {
       const { isDemoMode, buildMockHeatmap } = await import("@/pages/trends/trends-mock");
       if (isDemoMode()) return buildMockHeatmap();
       const [{ data: views }, { data: searches }] = await Promise.all([
-        untypedFrom("product_views").select("created_at").gte("created_at", since),
-        untypedFrom("search_analytics").select("created_at").gte("created_at", since),
+        untypedFrom<{ created_at: string }>("product_views").select("created_at").gte("created_at", since),
+        untypedFrom<{ created_at: string }>("search_analytics").select("created_at").gte("created_at", since),
       ]);
       // matriz [day][hour]
       const matrix: number[][] = Array.from({ length: 7 }, () => Array(24).fill(0));
       const fill = (rows: Array<{ created_at: string }> | null) => {
         rows?.forEach(r => {
           const d = new Date(r.created_at);
-          matrix[d.getDay()][d.getHours()] += 1;
+          const row = matrix[d.getDay()]!;
+          row[d.getHours()]! += 1;
         });
       };
       fill(views);

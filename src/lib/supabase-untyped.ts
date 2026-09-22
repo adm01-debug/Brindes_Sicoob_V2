@@ -12,6 +12,7 @@ type UntypedError = { message: string } | null;
 export interface UntypedFilterBuilder<T> extends PromiseLike<{ data: T[] | null; error: UntypedError }> {
   eq(column: string, value: unknown): UntypedFilterBuilder<T>;
   neq(column: string, value: unknown): UntypedFilterBuilder<T>;
+  gte(column: string, value: unknown): UntypedFilterBuilder<T>;
   in(column: string, values: unknown[]): UntypedFilterBuilder<T>;
   order(column: string, options?: { ascending?: boolean }): UntypedFilterBuilder<T>;
   limit(count: number): UntypedFilterBuilder<T>;

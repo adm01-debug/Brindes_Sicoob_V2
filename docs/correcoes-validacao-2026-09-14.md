@@ -2630,3 +2630,21 @@ O código fazia `result as { products: ExternalProduct[]; count }`, mas `fetchPr
 - `check-eslint-baseline.mjs`: 0 regressões (3336 erros globais, referência `origin/main` em `8693dee067`).
 - Teste dedicado encontrado e executado: `tests/components/filters/FilterPanel.test.tsx` — 2/2 passou.
 - `typecheck:baseline`: 578 → 574 (331 arquivos), travado via `--update`.
+
+## TrendsHeatmap.tsx + supabase-untyped.ts + TopCategoriesCard.tsx (etapa 17)
+
+**Arquivos:** `src/components/intelligence/TrendsHeatmap.tsx`, `src/lib/supabase-untyped.ts`, `src/components/intelligence/TopCategoriesCard.tsx`
+
+**Erros originais em `TrendsHeatmap.tsx` (4×):** TS2339×2 (linhas 28-29, `.gte()` não existe em `UntypedFilterBuilder<Record<string, unknown>>`), TS2532×2 (linha 36, `matrix[d.getDay()]` possivelmente `undefined`).
+
+**Diagnóstico — lacuna real no wrapper compartilhado, não apenas erro de tipo no call site:** `UntypedFilterBuilder` (`src/lib/supabase-untyped.ts`) declarava os métodos `eq`, `neq`, `in`, `order`, `limit`, `select`, `single`, `maybeSingle`, mas **não `gte`** — apesar do objeto retornado em runtime ser o query builder real do Supabase (que sempre teve `.gte()`), só faltava a declaração de tipo. `TrendsHeatmap.tsx` e `TopCategoriesCard.tsx` (`src/components/intelligence/TopCategoriesCard.tsx`) já usavam `.gte("created_at", ...)` — ambos os arquivos eram consumidores reais dessa lacuna, então o método foi adicionado ao wrapper compartilhado (fix de causa raiz, não um workaround local) em vez de contornar cada call site individualmente.
+
+**Efeito colateral esperado ao corrigir o wrapper:** com `.gte()` agora tipado, o TS passou a checar toda a cadeia de tipos que antes era interrompida no primeiro erro (`Record<string, unknown>[] | null` inferido por `untypedFrom(...)` sem parâmetro genérico explícito) — revelando um erro TS2345 pré-existente e até então mascarado em cada arquivo (`fill(views)` em `TrendsHeatmap.tsx`; o callback do `.forEach` em `TopCategoriesCard.tsx`). Corrigido parametrizando `untypedFrom<T>(...)` explicitamente com o shape de linha esperado em cada chamada (`{ created_at: string }` e `{ product_name: string | null; created_at: string }`, respectivamente).
+
+**`matrix[d.getDay()]` (TS2532×2):** `matrix` é `Array.from({ length: 7 }, ...)` (sempre 7 elementos) e `Date.prototype.getDay()` sempre retorna um inteiro em `[0, 6]` — acesso estruturalmente seguro, mas em `matrix[d.getDay()][d.getHours()] += 1` o erro repetia na mesma posição porque a atribuição composta (`+=`) exige tanto leitura quanto escrita do valor, e o `!` isolado em `matrix[d.getDay()]!` não elimina o `undefined` do resultado da segunda indexação (`row[hora]`) sob `noUncheckedIndexedAccess`. Extraído `const row = matrix[d.getDay()]!;` e aplicado `row[d.getHours()]! += 1;` (segunda asserção necessária na leitura/escrita do valor incrementado, também estruturalmente segura: `row` tem sempre 24 posições e `getHours()` sempre retorna `[0, 23]`).
+
+**Validação:**
+- `tscheck-files.mjs` (3 arquivos): 4 → 0 erros em `TrendsHeatmap.tsx`, 1 → 0 em `TopCategoriesCard.tsx` (0 no programa inteiro).
+- `check-eslint-baseline.mjs`: 0 regressões (3336 erros globais, referência `origin/main` em `e95964a00c`).
+- Nenhum teste dedicado encontrado para nenhum dos três arquivos.
+- `typecheck:baseline`: 574 → 569 (329 arquivos), travado via `--update`.
