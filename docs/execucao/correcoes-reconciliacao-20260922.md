@@ -152,7 +152,11 @@ foram executadas. Não houve alteração de orçamento nem bypass dos checks. A
 integração preexistente da Vercel iniciou preview automático ao abrir o PR; isso
 não certifica paridade de banco nem homologação. Neste lote, 19 migrations foram
 aplicadas com dry-run prévio e ledger exato no banco de construção autorizado.
-Nenhuma publicação manual de Edge Functions foi executada.
+Nenhuma publicação manual de Edge Functions foi executada. O ping administrativo
+dos 103 nomes locais encontrou 98 respostas HTTP 200, quatro HTTP 404 e um timeout.
+As ausências de `sicoob-artwork-register`, `sicoob-kit-quote` e `sicoob-reorder`
+bloqueiam fluxos usados pelo frontend; o MCP não possui token de Management API
+para comparar ou publicar o código.
 
 ## Pendências que impedem o aceite integral
 
@@ -205,7 +209,7 @@ as trata como prontas. Este projeto está em construção, conforme orientação
 | 22 | Aberta: confirmar FKs/dependências remotas antes de qualquer remoção da família de PAs |
 | 23 | Aberta: blog_posts preservada; ausência de rota não autoriza concluir que não há uso externo |
 | 24 | Aberta: Magic Up colaborativo ainda não tem aceite funcional completo |
-| 25 | Parcial: módulos de aprovações/logística já têm consumidores; homologação integrada não refeita |
+| 25 | Parcial e bloqueante: módulos locais e consumidores existem, mas `sicoob-artwork-register`, `sicoob-kit-quote` e `sicoob-reorder` retornaram HTTP 404 no ambiente de construção |
 | 26 | Parcial: SQL da view corrigido localmente; tela e leitura remota ainda precisam de aceite |
 | 27 | Aberta: dependências internas e intenção de cada RPC exigem catálogo PostgreSQL completo |
 | 28 | Parcial: 13 buckets vazios na coleta de 22/09; nenhum removido sem confirmar dependências |
@@ -221,7 +225,7 @@ as trata como prontas. Este projeto está em construção, conforme orientação
 | 38 | Aberta: decisões de negócio remanescentes não foram inventadas nem comunicadas a terceiros |
 | 39 | Concluída no gate estático atual: 1.128 referências analisadas, zero quebradas e zero entradas de allowlist |
 | 40 | Parcial: testes e baselines locais validados; tipagem global mantém 668 erros preexistentes e o CI remoto não iniciou por orçamento |
-| 41 | Aberta: quatro jornadas completas não homologadas no banco de construção |
+| 41 | Aberta: quatro jornadas completas não homologadas; três delas dependem de Edge Functions Sicoob ainda ausentes no ambiente de construção |
 | 42 | Aberta: branch isolada ainda depende de merge; não afirmar igualdade com main |
 | 43 | Concluída no banco de construção: ledger revalidado após cada aplicação e 19 hashes exatos confirmados |
 | 44 | Parcial: lote aplicado ao banco de construção autorizado; nenhuma comunicação a terceiros foi necessária |
