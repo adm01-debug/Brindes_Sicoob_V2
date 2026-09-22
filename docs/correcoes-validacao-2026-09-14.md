@@ -2802,3 +2802,27 @@ Esse hook é consumido por `AuthContext.tsx` (linha 88), que calcula `mfaRequire
 - `check-eslint-baseline.mjs`: 0 regressões (3335 erros globais, referência `origin/main` em `85e68c4559`).
 - Teste dedicado `tests/hooks/useComparisonScore.test.ts`: 5/5 passou.
 - `typecheck:baseline`: 537 → 533 (320 arquivos), travado via `--update`.
+
+## useGravacaoPriceV2.ts (etapa 17)
+
+**Arquivo:** `src/hooks/useGravacaoPriceV2.ts`
+
+**Erros originais (4×):**
+- TS18048 (linha 235 — `techResults.records` possivelmente `undefined`).
+- TS2345 ×3 (linhas 325, 365, 392 — `CustomizationPriceResponse` não atribuível a `Record<string, unknown>` no parâmetro de `adaptPriceResponse`).
+
+**Diagnóstico 1 — guarda real (não é o mesmo padrão de `areasResult.records` no mesmo arquivo):** `techResults = await invokeExternalDb<TabelaOficialRaw>({...})` retorna `InvokeResult<T>` (`src/lib/external-db/invoke.ts`), cujo campo `records` é `T[] | undefined` — genuinamente opcional no contrato de tipo da API. Isso contrasta com `areasResult.records` (linhas 219/243, mais acima no mesmo arquivo), que vem de um objeto literal `{ records: fetchedAreas as unknown as ProductPrintAreaRaw[] }` com `records` não-opcional, e por isso corretamente não gera erro. Como a ausência de `records` é uma possibilidade real de runtime (não apenas um ponto cego do TS), o fix é uma guarda real, não uma asserção de não-nulo.
+
+**Fix 1 aplicado:** `for (const t of techResults.records) {` → `for (const t of techResults.records ?? []) {`.
+
+**Diagnóstico 2 — padrão já estabelecido no código:** `adaptPriceResponse(resp: Record<string, unknown> | null | undefined)` (`src/lib/personalization/adapters/price-response.adapter.ts`) não aceita diretamente o tipo mais específico `CustomizationPriceResponse` retornado por `invokeExternalRpc<CustomizationPriceResponse>(...)`. O mesmo cast já é usado em `src/hooks/simulator/useWizardPricing.ts` (linhas 67, 160) e `src/hooks/simulation/simulationPriceFetcher.ts` (linha 225) para o mesmo cenário — reaproveitado aqui em vez de inventar uma solução nova (zero churn).
+
+**Fix 2 aplicado (3 call sites):** `adaptPriceResponse(result)` → `adaptPriceResponse(result as unknown as Record<string, unknown>)` em `useCustomizationPriceV2().calculatePrice` (linha 325), `useCustomizationPriceReactive()` (linha 365, variável `data`) e `calculateCustomizationPrice()` (linha 392).
+
+**Nota:** o mesmo erro TS2345 existe em `src/components/pricing/ConfigurationPanel.tsx:120` (`adaptPriceResponse(result)`) — não corrigido aqui por estar fora do escopo deste arquivo; candidato natural quando seu próprio tier for alcançado.
+
+**Validação:**
+- `tscheck-files.mjs`: 4 → 0 erros (5 no programa inteiro).
+- `check-eslint-baseline.mjs`: 0 regressões (3335 erros globais, referência `origin/main` em `927b0ca921`).
+- Teste dedicado `tests/hooks/useGravacaoPriceV2.test.ts`: 8/8 passou.
+- `typecheck:baseline`: 533 → 529 (319 arquivos), travado via `--update`.

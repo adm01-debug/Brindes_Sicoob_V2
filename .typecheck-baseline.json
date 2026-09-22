@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-09-22T23:47:11.116Z",
-  "total": 533,
+  "generatedAt": "2026-09-22T23:54:19.321Z",
+  "total": 529,
   "files": {
     "src/components/admin/common/AdminDataTable.tsx": 2,
     "src/components/admin/connections/Bitrix24Tab.tsx": 1,
@@ -212,7 +212,6 @@
     "src/hooks/useErrorHandler.ts": 1,
     "src/hooks/useExternalCollections.ts": 2,
     "src/hooks/useExternalVariantStock.ts": 2,
-    "src/hooks/useGravacaoPriceV2.ts": 4,
     "src/hooks/useInfiniteScroll.ts": 1,
     "src/hooks/useKitBuilderTransformers.ts": 2,
     "src/hooks/useKitStockForecast.ts": 1,

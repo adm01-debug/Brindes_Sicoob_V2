@@ -232,7 +232,7 @@ async function buildPrintAreasFromTables(productId: string): Promise<PrintAreaV2
       orderBy: { column: 'nome', ascending: true },
       limit: 100,
     });
-    for (const t of techResults.records) {
+    for (const t of techResults.records ?? []) {
       if (priceTableIds.has(t.id)) {
         techById.set(t.id, t);
       }
@@ -322,7 +322,7 @@ export function useCustomizationPriceV2() {
       
       setLoading(false);
       if (!result?.success) return null;
-      return adaptPriceResponse(result);
+      return adaptPriceResponse(result as unknown as Record<string, unknown>);
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Erro ao calcular preço';
       setError(message);
@@ -362,7 +362,7 @@ export function useCustomizationPriceReactive(
     )
       .then((data) => {
         if (data && data.success) {
-          setPrice(adaptPriceResponse(data));
+          setPrice(adaptPriceResponse(data as unknown as Record<string, unknown>));
         } else {
           setError('Erro no cálculo');
         }
@@ -389,7 +389,7 @@ export async function calculateCustomizationPrice(
       p_altura_cm: params.alturaCm ?? null,
     }
   );
-  return adaptPriceResponse(result);
+  return adaptPriceResponse(result as unknown as Record<string, unknown>);
 }
 
 // ============================================
