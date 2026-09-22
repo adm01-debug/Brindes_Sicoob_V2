@@ -99,10 +99,10 @@ export function useExpertChat({
     if (!isLoading) { setThinkingMessage(""); return; }
     const msgs = clientId ? THINKING_MESSAGES_CRM : THINKING_MESSAGES;
     let idx = 0;
-    setThinkingMessage(msgs[0]);
+    setThinkingMessage(msgs[0]!);
     const interval = setInterval(() => {
       idx = (idx + 1) % msgs.length;
-      setThinkingMessage(msgs[idx]);
+      setThinkingMessage(msgs[idx]!);
     }, 2500);
     return () => clearInterval(interval);
   }, [isLoading, clientId]);
@@ -119,7 +119,7 @@ export function useExpertChat({
           .select("full_name, preferences")
           .eq("user_id", user.id)
           .single();
-        if (profile?.full_name) setSellerFirstName(profile.full_name.split(" ")[0]);
+        if (profile?.full_name) setSellerFirstName(profile.full_name.split(" ")[0]!);
         const prefs = profile?.preferences as Record<string, unknown> | null;
         if (prefs && typeof prefs.flow_autoplay_tts === "boolean") {
           setAutoPlayTts(prefs.flow_autoplay_tts);
@@ -391,7 +391,8 @@ export function useExpertChat({
                   assistantMessage += content;
                   setMessages(prev => {
                     const n = [...prev];
-                    if (n[n.length - 1]?.role === "assistant") n[n.length - 1].content = assistantMessage;
+                    const last = n[n.length - 1];
+                    if (last?.role === "assistant") last.content = assistantMessage;
                     return n;
                   });
                 }

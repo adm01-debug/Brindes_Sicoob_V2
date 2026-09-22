@@ -2572,3 +2572,24 @@ O código fazia `result as { products: ExternalProduct[]; count }`, mas `fetchPr
 - `check-eslint-baseline.mjs`: 0 regressões (3336 erros globais, referência `origin/main` em `b022d80b8b`).
 - Nenhum teste dedicado encontrado para este componente.
 - `typecheck:baseline`: 590 → 586 (334 arquivos), travado via `--update`.
+
+## useExpertChat.ts (etapa 17)
+
+**Arquivo:** `src/components/expert/chat/useExpertChat.ts`
+
+**Erros originais (4×):** TS2345×2 (linhas ~102 e ~105, `msgs[0]`/`msgs[idx]` possivelmente `undefined` passados a `setThinkingMessage`), TS2345 (linha ~122, `profile.full_name.split(" ")[0]` possivelmente `undefined` passado a `setSellerFirstName`), TS2532 (linha ~394, segundo acesso não-guardado a `n[n.length - 1]` após um guard opcional-chained anterior no mesmo bloco).
+
+**Diagnóstico:**
+- Rotação de mensagens de "pensando": `msgs` é sempre `THINKING_MESSAGES` ou `THINKING_MESSAGES_CRM`, ambos arrays literais não vazios declarados no topo do módulo; `idx` sempre orbita em `[0, msgs.length - 1]` via `(idx + 1) % msgs.length` — acesso estruturalmente seguro.
+- `profile.full_name.split(" ")[0]`: `String.prototype.split` sempre retorna um array com ao menos 1 elemento — acesso estruturalmente seguro.
+- `n[n.length - 1]` no updater de `setMessages`: o guard `n[n.length - 1]?.role === "assistant"` não propaga a garantia de "definido" para o segundo acesso não-opcional (`n[n.length - 1].content = ...`) na mesma expressão, pois são duas leituras de índice distintas aos olhos do TS.
+
+**Fix aplicado:**
+- Asserção de não-nulo nos dois acessos de rotação de mensagens (`msgs[0]!`, `msgs[idx]!`) e no `split(" ")[0]!`.
+- Para o terceiro caso, em vez de asserção, extração para uma constante local (`const last = n[n.length - 1]; if (last?.role === "assistant") last.content = assistantMessage;`) — evita duplicar o acesso por índice e é mais limpo que uma segunda asserção.
+
+**Validação:**
+- `tscheck-files.mjs`: 4 → 0 erros (18 no programa inteiro, erros pré-existentes não relacionados).
+- `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `5b77710cc1`).
+- Teste dedicado encontrado e executado: `tests/components/expert/ExpertChatDialog.test.tsx` — 2/2 passaram.
+- `typecheck:baseline`: 586 → 582 (333 arquivos), travado via `--update`.
