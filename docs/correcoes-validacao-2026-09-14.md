@@ -874,3 +874,43 @@ Verificado: `tscheck-files.mjs` em `useCMS.ts` + `BannerCarousel.tsx`
 typecheck:baseline` → zero regressão (956 vs. baseline 965, 2 arquivos
 melhoraram); `--update` travou o ganho (965 → 956 erros, 409 → 407
 arquivos). Sem teste dedicado.
+
+## `src/components/orders/OrderStatsBar.tsx` (etapa 17, 7 → 0 erros — **achado real de bug de crash em produção**)
+
+`const { data: orders } = useOrdersList(user?.id, scope);` — mas
+`useOrdersList` retorna um `useQuery` cujo `queryFn` resolve pra
+`OrderService.list(...)`, que devolve o envelope paginado
+`{ data: OrderRow[]; count: number | null }`, não um array direto
+(confirmado comparando com o padrão já usado em `OrdersPage.tsx`:
+`const { data: response } = useOrdersList(...); const orders =
+response?.data || [];`, e em `ApprovalKanbanBoard.tsx`:
+`ordersResult?.data`). Ou seja, a variável local `orders` em
+`OrderStatsBar.tsx` sempre foi o objeto-envelope inteiro, nunca o
+array de pedidos.
+
+Isso não era só erro de tipo — era **crash de runtime real**: antes do
+carregamento, `orders` é `undefined` e `orders?.filter(...)` faz
+short-circuit pra `undefined` (daí `|| 0`, os cards mostravam 0
+silenciosamente). Mas assim que a query resolve, `orders` vira o
+objeto `{data, count}` — que não tem `.filter` — e
+`orders?.filter(...)` **não** faz short-circuit (o objeto não é
+nulo/undefined), então tenta chamar `orders.filter` como função e
+lança `TypeError: orders.filter is not a function`.
+`OrderStatsBar` está montado ativamente em `OrdersPage.tsx:93`
+(confirmado — não é código morto), então este componente quebrava em
+produção toda vez que a lista de pedidos carregava com sucesso.
+
+Corrigido seguindo o mesmo padrão já usado nos outros 2 consumidores
+de `useOrdersList`: `const orders = response?.data || [];` e uso
+direto de `orders.length`/`orders.filter(...)` sem `?.`/`|| 0`
+redundante (o array já é garantido). Ajuste adicional: a primeira
+versão do fix (`const orders = response?.data;` mantendo `orders?.`
+nos 4 usos) introduziu uma regressão de complexidade ciclomática no
+ESLint (10 → 11, limite é 10) — resolvido eliminando os `?.`/`|| 0`
+agora desnecessários ao garantir o fallback `[]` uma única vez.
+
+Verificado: `tscheck-files.mjs` → 0 erros (24 no programa inteiro).
+`check-eslint-baseline.mjs` → zero regressão (após o ajuste de
+complexidade). `npm run typecheck:baseline` → zero regressão (949 vs.
+baseline 956, 1 arquivo melhorou); `--update` travou o ganho
+(956 → 949 erros, 407 → 406 arquivos). Sem teste dedicado.

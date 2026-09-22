@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-09-22T12:46:07.898Z",
-  "total": 956,
+  "generatedAt": "2026-09-22T12:56:44.876Z",
+  "total": 949,
   "files": {
     "src/components/admin/categories/CategoriesManager.tsx": 6,
     "src/components/admin/common/AdminDataTable.tsx": 2,
@@ -133,7 +133,6 @@
     "src/components/orders/OrderFulfillmentManager.tsx": 1,
     "src/components/orders/OrderPilotWorkflow.tsx": 4,
     "src/components/orders/OrderSellerActions.tsx": 1,
-    "src/components/orders/OrderStatsBar.tsx": 7,
     "src/components/orders/OrderStatusTimeline.tsx": 3,
     "src/components/pdf/proposal/LogoWithTransparentBg.tsx": 3,
     "src/components/pdf/proposal/ProposalProductTable.tsx": 3,

@@ -8,13 +8,14 @@ import { useSalesScope } from '@/lib/auth/visibility-scope';
 export function OrderStatsBar() {
   const { user } = useAuth();
   const scope = useSalesScope();
-  const { data: orders } = useOrdersList(user?.id, scope);
-  
+  const { data: response } = useOrdersList(user?.id, scope);
+  const orders = response?.data || [];
+
   const stats = {
-    total: orders?.length || 0,
-    drafts: orders?.filter(o => o.status === 'rascunho').length || 0,
-    pending: orders?.filter(o => ['enviado_gestor', 'aprovado_gestor'].includes(o.status)).length || 0,
-    completed: orders?.filter(o => o.status === 'concluido').length || 0,
+    total: orders.length,
+    drafts: orders.filter(o => o.status === 'rascunho').length,
+    pending: orders.filter(o => ['enviado_gestor', 'aprovado_gestor'].includes(o.status)).length,
+    completed: orders.filter(o => o.status === 'concluido').length,
   };
 
   const statCards = [
