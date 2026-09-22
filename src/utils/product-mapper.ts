@@ -14,7 +14,7 @@ function getStockStatus(stock: number): 'in-stock' | 'low-stock' | 'out-of-stock
   return 'in-stock';
 }
 
-function parseMaterials(materials: unknown): string[] {
+export function parseMaterials(materials: unknown): string[] {
   if (!materials) return [];
   if (Array.isArray(materials)) return materials.filter((m): m is string => typeof m === 'string' && !!m.trim());
   if (typeof materials === 'string') {

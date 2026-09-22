@@ -2458,3 +2458,30 @@ src/components/admin/products/HorizontalStepper.tsx(133,24): error TS2532: Objec
 - `check-eslint-baseline.mjs`: 0 regressões.
 - Teste dedicado: não encontrado.
 - `typecheck:baseline`: 614 → 610 (340 arquivos), travado via `--update`.
+
+## useProductsManager.ts (etapa 17)
+
+**Arquivo:** `src/components/admin/products/useProductsManager.ts`
+
+**Erros originais (4×):** confusão de tipos entre 3 modelos de produto distintos e sobrepostos:
+- `PromobrindProduct` (`@/lib/external-db/product-types`) — tipo real retornado por `fetchPromobrindProducts`.
+- `ExternalProduct` (`@/types/external-db`) — outro tipo, de outro módulo, com index signature `[key: string]: unknown`, usado indevidamente aqui como cast de escape para ler campos que não existem em `PromobrindProduct`.
+- `AdminProduct` (definido neste próprio arquivo) — ~60 campos, o formato interno da tela de produtos do admin.
+
+O código fazia `result as { products: ExternalProduct[]; count }`, mas `fetchPromobrindProducts` genuinamente retorna `{ products: PromobrindProduct[]; count }` — os dois tipos não têm overlap suficiente (TS2352). Isso também quebrava as chamadas a `getProductImageUrl(p)`/`getProductStock(p)`, que exigem formato `PromobrindProduct` (TS2345), e o objeto mapeado final não batia com `AdminProduct[]` (TS2322).
+
+**Diagnóstico:** o cast para `ExternalProduct` era um "escape hatch" para ler ~30 campos fiscais/embalagem/frete/SEO (`ncm_code`, `icms_rate`, `is_textil`, `allows_personalization`, `packaging_material`, `stock_unit`, `meta_title`, `slug` etc.) que **não existem em `PromobrindProduct`** porque as constantes `PRODUCT_SELECT_FIELDS_WITH_SALE/LEGACY/DETAIL` (`product-types.ts`) nunca os selecionam na query ao banco externo.
+
+**⚠️ Nota de risco funcional:** esses ~30 campos ficam **sempre `undefined` em produção hoje**, independente do que exista na linha real do banco — a lista de produtos do admin sempre mostra os fallbacks (`null`/`false`/`[]`) para NCM, alíquotas fiscais, tipo/material de embalagem, unidade de estoque, meta title/slug/SEO, etc. Corrigir isso exigiria estender o `SELECT` para essas colunas (risco de "column does not exist" se a coluna não existir de fato no banco externo — fora do escopo desta correção pontual de tipos). Recomenda-se investigação futura dedicada.
+
+**Fix aplicado:**
+1. Removido o cast para `ExternalProduct` (tipo errado/não relacionado). Criado um tipo local `PromobrindProductRow = PromobrindProduct & {...~30 campos opcionais...}` que documenta exatamente essa lacuna, com fallback `?? null`/`?? false` já existente no mapeamento (comportamento em runtime não muda).
+2. Removidos 2 casts redundantes: `p.is_bestseller`/`p.is_kit` já existem em `PromobrindProduct` — o cast para `ExternalProduct` era desnecessário.
+3. **Bug real encontrado e corrigido:** `colors: Array.isArray(p.colors) ? p.colors : []` — `PromobrindProduct.colors` pode conter tanto strings soltas (`"Azul"`) quanto objetos (`{name, hex, stock}`), mas `AdminProduct.colors` exige só objetos com `name`. Entradas string vazavam sem normalização, quebrando qualquer código que lesse `.name` (ex.: exibição de cor no admin). Corrigido normalizando string → `{ name: c }`.
+4. **Bug real encontrado e corrigido:** `materials: p.materials ? (typeof p.materials === 'string' ? [p.materials] : p.materials) : []` — mesma classe de bug: quando `p.materials` já é array, objetos genéricos (`Record<string, unknown>`) vazavam sem normalização, embora `AdminProduct.materials` exija `string[]`. Corrigido reaproveitando `parseMaterials()` (helper já existente e testado em `src/utils/product-mapper.ts`, apenas exportado — antes era privado do módulo) em vez de duplicar lógica de normalização.
+
+**Validação:**
+- `tscheck-files.mjs`: 0 erros (20 no programa inteiro).
+- `check-eslint-baseline.mjs`: 0 regressões.
+- Teste dedicado: `tests/utils/product-mapper.test.ts` (15 testes) — passou integralmente após exportar `parseMaterials`.
+- `typecheck:baseline`: 610 → 606 (339 arquivos), travado via `--update`.

@@ -8,9 +8,39 @@ import { invokeExternalDbSingle, invokeExternalDbDelete } from "@/lib/external-d
 import { toast } from "sonner";
 import { useAuditLog } from "@/hooks/admin/useAuditLog";
 import type { ProductFilters } from "../products/ProductFiltersBar";
-import type { ExternalProduct } from "@/types/external-db";
+import type { PromobrindProduct } from "@/lib/external-db/product-types";
+import { parseMaterials } from "@/utils/product-mapper";
 
 const PAGE_SIZE_OPTIONS = [25, 50, 100] as const;
+
+/**
+ * Campos fiscais/embalagem/frete/SEO lidos abaixo mas ausentes de `PromobrindProduct`
+ * porque `PRODUCT_SELECT_FIELDS_WITH_SALE/LEGACY/DETAIL` nunca os seleciona — por isso
+ * ficam sempre `undefined` em produção hoje (ver Nota de risco funcional na doc de correções).
+ */
+type PromobrindProductRow = PromobrindProduct & {
+  is_imported?: boolean | null; is_textil?: boolean | null; is_thermal?: boolean | null;
+  allows_personalization?: boolean | null;
+  has_gift_box?: boolean | null; has_optional_packaging?: boolean | null;
+  internal_height_cm?: number | null; internal_width_cm?: number | null;
+  internal_length_cm?: number | null; internal_diameter_cm?: number | null;
+  box_inner_quantity?: number | null;
+  packaging_material?: string | null; packaging_color?: string | null; packaging_finish?: string | null;
+  suggested_price?: number | null; stock_unit?: string | null; min_order_quantity?: number | null;
+  ncm_code?: string | null; ean?: string | null; gtin?: string | null; ipi_rate?: number | null;
+  country_of_origin?: string | null; cfop?: string | null; csosn?: string | null;
+  icms_rate?: number | null; pis_rate?: number | null; cofins_rate?: number | null;
+  tax_regime?: string | null; cest?: string | null;
+  freight_class?: string | null; default_carrier?: string | null;
+  shipping_weight_kg?: number | null; shipping_width_cm?: number | null;
+  shipping_height_cm?: number | null; shipping_length_cm?: number | null;
+  cubic_weight?: number | null; requires_special_shipping?: boolean | null; shipping_notes?: string | null;
+  product_type?: string | null; supply_mode?: string | null; warranty_months?: number | null;
+  meta_title?: string | null; meta_keywords?: string[] | null;
+  slug?: string | null; canonical_url?: string | null;
+  key_benefits?: string | null; use_cases?: string | null;
+  videos?: string[] | null;
+};
 
 export interface AdminProduct {
   id: string; sku: string; name: string; description: string | null;
@@ -97,7 +127,8 @@ export function useProductsManager() {
         returnCount: true, filters: serverFilters,
       });
 
-      const { products: productsData, count } = result as { products: ExternalProduct[]; count: number | null };
+      const { products: rawProducts, count } = result;
+      const productsData: PromobrindProductRow[] = rawProducts;
       setTotalCount(count);
 
       const formatted: AdminProduct[] = productsData.map((p) => {
@@ -116,14 +147,16 @@ export function useProductsManager() {
           supplier_reference: p.supplier_reference ?? null,
           is_active: p.is_active ?? p.active ?? true,
           images: imageUrl ? [imageUrl] : (Array.isArray(p.images) ? p.images : []),
-          colors: Array.isArray(p.colors) ? p.colors : [],
-          materials: p.materials ? (typeof p.materials === 'string' ? [p.materials] : p.materials) : [],
+          colors: Array.isArray(p.colors)
+            ? p.colors.map((c) => (typeof c === 'string' ? { name: c } : c))
+            : [],
+          materials: parseMaterials(p.materials),
           min_quantity: p.min_quantity ?? 1,
           is_featured: p.is_featured ?? false,
-          is_bestseller: (p as ExternalProduct).is_bestseller ?? false,
+          is_bestseller: p.is_bestseller ?? false,
           is_new: p.is_new ?? false,
           is_on_sale: p.is_on_sale ?? false,
-          is_kit: (p as ExternalProduct).is_kit ?? false,
+          is_kit: p.is_kit ?? false,
           has_commercial_packaging: p.has_commercial_packaging ?? false,
           is_imported: p.is_imported ?? false,
           is_textil: p.is_textil ?? false,
@@ -168,7 +201,7 @@ export function useProductsManager() {
           meta_title: p.meta_title ?? null,
           meta_keywords: Array.isArray(p.meta_keywords) ? p.meta_keywords : null,
           slug: p.slug ?? null, canonical_url: p.canonical_url ?? null,
-          video_url: (p as ExternalProduct).videos?.[0] ?? null,
+          video_url: p.videos?.[0] ?? null,
           key_benefits: p.key_benefits ?? null, use_cases: p.use_cases ?? null,
           created_at: p.created_at ?? '', updated_at: p.updated_at ?? '',
         };
