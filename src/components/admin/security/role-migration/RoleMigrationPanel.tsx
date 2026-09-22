@@ -313,7 +313,7 @@ export function RoleMigrationPanel() {
           ) : (
             <div className="space-y-2">
               {batches.map((b) => {
-                const meta = STATUS_BADGE[b.status] ?? STATUS_BADGE.pending;
+                const meta = STATUS_BADGE[b.status] ?? STATUS_BADGE.pending!;
                 return (
                   <button
                     key={b.id}
@@ -354,7 +354,7 @@ export function RoleMigrationPanel() {
                 ) : (
                   <div className="space-y-1">
                     {openItems.map((it) => {
-                      const meta = STATUS_BADGE[it.status] ?? STATUS_BADGE.pending;
+                      const meta = STATUS_BADGE[it.status] ?? STATUS_BADGE.pending!;
                       return (
                         <div key={it.id} className="flex items-start gap-3 p-2 rounded border bg-card text-sm">
                           <Badge variant={meta.variant} className={meta.className}>{it.status}</Badge>

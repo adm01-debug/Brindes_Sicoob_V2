@@ -2485,3 +2485,19 @@ O código fazia `result as { products: ExternalProduct[]; count }`, mas `fetchPr
 - `check-eslint-baseline.mjs`: 0 regressões.
 - Teste dedicado: `tests/utils/product-mapper.test.ts` (15 testes) — passou integralmente após exportar `parseMaterials`.
 - `typecheck:baseline`: 610 → 606 (339 arquivos), travado via `--update`.
+
+## RoleMigrationPanel.tsx (etapa 17)
+
+**Arquivo:** `src/components/admin/security/role-migration/RoleMigrationPanel.tsx`
+
+**Erros originais (4× TS18048 "'meta' is possibly 'undefined'"):** linhas 326 (×2) e 360 (×2), ambos em expressões `<Badge variant={meta.variant} className={meta.className}>`.
+
+**Diagnóstico:** `STATUS_BADGE` é tipado como `Record<string, { variant: ...; className?: string }>`. Com `noUncheckedIndexedAccess` ativo, isso afeta **qualquer** acesso resolvido via assinatura de índice — inclusive `STATUS_BADGE.pending` em notação de ponto, já que a chave `pending` não é uma propriedade explícita da assinatura `Record<string, ...>`, apenas mais uma chave coberta pelo índice genérico. Ou seja, mesmo o fallback `STATUS_BADGE[status] ?? STATUS_BADGE.pending` resolve para `{...} | undefined`, porque o segundo operando do `??` já carrega `| undefined` em seu próprio tipo.
+
+**Fix aplicado:** asserção de não-nulo apenas no fallback (`STATUS_BADGE.pending!`), nos dois pontos de uso (linha 316 e 357). Justificativa: `pending` é uma chave literal declarada diretamente no objeto `STATUS_BADGE` poucas linhas acima no mesmo módulo — presença garantida estruturalmente pelo próprio código-fonte, não uma suposição sobre dado externo. `STATUS_BADGE[status]` (a busca dinâmica) continua sem asserção, preservando a checagem real de índice dinâmico.
+
+**Validação:**
+- `tscheck-files.mjs`: 4 → 0 erros (0 no programa inteiro).
+- `check-eslint-baseline.mjs`: 0 regressões (3336 erros globais, referência `origin/main` em `ed88282fe2`).
+- Nenhum teste dedicado encontrado para este componente.
+- `typecheck:baseline`: 606 → 602 (338 arquivos), travado via `--update`.
