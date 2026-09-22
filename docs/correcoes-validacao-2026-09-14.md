@@ -2259,3 +2259,22 @@ erros (364 → 362 arquivos).
 - `check-eslint-baseline.mjs`: 0 regressões (referência origin/main c24afb02b1); 3342 erros globais (sem alteração).
 - Testes dedicados: 4 arquivos / 8 testes (`BridgeMetricsOverlay-ProdGate.test.tsx`, `useBridgeMetrics.test.ts`, `useBridgeMetricsCleanup.test.ts`, `useBridgeMetricsPerformance.test.ts`) — todos passaram.
 - `typecheck:baseline`: 648 → 643 (347 arquivos), travado via `--update`.
+
+## ReleaseEvidencesPage.tsx (etapa 17)
+
+**Arquivo:** `src/pages/admin/qa/ReleaseEvidencesPage.tsx`
+**Erros:** 5× (`TS18048`×3 + `TS2345` + `TS2769`).
+
+**Diagnóstico (NÃO são assertions cegas — são valores genuinamente opcionais em runtime):**
+- **`handleFileUpload()` (linhas 69, 72, 85, 86):** `const file = e.target.files[0]` — o guard existente (`if (!e.target.files || !selectedReleaseId) return;`) verifica apenas que o `FileList` existe, não que tem elementos. Um `FileList` vazio é um objeto truthy com `length === 0`, então `file` pode genuinamente ser `undefined` em runtime.
+- **Linha 138:** `new Date(release.created_at)` — `qa_releases.created_at` é `string | null` no schema (`src/integrations/supabase/types.ts`), coluna nullable de verdade; `Date` não aceita `null` em nenhum overload.
+
+**Correção (tratamento real, não bypass de tipo):**
+- Adicionado guard explícito `if (!file) return;` logo após a leitura de `file`, cobrindo os 4 usos subsequentes.
+- Linha 138: renderização condicional `release.created_at && new Date(release.created_at).toLocaleDateString()`, seguindo o padrão já estabelecido em `QuoteKanbanBoard.tsx:211` (`quickViewQuote?.created_at && new Date(...)`).
+
+**Validação:**
+- `tscheck-files.mjs`: 0 erro(s) nos arquivos pedidos (5 eliminados).
+- `check-eslint-baseline.mjs`: 0 regressões (referência origin/main 7d286c5cf9); 3342 erros globais (sem alteração).
+- Teste dedicado: não encontrado.
+- `typecheck:baseline`: 643 → 638 (346 arquivos), travado via `--update`.

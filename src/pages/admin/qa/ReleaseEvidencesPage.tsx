@@ -63,6 +63,7 @@ export default function ReleaseEvidencesPage() {
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files || !selectedReleaseId) return;
     const file = e.target.files[0];
+    if (!file) return;
     setUploading(true);
 
     try {
@@ -135,7 +136,7 @@ export default function ReleaseEvidencesPage() {
                   >
                     <div className="font-bold">{release.version_tag}</div>
                     <div className="text-xs text-muted-foreground">
-                      {new Date(release.created_at).toLocaleDateString()}
+                      {release.created_at && new Date(release.created_at).toLocaleDateString()}
                     </div>
                   </button>
                 ))}
