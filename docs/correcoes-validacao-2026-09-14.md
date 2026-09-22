@@ -760,3 +760,24 @@ são pré-existentes e fora do escopo deste arquivo (não relacionados a
 trabalho própria. `check-eslint-baseline.mjs` → zero regressão. Teste
 dedicado `tests/hooks/useQuoteTemplates.test.tsx` → 1/1 passou (smoke
 test, não exercita `createTemplate`/`updateTemplate` diretamente).
+
+## `src/components/admin/products/new-supplier/useNewSupplierForm.ts` (etapa 17, 7 → 0 erros — `noUncheckedIndexedAccess` em acesso a índice já guardado)
+
+Mesmo padrão já visto em `FocusTrap.tsx`/`ProductVariationAxesConfig.tsx`
+nesta sessão: todos os 7 erros são `TS2532` em acesso por índice
+(`array[0]`) já protegido por checagem de `.length > 0` (ou invariante
+estrutural) no mesmo bloco, que o TS não propaga pro tipo do acesso
+indexado. Corrigido com asserção de não-nulo (`!`) nos 7 pontos:
+- `next[0]!.principal = true` (guardado por `next.length > 0`).
+- `contacts[0]!.id` (×2, em `handleCnpjLookup`) — `contacts` nunca fica
+  vazio (`removeContact` bloqueia remover o último), comentário
+  adicionado explicando o invariante.
+- `existing.records[0]!.name`, `existingByName.records[0]!.name`
+  (guardados por `records.length > 0`).
+- `existingByTN.records[0]` usado 2× na mesma linha — extraída
+  constante local `first` com a asserção uma única vez, evitando
+  duplicar a asserção e encurtando a linha.
+
+Verificado: `tscheck-files.mjs` → 0 erros (15 no programa inteiro, era
+22). `check-eslint-baseline.mjs` → zero regressão. Sem teste dedicado
+para este hook.

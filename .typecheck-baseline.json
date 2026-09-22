@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-09-22T12:11:52.687Z",
-  "total": 979,
+  "generatedAt": "2026-09-22T12:19:51.910Z",
+  "total": 972,
   "files": {
     "src/components/admin/categories/CategoriesManager.tsx": 6,
     "src/components/admin/common/AdminDataTable.tsx": 2,
@@ -33,7 +33,6 @@
     "src/components/admin/products/HorizontalStepper.tsx": 4,
     "src/components/admin/products/image-gallery/useProductImageGallery.ts": 4,
     "src/components/admin/products/kit-components/VolumeValidation.tsx": 6,
-    "src/components/admin/products/new-supplier/useNewSupplierForm.ts": 7,
     "src/components/admin/products/ProductFormFullscreen.tsx": 6,
     "src/components/admin/products/ProductFormHelpers.tsx": 1,
     "src/components/admin/products/ProductFormStepContent.tsx": 7,

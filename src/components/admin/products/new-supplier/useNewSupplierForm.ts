@@ -132,7 +132,7 @@ export function useNewSupplierForm(onCreated: (id: string) => void) {
   const addPixKey = () => setPixKeys(prev => [...prev, createEmptyPixKey(prev.length === 0)]);
   const removePixKey = (id: string) => setPixKeys(prev => {
     const next = prev.filter(k => k.id !== id);
-    if (next.length > 0 && !next.some(k => k.principal)) next[0].principal = true;
+    if (next.length > 0 && !next.some(k => k.principal)) next[0]!.principal = true;
     return next.length > 0 ? next : [createEmptyPixKey(true)];
   });
 
@@ -197,8 +197,9 @@ export function useNewSupplierForm(onCreated: (id: string) => void) {
         if (data.cidade) setCidade(data.cidade);
         if (data.estado) setEstado(data.estado);
         if (data.cep) setCep(maskCep(data.cep));
-        if (data.email) updateContact(contacts[0].id, 'email', data.email);
-        if (data.telefone) updateContact(contacts[0].id, 'phone', data.telefone);
+        // contacts nunca fica vazio (removeContact bloqueia remover o último) — asserção segura.
+        if (data.email) updateContact(contacts[0]!.id, 'email', data.email);
+        if (data.telefone) updateContact(contacts[0]!.id, 'phone', data.telefone);
         toast.success('Dados preenchidos via CNPJ!');
       }
     } catch (err: unknown) {
@@ -238,19 +239,19 @@ export function useNewSupplierForm(onCreated: (id: string) => void) {
       try {
         const { invokeExternalDb } = await import('@/lib/external-db');
         const existing = await invokeExternalDb<{ id: string; name: string; cnpj: string }>({ table: 'suppliers', operation: 'select', select: 'id,name,cnpj', filters: { cnpj: cnpj.trim() }, limit: 1 });
-        if (existing.records && existing.records.length > 0) { toast.error(`Já existe um fornecedor com este CNPJ: "${existing.records[0].name}".`); setSaving(false); return; }
+        if (existing.records && existing.records.length > 0) { toast.error(`Já existe um fornecedor com este CNPJ: "${existing.records[0]!.name}".`); setSaving(false); return; }
       } catch (err) { logger.warn('[NewSupplierDialog] Falha ao verificar duplicidade de CNPJ:', err); }
     }
     try {
       const { invokeExternalDb: invokeDbName } = await import('@/lib/external-db');
       const existingByName = await invokeDbName<{ id: string; name: string }>({ table: 'suppliers', operation: 'select', select: 'id,name', filters: { name: name.trim() }, limit: 1 });
-      if (existingByName.records && existingByName.records.length > 0) { toast.error(`Já existe um fornecedor com este nome: "${existingByName.records[0].name}".`); setSaving(false); return; }
+      if (existingByName.records && existingByName.records.length > 0) { toast.error(`Já existe um fornecedor com este nome: "${existingByName.records[0]!.name}".`); setSaving(false); return; }
     } catch (err) { logger.warn('[NewSupplierDialog] Falha ao verificar duplicidade de nome:', err); }
     if (tradingName.trim()) {
       try {
         const { invokeExternalDb: invokeDbTN } = await import('@/lib/external-db');
         const existingByTN = await invokeDbTN<{ id: string; name: string; trading_name: string }>({ table: 'suppliers', operation: 'select', select: 'id,name,trading_name', filters: { trading_name: tradingName.trim() }, limit: 1 });
-        if (existingByTN.records && existingByTN.records.length > 0) { toast.error(`Já existe um fornecedor com este Nome Fantasia: "${existingByTN.records[0].trading_name || existingByTN.records[0].name}".`); setSaving(false); return; }
+        if (existingByTN.records && existingByTN.records.length > 0) { const first = existingByTN.records[0]!; toast.error(`Já existe um fornecedor com este Nome Fantasia: "${first.trading_name || first.name}".`); setSaving(false); return; }
       } catch (err) { logger.warn('[NewSupplierDialog] Falha ao verificar duplicidade de nome fantasia:', err); }
     }
 
