@@ -1,10 +1,17 @@
 # 🔔 SISTEMA UNIFICADO DE NOTIFICAÇÕES
 
-**Status:** ✅ Implementado  
+**Status:** documentação histórica; implementação e operação parcialmente verificadas
 **Data:** 02/01/2026  
 **Versão:** 1.0.0
 
 ---
+
+Auditoria de 22/09/2026: as marcações históricas de 100% abaixo não comprovam
+entrega real. O endpoint genérico apenas gravava uma notificação interna e
+respondia que havia enfileirado email. A correção desse contrato, a fila de
+aprovação Sicoob e os bloqueios de publicação estão no
+[relatório de notificações duráveis](execucao/notificacoes-duraveis-20260922.md).
+Nenhum envio externo foi efetuado durante essa validação.
 
 ## 📋 VISÃO GERAL
 

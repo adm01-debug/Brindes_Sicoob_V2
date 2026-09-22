@@ -174,6 +174,7 @@
     "seller_carts",
     "seller_discount_limits",
     "sensitive_access_logs",
+    "sicoob_approval_deliveries",
     "sicoob_approval_policies",
     "sicoob_approval_requests",
     "sicoob_budget_audit",
@@ -261,6 +262,7 @@
     "check_tables_rls",
     "check_telemetry_regression",
     "claim_next_optimization",
+    "claim_sicoob_approval_delivery",
     "cleanup_discount_test_data",
     "cleanup_expired_collection_trash",
     "cleanup_expired_favorite_trash",
@@ -286,9 +288,11 @@
     "dispatch_sicoob_order_consolidation",
     "e2e_cleanup_check_rate_limit",
     "enqueue_optimization",
+    "enqueue_sicoob_approval_notifications",
     "ensure_admin_audit_log_partitions",
     "ensure_default_favorite_list",
     "execute_role_migration_batch",
+    "finish_sicoob_approval_delivery",
     "generate_sicoob_performance_report",
     "get_app_health_summary",
     "get_auto_test_job_status",
@@ -304,9 +308,10 @@
     "get_industry_seasonality",
     "get_industry_top_products",
     "get_platform_failure_metrics",
-    "get_query_telemetry_p95",
     "get_public_quote_approval",
+    "get_query_telemetry_p95",
     "get_quote_token_by_value",
+    "get_sicoob_approval_delivery_summary",
     "get_sicoob_consolidation_sellers",
     "get_sicoob_kit_quote_idempotency",
     "get_sicoob_order_approval_policy",
@@ -438,7 +443,8 @@
       "20260922166000",
       "20260922167000",
       "20260922190000",
-      "20260922200000"
+      "20260922200000",
+      "20260922210000"
     ],
     "relations": [
       "bitrix_clients",
@@ -449,7 +455,8 @@
       "product_group_components",
       "product_group_location_techniques",
       "product_group_locations",
-      "sales_goals"
+      "sales_goals",
+      "sicoob_approval_deliveries"
     ],
     "functions": [
       "assert_database_auditor",
@@ -469,8 +476,13 @@
       "guard_local_quote_approval_token",
       "apply_local_quote_approval_response",
       "get_public_quote_approval",
-      "submit_signed_quote_response"
+      "submit_signed_quote_response",
+      "enqueue_sicoob_approval_notifications",
+      "claim_sicoob_approval_delivery",
+      "finish_sicoob_approval_delivery",
+      "get_sicoob_approval_delivery_summary",
+      "queue_sicoob_approval_notifications"
     ],
-    "checked_at": "2026-09-22T20:29:57Z"
+    "checked_at": "2026-09-22T21:01:15Z"
   }
 }

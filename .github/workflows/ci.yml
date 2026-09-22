@@ -77,6 +77,7 @@ jobs:
           tests/pages/QuoteApprovalPage.test.tsx
           tests/hooks/useQuoteApprovalToken.test.ts
           tests/hooks/useQuoteApproval.test.ts
+          tests/hooks/useTransactionalEmail.test.ts
           tests/components/admin/connections/ZoneRefreshButton.collapsed.test.tsx
           tests/hooks/useWebAuthn.test.tsx
 
@@ -101,6 +102,7 @@ jobs:
           deno check supabase/functions/admin-audit-hook/index.ts
           deno check supabase/functions/quote-approval/index.ts
           deno check supabase/functions/sicoob-approval-notifications/index.ts
+          deno check supabase/functions/send-transactional-email/index.ts
           deno check supabase/functions/migration-health-check/index.ts
           deno check supabase/functions/product-webhook/index.ts
           deno check supabase/functions/mcp-keys-revoke/index.ts
@@ -119,6 +121,9 @@ jobs:
 
       - name: Simular aprovação pública, RLS e respostas concorrentes
         run: python3 scripts/qa/simular-aprovacao-publica.py
+
+      - name: Simular fila durável de aprovação e falhas de entrega
+        run: python3 scripts/qa/simular-outbox-aprovacao.py
 
       - name: Compilar artefato de produção
         env:

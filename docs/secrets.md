@@ -22,7 +22,8 @@ dois gates de CI ficam vermelhos. Ninguém tinha essa lista consolidada antes.
 | `CNPJA_API_KEY` | `cnpj-lookup` | **preencher** |
 | `DROPBOX_ACCESS_TOKEN` | `dropbox-list` | **preencher** |
 | `ELEVENLABS_API_KEY` | `elevenlabs-scribe-token`, `elevenlabs-tts` | **preencher** |
-| `RESEND_API_KEY` | e-mail transacional | **preencher** |
+| `RESEND_API_KEY` | e-mail da fila de aprovações Sicoob e relatórios | **configuração remota ainda não verificada** |
+| `NOTIFICATION_FROM_EMAIL` | endereço remetente do Resend na fila de aprovações; somente email, sem nome de exibição | **configuração remota ainda não verificada** |
 | `VIRUSTOTAL_API_KEY` | scan de upload | **preencher** |
 | `GITHUB_PAT` | `github-credentials-test`, `github-fix-config` | **preencher — escopo mínimo necessário** |
 | `LOVABLE_API_KEY` | integração Lovable | **preencher** |

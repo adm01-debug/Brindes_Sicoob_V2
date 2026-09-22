@@ -1,4 +1,5 @@
 import { withStructuredLogging } from "../_shared/structured-logger.ts";
+import { deliverApprovalNotification, type ApprovalDelivery } from "../_shared/approval-delivery.ts";
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
@@ -9,87 +10,50 @@ const corsHeaders = {
 
 serve(withStructuredLogging("sicoob-approval-notifications", async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
-
-  if (req.method !== "POST") return new Response(JSON.stringify({ error: "metodo_nao_permitido" }), { status: 405, headers: corsHeaders });
+  const json = (data: unknown, status = 200) => new Response(JSON.stringify(data), {
+    status, headers: { ...corsHeaders, "Content-Type": "application/json", "Cache-Control": "no-store" },
+  });
+  if (req.method !== "POST") return json({ error: "metodo_nao_permitido" }, 405);
   const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-  if (!serviceKey) return new Response(JSON.stringify({ error: "servico_nao_configurado" }), { status: 503, headers: corsHeaders });
-  if (req.headers.get("Authorization") !== `Bearer ${serviceKey}`) {
-    return new Response(JSON.stringify({ error: "credencial_de_servico_necessaria" }), { status: 401, headers: corsHeaders });
-  }
-
+  if (!serviceKey) return json({ error: "servico_nao_configurado" }, 503);
+  if (req.headers.get("Authorization") !== `Bearer ${serviceKey}`) return json({ error: "credencial_de_servico_necessaria" }, 401);
   try {
-    const supabase = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      serviceKey
-    );
-
     let event;
-    try { event = await req.json(); } catch {
-      return new Response(JSON.stringify({ error: "json_invalido" }), { status: 400, headers: corsHeaders });
-    }
-    // Aceita o envelope nativo do Database Webhook e o envelope legado.
-    const { type } = event ?? {};
-    const payload = event?.payload ?? event;
-
-    if (type !== "INSERT" || (payload?.schema && payload.schema !== "public") || payload?.table !== "sicoob_approval_requests" || typeof payload?.record?.id !== "string") {
-      return new Response(JSON.stringify({ error: "evento_invalido" }), { status: 400, headers: corsHeaders });
-    }
-    {
-      // Reconsulta o registro: o corpo do webhook não é a fonte dos valores.
-      const { data: request, error: requestError } = await supabase
-        .from("sicoob_approval_requests").select("requester_id, amount_at_request, request_reason")
-        .eq("id", payload.record.id).maybeSingle();
-      if (requestError) throw requestError;
-      if (!request) return new Response(JSON.stringify({ error: "solicitacao_nao_encontrada" }), { status: 404, headers: corsHeaders });
-      
-      // Consulta os canais configurados para o PA
-      const { data: requester, error: requesterError } = await supabase
-        .from("profiles")
-        .select("pa_id, full_name")
-        .eq("id", request.requester_id)
-        .single();
-
-      if (requesterError) throw requesterError;
-      if (!requester?.pa_id) return new Response(JSON.stringify({ success: true, skipped: "solicitante_sem_pa", delivered: 0 }), { headers: corsHeaders });
-
-      const { data: settings, error: settingsError } = await supabase
-        .from("pa_notification_settings")
-        .select("*")
-        .eq("pa_id", requester.pa_id)
-        .eq("is_active", true);
-
-      if (settingsError) throw settingsError;
-      // Não declarar entrega de um canal que ainda não possui implementação.
-      // Valida todos os destinos antes do primeiro envio para evitar lote parcial.
-      for (const setting of settings || []) {
-        if (setting.channel !== 'slack' || !setting.webhook_url) {
-          return new Response(JSON.stringify({ error: "canal_nao_implementado_ou_incompleto" }), { status: 501, headers: corsHeaders });
-        }
-        const destination = new URL(setting.webhook_url);
-        if (destination.protocol !== 'https:' || destination.hostname !== 'hooks.slack.com' || !destination.pathname.startsWith('/services/') || destination.username || destination.password || destination.port) {
-          return new Response(JSON.stringify({ error: "destino_de_notificacao_invalido" }), { status: 400, headers: corsHeaders });
-        }
+    try { event = await req.json(); } catch { return json({ error: "json_invalido" }, 400); }
+    const supabase = createClient(Deno.env.get("SUPABASE_URL") ?? "", serviceKey);
+    let requestId: string | null = null;
+    if (event?.action !== 'process_queue') {
+      const payload = event?.payload ?? event;
+      if (event?.type !== 'INSERT' || (payload?.schema && payload.schema !== 'public') || payload?.table !== 'sicoob_approval_requests' || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(payload?.record?.id ?? '')) {
+        return json({ error: "evento_invalido" }, 400);
       }
-      for (const setting of settings || []) {
-        if (setting.channel === 'slack' && setting.webhook_url) {
-          const delivery = await fetch(setting.webhook_url, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            redirect: "error",
-            signal: AbortSignal.timeout(10_000),
-            body: JSON.stringify({
-              text: `🚨 *Nova Solicitação de Alçada Sicoob*\n\n*Solicitante:* ${requester.full_name}\n*Valor:* R$ ${request.amount_at_request.toLocaleString()}\n*Motivo:* ${request.request_reason}\n\n<${Deno.env.get("PUBLIC_APP_URL")}/admin/sicoob|Acessar Painel de Aprovação>`,
-            }),
-          });
-          if (!delivery.ok) return new Response(JSON.stringify({ error: "entrega_de_notificacao_recusada" }), { status: 502, headers: corsHeaders });
-        }
-        
-
-      }
+      requestId = payload.record.id;
+      const { data, error } = await supabase.from('sicoob_approval_requests').select('id').eq('id', requestId).maybeSingle();
+      if (error) throw error;
+      if (!data) return json({ error: 'solicitacao_nao_encontrada' }, 404);
+      const queued = await supabase.rpc('enqueue_sicoob_approval_notifications', { p_request_id: requestId });
+      if (queued.error) throw queued.error;
     }
-
-    return new Response(JSON.stringify({ success: true }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    // Reserva uma mensagem de cada vez: não deixa leases vencerem esperando o lote.
+    const startedAt = Date.now();
+    for (let index = 0; index < 5 && Date.now() - startedAt < 35_000; index++) {
+      const claimed = await supabase.rpc('claim_sicoob_approval_delivery', { p_request_id: requestId });
+      if (claimed.error) throw claimed.error;
+      if (!Array.isArray(claimed.data)) throw new Error('Contrato de reserva inválido');
+      const delivery = claimed.data[0] as ApprovalDelivery | undefined;
+      if (!delivery) break;
+      const result = await deliverApprovalNotification(delivery);
+      const finished = await supabase.rpc('finish_sicoob_approval_delivery', {
+        p_id: delivery.id, p_lease_token: delivery.lease_token, p_outcome: result.outcome,
+        p_error_code: result.errorCode ?? null, p_provider_id: result.providerId ?? null,
+      });
+      if (finished.error || finished.data !== true) return json({ error: 'confirmacao_de_entrega_indisponivel' }, 503);
+    }
+    const { data: summary, error } = await supabase.rpc('get_sicoob_approval_delivery_summary', { p_request_id: requestId });
+    if (error || !summary || !['delivered','pending','uncertain','failed','cancelled'].every(key => Number.isInteger(summary[key]) && summary[key] >= 0)) throw new Error('Resumo indisponível');
+    const status = summary.uncertain || summary.failed ? 503 : summary.pending ? 202 : 200;
+    return json({ success: status === 200, ...summary }, status);
   } catch {
-    return new Response(JSON.stringify({ error: "notificacao_indisponivel" }), { status: 503, headers: corsHeaders });
+    return json({ error: "notificacao_indisponivel" }, 503);
   }
 }));

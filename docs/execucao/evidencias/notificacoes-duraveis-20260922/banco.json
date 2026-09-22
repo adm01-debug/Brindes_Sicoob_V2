@@ -1,0 +1,55 @@
+{
+  "projeto": "cfmzkthhgliqelozlmwu",
+  "registrado_em": "2026-09-22T21:03:57.884115+00:00",
+  "migration": "supabase/migrations/20260922210000_sicoob_approval_notification_outbox.sql",
+  "sha256": "a63d7826b14cb6ede3de08606f57f0e918c09ea9950971c64003533d37c9c4e5",
+  "dryrun": {
+    "statements": 1,
+    "results": [
+      {
+        "command": null,
+        "rowCount": 1,
+        "fields": [
+          "result"
+        ],
+        "rows": [
+          {
+            "result": {
+              "dryrun_revertido": true,
+              "ledger_inalterado": true
+            }
+          }
+        ]
+      }
+    ],
+    "notices": []
+  },
+  "verificacao": {
+    "statements": 1,
+    "results": [
+      {
+        "command": null,
+        "rowCount": 1,
+        "fields": [
+          "result"
+        ],
+        "rows": [
+          {
+            "result": {
+              "entregas": 0,
+              "rls_ativa": true,
+              "sql_exato": true,
+              "ledger_total": 44,
+              "acl_violacoes": 0,
+              "anon_sem_leitura": true,
+              "migration_aplicada": true,
+              "authenticated_sem_execucao": true
+            }
+          }
+        ]
+      }
+    ],
+    "notices": []
+  },
+  "mensagens_externas_enviadas": 0
+}

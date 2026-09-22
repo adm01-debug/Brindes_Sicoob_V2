@@ -1,4 +1,5 @@
 import { getCorsHeaders } from "../_shared/cors.ts";
+import { withStructuredLogging } from "../_shared/structured-logger.ts";
 /**
  * Edge Function: send-transactional-email
  * Envia emails transacionais para eventos do sistema.
@@ -175,7 +176,7 @@ function validatePayload(event: EmailRequest) {
   }
 }
 
-serve(async (req) => {
+serve(withStructuredLogging('send-transactional-email', async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: getCorsHeaders(req) });
   }
@@ -193,7 +194,6 @@ serve(async (req) => {
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
     const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
-    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
 
     const supabase = createClient(supabaseUrl, supabaseAnonKey, {
       global: { headers: { Authorization: authHeader } }
@@ -227,32 +227,20 @@ serve(async (req) => {
       });
     }
 
-    const { subject, html } = buildEmailContent(body);
-
-    // 3. Admin Log
-    const adminClient = createClient(supabaseUrl, supabaseServiceKey);
-    await adminClient.from("workspace_notifications").insert({
-      user_id: user.id,
-      title: `📧 Email: ${subject}`,
-      message: `Email transacional (${body.event_type}) para ${body.recipient_email}`,
-      type: "info",
-      category: "emails",
-    });
-
+    // Este endpoint legado não possui fila ou transporte de email.
+    // Aprovações Sicoob usam a outbox própria, com destinatários do banco.
     return new Response(
       JSON.stringify({
-        success: true,
-        message: "Email validated and queued successfully",
-        preview: { subject, recipient: body.recipient_email, event_type: body.event_type },
+        success: false,
+        error: "email_transacional_sem_entrega",
+        message: "O envio deste email ainda não está implementado.",
       }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { status: 501, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {
-    const message = error instanceof Error ? error.message : String(error ?? "Internal error");
-    console.error(`Edge Function Error [send-transactional-email]: ${message}`);
     return new Response(
       JSON.stringify({ error: "Internal Server Error during email processing" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
-});
+}));
