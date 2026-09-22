@@ -82,7 +82,7 @@ export function SyncedZoomGallery({ products, onProductClick }: SyncedZoomGaller
   }, []);
 
   const handleSliderChange = (value: number[]) => {
-    setZoom(value[0]);
+    setZoom(value[0]!);
     if (value[0] === 1) setPan({ x: 0, y: 0 });
   };
 
@@ -91,7 +91,7 @@ export function SyncedZoomGallery({ products, onProductClick }: SyncedZoomGaller
    * matching color (name or hex distance < 30).
    */
   const selectColor = (slotIdx: number, colorIdx: number) => {
-    const sourceProduct = products[slotIdx];
+    const sourceProduct = products[slotIdx]!;
     const sourceColor = sourceProduct.colors?.[colorIdx];
     setSelectedColorIdx(prev => {
       const next = { ...prev, [`slot-${slotIdx}`]: colorIdx };
@@ -145,7 +145,7 @@ export function SyncedZoomGallery({ products, onProductClick }: SyncedZoomGaller
         products.length >= 4 && "grid-cols-2 lg:grid-cols-4"
       )}>
         {products.map((product, slotIdx) => {
-          const slotKey = productKeys[slotIdx];
+          const slotKey = productKeys[slotIdx]!;
           const colorIdx = selectedColorIdx[slotKey] ?? 0;
           const currentImage = product.images[Math.min(colorIdx, product.images.length - 1)] ?? product.images[0];
           const colors = product.colors ?? [];

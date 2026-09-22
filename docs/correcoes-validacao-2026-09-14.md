@@ -2553,3 +2553,22 @@ O código fazia `result as { products: ExternalProduct[]; count }`, mas `fetchPr
 - `check-eslint-baseline.mjs`: 0 regressões (3336 erros globais, referência `origin/main` em `ec9b6c5543`).
 - Nenhum teste dedicado encontrado para este componente.
 - `typecheck:baseline`: 594 → 590 (335 arquivos), travado via `--update`.
+
+## SyncedZoomGallery.tsx (etapa 17)
+
+**Arquivo:** `src/components/compare/SyncedZoomGallery.tsx`
+
+**Erros originais (4×):** TS2345 (linha 85, `value[0]` possivelmente `undefined` passado a `setZoom`), TS18048 (linha 95, `sourceProduct` possivelmente `undefined`), TS2538 (linha 149, `undefined` usado como índice), TS2464 (linha 213, nome de propriedade computada precisa ser `string`).
+
+**Diagnóstico:** três acessos por índice estruturalmente seguros sob `noUncheckedIndexedAccess`:
+- `value[0]` no callback `onValueChange` do `Slider`: o componente é sempre montado com `value={[zoom]}` (array de 1 elemento), então o callback sempre recebe um array de mesmo tamanho — `value[0]` nunca é `undefined` na prática.
+- `products[slotIdx]` dentro de `selectColor`: função local (não exportada), chamada apenas de `onClick={() => selectColor(slotIdx, idx)}` dentro do `products.map(...)`, onde `slotIdx` é sempre um índice válido de `products`.
+- `productKeys[slotIdx]` dentro do render principal: `productKeys = products.map((_, i) => \`slot-${i}\`)` tem exatamente o mesmo tamanho de `products`, então indexar por um `slotIdx` vindo de `products.map(...)` é sempre válido — essa era a causa raiz dos dois erros aparentemente distintos (TS2538 na linha 149 e TS2464 na linha 213), ambos decorrentes do mesmo `slotKey: string | undefined` se propagando para usos downstream.
+
+**Fix aplicado:** asserção de não-nulo nos três pontos de origem (`value[0]!`, `products[slotIdx]!`, `productKeys[slotIdx]!`), corrigindo também os dois erros derivados do `slotKey`.
+
+**Validação:**
+- `tscheck-files.mjs`: 4 → 0 erros (0 no programa inteiro).
+- `check-eslint-baseline.mjs`: 0 regressões (3336 erros globais, referência `origin/main` em `b022d80b8b`).
+- Nenhum teste dedicado encontrado para este componente.
+- `typecheck:baseline`: 590 → 586 (334 arquivos), travado via `--update`.
