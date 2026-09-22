@@ -2,9 +2,9 @@
   "date": "2026-09-22",
   "project_ref": "cfmzkthhgliqelozlmwu",
   "source": "ledger via MCP administrativo e arquivos locais em supabase/migrations",
-  "local_sql_files": 505,
-  "local_versions": 505,
-  "remote_ledger_versions": 37,
+  "local_sql_files": 509,
+  "local_versions": 509,
+  "remote_ledger_versions": 41,
   "exact_byte_matches": [
     {
       "version": "20251220181321",
@@ -80,6 +80,26 @@
       "version": "20260922163000",
       "file": "20260922163000_revoke_trigger_function_rpc_access.sql",
       "md5": "f0a16d493e4a56e7878d6524bb2656de"
+    },
+    {
+      "version": "20260922164000",
+      "file": "20260922164000_restrict_anonymous_security_definer_rpcs.sql",
+      "md5": "89286c4c82dc5d3879b432a1c0c6948f"
+    },
+    {
+      "version": "20260922165000",
+      "file": "20260922165000_scope_public_role_helpers_to_actor.sql",
+      "md5": "4329da94c3ea89820f7fef07b1169a4e"
+    },
+    {
+      "version": "20260922166000",
+      "file": "20260922166000_tighten_anonymous_security_definer_allowlist.sql",
+      "md5": "2dd3c7db219ccf7d856163ee4edeb090"
+    },
+    {
+      "version": "20260922167000",
+      "file": "20260922167000_align_security_definer_acl_gate.sql",
+      "md5": "889620e3687cd7bd0d9d07e745c31731"
     }
   ],
   "textually_normalized_matches": [

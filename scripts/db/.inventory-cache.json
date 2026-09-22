@@ -1,6 +1,6 @@
 {
   "_comment": "Snapshot original da API/Storage com delta de migrations aplicado e verificado por SQL. Presença física e GRANT não substituem teste RLS por usuário nem prova de exposição de todas as rotas PostgREST.",
-  "generated_at": "2026-09-22T17:38:00Z",
+  "generated_at": "2026-09-22T18:25:00Z",
   "project_ref": "cfmzkthhgliqelozlmwu",
   "source": "OpenAPI administrativo + Storage de 22/09; delta SQL verificado em pg_catalog e no ledger do projeto em 22/09",
   "source_sha256": {
@@ -430,7 +430,11 @@
       "20260922160000",
       "20260922161000",
       "20260922162000",
-      "20260922163000"
+      "20260922163000",
+      "20260922164000",
+      "20260922165000",
+      "20260922166000",
+      "20260922167000"
     ],
     "relations": [
       "bitrix_clients",

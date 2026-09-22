@@ -140,6 +140,7 @@ alegação de login real, entrega de telemetria ou jornada completa no Supabase.
 - Correções: [PR #12](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/12).
 - Snapshot local/GitHub: [PR #13](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/13).
 - Snapshot da API real: [PR #14](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/14).
+- Reconciliação funcional e de segurança no banco de construção: [PR #16](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/16).
 
 Os dois snapshots históricos foram validados novamente em seus próprios
 worktrees antes da publicação (hashes, contagens, links e padrões de credenciais).
@@ -149,28 +150,18 @@ Na publicação de `a4a3814f7`, o [job de qualidade](https://github.com/adm01-de
 não iniciou: o GitHub informou bloqueio de orçamento do Actions; zero etapas
 foram executadas. Não houve alteração de orçamento nem bypass dos checks. A
 integração preexistente da Vercel iniciou preview automático ao abrir o PR; isso
-não certifica paridade de banco, aplicação de migrations ou homologação.
-Nenhuma migration remota ou publicação manual de Edge Functions foi executada.
+não certifica paridade de banco nem homologação. Neste lote, 19 migrations foram
+aplicadas com dry-run prévio e ledger exato no banco de construção autorizado.
+Nenhuma publicação manual de Edge Functions foi executada.
 
 ## Pendências que impedem o aceite integral
 
-O gate de referências termina com código 1: **58 ocorrências em 17 recursos**,
-sendo **27 fora da allowlist**. A allowlist não foi ampliada para esconder achados.
-
-| Família | Ocorrências | Reconciliação necessária |
-|---|---:|---|
-| Grupos, componentes e locais de personalização | 23 | Migration e RPC locais simuladas; validar objetos reais/ledger, aplicar e recontar |
-| `personalization_techniques`, `color_nuances`, `personalization_simulations` | 7 | Separar dados de catálogo e configurações locais; validar referências |
-| `products` em mockups/rascunhos | 2 | Verificar FKs remotas e preservar identificação do produto externo; trocar cliente sem isso pode gerar violação de FK |
-| `user_2fa_settings`, `user_passkeys` | 4 | Passkey insegura desativada; autenticação precisa de validação no servidor |
-| Bitrix: clientes, negócios e logs | 10 | Confirmar integração e contrato externo; migrations históricas têm permissões inadequadas |
-| `sales_goals`, `roles`, `companies` | 11 | Implementar contrato/consumo correto ou documentar retirada; não confundir `roles` com `user_roles` |
-| `create_quote_version_atomic` | 1 | Aplicar pacote existente somente após validação administrativa e testar concorrência remota |
-
-Também permanecem: ledger completo, comparação do código publicado das Edge
-Functions, classificação das 186 assinaturas apontadas pela auditoria de ACL,
-homologação com usuários/tenants reais de teste, armazenamento e fluxos completos.
-Os 391 apontamentos de ACL não equivalem a 391 vulnerabilidades confirmadas.
+O gate atual de referências aprovou as 1.128 chamadas analisadas, sem referência
+quebrada e sem uso de allowlist. Permanecem como pendências independentes desse
+gate: acesso completo e somente leitura ao catálogo externo, comparação do código
+publicado das Edge Functions, revisão semântica das 468 migrations fora do ledger,
+auditoria por ator dos contratos autenticados restantes e homologação com contas e
+cooperativas reais de teste, armazenamento e fluxos completos.
 
 **Contrato de somente leitura do catálogo:** a função `external-db-bridge` já
 recusa operações de escrita no ingresso. Entretanto, há interfaces legadas que
@@ -194,14 +185,14 @@ as trata como prontas. Este projeto está em construção, conforme orientação
 | 2 | PR #12 aberto em rascunho; cobertura dos commits históricos precisa de reconciliação própria |
 | 3 | Aberta: merge depende de revisão e checks; nenhum bypass autorizado pelo resultado local |
 | 4 | Sem ação: artefatos de outros worktrees preservados; não fazem parte desta correção |
-| 5 | Bloqueada por acesso: extrair statements reais da baseline do ledger |
-| 6 | Bloqueada pela etapa 5: comparar baseline aplicada com arquivo local |
-| 7 | Bloqueada pela comparação; não arquivar migration por semelhança de nome |
-| 8 | Bloqueada por acesso; não executar repair para apenas silenciar drift |
+| 5 | Concluída: statements reais da baseline foram extraídos do ledger administrativo e preservados localmente |
+| 6 | Concluída com limite explícito: baseline aplicada e arquivo local coincidem após normalização textual preliminar; isso não substitui prova semântica |
+| 7 | Concluída: versão canônica preservada; nenhuma migration foi arquivada apenas por semelhança de nome |
+| 8 | Concluída para a baseline: ledger consultado e reconciliado sem repair artificial; versões sem corpo permanecem declaradas |
 | 9 | Aberta: Bitrix exige contrato atualizado e teste; não aplicar cluster histórico indiscriminadamente |
-| 10 | Parcial: pacote de versionamento existe; RPC ausente na API de 22/09; aplicação remota pendente |
-| 11 | Local: helpers reescritos e health-check testado; aplicação/publicação remotas pendentes |
-| 12 | Parcial: pacote Sicoob reauditado; 43 grants anônimos removidos, 17 RPCs de frontend autenticadas e helpers fechados. Restam as demais funções fora deste pacote |
+| 10 | Parcial: pacote de versionamento aplicado e ensaiado no banco de construção; concorrência real entre duas sessões ainda pendente |
+| 11 | Parcial: helpers e health-check aplicados e testados no banco de construção; publicação de Edge Functions segue fora desta evidência |
+| 12 | Parcial avançada: pacote Sicoob fechado, 80 funções de trigger sem RPC cliente e exposição anônima global de `SECURITY DEFINER` não-trigger reduzida de 96 para 15. Nove helpers foram limitados ao próprio ator; auditoria dos contratos autenticados remanescentes continua necessária |
 | 13 | Parcial: 468/468 migrations fora do ledger classificadas estaticamente; revisão semântica e ordem de dependências continuam obrigatórias |
 | 14 | Código da base já usa `cooperativa_budgets`/`pa_budgets`; homologação por período pendente |
 | 15 | Parcial: webhook corrigido; restam dois usos de products em mockups e companies sem consumidor |
@@ -218,7 +209,7 @@ as trata como prontas. Este projeto está em construção, conforme orientação
 | 26 | Parcial: SQL da view corrigido localmente; tela e leitura remota ainda precisam de aceite |
 | 27 | Aberta: dependências internas e intenção de cada RPC exigem catálogo PostgreSQL completo |
 | 28 | Parcial: 13 buckets vazios na coleta de 22/09; nenhum removido sem confirmar dependências |
-| 29 | Local: comparador bidirecional e job existentes corrigidos; ledger real não acessível |
+| 29 | Concluída para o estado atual: comparador bidirecional executado contra o ledger real; 41 versões remotas, 509 locais e 468 locais fora do ledger |
 | 30 | Parcial: auditoria anterior identificou bypass administrativo e ausência de checks obrigatórios; mitigação não concluída |
 | 31 | Aberta: alerta periódico de commits sem PR não foi implementado neste lote |
 | 32 | Runbook existente atualizado para banco de construção, simulação e reconciliação bidirecional |
@@ -228,16 +219,16 @@ as trata como prontas. Este projeto está em construção, conforme orientação
 | 36 | Métricas desta execução datadas acima; ledger remoto não substituído por contagem de arquivos |
 | 37 | Decisões consolidadas atualizadas com correções feitas e pendências reais |
 | 38 | Aberta: decisões de negócio remanescentes não foram inventadas nem comunicadas a terceiros |
-| 39 | Executada e reprovada: 58 ocorrências, 27 bloqueantes; evidência anexada |
-| 40 | Parcial: testes e baselines locais validados; tipagem global tem dívida e testes remotos pendem |
+| 39 | Concluída no gate estático atual: 1.128 referências analisadas, zero quebradas e zero entradas de allowlist |
+| 40 | Parcial: testes e baselines locais validados; tipagem global mantém 668 erros preexistentes e o CI remoto não iniciou por orçamento |
 | 41 | Aberta: quatro jornadas completas não homologadas no banco de construção |
 | 42 | Aberta: branch isolada ainda depende de merge; não afirmar igualdade com main |
-| 43 | Bloqueada por acesso: ledger não revalidado |
-| 44 | Não enviada: este lote não foi publicado no banco e não houve instrução para contactar terceiros |
+| 43 | Concluída no banco de construção: ledger revalidado após cada aplicação e 19 hashes exatos confirmados |
+| 44 | Parcial: lote aplicado ao banco de construção autorizado; nenhuma comunicação a terceiros foi necessária |
 | 45 | Nota de mudanças presente neste relatório; ainda não é release |
 | 46 | Backlog técnico consolidado acima; responsáveis/prazos de negócio não foram inventados |
 | 47 | Aberta: importação do snapshot reproduzível; atualização automática semanal ainda não concluída |
-| 48 | Parcial: SQL simulado em ambiente isolado; staging remoto completo ainda pendente |
+| 48 | Parcial: SQL ensaiado com rollback e aplicado no banco remoto de construção; jornadas completas e integrações externas ainda pendentes |
 | 49 | Aberta: prazos dos responsáveis pelos módulos remanescentes ainda sem definição |
 | 50 | Retrospectiva registrada abaixo; cobertura de chamadas indiretas permanece limitada e explícita |
 
