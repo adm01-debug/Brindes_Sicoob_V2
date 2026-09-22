@@ -843,3 +843,34 @@ escopo). `check-eslint-baseline.mjs` → zero regressão nos 3 arquivos.
 (965 vs. baseline 972, 1 arquivo melhorou); `--update` travou o ganho
 (972 → 965 erros, 410 → 409 arquivos). Sem teste dedicado para nenhum
 dos 3 arquivos.
+
+## `src/components/cms/BannerCarousel.tsx` (etapa 17, 7 → 0 erros — drift de nulidade em `useCMS.ts` quebra a inferência de generics do `useQuery`)
+
+Os 7 erros apareciam todos em `BannerCarousel.tsx` (`banners.length`,
+`banners.map`, parâmetros implícitos `any`), mas a causa raiz estava em
+`src/hooks/useCMS.ts`: a interface hand-written `CMSBanner` declarava
+`is_active: boolean` e `sort_order: number`, enquanto as colunas reais
+de `cms_banners` (confirmado em `types.ts` gerado) são
+`is_active: boolean | null` e `sort_order: number | null` — mesmo
+drift de nulidade já visto em `useQuoteTemplates.ts`/`OrderDetailPage.tsx`
+nesta sessão. `CMSSection` tinha o mesmo problema pra `cms_sections`.
+Como `useQuery<CMSBanner[]>({ queryFn: async () => {...} })` recebe só
+o generic explícito e o `queryFn` retorna o shape real do banco
+(`is_active: boolean | null`), nenhum dos overloads do `useQuery` batia
+— e quando um generic overloaded do TanStack Query falha em todos os
+overloads, o `TData`/`TQueryFnData` fica sem resolver e vaza como
+`never[] | NonNullable<TQueryFnData>` pro tipo de `.data` no consumidor
+(`useCMS.ts` não aparecia com erro no escopo isolado de
+`BannerCarousel.tsx` — só apareceu ao rodar `tscheck-files.mjs` direto
+nele). Corrigido widenando `is_active`/`sort_order` pra `| null` nas
+duas interfaces, batendo com o `Row` real gerado.
+
+Verificado: `tscheck-files.mjs` em `useCMS.ts` + `BannerCarousel.tsx`
+→ 0 erros nos 2 (0 no programa inteiro). Único consumidor de
+`useCMS`/`CMSBanner`/`CMSSection` no projeto é o próprio
+`BannerCarousel.tsx` (confirmado por grep), que não referencia
+`is_active`/`sort_order` no render — sem impacto de runtime.
+`check-eslint-baseline.mjs` → zero regressão. `npm run
+typecheck:baseline` → zero regressão (956 vs. baseline 965, 2 arquivos
+melhoraram); `--update` travou o ganho (965 → 956 erros, 409 → 407
+arquivos). Sem teste dedicado.

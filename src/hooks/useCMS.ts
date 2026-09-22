@@ -10,8 +10,8 @@ export interface CMSBanner {
   position: string | null;
   start_at: string | null;
   end_at: string | null;
-  is_active: boolean;
-  sort_order: number;
+  is_active: boolean | null;
+  sort_order: number | null;
 }
 
 export interface CMSSection {
@@ -19,8 +19,8 @@ export interface CMSSection {
   name: string;
   type: string;
   content: any;
-  is_active: boolean;
-  sort_order: number;
+  is_active: boolean | null;
+  sort_order: number | null;
 }
 
 export function useCMS() {
