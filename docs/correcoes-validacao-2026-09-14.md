@@ -1534,3 +1534,27 @@ Verificado: `tscheck-files.mjs` → 0 erros (40 no programa inteiro).
 passaram após a mudança. **Não verificado em navegador** — mudança de
 comportamento real (a tabela deve passar a mostrar preços em vez de
 "N/D"), recomenda-se validação visual em `/simulador` quando possível.
+
+## `src/components/products/customization/VariationSelector.tsx` (etapa 17, 6 → 0 erros)
+
+**Falso positivo de tipagem, sem bug de runtime** — os 6 erros eram
+todos a mesma causa raiz repetida: `variations[0]` é tipado
+`PrintAreaV2 | undefined` por causa do `noUncheckedIndexedAccess`, mas
+os dois pontos de acesso (linha 25, dentro do `useEffect` de
+auto-seleção; linha 31, no branch `if (variations.length === 1)`) só
+executam quando `variations.length === 1` já foi verificado
+explicitamente — o índice 0 é estruturalmente garantido pelo guard,
+algo que o TS não consegue inferir a partir de `.length === 1`. Sem
+essa garantia estrutural o array poderia legitimamente estar vazio (daí
+o compilador não assumir por padrão). Os outros 4 erros (linhas 32, 49
+×2, 55 ×2) eram consequência em cascata de `const area = variations[0]`
+carregar o `| undefined` adiante.
+
+Corrigido com asserção não-nula (`variations[0]!`) nos dois pontos de
+indexação, já que o guard de `.length === 1` que os envolve garante a
+existência do elemento — não há caminho de execução em que `area` seja
+de fato `undefined` nesses branches.
+
+Verificado: `tscheck-files.mjs` → 0 erros (14 no programa inteiro).
+`check-eslint-baseline.mjs` → zero regressão. Nenhum teste dedicado
+encontrado para este componente (nem referência em outros testes).

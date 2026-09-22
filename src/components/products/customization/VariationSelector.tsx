@@ -22,13 +22,13 @@ export function VariationSelector({ variations, selectedAreaId, onSelect }: Vari
   // Auto-select if only 1 variation
   useEffect(() => {
     if (variations.length === 1 && !selectedAreaId) {
-      onSelect(variations[0].area_id);
+      onSelect(variations[0]!.area_id);
     }
   }, [variations, selectedAreaId, onSelect]);
 
   // Single variation: show as confirmed selection (not hidden)
   if (variations.length === 1) {
-    const area = variations[0];
+    const area = variations[0]!;
     const isSelected = selectedAreaId === area.area_id;
     return (
       <div className="space-y-2">
