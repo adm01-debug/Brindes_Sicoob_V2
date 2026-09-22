@@ -155,7 +155,7 @@ function generateBreadcrumbs(
   let currentPath = "";
 
   for (let i = 0; i < segments.length; i++) {
-    const segment = segments[i];
+    const segment = segments[i]!;
     currentPath += `/${segment}`;
 
     // Skip UUIDs or numeric IDs in breadcrumbs display

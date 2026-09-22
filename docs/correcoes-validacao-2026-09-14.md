@@ -1424,3 +1424,19 @@ Verificado: `tscheck-files.mjs` → 0 erros (0 no programa inteiro).
 `check-eslint-baseline.mjs` → zero regressão. Sem teste dedicado.
 **Não verificado em runtime** — fix puramente de tipagem sem mudança
 de lógica.
+
+## `src/components/navigation/Breadcrumbs.tsx` (etapa 17, 6 → 0 erros)
+
+Mesmo padrão de `ExportCollectionButton.tsx`: `const segment =
+segments[i];` dentro de `for (let i = 0; i < segments.length; i++)` é
+`string | undefined` sob `noUncheckedIndexedAccess`, apesar do laço
+garantir os limites. Isso propagava `undefined` para os 3 usos
+seguintes de `segment` (regex de detecção de UUID/ID numérico,
+`segment.slice(0, 8)`, e `routeLabels[segment]` — este último gerando
+TS2538 porque `undefined` não pode ser usado como índice). Corrigido
+com asserção de não-nulo: `segments[i]!`.
+
+Verificado: `tscheck-files.mjs` → 0 erros (11 no programa inteiro).
+`check-eslint-baseline.mjs` → zero regressão. **Teste dedicado existe**
+(`tests/components/layout/MainLayout.breadcrumbs.test.tsx`) — 6/6
+passaram após a mudança.
