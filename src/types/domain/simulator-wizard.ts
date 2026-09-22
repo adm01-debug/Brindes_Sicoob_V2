@@ -209,6 +209,7 @@ export interface Personalization {
     costPerUnit: number;
     budgetCode: string;
     productionDays: number | null;
+    _needsRecalc?: boolean;
   };
 }
 

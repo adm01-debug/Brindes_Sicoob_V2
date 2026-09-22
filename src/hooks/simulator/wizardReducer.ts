@@ -40,7 +40,7 @@ export function wizardReducer(state: SimulatorWizardState, action: WizardAction)
         ...state, quantity: action.payload,
         comparisonResults: [], selectedComparison: null,
         personalizations: state.personalizations.map(p => ({
-          ...p, pricing: { ...p.pricing, _needsRecalc: true } as Record<string, unknown>,
+          ...p, pricing: { ...p.pricing, _needsRecalc: true },
         })),
       };
 
@@ -152,7 +152,7 @@ export function wizardReducer(state: SimulatorWizardState, action: WizardAction)
         ...source, id: `pers-${Date.now()}`,
         index: state.personalizations.length + 1,
         location: targetLocation,
-        pricing: { ...source.pricing, _needsRecalc: true } as Record<string, unknown>,
+        pricing: { ...source.pricing, _needsRecalc: true },
       };
       return {
         ...state, personalizations: [...state.personalizations, newPers],

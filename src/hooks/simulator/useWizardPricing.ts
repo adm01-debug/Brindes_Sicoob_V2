@@ -30,7 +30,7 @@ export function useWizardPricing({ state, dispatch }: UseWizardPricingParams) {
 
   useEffect(() => {
     const persToRecalc = state.personalizations.filter(
-      (p) => (p.pricing as unknown)?._needsRecalc === true
+      (p) => p.pricing._needsRecalc === true
     );
     if (persToRecalc.length === 0) return;
 
@@ -64,7 +64,7 @@ export function useWizardPricing({ state, dispatch }: UseWizardPricingParams) {
           );
 
           if (result?.success) {
-            const flat = adaptPriceResponse(result);
+            const flat = adaptPriceResponse(result as unknown as Record<string, unknown>);
             dispatch({
               type: 'RECALC_PERSONALIZATION_PRICING',
               payload: {
@@ -157,7 +157,7 @@ export function useWizardPricing({ state, dispatch }: UseWizardPricingParams) {
             return;
           }
 
-          const flat = adaptPriceResponse(result);
+          const flat = adaptPriceResponse(result as unknown as Record<string, unknown>);
 
           allResults.push({
             techniqueId: tech.techniqueId,
@@ -191,10 +191,10 @@ export function useWizardPricing({ state, dispatch }: UseWizardPricingParams) {
 
       const available = allResults.filter(r => r.isAvailable);
       if (available.length > 0) {
-        const cheapest = [...available].sort((a, b) => a.totalPrice - b.totalPrice)[0];
+        const cheapest = [...available].sort((a, b) => a.totalPrice - b.totalPrice)[0]!;
         const fastest = [...available].sort((a, b) =>
           (a.productionDays || 999) - (b.productionDays || 999)
-        )[0];
+        )[0]!;
 
         allResults.forEach(r => {
           if (r.isAvailable) {

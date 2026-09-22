@@ -2091,3 +2091,19 @@ erros (364 → 362 arquivos).
 - `check-eslint-baseline.mjs`: 0 regressões de lint nos 3 arquivos.
 - Sem testes dedicados para os 3 arquivos (busca por nome de arquivo não retornou spec/test).
 - `typecheck:baseline`: 717 → 702 (359 arquivos), baseline atualizado com `--update`.
+
+## useWizardPricing.ts + wizardReducer.ts + simulator-wizard.ts (etapa 17)
+
+**Arquivos:** `src/hooks/simulator/useWizardPricing.ts`, `src/hooks/simulator/wizardReducer.ts`, `src/types/domain/simulator-wizard.ts`
+
+**Diagnóstico:** 5 erros TS em `useWizardPricing.ts`, com causa raiz compartilhada em 2 outros arquivos:
+
+- **`_needsRecalc` sem tipo** (linha 33): o reducer (`wizardReducer.ts`, 2 sites) marca uma personalização como "precisa recalcular" gravando `{ ...p.pricing, _needsRecalc: true }` e forçando o resultado com `as Record<string, unknown>`, porque `Personalization['pricing']` (em `simulator-wizard.ts`) nunca declarava esse campo. O lado de leitura em `useWizardPricing.ts` precisava então castar `p.pricing as unknown` pra acessar a flag. Corrigido na raiz: adicionado `_needsRecalc?: boolean` ao tipo `Personalization.pricing`, eliminando os 2 casts de escrita no reducer e o cast de leitura aqui — achado bônus: isso também zerou de graça 3 erros pré-existentes em `wizardReducer.ts` (`TS2322` nas linhas 42 e 158×2, mesma causa).
+- **`adaptPriceResponse(result)` com interface nomeada sem index signature** (linhas 67, 160): `result` é `CustomizationPriceResponse` (interface fechada, sem `[key:string]`), e `adaptPriceResponse` espera `Record<string, unknown> | null | undefined` — TS recusa a atribuição direta de uma interface nomeada a um tipo com index signature. Corrigido com o mesmo padrão já usado em `simulationPriceFetcher.ts:225` (`as unknown as Record<string, unknown>`) nos 2 call sites, sem alterar a assinatura da função compartilhada (usada por outros 6+ consumidores fora do escopo desta etapa — mesmo erro identificado em `ConfigurationPanel.tsx:120`, não corrigido aqui por estar fora do arquivo-alvo).
+- **`cheapest`/`fastest` possivelmente `undefined`** (linhas 201-202): `[...available].sort(...)[0]` dentro de `if (available.length > 0)` — acesso estruturalmente garantido não presente após `.sort()` (retorna array solto). Corrigido com asserção de não-nulo nos 2 pontos.
+
+**Validação:**
+- `tscheck-files.mjs`: 0 erro(s) nos 3 arquivos (8 erros eliminados no total: 5 do alvo + 3 bônus em `wizardReducer.ts`; confirmado via `git stash` que os 4 erros remanescentes no probe — `REMOVE_ALL_PERSONALIZATIONS` não comparável e `WizardStep | undefined` vs. `| null`, em `wizardReducer.ts:87` e `simulator-wizard.ts:284/292/325` — já existiam antes desta mudança, fora de escopo).
+- `check-eslint-baseline.mjs`: 0 regressões de lint.
+- Teste dedicado `tests/integration/simulator-wizard-pricing-parity.test.ts` 5/5 passou.
+- `typecheck:baseline`: 702 → 694 (358 arquivos), baseline atualizado com `--update`.
