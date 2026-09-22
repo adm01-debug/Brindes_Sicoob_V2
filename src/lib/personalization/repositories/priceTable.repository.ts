@@ -77,7 +77,7 @@ export async function findAll(options: PriceTableQueryOptions = {}): Promise<Tab
     offset,
   });
 
-  let tabelas = transformRawToTabelas(result.records);
+  let tabelas = transformRawToTabelas(result.records ?? []);
 
   // Filtros pós-query (não suportados diretamente)
   if (filters?.maxColors !== undefined) {
@@ -101,7 +101,7 @@ export async function findById(id: string): Promise<TabelaPrecoTecnica | null> {
     limit: 1,
   });
 
-  const raw = result.records[0];
+  const raw = result.records?.[0];
   return raw ? rawToTabelaPrecoTecnica(raw) : null;
 }
 
@@ -116,7 +116,7 @@ export async function findByCodeOption(codeOption: string): Promise<TabelaPrecoT
     limit: 1,
   });
 
-  const raw = result.records[0];
+  const raw = result.records?.[0];
   return raw ? rawToTabelaPrecoTecnica(raw) : null;
 }
 
@@ -156,7 +156,7 @@ export async function findBestMatch(params: {
 
   // Se não encontrou por cores, pegar a com mais cores disponível
   if (!tabelaAdequada) {
-    tabelaAdequada = tabelas[tabelas.length - 1];
+    tabelaAdequada = tabelas[tabelas.length - 1]!;
   }
 
   // Validar dimensões se fornecidas
@@ -183,7 +183,7 @@ export async function findTechniqueNames(): Promise<string[]> {
     filters: { is_active: true },
   });
 
-  const nomes = [...new Set(result.records.map(r => r.customization_type_name))];
+  const nomes = [...new Set((result.records ?? []).map(r => r.customization_type_name))];
   return nomes.sort();
 }
 
@@ -198,7 +198,7 @@ export async function findTableCodes(): Promise<string[]> {
     filters: { is_active: true },
   });
 
-  const codes = [...new Set(result.records.map(r => r.table_code))];
+  const codes = [...new Set((result.records ?? []).map(r => r.table_code))];
   return codes.sort();
 }
 

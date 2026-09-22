@@ -11,8 +11,8 @@ export function ProductCardResult({ product, quantity }: { product: ProductWithC
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="group">
       <Card className="overflow-hidden hover:shadow-lg transition-all duration-300 border-border/50 hover:border-primary/30">
         <div className="aspect-square relative bg-muted/30">
-          {product.image ? (
-            <img src={product.image} alt={product.name} className="w-full h-full object-contain p-4" loading="lazy" />
+          {product.images[0] ? (
+            <img src={product.images[0]} alt={product.name} className="w-full h-full object-contain p-4" loading="lazy" />
           ) : (
             <div className="w-full h-full flex items-center justify-center">
               <Package className="h-16 w-16 text-muted-foreground/30" />
@@ -81,7 +81,7 @@ export function ProductTableResult({ products, quantity }: { products: ProductWi
               <motion.tr key={product.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="hover:bg-muted/30 transition-colors">
                 <td className="p-3">
                   <div className="flex items-center gap-3">
-                    {product.image && <img src={product.image} alt={product.name} className="w-10 h-10 object-contain rounded" loading="lazy" />}
+                    {product.images[0] && <img src={product.images[0]} alt={product.name} className="w-10 h-10 object-contain rounded" loading="lazy" />}
                     <span className="text-sm font-medium line-clamp-1 max-w-[200px]">{product.name}</span>
                   </div>
                 </td>
@@ -113,8 +113,8 @@ export function ProductListResult({ products, quantity }: { products: ProductWit
                   <span className="text-sm font-bold text-primary">{index + 1}</span>
                 </div>
                 <div className="flex-shrink-0 w-16 h-16 rounded-lg bg-muted/50 overflow-hidden">
-                  {product.image ? (
-                    <img src={product.image} alt={product.name} className="w-full h-full object-contain p-1" loading="lazy" />
+                  {product.images[0] ? (
+                    <img src={product.images[0]} alt={product.name} className="w-full h-full object-contain p-1" loading="lazy" />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center"><Package className="h-6 w-6 text-muted-foreground/30" /></div>
                   )}

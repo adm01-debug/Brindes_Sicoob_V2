@@ -49,14 +49,14 @@ export async function logRlsDenial(
     await supabase.rpc("log_rls_denial", {
       p_table_name: ctx.table,
       p_operation: ctx.op,
-      p_endpoint: ctx.endpoint ?? (typeof window !== "undefined" ? window.location.pathname : null),
-      p_query_summary: ctx.querySummary ?? null,
-      p_target_id: ctx.targetId ?? null,
-      p_target_seller_id: ctx.targetSellerId ?? null,
-      p_policy_hint: ctx.policyHint ?? null,
-      p_error_code: error.code ?? null,
-      p_error_message: error.message ?? null,
-      p_user_agent: typeof navigator !== "undefined" ? navigator.userAgent : null,
+      p_endpoint: ctx.endpoint ?? (typeof window !== "undefined" ? window.location.pathname : undefined),
+      p_query_summary: ctx.querySummary ?? undefined,
+      p_target_id: ctx.targetId ?? undefined,
+      p_target_seller_id: ctx.targetSellerId ?? undefined,
+      p_policy_hint: ctx.policyHint ?? undefined,
+      p_error_code: error.code ?? undefined,
+      p_error_message: error.message ?? undefined,
+      p_user_agent: typeof navigator !== "undefined" ? navigator.userAgent : undefined,
     });
   } catch {
     // Logging nunca deve quebrar o fluxo do usuário.

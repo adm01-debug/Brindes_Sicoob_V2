@@ -1708,3 +1708,63 @@ Verificado: `tscheck-files.mjs` → 0 erros. `check-eslint-baseline.mjs`
 
 Baseline de typecheck do projeto atualizado: 819 → 801 erros (381 → 378
 arquivos).
+
+## `src/lib/personalization/repositories/priceTable.repository.ts` (etapa 17, 6 → 0 erros)
+
+**Mesmo padrão já visto em `useTecnicasGravacao.ts`/`useReplenishments.ts`:**
+`InvokeResult<T>.records?: T[]` é genuinamente opcional no bridge de BD
+externo (`invokeExternalDb`), então 5 dos 6 erros eram `TS2532`/`TS18048`
+em `result.records` acessado sem fallback — corrigidos com
+`result.records ?? []` (em `findAll`, `findTechniqueNames`,
+`findTableCodes`) e `result.records?.[0]` (em `findById`,
+`findByCodeOption`). O 6º erro era `noUncheckedIndexedAccess` em
+`findBestMatch()`, na linha `tabelaAdequada = tabelas[tabelas.length - 1]`:
+estruturalmente seguro porque a função já faz `if (tabelas.length === 0)
+return null;` antes, garantindo `tabelas.length >= 1` — corrigido com
+asserção não-nula (`!`), não com guard redundante.
+
+Verificado: `tscheck-files.mjs` → 0 erros. `check-eslint-baseline.mjs`
+→ zero regressão. Nenhum teste dedicado encontrado.
+
+## `src/lib/security/rls-denial-logger.ts` (etapa 17, 6 → 0 erros)
+
+**Incompatibilidade de tipo entre fallback `?? null` e a assinatura
+gerada da RPC.** A RPC `log_rls_denial` (ver
+`src/integrations/supabase/types.ts`, linhas 10204-10218) declara todos
+os parâmetros opcionais como `string | undefined` — nunca `string | null`
+(ex.: `p_endpoint?: string`, `p_error_code?: string`). O código original
+usava `?? null` / ternário `: null` para os campos ausentes, produzindo
+`string | null`, incompatível com `string | undefined`. Corrigido
+trocando todos os fallbacks de `null` para `undefined` — comportamento
+idêntico, já que `supabase.rpc()` serializa os parâmetros via
+`JSON.stringify`, que omite chaves com valor `undefined`, deixando o
+Postgres aplicar o `DEFAULT NULL` de cada parâmetro. `p_error_code` e
+`p_error_message` não estavam entre os 6 erros originalmente apontados
+(porque `PostgrestError.code`/`.message` são `string` não-nulável, então
+o TS simplifica `string ?? null` para `string`), mas foram trocados
+junto por consistência no mesmo bloco de edição — sem efeito de
+comportamento.
+
+Verificado: `tscheck-files.mjs` → 0 erros. `check-eslint-baseline.mjs`
+→ zero regressão. Nenhum teste dedicado encontrado.
+
+## `src/pages/advanced-price-search/ResultViews.tsx` (etapa 17, 6 → 0 erros)
+
+**Bug real: propriedade inexistente, não só tipo desatualizado.** O
+componente usava `product.image` em 3 lugares (`ProductCardResult`,
+`ProductTableResult`, `ProductListResult`), mas `Product` (em
+`src/types/product-catalog.ts`) nunca teve campo `image` — sempre foi
+`images: string[]`. Isso quer dizer que a miniatura do produto nunca
+apareceu nessas 3 views (sempre caía no fallback do ícone `Package`),
+um bug visual silencioso desde que o componente foi escrito. Corrigido
+para `product.images[0]`, seguindo a mesma convenção já usada em todo o
+resto do app (`ProductsManager.tsx`, `RelatedProducts.tsx`,
+`ProductListItem.tsx`, etc.) — os 6 erros eram `TS2551: Property
+'image' does not exist... Did you mean 'images'?`, um a mais do que os
+3 sites porque o TS aponta tanto a condição quanto o uso no `src=`.
+
+Verificado: `tscheck-files.mjs` → 0 erros. `check-eslint-baseline.mjs`
+→ zero regressão. Nenhum teste dedicado encontrado.
+
+Baseline de typecheck do projeto atualizado: 801 → 783 erros (378 → 375
+arquivos).
