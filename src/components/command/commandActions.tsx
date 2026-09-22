@@ -7,6 +7,7 @@ import {
   Printer, HelpCircle, Moon, Sun, BookOpen, Grid,
 } from "lucide-react";
 import type { ReactNode } from "react";
+import type { Theme } from "@/contexts/ThemeContext";
 
 export interface CommandAction {
   id: string;
@@ -40,7 +41,7 @@ export const RECENT_ITEMS_KEY = "command-bar-recent";
 interface BuildActionsParams {
   goTo: (path: string, label: string, type?: RecentItem["type"]) => void;
   actualTheme: string;
-  setTheme: (t: string) => void;
+  setTheme: (t: Theme) => void;
   setOpen: (v: boolean) => void;
 }
 

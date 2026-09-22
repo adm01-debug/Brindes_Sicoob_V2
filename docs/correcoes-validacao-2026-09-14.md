@@ -1353,3 +1353,53 @@ Verificado: `tscheck-files.mjs` → 0 erros (40 no programa inteiro).
 de lógica; os 4 campos assertados (`is_featured`, `is_new`, `is_on_sale`,
 `is_active`) são sempre inicializados com `?? false` duas dezenas de
 linhas acima, então a asserção reflete uma garantia real do código.
+
+## `src/components/collections/ExportCollectionButton.tsx` (etapa 17, 6 → 0 erros)
+
+Mesmo padrão de `VolumeValidation.tsx`/`FocusTrap.tsx`/`useNewSupplierForm.ts`:
+`const p = products[i];` dentro de `while (i < products.length)` é
+`Product | undefined` sob `noUncheckedIndexedAccess`, apesar do laço
+garantir que `i` está sempre dentro dos limites do array. Corrigido com
+asserção de não-nulo: `products[i]!`.
+
+Verificado: `tscheck-files.mjs` → 0 erros (14 no programa inteiro).
+`check-eslint-baseline.mjs` → zero regressão. Sem teste dedicado.
+**Não verificado em runtime** — fix puramente de tipagem sem mudança
+de lógica.
+
+## `src/components/command/GlobalCommandBar.tsx` + `commandActions.tsx` + `ThemeContext.tsx` (etapa 17, 6 → 0 erros)
+
+Dois bugs de tipagem independentes:
+
+1. **`grouped.quick` / `.navigation` / `.action` / `.settings` / `.help`**
+   (TS2322): `grouped` era construído como `Record<string, CommandAction[]>`
+   — a mesma classe de bug já vista em `ACTION_META`
+   (`VoiceTranscriptPanel.tsx`): a anotação larga `Record<string, T>` faz
+   todo acesso por ponto virar `T | undefined` sob
+   `noUncheckedIndexedAccess`, mesmo a variável sendo inicializada com
+   todas as chaves conhecidas. Corrigido substituindo o tipo por
+   `Record<GroupKey, CommandAction[]>`, onde `GroupKey =
+   Exclude<CommandAction["category"], "recent">` — um union fechado das
+   5 categorias que de fato passam por `grouped` (categoria `"recent"` é
+   tratada à parte via `recentActions`). O `forEach` que popula `g` ganhou
+   um guard `if (a.category !== "recent")` para estreitar o tipo de
+   `a.category` para `GroupKey` antes do acesso — sem esse guard, TS não
+   permite `g[a.category]` porque `a.category` ainda incluiria
+   `"recent"`, que não existe em `g`.
+2. **`buildActions({ ..., setTheme, ... })`** (TS2322 — `(theme: Theme) =>
+   void` não atribuível a `(t: string) => void`): `BuildActionsParams.
+   setTheme` em `commandActions.tsx` estava tipado com o parâmetro
+   solto `string`, mas o `setTheme` real vem de `useTheme()`
+   (`ThemeContext.tsx`) e é `(theme: Theme) => void` com `Theme = 'light'
+   | 'dark' | 'auto'`. Contravariância de parâmetros de função torna essa
+   atribuição insegura de verdade (o código de `buildActions` só chama
+   `setTheme` com `'light'`/`'dark'` literais, mas o tipo declarado
+   permitia qualquer string). Corrigido exportando `Theme` de
+   `ThemeContext.tsx` (`export type Theme = ...`) e usando-o em
+   `BuildActionsParams.setTheme: (t: Theme) => void` — fix de causa raiz,
+   não supressão.
+
+Verificado: `tscheck-files.mjs` → 0 erros (11 no programa inteiro).
+`check-eslint-baseline.mjs` → zero regressão. **Teste dedicado existe**
+(`tests/components/command/GlobalCommandBar.test.tsx`) — 2/2 passaram
+após a mudança.

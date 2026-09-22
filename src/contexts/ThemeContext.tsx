@@ -1,7 +1,7 @@
 import { createContext, useContext, useState, useEffect, type ReactNode, useCallback } from 'react';
 import { loadThemeConfig, applyThemePreset, applyRadius, saveThemeConfig } from '@/lib/theme-presets';
 
-type Theme = 'light' | 'dark' | 'auto';
+export type Theme = 'light' | 'dark' | 'auto';
 
 interface ThemeContextType {
   theme: Theme;

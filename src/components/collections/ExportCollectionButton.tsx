@@ -132,7 +132,7 @@ export function ExportCollectionButton({ products, variantMap, notesMap, collect
         const x = margin + col * cellW;
         const y = margin + 20 + row * cellH;
 
-        const p = products[i];
+        const p = products[i]!;
         const v = variantMap?.get(p.id);
         const note = notesMap?.get(p.id);
 

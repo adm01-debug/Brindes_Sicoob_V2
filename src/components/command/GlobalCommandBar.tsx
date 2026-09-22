@@ -28,6 +28,8 @@ interface GlobalCommandBarProps {
   showTrigger?: boolean;
 }
 
+type GroupKey = Exclude<CommandAction["category"], "recent">;
+
 export function GlobalCommandBar({ children, showTrigger = false }: GlobalCommandBarProps) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
@@ -99,8 +101,10 @@ export function GlobalCommandBar({ children, showTrigger = false }: GlobalComman
 
   // Group
   const grouped = useMemo(() => {
-    const g: Record<string, CommandAction[]> = { quick: [], navigation: [], action: [], settings: [], help: [] };
-    filteredActions.forEach((a) => g[a.category]?.push(a));
+    const g: Record<GroupKey, CommandAction[]> = { quick: [], navigation: [], action: [], settings: [], help: [] };
+    filteredActions.forEach((a) => {
+      if (a.category !== "recent") g[a.category].push(a);
+    });
     return g;
   }, [filteredActions]);
 
