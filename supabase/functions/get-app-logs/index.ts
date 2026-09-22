@@ -1,6 +1,6 @@
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.95.0";
 import { createStructuredLogger } from "../_shared/structured-logger.ts";
 import { getOrCreateRequestId } from "../_shared/request-id.ts";
+import { authorize } from "../_shared/authorize.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -15,23 +15,9 @@ Deno.serve(async (req) => {
   log.info("fetch_logs_start");
 
   try {
-    const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
-    const SERVICE_ROLE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const supabase = createClient(SUPABASE_URL, SERVICE_ROLE);
-
-    const authHeader = req.headers.get("Authorization")!;
-    const { data: { user }, error: authErr } = await supabase.auth.getUser(authHeader.replace("Bearer ", ""));
-    
-    if (authErr || !user) {
-      log.warn("unauthorized_access_attempt");
-      return log.respond(new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: corsHeaders }));
-    }
-
-    const { data: profile } = await supabase.from("profiles").select("role").eq("user_id", user.id).single();
-    if (profile?.role !== "admin" && profile?.role !== "dev") {
-      log.warn("forbidden_access_attempt", { user_id: user.id, role: profile?.role });
-      return log.respond(new Response(JSON.stringify({ error: "Forbidden" }), { status: 403, headers: corsHeaders }));
-    }
+    const auth = await authorize(req, { requireRole: "dev", enforceServerSide: true });
+    if (!auth.ok) return log.respond(auth.response);
+    const supabase = auth.supabaseAdmin;
 
     const body = await req.json();
     const { severity, table_name, limit = 100, offset = 0 } = body;
@@ -63,8 +49,9 @@ Deno.serve(async (req) => {
       status: 200,
     }));
   } catch (e) {
-    log.error("fetch_logs_failed", { err: e.message });
-    return log.respond(new Response(JSON.stringify({ error: e.message }), {
+    const message = e instanceof Error ? e.message : String(e);
+    log.error("fetch_logs_failed", { err: message });
+    return log.respond(new Response(JSON.stringify({ error: message }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,
     }));

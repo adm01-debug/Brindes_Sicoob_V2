@@ -1,6 +1,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { createStructuredLogger } from "../_shared/structured-logger.ts";
 import { getOrCreateRequestId } from "../_shared/request-id.ts";
+import { authorize } from "../_shared/authorize.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -11,8 +12,6 @@ const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
 const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-const QA_PASSWORD = "Qa@Test2026";
-
 const QA_USERS = [
   { id: "00000000-0000-0000-0000-0000000000a1", email: "qa+gerente@sicoob.test", role: "gerente_pa", pa_id: "00000000-0000-0000-0000-0000000000b1", cooperativa_id: "00000000-0000-0000-0000-0000000000c1" },
   { id: "00000000-0000-0000-0000-0000000000a2", email: "qa+gestor@sicoob.test", role: "gestor_compras", cooperativa_id: "00000000-0000-0000-0000-0000000000c1" },
@@ -20,7 +19,7 @@ const QA_USERS = [
   { id: "00000000-0000-0000-0000-0000000000a4", email: "qa+admin@sicoob.test", role: "admin" },
 ];
 
-async function ensureUser(user: any, log: any) {
+async function ensureUser(user: any, log: any, password: string) {
   log.debug("ensuring_qa_user", { email: user.email });
   
   const { data: { users }, error: listError } = await supabase.auth.admin.listUsers();
@@ -30,7 +29,7 @@ async function ensureUser(user: any, log: any) {
 
   if (existingUser) {
     const { error: updateError } = await supabase.auth.admin.updateUserById(existingUser.id, { 
-      password: QA_PASSWORD,
+      password,
       user_metadata: { full_name: `QA ${user.role}` }
     });
     if (updateError) throw updateError;
@@ -38,7 +37,7 @@ async function ensureUser(user: any, log: any) {
   } else {
     const { data: newUser, error: createError } = await supabase.auth.admin.createUser({
       email: user.email,
-      password: QA_PASSWORD,
+      password,
       email_confirm: true,
       user_metadata: { full_name: `QA ${user.role}` }
     });
@@ -65,6 +64,16 @@ Deno.serve(async (req) => {
 
   const requestId = getOrCreateRequestId(req);
   const log = createStructuredLogger({ fn: "sicoob-seed-qa", requestId, req });
+
+  const auth = await authorize(req, { requireRole: "dev", enforceServerSide: true });
+  if (!auth.ok) return log.respond(auth.response);
+  const qaPassword = Deno.env.get("SICOOB_QA_USER_PASSWORD");
+  if (!qaPassword) {
+    return log.respond(new Response(JSON.stringify({ error: "qa_password_not_configured" }), {
+      status: 503,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    }));
+  }
 
   const { scenario = "default" } = await req.json().catch(() => ({}));
   log.info("seed_qa_start", { scenario });
@@ -93,7 +102,7 @@ Deno.serve(async (req) => {
     await supabase.from("pa_budgets").upsert({ pa_id: "00000000-0000-0000-0000-0000000000b1", verba_total: 50000, verba_consumida: 0, limite_alcada: 5000 }, { onConflict: "pa_id" });
 
     for (const user of QA_USERS) {
-      await ensureUser(user, log);
+      await ensureUser(user, log, qaPassword);
       report.created.push(user.email);
     }
 
@@ -148,14 +157,15 @@ Deno.serve(async (req) => {
       headers: { ...corsHeaders, "Content-Type": "application/json" } 
     }));
   } catch (err) {
-    log.error("seed_qa_failed", { err: err.message, runId: run.id });
+    const message = err instanceof Error ? err.message : String(err);
+    log.error("seed_qa_failed", { err: message, runId: run.id });
     await supabase.from("qa_runs").update({ 
       status: 'failed', 
-      error: err.message,
+      error: message,
       finished_at: new Date().toISOString() 
     }).eq("id", run.id);
     
-    return log.respond(new Response(JSON.stringify({ error: err.message, runId: run.id }), { 
+    return log.respond(new Response(JSON.stringify({ error: message, runId: run.id }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" }
     }));

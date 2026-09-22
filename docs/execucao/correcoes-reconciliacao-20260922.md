@@ -156,7 +156,9 @@ Nenhuma publicação manual de Edge Functions foi executada. O ping administrati
 dos 103 nomes locais encontrou 98 respostas HTTP 200, quatro HTTP 404 e um timeout.
 As ausências de `sicoob-artwork-register`, `sicoob-kit-quote` e `sicoob-reorder`
 bloqueiam fluxos usados pelo frontend; o MCP não possui token de Management API
-para comparar ou publicar o código.
+para comparar ou publicar o código. A revisão local também fechou autorização
+insuficiente em nove funções técnicas, removeu senhas previsíveis dos seeds e
+sanitizou o diagnóstico, mas essas correções ainda precisam ser publicadas.
 
 ## Pendências que impedem o aceite integral
 
@@ -201,10 +203,10 @@ as trata como prontas. Este projeto está em construção, conforme orientação
 | 14 | Código da base já usa `cooperativa_budgets`/`pa_budgets`; homologação por período pendente |
 | 15 | Parcial: webhook corrigido; restam dois usos de products em mockups e companies sem consumidor |
 | 16 | Buckets antigos não aparecem no gate atual; upload autenticado ponta a ponta ainda pendente |
-| 17 | Local: chamada morta de set_config removida e comentário corrigido; publicação pendente |
-| 18 | Local: uso de telemetry_events e teste de envio; entrega remota não certificada |
+| 17 | Local: chamada morta de set_config removida, comentário corrigido e autorização das funções técnicas endurecida; publicação pendente |
+| 18 | Local: uso de telemetry_events, teste de envio e monitores protegidos por papel técnico; entrega remota não certificada |
 | 19 | Parcial: AST para wrappers e inventário atualizado; 58 ocorrências ainda abertas, 27 bloqueantes |
-| 20 | Gate ligado ao CI; novos testes incluídos; GitHub não iniciou o job por bloqueio de orçamento |
+| 20 | Gate ligado ao CI e fortalecido para rejeitar exceção custom sem prova de identidade e papel; novos testes incluídos; GitHub não iniciou o job por bloqueio de orçamento |
 | 21 | Documento de órfãos preexistente; contagens não bastam para remover recursos |
 | 22 | Aberta: confirmar FKs/dependências remotas antes de qualquer remoção da família de PAs |
 | 23 | Aberta: blog_posts preservada; ausência de rota não autoriza concluir que não há uso externo |

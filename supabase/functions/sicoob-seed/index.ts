@@ -1,6 +1,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { createStructuredLogger } from "../_shared/structured-logger.ts";
 import { getOrCreateRequestId } from "../_shared/request-id.ts";
+import { authorize } from "../_shared/authorize.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -11,8 +12,9 @@ const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
 const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-// Configuração de credenciais via variáveis de ambiente com fallbacks seguros para dev/test
-const TEST_PASSWORD = Deno.env.get("SICOOB_TEST_USER_PASSWORD") || "password123";
+// A senha de teste é obrigatoriamente injetada no ambiente de construção. Um
+// fallback previsível permitiria redefinir contas conhecidas após um deploy.
+const TEST_PASSWORD = Deno.env.get("SICOOB_TEST_USER_PASSWORD");
 
 const TEST_USERS_CONFIG = [
   {
@@ -69,13 +71,18 @@ async function cleanupOrphans(log: any) {
   return { removed };
 }
 
-async function ensureTestUser(user: (typeof TEST_USERS_CONFIG)[number], stats: any, log: any) {
+async function ensureTestUser(
+  user: (typeof TEST_USERS_CONFIG)[number],
+  stats: any,
+  log: any,
+  password: string,
+) {
   log.debug("ensuring_user", { email: user.email });
 
   const { data: created, error: createError } = await supabase.auth.admin.createUser({
     id: user.id,
     email: user.email,
-    password: TEST_PASSWORD,
+    password,
     email_confirm: true,
     user_metadata: { full_name: user.full_name },
   });
@@ -83,7 +90,7 @@ async function ensureTestUser(user: (typeof TEST_USERS_CONFIG)[number], stats: a
   if (createError) {
     if (createError.message.includes("already registered") || createError.message.includes("duplicate")) {
        const { error: updateError } = await supabase.auth.admin.updateUserById(user.id, {
-         password: TEST_PASSWORD,
+         password,
          email_confirm: true,
          user_metadata: { full_name: user.full_name },
        });
@@ -111,6 +118,15 @@ Deno.serve(async (req) => {
   const requestId = getOrCreateRequestId(req);
   const log = createStructuredLogger({ fn: "sicoob-seed", requestId, req });
   log.info("seed_start");
+
+  const auth = await authorize(req, { requireRole: "dev", enforceServerSide: true });
+  if (!auth.ok) return log.respond(auth.response);
+  if (!TEST_PASSWORD) {
+    return log.respond(new Response(JSON.stringify({ error: "test_password_not_configured" }), {
+      status: 503,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    }));
+  }
 
   const stats = {
     orphans_removed: [] as string[],
@@ -143,7 +159,7 @@ Deno.serve(async (req) => {
 
     // 3. Usuários de Teste
     for (const user of TEST_USERS_CONFIG) {
-      await ensureTestUser(user, stats, log);
+      await ensureTestUser(user, stats, log, TEST_PASSWORD);
 
       // Limpa profiles duplicados por email
       await supabase.from("profiles").delete().eq("email", user.email).neq("user_id", user.id);
@@ -189,14 +205,15 @@ Deno.serve(async (req) => {
     return log.respond(new Response(JSON.stringify({ 
       message: "Seed finalizado com sucesso",
       report: stats,
-      config_source: Deno.env.get("SICOOB_TEST_USER_PASSWORD") ? "env_vars" : "default_values"
+      config_source: "env_vars"
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
     }));
   } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
     log.error("seed_failed", { err });
-    return log.respond(new Response(JSON.stringify({ error: err.message, partial_report: stats }), {
+    return log.respond(new Response(JSON.stringify({ error: message, partial_report: stats }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,
     }));

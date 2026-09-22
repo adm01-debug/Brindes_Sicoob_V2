@@ -168,5 +168,25 @@
     "O MCP não possui token sbp_ de Management API; lista de versões, hash/código publicado e deploy permanecem indisponíveis.",
     "Ping não executou jornadas de negócio nem validou segredos das funções.",
     "Timeout em duas tentativas é inconclusivo e pode indicar versão antiga, cold start ou dependência externa bloqueada."
-  ]
+  ],
+  "local_security_hardening_pending_deploy": {
+    "functions": [
+      "e2e-auth-test",
+      "error-monitor",
+      "get-app-logs",
+      "ownership-repair",
+      "qa-block-monitor",
+      "rls-audit",
+      "sicoob-seed",
+      "sicoob-seed-debug",
+      "sicoob-seed-qa"
+    ],
+    "changes": [
+      "papel técnico validado pelo helper compartilhado",
+      "senhas previsíveis removidas dos seeds",
+      "diagnóstico deixou de retornar e-mails e metadados de chaves",
+      "gate custom agora exige prova estática conjunta de identidade e papel"
+    ],
+    "deployment_status": "não comprovado; Supabase CLI e MCP sem privilégio/token de Management API"
+  }
 }

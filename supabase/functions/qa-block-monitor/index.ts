@@ -1,6 +1,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { createStructuredLogger } from "../_shared/structured-logger.ts";
 import { getOrCreateRequestId } from "../_shared/request-id.ts";
+import { authorize } from "../_shared/authorize.ts";
 
 const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
 const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -10,6 +11,9 @@ Deno.serve(async (req) => {
   const requestId = getOrCreateRequestId(req);
   const log = createStructuredLogger({ fn: "qa-block-monitor", requestId, req });
   log.info("monitor_start");
+
+  const auth = await authorize(req, { requireRole: "dev", enforceServerSide: true });
+  if (!auth.ok) return log.respond(auth.response);
 
   try {
     const report: any = { blocks: [], timestamp: new Date().toISOString() };
@@ -57,8 +61,9 @@ Deno.serve(async (req) => {
       headers: { "Content-Type": "application/json" } 
     }));
   } catch (err) {
-    log.error("monitor_failed", { err: err.message });
-    return log.respond(new Response(JSON.stringify({ error: err.message }), { 
+    const message = err instanceof Error ? err.message : String(err);
+    log.error("monitor_failed", { err: message });
+    return log.respond(new Response(JSON.stringify({ error: message }), {
       status: 500,
       headers: { "Content-Type": "application/json" }
     }));

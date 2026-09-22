@@ -48,7 +48,8 @@ const entries = new Map();
 const fns = readdirSync(FN_DIR).filter((d) => {
   if (d.startsWith("_")) return false;
   try {
-    return statSync(join(FN_DIR, d)).isDirectory();
+    return statSync(join(FN_DIR, d)).isDirectory() &&
+      statSync(join(FN_DIR, d, "index.ts")).isFile();
   } catch {
     return false;
   }
@@ -84,16 +85,26 @@ for (const fn of fns) {
   if (!entry) continue;
   if (!ROLE_REQUIRED[entry.category]) continue; // só validamos supervisor/dev
 
-  // Edges com enforcedBy: "custom" têm validação inline própria (has_role,
-  // is_dev, scope MCP). O manifest documenta a decisão; o gate aceita.
-  if (entry.enforcedBy === "custom") continue;
-
   const path = join(FN_DIR, fn, "index.ts");
   let src;
   try {
     src = readFileSync(path, "utf8");
   } catch {
     errors.push(`[enforcement] ${fn}: index.ts ausente.`);
+    continue;
+  }
+
+  if (entry.enforcedBy === "custom") {
+    const validatesIdentity = /auth\.getUser\s*\(/.test(src);
+    const validatesRole = /\.from\s*\(\s*["']user_roles["']/.test(src) ||
+      /\.rpc\s*\(\s*["'](?:has_role|is_dev|is_admin|is_supervisor_or_above)["']/.test(src);
+    if (!validatesIdentity || !validatesRole) {
+      errors.push(
+        `[enforcement] ${fn} (categoria=${entry.category}, custom): não há prova estática ` +
+          `conjunta de JWT válido e papel técnico. Use authorize() ou valide auth.getUser() ` +
+          `e user_roles/has_role no próprio corpo.`,
+      );
+    }
     continue;
   }
 

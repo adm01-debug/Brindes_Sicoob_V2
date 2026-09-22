@@ -1,9 +1,6 @@
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 import { createStructuredLogger } from "../_shared/structured-logger.ts";
 import { getOrCreateRequestId } from "../_shared/request-id.ts";
-
-const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
-const SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+import { authorize } from "../_shared/authorize.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -17,23 +14,13 @@ Deno.serve(async (req) => {
   const log = createStructuredLogger({ fn: "e2e-auth-test", requestId, req });
   log.info("e2e_auth_test_start");
 
-  const authHeader = req.headers.get("Authorization");
-  if (!authHeader) {
-    log.warn("missing_auth_header");
-    return log.respond(new Response("Unauthorized", { status: 401, headers: corsHeaders }));
-  }
+  const auth = await authorize(req, { requireRole: "dev", enforceServerSide: true });
+  if (!auth.ok) return log.respond(auth.response);
 
   try {
-    const admin = createClient(SUPABASE_URL, SERVICE_ROLE_KEY);
-    const userClient = createClient(SUPABASE_URL, Deno.env.get("SUPABASE_ANON_KEY")!, {
-      global: { headers: { Authorization: authHeader } }
-    });
-
-    const { data: { user }, error: authErr } = await userClient.auth.getUser();
-    if (authErr || !user) {
-      log.warn("invalid_jwt_token", { err: authErr?.message });
-      return log.respond(new Response("Invalid user", { status: 401, headers: corsHeaders }));
-    }
+    const admin = auth.supabaseAdmin;
+    const userClient = auth.supabaseUser;
+    const user = auth.user;
 
     const { data: profile } = await admin.from('profiles').select('role, cooperativa_id, pa_id').eq('user_id', user.id).single();
     
@@ -52,8 +39,9 @@ Deno.serve(async (req) => {
       results
     }), { headers: { ...corsHeaders, "Content-Type": "application/json" } }));
   } catch (e) {
-    log.error("e2e_auth_test_failed", { err: e.message });
-    return log.respond(new Response(JSON.stringify({ error: e.message }), { 
+    const message = e instanceof Error ? e.message : String(e);
+    log.error("e2e_auth_test_failed", { err: message });
+    return log.respond(new Response(JSON.stringify({ error: message }), {
       status: 500, 
       headers: { ...corsHeaders, "Content-Type": "application/json" } 
     }));

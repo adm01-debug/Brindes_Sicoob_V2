@@ -1,5 +1,6 @@
 import { getCorsHeaders } from "../_shared/cors.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.95.0";
+import { authorize } from "../_shared/authorize.ts";
 
 interface ScenarioResult {
   table: string;
@@ -26,7 +27,7 @@ Deno.serve(async (req) => {
 
     console.log(`RLS Audit: isAdminAudit=${isAdminAudit}, hasTarget=${!!targetUserId}`);
     
-    const isServiceRole = authHeader.includes(SERVICE) || req.headers.get("apikey") === SERVICE || req.headers.get("x-supabase-key") === SERVICE;
+    const isServiceRole = authHeader === `Bearer ${SERVICE}` || req.headers.get("apikey") === SERVICE || req.headers.get("x-supabase-key") === SERVICE;
     
     console.log(`isServiceRole evaluation: ${isServiceRole}`);
 
@@ -36,28 +37,15 @@ Deno.serve(async (req) => {
       sellerId = targetUserId;
       console.log(`Admin audit for user: ${sellerId}`);
     } else {
-      if (!authHeader.startsWith("Bearer ")) {
-        console.log("Missing Bearer token");
-        return new Response(JSON.stringify({ error: "missing_auth" }), {
-          status: 401,
+      if (isServiceRole) {
+        return new Response(JSON.stringify({ error: "service_audit_target_required" }), {
+          status: 403,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
-
-      const userClientTemp = createClient(SUPABASE_URL, ANON, {
-        global: { headers: { Authorization: authHeader } },
-        auth: { persistSession: false },
-      });
-
-      const { data: userResp, error: userErr } = await userClientTemp.auth.getUser();
-      if (userErr || !userResp.user) {
-        console.log("Invalid JWT");
-        return new Response(JSON.stringify({ error: "invalid_jwt" }), {
-          status: 401,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      sellerId = userResp.user.id;
+      const auth = await authorize(req, { requireRole: "dev", enforceServerSide: true });
+      if (!auth.ok) return auth.response;
+      sellerId = auth.user.id;
     }
 
     const userClient = createClient(SUPABASE_URL, ANON, {
@@ -191,9 +179,10 @@ Deno.serve(async (req) => {
       status: 200,
     });
   } catch (e) {
-    console.error(`Error in RLS Audit: ${e.message}`);
+    const message = e instanceof Error ? e.message : String(e);
+    console.error(`Error in RLS Audit: ${message}`);
     return new Response(
-      JSON.stringify({ error: "internal", detail: String((e as Error).message) }),
+      JSON.stringify({ error: "internal", detail: message }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
   }
