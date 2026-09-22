@@ -2593,3 +2593,21 @@ O código fazia `result as { products: ExternalProduct[]; count }`, mas `fetchPr
 - `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `5b77710cc1`).
 - Teste dedicado encontrado e executado: `tests/components/expert/ExpertChatDialog.test.tsx` — 2/2 passaram.
 - `typecheck:baseline`: 586 → 582 (333 arquivos), travado via `--update`.
+
+## FavoritesHeatmap.tsx (etapa 17)
+
+**Arquivo:** `src/components/favorites/FavoritesHeatmap.tsx`
+
+**Erros originais (4×):** TS2532 (linha 32, `arr[maxI]` possivelmente `undefined` dentro do `reduce`), TS18048×3 (linhas 34 e 61×2, `peak` possivelmente `undefined`).
+
+**Diagnóstico:** padrão idêntico ao já corrigido em `CollectionsHeatmap.tsx` — dois acessos por índice estruturalmente seguros sob `noUncheckedIndexedAccess`:
+- `arr[maxI]` dentro do `reduce` que computa `peakIdx`: `maxI` inicia em `0` e só é reatribuído para `i`, sempre um índice válido do próprio `arr`.
+- `data[peakIdx]`: `peakIdx` é o resultado desse `reduce`, garantido em `[0, data.length - 1]`, com `data` não vazio assegurado pelo guard anterior (`if (!data || data.length === 0) return null;`).
+
+**Fix aplicado:** asserção de não-nulo nos dois acessos (`arr[maxI]!` e `data[peakIdx]!`).
+
+**Validação:**
+- `tscheck-files.mjs`: 4 → 0 erros (9 no programa inteiro).
+- `check-eslint-baseline.mjs`: 0 regressões (3336 erros globais, referência `origin/main` em `f52399ff49`).
+- Nenhum teste dedicado encontrado para este componente (`tests/hooks/useFavorites.test.ts` e `tests/stores/useFavoritesStore.test.ts` cobrem hook/store, não este componente).
+- `typecheck:baseline`: 582 → 578 (332 arquivos), travado via `--update`.
