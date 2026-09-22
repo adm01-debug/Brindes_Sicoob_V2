@@ -43,7 +43,7 @@ export function VolumeValidation({ components, boxDimensions }: { components: Ki
     if (!boxH || !boxW || !boxL) return true;
     const dims = [h, w, l].sort((a, b) => a - b);
     const boxDims = [boxH, boxW, boxL].sort((a, b) => a - b);
-    return dims[0] <= boxDims[0] && dims[1] <= boxDims[1] && dims[2] <= boxDims[2];
+    return dims[0]! <= boxDims[0]! && dims[1]! <= boxDims[1]! && dims[2]! <= boxDims[2]!;
   };
 
   return (

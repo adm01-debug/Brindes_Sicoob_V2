@@ -1299,3 +1299,22 @@ chamava); `--update` travou o ganho (897 → 891 erros, 394 → 393
 arquivos). **Não verificado em runtime** — mesma limitação de acesso
 desta sessão, mas os 3 fixes são puramente de tipagem (nulidade real
 do schema + generics), sem mudança de lógica de negócio.
+
+## `src/components/admin/products/kit-components/VolumeValidation.tsx` (etapa 17, 6 → 0 erros)
+
+Mesmo padrão de guarda estrutural já visto várias vezes nesta etapa
+(`FocusTrap.tsx`, `useNewSupplierForm.ts`): `checkItemFits()` ordena
+dois arrays de exatamente 3 elementos fixos (`[h, w, l].sort(...)` e
+`[boxH, boxW, boxL].sort(...)`) e acessa os 3 índices — `.sort()`
+preserva o tamanho do array, mas retorna `number[]`, então
+`noUncheckedIndexedAccess` trata cada acesso por índice como `number |
+undefined`, gerando 6 erros `TS2532` na mesma linha (2 arrays × 3
+índices). Corrigido com asserção de não-nulo nos 6 pontos
+(`dims[0]!`, `boxDims[0]!` etc.) — mesmo espírito das correções
+anteriores, guarda de tamanho real e imutável do array que o TS não
+consegue enxergar através de `.sort()`.
+
+Verificado: `tscheck-files.mjs` → 0 erros (0 no programa inteiro).
+`check-eslint-baseline.mjs` → zero regressão. Sem teste dedicado.
+**Não verificado em runtime** — fix puramente de tipagem sem mudança
+de lógica.
