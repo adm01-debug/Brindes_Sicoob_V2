@@ -2535,3 +2535,21 @@ O código fazia `result as { products: ExternalProduct[]; count }`, mas `fetchPr
 - `check-eslint-baseline.mjs`: 0 regressões (3336 erros globais, referência `origin/main` em `c4508bbee2`).
 - Nenhum teste dedicado encontrado para `useCart`/`MiniCart`.
 - `typecheck:baseline`: 598 → 594 (336 arquivos), travado via `--update`.
+
+## CollectionsHeatmap.tsx (etapa 17)
+
+**Arquivo:** `src/components/collections/CollectionsHeatmap.tsx`
+
+**Erros originais (4×):** TS2532 (linha 31, `arr[maxI]` possivelmente `undefined` dentro do `reduce`), TS18048×3 (linhas 33 e 60×2, `peak` possivelmente `undefined`).
+
+**Diagnóstico:** dois acessos por índice estruturalmente seguros mas não comprováveis pelo TS sob `noUncheckedIndexedAccess`:
+- `arr[maxI]` dentro do `reduce` que computa `peakIdx`: `maxI` é inicializado em `0` e só reatribuído para `i`, que é sempre um índice válido de `arr` (o próprio array recebido pelo callback do `reduce`) — nunca pode estar fora dos limites.
+- `data[peakIdx]`: `peakIdx` é o resultado desse mesmo `reduce`, garantido estar em `[0, data.length - 1]`, e o guard `if (!data || data.length === 0) return null;` já garante `data` não vazio antes deste ponto.
+
+**Fix aplicado:** asserção de não-nulo nos dois acessos (`arr[maxI]!` e `data[peakIdx]!`).
+
+**Validação:**
+- `tscheck-files.mjs`: 4 → 0 erros (9 no programa inteiro).
+- `check-eslint-baseline.mjs`: 0 regressões (3336 erros globais, referência `origin/main` em `ec9b6c5543`).
+- Nenhum teste dedicado encontrado para este componente.
+- `typecheck:baseline`: 594 → 590 (335 arquivos), travado via `--update`.

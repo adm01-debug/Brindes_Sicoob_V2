@@ -28,8 +28,8 @@ export function CollectionsHeatmap() {
   const total = data.reduce((s, d) => s + d.item_count, 0);
   if (total === 0) return null;
 
-  const peakIdx = data.reduce((maxI, d, i, arr) => (d.item_count > arr[maxI].item_count ? i : maxI), 0);
-  const peak = data[peakIdx];
+  const peakIdx = data.reduce((maxI, d, i, arr) => (d.item_count > arr[maxI]!.item_count ? i : maxI), 0);
+  const peak = data[peakIdx]!;
   const peakDate = new Date(peak.week_start);
   const peakMonth = peakDate.toLocaleDateString("pt-BR", { month: "long" });
 
