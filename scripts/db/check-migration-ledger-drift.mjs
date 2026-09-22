@@ -1,137 +1,97 @@
 #!/usr/bin/env node
-/**
- * check-migration-ledger-drift.mjs
- *
- * Compara `supabase_migrations.schema_migrations` (o ledger remoto) contra
- * os arquivos locais em supabase/migrations/ e supabase/migrations_archive/.
- *
- * Por quê existe: em 17/09/2026 a migration `20260915143442_sicoob_reconciliation_baseline`
- * ficou registrada como aplicada no banco por dias sem NENHUM arquivo local
- * com esse timestamp em qualquer branch — o baseline mais crítico do projeto
- * sem fonte rastreável no repositório. Ver docs/plano-implementacao/
- * plano-correcoes-auditoria-50-etapas-20260917.md, Etapas 5-8 e 29.
- *
- * Importante — o que este script NÃO verifica: este projeto tem, por
- * desenho documentado (mesmo plano, Fase B), 489 arquivos locais e só 22
- * no ledger — a maioria dos arquivos locais nunca aplicados é ESPERADO
- * (schema aplicado via MCP, documentado como as-built depois, ou migration
- * legada/nunca-aplicada ainda não classificada pela Etapa 9 do plano
- * principal). Este script SÓ alerta a direção perigosa: versão no ledger
- * remoto sem NENHUM arquivo local correspondente — banco com mudança de
- * schema sem rastro nenhum no Git. A direção oposta (arquivo sem ledger)
- * não é reportada aqui de propósito.
- *
- * Pré-requisito não resolvido nesta sessão: precisa do pacote `pg` como
- * dependência (não está em package.json ainda) e da variável de ambiente
- * `SUPABASE_DB_URL` (connection string direta ao Postgres, não a API REST)
- * cadastrada como secret do GitHub Actions no environment apropriado —
- * ver Etapa 3 do plano principal (`docs/plano-implementacao/
- * plano-reconciliacao-50-etapas.md`), que já previa esse cadastro e ainda
- * não foi executada. Sem isso, o job do workflow falha na instalação/
- * conexão, não silenciosamente — não decidi sozinho adicionar a dependência
- * nem o secret.
- *
- * Uso: SUPABASE_DB_URL=postgres://... node scripts/db/check-migration-ledger-drift.mjs
- */
+// Reconciliação bidirecional; nunca aplica arquivos nem repara o ledger.
+import { readdirSync, readFileSync } from 'node:fs';
+import { join, dirname, relative } from 'node:path';
+import { fileURLToPath, pathToFileURL } from 'node:url';
+import { createHash } from 'node:crypto';
+const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
+const hash = value => createHash('sha256').update(value).digest('hex');
 
-import { readdirSync } from 'node:fs';
-import { join, dirname } from 'node:path';
-import { fileURLToPath } from 'node:url';
-
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const ROOT = join(__dirname, '..', '..');
-
-const MIGRATION_DIRS = [
-  join(ROOT, 'supabase', 'migrations'),
-  join(ROOT, 'supabase', 'migrations_archive'),
-];
-
-const VERSION_RE = /^(\d{3}|\d{14})_/;
-
-function collectLocalVersions() {
-  const versions = new Set();
-  function walk(dir) {
-    let entries;
-    try {
-      entries = readdirSync(dir, { withFileTypes: true });
-    } catch {
-      return;
-    }
-    for (const entry of entries) {
-      const full = join(dir, entry.name);
-      if (entry.isDirectory()) {
-        walk(full);
-        continue;
-      }
-      if (!entry.name.endsWith('.sql')) continue;
-      const m = entry.name.match(VERSION_RE);
-      if (m) versions.add(m[1]);
-    }
-  }
-  for (const d of MIGRATION_DIRS) walk(d);
-  return versions;
+// Preserva literais e corpos SQL; diferenças normalizadas exigem revisão,
+// não significam necessariamente divergência semântica.
+export function normalizedSql(sql) {
+  const tokens = sql.match(/\$([A-Za-z_][\w]*|)\$[\s\S]*?\$\1\$|'(?:''|[^'])*'|"(?:""|[^"])*"|--[^\n]*|\/\*[\s\S]*?\*\/|[\w$]+|[^\s]/g) ?? [];
+  return tokens.filter(t => !t.startsWith('--') && !t.startsWith('/*')).join(' ').replace(/(?:\s*;)+\s*$/, '');
 }
-
-async function fetchLedgerVersions() {
+export function collectLocalMigrations(root = ROOT) {
+  const files = [];
+  function walk(dir, archived) {
+    for (const item of readdirSync(dir, { withFileTypes: true })) {
+      const full = join(dir, item.name);
+      if (item.isDirectory()) { walk(full, archived); continue; }
+      const match = /^(\d+)_(.+)\.sql$/.exec(item.name);
+      if (!match) continue;
+      const sql = readFileSync(full, 'utf8');
+      files.push({ version: match[1], name: match[2], path: relative(root, full), archived,
+        sha256: hash(sql), normalized_sha256: hash(normalizedSql(sql)) });
+    }
+  }
+  for (const [dir, archived] of [['migrations', false], ['migrations_archive', true]]) {
+    try { walk(join(root, 'supabase', dir), archived); }
+    catch (e) { if (e.code !== 'ENOENT') throw e; }
+  }
+  return files;
+}
+export function compareLedger(local, ledger) {
+  const results = [];
+  const applied = new Set(ledger.map(r => r.version));
+  for (const row of ledger) {
+    const candidates = local.filter(f => f.version === row.version);
+    const active = candidates.filter(f => !f.archived);
+    if (!candidates.length) { results.push({ version: row.version, status: 'remota_sem_arquivo' }); continue; }
+    if (active.length > 1) { results.push({ version: row.version, status: 'versao_ativa_duplicada' }); continue; }
+    const file = active[0] ?? candidates[0];
+    const sql = Array.isArray(row.statements) ? row.statements.map(s => s.trim().replace(/;\s*$/, '')).join(';\n') : null;
+    const remoteHash = sql === null ? null : hash(normalizedSql(sql));
+    results.push({ version: row.version, path: file.path, archived: file.archived,
+      local_sha256: file.sha256, remote_normalized_sha256: remoteHash,
+      status: remoteHash === null ? 'conteudo_nao_verificado' : remoteHash !== file.normalized_sha256 ? 'conteudo_divergente' :
+        row.name !== file.name ? 'nome_divergente' : file.archived ? 'aplicada_arquivada' : 'alinhada' });
+  }
+  for (const file of local) {
+    if (!applied.has(file.version)) results.push({ version: file.version, path: file.path,
+      status: file.archived ? 'arquivada_sem_ledger' : 'local_sem_ledger' });
+  }
+  const counts = new Map();
+  for (const f of local.filter(f => !f.archived)) counts.set(f.version, (counts.get(f.version) ?? 0) + 1);
+  for (const [version, count] of counts) {
+    if (count > 1 && !results.some(r => r.version === version && r.status === 'versao_ativa_duplicada')) {
+      results.push({ version, status: 'versao_ativa_duplicada' });
+    }
+  }
+  return results;
+}
+async function fetchLedger() {
   const connectionString = process.env.SUPABASE_DB_URL || process.env.DATABASE_URL;
-  if (!connectionString) {
-    console.error(
-      '[check-migration-ledger-drift] SUPABASE_DB_URL (ou DATABASE_URL) não definida — ' +
-        'não é possível consultar o ledger remoto. Ver comentário no topo deste arquivo.'
-    );
-    process.exit(2);
-  }
-
-  let Client;
-  try {
-    ({ Client } = await import('pg'));
-  } catch {
-    console.error(
-      "[check-migration-ledger-drift] pacote 'pg' não instalado — adicione como devDependency " +
-        "antes de usar este script em CI (ver comentário no topo deste arquivo)."
-    );
-    process.exit(2);
-  }
-
-  const client = new Client({ connectionString, ssl: { rejectUnauthorized: false } });
+  if (!connectionString) throw new Error('SUPABASE_DB_URL não definida; ledger não verificado.');
+  const { Client } = await import('pg');
+  // TLS e CA são configurados pela URL; não desabilitamos certificados.
+  const client = new Client({ connectionString, connectionTimeoutMillis: 15000, application_name: 'sicoob-auditoria-ledger' });
   await client.connect();
   try {
-    const { rows } = await client.query(
-      'select version from supabase_migrations.schema_migrations order by version'
-    );
-    return rows.map((r) => r.version);
-  } finally {
-    await client.end();
-  }
+    await client.query('BEGIN READ ONLY');
+    await client.query("SET LOCAL statement_timeout = '30s'");
+    const { rows } = await client.query('SELECT version, name, statements FROM supabase_migrations.schema_migrations ORDER BY version');
+    await client.query('ROLLBACK');
+    return rows;
+  } finally { await client.end(); }
 }
-
 async function main() {
-  const jsonOutput = process.argv.includes('--json');
-  const localVersions = collectLocalVersions();
-  const ledgerVersions = await fetchLedgerVersions();
-
-  const orphanVersions = ledgerVersions.filter((v) => !localVersions.has(v));
-
-  if (jsonOutput) {
-    console.log(JSON.stringify({ ledger_count: ledgerVersions.length, local_count: localVersions.size, orphan_versions: orphanVersions }, null, 2));
-  } else {
-    console.log(
-      `[check-migration-ledger-drift] ${ledgerVersions.length} versões no ledger remoto · ${localVersions.size} versões locais (migrations + migrations_archive)`
-    );
-    if (orphanVersions.length) {
-      console.log(
-        `\n${orphanVersions.length} versão(ões) aplicada(s) no banco SEM arquivo local correspondente:`
-      );
-      for (const v of orphanVersions) console.log(`  ${v}`);
-    } else {
-      console.log('\n0 versões órfãs — todo registro do ledger tem arquivo local rastreável.');
-    }
+  const args = process.argv.slice(2), index = args.indexOf('--ledger-file');
+  const ledger = index < 0 ? await fetchLedger() : JSON.parse(readFileSync(args[index + 1], 'utf8'));
+  if (!Array.isArray(ledger) || ledger.some(r => typeof r.version !== 'string')) throw new Error('Ledger inválido.');
+  const local = collectLocalMigrations(), results = compareLedger(local, ledger);
+  const pending = results.filter(r => !['alinhada', 'arquivada_sem_ledger'].includes(r.status));
+  const summary = { source: index < 0 ? 'PostgreSQL atual, somente leitura' : 'arquivo offline; não comprova estado remoto',
+    ledger_count: ledger.length, local_count: local.length, pending_count: pending.length, results };
+  if (args.includes('--json')) console.log(JSON.stringify(summary, null, 2));
+  else {
+    console.log(`Ledger: ${ledger.length}; arquivos: ${local.length}; pendências: ${pending.length}.`);
+    for (const r of pending) console.log(`${r.version}: ${r.status}${r.path ? ' — ' + r.path : ''}`);
+    console.log('Diferenças exigem revisão; não aplique automaticamente arquivos ausentes do ledger.');
   }
-
-  process.exit(orphanVersions.length > 0 ? 1 : 0);
+  process.exitCode = pending.length ? 1 : 0;
 }
-
-main().catch((err) => {
-  console.error('[check-migration-ledger-drift] erro inesperado:', err.message);
-  process.exit(2);
-});
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  main().catch(e => { console.error(`[ledger] Verificação indisponível (${e.code ?? e.name}); nenhum resultado aprovado.`); process.exitCode = 2; });
+}

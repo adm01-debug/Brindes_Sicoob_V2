@@ -58,7 +58,7 @@ export const EDGE_AUTHZ_MANIFEST: Record<string, AuthzEntry> = {
   "cnpj-lookup": { category: "public", rationale: "Lookup CNPJ via API pública" },
   "health-check": { category: "public", rationale: "Health endpoint para uptime monitors" },
   "system-healthcheck": { category: "public", rationale: "Health check global do sistema" },
-  "migration-health-check": { category: "public", rationale: "Verificação de integridade pós-migração" },
+  "migration-health-check": { category: "dev", rationale: "Metadados administrativos restritos a desenvolvedor" },
   "get-visitor-info": { category: "public", rationale: "Geo/IP do visitante para anti-fraude" },
   "verify-email": { category: "public", rationale: "Verificação de email no signup público" },
   "log-login-attempt": { category: "public", rationale: "Telemetria de login (anti-bruteforce)" },
@@ -83,7 +83,7 @@ export const EDGE_AUTHZ_MANIFEST: Record<string, AuthzEntry> = {
   // ---------------- Webhooks (assinatura própria) ----------------
   "webhook-inbound": { category: "scoped", rationale: "HMAC-SHA256 inline" },
   "webhook-dispatcher": { category: "scoped", rationale: "Disparo via service-role / cron" },
-  "product-webhook": { category: "scoped", rationale: "Token shared-secret no header" },
+  "product-webhook": { category: "public", rationale: "Endpoint inerte: retorna 410, sem acesso a dados ou segredos" },
 
   // ---------------- Cron / service-to-service ----------------
   "cleanup-notifications": { category: "service", rationale: "pg_cron diário" },

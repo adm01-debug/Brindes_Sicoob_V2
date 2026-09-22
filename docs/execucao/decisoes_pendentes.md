@@ -1,6 +1,9 @@
-# Decisões pendentes — reconciliação Sicoob (consolidado em 20/09/2026)
+# Decisões pendentes — reconciliação Sicoob (atualizado em 22/09/2026)
 
-Cada item abaixo já foi investigado a fundo (evidência linkada); nenhum foi resolvido por suposição. O que falta é uma escolha de produto/arquitetura, não trabalho mecânico.
+O projeto está em construção. Há escolhas de produto, implementação pendente e
+dependências de acesso administrativo; não são todas decisões de arquitetura.
+O [relatório de execução](correcoes-reconciliacao-20260922.md) distingue correções
+locais testadas, aplicação remota e aceite funcional ainda abertos.
 
 ## 1. `bitrix_clients`/`bitrix_deals`/`bitrix_sync_logs` — a sync com Bitrix24 ainda é ativa?
 **Pergunta:** a integração `bitrix-sync` (edge function, webhook real com Bitrix24) ainda é usada? Se sim, ela precisa de tabelas de sync-cache próprias — mas **não** deve ressuscitar `bitrix_clients` como fonte de cliente do resto do app, porque 2 migrations (`20260213151101`, `20260301143055`) já documentam a migração pra `companies`/CRM externo.
@@ -8,18 +11,25 @@ Cada item abaixo já foi investigado a fundo (evidência linkada); nenhum foi re
 **Se "não, abandonada":** remover a edge function `bitrix-sync` e o código morto associado; fechar como código morto.
 **Evidência:** `docs/execucao/evidencias/auditoria_tripla_20260917.md` §3.
 
-## 2. RPCs `check_rls_enabled`/`get_enum_values` — vale reescrever o health-check?
-**Pergunta:** `migration-health-check` (ferramenta interna de ops) é usada por alguém? Se sim, as 2 RPCs precisam ser escritas do zero (não existe migration real, premissa anterior estava errada).
-**Evidência:** `docs/execucao/evidencias/auditoria_tripla_20260917.md` §3.
+## 2. RPCs `check_rls_enabled`/`get_enum_values` — implementadas localmente
+Helpers restritos ao servidor na migration `20260922151000`; health-check exige
+dev e não aprova resultado com erro/RLS desligado. Simulações SQL e testes passaram.
+**Pendente:** aplicar a migration e publicar/testar a função no banco de construção.
 
-## 3. `set_config` em `mcp-keys-revoke` — vale o wrapper?
-**Pergunta:** a trilha de auditoria `request.mcp_actor` (quem revogou uma chave MCP) é usada/consultada por alguém? Se sim, precisa de uma função wrapper nova exposta via PostgREST. Se não, remover a tentativa morta e corrigir o comentário enganoso no código.
+## 3. `set_config` em `mcp-keys-revoke` — chamada morta removida
+Uma RPC separada com `SET LOCAL` não propaga o ator para a transação de UPDATE.
+Foi preservado o registro explícito de ator em `writeAuditEntry`. **Pendente:**
+publicação remota e eventual garantia atômica entre revogação e trilha.
 
-## 4. `error_logs` — criar tabela ou confiar só no Sentry?
-**Pergunta:** `VITE_SENTRY_DSN` está configurado em produção? (não tenho acesso a env vars de produção pra confirmar). Se sim, `error_logs` é redundante — decidir manter como fallback barato ou remover a tentativa de escrita. Se não, o app está sem observabilidade de erro nenhuma — prioridade sobe.
+## 4. `error_logs` — substituída por telemetria existente
+`error-reporter` agora grava em `telemetry_events`, mantém Sentry e remove tokens
+de query/fragmento da URL enviada. Teste de envio passou. **Pendente:** verificar
+entrega real e configuração remota de Sentry; nenhuma configuração foi presumida.
 
-## 5. `sicoob_budgets` — schema genuinamente ausente
-**Pergunta:** a hipótese de ser `cooperativa_budgets` sob outro nome foi **refutada** (schemas não batem). Precisa de decisão de arquitetura: criar a tabela do zero, ou o conceito de orçamento por cooperativa deveria usar `cooperativa_budgets` mesmo, exigindo mudança de código em vez de schema?
+## 5. `sicoob_budgets` — referência corrigida em trabalho anterior
+A base desta execução já usa `cooperativa_budgets`/`pa_budgets`, sem criar tabela
+homônima. **Pendente:** homologação de verba por período; ausência no verificador
+de nomes não comprova as regras financeiras.
 
 ## 6. `companies` (`whitelabel-comparison.ts`)
 **Pergunta:** o módulo de white-label é código morto de verdade (zero importadores hoje) — remover, ou é feature planejada pra reativar? Se reativar, precisa da mesma correção de client da tabela `products`.
@@ -37,10 +47,25 @@ Decisões de arquitetura já registradas na Etapa 26 original (`docs/execucao/ev
 3 tabelas (comentários, compartilhamento público, reações) com schema pronto, UI nunca iniciada. **Evidência:** `docs/execucao/evidencias/etapa24_magic_up_20260917.md`
 
 ## 10. Views de auditoria prontas pra virar tela
-`sicoob_budget_audit` e `v_full_scope_grants` têm proposta de UI documentada pra `AuditEvidenceDashboard.tsx` — só falta aprovar e alguém implementar o frontend. **Evidência:** `docs/execucao/evidencias/etapa26_views_auditoria_20260917.md`
+`sicoob_budget_audit` e `v_full_scope_grants` têm proposta de UI para
+`AuditEvidenceDashboard.tsx`. A view de concessões falhou na leitura real por
+depender de `auth.users`; a migration `20260922150000` corrige a dependência e o
+join com profiles, com simulação RLS. Aplicação remota e aceite da tela pendem.
 
-## 11. PR retroativa para os commits sem revisão
-`e3db49229`, `824cfa3bf`, `1fd123847`, `d6974924f` (+ trabalho desta sessão) estão no GitHub com schema já em produção, sem PR cobrindo. Ação: abrir e mergear a PR (Etapa 2-3 do plano de correções). Confirmado que não é bug de proteção de branch — é ação pendente mesmo.
+## 11. Rastreabilidade dos commits e regras de branch
+A cobertura de commits históricos por PR precisa ser reconciliada. A auditoria
+de 22/09 identificou bypass administrativo e ausência de checks obrigatórios.
+O lote atual será enviado por branch/PR próprio; isso não revisa retroativamente
+DDL anterior nem comprova que os checks foram executados.
 
-## 12. Aplicação em produção da RPC `create_quote_version_atomic`
-Única migration do "Nível 2" totalmente validada e pronta. Bloqueada por trava de plataforma do Claude Code (não contornável via settings). Pacote de aplicação manual pronto: `docs/execucao/evidencias/pacote_aplicacao_quote_versioning_20260920.md` — precisa de alguém colar o SQL no SQL Editor do Supabase.
+## 12. Aplicação no banco de construção da RPC `create_quote_version_atomic`
+Pacote existente: `docs/execucao/evidencias/pacote_aplicacao_quote_versioning_20260920.md`.
+A RPC não apareceu na API de 22/09. Nesta sessão falta acesso administrativo ao
+projeto para validar dependências, simular/aplicar e conferir ledger. Chave da
+Data API não substitui esse acesso. A aplicação não foi executada nem certificada.
+
+## 13. Novas referências encontradas por AST
+O relatório de execução lista grupos/componentes/locais de personalização,
+`user_passkeys`, `color_nuances` e dois usos de `products` em mockups. Não basta
+criar tabelas vazias para aprovar o verificador: autenticação exige validação
+no servidor, e mockups precisam preservar as referências externas sem violar FKs.

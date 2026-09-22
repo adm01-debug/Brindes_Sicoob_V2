@@ -1,5 +1,11 @@
 # Plano de reconciliação e hardening do banco em 50 etapas
 
+> **Revisão de 22/09/2026:** ambiente em construção. Consulte os
+> [achados, correções testadas e pendências atuais](../execucao/correcoes-reconciliacao-20260922.md).
+> A etapa 26 permanece parcial: a varredura ampliada ainda encontra referências
+> sem contrato exposto. Marcas históricas de conclusão abaixo não substituem a
+> revalidação remota; ledger e código publicado ainda precisam ser conferidos.
+
 **Projeto:** `adm01-debug/Brindes_Sicoob_V2` · **Supabase operacional:** `cfmzkthhgliqelozlmwu` · **Catálogo externo (somente leitura):** `doufsxqlfjyuvxuezpln`
 **Base factual:** auditoria de 15/09/2026 (PR #8) reverificada em 16/09/2026 com consultas somente leitura. Todos os números abaixo foram medidos no banco real nessa data.
 **Postura:** engenharia de banco de dados defensiva. Nenhuma etapa altera produção sem baseline, backup restaurável, migration idempotente, teste em branch e rollback escrito.

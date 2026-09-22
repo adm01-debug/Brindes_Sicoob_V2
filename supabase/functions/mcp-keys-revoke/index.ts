@@ -194,13 +194,8 @@ Deno.serve(async (req) => {
       return log.respond(jsonResponse({ error: "already_revoked" }, 409, requestId));
     }
 
-    // postgrest-js 2.95+ removeu .then/.catch do RPC builder — usar try/catch.
-    // Falhas em set_config são silenciadas (best-effort para o trigger de auditoria).
-    try {
-      await admin.rpc("set_config" as never, { setting_name: "request.mcp_actor", new_value: userId, is_local: true } as never);
-    } catch {
-      // intentionally swallowed
-    }
+    // O ator é registrado explicitamente em writeAuditEntry abaixo.
+    // Uma RPC separada com SET LOCAL não propagaria o ator à transação do UPDATE.
 
     const revokedAt = new Date().toISOString();
     const { error: updErr } = await admin

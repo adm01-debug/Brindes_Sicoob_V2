@@ -1,0 +1,963 @@
+{
+  "cache_generated_at": "2026-09-22",
+  "files_scanned": 2038,
+  "references_scanned": 1167,
+  "broken": [
+    {
+      "file": "src/components/admin/MockupPromptManager.tsx",
+      "line": 51,
+      "kind": "from",
+      "name": "personalization_techniques"
+    },
+    {
+      "file": "src/components/admin/hooks/useGroupPersonalization.ts",
+      "line": 77,
+      "kind": "from",
+      "name": "product_group_components",
+      "unresolved": false
+    },
+    {
+      "file": "src/components/admin/hooks/useGroupPersonalization.ts",
+      "line": 99,
+      "kind": "from",
+      "name": "product_group_locations",
+      "unresolved": false
+    },
+    {
+      "file": "src/components/admin/hooks/useGroupPersonalization.ts",
+      "line": 135,
+      "kind": "from",
+      "name": "product_group_location_techniques",
+      "unresolved": false
+    },
+    {
+      "file": "src/components/admin/hooks/useGroupPersonalization.ts",
+      "line": 153,
+      "kind": "from",
+      "name": "product_group_components",
+      "unresolved": false
+    },
+    {
+      "file": "src/components/admin/hooks/useGroupPersonalization.ts",
+      "line": 165,
+      "kind": "from",
+      "name": "product_group_components",
+      "unresolved": false
+    },
+    {
+      "file": "src/components/admin/hooks/useGroupPersonalization.ts",
+      "line": 174,
+      "kind": "from",
+      "name": "product_group_components",
+      "unresolved": false
+    },
+    {
+      "file": "src/components/admin/hooks/useGroupPersonalization.ts",
+      "line": 186,
+      "kind": "from",
+      "name": "product_group_locations",
+      "unresolved": false
+    },
+    {
+      "file": "src/components/admin/hooks/useGroupPersonalization.ts",
+      "line": 198,
+      "kind": "from",
+      "name": "product_group_locations",
+      "unresolved": false
+    },
+    {
+      "file": "src/components/admin/hooks/useGroupPersonalization.ts",
+      "line": 210,
+      "kind": "from",
+      "name": "product_group_locations",
+      "unresolved": false
+    },
+    {
+      "file": "src/components/admin/hooks/useGroupPersonalization.ts",
+      "line": 222,
+      "kind": "from",
+      "name": "product_group_location_techniques",
+      "unresolved": false
+    },
+    {
+      "file": "src/components/admin/hooks/useGroupPersonalization.ts",
+      "line": 234,
+      "kind": "from",
+      "name": "product_group_location_techniques",
+      "unresolved": false
+    },
+    {
+      "file": "src/components/admin/hooks/useGroupPersonalization.ts",
+      "line": 246,
+      "kind": "from",
+      "name": "product_group_location_techniques",
+      "unresolved": false
+    },
+    {
+      "file": "src/components/admin/hooks/useGroupPersonalization.ts",
+      "line": 268,
+      "kind": "from",
+      "name": "product_group_components",
+      "unresolved": false
+    },
+    {
+      "file": "src/components/admin/personalization/GroupInheritance.tsx",
+      "line": 60,
+      "kind": "from",
+      "name": "product_group_components",
+      "unresolved": false
+    },
+    {
+      "file": "src/components/admin/personalization/GroupInheritance.tsx",
+      "line": 76,
+      "kind": "from",
+      "name": "product_group_locations",
+      "unresolved": false
+    },
+    {
+      "file": "src/components/admin/personalization/GroupInheritance.tsx",
+      "line": 85,
+      "kind": "from",
+      "name": "product_group_location_techniques",
+      "unresolved": false
+    },
+    {
+      "file": "src/components/admin/personalization/GroupInheritance.tsx",
+      "line": 90,
+      "kind": "from",
+      "name": "product_component_location_techniques",
+      "unresolved": false
+    },
+    {
+      "file": "src/components/admin/personalization/usePersonalizationData.ts",
+      "line": 176,
+      "kind": "from",
+      "name": "product_component_location_techniques",
+      "unresolved": false
+    },
+    {
+      "file": "src/components/admin/personalization/usePersonalizationData.ts",
+      "line": 278,
+      "kind": "from",
+      "name": "product_component_location_techniques",
+      "unresolved": false
+    },
+    {
+      "file": "src/components/admin/personalization/usePersonalizationData.ts",
+      "line": 290,
+      "kind": "from",
+      "name": "product_component_location_techniques",
+      "unresolved": false
+    },
+    {
+      "file": "src/components/admin/personalization/usePersonalizationData.ts",
+      "line": 302,
+      "kind": "from",
+      "name": "product_component_location_techniques",
+      "unresolved": false
+    },
+    {
+      "file": "src/components/admin/personalization-manager/usePersonalizationManager.ts",
+      "line": 161,
+      "kind": "from",
+      "name": "product_component_location_techniques",
+      "unresolved": false
+    },
+    {
+      "file": "src/components/admin/personalization-manager/usePersonalizationManager.ts",
+      "line": 231,
+      "kind": "from",
+      "name": "product_component_location_techniques",
+      "unresolved": false
+    },
+    {
+      "file": "src/components/admin/personalization-manager/usePersonalizationManager.ts",
+      "line": 240,
+      "kind": "from",
+      "name": "product_component_location_techniques",
+      "unresolved": false
+    },
+    {
+      "file": "src/components/admin/personalization-manager/usePersonalizationManager.ts",
+      "line": 248,
+      "kind": "from",
+      "name": "product_component_location_techniques",
+      "unresolved": false
+    },
+    {
+      "file": "src/components/admin/personalization-manager/usePersonalizationManager.ts",
+      "line": 302,
+      "kind": "from",
+      "name": "product_group_components",
+      "unresolved": false
+    },
+    {
+      "file": "src/components/admin/personalization-manager/usePersonalizationManager.ts",
+      "line": 311,
+      "kind": "from",
+      "name": "product_group_locations",
+      "unresolved": false
+    },
+    {
+      "file": "src/components/admin/personalization-manager/usePersonalizationManager.ts",
+      "line": 319,
+      "kind": "from",
+      "name": "product_group_location_techniques",
+      "unresolved": false
+    },
+    {
+      "file": "src/components/admin/personalization-manager/usePersonalizationManager.ts",
+      "line": 324,
+      "kind": "from",
+      "name": "product_component_location_techniques",
+      "unresolved": false
+    },
+    {
+      "file": "src/hooks/mockup/mockupGenerationService.ts",
+      "line": 121,
+      "kind": "from",
+      "name": "products",
+      "unresolved": false
+    },
+    {
+      "file": "src/hooks/mockup/mockupGenerationService.ts",
+      "line": 127,
+      "kind": "from",
+      "name": "personalization_techniques",
+      "unresolved": false
+    },
+    {
+      "file": "src/hooks/use2FA.ts",
+      "line": 42,
+      "kind": "from",
+      "name": "user_2fa_settings",
+      "unresolved": false
+    },
+    {
+      "file": "src/hooks/use2FA.ts",
+      "line": 111,
+      "kind": "from",
+      "name": "user_2fa_settings",
+      "unresolved": false
+    },
+    {
+      "file": "src/hooks/use2FA.ts",
+      "line": 138,
+      "kind": "from",
+      "name": "user_2fa_settings",
+      "unresolved": false
+    },
+    {
+      "file": "src/hooks/use2FA.ts",
+      "line": 156,
+      "kind": "from",
+      "name": "user_2fa_settings",
+      "unresolved": false
+    },
+    {
+      "file": "src/hooks/useColorSystem.ts",
+      "line": 112,
+      "kind": "from",
+      "name": "color_nuances",
+      "unresolved": false
+    },
+    {
+      "file": "src/hooks/useColorSystem.ts",
+      "line": 158,
+      "kind": "from",
+      "name": "color_nuances",
+      "unresolved": false
+    },
+    {
+      "file": "src/hooks/useMockupDraft.ts",
+      "line": 83,
+      "kind": "from",
+      "name": "products",
+      "unresolved": false
+    },
+    {
+      "file": "src/hooks/useMockupDraft.ts",
+      "line": 95,
+      "kind": "from",
+      "name": "personalization_techniques",
+      "unresolved": false
+    },
+    {
+      "file": "src/hooks/useMockupDraft.ts",
+      "line": 107,
+      "kind": "from",
+      "name": "bitrix_clients",
+      "unresolved": false
+    },
+    {
+      "file": "src/hooks/useSalesGoals.ts",
+      "line": 58,
+      "kind": "from",
+      "name": "sales_goals"
+    },
+    {
+      "file": "src/hooks/useSalesGoals.ts",
+      "line": 78,
+      "kind": "from",
+      "name": "sales_goals"
+    },
+    {
+      "file": "src/hooks/useSalesGoals.ts",
+      "line": 100,
+      "kind": "from",
+      "name": "sales_goals"
+    },
+    {
+      "file": "src/hooks/useSalesGoals.ts",
+      "line": 146,
+      "kind": "from",
+      "name": "sales_goals"
+    },
+    {
+      "file": "src/hooks/useSalesGoals.ts",
+      "line": 166,
+      "kind": "from",
+      "name": "sales_goals"
+    },
+    {
+      "file": "src/hooks/useSalesGoals.ts",
+      "line": 201,
+      "kind": "from",
+      "name": "sales_goals"
+    },
+    {
+      "file": "src/hooks/useSimulation.ts",
+      "line": 145,
+      "kind": "from",
+      "name": "personalization_simulations"
+    },
+    {
+      "file": "src/hooks/useSimulation.ts",
+      "line": 336,
+      "kind": "from",
+      "name": "personalization_simulations"
+    },
+    {
+      "file": "src/hooks/useSimulation.ts",
+      "line": 349,
+      "kind": "from",
+      "name": "personalization_simulations"
+    },
+    {
+      "file": "src/hooks/useWebAuthn.ts",
+      "line": 81,
+      "kind": "from",
+      "name": "user_passkeys",
+      "unresolved": false
+    },
+    {
+      "file": "src/hooks/useWebAuthn.ts",
+      "line": 162,
+      "kind": "from",
+      "name": "user_passkeys",
+      "unresolved": false
+    },
+    {
+      "file": "src/hooks/useWebAuthn.ts",
+      "line": 248,
+      "kind": "from",
+      "name": "user_passkeys",
+      "unresolved": false
+    },
+    {
+      "file": "src/hooks/useWebAuthn.ts",
+      "line": 258,
+      "kind": "from",
+      "name": "user_passkeys",
+      "unresolved": false
+    },
+    {
+      "file": "src/hooks/useWebAuthn.ts",
+      "line": 295,
+      "kind": "from",
+      "name": "user_passkeys",
+      "unresolved": false
+    },
+    {
+      "file": "src/hooks/useWebAuthn.ts",
+      "line": 325,
+      "kind": "from",
+      "name": "user_passkeys",
+      "unresolved": false
+    },
+    {
+      "file": "src/lib/pdf/whitelabel-comparison.ts",
+      "line": 16,
+      "kind": "from",
+      "name": "companies"
+    },
+    {
+      "file": "src/pages/QuotesKanbanPage.tsx",
+      "line": 72,
+      "kind": "from",
+      "name": "bitrix_clients"
+    },
+    {
+      "file": "src/pages/RolesPage.tsx",
+      "line": 38,
+      "kind": "from",
+      "name": "roles",
+      "unresolved": false
+    },
+    {
+      "file": "src/pages/RolesPage.tsx",
+      "line": 54,
+      "kind": "from",
+      "name": "roles",
+      "unresolved": false
+    },
+    {
+      "file": "src/pages/RolesPage.tsx",
+      "line": 60,
+      "kind": "from",
+      "name": "roles",
+      "unresolved": false
+    },
+    {
+      "file": "src/pages/RolesPage.tsx",
+      "line": 82,
+      "kind": "from",
+      "name": "roles",
+      "unresolved": false
+    },
+    {
+      "file": "src/services/quotes/quoteVersionService.ts",
+      "line": 33,
+      "kind": "rpc",
+      "name": "create_quote_version_atomic"
+    },
+    {
+      "file": "supabase/functions/bitrix-sync/index.ts",
+      "line": 298,
+      "kind": "from",
+      "name": "bitrix_sync_logs"
+    },
+    {
+      "file": "supabase/functions/bitrix-sync/index.ts",
+      "line": 387,
+      "kind": "from",
+      "name": "bitrix_clients"
+    },
+    {
+      "file": "supabase/functions/bitrix-sync/index.ts",
+      "line": 412,
+      "kind": "from",
+      "name": "bitrix_deals"
+    },
+    {
+      "file": "supabase/functions/bitrix-sync/index.ts",
+      "line": 425,
+      "kind": "from",
+      "name": "bitrix_sync_logs"
+    },
+    {
+      "file": "supabase/functions/bitrix-sync/index.ts",
+      "line": 467,
+      "kind": "from",
+      "name": "bitrix_sync_logs"
+    },
+    {
+      "file": "supabase/functions/bitrix-sync/index.ts",
+      "line": 485,
+      "kind": "from",
+      "name": "bitrix_clients"
+    },
+    {
+      "file": "supabase/functions/bitrix-sync/index.ts",
+      "line": 517,
+      "kind": "from",
+      "name": "bitrix_deals"
+    },
+    {
+      "file": "supabase/functions/bitrix-sync/index.ts",
+      "line": 554,
+      "kind": "from",
+      "name": "bitrix_sync_logs"
+    }
+  ],
+  "blocking": [
+    {
+      "file": "src/components/admin/hooks/useGroupPersonalization.ts",
+      "line": 77,
+      "kind": "from",
+      "name": "product_group_components",
+      "unresolved": false
+    },
+    {
+      "file": "src/components/admin/hooks/useGroupPersonalization.ts",
+      "line": 99,
+      "kind": "from",
+      "name": "product_group_locations",
+      "unresolved": false
+    },
+    {
+      "file": "src/components/admin/hooks/useGroupPersonalization.ts",
+      "line": 135,
+      "kind": "from",
+      "name": "product_group_location_techniques",
+      "unresolved": false
+    },
+    {
+      "file": "src/components/admin/hooks/useGroupPersonalization.ts",
+      "line": 153,
+      "kind": "from",
+      "name": "product_group_components",
+      "unresolved": false
+    },
+    {
+      "file": "src/components/admin/hooks/useGroupPersonalization.ts",
+      "line": 165,
+      "kind": "from",
+      "name": "product_group_components",
+      "unresolved": false
+    },
+    {
+      "file": "src/components/admin/hooks/useGroupPersonalization.ts",
+      "line": 174,
+      "kind": "from",
+      "name": "product_group_components",
+      "unresolved": false
+    },
+    {
+      "file": "src/components/admin/hooks/useGroupPersonalization.ts",
+      "line": 186,
+      "kind": "from",
+      "name": "product_group_locations",
+      "unresolved": false
+    },
+    {
+      "file": "src/components/admin/hooks/useGroupPersonalization.ts",
+      "line": 198,
+      "kind": "from",
+      "name": "product_group_locations",
+      "unresolved": false
+    },
+    {
+      "file": "src/components/admin/hooks/useGroupPersonalization.ts",
+      "line": 210,
+      "kind": "from",
+      "name": "product_group_locations",
+      "unresolved": false
+    },
+    {
+      "file": "src/components/admin/hooks/useGroupPersonalization.ts",
+      "line": 222,
+      "kind": "from",
+      "name": "product_group_location_techniques",
+      "unresolved": false
+    },
+    {
+      "file": "src/components/admin/hooks/useGroupPersonalization.ts",
+      "line": 234,
+      "kind": "from",
+      "name": "product_group_location_techniques",
+      "unresolved": false
+    },
+    {
+      "file": "src/components/admin/hooks/useGroupPersonalization.ts",
+      "line": 246,
+      "kind": "from",
+      "name": "product_group_location_techniques",
+      "unresolved": false
+    },
+    {
+      "file": "src/components/admin/hooks/useGroupPersonalization.ts",
+      "line": 268,
+      "kind": "from",
+      "name": "product_group_components",
+      "unresolved": false
+    },
+    {
+      "file": "src/components/admin/personalization/GroupInheritance.tsx",
+      "line": 60,
+      "kind": "from",
+      "name": "product_group_components",
+      "unresolved": false
+    },
+    {
+      "file": "src/components/admin/personalization/GroupInheritance.tsx",
+      "line": 76,
+      "kind": "from",
+      "name": "product_group_locations",
+      "unresolved": false
+    },
+    {
+      "file": "src/components/admin/personalization/GroupInheritance.tsx",
+      "line": 85,
+      "kind": "from",
+      "name": "product_group_location_techniques",
+      "unresolved": false
+    },
+    {
+      "file": "src/components/admin/personalization/GroupInheritance.tsx",
+      "line": 90,
+      "kind": "from",
+      "name": "product_component_location_techniques",
+      "unresolved": false
+    },
+    {
+      "file": "src/components/admin/personalization/usePersonalizationData.ts",
+      "line": 176,
+      "kind": "from",
+      "name": "product_component_location_techniques",
+      "unresolved": false
+    },
+    {
+      "file": "src/components/admin/personalization/usePersonalizationData.ts",
+      "line": 278,
+      "kind": "from",
+      "name": "product_component_location_techniques",
+      "unresolved": false
+    },
+    {
+      "file": "src/components/admin/personalization/usePersonalizationData.ts",
+      "line": 290,
+      "kind": "from",
+      "name": "product_component_location_techniques",
+      "unresolved": false
+    },
+    {
+      "file": "src/components/admin/personalization/usePersonalizationData.ts",
+      "line": 302,
+      "kind": "from",
+      "name": "product_component_location_techniques",
+      "unresolved": false
+    },
+    {
+      "file": "src/components/admin/personalization-manager/usePersonalizationManager.ts",
+      "line": 161,
+      "kind": "from",
+      "name": "product_component_location_techniques",
+      "unresolved": false
+    },
+    {
+      "file": "src/components/admin/personalization-manager/usePersonalizationManager.ts",
+      "line": 231,
+      "kind": "from",
+      "name": "product_component_location_techniques",
+      "unresolved": false
+    },
+    {
+      "file": "src/components/admin/personalization-manager/usePersonalizationManager.ts",
+      "line": 240,
+      "kind": "from",
+      "name": "product_component_location_techniques",
+      "unresolved": false
+    },
+    {
+      "file": "src/components/admin/personalization-manager/usePersonalizationManager.ts",
+      "line": 248,
+      "kind": "from",
+      "name": "product_component_location_techniques",
+      "unresolved": false
+    },
+    {
+      "file": "src/components/admin/personalization-manager/usePersonalizationManager.ts",
+      "line": 302,
+      "kind": "from",
+      "name": "product_group_components",
+      "unresolved": false
+    },
+    {
+      "file": "src/components/admin/personalization-manager/usePersonalizationManager.ts",
+      "line": 311,
+      "kind": "from",
+      "name": "product_group_locations",
+      "unresolved": false
+    },
+    {
+      "file": "src/components/admin/personalization-manager/usePersonalizationManager.ts",
+      "line": 319,
+      "kind": "from",
+      "name": "product_group_location_techniques",
+      "unresolved": false
+    },
+    {
+      "file": "src/components/admin/personalization-manager/usePersonalizationManager.ts",
+      "line": 324,
+      "kind": "from",
+      "name": "product_component_location_techniques",
+      "unresolved": false
+    },
+    {
+      "file": "src/hooks/mockup/mockupGenerationService.ts",
+      "line": 121,
+      "kind": "from",
+      "name": "products",
+      "unresolved": false
+    },
+    {
+      "file": "src/hooks/useColorSystem.ts",
+      "line": 112,
+      "kind": "from",
+      "name": "color_nuances",
+      "unresolved": false
+    },
+    {
+      "file": "src/hooks/useColorSystem.ts",
+      "line": 158,
+      "kind": "from",
+      "name": "color_nuances",
+      "unresolved": false
+    },
+    {
+      "file": "src/hooks/useMockupDraft.ts",
+      "line": 83,
+      "kind": "from",
+      "name": "products",
+      "unresolved": false
+    },
+    {
+      "file": "src/hooks/useWebAuthn.ts",
+      "line": 81,
+      "kind": "from",
+      "name": "user_passkeys",
+      "unresolved": false
+    },
+    {
+      "file": "src/hooks/useWebAuthn.ts",
+      "line": 162,
+      "kind": "from",
+      "name": "user_passkeys",
+      "unresolved": false
+    },
+    {
+      "file": "src/hooks/useWebAuthn.ts",
+      "line": 248,
+      "kind": "from",
+      "name": "user_passkeys",
+      "unresolved": false
+    },
+    {
+      "file": "src/hooks/useWebAuthn.ts",
+      "line": 258,
+      "kind": "from",
+      "name": "user_passkeys",
+      "unresolved": false
+    },
+    {
+      "file": "src/hooks/useWebAuthn.ts",
+      "line": 295,
+      "kind": "from",
+      "name": "user_passkeys",
+      "unresolved": false
+    },
+    {
+      "file": "src/hooks/useWebAuthn.ts",
+      "line": 325,
+      "kind": "from",
+      "name": "user_passkeys",
+      "unresolved": false
+    }
+  ],
+  "allowed": [
+    {
+      "file": "src/components/admin/MockupPromptManager.tsx",
+      "line": 51,
+      "kind": "from",
+      "name": "personalization_techniques"
+    },
+    {
+      "file": "src/hooks/mockup/mockupGenerationService.ts",
+      "line": 127,
+      "kind": "from",
+      "name": "personalization_techniques",
+      "unresolved": false
+    },
+    {
+      "file": "src/hooks/use2FA.ts",
+      "line": 42,
+      "kind": "from",
+      "name": "user_2fa_settings",
+      "unresolved": false
+    },
+    {
+      "file": "src/hooks/use2FA.ts",
+      "line": 111,
+      "kind": "from",
+      "name": "user_2fa_settings",
+      "unresolved": false
+    },
+    {
+      "file": "src/hooks/use2FA.ts",
+      "line": 138,
+      "kind": "from",
+      "name": "user_2fa_settings",
+      "unresolved": false
+    },
+    {
+      "file": "src/hooks/use2FA.ts",
+      "line": 156,
+      "kind": "from",
+      "name": "user_2fa_settings",
+      "unresolved": false
+    },
+    {
+      "file": "src/hooks/useMockupDraft.ts",
+      "line": 95,
+      "kind": "from",
+      "name": "personalization_techniques",
+      "unresolved": false
+    },
+    {
+      "file": "src/hooks/useMockupDraft.ts",
+      "line": 107,
+      "kind": "from",
+      "name": "bitrix_clients",
+      "unresolved": false
+    },
+    {
+      "file": "src/hooks/useSalesGoals.ts",
+      "line": 58,
+      "kind": "from",
+      "name": "sales_goals"
+    },
+    {
+      "file": "src/hooks/useSalesGoals.ts",
+      "line": 78,
+      "kind": "from",
+      "name": "sales_goals"
+    },
+    {
+      "file": "src/hooks/useSalesGoals.ts",
+      "line": 100,
+      "kind": "from",
+      "name": "sales_goals"
+    },
+    {
+      "file": "src/hooks/useSalesGoals.ts",
+      "line": 146,
+      "kind": "from",
+      "name": "sales_goals"
+    },
+    {
+      "file": "src/hooks/useSalesGoals.ts",
+      "line": 166,
+      "kind": "from",
+      "name": "sales_goals"
+    },
+    {
+      "file": "src/hooks/useSalesGoals.ts",
+      "line": 201,
+      "kind": "from",
+      "name": "sales_goals"
+    },
+    {
+      "file": "src/hooks/useSimulation.ts",
+      "line": 145,
+      "kind": "from",
+      "name": "personalization_simulations"
+    },
+    {
+      "file": "src/hooks/useSimulation.ts",
+      "line": 336,
+      "kind": "from",
+      "name": "personalization_simulations"
+    },
+    {
+      "file": "src/hooks/useSimulation.ts",
+      "line": 349,
+      "kind": "from",
+      "name": "personalization_simulations"
+    },
+    {
+      "file": "src/lib/pdf/whitelabel-comparison.ts",
+      "line": 16,
+      "kind": "from",
+      "name": "companies"
+    },
+    {
+      "file": "src/pages/QuotesKanbanPage.tsx",
+      "line": 72,
+      "kind": "from",
+      "name": "bitrix_clients"
+    },
+    {
+      "file": "src/pages/RolesPage.tsx",
+      "line": 38,
+      "kind": "from",
+      "name": "roles",
+      "unresolved": false
+    },
+    {
+      "file": "src/pages/RolesPage.tsx",
+      "line": 54,
+      "kind": "from",
+      "name": "roles",
+      "unresolved": false
+    },
+    {
+      "file": "src/pages/RolesPage.tsx",
+      "line": 60,
+      "kind": "from",
+      "name": "roles",
+      "unresolved": false
+    },
+    {
+      "file": "src/pages/RolesPage.tsx",
+      "line": 82,
+      "kind": "from",
+      "name": "roles",
+      "unresolved": false
+    },
+    {
+      "file": "src/services/quotes/quoteVersionService.ts",
+      "line": 33,
+      "kind": "rpc",
+      "name": "create_quote_version_atomic"
+    },
+    {
+      "file": "supabase/functions/bitrix-sync/index.ts",
+      "line": 298,
+      "kind": "from",
+      "name": "bitrix_sync_logs"
+    },
+    {
+      "file": "supabase/functions/bitrix-sync/index.ts",
+      "line": 387,
+      "kind": "from",
+      "name": "bitrix_clients"
+    },
+    {
+      "file": "supabase/functions/bitrix-sync/index.ts",
+      "line": 412,
+      "kind": "from",
+      "name": "bitrix_deals"
+    },
+    {
+      "file": "supabase/functions/bitrix-sync/index.ts",
+      "line": 425,
+      "kind": "from",
+      "name": "bitrix_sync_logs"
+    },
+    {
+      "file": "supabase/functions/bitrix-sync/index.ts",
+      "line": 467,
+      "kind": "from",
+      "name": "bitrix_sync_logs"
+    },
+    {
+      "file": "supabase/functions/bitrix-sync/index.ts",
+      "line": 485,
+      "kind": "from",
+      "name": "bitrix_clients"
+    },
+    {
+      "file": "supabase/functions/bitrix-sync/index.ts",
+      "line": 517,
+      "kind": "from",
+      "name": "bitrix_deals"
+    },
+    {
+      "file": "supabase/functions/bitrix-sync/index.ts",
+      "line": 554,
+      "kind": "from",
+      "name": "bitrix_sync_logs"
+    }
+  ]
+}

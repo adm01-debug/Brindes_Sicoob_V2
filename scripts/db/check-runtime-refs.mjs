@@ -16,7 +16,8 @@
  *
  * Como funciona:
  *  1. Lê scripts/db/.inventory-cache.json (tabelas/views/funções/buckets
- *     ao vivo) — gerado por consulta MCP read-only, NÃO chamado daqui.
+ *     expostos) — gerado por consulta MCP ou import-api-inventory.mjs,
+ *     NÃO atualizado automaticamente por este verificador.
  *     PRECISA SER REGENERADO PERIODICAMENTE (ver Etapa 47 do plano de
  *     correções de 17/09/2026 — ainda não agendado). Um cache desatualizado
  *     produz falso-negativo (objeto que já foi dropado ainda "existe" pro
@@ -39,7 +40,8 @@
 
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join, relative, dirname } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
+import ts from 'typescript';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, '..', '..');
@@ -103,9 +105,39 @@ function isExternalEnvName(name) {
   return /^(EXTERNAL|CRM)_/.test(name);
 }
 
-function analyzeFile(filePath) {
-  const text = readFileSync(filePath, 'utf8');
+export function analyzeSource(text, filePath) {
   const findings = [];
+  const ast = ts.createSourceFile(filePath, text, ts.ScriptTarget.Latest, true);
+  const wrappers = new Set();
+  const namespaces = new Set();
+  for (const statement of ast.statements) {
+    if (!ts.isImportDeclaration(statement) || !ts.isStringLiteral(statement.moduleSpecifier)) continue;
+    if (!statement.moduleSpecifier.text.endsWith('/supabase-untyped')) continue;
+    const bindings = statement.importClause?.namedBindings;
+    if (bindings && ts.isNamespaceImport(bindings)) namespaces.add(bindings.name.text);
+    if (bindings && ts.isNamedImports(bindings)) {
+      for (const binding of bindings.elements) {
+        if ((binding.propertyName ?? binding.name).text === 'untypedFrom') wrappers.add(binding.name.text);
+      }
+    }
+  }
+  function visit(node) {
+    if (ts.isCallExpression(node)) {
+      const fn = node.expression;
+      const wrapper = (ts.isIdentifier(fn) && wrappers.has(fn.text)) ||
+        (ts.isPropertyAccessExpression(fn) && ts.isIdentifier(fn.expression) &&
+          namespaces.has(fn.expression.text) && fn.name.text === 'untypedFrom');
+      if (wrapper) {
+        const arg = node.arguments[0];
+        const literal = arg && (ts.isStringLiteral(arg) || ts.isNoSubstitutionTemplateLiteral(arg));
+        findings.push({ file: relative(ROOT, filePath),
+          line: ast.getLineAndCharacterOfPosition(node.getStart(ast)).line + 1,
+          kind: 'from', name: literal ? arg.text : '<dinâmico>', unresolved: !literal });
+      }
+    }
+    ts.forEachChild(node, visit);
+  }
+  visit(ast);
 
   const importMatch = INTERNAL_CLIENT_IMPORT_RE.exec(text);
   const isEdgeFunctionStyle = !importMatch && /Deno\.env\.get/.test(text) && /createClient\s*\(/.test(text);
@@ -229,7 +261,7 @@ function main() {
   const cache = loadJson(join(__dirname, '.inventory-cache.json'), null);
   if (!cache) {
     console.error(
-      '[check-runtime-refs] scripts/db/.inventory-cache.json ausente ou inválido — regenere via MCP antes de rodar (Etapa 47 do plano de correções).'
+      '[check-runtime-refs] scripts/db/.inventory-cache.json ausente ou inválido — importe uma coleta real antes de rodar (Etapa 47 do plano de correções).'
     );
     process.exit(2);
   }
@@ -240,10 +272,10 @@ function main() {
   const views = new Set(cache.views || []);
   const functions = new Set(cache.functions || []);
   const buckets = new Set(cache.buckets || []);
-  const tableLike = new Set([...tables, ...views]);
+  const tableLike = new Set(cache.relations ?? [...tables, ...views]);
 
   const files = SCAN_DIRS.flatMap((d) => walk(d));
-  const allFindings = files.flatMap(analyzeFile);
+  const allFindings = files.flatMap(file => analyzeSource(readFileSync(file, 'utf8'), file));
 
   const broken = [];
   for (const f of allFindings) {
@@ -259,7 +291,8 @@ function main() {
   const allowed = broken.filter((f) => allowlist.has(f.name));
 
   if (jsonOutput) {
-    console.log(JSON.stringify({ cache_generated_at: cache.generated_at, broken, blocking, allowed }, null, 2));
+    console.log(JSON.stringify({ cache_generated_at: cache.generated_at, files_scanned: files.length,
+      references_scanned: allFindings.length, broken, blocking, allowed }, null, 2));
   } else {
     console.log(
       `[check-runtime-refs] cache de ${cache.generated_at} · ${files.length} arquivos varridos · ${allFindings.length} referências ao client interno encontradas`
@@ -279,4 +312,4 @@ function main() {
   process.exit(blocking.length > 0 ? 1 : 0);
 }
 
-main();
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) main();

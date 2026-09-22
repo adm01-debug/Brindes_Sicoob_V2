@@ -69,6 +69,11 @@ jobs:
           tests/edge-functions/sicoob-kit-quote-catalog.test.ts
           tests/edge-functions/sicoob-artwork-register.test.ts
           tests/edge-functions/cors.test.ts
+          tests/lib/error-reporter.test.ts
+          tests/edge-functions/migration-health-check.test.ts
+          tests/edge-functions/product-webhook.test.ts
+          tests/pages/trends-queries.test.ts
+          tests/pages/TrendsKpiCards.test.tsx
 
       - uses: denoland/setup-deno@v2
         with:
@@ -87,9 +92,15 @@ jobs:
           deno check supabase/functions/sicoob-reorder/index.ts
           deno check supabase/functions/sicoob-kit-quote/index.ts
           deno check supabase/functions/sicoob-artwork-register/index.ts
+          deno check supabase/functions/migration-health-check/index.ts
+          deno check supabase/functions/product-webhook/index.ts
+          deno check supabase/functions/mcp-keys-revoke/index.ts
 
       - name: Simular atomicidade da verba em PostgreSQL descartável
         run: python3 scripts/qa/simular-verba-atomica.py
+
+      - name: Simular controles de auditoria e permissões em PostgreSQL descartável
+        run: python3 scripts/qa/simular-controles-auditoria.py
 
       - name: Compilar artefato de produção
         env:

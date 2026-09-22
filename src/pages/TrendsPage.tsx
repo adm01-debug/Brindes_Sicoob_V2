@@ -1,11 +1,12 @@
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 // import { MainLayout } from "@/components/layout/MainLayout";
-import { untypedFrom } from "@/lib/supabase-untyped";
+import { supabase } from "@/integrations/supabase/client";
+import { loadTrendsActivity } from "./trends/trends-queries";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { TrendingUp, Search, Package, Calendar, RefreshCw, Download, Layers } from "lucide-react";
+import { TrendingUp, Search, Package, Calendar, RefreshCw, Download } from "lucide-react";
 import { format, subDays } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { PageSEO } from "@/components/seo/PageSEO";
@@ -88,6 +89,7 @@ export default function TrendsPage() {
   const sellerScope = canManage ? null : user?.id ?? null;
   const scopeKey = sellerScope ?? "all";
   const demo = isDemoMode();
+  const queryEnabled = !demo && !!user;
 
   const { sinceCurrent, sincePrevious, recentCutoff } = useMemo(() => {
     const now = new Date();
@@ -101,10 +103,11 @@ export default function TrendsPage() {
   // ============================================
   // Top Products
   // ============================================
-  const { data: topProducts, isLoading: loadingProducts, refetch: refetchProducts } = useQuery({
+  const { data: topProducts, isLoading: loadingProducts, isError: productsError, refetch: refetchProducts } = useQuery({
     queryKey: ["trends-products", dateRange, scopeKey],
+    enabled: queryEnabled,
     queryFn: async (): Promise<AggregatedProduct[]> => {
-      let q = untypedFrom("product_views")
+      let q = supabase.from("product_views")
         .select("product_id, product_name, product_sku, view_type, created_at, seller_id")
         .gte("created_at", sincePrevious)
         .order("created_at", { ascending: false });
@@ -158,14 +161,15 @@ export default function TrendsPage() {
   // ============================================
   // Top Searches
   // ============================================
-  const { data: searchesData, isLoading: loadingSearches, refetch: refetchSearches } = useQuery({
+  const { data: searchesData, isLoading: loadingSearches, isError: searchesError, refetch: refetchSearches } = useQuery({
     queryKey: ["trends-searches", dateRange, scopeKey],
+    enabled: queryEnabled,
     queryFn: async () => {
-      let q = untypedFrom("search_analytics")
-        .select("search_term, results_count, created_at, seller_id")
+      let q = supabase.from("search_analytics")
+        .select("search_term, results_count, created_at, user_id")
         .gte("created_at", sincePrevious)
         .order("created_at", { ascending: false });
-      if (sellerScope) q = q.eq("seller_id", sellerScope);
+      if (sellerScope) q = q.eq("user_id", sellerScope);
       const { data, error } = await q;
       if (error) throw error;
 
@@ -201,19 +205,11 @@ export default function TrendsPage() {
   // ============================================
   // Daily activity (atual + anterior para comparação)
   // ============================================
-  const { data: dailyData, isLoading: loadingDaily } = useQuery({
+  const { data: dailyData, isLoading: loadingDaily, isError: dailyError, refetch: refetchDaily } = useQuery({
     queryKey: ["trends-daily", dateRange, scopeKey],
+    enabled: queryEnabled,
     queryFn: async () => {
-      const buildQ = (table: string, since: string) => {
-        let q = untypedFrom(table).select("created_at, seller_id").gte("created_at", since);
-        if (sellerScope) q = q.eq("seller_id", sellerScope);
-        return q;
-      };
-      const [{ data: views, error: ve }, { data: searches, error: se }] = await Promise.all([
-        buildQ("product_views", sincePrevious),
-        buildQ("search_analytics", sincePrevious),
-      ]);
-      if (ve || se) throw ve || se;
+      const { views, searches } = await loadTrendsActivity(sincePrevious, sellerScope);
 
       // Buckets atual + anterior (mesmo número de dias)
       const cur = new Map<string, { date: string; views: number; searches: number }>();
@@ -245,21 +241,14 @@ export default function TrendsPage() {
   // ============================================
   // KPIs (atuais + anteriores)
   // ============================================
-  const { data: kpiSnapshot } = useQuery({
+  const { data: kpiSnapshot, isError: kpiError, isLoading: loadingKpi, refetch: refetchKpi } = useQuery({
     queryKey: ["trends-kpi-snapshot", dateRange, scopeKey],
+    enabled: queryEnabled,
     queryFn: async () => {
-      const buildQ = (table: string, fields: string) => {
-        let q = untypedFrom(table).select(fields).gte("created_at", sincePrevious);
-        if (sellerScope) q = q.eq("seller_id", sellerScope);
-        return q;
-      };
-      const [{ data: vAll }, { data: sAll }] = await Promise.all([
-        buildQ("product_views", "product_id, product_name, created_at, seller_id"),
-        buildQ("search_analytics", "search_term, created_at, seller_id"),
-      ]);
-      const split = (
-        rows: Array<{ created_at: string }>,
-        keyFn: (r: any) => string | null,
+      const { views: vAll, searches: sAll } = await loadTrendsActivity(sincePrevious, sellerScope);
+      const split = <Row extends { created_at: string },>(
+        rows: Row[],
+        keyFn: (r: Row) => string | null,
       ) => {
         let curTotal = 0, prevTotal = 0;
         const curUnique = new Set<string>(), prevUnique = new Set<string>();
@@ -294,7 +283,11 @@ export default function TrendsPage() {
   const displayLoadingSearches = demo ? false : loadingSearches;
   const displayLoadingDaily = demo ? false : loadingDaily;
 
-  const handleRefresh = () => { refetchProducts(); refetchSearches(); };
+  const handleRefresh = () => {
+    if (!queryEnabled) return;
+    void refetchProducts(); void refetchSearches(); void refetchDaily(); void refetchKpi();
+  };
+  const hasQueryError = !demo && [productsError, searchesError, dailyError, kpiError].some(Boolean);
 
   const handleExportProducts = () => {
     if (!displayProducts?.length) {
@@ -363,8 +356,15 @@ export default function TrendsPage() {
         {/* IA — só para managers */}
         {canManage && <TrendsInsightsCard days={days} />}
 
-        {/* KPIs */}
-        <TrendsKpiCards current={kpiCurrent} previous={kpiPrevious} />
+        {hasQueryError && (
+          <p role="alert" className="rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-sm">
+            Não foi possível carregar parte das tendências. Use Atualizar para tentar novamente.
+          </p>
+        )}
+
+        {/* Falha ou carregamento não representam atividade zero. */}
+        <TrendsKpiCards current={kpiCurrent} previous={kpiPrevious}
+          isLoading={loadingKpi} isError={kpiError} isDemo={demo} />
 
         {/* Funil + Demanda Reprimida */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
