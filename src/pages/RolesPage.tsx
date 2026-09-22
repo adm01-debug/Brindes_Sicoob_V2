@@ -1,196 +1,63 @@
-import { useState, useEffect } from 'react';
-import { untypedFrom } from '@/lib/supabase-untyped';
+import { Link } from 'react-router-dom';
 import { SidebarProvider, Sidebar, SidebarInset, SidebarTrigger } from '@/components/ui/sidebar';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { useToast } from '@/hooks/use-toast';
-import { Shield, Plus, Edit, Trash2, Users } from 'lucide-react';
+import { Shield, Users } from 'lucide-react';
 import { BackButton } from '@/components/common/BackButton';
-import { PageSEO } from "@/components/seo/PageSEO";
-
-interface Role {
-  id: string;
-  name: string;
-  description: string | null;
-  created_at: string;
-}
+import { PageSEO } from '@/components/seo/PageSEO';
+import { Constants } from '@/integrations/supabase/types';
+import { getRoleVisual } from '@/lib/roles';
 
 export default function RolesPage() {
-  const [roles, setRoles] = useState<Role[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [editingRole, setEditingRole] = useState<Role | null>(null);
-  const [formData, setFormData] = useState({ name: '', description: '' });
-  const { toast } = useToast();
-
-  useEffect(() => {
-    fetchRoles();
-  }, []);
-
-  const fetchRoles = async () => {
-    try {
-      const { data, error } = await untypedFrom<Role>('roles')
-        .select('*')
-        .order('name');
-
-      if (error) throw error;
-      setRoles(data || []);
-    } catch (error: any) {
-      toast({ title: 'Erro', description: error.message, variant: 'destructive' });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleSubmit = async () => {
-    try {
-      if (editingRole) {
-        const { error } = await untypedFrom<Role>('roles')
-          .update({ name: formData.name, description: formData.description })
-          .eq('id', editingRole.id);
-        if (error) throw error;
-        toast({ title: 'Role atualizada com sucesso' });
-      } else {
-        const { error } = await untypedFrom<Role>('roles')
-          .insert({ name: formData.name, description: formData.description });
-        if (error) throw error;
-        toast({ title: 'Role criada com sucesso' });
-      }
-      setIsDialogOpen(false);
-      setEditingRole(null);
-      setFormData({ name: '', description: '' });
-      fetchRoles();
-    } catch (error: any) {
-      toast({ title: 'Erro', description: error.message, variant: 'destructive' });
-    }
-  };
-
-  const handleEdit = (role: Role) => {
-    setEditingRole(role);
-    setFormData({ name: role.name, description: role.description || '' });
-    setIsDialogOpen(true);
-  };
-
-  const handleDelete = async (id: string) => {
-    try {
-      const { error } = await untypedFrom<Role>('roles').delete().eq('id', id);
-      if (error) throw error;
-      toast({ title: 'Role excluída com sucesso' });
-      fetchRoles();
-    } catch (error: any) {
-      toast({ title: 'Erro', description: error.message, variant: 'destructive' });
-    }
-  };
+  const roles = Constants.public.Enums.app_role;
 
   return (
     <SidebarProvider>
-      <PageSEO title="Roles" description="Gerencie perfis de acesso do sistema." path="/admin/roles" noIndex />
+      <PageSEO title="Perfis de acesso" description="Consulte os perfis de acesso do sistema." path="/admin/roles" noIndex />
       <div className="flex min-h-screen w-full">
         <Sidebar />
         <SidebarInset className="flex-1">
           <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
             <SidebarTrigger className="-ml-1" />
             <BackButton fallbackPath="/admin" />
-            <div className="flex-1">
-              <h1 className="font-display text-lg font-semibold">Gestão de Roles</h1>
-            </div>
+            <h1 className="font-display text-lg font-semibold">Perfis de acesso</h1>
           </header>
-          <main className="flex-1 w-full max-w-[1920px] mx-auto px-3 sm:px-4 lg:px-6 xl:px-8 py-3 sm:py-4 space-y-3 sm:space-y-4 pb-24 md:pb-6 animate-fade-in">
-            <div className="mx-auto max-w-4xl space-y-6">
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between">
-                  <div>
-                    <CardTitle className="flex items-center gap-2">
-                      <Shield className="h-5 w-5" />
-                      Roles do Sistema
-                    </CardTitle>
-                    <CardDescription>Gerencie as roles de acesso do sistema</CardDescription>
-                  </div>
-                  <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                    <DialogTrigger asChild>
-                      <Button onClick={() => { setEditingRole(null); setFormData({ name: '', description: '' }); }}>
-                        <Plus className="h-4 w-4 mr-2" />
-                        Nova Role
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent>
-                      <DialogHeader>
-                        <DialogTitle>{editingRole ? 'Editar Role' : 'Nova Role'}</DialogTitle>
-                      </DialogHeader>
-                      <div className="space-y-4 py-4">
-                        <div className="space-y-2">
-                          <Label>Nome</Label>
-                          <Input
-                            value={formData.name}
-                            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                            placeholder="ex: manager"
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label>Descrição</Label>
-                          <Textarea
-                            value={formData.description}
-                            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                            placeholder="Descrição da role..."
-                          />
-                        </div>
-                        <Button onClick={handleSubmit} className="w-full">
-                          {editingRole ? 'Atualizar' : 'Criar'}
-                        </Button>
-                      </div>
-                    </DialogContent>
-                  </Dialog>
-                </CardHeader>
-                <CardContent>
-                  {isLoading ? (
-                    <div className="flex justify-center py-8">
-                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
-                    </div>
-                  ) : (
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Nome</TableHead>
-                          <TableHead>Descrição</TableHead>
-                          <TableHead className="w-[100px]">Ações</TableHead>
+          <main className="mx-auto w-full max-w-[1920px] px-3 py-4 pb-24 sm:px-4 lg:px-6 xl:px-8">
+            <Card className="mx-auto max-w-4xl">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2"><Shield className="h-5 w-5" />Perfis disponíveis</CardTitle>
+                <CardDescription>
+                  Os perfis disponíveis são definidos pelo sistema. Atribua perfis a usuários ou ajuste suas permissões nas telas específicas.
+                </CardDescription>
+                <div className="flex flex-wrap gap-2 pt-2">
+                  <Button asChild variant="outline"><Link to="/admin/usuarios">Gerenciar usuários</Link></Button>
+                  <Button asChild variant="outline"><Link to="/admin/role-permissoes">Gerenciar permissões</Link></Button>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <Table>
+                  <TableHeader><TableRow><TableHead>Perfil</TableHead><TableHead>Descrição</TableHead></TableRow></TableHeader>
+                  <TableBody>
+                    {roles.map((role) => {
+                      const visual = getRoleVisual(role);
+                      return (
+                        <TableRow key={role}>
+                          <TableCell>
+                            <Badge variant="outline" className="inline-flex items-center gap-1">
+                              <Users className="h-3 w-3" />{visual.label}
+                            </Badge>
+                            <span className="ml-2 text-xs text-muted-foreground">{role}</span>
+                          </TableCell>
+                          <TableCell className="text-muted-foreground">{visual.description}</TableCell>
                         </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {roles.map((role) => (
-                          <TableRow key={role.id}>
-                            <TableCell>
-                              <Badge variant="outline" className="flex items-center gap-1 w-fit">
-                                <Users className="h-3 w-3" />
-                                {role.name}
-                              </Badge>
-                            </TableCell>
-                            <TableCell className="text-muted-foreground">
-                              {role.description || '-'}
-                            </TableCell>
-                            <TableCell>
-                              <div className="flex gap-2">
-                                <Button variant="ghost" size="icon" aria-label="Editar" onClick={() => handleEdit(role)}>
-                                  <Edit className="h-4 w-4" />
-                                </Button>
-                                <Button variant="ghost" size="icon" aria-label="Excluir" onClick={() => handleDelete(role.id)}>
-                                  <Trash2 className="h-4 w-4 text-destructive" />
-                                </Button>
-                              </div>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  )}
-                </CardContent>
-              </Card>
-            </div>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
           </main>
         </SidebarInset>
       </div>

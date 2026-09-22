@@ -1,6 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { untypedFrom } from '@/lib/supabase-untyped';
 import { logger } from "@/lib/logger";
 
 // =====================================================
@@ -36,6 +35,31 @@ export interface ColorFilters {
   nuances: ColorNuance[];
 }
 
+type ExternalColorGroup = Omit<ColorGroup, 'variations'>;
+type ExternalColorVariation = ColorVariation;
+
+function isCatalogUnavailable(payload: { _unconfigured?: boolean; error?: string } | null): boolean {
+  return payload?._unconfigured === true || payload?.error === 'CATALOG_NOT_CONFIGURED';
+}
+
+function externalRecords<T extends object>(response: { data?: unknown; error?: { message: string } | null }, label: string): T[] {
+  if (response.error) throw new Error(`Erro ao buscar ${label}: ${response.error.message}`);
+
+  const payload = response.data as {
+    data?: { records?: T[] };
+    records?: T[];
+    error?: string;
+    _unconfigured?: boolean;
+  } | null;
+  if (isCatalogUnavailable(payload)) {
+    throw new Error('O catálogo externo ainda não está configurado.');
+  }
+
+  const records = payload?.data?.records ?? payload?.records;
+  if (!Array.isArray(records)) throw new Error(`Resposta inválida ao buscar ${label} no catálogo externo.`);
+  return records;
+}
+
 // =====================================================
 // HELPER - Busca dados do banco externo Promobrind
 // =====================================================
@@ -52,12 +76,7 @@ async function fetchExternalColors() {
     }
   });
 
-  if (groupsResponse.error) {
-    throw new Error(`Erro ao buscar grupos de cores: ${groupsResponse.error.message}`);
-  }
-
-  // Resposta vem em data.data.records
-  const groups = groupsResponse.data?.data?.records || [];
+  const groups = externalRecords<ExternalColorGroup>(groupsResponse, 'grupos de cores');
 
   // Buscar variações de cores
   const variationsResponse = await supabase.functions.invoke('external-db-bridge', {
@@ -70,22 +89,18 @@ async function fetchExternalColors() {
     }
   });
 
-  if (variationsResponse.error) {
-    throw new Error(`Erro ao buscar variações de cores: ${variationsResponse.error.message}`);
-  }
-
-  const variations = variationsResponse.data?.data?.records || [];
+  const variations = externalRecords<ExternalColorVariation>(variationsResponse, 'variações de cores');
 
   // Mapear variações para seus grupos
-  const groupsWithVariations: ColorGroup[] = groups.map((group: Record<string, string>) => ({
+  const groupsWithVariations: ColorGroup[] = groups.map((group) => ({
     id: group.id,
     name: group.name,
     slug: group.slug || (group.name || '').toLowerCase().replace(/\s+/g, '-'),
     hex_code: group.hex_code,
     internal_code: group.internal_code,
     variations: variations
-      .filter((v: Record<string, string>) => v.group_id === group.id)
-      .map((v: Record<string, string>) => ({
+      .filter((v) => v.group_id === group.id)
+      .map((v) => ({
         id: v.id,
         name: v.name,
         slug: v.slug || (v.name || '').toLowerCase().replace(/\s+/g, '-'),
@@ -98,6 +113,24 @@ async function fetchExternalColors() {
   return groupsWithVariations;
 }
 
+async function fetchExternalNuances(): Promise<ColorNuance[]> {
+  const response = await supabase.functions.invoke('external-db-bridge', {
+    body: {
+      table: 'color_nuances',
+      operation: 'select',
+      filters: { is_active: true },
+      orderBy: { column: 'sort_order', ascending: true },
+      countMode: 'none',
+    },
+  });
+
+  return externalRecords<ColorNuance>(response, 'nuances de cores').map((nuance) => ({
+    id: nuance.id,
+    name: nuance.name,
+    slug: nuance.slug,
+  }));
+}
+
 // =====================================================
 // HOOK PRINCIPAL - Carrega toda a hierarquia de cores do Promobrind
 // =====================================================
@@ -108,19 +141,16 @@ export function useColorSystem() {
     queryFn: async () => {
       const groups = await fetchExternalColors();
       
-      // Nuances são mantidas localmente (acabamentos como Fosco, Brilhante, etc.)
-      const { data: nuances, error: nuancesError } = await untypedFrom<ColorNuance>('color_nuances')
-        .select('id, name, slug')
-        .eq('is_active', true)
-        .order('sort_order');
-
-      if (nuancesError) {
-        logger.warn('Nuances não encontradas localmente:', nuancesError);
+      let nuances: ColorNuance[] = [];
+      try {
+        nuances = await fetchExternalNuances();
+      } catch (error) {
+        logger.warn('Nuances não disponíveis no catálogo externo:', error);
       }
 
       return {
         groups,
-        nuances: nuances || []
+        nuances
       };
     },
     staleTime: 60 * 60 * 1000, // 1 hora
@@ -155,16 +185,7 @@ export function useColorNuances() {
   return useQuery<ColorNuance[]>({
     queryKey: ['color-nuances'],
     queryFn: async () => {
-      const { data, error } = await untypedFrom<ColorNuance>('color_nuances')
-        .select('id, name, slug')
-        .eq('is_active', true)
-        .order('sort_order');
-
-      if (error) {
-        throw new Error(`Falha ao carregar nuances: ${error.message}`);
-      }
-
-      return data || [];
+      return fetchExternalNuances();
     },
     staleTime: 60 * 60 * 1000,
   });
@@ -188,11 +209,7 @@ export function useColorVariations(groupId: string | null) {
         }
       });
 
-      if (response.error) {
-        throw new Error(`Falha ao carregar variações: ${response.error.message}`);
-      }
-
-      return (response.data?.data?.records || []).map((v: Record<string, string>) => ({
+      return externalRecords<ExternalColorVariation>(response, 'variações de cores').map((v) => ({
         id: v.id,
         name: v.name,
         slug: v.slug || (v.name || '').toLowerCase().replace(/\s+/g, '-'),

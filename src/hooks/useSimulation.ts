@@ -32,7 +32,6 @@ type SavedSimulationRawRow = {
   created_at: string;
   updated_at: string;
   client_id: string | null;
-  bitrix_clients: { id: string; name: string; ramo: string | null } | null;
 };
 
 export function useSimulation() {
@@ -144,7 +143,7 @@ export function useSimulation() {
     queryFn: async (): Promise<SavedSimulation[]> => {
       const { data, error } = await supabase
         .from("personalization_simulations")
-        .select<'*, bitrix_clients (id, name, ramo)', SavedSimulationRawRow>(`*, bitrix_clients (id, name, ramo)`)
+        .select<'*', SavedSimulationRawRow>('*')
         .order("created_at", { ascending: false })
         .limit(50);
       if (error) throw error;
@@ -161,7 +160,7 @@ export function useSimulation() {
         created_at: item.created_at,
         updated_at: item.updated_at,
         client_id: item.client_id,
-        bitrix_clients: item.bitrix_clients ?? null,
+        bitrix_clients: null,
       }));
     },
   });

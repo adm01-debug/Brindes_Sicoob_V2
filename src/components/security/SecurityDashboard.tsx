@@ -44,7 +44,7 @@ export function SecurityDashboard() {
   const isManagingOther = !!selectedUserId && selectedUserId !== user?.id;
   const selectedUser = users.find(u => u.user_id === selectedUserId);
 
-  const { metrics, loginAttempts, notifications, is2FAEnabled, allowedIPs } =
+  const { metrics, loginAttempts, notifications, is2FAEnabled, mfaStatusAvailable, allowedIPs } =
     useSecurityData(effectiveUserId, isManagingOther, selectedUserId);
 
   useEffect(() => {
@@ -56,7 +56,7 @@ export function SecurityDashboard() {
   }, [isAdmin]);
 
   const recommendations = [];
-  if (!is2FAEnabled) recommendations.push({ icon: <Key className="h-4 w-4" />, title: 'Ativar autenticação de dois fatores', description: isManagingOther ? 'Este usuário não possui 2FA ativado' : 'Adiciona uma camada extra de segurança à sua conta', priority: 'high' });
+  if (mfaStatusAvailable && !is2FAEnabled) recommendations.push({ icon: <Key className="h-4 w-4" />, title: 'Ativar autenticação de dois fatores', description: 'Adiciona uma camada extra de segurança à sua conta', priority: 'high' });
   if (allowedIPs.length === 0) recommendations.push({ icon: <Globe className="h-4 w-4" />, title: 'Configurar restrição de IP', description: 'Limite o acesso por endereços IP específicos', priority: 'medium' });
   if (metrics.failedLoginAttempts > 3) recommendations.push({ icon: <AlertTriangle className="h-4 w-4" />, title: 'Revisar tentativas de login falhas', description: 'Foram detectadas várias tentativas de login sem sucesso', priority: 'high' });
 
@@ -113,7 +113,7 @@ export function SecurityDashboard() {
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-2 text-sm">
-                  <div className="flex items-center gap-2">{is2FAEnabled ? <CheckCircle2 className="h-4 w-4 text-success" /> : <XCircle className="h-4 w-4 text-destructive" />}<span>MFA {is2FAEnabled ? 'ativo' : 'inativo'}</span></div>
+                  <div className="flex items-center gap-2">{mfaStatusAvailable && (is2FAEnabled ? <CheckCircle2 className="h-4 w-4 text-success" /> : <XCircle className="h-4 w-4 text-destructive" />)}<span>MFA {!mfaStatusAvailable ? 'não consultável' : is2FAEnabled ? 'ativo' : 'inativo'}</span></div>
                   <div className="flex items-center gap-2">{allowedIPs.length > 0 ? <CheckCircle2 className="h-4 w-4 text-success" /> : <XCircle className="h-4 w-4 text-muted-foreground" />}<span>{allowedIPs.length} IPs permitidos</span></div>
                   <div className="flex items-center gap-2"><Monitor className="h-4 w-4 text-muted-foreground" /><span>{metrics.knownDevicesCount} dispositivos</span></div>
                   <div className="flex items-center gap-2"><Activity className="h-4 w-4 text-muted-foreground" /><span>{metrics.recentLoginAttempts} logins recentes</span></div>
@@ -127,9 +127,9 @@ export function SecurityDashboard() {
           <CardHeader className="pb-2"><CardTitle className="text-sm font-medium flex items-center gap-2"><Key className="h-4 w-4" />MFA</CardTitle></CardHeader>
           <CardContent>
             <div className="flex items-center gap-2">
-              {is2FAEnabled ? <><Lock className="h-5 w-5 text-success" /><span className="text-lg font-semibold text-success">Ativo</span></> : <><Unlock className="h-5 w-5 text-destructive" /><span className="text-lg font-semibold text-destructive">Inativo</span></>}
+              {!mfaStatusAvailable ? <span className="text-sm text-muted-foreground">Status de MFA indisponível</span> : is2FAEnabled ? <><Lock className="h-5 w-5 text-success" /><span className="text-lg font-semibold text-success">Ativo</span></> : <><Unlock className="h-5 w-5 text-destructive" /><span className="text-lg font-semibold text-destructive">Inativo</span></>}
             </div>
-            <p className="text-xs text-muted-foreground mt-1">{is2FAEnabled ? 'Proteção extra ativada' : 'Recomendado ativar'}</p>
+            <p className="text-xs text-muted-foreground mt-1">{!mfaStatusAvailable ? 'Pontuação parcial: MFA não incluído' : is2FAEnabled ? 'Proteção extra ativada' : 'Recomendado ativar'}</p>
           </CardContent>
         </Card>
 

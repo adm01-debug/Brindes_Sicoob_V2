@@ -18,6 +18,10 @@ export { mapPromobrindToProduct } from '@/utils/product-mapper';
 import type { Product, ProductFilters } from '@/types/product-catalog';
 import { mapPromobrindToProduct } from '@/utils/product-mapper';
 
+function shouldRetryCatalog(failureCount: number, error: Error, maximum: number): boolean {
+  return failureCount < maximum && !/CATALOG_NOT_CONFIGURED|CATALOG_READ_ONLY/.test(error.message);
+}
+
 /**
  * Hook para buscar todos os produtos do catálogo externo.
  */
@@ -78,7 +82,7 @@ export function useProducts(
     staleTime: 10 * 60 * 1000,
     gcTime: 30 * 60 * 1000,
     refetchOnWindowFocus: false,
-    retry: 3,
+    retry: (failureCount, error) => shouldRetryCatalog(failureCount, error, 3),
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
     ...options,
   });
@@ -97,7 +101,7 @@ export function useProduct(id: string) {
     staleTime: 10 * 60 * 1000,
     gcTime: 30 * 60 * 1000,
     refetchOnWindowFocus: false,
-    retry: 2,
+    retry: (failureCount, error) => shouldRetryCatalog(failureCount, error, 2),
     retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 10000),
     enabled: !!id,
   });

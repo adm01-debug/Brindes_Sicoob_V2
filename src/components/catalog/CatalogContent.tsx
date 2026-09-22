@@ -25,6 +25,8 @@ interface CatalogContentProps {
   viewMode: ViewMode;
   shouldShowCatalogSkeleton: boolean;
   shouldShowEmptyState: boolean;
+  catalogError?: Error | null;
+  onRetryCatalog?: () => void;
   hasActiveCatalogConstraints: boolean;
   paginatedProducts: Product[];
   filteredProducts: Product[];
@@ -231,7 +233,7 @@ function VirtualList({ products, navigate, handleViewProduct, handleShareProduct
 
 // ─── CatalogContent — Orchestrator ──────────────────────────────────
 export function CatalogContent({
-  viewMode, shouldShowCatalogSkeleton, shouldShowEmptyState, hasActiveCatalogConstraints,
+  viewMode, shouldShowCatalogSkeleton, shouldShowEmptyState, catalogError, onRetryCatalog, hasActiveCatalogConstraints,
   paginatedProducts, filteredProducts, gridColumns, hasMoreProducts, isLoadingMore, totalEstimate,
   loadMoreRef, itemsPerPage, navigate, handleViewProduct, handleShareProduct,
   handleFavoriteProduct, isFavorite, toggleFavorite, isInCompare, onToggleCompare, canAddToCompare,
@@ -248,6 +250,23 @@ export function CatalogContent({
     selectionMode, selectedIds: sel.selectedIds, onToggleSelect: sel.toggleSelect,
     activeColorFilter,
   };
+
+  if (catalogError && paginatedProducts.length === 0) {
+    const configurationMissing = /CATALOG_NOT_CONFIGURED|CATALOG_READ_ONLY/.test(catalogError.message);
+    return (
+      <div className={`${CONTAINER_CLASS} p-4`} role="alert">
+        <EmptyState
+          variant="products"
+          title={configurationMissing ? "Catálogo temporariamente indisponível" : "Não foi possível carregar o catálogo"}
+          description={configurationMissing
+            ? "A consulta aos produtos ainda precisa ser configurada. Tente novamente mais tarde ou fale com a equipe responsável."
+            : "Houve uma falha na consulta aos produtos. Tente novamente em instantes."}
+          action={!configurationMissing && onRetryCatalog ? { label: "Tentar novamente", onClick: onRetryCatalog } : undefined}
+          className="min-h-[420px]"
+        />
+      </div>
+    );
+  }
 
   if (shouldShowEmptyState) {
     return (
