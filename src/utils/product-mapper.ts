@@ -58,6 +58,7 @@ function normalizeMarketingTags(tags: unknown): Product['tags'] {
     endomarketing: parseTagList(source.endomarketing),
     ramo: parseTagList(source.ramo),
     nicho: parseTagList(source.nicho),
+    temas: parseTagList(source.temas),
   };
 }
 

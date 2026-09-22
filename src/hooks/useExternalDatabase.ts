@@ -66,6 +66,13 @@ interface QueryResult<T> {
   count: number | null;
 }
 
+/** Envelope real devolvido pelo edge function external-db-bridge (ver index.ts). */
+interface EdgeFunctionEnvelope {
+  success?: boolean;
+  error?: string;
+  data?: unknown;
+}
+
 interface ExternalDatabaseState<T> {
   data: T[];
   count: number | null;
@@ -77,7 +84,11 @@ interface ExternalDatabaseState<T> {
 // HOOK PRINCIPAL
 // ============================================
 
-export function useExternalDatabase<T = Record<string, unknown>>(tableName: ExternalTable) {
+// T extends object (não Record<string, unknown>): interfaces nomeadas (ExternalProduct,
+// ExternalCategory etc.) não satisfazem Record<string, unknown> estruturalmente — mesma
+// armadilha documentada em supabase-untyped.ts. `object` já basta para excluir primitivos
+// do operando direito do `in` (linhas 147/157/174), que é o único motivo da constraint.
+export function useExternalDatabase<T extends object = Record<string, unknown>>(tableName: ExternalTable) {
   if (!tableName || typeof tableName !== 'string') {
     console.error(`[useExternalDatabase] Invalid tableName: ${JSON.stringify(tableName)}`);
   }
@@ -96,7 +107,7 @@ export function useExternalDatabase<T = Record<string, unknown>>(tableName: Exte
     setState(prev => ({ ...prev, isLoading: true, error: null }));
 
     try {
-      const { data, error } = await invokeWithRetry({
+      const { data: rawData, error } = await invokeWithRetry({
         table: tableName,
         operation,
         data: options?.data,
@@ -113,23 +124,25 @@ export function useExternalDatabase<T = Record<string, unknown>>(tableName: Exte
         throw new Error(message);
       }
 
+      const data = rawData as EdgeFunctionEnvelope | null;
+
       if (!data?.success) {
         throw new Error(data?.error || 'Erro desconhecido');
       }
 
       if (operation === 'select') {
         const result = data.data as QueryResult<T>;
-        setState(prev => ({ 
-          ...prev, 
-          data: result.records, 
+        setState(prev => ({
+          ...prev,
+          data: result.records,
           count: result.count,
-          isLoading: false 
+          isLoading: false
         }));
         return result;
-      } 
+      }
         setState(prev => ({ ...prev, isLoading: false }));
         return data.data as T;
-      
+
     } catch (err) {
       const errorMessage = await extractFunctionErrorMessage(err);
       setState(prev => ({ ...prev, error: errorMessage, isLoading: false }));
@@ -269,10 +282,29 @@ export function useExternalTags() {
   return useExternalDatabase<ExternalTag>('tags');
 }
 
-// Empresas/Clientes — MIGRADO para CRM externo
+/**
+ * @deprecated 'companies' não existe no external-db-bridge (Promobrind) — nem em
+ * PRODUCT_TABLES nem em BRIDGE_ALIASES. Empresas/clientes são servidas pelo CRM
+ * externo via crm-db-bridge. Use useCrmCompanies() de '@/hooks/useCrmCompanies'.
+ * Mantido com fallback vazio (mesmo padrão de useExternalBusinessSectors) para não
+ * quebrar consumidores legados (ex.: ExternalDatabaseTest.tsx).
+ */
 export function useExternalCompanies() {
   logger.warn("[DEPRECATED] useExternalCompanies() → use useCrmCompanies() from '@/hooks/useCrmCompanies'");
-  return useExternalDatabase<ExternalCompany>('companies');
+  return {
+    data: [] as ExternalCompany[],
+    count: null as number | null,
+    isLoading: false,
+    error: null as string | null,
+    fetchAll: async (_options?: Omit<QueryOptions, 'id'>) => null as QueryResult<ExternalCompany> | null,
+    fetchOne: async (_id: string, _select?: string) => null as ExternalCompany | null,
+    create: async (_data: Partial<ExternalCompany>) => null as ExternalCompany | null,
+    update: async (_id: string, _data: Partial<ExternalCompany>) => null as ExternalCompany | null,
+    remove: async (_id: string) => false,
+    refetch: async (_options?: Omit<QueryOptions, 'id'>) => null as QueryResult<ExternalCompany> | null,
+    invoke: async (_operation: Operation, _options?: QueryOptions & { data?: Partial<ExternalCompany> }) =>
+      null as ExternalCompany | QueryResult<ExternalCompany> | null,
+  };
 }
 
 export function useExternalClientContacts() {

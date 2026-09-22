@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
-import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import * as OTPAuth from 'otpauth';
+import { untypedFrom } from '@/lib/supabase-untyped';
 
 interface TwoFactorSettings {
   id: string;
@@ -9,6 +9,19 @@ interface TwoFactorSettings {
   is_enabled: boolean;
   enabled_at: string | null;
   created_at: string;
+}
+
+// user_2fa_settings existe na migration (20251231024837) mas não no types.ts
+// gerado — drift real (ver etapa 22 do plano), não um erro de tipagem local.
+interface TwoFactorSettingsRow {
+  id: string;
+  user_id: string;
+  totp_secret: string | null;
+  is_enabled: boolean;
+  backup_codes: string[] | null;
+  enabled_at: string | null;
+  created_at: string;
+  updated_at: string;
 }
 
 export function use2FA(targetUserId?: string) {
@@ -26,8 +39,7 @@ export function use2FA(targetUserId?: string) {
     }
 
     try {
-      const { data, error } = await supabase
-        .from('user_2fa_settings')
+      const { data, error } = await untypedFrom<TwoFactorSettingsRow>('user_2fa_settings')
         .select('id, user_id, is_enabled, enabled_at, created_at')
         .eq('user_id', effectiveUserId)
         .maybeSingle();
@@ -96,8 +108,7 @@ export function use2FA(targetUserId?: string) {
         Math.random().toString(36).substring(2, 10).toUpperCase()
       );
 
-      const { error } = await supabase
-        .from('user_2fa_settings')
+      const { error } = await untypedFrom<TwoFactorSettingsRow>('user_2fa_settings')
         .upsert({
           user_id: effectiveUserId,
           totp_secret: pendingSecret,
@@ -124,8 +135,7 @@ export function use2FA(targetUserId?: string) {
 
     try {
       // Buscar secret atual
-      const { data: currentSettings } = await supabase
-        .from('user_2fa_settings')
+      const { data: currentSettings } = await untypedFrom<TwoFactorSettingsRow>('user_2fa_settings')
         .select('totp_secret')
         .eq('user_id', effectiveUserId)
         .single();
@@ -143,8 +153,7 @@ export function use2FA(targetUserId?: string) {
         return { success: false, error: 'Código necessário' };
       }
 
-      const { error } = await supabase
-        .from('user_2fa_settings')
+      const { error } = await untypedFrom<TwoFactorSettingsRow>('user_2fa_settings')
         .update({
           is_enabled: false,
           totp_secret: null,

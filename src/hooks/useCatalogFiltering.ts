@@ -2,10 +2,11 @@
  * useCatalogFiltering — Filtering and sorting logic extracted from useCatalogState
  */
 import { useMemo } from "react";
-import type { Product } from "@/hooks/useProducts";
+import type { Product, ProductColor } from "@/hooks/useProducts";
 import type { FilterState } from "@/components/filters/FilterPanel";
 import type { SortOption } from "./useCatalogState";
 import { sortProducts } from "@/utils/product-sorting";
+import type { SupplierSalesEntry } from "@/hooks/useSupplierSalesRanking";
 
 interface CatalogFilteringOptions {
   realProducts: Product[];
@@ -20,7 +21,7 @@ interface CatalogFilteringOptions {
   categoryFilteredProductIds: Set<string>;
   isLoadingCategoryFilter: boolean;
   promoSalesMap?: Map<string, number>;
-  supplierSalesMap?: Map<string, number>;
+  supplierSalesMap?: Map<string, SupplierSalesEntry>;
 }
 
 export function useCatalogFiltering({
@@ -67,14 +68,14 @@ export function useCatalogFiltering({
 
     if (colorFilterSet.size > 0) {
       result = result.filter((p) =>
-        p.colors?.some((c: Record<string, string>) => colorFilterSet.has(c.name))
+        p.colors?.some((c: ProductColor) => colorFilterSet.has(c.name))
       );
     }
 
     if (colorGroupSet.size > 0) {
       const lowerGroupFilters = Array.from(colorGroupSet).map(s => s.toLowerCase());
       result = result.filter((p) =>
-        p.colors?.some((c: Record<string, string>) => {
+        p.colors?.some((c: ProductColor) => {
           const groupSlug = (c.groupSlug || '').toLowerCase().trim();
           const group = (c.group || '').toLowerCase().trim();
           if (colorGroupSet.has(groupSlug) || colorGroupSet.has(group)) return true;
@@ -87,7 +88,7 @@ export function useCatalogFiltering({
 
     if (colorVariationSet.size > 0) {
       result = result.filter((p) =>
-        p.colors?.some((c: Record<string, string>) => {
+        p.colors?.some((c: ProductColor) => {
           const variationSlug = (c.variationSlug || '').toLowerCase().trim();
           return colorVariationSet.has(variationSlug);
         })
@@ -133,7 +134,12 @@ export function useCatalogFiltering({
     if (!hasMaterialFilter && filters.materiais.length) {
       const lowerMateriais = filters.materiais.map(m => m.toLowerCase());
       result = result.filter((p) => {
-        const materialsStr = Array.isArray(p.materials) ? p.materials.join(' ').toLowerCase() : (p.materials || '').toLowerCase();
+        // p.materials é tipado como string[], mas dados legados/externos já vieram
+        // como string solta — tratamos como unknown pra manter a defesa em runtime.
+        const rawMaterials: unknown = p.materials;
+        const materialsStr = Array.isArray(rawMaterials)
+          ? rawMaterials.join(' ').toLowerCase()
+          : String(rawMaterials || '').toLowerCase();
         return lowerMateriais.some((m) => materialsStr.includes(m));
       });
     }

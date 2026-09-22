@@ -73,6 +73,8 @@ export interface Product {
     endomarketing: string[];
     ramo: string[];
     nicho: string[];
+    /** Regionalismo/temas Sicoob (Agro, Sul, Praia, Corporativo) — usado pelo filtro "temas", opcional pois raramente presente na origem. */
+    temas?: string[];
   };
 
   subcategory?: string;

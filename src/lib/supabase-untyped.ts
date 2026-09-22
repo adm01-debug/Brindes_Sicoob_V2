@@ -23,6 +23,7 @@ export interface UntypedFilterBuilder<T> extends PromiseLike<{ data: T[] | null;
 export interface UntypedQueryBuilder<T> {
   select(columns?: string): UntypedFilterBuilder<T>;
   insert(values: Partial<T> | Partial<T>[]): UntypedFilterBuilder<T>;
+  upsert(values: Partial<T> | Partial<T>[]): UntypedFilterBuilder<T>;
   update(values: Partial<T>): UntypedFilterBuilder<T>;
   delete(): UntypedFilterBuilder<T>;
 }

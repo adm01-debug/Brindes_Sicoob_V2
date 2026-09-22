@@ -388,3 +388,105 @@ imediatamente acima — não é supressão de um caso real, é o mesmo tipo de
 limite de inferência já documentado nos outros arquivos desta etapa.
 
 Sem teste dedicado no repo.
+
+## `use2FA.ts` (etapa 17, 8 → 0 erros)
+
+Causa: a tabela `user_2fa_settings` existe na migration
+`20251231024837_c924e1c3-b77f-4076-9cdc-195effdf6ea2.sql` mas está **ausente**
+do `src/integrations/supabase/types.ts` gerado — drift real entre schema e
+tipos (mesma classe de problema da etapa 22), confirmado via
+`grep -rn "user_2fa_settings" src/integrations/supabase/types.ts` (sem
+resultado). Todo `supabase.from('user_2fa_settings')` caía na união de erro
+genérica do client tipado.
+
+Corrigido substituindo os 4 pontos de chamada (`fetchSettings`, `enable2FA`,
+`disable2FA` × 2) por `untypedFrom<TwoFactorSettingsRow>('user_2fa_settings')`
+(`src/lib/supabase-untyped.ts`), com uma interface local documentando o
+drift. O helper `untypedFrom` não tinha suporte a `upsert` (só
+`select`/`insert`/`update`/`delete`) — adicionado ao
+`UntypedQueryBuilder<T>` porque `enable2FA` precisa de upsert real (criar ou
+atualizar as configurações de 2FA do usuário).
+
+Teste dedicado: `tests/hooks/use2FA.test.ts` — 6/6 passando.
+
+## `useCatalogFiltering.ts` (etapa 17, 8 → 0 erros)
+
+Quatro causas independentes:
+
+1. **Tipo solto em vez do tipo real**: os 3 callbacks de filtro de cor
+   usavam `(c: Record<string, string>)` em vez de `ProductColor`
+   (`@/hooks/useProducts`), que é o tipo real de `p.colors[]`.
+2. **Tipo da interface desalinhado com o dado real**: `supplierSalesMap` era
+   declarado como `Map<string, number>` na interface
+   `CatalogFilteringOptions`, mas o dado real (rastreado até
+   `useCatalogState.ts` → `useSupplierSalesRanking.ts`) é
+   `Map<string, SupplierSalesEntry>` — é o que `sortProducts()` já esperava.
+3. **Guarda defensiva narrowed a `never`**: o fallback de `materials` (linha
+   ~134) trata o caso de dado legado vindo como string solta em vez de
+   array, mas como `p.materials` é tipado como `string[]`, o TS provava a
+   branch `else` de `Array.isArray()` como inalcançável. Corrigido
+   re-tipando a variável local como `unknown` antes do `Array.isArray()`,
+   preservando a defesa em runtime sem `any`.
+4. **Achado real — filtro "temas" nunca conectado**: o "New Sicoob Theme
+   Filter" lê `p.tags?.temas`, campo que não existia em `Product['tags']`.
+   Investigação via `git log --all -S"New Sicoob Theme Filter"` encontrou um
+   único commit (`322509aa8`, `gpt-engineer-app[bot]`, 2026-05-17) que
+   introduziu o filtro e nunca mais tocou nele — o filtro está 100% ligado
+   na UI (`FilterPanel.tsx`, `useFilterPanelState.ts`,
+   `CatalogActiveFilters.tsx`) mas o campo de dado nunca existiu. Como
+   mapear "temas" pra um campo real (`ramo`? `nicho`?) é uma decisão de
+   negócio que não deve ser adivinhada (AGENTS.md, regra 1), a correção foi
+   deliberadamente conservadora: `temas?: string[]` como campo **opcional**
+   em `Product['tags']` (zero mudança de comportamento — resolve pra
+   `[]`/no-op exatamente como hoje) + espelhar o mesmo `parseTagList` dos
+   outros 5 campos de tag em `product-mapper.ts`, pra que o filtro passe a
+   funcionar automaticamente se a origem (JSONB `tags` do banco externo)
+   algum dia passar a enviar `temas`. Campo opcional evita tocar as ~40
+   construções literais de `Product['tags']` em
+   `src/data/mock-match-products.ts` (27 ocorrências, `Product` local
+   próprio, não afetado).
+
+Sem teste dedicado pro hook em si; suíte relacionada
+`tests/utils/product-mapper.test.ts` (afetada pela mudança #4) — 15/15
+passando.
+
+## `useExternalDatabase.ts` (etapa 17, 8 → 0 erros)
+
+Três causas independentes:
+
+1. **Fronteira não tipada**: `invokeWithRetry()`
+   (`src/lib/external-db/invoke.ts`) retorna
+   `Promise<{ data: unknown; error: Error | null }>`. O `data` era acessado
+   direto (`data?.success`, `data.data`, `data?.error`) sem cast, gerando
+   4 `TS2339`. Confirmado o envelope real devolvido pelo edge function
+   `external-db-bridge` via grep em
+   `supabase/functions/external-db-bridge/index.ts`
+   (`JSON.stringify({ data: result, success: true })`). Corrigido com uma
+   interface `EdgeFunctionEnvelope` local e um único cast na fronteira.
+2. **Genérico sem constraint quebrava o operador `in`**: `useExternalDatabase<T
+   = Record<string, unknown>>` permitia `T` estruturalmente primitivo, então
+   `'records' in result` (onde `result: T | QueryResult<T>`) falhava com
+   `TS2638` em 3 pontos. Primeira tentativa, `T extends Record<string,
+   unknown>`, **quebrou 22 dos 24 hooks especializados** (`useExternalProducts`,
+   `useExternalCategories` etc.) — interfaces nomeadas como `ExternalProduct`
+   não satisfazem `Record<string, unknown>` estruturalmente (mesma armadilha
+   já documentada em `supabase-untyped.ts`). Corrigido com `T extends object`,
+   que já é suficiente pra excluir primitivos do operando do `in` sem exigir
+   compatibilidade de index signature.
+3. **Tabela inválida em função já deprecated**: `useExternalCompanies()`
+   chamava `useExternalDatabase<ExternalCompany>('companies')`, mas
+   `'companies'` não existe nem em `PRODUCT_TABLES` nem em `BRIDGE_ALIASES`
+   do `external-db-bridge` (confirmado em `src/lib/external-db/tables.ts`) —
+   empresas/clientes são servidas por um bridge diferente
+   (`crm-db-bridge`, via `useCrmCompanies()`, já apontado pelo aviso de
+   deprecation existente). Não é só erro de tipo: a função já quebrava em
+   runtime (toast de erro) sempre que chamada. Confirmado que ainda é
+   chamada ao vivo em `src/pages/ExternalDatabaseTest.tsx` (rota dev
+   `/external-db-test`, atrás de `DevRoute`). Corrigido convertendo
+   `useExternalCompanies()` pro mesmo padrão de stub já usado em
+   `useExternalBusinessSectors()` (fallback vazio, sem chamar o bridge
+   errado), preservando a assinatura completa (`data`, `isLoading`, `error`,
+   `fetchAll`, etc.) que `ExternalDatabaseTest.tsx` consome — corrige o bug
+   de runtime pré-existente como efeito colateral, não muda a página.
+
+Sem teste dedicado no repo pra nenhum dos dois arquivos.
