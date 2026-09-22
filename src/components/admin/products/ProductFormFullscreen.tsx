@@ -228,7 +228,7 @@ export function ProductFormFullscreen({
     })(e);
   };
 
-  const currentStep = STEPS[stepIndex] ?? STEPS[0];
+  const currentStep = (STEPS[stepIndex] ?? STEPS[0])!;
   const hasPrev = stepIndex > 0;
   const hasNext = stepIndex < STEPS.length - 1;
   const isLast = stepIndex === STEPS.length - 1;
@@ -380,8 +380,8 @@ export function ProductFormFullscreen({
                 <ProductPreviewPanel
                   name={nameValue} sku={skuValue} salePrice={salePriceValue}
                   stockQuantity={stockQuantityValue} images={images} brand={brandValue}
-                  isFeatured={flags.is_featured} isNew={flags.is_new} isOnSale={flags.is_on_sale}
-                  isKit={formValues.is_kit ?? false} isActive={flags.is_active}
+                  isFeatured={flags.is_featured!} isNew={flags.is_new!} isOnSale={flags.is_on_sale!}
+                  isKit={formValues.is_kit ?? false} isActive={flags.is_active!}
                 />
               </div>
             )}

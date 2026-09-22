@@ -1318,3 +1318,38 @@ Verificado: `tscheck-files.mjs` → 0 erros (0 no programa inteiro).
 `check-eslint-baseline.mjs` → zero regressão. Sem teste dedicado.
 **Não verificado em runtime** — fix puramente de tipagem sem mudança
 de lógica.
+
+## `src/components/admin/products/ProductFormFullscreen.tsx` (etapa 17, 6 → 0 erros)
+
+Dois bugs de tipagem independentes no mesmo arquivo, ambos sob
+`noUncheckedIndexedAccess`:
+
+1. **`STEPS[stepIndex] ?? STEPS[0]`** (linhas 276, 285 — TS18048): `STEPS`
+   é um array literal const não-vazio (9 objetos `StepDef`), mas o `??`
+   não elimina `undefined` do tipo porque ambos os operandos — o acesso
+   indexado por `stepIndex` e o fallback `STEPS[0]` — são, cada um,
+   `StepDef | undefined` sob `noUncheckedIndexedAccess`. TS não sabe que
+   `STEPS[0]` é seguro para um array literal não-vazio. Corrigido com
+   asserção de não-nulo no resultado final: `(STEPS[stepIndex] ??
+   STEPS[0])!`.
+2. **`flags.is_featured` / `flags.is_new` / `flags.is_on_sale` /
+   `flags.is_active`** (linhas 383-384 — TS2322): `flags` é declarado
+   como `Record<string, boolean>` (não uma interface com chaves
+   nomeadas), então todo acesso por ponto vira `boolean | undefined`.
+   Esse tipo largo **não é acidental**: `flags` é passado adiante para
+   `ProductFormStepContent.tsx` → `ProductFlagsSection.tsx`, que faz
+   acesso dinâmico por colchete (`flags[key]`, linha 72) dentro de um
+   loop sobre uma configuração de flags — ou seja, o índice de string é
+   genuinamente necessário no tipo compartilhado. Reduzir o tipo de
+   `flags` na declaração quebraria esse consumidor dinâmico. Corrigido
+   com asserção de não-nulo pontual apenas nos 4 usos de leitura direta
+   dentro deste arquivo (`flags.is_featured!`, etc.), sem alterar o tipo
+   compartilhado entre os três arquivos.
+
+Verificado: `tscheck-files.mjs` → 0 erros (40 no programa inteiro).
+`check-eslint-baseline.mjs` → zero regressão. Sem teste dedicado para
+`ProductFormFullscreen.tsx` ou `ProductFlagsSection.tsx`.
+**Não verificado em runtime** — fix puramente de tipagem sem mudança
+de lógica; os 4 campos assertados (`is_featured`, `is_new`, `is_on_sale`,
+`is_active`) são sempre inicializados com `?? false` duas dezenas de
+linhas acima, então a asserção reflete uma garantia real do código.
