@@ -66,5 +66,23 @@
       "service_role_executable": 48
     }
   },
-  "secrets_in_artifact": false
+  "secrets_in_artifact": false,
+  "global_trigger_function_acl": {
+    "version": "20260922163000",
+    "file": "supabase/migrations/20260922163000_revoke_trigger_function_rpc_access.sql",
+    "md5": "f0a16d493e4a56e7878d6524bb2656de",
+    "ledger_hash_matches": true,
+    "before": {
+      "trigger_functions": 80,
+      "anon_executable": 63,
+      "authenticated_executable": 63
+    },
+    "after": {
+      "trigger_functions": 80,
+      "anon_executable": 0,
+      "authenticated_executable": 0,
+      "service_role_executable": 80
+    },
+    "remaining_security_definer_executable_by_anon": 96
+  }
 }

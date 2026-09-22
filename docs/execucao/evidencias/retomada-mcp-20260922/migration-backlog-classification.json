@@ -2,11 +2,11 @@
   "generated_from": {
     "ledger_date": "2026-09-22",
     "project_ref": "cfmzkthhgliqelozlmwu",
-    "inventory_generated_at": "2026-09-22T17:31:00Z"
+    "inventory_generated_at": "2026-09-22T17:38:00Z"
   },
   "source_hashes": {
-    "ledger_canonical_json_sha256": "1b5d37434946123d1a0ab53d2b8a7799bddb06922e02524ac81bfe3f02cd9146",
-    "inventory_canonical_json_sha256": "55776389b0b61c1309972de85e4a4bde6eccfc9aa0dbffef2fdbb4f77edc0e0a"
+    "ledger_canonical_json_sha256": "0b53e4bcaaa462e8c5e529fafe47d62abba063014323b02e6980bac1b395fb87",
+    "inventory_canonical_json_sha256": "a3b73da99b586e13e0a162da3679104511e994547867546c7c8b1fd171296bf7"
   },
   "scope": {
     "pending_versions": 468,
