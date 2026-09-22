@@ -88,10 +88,10 @@ export function BridgesLiveCard() {
     const totalMs = samples.reduce((acc, s) => acc + s.durationMs, 0);
     const sortedDur = samples.map(s => s.durationMs).sort((a, b) => a - b);
     const p50 = sortedDur.length
-      ? sortedDur[Math.min(sortedDur.length - 1, Math.floor(0.5 * sortedDur.length))]
+      ? sortedDur[Math.min(sortedDur.length - 1, Math.floor(0.5 * sortedDur.length))]!
       : 0;
     const p95 = sortedDur.length
-      ? sortedDur[Math.min(sortedDur.length - 1, Math.floor(0.95 * sortedDur.length))]
+      ? sortedDur[Math.min(sortedDur.length - 1, Math.floor(0.95 * sortedDur.length))]!
       : 0;
     return {
       total,

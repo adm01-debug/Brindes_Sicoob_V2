@@ -2501,3 +2501,19 @@ O código fazia `result as { products: ExternalProduct[]; count }`, mas `fetchPr
 - `check-eslint-baseline.mjs`: 0 regressões (3336 erros globais, referência `origin/main` em `ed88282fe2`).
 - Nenhum teste dedicado encontrado para este componente.
 - `typecheck:baseline`: 606 → 602 (338 arquivos), travado via `--update`.
+
+## BridgesLiveCard.tsx (etapa 17)
+
+**Arquivo:** `src/components/admin/telemetry/BridgesLiveCard.tsx`
+
+**Erros originais (4×):** TS2345 (linha 147, argumento `number | undefined` não atribuível a `number` em `formatMs(totals.p50Ms)`), TS18048×2 (linhas 153 e 155, `totals.p95Ms` possivelmente `undefined` em comparações relacionais), TS2345 (linha 160, mesmo padrão em `formatMs(totals.p95Ms)`).
+
+**Diagnóstico:** `p50` e `p95` são calculados via `sortedDur[Math.min(sortedDur.length - 1, Math.floor(f * sortedDur.length))]`. Sob `noUncheckedIndexedAccess`, todo acesso por índice a array retorna `T | undefined`, mesmo quando o índice é matematicamente garantido estar dentro dos limites — aqui, `Math.min(sortedDur.length - 1, ...)` clampa o índice ao intervalo válido `[0, length-1]`, e o próprio ternário só entra nesse ramo quando `sortedDur.length` é truthy (array não vazio). Ou seja, o acesso é estruturalmente seguro, mas o TS não consegue provar isso via análise de fluxo.
+
+**Fix aplicado:** asserção de não-nulo (`!`) nos dois acessos por índice (`sortedDur[...]!"`), preservando o fallback `: 0` para o caso de array vazio.
+
+**Validação:**
+- `tscheck-files.mjs`: 4 → 0 erros (0 no programa inteiro).
+- `check-eslint-baseline.mjs`: 0 regressões (3336 erros globais, referência `origin/main` em `c4508bbee2`).
+- Nenhum teste dedicado encontrado para este componente.
+- `typecheck:baseline`: 602 → 598 (337 arquivos), travado via `--update`.
