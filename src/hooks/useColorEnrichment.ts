@@ -33,7 +33,7 @@ interface UseColorEnrichmentOptions {
 
 // Cached reference tables (shared across instances)
 let cachedColorGroups: Array<{ id: string; slug: string }> | null = null;
-let cachedColorVariations: Array<{ id: string; name: string; slug: string; group_id: string; hex_code?: string }> | null = null;
+let cachedColorVariations: Array<{ id: string; name: string; slug: string; group_id: string; hex_code: string | null }> | null = null;
 
 /**
  * Returns a Map<productId, ColorEnrichmentData> for products matching the color filter.
@@ -253,17 +253,17 @@ export function useColorEnrichment({ productIds, colorGroups, colorVariations }:
               // Filter out main product images from variant images
               const productPrimaries = primaryImagesByProduct.get(productId);
               const validImages = v.images.filter(img => !productPrimaries?.has(img));
-              if (validImages.length > 0) { bestImage = validImages[0]; bestColorName = v.color_name; bestColorHex = v.color_hex; break; }
+              if (validImages.length > 0) { bestImage = validImages[0]!; bestColorName = v.color_name; bestColorHex = v.color_hex; break; }
               // Last resort: use first image even if it's a main image
-              if (v.images.length > 0) { bestImage = v.images[0]; bestColorName = v.color_name; bestColorHex = v.color_hex; break; }
+              if (v.images.length > 0) { bestImage = v.images[0]!; bestColorName = v.color_name; bestColorHex = v.color_hex; break; }
             }
           }
         }
 
         // Set color name/hex even without image
         if (!bestColorName && variants.length > 0) {
-          bestColorName = variants[0].color_name;
-          bestColorHex = variants[0].color_hex;
+          bestColorName = variants[0]!.color_name;
+          bestColorHex = variants[0]!.color_hex;
         }
 
         if (bestImage) withImage++; else withoutImage++;

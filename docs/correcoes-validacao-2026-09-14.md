@@ -2137,3 +2137,18 @@ erros (364 → 362 arquivos).
 - `check-eslint-baseline.mjs`: 0 regressões de lint.
 - Sem testes dedicados encontrados.
 - `typecheck:baseline`: 689 → 680 (355 arquivos), baseline atualizado com `--update`.
+
+## useColorEnrichment.ts (etapa 17)
+
+**Arquivo:** `src/hooks/useColorEnrichment.ts`
+
+**Diagnóstico:** 5 erros TS, 2 causas independentes:
+
+- **Cache de módulo com tipo mais estrito que o dado real** (linha 97): `cachedColorVariations` era declarado como `Array<{ ...; hex_code?: string }>` (campo opcional, `string | undefined`), mas o valor atribuído (linha 97, cast explícito) é `hex_code: string | null` — reflexo real da coluna nullable do banco, nunca ausente. Corrigido alinhando o tipo da variável de cache pra `hex_code: string | null`.
+- **Acessos por índice estruturalmente garantidos** (linhas 256, 258, 265, 266): `validImages[0]`/`v.images[0]` guardados por `if (validImages.length > 0)`/`if (v.images.length > 0)` na linha imediatamente anterior; `variants[0].color_name`/`.color_hex` guardado por `variants.length > 0` na condição do `if` que envolve o bloco. `noUncheckedIndexedAccess` não propaga essas garantias — corrigido com asserção de não-nulo nos 3 pontos (mesmo padrão já usado em `FocusTrap.tsx`/`useNewSupplierForm.ts`/`VolumeValidation.tsx`).
+
+**Validação:**
+- `tscheck-files.mjs`: 0 erro(s) (5 eliminados).
+- `check-eslint-baseline.mjs`: 0 regressões de lint.
+- Sem testes dedicados encontrados.
+- `typecheck:baseline`: 680 → 675 (354 arquivos), baseline atualizado com `--update`.
