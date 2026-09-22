@@ -2185,3 +2185,20 @@ erros (364 → 362 arquivos).
 - `check-eslint-baseline.mjs`: 0 regressões de lint (referência origin/main e89f82c6b4).
 - Teste dedicado `tests/hooks/useSpeechRecognition.test.ts` 1/1 passou.
 - `typecheck:baseline`: 668 → 663 (351 arquivos), baseline atualizado com `--update`.
+
+## forecast.ts (etapa 17)
+
+**Arquivo:** `src/lib/forecast.ts`
+**Erros:** 5× `TS2532` ("Object is possibly 'undefined'") sob `noUncheckedIndexedAccess`.
+
+**Diagnóstico:** todos os 5 acessos por índice são estruturalmente seguros em runtime, mas o TypeScript não consegue provar isso:
+- `linearRegression()`: `xs[i]` e `values[i]` são dois arrays paralelos de mesmo comprimento `n`, acessados dentro de `for (let i = 0; i < n; i++)` — 4 ocorrências (2 no loop de soma `num`/`den`, 1 no loop de resíduos `sumSq`).
+- `projectForecast()`: `series[series.length - 1]` é acessado logo após o guard `if (series.length < 3) return ...`, que garante `series.length >= 3` naquele ponto.
+
+**Correção:** asserções de non-null (`!`) nos 3 pontos de acesso (5 ocorrências), sem alterar lógica.
+
+**Validação:**
+- `tscheck-files.mjs`: 0 erro(s) nos arquivos pedidos (5 eliminados).
+- `check-eslint-baseline.mjs`: 0 regressões (referência origin/main b6c06ae465); 3342 erros globais (sem alteração — arquivo não tinha issues de lint).
+- Teste dedicado: não encontrado (`tests/**/*forecast*` vazio).
+- `typecheck:baseline`: 663 → 658 (350 arquivos), travado via `--update`.
