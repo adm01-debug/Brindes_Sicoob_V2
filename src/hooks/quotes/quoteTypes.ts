@@ -65,6 +65,7 @@ export interface Quote {
   discount_percent: number;
   discount_amount: number;
   total: number;
+  total_cost?: number | null;
   notes?: string;
   payment_terms?: string;
   delivery_time?: string;

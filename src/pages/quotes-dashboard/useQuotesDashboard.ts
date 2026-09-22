@@ -88,7 +88,7 @@ export function useQuotesDashboard() {
       case "year": startDate = subMonths(startOfMonth(now), 11); break;
     }
 
-    let filtered = quotes.filter(q => new Date(q.created_at) >= startDate);
+    let filtered = quotes.filter(q => new Date(q.created_at!) >= startDate);
     if (selectedClientId !== "all") filtered = filtered.filter(q => q.client_id === selectedClientId);
 
     const totalQuotes = filtered.length;
@@ -107,7 +107,7 @@ export function useQuotesDashboard() {
     const withResponse = filtered.filter(q => q.client_response_at && (q.status === "approved" || q.status === "rejected"));
     let averageResponseTime = 0;
     if (withResponse.length > 0) {
-      averageResponseTime = withResponse.reduce((s, q) => s + differenceInHours(new Date(q.client_response_at!), new Date(q.created_at)), 0) / withResponse.length;
+      averageResponseTime = withResponse.reduce((s, q) => s + differenceInHours(new Date(q.client_response_at!), new Date(q.created_at!)), 0) / withResponse.length;
     }
 
     const statusCounts = filtered.reduce((a, q) => { a[q.status] = (a[q.status] || 0) + 1; return a; }, {} as Record<string, number>);
@@ -117,7 +117,7 @@ export function useQuotesDashboard() {
     }));
 
     const monthlyGroups = filtered.reduce((a, q) => {
-      const m = format(new Date(q.created_at), "MMM", { locale: ptBR });
+      const m = format(new Date(q.created_at!), "MMM", { locale: ptBR });
       if (!a[m]) a[m] = { month: m, total: 0, approved: 0, rejected: 0, value: 0, profit: 0 };
       a[m].total++;
       if (q.status === "approved") {
@@ -214,7 +214,7 @@ export function useQuotesDashboard() {
       doc.setFontSize(13); doc.text("Últimas Respostas de Clientes", 14, startY);
       autoTable(doc, { startY: startY + 4, head: [["Orçamento", "Status", "Data", "Valor"]],
         body: recentResponses.map(q => [
-          q.quote_number || q.id,
+          q.quote_number || q.id || "",
           statusConfig[q.status]?.label || q.status,
           q.client_response_at ? format(new Date(q.client_response_at), "dd/MM/yyyy HH:mm") : "-",
           formatCurrency(q.total || 0),

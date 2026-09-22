@@ -1839,3 +1839,50 @@ dedicado encontrado para este arquivo.
 
 Baseline de typecheck do projeto atualizado: 774 → 768 erros (373 → 372
 arquivos).
+
+## useQuotesDashboard.ts (etapa 17)
+
+6 erros TS, 2 causas de drift entre o tipo de domínio `Quote`
+(`src/hooks/quotes/quoteTypes.ts`) e o schema real do BD
+(`src/integrations/supabase/types.ts`):
+
+1. `total_cost` (linhas 100, 126) — coluna real `quotes.total_cost: number
+   | null` existe no BD (usada pro cálculo de lucro bruto/margem do
+   dashboard) mas nunca foi declarada no tipo de domínio `Quote` — drift de
+   schema, mesma categoria dos achados de `total_cost`/`use2FA.ts` em
+   etapas anteriores. Corrigido adicionando `total_cost?: number | null` ao
+   `Quote` (fonte, não cast pontual). **Achado bônus**: a mesma adição
+   zerou de graça 1 erro idêntico pré-existente em
+   `QuoteKanbanBoard.tsx:454` (`quote.total_cost || 0`), fora do escopo
+   desta etapa.
+2. `created_at` (linhas 91, 110, 120) — `Quote.created_at?: string` é
+   opcional no tipo de domínio (correto: cobre orçamento em memória ainda
+   não persistido, ex. `Partial<Quote>` durante criação), mas a coluna real
+   é `NOT NULL` e os `quotes` consumidos aqui vêm 100% de
+   `useQuotes()`/`QuoteService.list()` — sempre linhas já persistidas.
+   Corrigido com asserção de não-nulo (`q.created_at!`) nos 3 usos dentro
+   de `new Date(...)`/`format(...)`, sem alargar nem estreitar o tipo
+   compartilhado (que precisa continuar opcional pros outros consumidores
+   que lidam com orçamento em criação).
+3. Linha 216 — `q.quote_number || q.id` no export de PDF podia resultar em
+   `string | undefined` (ambos opcionais em `Quote`) passado pra
+   `RowInput` do `jspdf-autotable`, que não aceita `undefined`. Corrigido
+   com fallback final `|| ""` (nunca dispara na prática — mesmo raciocínio
+   de "sempre populado" do item 2 — mas evita literal `"undefined"` na
+   tabela caso algum dia não esteja).
+
+Verificado: `tscheck-files.mjs` → 0 erros nos 2 arquivos (34 → 28 no
+programa inteiro, medido antes do merge abaixo). `check-eslint-baseline.mjs`
+→ zero regressão (referência já em `518a816b6`, confirmando que o push
+anterior chegou). Nenhum teste dedicado encontrado.
+
+**Nota**: entre a validação acima e o commit, `origin/main` avançou com o
+PR externo `#12` ("Reconcilia contratos, protege passkeys e torna regras de
+grupo atômicas", commit `9bf9b2554`), que regenerou
+`src/integrations/supabase/types.ts` e trouxe outras melhorias de tipo não
+relacionadas a esta etapa. Fast-forward local limpo (sem conflito nos
+arquivos desta correção), `npm install` pra sincronizar `package-lock.json`,
+e reconfirmado `tscheck-files.mjs` → 0 erros nos 2 arquivos contra o
+`types.ts` novo antes de recomputar o baseline global. Baseline de
+typecheck do projeto atualizado pra refletir o estado combinado (esta
+correção + PR #12): 746 erros em 368 arquivos.
