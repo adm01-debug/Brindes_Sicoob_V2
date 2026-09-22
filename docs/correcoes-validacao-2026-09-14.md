@@ -1917,3 +1917,58 @@ inteiro). `check-eslint-baseline.mjs` → zero regressão (referência já em
 `bee873b314`, confirmando que o push anterior chegou). Nenhum teste
 dedicado encontrado para esta página. Baseline de typecheck do projeto
 atualizado: 746 → 743 erros (368 → 367 arquivos).
+
+## OrderService.ts + src/types/orders.ts (etapa 17)
+
+6 erros de tipo, 3 causas independentes:
+
+1. Linhas 126, 132 — `OrderInvoice` (tipo hand-written em `src/types/orders.ts`)
+   nunca correspondeu à tabela real `order_invoices`: campos inventados
+   `file_url`/`total_amount` (nulável) vs. reais `pdf_url`/`xml_url`/`amount`
+   (NOT NULL)/`status`/`serie`/`issue_date`/`due_date`/`notes`/`created_by`/
+   `updated_at` (confirmado em `src/integrations/supabase/types.ts:4998`).
+   Corrigido reescrevendo `OrderInvoice` pra bater com o schema real.
+   **Achado bônus de código morto confirmado**: `OrderService.listInvoices`/
+   `addInvoice` não têm NENHUM chamador em todo o app (`grep` de
+   `OrderService.listInvoices\|OrderService.addInvoice` não retornou nada).
+   A UI real de notas fiscais (`OrderInvoicesManager.tsx`,
+   `OrderInvoicesTab.tsx`) usa o hook `useOrderInvoices.ts`, que consulta
+   diretamente a tabela `sicoob_order_invoices` (schema totalmente
+   diferente) via `supabase.rpc('add_sicoob_order_invoice', ...)`. Ou seja,
+   `order_invoices`/`OrderInvoice`/`listInvoices`/`addInvoice` formam um
+   sistema de NF paralelo, nunca conectado a nenhuma tela — não removido
+   nesta etapa (fora do escopo de "zerar erro de tipo", risco de deletar
+   contrato que outro agente/PR possa estar prestes a conectar), mas
+   sinalizado aqui pra quem for revisar arquitetura de notas fiscais.
+   `addInvoice(orderId, values: Partial<OrderInvoice>)` ainda falhava o
+   overload de `insert` mesmo com o tipo corrigido, porque `Partial<...>`
+   torna `invoice_number`/`amount` (únicos campos NOT NULL sem default)
+   opcionais — corrigido com `Partial<OrderInvoice> & Pick<OrderInvoice,
+   "invoice_number" | "amount">`.
+2. Linhas 356, 382 — `duplicate()` desestruturava `{ order: original, items
+   }` do retorno de `getById()` (que pode ser `null`) ANTES do guard
+   `if (!original) throw ...`, que na verdade checava o campo interno, não
+   o objeto. TypeScript corretamente rejeitava a desestruturação direta de
+   um tipo `{...} | null`. Corrigido: `const result = await
+   this.getById(orderId); if (!result) throw ...; const { order: original,
+   items } = result;`. **Achado bônus**: essa mesma correção zerou de graça
+   o erro em cascata na linha 382 (`it` implícito `any` no
+   `.map()` de `items`) — sem o guard, o TS não conseguia propagar o tipo
+   `OrderItem[]` através da desestruturação de um tipo unido a `null`.
+3. Linha 504 — `convertQuoteToOrder` retornava `order` (do
+   `.select("id, order_number, status, total").single()`, onde `total:
+   number | null` reflete a coluna real) diretamente como `ConvertedOrder`,
+   que exige `total: number`. Na prática o valor nunca é `null` nesse call
+   site (`quote.total` é `NOT NULL` em `Quote` e é o valor inserido —
+   linha 468), mas o tipo da coluna no BD permite `null` por design mais
+   amplo. Corrigido com fallback `total: order.total ?? 0` no retorno, sem
+   alargar `ConvertedOrder` (único consumidor, `useOrders.ts`, nem usa o
+   campo `total` no `onSuccess`).
+
+Verificado: `tscheck-files.mjs` → 0 erros nos 2 arquivos (7 → 1 no programa
+probe, resíduo de dependência pré-existente fora do escopo). `tsc --noEmit`
+completo do projeto → 743 → 737 erros (exatamente os 6 corrigidos, sem
+regressão). `check-eslint-baseline.mjs` → zero regressão (referência já em
+`27d89ee683`, confirmando que o push anterior chegou). Teste dedicado
+`tests/services/orderService.test.ts` → 5/5 passou. Baseline de typecheck
+do projeto atualizado: 743 → 737 erros (367 → 366 arquivos).

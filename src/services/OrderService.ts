@@ -126,7 +126,7 @@ export class OrderService {
     return data as OrderInvoice[];
   }
 
-  static async addInvoice(orderId: string, values: Partial<OrderInvoice>) {
+  static async addInvoice(orderId: string, values: Partial<OrderInvoice> & Pick<OrderInvoice, "invoice_number" | "amount">) {
     const { data, error } = await supabase
       .from("order_invoices")
       .insert({ order_id: orderId, ...values })
@@ -353,8 +353,9 @@ export class OrderService {
   }
 
   static async duplicate(orderId: string, sellerId: string): Promise<OrderRow> {
-    const { order: original, items } = await this.getById(orderId);
-    if (!original) throw new Error("Pedido não encontrado");
+    const result = await this.getById(orderId);
+    if (!result) throw new Error("Pedido não encontrado");
+    const { order: original, items } = result;
 
     // Copy logistics if exists
     const logistics = await this.getLogistics(orderId);
@@ -501,7 +502,7 @@ export class OrderService {
       
       if (updErr) throw updErr;
 
-      return order;
+      return { ...order, total: order.total ?? 0 };
     } catch (error: any) {
       logger.error("Error converting quote to order:", error);
       throw error;

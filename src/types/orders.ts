@@ -65,10 +65,18 @@ export interface OrderInvoice {
   id: string;
   order_id: string;
   invoice_number: string;
+  amount: number;
+  status: string;
   access_key: string | null;
-  file_url: string | null;
-  total_amount: number | null;
+  serie: string | null;
+  issue_date: string | null;
+  due_date: string | null;
+  pdf_url: string | null;
+  xml_url: string | null;
+  notes: string | null;
+  created_by: string | null;
   created_at: string;
+  updated_at: string;
 }
 
 export interface OrderComment {
