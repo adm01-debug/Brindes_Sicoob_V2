@@ -2,7 +2,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 export const sicoobBudgetService = {
   async getBudgets(filters?: { pa_id?: string; cooperative_id?: string }) {
-    let query = supabase.from("sicoob_budgets").select("*, postos_atendimento(nome)");
+    let query = supabase.from("pa_budgets").select("*, postos_atendimento(nome)");
 
     if (filters?.pa_id && filters.pa_id !== "all") {
       query = query.eq("pa_id", filters.pa_id);
@@ -18,7 +18,7 @@ export const sicoobBudgetService = {
 
   async getBudgetByPa(paId: string) {
     const { data, error } = await supabase
-      .from("sicoob_budgets")
+      .from("pa_budgets")
       .select("*")
       .eq("pa_id", paId)
       .maybeSingle();
@@ -32,8 +32,8 @@ export const sicoobBudgetService = {
     if (!budget) return;
 
     const { error } = await supabase
-      .from("sicoob_budgets")
-      .update({ used_amount: usedAmount, updated_at: new Date().toISOString() })
+      .from("pa_budgets")
+      .update({ verba_consumida: usedAmount, updated_at: new Date().toISOString() })
       .eq("pa_id", paId);
 
     if (error) throw error;

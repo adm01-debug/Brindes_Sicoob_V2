@@ -1169,3 +1169,71 @@ passando. `npm run typecheck:baseline` → zero regressão (917 vs.
 baseline 928, 5 arquivos melhoraram: `RolesPage.tsx` + as 3 páginas
 que ganharam o fix de `fallbackPath` + `BackButton.tsx`); `--update`
 travou o ganho (928 → 917 erros, 403 → 400 arquivos).
+
+## `src/pages/sicoob/PAWalletPage.tsx` (etapa 17, 7 → 0 erros — **3 bugs reais ao vivo em produção**, não drift de tipos)
+
+Nenhuma das 3 causas raízes era drift comum de tipos gerados — todas
+eram bugs genuínos que quebravam a feature de verba do PA em produção
+há tempo indeterminado:
+
+1. **Tabela errada em `budgetService.ts`**: `getBudgetByPa()` (única
+   função realmente consumida, por `PAWalletPage.tsx` e
+   `useSicoobBudget.ts`) consultava `supabase.from("sicoob_budgets")`
+   — essa tabela **não existe** no banco (confirmado: zero ocorrência
+   em `types.ts` gerado e zero migration que a crie). A tabela real é
+   `pa_budgets` (colunas `verba_consumida`/`verba_total`/`limite_alcada`/
+   `pa_id`, FK pra `postos_atendimento`) — o próprio
+   `BudgetExceededBanner.tsx` já referenciava `budget.verba_consumida`/
+   `budget.verba_total` corretamente, confirmando que esses são os
+   nomes certos e que só o nome da tabela estava errado. Resultado em
+   produção: toda consulta de verba sempre retornava `null`
+   (`.maybeSingle()` contra tabela inexistente), `PAWalletPage`
+   sempre mostrava R$ 0,00 em tudo, e `BudgetExceededBanner`
+   (renderizado condicionalmente a partir do mesmo hook) **nunca
+   disparava o alerta de verba estourada** — `if (!budget) return
+   null;` sempre era `true`. Corrigido renomeando as 3 ocorrências de
+   `"sicoob_budgets"` pra `"pa_budgets"` em `getBudgets()`,
+   `getBudgetByPa()` e `updateBudget()` (as 3 únicas queries do
+   arquivo); achado bônus ao corrigir `updateBudget()` (código morto,
+   zero chamadores, mas já estava sendo tocado): também usava a coluna
+   fictícia `used_amount` em vez da real `verba_consumida` — corrigido
+   junto, mesmo fix, zero custo adicional.
+
+2. **Campo inventado em `PAWalletPage.tsx`**: linha 114 lia
+   `budget?.current_spent`, coluna que nunca existiu — o restante do
+   mesmo arquivo (linhas 78-79) já usava corretamente
+   `budget.verba_consumida`. Corrigido pro nome real, consistente com
+   o resto do arquivo.
+
+3. **`indicatorClassName` nunca implementado em `Progress`**
+   (`src/components/ui/progress.tsx`): o componente compartilhado
+   nunca aceitava essa prop — o indicador tinha `className` fixo
+   (`"h-full w-full flex-1 bg-primary transition-all"`), sem nenhum
+   jeito de sobrescrever a cor. Grep confirmou **5 arquivos** já
+   passando `indicatorClassName` esperando que funcionasse
+   (`PAWalletPage.tsx`, `PADashboardPage.tsx`,
+   `WebVitalsPanel.tsx`, `SLABadge.tsx`,
+   `OrderBudgetIntelligence.tsx`) — em todos, a barra de progresso
+   nunca mudava de cor (ex.: nunca ficava vermelha acima de 90% de
+   consumo de verba, nem em SLA estourado). Mesmo padrão do achado de
+   `BackButtonProps.fallbackPath` desta mesma etapa: prop usada em
+   múltiplos call-sites, nunca implementada no componente
+   compartilhado. Corrigido adicionando
+   `indicatorClassName?: string` à assinatura e aplicando via
+   `cn(..., indicatorClassName)` no `ProgressPrimitive.Indicator`.
+   Fix de 2 linhas que resolve o bug visual nos 5 arquivos de uma vez.
+
+Verificado: `tscheck-files.mjs` → 0 erros em todos os 5 arquivos
+tocados (9 no programa inteiro, não relacionados). Confirmado via
+`tscheck-files.mjs` que o `TS2322` de `indicatorClassName` também
+desapareceu dos outros 4 consumidores (`WebVitalsPanel.tsx`,
+`SLABadge.tsx`, `OrderBudgetIntelligence.tsx`, `PADashboardPage.tsx`
+— este último com 1 erro pré-existente não relacionado, fora do
+escopo). `check-eslint-baseline.mjs` → zero regressão. Sem teste
+dedicado (grep encontrou só falsos-positivos pela palavra
+"progress"). `npm run typecheck:baseline` → zero regressão (897 vs.
+baseline 917, 7 arquivos melhoraram); `--update` travou o ganho (917
+→ 897 erros, 400 → 394 arquivos). **Não verificado em runtime** —
+mesma limitação de acesso desta sessão (sem ambiente rodando pra
+smoke-test visual), mas o fix é puramente de nomes reais confirmados
+no schema gerado, sem lógica nova.

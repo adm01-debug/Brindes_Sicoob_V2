@@ -111,7 +111,7 @@ export default function PAWalletPage() {
               <TrendingUp className="h-4 w-4 text-destructive" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-destructive">{formatCurrency(budget?.current_spent || 0)}</div>
+              <div className="text-2xl font-bold text-destructive">{formatCurrency(budget?.verba_consumida || 0)}</div>
               <p className="text-xs text-muted-foreground mt-1">{spentPercent.toFixed(1)}% do limite utilizado</p>
             </CardContent>
           </Card>
