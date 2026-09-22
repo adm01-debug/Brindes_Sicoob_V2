@@ -78,9 +78,24 @@ export function calcularPreco(
   quantidade: number,
   numeroCores?: number
 ): ResultadoCalculoPreco {
+  // Tabela sem faixas configuradas: retorna preço zerado em vez de quebrar
+  if (tabela.faixas.length === 0) {
+    return {
+      tabelaId: tabela.id,
+      codigoTabela: tabela.codigoTabelaOpcao,
+      quantidade,
+      faixaUtilizada: 0,
+      precoUnitario: 0,
+      precoTotal: 0,
+      precoSetup: tabela.precoSetup,
+      precoManuseio: tabela.precoManuseio,
+      slaDias: null,
+    };
+  }
+
   // Encontrar a faixa correta
-  let faixaUtilizada = tabela.faixas[0];
-  
+  let faixaUtilizada = tabela.faixas[0]!;
+
   for (const faixa of tabela.faixas) {
     if (quantidade >= faixa.quantidadeMinima) {
       faixaUtilizada = faixa;
@@ -119,13 +134,16 @@ export function calcularPreco(
  * Extrai faixas de preço
  */
 export function extractPriceTiersFromTabela(tabela: TabelaPrecoTecnica): PriceTier[] {
-  return tabela.faixas.map((f, idx, arr) => ({
-    tierIndex: f.faixa,
-    minQuantity: f.quantidadeMinima,
-    maxQuantity: arr[idx + 1] ? arr[idx + 1].quantidadeMinima - 1 : null,
-    unitPrice: f.precoUnitario,
-    slaDays: f.slaDias,
-  }));
+  return tabela.faixas.map((f, idx, arr) => {
+    const proxima = arr[idx + 1];
+    return {
+      tierIndex: f.faixa,
+      minQuantity: f.quantidadeMinima,
+      maxQuantity: proxima ? proxima.quantidadeMinima - 1 : null,
+      unitPrice: f.precoUnitario,
+      slaDays: f.slaDias,
+    };
+  });
 }
 
 /**
@@ -136,19 +154,19 @@ export function calculatePriceForQuantity(
   quantity: number
 ): PriceCalculation | null {
   if (tabela.faixas.length === 0) return null;
-  
-  let selectedFaixa = tabela.faixas[0];
+
+  let selectedFaixa = tabela.faixas[0]!;
   for (const faixa of tabela.faixas) {
     if (quantity >= faixa.quantidadeMinima) {
       selectedFaixa = faixa;
     }
   }
-  
+
   const unitPrice = selectedFaixa.precoUnitario;
   const totalPrice = unitPrice * quantity;
   const grandTotal = totalPrice + tabela.precoSetup + tabela.precoManuseio;
-  
-  const minPrice = tabela.faixas[0].precoUnitario;
+
+  const minPrice = tabela.faixas[0]!.precoUnitario;
   const savingsPerUnit = minPrice - unitPrice;
   const percentageOff = minPrice > 0 ? ((minPrice - unitPrice) / minPrice) * 100 : 0;
   

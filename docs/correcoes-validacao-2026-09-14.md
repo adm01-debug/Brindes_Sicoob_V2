@@ -914,3 +914,55 @@ Verificado: `tscheck-files.mjs` → 0 erros (24 no programa inteiro).
 complexidade). `npm run typecheck:baseline` → zero regressão (949 vs.
 baseline 956, 1 arquivo melhorou); `--update` travou o ganho
 (956 → 949 erros, 407 → 406 arquivos). Sem teste dedicado.
+
+## `src/hooks/tecnicas/usePrecoCalculation.ts` (etapa 17, 7 → 0 erros — **2º achado real de bug de crash em produção nesta etapa**)
+
+Todos os 7 erros eram da família `noUncheckedIndexedAccess`
+(TS18048/TS2532) em acesso a `tabela.faixas[N]`, mas cada um pedia um
+diagnóstico diferente:
+
+- `calcularPreco()` fazia `let faixaUtilizada = tabela.faixas[0];`
+  **sem nenhum guard de `.length`** antes — diferente de
+  `calculatePriceForQuantity()`, que já tinha
+  `if (tabela.faixas.length === 0) return null;`. Investigado se
+  `tabela.faixas` pode legitimamente vir vazio: `faixas` é montado em
+  `rawToTabelaPrecoTecnica()` (`src/lib/personalization/transformers.ts:72-88`)
+  varrendo as colunas `min_qty_1..15`/`price_1..15` do banco e só
+  empurrando uma faixa quando ambas não são `null` — ou seja, uma
+  tabela de preço cadastrada sem nenhuma faixa preenchida gera
+  `faixas: []` de verdade, não é um estado impossível. E
+  `calcularPreco()` é chamado em `PricingPanel.tsx:127`
+  (`getSimulacao`) dentro de um `.map(tabelasGrupo)` sem guard nenhum,
+  renderizando `formatCurrency(simulacao.precoUnitario)`
+  incondicionalmente (`PricingPanel.tsx:342`) — ou seja, qualquer
+  tabela de preço sem faixas configuradas quebraria esse painel em
+  produção com `TypeError: Cannot read properties of undefined
+  (reading 'precoUnitario')`. Mesmo padrão de bug do achado anterior
+  em `OrderStatsBar.tsx`: o TS só expôs porque o tipo do array não
+  garante não-vazio.
+  Corrigido com um guard no topo de `calcularPreco()` (mesmo espírito
+  do já existente em `calculatePriceForQuantity()`), retornando um
+  `ResultadoCalculoPreco` zerado (`precoUnitario: 0`, `precoTotal: 0`,
+  `slaDias: null`) em vez de deixar propagar `undefined` — mantém a
+  assinatura não-nula da função (único chamador não trata `null`) e o
+  painel mostra R$ 0,00 em vez de quebrar a tela.
+- `calculatePriceForQuantity()` (linha 138) já tinha o guard
+  `.length === 0`, mas TS não propaga essa checagem pro tipo do acesso
+  indexado seguinte (`tabela.faixas[0]`) — precisa de `!` explícito no
+  ponto de uso mesmo already-guarded. Aplicado `!` em
+  `tabela.faixas[0]!` (linha 140) e `tabela.faixas[0]!.precoUnitario`
+  (linha 151), justificado pelo guard 3 linhas acima.
+- `extractPriceTiersFromTabela()`: `arr[idx + 1] ?
+  arr[idx + 1].quantidadeMinima - 1 : null` fazia acesso duplo ao
+  mesmo índice — clássico caso em que o TS não consegue provar que a
+  segunda leitura ainda é o mesmo valor da primeira. Corrigido
+  extraindo `const proxima = arr[idx + 1];` uma vez, mesmo padrão já
+  usado em `existingByTN.records[0]` (`useNewSupplierForm.ts`) mais
+  cedo nesta sessão.
+
+Verificado: `tscheck-files.mjs` → 0 erros (36 no programa inteiro).
+`check-eslint-baseline.mjs` → zero regressão. `npm run
+typecheck:baseline` → zero regressão (942 vs. baseline 949, 1 arquivo
+melhorou); `--update` travou o ganho (949 → 942 erros, 406 → 405
+arquivos). Sem teste dedicado para `usePrecoCalculation.ts` nem para
+`PricingPanel.tsx`.
