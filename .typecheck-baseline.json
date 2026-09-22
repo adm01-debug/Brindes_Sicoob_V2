@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-09-22T23:33:08.282Z",
-  "total": 545,
+  "generatedAt": "2026-09-22T23:38:21.992Z",
+  "total": 541,
   "files": {
     "src/components/admin/common/AdminDataTable.tsx": 2,
     "src/components/admin/connections/Bitrix24Tab.tsx": 1,
@@ -183,7 +183,6 @@
     "src/hooks/admin/useAccessSecurity.ts": 2,
     "src/hooks/admin/useApprovalThreshold.ts": 1,
     "src/hooks/admin/useAuditLog.ts": 2,
-    "src/hooks/auth/useAuthAAL.ts": 4,
     "src/hooks/bi/useChurnRisk.ts": 2,
     "src/hooks/bi/useClientBI.ts": 1,
     "src/hooks/cart/useCart.ts": 1,

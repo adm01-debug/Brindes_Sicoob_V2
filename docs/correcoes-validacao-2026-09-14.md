@@ -2749,3 +2749,22 @@ Adicionalmente, o componente usava nomes de campo que nunca existiram no tipo `P
 - `check-eslint-baseline.mjs`: 0 regressões (3335 erros globais, referência `origin/main` em `b24ac5e904`).
 - Nenhum teste dedicado encontrado para este componente.
 - `typecheck:baseline`: 549 → 545 (323 arquivos), travado via `--update`.
+
+## useAuthAAL.ts (etapa 17) — BUG REAL DE SEGURANÇA
+
+**Arquivo:** `src/hooks/auth/useAuthAAL.ts`
+
+**Erros originais (4×):** TS2339×4 (linhas 12-13, propriedades `currentLevel`/`nextLevel` não existem no retorno de `authService.fetchAAL()`).
+
+**Diagnóstico — bug real, não apenas gap de tipagem:** `authService.fetchAAL()` (`src/services/authService.ts:7-15`) retorna `{ currentAAL, nextAAL, hasMFA }`, mas o hook lia `data.currentLevel`/`data.nextLevel` — nomes que nunca existiram no objeto retornado. Isso significa que `setCurrentAAL`/`setNextAAL` sempre recebiam `undefined`, e os estados `currentAAL`/`nextAAL` do hook **nunca refletiam o AAL real do usuário** após qualquer chamada a `fetchAAL()`.
+Esse hook é consumido por `AuthContext.tsx` (linha 88), que calcula `mfaRequired: nextAAL === 'aal2' && currentAAL !== 'aal2'` (linha 383) — com `nextAAL` sempre `undefined`, essa condição **nunca era verdadeira**, o que significa que a detecção de "step-up MFA necessário" (quando a política do usuário exige `aal2` mas a sessão atual está em `aal1`) estava **completamente inoperante em produção**, silenciosamente, sem erro visível — apenas os tipos genéricos `undefined` mascarados por `'aal1' | 'aal2' | null` tornavam o gap invisível até o `noUncheckedIndexedAccess`/checagem estrita revelar o TS2339 pela ausência real das propriedades.
+
+**Fix aplicado:** correção dos nomes de campo lidos do retorno de `fetchAAL()`: `data.currentLevel` → `data.currentAAL`, `data.nextLevel` → `data.nextAAL`.
+
+**Validação:**
+- `tscheck-files.mjs`: 4 → 0 erros (0 no programa, considerando o próprio arquivo).
+- `check-eslint-baseline.mjs`: 0 regressões (3335 erros globais, referência `origin/main` em `13a08d15d2`).
+- Teste dedicado `tests/contexts/AuthContext.test.tsx`: 5/5 passou.
+- `typecheck:baseline`: 545 → 541 (322 arquivos), travado via `--update`.
+
+**Recomendação:** validar manualmente em produção/staging que o fluxo de step-up MFA (usuário com fator TOTP verificado, política exigindo `aal2`) agora bloqueia corretamente ações sensíveis até a segunda etapa de autenticação ser completada — esse comportamento estava quebrado antes desta correção.
