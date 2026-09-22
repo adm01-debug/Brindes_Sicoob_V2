@@ -2278,3 +2278,24 @@ erros (364 → 362 arquivos).
 - `check-eslint-baseline.mjs`: 0 regressões (referência origin/main 7d286c5cf9); 3342 erros globais (sem alteração).
 - Teste dedicado: não encontrado.
 - `typecheck:baseline`: 643 → 638 (346 arquivos), travado via `--update`.
+
+## NotificationSettingsTab.tsx (etapa 17)
+
+**Arquivo:** `src/pages/admin/sicoob/tabs/NotificationSettingsTab.tsx`
+**Erros:** 5× (`TS2769` + `TS2322`×4).
+
+**Diagnóstico:**
+- **Linha 44:** `pa_id: selectedPa` no payload de `upsert()` — `pa_notification_settings.pa_id` é `string` (obrigatório) no schema, mas `selectedPa` é tipado `string | null`. Os handlers que disparam essa mutação (`Switch.onCheckedChange`, `Input.onBlur`) só são renderizados dentro do guard `{selectedPa && (...)}` (linha 92), garantindo `selectedPa` truthy no momento em que podem ser acionados pelo usuário.
+- **Linhas 103, 129:** `getSetting(channel).is_active` — `is_active` é `boolean | null` no schema (nullable); o componente `Switch` (Radix) aceita `checked?: boolean` (não aceita `null`).
+- **Linhas 113, 139:** `getSetting(channel).webhook_url` / `.recipient_email` — ambos `string | null` no schema; `Input.defaultValue` (React) não aceita `null`.
+
+**Correção:**
+- Linha 44: non-null assertion (`selectedPa!`), justificada pelo guard de renderização.
+- Linhas 103/129: fallback `?? false`, alinhado ao default já usado no objeto de fallback de `getSetting()` (`is_active: false`).
+- Linhas 113/139: fallback `?? ''`, alinhado ao default já usado no objeto de fallback de `getSetting()` (`webhook_url: ''`, `recipient_email: ''`).
+
+**Validação:**
+- `tscheck-files.mjs`: 0 erro(s) nos arquivos pedidos (5 eliminados).
+- `check-eslint-baseline.mjs`: 0 regressões (referência origin/main 1c37076eb6); 3341 erros globais (sem alteração).
+- Teste dedicado: não encontrado.
+- `typecheck:baseline`: 638 → 633 (345 arquivos), travado via `--update`.

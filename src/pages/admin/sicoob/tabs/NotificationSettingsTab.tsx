@@ -41,7 +41,7 @@ export const NotificationSettingsTab = () => {
       const { error } = await supabase
         .from("pa_notification_settings")
         .upsert({
-          pa_id: selectedPa,
+          pa_id: selectedPa!,
           channel: payload.channel,
           webhook_url: payload.webhook_url,
           recipient_email: payload.recipient_email,
@@ -99,8 +99,8 @@ export const NotificationSettingsTab = () => {
                       <Slack className="h-4 w-4 text-[#4A154B]" />
                       Slack Webhook
                     </CardTitle>
-                    <Switch 
-                      checked={getSetting('slack').is_active}
+                    <Switch
+                      checked={getSetting('slack').is_active ?? false}
                       onCheckedChange={(val) => upsertMutation.mutate({ ...getSetting('slack'), is_active: val })}
                     />
                   </div>
@@ -108,9 +108,9 @@ export const NotificationSettingsTab = () => {
                 <CardContent className="space-y-4">
                   <div className="space-y-1.5">
                     <Label className="text-[10px] uppercase font-bold text-muted-foreground">Webhook URL</Label>
-                    <Input 
+                    <Input
                       placeholder="https://hooks.slack.com/services/..."
-                      defaultValue={getSetting('slack').webhook_url}
+                      defaultValue={getSetting('slack').webhook_url ?? ''}
                       onBlur={(e) => upsertMutation.mutate({ ...getSetting('slack'), webhook_url: e.target.value })}
                     />
                   </div>
@@ -125,8 +125,8 @@ export const NotificationSettingsTab = () => {
                       <Mail className="h-4 w-4 text-primary" />
                       E-mail do Gestor
                     </CardTitle>
-                    <Switch 
-                      checked={getSetting('email').is_active}
+                    <Switch
+                      checked={getSetting('email').is_active ?? false}
                       onCheckedChange={(val) => upsertMutation.mutate({ ...getSetting('email'), is_active: val })}
                     />
                   </div>
@@ -134,9 +134,9 @@ export const NotificationSettingsTab = () => {
                 <CardContent className="space-y-4">
                   <div className="space-y-1.5">
                     <Label className="text-[10px] uppercase font-bold text-muted-foreground">E-mail para Alerta</Label>
-                    <Input 
+                    <Input
                       placeholder="gestor@singular.com.br"
-                      defaultValue={getSetting('email').recipient_email}
+                      defaultValue={getSetting('email').recipient_email ?? ''}
                       onBlur={(e) => upsertMutation.mutate({ ...getSetting('email'), recipient_email: e.target.value })}
                     />
                   </div>
