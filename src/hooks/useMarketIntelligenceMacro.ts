@@ -51,7 +51,7 @@ export function useMarketIntelligenceMacro(days = 30, supplierId?: string | null
     queryFn: async (): Promise<MacroMarketData> => {
       const cutoff = new Date();
       cutoff.setDate(cutoff.getDate() - days);
-      const cutoffStr = cutoff.toISOString().split('T')[0];
+      const cutoffStr = cutoff.toISOString().split('T')[0]!;
 
       const filters: Record<string, unknown> = {};
       if (supplierId) filters.supplier_id = supplierId;
@@ -77,9 +77,9 @@ export function useMarketIntelligenceMacro(days = 30, supplierId?: string | null
 
       const now = new Date();
       const d7 = new Date(now); d7.setDate(d7.getDate() - 7);
-      const d7Str = d7.toISOString().split('T')[0];
+      const d7Str = d7.toISOString().split('T')[0]!;
 
-      for (const row of result.records) {
+      for (const row of result.records ?? []) {
         if (row.summary_date < cutoffStr) continue;
 
         // Global aggregation

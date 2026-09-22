@@ -2826,3 +2826,26 @@ Esse hook é consumido por `AuthContext.tsx` (linha 88), que calcula `mfaRequire
 - `check-eslint-baseline.mjs`: 0 regressões (3335 erros globais, referência `origin/main` em `927b0ca921`).
 - Teste dedicado `tests/hooks/useGravacaoPriceV2.test.ts`: 8/8 passou.
 - `typecheck:baseline`: 533 → 529 (319 arquivos), travado via `--update`.
+
+## useMarketIntelligenceMacro.ts (etapa 17)
+
+**Arquivo:** `src/hooks/useMarketIntelligenceMacro.ts`
+
+**Erros originais (4×):**
+- TS18048 (linha 82 — `result.records` possivelmente `undefined`).
+- TS18048 ×3 (linhas 83, 111, 135 — `cutoffStr`/`d7Str` possivelmente `undefined`).
+
+**Diagnóstico:**
+- `result.records` — mesmo padrão de `useGravacaoPriceV2.ts`: `invokeExternalDb<T>` retorna `InvokeResult<T>` com `records?: T[]`, genuinamente opcional no contrato de tipo.
+- `cutoffStr`/`d7Str` — ambos derivados de `date.toISOString().split('T')[0]`. `Date.prototype.toISOString()` sempre retorna o formato ISO 8601 estendido (ex: `2026-09-22T12:34:56.789Z`), que contém exatamente um `'T'` — logo `.split('T')` sempre produz um array de 2 elementos, tornando o acesso `[0]` estruturalmente seguro sob `noUncheckedIndexedAccess`, apesar do TS não conseguir provar isso.
+
+**Fix aplicado:**
+- `for (const row of result.records) {` → `for (const row of result.records ?? []) {` (guarda real).
+- `cutoff.toISOString().split('T')[0]` → `cutoff.toISOString().split('T')[0]!` (asserção de não-nulo na declaração, estruturalmente segura).
+- `d7.toISOString().split('T')[0]` → `d7.toISOString().split('T')[0]!` (idem — resolve os 2 usos nas linhas 111 e 135, já que a asserção é aplicada uma vez na declaração).
+
+**Validação:**
+- `tscheck-files.mjs`: 4 → 0 erros (5 no programa inteiro).
+- `check-eslint-baseline.mjs`: 0 regressões (3335 erros globais, referência `origin/main` em `67f05e5bf5`).
+- Nenhum teste dedicado encontrado para este hook.
+- `typecheck:baseline`: 529 → 525 (318 arquivos), travado via `--update`.
