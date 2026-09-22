@@ -10,8 +10,8 @@
  *
  *   2. ENFORCEMENT: edges declaradas como `supervisor` ou `dev`
  *      DEVEM importar `authorize` do `_shared/authorize.ts` e
- *      passar `requireRole` correspondente. Verificação por regex
- *      conservadora — alternativas custom são permitidas se
+ *      passar `requireRole` correspondente. Inspeção AST das chamadas
+ *      reais — alternativas custom são permitidas se
  *      `skipAnonBypassTest`/`skipAuthBypassTest` justificarem.
  *
  *   3. ANTI-REGRESSION: detecta funções que tinham `authorize(...)`
@@ -25,6 +25,7 @@
  */
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
+import { inspectAuthorization } from "./lib/edge-authorization-contract.mjs";
 
 const FN_DIR = "supabase/functions";
 const MANIFEST_PATH = `${FN_DIR}/_shared/edge-authz-manifest.ts`;
@@ -94,10 +95,9 @@ for (const fn of fns) {
     continue;
   }
 
+  const evidence = inspectAuthorization(src);
   if (entry.enforcedBy === "custom") {
-    const validatesIdentity = /auth\.getUser\s*\(/.test(src);
-    const validatesRole = /\.from\s*\(\s*["']user_roles["']/.test(src) ||
-      /\.rpc\s*\(\s*["'](?:has_role|is_dev|is_admin|is_supervisor_or_above)["']/.test(src);
+    const { validatesIdentity, validatesRole } = evidence;
     if (!validatesIdentity || !validatesRole) {
       errors.push(
         `[enforcement] ${fn} (categoria=${entry.category}, custom): não há prova estática ` +
@@ -108,32 +108,15 @@ for (const fn of fns) {
     continue;
   }
 
-  const importsAuthorize = /from\s+["']\.\.\/_shared\/authorize\.ts["']/.test(src);
-  const callsAuthorize = /\bauthorize\s*\(\s*req/.test(src);
-
-  if (!importsAuthorize || !callsAuthorize) {
-    errors.push(
-      `[enforcement] ${fn} (categoria=${entry.category}): não importa nem chama ` +
-        `authorize() do _shared/authorize.ts. Edges sensíveis DEVEM usar o helper SSOT.`,
-    );
-    continue;
-  }
-
   const expected = ROLE_REQUIRED[entry.category];
-  const reqRoleMatch = src.match(/requireRole:\s*["']([a-z]+)["']/);
-  if (!reqRoleMatch) {
+  if (!evidence.sharedRoles.some(role => expected.includes(role))) {
     errors.push(
-      `[enforcement] ${fn}: chama authorize() mas sem requireRole. ` +
-        `Esperado requireRole: "${expected.join('" ou "')}".`,
-    );
-    continue;
-  }
-  if (!expected.includes(reqRoleMatch[1])) {
-    errors.push(
-      `[enforcement] ${fn}: requireRole="${reqRoleMatch[1]}" não bate com categoria=${entry.category}. ` +
-        `Esperado: ${expected.join(" ou ")}.`,
+      `[enforcement] ${fn} (categoria=${entry.category}): não há chamada aguardada ` +
+      `ao authorize importado com requireRole ${expected.join(" ou ")}. ` +
+      `Comentários, exemplos e opções de outras chamadas não comprovam autorização.`,
     );
   }
+
 }
 
 // 4.1) Anti-exfiltração: nenhuma edge pode devolver credenciais de serviço
@@ -180,7 +163,7 @@ if (warnings.length) {
 }
 
 if (errors.length === 0) {
-  console.log(`\n✅ Authorization coverage: OK (${fns.length}/${fns.length} declaradas e enforced).`);
+  console.log(`\n✅ Authorization coverage: OK (${fns.length}/${fns.length} declaradas; contratos estáticos conferidos).`);
   process.exit(0);
 }
 

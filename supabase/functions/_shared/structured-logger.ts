@@ -28,7 +28,7 @@
  *   {"ts":"2026-...","level":"info","fn":"minha-fn","request_id":"...","event":"request_start","method":"POST","path":"/minha-fn","duration_ms":12,"status":200}
  */
 
-import { REQUEST_ID_HEADER } from "./request-id.ts";
+import { getOrCreateRequestId, REQUEST_ID_HEADER } from "./request-id.ts";
 
 export type LogLevel = "debug" | "info" | "warn" | "error";
 
@@ -143,4 +143,25 @@ export function createStructuredLogger(init: StructuredLoggerInit): StructuredLo
   };
 
   return make({});
+}
+
+/** Instrumenta inclusive respostas antecipadas, sem registrar corpo ou credenciais. */
+export function withStructuredLogging(
+  fn: string,
+  handler: (req: Request) => Response | Promise<Response>,
+): (req: Request) => Promise<Response> {
+  return async (req) => {
+    const log = createStructuredLogger({ fn, requestId: getOrCreateRequestId(req), req });
+    log.info("request_start");
+    try {
+      return log.respond(await handler(req));
+    } catch {
+      // Mensagens de exceção podem conter URLs assinadas ou dados pessoais.
+      log.error("request_failed");
+      return log.respond(new Response(JSON.stringify({ error: "erro_interno" }), {
+        status: 500,
+        headers: { "Content-Type": "application/json", "Cache-Control": "no-store" },
+      }));
+    }
+  };
 }

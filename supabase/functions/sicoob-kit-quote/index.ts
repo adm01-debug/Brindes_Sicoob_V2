@@ -1,3 +1,4 @@
+import { withStructuredLogging } from "../_shared/structured-logger.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.49.4';
 import { getCorsHeaders, handleCorsPreflightIfNeeded } from '../_shared/cors.ts';
 import {
@@ -68,7 +69,7 @@ function validLine(value: unknown): value is KitLineRequest {
   return typeof personalization.techniqueId === 'string';
 }
 
-Deno.serve(async (req) => {
+Deno.serve(withStructuredLogging("sicoob-kit-quote", async (req) => {
   const preflight = handleCorsPreflightIfNeeded(req);
   if (preflight) return preflight;
   if (req.method !== 'POST') return json(req, { error: 'Método não permitido.' }, 405);
@@ -232,7 +233,6 @@ Deno.serve(async (req) => {
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Não foi possível criar o orçamento do kit.';
-    console.error('[sicoob-kit-quote] falha', { message });
     return json(req, { error: message }, 400);
   }
-});
+}));

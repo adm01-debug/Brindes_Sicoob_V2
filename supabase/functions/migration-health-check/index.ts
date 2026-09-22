@@ -1,8 +1,9 @@
+import { withStructuredLogging } from "../_shared/structured-logger.ts";
 import { authorize } from "../_shared/authorize.ts";
 import { getCorsHeaders, handleCorsPreflightIfNeeded } from "../_shared/cors.ts";
 import { evaluateMigrationHealth } from "./contract.ts";
 
-Deno.serve(async (req) => {
+Deno.serve(withStructuredLogging("migration-health-check", async (req) => {
   const preflight = handleCorsPreflightIfNeeded(req);
   if (preflight) return preflight;
   const headers = { ...getCorsHeaders(req), "Content-Type": "application/json", "Cache-Control": "no-store" };
@@ -28,4 +29,4 @@ Deno.serve(async (req) => {
   } catch {
     return new Response(JSON.stringify({ migration_applied: false, error: 'verificacao_indisponivel' }), { status: 503, headers });
   }
-});
+}));

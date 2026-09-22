@@ -169,28 +169,24 @@ export async function authorize(
 
     // Cinto-suspensório: revalida via RPC has_role (não confia só na leitura direta).
     if (opts.enforceServerSide) {
-      const { data: ok, error: rpcErr } = await supabaseAdmin.rpc("has_role", {
-        _user_id: userId,
-        _role: opts.requireRole,
-      });
-      if (rpcErr || ok !== true) {
-        // Para 'supervisor', precisa também aceitar quem é dev (hierarquia)
-        if (opts.requireRole === "supervisor") {
-          const { data: isDev } = await supabaseAdmin.rpc("has_role", {
-            _user_id: userId,
-            _role: "dev",
-          });
-          if (isDev === true) {
-            return {
-              ok: true,
-              user: { id: userId, email: userEmail },
-              role: highestRole,
-              token,
-              supabaseUser,
-              supabaseAdmin,
-            };
-          }
-        }
+      // Revalida os papéis reais que concederam acesso, preservando aliases e
+      // hierarquia. Não consulta um alias técnico ausente no enum do banco.
+      const eligibleRoles = [...new Set((roles ?? []).map((r) => r.role as string))]
+        .filter((role) => {
+          const technical = technicalRole(role);
+          return technical !== null && ROLE_RANK[technical] >= requiredRank;
+        });
+      let confirmed = false;
+      for (const role of eligibleRoles) {
+        const { data: allowed, error } = await supabaseAdmin.rpc("has_role", {
+          _user_id: userId,
+          _role: role,
+        });
+        // Erro de consulta não pode virar sucesso por fallback.
+        if (error) { confirmed = false; break; }
+        if (allowed === true) { confirmed = true; break; }
+      }
+      if (!confirmed) {
         return {
           ok: false,
           response: jsonResponse(

@@ -434,7 +434,8 @@
       "20260922164000",
       "20260922165000",
       "20260922166000",
-      "20260922167000"
+      "20260922167000",
+      "20260922190000"
     ],
     "relations": [
       "bitrix_clients",
@@ -462,6 +463,7 @@
       "normalize_quote_parent_root",
       "protect_latest_quote_version_deletion",
       "protect_sicoob_approval_policy_version"
-    ]
+    ],
+    "checked_at": "2026-09-22T18:37:12.720198+00:00"
   }
 }

@@ -80,7 +80,7 @@ if (!Array.isArray(rows)) {
 
 if (rows.length === 0) {
   console.log("✅ SECURITY DEFINER ACL: 0 violações.");
-  console.log("   Todas as funções SECURITY DEFINER em public estão restritas corretamente.");
+  console.log("   Nenhuma violação do contrato ACL auditado; isso não certifica autorização interna ou RLS.");
   process.exit(0);
 }
 
@@ -103,8 +103,8 @@ console.error(
     "  - Para cada função listada, na próxima migration:\n" +
     "      REVOKE EXECUTE ON FUNCTION public.<fn>(<args>) FROM <papel>;\n" +
     "  - Se a função PRECISA mesmo ser pública (ex: rota de aprovação por\n" +
-    "    token), adicione o nome em supabase/migrations/<...>_hardening_security_definer.sql,\n" +
-    "    no array `public_intent` da função audit_security_definer_acl().\n",
+    "    token), inclua a assinatura completa em uma NOVA migration,\n" +
+    "    na lista revisada da função audit_security_definer_acl().\n",
 );
 
 // Annotation amigável no GitHub Actions

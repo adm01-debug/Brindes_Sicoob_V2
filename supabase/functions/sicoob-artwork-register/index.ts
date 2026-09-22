@@ -1,3 +1,4 @@
+import { withStructuredLogging } from "../_shared/structured-logger.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.49.4';
 import { getCorsHeaders, handleCorsPreflightIfNeeded } from '../_shared/cors.ts';
 import {
@@ -21,7 +22,7 @@ function json(req: Request, body: Record<string, unknown>, status = 200): Respon
   });
 }
 
-Deno.serve(async (req) => {
+Deno.serve(withStructuredLogging("sicoob-artwork-register", async (req) => {
   const preflight = handleCorsPreflightIfNeeded(req);
   if (preflight) return preflight;
   if (req.method !== 'POST') return json(req, { error: 'Método não permitido.' }, 405);
@@ -82,7 +83,6 @@ Deno.serve(async (req) => {
     return json(req, { artworkId, sha256: hash });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Não foi possível registrar a arte.';
-    console.error('[sicoob-artwork-register] falha', { message });
     return json(req, { error: message }, 400);
   }
-});
+}));

@@ -5,13 +5,13 @@ import vm from 'node:vm';
 import ts from 'typescript';
 
 // Executa o módulo real; somente transporte e ambiente são substituídos.
-function carregarAutorizador(papeis) {
+function carregarAutorizador(papeis, confirmarPapel = async (_nome, args) => ({ data: papeis.includes(args._role), error: null })) {
   const fonte = fs.readFileSync('supabase/functions/_shared/authorize.ts', 'utf8');
   const codigo = ts.transpileModule(fonte, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText;
   const cliente = {
     auth: { getUser: async () => ({ data: { user: { id: 'usuario-sintetico' } }, error: null }) },
     from: () => ({ select: () => ({ eq: async () => ({ data: papeis.map(role => ({ role })), error: null }) }) }),
-    rpc: async () => ({ data: false, error: null }),
+    rpc: confirmarPapel,
   };
   const exports = {};
   const contexto = {
@@ -58,3 +58,20 @@ test('requisição sem sessão é recusada antes de consultar o banco', async ()
   assert.equal(resultado.ok, false);
   assert.equal(resultado.response.status, 401);
 });
+
+for (const papel of [...papeisBasicos, 'supervisor', 'admin', 'manager', 'dev']) {
+  const exigencias = papeisBasicos.includes(papel) ? ['agente'] : papel === 'dev' ? ['agente', 'supervisor', 'dev'] : ['agente', 'supervisor'];
+  for (const exigido of exigencias) {
+    test(`revalidação no banco preserva ${papel} como ${exigido}`, async () => {
+      const resultado = await carregarAutorizador([papel])(new Request('https://simulacao.invalid', { headers: { Authorization: 'Bearer token-sintetico' } }), { requireRole: exigido, enforceServerSide: true });
+      assert.equal(resultado.ok, true);
+    });
+  }
+}
+for (const confirmacao of [{ data: false, error: null }, { data: true, error: { message: 'falha simulada' } }]) {
+  test(`revalidação recusa permissão revogada ou consulta falha: ${JSON.stringify(confirmacao)}`, async () => {
+    const resultado = await carregarAutorizador(['dev'], async () => confirmacao)(new Request('https://simulacao.invalid', { headers: { Authorization: 'Bearer token-sintetico' } }), { requireRole: 'supervisor', enforceServerSide: true });
+    assert.equal(resultado.ok, false);
+    assert.equal(resultado.response.status, 403);
+  });
+}

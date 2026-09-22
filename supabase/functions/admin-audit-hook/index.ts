@@ -1,3 +1,4 @@
+import { withStructuredLogging } from "../_shared/structured-logger.ts";
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
@@ -15,7 +16,7 @@ async function hash(data: string): Promise<string> {
   return new TextDecoder().decode(hexEncode(new Uint8Array(hashBuffer)));
 }
 
-serve(async (req) => {
+serve(withStructuredLogging("admin-audit-hook", async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
@@ -107,4 +108,4 @@ serve(async (req) => {
       status: 400,
     })
   }
-})
+}))
