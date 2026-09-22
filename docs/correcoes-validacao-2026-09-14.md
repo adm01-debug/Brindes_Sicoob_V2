@@ -1496,3 +1496,41 @@ dedicado. **Não verificado em navegador** (painel só renderiza com
 `debug:notifications=1` no localStorage ou em dev) — mas os 3 fixes
 eliminam `TypeError`s garantidos que antes só não apareciam porque o
 código nem compilava sob o baseline de tipos estrito.
+
+## `src/components/pricing/calculator/QuantityComparisonTable.tsx` (etapa 17, 6 → 0 erros)
+
+**Bug real de produção, não apenas tipagem** — a tabela de comparação de
+preços por quantidade (visível em `/simulador`, página com badge
+"Popular" no command bar) estava **sempre exibindo "N/D" em todas as
+células**, para toda técnica e toda quantidade, desde sempre. Causa
+raiz: `useCustomizationPricing()` (`useTecnicasUnificadas.ts:100`)
+retorna `priceTables: []` — um array vazio hardcoded, comentado como
+"Legado - não mais usado" no próprio hook. `QuantityComparisonTable.tsx`
+não sabia disso e fazia `priceTables.find(t => t.table_code...)` para
+tentar casar a técnica selecionada com uma tabela de preço por
+correspondência difusa de string — busca que nunca encontrava nada
+porque o array de origem está permanentemente vazio, então
+`calculateForConfig` sempre retornava `null`. Os 6 erros de TS (`t` no
+`.find()` inferido como `never`, já que `[]` sem anotação vira
+`never[]`) eram, na prática, o compilador apontando para um caminho de
+código morto.
+
+O hook já expõe `calculatePrice(techniqueCode, quantity)` — que faz
+exatamente esse casamento, mas contra os dados reais e atuais
+(`tabelas` via `useTabelasPreco`), usando `techniqueCode` exato em vez
+de correspondência difusa de texto. E `technique.techniqueCode` já
+está disponível diretamente em `SelectedTechniqueConfig.technique`
+(`types.ts`), sem precisar de nenhuma tabela intermediária. Corrigido
+eliminando o `priceTables.find(...)` fuzzy-match morto e chamando
+`calculatePrice(technique.techniqueCode, quantity)` diretamente; o
+`price_by_color` (usado para o adicional de +10% por cor extra) passou
+a vir de `techniques.find(t => t.code === technique.techniqueCode)
+?.priceByColor` — mesmo dado, já exposto por `useCustomizationPricing()`
+via `techniques: calc.techniques`.
+
+Verificado: `tscheck-files.mjs` → 0 erros (40 no programa inteiro).
+`check-eslint-baseline.mjs` → zero regressão. **Teste dedicado existe**
+(`tests/components/pricing/QuantityPriceCalculator.test.tsx`) — 2/2
+passaram após a mudança. **Não verificado em navegador** — mudança de
+comportamento real (a tabela deve passar a mostrar preços em vez de
+"N/D"), recomenda-se validação visual em `/simulador` quando possível.

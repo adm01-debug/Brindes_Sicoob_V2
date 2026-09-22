@@ -16,29 +16,24 @@ interface Props {
 }
 
 export function QuantityComparisonTable({ product, selectedConfigs, quantities }: Props) {
-  const { priceTables, calculatePrice } = useCustomizationPricing();
+  const { techniques, calculatePrice } = useCustomizationPricing();
 
   const calculateForConfig = useCallback((config: SelectedTechniqueConfig, quantity: number) => {
     const { technique, colors, sizeModifier } = config;
-    const matchingTable = priceTables.find(t =>
-      t.table_code.toLowerCase().includes(technique.techniqueCode.toLowerCase()) ||
-      technique.techniqueCode.toLowerCase().includes(t.table_code.toLowerCase()) ||
-      t.customization_type_name.toLowerCase().includes(technique.techniqueName.toLowerCase()) ||
-      technique.techniqueName.toLowerCase().includes(t.customization_type_name.toLowerCase())
-    );
-    if (!matchingTable) return null;
-    const calc = calculatePrice(matchingTable.table_code, quantity);
+    const calc = calculatePrice(technique.techniqueCode, quantity);
     if (!calc) return null;
 
+    const techMeta = techniques.find(t => t.code === technique.techniqueCode);
+
     let modifiedUnitPrice = calc.unitPrice;
-    if (colors > 1 && matchingTable.price_by_color) modifiedUnitPrice *= (1 + (colors - 1) * 0.1);
+    if (colors > 1 && techMeta?.priceByColor) modifiedUnitPrice *= (1 + (colors - 1) * 0.1);
     modifiedUnitPrice *= sizeModifier;
 
     const customizationTotal = modifiedUnitPrice * quantity + calc.setupPrice;
     const productTotal = product.price * quantity;
     const grandTotal = productTotal + customizationTotal;
     return { unitPrice: modifiedUnitPrice, customizationTotal, productTotal, grandTotal, unitTotal: grandTotal / quantity, slaDays: calc.slaDays };
-  }, [priceTables, calculatePrice, product.price]);
+  }, [techniques, calculatePrice, product.price]);
 
   const bestPricePerConfig = useMemo(() => {
     const map = new Map<string, number>();
