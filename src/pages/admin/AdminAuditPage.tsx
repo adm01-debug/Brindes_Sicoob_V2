@@ -17,6 +17,14 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 // XLSX will be loaded dynamically when needed
 
+// admin_audit_log.details (JSONB) guarda o payload estruturado gravado pela
+// edge function admin-audit-hook: dados antigos/novos e metadados do usuário.
+interface AuditLogDetails {
+  old_data?: unknown;
+  new_data?: { count?: number } & Record<string, unknown>;
+  metadata?: { user_email?: string; user_agent?: string } & Record<string, unknown>;
+}
+
 export default function AdminAuditPage() {
   const navigate = useNavigate();
   const [logs, setLogs] = useState<any[]>([]);
@@ -41,16 +49,16 @@ export default function AdminAuditPage() {
 
       // Apply filters
       if (filters.type !== 'ALL') {
-        query = query.eq('event_type', filters.type);
+        query = query.eq('action', filters.type);
       }
-      
+
       if (filters.entity) {
-        query = query.ilike('entity_type', `%${filters.entity}%`);
+        query = query.ilike('resource_type', `%${filters.entity}%`);
       }
 
       if (filters.user) {
-        // Since user_email is in metadata (JSONB), we use the arrow operator
-        query = query.filter('metadata->>user_email', 'ilike', `%${filters.user}%`);
+        // user_email fica dentro de details.metadata (JSONB), usamos o operador de path
+        query = query.filter('details->metadata->>user_email', 'ilike', `%${filters.user}%`);
       }
 
       if (filters.date) {
@@ -99,9 +107,9 @@ export default function AdminAuditPage() {
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (filters.type !== 'ALL') query = query.eq('event_type', filters.type);
-      if (filters.entity) query = query.ilike('entity_type', `%${filters.entity}%`);
-      if (filters.user) query = query.filter('metadata->>user_email', 'ilike', `%${filters.user}%`);
+      if (filters.type !== 'ALL') query = query.eq('action', filters.type);
+      if (filters.entity) query = query.ilike('resource_type', `%${filters.entity}%`);
+      if (filters.user) query = query.filter('details->metadata->>user_email', 'ilike', `%${filters.user}%`);
       
       if (filters.date) {
         const startOfDay = new Date(filters.date);
@@ -114,16 +122,19 @@ export default function AdminAuditPage() {
       const { data, error } = await query;
       if (error) throw error;
 
-      const exportData = (data || []).map(log => ({
-        'Data': format(new Date(log.created_at), 'dd/MM/yyyy HH:mm:ss'),
-        'Usuário': log.metadata?.user_email || log.user_id,
-        'Evento': log.event_type,
-        'Entidade': log.entity_type,
-        'ID Entidade': log.entity_id || '',
-        'Antes': JSON.stringify(log.old_data || {}),
-        'Depois': JSON.stringify(log.new_data || {}),
-        'IP/Agente': log.metadata?.user_agent || ''
-      }));
+      const exportData = (data || []).map((log) => {
+        const details = (log.details ?? {}) as AuditLogDetails;
+        return {
+          'Data': format(new Date(log.created_at), 'dd/MM/yyyy HH:mm:ss'),
+          'Usuário': details.metadata?.user_email || log.user_id,
+          'Evento': log.action,
+          'Entidade': log.resource_type,
+          'ID Entidade': log.resource_id || '',
+          'Antes': JSON.stringify(details.old_data || {}),
+          'Depois': JSON.stringify(details.new_data || {}),
+          'IP/Agente': details.metadata?.user_agent || ''
+        };
+      });
 
       const worksheet = XLSX.utils.json_to_sheet(exportData);
       const workbook = XLSX.utils.book_new();
@@ -151,17 +162,17 @@ export default function AdminAuditPage() {
     },
     {
       header: "Usuário",
-      accessorKey: "metadata",
+      accessorKey: "details",
       cell: (row: any) => (
         <div className="flex flex-col">
-          <span className="font-medium text-sm">{row.metadata?.user_email?.split('@')[0] || 'Sistema'}</span>
-          <span className="text-[10px] text-muted-foreground">{row.metadata?.user_email || ''}</span>
+          <span className="font-medium text-sm">{row.details?.metadata?.user_email?.split('@')[0] || 'Sistema'}</span>
+          <span className="text-[10px] text-muted-foreground">{row.details?.metadata?.user_email || ''}</span>
         </div>
       )
     },
     {
       header: "Evento",
-      accessorKey: "event_type",
+      accessorKey: "action",
       cell: (row: any) => {
         const variants: Record<string, any> = {
           'CREATE': 'default',
@@ -171,14 +182,14 @@ export default function AdminAuditPage() {
           'EXPORT': 'outline',
           'PUBLISH_CMS': 'default',
         };
-        return <Badge variant={variants[row.event_type] || 'outline'}>{row.event_type}</Badge>;
+        return <Badge variant={variants[row.action] || 'outline'}>{row.action}</Badge>;
       },
       sortable: true
     },
     {
       header: "Entidade",
-      accessorKey: "entity_type",
-      cell: (row: any) => <span className="text-sm font-mono">{row.entity_type}</span>,
+      accessorKey: "resource_type",
+      cell: (row: any) => <span className="text-sm font-mono">{row.resource_type}</span>,
       sortable: true
     },
     {
@@ -186,9 +197,9 @@ export default function AdminAuditPage() {
       accessorKey: "id",
       cell: (row: any) => (
         <div className="max-w-[300px] truncate text-xs text-muted-foreground">
-          {row.event_type === 'UPDATE' ? 'Alteração de dados' : 
-           row.event_type === 'DELETE' ? `ID: ${row.entity_id}` : 
-           row.event_type === 'IMPORT' ? `${row.new_data?.count || 0} registros` : 'Ação administrativa'}
+          {row.action === 'UPDATE' ? 'Alteração de dados' :
+           row.action === 'DELETE' ? `ID: ${row.resource_id}` :
+           row.action === 'IMPORT' ? `${row.details?.new_data?.count || 0} registros` : 'Ação administrativa'}
         </div>
       )
     }

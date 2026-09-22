@@ -996,3 +996,76 @@ programa inteiro). `check-eslint-baseline.mjs` → zero regressão. `npm
 run typecheck:baseline` → zero regressão (935 vs. baseline 942, 1
 arquivo melhorou); `--update` travou o ganho (942 → 935 erros, 405 →
 404 arquivos). Sem teste dedicado.
+
+## `src/pages/admin/AdminAuditPage.tsx` (etapa 17, 7 → 0 erros — achado de bug grave e AO VIVO em produção fora do arquivo)
+
+Os 7 erros vinham de acessar campos que não existem na tabela real
+(`event_type`, `entity_type`, `entity_id`, `metadata`, `old_data`,
+`new_data`) — a página foi escrita pra um schema imaginado de
+`admin_audit_log`. O schema real (`src/integrations/supabase/types.ts`)
+é `action`, `resource_type`, `resource_id`, `details` (JSONB), mais
+campos de hash-chain (`previous_hash`/`current_hash`). Confirmado
+contra os dois lugares que já leem/escrevem esse schema corretamente:
+`RecentAuditTable.tsx` (leitor) e `useDiscountApproval.ts` (escritor).
+
+Corrigido substituindo os nomes de campo 1:1 (`event_type`→`action`,
+`entity_type`→`resource_type`, `entity_id`→`resource_id`) e tratando
+o antigo objeto plano `{metadata, old_data, new_data}` como um objeto
+aninhado dentro de `details` (JSONB) — mesma forma, só que embrulhado,
+preservando 100% da lógica de UI/exportação já existente (badges de
+evento, filtro por tipo, export XLSX). Também corrigido:
+`query.order(sort.key)` usava `accessorKey: "event_type"` /
+`"entity_type"` nas colunas ordenáveis — ordenar por essas colunas
+inexistentes teria devolvido erro 500 do PostgREST; agora aponta pra
+`action`/`resource_type` reais. Tipagem da função de export: extraído
+`const details = (log.details ?? {}) as AuditLogDetails` (interface
+local nova) em vez de tipar o parâmetro do `.map()` como `any` —
+evita tanto `@typescript-eslint/no-explicit-any` quanto estourar o
+limite de `complexity` (ficou em 12/10 numa primeira tentativa só
+encadeando `?.` sem extrair a variável).
+
+`AdminAuditPage` continua **código morto/não roteado** — confirmado
+via grep, não aparece em nenhum arquivo de rotas (`src/routes/`) nem
+em `route-matrix.ts`. O botão "Dossier Enterprise" (`/admin/auditoria/enterprise`)
+e o próprio path da página (`/admin/auditoria`) também não têm rota
+registrada. Corrigido mesmo assim (não é "3 linhas pra ignorar" — é
+uma feature de auditoria administrativa real, só falta religar a rota
+um dia).
+
+**Achado maior, fora do escopo de erros de TS deste arquivo — bug ao
+vivo em produção, não corrigido nesta sessão:** a mesma tabela
+`admin_audit_log` é escrita pela Edge Function
+`supabase/functions/admin-audit-hook/index.ts`, chamada por
+`src/utils/adminAudit.ts` → `logAdminAction()`, que por sua vez é
+importada e usada em 6 páginas administrativas **ativas e roteadas**
+(`AdminRoute.tsx`, `AdminCampanhasPage.tsx`,
+`DiscountApprovalQueue.tsx`, `AdminNewsletterPage.tsx`,
+`CategoriesManager.tsx`, `AdminCMSPage.tsx`). A Edge Function faz
+`INSERT` usando os MESMOS nomes de campo fictícios que este arquivo
+tinha (`event_type`, `entity_type`, `entity_id`, `new_data`,
+`old_data`, `metadata` direto na raiz) — todo `INSERT` falha no
+Postgres por coluna inexistente. O wrapper cliente (`adminAudit.ts`)
+engole o erro com `console.error`, sem re-lançar nem avisar o usuário.
+Ou seja: **a trilha de auditoria (com hash-chain) provavelmente nunca
+gravou uma linha válida em produção**, pra nenhuma ação administrativa
+de CREATE/UPDATE/DELETE/PUBLISH/APPROVE/REJECT feita por essas 6
+páginas. Não corrigido aqui porque (a) é código fora do escopo do
+arquivo/erro de TS que motivou esta etapa, e (b) a sessão atual não
+tem acesso de deploy ao projeto Supabase real deste repo
+(`cfmzkthhgliqelozlmwu` — confirmado ausente de `supabase projects
+list`, que só lista projetos de outros clientes). Reportado
+separadamente ao usuário por gravidade (trilha de auditoria/compliance
+sem funcionar silenciosamente).
+
+Há também um `logAdminAction()` **diferente e não relacionado** em
+`src/lib/audit-logger.ts` (assinatura posicional), com o mesmo
+schema errado, mas confirmado via grep como código morto (zero
+importadores) — item separado, de menor prioridade, na fila de 1 erro.
+
+Verificado: `tscheck-files.mjs` → 0 erros no arquivo (2 no programa
+inteiro, pré-existentes/não relacionados). `check-eslint-baseline.mjs`
+→ zero regressão (a tentativa inicial introduziu 2 erros novos —
+`no-explicit-any` e `complexity` — corrigidos antes do commit). `npm
+run typecheck:baseline` → zero regressão (928 vs. baseline 935, 1
+arquivo melhorou); `--update` travou o ganho (935 → 928 erros, 404 →
+403 arquivos). Sem teste dedicado.
