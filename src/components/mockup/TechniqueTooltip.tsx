@@ -27,7 +27,11 @@ interface TechniqueTooltipProps {
 }
 
 // Visual examples and descriptions for each technique
-const TECHNIQUE_INFO: Record<string, {
+type TechniqueInfoKey =
+  | "bordado" | "silk" | "dtf" | "laser" | "sublimacao"
+  | "hot_stamping" | "tampografia" | "uv" | "default";
+
+const TECHNIQUE_INFO: Record<TechniqueInfoKey, {
   description: string;
   durability: string;
   colors: string;

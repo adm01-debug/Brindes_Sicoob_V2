@@ -1403,3 +1403,24 @@ Verificado: `tscheck-files.mjs` → 0 erros (11 no programa inteiro).
 `check-eslint-baseline.mjs` → zero regressão. **Teste dedicado existe**
 (`tests/components/command/GlobalCommandBar.test.tsx`) — 2/2 passaram
 após a mudança.
+
+## `src/components/mockup/TechniqueTooltip.tsx` (etapa 17, 6 → 0 erros)
+
+Mesma classe de bug de `ACTION_META` (`VoiceTranscriptPanel.tsx`) e
+`grouped` (`GlobalCommandBar.tsx`): `TECHNIQUE_INFO` era declarado como
+`Record<string, {...}>`. O acesso por ponto `TECHNIQUE_INFO.default`
+(usado como fallback em `getTechniqueInfo` quando nenhuma técnica bate
+com o `code`) virava `{...} | undefined` sob `noUncheckedIndexedAccess`,
+mesmo `default` sendo uma chave sempre presente no objeto literal —
+isso propagava `undefined` para o tipo de retorno de `getTechniqueInfo`
+e, por consequência, para `info` em todo o componente (6 usos).
+Corrigido trocando a anotação larga por um union fechado das 9 chaves
+literais reais (`TechniqueInfoKey`), sem alterar a lógica do
+`for...of Object.entries(...)` que já funcionava corretamente com
+tipos concretos. `getTechniqueInfo` não é usado fora deste arquivo
+(confirmado via grep).
+
+Verificado: `tscheck-files.mjs` → 0 erros (0 no programa inteiro).
+`check-eslint-baseline.mjs` → zero regressão. Sem teste dedicado.
+**Não verificado em runtime** — fix puramente de tipagem sem mudança
+de lógica.
