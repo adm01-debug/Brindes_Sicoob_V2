@@ -2377,3 +2377,40 @@ consumido: `calcPersTotal` e o re-export de `formatCurrency`/`formatCNPJ`
   com o código morto).
 - Teste dedicado: não encontrado.
 - `typecheck:baseline`: 628 → 623 (343 arquivos), travado via `--update`.
+
+## QuotesListPage.tsx (etapa 17)
+
+**Erros TS originais (5):**
+```
+src/pages/QuotesListPage.tsx(83,50): error TS2339: Property 'duplicateQuote' does not exist on type '{ quotes: Quote[]; ... }'.
+src/pages/QuotesListPage.tsx(253,21): error TS2554: Expected 2 arguments, but got 1.
+src/pages/QuotesListPage.tsx(264,21): error TS2554: Expected 2 arguments, but got 1.
+src/pages/QuotesListPage.tsx(419,60): error TS2345: Argument of type 'string' is not assignable to parameter of type '"pending" | "rejected" | "draft" | "sent" | "approved" | "expired" | "pending_approval" | "pending_singular_approval" | "approved_singular" | "rejected_singular"'.
+src/pages/QuotesListPage.tsx(439,23): error TS2554: Expected 1 arguments, but got 2.
+```
+
+**Diagnóstico raiz (4 bugs reais distintos, não apenas ruído de tipagem):**
+
+1. **`duplicateQuote` nunca existiu no hook `useQuotes`** (linha 83). O hook (`src/hooks/quotes/useQuotes.ts`) nunca exportou essa função — a duplicação de orçamento é implementada por `reorderQuote(quoteId, itemIds?)`, que já produz o toast "Orçamento duplicado!" e cria o novo orçamento como rascunho. A página estava desestruturando um nome que nunca existiu; o botão "Duplicar" (`onDuplicate={(id) => duplicateQuote(id)}`, linha ~453) chamaria `undefined(id)` em runtime — bug real, não só erro de compilação.
+
+2. **Dois `exportToExcel`/`exportToPDF` com assinaturas incompatíveis, confundidos em 3 pontos:**
+   - `src/utils/orderExportUtils.ts` exporta `exportToExcel(data: any[], filename: string)` e `exportToPDF(data: any[], filename: string)` — assinatura **posicional**, gera CSV simples usando a constante interna `QUOTE_EXPORT_COLUMNS` (não aceita parâmetro de colunas).
+   - `src/utils/excelExport.ts` exporta `exportToExcel(config: ExcelExportConfig)` — assinatura de **objeto de configuração** (`{filename, columns, data, sheetName?, includeTimestamp?}`), gera `.xlsx` real via `@e965/xlsx`.
+   - O menu de exportação (botões "Excel (.xlsx)" e "PDF (.pdf)" no dropdown do topo, linhas ~253/264) importava as funções de `orderExportUtils.ts` (posicional) mas chamava com um objeto `{ items: data, filename: 'orcamentos', columns: QUOTE_EXPORT_COLUMNS }` — em runtime, `data` (1º parâmetro posicional) recebia o objeto inteiro, não um array; `data.map(...)` dentro da função quebrava (`TypeError`, capturado pelo try/catch interno, exibindo apenas "Erro na exportação"). **Os dois botões de exportação do topo estavam quebrados em produção.**
+   - O handler `onBulkExport` (exportação de selecionados, linha ~439) importava dinamicamente `exportToExcel` de `excelExport.ts` (a versão de config) mas chamava com 2 argumentos posicionais (`array, string`) — `config.columns` ficava `undefined`, `columns.forEach(...)` lançava exceção dentro do try/catch de `excelExport.ts`, rejeitando a Promise sem tratamento (`.then()` sem `.catch()`) — **exceção não tratada em runtime, exportação de selecionados também quebrada.**
+
+3. **Cast incorreto de `status` para `string` genérico** (linha 419, dentro de `onBulkStatusChange`): o parâmetro `status` já chega tipado como `string` solto (assinatura do prop em `QuotesConfigurableList.tsx`: `onBulkStatusChange?: (ids: string[], status: string) => void`), mas `updateQuoteStatus(quoteId, status: Quote["status"], notes?)` exige a união literal de status. O cast `as string` não resolvia nada (já era string); corrigido para `as Quote["status"]`, coerente com os valores literais reais que `QuotesConfigurableList.tsx` de fato emite (`"pending"`, `"approved"`, etc.).
+
+**Fix aplicado (`src/pages/QuotesListPage.tsx`):**
+- `duplicateQuote` → `reorderQuote` (desestruturação do hook e no `onDuplicate`).
+- Export do topo: chamadas de `exportToExcel(data, filename)` / `exportToPDF(data, filename)` corrigidas para a assinatura posicional real de `orderExportUtils.ts`; removido o import não utilizado de `QUOTE_EXPORT_COLUMNS` (a função já usa a constante internamente).
+- Export em massa (`onBulkExport`): chamada de `exportToExcel` (de `excelExport.ts`) corrigida para a assinatura de config `{filename, columns, data}`, com `columns` mapeando as mesmas chaves em português já usadas na montagem das linhas (`Número`, `Empresa`, `Contato`, `Status`, `Valor`, `Data`).
+- Cast de status: `status as string` → `status as Quote["status"]` (novo `import type { Quote } from "@/hooks/quotes/quoteTypes";`).
+
+**Validação:**
+- `node scripts/tscheck-files.mjs src/pages/QuotesListPage.tsx` → 0 erros (30 no programa inteiro).
+- `node scripts/check-eslint-baseline.mjs src/pages/QuotesListPage.tsx` → 0 regressões (referência origin/main 9862ad376c, 3336 erros globais).
+- Nenhum teste dedicado encontrado para este arquivo.
+- `npm run typecheck:baseline -- --update` → baseline 623→618 (342 arquivos).
+
+**Nota de risco funcional:** os 3 bugs de export (itens 1 e 2 acima) eram falhas silenciosas em produção — os botões "Excel", "PDF" e "Exportar selecionados" da tela de Orçamentos lançavam exceção e exibiam apenas um toast genérico de erro, sem nunca gerar o arquivo. Recomenda-se validação manual em navegador dessas 3 ações (não realizada nesta sessão, apenas correção estática + typecheck).

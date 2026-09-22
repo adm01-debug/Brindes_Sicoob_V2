@@ -46,6 +46,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { useQuotes } from "@/hooks/quotes/useQuotes";
+import type { Quote } from "@/hooks/quotes/quoteTypes";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRBAC } from "@/hooks/useRBAC";
 import Fuse from "fuse.js";
@@ -59,7 +60,7 @@ import { QuotesStatusChips } from "@/components/quotes/QuotesStatusChips";
 import { QuotesFunnelChart } from "@/components/quotes/QuotesFunnelChart";
 import { useQuoteFunnel } from "@/hooks/useQuoteFunnel";
 import { useQuoteViewedMap } from "@/hooks/useQuoteViewedMap";
-import { exportToExcel, exportToPDF, QUOTE_EXPORT_COLUMNS } from "@/utils/orderExportUtils";
+import { exportToExcel, exportToPDF } from "@/utils/orderExportUtils";
 import { Download, FileSpreadsheet } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
@@ -80,7 +81,7 @@ export function QuotesListPage() {
   const navigate = useNavigate();
   const { isGestorCompras, isDev } = useAuth();
   const { isSupervisorOrAbove } = useRBAC();
-  const { quotes, isLoading, error, deleteQuote, duplicateQuote, updateQuoteStatus } = useQuotes();
+  const { quotes, isLoading, error, deleteQuote, reorderQuote, updateQuoteStatus } = useQuotes();
 
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
@@ -250,7 +251,7 @@ export function QuotesListPage() {
                       total_formatted: (q.total || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }),
                       valid_until_formatted: q.valid_until ? format(new Date(q.valid_until), 'dd/MM/yyyy') : '-'
                     }));
-                    exportToExcel({ items: data, filename: 'orcamentos', columns: QUOTE_EXPORT_COLUMNS });
+                    exportToExcel(data, 'orcamentos');
                   }}>
                     <FileSpreadsheet className="h-4 w-4 mr-2" /> Excel (.xlsx)
                   </DropdownMenuItem>
@@ -261,7 +262,7 @@ export function QuotesListPage() {
                       total_formatted: (q.total || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }),
                       valid_until_formatted: q.valid_until ? format(new Date(q.valid_until), 'dd/MM/yyyy') : '-'
                     }));
-                    exportToPDF({ items: data, filename: 'orcamentos', columns: QUOTE_EXPORT_COLUMNS });
+                    exportToPDF(data, 'orcamentos');
                   }}>
                     <FileText className="h-4 w-4 mr-2" /> PDF (.pdf)
                   </DropdownMenuItem>
@@ -416,7 +417,7 @@ export function QuotesListPage() {
                 onBulkStatusChange={async (ids, status) => {
                   let successCount = 0;
                   for (const id of ids) {
-                    const ok = await updateQuoteStatus(id, status as string);
+                    const ok = await updateQuoteStatus(id, status as Quote["status"]);
                     if (ok) successCount++;
                   }
                   toast.success(`${successCount} orçamento(s) atualizado(s)`);
@@ -427,8 +428,17 @@ export function QuotesListPage() {
                 onBulkExport={(ids) => {
                   const selected = filteredQuotes.filter((q) => ids.includes(q.id!));
                   import("@/utils/excelExport").then(({ exportToExcel }) => {
-                    exportToExcel(
-                      selected.map((q) => ({
+                    exportToExcel({
+                      filename: "orcamentos_selecionados",
+                      columns: [
+                        { key: "Número", header: "Número" },
+                        { key: "Empresa", header: "Empresa" },
+                        { key: "Contato", header: "Contato" },
+                        { key: "Status", header: "Status" },
+                        { key: "Valor", header: "Valor" },
+                        { key: "Data", header: "Data" },
+                      ],
+                      data: selected.map((q) => ({
                         Número: q.quote_number,
                         Empresa: q.client_company || "",
                         Contato: q.client_name || "",
@@ -436,12 +446,11 @@ export function QuotesListPage() {
                         Valor: q.total || 0,
                         Data: q.created_at ? format(new Date(q.created_at), "dd/MM/yyyy") : "",
                       })),
-                      "orcamentos_selecionados"
-                    );
+                    });
                     toast.success(`${ids.length} orçamento(s) exportado(s)`);
                   });
                 }}
-                onDuplicate={(id) => duplicateQuote(id)}
+                onDuplicate={(id) => reorderQuote(id)}
                 onMarkApproved={async (id) => {
                   const ok = await updateQuoteStatus(id, "approved");
                   if (ok) {
