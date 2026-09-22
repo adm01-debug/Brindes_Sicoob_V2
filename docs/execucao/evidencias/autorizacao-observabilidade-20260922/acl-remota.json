@@ -1,0 +1,41 @@
+{
+  "coletado_em": "2026-09-22T18:37:12.720198+00:00",
+  "projeto": "cfmzkthhgliqelozlmwu",
+  "ambiente": "construção",
+  "dryrun": [
+    {
+      "violations_after": 0,
+      "database": "postgres"
+    }
+  ],
+  "rollback_confirmado": [
+    {
+      "dryrun_reverted": true,
+      "ledger_unmodified": true
+    }
+  ],
+  "aplicacao": [
+    {
+      "violations": 0,
+      "ledger_exact": true,
+      "ledger_count": 42
+    }
+  ],
+  "mutacao_remota_transacional": [
+    {
+      "overload_detected": true,
+      "temporary_violations": 1
+    }
+  ],
+  "estado_final": [
+    {
+      "violations": 0,
+      "temporary_overload_removed": true,
+      "anon_can_audit": false,
+      "service_can_audit": true,
+      "ledger_md5": "bcf2d065edb94f34ead38385f68dde43",
+      "ledger_count": 42
+    }
+  ],
+  "migration_sha256": "2dd211ec14923a1532b31eebdc450eb6f09b0a43a68dd4595b5c8d53c43bc706"
+}

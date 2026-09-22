@@ -93,6 +93,10 @@ jobs:
           deno check supabase/functions/sicoob-reorder/index.ts
           deno check supabase/functions/sicoob-kit-quote/index.ts
           deno check supabase/functions/sicoob-artwork-register/index.ts
+          deno check supabase/functions/_shared/authorize.ts
+          deno check supabase/functions/admin-audit-hook/index.ts
+          deno check supabase/functions/quote-approval/index.ts
+          deno check supabase/functions/sicoob-approval-notifications/index.ts
           deno check supabase/functions/migration-health-check/index.ts
           deno check supabase/functions/product-webhook/index.ts
           deno check supabase/functions/mcp-keys-revoke/index.ts
@@ -102,6 +106,12 @@ jobs:
 
       - name: Simular controles de auditoria e permissões em PostgreSQL descartável
         run: python3 scripts/qa/simular-controles-auditoria.py
+
+      - name: Simular ACL padrão, sobrecargas e herança de papéis
+        run: python3 scripts/qa/simular-acl-efetiva.py
+
+      - name: Verificar adoção de logging nas Edge Functions
+        run: node scripts/check-edge-structured-logging.mjs
 
       - name: Compilar artefato de produção
         env:

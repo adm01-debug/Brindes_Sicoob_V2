@@ -1,0 +1,17 @@
+{
+  "ambiente": "PostgreSQL descartável sem rede",
+  "remoto_validado": false,
+  "cenarios": {
+    "dry_run_sem_persistencia": true,
+    "fixture_acl_nula": true,
+    "public_padrao_detectado": true,
+    "anon_padrao_detectado": true,
+    "revogacao_elimina_achado": true,
+    "heranca_anon_detectada": true,
+    "assinatura_revisada_aceita": true,
+    "sobrecarga_nao_herda_excecao": true,
+    "heranca_authenticated_trigger_detectada": true,
+    "anon_nao_chama_gate": true,
+    "service_chama_gate": true
+  }
+}

@@ -168,3 +168,16 @@ Para capturar e rastrear uma falha em tempo real, siga este fluxo:
 
 
 
+
+## 11. Retornos antecipados nas Edge Functions
+
+`withStructuredLogging(nome, handler)` instrumenta início, resposta e exceções,
+acrescentando `X-Request-Id` inclusive em 401, 403, 405 e 429. O wrapper preserva
+corpo/status/headers da resposta e não registra corpo da requisição, credenciais
+ou texto de exceções inesperadas. Para casos não tratados, retorna 500 genérico.
+
+O gate verifica chamadas reais por AST, incluindo imports com alias. Importar o
+logger sem chamá-lo não satisfaz o contrato. Isso continua sendo inspeção estática;
+os cenários executáveis verificam o comportamento do wrapper. O stub desativado
+`migrate-helper` é dispensado exclusivamente pelo hash do código inerte revisado.
+Mudanças nesse stub invalidam a exceção. A allowlist legada não deve crescer.

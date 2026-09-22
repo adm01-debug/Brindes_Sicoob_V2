@@ -178,6 +178,8 @@ negócio. Não habilitar escrita no banco externo para fazer a interface parecer
 funcional. O módulo de prompts também consultava técnicas no banco errado;
 agora faz a consulta pela ponte externa de leitura.
 
+> Continuação: [autorização, observabilidade e ACL efetiva](autorizacao-observabilidade-20260922.md), com evidência posterior ao merge do PR #16.
+
 ## Reconciliação das 50 etapas corretivas
 
 Referência: [plano de 17/09](../plano-implementacao/plano-correcoes-auditoria-50-etapas-20260917.md).
@@ -189,7 +191,7 @@ as trata como prontas. Este projeto está em construção, conforme orientação
 |---:|---|
 | 1 | Base origin/main consultada; execução isolada para preservar outro trabalho local |
 | 2 | PR #12 aberto em rascunho; cobertura dos commits históricos precisa de reconciliação própria |
-| 3 | Aberta: merge depende de revisão e checks; nenhum bypass autorizado pelo resultado local |
+| 3 | PR #16 incorporado à main por ação externa a esta execução; continuação isolada em novo PR. CI anterior não executou por orçamento |
 | 4 | Sem ação: artefatos de outros worktrees preservados; não fazem parte desta correção |
 | 5 | Concluída: statements reais da baseline foram extraídos do ledger administrativo e preservados localmente |
 | 6 | Concluída com limite explícito: baseline aplicada e arquivo local coincidem após normalização textual preliminar; isso não substitui prova semântica |
@@ -205,7 +207,7 @@ as trata como prontas. Este projeto está em construção, conforme orientação
 | 16 | Buckets antigos não aparecem no gate atual; upload autenticado ponta a ponta ainda pendente |
 | 17 | Local: chamada morta de set_config removida, comentário corrigido e autorização das funções técnicas endurecida; publicação pendente |
 | 18 | Local: uso de telemetry_events, teste de envio e monitores protegidos por papel técnico; entrega remota não certificada |
-| 19 | Parcial: AST para wrappers e inventário atualizado; 58 ocorrências ainda abertas, 27 bloqueantes |
+| 19 | Gate estático atual: 1.120 referências analisadas e zero quebradas; não equivale à homologação dos fluxos |
 | 20 | Gate ligado ao CI e fortalecido para rejeitar exceção custom sem prova de identidade e papel; novos testes incluídos; GitHub não iniciou o job por bloqueio de orçamento |
 | 21 | Documento de órfãos preexistente; contagens não bastam para remover recursos |
 | 22 | Aberta: confirmar FKs/dependências remotas antes de qualquer remoção da família de PAs |
@@ -215,7 +217,7 @@ as trata como prontas. Este projeto está em construção, conforme orientação
 | 26 | Parcial: SQL da view corrigido localmente; tela e leitura remota ainda precisam de aceite |
 | 27 | Aberta: dependências internas e intenção de cada RPC exigem catálogo PostgreSQL completo |
 | 28 | Parcial: 13 buckets vazios na coleta de 22/09; nenhum removido sem confirmar dependências |
-| 29 | Concluída para o estado atual: comparador bidirecional executado contra o ledger real; 41 versões remotas, 509 locais e 468 locais fora do ledger |
+| 29 | Concluída para o estado atual: comparador bidirecional executado contra o ledger real; 41 versões remotas, 509 locais e 468 locais fora do ledger na coleta anterior; o lote seguinte acrescentou uma migration local/remota com ledger exato |
 | 30 | Parcial: auditoria anterior identificou bypass administrativo e ausência de checks obrigatórios; mitigação não concluída |
 | 31 | Aberta: alerta periódico de commits sem PR não foi implementado neste lote |
 | 32 | Runbook existente atualizado para banco de construção, simulação e reconciliação bidirecional |
@@ -225,10 +227,10 @@ as trata como prontas. Este projeto está em construção, conforme orientação
 | 36 | Métricas desta execução datadas acima; ledger remoto não substituído por contagem de arquivos |
 | 37 | Decisões consolidadas atualizadas com correções feitas e pendências reais |
 | 38 | Aberta: decisões de negócio remanescentes não foram inventadas nem comunicadas a terceiros |
-| 39 | Concluída no gate estático atual: 1.128 referências analisadas, zero quebradas e zero entradas de allowlist |
-| 40 | Parcial: testes e baselines locais validados; tipagem global mantém 668 erros preexistentes e o CI remoto não iniciou por orçamento |
+| 39 | Concluída no gate estático atual: 1.120 referências analisadas, zero quebradas e zero entradas de allowlist |
+| 40 | Parcial: testes e baselines locais validados; tipagem global mantém 653 erros preexistentes e o CI remoto não iniciou por orçamento |
 | 41 | Aberta: quatro jornadas completas não homologadas; três delas dependem de Edge Functions Sicoob ainda ausentes no ambiente de construção |
-| 42 | Aberta: branch isolada ainda depende de merge; não afirmar igualdade com main |
+| 42 | PR #16 incorporado; novo lote em worktree isolado, sem afirmar igualdade de todas as cópias locais com main |
 | 43 | Concluída no banco de construção: ledger revalidado após cada aplicação e 19 hashes exatos confirmados |
 | 44 | Parcial: lote aplicado ao banco de construção autorizado; nenhuma comunicação a terceiros foi necessária |
 | 45 | Nota de mudanças presente neste relatório; ainda não é release |

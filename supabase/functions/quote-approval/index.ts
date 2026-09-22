@@ -1,3 +1,4 @@
+import { withStructuredLogging } from "../_shared/structured-logger.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.7.1";
 import { RateLimiter, applyRateLimit } from "../_shared/rate-limiter.ts";
@@ -13,7 +14,7 @@ const approvalLimiter = new RateLimiter({
   keyPrefix: 'quote-approval'
 });
 
-serve(async (req) => {
+serve(withStructuredLogging("quote-approval", async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
   }
@@ -144,4 +145,4 @@ serve(async (req) => {
       }
     );
   }
-});
+}));
