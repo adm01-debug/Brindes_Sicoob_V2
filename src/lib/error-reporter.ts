@@ -2,6 +2,7 @@
  * Centralized error reporting service.
  * Captures unhandled errors and sends them to the database for monitoring.
  */
+import type { Json } from '@/integrations/supabase/types';
 import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/lib/logger';
 import { captureException } from '@/lib/sentry';
@@ -105,20 +106,22 @@ async function flushErrors() {
 
     const rows = batch.map(err => ({
       user_id: err.userId || null,
-      error_message: err.message,
-      error_stack: err.stack?.slice(0, 5000),
-      component_stack: err.componentStack?.slice(0, 5000),
+      event_type: 'application_error',
       url: err.url,
       user_agent: err.userAgent.slice(0, 500),
       severity: (err.metadata?.severity as string) || (err.metadata?.category === 'blank_screen' ? 'critical' : 'error'),
-      metadata: err.metadata || {},
+      metadata: {
+        ...err.metadata,
+        error_message: err.message,
+        error_stack: err.stack?.slice(0, 5000),
+        component_stack: err.componentStack?.slice(0, 5000),
+      } as Json,
     }));
 
-    // Usamos o cast 'as any' porque os tipos do Supabase podem ainda não estar sincronizados com o novo schema
-    const { error } = await (supabase.from('error_logs') as any).insert(rows);
-    if (error) logger.warn('[ErrorReporter] Failed to flush to error_logs:', error.message);
-    
-    // Fallback para admin_audit_log se necessário (opcional, vamos manter apenas error_logs para evitar duplicidade excessiva)
+    // Telemetria já existente no schema; Sentry continua recebendo o evento.
+    const { error } = await supabase.from('telemetry_events').insert(rows);
+    if (error) logger.warn('[ErrorReporter] Falha ao registrar telemetria:', error.message);
+
   } catch (e) {
     logger.warn('[ErrorReporter] Flush failed:', e);
   }
@@ -167,7 +170,8 @@ export function reportError(error: Error, metadata?: Record<string, unknown>) {
   const report: ErrorReport = {
     message: error.message,
     stack: error.stack,
-    url: window.location.href,
+    // URLs de recuperação/aprovação podem carregar tokens em query ou fragmento.
+    url: window.location.origin + window.location.pathname,
     userAgent: navigator.userAgent,
     timestamp: new Date().toISOString(),
     metadata: enrichedMetadata,

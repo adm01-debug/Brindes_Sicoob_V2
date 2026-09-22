@@ -1,0 +1,31 @@
+{
+  "source": "Snapshot offline; não comprova estado remoto atual",
+  "openapi_sha256": "1d17066521e7ab9d88ea78ad91b056a16a81727a19c8c4fbd1adf045a5333373",
+  "types_sha256": "11034afde72294bbe40eff253da0c88a286eaccf9b81b9ad33e76c210dbe4a08",
+  "scope": "Presença de relações/colunas e nomes de argumentos RPC; sem certificar tipos SQL, nulabilidade, overloads ou corpos.",
+  "types_tables": 211,
+  "types_views": 4,
+  "api_relations": 202,
+  "relations_only_types": [
+    "admin_audit_log_archive",
+    "admin_audit_log_default",
+    "admin_audit_log_old",
+    "admin_audit_log_y2024",
+    "admin_audit_log_y2025",
+    "admin_audit_log_y2026_m01",
+    "admin_audit_log_y2026_m02",
+    "admin_audit_log_y2026_m03",
+    "admin_audit_log_y2026_m04",
+    "admin_audit_log_y2026_m05",
+    "admin_audit_log_y2026_m06",
+    "personalization_simulations",
+    "sales_goals"
+  ],
+  "relations_only_api": [],
+  "columns_differences": [],
+  "types_functions": 167,
+  "api_functions": 167,
+  "functions_only_types": [],
+  "functions_only_api": [],
+  "rpc_argument_differences": []
+}

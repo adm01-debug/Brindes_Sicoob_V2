@@ -40,7 +40,7 @@ export function ProductPersonalizationManager() {
 
   const {
     products, productsLoading, productGroups, allMemberships,
-    productMembership, components, componentsLoading,
+    productMembership, components, componentsLoading, locationsError, locationTechniquesError,
     techniques, toggleGroupRulesMutation,
     addComponentMutation, updateComponentMutation, deleteComponentMutation,
     addLocationMutation, updateLocationMutation, deleteLocationMutation,
@@ -71,7 +71,6 @@ export function ProductPersonalizationManager() {
 
   const handleAddTechnique = () => {
     if (!selectedLocationId || !newTechniqueId) return;
-    const location = getLocationsForComponent("").length ? undefined : undefined; // lookup below
     const allLocs = components?.flatMap(c => getLocationsForComponent(c.id)) || [];
     const loc = allLocs.find(l => l.id === selectedLocationId);
     const comp = components?.find(c => c.id === loc?.component_id);
@@ -103,6 +102,11 @@ export function ProductPersonalizationManager() {
 
   return (
     <div className="space-y-6">
+      {(locationsError || locationTechniquesError) && (
+        <div role="alert" className="rounded-md border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive">
+          Não foi possível carregar as regras de personalização. Verifique o acesso ao banco e tente novamente.
+        </div>
+      )}
       <ProductSelector
         products={products}
         productsLoading={productsLoading}
@@ -115,8 +119,6 @@ export function ProductPersonalizationManager() {
       {selectedProduct && hasGroup && productMembership && (
         <GroupInheritance
           productMembership={productMembership}
-          selectedProduct={selectedProduct}
-          techniques={techniques}
           toggleGroupRules={(p) => toggleGroupRulesMutation.mutate(p)}
         />
       )}

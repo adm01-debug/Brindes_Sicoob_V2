@@ -16,10 +16,29 @@ describe('error-reporter', () => {
   beforeEach(() => {
     vi.useFakeTimers();
     vi.resetModules();
+    vi.clearAllMocks();
   });
 
   afterEach(() => {
+    vi.clearAllTimers();
     vi.useRealTimers();
+  });
+
+  it('registra o lote na telemetria existente sem incluir tokens da URL', async () => {
+    const { supabase } = await import('@/integrations/supabase/client');
+    const insert = vi.fn().mockResolvedValue({ error: null });
+    vi.mocked(supabase.from).mockReturnValue({ insert } as never);
+    window.history.replaceState({}, '', '/aprovacao?token=segredo-sintetico#chave');
+    const { reportError } = await import('@/lib/error-reporter');
+    reportError(new Error('Falha de envio'), { context: 'teste' });
+    await vi.advanceTimersByTimeAsync(5000);
+    expect(supabase.from).toHaveBeenCalledWith('telemetry_events');
+    expect(insert).toHaveBeenCalledWith([expect.objectContaining({
+      event_type: 'application_error', user_id: 'user-123',
+      url: window.location.origin + '/aprovacao',
+      metadata: expect.objectContaining({ error_message: 'Falha de envio', context: 'teste' }),
+    })]);
+    window.history.replaceState({}, '', '/');
   });
 
   it('reportError queues an error and schedules flush', async () => {

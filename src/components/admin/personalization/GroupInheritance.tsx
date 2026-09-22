@@ -8,48 +8,15 @@ import {
 import { Link, Unlink, Copy, Loader2 } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { untypedFrom } from "@/lib/supabase-untyped";
 import { toast } from "sonner";
-import type { ProductGroupMember, Technique } from "./usePersonalizationData";
-
-interface GroupComponentRow {
-  id: string;
-  component_code: string;
-  component_name: string;
-  is_personalizable: boolean;
-  is_active: boolean;
-  sort_order: number;
-}
-
-interface GroupLocationRow {
-  id: string;
-  group_component_id: string;
-  location_code: string;
-  location_name: string;
-  max_width_cm: number | null;
-  max_height_cm: number | null;
-  max_area_cm2: number | null;
-  area_image_url: string | null;
-  is_active: boolean;
-}
-
-interface GroupLocationTechniqueRow {
-  id: string;
-  group_location_id: string;
-  technique_id: string;
-  max_colors: number | null;
-  is_default: boolean;
-  is_active: boolean;
-}
+import type { ProductGroupMember } from "./usePersonalizationData";
 
 interface GroupInheritanceProps {
   productMembership: ProductGroupMember;
-  selectedProduct: string;
-  techniques: Technique[] | undefined;
   toggleGroupRules: (params: { id: string; use_group_rules: boolean }) => void;
 }
 
-export function GroupInheritance({ productMembership, selectedProduct, techniques, toggleGroupRules }: GroupInheritanceProps) {
+export function GroupInheritance({ productMembership, toggleGroupRules }: GroupInheritanceProps) {
   const queryClient = useQueryClient();
   const [isCopying, setIsCopying] = useState(false);
   const isUsingGroupRules = productMembership.use_group_rules;
@@ -57,45 +24,8 @@ export function GroupInheritance({ productMembership, selectedProduct, technique
   const copyGroupRulesToProduct = async () => {
     setIsCopying(true);
     try {
-      const { data: groupComponentsRaw } = await untypedFrom("product_group_components")
-        .select("*")
-        .eq("product_group_id", productMembership.product_group_id);
-      const groupComponents = groupComponentsRaw as GroupComponentRow[] | null;
-
-      if (!groupComponents?.length) { toast.error("Grupo não possui componentes configurados"); return; }
-
-      await supabase.from("product_components").delete().eq("product_id", selectedProduct);
-
-      for (const gc of groupComponents) {
-        const { data: newComp, error: compError } = await supabase
-          .from("product_components")
-          .insert({ product_id: selectedProduct, component_code: gc.component_code, component_name: gc.component_name, is_personalizable: gc.is_personalizable, is_active: gc.is_active, sort_order: gc.sort_order })
-          .select().single();
-        if (compError) throw compError;
-
-        const { data: groupLocationsRaw } = await untypedFrom("product_group_locations").select("*").eq("group_component_id", gc.id);
-        const groupLocations = groupLocationsRaw as GroupLocationRow[] | null;
-        if (groupLocations?.length) {
-          for (const gl of groupLocations) {
-            const { data: newLoc, error: locError } = await untypedFrom("product_component_locations")
-              .insert({ component_id: newComp.id, location_code: gl.location_code, location_name: gl.location_name, max_width_cm: gl.max_width_cm, max_height_cm: gl.max_height_cm, max_area_cm2: gl.max_area_cm2, area_image_url: gl.area_image_url, is_active: gl.is_active })
-              .select().single();
-            if (locError) throw locError;
-
-            const { data: groupTechsRaw } = await untypedFrom("product_group_location_techniques").select("*").eq("group_location_id", gl.id);
-            const groupTechs = groupTechsRaw as GroupLocationTechniqueRow[] | null;
-            if (groupTechs?.length) {
-              for (const gt of groupTechs) {
-                const tech = techniques?.find((t) => t.id === gt.technique_id);
-                await untypedFrom("product_component_location_techniques")
-                  .insert({ component_location_id: newLoc.id, technique_id: gt.technique_id, composed_code: `${gc.component_code}-${gl.location_code}-${tech?.code || ""}`, max_colors: gt.max_colors, is_default: gt.is_default, is_active: gt.is_active });
-              }
-            }
-          }
-        }
-      }
-
-      await supabase.from("product_group_members").update({ use_group_rules: false }).eq("id", productMembership.id);
+      const { error } = await supabase.rpc("copy_group_personalization_to_product", { p_membership_id: productMembership.id });
+      if (error) throw error;
       queryClient.invalidateQueries({ queryKey: ["product-components"] });
       queryClient.invalidateQueries({ queryKey: ["component-locations"] });
       queryClient.invalidateQueries({ queryKey: ["location-techniques"] });

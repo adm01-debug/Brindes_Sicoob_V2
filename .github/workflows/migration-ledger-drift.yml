@@ -1,13 +1,5 @@
-# Alerta diário: versão aplicada em supabase_migrations.schema_migrations sem
-# arquivo local correspondente em supabase/migrations|migrations_archive.
-#
-# Pré-requisitos ainda não atendidos nesta sessão (ver scripts/db/
-# check-migration-ledger-drift.mjs e Etapa 29 de docs/plano-implementacao/
-# plano-correcoes-auditoria-50-etapas-20260917.md):
-#   1. Adicionar `pg` como devDependency em package.json.
-#   2. Cadastrar o secret SUPABASE_DB_URL (connection string direta ao
-#      Postgres) — já previsto na Etapa 3 do plano principal, ainda não
-#      executada. Sem os dois, este job falha na conexão, não silenciosamente.
+# Compara versões, nomes e conteúdo nos dois sentidos; pendências exigem classificação.
+# SUPABASE_DB_URL deve usar TLS com certificado verificado no ambiente remoto.
 name: Migration ledger drift
 
 on:

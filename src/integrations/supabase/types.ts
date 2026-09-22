@@ -14,6 +14,301 @@ export type Database = {
   }
   public: {
     Tables: {
+      // Contratos observados na API em 22/09/2026; relacionamentos não inferidos.
+      audit_log: {
+        Row: {
+          action: string
+          created_at: string
+          entity_id: string
+          entity_type: string
+          id: string
+          ip_address: string | null
+          new_values: Json | null
+          old_values: Json | null
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          entity_id: string
+          entity_type: string
+          id?: string
+          ip_address?: string | null
+          new_values?: Json | null
+          old_values?: Json | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          entity_id?: string
+          entity_type?: string
+          id?: string
+          ip_address?: string | null
+          new_values?: Json | null
+          old_values?: Json | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      notification_templates: {
+        Row: {
+          channel: string
+          created_at: string | null
+          default_priority: number | null
+          event_type: string
+          id: string
+          message_template: string
+          system: string
+          title_template: string
+          variables: (string)[] | null
+        }
+        Insert: {
+          channel: string
+          created_at?: string | null
+          default_priority?: number | null
+          event_type: string
+          id?: string
+          message_template: string
+          system: string
+          title_template: string
+          variables?: (string)[] | null
+        }
+        Update: {
+          channel?: string
+          created_at?: string | null
+          default_priority?: number | null
+          event_type?: string
+          id?: string
+          message_template?: string
+          system?: string
+          title_template?: string
+          variables?: (string)[] | null
+        }
+        Relationships: []
+      }
+      password_reset_requests: {
+        Row: {
+          email: string
+          id: string
+          requested_at: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          reviewer_notes: string | null
+          status: string
+          user_id: string | null
+        }
+        Insert: {
+          email: string
+          id?: string
+          requested_at?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          reviewer_notes?: string | null
+          status?: string
+          user_id?: string | null
+        }
+        Update: {
+          email?: string
+          id?: string
+          requested_at?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          reviewer_notes?: string | null
+          status?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      sicoob_kit_quote_requests: {
+        Row: {
+          actor_id: string
+          created_at: string
+          id: string
+          idempotency_key: string
+          payload_hash: string
+          quote_id: string
+        }
+        Insert: {
+          actor_id: string
+          created_at?: string
+          id?: string
+          idempotency_key: string
+          payload_hash: string
+          quote_id: string
+        }
+        Update: {
+          actor_id?: string
+          created_at?: string
+          id?: string
+          idempotency_key?: string
+          payload_hash?: string
+          quote_id?: string
+        }
+        Relationships: []
+      }
+      sicoob_order_shipments: {
+        Row: {
+          actual_delivery_at: string | null
+          carrier_name: string | null
+          created_at: string
+          created_by: string
+          delivery_photo_path: string | null
+          estimated_delivery: string | null
+          id: string
+          order_id: string
+          status: string
+          tracking_code: string | null
+          updated_at: string
+        }
+        Insert: {
+          actual_delivery_at?: string | null
+          carrier_name?: string | null
+          created_at?: string
+          created_by: string
+          delivery_photo_path?: string | null
+          estimated_delivery?: string | null
+          id?: string
+          order_id: string
+          status?: string
+          tracking_code?: string | null
+          updated_at?: string
+        }
+        Update: {
+          actual_delivery_at?: string | null
+          carrier_name?: string | null
+          created_at?: string
+          created_by?: string
+          delivery_photo_path?: string | null
+          estimated_delivery?: string | null
+          id?: string
+          order_id?: string
+          status?: string
+          tracking_code?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      sicoob_reorder_requests: {
+        Row: {
+          actor_id: string
+          created_at: string
+          id: string
+          idempotency_key: string
+          payload_hash: string
+          quote_id: string
+          source_order_id: string
+        }
+        Insert: {
+          actor_id: string
+          created_at?: string
+          id?: string
+          idempotency_key: string
+          payload_hash: string
+          quote_id: string
+          source_order_id: string
+        }
+        Update: {
+          actor_id?: string
+          created_at?: string
+          id?: string
+          idempotency_key?: string
+          payload_hash?: string
+          quote_id?: string
+          source_order_id?: string
+        }
+        Relationships: []
+      }
+      webhook_configs: {
+        Row: {
+          created_at: string | null
+          events: (string)[]
+          failed_calls: number | null
+          id: string
+          is_active: boolean | null
+          last_triggered_at: string | null
+          max_retries: number | null
+          name: string
+          retry_delay_seconds: number | null
+          secret: string | null
+          system: string
+          total_calls: number | null
+          url: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          events: (string)[]
+          failed_calls?: number | null
+          id?: string
+          is_active?: boolean | null
+          last_triggered_at?: string | null
+          max_retries?: number | null
+          name: string
+          retry_delay_seconds?: number | null
+          secret?: string | null
+          system: string
+          total_calls?: number | null
+          url: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          events?: (string)[]
+          failed_calls?: number | null
+          id?: string
+          is_active?: boolean | null
+          last_triggered_at?: string | null
+          max_retries?: number | null
+          name?: string
+          retry_delay_seconds?: number | null
+          secret?: string | null
+          system?: string
+          total_calls?: number | null
+          url?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      webhook_logs: {
+        Row: {
+          attempt_number: number | null
+          created_at: string | null
+          event_type: string
+          id: string
+          payload: Json
+          response_body: string | null
+          status_code: number | null
+          success: boolean | null
+          webhook_id: string | null
+        }
+        Insert: {
+          attempt_number?: number | null
+          created_at?: string | null
+          event_type: string
+          id?: string
+          payload: Json
+          response_body?: string | null
+          status_code?: number | null
+          success?: boolean | null
+          webhook_id?: string | null
+        }
+        Update: {
+          attempt_number?: number | null
+          created_at?: string | null
+          event_type?: string
+          id?: string
+          payload?: Json
+          response_body?: string | null
+          status_code?: number | null
+          success?: boolean | null
+          webhook_id?: string | null
+        }
+        Relationships: []
+      }
       personalization_simulations: {
         Row: {
           id: string
@@ -6000,6 +6295,7 @@ export type Database = {
       }
       product_component_locations: {
         Row: {
+          area_image_url: string | null
           component_id: string
           created_at: string
           deleted_at: string | null
@@ -6008,12 +6304,14 @@ export type Database = {
           is_active: boolean
           location_code: string
           location_name: string
+          max_area_cm2: number | null
           max_height_cm: number | null
           max_width_cm: number | null
           sort_order: number | null
           updated_at: string
         }
         Insert: {
+          area_image_url?: string | null
           component_id: string
           created_at?: string
           deleted_at?: string | null
@@ -6022,12 +6320,14 @@ export type Database = {
           is_active?: boolean
           location_code: string
           location_name: string
+          max_area_cm2?: number | null
           max_height_cm?: number | null
           max_width_cm?: number | null
           sort_order?: number | null
           updated_at?: string
         }
         Update: {
+          area_image_url?: string | null
           component_id?: string
           created_at?: string
           deleted_at?: string | null
@@ -6036,6 +6336,7 @@ export type Database = {
           is_active?: boolean
           location_code?: string
           location_name?: string
+          max_area_cm2?: number | null
           max_height_cm?: number | null
           max_width_cm?: number | null
           sort_order?: number | null
@@ -6262,6 +6563,8 @@ export type Database = {
       }
       profiles: {
         Row: {
+          singular_id: string | null
+          carteira_id: string | null
           approval_threshold: number | null
           avatar_url: string | null
           cooperativa_id: string | null
@@ -6282,6 +6585,8 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          singular_id?: string | null
+          carteira_id?: string | null
           approval_threshold?: number | null
           avatar_url?: string | null
           cooperativa_id?: string | null
@@ -6302,6 +6607,8 @@ export type Database = {
           user_id: string
         }
         Update: {
+          singular_id?: string | null
+          carteira_id?: string | null
           approval_threshold?: number | null
           avatar_url?: string | null
           cooperativa_id?: string | null
@@ -6886,6 +7193,7 @@ export type Database = {
       }
       quote_item_personalizations: {
         Row: {
+          catalog_checked_at: string | null
           area_cm2: number | null
           colors_count: number | null
           created_at: string
@@ -6904,6 +7212,7 @@ export type Database = {
           width_cm: number | null
         }
         Insert: {
+          catalog_checked_at?: string | null
           area_cm2?: number | null
           colors_count?: number | null
           created_at?: string
@@ -6922,6 +7231,7 @@ export type Database = {
           width_cm?: number | null
         }
         Update: {
+          catalog_checked_at?: string | null
           area_cm2?: number | null
           colors_count?: number | null
           created_at?: string
@@ -8572,6 +8882,7 @@ export type Database = {
       }
       sicoob_orders: {
         Row: {
+          order_number: string
           approved_at: string | null
           approved_by: string | null
           approval_policy_id: string | null
@@ -8595,6 +8906,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          order_number: string
           approved_at?: string | null
           approved_by?: string | null
           approval_policy_id?: string | null
@@ -8618,6 +8930,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          order_number?: string
           approved_at?: string | null
           approved_by?: string | null
           approval_policy_id?: string | null
@@ -9602,6 +9915,137 @@ export type Database = {
       }
     }
     Functions: {
+      copy_group_personalization_to_product: {
+        Args: { p_membership_id: string }
+        Returns: number
+      }
+      assert_sicoob_approval_actor: {
+        Args: {
+          p_actor_id: string
+          p_board_only?: boolean
+          p_order_id: string
+          p_requester_id?: string
+        }
+        Returns: undefined
+      }
+      create_sicoob_kit_quote: {
+        Args: {
+          p_actor_id: string
+          p_idempotency_key: string
+          p_items: Json
+          p_kit: Json
+          p_personalizations: Json
+          p_request_hash: string
+        }
+        Returns: Json
+      }
+      ensure_admin_audit_log_partitions: {
+        Args: {
+          months_ahead?: number
+        }
+        Returns: undefined
+      }
+      get_sicoob_kit_quote_idempotency: {
+        Args: {
+          p_actor_id: string
+          p_idempotency_key: string
+          p_request_hash: string
+        }
+        Returns: Json
+      }
+      get_sicoob_order_approval_policy: {
+        Args: {
+          p_order_id: string
+        }
+        Returns: { policy_id: string | null; policy_version: string; forbid_self_approval: boolean; require_active_membership: boolean }[]
+      }
+      get_sicoob_order_shipment: {
+        Args: {
+          p_order_id: string
+        }
+        Returns: Json
+      }
+      get_sicoob_reorder_idempotency: {
+        Args: {
+          p_actor_id: string
+          p_idempotency_key: string
+          p_order_id: string
+          p_request_hash: string
+        }
+        Returns: string | null
+      }
+      get_user_singular_id: {
+        Args: Record<PropertyKey, never>
+        Returns: string | null
+      }
+      sicoob_actor_can_approve: {
+        Args: {
+          p_actor_id: string
+          p_board_only?: boolean
+          p_order_id: string
+        }
+        Returns: boolean
+      }
+      sicoob_actor_can_manage_consolidation: {
+        Args: {
+          p_actor_id: string
+          p_cooperative_id: string
+        }
+        Returns: boolean
+      }
+      sicoob_actor_can_manage_finance: {
+        Args: {
+          p_actor_id: string
+          p_order_id: string
+        }
+        Returns: boolean
+      }
+      sicoob_actor_can_manage_fulfillment: {
+        Args: {
+          p_actor_id: string
+          p_order_id: string
+        }
+        Returns: boolean
+      }
+      sicoob_actor_can_receive_consolidation: {
+        Args: {
+          p_actor_id: string
+          p_consolidation_id: string
+        }
+        Returns: boolean
+      }
+      sicoob_actor_can_receive_destination: {
+        Args: {
+          p_actor_id: string
+          p_destination_id: string
+        }
+        Returns: boolean
+      }
+      sicoob_actor_can_request_approval: {
+        Args: {
+          p_actor_id: string
+          p_order_id: string
+        }
+        Returns: boolean
+      }
+      sicoob_actor_can_view_all_consolidation: {
+        Args: {
+          p_actor_id: string
+          p_consolidation_id: string
+        }
+        Returns: boolean
+      }
+      upsert_sicoob_order_shipment: {
+        Args: {
+          p_carrier_name?: string
+          p_delivery_photo_path?: string
+          p_estimated_delivery?: string
+          p_expected_order_status: string
+          p_order_id: string
+          p_tracking_code?: string
+        }
+        Returns: Json
+      }
       _can_act_on_behalf_of_others: { Args: never; Returns: boolean }
       acquire_ai_quota: {
         Args: { _function_name: string; _model: string; _user_id: string }
@@ -9684,6 +10128,7 @@ export type Database = {
       }
       reorder_sicoob_order_as_quote: {
         Args: {
+          p_request_hash: string
           p_actor_id: string
           p_idempotency_key: string
           p_items: Json

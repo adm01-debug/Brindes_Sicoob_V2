@@ -13,33 +13,6 @@ import type {
   Product, ProductGroup, ProductGroupMember, Component, Location, Technique, LocationTechnique,
 } from "./types";
 
-type GroupComponentRow = {
-  id: string;
-  component_code: string;
-  component_name: string;
-  is_personalizable: boolean;
-  is_active: boolean;
-  sort_order: number;
-}
-
-type GroupLocationRow = {
-  id: string;
-  location_code: string;
-  location_name: string;
-  max_width_cm: number | null;
-  max_height_cm: number | null;
-  max_area_cm2: number | null;
-  area_image_url: string | null;
-  is_active: boolean;
-}
-
-type GroupLocationTechniqueRow = {
-  technique_id: string;
-  max_colors: number | null;
-  is_default: boolean;
-  is_active: boolean;
-}
-
 export function usePersonalizationManager() {
   const queryClient = useQueryClient();
   const [selectedProduct, setSelectedProduct] = useState<string | null>(null);
@@ -127,16 +100,14 @@ export function usePersonalizationManager() {
     enabled: !!selectedProduct,
   });
 
-  const { data: locations } = useQuery({
+  const { data: locations, error: locationsError } = useQuery({
     queryKey: ["component-locations", selectedProduct],
     queryFn: async () => {
       if (!components?.length) return [];
-      try {
-        const componentIds = components.map((c) => c.id);
-        const { data, error } = await untypedFrom<Location>("product_component_locations").select("*").in("component_id", componentIds);
-        if (error) { logger.warn("[Admin] product_component_locations not available:", error.message); return []; }
-        return data as Location[];
-      } catch { return []; }
+      const componentIds = components.map((c) => c.id);
+      const { data, error } = await untypedFrom<Location>("product_component_locations").select("*").in("component_id", componentIds);
+      if (error) throw error;
+      return data as Location[];
     },
     enabled: !!components?.length,
   });
@@ -152,18 +123,16 @@ export function usePersonalizationManager() {
     },
   });
 
-  const { data: locationTechniques } = useQuery({
+  const { data: locationTechniques, error: locationTechniquesError } = useQuery({
     queryKey: ["location-techniques", selectedProduct],
     queryFn: async () => {
       if (!locations?.length) return [];
-      try {
-        const locationIds = locations.map((l) => l.id);
-        const { data, error } = await untypedFrom<LocationTechnique>("product_component_location_techniques")
-          .select(`*, technique:personalization_techniques(id, code, name)`)
+      const locationIds = locations.map((l) => l.id);
+      const { data, error } = await untypedFrom<LocationTechnique>("product_component_location_techniques")
+          .select("*")
           .in("component_location_id", locationIds);
-        if (error) { logger.warn("[Admin] location_techniques not available:", error.message); return []; }
-        return data as LocationTechnique[];
-      } catch { return []; }
+      if (error) throw error;
+      return data as LocationTechnique[];
     },
     enabled: !!locations?.length,
   });
@@ -277,7 +246,9 @@ export function usePersonalizationManager() {
   };
 
   const getLocationsForComponent = (componentId: string) => locations?.filter((l) => l.component_id === componentId) || [];
-  const getTechniquesForLocation = (locationId: string) => locationTechniques?.filter((lt) => lt.component_location_id === locationId) || [];
+  const getTechniquesForLocation = (locationId: string) =>
+    locationTechniques?.filter((lt) => lt.component_location_id === locationId)
+      .map((lt) => ({ ...lt, technique: techniques?.find((t) => t.id === lt.technique_id) })) || [];
 
   const handleComponentDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event;
@@ -296,41 +267,11 @@ export function usePersonalizationManager() {
   };
 
   const copyGroupRulesToProduct = async () => {
-    if (!selectedProduct || !productMembership?.product_group_id) return;
+    if (!selectedProduct || !productMembership?.id) return;
     setIsCopying(true);
     try {
-      const { data: groupComponents } = await untypedFrom<GroupComponentRow>("product_group_components").select("*").eq("product_group_id", productMembership.product_group_id);
-      if (!groupComponents?.length) { toast.error("Grupo não possui componentes configurados"); return; }
-      await supabase.from("product_components").delete().eq("product_id", selectedProduct);
-      for (const gc of groupComponents) {
-        const { data: newComp, error: compError } = await supabase.from("product_components").insert({
-          product_id: selectedProduct, component_code: gc.component_code, component_name: gc.component_name,
-          is_personalizable: gc.is_personalizable, is_active: gc.is_active, sort_order: gc.sort_order,
-        }).select().single();
-        if (compError) throw compError;
-        const { data: groupLocations } = await untypedFrom<GroupLocationRow>("product_group_locations").select("*").eq("group_component_id", gc.id);
-        if (groupLocations?.length) {
-          for (const gl of groupLocations) {
-            const { data: newLoc, error: locError } = await untypedFrom<Location>("product_component_locations").insert({
-              component_id: newComp?.id ?? "", location_code: gl.location_code, location_name: gl.location_name,
-              max_width_cm: gl.max_width_cm, max_height_cm: gl.max_height_cm, max_area_cm2: gl.max_area_cm2, area_image_url: gl.area_image_url, is_active: gl.is_active,
-            }).select().single();
-            if (locError) throw locError;
-            const { data: groupTechniques } = await untypedFrom<GroupLocationTechniqueRow>("product_group_location_techniques").select("*").eq("group_location_id", gl.id);
-            if (groupTechniques?.length) {
-              for (const gt of groupTechniques) {
-                const technique = techniques?.find((t) => t.id === gt.technique_id);
-                const composedCode = `${gc.component_code}-${gl.location_code}-${technique?.code || ""}`;
-                await untypedFrom<LocationTechnique>("product_component_location_techniques").insert({
-                  component_location_id: newLoc?.id ?? "", technique_id: gt.technique_id, composed_code: composedCode,
-                  max_colors: gt.max_colors, is_default: gt.is_default, is_active: gt.is_active,
-                });
-              }
-            }
-          }
-        }
-      }
-      await supabase.from("product_group_members").update({ use_group_rules: false }).eq("id", productMembership.id);
+      const { error } = await supabase.rpc("copy_group_personalization_to_product", { p_membership_id: productMembership.id });
+      if (error) throw error;
       queryClient.invalidateQueries({ queryKey: ["product-components"] });
       queryClient.invalidateQueries({ queryKey: ["component-locations"] });
       queryClient.invalidateQueries({ queryKey: ["location-techniques"] });
@@ -358,7 +299,7 @@ export function usePersonalizationManager() {
     sensors,
     // Data
     products, productsLoading, productGroups, allMemberships, filteredProducts,
-    productMembership, components, componentsLoading, locations, techniques, locationTechniques,
+    productMembership, components, componentsLoading, locations, locationsError, techniques, locationTechniques, locationTechniquesError,
     isUsingGroupRules, hasGroup,
     // Mutations
     toggleGroupRulesMutation, addComponentMutation, updateComponentMutation, deleteComponentMutation,

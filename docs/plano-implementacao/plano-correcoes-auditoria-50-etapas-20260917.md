@@ -1,5 +1,11 @@
 # Plano de correções da auditoria tripla em 50 etapas
 
+> **Revisão de 22/09/2026:** o projeto está em construção. A
+> [execução atual, com evidências e estado das 50 etapas](../execucao/correcoes-reconciliacao-20260922.md)
+> corrige premissas deste documento: não aplicar migrations históricas em bloco,
+> não usar RPC separada de `set_config` como contexto transacional e não tratar
+> inventário de nomes como homologação. O conteúdo abaixo preserva o plano histórico.
+
 **Projeto:** `adm01-debug/Brindes_Sicoob_V2` · **Supabase operacional:** `cfmzkthhgliqelozlmwu` · **Catálogo externo (somente leitura):** `doufsxqlfjyuvxuezpln`
 
 **Relação com o plano principal:** este documento é complementar a `docs/plano-implementacao/plano-reconciliacao-50-etapas.md`, não um substituto. O plano principal continua sendo a fonte de verdade para a reconciliação estrutural (Fases 0-7, hoje com Fase 1 — ledger de migrations — só 42/503 classificados). Este plano trata especificamente dos achados da **auditoria tripla de 17/09/2026** (Git↔GitHub, migrations locais↔banco aplicado, código↔banco bidirecional exaustivo). Onde um achado já tem etapa correspondente no plano principal (ex.: a migration-baseline órfã já está prevista na Etapa 12 dele), este plano referencia em vez de duplicar.

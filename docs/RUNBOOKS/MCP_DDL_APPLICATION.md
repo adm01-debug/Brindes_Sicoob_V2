@@ -1,5 +1,9 @@
 # Runbook: aplicar DDL via MCP corretamente
 
+Atualização de 22/09/2026: o projeto está em construção. Referências históricas
+a "produção" abaixo não significam que exista operação produtiva. A validação
+atual e os bloqueios estão em [correções de reconciliação](../execucao/correcoes-reconciliacao-20260922.md).
+
 ## Quando isto se aplica
 
 Sempre que um agente (ou pessoa) aplicar `CREATE`/`ALTER`/`DROP`/qualquer DDL
@@ -37,20 +41,23 @@ razoável assumir.
    `CREATE OR REPLACE`), sem `DROP` destrutivo sem aprovação, RLS/ACL corretos
    desde a primeira aplicação (não "corrijo depois" — ver Etapa 12 deste plano
    sobre reauditar ACL/RLS de tudo aplicado por este caminho).
-3. **Aplique via MCP** com o texto exato do arquivo que você acabou de escrever
-   — não uma versão "rascunho" diferente do que vai ficar versionado. Se usar
-   dry-run (`BEGIN; ...; ROLLBACK;`), rode com o mesmo texto do arquivo.
-4. **Commite o arquivo `.sql` imediatamente** — no mesmo commit da aplicação,
-   ou no primeiro commit seguinte da mesma sessão de trabalho. Nunca deixe
-   "vou versionar depois" como item de TODO solto.
+3. **Simule antes de aplicar:** execute o mesmo arquivo em banco descartável,
+   incluindo permissões e rollback. No projeto correto, faça o preflight read-only
+   e valide dependências reais. Data API não dá acesso administrativo ao ledger.
+4. **Versione o arquivo antes da aplicação** e aplique via ferramenta administrativa
+   que registre a migration no ledger. Confirme versão, nome e statements. Não
+   use `repair --status applied` para representar DDL que não foi executado.
+   Preserve diferenças como evidência; não altere migrations históricas por conveniência.
 5. Se a aplicação foi emergencial e não deu tempo de seguir os passos 1-2 antes:
    **abra uma issue de follow-up com prazo** no mesmo momento, referenciando a
    versão exata (`supabase_migrations.schema_migrations.version`) que precisa
    ser extraída e versionada. Não deixe isso implícito ou "lembrado de cabeça".
 6. **Confirme reprodutibilidade**: depois de commitar, rode
    `node scripts/db/check-migration-ledger-drift.mjs` (Etapa 29 deste plano)
-   contra o ambiente — ele detecta exatamente esse tipo de órfão (versão no
-   ledger sem arquivo local) antes que vire um problema de dias/semanas.
+   contra o ambiente — compara ausências nas duas direções, duplicações, arquivos
+   arquivados, nomes e SQL normalizado. Código 1 indica pendências; código 2 indica
+   impossibilidade de verificar. Snapshot offline não prova estado atual e hash
+   normalizado diferente exige revisão, não aplicação automática.
 
 ## Por que isso importa mais do que parece
 

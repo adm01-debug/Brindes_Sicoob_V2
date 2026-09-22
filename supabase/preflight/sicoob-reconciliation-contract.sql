@@ -40,23 +40,23 @@ required_columns(table_name, column_name) AS (
     ('sicoob_order_items', 'size_code'),
     ('sicoob_order_items', 'personalization_snapshot')
 ),
-required_functions(function_name) AS (
+required_functions(function_name, signature, server_only) AS (
   VALUES
-    ('create_sicoob_kit_quote'),
-    ('get_sicoob_kit_quote_idempotency'),
-    ('get_sicoob_reorder_idempotency'),
-    ('get_sicoob_consolidation_sellers'),
-    ('reorder_sicoob_order_as_quote'),
-    ('record_sicoob_order_payment'),
-    ('refund_sicoob_order_payment'),
-    ('add_sicoob_order_invoice'),
-    ('decide_sicoob_order_artwork')
+    ('create_sicoob_kit_quote', 'public.create_sicoob_kit_quote(jsonb,jsonb,jsonb,text,uuid,text)', true),
+    ('get_sicoob_kit_quote_idempotency', 'public.get_sicoob_kit_quote_idempotency(uuid,text,text)', true),
+    ('get_sicoob_reorder_idempotency', 'public.get_sicoob_reorder_idempotency(uuid,uuid,text,text)', true),
+    ('get_sicoob_consolidation_sellers', 'public.get_sicoob_consolidation_sellers()', false),
+    ('reorder_sicoob_order_as_quote', 'public.reorder_sicoob_order_as_quote(uuid,jsonb,text,uuid,text)', true),
+    ('record_sicoob_order_payment', 'public.record_sicoob_order_payment(uuid,integer,numeric,date,text,uuid,text,text,timestamptz)', false),
+    ('refund_sicoob_order_payment', 'public.refund_sicoob_order_payment(uuid,text,timestamptz)', false),
+    ('add_sicoob_order_invoice', 'public.add_sicoob_order_invoice(uuid,text,text,text,numeric,text,date)', false),
+    ('decide_sicoob_order_artwork', 'public.decide_sicoob_order_artwork(uuid,text,text)', false)
 ),
 required_views(view_name) AS (
   VALUES ('v_sicoob_hierarchy')
 ),
 required_buckets(bucket_id) AS (
-  VALUES ('art-files'), ('avatars'), ('sicoob-order-documents')
+  VALUES ('proposals'), ('avatars'), ('sicoob-order-documents')
 ),
 checks AS (
   SELECT
@@ -94,21 +94,21 @@ checks AS (
 
   SELECT
     'função'::text,
-    function_name,
-    EXISTS (
-      SELECT 1
-      FROM pg_proc p
-      JOIN pg_namespace n ON n.oid = p.pronamespace
-      WHERE n.nspname = 'public'
-        AND p.proname = required_functions.function_name
+    signature,
+    to_regprocedure(signature) IS NOT NULL AND (
+      NOT server_only OR (
+        NOT has_function_privilege('anon', to_regprocedure(signature), 'EXECUTE')
+        AND NOT has_function_privilege('authenticated', to_regprocedure(signature), 'EXECUTE')
+        AND has_function_privilege('service_role', to_regprocedure(signature), 'EXECUTE')
+      )
     ),
-    CASE WHEN EXISTS (
-      SELECT 1
-      FROM pg_proc p
-      JOIN pg_namespace n ON n.oid = p.pronamespace
-      WHERE n.nspname = 'public'
-        AND p.proname = required_functions.function_name
-    ) THEN 'presente' ELSE 'ausente' END
+    CASE WHEN to_regprocedure(signature) IS NULL THEN 'assinatura ausente'
+      WHEN server_only AND (has_function_privilege('anon', to_regprocedure(signature), 'EXECUTE')
+        OR has_function_privilege('authenticated', to_regprocedure(signature), 'EXECUTE'))
+        THEN 'execução indevida por cliente'
+      WHEN server_only AND NOT has_function_privilege('service_role', to_regprocedure(signature), 'EXECUTE')
+        THEN 'servidor sem EXECUTE'
+      ELSE 'assinatura e acesso esperado presentes' END
   FROM required_functions
 
   UNION ALL
