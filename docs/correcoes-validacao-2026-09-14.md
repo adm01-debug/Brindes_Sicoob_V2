@@ -1805,3 +1805,37 @@ escopo, erros remanescentes são de outra causa). `check-eslint-baseline.mjs`
 
 Baseline de typecheck do projeto atualizado: 783 → 774 erros (375 → 373
 arquivos).
+
+## QuoteBitrixSync.ts (etapa 17)
+
+6 erros TS, todos com a mesma raiz de tipo `Quote` (`src/hooks/quotes/quoteTypes.ts`)
+sendo mais permissivo do que o uso real da função:
+
+1. `quote.id` é opcional (`id?: string`) em `Quote` — faz sentido pro tipo
+   genérico (cobre orçamento ainda não salvo), mas `syncQuoteToBitrix` só é
+   chamada a partir de `useQuoteViewData.ts::handleSyncBitrix`, sobre um
+   orçamento já carregado do BD por id (sempre com `id` definido em tempo de
+   execução). Corrigido com guard-clause no topo da função
+   (`if (!quote.id) return { success: false }`) que produz uma constante
+   local `quoteId: string` estreitada, usada nos 6 sites que antes recebiam
+   `quote.id` diretamente (2 `logQuoteHistory`, 1 template de filename, 1
+   storage path, 1 `.eq("id", ...)`, mais 1 `logQuoteHistory` de sucesso) —
+   elimina os 4 `TS2345` (linhas 69, 104, 117, 120) e o `TS2532` (linha 76,
+   `.replace()` sobre `quote.quote_number || quote.id` que podia ser
+   `undefined`).
+2. `TS2322` na linha 129 (`updatedQuote: Partial<Quote>`) — `bitrix_quote_id`
+   é `string | null` na coluna real do BD (confirmado em
+   `src/integrations/supabase/types.ts:7116`) e portanto `string` no tipo de
+   domínio `Quote`, mas o código montava `bitrixQuoteIdFromResponse` como
+   `number` (via `Number(result.quote_id)`) e atribuía direto tanto em
+   `crmUpdates.bitrix_quote_id` (update no Supabase) quanto no retorno
+   `updatedQuote.bitrix_quote_id`. Corrigido convertendo com `String(...)`
+   nos dois pontos de atribuição — mantém a validação numérica
+   (`!isNaN`) que já existia, só ajusta o tipo na borda de saída.
+
+Verificado: `tscheck-files.mjs` → 0 erros no arquivo (42 → 36 no programa
+inteiro). `check-eslint-baseline.mjs` → zero regressão. Nenhum teste
+dedicado encontrado para este arquivo.
+
+Baseline de typecheck do projeto atualizado: 774 → 768 erros (373 → 372
+arquivos).
