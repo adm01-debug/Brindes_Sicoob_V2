@@ -21,8 +21,8 @@ export async function deliverApprovalNotification(delivery: ApprovalDelivery): P
   } catch {
     return { outcome: 'retry', errorCode: 'app_url_not_configured' };
   }
-  const amount = Number(delivery.payload.amount);
-  if (!Number.isFinite(amount)) return { outcome: 'failed', errorCode: 'invalid_amount' };
+  const amount = delivery.payload.amount;
+  if (typeof amount !== 'number' || !Number.isFinite(amount) || amount < 0) return { outcome: 'failed', errorCode: 'invalid_amount' };
   const text = `Nova solicitação de alçada Sicoob\nSolicitante: ${delivery.payload.requester_name}\nValor: ${amount.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}\nMotivo: ${delivery.payload.reason}`;
   let destination: string;
   let body: Record<string, unknown>;
@@ -70,7 +70,7 @@ export async function deliverApprovalNotification(delivery: ApprovalDelivery): P
         : { outcome: 'uncertain', errorCode: 'invalid_provider_ack' };
     }
     const data = await response.json();
-    return typeof data?.id === 'string' && data.id.length > 0 && data.id.length <= 200
+    return typeof data?.id === 'string' && data.id.trim().length > 0 && data.id.length <= 200
       ? { outcome: 'delivered', providerId: data.id }
       : { outcome: 'uncertain', errorCode: 'invalid_provider_ack' };
   } catch {

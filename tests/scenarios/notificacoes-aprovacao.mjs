@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs';
 import vm from 'node:vm';
 import ts from 'typescript';
 
-function carregar({ segredo = 'segredo-sintetico', settings = [], erro = null, statusEntrega = 200, emailConfigurado = false, falhaConfirmacao = false, falhaRede = false, ackInvalido = false } = {}) {
+function carregar({ segredo = 'segredo-sintetico', settings = [], erro = null, statusEntrega = 200, emailConfigurado = false, falhaConfirmacao = false, falhaRede = false, ackInvalido = false, amount = 25 } = {}) {
   let handler, clientes = 0;
   const envios = [];
   const fila = [];
@@ -15,7 +15,7 @@ function carregar({ segredo = 'segredo-sintetico', settings = [], erro = null, s
     if (erro) return { data: null, error: erro };
     if (name === 'enqueue_sicoob_approval_notifications') {
       for (const [index, setting] of settings.entries()) {
-        if (!fila.some(row => row.id === String(index))) fila.push({ id: String(index), state: 'pending', channel: setting.channel, destination: setting.channel === 'slack' ? setting.webhook_url : setting.recipient_email, payload: { requester_name: 'Nome real', amount: 25, reason: 'motivo-real' }, lease_token: 'reserva-sintetica' });
+        if (!fila.some(row => row.id === String(index))) fila.push({ id: String(index), state: 'pending', channel: setting.channel, destination: setting.channel === 'slack' ? setting.webhook_url : setting.recipient_email, payload: { requester_name: 'Nome real', amount, reason: 'motivo-real' }, lease_token: 'reserva-sintetica' });
       }
       return { data: fila.length, error: null };
     }
@@ -139,6 +139,13 @@ test('duas instâncias concorrentes não enviam a mesma entrega', async () => {
 });
 
 const email = { channel: 'email', recipient_email: 'qa@example.invalid' };
+for (const amount of [null, '', -10]) {
+  test(`valor inválido não vira zero em mensagem financeira: ${JSON.stringify(amount)}`, async () => {
+    const app=carregar({ settings:[slack],amount });
+    assert.equal((await app.chamar(requisicao())).status,503);
+    assert.equal(app.envios.length,0);
+  });
+}
 test('email só confirma depois do aceite do provedor e usa chave de idempotência', async () => {
   const app=carregar({ settings: [email], emailConfigurado: true });
   assert.equal((await app.chamar(requisicao())).status,200);

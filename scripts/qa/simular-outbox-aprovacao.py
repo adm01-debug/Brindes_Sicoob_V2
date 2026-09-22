@@ -32,6 +32,9 @@ try:
     sql('BEGIN;\n'+migration+'\nROLLBACK;')
     checks['dryrun_revertido']=scalar("SELECT to_regclass('public.sicoob_approval_deliveries') IS NULL;")=='t'
     sql(migration)
+    authenticated_id=str(uuid.uuid4())
+    sql(f"GRANT INSERT ON public.sicoob_approval_requests TO authenticated; SET ROLE authenticated; INSERT INTO public.sicoob_approval_requests VALUES ('{authenticated_id}','22222222-2222-4222-8222-222222222222','11111111-1111-4111-8111-111111111111','pending',100,'Pedido autenticado'); RESET ROLE;")
+    checks['trigger_enfileira_para_ator_sem_acesso_a_fila']=scalar(f"SELECT count(*) FROM public.sicoob_approval_deliveries WHERE request_id='{authenticated_id}';")=='2'
     request=new_request()
     checks['trigger_enfileira_por_pa_do_pedido']=scalar(f"SELECT count(*) FROM public.sicoob_approval_deliveries WHERE request_id='{request}';")=='2'
     checks['pa_do_perfil_nao_redireciona']=scalar(f"SELECT count(*) FROM public.sicoob_approval_deliveries WHERE request_id='{request}' AND setting_id='55555555-5555-4555-8555-555555555555';")=='0'

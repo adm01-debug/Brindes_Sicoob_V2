@@ -1,6 +1,7 @@
 # Notificações duráveis de aprovação — 22/09/2026
 
-Base `1c37076eb` de `origin/main`; trabalho isolado em
+Base inicial `1c37076eb`, reconciliada por rebase com `939000f68` de `origin/main`;
+trabalho isolado em
 `fix/sicoob-entregas-20260922`. Banco de construção `cfmzkthhgliqelozlmwu`.
 O PR #18 já estava mesclado e a Vercel havia publicado aquele lote. Esta execução
 avança no backend de notificações; o plano completo de 50 etapas permanece aberto.
@@ -95,13 +96,23 @@ as RPCs do worker. A auditoria ACL retornou zero violações. A tabela de entreg
 permanece vazia; não havia solicitações nem canais ativos na inspeção inicial.
 Nenhum email, Slack ou outro webhook externo foi enviado nos testes.
 
-Foram aprovados 31 cenários PostgreSQL e 163 cenários Node, incluindo 24 do
+Foram aprovados 32 cenários PostgreSQL e 166 cenários Node, incluindo 27 do
 webhook/fila e dois do endpoint genérico. A suíte Vitest completa passou com
-5.446 testes e 113 ignorados antes do reforço final do recibo no consumidor;
-o teste desse consumidor foi então ampliado para oito cenários. Os testes da
+5.447 testes e 113 ignorados, em 371 arquivos aprovados e nove ignorados;
+o consumidor de email tem oito cenários, incluindo a recusa do sucesso legado
+sem recibo. O teste de valor financeiro também impede que `null`, texto vazio ou
+valor negativo se transformem em uma mensagem com valor incorreto. Os testes da
 Edge Function usam transporte e banco simulados; os testes SQL usam duas sessões
 reais em PostgreSQL descartável sem rede. A fixture não é um clone completo dos
 dados e triggers remotos.
+
+O typecheck passou sem regressão, com 628 erros globais herdados da base atual;
+o lint passou sem regressão, com 3.341 erros globais e um arquivo de aplicação
+alterado. O Deno aprovou as duas entradas alteradas. O gate de runtime verificou
+1.118 referências sem ausências fora da lista de exceções. Autorização estática
+cobre 103 funções; logging registra 25 instrumentadas, 77 legadas e um stub
+inerte. O gate de imutabilidade aprovou a migration nova, sem editar SQL anterior.
+O build Vite também passou após a reconciliação com a nova base.
 
 A Management API continua retornando 403 por privilégios insuficientes. Portanto,
 a presença da migration no banco não significa que o worker novo já esteja
