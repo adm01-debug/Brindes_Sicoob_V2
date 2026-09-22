@@ -1069,3 +1069,49 @@ inteiro, pré-existentes/não relacionados). `check-eslint-baseline.mjs`
 run typecheck:baseline` → zero regressão (928 vs. baseline 935, 1
 arquivo melhorou); `--update` travou o ganho (935 → 928 erros, 404 →
 403 arquivos). Sem teste dedicado.
+
+## `supabase/functions/admin-audit-hook/index.ts` (fora da etapa 17 — fix de código-fonte do bug ao vivo acima, deploy PENDENTE)
+
+Corrigido o `INSERT` que gravava em `admin_audit_log` usando colunas
+fictícias (`event_type`, `entity_type`, `entity_id`, `new_data`,
+`old_data`, `metadata` soltos na raiz — nenhuma dessas existe na
+tabela real). Enquanto investigava encontrei o padrão canônico já
+usado por outras Edge Functions do repo: `supabase/functions/_shared/audit-log.ts`
+exporta `writeAuditEntry()`, usado por `mcp-keys-issue` e
+`secrets-manager`, com o schema real (`action`, `resource_type`,
+`resource_id`, `ip_address`, `source`, `details`, mais os campos de
+hardening `request_id`/`started_at`/`status`/etc.).
+
+**Decisão**: não troquei `admin-audit-hook` para usar
+`writeAuditEntry()` diretamente — esse helper não tem parâmetros pra
+`previous_hash`/`current_hash`, e `admin-audit-hook` é especificamente
+a função que implementa o hash-chain (motivo de ela existir separada
+das outras). Trocar pelo helper genérico teria **removido** a
+propriedade de tamper-evidence do hash-chain, uma regressão de
+segurança disfarçada de fix. Em vez disso, apliquei o fix mínimo:
+manter toda a lógica de hash-chain como estava (busca do
+`previous_hash`, cálculo do `current_hash`) e só corrigir o `INSERT`
+final pra usar as colunas reais — `action`/`resource_type`/`resource_id`
+na raiz (mesmos nomes que `AdminAuditPage.tsx` já espera agora),
+`previous_hash`/`current_hash` (já eram colunas reais, não precisavam
+de fix), `ip_address` e `source` movidos pra colunas reais dedicadas
+(antes enterrados dentro de `metadata`, que nem existe como coluna) e
+o restante (`new_data`/`old_data`/`metadata` do payload original)
+aninhado dentro de `details` (JSONB) — mesma forma de antes, só
+embrulhada corretamente.
+
+Achado bônus fora do escopo: `deno check` (não faz parte da lista do
+`ci.yml` pra este arquivo — nunca foi verificado em CI) apontou
+`TS18046` pré-existente no `catch (error)` final (`error.message` em
+`unknown`) — corrigido com `error instanceof Error ? error.message :
+String(error)`, mesmo padrão já usado em outros catches do projeto.
+
+**Verificado**: `deno check supabase/functions/admin-audit-hook/index.ts`
+→ limpo. **NÃO verificado em runtime** — a sessão não tem acesso de
+deploy ao projeto Supabase real deste repo (`cfmzkthhgliqelozlmwu`,
+ausente de `supabase projects list`). Este arquivo não é coberto por
+nenhum gate de CI (não está na lista de `deno check` do `ci.yml`, e
+`supabase/functions/**` é ignorado pelo ESLint). **Requer deploy
+manual** (`supabase functions deploy admin-audit-hook`) por alguém
+com acesso ao projeto pra entrar em produção — até lá, a trilha de
+auditoria continua sem gravar nada, exatamente como antes deste fix.

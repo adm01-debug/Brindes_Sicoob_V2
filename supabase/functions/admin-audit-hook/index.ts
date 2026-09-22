@@ -66,24 +66,31 @@ serve(async (req) => {
 
     const current_hash = await hash(logData);
 
+    // admin_audit_log real não tem event_type/entity_type/entity_id/new_data/
+    // old_data/metadata como colunas soltas (esse INSERT falhava sempre,
+    // silenciosamente, no cliente) — schema real: action, resource_type,
+    // resource_id, ip_address, source (colunas) + details (JSONB), igual ao
+    // padrão já usado em useDiscountApproval.ts e em _shared/audit-log.ts.
     const { error: insertError } = await supabaseClient
       .from('admin_audit_log')
       .insert({
         user_id: user.id,
-        event_type,
-        entity_type,
-        entity_id,
-        new_data: payload,
-        old_data: previous_state,
+        action: event_type,
+        resource_type: entity_type,
+        resource_id: entity_id,
         previous_hash,
         current_hash,
-        metadata: {
-          ...metadata,
-          user_email: user.email,
-          traceparent: traceparent,
-          source: 'admin-audit-hook-v2',
-          ip_address: req.headers.get('x-real-ip') || req.headers.get('x-forwarded-for'),
-          timestamp: new Date().toISOString()
+        ip_address: req.headers.get('x-real-ip') || req.headers.get('x-forwarded-for'),
+        source: 'admin-audit-hook-v2',
+        details: {
+          new_data: payload,
+          old_data: previous_state,
+          metadata: {
+            ...metadata,
+            user_email: user.email,
+            traceparent: traceparent,
+            timestamp: new Date().toISOString()
+          }
         }
       })
 
@@ -94,7 +101,8 @@ serve(async (req) => {
       status: 200,
     })
   } catch (error) {
-    return new Response(JSON.stringify({ error: error.message }), {
+    const message = error instanceof Error ? error.message : String(error);
+    return new Response(JSON.stringify({ error: message }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 400,
     })
