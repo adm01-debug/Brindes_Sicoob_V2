@@ -74,6 +74,7 @@ jobs:
           tests/edge-functions/product-webhook.test.ts
           tests/pages/trends-queries.test.ts
           tests/pages/TrendsKpiCards.test.tsx
+          tests/hooks/useWebAuthn.test.tsx
 
       - uses: denoland/setup-deno@v2
         with:

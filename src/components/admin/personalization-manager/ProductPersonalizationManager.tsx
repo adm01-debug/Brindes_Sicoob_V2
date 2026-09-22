@@ -22,6 +22,11 @@ export function ProductPersonalizationManager() {
 
   return (
     <div className="space-y-6">
+      {(m.locationsError || m.locationTechniquesError) && (
+        <div role="alert" className="rounded-md border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive">
+          Não foi possível carregar as regras de personalização. Verifique o acesso ao banco e tente novamente.
+        </div>
+      )}
       {/* Product Selector */}
       <ProductSelector
         searchQuery={m.searchQuery} setSearchQuery={m.setSearchQuery}

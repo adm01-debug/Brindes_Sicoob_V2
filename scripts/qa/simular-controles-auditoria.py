@@ -61,6 +61,32 @@ try:
     checks['preflight_rpc_servidor_conforme'] = signature + '|CONFORME|' in sql(preflight).stdout
     sql(f'GRANT EXECUTE ON FUNCTION {signature} TO authenticated;')
     checks['preflight_rpc_cliente_negado'] = signature + '|FALTANTE|execução indevida por cliente' in sql(preflight).stdout
+
+    sql((ROOT/'tests/scenarios/sql/group-personalization-fixture.sql').read_text())
+    templates = (ROOT/'supabase/migrations/20260922152000_group_personalization_templates.sql').read_text()
+    sql('BEGIN;\n'+templates+'\nROLLBACK;')
+    sql(templates)
+    group_id = '00000000-0000-0000-0000-000000000101'
+    membership_id = '00000000-0000-0000-0000-000000000102'
+    admin_id = '00000000-0000-0000-0000-000000000004'
+    sql(f"INSERT INTO public.product_group_components(id,product_group_id,component_code,component_name) VALUES ('00000000-0000-0000-0000-000000000104','{group_id}','CORPO','Corpo');")
+    sql("INSERT INTO public.product_group_locations(id,group_component_id,location_code,location_name,max_area_cm2) VALUES ('00000000-0000-0000-0000-000000000105','00000000-0000-0000-0000-000000000104','LATERAL','Lateral',10);")
+    sql("INSERT INTO public.product_group_location_techniques(group_location_id,technique_id,technique_code,is_default) VALUES ('00000000-0000-0000-0000-000000000105','EXT-TECNICA-42','SILK',true);")
+    checks['template_nao_copia_produto_externo'] = all(sql(f"SELECT count(*) FROM pg_class WHERE relnamespace='public'::regnamespace AND relname='{name}';").stdout.strip()=='0' for name in ('products','personalization_techniques'))
+    checks['template_anon_sem_select'] = actor('anon','','SELECT * FROM public.product_group_components;',False).returncode != 0
+    checks['template_comprador_sem_escrita'] = actor('authenticated',own,f"INSERT INTO public.product_group_components(product_group_id,component_code,component_name) VALUES ('{group_id}','OUTRO','Outro');",False).returncode != 0
+    checks['template_comprador_sem_rpc'] = actor('authenticated',own,f"SELECT public.copy_group_personalization_to_product('{membership_id}');",False).returncode != 0
+    checks['template_copia_atomica'] = actor('authenticated',admin_id,f"SELECT public.copy_group_personalization_to_product('{membership_id}');").stdout.strip() == '1'
+    checks['template_id_externo_preservado'] = sql("SELECT technique_id FROM public.product_component_location_techniques;").stdout.strip() == 'EXT-TECNICA-42'
+    checks['template_codigo_composto_estavel'] = sql("SELECT composed_code FROM public.product_component_location_techniques;").stdout.strip() == 'CORPO-LATERAL-SILK'
+    checks['template_antigo_substituido'] = sql("SELECT string_agg(component_code, ',') FROM public.product_components WHERE product_id='SKU-EXTERNO-1';").stdout.strip() == 'CORPO'
+    checks['template_sem_duplicar_na_repeticao'] = actor('authenticated',admin_id,f"SELECT public.copy_group_personalization_to_product('{membership_id}');").stdout.strip() == '1' and sql("SELECT count(*) FROM public.product_components WHERE product_id='SKU-EXTERNO-1';").stdout.strip() == '1'
+    before_failure = sql("SELECT id FROM public.product_components WHERE product_id='SKU-EXTERNO-1';").stdout.strip()
+    sql("ALTER TABLE public.product_component_locations ADD CONSTRAINT falha_simulada CHECK (location_code <> 'FALHA');")
+    sql("INSERT INTO public.product_group_locations(group_component_id,location_code,location_name) VALUES ('00000000-0000-0000-0000-000000000104','FALHA','Falha simulada');")
+    checks['template_rollback_em_falha'] = actor('authenticated',admin_id,f"SELECT public.copy_group_personalization_to_product('{membership_id}');",False).returncode != 0 and sql("SELECT id FROM public.product_components WHERE product_id='SKU-EXTERNO-1';").stdout.strip() == before_failure
+    sql(f"DELETE FROM public.product_group_components WHERE product_group_id='{group_id}';")
+    checks['template_grupo_vazio_preserva_produto'] = actor('authenticated',admin_id,f"SELECT public.copy_group_personalization_to_product('{membership_id}');",False).returncode != 0 and sql("SELECT id FROM public.product_components WHERE product_id='SKU-EXTERNO-1';").stdout.strip() == before_failure
     assert all(checks.values()), checks
     print(json.dumps({'ambiente':'PostgreSQL descartável sem rede', 'remoto_validado':False, 'cenarios':checks},ensure_ascii=False,indent=2))
 finally:

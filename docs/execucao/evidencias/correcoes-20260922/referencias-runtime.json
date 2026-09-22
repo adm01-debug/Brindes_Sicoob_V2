@@ -1,216 +1,166 @@
 {
   "cache_generated_at": "2026-09-22",
   "files_scanned": 2038,
-  "references_scanned": 1167,
+  "references_scanned": 1146,
   "broken": [
     {
-      "file": "src/components/admin/MockupPromptManager.tsx",
-      "line": 51,
-      "kind": "from",
-      "name": "personalization_techniques"
-    },
-    {
       "file": "src/components/admin/hooks/useGroupPersonalization.ts",
-      "line": 77,
+      "line": 75,
       "kind": "from",
       "name": "product_group_components",
       "unresolved": false
     },
     {
       "file": "src/components/admin/hooks/useGroupPersonalization.ts",
-      "line": 99,
-      "kind": "from",
-      "name": "product_group_locations",
-      "unresolved": false
-    },
-    {
-      "file": "src/components/admin/hooks/useGroupPersonalization.ts",
-      "line": 135,
-      "kind": "from",
-      "name": "product_group_location_techniques",
-      "unresolved": false
-    },
-    {
-      "file": "src/components/admin/hooks/useGroupPersonalization.ts",
-      "line": 153,
-      "kind": "from",
-      "name": "product_group_components",
-      "unresolved": false
-    },
-    {
-      "file": "src/components/admin/hooks/useGroupPersonalization.ts",
-      "line": 165,
-      "kind": "from",
-      "name": "product_group_components",
-      "unresolved": false
-    },
-    {
-      "file": "src/components/admin/hooks/useGroupPersonalization.ts",
-      "line": 174,
-      "kind": "from",
-      "name": "product_group_components",
-      "unresolved": false
-    },
-    {
-      "file": "src/components/admin/hooks/useGroupPersonalization.ts",
-      "line": 186,
-      "kind": "from",
-      "name": "product_group_locations",
-      "unresolved": false
-    },
-    {
-      "file": "src/components/admin/hooks/useGroupPersonalization.ts",
-      "line": 198,
-      "kind": "from",
-      "name": "product_group_locations",
-      "unresolved": false
-    },
-    {
-      "file": "src/components/admin/hooks/useGroupPersonalization.ts",
-      "line": 210,
-      "kind": "from",
-      "name": "product_group_locations",
-      "unresolved": false
-    },
-    {
-      "file": "src/components/admin/hooks/useGroupPersonalization.ts",
-      "line": 222,
-      "kind": "from",
-      "name": "product_group_location_techniques",
-      "unresolved": false
-    },
-    {
-      "file": "src/components/admin/hooks/useGroupPersonalization.ts",
-      "line": 234,
-      "kind": "from",
-      "name": "product_group_location_techniques",
-      "unresolved": false
-    },
-    {
-      "file": "src/components/admin/hooks/useGroupPersonalization.ts",
-      "line": 246,
-      "kind": "from",
-      "name": "product_group_location_techniques",
-      "unresolved": false
-    },
-    {
-      "file": "src/components/admin/hooks/useGroupPersonalization.ts",
-      "line": 268,
-      "kind": "from",
-      "name": "product_group_components",
-      "unresolved": false
-    },
-    {
-      "file": "src/components/admin/personalization/GroupInheritance.tsx",
-      "line": 60,
-      "kind": "from",
-      "name": "product_group_components",
-      "unresolved": false
-    },
-    {
-      "file": "src/components/admin/personalization/GroupInheritance.tsx",
-      "line": 76,
-      "kind": "from",
-      "name": "product_group_locations",
-      "unresolved": false
-    },
-    {
-      "file": "src/components/admin/personalization/GroupInheritance.tsx",
-      "line": 85,
-      "kind": "from",
-      "name": "product_group_location_techniques",
-      "unresolved": false
-    },
-    {
-      "file": "src/components/admin/personalization/GroupInheritance.tsx",
       "line": 90,
       "kind": "from",
-      "name": "product_component_location_techniques",
-      "unresolved": false
-    },
-    {
-      "file": "src/components/admin/personalization/usePersonalizationData.ts",
-      "line": 176,
-      "kind": "from",
-      "name": "product_component_location_techniques",
-      "unresolved": false
-    },
-    {
-      "file": "src/components/admin/personalization/usePersonalizationData.ts",
-      "line": 278,
-      "kind": "from",
-      "name": "product_component_location_techniques",
-      "unresolved": false
-    },
-    {
-      "file": "src/components/admin/personalization/usePersonalizationData.ts",
-      "line": 290,
-      "kind": "from",
-      "name": "product_component_location_techniques",
-      "unresolved": false
-    },
-    {
-      "file": "src/components/admin/personalization/usePersonalizationData.ts",
-      "line": 302,
-      "kind": "from",
-      "name": "product_component_location_techniques",
-      "unresolved": false
-    },
-    {
-      "file": "src/components/admin/personalization-manager/usePersonalizationManager.ts",
-      "line": 161,
-      "kind": "from",
-      "name": "product_component_location_techniques",
-      "unresolved": false
-    },
-    {
-      "file": "src/components/admin/personalization-manager/usePersonalizationManager.ts",
-      "line": 231,
-      "kind": "from",
-      "name": "product_component_location_techniques",
-      "unresolved": false
-    },
-    {
-      "file": "src/components/admin/personalization-manager/usePersonalizationManager.ts",
-      "line": 240,
-      "kind": "from",
-      "name": "product_component_location_techniques",
-      "unresolved": false
-    },
-    {
-      "file": "src/components/admin/personalization-manager/usePersonalizationManager.ts",
-      "line": 248,
-      "kind": "from",
-      "name": "product_component_location_techniques",
-      "unresolved": false
-    },
-    {
-      "file": "src/components/admin/personalization-manager/usePersonalizationManager.ts",
-      "line": 302,
-      "kind": "from",
-      "name": "product_group_components",
-      "unresolved": false
-    },
-    {
-      "file": "src/components/admin/personalization-manager/usePersonalizationManager.ts",
-      "line": 311,
-      "kind": "from",
       "name": "product_group_locations",
       "unresolved": false
     },
     {
-      "file": "src/components/admin/personalization-manager/usePersonalizationManager.ts",
-      "line": 319,
+      "file": "src/components/admin/hooks/useGroupPersonalization.ts",
+      "line": 119,
       "kind": "from",
       "name": "product_group_location_techniques",
       "unresolved": false
     },
     {
-      "file": "src/components/admin/personalization-manager/usePersonalizationManager.ts",
-      "line": 324,
+      "file": "src/components/admin/hooks/useGroupPersonalization.ts",
+      "line": 131,
+      "kind": "from",
+      "name": "product_group_components",
+      "unresolved": false
+    },
+    {
+      "file": "src/components/admin/hooks/useGroupPersonalization.ts",
+      "line": 143,
+      "kind": "from",
+      "name": "product_group_components",
+      "unresolved": false
+    },
+    {
+      "file": "src/components/admin/hooks/useGroupPersonalization.ts",
+      "line": 152,
+      "kind": "from",
+      "name": "product_group_components",
+      "unresolved": false
+    },
+    {
+      "file": "src/components/admin/hooks/useGroupPersonalization.ts",
+      "line": 164,
+      "kind": "from",
+      "name": "product_group_locations",
+      "unresolved": false
+    },
+    {
+      "file": "src/components/admin/hooks/useGroupPersonalization.ts",
+      "line": 176,
+      "kind": "from",
+      "name": "product_group_locations",
+      "unresolved": false
+    },
+    {
+      "file": "src/components/admin/hooks/useGroupPersonalization.ts",
+      "line": 188,
+      "kind": "from",
+      "name": "product_group_locations",
+      "unresolved": false
+    },
+    {
+      "file": "src/components/admin/hooks/useGroupPersonalization.ts",
+      "line": 200,
+      "kind": "from",
+      "name": "product_group_location_techniques",
+      "unresolved": false
+    },
+    {
+      "file": "src/components/admin/hooks/useGroupPersonalization.ts",
+      "line": 212,
+      "kind": "from",
+      "name": "product_group_location_techniques",
+      "unresolved": false
+    },
+    {
+      "file": "src/components/admin/hooks/useGroupPersonalization.ts",
+      "line": 224,
+      "kind": "from",
+      "name": "product_group_location_techniques",
+      "unresolved": false
+    },
+    {
+      "file": "src/components/admin/hooks/useGroupPersonalization.ts",
+      "line": 247,
+      "kind": "from",
+      "name": "product_group_components",
+      "unresolved": false
+    },
+    {
+      "file": "src/components/admin/personalization/GroupInheritance.tsx",
+      "line": 27,
+      "kind": "rpc",
+      "name": "copy_group_personalization_to_product"
+    },
+    {
+      "file": "src/components/admin/personalization/usePersonalizationData.ts",
+      "line": 166,
       "kind": "from",
       "name": "product_component_location_techniques",
       "unresolved": false
+    },
+    {
+      "file": "src/components/admin/personalization/usePersonalizationData.ts",
+      "line": 262,
+      "kind": "from",
+      "name": "product_component_location_techniques",
+      "unresolved": false
+    },
+    {
+      "file": "src/components/admin/personalization/usePersonalizationData.ts",
+      "line": 274,
+      "kind": "from",
+      "name": "product_component_location_techniques",
+      "unresolved": false
+    },
+    {
+      "file": "src/components/admin/personalization/usePersonalizationData.ts",
+      "line": 286,
+      "kind": "from",
+      "name": "product_component_location_techniques",
+      "unresolved": false
+    },
+    {
+      "file": "src/components/admin/personalization-manager/usePersonalizationManager.ts",
+      "line": 131,
+      "kind": "from",
+      "name": "product_component_location_techniques",
+      "unresolved": false
+    },
+    {
+      "file": "src/components/admin/personalization-manager/usePersonalizationManager.ts",
+      "line": 200,
+      "kind": "from",
+      "name": "product_component_location_techniques",
+      "unresolved": false
+    },
+    {
+      "file": "src/components/admin/personalization-manager/usePersonalizationManager.ts",
+      "line": 209,
+      "kind": "from",
+      "name": "product_component_location_techniques",
+      "unresolved": false
+    },
+    {
+      "file": "src/components/admin/personalization-manager/usePersonalizationManager.ts",
+      "line": 217,
+      "kind": "from",
+      "name": "product_component_location_techniques",
+      "unresolved": false
+    },
+    {
+      "file": "src/components/admin/personalization-manager/usePersonalizationManager.ts",
+      "line": 273,
+      "kind": "rpc",
+      "name": "copy_group_personalization_to_product"
     },
     {
       "file": "src/hooks/mockup/mockupGenerationService.ts",
@@ -344,48 +294,6 @@
       "name": "personalization_simulations"
     },
     {
-      "file": "src/hooks/useWebAuthn.ts",
-      "line": 81,
-      "kind": "from",
-      "name": "user_passkeys",
-      "unresolved": false
-    },
-    {
-      "file": "src/hooks/useWebAuthn.ts",
-      "line": 162,
-      "kind": "from",
-      "name": "user_passkeys",
-      "unresolved": false
-    },
-    {
-      "file": "src/hooks/useWebAuthn.ts",
-      "line": 248,
-      "kind": "from",
-      "name": "user_passkeys",
-      "unresolved": false
-    },
-    {
-      "file": "src/hooks/useWebAuthn.ts",
-      "line": 258,
-      "kind": "from",
-      "name": "user_passkeys",
-      "unresolved": false
-    },
-    {
-      "file": "src/hooks/useWebAuthn.ts",
-      "line": 295,
-      "kind": "from",
-      "name": "user_passkeys",
-      "unresolved": false
-    },
-    {
-      "file": "src/hooks/useWebAuthn.ts",
-      "line": 325,
-      "kind": "from",
-      "name": "user_passkeys",
-      "unresolved": false
-    },
-    {
       "file": "src/lib/pdf/whitelabel-comparison.ts",
       "line": 16,
       "kind": "from",
@@ -483,206 +391,162 @@
   "blocking": [
     {
       "file": "src/components/admin/hooks/useGroupPersonalization.ts",
-      "line": 77,
+      "line": 75,
       "kind": "from",
       "name": "product_group_components",
       "unresolved": false
     },
     {
       "file": "src/components/admin/hooks/useGroupPersonalization.ts",
-      "line": 99,
-      "kind": "from",
-      "name": "product_group_locations",
-      "unresolved": false
-    },
-    {
-      "file": "src/components/admin/hooks/useGroupPersonalization.ts",
-      "line": 135,
-      "kind": "from",
-      "name": "product_group_location_techniques",
-      "unresolved": false
-    },
-    {
-      "file": "src/components/admin/hooks/useGroupPersonalization.ts",
-      "line": 153,
-      "kind": "from",
-      "name": "product_group_components",
-      "unresolved": false
-    },
-    {
-      "file": "src/components/admin/hooks/useGroupPersonalization.ts",
-      "line": 165,
-      "kind": "from",
-      "name": "product_group_components",
-      "unresolved": false
-    },
-    {
-      "file": "src/components/admin/hooks/useGroupPersonalization.ts",
-      "line": 174,
-      "kind": "from",
-      "name": "product_group_components",
-      "unresolved": false
-    },
-    {
-      "file": "src/components/admin/hooks/useGroupPersonalization.ts",
-      "line": 186,
-      "kind": "from",
-      "name": "product_group_locations",
-      "unresolved": false
-    },
-    {
-      "file": "src/components/admin/hooks/useGroupPersonalization.ts",
-      "line": 198,
-      "kind": "from",
-      "name": "product_group_locations",
-      "unresolved": false
-    },
-    {
-      "file": "src/components/admin/hooks/useGroupPersonalization.ts",
-      "line": 210,
-      "kind": "from",
-      "name": "product_group_locations",
-      "unresolved": false
-    },
-    {
-      "file": "src/components/admin/hooks/useGroupPersonalization.ts",
-      "line": 222,
-      "kind": "from",
-      "name": "product_group_location_techniques",
-      "unresolved": false
-    },
-    {
-      "file": "src/components/admin/hooks/useGroupPersonalization.ts",
-      "line": 234,
-      "kind": "from",
-      "name": "product_group_location_techniques",
-      "unresolved": false
-    },
-    {
-      "file": "src/components/admin/hooks/useGroupPersonalization.ts",
-      "line": 246,
-      "kind": "from",
-      "name": "product_group_location_techniques",
-      "unresolved": false
-    },
-    {
-      "file": "src/components/admin/hooks/useGroupPersonalization.ts",
-      "line": 268,
-      "kind": "from",
-      "name": "product_group_components",
-      "unresolved": false
-    },
-    {
-      "file": "src/components/admin/personalization/GroupInheritance.tsx",
-      "line": 60,
-      "kind": "from",
-      "name": "product_group_components",
-      "unresolved": false
-    },
-    {
-      "file": "src/components/admin/personalization/GroupInheritance.tsx",
-      "line": 76,
-      "kind": "from",
-      "name": "product_group_locations",
-      "unresolved": false
-    },
-    {
-      "file": "src/components/admin/personalization/GroupInheritance.tsx",
-      "line": 85,
-      "kind": "from",
-      "name": "product_group_location_techniques",
-      "unresolved": false
-    },
-    {
-      "file": "src/components/admin/personalization/GroupInheritance.tsx",
       "line": 90,
       "kind": "from",
-      "name": "product_component_location_techniques",
-      "unresolved": false
-    },
-    {
-      "file": "src/components/admin/personalization/usePersonalizationData.ts",
-      "line": 176,
-      "kind": "from",
-      "name": "product_component_location_techniques",
-      "unresolved": false
-    },
-    {
-      "file": "src/components/admin/personalization/usePersonalizationData.ts",
-      "line": 278,
-      "kind": "from",
-      "name": "product_component_location_techniques",
-      "unresolved": false
-    },
-    {
-      "file": "src/components/admin/personalization/usePersonalizationData.ts",
-      "line": 290,
-      "kind": "from",
-      "name": "product_component_location_techniques",
-      "unresolved": false
-    },
-    {
-      "file": "src/components/admin/personalization/usePersonalizationData.ts",
-      "line": 302,
-      "kind": "from",
-      "name": "product_component_location_techniques",
-      "unresolved": false
-    },
-    {
-      "file": "src/components/admin/personalization-manager/usePersonalizationManager.ts",
-      "line": 161,
-      "kind": "from",
-      "name": "product_component_location_techniques",
-      "unresolved": false
-    },
-    {
-      "file": "src/components/admin/personalization-manager/usePersonalizationManager.ts",
-      "line": 231,
-      "kind": "from",
-      "name": "product_component_location_techniques",
-      "unresolved": false
-    },
-    {
-      "file": "src/components/admin/personalization-manager/usePersonalizationManager.ts",
-      "line": 240,
-      "kind": "from",
-      "name": "product_component_location_techniques",
-      "unresolved": false
-    },
-    {
-      "file": "src/components/admin/personalization-manager/usePersonalizationManager.ts",
-      "line": 248,
-      "kind": "from",
-      "name": "product_component_location_techniques",
-      "unresolved": false
-    },
-    {
-      "file": "src/components/admin/personalization-manager/usePersonalizationManager.ts",
-      "line": 302,
-      "kind": "from",
-      "name": "product_group_components",
-      "unresolved": false
-    },
-    {
-      "file": "src/components/admin/personalization-manager/usePersonalizationManager.ts",
-      "line": 311,
-      "kind": "from",
       "name": "product_group_locations",
       "unresolved": false
     },
     {
-      "file": "src/components/admin/personalization-manager/usePersonalizationManager.ts",
-      "line": 319,
+      "file": "src/components/admin/hooks/useGroupPersonalization.ts",
+      "line": 119,
       "kind": "from",
       "name": "product_group_location_techniques",
       "unresolved": false
     },
     {
-      "file": "src/components/admin/personalization-manager/usePersonalizationManager.ts",
-      "line": 324,
+      "file": "src/components/admin/hooks/useGroupPersonalization.ts",
+      "line": 131,
+      "kind": "from",
+      "name": "product_group_components",
+      "unresolved": false
+    },
+    {
+      "file": "src/components/admin/hooks/useGroupPersonalization.ts",
+      "line": 143,
+      "kind": "from",
+      "name": "product_group_components",
+      "unresolved": false
+    },
+    {
+      "file": "src/components/admin/hooks/useGroupPersonalization.ts",
+      "line": 152,
+      "kind": "from",
+      "name": "product_group_components",
+      "unresolved": false
+    },
+    {
+      "file": "src/components/admin/hooks/useGroupPersonalization.ts",
+      "line": 164,
+      "kind": "from",
+      "name": "product_group_locations",
+      "unresolved": false
+    },
+    {
+      "file": "src/components/admin/hooks/useGroupPersonalization.ts",
+      "line": 176,
+      "kind": "from",
+      "name": "product_group_locations",
+      "unresolved": false
+    },
+    {
+      "file": "src/components/admin/hooks/useGroupPersonalization.ts",
+      "line": 188,
+      "kind": "from",
+      "name": "product_group_locations",
+      "unresolved": false
+    },
+    {
+      "file": "src/components/admin/hooks/useGroupPersonalization.ts",
+      "line": 200,
+      "kind": "from",
+      "name": "product_group_location_techniques",
+      "unresolved": false
+    },
+    {
+      "file": "src/components/admin/hooks/useGroupPersonalization.ts",
+      "line": 212,
+      "kind": "from",
+      "name": "product_group_location_techniques",
+      "unresolved": false
+    },
+    {
+      "file": "src/components/admin/hooks/useGroupPersonalization.ts",
+      "line": 224,
+      "kind": "from",
+      "name": "product_group_location_techniques",
+      "unresolved": false
+    },
+    {
+      "file": "src/components/admin/hooks/useGroupPersonalization.ts",
+      "line": 247,
+      "kind": "from",
+      "name": "product_group_components",
+      "unresolved": false
+    },
+    {
+      "file": "src/components/admin/personalization/GroupInheritance.tsx",
+      "line": 27,
+      "kind": "rpc",
+      "name": "copy_group_personalization_to_product"
+    },
+    {
+      "file": "src/components/admin/personalization/usePersonalizationData.ts",
+      "line": 166,
       "kind": "from",
       "name": "product_component_location_techniques",
       "unresolved": false
+    },
+    {
+      "file": "src/components/admin/personalization/usePersonalizationData.ts",
+      "line": 262,
+      "kind": "from",
+      "name": "product_component_location_techniques",
+      "unresolved": false
+    },
+    {
+      "file": "src/components/admin/personalization/usePersonalizationData.ts",
+      "line": 274,
+      "kind": "from",
+      "name": "product_component_location_techniques",
+      "unresolved": false
+    },
+    {
+      "file": "src/components/admin/personalization/usePersonalizationData.ts",
+      "line": 286,
+      "kind": "from",
+      "name": "product_component_location_techniques",
+      "unresolved": false
+    },
+    {
+      "file": "src/components/admin/personalization-manager/usePersonalizationManager.ts",
+      "line": 131,
+      "kind": "from",
+      "name": "product_component_location_techniques",
+      "unresolved": false
+    },
+    {
+      "file": "src/components/admin/personalization-manager/usePersonalizationManager.ts",
+      "line": 200,
+      "kind": "from",
+      "name": "product_component_location_techniques",
+      "unresolved": false
+    },
+    {
+      "file": "src/components/admin/personalization-manager/usePersonalizationManager.ts",
+      "line": 209,
+      "kind": "from",
+      "name": "product_component_location_techniques",
+      "unresolved": false
+    },
+    {
+      "file": "src/components/admin/personalization-manager/usePersonalizationManager.ts",
+      "line": 217,
+      "kind": "from",
+      "name": "product_component_location_techniques",
+      "unresolved": false
+    },
+    {
+      "file": "src/components/admin/personalization-manager/usePersonalizationManager.ts",
+      "line": 273,
+      "kind": "rpc",
+      "name": "copy_group_personalization_to_product"
     },
     {
       "file": "src/hooks/mockup/mockupGenerationService.ts",
@@ -711,57 +575,9 @@
       "kind": "from",
       "name": "products",
       "unresolved": false
-    },
-    {
-      "file": "src/hooks/useWebAuthn.ts",
-      "line": 81,
-      "kind": "from",
-      "name": "user_passkeys",
-      "unresolved": false
-    },
-    {
-      "file": "src/hooks/useWebAuthn.ts",
-      "line": 162,
-      "kind": "from",
-      "name": "user_passkeys",
-      "unresolved": false
-    },
-    {
-      "file": "src/hooks/useWebAuthn.ts",
-      "line": 248,
-      "kind": "from",
-      "name": "user_passkeys",
-      "unresolved": false
-    },
-    {
-      "file": "src/hooks/useWebAuthn.ts",
-      "line": 258,
-      "kind": "from",
-      "name": "user_passkeys",
-      "unresolved": false
-    },
-    {
-      "file": "src/hooks/useWebAuthn.ts",
-      "line": 295,
-      "kind": "from",
-      "name": "user_passkeys",
-      "unresolved": false
-    },
-    {
-      "file": "src/hooks/useWebAuthn.ts",
-      "line": 325,
-      "kind": "from",
-      "name": "user_passkeys",
-      "unresolved": false
     }
   ],
   "allowed": [
-    {
-      "file": "src/components/admin/MockupPromptManager.tsx",
-      "line": 51,
-      "kind": "from",
-      "name": "personalization_techniques"
-    },
     {
       "file": "src/hooks/mockup/mockupGenerationService.ts",
       "line": 127,

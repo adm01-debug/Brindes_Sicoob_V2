@@ -87,9 +87,9 @@ export function PasskeyManager({ targetUserId }: PasskeyManagerProps) {
               <Fingerprint className="h-5 w-5 text-muted-foreground" />
             </div>
             <div>
-              <p className="font-medium text-foreground">Não suportado</p>
+              <p className="font-medium text-foreground">Indisponível por enquanto</p>
               <p className="text-sm text-muted-foreground">
-                Seu navegador não suporta WebAuthn/Passkeys
+                O login com passkey aguarda validação segura no servidor.
               </p>
             </div>
           </div>

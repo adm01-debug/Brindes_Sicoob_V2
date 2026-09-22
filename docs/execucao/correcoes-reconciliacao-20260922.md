@@ -18,6 +18,10 @@ trabalho; esta execução usa worktree próprio.
 | Revogação MCP em duas requisições | Não prometer propagação de GUC transacional entre requisições |
 | Health-check com erro de autorização ou RLS desligado | Não retornar migração aplicada |
 | Webhook tentando escrever catálogo local inexistente | Rejeição explícita, sem escrita no catálogo externo |
+| Cópia de regras interrompida depois de apagar componentes antigos | Transação inteira revertida; componentes antigos preservados |
+| Grupo sem componentes no momento da cópia | Erro antes de qualquer exclusão no produto |
+| Comprador ou usuário anônimo tentando alterar template | Operação negada por RLS/ACL e checagem da RPC |
+| Passkey com `credential_id` conhecido, sem assinatura verificada | Login indisponível até integração WebAuthn no servidor |
 
 ## Lotes e checklist local
 
@@ -29,12 +33,17 @@ trabalho; esta execução usa worktree próprio.
 - [x] Inventário atualizado a partir da coleta real de 22/09: 202 relações, 167 RPCs, 13 buckets.
 - [x] Simulações PostgreSQL e testes de regressão executados.
 - [x] Revisão local, publicação da branch e abertura do PR #12 como rascunho.
+- [x] Passkey insegura desativada até haver desafio e assinatura validados no servidor.
+- [x] Templates de personalização e cópia atômica simulados em PostgreSQL descartável.
+- [x] Duas interfaces de produto ligadas à RPC; técnicas externas resolvidas por ID na aplicação.
 - [ ] Aplicação remota e revalidação com acesso administrativo.
 - [ ] Homologação completa dos fluxos e CI executado no SHA final.
 
 A chave da Data API não permite consultar/aplicar o ledger ou obter o código
 publicado das Edge Functions. Reconexão do MCP solicitada enquanto o trabalho
 local prossegue. Não marcar a última etapa com base apenas em teste local.
+Os MCPs de Supabase visíveis nesta sessão apontam para outros projetos; nenhum
+conector administrativo identificado aponta para `cfmzkthhgliqelozlmwu`.
 
 ## Correções e limites
 
@@ -73,6 +82,13 @@ relações/colunas/argumentos expostos ausentes dos tipos; **13 relações dos t
 não aparecem na API**. Algumas são partições internas; ausência na API não prova
 ausência no PostgreSQL. Não foram apagadas por suposição.
 
+O lote de templates acrescenta tipos para duas colunas e uma RPC que **ainda não
+constam do snapshot remoto**. A divergência é esperada até aplicar a migration e
+refazer a coleta administrativa; o relatório anterior de tipos não certifica este
+novo lote. As migrations antigas da mesma família também descrevem tabelas que
+não apareceram na API; antes de aplicar qualquer SQL remoto é obrigatório
+inspecionar `pg_catalog` e o ledger para evitar colisão com objetos ocultos.
+
 ## Evidência reproduzível
 
 - [Simulação SQL](evidencias/correcoes-20260922/simulacao-controles.json): banco
@@ -95,22 +111,22 @@ sentido resultam em código 1. Não contém nem solicita chave no código.
 
 ### Resultado dos checks locais
 
-Base integrada: `cbaf329833` (inclui o trabalho concorrente publicado até esta
+Base integrada: `1dee903c93` (inclui o trabalho concorrente publicado até esta
 reconciliação). As mudanças de código deste lote passaram pelos checks abaixo.
 
 | Check | Resultado |
 |---|---|
-| Vitest crítico do workflow | 137 testes aprovados, 20 arquivos |
+| Vitest crítico do workflow | 138 testes aprovados, 21 arquivos |
 | Cenários Node | 89 aprovados |
-| Cenários PostgreSQL | 19 aprovados; remoto_validado=false |
+| Cenários PostgreSQL | 30 aprovados; remoto_validado=false, incluindo rollback integral, grupo vazio e código composto |
 | Build Vite | Aprovado; artefato local gerado |
-| Typecheck baseline | Sem regressão: 848 erros globais versus baseline 861; não é tipagem global zerada |
-| Lint baseline | Sem regressão nos 5 arquivos de aplicação; 4 erros eliminados; dívida global permanece |
+| Typecheck baseline | Sem regressão: 786 erros globais versus baseline 801; não é tipagem global zerada |
+| Lint baseline | Sem regressão nos 15 arquivos de aplicação; 19 erros eliminados; dívida global permanece |
 | Auditoria de dependências | Gate aprovado |
 | Manifesto de autorização Edge | 104 entradas validadas estaticamente |
 | Deno das três Edge Functions alteradas | Aprovado |
 | Imutabilidade de migrations | Aprovada; somente arquivos SQL novos |
-| Referências runtime | Reprovado: 71 ocorrências, 39 bloqueantes |
+| Referências runtime | Reprovado: 58 ocorrências em 17 recursos, 27 bloqueantes |
 | Contrato TypeScript versus API | Sem nomes expostos faltando nos tipos; 13 relações extras exigem classificação |
 | Ledger real / funções publicadas / homologação remota | Não verificados nesta execução |
 
@@ -136,15 +152,15 @@ Nenhuma migration remota ou publicação manual de Edge Functions foi executada.
 
 ## Pendências que impedem o aceite integral
 
-O gate de referências termina com código 1: **71 ocorrências em 17 recursos**,
-sendo **39 fora da allowlist**. A allowlist não foi ampliada para esconder achados.
+O gate de referências termina com código 1: **58 ocorrências em 17 recursos**,
+sendo **27 fora da allowlist**. A allowlist não foi ampliada para esconder achados.
 
 | Família | Ocorrências | Reconciliação necessária |
 |---|---:|---|
-| Grupos, componentes e locais de personalização | 29 | Definir e validar o contrato das quatro tabelas ausentes; não escrever no catálogo externo |
-| `personalization_techniques`, `color_nuances`, `personalization_simulations` | 8 | Separar dados de catálogo e configurações locais; validar referências |
+| Grupos, componentes e locais de personalização | 23 | Migration e RPC locais simuladas; validar objetos reais/ledger, aplicar e recontar |
+| `personalization_techniques`, `color_nuances`, `personalization_simulations` | 7 | Separar dados de catálogo e configurações locais; validar referências |
 | `products` em mockups/rascunhos | 2 | Verificar FKs remotas e preservar identificação do produto externo; trocar cliente sem isso pode gerar violação de FK |
-| `user_2fa_settings`, `user_passkeys` | 10 | Autenticação precisa de validação no servidor; criar tabelas de segredos no cliente não resolve o fluxo |
+| `user_2fa_settings`, `user_passkeys` | 4 | Passkey insegura desativada; autenticação precisa de validação no servidor |
 | Bitrix: clientes, negócios e logs | 10 | Confirmar integração e contrato externo; migrations históricas têm permissões inadequadas |
 | `sales_goals`, `roles`, `companies` | 11 | Implementar contrato/consumo correto ou documentar retirada; não confundir `roles` com `user_roles` |
 | `create_quote_version_atomic` | 1 | Aplicar pacote existente somente após validação administrativa e testar concorrência remota |
@@ -153,6 +169,15 @@ Também permanecem: ledger completo, comparação do código publicado das Edge
 Functions, classificação das 186 assinaturas apontadas pela auditoria de ACL,
 homologação com usuários/tenants reais de teste, armazenamento e fluxos completos.
 Os 391 apontamentos de ACL não equivalem a 391 vulnerabilidades confirmadas.
+
+**Contrato de somente leitura do catálogo:** a função `external-db-bridge` já
+recusa operações de escrita no ingresso. Entretanto, há interfaces legadas que
+ainda oferecem edição de produtos, imagens, variantes, fornecedores e técnicas
+via essa ponte; elas falharão com `CATALOG_READ_ONLY`. Migrar essas operações
+para entidades próprias locais ou retirar os controles após decidir o fluxo de
+negócio. Não habilitar escrita no banco externo para fazer a interface parecer
+funcional. O módulo de prompts também consultava técnicas no banco errado;
+agora faz a consulta pela ponte externa de leitura.
 
 ## Reconciliação das 50 etapas corretivas
 
@@ -181,7 +206,7 @@ as trata como prontas. Este projeto está em construção, conforme orientação
 | 16 | Buckets antigos não aparecem no gate atual; upload autenticado ponta a ponta ainda pendente |
 | 17 | Local: chamada morta de set_config removida e comentário corrigido; publicação pendente |
 | 18 | Local: uso de telemetry_events e teste de envio; entrega remota não certificada |
-| 19 | Parcial: AST para wrappers e inventário atualizado; 71 ocorrências ainda abertas |
+| 19 | Parcial: AST para wrappers e inventário atualizado; 58 ocorrências ainda abertas, 27 bloqueantes |
 | 20 | Gate ligado ao CI; novos testes incluídos; GitHub não iniciou o job por bloqueio de orçamento |
 | 21 | Documento de órfãos preexistente; contagens não bastam para remover recursos |
 | 22 | Aberta: confirmar FKs/dependências remotas antes de qualquer remoção da família de PAs |
@@ -201,7 +226,7 @@ as trata como prontas. Este projeto está em construção, conforme orientação
 | 36 | Métricas desta execução datadas acima; ledger remoto não substituído por contagem de arquivos |
 | 37 | Decisões consolidadas atualizadas com correções feitas e pendências reais |
 | 38 | Aberta: decisões de negócio remanescentes não foram inventadas nem comunicadas a terceiros |
-| 39 | Executada e reprovada: 71 ocorrências, 39 bloqueantes; evidência anexada |
+| 39 | Executada e reprovada: 58 ocorrências, 27 bloqueantes; evidência anexada |
 | 40 | Parcial: testes e baselines locais validados; tipagem global tem dívida e testes remotos pendem |
 | 41 | Aberta: quatro jornadas completas não homologadas no banco de construção |
 | 42 | Aberta: branch isolada ainda depende de merge; não afirmar igualdade com main |

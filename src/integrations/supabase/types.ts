@@ -6295,6 +6295,7 @@ export type Database = {
       }
       product_component_locations: {
         Row: {
+          area_image_url: string | null
           component_id: string
           created_at: string
           deleted_at: string | null
@@ -6303,12 +6304,14 @@ export type Database = {
           is_active: boolean
           location_code: string
           location_name: string
+          max_area_cm2: number | null
           max_height_cm: number | null
           max_width_cm: number | null
           sort_order: number | null
           updated_at: string
         }
         Insert: {
+          area_image_url?: string | null
           component_id: string
           created_at?: string
           deleted_at?: string | null
@@ -6317,12 +6320,14 @@ export type Database = {
           is_active?: boolean
           location_code: string
           location_name: string
+          max_area_cm2?: number | null
           max_height_cm?: number | null
           max_width_cm?: number | null
           sort_order?: number | null
           updated_at?: string
         }
         Update: {
+          area_image_url?: string | null
           component_id?: string
           created_at?: string
           deleted_at?: string | null
@@ -6331,6 +6336,7 @@ export type Database = {
           is_active?: boolean
           location_code?: string
           location_name?: string
+          max_area_cm2?: number | null
           max_height_cm?: number | null
           max_width_cm?: number | null
           sort_order?: number | null
@@ -9909,6 +9915,10 @@ export type Database = {
       }
     }
     Functions: {
+      copy_group_personalization_to_product: {
+        Args: { p_membership_id: string }
+        Returns: number
+      }
       assert_sicoob_approval_actor: {
         Args: {
           p_actor_id: string

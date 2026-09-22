@@ -4,6 +4,7 @@
  */
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { invokeExternalDb } from "@/lib/external-db";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -48,10 +49,13 @@ export function MockupPromptManager() {
     try {
       const [cr, tr] = await Promise.all([
         supabase.from("mockup_prompt_configs").select("*").order("config_key"),
-        supabase.from("personalization_techniques").select("id, name, code").eq("is_active", true),
+        invokeExternalDb<Technique>({
+          table: "personalization_techniques", operation: "select", select: "id, name, code",
+          filters: { is_active: true }, limit: 100,
+        }),
       ]);
-      if (cr.error) throw cr.error; if (tr.error) throw tr.error;
-      setConfigs((cr.data || []) as PromptConfig[]); setTechniques(tr.data || []);
+      if (cr.error) throw cr.error;
+      setConfigs((cr.data || []) as PromptConfig[]); setTechniques(tr.records);
     } catch (err: unknown) { toast.error("Erro ao carregar configurações", { description: err instanceof Error ? err.message : undefined }); }
     finally { setIsLoading(false); }
   };

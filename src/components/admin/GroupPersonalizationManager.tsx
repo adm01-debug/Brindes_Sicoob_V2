@@ -22,8 +22,8 @@ export function GroupPersonalizationManager() {
   const {
     selectedGroup, setSelectedGroup,
     groups, groupsLoading,
-    components, componentsLoading,
-    locations, techniques,
+    components, componentsLoading, componentsError,
+    locations, locationsError, techniques, locationTechniquesError,
     addComponent, updateComponent, deleteComponent,
     addLocation, updateLocation, deleteLocation,
     addTechnique, updateTechnique, deleteTechnique,
@@ -33,6 +33,7 @@ export function GroupPersonalizationManager() {
 
   const [isAddComponentOpen, setIsAddComponentOpen] = useState(false);
   const [newComponent, setNewComponent] = useState({ code: "", name: "" });
+  const loadError = [componentsError, locationsError, locationTechniquesError].find(Boolean);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
@@ -132,7 +133,11 @@ export function GroupPersonalizationManager() {
             </div>
           </CardHeader>
           <CardContent>
-            {componentsLoading ? (
+            {loadError ? (
+              <div role="alert" className="rounded-md border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive">
+                Não foi possível carregar as regras de personalização. Tente novamente após verificar o acesso ao banco.
+              </div>
+            ) : componentsLoading ? (
               <div className="flex items-center justify-center py-8"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
             ) : !components?.length ? (
               <div className="text-center py-8 text-muted-foreground">

@@ -4,7 +4,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { untypedFrom } from "@/lib/supabase-untyped";
 import { invokeExternalDb } from "@/lib/external-db";
 import { toast } from "sonner";
-import { logger } from "@/lib/logger";
 
 export type UpdateData = { id: string; [key: string]: string | number | boolean | null | undefined };
 
@@ -46,6 +45,7 @@ export interface GroupLocationTechnique {
   id: string;
   group_location_id: string;
   technique_id: string;
+  technique_code: string;
   max_colors: number | null;
   is_default: boolean;
   is_active: boolean;
@@ -69,44 +69,30 @@ export function useGroupPersonalization() {
     },
   });
 
-  const { data: components, isLoading: componentsLoading } = useQuery({
+  const { data: components, isLoading: componentsLoading, error: componentsError } = useQuery({
     queryKey: ["group-components", selectedGroup],
     queryFn: async () => {
       if (!selectedGroup) return [];
-      try {
-        const { data, error } = await untypedFrom<GroupComponent>("product_group_components")
+      const { data, error } = await untypedFrom<GroupComponent>("product_group_components")
           .select("*")
           .eq("product_group_id", selectedGroup)
           .order("sort_order");
-        if (error) {
-          logger.warn("[Admin] product_group_components not available:", error.message);
-          return [];
-        }
-        return data ?? [];
-      } catch {
-        return [];
-      }
+      if (error) throw error;
+      return data ?? [];
     },
     enabled: !!selectedGroup,
   });
 
-  const { data: locations } = useQuery({
+  const { data: locations, error: locationsError } = useQuery({
     queryKey: ["group-locations", selectedGroup],
     queryFn: async () => {
       if (!components?.length) return [];
-      try {
-        const componentIds = components.map((c) => c.id);
-        const { data, error } = await untypedFrom<GroupLocation>("product_group_locations")
+      const componentIds = components.map((c) => c.id);
+      const { data, error } = await untypedFrom<GroupLocation>("product_group_locations")
           .select("*")
           .in("group_component_id", componentIds);
-        if (error) {
-          logger.warn("[Admin] product_group_locations not available:", error.message);
-          return [];
-        }
-        return data ?? [];
-      } catch {
-        return [];
-      }
+      if (error) throw error;
+      return data ?? [];
     },
     enabled: !!components?.length,
   });
@@ -126,23 +112,16 @@ export function useGroupPersonalization() {
     },
   });
 
-  const { data: locationTechniques } = useQuery({
+  const { data: locationTechniques, error: locationTechniquesError } = useQuery({
     queryKey: ["group-location-techniques", selectedGroup],
     queryFn: async () => {
       if (!locations?.length) return [];
-      try {
-        const locationIds = locations.map((l) => l.id);
-        const { data, error } = await untypedFrom<GroupLocationTechnique>("product_group_location_techniques")
-          .select(`*, technique:personalization_techniques(id, code, name)`)
+      const locationIds = locations.map((l) => l.id);
+      const { data, error } = await untypedFrom<GroupLocationTechnique>("product_group_location_techniques")
+          .select("*")
           .in("group_location_id", locationIds);
-        if (error) {
-          logger.warn("[Admin] product_group_location_techniques not available:", error.message);
-          return [];
-        }
-        return data ?? [];
-      } catch {
-        return [];
-      }
+      if (error) throw error;
+      return data ?? [];
     },
     enabled: !!locations?.length,
   });
@@ -157,7 +136,7 @@ export function useGroupPersonalization() {
       queryClient.invalidateQueries({ queryKey: ["group-components"] });
       toast.success("Componente adicionado!");
     },
-    onError: () => toast.error("Erro ao adicionar componente — tabela pode não existir"),
+    onError: () => toast.error("Erro ao adicionar componente"),
   });
 
   const updateComponent = useMutation({
@@ -219,7 +198,10 @@ export function useGroupPersonalization() {
 
   const addTechnique = useMutation({
     mutationFn: async (data: { group_location_id: string; technique_id: string; max_colors?: number }) => {
-      const { error } = await untypedFrom<GroupLocationTechnique>("product_group_location_techniques").insert(data);
+      const technique = techniques?.find((item) => item.id === data.technique_id);
+      if (!technique?.code) throw new Error("Técnica externa indisponível");
+      const { error } = await untypedFrom<GroupLocationTechnique>("product_group_location_techniques")
+        .insert({ ...data, technique_code: technique.code });
       if (error) throw error;
     },
     onSuccess: () => {
@@ -257,7 +239,8 @@ export function useGroupPersonalization() {
     locations?.filter((l) => l.group_component_id === componentId) || [];
 
   const getTechniquesForLocation = (locationId: string) =>
-    locationTechniques?.filter((lt) => lt.group_location_id === locationId) || [];
+    locationTechniques?.filter((lt) => lt.group_location_id === locationId)
+      .map((lt) => ({ ...lt, technique: techniques?.find((t) => t.id === lt.technique_id) })) || [];
 
   const reorderComponents = async (components: GroupComponent[], oldIndex: number, newIndex: number) => {
     const { arrayMove } = await import("@dnd-kit/sortable");
@@ -275,8 +258,8 @@ export function useGroupPersonalization() {
   return {
     selectedGroup, setSelectedGroup,
     groups, groupsLoading,
-    components, componentsLoading,
-    locations, techniques, locationTechniques,
+    components, componentsLoading, componentsError,
+    locations, locationsError, techniques, locationTechniques, locationTechniquesError,
     addComponent, updateComponent, deleteComponent,
     addLocation, updateLocation, deleteLocation,
     addTechnique, updateTechnique, deleteTechnique,

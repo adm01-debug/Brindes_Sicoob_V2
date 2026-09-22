@@ -20,6 +20,17 @@
     "preflight_assinatura_ausente": true,
     "preflight_servidor_sem_acesso": true,
     "preflight_rpc_servidor_conforme": true,
-    "preflight_rpc_cliente_negado": true
+    "preflight_rpc_cliente_negado": true,
+    "template_nao_copia_produto_externo": true,
+    "template_anon_sem_select": true,
+    "template_comprador_sem_escrita": true,
+    "template_comprador_sem_rpc": true,
+    "template_copia_atomica": true,
+    "template_id_externo_preservado": true,
+    "template_codigo_composto_estavel": true,
+    "template_antigo_substituido": true,
+    "template_sem_duplicar_na_repeticao": true,
+    "template_rollback_em_falha": true,
+    "template_grupo_vazio_preserva_produto": true
   }
 }

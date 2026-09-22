@@ -1,10 +1,8 @@
-import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { untypedFrom } from "@/lib/supabase-untyped";
 import { invokeExternalDb } from "@/lib/external-db";
 import { toast } from "sonner";
-import { logger } from "@/lib/logger";
 
 export interface Product {
   id: string;
@@ -131,23 +129,16 @@ export function usePersonalizationData(selectedProduct: string | null) {
     enabled: !!selectedProduct,
   });
 
-  const { data: locations } = useQuery({
+  const { data: locations, error: locationsError } = useQuery({
     queryKey: ["component-locations", selectedProduct],
     queryFn: async () => {
       if (!components?.length) return [];
-      try {
-        const componentIds = components.map((c) => c.id);
-        const { data, error } = await untypedFrom("product_component_locations")
+      const componentIds = components.map((c) => c.id);
+      const { data, error } = await untypedFrom("product_component_locations")
           .select("*")
           .in("component_id", componentIds);
-        if (error) {
-          logger.warn("[Admin] product_component_locations not available:", error.message);
-          return [];
-        }
-        return data as Location[];
-      } catch {
-        return [];
-      }
+      if (error) throw error;
+      return data as Location[];
     },
     enabled: !!components?.length,
   });
@@ -167,23 +158,16 @@ export function usePersonalizationData(selectedProduct: string | null) {
     },
   });
 
-  const { data: locationTechniques } = useQuery({
+  const { data: locationTechniques, error: locationTechniquesError } = useQuery({
     queryKey: ["location-techniques", selectedProduct],
     queryFn: async () => {
       if (!locations?.length) return [];
-      try {
-        const locationIds = locations.map((l) => l.id);
-        const { data, error } = await untypedFrom("product_component_location_techniques")
-          .select(`*, technique:personalization_techniques(id, code, name)`)
+      const locationIds = locations.map((l) => l.id);
+      const { data, error } = await untypedFrom("product_component_location_techniques")
+          .select("*")
           .in("component_location_id", locationIds);
-        if (error) {
-          logger.warn("[Admin] location_techniques not available:", error.message);
-          return [];
-        }
-        return data as LocationTechnique[];
-      } catch {
-        return [];
-      }
+      if (error) throw error;
+      return data as LocationTechnique[];
     },
     enabled: !!locations?.length,
   });
@@ -313,12 +297,13 @@ export function usePersonalizationData(selectedProduct: string | null) {
     locations?.filter((l) => l.component_id === componentId) || [];
 
   const getTechniquesForLocation = (locationId: string) =>
-    locationTechniques?.filter((lt) => lt.component_location_id === locationId) || [];
+    locationTechniques?.filter((lt) => lt.component_location_id === locationId)
+      .map((lt) => ({ ...lt, technique: techniques?.find((t) => t.id === lt.technique_id) })) || [];
 
   return {
     products, productsLoading, productGroups, allMemberships,
     productMembership, components, componentsLoading,
-    locations, techniques, locationTechniques,
+    locations, locationsError, techniques, locationTechniques, locationTechniquesError,
     toggleGroupRulesMutation, addComponentMutation, updateComponentMutation,
     deleteComponentMutation, addLocationMutation, updateLocationMutation,
     deleteLocationMutation, addTechniqueMutation, updateTechniqueMutation,
