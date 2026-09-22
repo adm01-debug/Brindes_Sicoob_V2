@@ -59,7 +59,7 @@ export interface KitItem {
 }
 
 export interface Category {
-  id: number;
+  id: number | string;
   name: string;
   parentId?: number;
   icon?: string;

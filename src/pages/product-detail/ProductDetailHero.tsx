@@ -89,7 +89,6 @@ export function ProductDetailHero({
         <div className="lg:sticky lg:top-20 space-y-3 pb-4">
           <ProductGallery
             images={product.images}
-            video={product.video}
             productVideos={product.productVideos}
             productName={product.name}
             colors={product.variations?.map((variation: any) => ({
@@ -133,10 +132,10 @@ export function ProductDetailHero({
             )}
             {product.gender && <GenderBadge gender={product.gender} size="md" />}
             <PackagingBadge
-              hasCommercialPackaging={product.hasCommercialPackaging}
-              packingType={product.packingType}
-              repackingType={product.repackingType}
-              packagingContext={product.packagingContext}
+              hasCommercialPackaging={product.hasCommercialPackaging ?? null}
+              packingType={product.packingType ?? null}
+              repackingType={product.repackingType ?? null}
+              packagingContext={product.packagingContext ?? null}
               onClick={onOpenPackagingModal}
             />
           </div>

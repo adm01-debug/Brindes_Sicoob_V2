@@ -1768,3 +1768,40 @@ Verificado: `tscheck-files.mjs` → 0 erros. `check-eslint-baseline.mjs`
 
 Baseline de typecheck do projeto atualizado: 801 → 783 erros (378 → 375
 arquivos).
+
+## `src/pages/product-detail/ProductDetailHero.tsx` (etapa 17, 6 → 0 erros)
+
+**3 causas diferentes, uma delas com achado bônus em cascata:**
+
+1. `product.video` — campo que **nunca existiu** no tipo `Product`
+   (`src/types/product-catalog.ts`): sempre foi `productVideos?: ProductVideo[]`
+   (array), nunca um `video?: string` singular (esse campo só existe em
+   `KitComponent`, tipo diferente). Em runtime `product.video` sempre foi
+   `undefined`, então a prop nunca teve efeito — código morto desde que foi
+   escrito. Removida a prop (já opcional em `ProductGallery`).
+2. `product.category` (`{ id: string | number; name: string }`) passado pra
+   `ProductCategoryBadges`, que espera `Category` (`src/data/mockData.ts`,
+   `id: number`) — drift de tipo: categorias reais vêm do BD com UUID
+   (`string`), o mock legado assumia IDs numéricos sequenciais. Corrigido
+   alargando `Category.id` pra `number | string` na fonte (`mockData.ts`) —
+   único consumidor do tipo é `ProductCategoryBadges.tsx`, que só usa `id`
+   como `key`, em interpolação de string e em `===`, nunca aritmeticamente,
+   então o alargamento é seguro. **Achado bônus**: a mesma correção zerou de
+   graça o erro idêntico e pré-existente em `ProductCard.tsx:249` e reduziu
+   `ProductQuickView.tsx:281` (ambos passavam `product.category` pro mesmo
+   componente) — nenhum dos dois fazia parte do lote desta etapa, ficam mais
+   leves como efeito colateral correto da correção na raiz.
+3. `hasCommercialPackaging`/`packingType`/`repackingType`/`packagingContext`
+   — os 4 campos são opcionais (`?:`) em `Product`, então o tipo inferido
+   inclui `undefined`, mas `PackagingBadgeProps` (single consumer, só usado
+   aqui) só aceita `| null`. Corrigido com `?? null` nos 4 pontos, único call
+   site do componente.
+
+Verificado: `tscheck-files.mjs` → 0 erros no arquivo (mais os 2 bônus
+reduzidos em `ProductCard.tsx`/`ProductQuickView.tsx`, não zerados — fora do
+escopo, erros remanescentes são de outra causa). `check-eslint-baseline.mjs`
+→ zero regressão. Teste dedicado `ProductDetailHero.priceFreshness.test.tsx`
+→ 5/5 passou.
+
+Baseline de typecheck do projeto atualizado: 783 → 774 erros (375 → 373
+arquivos).
