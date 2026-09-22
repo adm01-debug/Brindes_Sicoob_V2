@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-09-22T23:43:03.456Z",
-  "total": 537,
+  "generatedAt": "2026-09-22T23:47:11.116Z",
+  "total": 533,
   "files": {
     "src/components/admin/common/AdminDataTable.tsx": 2,
     "src/components/admin/connections/Bitrix24Tab.tsx": 1,
@@ -208,7 +208,6 @@
     "src/hooks/useCategoryIcons.ts": 3,
     "src/hooks/useClientOrdersHistory.ts": 1,
     "src/hooks/useCollections.ts": 2,
-    "src/hooks/useComparisonScore.ts": 4,
     "src/hooks/useContextualSuggestions.ts": 1,
     "src/hooks/useErrorHandler.ts": 1,
     "src/hooks/useExternalCollections.ts": 2,

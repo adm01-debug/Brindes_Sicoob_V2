@@ -2786,3 +2786,19 @@ Esse hook é consumido por `AuthContext.tsx` (linha 88), que calcula `mfaRequire
 - `check-eslint-baseline.mjs`: 0 regressões (3335 erros globais, referência `origin/main` em `839095c1c5`).
 - Teste dedicado `tests/hooks/useUndoRedo.test.ts`: 10/10 passou.
 - `typecheck:baseline`: 541 → 537 (321 arquivos), travado via `--update`.
+
+## useComparisonScore.ts (etapa 17)
+
+**Arquivo:** `src/hooks/useComparisonScore.ts`
+
+**Erros originais (4×):** TS2345 (linhas 91, 92, 93, 96 — `prices[i]`/`stocks[i]`/`mins[i]`/`leadTimes[i]` possivelmente `undefined` passados para parâmetros `number`).
+
+**Diagnóstico:** `prices`, `stocks`, `mins`, `leadTimes` são todos derivados via `products.map(...)` e indexados pelo mesmo `i` do `products.map((p, i) => ...)` externo — como todos têm exatamente `products.length` elementos e `i` sempre está no intervalo `[0, products.length - 1]`, o acesso é estruturalmente seguro sob `noUncheckedIndexedAccess`. Curiosidade: `colorCounts[i]` (mesma linha de raciocínio, linha 94) não disparou erro porque `colorCounts` é inferido como `any[]` (a expressão `p.colors?.length ?? 0` nunca perde o `any` de `p: any`, ao contrário de `prices`/`stocks`/`mins`/`leadTimes` que passam por `Number(...)`, forçando o tipo `number[]`).
+
+**Fix aplicado:** asserção de não-nulo nos 4 acessos (`prices[i]!`, `stocks[i]!`, `mins[i]!`, `leadTimes[i]!`).
+
+**Validação:**
+- `tscheck-files.mjs`: 4 → 0 erros (0 no programa inteiro).
+- `check-eslint-baseline.mjs`: 0 regressões (3335 erros globais, referência `origin/main` em `85e68c4559`).
+- Teste dedicado `tests/hooks/useComparisonScore.test.ts`: 5/5 passou.
+- `typecheck:baseline`: 537 → 533 (320 arquivos), travado via `--update`.

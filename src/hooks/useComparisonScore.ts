@@ -88,12 +88,12 @@ export function useComparisonScore(
     const scores = products.map((p, i) => {
       const verified = Boolean(p.supplier?.verified ?? p.supplier?.isVerified ?? false);
       const breakdown: Record<keyof ComparisonScoreWeights, number> = {
-        price: normalizeLowerBetter(prices[i], minPrice, maxPrice) * weights.price,
-        stock: normalizeHigherBetter(stocks[i], minStock, maxStock) * weights.stock,
-        minQuantity: normalizeLowerBetter(mins[i], minMin, maxMin) * weights.minQuantity,
+        price: normalizeLowerBetter(prices[i]!, minPrice, maxPrice) * weights.price,
+        stock: normalizeHigherBetter(stocks[i]!, minStock, maxStock) * weights.stock,
+        minQuantity: normalizeLowerBetter(mins[i]!, minMin, maxMin) * weights.minQuantity,
         colorVariety: normalizeHigherBetter(colorCounts[i], minColors, maxColors) * weights.colorVariety,
         verifiedSupplier: (verified ? 1 : 0.4) * weights.verifiedSupplier,
-        leadTime: normalizeLowerBetter(leadTimes[i], minLead, maxLead) * weights.leadTime,
+        leadTime: normalizeLowerBetter(leadTimes[i]!, minLead, maxLead) * weights.leadTime,
       };
       const total = Object.values(breakdown).reduce((a, b) => a + b, 0);
       return {
