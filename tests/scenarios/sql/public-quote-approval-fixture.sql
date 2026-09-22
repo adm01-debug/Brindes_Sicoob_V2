@@ -2,6 +2,13 @@ CREATE ROLE anon;
 CREATE ROLE authenticated;
 CREATE ROLE service_role BYPASSRLS;
 CREATE SCHEMA auth;
+CREATE SCHEMA extensions;
+CREATE EXTENSION pgcrypto WITH SCHEMA extensions;
+CREATE SCHEMA vault;
+CREATE TABLE vault.decrypted_secrets (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(), name text NOT NULL,
+  decrypted_secret text, created_at timestamptz DEFAULT now(), updated_at timestamptz DEFAULT now()
+);
 CREATE FUNCTION auth.uid() RETURNS uuid LANGUAGE sql STABLE AS
 $$ SELECT NULLIF(current_setting('request.jwt.claim.sub', true), '')::uuid $$;
 GRANT USAGE ON SCHEMA public, auth TO anon, authenticated, service_role;
@@ -13,6 +20,20 @@ CREATE TABLE public.quotes (
   is_latest_version boolean NOT NULL DEFAULT true, deleted_at timestamptz,
   internal_notes text DEFAULT 'anotação interna', total_cost numeric DEFAULT 15,
   version integer DEFAULT 1, row_version bigint DEFAULT 1, rejection_notes text
+);
+CREATE TABLE public.quote_items (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(), quote_id uuid NOT NULL REFERENCES public.quotes(id),
+  product_id text, product_name text NOT NULL, product_sku text, product_image_url text,
+  quantity integer NOT NULL DEFAULT 1, unit_price numeric NOT NULL DEFAULT 0,
+  subtotal numeric GENERATED ALWAYS AS (quantity * unit_price) STORED,
+  color_name text, color_hex text, notes text, sort_order integer DEFAULT 0,
+  created_at timestamptz DEFAULT now(), updated_at timestamptz DEFAULT now()
+);
+CREATE TABLE public.quote_item_personalizations (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(), quote_item_id uuid NOT NULL REFERENCES public.quote_items(id),
+  technique_id uuid, colors_count integer DEFAULT 1, positions_count integer DEFAULT 1,
+  area_cm2 numeric, setup_cost numeric DEFAULT 0, unit_cost numeric DEFAULT 0,
+  total_cost numeric DEFAULT 0, notes text, created_at timestamptz DEFAULT now()
 );
 CREATE TABLE public.quote_approval_tokens (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(), quote_id text NOT NULL,
@@ -82,3 +103,27 @@ $$;
 REVOKE ALL ON FUNCTION public.log_quote_status_change() FROM PUBLIC;
 CREATE TRIGGER tr_log_quote_status_change AFTER UPDATE ON public.quotes
 FOR EACH ROW EXECUTE FUNCTION public.log_quote_status_change();
+
+CREATE TABLE public.request_rate_limits (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(), identifier text NOT NULL,
+  endpoint text NOT NULL, request_count integer NOT NULL DEFAULT 1,
+  window_start timestamptz NOT NULL DEFAULT now(), blocked_until timestamptz,
+  created_at timestamptz NOT NULL DEFAULT now(), updated_at timestamptz NOT NULL DEFAULT now(),
+  UNIQUE(identifier, endpoint)
+);
+CREATE FUNCTION public.check_rate_limit(
+  _identifier text, _endpoint text, _max_requests integer DEFAULT 60,
+  _window_seconds integer DEFAULT 60, _block_duration_seconds integer DEFAULT 3600
+) RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER SET search_path=public AS $$
+DECLARE v_row public.request_rate_limits%ROWTYPE; v_now timestamptz := clock_timestamp();
+BEGIN
+  INSERT INTO public.request_rate_limits(identifier,endpoint) VALUES (_identifier,_endpoint)
+  ON CONFLICT(identifier,endpoint) DO UPDATE SET
+    request_count = CASE WHEN request_rate_limits.window_start < v_now-make_interval(secs=>_window_seconds) THEN 1 ELSE request_rate_limits.request_count+1 END,
+    window_start = CASE WHEN request_rate_limits.window_start < v_now-make_interval(secs=>_window_seconds) THEN v_now ELSE request_rate_limits.window_start END,
+    blocked_until = CASE WHEN request_rate_limits.window_start >= v_now-make_interval(secs=>_window_seconds)
+      AND request_rate_limits.request_count+1 > _max_requests THEN v_now+make_interval(secs=>_block_duration_seconds) ELSE NULL END,
+    updated_at=v_now RETURNING * INTO v_row;
+  RETURN jsonb_build_object('allowed',v_row.blocked_until IS NULL,'retry_after_seconds',
+    CASE WHEN v_row.blocked_until IS NULL THEN 0 ELSE _block_duration_seconds END);
+END; $$;

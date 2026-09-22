@@ -49,13 +49,12 @@ describe("sicoobOrderService.updateOrderStatus", () => {
     expect(mocks.from).not.toHaveBeenCalled();
   });
 
-  it("delega uma confirmação iniciada em pendência à RPC atômica", async () => {
-    await sicoobOrderService.updateOrderStatus("pedido-1", "confirmed", "pending");
+  it("impede confirmação direta de pedido ainda não submetido à aprovação", async () => {
+    await expect(sicoobOrderService.updateOrderStatus("pedido-1", "confirmed", "pending"))
+      .rejects.toThrow(/transição de status inválida/i);
 
-    expect(mocks.rpc).toHaveBeenCalledExactlyOnceWith("confirm_sicoob_order", {
-      p_order_id: "pedido-1",
-      p_expected_status: "pending",
-    });
+    expect(mocks.getUser).not.toHaveBeenCalled();
+    expect(mocks.rpc).not.toHaveBeenCalled();
     expect(mocks.from).not.toHaveBeenCalled();
   });
 

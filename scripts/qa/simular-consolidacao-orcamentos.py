@@ -18,10 +18,12 @@ try:
  sql(f"""
  CREATE ROLE anon; CREATE ROLE authenticated; CREATE ROLE service_role BYPASSRLS; CREATE SCHEMA auth;
  CREATE FUNCTION auth.uid() RETURNS uuid LANGUAGE sql STABLE AS $$SELECT NULLIF(current_setting('request.jwt.claim.sub',true),'')::uuid$$;
- CREATE TABLE profiles(id uuid,user_id uuid,role text,cooperativa_id uuid);
+ CREATE TABLE profiles(id uuid,user_id uuid,role text,cooperativa_id uuid,is_active boolean DEFAULT true,deleted_at timestamptz);
+ CREATE TABLE user_roles(user_id uuid,role text);
  CREATE TABLE quote_consolidations(id uuid PRIMARY KEY DEFAULT gen_random_uuid(),consolidated_by uuid,singular_id uuid,status text,notes text,created_at timestamptz DEFAULT now(),updated_at timestamptz DEFAULT now());
  CREATE TABLE quotes(id uuid PRIMARY KEY,singular_id uuid,status text,consolidation_id uuid,updated_at timestamptz DEFAULT now());
- INSERT INTO profiles VALUES ('{ACTOR}','{ACTOR}','gestor_compras','{SING}'),('{OUT}','{OUT}','gestor_compras','{OTHER}');
+ INSERT INTO profiles(id,user_id,role,cooperativa_id,is_active) VALUES ('{ACTOR}','{ACTOR}','gestor_compras','{SING}',true),('{OUT}','{OUT}','gestor_compras','{OTHER}',true);
+ INSERT INTO user_roles VALUES ('{ACTOR}','gestor_compras'),('{OUT}','gestor_compras');
  """)
  migration=MIGRATION.read_text(); sql('BEGIN;\n'+migration+'\nROLLBACK;'); sql(migration)
  q1='33333333-3333-4333-8333-333333333331'; q2='33333333-3333-4333-8333-333333333332'
@@ -30,6 +32,10 @@ try:
  checks['consolidacao_e_vinculos_atomicos']=bool(result) and scalar(f"SELECT count(*) FROM quotes WHERE consolidation_id='{result}';")=='2'
  second=actor(f"SELECT public.consolidate_sicoob_quotes('{SING}',ARRAY['{q1}'::uuid],'repetida');",check=False)
  checks['nao_reconsolida_orcamento']=second.returncode!=0 and scalar('SELECT count(*) FROM quote_consolidations;')=='1'
+ sql(f"UPDATE profiles SET is_active=false WHERE user_id='{ACTOR}';")
+ inactive=actor(f"SELECT public.consolidate_sicoob_quotes('{SING}',ARRAY['{q1}'::uuid],NULL);",check=False)
+ checks['perfil_inativo_bloqueado']=inactive.returncode!=0
+ sql(f"UPDATE profiles SET is_active=true WHERE user_id='{ACTOR}';")
  q3='33333333-3333-4333-8333-333333333333'; sql(f"INSERT INTO quotes VALUES ('{q3}','{SING}','approved_singular',NULL,now());")
  denied=actor(f"SELECT public.consolidate_sicoob_quotes('{SING}',ARRAY['{q3}'::uuid],NULL);",OUT,False)
  checks['ator_fora_da_singular_bloqueado']=denied.returncode!=0 and scalar(f"SELECT consolidation_id IS NULL FROM quotes WHERE id='{q3}';")=='t'

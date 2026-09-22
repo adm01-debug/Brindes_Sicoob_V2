@@ -5,7 +5,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import "../components/render-helpers";
 import { waitFor } from "@testing-library/react";
 import { renderHookWithProviders } from "./_helpers/render-hook-providers";
-import { mockRpcOnce, resetSupabaseMocks } from "./_helpers/mock-supabase-builder";
+import { mockFunctionsInvoke, resetSupabaseMocks } from "./_helpers/mock-supabase-builder";
 import { useQuoteApprovalToken } from "@/hooks/useQuoteApprovalToken";
 
 beforeEach(() => {
@@ -20,21 +20,21 @@ describe("useQuoteApprovalToken", () => {
   });
 
   it("retorna resumo do orçamento sem consulta anônima à tabela", async () => {
-    mockRpcOnce({ data: { quote_number: "001", total: 100, status: "active" }, error: null });
+    mockFunctionsInvoke({ data: { quote: { quote_number: "001", total: 100, status: "active" } }, error: null });
     const { result } = renderHookWithProviders(() => useQuoteApprovalToken("abc"));
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(result.current.data).toEqual({ quote_number: "001", total: 100, status: "active" });
   });
 
   it("preserva ausência de dados para token inválido ou expirado", async () => {
-    mockRpcOnce({ data: null, error: null });
+    mockFunctionsInvoke({ data: { quote: null }, error: null });
     const { result } = renderHookWithProviders(() => useQuoteApprovalToken("abc"));
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(result.current.data).toBeNull();
   });
 
   it("propaga erro como isError", async () => {
-    mockRpcOnce({ data: null, error: { message: "not found" } });
+    mockFunctionsInvoke({ data: null, error: { message: "not found" } });
     const { result } = renderHookWithProviders(() => useQuoteApprovalToken("zzz"));
     await waitFor(() => expect(result.current.isError).toBe(true));
   });

@@ -22,8 +22,13 @@ BEGIN
   IF NOT EXISTS (
     SELECT 1 FROM public.profiles p
     WHERE (p.user_id = v_actor OR p.id = v_actor)
-      AND p.role::text IN ('gestor_compras', 'comprador_singular', 'admin', 'dev')
-      AND (p.role::text IN ('admin', 'dev') OR p.cooperativa_id = p_singular_id)
+      AND p.is_active IS TRUE AND p.deleted_at IS NULL
+      AND EXISTS (
+        SELECT 1 FROM public.user_roles ur
+        WHERE ur.user_id=v_actor
+          AND ur.role::text IN ('gestor_compras','comprador_singular','admin','dev')
+          AND (ur.role::text IN ('admin','dev') OR p.cooperativa_id=p_singular_id)
+      )
   ) THEN
     RAISE EXCEPTION 'Usuário fora da alçada da Singular.' USING ERRCODE = '42501';
   END IF;

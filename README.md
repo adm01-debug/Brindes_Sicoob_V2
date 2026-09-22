@@ -1,4 +1,4 @@
-# 🎁 Promo Brindes — Plataforma de Vendas de Brindes Promocionais
+# 🎁 Brindes Sicoob V2 — Portal corporativo de brindes
 
 > Sistema completo de catálogo, orçamentos, simulação de preços e inteligência comercial para vendedores de brindes promocionais.
 
@@ -29,16 +29,17 @@
 
 ## 🛡️ Relatório de Auditoria
 
-O sistema passa por auditorias regulares de segurança, performance e integridade. O relatório mais recente (14/05/2026) está disponível nos seguintes formatos:
+O sistema está em construção e passa por auditorias de segurança, banco,
+contratos e experiência. O relatório consolidado mais recente é:
 
-- 📄 **[Relatório em Markdown (Audit Report)](./audit_report.md)** - Visualização rápida no GitHub.
-- 📕 **[Relatório em PDF (Enterprise Audit)](./audit_report.pdf)** - Versão para download e arquivamento oficial.
+- 📄 **[Auditoria de validação — 22/09/2026](./docs/auditoria-validacao-2026-09-22.md)**
 
 ---
 
 ## 🎯 Visão Geral
 
-**Promo Brindes** é uma plataforma B2B para vendedores de brindes promocionais que integra:
+**Brindes Sicoob V2** é um portal B2B para cooperativas, gestores e compradores
+do Sicoob que integra:
 
 - **Catálogo** com 6.100+ produtos, filtros avançados e infinite scroll virtualizado
 - **Simulador de Preços** com cálculo de personalização (gravação, serigrafia, etc.)
@@ -55,7 +56,7 @@ O sistema passa por auditorias regulares de segurança, performance e integridad
 
 | Camada | Tecnologia |
 |---|---|
-| **Frontend** | React 18, TypeScript 5 (strict mode), Vite 5 |
+| **Frontend** | React 18, TypeScript 5, Vite 5 |
 | **Estilização** | Tailwind CSS 3, shadcn/ui, Framer Motion |
 | **Estado** | TanStack Query (server state), Zustand (client state) |
 | **Backend** | Supabase (Auth, DB, Storage, Edge Functions) |
@@ -163,12 +164,12 @@ src/
 
 supabase/
 ├── config.toml       # Configuração do projeto Supabase
-├── functions/        # 47 Edge Functions
+├── functions/        # 104 Edge Functions com entrypoint
 │   ├── _shared/      # Utilitários compartilhados (CORS, auth, validação)
 │   ├── expert-chat/  # Assistente IA
 │   ├── external-db-bridge/ # Bridge para banco externo
 │   └── ...
-└── migrations/       # 205 migrations SQL versionadas
+└── migrations/       # 529 migrations SQL versionadas
 ```
 
 ---
@@ -232,7 +233,7 @@ supabase/
 - `AdminRoute` wrapper para proteção de rotas sensíveis
 
 ### RLS
-- **100% das tabelas** têm Row Level Security ativado
+- RLS é auditada por gates estáticos e remotos; a comprovação do ambiente exige credenciais administrativas e execução verde do workflow de compliance
 - Policies baseadas em `auth.uid()` e `has_role()`
 - Multi-tenancy via `organization_id` com isolamento completo
 
@@ -242,7 +243,7 @@ supabase/
 
 ### Supabase (Interno)
 - 35+ tabelas com RLS completo
-- 205 migrations versionadas e reproduzíveis
+- 529 migrations versionadas; o ledger remoto deve ser confrontado antes de qualquer deploy
 - Tipos gerados automaticamente (`supabase gen types`)
 - Connection pooling via Supabase pooler
 
@@ -256,7 +257,7 @@ supabase/
 
 ## ⚡ Edge Functions
 
-47 Edge Functions organizadas em categorias:
+104 Edge Functions com entrypoint, classificadas no manifesto de autorização:
 
 | Categoria | Funções |
 |---|---|
@@ -288,7 +289,7 @@ supabase/
 ## 📝 Convenções de Código
 
 ### TypeScript
-- `strict: true` no tsconfig
+- `strict: true` está configurado; o repositório ainda controla dívida histórica por baseline e bloqueia novas regressões
 - Zero `any` (exceto em type guards justificados)
 - Return types explícitos em funções públicas
 - Validação runtime com Zod nas Edge Functions
@@ -338,11 +339,11 @@ O deploy é gerenciado automaticamente pelo **Lovable Cloud**:
 |---|---|
 | Arquivos TypeScript | ~907 |
 | Linhas de código | ~180.000 |
-| Edge Functions | 46 |
-| Migrations SQL | 212 |
-| Tabelas com RLS | 100% |
-| Testes | 168 arquivos |
-| TypeScript strict | ✅ |
+| Edge Functions com entrypoint | 104 |
+| Migrations SQL | 529 |
+| RLS | gate automatizado; validação remota ainda depende de personas e credenciais |
+| Testes | 381 arquivos Vitest + cenários Node e simulações PostgreSQL |
+| TypeScript sem regressão | ✅ baseline controlado; dívida existente documentada |
 
 ---
 
@@ -352,4 +353,4 @@ Projeto proprietário — todos os direitos reservados.
 
 ---
 
-**Desenvolvido por Pink e Cerébro × Promo Brindes** 🚀
+**Portal Brindes Sicoob V2 — em construção.**

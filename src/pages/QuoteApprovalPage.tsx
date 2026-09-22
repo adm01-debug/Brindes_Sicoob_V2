@@ -44,15 +44,16 @@ export default function QuoteApprovalPage() {
     if (!pendingResponse || isSubmitting) return;
     setIsSubmitting(true);
     try {
-      const { data, error } = await supabase.rpc("submit_signed_quote_response", {
-        _token: token!,
-        _response: pendingResponse,
-        _signer_name: sigData.name,
-        _signer_document: sigData.document,
-        _signature_data_url: sigData.signatureDataUrl,
+      const { data, error } = await supabase.functions.invoke("quote-approval", {
+        body: {
+          action: "respond",
+          token,
+          status: pendingResponse,
+          signer: sigData,
+        },
       });
       if (error) throw error;
-      if (data !== true) throw new Error("O link expirou, foi revogado ou já recebeu uma resposta. Atualize a página.");
+      if (data?.success !== true) throw new Error("O link expirou, foi revogado ou já recebeu uma resposta. Atualize a página.");
 
       setSubmitted(true);
       toast.success("Resposta registrada com sucesso");
@@ -72,6 +73,11 @@ export default function QuoteApprovalPage() {
         total={Number(quote.total ?? 0)}
         validUntil={quote.valid_until}
         status={isResponded ? quote.response ?? "responded" : quote.status}
+        items={quote.items}
+        paymentTerms={quote.payment_terms}
+        deliveryTime={quote.delivery_time}
+        shippingCost={quote.shipping_cost}
+        notes={quote.notes}
         isResponded={isResponded}
         onApprove={() => setPendingResponse("approved")}
         onReject={() => setPendingResponse("rejected")}

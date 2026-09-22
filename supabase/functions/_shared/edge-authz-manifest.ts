@@ -162,6 +162,7 @@ export const EDGE_AUTHZ_MANIFEST: Record<string, AuthzEntry> = {
   "manage-users": { category: "supervisor", rationale: "Gestão de usuários via has_role inline", enforcedBy: "custom" },
   "block-ip-temporarily": { category: "supervisor", rationale: "Bloqueio de IP — has_role inline", enforcedBy: "custom" },
   "ownership-repair": { category: "supervisor", rationale: "Reparo de órfãos com autorização central e validação adicional na RPC", enforcedBy: "shared-authorize" },
+  "sicoob-approval-reconciliation": { category: "supervisor", rationale: "Reconciliação auditada de notificações incertas ou falhas", enforcedBy: "shared-authorize" },
   "error-monitor": { category: "supervisor", rationale: "Monitoramento de erros e alertas de sistema", enforcedBy: "shared-authorize" },
 
   // ---------------- Dev-only ----------------

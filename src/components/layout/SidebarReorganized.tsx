@@ -165,6 +165,7 @@ const navGroups: NavGroup[] = [
     items: [
       { icon: Users, label: "Usuários", href: "/admin/usuarios", adminOnly: true },
       { icon: Landmark, label: "Gestão SICOOB", href: "/admin/sicoob", adminOnly: true },
+      { icon: Bell, label: "Reconciliação SICOOB", href: "/admin/sicoob/notificacoes", adminOnly: true },
       { icon: FolderOpen, label: "Cadastros", href: "/admin/cadastros", adminOnly: true, children: [
         { icon: Package, label: "Produtos", href: "/admin/cadastros?tab=products" },
         { icon: Truck, label: "Fornecedores", href: "/admin/cadastros?tab=suppliers" },

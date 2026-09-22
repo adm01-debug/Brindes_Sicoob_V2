@@ -48,7 +48,7 @@ try:
       CREATE SCHEMA auth;
       CREATE FUNCTION auth.uid() RETURNS uuid LANGUAGE sql STABLE AS $$SELECT NULLIF(current_setting('request.jwt.claim.sub',true),'')::uuid$$;
       CREATE TABLE public.user_roles(user_id uuid, role text);
-      CREATE TABLE public.profiles(id uuid PRIMARY KEY, user_id uuid, pa_id uuid, cooperativa_id uuid, singular_id uuid);
+      CREATE TABLE public.profiles(id uuid PRIMARY KEY, user_id uuid, pa_id uuid, cooperativa_id uuid, singular_id uuid, is_active boolean DEFAULT true, deleted_at timestamptz);
       CREATE TABLE public.postos_atendimento(id uuid PRIMARY KEY, cooperativa_id uuid, is_active boolean NOT NULL DEFAULT true);
       CREATE TABLE public.quotes(
         id uuid PRIMARY KEY, quote_number text, seller_id uuid NOT NULL, status text NOT NULL,
@@ -88,7 +88,7 @@ try:
       CREATE FUNCTION public.require_sicoob_artwork_before_production() RETURNS trigger LANGUAGE plpgsql AS $$BEGIN RETURN NEW; END$$;
       CREATE TRIGGER tr_require_sicoob_artwork_before_production BEFORE UPDATE OF status ON public.sicoob_orders FOR EACH ROW EXECUTE FUNCTION public.require_sicoob_artwork_before_production();
       INSERT INTO public.postos_atendimento VALUES ('{PA}','{COOP}',true);
-      INSERT INTO public.profiles VALUES ('{ACTOR}','{ACTOR}','{PA}','{COOP}','{COOP}');
+      INSERT INTO public.profiles(id,user_id,pa_id,cooperativa_id,singular_id,is_active) VALUES ('{ACTOR}','{ACTOR}','{PA}','{COOP}','{COOP}',true);
     """)
     migration = MIGRATION.read_text()
     mutation = MUTATION.read_text()
@@ -107,6 +107,9 @@ try:
     checks['marca_orcamento_convertido'] = scalar(f"SELECT status FROM public.quotes WHERE id='{quote}';") == 'converted'
     repeated = json.loads(actor(f"SELECT row_to_json(x) FROM public.convert_quote_to_sicoob_order('{quote}') x;").stdout.strip())
     checks['repeticao_idempotente'] = repeated['id'] == order['id'] and scalar(f"SELECT count(*) FROM public.sicoob_orders WHERE source_quote_id='{quote}';") == '1'
+    sql(f"UPDATE public.profiles SET is_active=false WHERE user_id='{ACTOR}';")
+    checks['perfil_inativo_nao_acessa_conversao_idempotente'] = actor(f"SELECT * FROM public.convert_quote_to_sicoob_order('{quote}');", check=False).returncode != 0
+    sql(f"UPDATE public.profiles SET is_active=true WHERE user_id='{ACTOR}';")
     blocked_art = sql(f"UPDATE public.sicoob_orders SET status='logistic' WHERE id='{order['id']}';", check=False)
     checks['personalizado_exige_arte'] = blocked_art.returncode != 0 and 'arte precisa estar aprovada' in blocked_art.stderr
     sql(f"INSERT INTO public.sicoob_order_artwork_versions(order_id,is_latest,status) VALUES ('{order['id']}',true,'approved');")

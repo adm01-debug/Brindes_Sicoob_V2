@@ -1,39 +1,38 @@
-# 🚀 Pipeline de CI/CD — Promo Gifts
+# CI e entrega — Brindes Sicoob V2
 
-Este documento detalha o fluxo automatizado de integração e entrega contínua do projeto.
+## Estado comprovado em 22/09/2026
 
-## 1. Workflows do GitHub Actions
+O repositório possui validação contínua, mas ainda não possui uma entrega em
+produção comprovada. O orçamento do GitHub Actions está bloqueando a execução
+remota dos jobs; por isso, resultado local não deve ser apresentado como CI
+verde.
 
-O repositório utiliza múltiplos workflows para garantir qualidade e segurança:
+| Workflow | Responsabilidade |
+|---|---|
+| `ci.yml` | Typecheck/lint por baseline, imutabilidade de migrations, referências de runtime, cenários, suíte Vitest integral com cobertura, Deno, simulações PostgreSQL e build |
+| `sicoob-ci.yml` | Fluxos transacionais Sicoob, experiência responsiva e PWA |
+| `security.yml` | Gitleaks e verificações de segurança do repositório |
+| `security-compliance.yml` | RLS remoto, ACL `SECURITY DEFINER` e isolamento entre personas |
+| `migration-ledger-drift.yml` | Divergência entre migrations locais e ledger remoto |
+| `e2e.yml` | Jornadas autenticadas com personas dedicadas |
+| `codeql.yml` | Análise estática CodeQL |
+| `bundle-check.yml` e `lighthouse.yml` | Orçamento de bundle e auditoria de experiência |
+| `db-performance-audit.yml` | Auditoria programada do banco |
 
-- **quality.yml**: Executa ESLint, Vitest, Playwright E2E e verificações de segurança em cada PR.
-- **security-compliance.yml**: Auditoria automatizada de políticas RLS e permissões de Edge Functions.
-- **db-performance-audit.yml**: Execução mensal de `EXPLAIN ANALYZE` para tabelas críticas.
-- **bundle-check.yml**: Monitoramento de tamanho do bundle frontend para evitar regressões de performance.
+Os workflows que acessam o ambiente exigem os secrets inventariados em
+[`secrets.md`](./secrets.md). Ausência de credenciais em gates remotos deve
+falhar fechado; os testes locais explicitamente opcionais registram `skip`.
 
-## 2. Release Management (Semantic Release)
+## Fluxo de mudança
 
-Adotamos o padrão de **Semantic Versioning** (SemVer) automatizado via GitHub Actions.
+1. Criar branch/worktree isolado.
+2. Implementar migrations cumulativas; não editar migration já presente na `main`.
+3. Executar gates locais equivalentes ao CI.
+4. Abrir PR e aguardar revisão e checks obrigatórios.
+5. Aplicar migrations e publicar Edge Functions primeiro no ambiente de construção.
+6. Executar smoke autenticado, conferir o ledger e registrar evidências.
+7. Liberar ambiente superior somente depois dos gates verdes.
 
-### Padrão de Commits
-Para que o release automático funcione, os commits devem seguir:
-- `fix: ...` → Patch release (v1.0.1)
-- `feat: ...` → Minor release (v1.1.0)
-- `perf: ...` ou `feat!: ...` → Major release (v2.0.0)
-
-### Automação de Changelog
-O arquivo `CHANGELOG.md` é atualizado automaticamente em cada merge na `main` que resulte em um novo binário/tag.
-
-## 3. Ambientes
-
-| Ambiente | URL | Trigger |
-|---|---|---|
-| **Development** | Lovable Preview | Commit em qualquer branch |
-| **Staging** | `staging.promogifts.com.br` | Merge em `develop` |
-| **Production** | `app.promogifts.com.br` | Tag de Release (Merge em `main`) |
-
-## 4. Rollback
-Em caso de falha crítica:
-1. Reverter o PR no GitHub.
-2. O workflow de deploy será disparado para a versão estável anterior.
-3. Se necessário, executar manualmente a migration de "Down" documentada no PR original.
+Não há automação de Semantic Release, changelog ou rollback por migration
+reversa comprovada neste repositório. Rollback de banco segue estratégia
+forward-only com migration corretiva e o runbook de incidente.

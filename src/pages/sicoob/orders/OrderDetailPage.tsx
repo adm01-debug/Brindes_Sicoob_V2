@@ -230,25 +230,13 @@ export default function OrderDetailPage() {
   };
 
   const handleStatusUpdate = async (newStatus: OrderStatus) => {
-    const statusLabels: Record<OrderStatus, string> = {
-      draft: "Rascunho",
-      pending: "Pendente",
-      waiting_approval: "Aguardando Aprovação",
-      escalated_to_board: "Escalado para Diretoria",
-      confirmed: "Confirmado",
-      logistic: "Logística",
-      rejected: "Rejeitado",
-      completed: "Concluído",
-      cancelled: "Cancelado"
-    };
-
-    if (!confirm(`Deseja realmente alterar o status do pedido para "${statusLabels[newStatus]}"?`)) return;
+    if (!confirm(`Deseja realmente alterar o status do pedido para "${ORDER_STATUS_CONFIG[newStatus].label}"?`)) return;
     
     updateOrderStatusMutation.mutate({ 
       orderId: id!, 
       status: newStatus, 
       currentStatus: orderData?.status as OrderStatus,
-      observations: `Alteração manual de status para ${statusLabels[newStatus]}`
+      observations: `Alteração manual de status para ${ORDER_STATUS_CONFIG[newStatus].label}`
     });
   };
 

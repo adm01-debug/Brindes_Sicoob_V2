@@ -19,13 +19,13 @@ describe('sicoobFulfillmentService', () => {
 
     await sicoobFulfillmentService.updateShipment({
       orderId: 'order-1',
-      expectedOrderStatus: 'logistic',
+      expectedOrderStatus: 'in_transit',
       deliveryPhotoPath: 'order-1/delivery/proof.jpg',
     });
 
     expect(rpc).toHaveBeenCalledWith('upsert_sicoob_order_shipment', {
       p_order_id: 'order-1',
-      p_expected_order_status: 'logistic',
+      p_expected_order_status: 'in_transit',
       p_carrier_name: null,
       p_tracking_code: null,
       p_estimated_delivery: null,
@@ -37,7 +37,7 @@ describe('sicoobFulfillmentService', () => {
     rpc.mockResolvedValue({ data: null, error: null });
 
     await expect(sicoobFulfillmentService.updateShipment({
-      orderId: 'order-1', expectedOrderStatus: 'confirmed', carrierName: 'Correios', trackingCode: 'AB123',
+      orderId: 'order-1', expectedOrderStatus: 'in_separation', carrierName: 'Correios', trackingCode: 'AB123',
     })).rejects.toThrow(/registro válido/i);
   });
 });

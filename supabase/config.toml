@@ -5,3 +5,6 @@ verify_jwt = false
 
 [functions.sicoob-approval-notifications]
 verify_jwt = false
+
+[functions.quote-approval]
+verify_jwt = false

@@ -51,7 +51,9 @@ jobs:
           node scripts/check-edge-authorization.mjs
 
       - name: Executar cenários de arquitetura e segurança
-        run: npm run test:scenarios
+        run: |
+          npm run check:critical-test-skips
+          npm run test:scenarios
 
       - name: Executar a suíte completa com gate de cobertura
         run: npm run test:coverage:ci
@@ -78,6 +80,7 @@ jobs:
           deno check supabase/functions/quote-approval/index.ts
           deno check supabase/functions/quote-public-view/index.ts
           deno check supabase/functions/sicoob-approval-notifications/index.ts
+          deno check supabase/functions/sicoob-approval-reconciliation/index.ts
           deno check supabase/functions/send-transactional-email/index.ts
           deno check supabase/functions/step-up-verify/index.ts
           deno check supabase/functions/migration-health-check/index.ts
@@ -110,6 +113,9 @@ jobs:
 
       - name: Simular integridade dos documentos Sicoob
         run: python3 scripts/qa/simular-documentos-sicoob.py
+
+      - name: Simular logística canônica Sicoob
+        run: python3 scripts/qa/simular-logistica-canonica.py
 
       - name: Simular consolidação atômica dos orçamentos
         run: python3 scripts/qa/simular-consolidacao-orcamentos.py

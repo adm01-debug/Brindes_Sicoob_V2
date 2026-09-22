@@ -1,4 +1,4 @@
-export type OrderStatus = 'draft' | 'pending' | 'waiting_approval' | 'escalated_to_board' | 'confirmed' | 'logistic' | 'rejected' | 'completed' | 'cancelled';
+export type OrderStatus = 'draft' | 'pending' | 'waiting_approval' | 'escalated_to_board' | 'confirmed' | 'logistic' | 'in_production' | 'in_separation' | 'in_transit' | 'delivered' | 'rejected' | 'completed' | 'cancelled';
 
 export interface StatusConfig {
   label: string;
@@ -11,7 +11,11 @@ export const ORDER_STATUS_CONFIG: Record<OrderStatus, StatusConfig> = {
   waiting_approval: { label: "Aguardando Aprovação", className: "bg-accent/10 text-accent-foreground border-accent/20" },
   escalated_to_board: { label: "Alçada Superior (Diretoria)", className: "bg-amber-100 text-amber-700 border-amber-200" },
   confirmed: { label: "Confirmado", className: "bg-status-delivered/10 text-status-delivered border-status-delivered/20" },
-  logistic: { label: "Logística", className: "bg-status-transit/10 text-status-transit border-status-transit/20" },
+  logistic: { label: "Logística (legado)", className: "bg-status-transit/10 text-status-transit border-status-transit/20" },
+  in_production: { label: "Em Produção", className: "bg-status-production/10 text-status-production border-status-production/20" },
+  in_separation: { label: "Em Separação", className: "bg-amber-100 text-amber-700 border-amber-200" },
+  in_transit: { label: "Em Trânsito", className: "bg-status-transit/10 text-status-transit border-status-transit/20" },
+  delivered: { label: "Entregue", className: "bg-status-delivered/10 text-status-delivered border-status-delivered/20" },
   rejected: { label: "Rejeitado", className: "bg-destructive/10 text-destructive border-destructive/20" },
   completed: { label: "Concluído", className: "bg-status-completed/10 text-status-completed border-status-completed/20" },
   cancelled: { label: "Cancelado", className: "bg-muted text-muted-foreground border-border/40" },
@@ -21,11 +25,15 @@ export const ORDER_STATUS_OPTIONS = Object.keys(ORDER_STATUS_CONFIG) as OrderSta
 
 export const SICOOB_VALID_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
   draft: ["pending", "cancelled"],
-  pending: ["waiting_approval", "confirmed", "cancelled"],
+  pending: ["waiting_approval", "cancelled"],
   waiting_approval: ["confirmed", "rejected", "escalated_to_board", "cancelled"],
   escalated_to_board: ["confirmed", "rejected", "cancelled"],
-  confirmed: ["logistic", "cancelled"],
+  confirmed: ["in_production", "logistic", "cancelled"],
   logistic: ["completed", "cancelled"],
+  in_production: ["in_separation", "cancelled"],
+  in_separation: ["in_transit", "cancelled"],
+  in_transit: ["delivered", "cancelled"],
+  delivered: ["completed", "cancelled"],
   rejected: ["draft", "pending"],
   completed: [],
   cancelled: [],
@@ -90,6 +98,7 @@ export interface SicoobOrderShipment {
   estimated_delivery: string | null;
   actual_delivery_at: string | null;
   delivery_photo_path: string | null;
+  delivery_photo_uploaded_by?: string | null;
   created_at: string;
   updated_at: string;
 }

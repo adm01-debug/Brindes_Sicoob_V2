@@ -52,11 +52,7 @@ export function useOrderPayments(orderId?: string) {
         .eq('order_id', orderId!)
         .order('installment_number');
       if (error) throw error;
-      const today = getSicoobFinancialDate();
-      return (data || []).map(payment => ({
-        ...payment,
-        status: payment.status === 'pending' && payment.due_date < today ? 'overdue' : payment.status,
-      })) as OrderPayment[];
+      return (data || []) as OrderPayment[];
     },
     enabled: Boolean(orderId),
   });

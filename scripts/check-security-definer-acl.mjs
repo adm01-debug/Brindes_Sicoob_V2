@@ -15,9 +15,8 @@
  *   migrations futuras não reintroduzam o problema.
  *
  * Como funciona:
- *   1. Se o ambiente NÃO tem credenciais Supabase (PR de fork, sandbox
- *      sem secrets), o script termina com sucesso e log de skip — o
- *      gate é defensivo, não pode quebrar PRs sem acesso ao banco.
+ *   1. Fora do GitHub Actions, a ausência de credenciais gera skip explícito.
+ *      No Actions, a ausência bloqueia o gate para impedir falso positivo.
  *   2. Caso contrário, chama o RPC `audit_security_definer_acl()`
  *      (criado na migração) via REST. Cada linha retornada é uma
  *      violação. Falha com exit 1 e imprime tabela legível.
@@ -35,14 +34,16 @@
  */
 
 const url = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
-const key =
-  process.env.SUPABASE_SERVICE_ROLE_KEY ||
-  process.env.SUPABASE_ANON_KEY ||
-  process.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 if (!url || !key) {
-  console.log("⚠️  SECURITY DEFINER ACL gate: credenciais Supabase ausentes — skip.");
-  console.log("   Defina VITE_SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY no CI para habilitar.");
+  const message = "SECURITY DEFINER ACL gate: VITE_SUPABASE_URL/SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY são obrigatórios.";
+  if (process.env.GITHUB_ACTIONS === "true") {
+    console.error(`❌ ${message}`);
+    console.log(`::error title=SECURITY DEFINER ACL não executado::${message}`);
+    process.exit(1);
+  }
+  console.log(`⚠️  ${message} Execução local ignorada.`);
   process.exit(0);
 }
 

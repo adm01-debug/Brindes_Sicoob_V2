@@ -26,6 +26,13 @@ BEGIN
   IF v_actor IS NULL OR p_quote_id IS NULL THEN
     RAISE EXCEPTION 'Usuário autenticado e orçamento são obrigatórios.' USING ERRCODE = '42501';
   END IF;
+  IF NOT EXISTS (
+    SELECT 1 FROM public.profiles p
+    WHERE (p.user_id=v_actor OR p.id=v_actor)
+      AND p.is_active IS TRUE AND p.deleted_at IS NULL
+  ) THEN
+    RAISE EXCEPTION 'O perfil do usuário está inativo ou indisponível.' USING ERRCODE='42501';
+  END IF;
 
   SELECT * INTO v_quote
   FROM public.quotes

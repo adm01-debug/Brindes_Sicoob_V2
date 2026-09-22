@@ -48,6 +48,18 @@ O agendamento da outbox exige ainda dois segredos no Supabase Vault:
 `SICOOB_APPROVAL_WORKER_SECRET`). Sem ambos, o job permanece inerte, registra
 um aviso e não realiza chamadas externas.
 
+A evidência da assinatura pública exige o segredo
+`quote_approval_evidence_hmac` no Supabase Vault, com pelo menos 32 caracteres
+aleatórios. A chave não deve ser colocada em variáveis `VITE_*` nem no
+repositório. Sem ela, respostas assinadas falham de forma fechada e a transação
+do orçamento é revertida.
+
+Para rotacionar, crie primeiro um segredo novo com nome versionado
+`quote_approval_evidence_hmac_vN` e pelo menos 32 caracteres, depois invoque
+`rotate_quote_approval_evidence_key()` por uma operação administrativa
+confiável. As chaves antigas não podem ser apagadas enquanto existirem
+assinaturas que as referenciem, pois são necessárias para verificar o histórico.
+
 ## Lidos pelo GitHub Actions (`secrets.*`)
 
 | Variável | Workflow | Status |
