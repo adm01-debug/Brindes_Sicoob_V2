@@ -15,54 +15,9 @@ interface SpeechRecognitionResult {
   error: string | null;
 }
 
-// TypeScript declarations for Web Speech API
-interface SpeechRecognitionEvent extends Event {
-  results: SpeechRecognitionResultList;
-  resultIndex: number;
-}
-
-interface SpeechRecognitionResultList {
-  length: number;
-  item(index: number): SpeechRecognitionResultItem;
-  [index: number]: SpeechRecognitionResultItem;
-}
-
-interface SpeechRecognitionResultItem {
-  isFinal: boolean;
-  length: number;
-  item(index: number): SpeechRecognitionAlternative;
-  [index: number]: SpeechRecognitionAlternative;
-}
-
-interface SpeechRecognitionAlternative {
-  transcript: string;
-  confidence: number;
-}
-
-interface SpeechRecognitionErrorEvent extends Event {
-  error: string;
-  message: string;
-}
-
-declare global {
-  interface Window {
-    SpeechRecognition: new () => SpeechRecognition;
-    webkitSpeechRecognition: new () => SpeechRecognition;
-  }
-}
-
-interface SpeechRecognition extends EventTarget {
-  continuous: boolean;
-  interimResults: boolean;
-  lang: string;
-  start(): void;
-  stop(): void;
-  abort(): void;
-  onresult: ((event: SpeechRecognitionEvent) => void) | null;
-  onerror: ((event: SpeechRecognitionErrorEvent) => void) | null;
-  onend: (() => void) | null;
-  onstart: (() => void) | null;
-}
+// Tipos do Web Speech API (SpeechRecognition, SpeechRecognitionEvent, etc.)
+// já são declarados globalmente em src/types/speech-recognition.d.ts —
+// não redeclarar aqui para evitar conflito de merge em `Window`.
 
 export function useSpeechRecognition({
   onResult,
@@ -81,6 +36,7 @@ export function useSpeechRecognition({
     if (!isSupported) return;
 
     const SpeechRecognitionAPI = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognitionAPI) return;
     const recognitionInstance = new SpeechRecognitionAPI();
     
     recognitionInstance.continuous = false;

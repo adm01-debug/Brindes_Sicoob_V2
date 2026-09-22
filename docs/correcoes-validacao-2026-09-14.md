@@ -2167,3 +2167,21 @@ erros (364 → 362 arquivos).
 - `check-eslint-baseline.mjs`: 0 regressões de lint.
 - Teste dedicado `tests/components/intelligence/commercial-intelligence.test.ts` 111/111 passou.
 - `typecheck:baseline`: 675 → 670 (353 arquivos), baseline atualizado com `--update`.
+
+## Reconciliação com origin/main (PR #15) + useSpeechRecognition.ts (etapa 17)
+
+**Contexto:** entre o commit de `useCommercialIntelligence.ts` e o próximo push, `origin/main` avançou com um commit externo (`a5b2f41dc`, "Reconcilia contratos do portal com banco de construção e MFA seguro #15", 28 arquivos, sem overlap com os arquivos desta etapa). Resolvido com `git rebase origin/main` (sem force-push — commit local ainda não publicado). A revalidação pós-rebase revelou que a mudança externa zerou incidentalmente os 2 erros de `src/pages/QuotesKanbanPage.tsx`; baseline corrigida de 670 para 668 num commit próprio (`chore(baseline)`).
+
+**Arquivo:** `src/hooks/useSpeechRecognition.ts`
+
+**Diagnóstico:** 5 erros TS, causa raiz única: o hook redeclarava localmente toda a superfície ambiente do Web Speech API (`SpeechRecognitionEvent`, `SpeechRecognitionResultList`, `SpeechRecognitionResultItem`, `SpeechRecognitionAlternative`, `SpeechRecognitionErrorEvent`, `SpeechRecognition`, e um `declare global { interface Window { SpeechRecognition: new () => SpeechRecognition; ... } }`) — duplicando e conflitando com a declaração ambiente canônica já existente em `src/types/speech-recognition.d.ts` (e reexposta em `src/types/browser.d.ts`). O merge de `Window.SpeechRecognition`/`webkitSpeechRecognition` entre a versão local (não-opcional, `new () => SpeechRecognition`) e a global (opcional, `{ new(): SpeechRecognition; prototype: SpeechRecognition } | undefined`) gerava `TS2687`/`TS2717`; o mesmo conflito de tipo se propagava para `setRecognition(recognitionInstance)` (`TS2345`).
+
+**Correção:** removidas as 6 interfaces + o bloco `declare global` redundantes do hook, mantendo apenas seu próprio `interface SpeechRecognitionResult` (formato de retorno do hook, sem colisão pois é local ao módulo). Adicionado guard `if (!SpeechRecognitionAPI) return;` após `window.SpeechRecognition || window.webkitSpeechRecognition`, já que o tipo ambiente global é opcional.
+
+**Achado bônus (lint):** a remoção do shadow local expôs um falso-positivo pré-existente do ESLint: `no-undef` não reconhece tipos ambientes globais declarados em `.d.ts` que não constam no pacote `globals` (`SpeechRecognition` não é um global padrão). Corrigido registrando `SpeechRecognition`/`webkitSpeechRecognition` como globals customizados em `eslint.config.js` (bloco `src/**/*.{ts,tsx}`), mesmo padrão de extensão de `globals.browser` já usado no arquivo.
+
+**Validação:**
+- `tscheck-files.mjs`: 0 erro(s) (5 eliminados).
+- `check-eslint-baseline.mjs`: 0 regressões de lint (referência origin/main e89f82c6b4).
+- Teste dedicado `tests/hooks/useSpeechRecognition.test.ts` 1/1 passou.
+- `typecheck:baseline`: 668 → 663 (351 arquivos), baseline atualizado com `--update`.

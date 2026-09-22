@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-09-22T17:31:42.355Z",
-  "total": 668,
+  "generatedAt": "2026-09-22T17:43:42.076Z",
+  "total": 663,
   "files": {
     "src/components/admin/common/AdminDataTable.tsx": 2,
     "src/components/admin/connections/Bitrix24Tab.tsx": 1,
@@ -263,7 +263,6 @@
     "src/hooks/useSicoobOrderItems.ts": 1,
     "src/hooks/useSimulatorPreferences.ts": 1,
     "src/hooks/useSparklineSales.tsx": 2,
-    "src/hooks/useSpeechRecognition.ts": 5,
     "src/hooks/useSupplierNames.ts": 2,
     "src/hooks/useSupplierSalesRanking.ts": 1,
     "src/hooks/useTechniquePricing.ts": 4,

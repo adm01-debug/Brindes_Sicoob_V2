@@ -46,7 +46,13 @@ export default [
     languageOptions: {
       parser: typescriptParser,
       parserOptions: tsParserOptions,
-      globals: globals.browser,
+      globals: {
+        ...globals.browser,
+        // Web Speech API — não faz parte do pacote `globals`, mas é
+        // declarado ambientalmente em src/types/speech-recognition.d.ts.
+        SpeechRecognition: 'readonly',
+        webkitSpeechRecognition: 'readonly',
+      },
     },
     plugins: {
       react,
