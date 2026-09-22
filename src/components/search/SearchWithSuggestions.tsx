@@ -65,9 +65,11 @@ export function SearchWithSuggestions({
     } else if (e.key === "Enter" && selectedIndex >= 0) {
       e.preventDefault();
       const selected = allSuggestions[selectedIndex];
-      setQuery(selected);
-      onSearch(selected);
-      setIsFocused(false);
+      if (selected !== undefined) {
+        setQuery(selected);
+        onSearch(selected);
+        setIsFocused(false);
+      }
     } else if (e.key === "Escape") {
       setIsFocused(false);
       inputRef.current?.blur();
@@ -91,7 +93,7 @@ export function SearchWithSuggestions({
     recognition.onerror = () => setIsListening(false);
     
     recognition.onresult = (event: SpeechRecognitionEvent) => {
-      const transcript = event.results[0][0].transcript;
+      const transcript = event.results[0]![0]!.transcript;
       setQuery(transcript);
       onSearch(transcript);
     };

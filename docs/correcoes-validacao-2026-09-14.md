@@ -2729,3 +2729,23 @@ Adicionalmente, o componente usava nomes de campo que nunca existiram no tipo `P
 - `check-eslint-baseline.mjs`: 0 regressões (3335 erros globais, referência `origin/main` em `2eef64359f`).
 - Nenhum teste dedicado encontrado para este componente (`useProductCustomizationOptions.smoke.test.ts` testa um hook diferente).
 - `typecheck:baseline`: 553 → 549 (324 arquivos), travado via `--update`.
+
+## SearchWithSuggestions.tsx (etapa 17)
+
+**Arquivo:** `src/components/search/SearchWithSuggestions.tsx`
+
+**Erros originais (4×):** TS2345×2 (linhas 68-69, `allSuggestions[selectedIndex]` possivelmente `undefined` passado para `setQuery`/`onSearch`), TS2532×2 (linha 94, `event.results[0][0].transcript` — dois níveis de indexação possivelmente `undefined`).
+
+**Diagnóstico:**
+- **Linhas 68-69 (guard real, não estruturalmente seguro):** o handler de `Enter` só verificava `selectedIndex >= 0`, mas `selectedIndex` é estado independente de `allSuggestions` (que deriva de props `suggestions`/`recentSearches` e do `query` atual) — se a lista de sugestões encolher entre uma navegação por seta e o Enter (ex.: prop `suggestions` atualiza de forma assíncrona), `selectedIndex` pode ficar fora dos limites do array atual, tornando `allSuggestions[selectedIndex]` genuinamente `undefined` em runtime.
+- **Linha 94:** `event.results[0][0].transcript` na Web Speech API — `results[0]` e `results[0][0]` são estruturalmente garantidos pelo contrato do navegador (o evento `onresult` só dispara com pelo menos um resultado contendo pelo menos uma alternativa), mas o tipo `SpeechRecognitionResultList`/`SpeechRecognitionResult` usa assinatura de índice numérico, disparando `noUncheckedIndexedAccess` em ambos os níveis.
+
+**Fix aplicado:**
+- Guard real: `if (selected !== undefined) { setQuery(selected); onSearch(selected); setIsFocused(false); }` — evita disparar busca/seleção com valor inválido quando `selectedIndex` está desatualizado.
+- Asserção de não-nulo nos dois níveis de indexação da Web Speech API (`event.results[0]![0]!.transcript`), estruturalmente seguro pelo contrato da API do navegador.
+
+**Validação:**
+- `tscheck-files.mjs`: 4 → 0 erros (0 no programa inteiro).
+- `check-eslint-baseline.mjs`: 0 regressões (3335 erros globais, referência `origin/main` em `b24ac5e904`).
+- Nenhum teste dedicado encontrado para este componente.
+- `typecheck:baseline`: 549 → 545 (323 arquivos), travado via `--update`.
