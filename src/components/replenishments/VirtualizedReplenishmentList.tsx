@@ -59,6 +59,7 @@ export function VirtualizedReplenishmentList({
       >
         {virtualizer.getVirtualItems().map((virtualRow) => {
           const item = products[virtualRow.index];
+          if (!item) return null;
           const prod = productMap.get(item.product_id);
           if (!prod) return null;
           const isSelected = selectedIds.has(item.product_id);

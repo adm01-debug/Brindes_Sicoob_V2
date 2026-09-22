@@ -45,15 +45,16 @@ export function FocusTrap({
 
   const focusFirst = useCallback(() => {
     const elements = getFocusableElements();
+    // length checado acima garante o índice — TS não propaga isso pro acesso.
     if (elements.length > 0) {
-      elements[0].focus();
+      elements[0]!.focus();
     }
   }, [getFocusableElements]);
 
   const focusLast = useCallback(() => {
     const elements = getFocusableElements();
     if (elements.length > 0) {
-      elements[elements.length - 1].focus();
+      elements[elements.length - 1]!.focus();
     }
   }, [getFocusableElements]);
 
@@ -67,8 +68,8 @@ export function FocusTrap({
       const elements = getFocusableElements();
       if (elements.length === 0) return;
 
-      const firstElement = elements[0];
-      const lastElement = elements[elements.length - 1];
+      const firstElement = elements[0]!;
+      const lastElement = elements[elements.length - 1]!;
 
       if (e.shiftKey) {
         // Shift+Tab
@@ -159,14 +160,14 @@ export function useFocusTrap(active: boolean = true) {
   const focusFirst = useCallback(() => {
     const elements = getFocusableElements();
     if (elements.length > 0) {
-      elements[0].focus();
+      elements[0]!.focus();
     }
   }, [getFocusableElements]);
 
   const focusLast = useCallback(() => {
     const elements = getFocusableElements();
     if (elements.length > 0) {
-      elements[elements.length - 1].focus();
+      elements[elements.length - 1]!.focus();
     }
   }, [getFocusableElements]);
 
@@ -181,8 +182,8 @@ export function useFocusTrap(active: boolean = true) {
       const elements = getFocusableElements();
       if (elements.length === 0) return;
 
-      const firstElement = elements[0];
-      const lastElement = elements[elements.length - 1];
+      const firstElement = elements[0]!;
+      const lastElement = elements[elements.length - 1]!;
 
       if (e.shiftKey) {
         if (document.activeElement === firstElement) {

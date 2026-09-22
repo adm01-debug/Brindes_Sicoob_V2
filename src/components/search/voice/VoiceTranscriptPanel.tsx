@@ -6,23 +6,28 @@ import { MicOff } from "lucide-react";
 import type { VoiceAgentAction, VoiceAgentPhase } from "@/hooks/useVoiceAgent";
 import type { ReactElement } from "react";
 
-const ACTION_META: Record<string, { icon: React.ElementType; label: string; color: string }> = {
-  search: { icon: () => null, label: "Busca", color: "text-primary" },
-  filter: { icon: () => null, label: "Filtro", color: "text-accent-foreground" },
-  navigate: { icon: () => null, label: "Navegação", color: "text-success" },
-  sort: { icon: () => null, label: "Ordenação", color: "text-orange" },
-  clear: { icon: () => null, label: "Limpar", color: "text-destructive" },
-  answer: { icon: () => null, label: "Resposta", color: "text-secondary-foreground" },
+import { Search, Filter, Navigation, ArrowUpDown, Trash2, HelpCircle } from "lucide-react";
+
+// Cobre só as 6 ações com meta visual própria — "open_oracle"/"open_cart" (ver
+// VoiceAgentAction) não têm entrada e caem no fallback "answer" via getActionMeta.
+type ActionMetaKey = "search" | "filter" | "navigate" | "sort" | "clear" | "answer";
+
+const ACTION_META: Record<ActionMetaKey, { icon: React.ElementType; label: string; color: string }> = {
+  search: { icon: Search, label: "Busca", color: "text-primary" },
+  filter: { icon: Filter, label: "Filtro", color: "text-accent-foreground" },
+  navigate: { icon: Navigation, label: "Navegação", color: "text-success" },
+  sort: { icon: ArrowUpDown, label: "Ordenação", color: "text-orange" },
+  clear: { icon: Trash2, label: "Limpar", color: "text-destructive" },
+  answer: { icon: HelpCircle, label: "Resposta", color: "text-secondary-foreground" },
 };
 
-// Re-import real icons lazily to keep the file light
-import { Search, Filter, Navigation, ArrowUpDown, Trash2, HelpCircle } from "lucide-react";
-ACTION_META.search.icon = Search;
-ACTION_META.filter.icon = Filter;
-ACTION_META.navigate.icon = Navigation;
-ACTION_META.sort.icon = ArrowUpDown;
-ACTION_META.clear.icon = Trash2;
-ACTION_META.answer.icon = HelpCircle;
+function isActionMetaKey(action: string): action is ActionMetaKey {
+  return action in ACTION_META;
+}
+
+function getActionMeta(action: string): (typeof ACTION_META)[ActionMetaKey] | undefined {
+  return isActionMetaKey(action) ? ACTION_META[action] : undefined;
+}
 
 interface VoiceTranscriptPanelProps {
   phase: VoiceAgentPhase;
@@ -90,7 +95,7 @@ export function VoiceTranscriptPanel({
               <div className="flex items-start gap-3">
                 {(() => {
                   const actionType = currentAction?.action || "answer";
-                  const actionMeta = ACTION_META[actionType] || ACTION_META.answer;
+                  const actionMeta = getActionMeta(actionType) ?? ACTION_META.answer;
                   const Icon = actionMeta.icon;
                   return (
                     <motion.div
@@ -110,9 +115,9 @@ export function VoiceTranscriptPanel({
                       <motion.span
                         initial={{ scale: 0, opacity: 0 }}
                         animate={{ scale: 1, opacity: 1 }}
-                        className={`text-[9px] px-2 py-0.5 rounded-full bg-white/[0.06] border border-white/[0.1] font-medium ${ACTION_META[currentAction.action]?.color || "text-white/50"}`}
+                        className={`text-[9px] px-2 py-0.5 rounded-full bg-white/[0.06] border border-white/[0.1] font-medium ${getActionMeta(currentAction.action)?.color || "text-white/50"}`}
                       >
-                        {ACTION_META[currentAction.action]?.label}
+                        {getActionMeta(currentAction.action)?.label}
                       </motion.span>
                     )}
                   </div>

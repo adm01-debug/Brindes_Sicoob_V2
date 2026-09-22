@@ -321,3 +321,70 @@ Sem teste dedicado a `ConfigurationPanelV6.tsx` no repo — mesmo gap já
 registrado para outros arquivos desta etapa; `tests/hooks/useGravacaoPriceV2.test.ts`
 (8 testes, cobre o adapter que alimenta este fluxo) passa sem alteração.
 Baseline total: 1091 → 1083.
+
+## `VirtualizedReplenishmentList.tsx` (etapa 17, 8 → 0 erros)
+
+Mesmo padrão de `noUncheckedIndexedAccess` já visto em outros arquivos desta
+etapa: `products[virtualRow.index]` indexa um array (`products: Replenishment
+WithDetails[]`) com um índice vindo de `virtualizer.getVirtualItems()`. Como
+o virtualizer é configurado com `count: products.length`, o índice nunca
+excede os limites do array em runtime — mas o TypeScript não consegue provar
+essa relação entre a config do `useVirtualizer` e o array original, então
+todo uso de `item.product_id`/`item.product_name` no restante do `.map()`
+(8 acessos) herdava `TS18048 'item' is possibly 'undefined'`.
+
+Corrigido com uma guarda local logo após a indexação:
+
+```tsx
+const item = products[virtualRow.index];
+if (!item) return null;
+```
+
+Sem teste dedicado no repo; componente é referenciado apenas por
+`ReplenishmentProductGrid.tsx`.
+
+## `VoiceTranscriptPanel.tsx` (etapa 17, 8 → 0 erros)
+
+Causa distinta dos demais arquivos desta etapa: `ACTION_META` era tipado como
+`Record<string, {...}>` — um índice genérico de string, não as 6 chaves reais
+usadas (`search`, `filter`, `navigate`, `sort`, `clear`, `answer`). Sob
+`noUncheckedIndexedAccess`, isso torna **todo** acesso a `ACTION_META`,
+inclusive por notação de ponto nas próprias chaves que o objeto acabou de
+declarar (linhas 20-25, atribuindo os ícones reais do lucide-react por cima
+dos placeholders `() => null`), tipado como `T | undefined`.
+
+Investigação: `VoiceAgentAction["action"]` (`src/hooks/voice/types.ts`) é uma
+união de **8** valores, não 6 — inclui também `open_oracle` e `open_cart`
+(usados de fato em `FiltersPage.tsx` e `useVoiceSearchAction.ts`). O código já
+tinha um fallback intencional pra essas duas ações não mapeadas
+(`ACTION_META[actionType] || ACTION_META.answer`), então não é um bug de
+runtime novo — é o tipo genérico (`Record<string, T>`) mascarando tanto o caso
+real (chave ausente, já tratado) quanto o caso impossível (chave declarada no
+literal, nunca ausente) com o mesmo `T | undefined`.
+
+Corrigido tipando `ACTION_META` como `Record<ActionMetaKey, {...}>` (união
+literal das 6 chaves reais, não `string`) — resolve as atribuições por ponto
+nas linhas 20-25 sem indireção. Para a leitura com chave dinâmica (que pode
+ser uma das 8, incluindo as 2 não mapeadas), foi adicionado um helper
+`getActionMeta(action: string)` com type guard `action in ACTION_META`,
+preservando exatamente o mesmo fallback pro `answer` que já existia — mudança
+de tipo, não de comportamento.
+
+Sem teste dedicado no repo; componente é referenciado apenas por
+`VoiceSearchOverlay.tsx`.
+
+## `FocusTrap.tsx` (etapa 17, 8 → 0 erros)
+
+Mesmo padrão nas 4 ocorrências (2 na função `FocusTrap`, repetidas na função
+`useFocusTrap`): acesso a `elements[0]`/`elements[elements.length - 1]` já
+protegido por um `if (elements.length > 0)` ou `if (elements.length === 0)
+return;` imediatamente acima — a invariante de que o índice existe é
+verdadeira em runtime, mas o TypeScript não propaga um `.length` checado pra
+um acesso por índice separado sob `noUncheckedIndexedAccess`.
+
+Corrigido com asserção de não-nulo (`elements[0]!`) nos 4 pontos, já que a
+ausência de `undefined` está provada pela checagem de `.length` na linha
+imediatamente acima — não é supressão de um caso real, é o mesmo tipo de
+limite de inferência já documentado nos outros arquivos desta etapa.
+
+Sem teste dedicado no repo.
