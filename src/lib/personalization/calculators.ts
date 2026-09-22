@@ -95,7 +95,7 @@ export function findPriceTier(tiers: PriceTier[], quantity: number): PriceTier |
   const sortedTiers = [...tiers].sort((a, b) => a.minQuantity - b.minQuantity);
   
   // Encontrar a maior faixa que a quantidade atinge
-  let selectedTier = sortedTiers[0];
+  let selectedTier = sortedTiers[0]!;
   
   for (const tier of sortedTiers) {
     if (quantity >= tier.minQuantity) {
@@ -162,7 +162,7 @@ function calculateTierSavings(
 ): PriceCalculationResult['savings'] {
   if (tiers.length === 0) return undefined;
   
-  const firstTier = [...tiers].sort((a, b) => a.minQuantity - b.minQuantity)[0];
+  const firstTier = [...tiers].sort((a, b) => a.minQuantity - b.minQuantity)[0]!;
   const firstTierPrice = firstTier.unitPrice;
   
   const savingsPerUnit = firstTierPrice - currentUnitPrice;
@@ -215,7 +215,7 @@ export function getMinimumQuantity(tiers: PriceTier[]): number {
 export function getMaximumQuantity(tiers: PriceTier[]): number | null {
   if (tiers.length === 0) return null;
   
-  const lastTier = [...tiers].sort((a, b) => b.minQuantity - a.minQuantity)[0];
+  const lastTier = [...tiers].sort((a, b) => b.minQuantity - a.minQuantity)[0]!;
   return lastTier.maxQuantity;
 }
 
@@ -236,7 +236,7 @@ export function suggestNextTier(
     return null;
   }
   
-  const nextTier = sortedTiers[currentIndex + 1];
+  const nextTier = sortedTiers[currentIndex + 1]!;
   const savingsPercent = ((currentTier.unitPrice - nextTier.unitPrice) / currentTier.unitPrice) * 100;
   
   return {

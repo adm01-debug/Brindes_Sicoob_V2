@@ -2202,3 +2202,22 @@ erros (364 → 362 arquivos).
 - `check-eslint-baseline.mjs`: 0 regressões (referência origin/main b6c06ae465); 3342 erros globais (sem alteração — arquivo não tinha issues de lint).
 - Teste dedicado: não encontrado (`tests/**/*forecast*` vazio).
 - `typecheck:baseline`: 663 → 658 (350 arquivos), travado via `--update`.
+
+## calculators.ts (etapa 17)
+
+**Arquivo:** `src/lib/personalization/calculators.ts`
+**Erros:** 5× (`TS2322` + 4×`TS18048`) — "possibly undefined" sob `noUncheckedIndexedAccess`.
+
+**Diagnóstico:** todos os 5 acessos são estruturalmente seguros, cada um imediatamente após um guard de comprimento:
+- `findPriceTier()` (linha 108): `selectedTier = sortedTiers[0]` — guard `if (tiers.length === 0) return null;` na linha 92 garante `sortedTiers.length >= 1`.
+- `calculateTierSavings()` (linha 166): `firstTier = [...tiers].sort(...)[0]` — guard `if (tiers.length === 0) return undefined;` na linha 163.
+- `getMaximumQuantity()` (linha 219): `lastTier = [...tiers].sort(...)[0]` — guard `if (tiers.length === 0) return null;` na linha 216.
+- `suggestNextTier()` (linhas 240, 243): `nextTier = sortedTiers[currentIndex + 1]` — guard `if (currentIndex === -1 || currentIndex >= sortedTiers.length - 1) return null;` garante `currentIndex + 1 < sortedTiers.length`.
+
+**Correção:** asserções de non-null (`!`) nos 4 pontos de acesso (5 ocorrências), sem alterar lógica.
+
+**Validação:**
+- `tscheck-files.mjs`: 0 erro(s) nos arquivos pedidos (5 eliminados).
+- `check-eslint-baseline.mjs`: 0 regressões (referência origin/main 4ecd791e1a); 3342 erros globais (sem alteração).
+- Teste dedicado: não encontrado (nenhum teste em `tests/` importa `personalization/calculators`).
+- `typecheck:baseline`: 658 → 653 (349 arquivos), travado via `--update`.
