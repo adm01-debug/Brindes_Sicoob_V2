@@ -25,11 +25,11 @@ function parseCSVLine(line: string, delimiter: string): string[] {
 }
 
 function parseCSV(text: string): { headers: string[]; rows: Record<string, string>[] } {
-  const firstLine = text.split('\n')[0];
+  const firstLine = text.split('\n')[0]!;
   const delimiter = firstLine.includes(';') ? ';' : firstLine.includes('\t') ? '\t' : ',';
   const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
   if (lines.length < 2) return { headers: [], rows: [] };
-  const headers = parseCSVLine(lines[0], delimiter);
+  const headers = parseCSVLine(lines[0]!, delimiter);
   const rows = lines.slice(1).map(line => {
     const values = parseCSVLine(line, delimiter);
     const row: Record<string, string> = {};
@@ -37,6 +37,18 @@ function parseCSV(text: string): { headers: string[]; rows: Record<string, strin
     return row;
   });
   return { headers, rows };
+}
+
+async function parseXLSX(file: File) {
+  const XLSX = await import('@e965/xlsx');
+  const buffer = await file.arrayBuffer();
+  const wb = XLSX.read(buffer, { type: 'array' });
+  const firstSheetName = wb.SheetNames[0];
+  if (!firstSheetName) return null;
+  const sheet = wb.Sheets[firstSheetName]!;
+  const json = XLSX.utils.sheet_to_json<Record<string, any>>(sheet, { defval: '' });
+  if (json.length === 0) return null;
+  return { headers: Object.keys(json[0]!), rows: json };
 }
 
 function downloadBlob(content: string, filename: string, type: string) {
@@ -64,14 +76,10 @@ export function StepUpload({ onFileProcessed }: StepUploadProps) {
         parsedHeaders = result.headers;
         parsedRows = result.rows;
       } else if (['xlsx', 'xls'].includes(ext || '')) {
-        const XLSX = await import('@e965/xlsx');
-        const buffer = await file.arrayBuffer();
-        const wb = XLSX.read(buffer, { type: 'array' });
-        const sheet = wb.Sheets[wb.SheetNames[0]];
-        const json = XLSX.utils.sheet_to_json<Record<string, any>>(sheet, { defval: '' });
-        if (json.length === 0) { toast.error('Planilha vazia'); return; }
-        parsedHeaders = Object.keys(json[0]);
-        parsedRows = json;
+        const result = await parseXLSX(file);
+        if (!result) { toast.error('Planilha vazia ou sem abas'); return; }
+        parsedHeaders = result.headers;
+        parsedRows = result.rows;
       } else {
         toast.error('Formato não suportado. Use CSV, XLSX ou XLS.');
         return;

@@ -1972,3 +1972,57 @@ regressão). `check-eslint-baseline.mjs` → zero regressão (referência já em
 `27d89ee683`, confirmando que o push anterior chegou). Teste dedicado
 `tests/services/orderService.test.ts` → 5/5 passou. Baseline de typecheck
 do projeto atualizado: 743 → 737 erros (367 → 366 arquivos).
+
+## StepUpload.tsx + ComparisonPresentationLauncher.tsx (etapa 17)
+
+**Arquivo 1:** `src/components/admin/products/bulk-import/StepUpload.tsx`
+(5 erros TS → 0)
+
+1. Linhas 28, 32 — `parseCSV()` indexava `text.split('\n')[0]` (usado como
+   `firstLine`) e `lines[0]` (passado a `parseCSVLine`) sob
+   `noUncheckedIndexedAccess`, ambos tipados como possivelmente
+   `undefined`. Estruturalmente garantidos: `String.prototype.split`
+   sempre retorna ao menos 1 elemento (linha 28); `lines[0]` é acessado
+   após o guard `if (lines.length < 2) return { headers: [], rows: [] };`
+   (linha 31), então na linha 32 `lines.length >= 2` é garantido.
+   Corrigido com asserção não-nula (`!`) nos dois pontos — sem alargar o
+   tipo de retorno nem adicionar checagem redundante.
+2. Linhas 70/73 (originais) — bloco XLSX indexava `wb.Sheets[wb.SheetNames[0]]`
+   e `json[0]` sem guard. Diferente do caso CSV, `wb.SheetNames[0]` vem de
+   um arquivo enviado pelo usuário (upload arbitrário) — uma planilha
+   malformada/sem abas é uma possibilidade real, não apenas um artefato do
+   `noUncheckedIndexedAccess`. Corrigido com guard explícito e feedback ao
+   usuário (`toast.error`) em vez de asserção cega, e o bloco inteiro foi
+   extraído para uma função dedicada `parseXLSX(file)` (espelhando o
+   padrão já existente de `parseCSV(text)` como função top-level fora do
+   componente) — isso também resolveu de graça uma regressão de
+   `sonarjs/cognitive-complexity` em `handleFileUpload` (16 vs. limite 15)
+   introduzida pelo guard adicional, sem precisar reestruturar o restante
+   da função. `json[0]` dentro de `parseXLSX` recebeu asserção não-nula,
+   guardado pelo `if (json.length === 0) return null;` logo acima.
+
+**Arquivo 2:** `src/components/compare/ComparisonPresentationLauncher.tsx`
+(5 erros TS → 0)
+
+1. Linhas 23, 25 — o componente desestruturava `{ items: scoreItems } =
+   useComparisonScore(products)` e reduzia manualmente `scoreItems` para
+   achar o vencedor via `cur.score > arr[best].score`. Divergência de
+   contrato: `useComparisonScore()` (`src/hooks/useComparisonScore.ts`)
+   retorna `ProductScore[]` diretamente (não um wrapper `{ items }`), e
+   `ProductScore` não tem campo `.score` (é `.total`) — o hook já calcula
+   `isWinner`/`rank` internamente, tornando o `.reduce()` manual
+   redundante e desatualizado em relação à API real do hook. Corrigido
+   consumindo o hook corretamente (`const scoreItems =
+   useComparisonScore(products)`) e usando o campo já calculado
+   (`scoreItems.findIndex(s => s.isWinner)`), eliminando também os 4 erros
+   de parâmetro implicitamente `any` do `.reduce()` removido. A ordem de
+   `scoreItems` é garantida igual à de `products` (o hook mapeia
+   `products.map((p, i) => ...)` sem reordenar o array retornado — apenas
+   uma cópia local `sorted` é ordenada para calcular `rank`/`isWinner`).
+
+Verificado: `tscheck-files.mjs` → 0 erros nos 2 arquivos (12 no programa
+probe). `check-eslint-baseline.mjs` → zero regressão após correção da
+cognitive-complexity (referência `a8d6488fc8`, confirmando que o push
+anterior chegou). Teste dedicado `tests/hooks/useComparisonScore.test.ts`
+→ 5/5 passou (nenhum teste dedicado para `StepUpload.tsx`). Baseline de
+typecheck do projeto atualizado: 737 → 727 erros (366 → 364 arquivos).
