@@ -142,7 +142,7 @@ export function NotificationsBadgeStatsPanel() {
           <div className="mt-2 space-y-1">
             <h4 className="font-medium text-muted-foreground">Top Contributors (Last {SPARK_WINDOW_SECONDS}s)</h4>
             <div ref={topContributorsRef} className="space-y-0.5 text-[10px] max-h-24 overflow-y-auto rounded border border-border/50 bg-background/50 p-1">
-              {Object.entries(snapshot.topContributors)
+              {Object.entries(snapshot.coalescingByTrigger)
                 .sort(([, a]: any, [, b]: any) => b.fetches - a.fetches)
                 .map(([key, { triggers, fetches }]) => (
                   <div key={key} className="flex justify-between items-center px-1 py-0.5 rounded hover:bg-muted/50">

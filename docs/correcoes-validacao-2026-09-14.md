@@ -1440,3 +1440,59 @@ Verificado: `tscheck-files.mjs` → 0 erros (11 no programa inteiro).
 `check-eslint-baseline.mjs` → zero regressão. **Teste dedicado existe**
 (`tests/components/layout/MainLayout.breadcrumbs.test.tsx`) — 6/6
 passaram após a mudança.
+
+## `src/components/notifications/NotificationsBadgeStatsPanel.tsx` + `useNotificationsMetricsPanel.ts` (etapa 17, 6 → 0 erros)
+
+Diferente dos casos anteriores, aqui os erros de TS apontavam para
+**3 bugs reais de runtime**, não apenas lacunas de tipagem — o painel
+de debug (`debugOn && ...`, visível para dev/admin) quebraria ao
+renderizar em pelo menos dois pontos:
+
+1. **`sparkStats.min` / `sparkStats.max` inexistentes** (TS2339):
+   `useNotificationsMetricsPanel.ts` calculava `{ avg, peak, latest }`,
+   mas o componente lia `sparkStats.min.toFixed(2)` e
+   `sparkStats.max.toFixed(2)`. `min` nunca foi calculado em nenhum
+   momento — não é só um erro de nome, é uma métrica ausente. Em
+   runtime, `sparkStats.min` seria `undefined` e `.toFixed(2)` geraria
+   `TypeError: Cannot read properties of undefined`, quebrando a
+   sparkline inteira sempre que `debugOn` estivesse ativo com pelo
+   menos 1 amostra. Corrigido adicionando `min: Math.min(...ratios)` de
+   verdade e renomeando `peak` → `max` (grep confirmou que `sparkStats.
+   peak`/`.latest` não são usados em nenhum outro arquivo — troca seguro).
+2. **`streakTrend.direction` perdendo o tipo literal** (TS2322 ao
+   passar `streakTrend` para `<SuspiciousWarning streakTrend={...}>`):
+   o `useMemo` de `streakTrend` tem 3 branches de retorno; as duas
+   primeiras (`streakStartIdx < 0` e `window.length < 3`) escreviam
+   `direction: "flat"` sem contexto de tipo, e o TS alarga (widen) para
+   `string` na ausência de anotação — só a 3ª branch tinha `direction`
+   pré-tipado via `const direction: "rising"|"flat"|"falling" = ...`.
+   O tipo inferido da união das 3 branches ficava incompatível com o
+   prop `streakTrend: { direction: "rising"|"flat"|"falling"; ... }`
+   exigido por `SuspiciousWarning.tsx`. Corrigido extraindo um tipo
+   `StreakTrend` (mesmo formato exato do prop de `SuspiciousWarning`) e
+   anotando `useMemo<StreakTrend>(() => {...})` — a anotação de retorno
+   dá contexto de tipo para as 3 branches, eliminando o widening sem
+   tocar em nenhuma lógica.
+3. **`snapshot.topContributors` nunca existiu** (TS2339 + TS2339 em
+   cascata ao desestruturar `{ triggers, fetches }` de `unknown`): a
+   seção "Top Contributors" do painel fazia
+   `Object.entries(snapshot.topContributors)` — mas o tipo `Snapshot`
+   (`src/lib/notifications-metrics.ts`) nunca teve esse campo; não é
+   drift de schema, é um campo que nunca foi implementado no módulo de
+   métricas. Em runtime, `Object.entries(undefined)` lança
+   `TypeError: Cannot convert undefined or null to object` — a seção
+   quebraria 100% das vezes que fosse renderizada. `Snapshot` já expõe
+   `coalescingByTrigger: Record<TriggerSource, { triggers, fetches,
+   saved, efficiency }>`, com exatamente os campos `triggers`/`fetches`
+   por fonte que a UI consome e ordena por `fetches` — é semanticamente
+   o que "Top Contributors" deveria mostrar (qual fonte de trigger mais
+   contribui para fetches). Corrigido trocando `snapshot.topContributors`
+   por `snapshot.coalescingByTrigger`, sem alterar o restante do JSX
+   (sort/map já compatíveis com o formato real).
+
+Verificado: `tscheck-files.mjs` → 0 erros (9 no programa inteiro).
+`check-eslint-baseline.mjs` → zero regressão (2 arquivos). Sem teste
+dedicado. **Não verificado em navegador** (painel só renderiza com
+`debug:notifications=1` no localStorage ou em dev) — mas os 3 fixes
+eliminam `TypeError`s garantidos que antes só não apareciam porque o
+código nem compilava sob o baseline de tipos estrito.

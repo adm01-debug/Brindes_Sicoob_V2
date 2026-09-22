@@ -11,6 +11,13 @@ const SUSPICIOUS_STREAK_SECONDS = 10;
 /** One ratio sample for the sparkline. */
 export interface RatioSample { t: number; ratio: number; triggers: number; fetches: number; }
 
+/** Trend fitted over the current suspicious streak window. */
+export interface StreakTrend {
+  direction: "rising" | "flat" | "falling";
+  slopePerSec: number;
+  suggestion: { primary: string; rationale: string } | null;
+}
+
 /** Read the runtime debug toggle (mirrors `isDebugEnabled` in notifications-metrics). */
 function isDebugMode(): boolean {
   try {
@@ -66,12 +73,13 @@ export function useNotificationsMetricsPanel(visible: boolean) {
   }, [visible]);
 
   const sparkStats = useMemo(() => {
-    if (samples.length === 0) return { avg: 0, peak: 0, latest: 0 };
+    if (samples.length === 0) return { avg: 0, min: 0, max: 0, latest: 0 };
     const ratios = samples.map((s) => s.ratio);
     const sum = ratios.reduce((a, b) => a + b, 0);
     return {
       avg: sum / ratios.length,
-      peak: Math.max(...ratios),
+      min: Math.min(...ratios),
+      max: Math.max(...ratios),
       latest: ratios[ratios.length - 1],
     };
   }, [samples]);
@@ -121,7 +129,7 @@ export function useNotificationsMetricsPanel(visible: boolean) {
     };
   }, [samples, streakStartIdx, suspiciousStreakSeconds]);
 
-  const streakTrend = useMemo(() => {
+  const streakTrend = useMemo<StreakTrend>(() => {
     if (streakStartIdx < 0) {
       return { direction: "flat", slopePerSec: 0, suggestion: null };
     }
