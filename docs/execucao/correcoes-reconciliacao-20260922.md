@@ -28,7 +28,7 @@ trabalho; esta execução usa worktree próprio.
 - [x] Tendências: autoria de buscas em `user_id`, consultas tipadas e tratamento de falhas.
 - [x] Inventário atualizado a partir da coleta real de 22/09: 202 relações, 167 RPCs, 13 buckets.
 - [x] Simulações PostgreSQL e testes de regressão executados.
-- [ ] Revisão no SHA final, publicação da branch e PR.
+- [x] Revisão local, publicação da branch e abertura do PR #12 como rascunho.
 - [ ] Aplicação remota e revalidação com acesso administrativo.
 - [ ] Homologação completa dos fluxos e CI executado no SHA final.
 
@@ -117,6 +117,23 @@ reconciliação). As mudanças de código deste lote passaram pelos checks abaix
 Os testes críticos usam dados sintéticos e mocks quando apropriado. Não há
 alegação de login real, entrega de telemetria ou jornada completa no Supabase.
 
+### Publicação e CI remoto
+
+- Correções: [PR #12](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/12).
+- Snapshot local/GitHub: [PR #13](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/13).
+- Snapshot da API real: [PR #14](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/14).
+
+Os dois snapshots históricos foram validados novamente em seus próprios
+worktrees antes da publicação (hashes, contagens, links e padrões de credenciais).
+Eles registram estados anteriores às correções, não o estado após este lote.
+
+Na publicação de `a4a3814f7`, o [job de qualidade](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/35742550546)
+não iniciou: o GitHub informou bloqueio de orçamento do Actions; zero etapas
+foram executadas. Não houve alteração de orçamento nem bypass dos checks. A
+integração preexistente da Vercel iniciou preview automático ao abrir o PR; isso
+não certifica paridade de banco, aplicação de migrations ou homologação.
+Nenhuma migration remota ou publicação manual de Edge Functions foi executada.
+
 ## Pendências que impedem o aceite integral
 
 O gate de referências termina com código 1: **71 ocorrências em 17 recursos**,
@@ -147,7 +164,7 @@ as trata como prontas. Este projeto está em construção, conforme orientação
 | Etapa | Estado e evidência/pendência |
 |---:|---|
 | 1 | Base origin/main consultada; execução isolada para preservar outro trabalho local |
-| 2 | PR desta correção a publicar; cobertura dos commits históricos precisa de reconciliação própria |
+| 2 | PR #12 aberto em rascunho; cobertura dos commits históricos precisa de reconciliação própria |
 | 3 | Aberta: merge depende de revisão e checks; nenhum bypass autorizado pelo resultado local |
 | 4 | Sem ação: artefatos de outros worktrees preservados; não fazem parte desta correção |
 | 5 | Bloqueada por acesso: extrair statements reais da baseline do ledger |
@@ -165,7 +182,7 @@ as trata como prontas. Este projeto está em construção, conforme orientação
 | 17 | Local: chamada morta de set_config removida e comentário corrigido; publicação pendente |
 | 18 | Local: uso de telemetry_events e teste de envio; entrega remota não certificada |
 | 19 | Parcial: AST para wrappers e inventário atualizado; 71 ocorrências ainda abertas |
-| 20 | Gate já ligado ao CI; novos testes incluídos; execução remota no SHA final pendente |
+| 20 | Gate ligado ao CI; novos testes incluídos; GitHub não iniciou o job por bloqueio de orçamento |
 | 21 | Documento de órfãos preexistente; contagens não bastam para remover recursos |
 | 22 | Aberta: confirmar FKs/dependências remotas antes de qualquer remoção da família de PAs |
 | 23 | Aberta: blog_posts preservada; ausência de rota não autoriza concluir que não há uso externo |
