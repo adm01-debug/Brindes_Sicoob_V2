@@ -2026,3 +2026,50 @@ cognitive-complexity (referência `a8d6488fc8`, confirmando que o push
 anterior chegou). Teste dedicado `tests/hooks/useComparisonScore.test.ts`
 → 5/5 passou (nenhum teste dedicado para `StepUpload.tsx`). Baseline de
 typecheck do projeto atualizado: 737 → 727 erros (366 → 364 arquivos).
+
+## FutureStockDialog.tsx + KitSmartSuggestions.tsx (etapa 17)
+
+**Arquivo 1:** `src/components/inventory/FutureStockDialog.tsx` (5 erros TS → 0)
+
+1. Linhas 150, 209 (×2), 211 — `statusConf = STATUS_CONFIG[entry.status] ||
+   STATUS_CONFIG.pending`. `STATUS_CONFIG` é `Record<string, {...}>` com
+   apenas 4 chaves (`confirmed`/`pending`/`in_transit`/`partial`), enquanto
+   `FutureStockEntry.status` é a união fechada `'pending' | 'confirmed' |
+   'in_transit' | 'partial' | 'completed' | 'cancelled'` — **diferente**
+   dos casos já documentados de `ACTION_META`/`TECHNIQUE_INFO` (onde o
+   `Record<string,T>` alargava de forma redundante um mapa que já cobria
+   100% das chaves), aqui o mapa **genuinamente não cobre** `completed`/
+   `cancelled`, então o acesso por índice pode legitimamente vir
+   `undefined` em runtime — daí o fallback `|| STATUS_CONFIG.pending`
+   já existir no código. O TS não sabia que o próprio fallback
+   (`STATUS_CONFIG.pending`, chave literal sempre presente no objeto)
+   nunca é `undefined`, pois o tipo declarado (`Record<string, T>`)
+   descarta essa garantia. Corrigido com asserção de não-nulo apenas no
+   fallback: `STATUS_CONFIG.pending!`.
+2. Linha 356 — `filtered.reduce(..., filtered[0].expectedDate)` dentro do
+   ramo `filtered.length > 0 ? ... : null` — `filtered[0]` garantido
+   pelo guard imediatamente anterior. Asserção de não-nulo.
+
+**Arquivo 2:** `src/components/kit-builder/KitSmartSuggestions.tsx`
+(5 erros TS → 0)
+
+1. Linhas 49, 50, 54, 55, 57 — `items = (kit.items_data as unknown[]) ||
+   []` seguido de `for (const item of items)` acessando `item.id`/
+   `.name`/`.imageUrl` num valor tipado `unknown`. Investigado a origem
+   real de `custom_kits.items_data` (`useCustomKitPersistence.ts:86`,
+   `useKitAutoSave.ts:96`): é persistido como
+   `JSON.parse(JSON.stringify(kitState.items))`, ou seja, o shape real em
+   runtime é `KitItem[]` (de `@/lib/kit-builder`, já importado no
+   arquivo). Corrigido trocando o cast de `unknown[]` para
+   `unknown as KitItem[]` — tipo correto na fonte, não supressão; isso
+   também eliminou a necessidade do `(i: any)` avulso no `.map()` da
+   linha 44 (agora inferido como `KitItem`). Ajuste em cascata: o `Map`
+   de co-ocorrência espera `imageUrl?: string`, mas `KitItem.imageUrl` é
+   `string | null` — `?? undefined` na atribuição.
+
+Verificado: `tscheck-files.mjs` → 0 erros nos 2 arquivos (9 no programa
+probe). `check-eslint-baseline.mjs` → zero regressão (referência
+`832c9cdff9`, confirmando que o push anterior chegou; drift positivo de
+1 erro de lint eliminado de graça). Nenhum teste dedicado encontrado para
+os 2 arquivos. Baseline de typecheck do projeto atualizado: 727 → 717
+erros (364 → 362 arquivos).

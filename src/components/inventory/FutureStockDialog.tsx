@@ -146,7 +146,7 @@ function KpiCard({ label, value, sub, icon: Icon, variant = 'default' }: {
 function EntryRow({ entry }: { entry: FutureStockEntry }) {
   const days = daysUntil(entry.expectedDate);
   const daysInfo = getDaysLabel(days);
-  const statusConf = STATUS_CONFIG[entry.status] || STATUS_CONFIG.pending;
+  const statusConf = STATUS_CONFIG[entry.status] || STATUS_CONFIG.pending!;
   const StatusIcon = statusConf.icon;
 
   return (
@@ -353,7 +353,7 @@ export function FutureStockDialog({ open, onOpenChange, entries }: FutureStockDi
     const uniqueProducts = new Set(filtered.map(e => e.productId)).size;
     const overdue = filtered.filter(e => daysUntil(e.expectedDate) < 0);
     const nextDate = filtered.length > 0
-      ? filtered.reduce((min, e) => e.expectedDate < min ? e.expectedDate : min, filtered[0].expectedDate)
+      ? filtered.reduce((min, e) => e.expectedDate < min ? e.expectedDate : min, filtered[0]!.expectedDate)
       : null;
     return { totalUnits, confirmedUnits, inTransitUnits, uniqueProducts, nextDate, total: filtered.length, overdueCount: overdue.length };
   }, [filtered]);
