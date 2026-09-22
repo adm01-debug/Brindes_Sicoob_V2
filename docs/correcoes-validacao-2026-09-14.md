@@ -2713,3 +2713,19 @@ Adicionalmente, o componente usava nomes de campo que nunca existiram no tipo `P
 - `check-eslint-baseline.mjs`: 0 regressões (3335 erros globais, referência `origin/main` em `fec859a22f`).
 - Nenhum teste dedicado encontrado para este componente ou hook.
 - `typecheck:baseline`: 557 → 553 (325 arquivos), travado via `--update`.
+
+## CustomizationOptions.tsx (etapa 17)
+
+**Arquivo:** `src/components/pricing/simulator/CustomizationOptions.tsx`
+
+**Erros originais (4×):** TS2532 (linhas 52, 55, 155×2) — acesso a `colorOptions[0]`/`sizeOptions[0]` possivelmente `undefined`.
+
+**Diagnóstico:** todos os 4 acessos são estruturalmente seguros sob `noUncheckedIndexedAccess`: linhas 52/55 estão dentro de `if (colorOptions.length > 0 ...)`/`if (sizeOptions.length > 0 ...)`, e a linha 155 está dentro de `{sizeOptions.length === 1 && (...)}` — em ambos os casos o guard de tamanho garante que o índice `0` existe.
+
+**Fix aplicado:** asserção de não-nulo nos 4 acessos (`colorOptions[0]!.value`, `sizeOptions[0]!.value`, `sizeOptions[0]!.label`, `sizeOptions[0]!.areaCm2`).
+
+**Validação:**
+- `tscheck-files.mjs`: 4 → 0 erros (0 no programa inteiro).
+- `check-eslint-baseline.mjs`: 0 regressões (3335 erros globais, referência `origin/main` em `2eef64359f`).
+- Nenhum teste dedicado encontrado para este componente (`useProductCustomizationOptions.smoke.test.ts` testa um hook diferente).
+- `typecheck:baseline`: 553 → 549 (324 arquivos), travado via `--update`.

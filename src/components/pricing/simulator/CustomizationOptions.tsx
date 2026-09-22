@@ -49,10 +49,10 @@ export function CustomizationOptions({
   // Definir valores iniciais quando opções carregam
   useEffect(() => {
     if (colorOptions.length > 0 && colors === 0) {
-      onColorsChange(colorOptions[0].value);
+      onColorsChange(colorOptions[0]!.value);
     }
     if (sizeOptions.length > 0 && !sizeOption) {
-      onSizeChange(sizeOptions[0].value);
+      onSizeChange(sizeOptions[0]!.value);
     }
   }, [colorOptions, sizeOptions, colors, sizeOption, onColorsChange, onSizeChange]);
 
@@ -152,7 +152,7 @@ export function CustomizationOptions({
             <Ruler className="w-4 h-4" />
             Tamanho da gravação:{' '}
             <strong>
-              {sizeOptions[0].label} ({sizeOptions[0].areaCm2} cm²)
+              {sizeOptions[0]!.label} ({sizeOptions[0]!.areaCm2} cm²)
             </strong>
           </p>
         </div>
