@@ -2611,3 +2611,22 @@ O código fazia `result as { products: ExternalProduct[]; count }`, mas `fetchPr
 - `check-eslint-baseline.mjs`: 0 regressões (3336 erros globais, referência `origin/main` em `f52399ff49`).
 - Nenhum teste dedicado encontrado para este componente (`tests/hooks/useFavorites.test.ts` e `tests/stores/useFavoritesStore.test.ts` cobrem hook/store, não este componente).
 - `typecheck:baseline`: 582 → 578 (332 arquivos), travado via `--update`.
+
+## FilterPanel.tsx (etapa 17)
+
+**Arquivo:** `src/components/filters/FilterPanel.tsx`
+
+**Erros originais (4×):** TS2322 (linha 239, props inválidas passadas a `GenderBadge`), TS2551 (linha 239, `filters.genders` não existe em `FilterState` — quis dizer `gender`), TS2345 (linha 240, `"genders"` não é uma chave válida de `FilterState`), TS2345 (linha 281, `sectionRenderers[sId]` possivelmente `undefined` passado para um parâmetro não opcional).
+
+**Diagnóstico — bug real de produção, não apenas erro de tipo:** a seção "gênero" do painel de filtros usava `GenderBadge` (`@/components/products/GenderBadge`) como se fosse um chip de filtro clicável, mas esse componente é somente leitura — suas props são só `gender`, `size`, `className` (usado em `ProductCard.tsx`/`ProductListItem.tsx`/`ProductDetailHero.tsx` exclusivamente para exibir o gênero de um produto). As props `selected` e `onClick` passadas em `FilterPanel.tsx` não existem em `GenderBadgeProps` — ou seja, clicar em "Masculino/Feminino/Unissex" no filtro **não fazia nada**: nenhum `onClick` era de fato ligado ao DOM, e não havia nenhum estado visual de seleção. Somado a isso, o código referenciava `filters.genders` (chave inexistente — o campo real em `FilterState` é `gender: string[]`) e passava a string `"genders"` para `toggleArrayFilter`, que exige `keyof FilterState`.
+
+**Fix aplicado:**
+- Seção "genero" reescrita para renderizar botões de toggle no mesmo padrão já usado na seção "temas" (chip com classe condicional `isSelected`), corrigindo `filters.genders` → `filters.gender` e `"genders"` → `"gender"`.
+- Import de `GenderBadge` removido de `FilterPanel.tsx` (permanece em uso normal nos demais arquivos).
+- `renderSection`: segundo parâmetro tornado opcional (`renderContent?: () => React.ReactNode`) com guard `if (!config || !renderContent) return null;`, no mesmo estilo defensivo já usado para `config` — protege contra o caso (hoje impossível, mas não comprovável pelo TS) de um id em `SECTION_GROUPS` sem entrada correspondente em `sectionRenderers`.
+
+**Validação:**
+- `tscheck-files.mjs`: 4 → 0 erros (14 no programa inteiro).
+- `check-eslint-baseline.mjs`: 0 regressões (3336 erros globais, referência `origin/main` em `8693dee067`).
+- Teste dedicado encontrado e executado: `tests/components/filters/FilterPanel.test.tsx` — 2/2 passou.
+- `typecheck:baseline`: 578 → 574 (331 arquivos), travado via `--update`.

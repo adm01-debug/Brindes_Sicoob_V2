@@ -27,7 +27,6 @@ import {
   QuickOptionsFilter,
 } from "./filter-panel/sections/SimpleFilters";
 import { SizeFilter } from "./filter-panel/sections/SizeFilter";
-import { GenderBadge } from "@/components/products/GenderBadge";
 
 export function FilterPanel({
   filters, onFilterChange, onReset, activeFiltersCount,
@@ -35,9 +34,9 @@ export function FilterPanel({
 }: FilterPanelProps) {
   const state = useFilterPanelState(filters, onFilterChange, products);
 
-  const renderSection = (id: string, renderContent: () => React.ReactNode) => {
+  const renderSection = (id: string, renderContent?: () => React.ReactNode) => {
     const config = SECTION_CONFIG[id];
-    if (!config) return null;
+    if (!config || !renderContent) return null;
     if (!state.sectionMatchesSearch(id, config.title)) return null;
     return (
       <FilterSection
@@ -232,14 +231,22 @@ export function FilterPanel({
     ),
     genero: () => (
       <div className="flex flex-wrap gap-2 px-1">
-        {["Masculino", "Feminino", "Unissex"].map((g) => (
-          <GenderBadge
-            key={g}
-            gender={g}
-            selected={(filters.genders || []).includes(g)}
-            onClick={() => state.toggleArrayFilter("genders", g)}
-          />
-        ))}
+        {["Masculino", "Feminino", "Unissex"].map((g) => {
+          const isSelected = (filters.gender || []).includes(g);
+          return (
+            <button
+              key={g}
+              onClick={() => state.toggleArrayFilter("gender", g)}
+              className={`px-2.5 py-1 rounded-md text-xs font-medium border transition-all ${
+                isSelected
+                  ? "bg-sicoob-green text-white border-sicoob-green shadow-sm"
+                  : "bg-card border-border text-foreground hover:border-sicoob-green/40 hover:bg-accent"
+              }`}
+            >
+              {g}
+            </button>
+          );
+        })}
       </div>
     ),
 
