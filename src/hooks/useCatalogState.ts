@@ -64,6 +64,8 @@ export function useCatalogState() {
     isFetchingNextPage,
     hasNextPage,
     fetchNextPage,
+    error: catalogError,
+    refetch: refetchCatalog,
   } = useProductsCatalog(debouncedServerSearch ? { search: debouncedServerSearch } : undefined);
 
   const realProducts = useMemo(() => {
@@ -196,7 +198,7 @@ export function useCatalogState() {
   
   // Adjusted empty state logic to avoid false positives during fetch transitions
   const isDataFullyLoaded = !isLoadingProducts && !isFetchingProducts && !isLoading;
-  const shouldShowEmptyState = isDataFullyLoaded && paginatedProducts.length === 0;
+  const shouldShowEmptyState = isDataFullyLoaded && !catalogError && paginatedProducts.length === 0;
 
   // Stats
   const statBadges = useCatalogStats({
@@ -258,6 +260,8 @@ export function useCatalogState() {
     paginatedProducts,
     shouldShowCatalogSkeleton,
     shouldShowEmptyState,
+    catalogError,
+    refetchCatalog,
     hasActiveCatalogConstraints,
     hasMoreProducts,
     totalEstimate,

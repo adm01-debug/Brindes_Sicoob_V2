@@ -12,6 +12,7 @@ Projeto `cfmzkthhgliqelozlmwu`, ambiente de **construção**. As verificações 
 - A tabela local `personalization_simulations` foi criada pela migration `20260922155000` com IDs externos de produto/cliente em `text`, sem as FKs incompatíveis da migration histórica. A interface deixou de tentar fazer join com `bitrix_clients` ausente. Um usuário autenticado leu sua simulação sintética; outro usuário não a enxergou. O teste foi revertido.
 - Os IDs de produtos, técnicas e clientes nos rascunhos/mockups são `text` sem FK local. O código agora preserva os IDs externos, permitindo restaurar seleção e histórico. Nuances passam pela ponte externa de consulta. A resposta `_unconfigured` dessa ponte passou a ser tratada como erro, em vez de catálogo vazio.
 - O PDF de comparação passou a obter nome e logo da empresa pelo CRM externo já usado pelo restante do portal. O CRM não declara cor de marca nesse contrato; o PDF usa sua cor padrão quando não houver outra fonte.
+- Consultas ao catálogo sem configuração agora falham sem repetição inútil nos hooks de produtos. A vitrine distingue falha de integração de busca sem resultados e oferece nova tentativa para erros transitórios. Respostas batch incompletas são verificadas antes de compor a lista; a página individual é consultada como fallback.
 - O filtro de clientes do Kanban passou a usar apenas os clientes dos orçamentos visíveis; a consulta à tabela Bitrix local inexistente foi removida. A tela de perfis agora mostra os valores reais de `app_role` e encaminha para gestão de usuários/permissões, sem oferecer CRUD falso sobre `roles`.
 - O 2FA legado que gerava/validava segredo no navegador foi substituído, na área de segurança, pelas APIs de MFA do Supabase Auth já usadas no acesso administrativo. A própria conta pode cadastrar TOTP e removê-lo após desafio e verificação; a tela não permite administrar fatores de outra conta pelo cliente. Falha de consulta e status alheio são exibidos como indisponíveis, não como MFA desligado. O esquema histórico `user_2fa_settings` permaneceu sem aplicação. O fluxo segue a [documentação de MFA TOTP](https://supabase.com/docs/guides/auth/auth-mfa/totp) e [remoção de fator com AAL2](https://supabase.com/docs/reference/javascript/auth-mfa-unenroll).
 - O cache local da Edge Function `bitrix-sync` foi criado pela migration `20260922160000`, substituindo o desenho histórico com policy aberta. `bitrix_clients`, `bitrix_deals` e `bitrix_sync_logs` têm RLS e acesso direto restrito a `service_role`. Inserções sintéticas nas três tabelas passaram como servidor e foram revertidas; `authenticated` recebeu `42501` ao ler clientes. O webhook Bitrix e a função publicada não foram homologados ponta a ponta.
@@ -26,11 +27,14 @@ Todas as doze migrations aplicadas nesta rodada têm `md5(statements[1])` idênt
 | Typecheck completo | Reprovado: 751 erros globais preexistentes; baseline de 768 aprovado, sem regressão |
 | Build Vite | Aprovado |
 | Vitest completo e cenários Node | 5.422 aprovados, 115 ignorados; 89/89 cenários Node aprovados |
+| Regressão direcionada do catálogo após correção | 19/19 testes aprovados, inclusive lote incompleto e integração não configurada |
 | Lint baseline | Aprovado sem regressão; 12 erros preexistentes eliminados nos arquivos alterados |
 | RPC de versão no banco | Versão 2, item e histórico confirmados; rollback confirmado |
 | Metas no banco | Inserção/leitura autenticada confirmadas; leitura anônima negada; rollback confirmado |
 | Simulações e cache Bitrix no banco | Acesso do autor/servidor confirmado e leitura indevida negada; rollback confirmado |
 | Ponte do catálogo externo | **Não configurada no ambiente**: resposta publicada HTTP 200 com `_unconfigured: true` e zero registros |
+
+A investigação da origem `doufsxqlfjyuvxuezpln` encontrou uma chave **publicável** local, sem divulgar seu valor. Ela lê algumas tabelas auxiliares (`color_groups`, `color_variations`, `color_nuances`, `product_variants`, `tecnicas_gravacao`), mas recebe `42501` para `products` com projeção completa, `product_images` e `stock_daily_summary`. Portanto, configurá-la no bridge não entregaria a loja nem o estoque. A tabela `integration_credentials` do portal permite `SELECT` a administradores por policy; armazenar ali uma chave privilegiada da origem ampliaria seu alcance indevidamente. A CLI local também recebeu `403` ao listar segredos do projeto, então não há acesso administrativo para instalar um segredo Edge protegido. Nenhuma credencial da origem foi copiada ou gravada no portal.
 
 O snapshot de API/Storage em `scripts/db/.inventory-cache.json` recebeu somente um delta SQL verificado de relações e funções. Isso registra presença física e ACL, mas não comprova que todas as rotas PostgREST foram expostas nem que Edge Functions locais coincidam com as publicadas.
 
@@ -38,7 +42,7 @@ O gate de referências passou sem usar sua allowlist. Ele verifica nomes estáti
 
 ## Checklist ainda aberto para aceite integral
 
-- [ ] Configurar e testar as credenciais de **consulta** do catálogo externo no ambiente; hoje produtos, cores e estoque não podem ser homologados pela ponte. Não habilitar escrita no banco de produtos.
+- [ ] Disponibilizar uma credencial com leitura completa e somente leitura da origem (ou acesso para configurar segredo Edge protegido) e testar o bridge; hoje produtos, imagens e estoque não podem ser homologados. Não habilitar escrita no banco de produtos nem guardar chave privilegiada em `integration_credentials` com acesso de administrador.
 - [ ] Homologar `bitrix-sync` publicada com credenciais de construção, volume, paginação e política de dados. A migration histórica de simulações depende de `products` local ausente; não aplicá-la após a substituição compatível. A migration histórica Bitrix contém políticas `FOR ALL USING (true)` e não deve ser aplicada após o cache seguro.
 - [ ] Homologar cadastro, desafio, login e remoção de MFA com contas reais de teste. WebAuthn/passkeys permanecem indisponíveis até haver verificação de assinatura no servidor. Não aplicar `user_2fa_settings` apenas para satisfazer o gate.
 - [ ] Classificar individualmente as 468 versões sem ledger por dependência, objeto real, RLS/ACL e necessidade de negócio. Investigar as 18 versões sem corpo SQL no ledger com fontes adicionais.

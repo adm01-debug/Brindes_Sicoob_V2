@@ -11,6 +11,10 @@ export type { ProductLightweight } from '@/types/product-catalog';
 import type { ProductLightweight } from '@/types/product-catalog';
 import type { Product } from '@/types/product-catalog';
 
+function shouldRetryCatalog(failureCount: number, error: Error): boolean {
+  return failureCount < 3 && !/CATALOG_NOT_CONFIGURED|CATALOG_READ_ONLY/.test(error.message);
+}
+
 function mapLightweight(p: LightweightProduct): ProductLightweight {
   const price = (p.sale_price ?? p.cost_price ?? 0);
   const imageUrl = p.primary_image_url || p.image_url || '/placeholder.svg';
@@ -134,6 +138,9 @@ async function fetchCatalogPage(
   let batchResults;
   try {
     batchResults = await invokeBatchBridge(batchQueries);
+    if (batchResults.length !== batchQueries.length || batchResults.some(result => !result.success || !Array.isArray(result.data?.records))) {
+      throw new Error(batchResults.find(result => !result.success)?.error || 'Consulta incompleta ao catálogo externo');
+    }
   } catch {
     const fallbackProducts = await fetchPromobrindProductsLightweight({
       search,
@@ -188,7 +195,7 @@ export function useProductsLightweight() {
     staleTime: 10 * 60 * 1000,
     gcTime: 30 * 60 * 1000,
     refetchOnWindowFocus: false,
-    retry: 3,
+    retry: shouldRetryCatalog,
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
   });
 }
@@ -209,7 +216,7 @@ export function useProductsCatalog(filters?: { search?: string }) {
     staleTime: 10 * 60 * 1000,
     gcTime: 30 * 60 * 1000,
     refetchOnWindowFocus: false,
-    retry: 3,
+    retry: shouldRetryCatalog,
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
   });
 }

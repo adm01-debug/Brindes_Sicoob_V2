@@ -116,6 +116,8 @@ export default function Index() {
                 viewMode={catalog.viewMode}
                 shouldShowCatalogSkeleton={catalog.shouldShowCatalogSkeleton}
                 shouldShowEmptyState={catalog.shouldShowEmptyState}
+                catalogError={catalog.catalogError}
+                onRetryCatalog={() => { void catalog.refetchCatalog(); }}
                 hasActiveCatalogConstraints={catalog.hasActiveCatalogConstraints}
                 paginatedProducts={catalog.paginatedProducts}
                 filteredProducts={catalog.filteredProducts}
