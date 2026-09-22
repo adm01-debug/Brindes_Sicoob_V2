@@ -35,7 +35,7 @@ reenviados automaticamente.
 
 ## Validação local
 
-- 55 cenários PostgreSQL da outbox aprovados, incluindo concorrência, lease,
+- 57 cenários PostgreSQL da outbox aprovados, incluindo concorrência, lease,
   backoff, mudança de destino antes/depois de tentativa, reconciliação e retenção;
 - 11 cenários de agendamento/Vault/monitoramento aprovados, incluindo a
   degradação obrigatória do estado de saúde quando existe entrega falha ou

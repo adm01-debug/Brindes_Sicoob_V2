@@ -108,12 +108,15 @@ GRANT EXECUTE ON FUNCTION public.quote_approval_content_snapshot(uuid) TO servic
 
 CREATE OR REPLACE FUNCTION public.get_public_quote_approval(_token text)
 RETURNS jsonb
-LANGUAGE sql
-STABLE
+LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = pg_catalog, public
 AS $$
-  SELECT jsonb_build_object(
+DECLARE
+  v_token_id uuid;
+  v_payload jsonb;
+BEGIN
+  SELECT t.id, jsonb_build_object(
     'quote_number', q.quote_number,
     'client_name', q.client_name,
     'total', q.total,
@@ -129,14 +132,27 @@ AS $$
     'delivery_time', to_jsonb(q)->'delivery_time',
     'notes', to_jsonb(q)->'notes',
     'items', public.quote_approval_content_snapshot(q.id)->'items'
-  )
+  ) INTO v_token_id, v_payload
   FROM public.quote_approval_tokens t
   JOIN public.quotes q ON q.id::text=t.quote_id AND q.seller_id=t.seller_id
   WHERE t.token=_token AND t.status IN ('active','responded')
     AND (t.expires_at IS NULL OR t.expires_at>statement_timestamp())
     AND q.deleted_at IS NULL AND q.is_latest_version
     AND (q.valid_until IS NULL OR q.valid_until::date>=CURRENT_DATE)
-  LIMIT 1;
+  ORDER BY t.created_at DESC, t.id
+  LIMIT 1
+  FOR UPDATE OF t;
+
+  IF v_token_id IS NULL THEN
+    RETURN NULL;
+  END IF;
+
+  UPDATE public.quote_approval_tokens
+  SET viewed_at = COALESCE(viewed_at, clock_timestamp())
+  WHERE id = v_token_id;
+
+  RETURN v_payload;
+END;
 $$;
 
 CREATE OR REPLACE FUNCTION public.guard_local_quote_approval_token()

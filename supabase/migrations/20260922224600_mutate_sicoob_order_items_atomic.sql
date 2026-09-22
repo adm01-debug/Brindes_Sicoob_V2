@@ -37,6 +37,9 @@ BEGIN
   IF v_order.status <> 'draft' THEN
     RAISE EXCEPTION 'Itens só podem ser alterados enquanto o pedido está em rascunho.' USING ERRCODE = '23514';
   END IF;
+  IF v_order.source_quote_id IS NOT NULL THEN
+    RAISE EXCEPTION 'Itens de pedido convertido são imutáveis; altere o orçamento de origem antes da conversão.' USING ERRCODE = '23514';
+  END IF;
 
   IF p_action = 'add' THEN
     IF p_product_id IS NULL OR p_product_name IS NULL OR btrim(p_product_name) = ''
@@ -61,12 +64,20 @@ BEGIN
     END IF;
   END IF;
 
-  SELECT COALESCE(sum(total_price), 0) INTO v_total
+  SELECT COALESCE(sum(line_total_amount), 0) INTO v_total
   FROM public.sicoob_order_items
   WHERE order_id = p_order_id;
 
   UPDATE public.sicoob_orders
-  SET total_amount = v_total, updated_at = clock_timestamp()
+  SET merchandise_amount = v_total,
+      personalization_amount = 0,
+      negotiation_markup_amount = 0,
+      commercial_subtotal_amount = v_total,
+      discount_amount = 0,
+      shipping_amount = 0,
+      pricing_formula_version = 'brl-v1',
+      total_amount = v_total,
+      updated_at = clock_timestamp()
   WHERE id = p_order_id;
   RETURN v_total;
 END;

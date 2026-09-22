@@ -8,6 +8,7 @@ import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useSicoobShipment, useUpdateSicoobShipment } from '@/hooks/sicoob/useSicoobFulfillment';
 import type { OrderStatus } from '@/types/sicoob/orders';
+import { sicoobDocumentIngestService } from '@/services/sicoob/documentIngestService';
 
 interface OrderLogisticsTabProps {
   orderId: string;
@@ -19,10 +20,6 @@ const DELIVERY_IMAGE_EXTENSIONS: Record<string, string> = {
   'image/png': 'png',
   'image/webp': 'webp',
 };
-
-function deliveryPath(orderId: string, file: File): string {
-  return `${orderId}/delivery/${Date.now()}-${crypto.randomUUID()}.${DELIVERY_IMAGE_EXTENSIONS[file.type]}`;
-}
 
 export function OrderLogisticsTab({ orderId, orderStatus }: OrderLogisticsTabProps) {
   const { data: shipment, isLoading } = useSicoobShipment(orderId);
@@ -85,24 +82,15 @@ export function OrderLogisticsTab({ orderId, orderStatus }: OrderLogisticsTabPro
       return;
     }
 
-    const path = deliveryPath(orderId, file);
     try {
       setIsUploadingPhoto(true);
-      const { error: uploadError } = await supabase.storage
-        .from('sicoob-order-documents')
-        .upload(path, file, { upsert: false, contentType: file.type });
-      if (uploadError) throw uploadError;
+      const document = await sicoobDocumentIngestService.ingest(orderId, 'delivery_proof', file);
 
-      try {
-        await updateShipment.mutateAsync({
-          orderId,
-          expectedOrderStatus: orderStatus,
-          deliveryPhotoPath: path,
-        });
-      } catch (error) {
-        await supabase.storage.from('sicoob-order-documents').remove([path]);
-        throw error;
-      }
+      await updateShipment.mutateAsync({
+        orderId,
+        expectedOrderStatus: orderStatus,
+        deliveryPhotoPath: document.path,
+      });
 
       toast.success('Comprovante enviado e entrega concluída.');
     } catch (error) {

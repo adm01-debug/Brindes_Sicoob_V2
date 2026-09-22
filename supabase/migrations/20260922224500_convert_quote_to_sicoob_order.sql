@@ -3,7 +3,34 @@
 ALTER TABLE public.sicoob_orders
   ADD COLUMN source_quote_id uuid REFERENCES public.quotes(id) ON DELETE RESTRICT,
   ADD COLUMN source_quote_snapshot jsonb,
-  ADD COLUMN requires_artwork boolean NOT NULL DEFAULT false;
+  ADD COLUMN requires_artwork boolean NOT NULL DEFAULT false,
+  ADD COLUMN merchandise_amount numeric(14,2) NOT NULL DEFAULT 0,
+  ADD COLUMN personalization_amount numeric(14,2) NOT NULL DEFAULT 0,
+  ADD COLUMN negotiation_markup_amount numeric(14,2) NOT NULL DEFAULT 0,
+  ADD COLUMN commercial_subtotal_amount numeric(14,2) NOT NULL DEFAULT 0,
+  ADD COLUMN discount_amount numeric(14,2) NOT NULL DEFAULT 0,
+  ADD COLUMN shipping_amount numeric(14,2) NOT NULL DEFAULT 0,
+  ADD COLUMN pricing_formula_version text NOT NULL DEFAULT 'legacy-v0';
+
+ALTER TABLE public.sicoob_order_items
+  ADD COLUMN personalization_amount numeric(14,2) NOT NULL DEFAULT 0,
+  ADD COLUMN line_total_amount numeric(14,2)
+    GENERATED ALWAYS AS (round((COALESCE(total_price, 0) + personalization_amount)::numeric, 2)) STORED;
+
+ALTER TABLE public.sicoob_orders
+  ADD CONSTRAINT sicoob_orders_commercial_components_nonnegative CHECK (
+    merchandise_amount >= 0 AND personalization_amount >= 0
+    AND negotiation_markup_amount >= 0 AND commercial_subtotal_amount >= 0
+    AND discount_amount >= 0 AND shipping_amount >= 0
+  ),
+  ADD CONSTRAINT sicoob_orders_brl_v1_reconciled CHECK (
+    pricing_formula_version <> 'brl-v1'
+    OR (
+      abs(commercial_subtotal_amount - (merchandise_amount + personalization_amount + negotiation_markup_amount)) <= 0.01
+      AND discount_amount <= commercial_subtotal_amount
+      AND abs(total_amount - (commercial_subtotal_amount - discount_amount + shipping_amount)) <= 0.01
+    )
+  );
 
 CREATE UNIQUE INDEX ux_sicoob_orders_source_quote
   ON public.sicoob_orders(source_quote_id)
@@ -22,6 +49,15 @@ DECLARE
   v_pa_id uuid;
   v_cooperative_id uuid;
   v_requires_artwork boolean;
+  v_merchandise numeric(14,2);
+  v_personalization numeric(14,2);
+  v_base numeric(14,2);
+  v_markup_percent numeric(5,2);
+  v_markup_amount numeric(14,2);
+  v_commercial_subtotal numeric(14,2);
+  v_discount_amount numeric(14,2);
+  v_shipping_amount numeric(14,2);
+  v_expected_total numeric(14,2);
 BEGIN
   IF v_actor IS NULL OR p_quote_id IS NULL THEN
     RAISE EXCEPTION 'Usuário autenticado e orçamento são obrigatórios.' USING ERRCODE = '42501';
@@ -101,11 +137,60 @@ BEGIN
     WHERE qi.quote_id = p_quote_id
   ) INTO v_requires_artwork;
 
+  SELECT
+    COALESCE(sum(round((qi.quantity * qi.unit_price)::numeric, 2)), 0),
+    COALESCE(sum((
+      SELECT COALESCE(sum(round(COALESCE(qip.total_cost, 0)::numeric, 2)), 0)
+      FROM public.quote_item_personalizations qip
+      WHERE qip.quote_item_id = qi.id
+    )), 0)
+  INTO v_merchandise, v_personalization
+  FROM public.quote_items qi
+  WHERE qi.quote_id = p_quote_id;
+
+  v_base := round(v_merchandise + v_personalization, 2);
+  v_markup_percent := COALESCE(v_quote.negotiation_markup_percent, 0);
+  IF v_markup_percent < 0 OR v_markup_percent > 50 THEN
+    RAISE EXCEPTION 'Markup do orçamento fora do intervalo permitido.' USING ERRCODE = '23514';
+  END IF;
+  v_markup_amount := round(v_base * v_markup_percent / 100, 2);
+  v_commercial_subtotal := round(v_base + v_markup_amount, 2);
+
+  IF COALESCE(v_quote.discount_percent, 0) < 0 OR COALESCE(v_quote.discount_percent, 0) > 100 THEN
+    RAISE EXCEPTION 'Percentual de desconto do orçamento inválido.' USING ERRCODE = '23514';
+  END IF;
+  v_discount_amount := CASE
+    WHEN COALESCE(v_quote.discount_percent, 0) > 0
+      THEN round(v_commercial_subtotal * v_quote.discount_percent / 100, 2)
+    ELSE round(COALESCE(v_quote.discount_amount, 0), 2)
+  END;
+  IF v_discount_amount < 0 OR v_discount_amount > v_commercial_subtotal THEN
+    RAISE EXCEPTION 'Desconto do orçamento excede o subtotal comercial.' USING ERRCODE = '23514';
+  END IF;
+
+  v_shipping_amount := CASE
+    WHEN v_quote.shipping_type IN ('fob', 'fob_pre') THEN round(COALESCE(v_quote.shipping_cost, 0), 2)
+    ELSE 0
+  END;
+  IF v_shipping_amount < 0 THEN
+    RAISE EXCEPTION 'Frete do orçamento inválido.' USING ERRCODE = '23514';
+  END IF;
+  v_expected_total := round(v_commercial_subtotal - v_discount_amount + v_shipping_amount, 2);
+
+  IF abs(COALESCE(v_quote.real_subtotal, v_base) - v_base) > 0.01
+     OR abs(COALESCE(v_quote.subtotal, v_commercial_subtotal) - v_commercial_subtotal) > 0.01
+     OR abs(COALESCE(v_quote.discount_amount, v_discount_amount) - v_discount_amount) > 0.01
+     OR abs(COALESCE(v_quote.total, v_expected_total) - v_expected_total) > 0.01 THEN
+    RAISE EXCEPTION 'Totais persistidos do orçamento divergem da fórmula comercial brl-v1.' USING ERRCODE = '23514';
+  END IF;
+
   INSERT INTO public.sicoob_orders(
     cooperative_id, pa_id, created_by, status, total_amount, notes,
-    source_quote_id, source_quote_snapshot, requires_artwork
+    source_quote_id, source_quote_snapshot, requires_artwork,
+    merchandise_amount, personalization_amount, negotiation_markup_amount,
+    commercial_subtotal_amount, discount_amount, shipping_amount, pricing_formula_version
   ) VALUES (
-    v_cooperative_id, v_pa_id, v_actor, 'pending', v_quote.total, v_quote.notes,
+    v_cooperative_id, v_pa_id, v_actor, 'pending', v_expected_total, v_quote.notes,
     p_quote_id,
     jsonb_build_object(
       'quote_number', v_quote.quote_number,
@@ -116,20 +201,26 @@ BEGIN
       'client_company', v_quote.client_company,
       'client_cnpj', v_quote.client_cnpj,
       'subtotal', v_quote.subtotal,
+      'real_subtotal', v_quote.real_subtotal,
+      'discount_percent', v_quote.discount_percent,
       'discount_amount', v_quote.discount_amount,
+      'negotiation_markup_percent', v_quote.negotiation_markup_percent,
       'shipping_cost', v_quote.shipping_cost,
       'shipping_type', v_quote.shipping_type,
       'payment_terms', v_quote.payment_terms,
       'delivery_time', v_quote.delivery_time,
+      'pricing_formula_version', 'brl-v1',
       'converted_at', clock_timestamp()
     ),
-    v_requires_artwork
+    v_requires_artwork,
+    v_merchandise, v_personalization, v_markup_amount,
+    v_commercial_subtotal, v_discount_amount, v_shipping_amount, 'brl-v1'
   ) RETURNING * INTO v_order;
 
   INSERT INTO public.sicoob_order_items(
     order_id, product_id, product_name, product_sku, product_image_url,
     variant_id, variant_sku, color_name, color_hex, size_code,
-    personalization_snapshot, quantity, unit_price, total_price
+    personalization_snapshot, quantity, unit_price, total_price, personalization_amount
   )
   SELECT v_order.id,
     CASE WHEN qi.product_id ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$' THEN qi.product_id::uuid END,
@@ -146,7 +237,9 @@ BEGIN
         WHERE qip.quote_item_id = qi.id
       ), '[]'::jsonb)
     ),
-    qi.quantity, qi.unit_price, qi.quantity * qi.unit_price
+    qi.quantity, qi.unit_price, round((qi.quantity * qi.unit_price)::numeric, 2),
+    (SELECT COALESCE(sum(round(COALESCE(qip.total_cost, 0)::numeric, 2)), 0)
+     FROM public.quote_item_personalizations qip WHERE qip.quote_item_id = qi.id)
   FROM public.quote_items qi
   WHERE qi.quote_id = p_quote_id
   ORDER BY COALESCE(qi.display_order, qi.sort_order, 0), qi.id;

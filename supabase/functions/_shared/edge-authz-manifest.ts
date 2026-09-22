@@ -136,6 +136,11 @@ export const EDGE_AUTHZ_MANIFEST: Record<string, AuthzEntry> = {
     rationale: "Baixa a arte privada sob RLS, calcula sua identidade criptográfica e chama a RPC interna exclusiva de serviço",
     enforcedBy: "custom",
   },
+  "sicoob-document-ingest": {
+    category: "authenticated",
+    rationale: "Valida JWT e escopo do pedido antes de inspecionar, escanear e promover documentos privados",
+    enforcedBy: "custom",
+  },
   "generate-ad-image": { category: "authenticated", rationale: "Magic Up Ads do user" },
   "generate-ad-prompt": { category: "authenticated", rationale: "Magic Up Ads do user" },
   "generate-mockup": { category: "authenticated", rationale: "Mockup IA do user" },

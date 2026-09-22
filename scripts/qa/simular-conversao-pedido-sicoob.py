@@ -29,15 +29,34 @@ def scalar(statement):
 def actor(statement, actor_id=ACTOR, check=True):
     return sql(f"SET ROLE authenticated; SET request.jwt.claim.sub='{actor_id}'; {statement}", check)
 
-def seed_quote(quote_id, status='approved', price=50, personalized=False):
+def seed_quote(
+    quote_id, status='approved', price=50, personalized=False,
+    personalization_cost=0, markup=0, discount_percent=0,
+    discount_amount=0, shipping_type='cif', shipping_cost=0,
+    subtotal=None, real_subtotal=None, total=None,
+):
+    base = round(2 * price + personalization_cost, 2)
+    commercial_subtotal = round(base * (1 + markup / 100), 2)
+    expected_discount = round(commercial_subtotal * discount_percent / 100, 2) if discount_percent else discount_amount
+    expected_shipping = shipping_cost if shipping_type in ('fob', 'fob_pre') else 0
+    persisted_subtotal = commercial_subtotal if subtotal is None else subtotal
+    persisted_real_subtotal = base if real_subtotal is None else real_subtotal
+    persisted_total = round(commercial_subtotal - expected_discount + expected_shipping, 2) if total is None else total
     sql(f"""
-      INSERT INTO public.quotes(id,quote_number,seller_id,status,total,subtotal,discount_amount,shipping_cost,pa_id,singular_id,client_name)
-      VALUES ('{quote_id}','ORC-{quote_id[-4:]}','{ACTOR}','{status}',100,100,0,0,'{PA}','{COOP}','Cliente sintético');
+      INSERT INTO public.quotes(
+        id,quote_number,seller_id,status,total,subtotal,real_subtotal,
+        discount_percent,discount_amount,negotiation_markup_percent,
+        shipping_type,shipping_cost,pa_id,singular_id,client_name
+      ) VALUES (
+        '{quote_id}','ORC-{quote_id[-4:]}','{ACTOR}','{status}',{persisted_total},
+        {persisted_subtotal},{persisted_real_subtotal},{discount_percent},{expected_discount},
+        {markup},'{shipping_type}',{shipping_cost},'{PA}','{COOP}','Cliente sintético'
+      );
       INSERT INTO public.quote_items(id,quote_id,product_id,product_name,product_sku,quantity,unit_price,sort_order)
       VALUES (gen_random_uuid(),'{quote_id}','produto-externo','Produto sintético','SKU-1',2,{price},1);
     """)
     if personalized:
-        sql(f"INSERT INTO public.quote_item_personalizations(quote_item_id,technique_name) SELECT id,'Silk' FROM public.quote_items WHERE quote_id='{quote_id}';")
+        sql(f"INSERT INTO public.quote_item_personalizations(quote_item_id,technique_name,total_cost) SELECT id,'Silk',{personalization_cost} FROM public.quote_items WHERE quote_id='{quote_id}';")
 
 checks = {}
 try:
@@ -52,7 +71,8 @@ try:
       CREATE TABLE public.postos_atendimento(id uuid PRIMARY KEY, cooperativa_id uuid, is_active boolean NOT NULL DEFAULT true);
       CREATE TABLE public.quotes(
         id uuid PRIMARY KEY, quote_number text, seller_id uuid NOT NULL, status text NOT NULL,
-        total numeric, subtotal numeric, discount_amount numeric, shipping_cost numeric,
+        total numeric, subtotal numeric, real_subtotal numeric, discount_percent numeric,
+        discount_amount numeric, negotiation_markup_percent numeric, shipping_cost numeric,
         pa_id uuid, singular_id uuid, notes text, client_id text, client_name text,
         client_email text, client_phone text, client_company text, client_cnpj text,
         shipping_type text, payment_terms text, delivery_time text, updated_at timestamptz DEFAULT now()
@@ -65,7 +85,7 @@ try:
       );
       CREATE TABLE public.quote_item_personalizations(
         id uuid PRIMARY KEY DEFAULT gen_random_uuid(), quote_item_id uuid REFERENCES public.quote_items(id),
-        technique_name text, created_at timestamptz DEFAULT now()
+        technique_name text, total_cost numeric DEFAULT 0, created_at timestamptz DEFAULT now()
       );
       CREATE TABLE public.sicoob_orders(
         id uuid PRIMARY KEY DEFAULT gen_random_uuid(), order_number text NOT NULL DEFAULT ('SIC-'||upper(substr(gen_random_uuid()::text,1,8))),
@@ -104,6 +124,7 @@ try:
     checks['converte_para_dominio_sicoob'] = order['status'] == 'pending' and order['total_amount'] == 100
     checks['copia_itens_e_snapshot'] = scalar(f"SELECT count(*)||'|'||COALESCE(product_id::text,'externo')||'|'||(personalization_snapshot->'personalizations'<> '[]'::jsonb)::text FROM public.sicoob_order_items WHERE order_id='{order['id']}' GROUP BY product_id,personalization_snapshot;") == '1|externo|true'
     checks['congela_origem_e_hierarquia'] = scalar(f"SELECT source_quote_id::text||'|'||pa_id::text||'|'||cooperative_id::text||'|'||requires_artwork::text FROM public.sicoob_orders WHERE id='{order['id']}';") == f'{quote}|{PA}|{COOP}|true'
+    checks['componentes_comerciais_basicos_reconciliados'] = scalar(f"SELECT merchandise_amount||'|'||personalization_amount||'|'||negotiation_markup_amount||'|'||commercial_subtotal_amount||'|'||discount_amount||'|'||shipping_amount||'|'||pricing_formula_version FROM public.sicoob_orders WHERE id='{order['id']}';") == '100.00|0.00|0.00|100.00|0.00|0.00|brl-v1'
     checks['marca_orcamento_convertido'] = scalar(f"SELECT status FROM public.quotes WHERE id='{quote}';") == 'converted'
     repeated = json.loads(actor(f"SELECT row_to_json(x) FROM public.convert_quote_to_sicoob_order('{quote}') x;").stdout.strip())
     checks['repeticao_idempotente'] = repeated['id'] == order['id'] and scalar(f"SELECT count(*) FROM public.sicoob_orders WHERE source_quote_id='{quote}';") == '1'
@@ -114,6 +135,26 @@ try:
     checks['personalizado_exige_arte'] = blocked_art.returncode != 0 and 'arte precisa estar aprovada' in blocked_art.stderr
     sql(f"INSERT INTO public.sicoob_order_artwork_versions(order_id,is_latest,status) VALUES ('{order['id']}',true,'approved');")
     checks['arte_aprovada_libera_fluxo'] = sql(f"UPDATE public.sicoob_orders SET status='logistic' WHERE id='{order['id']}';").returncode == 0
+    sql(f"UPDATE public.sicoob_orders SET status='draft' WHERE id='{order['id']}';")
+    source_frozen = actor(f"SELECT public.mutate_sicoob_order_item('{order['id']}','add',NULL,'66666666-6666-4666-8666-666666666661','Outro',1,10);", check=False)
+    checks['pedido_convertido_nao_aceita_mutacao_de_itens'] = source_frozen.returncode != 0 and 'pedido convertido' in source_frozen.stderr.lower()
+
+    quote_commercial = '44444444-4444-4444-8444-444444444446'
+    seed_quote(
+        quote_commercial, personalized=True, personalization_cost=10,
+        markup=20, discount_percent=10, shipping_type='fob', shipping_cost=15,
+    )
+    commercial = json.loads(actor(f"SELECT row_to_json(x) FROM public.convert_quote_to_sicoob_order('{quote_commercial}') x;").stdout.strip())
+    checks['formula_brl_v1_preserva_personalizacao_markup_desconto_e_frete'] = (
+        float(commercial['total_amount']) == 133.80
+        and scalar(f"SELECT merchandise_amount||'|'||personalization_amount||'|'||negotiation_markup_amount||'|'||commercial_subtotal_amount||'|'||discount_amount||'|'||shipping_amount FROM public.sicoob_orders WHERE id='{commercial['id']}';") == '100.00|10.00|22.00|132.00|13.20|15.00'
+        and scalar(f"SELECT total_price||'|'||personalization_amount||'|'||line_total_amount FROM public.sicoob_order_items WHERE order_id='{commercial['id']}';") == '100.00|10.00|110.00'
+    )
+
+    quote_tampered = '44444444-4444-4444-8444-444444444447'
+    seed_quote(quote_tampered, total=99)
+    tampered = actor(f"SELECT * FROM public.convert_quote_to_sicoob_order('{quote_tampered}');", check=False)
+    checks['total_adulterado_reverte_conversao'] = tampered.returncode != 0 and scalar(f"SELECT count(*) FROM public.sicoob_orders WHERE source_quote_id='{quote_tampered}';") == '0'
 
     quote_out = '44444444-4444-4444-8444-444444444442'
     seed_quote(quote_out)
@@ -149,7 +190,7 @@ try:
     product = '66666666-6666-4666-8666-666666666661'
     sql(f"INSERT INTO public.sicoob_orders(id,created_by,status,total_amount) VALUES ('{draft}','{ACTOR}','draft',0);")
     total = actor(f"SELECT public.mutate_sicoob_order_item('{draft}','add',NULL,'{product}','Produto',2,25);").stdout.strip()
-    checks['item_e_total_numa_transacao'] = total == '50' and scalar(f"SELECT total_amount::text||'|'||count(*)::text FROM public.sicoob_orders o JOIN public.sicoob_order_items i ON i.order_id=o.id WHERE o.id='{draft}' GROUP BY o.total_amount;") == '50|1'
+    checks['item_e_total_numa_transacao'] = float(total) == 50 and scalar(f"SELECT total_amount::text||'|'||count(*)::text FROM public.sicoob_orders o JOIN public.sicoob_order_items i ON i.order_id=o.id WHERE o.id='{draft}' GROUP BY o.total_amount;") in ('50|1', '50.00|1')
     item_id = scalar(f"SELECT id FROM public.sicoob_order_items WHERE order_id='{draft}';")
     removed = actor(f"SELECT public.mutate_sicoob_order_item('{draft}','remove','{item_id}',NULL,NULL,NULL,NULL);").stdout.strip()
     checks['remocao_e_total_numa_transacao'] = removed == '0' and scalar(f"SELECT count(*) FROM public.sicoob_order_items WHERE order_id='{draft}';") == '0'

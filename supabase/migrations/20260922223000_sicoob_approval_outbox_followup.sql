@@ -10,6 +10,25 @@ ALTER TABLE public.sicoob_approval_deliveries
 ALTER TABLE public.sicoob_approval_deliveries
   ADD CONSTRAINT sicoob_approval_deliveries_event_generation_key
   UNIQUE(request_id, event_kind, channel, generation);
+
+-- A versão anterior não exigia recibo do provedor nem código para falhas. Um
+-- registro legado sem essas evidências não pode continuar afirmando entrega.
+-- Preserve-o como resultado incerto para reconciliação humana, sem inventar
+-- um identificador de provedor que nunca existiu.
+UPDATE public.sicoob_approval_deliveries
+SET state = 'uncertain',
+    last_error_code = 'legacy_missing_provider_receipt',
+    delivered_at = NULL,
+    updated_at = clock_timestamp()
+WHERE state = 'delivered'
+  AND NULLIF(btrim(provider_id), '') IS NULL;
+
+UPDATE public.sicoob_approval_deliveries
+SET last_error_code = 'legacy_unclassified_delivery',
+    updated_at = clock_timestamp()
+WHERE state IN ('retry', 'uncertain', 'failed')
+  AND NULLIF(btrim(last_error_code), '') IS NULL;
+
 ALTER TABLE public.sicoob_approval_deliveries
   ADD CONSTRAINT sicoob_approval_deliveries_result_receipt_check CHECK (
     (state <> 'delivered' OR (provider_id IS NOT NULL AND btrim(provider_id) <> ''))

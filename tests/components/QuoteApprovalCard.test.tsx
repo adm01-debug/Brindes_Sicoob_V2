@@ -29,11 +29,20 @@ describe("QuoteApprovalCard", () => {
     expect(screen.getByText(/Prazo:/)).toBeInTheDocument();
     expect(screen.getByText(/Frete:/)).toBeInTheDocument();
     expect(screen.getByText(/Entrega no PA central/)).toBeInTheDocument();
+    expect(screen.getByText("Aguardando resposta")).toBeInTheDocument();
+    expect(screen.queryByText("active")).not.toBeInTheDocument();
   });
 
   it("oculta ações depois de uma decisão", () => {
     render(<QuoteApprovalCard quoteNumber="ORC-002" total={100} status="approved" isResponded onApprove={vi.fn()} onReject={vi.fn()} />);
     expect(screen.queryByRole("button", { name: /aprovar/i })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /recusar/i })).not.toBeInTheDocument();
+    expect(screen.getByText("Aprovado")).toBeInTheDocument();
+  });
+
+  it("não expõe status interno desconhecido", () => {
+    render(<QuoteApprovalCard quoteNumber="ORC-003" total={100} status="estado_interno" isResponded />);
+    expect(screen.getByText("Status indisponível")).toBeInTheDocument();
+    expect(screen.queryByText("estado_interno")).not.toBeInTheDocument();
   });
 });

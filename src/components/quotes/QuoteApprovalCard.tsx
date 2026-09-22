@@ -23,6 +23,19 @@ interface QuoteApprovalCardProps {
   notes?: string | null;
 }
 
+const PUBLIC_STATUS_LABELS: Record<string, string> = {
+  active: "Aguardando resposta",
+  responded: "Respondido",
+  approved: "Aprovado",
+  rejected: "Recusado",
+  expired: "Expirado",
+  revoked: "Revogado",
+  pending: "Pendente",
+  sent: "Enviado",
+  viewed: "Visualizado",
+  revision: "Em revisão",
+};
+
 function QuoteItems({ items }: { items?: PublicQuoteApproval["items"] }) {
   if (!items?.length) return null;
   return (
@@ -87,7 +100,7 @@ export function QuoteApprovalCard({
             {clientName && <p className="text-sm text-muted-foreground mt-1">Para: {clientName}</p>}
           </div>
           <Badge variant={status === "approved" ? "default" : status === "rejected" ? "destructive" : "secondary"}>
-            {status}
+            {PUBLIC_STATUS_LABELS[status] ?? "Status indisponível"}
           </Badge>
         </div>
       </CardHeader>

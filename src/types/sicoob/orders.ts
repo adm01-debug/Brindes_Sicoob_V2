@@ -45,6 +45,10 @@ export function canSicoobTransitionTo(current: OrderStatus, next: OrderStatus): 
   return validNext.includes(next);
 }
 
+export function canEditSicoobOrderItems(status: OrderStatus): boolean {
+  return status === 'draft';
+}
+
 
 export interface SicoobOrder {
   id: string;
@@ -54,6 +58,13 @@ export interface SicoobOrder {
   created_by: string;
   status: OrderStatus;
   total_amount: number;
+  merchandise_amount?: number;
+  personalization_amount?: number;
+  negotiation_markup_amount?: number;
+  commercial_subtotal_amount?: number;
+  discount_amount?: number;
+  shipping_amount?: number;
+  pricing_formula_version?: 'legacy-v0' | 'brl-v1';
   notes?: string;
   source_quote_id?: string | null;
   source_quote_snapshot?: Record<string, unknown> | null;
@@ -87,6 +98,8 @@ export interface SicoobOrderItem {
   quantity: number;
   unit_price: number;
   total_price: number;
+  personalization_amount?: number;
+  line_total_amount?: number;
 }
 
 export interface SicoobOrderShipment {

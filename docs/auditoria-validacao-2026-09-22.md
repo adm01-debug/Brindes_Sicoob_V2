@@ -75,16 +75,26 @@ credencial ausente, lease vencido, destino corrigido e registros históricos.
 - A conversão `quote → sicoob_orders + sicoob_order_items` ocorre em uma RPC
   atômica, com lock, escopo, idempotência, snapshots, histórico e marcação da
   origem.
+- A fórmula `brl-v1` reconcilia produtos, personalizações, ajuste comercial,
+  desconto e frete com arredondamento em BRL; qualquer divergência no orçamento
+  aprovado aborta toda a conversão.
+- Pedidos convertidos preservam o detalhamento financeiro e seus itens ficam
+  imutáveis. Pedidos manuais em rascunho são recalculados atomicamente pela RPC.
+- O BI usa eventos reais de conclusão para volume e ticket, calcula o mix pelas
+  unidades efetivamente entregues e exporta CSV; os indicadores fictícios foram
+  removidos.
 - Inclusão/remoção de item e recálculo do total ocorrem na mesma transação.
 - Policies antigas de escrita direta nos itens foram removidas, impedindo
   contornar a RPC atômica.
 - Consolidação de orçamentos legados ocorre em uma RPC com locks e rollback.
 - Pedidos personalizados recebem `requires_artwork`; produção/logística exige
   versão vigente aprovada.
-- Nota fiscal e comprovante logístico exigem objeto existente, proprietário,
-  MIME e tamanho compatíveis. Exclusão é limitada a objeto órfão.
-- O comprovante aceita somente JPEG, PNG ou WebP, vincula o proprietário do
-  objeto atual e impede extensão incompatível com o MIME declarado.
+- Nota fiscal e comprovante passam pela Edge `sicoob-document-ingest`, bucket
+  privado de quarentena, detecção por assinatura dos bytes, SHA-256 e scanner
+  antimalware privado antes da promoção ao bucket final.
+- Ausência, timeout, erro ou parecer inconclusivo do scanner falham fechados. O
+  registro imutável vincula finalidade, pedido, usuário, hash, MIME detectado,
+  tamanho, versão do scanner e objeto final; reutilização é bloqueada.
 - Pedidos personalizados anteriores recebem backfill de `requires_artwork`, e
   a exigência não pode ser rebaixada.
 - Conversão e consolidação recusam perfis inativos/excluídos; a consolidação usa
@@ -95,8 +105,8 @@ credencial ausente, lease vencido, destino corrigido e registros históricos.
 
 ### CI e inventário
 
-- CI executa a suíte Vitest completa com cobertura, além das novas simulações
-  SQL e checks Deno.
+- CI executa a suíte Vitest completa com cobertura dos fluxos críticos alterados,
+  além das novas simulações SQL e checks Deno.
 - O gate de migrations falha fechado e usa a base correta em PR e push.
 - Gates de RLS e Security Definer falham quando não conseguem auditar.
 - O gate de ACL aceita somente service role e falha no Actions sem credenciais.
@@ -109,24 +119,24 @@ credencial ausente, lease vencido, destino corrigido e registros históricos.
 | Gate | Resultado |
 |---|---:|
 | Cenários Node de arquitetura e segurança | 190/190 aprovados |
-| Vitest integral | 5.457 aprovados; 109 ignorados |
-| Arquivos Vitest | 373 aprovados; 8 ignorados |
-| Cobertura selecionada | 100% statements, funções e linhas; 96,62% branches |
-| TypeScript baseline | 578/578; nenhuma regressão |
-| ESLint baseline | nenhuma regressão; 8 erros removidos |
+| Vitest integral | 5.472 aprovados; 109 ignorados |
+| Arquivos Vitest | 377 aprovados; 8 ignorados |
+| Cobertura crítica selecionada | 93,61% statements; 86,09% branches; 96,77% funções; 97,43% linhas |
+| TypeScript baseline | 545/545; nenhuma regressão |
+| ESLint baseline | nenhuma regressão; 13 erros removidos |
 | Build Vite | aprovado |
 | Deno check das Edge Functions alteradas | aprovado |
-| Manifest de autorização Edge | 104/104 declaradas |
-| Referências de runtime | 2.042 arquivos; 1.098 referências; 0 quebradas fora da allowlist |
+| Manifest de autorização Edge | 105/105 declaradas |
+| Referências de runtime | 2.047 arquivos; 1.096 referências; 0 quebradas fora da allowlist |
 | Imutabilidade de migrations | aprovado contra `origin/main` |
 | Actionlint | aprovado |
 | Simulação da aprovação pública | aprovada, incluindo snapshot, adulteração e rotação |
-| Simulação da outbox | 55/55 |
+| Simulação da outbox | 57/57 |
 | Simulação do agendamento/Vault/monitor | 11/11 |
-| Conversão, itens e arte | 18/18 |
-| Documentos financeiros/logísticos | 10/10 |
+| Conversão, itens e arte | 22/22 |
+| Documentos financeiros/logísticos | 20/20 no banco + 8 testes de bytes/scanner |
 | Consolidação de orçamentos | 6/6 |
-| ACL efetiva | 22/22 |
+| ACL efetiva | 23/23 |
 | Consolidação/distribuição Sicoob | aprovada, incluindo as duas novas FKs |
 | Financeiro/arte, verba e controles | aprovados |
 | Segredos no diff | nenhuma correspondência encontrada; 31 fingerprints históricos isolados em baseline específica |
@@ -141,12 +151,16 @@ sucesso.
 2. Configurar no Vault `sicoob_project_url` e
    `sicoob_approval_worker_secret` e a chave HMAC versionada; publicar as Edge
    Functions e validar os crons.
-3. Configurar as personas RLS e os secrets administrativos do GitHub Actions.
-4. Restaurar o orçamento do GitHub Actions e tornar checks obrigatórios na
+3. Configurar `SICOOB_MALWARE_SCANNER_URL` e
+   `SICOOB_MALWARE_SCANNER_TOKEN` com um scanner privado que devolva parecer
+   conclusivo, publicar `sicoob-document-ingest` e executar arquivos EICAR no
+   ambiente de construção.
+4. Configurar as personas RLS e os secrets administrativos do GitHub Actions.
+5. Restaurar o orçamento do GitHub Actions e tornar checks obrigatórios na
    proteção da `main`, inclusive para administradores.
-5. Executar smoke test autenticado no banco de construção, envio real para
+6. Executar smoke test autenticado no banco de construção, envio real para
    provedores de teste e reconciliação de `uncertain`/`failed`.
-6. Confirmar no provedor a rotação da credencial histórica do `migrate-helper`;
+7. Confirmar no provedor a rotação da credencial histórica do `migrate-helper`;
    a baseline por fingerprint já mantém novos achados bloqueados.
 
 ## Gaps ainda abertos
@@ -154,18 +168,14 @@ sucesso.
 - Executar os contratos que dependem de personas, provedores e credenciais
   reais. O orçamento de skips apenas impede crescimento; não converte os 109
   casos condicionais em evidência remota.
-- Validar bytes reais e antimalware de notas fiscais e comprovantes. O banco
-  verifica proprietário, caminho, MIME e tamanho registrados no Storage, mas o
-  conteúdo binário ainda não passa por um verificador dedicado.
+- Homologar o scanner privado com EICAR, arquivos reais e indisponibilidade
+  induzida. O código e os contratos locais falham fechados, mas o provedor ainda
+  não foi configurado nem exercitado no projeto remoto.
 - Reduzir a dívida histórica de TypeScript/ESLint. Os 31 achados históricos do
   Gitleaks foram isolados por fingerprint, sem exceção genérica; a rotação da
   credencial antiga do `migrate-helper` ainda precisa ser comprovada.
 - Fixar Actions por SHA e estabelecer orçamento total/por rota do bundle, além
   do limite atual por arquivo.
-- Decidir a apresentação contábil da diferença entre total comercial do
-  orçamento (frete/desconto/personalização) e soma de mercadorias dos itens. O
-  snapshot preserva os componentes, mas relatórios precisam usar o cabeçalho
-  como total aprovado.
 
 O lote está validado para revisão e aplicação controlada no ambiente de
 construção. Ele não está validado como produção: ainda não houve migration

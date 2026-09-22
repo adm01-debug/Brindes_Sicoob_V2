@@ -78,6 +78,7 @@ export const RBAC_ROUTES: RbacRouteEntry[] = [
   { path: "/admin/temas", label: "Skins / Temas", guard: "ProtectedRoute", role: "authenticated", mfaAal2: false, category: "admin", notes: "Preferência visual local (localStorage). Disponível para qualquer usuário autenticado." },
   { path: "/admin/kit-templates", label: "Templates de Kit", guard: "AdminRoute", role: "admin", mfaAal2: true, category: "admin" },
   { path: "/admin/video-variantes", label: "Vídeos por variante", guard: "AdminRoute", role: "admin", mfaAal2: true, category: "admin" },
+  { path: "/admin/sicoob/notificacoes", label: "Notificações Sicoob", guard: "AdminRoute", role: "admin", mfaAal2: true, rlsHelper: "is_supervisor_or_above", category: "admin", notes: "Operação e reconciliação da outbox de aprovações." },
 
   // ─── Dev / Técnicas (exigem AAL2 + role dev) ──────────────────────────
   { path: "/sicoob/qa/preflight", label: "Pré-flight Sicoob", guard: "DevRoute", role: "dev", mfaAal2: true, category: "ops" },

@@ -2,7 +2,7 @@
   "_comment": "Snapshot original da API/Storage com delta de migrations aplicado e verificado por SQL. Presença física e GRANT não substituem teste RLS por usuário nem prova de exposição de todas as rotas PostgREST.",
   "generated_at": "2026-09-22T22:00:00Z",
   "project_ref": "cfmzkthhgliqelozlmwu",
-  "source": "OpenAPI administrativo + Storage de 22/09; delta SQL do lote 2026092222 validado em PostgreSQL 16 descartável",
+  "source": "OpenAPI administrativo + Storage de 22/09; delta SQL até 20260922225600 validado em PostgreSQL 16 descartável",
   "source_sha256": {
     "openapi": "1d17066521e7ab9d88ea78ad91b056a16a81727a19c8c4fbd1adf045a5333373",
     "buckets": "93367299e56f26fd0597379560a15cd40886b549e76853a5b82e170d50645201"
@@ -182,6 +182,7 @@
     "sicoob_delivery_allocations",
     "sicoob_delivery_destinations",
     "sicoob_delivery_receipt_events",
+    "sicoob_document_registry",
     "sicoob_kit_quote_requests",
     "sicoob_manager_audit",
     "sicoob_order_artwork_versions",
@@ -382,6 +383,7 @@
     "record_sicoob_delivery_receipt",
     "record_sicoob_order_payment",
     "refund_sicoob_order_payment",
+    "register_sicoob_clean_document",
     "reject_sicoob_order",
     "reject_sicoob_order_without_approval",
     "reorder_sicoob_order_as_quote",
@@ -433,6 +435,7 @@
     "proposals",
     "qa-evidences",
     "quarantine",
+    "sicoob-document-quarantine",
     "sicoob-order-documents",
     "supplier-logos"
   ],
@@ -459,7 +462,25 @@
       "20260922167000",
       "20260922190000",
       "20260922200000",
-      "20260922210000"
+      "20260922210000",
+      "20260922223000",
+      "20260922224000",
+      "20260922224100",
+      "20260922224200",
+      "20260922224300",
+      "20260922224400",
+      "20260922224500",
+      "20260922224600",
+      "20260922224700",
+      "20260922224800",
+      "20260922224900",
+      "20260922225000",
+      "20260922225100",
+      "20260922225200",
+      "20260922225300",
+      "20260922225400",
+      "20260922225500",
+      "20260922225600"
     ],
     "relations": [
       "bitrix_clients",
@@ -471,7 +492,8 @@
       "product_group_location_techniques",
       "product_group_locations",
       "sales_goals",
-      "sicoob_approval_deliveries"
+      "sicoob_approval_deliveries",
+      "sicoob_document_registry"
     ],
     "functions": [
       "assert_database_auditor",
@@ -496,8 +518,9 @@
       "claim_sicoob_approval_delivery",
       "finish_sicoob_approval_delivery",
       "get_sicoob_approval_delivery_summary",
-      "queue_sicoob_approval_notifications"
+      "queue_sicoob_approval_notifications",
+      "register_sicoob_clean_document"
     ],
-    "checked_at": "2026-09-22T21:01:15Z"
+    "checked_at": "2026-09-22T23:26:59Z"
   }
 }

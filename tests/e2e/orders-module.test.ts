@@ -7,6 +7,7 @@ import {
   ORDER_STATUS_CONFIG,
   ORDER_STATUS_OPTIONS,
   SICOOB_VALID_TRANSITIONS,
+  canEditSicoobOrderItems,
   canSicoobTransitionTo,
   type OrderStatus,
 } from '@/types/sicoob/orders';
@@ -58,6 +59,11 @@ describe('E2E Orders — Order Items', () => {
   });
   it('items have SKU', () => items.forEach(i => expect(i.product_sku).toBeTruthy()));
   it('items have quantity > 0', () => items.forEach(i => expect(i.quantity).toBeGreaterThan(0)));
+  it('só permite alterar itens enquanto o pedido está em rascunho', () => {
+    expect(canEditSicoobOrderItems('draft')).toBe(true);
+    expect(canEditSicoobOrderItems('pending')).toBe(false);
+    expect(canEditSicoobOrderItems('confirmed')).toBe(false);
+  });
 });
 
 describe('E2E Orders — Filtering', () => {

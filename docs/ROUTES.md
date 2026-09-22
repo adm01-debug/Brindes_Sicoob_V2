@@ -87,6 +87,7 @@
 | Rota | Componente |
 |------|------------|
 | `/admin/sicoob` | `@/pages/admin/sicoob/SicoobManagementPage` |
+| `/admin/sicoob/notificacoes` | `@/pages/admin/sicoob/SicoobApprovalReconciliationPage` |
 | `/sicoob/pedidos` | `@/pages/sicoob/orders/OrdersPage` |
 | `/sicoob/pedidos/kanban` | `@/pages/sicoob/orders/OrdersKanbanPage` |
 | `/sicoob/pedidos/:id` | `@/pages/sicoob/orders/OrderDetailPage` |
@@ -110,4 +111,3 @@
 | `/ferramentas/bi/comparar` | `@/pages/ClientComparatorPage` |
 | `/match` | `@/pages/ProductMatchPage` |
 | `/dropbox` | `@/pages/DropboxBrowserPage` |
-

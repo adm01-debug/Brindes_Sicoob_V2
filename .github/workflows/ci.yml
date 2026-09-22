@@ -75,6 +75,7 @@ jobs:
           deno check supabase/functions/sicoob-reorder/index.ts
           deno check supabase/functions/sicoob-kit-quote/index.ts
           deno check supabase/functions/sicoob-artwork-register/index.ts
+          deno check supabase/functions/sicoob-document-ingest/index.ts
           deno check supabase/functions/_shared/authorize.ts
           deno check supabase/functions/admin-audit-hook/index.ts
           deno check supabase/functions/quote-approval/index.ts

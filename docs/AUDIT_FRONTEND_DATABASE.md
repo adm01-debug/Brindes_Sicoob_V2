@@ -95,7 +95,7 @@
 
 | RPC | Arquivo chamador |
 |---|---|
-| `submit_quote_response` | `QuoteApprovalPage.tsx:52` |
+| `get_public_quote_approval` / `submit_public_quote_response` | `quote-approval` (Edge Function invocada por `QuoteApprovalPage.tsx`) |
 | `get_app_health_summary` | `useAppHealth.ts:65` |
 | `lookup_request_id` | `useAppHealth.ts:98` |
 | `enqueue_optimization` | `useOptimizationQueue.ts:77` |

@@ -44,7 +44,13 @@ try:
     sql('BEGIN;\n'+migration+'\n'+followup+'\n'+reconciliation+'\nROLLBACK;')
     checks['dryrun_revertido']=scalar("SELECT to_regclass('public.sicoob_approval_deliveries') IS NULL;")=='t'
     sql(migration)
+    legacy_request=new_request()
+    legacy_delivered=scalar(f"SELECT id FROM public.sicoob_approval_deliveries WHERE request_id='{legacy_request}' AND channel='slack';")
+    legacy_failed=scalar(f"SELECT id FROM public.sicoob_approval_deliveries WHERE request_id='{legacy_request}' AND channel='email';")
+    sql(f"UPDATE public.sicoob_approval_deliveries SET state='delivered',delivered_at=now(),provider_id=NULL WHERE id='{legacy_delivered}'; UPDATE public.sicoob_approval_deliveries SET state='failed',last_error_code=NULL WHERE id='{legacy_failed}';")
     sql(followup)
+    checks['entrega_legada_sem_recibo_vira_incerta']=scalar(f"SELECT state || '|' || last_error_code || '|' || (delivered_at IS NULL)::text FROM public.sicoob_approval_deliveries WHERE id='{legacy_delivered}';")=='uncertain|legacy_missing_provider_receipt|true'
+    checks['falha_legada_recebe_codigo_estruturado']=scalar(f"SELECT state || '|' || last_error_code FROM public.sicoob_approval_deliveries WHERE id='{legacy_failed}';")=='failed|legacy_unclassified_delivery'
     sql(reconciliation)
     authenticated_id=str(uuid.uuid4())
     sql(f"GRANT INSERT ON public.sicoob_approval_requests TO authenticated; SET ROLE authenticated; INSERT INTO public.sicoob_approval_requests(id,order_id,requester_id,status,amount_at_request,request_reason) VALUES ('{authenticated_id}','22222222-2222-4222-8222-222222222222','11111111-1111-4111-8111-111111111111','pending',100,'Pedido autenticado'); RESET ROLE;")

@@ -3,6 +3,8 @@
   "remoto_validado": false,
   "cenarios": {
     "dryrun_revertido": true,
+    "entrega_legada_sem_recibo_vira_incerta": true,
+    "falha_legada_recebe_codigo_estruturado": true,
     "trigger_enfileira_para_ator_sem_acesso_a_fila": true,
     "trigger_enfileira_por_pa_do_pedido": true,
     "pa_do_perfil_nao_redireciona": true,

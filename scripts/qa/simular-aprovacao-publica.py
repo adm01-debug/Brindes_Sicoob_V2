@@ -112,6 +112,16 @@ try:
       actor("SELECT public.get_public_quote_approval('valido');",role='anon',check=False).returncode != 0
       and actor("SELECT public.submit_signed_quote_response('valido','approved','Pessoa','12345678901','"+SIGNATURE+"','127.0.0.1','teste');",role='anon',check=False).returncode != 0
     )
+    viewed_quote = new_quote(); issue(viewed_quote, 'visualizado')
+    viewed_payload = json.loads(actor(
+      "SELECT public.get_public_quote_approval('visualizado');", role='service_role'
+    ).stdout)
+    first_viewed_at = sql("SELECT viewed_at::text FROM public.quote_approval_tokens WHERE token='visualizado';").stdout.strip()
+    actor("SELECT public.get_public_quote_approval('visualizado');", role='service_role')
+    checks['consulta_publica_registra_visualizacao']=viewed_payload['quote_number']=='TESTE' and bool(first_viewed_at)
+    checks['visualizacao_repetida_preserva_primeiro_instante']=sql(
+      f"SELECT viewed_at::text='{first_viewed_at}' FROM public.quote_approval_tokens WHERE token='visualizado';"
+    ).stdout.strip()=='t'
     quote = new_quote(); issue(quote,'hmac-valido')
     hardened_response = actor(
       "SELECT public.submit_signed_quote_response('hmac-valido','approved','Pessoa Teste','12345678901','"+SIGNATURE+"','203.0.113.10','navegador-teste');",
