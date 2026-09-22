@@ -1,10 +1,11 @@
 // Hook CRUD para Técnicas de Gravação (via external-db-bridge)
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { invokeExternalDb, invokeExternalDbSingle, invokeExternalDbDelete } from '@/lib/external-db';
-import type { 
-  TecnicaGravacao, 
+import type {
+  TecnicaGravacao,
+  TecnicaGravacaoVariante,
   TecnicaGravacaoFormData,
-  TecnicaGravacaoWithVariantes 
+  TecnicaGravacaoWithVariantes
 } from '@/types/gravacao-database';
 import { toast } from 'sonner';
 
@@ -39,11 +40,11 @@ export function useTecnicasGravacao() {
       ]);
 
       const variantesCount: Record<string, number> = {};
-      variantesResult.records.forEach((v) => {
+      (variantesResult.records ?? []).forEach((v) => {
         variantesCount[v.tecnica_gravacao_id] = (variantesCount[v.tecnica_gravacao_id] || 0) + 1;
       });
 
-      return tecnicasResult.records.map((t) => ({
+      return (tecnicasResult.records ?? []).map((t) => ({
         ...t,
         variantes: [],
         variantes_count: variantesCount[t.id] || 0,
@@ -106,7 +107,7 @@ export function useTecnicasGravacao() {
         limit: 1,
       });
 
-      if (variantesResult.count > 0) {
+      if ((variantesResult.count ?? 0) > 0) {
         throw new Error(`Não é possível excluir: existem ${variantesResult.count} variante(s) vinculada(s)`);
       }
 
@@ -168,7 +169,7 @@ export function useTecnicaGravacao(id: string | undefined) {
           filters: { id },
           limit: 1,
         }),
-        invokeExternalDb<TecnicaGravacao>({
+        invokeExternalDb<TecnicaGravacaoVariante>({
           table: 'tecnica_gravacao_variante',
           operation: 'select',
           filters: { tecnica_gravacao_id: id },
@@ -176,13 +177,13 @@ export function useTecnicaGravacao(id: string | undefined) {
         }),
       ]);
 
-      const tecnica = tecnicaResult.records[0];
+      const tecnica = tecnicaResult.records?.[0];
       if (!tecnica) return null;
 
       return {
         ...tecnica,
-        variantes: variantesResult.records,
-        variantes_count: variantesResult.count,
+        variantes: variantesResult.records ?? [],
+        variantes_count: variantesResult.count ?? undefined,
       };
     },
     enabled: !!id,

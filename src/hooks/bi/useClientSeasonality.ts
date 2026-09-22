@@ -94,7 +94,7 @@ function buildClientCells(rows: ClientRow[]): {
     const q = v?.q ?? 0;
     cells.push({
       month: m,
-      monthLabel: MONTH_LABELS[m - 1],
+      monthLabel: MONTH_LABELS[m - 1]!,
       quotesCount: q,
       totalRevenue: v?.r ?? 0,
       avgTicket: v && v.n > 0 ? v.t / v.n : 0,
@@ -125,10 +125,10 @@ function buildIndustryCells(rows: IndustryRow[]): IndustryMonthCell[] {
 
   const cells: IndustryMonthCell[] = [];
   for (let m = 1; m <= 12; m++) {
-    const v = monthly[m];
+    const v = monthly[m]!;
     cells.push({
       month: m,
-      monthLabel: MONTH_LABELS[m - 1],
+      monthLabel: MONTH_LABELS[m - 1]!,
       avgQuotesPerCompany: v.q,
       avgRevenuePerCompany: v.r,
       sharePercent: totalQ > 0 ? (v.q / totalQ) * 100 : 0,

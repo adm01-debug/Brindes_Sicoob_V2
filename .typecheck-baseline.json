@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-09-22T15:03:28.812Z",
-  "total": 837,
+  "generatedAt": "2026-09-22T15:10:27.338Z",
+  "total": 825,
   "files": {
     "src/components/admin/common/AdminDataTable.tsx": 2,
     "src/components/admin/common/ImportExportManager.tsx": 4,
@@ -215,14 +215,12 @@
     "src/hooks/auth/useAuthAAL.ts": 4,
     "src/hooks/bi/useChurnRisk.ts": 2,
     "src/hooks/bi/useClientBI.ts": 1,
-    "src/hooks/bi/useClientSeasonality.ts": 6,
     "src/hooks/cart/useCart.ts": 1,
     "src/hooks/cart/useCartTemplates.ts": 1,
     "src/hooks/catalog/useCatalogDisplay.ts": 2,
     "src/hooks/catalog/useCatalogPagination.ts": 1,
     "src/hooks/gravacao/gravacao-constants.ts": 1,
     "src/hooks/gravacao/useFornecedoresGravacao.ts": 1,
-    "src/hooks/gravacao/useTecnicasGravacao.ts": 6,
     "src/hooks/gravacao/useVariantesGravacao.ts": 1,
     "src/hooks/orders/extensions/useOrderComments.ts": 1,
     "src/hooks/quote/useQuotesStockStatus.ts": 1,

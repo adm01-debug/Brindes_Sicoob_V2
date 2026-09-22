@@ -1558,3 +1558,51 @@ de fato `undefined` nesses branches.
 Verificado: `tscheck-files.mjs` → 0 erros (14 no programa inteiro).
 `check-eslint-baseline.mjs` → zero regressão. Nenhum teste dedicado
 encontrado para este componente (nem referência em outros testes).
+
+## `src/hooks/bi/useClientSeasonality.ts` (etapa 17, 6 → 0 erros)
+
+**Falso positivo de tipagem, sem bug de runtime** — dois padrões de
+`noUncheckedIndexedAccess` já vistos nesta etapa: (1) `MONTH_LABELS[m -
+1]` — array de 12 posições, acessado dentro de loops `for (let m = 1; m
+<= 12; m++)`, então o índice `m - 1` está sempre em `0..11`,
+estruturalmente válido; (2) em `buildIndustryCells`, `monthly[m]` é um
+`Record<number, T>` preenchido explicitamente para todo `m` de 1 a 12
+num loop anterior (linha 119-121), mas o TS não consegue provar isso
+num segundo loop independente sobre o mesmo range. Ambos corrigidos com
+asserção não-nula (`!`) nos 3 pontos de acesso — não há caminho de
+execução em que os valores sejam de fato `undefined`.
+
+Verificado: `tscheck-files.mjs` → 0 erros (10 no programa inteiro).
+`check-eslint-baseline.mjs` → zero regressão. Nenhum teste dedicado
+encontrado.
+
+## `src/hooks/gravacao/useTecnicasGravacao.ts` (etapa 17, 6 → 0 erros)
+
+**Mistura de dois casos: acesso genuinamente opcional + bug real de
+tipagem.** `InvokeResult<T>` (`external-db/invoke.ts`) declara
+`records?: T[]` e `count?: number | null` como **genuinamente
+opcionais** — respostas de uma ponte HTTP externa (`external-db-bridge`)
+podem legitimamente vir sem esses campos em cenários de erro parcial,
+diferente dos outros casos desta etapa onde a garantia era estrutural.
+Corrigido com fallbacks defensivos (`?? []`, `?? 0`, `?.[0]`,
+`?? undefined`) em vez de asserção não-nula, nos 4 pontos de uso em
+`useTecnicasGravacao()` e `useTecnicaGravacao(id)`.
+
+Ao corrigir esses acessos, um **bug real de tipagem foi exposto**: a
+query da tabela `tecnica_gravacao_variante` em `useTecnicaGravacao(id)`
+usava o genérico `invokeExternalDb<TecnicaGravacao>` — tipo da tabela
+*pai* (`tecnica_gravacao`), não da tabela de variantes
+(`tecnica_gravacao_variante`) que estava sendo de fato consultada. O
+erro só ficou visível depois dos fallbacks acima, quando o TS pôde
+finalmente comparar o tipo do array retornado contra
+`TecnicaGravacaoWithVariantes.variantes: TecnicaGravacaoVarianteRaw[]`.
+Corrigido trocando o genérico para `TecnicaGravacaoVariante` (=
+`TecnicaGravacaoVarianteRaw`, já exportado por
+`types/gravacao-database.ts`). Sem esse fix, o objeto retornado por essa
+query teria o *shape* de execução correto (o bridge devolve o que o
+banco tem, independente do genérico TS) mas o autocomplete/tipagem para
+quem consome `variantes` estaria mentindo sobre os campos disponíveis.
+
+Verificado: `tscheck-files.mjs` → 0 erros (14 no programa inteiro).
+`check-eslint-baseline.mjs` → zero regressão. Nenhum teste dedicado
+encontrado.
