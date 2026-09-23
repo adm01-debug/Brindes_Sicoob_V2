@@ -3007,3 +3007,21 @@ Esse hook é consumido por `AuthContext.tsx` (linha 88), que calcula `mfaRequire
 - `check-eslint-baseline.mjs`: 0 regressões (3334 erros globais, referência `origin/main` em `0bb7a408cd`) — **drift positivo**: 1 erro eliminado (o `as any` removido).
 - Teste dedicado `tests/lib/crm-db-fixed.test.ts` (cobre `invokeCrmBatch`, tocado indiretamente): 14/14 passou. Nenhum teste dedicado para `SystemStatusPage.tsx`.
 - `typecheck:baseline`: 497 → 493 (310 arquivos), travado via `--update`.
+
+## materialService.ts (etapa 17)
+
+**Arquivo:** `src/services/materialService.ts`
+
+**Erros originais (4×):** TS2322/TS2345 nas funções `getGroups`, `getTypes`, `getTypesByGroupSlug` e `getComplete` — os objetos retornados pelo `.map()` não eram atribuíveis a `MaterialGroup`/`MaterialType`/`MaterialComplete`.
+
+**Diagnóstico:** as 4 funções mapeiam `Record<string, unknown>[]` (resposta bruta da API `materials-api`, formato ainda não 100% padronizado — por isso os fallbacks entre nomes de chave alternativos, ex. `g.group_id ?? g.id`) para as interfaces de domínio fortemente tipadas. Como cada elemento é `Record<string, unknown>`, qualquer acesso por ponto resolve pra `unknown`, e encadear `??` entre múltiplos nomes de chave possivelmente diferentes não estreita esse tipo — o resultado de `(g.group_id ?? g.id ?? "")` continua `unknown`, incompatível com os campos `string`/`number`/`boolean` das interfaces de destino.
+
+**Fix aplicado:** cast explícito por campo bruto (`(campo as TipoEsperado | undefined) ?? fallback`) antes de cada `??`, mesmo padrão já estabelecido em outros pontos de fronteira com API não tipada no mesmo repo (`src/services/QuoteService.ts`, `src/hooks/useGravacaoV2.ts`, `src/hooks/useSimilarKits.ts`, `src/hooks/useDuplicateKitDetector.ts`). Aplicado nas 4 funções: `getGroups` (9 campos), `getTypes`/`getTypesByGroupSlug` (bloco idêntico, 9 campos cada), `getComplete` (13 campos).
+
+**Ajuste intermediário (ESLint):** nos campos de `properties`/`type_properties` (tipados `Record<string, any> | null` nas interfaces `MaterialType`/`MaterialComplete`, `any` pré-existente e fora de escopo), o cast inicial usou `Record<string, any> | null | undefined`, o que introduziu 6 novos usos de `any` e quebrou o gate `@typescript-eslint/no-explicit-any` (base=3 → atual=9). Corrigido trocando para `Record<string, unknown> | null | undefined` — `unknown` não aciona a regra, e `Record<string, unknown>` continua estruturalmente atribuível a `Record<string, any> | null` (todo valor é atribuível a `any`), preservando o fix de tipo sem tocar nas declarações pré-existentes das interfaces.
+
+**Validação:**
+- `tscheck-files.mjs`: 4 → 0 erros (0 no programa inteiro).
+- `check-eslint-baseline.mjs`: 0 regressões (3334 erros globais, referência `origin/main` em `739620b9f4`).
+- Nenhum teste dedicado encontrado para este arquivo.
+- `typecheck:baseline`: 493 → 489 (309 arquivos), travado via `--update`.
