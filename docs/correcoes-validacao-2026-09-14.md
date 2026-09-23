@@ -6393,3 +6393,32 @@ onClick={() => m.handleGenerate()}
 - `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `2ddbd8aa0d`).
 - Nenhum teste dedicado encontrado para o arquivo.
 - `typecheck:baseline`: 182 → 180 (176 arquivos), travado via `--update`.
+
+## OrdersPage.tsx (etapa 17)
+
+**Arquivo:** `src/pages/OrdersPage.tsx`
+
+**Erros originais (2×):**
+```
+src/pages/OrdersPage.tsx(66,7): error TS2554: Expected 2 arguments, but got 1.
+src/pages/OrdersPage.tsx(68,7): error TS2554: Expected 2 arguments, but got 1.
+```
+
+**Diagnóstico:** `handleExport` chamava `exportToExcel({ items: data, filename: 'pedidos', columns: ORDER_EXPORT_COLUMNS })` / `exportToPDF({ ... })` com um único argumento-objeto, mas a implementação real em `src/utils/orderExportUtils.ts` tem assinatura `(data: any[], filename: string)` — sem parâmetro `columns` (as colunas são fixas via `QUOTE_EXPORT_COLUMNS` internamente). Bug de chamada real, não falso positivo: o mesmo import (`@/utils/orderExportUtils`) já é usado corretamente em `src/pages/QuotesListPage.tsx:254/265` com a forma posicional `exportToExcel(data, 'orcamentos')` — confirma que o call site em `OrdersPage.tsx` estava desalinhado com a assinatura real, provavelmente reescrito assumindo uma API de outro módulo (existem múltiplas funções `exportToExcel`/`exportToPDF` no repo com assinaturas distintas, ex. `src/utils/personalizationExport.ts` aceita objeto).
+
+**Fix aplicado:** alinha o call site à assinatura real, seguindo o padrão já validado em `QuotesListPage.tsx`; remove o import não utilizado `ORDER_EXPORT_COLUMNS` (só era referenciado nessas duas chamadas):
+```ts
+import { exportToExcel, exportToPDF } from "@/utils/orderExportUtils";
+// ...
+if (type === 'excel') {
+  exportToExcel(data, 'pedidos');
+} else {
+  exportToPDF(data, 'pedidos');
+}
+```
+
+**Validação:**
+- `tscheck-files.mjs`: 2 → 0 erros no arquivo.
+- `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `c021d16e5f`).
+- Nenhum teste dedicado encontrado para o arquivo.
+- `typecheck:baseline`: 180 → 178 (175 arquivos), travado via `--update`.

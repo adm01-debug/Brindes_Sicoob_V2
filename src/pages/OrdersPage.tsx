@@ -11,7 +11,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useSalesScope } from "@/lib/auth/visibility-scope";
 import { ScopeBadge } from "@/components/common/ScopeBadge";
 import { Button } from "@/components/ui/button";
-import { exportToExcel, exportToPDF, ORDER_EXPORT_COLUMNS } from "@/utils/orderExportUtils";
+import { exportToExcel, exportToPDF } from "@/utils/orderExportUtils";
 import { format } from "date-fns";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { BatchExportDialog } from "@/components/orders/BatchExportDialog";
@@ -63,9 +63,9 @@ export function OrdersPage() {
     }));
     
     if (type === 'excel') {
-      exportToExcel({ items: data, filename: 'pedidos', columns: ORDER_EXPORT_COLUMNS });
+      exportToExcel(data, 'pedidos');
     } else {
-      exportToPDF({ items: data, filename: 'pedidos', columns: ORDER_EXPORT_COLUMNS });
+      exportToPDF(data, 'pedidos');
     }
   };
 
