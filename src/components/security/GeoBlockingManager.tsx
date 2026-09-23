@@ -243,7 +243,7 @@ export function GeoBlockingManager() {
             <TableBody>
               {countries.map((country) => (
                 <TableRow key={country.id}>
-                  <TableCell className="font-medium">{country.country_name}</TableCell>
+                  <TableCell className="font-medium">{country.city_name}</TableCell>
                   <TableCell>
                     <Badge variant="outline">{country.country_code}</Badge>
                   </TableCell>
@@ -268,7 +268,7 @@ export function GeoBlockingManager() {
                       <Button
                         variant="ghost"
                         size="icon" aria-label="Excluir"
-                        onClick={() => handleRemoveCountry(country.id, country.country_name)}
+                        onClick={() => handleRemoveCountry(country.id, country.city_name)}
                       >
                         <Trash2 className="h-4 w-4 text-destructive" />
                       </Button>

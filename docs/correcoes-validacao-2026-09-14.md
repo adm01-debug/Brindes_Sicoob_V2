@@ -5448,3 +5448,33 @@ const fuse = new Fuse(filteredProducts, createProductFuseOptions<PromobrindProdu
 - `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `9c8455fd25`).
 - Teste dedicado `tests/hooks/useGlobalSearch-voice.test.ts`: 11/11 passaram.
 - `typecheck:baseline`: 249 → 247 (210 arquivos), travado via `--update`.
+
+## GeoBlockingManager.tsx (etapa 17)
+
+**Arquivo:** `src/components/security/GeoBlockingManager.tsx`
+
+**Erros originais (2×):**
+```
+src/components/security/GeoBlockingManager.tsx(246,63): error TS2339: Property 'country_name' does not exist on type '{ city_name: string; country_code: string; created_at: string; created_by: string | null; id: string; is_active: boolean; state: string | null; updated_at: string; }'.
+src/components/security/GeoBlockingManager.tsx(271,80): error TS2339: Property 'country_name' does not exist on type '{ city_name: string; country_code: string; created_at: string; created_by: string | null; id: string; is_active: boolean; state: string | null; updated_at: string; }'.
+```
+
+**Diagnóstico:** o tipo `AllowedCountry` (`src/hooks/useGeoBlocking.ts:8`) é `Database['public']['Tables']['city_whitelist']['Row']` — a tabela real não possui coluna `country_name`. O próprio hook confirma, no `addCountry` (linha ~99), que o nome de exibição do país é gravado em `city_name` (comentário: "Temporariamente usando countryName como city_name para compatibilidade de UI"). Ou seja, `country_name` nunca existiu no schema — é um bug de nome de propriedade desde a origem, não um caso de coerção de tipo.
+
+**Fix aplicado:**
+```tsx
+// antes:
+<TableCell className="font-medium">{country.country_name}</TableCell>
+...
+onClick={() => handleRemoveCountry(country.id, country.country_name)}
+// depois:
+<TableCell className="font-medium">{country.city_name}</TableCell>
+...
+onClick={() => handleRemoveCountry(country.id, country.city_name)}
+```
+
+**Validação:**
+- `tscheck-files.mjs`: 2 → 0 erros (4 → 2 no programa inteiro).
+- `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `af4bc621af`).
+- Sem teste dedicado encontrado (`find -iname "*GeoBlockingManager*"` retornou apenas o próprio componente).
+- `typecheck:baseline`: 247 → 245 (209 arquivos), travado via `--update`.
