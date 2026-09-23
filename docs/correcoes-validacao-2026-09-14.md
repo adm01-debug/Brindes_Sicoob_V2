@@ -3917,3 +3917,40 @@ className={step.status === 'blocked' ? 'bg-warning/10 text-warning border-warnin
 - `check-eslint-baseline.mjs`: 0 regressões (3331 erros globais, referência `origin/main` em `900ee841db`).
 - Nenhum teste dedicado encontrado.
 - `typecheck:baseline`: 360 → 357 (264 arquivos), travado via `--update`.
+
+## useQuoteViewData.ts (etapa 17)
+
+**Arquivo:** `src/pages/quote-view/useQuoteViewData.ts`
+
+**Erros originais (3×):** TS2339 (linha 21) — `duplicateQuote` desestruturado de `useQuotes()` mas inexistente no retorno do hook; TS2339 (linha 98) — `profile?.signature_url`, campo inexistente no tipo `Profile`; TS2322 (linha 215) — `logQuoteHistory` passado pra `syncQuoteToBitrix` com assinatura incompatível (4º parâmetro obrigatório vs. opcional esperado).
+
+**Diagnóstico (duplicateQuote):** função de fato existiu em `useQuotes.ts` (implementação completa, ver histórico git — commit `e4a7d038`), mas foi removida numa refatoração posterior. No hook atual (`src/hooks/quotes/useQuotes.ts`), a mesma funcionalidade já existe sob outro nome: `reorderQuote(quoteId)` (sem `itemIds`) cria uma cópia completa do orçamento como rascunho — confirmado como o substituto real porque `QuotesListPage.tsx:453` já usa exatamente `onDuplicate={(id) => reorderQuote(id)}` pro mesmo botão "Duplicar". `useQuoteViewData.ts` e seu consumidor `QuoteViewPage.tsx` (menu "Duplicar", linha 180) simplesmente não foram atualizados quando a função foi renomeada — bug de refatoração incompleta, não uma funcionalidade nova a implementar.
+
+**Diagnóstico (signature_url):** `Profile` (`src/types/users.ts`) e a tabela real `profiles` (`src/integrations/supabase/types.ts`) nunca tiveram coluna `signature_url` — campo sempre foi `undefined` em runtime também, não só em tipo. Como `signatureUrl` é opcional em `ProposalTemplateData.seller` (`ProposalHtmlTemplate.tsx:55`), a linha foi removida sem alterar comportamento (mesmo resultado: campo ausente).
+
+**Diagnóstico (logQuoteHistory):** o bug real estava em `useQuotes.ts:338` — `logQuoteHistory` declarava o 4º parâmetro `opts: Record<string, unknown>` como obrigatório, mas 3 outros call sites no projeto (`QuoteBitrixSync.ts:77`, `QuoteSingularApprovalActions.tsx:69`, e a própria função repassada pra `syncQuoteToBitrix`) já chamam/esperam esse parâmetro como opcional — `SyncBitrixParams.logQuoteHistory` (`QuoteBitrixSync.ts:18`) declara `meta?: Record<string, unknown>`. Corrigindo `opts` pra opcional na fonte (`useQuotes.ts`) resolve o erro do arquivo alvo e, como efeito colateral correto (mesma causa raiz), também zera 2 erros TS2554 pré-existentes em `QuoteManagerApprovalBanner.tsx:45` e `QuoteSingularApprovalActions.tsx:69` ("Expected 4 arguments, but got 3"), que já estavam quebrados por chamar a função com 3 argumentos.
+
+**Fix aplicado:**
+```ts
+// useQuotes.ts — antes: opts: Record<string, unknown>
+// depois:
+logQuoteHistory: (id: string, action: string, desc: string, opts?: Record<string, unknown>) =>
+  QuoteService.logHistory({ quoteId: id, userId: user?.id || "", action, description: desc, ...opts })
+
+// useQuoteViewData.ts — antes: const { fetchQuote, logQuoteHistory, duplicateQuote } = useQuotes();
+// depois:
+const { fetchQuote, logQuoteHistory, reorderQuote } = useQuotes();
+// (mesma troca no objeto de retorno do hook)
+// removida a linha: signatureUrl: profile?.signature_url || undefined,
+
+// QuoteViewPage.tsx — antes: const newQuote = await duplicateQuote(id!);
+// depois:
+const newQuote = await reorderQuote(id!);
+```
+
+**Validação:**
+- `tscheck-files.mjs`: 3 → 0 erros no arquivo alvo; efeito colateral zera também os 2 erros TS2554 em `QuoteManagerApprovalBanner.tsx` e `QuoteSingularApprovalActions.tsx`.
+- `check-eslint-baseline.mjs`: 0 regressões nos 3 arquivos alterados (`useQuoteViewData.ts`, `useQuotes.ts`, `QuoteViewPage.tsx`).
+- Nenhum teste dedicado encontrado (`tests/hooks/useQuotes-helpers.test.ts` testa apenas helpers puros, sem importar o hook).
+- `typecheck:baseline`: 357 → 352 (261 arquivos; 3 arquivos melhoraram), travado via `--update`.
+- **Nota:** durante a validação, foi descoberto um erro pré-existente e não-relacionado em `useQuotes.ts:56` (`newQuote.id` possivelmente `undefined` atribuído a `quoteId: string` em `QuoteService.logHistory`) — fora do escopo desta correção (não está entre os 3 erros do arquivo alvo, e existia antes desta mudança); candidato para uma futura etapa.

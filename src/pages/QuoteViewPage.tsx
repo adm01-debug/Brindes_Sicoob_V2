@@ -53,7 +53,7 @@ export default function QuoteViewPage() {
     isGeneratingPDF, isSyncing, approvalLink,
     showPresentation, setShowPresentation, proposalData,
     handleDownloadPDF, handleWhatsAppShare, handleShareLink,
-    handleSyncBitrix, fetchQuote, logQuoteHistory, duplicateQuote,
+    handleSyncBitrix, fetchQuote, logQuoteHistory, reorderQuote,
   } = useQuoteViewData(id);
 
   useEffect(() => {
@@ -177,7 +177,7 @@ export default function QuoteViewPage() {
                   <Edit2 className="h-4 w-4 mr-2" /> Editar
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={async () => {
-                  const newQuote = await duplicateQuote(id!);
+                  const newQuote = await reorderQuote(id!);
                   if (newQuote?.id) navigate(`/orcamentos/${newQuote.id}`);
                 }}>
                   <Copy className="h-4 w-4 mr-2" /> Duplicar

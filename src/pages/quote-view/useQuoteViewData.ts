@@ -18,7 +18,7 @@ import {
 } from './QuoteActionHandlers';
 
 export function useQuoteViewData(id: string | undefined) {
-  const { fetchQuote, logQuoteHistory, duplicateQuote } = useQuotes();
+  const { fetchQuote, logQuoteHistory, reorderQuote } = useQuotes();
   const { user, profile } = useAuth();
   const { generateApprovalLink, copyToClipboard, isGenerating } = useQuoteApproval();
 
@@ -95,7 +95,6 @@ export function useQuoteViewData(id: string | undefined) {
       seller: {
         name: profile?.full_name || user?.email || 'Vendedor',
         email: user?.email || undefined,
-        signatureUrl: profile?.signature_url || undefined,
       },
       items:
         quote.items?.map((item) => ({
@@ -248,6 +247,6 @@ export function useQuoteViewData(id: string | undefined) {
     // Quotes
     fetchQuote,
     logQuoteHistory,
-    duplicateQuote,
+    reorderQuote,
   };
 }

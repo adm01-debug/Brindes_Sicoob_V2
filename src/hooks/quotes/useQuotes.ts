@@ -335,7 +335,7 @@ export function useQuotes() {
     quotes, techniques, isLoading, error,
     fetchQuotes, fetchQuote, createQuote, updateQuote, updateQuoteStatus, bulkUpdateStatus,
     deleteQuote, reorderQuote, reorderFromOrder, syncQuoteToBitrix,
-    logQuoteHistory: (id: string, action: string, desc: string, opts: Record<string, unknown>) => 
+    logQuoteHistory: (id: string, action: string, desc: string, opts?: Record<string, unknown>) =>
       QuoteService.logHistory({ quoteId: id, userId: user?.id || "", action, description: desc, ...opts })
   };
 }
