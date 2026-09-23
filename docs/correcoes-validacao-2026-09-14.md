@@ -4491,3 +4491,40 @@ const last = data[data.length - 1]!.price;
 - `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `c5a6c4add5`).
 - Nenhum teste dedicado encontrado.
 - `typecheck:baseline`: 313 → 311 (242 arquivos), travado via `--update`.
+
+## PricingPanel.tsx (etapa 17)
+
+**Arquivo:** `src/components/engraving/PricingPanel.tsx`
+
+**Erros originais (2×):**
+- TS2532 (linha 97) — `grupos[tabela.nomeTecnica].push(tabela)` após guarda `if (!grupos[...])`, não propagada entre expressões separadas.
+- TS2532 (linha 102) — `grupos[key].sort(...)` onde `key` vem de `Object.keys(grupos)`, sempre uma chave válida, mas `Record` indexado retorna `T | undefined` independente da origem da chave.
+
+**Fix aplicado:**
+```ts
+// antes:
+results.forEach((tabela) => {
+  if (!grupos[tabela.nomeTecnica]) {
+    grupos[tabela.nomeTecnica] = [];
+  }
+  grupos[tabela.nomeTecnica].push(tabela);
+});
+Object.keys(grupos).forEach((key) => {
+  grupos[key].sort((a, b) => (a.maxCores ?? 0) - (b.maxCores ?? 0));
+});
+
+// depois:
+results.forEach((tabela) => {
+  (grupos[tabela.nomeTecnica] ??= []).push(tabela);
+});
+Object.keys(grupos).forEach((key) => {
+  grupos[key]!.sort((a, b) => (a.maxCores ?? 0) - (b.maxCores ?? 0));
+});
+```
+Idioma `??= []` já estabelecido no codebase (`ComparisonShortcutsCheatsheet.tsx`, `TechniqueMultiSelector.tsx`, `RlsAuditPanel.tsx`, `RolePermissionsPage.tsx`) — reutilizado para o primeiro ponto; asserção de não-nulo no segundo, onde a chave já vem do próprio objeto.
+
+**Validação:**
+- `tscheck-files.mjs`: 2 → 0 erros (9 no programa inteiro, pré-existentes/fora de escopo).
+- `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `d9c0561657`).
+- Nenhum teste dedicado encontrado.
+- `typecheck:baseline`: 311 → 309 (241 arquivos), travado via `--update`.

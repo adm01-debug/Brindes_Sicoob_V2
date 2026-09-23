@@ -91,15 +91,12 @@ export function PricingPanel() {
     // Agrupar por nome da técnica
     const grupos: Record<string, TabelaPrecoTecnica[]> = {};
     results.forEach((tabela) => {
-      if (!grupos[tabela.nomeTecnica]) {
-        grupos[tabela.nomeTecnica] = [];
-      }
-      grupos[tabela.nomeTecnica].push(tabela);
+      (grupos[tabela.nomeTecnica] ??= []).push(tabela);
     });
-    
+
     // Ordenar cada grupo por maxCores
     Object.keys(grupos).forEach((key) => {
-      grupos[key].sort((a, b) => (a.maxCores ?? 0) - (b.maxCores ?? 0));
+      grupos[key]!.sort((a, b) => (a.maxCores ?? 0) - (b.maxCores ?? 0));
     });
     
     return grupos;
