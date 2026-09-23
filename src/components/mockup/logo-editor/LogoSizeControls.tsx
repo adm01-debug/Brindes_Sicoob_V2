@@ -61,7 +61,7 @@ export function LogoSizeControls({
               </Button>
             </div>
           </div>
-          <Slider value={[logoWidth]} onValueChange={(v) => onSizeChange(v[0], logoHeight)} min={1} max={effectiveMaxW} step={0.5} />
+          <Slider value={[logoWidth]} onValueChange={(v) => onSizeChange(v[0]!, logoHeight)} min={1} max={effectiveMaxW} step={0.5} />
         </div>
 
         {/* Height */}
@@ -78,7 +78,7 @@ export function LogoSizeControls({
               </Button>
             </div>
           </div>
-          <Slider value={[logoHeight]} onValueChange={(v) => onSizeChange(logoWidth, v[0])} min={1} max={effectiveMaxH} step={0.5} />
+          <Slider value={[logoHeight]} onValueChange={(v) => onSizeChange(logoWidth, v[0]!)} min={1} max={effectiveMaxH} step={0.5} />
         </div>
 
         {/* Max area button */}
@@ -111,7 +111,7 @@ export function LogoSizeControls({
               </Button>
             </div>
           </div>
-          <Slider value={[logoScale]} onValueChange={(v) => onLogoScaleChange?.(v[0])} min={10} max={500} step={5} disabled={!logoPreview} />
+          <Slider value={[logoScale]} onValueChange={(v) => onLogoScaleChange?.(v[0]!)} min={10} max={500} step={5} disabled={!logoPreview} />
         </div>
 
         <div className="flex items-center justify-between">

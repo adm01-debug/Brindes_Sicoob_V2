@@ -3185,3 +3185,19 @@ Esse hook é consumido por `AuthContext.tsx` (linha 88), que calcula `mfaRequire
 - `check-eslint-baseline.mjs`: 0 regressões (3334 erros globais, referência `origin/main` em `19e663b687`).
 - Teste dedicado `tests/components/layout/SidebarNavGroup.test.tsx`: 1 passou (não cobre o cenário do bug corrigido, ver diagnóstico acima).
 - `typecheck:baseline`: 465 → 462 (300 arquivos), travado via `--update`.
+
+## LogoSizeControls.tsx (etapa 17)
+
+**Arquivo:** `src/components/mockup/logo-editor/LogoSizeControls.tsx`
+
+**Erros originais (3×):** TS2345 ×3 (linhas 64, 81, 114 — `number | undefined` não atribuível a `number` nos callbacks `onValueChange` dos 3 `Slider`).
+
+**Diagnóstico:** `src/components/ui/slider.tsx` é um wrapper fino sobre `@radix-ui/react-slider`, com exatamente 1 `SliderPrimitive.Thumb` renderizado. Os 3 usos neste arquivo sempre passam `value` como array de 1 elemento (`[logoWidth]`, `[logoHeight]`, `[logoScale]`) — o contrato do Radix Slider garante que `onValueChange` sempre retorna um array do mesmo tamanho que `value` (uma posição por thumb), logo `v[0]` é sempre definido. `noUncheckedIndexedAccess` não propaga essa garantia de contrato de biblioteca.
+
+**Fix aplicado:** asserção de não-nulo em `v[0]!` nos 3 pontos, mesma classe de garantia de contrato de biblioteca/API já usada nesta sessão (ex.: `IntersectionObserver` em `CompareTableView.tsx`).
+
+**Validação:**
+- `tscheck-files.mjs`: 3 → 0 erros (0 no programa inteiro).
+- `check-eslint-baseline.mjs`: 0 regressões (3334 erros globais, referência `origin/main` em `3610add7a1`).
+- Nenhum teste dedicado encontrado para este arquivo.
+- `typecheck:baseline`: 462 → 459 (299 arquivos), travado via `--update`.
