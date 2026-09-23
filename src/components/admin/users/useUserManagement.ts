@@ -29,7 +29,7 @@ export function useUserManagement() {
       
       const label =
         newRole === "dev" ? "Dev"
-        : newRole === "supervisor" || newRole === "admin" || newRole === "manager" ? "Supervisor"
+        : newRole === "supervisor" ? "Supervisor"
         : "Agente";
       toast.success(`Usuário alterado para ${label}`);
     } catch (error) {

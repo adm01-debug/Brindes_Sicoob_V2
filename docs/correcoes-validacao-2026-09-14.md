@@ -4255,3 +4255,32 @@ for (let i = 0; i < reordered.length; i++) {
 - `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `155e558b0`).
 - Nenhum teste dedicado encontrado para os 3 arquivos.
 - `typecheck:baseline`: 331 → 329 (251 arquivos), travado via `--update`.
+
+## useUserManagement.ts (etapa 17)
+
+**Arquivo:** `src/components/admin/users/useUserManagement.ts`
+
+**Erros originais (2×):** TS2367 (linha 32) — comparações `newRole === "admin"` e `newRole === "manager"` sem overlap possível com o tipo `AppRole`.
+
+**Diagnóstico:** `AppRole` (em `src/lib/roles.ts`) já não inclui mais `"admin"`/`"manager"` como valores válidos — esses são apenas aliases legados mapeados para `"supervisor"` via `ROLE_ALIASES` (usado em outro ponto do fluxo de dados, antes de chegar como `AppRole`). Como `newRole` é o parâmetro `newRole: AppRole` de `handleRoleChange`, e o único chamador (`AdminUsuariosPage.tsx` → `RoleChangeDialog.onConfirm`) já entrega um `AppRole` estritamente tipado, as 2 comparações são código morto: nunca podem ser verdadeiras. Confirmado via grep que não há nenhum outro ponto de entrada pra essa função. Fix: remover as 2 comparações mortas, mantendo a lógica (supervisor → "Supervisor", resto → "Agente") idêntica.
+
+**Fix aplicado:**
+```ts
+// antes:
+const label =
+  newRole === "dev" ? "Dev"
+  : newRole === "supervisor" || newRole === "admin" || newRole === "manager" ? "Supervisor"
+  : "Agente";
+
+// depois:
+const label =
+  newRole === "dev" ? "Dev"
+  : newRole === "supervisor" ? "Supervisor"
+  : "Agente";
+```
+
+**Validação:**
+- `tscheck-files.mjs`: 2 → 0 erros (2 no programa inteiro, pré-existentes/fora de escopo).
+- `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `40dd1337b`).
+- Nenhum teste dedicado encontrado.
+- `typecheck:baseline`: 329 → 327 (250 arquivos), travado via `--update`.
