@@ -38,8 +38,9 @@ npm run build
    histórico estiver divergente: ele tentaria reaplicar centenas de arquivos que
    não representam o baseline remoto. Neste lote, aplicar
    `20260923110000_harden_internal_operations.sql`,
-   `20260923111000_schedule_secure_export_worker.sql` e
-   `20260923112000_fix_connection_sync_and_favorites.sql`, registrando cada uma
+   `20260923111000_schedule_secure_export_worker.sql`,
+   `20260923112000_fix_connection_sync_and_favorites.sql` e
+   `20260923130000_secure_sicoob_documents_and_exports.sql`, registrando cada uma
    no ledger na mesma transação de aplicação.
 
 8. Verificar após a aplicação: as três versões aparecem no ledger, as chamadas

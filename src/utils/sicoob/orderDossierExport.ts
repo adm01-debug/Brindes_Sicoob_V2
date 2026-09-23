@@ -44,9 +44,9 @@ export const exportOrderDossier = ({
   doc.rect(0, 0, 210, 40, "F");
   doc.setTextColor("#FFFFFF");
   doc.setFontSize(22);
-  doc.text("DOSSIÊ DE CONFORMIDADE BPMN", 105, 20, { align: "center" });
+  doc.text("DOSSIÊ OPERACIONAL DO PEDIDO", 105, 20, { align: "center" });
   doc.setFontSize(10);
-  doc.text(`CERTIFICADO DIGITAL SICOOB • ID: ${orderData.id}`, 105, 30, { align: "center" });
+  doc.text(`Relatório gerado no portal • ID: ${orderData.id}`, 105, 30, { align: "center" });
 
   // Order info
   doc.setTextColor(darkColor);
@@ -113,10 +113,10 @@ export const exportOrderDossier = ({
   doc.rect(14, finalY, 182, 30);
   doc.setFontSize(12);
   doc.setTextColor(darkColor);
-  doc.text("VERIFICADO POR PROMO GIFTS INTELLIGENCE", 105, finalY + 12, { align: "center" });
+  doc.text("RELATÓRIO OPERACIONAL", 105, finalY + 12, { align: "center" });
   doc.setFontSize(8);
   doc.text(
-    "Este documento possui validade jurídica interna e comprova a integridade do fluxo de aprovações.",
+    "Este relatório apresenta os dados operacionais disponíveis no momento da emissão.",
     105,
     finalY + 20,
     { align: "center" }

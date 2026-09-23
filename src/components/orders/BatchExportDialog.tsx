@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useExportJobs, ExportJob } from "@/hooks/infrastructure/useExportJobs";
+import { supabase } from "@/integrations/supabase/client";
 import {
   Dialog,
   DialogContent,
@@ -30,7 +31,12 @@ export function BatchExportDialog({ entityType, filters }: BatchExportDialogProp
   const [open, setOpen] = useState(false);
   const [frequency, setFrequency] = useState<'daily' | 'weekly' | 'monthly'>('daily');
   const [exportType, setExportType] = useState<'pdf' | 'excel'>('excel');
-  const [notifyByEmail, setNotifyByEmail] = useState(true);
+  const downloadJob = async (job: ExportJob) => {
+    if (!job.file_path) return;
+    const { data, error } = await supabase.storage.from("exports").createSignedUrl(job.file_path, 300);
+    if (error) throw error;
+    window.open(data.signedUrl, "_blank", "noopener,noreferrer");
+  };
 
   const entityJobs = jobs.filter(j => j.entity_type === entityType);
   const entityScheduled = scheduledExports.filter(s => s.entity_type === entityType);
@@ -115,11 +121,14 @@ export function BatchExportDialog({ entityType, filters }: BatchExportDialogProp
                           </div>
                         </div>
                         <div className="flex items-center gap-1">
-                          {job.status === 'completed' && job.file_url && (
-                            <Button size="icon" variant="ghost" className="h-7 w-7" asChild>
-                              <a href={job.file_url} target="_blank" rel="noopener noreferrer">
-                                <ExternalLink className="h-3.5 w-3.5" />
-                              </a>
+                          {job.status === 'completed' && job.file_path && (
+                            <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => void downloadJob(job)}>
+                              <ExternalLink className="h-3.5 w-3.5" />
+                            </Button>
+                          )}
+                          {job.status === 'failed' && (
+                            <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => retryJob(job.id)}>
+                              <RefreshCw className="h-3.5 w-3.5" />
                             </Button>
                           )}
                         </div>
@@ -161,18 +170,7 @@ export function BatchExportDialog({ entityType, filters }: BatchExportDialogProp
                     </Select>
                   </div>
                 </div>
-                <div className="flex items-center gap-2 px-1">
-                  <input 
-                    type="checkbox" 
-                    id="notify-email" 
-                    checked={notifyByEmail} 
-                    onChange={(e) => setNotifyByEmail(e.target.checked)}
-                    className="h-4 w-4 rounded border-gray-300"
-                  />
-                  <label htmlFor="notify-email" className="text-xs text-muted-foreground cursor-pointer">
-                    Notificar por e-mail após a geração (apenas papéis autorizados)
-                  </label>
-                </div>
+                <p className="text-xs text-muted-foreground">A conclusão aparecerá nas notificações do portal. O download exige uma sessão autorizada.</p>
                 <Button className="w-full gap-2" variant="outline" onClick={handleSchedule}>
                   <Calendar className="h-4 w-4" /> Confirmar Agendamento
                 </Button>
@@ -214,4 +212,3 @@ export function BatchExportDialog({ entityType, filters }: BatchExportDialogProp
     </Dialog>
   );
 }
-

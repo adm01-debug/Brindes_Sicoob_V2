@@ -68,3 +68,31 @@ test('sync de conexões e favoritos respeitam a hierarquia e concorrência', () 
   assert.match(fix, /ON CONFLICT \(user_id\) WHERE is_default DO NOTHING/);
   assert.match(fix, /SET search_path = pg_catalog, public/);
 });
+
+test('correções P0 isolam documentos, corrigem a sincronização e reservam exportações', () => {
+  const migration = read('supabase/migrations/20260923130000_secure_sicoob_documents_and_exports.sql');
+  const worker = read('supabase/functions/process-batch-export/index.ts');
+  const dialog = read('src/components/orders/BatchExportDialog.tsx');
+
+  for (const policy of [
+    'sicoob_shipment_read_in_order_scope',
+    'sicoob_invoices_read_in_order_scope',
+    'sicoob_payments_read_in_order_scope',
+    'sicoob_artwork_read_in_order_scope',
+    'sicoob_order_documents_read_in_order_scope',
+  ]) {
+    assert.match(migration, new RegExp(`DROP POLICY IF EXISTS "${policy}"`));
+  }
+  assert.match(migration, /sicoob_current_actor_can_read_order\(order_id\)/);
+  assert.match(migration, /split_part\(name, '\/', 1\)::uuid/);
+  assert.match(migration, /user_id ASC/);
+  assert.doesNotMatch(migration, /FROM public\.user_roles[\s\S]{0,250}created_at ASC/);
+  assert.match(migration, /FOR UPDATE SKIP LOCKED/);
+  assert.match(migration, /split_part\(name, '\/', 1\) = auth\.uid\(\)::text/);
+  assert.match(worker, /claim_sicoob_export_jobs/);
+  assert.match(worker, /enqueue_due_sicoob_scheduled_exports/);
+  assert.match(dialog, /createSignedUrl/);
+  assert.doesNotMatch(worker, /getPublicUrl/);
+  assert.match(worker, /application\/vnd\.openxmlformats-officedocument\.spreadsheetml\.sheet/);
+  assert.match(worker, /application\/pdf/);
+});
