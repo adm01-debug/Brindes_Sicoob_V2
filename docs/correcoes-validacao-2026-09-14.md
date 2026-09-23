@@ -3480,3 +3480,22 @@ Esse hook é consumido por `AuthContext.tsx` (linha 88), que calcula `mfaRequire
 - `check-eslint-baseline.mjs`: 0 regressões (3331 erros globais, referência `origin/main` em `43e517e964`) — drift positivo: 1 erro de lint eliminado.
 - Nenhum teste dedicado encontrado.
 - `typecheck:baseline`: 419 → 416 (285 arquivos), travado via `--update`.
+
+## VoiceVisualEffects.tsx (etapa 17)
+
+**Arquivo:** `src/components/search/voice/VoiceVisualEffects.tsx`
+
+**Erros originais (3×):** TS2532 (linhas 223, 224, 225 — `Object is possibly 'undefined'`, componente `SpectrumWaveform`).
+
+**Diagnóstico:**
+- `barOffsets` é `number[]` calculado via `useMemo` com `Array.from({ length: barCount })` (mesma constante `barCount = 15` usada no loop externo `Array.from({ length: barCount }).map((_, i) => ...)`).
+- Com `noUncheckedIndexedAccess`, `barOffsets[i]` tipa como `number | undefined`, mas `i` sempre está no intervalo `[0, barCount)` e `barOffsets` sempre tem exatamente `barCount` elementos — mesmo padrão de garantia estrutural (dois arrays construídos a partir da mesma constante de tamanho) já resolvido com asserção de não-nulo em `FocusTrap.tsx` (etapa 17 anterior).
+
+**Fix aplicado:**
+- `barOffsets[i]` → `barOffsets[i]!` nos 3 usos dentro do cálculo de `duration` da transição do Framer Motion.
+
+**Validação:**
+- `tscheck-files.mjs`: 3 → 0 erros (4 no programa inteiro).
+- `check-eslint-baseline.mjs`: 0 regressões (3331 erros globais, referência `origin/main` em `a16350e4f5`).
+- Nenhum teste dedicado encontrado.
+- `typecheck:baseline`: 416 → 413 (284 arquivos), travado via `--update`.

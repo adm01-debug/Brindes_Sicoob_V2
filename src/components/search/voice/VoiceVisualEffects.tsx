@@ -220,9 +220,9 @@ export function SpectrumWaveform({ colors, isActive, isSpeaking }: { colors: Pha
             transition={{
               duration: isActive
                 ? isSpeaking
-                  ? 0.55 + barOffsets[i] * 0.5  // Speaking: slower, wave-like
-                  : 0.35 + barOffsets[i]          // Listening: fast, reactive
-                : 1 + barOffsets[i] * 2,
+                  ? 0.55 + barOffsets[i]! * 0.5  // Speaking: slower, wave-like
+                  : 0.35 + barOffsets[i]!          // Listening: fast, reactive
+                : 1 + barOffsets[i]! * 2,
               repeat: Infinity,
               delay: isSpeaking ? i * 0.08 : i * 0.05, // Speaking: staggered wave effect
               ease: isSpeaking ? "easeInOut" : "easeInOut",
