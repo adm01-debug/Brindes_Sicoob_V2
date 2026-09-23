@@ -3101,3 +3101,19 @@ Esse hook é consumido por `AuthContext.tsx` (linha 88), que calcula `mfaRequire
 - `check-eslint-baseline.mjs`: 0 regressões (3334 erros globais, referência `origin/main` em `aa64b3cfff`).
 - Nenhum teste dedicado encontrado para este arquivo.
 - `typecheck:baseline`: 480 → 477 (305 arquivos), travado via `--update`.
+
+## CompareTableView.tsx (etapa 17)
+
+**Arquivo:** `src/components/compare/CompareTableView.tsx`
+
+**Erros originais (3×):** TS18048 (linha 80 — `entry` possivelmente `undefined`), TS2538 (linha 326 — `undefined` não pode ser usado como tipo de índice), TS2345 (linha 333 — `number | undefined` não atribuível a `number`).
+
+**Diagnóstico:** linha 80 — `([entry]) => setHeaderStuck(!entry.isIntersecting)` desestrutura o array de entradas do `IntersectionObserver`; como só um elemento (`headerSentinelRef.current`) é observado (`observer.observe(el)`), o callback sempre recebe exatamente 1 entrada correspondente a esse alvo — garantia do próprio contrato da API `IntersectionObserver`, não propagada pelo TS via `noUncheckedIndexedAccess`. Linhas 326/333 — dentro de `HighlightedNumberRow`, `highlights` (retorno de `useComparisonHighlight(values, mode)`) e `values` (`= products.map(valueFn)`) têm sempre o mesmo comprimento de `products`, e a iteração é `products.map((_, idx) => ...)` — logo `highlights[idx]` e `values[idx]` são estruturalmente garantidos definidos pelo mesmo invariante de comprimento de array usado em `idx`.
+
+**Fix aplicado:** asserção de não-nulo nos 3 pontos (`entry!.isIntersecting`, `highlights[idx]!`, `values[idx]!`), mesmo padrão já usado na sessão para garantias estruturais de contrato de API ou de invariante de comprimento de array entre arrays irmãos.
+
+**Validação:**
+- `tscheck-files.mjs`: 3 → 0 erros (7 no programa inteiro).
+- `check-eslint-baseline.mjs`: 0 regressões (3334 erros globais, referência `origin/main` em `7610d92924`).
+- Nenhum teste dedicado encontrado para este arquivo.
+- `typecheck:baseline`: 477 → 474 (304 arquivos), travado via `--update`.

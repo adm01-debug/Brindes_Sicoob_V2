@@ -77,7 +77,7 @@ export function CompareTableView({
     const el = headerSentinelRef.current;
     if (!el) return;
     const observer = new IntersectionObserver(
-      ([entry]) => setHeaderStuck(!entry.isIntersecting),
+      ([entry]) => setHeaderStuck(!entry!.isIntersecting),
       { threshold: 0, rootMargin: "0px" }
     );
     observer.observe(el);
@@ -323,14 +323,14 @@ function HighlightedNumberRow({
         </div>
       </TableCell>
       {products.map((_, idx) => (
-        <TableCell key={`cell-${idx}`} className={cn("text-center", highlightClasses[highlights[idx]])}>
+        <TableCell key={`cell-${idx}`} className={cn("text-center", highlightClasses[highlights[idx]!])}>
           <div className="flex items-center justify-center gap-1">
             {highlights[idx] === "best" && <Crown className="h-3.5 w-3.5 text-success" />}
             <span className={cn(
               highlights[idx] === "best" ? "font-semibold text-success" :
               highlights[idx] === "worst" ? "text-destructive" : ""
             )}>
-              {renderFn(values[idx])}
+              {renderFn(values[idx]!)}
             </span>
             {highlights[idx] === "worst" && <AlertTriangle className="h-3 w-3 text-destructive" />}
           </div>
