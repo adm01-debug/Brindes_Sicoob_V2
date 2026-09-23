@@ -2895,3 +2895,21 @@ Esse hook é consumido por `AuthContext.tsx` (linha 88), que calcula `mfaRequire
 - `check-eslint-baseline.mjs`: 0 regressões (3335 erros globais, referência `origin/main` em `93b57b0527`).
 - Nenhum teste dedicado encontrado para este arquivo.
 - `typecheck:baseline`: 521 → 517 (316 arquivos), travado via `--update`.
+
+## mockData.ts (etapa 17)
+
+**Arquivo:** `src/lib/bi/mockData.ts`
+
+**Erros originais (4×):** TS2532 ×2 (linhas 69, 70 — `base[4]`/`base[2]` possivelmente `undefined`); TS2322 ×2 (linhas 117, 127 — `monthLabel: string | undefined` não atribuível a `monthLabel: string`).
+
+**Diagnóstico:** todos os 3 pontos de acesso indexado são estruturalmente seguros sob `noUncheckedIndexedAccess`:
+- `base[4]`/`base[2]` — `base` é um array literal fixo com exatamente 10 elementos; os índices 4 e 2 estão sempre dentro do intervalo.
+- `MONTH_LABELS_PT[i]` (2 ocorrências, em `client`/`industry`) — `MONTH_LABELS_PT` tem exatamente 12 elementos, e `i` vem de `.map((q, i) => ...)` sobre `clientPattern`/`industryPattern`, ambos também com exatamente 12 elementos (comentário do código confirma "12 meses") — `i` sempre está no intervalo `[0, 11]`, o mesmo de `MONTH_LABELS_PT`.
+
+**Fix aplicado:** asserção de não-nulo nos 4 pontos (`base[4]!`, `base[2]!`, `MONTH_LABELS_PT[i]!` ×2).
+
+**Validação:**
+- `tscheck-files.mjs`: 4 → 0 erros (0 no programa inteiro).
+- `check-eslint-baseline.mjs`: 0 regressões (3335 erros globais, referência `origin/main` em `bb3cdf3af8`).
+- Nenhum teste dedicado encontrado para este arquivo.
+- `typecheck:baseline`: 517 → 513 (315 arquivos), travado via `--update`.

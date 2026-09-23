@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-09-23T00:10:21.869Z",
-  "total": 517,
+  "generatedAt": "2026-09-23T00:14:28.514Z",
+  "total": 513,
   "files": {
     "src/components/admin/common/AdminDataTable.tsx": 2,
     "src/components/admin/connections/Bitrix24Tab.tsx": 1,
@@ -254,7 +254,6 @@
     "src/lib/auth/auth-utils.ts": 3,
     "src/lib/auth/visibility-scope.ts": 2,
     "src/lib/bi/executive-summary.ts": 2,
-    "src/lib/bi/mockData.ts": 4,
     "src/lib/bi/pptxGenerator.ts": 1,
     "src/lib/crm-db.ts": 1,
     "src/lib/edge-function-client.ts": 1,
