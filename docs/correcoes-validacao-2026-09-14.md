@@ -5062,3 +5062,31 @@ const url = images[i]!;
 - `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `6722e74365`).
 - Nenhum teste dedicado encontrado.
 - `typecheck:baseline`: 273 → 271 (222 arquivos), travado via `--update`.
+
+## ZoomableGallery.tsx (etapa 17)
+
+**Arquivo:** `src/components/products/ZoomableGallery.tsx`
+
+**Erros originais (2×):**
+```
+src/components/products/ZoomableGallery.tsx(101,48): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+src/components/products/ZoomableGallery.tsx(102,57): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+```
+
+**Diagnóstico:** padrão `noUncheckedIndexedAccess` em `images[g.currentIndex]`, passado para `onShare`/`onDownload` (props tipadas como `(imageUrl: string) => void`, sem `| undefined`). `currentIndex` é estado gerenciado por `useGalleryZoom` (`src/components/products/zoomable-gallery/useGalleryZoom.ts`), sempre inicializado em 0 e mantido dentro de `[0, images.length)` pelas funções de navegação — TS não modela essa garantia de estado interno do hook.
+
+**Fix aplicado:**
+```ts
+// antes:
+onShare={onShare ? () => onShare(images[g.currentIndex]) : undefined}
+onDownload={onDownload ? () => onDownload(images[g.currentIndex]) : undefined}
+// depois:
+onShare={onShare ? () => onShare(images[g.currentIndex]!) : undefined}
+onDownload={onDownload ? () => onDownload(images[g.currentIndex]!) : undefined}
+```
+
+**Validação:**
+- `tscheck-files.mjs`: 2 → 0 erros (2 → 0 no programa inteiro).
+- `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `51c1b8e6e6`).
+- Nenhum teste dedicado encontrado.
+- `typecheck:baseline`: 271 → 269 (221 arquivos), travado via `--update`.

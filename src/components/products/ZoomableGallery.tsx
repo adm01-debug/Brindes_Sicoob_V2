@@ -98,8 +98,8 @@ export function ZoomableGallery({ images, productName, className, onShare, onDow
             <GalleryToolbar
               zoom={g.zoom} onZoomIn={g.handleZoomIn} onZoomOut={g.handleZoomOut}
               onRotate={g.handleRotate} onReset={g.resetView} onClose={() => setIsFullscreen(false)}
-              onShare={onShare ? () => onShare(images[g.currentIndex]) : undefined}
-              onDownload={onDownload ? () => onDownload(images[g.currentIndex]) : undefined}
+              onShare={onShare ? () => onShare(images[g.currentIndex]!) : undefined}
+              onDownload={onDownload ? () => onDownload(images[g.currentIndex]!) : undefined}
             />
             <div className="flex-1 flex items-center justify-center p-16"><ImageViewer fullscreen /></div>
             {images.length > 1 && (
