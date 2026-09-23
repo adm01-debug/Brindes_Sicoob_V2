@@ -5751,3 +5751,38 @@ Os dois ramos inválidos foram colapsados em um único clamp para o piso real (`
 - `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `71ea0a13ff`).
 - Sem teste dedicado encontrado.
 - `typecheck:baseline`: 229 → 227 (200 arquivos), travado via `--update`.
+
+## useSimulatorWizard.ts (etapa 17)
+
+**Arquivo:** `src/hooks/simulator/useSimulatorWizard.ts` (+ `src/types/domain/simulator-wizard.ts`)
+
+**Erros originais (2×):**
+```
+src/hooks/simulator/useSimulatorWizard.ts(97,68): error TS2820: Type '"REMOVE_ALL_PERSONALIZATIONS"' is not assignable to type '"SET_STEP" | ... | "RESET_WIZARD"'. Did you mean '"REMOVE_PERSONALIZATION"'?
+src/hooks/simulator/useSimulatorWizard.ts(131,25): error TS2532: Object is possibly 'undefined'.
+```
+
+**Diagnóstico:**
+1. `removeAllPersonalizations` despacha `{ type: 'REMOVE_ALL_PERSONALIZATIONS' }`, e o reducer (`wizardReducer.ts:87`) **já trata esse case de verdade** (`return { ...state, personalizations: [] }`), mas a union `WizardAction` (`src/types/domain/simulator-wizard.ts`) nunca incluiu esse tipo — só tinha `REMOVE_PERSONALIZATION` (singular). Bug real de dessincronia entre a definição de tipo e a implementação: a feature "remover todas as gravações" (botão real, com toast "Todas as gravações removidas") funciona em runtime, mas o TS não conseguia validar a chamada.
+2. Em `availableLocationsFiltered`, o `if (state.isEditingPersonalization && state.personalizations[state.currentPersonalizationIndex])` guarda o acesso por índice, mas a re-leitura do mesmo acesso na linha seguinte (`state.personalizations[state.currentPersonalizationIndex].location.id`) é uma nova expressão para o TS — o `noUncheckedIndexedAccess` não propaga o narrowing entre expressões de indexação repetidas.
+
+**Fix aplicado:**
+```ts
+// types/domain/simulator-wizard.ts — tipo de ação adicionado (reducer já suportava):
+| { type: 'REMOVE_PERSONALIZATION'; payload: string }
+| { type: 'REMOVE_ALL_PERSONALIZATIONS' }
+| { type: 'EDIT_PERSONALIZATION'; payload: number }
+
+// useSimulatorWizard.ts — narrowing capturado em variável local:
+const currentPersonalization = state.personalizations[state.currentPersonalizationIndex];
+if (state.isEditingPersonalization && currentPersonalization) {
+  const currentId = currentPersonalization.location.id;
+  ...
+}
+```
+
+**Validação:**
+- `tscheck-files.mjs`: 2 → 0 erros no arquivo (8→5 no programa inteiro — o ajuste da union também zerou de graça outro consumidor de `WizardAction`).
+- `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `686b1b3b5c`).
+- Teste dedicado `tests/hooks/useSimulatorWizard.test.ts`: 16/16 passaram.
+- `typecheck:baseline`: 227 → 224 (198 arquivos, 2 arquivos melhoraram), travado via `--update`.

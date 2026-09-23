@@ -127,8 +127,9 @@ export function useSimulatorWizard() {
 
   const availableLocationsFiltered = useMemo(() => {
     const usedIds = new Set(state.personalizations.map(p => p.location.id));
-    if (state.isEditingPersonalization && state.personalizations[state.currentPersonalizationIndex]) {
-      const currentId = state.personalizations[state.currentPersonalizationIndex].location.id;
+    const currentPersonalization = state.personalizations[state.currentPersonalizationIndex];
+    if (state.isEditingPersonalization && currentPersonalization) {
+      const currentId = currentPersonalization.location.id;
       return state.availableLocations.filter(loc => !usedIds.has(loc.id) || loc.id === currentId);
     }
     return state.availableLocations.filter(loc => !usedIds.has(loc.id));

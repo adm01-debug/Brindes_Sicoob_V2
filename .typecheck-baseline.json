@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-09-23T09:13:30.035Z",
-  "total": 227,
+  "generatedAt": "2026-09-23T09:18:19.754Z",
+  "total": 224,
   "files": {
     "src/components/admin/connections/Bitrix24Tab.tsx": 1,
     "src/components/admin/connections/DataSourceDebugTab.tsx": 1,
@@ -105,9 +105,7 @@
     "src/hooks/quotes/useQuotes.ts": 1,
     "src/hooks/search/usePopularSearchItems.ts": 1,
     "src/hooks/simulator/useLivePricePreview.ts": 1,
-    "src/hooks/simulator/useSimulatorWizard.ts": 2,
     "src/hooks/simulator/useWizardDrafts.ts": 1,
-    "src/hooks/simulator/wizardReducer.ts": 1,
     "src/hooks/stock/stockFetcher.ts": 2,
     "src/hooks/useCatalogPrefetch.ts": 1,
     "src/hooks/useCatalogRealStats.ts": 1,

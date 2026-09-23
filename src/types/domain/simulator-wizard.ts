@@ -262,6 +262,7 @@ export type WizardAction =
   | { type: 'ADD_PERSONALIZATION'; payload: Personalization }
   | { type: 'UPDATE_PERSONALIZATION'; payload: { index: number; personalization: Personalization } }
   | { type: 'REMOVE_PERSONALIZATION'; payload: string }
+  | { type: 'REMOVE_ALL_PERSONALIZATIONS' }
   | { type: 'EDIT_PERSONALIZATION'; payload: number }
   | { type: 'START_NEW_PERSONALIZATION' }
   | { type: 'CANCEL_PERSONALIZATION' }
