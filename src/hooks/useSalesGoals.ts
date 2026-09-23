@@ -156,10 +156,12 @@ export function useSalesGoals() {
       const newConversions = (currentGoal.current_conversions || 0) + addConversions;
 
       // Check if goal is achieved
+      const targetQuotes = currentGoal.target_quotes ?? 0;
+      const targetConversions = currentGoal.target_conversions ?? 0;
       const isAchieved =
         newValue >= currentGoal.target_value &&
-        (currentGoal.target_quotes === 0 || newQuotes >= currentGoal.target_quotes) &&
-        (currentGoal.target_conversions === 0 || newConversions >= currentGoal.target_conversions);
+        (targetQuotes === 0 || newQuotes >= targetQuotes) &&
+        (targetConversions === 0 || newConversions >= targetConversions);
 
       const wasNotAchieved = !currentGoal.is_achieved;
 

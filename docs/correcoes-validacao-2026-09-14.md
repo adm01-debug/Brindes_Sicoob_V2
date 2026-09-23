@@ -6037,3 +6037,31 @@ const byRamo = segmentosData?.byRamo || new Map<string, SegmentoComplete[]>();
 - `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `202adeb2cc`).
 - Nenhum teste dedicado encontrado para o arquivo.
 - `typecheck:baseline`: 208 → 206 (189 arquivos), travado via `--update`.
+
+## useSalesGoals.ts (etapa 17)
+
+**Arquivo:** `src/hooks/useSalesGoals.ts`
+
+**Erros originais (2×):**
+```
+src/hooks/useSalesGoals.ts(161,58): error TS18047: 'currentGoal.target_quotes' is possibly 'null'.
+src/hooks/useSalesGoals.ts(162,68): error TS18047: 'currentGoal.target_conversions' is possibly 'null'.
+```
+
+**Diagnóstico:** `target_quotes`/`target_conversions` são `number | null` no banco (metas opcionais). O código já tratava `=== 0` como "sem meta definida" (`currentGoal.target_quotes === 0 || newQuotes >= currentGoal.target_quotes`), mas o TypeScript não consegue estreitar `null` a partir da negação de `=== 0` — no lado direito do `||`, o tipo continua `number | null`. Extraídas constantes locais com `?? 0`, mesmo padrão já usado 3 linhas acima para `current_value`/`current_quotes`/`current_conversions`, unificando "não definido" (`null`) e "sem meta" (`0`) sob o mesmo tratamento.
+
+**Fix aplicado:**
+```ts
+const targetQuotes = currentGoal.target_quotes ?? 0;
+const targetConversions = currentGoal.target_conversions ?? 0;
+const isAchieved =
+  newValue >= currentGoal.target_value &&
+  (targetQuotes === 0 || newQuotes >= targetQuotes) &&
+  (targetConversions === 0 || newConversions >= targetConversions);
+```
+
+**Validação:**
+- `tscheck-files.mjs`: 2 → 0 erros no arquivo (2 restantes no programa inteiro, pré-existentes em outros arquivos ainda não tratados).
+- `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `3214f4af73`).
+- Teste dedicado `tests/hooks/useSalesGoals.test.tsx`: 1/1 passou.
+- `typecheck:baseline`: 206 → 204 (188 arquivos), travado via `--update`.
