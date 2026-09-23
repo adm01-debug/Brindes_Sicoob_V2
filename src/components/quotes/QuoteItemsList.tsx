@@ -34,12 +34,12 @@ export function QuoteItemsList({
         onReorder={onItemsChange}
         onUpdateQuantity={(idx, qty) => {
           const newItems = [...items];
-          newItems[idx].quantity = qty;
+          newItems[idx]!.quantity = qty;
           onItemsChange(newItems);
         }}
         onUpdatePrice={(idx, price) => {
           const newItems = [...items];
-          newItems[idx].unit_price = price;
+          newItems[idx]!.unit_price = price;
           onItemsChange(newItems);
         }}
         onRemove={onRemoveItem || (() => {})}

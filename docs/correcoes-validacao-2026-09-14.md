@@ -5171,3 +5171,33 @@ src/components/quotes/QuoteHistoryPanel.tsx(226,10): error TS2300: Duplicate ide
 - `check-eslint-baseline.mjs`: 0 regressões, além de drift positivo (2 erros de lint eliminados) (referência `origin/main` em `1fb2812dfc`).
 - Nenhum teste dedicado encontrado.
 - `typecheck:baseline`: 265 → 263 (218 arquivos), travado via `--update`.
+
+## QuoteItemsList.tsx (etapa 17)
+
+**Arquivo:** `src/components/quotes/QuoteItemsList.tsx`
+
+**Erros originais (2×):**
+```
+src/components/quotes/QuoteItemsList.tsx(37,11): error TS2532: Object is possibly 'undefined'.
+src/components/quotes/QuoteItemsList.tsx(42,11): error TS2532: Object is possibly 'undefined'.
+```
+
+**Diagnóstico:** padrão `noUncheckedIndexedAccess` em `newItems[idx]` (`newItems = [...items]`). `idx` é recebido via callback `onUpdateQuantity`/`onUpdatePrice` de `DraggableQuoteItems`, que itera exatamente sobre esse mesmo array `items` (`.map((item, index) => ...)`) — logo `idx` está sempre dentro dos limites de `newItems`, que tem o mesmo comprimento.
+
+**Fix aplicado:**
+```ts
+// antes:
+newItems[idx].quantity = qty;
+...
+newItems[idx].unit_price = price;
+// depois:
+newItems[idx]!.quantity = qty;
+...
+newItems[idx]!.unit_price = price;
+```
+
+**Validação:**
+- `tscheck-files.mjs`: 2 → 0 erros (2 → 0 no programa inteiro).
+- `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `f32191096b`).
+- Nenhum teste dedicado encontrado.
+- `typecheck:baseline`: 263 → 261 (217 arquivos), travado via `--update`.
