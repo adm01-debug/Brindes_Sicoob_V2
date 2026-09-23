@@ -68,7 +68,7 @@ export async function fetchProductImages(productId: string): Promise<ProductImag
       limit: 100,
     });
 
-    return result.records;
+    return result.records ?? [];
   } catch (err) {
     logger.warn('Erro ao buscar imagens do produto:', productId, err);
     return [];
@@ -97,7 +97,7 @@ export async function fetchProductImagesBatch(productIds: string[]): Promise<Map
     const imagesByProduct = new Map<string, ProductImage[]>();
     const productIdSet = new Set(productIds);
 
-    result.records.forEach(image => {
+    (result.records ?? []).forEach(image => {
       if (!productIdSet.has(image.product_id)) return;
       
       if (!imagesByProduct.has(image.product_id)) {
@@ -130,7 +130,7 @@ export async function fetchPrimaryImage(productId: string): Promise<string | nul
       limit: 1,
     });
 
-    return result.records[0]?.url_cdn || null;
+    return result.records?.[0]?.url_cdn || null;
   } catch (err) {
     logger.warn('Erro ao buscar imagem principal:', productId, err);
     return null;

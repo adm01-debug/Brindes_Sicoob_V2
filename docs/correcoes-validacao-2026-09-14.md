@@ -3691,3 +3691,24 @@ for (const tech of techResult.records ?? []) { ... }
 - `check-eslint-baseline.mjs`: 0 regressões (3331 erros globais, referência `origin/main` em `4d734d409b`).
 - Nenhum teste dedicado encontrado.
 - `typecheck:baseline`: 387 → 384 (273 arquivos), travado via `--update`.
+
+## useProductImages.ts (etapa 17)
+
+**Arquivo:** `src/hooks/useProductImages.ts`
+
+**Erros originais (3×):** TS2322 (linha 71) + TS18048 (linhas 100, 133) — mesmo padrão de `useMockupTechniques.ts`: `InvokeResult<T>.records` é `T[] | undefined` por design (valor de fronteira do bridge externo), usado sem guard em `fetchProductImages`, `fetchProductImagesBatch` e `fetchPrimaryImage`.
+
+**Diagnóstico:** idêntico ao caso anterior — `records` opcional intencional, não gap de tipagem. Fallback defensivo é o fix correto.
+
+**Fix aplicado:**
+```ts
+return result.records ?? [];                    // fetchProductImages
+(result.records ?? []).forEach(image => { ... }); // fetchProductImagesBatch
+return result.records?.[0]?.url_cdn || null;     // fetchPrimaryImage
+```
+
+**Validação:**
+- `tscheck-files.mjs`: 3 → 0 erros (8 → 5 no programa inteiro).
+- `check-eslint-baseline.mjs`: 0 regressões (3331 erros globais, referência `origin/main` em `c0727e8118`).
+- Nenhum teste dedicado encontrado.
+- `typecheck:baseline`: 384 → 381 (272 arquivos), travado via `--update`.

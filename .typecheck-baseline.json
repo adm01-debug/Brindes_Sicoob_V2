@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-09-23T03:47:41.582Z",
-  "total": 384,
+  "generatedAt": "2026-09-23T03:51:31.944Z",
+  "total": 381,
   "files": {
     "src/components/admin/common/AdminDataTable.tsx": 2,
     "src/components/admin/connections/Bitrix24Tab.tsx": 1,
@@ -187,7 +187,6 @@
     "src/hooks/usePasswordBreachCheck.tsx": 2,
     "src/hooks/usePositionHistory.ts": 2,
     "src/hooks/usePrintAreas.ts": 1,
-    "src/hooks/useProductImages.ts": 3,
     "src/hooks/useProductInsights.ts": 3,
     "src/hooks/useProductRegistrationImport.ts": 1,
     "src/hooks/useProductsByColor.ts": 1,
