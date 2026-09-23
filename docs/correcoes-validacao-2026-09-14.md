@@ -6599,3 +6599,26 @@ Alias mantém o nome local `loading` inalterado, evitando renomear as 4 outras o
 - `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `eb0efbdedb`).
 - Nenhum teste dedicado encontrado para o arquivo.
 - `typecheck:baseline`: 169 → 168 (168 arquivos), travado via `--update`.
+
+## useIncidentDetails.ts (etapa 17)
+
+**Arquivo:** `src/components/admin/connections/useIncidentDetails.ts`
+
+**Erro original:**
+```
+src/components/admin/connections/useIncidentDetails.ts(89,3): error TS2322: Type 'number | undefined' is not assignable to type 'number | null'.
+```
+
+**Diagnóstico:** Na função `p95`, `noUncheckedIndexedAccess` tipa `sorted[idx]` como `number | undefined`, mesmo com `idx` sempre dentro dos limites do array (garantido por `Math.min(sorted.length - 1, ...)` após o early-return para array vazio). O tipo de retorno declarado da função é `number | null`, não `number | undefined`.
+
+**Fix aplicado:**
+```ts
+return sorted[idx] ?? null;
+```
+Diff mínimo: converte o `undefined` impossível de ocorrer em runtime para `null`, compatível com o tipo de retorno já existente.
+
+**Validação:**
+- `tscheck-files.mjs`: 1 → 0 erros no arquivo.
+- `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `5b14a88171`).
+- Nenhum teste dedicado encontrado para o arquivo.
+- `typecheck:baseline`: 168 → 167 (167 arquivos), travado via `--update`.

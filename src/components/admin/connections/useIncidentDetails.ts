@@ -86,7 +86,7 @@ function p95(nums: number[]): number | null {
   if (nums.length === 0) return null;
   const sorted = [...nums].sort((a, b) => a - b);
   const idx = Math.min(sorted.length - 1, Math.floor(sorted.length * 0.95));
-  return sorted[idx];
+  return sorted[idx] ?? null;
 }
 
 async function resolveEntity(entityId: string, kindHint?: string | null): Promise<IncidentEntity | null> {
