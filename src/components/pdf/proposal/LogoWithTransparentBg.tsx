@@ -30,7 +30,7 @@ export function processLogoTransparent(src: string): Promise<string> {
             const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
             const d = imageData.data;
             for (let i = 0; i < d.length; i += 4) {
-              const r = d[i], g = d[i + 1], b = d[i + 2];
+              const r = d[i]!, g = d[i + 1]!, b = d[i + 2]!;
               // Threshold 235 catches off-white anti-alias edges
               if (r > 235 && g > 235 && b > 235) d[i + 3] = 0;
             }

@@ -3241,3 +3241,19 @@ Esse hook é consumido por `AuthContext.tsx` (linha 88), que calcula `mfaRequire
 - `check-eslint-baseline.mjs`: 0 regressões (3334 erros globais, referência `origin/main` em `b2bfb9e928`).
 - Teste dedicado `tests/services/orderService.test.ts`: 5 passaram (não cobre especificamente `getApprovalHistory`, mas confirma que nenhum outro método do `OrderService` regrediu).
 - `typecheck:baseline`: 456 → 453 (297 arquivos), travado via `--update`.
+
+## LogoWithTransparentBg.tsx (etapa 17)
+
+**Arquivo:** `src/components/pdf/proposal/LogoWithTransparentBg.tsx`
+
+**Erros originais (3×):** TS18048 ×3 (linha 35 — `r`, `g`, `b` "possibly undefined" na leitura dos canais RGB de um pixel).
+
+**Diagnóstico:** `d = imageData.data` é um `Uint8ClampedArray` retornado por `CanvasRenderingContext2D.getImageData()` — pela própria especificação da API Canvas, o formato é sempre RGBA (4 bytes por pixel), logo `d.length` é sempre múltiplo de 4. O loop `for (let i = 0; i < d.length; i += 4)` garante que `i`, `i+1`, `i+2` estão sempre dentro dos limites do array em cada iteração — invariante do contrato da API de plataforma (Canvas/`ImageData`), não do código da aplicação.
+
+**Fix aplicado:** asserção de não-nulo em `d[i]!`, `d[i + 1]!`, `d[i + 2]!`, mesma classe de garantia de contrato de API de plataforma já usada nesta sessão (ex.: `Date.prototype.toISOString()`).
+
+**Validação:**
+- `tscheck-files.mjs`: 3 → 0 erros (0 no programa inteiro).
+- `check-eslint-baseline.mjs`: 0 regressões (3334 erros globais, referência `origin/main` em `26fb457fe4`).
+- Nenhum teste dedicado encontrado para este arquivo.
+- `typecheck:baseline`: 453 → 450 (296 arquivos), travado via `--update`.
