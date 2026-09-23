@@ -1,6 +1,6 @@
-# Edge Functions — Catálogo Completo
+# Edge Functions — Referência histórica
 
-> Última atualização: 2026-04-17 · 50 funções ativas
+> Este inventário de 2026-04-17 cobre 50 funções e não representa mais o conjunto ativo. A fonte de verdade para as 106 funções versionadas é [`supabase/functions/_shared/edge-authz-manifest.ts`](../supabase/functions/_shared/edge-authz-manifest.ts), verificada pelo gate `check-edge-authorization`.
 
 ## Convenções
 

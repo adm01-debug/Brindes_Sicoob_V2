@@ -19,6 +19,7 @@ export function OrdersHeatmap() {
     queryKey: ["orders-heatmap", days],
     queryFn: async () => {
       const { data: orders } = await supabase
+        // rls-allow: agregação administrativa; RLS aplica papel e organização
         .from("orders")
         .select("created_at")
         .gte("created_at", since);

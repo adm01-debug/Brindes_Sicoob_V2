@@ -49,6 +49,7 @@ jobs:
         run: |
           npm run check:npm-audit
           node scripts/check-edge-authorization.mjs
+          npm run check:seller-scope
 
       - name: Executar cenários de arquitetura e segurança
         run: |
@@ -58,12 +59,13 @@ jobs:
       - name: Executar a suíte completa com gate de cobertura
         run: npm run test:coverage:ci
 
-      - uses: denoland/setup-deno@v2
+      - uses: denoland/setup-deno@v2.0.5
         with:
           deno-version: v2.x
 
       - name: Verificar tipos das funções de fronteira alteradas
         run: |
+          deno test supabase/functions/_shared/internal-service-auth.test.ts
           deno check supabase/functions/external-db-bridge/index.ts
           deno check supabase/functions/external-db-inspect/index.ts
           deno check supabase/functions/categories-api/index.ts
@@ -87,6 +89,11 @@ jobs:
           deno check supabase/functions/migration-health-check/index.ts
           deno check supabase/functions/product-webhook/index.ts
           deno check supabase/functions/mcp-keys-revoke/index.ts
+          deno check supabase/functions/external-connections-sync/index.ts
+          deno check supabase/functions/send-notification/index.ts
+          deno check supabase/functions/process-batch-export/index.ts
+          deno check supabase/functions/monthly-health-report/index.ts
+          deno check supabase/functions/system-healthcheck/index.ts
 
       - name: Simular atomicidade da verba em PostgreSQL descartável
         run: python3 scripts/qa/simular-verba-atomica.py

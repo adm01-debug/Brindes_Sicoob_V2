@@ -6,6 +6,7 @@ export function usePendingQuotesCount() {
     queryKey: ["pending-quotes-count"],
     queryFn: async () => {
       const { count, error } = await supabase
+        // rls-allow: contagem pessoal protegida pela policy de quotes
         .from("quotes")
         .select("*", { count: 'exact', head: true })
         .eq("status", "pending");

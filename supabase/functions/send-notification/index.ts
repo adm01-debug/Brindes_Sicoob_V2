@@ -1,6 +1,7 @@
 import { getCorsHeaders } from '../_shared/cors.ts';
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 import { z } from "npm:zod@3.23.8";
+import { requireInternalService } from "../_shared/internal-service-auth.ts";
 
 const NotificationSchema = z.object({
   user_id: z.string().uuid(),
@@ -25,6 +26,12 @@ Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
   }
+  if (req.method !== 'POST') {
+    return jsonRes(corsHeaders, { error: 'Method not allowed' }, 405);
+  }
+
+  const denied = await requireInternalService(req);
+  if (denied) return denied;
 
   try {
     const supabase = createClient(
@@ -174,4 +181,3 @@ async function addToDigest(supabase: any, payload: any, frequency: string, corsH
 
   return jsonRes(corsHeaders, { success: true, status: 'digested' });
 }
-

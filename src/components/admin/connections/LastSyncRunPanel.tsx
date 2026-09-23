@@ -61,7 +61,7 @@ export function LastSyncRunPanel() {
 
   const runManual = useCallback(async () => {
     setRunning(true);
-    const { error } = await supabase.rpc("sync_external_connections_from_credentials");
+    const { error } = await supabase.functions.invoke("external-connections-sync", { body: {} });
     if (error) {
       toast.error(`Falha ao executar sync: ${error.message}`);
     } else {

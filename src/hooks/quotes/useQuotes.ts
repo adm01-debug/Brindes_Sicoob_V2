@@ -103,6 +103,7 @@ export function useQuotes() {
     }
 
     try {
+      // rls-allow: lookup por id; RLS valida ownership antes da transição
       const { data: quote, error: fetchErr } = await supabase.from("quotes").select("*").eq("id", quoteId).single();
       if (fetchErr) throw fetchErr;
       const oldStatus = quote?.status || "draft";
@@ -115,6 +116,7 @@ export function useQuotes() {
       }
 
       const { error } = await supabase
+        // rls-allow: atualização por id; RLS valida ownership
         .from("quotes")
         .update(updateData)
         .eq("id", quoteId)
@@ -181,6 +183,7 @@ export function useQuotes() {
     setIsLoading(true);
     try {
       const { error } = await supabase
+        // rls-allow: atualização por id; RLS valida ownership
         .from("quotes")
         .update({ 
           status,

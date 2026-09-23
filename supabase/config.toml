@@ -8,3 +8,15 @@ verify_jwt = false
 
 [functions.quote-approval]
 verify_jwt = false
+
+# Chamadas de cron/Edge são autenticadas no próprio código pelo segredo
+# INTERNAL_FUNCTION_SECRET. A verificação explícita evita depender de estado
+# antigo do gateway e falha fechada se o segredo não estiver configurado.
+[functions.send-notification]
+verify_jwt = false
+
+[functions.process-batch-export]
+verify_jwt = false
+
+[functions.monthly-health-report]
+verify_jwt = false
