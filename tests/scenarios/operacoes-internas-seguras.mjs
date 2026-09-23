@@ -53,6 +53,11 @@ test('cron de exportação usa Vault e não aponta para projeto legado', () => {
   assert.match(schedule, /name = 'sicoob_internal_function_secret'/);
   assert.match(schedule, /'x-sicoob-internal-secret', v_internal_secret/);
   assert.match(schedule, /SELECT public\.dispatch_sicoob_export_worker\(\)/);
+  assert.match(schedule, /Worker de exportações não agendado: Vault ainda não configurado/);
+  assert.ok(
+    schedule.indexOf('length(COALESCE(v_internal_secret') < schedule.lastIndexOf('PERFORM cron.schedule('),
+    'o cron só pode ser criado depois de validar os segredos do Vault',
+  );
   assert.doesNotMatch(schedule, /bojgeppypmtormfjsyun|service_role_key/);
 });
 

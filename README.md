@@ -169,7 +169,7 @@ supabase/
 │   ├── expert-chat/  # Assistente IA
 │   ├── external-db-bridge/ # Bridge para banco externo
 │   └── ...
-└── migrations/       # 533 migrations SQL versionadas
+└── migrations/       # 534 migrations SQL versionadas
 ```
 
 ---
@@ -243,7 +243,7 @@ supabase/
 
 ### Supabase (Interno)
 - 35+ tabelas com RLS completo
-- 529 migrations versionadas; o ledger remoto deve ser confrontado antes de qualquer deploy
+- 534 migrations versionadas; o ledger remoto deve ser confrontado antes de qualquer deploy
 - Tipos gerados automaticamente (`supabase gen types`)
 - Connection pooling via Supabase pooler
 

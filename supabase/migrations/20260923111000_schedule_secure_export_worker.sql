@@ -48,15 +48,37 @@ REVOKE ALL ON FUNCTION public.dispatch_sicoob_export_worker() FROM PUBLIC, anon,
 GRANT EXECUTE ON FUNCTION public.dispatch_sicoob_export_worker() TO service_role;
 
 DO $block$
+DECLARE
+  v_project_url text;
+  v_internal_secret text;
 BEGIN
   PERFORM cron.unschedule(jobid)
   FROM cron.job
   WHERE jobname = 'process-export-queue';
+
+  SELECT decrypted_secret INTO v_project_url
+  FROM vault.decrypted_secrets
+  WHERE name = 'sicoob_project_url'
+  ORDER BY updated_at DESC
+  LIMIT 1;
+
+  SELECT decrypted_secret INTO v_internal_secret
+  FROM vault.decrypted_secrets
+  WHERE name = 'sicoob_internal_function_secret'
+  ORDER BY updated_at DESC
+  LIMIT 1;
+
+  v_project_url := rtrim(COALESCE(v_project_url, ''), '/');
+  IF v_project_url !~ '^https://[a-z0-9-]+[.]supabase[.]co$'
+     OR length(COALESCE(v_internal_secret, '')) NOT BETWEEN 32 AND 512 THEN
+    RAISE NOTICE 'Worker de exportações não agendado: Vault ainda não configurado';
+    RETURN;
+  END IF;
+
+  PERFORM cron.schedule(
+    'process-export-queue',
+    '* * * * *',
+    $cron$SELECT public.dispatch_sicoob_export_worker();$cron$
+  );
 END;
 $block$;
-
-SELECT cron.schedule(
-  'process-export-queue',
-  '* * * * *',
-  $cron$SELECT public.dispatch_sicoob_export_worker();$cron$
-);
