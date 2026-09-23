@@ -3419,3 +3419,24 @@ Esse hook é consumido por `AuthContext.tsx` (linha 88), que calcula `mfaRequire
 - `check-eslint-baseline.mjs`: 0 regressões (3332 erros globais, referência `origin/main` em `6c17008a2b`) — drift positivo: 1 erro de lint eliminado.
 - Nenhum teste dedicado pré-existente. **Teste de fumaça temporário criado e executado** (`@testing-library/react`, não commitado — apenas para diagnóstico): (1) monta sem lançar erro e chama `onRestore` com o draft salvo do `localStorage`, confirmando o fix do crash de mount; (2) após mudança de `data` + avanço de 2.1s de timers falsos, confirma persistência real no `localStorage`. Ambos passaram; removido do repositório após validação.
 - `typecheck:baseline`: 428 → 425 (288 arquivos), travado via `--update`.
+
+## QuoteHistoryTimeline.tsx (etapa 17)
+
+**Arquivo:** `src/components/quotes/QuoteHistoryTimeline.tsx`
+
+**Erros originais (3×):** TS2339 (linhas 74, 82, 84 — `Property 'rejection_notes' does not exist on type 'string | number | boolean | { [key: string]: Json | undefined; } | Json[]'`).
+
+**Diagnóstico:**
+- `quote_history.metadata` é `Json | null` no banco (coluna sem schema fixo) — `event.metadata?.rejection_notes` tentava acessar uma propriedade nomeada diretamente na união `Json`, que inclui `string | number | boolean | Json[]` (nenhum desses tem `.rejection_notes`), além do shape de objeto.
+- Mesmo padrão já resolvido nesta base em `OrderAuditTimeline.tsx:111`: guard de runtime (`typeof === 'object'` e não-array) + cast para `Record<string, unknown>` + checagem de tipo por campo (`typeof x === 'string'`), já que o conteúdo de uma coluna JSON não tem garantia de schema em tempo de compilação.
+
+**Fix aplicado:**
+- Nova função de módulo `getRejectionNotes(metadata: unknown): string | null` — guard `object`/`!Array.isArray` + `typeof notes === 'string'`, mesma convenção de `OrderAuditTimeline.tsx`.
+- `const rejectionNotes = getRejectionNotes(event.metadata);` dentro do `.map()`, substituindo os 3 acessos diretos a `event.metadata.rejection_notes`.
+- Extração para função de módulo (em vez de inline no `.map()`) foi necessária para manter a complexidade ciclomática do callback dentro do limite do lint (`complexity` máx. 10 — inline gerava 12).
+
+**Validação:**
+- `tscheck-files.mjs`: 3 → 0 erros (0 no programa inteiro).
+- `check-eslint-baseline.mjs`: 0 regressões (3332 erros globais, referência `origin/main` em `10a0b137f4`) — a versão inline (sem extrair a função) gerou uma regressão real de `complexity` (0→1), corrigida extraindo a lógica para `getRejectionNotes`.
+- Nenhum teste dedicado encontrado.
+- `typecheck:baseline`: 425 → 422 (287 arquivos), travado via `--update`.
