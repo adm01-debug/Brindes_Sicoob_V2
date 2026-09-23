@@ -5124,3 +5124,30 @@ import { Fragment, useState } from "react";
 - `check-eslint-baseline.mjs`: 0 regressões, além de drift positivo (2 erros de lint eliminados) (referência `origin/main` em `058700f55d`).
 - Nenhum teste dedicado encontrado.
 - `typecheck:baseline`: 269 → 267 (220 arquivos), travado via `--update`.
+
+## QuoteBuilderSummaryColumn.tsx (etapa 17)
+
+**Arquivo:** `src/components/quotes/QuoteBuilderSummaryColumn.tsx`
+
+**Erros originais (2×):**
+```
+src/components/quotes/QuoteBuilderSummaryColumn.tsx(310,62): error TS18048: 'item.stock_available' is possibly 'undefined'.
+src/components/quotes/QuoteBuilderSummaryColumn.tsx(319,59): error TS18048: 'item.stock_available' is possibly 'undefined'.
+```
+
+**Diagnóstico:** `stock_available?: number | null` (`src/hooks/quotes/quoteTypes.ts:43`), mas o código só checava `!== null`, não narrowando `undefined`. Grep confirmou o padrão já estabelecido em `DraggableQuoteItems.tsx:238` para o mesmo campo: checar `!== null && !== undefined` em conjunto.
+
+**Fix aplicado:**
+```ts
+// antes:
+item.stock_available !== null && item.stock_available < item.quantity
+// depois:
+item.stock_available !== null && item.stock_available !== undefined && item.stock_available < item.quantity
+```
+(aplicado nas 2 ocorrências, linhas 310 e 319)
+
+**Validação:**
+- `tscheck-files.mjs`: 2 → 0 erros (13 → 11 no programa inteiro).
+- `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `eff76ef999`).
+- 3 testes dedicados encontrados e executados: `QuoteBuilderSummaryColumn.staleReactivity.test.tsx`, `QuoteBuilderSummaryColumn.staleFilter.test.tsx`, `QuoteBuilderSummaryColumn.confirmAll.test.tsx` — 15/15 passou.
+- `typecheck:baseline`: 267 → 265 (219 arquivos), travado via `--update`.

@@ -307,7 +307,7 @@ export function QuoteBuilderSummaryColumn({
                           <span className="text-muted-foreground">Qtd:</span>
                           <span className={cn(
                             "font-medium",
-                            item.stock_available !== null && item.stock_available < item.quantity ? "text-destructive font-bold" : ""
+                            item.stock_available !== null && item.stock_available !== undefined && item.stock_available < item.quantity ? "text-destructive font-bold" : ""
                           )}>
                             {item.quantity}
                           </span>
@@ -316,7 +316,7 @@ export function QuoteBuilderSummaryColumn({
                           <span className="ml-auto font-semibold text-foreground tabular-nums">{formatCurrency(item.quantity * item.unit_price)}</span>
                         </div>
                         
-                        {item.stock_available !== null && item.stock_available < item.quantity && (
+                        {item.stock_available !== null && item.stock_available !== undefined && item.stock_available < item.quantity && (
                           <div className="flex items-center gap-1 text-[10px] text-destructive font-semibold">
                             <AlertTriangle className="h-3 w-3" />
                             Estoque insuficiente (Disponível: {item.stock_available})
