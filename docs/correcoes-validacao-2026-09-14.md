@@ -4200,3 +4200,35 @@ return data as Location[];
 - `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `490337b20`).
 - Nenhum teste dedicado encontrado; consumidores (`ProductPersonalizationManager.tsx`, `GroupInheritance.tsx`, `ProductSelector.tsx`) também sem testes dedicados.
 - `typecheck:baseline`: 335 → 333 (253 arquivos), travado via `--update`.
+
+## ProductPersonalizationManager.tsx (etapa 17)
+
+**Arquivo:** `src/components/admin/ProductPersonalizationManager.tsx`
+
+**Erros originais (2×):** TS2532 (linhas 92 e 93) — `Object is possibly 'undefined'` em `reordered[i].sort_order` e `reordered[i].id` dentro do loop de reordenação de drag-and-drop.
+
+**Diagnóstico:** mesmo padrão de guarda de índice não-propagada já visto repetidamente nesta etapa: `for (let i = 0; i < reordered.length; i++)` garante `i` sempre dentro dos limites de `reordered`, mas o TS não propaga essa garantia para os 2 acessos por índice dentro do corpo do loop (`.sort_order` e `.id`).
+
+**Fix aplicado:**
+```ts
+// antes:
+for (let i = 0; i < reordered.length; i++) {
+  if (reordered[i].sort_order !== i) {
+    await supabase.from("product_components").update({ sort_order: i }).eq("id", reordered[i].id);
+  }
+}
+
+// depois:
+for (let i = 0; i < reordered.length; i++) {
+  const item = reordered[i]!;
+  if (item.sort_order !== i) {
+    await supabase.from("product_components").update({ sort_order: i }).eq("id", item.id);
+  }
+}
+```
+
+**Validação:**
+- `tscheck-files.mjs`: 2 → 0 erros (5 no programa inteiro, pré-existentes/fora de escopo).
+- `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `99127776c`).
+- Nenhum teste dedicado encontrado (existe um componente homônimo em `personalization-manager/`, não relacionado).
+- `typecheck:baseline`: 333 → 331 (252 arquivos), travado via `--update`.

@@ -89,8 +89,9 @@ export function ProductPersonalizationManager() {
     const newIndex = components.findIndex(c => c.id === over.id);
     const reordered = arrayMove(components, oldIndex, newIndex);
     for (let i = 0; i < reordered.length; i++) {
-      if (reordered[i].sort_order !== i) {
-        await supabase.from("product_components").update({ sort_order: i }).eq("id", reordered[i].id);
+      const item = reordered[i]!;
+      if (item.sort_order !== i) {
+        await supabase.from("product_components").update({ sort_order: i }).eq("id", item.id);
       }
     }
     queryClient.invalidateQueries({ queryKey: ["product-components"] });
