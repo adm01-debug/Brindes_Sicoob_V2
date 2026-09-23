@@ -4915,3 +4915,27 @@ const activeColorName = (currentVariant?.name || getActiveColorName(product, act
 - `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `d633b08773`).
 - Teste dedicado `tests/components/products/ProductCard.test.tsx`: 15/15 passando.
 - `typecheck:baseline`: 283 → 281 (227 arquivos), travado via `--update`.
+
+## ProductCardActions.tsx (etapa 17)
+
+**Arquivo:** `src/components/products/ProductCardActions.tsx`
+
+**Erros originais (2×):** TS2322 (linhas 104-105) — `productSku`/`productImageUrl` (`string | null | undefined`) repassados a `<QuickAddToQuote>`, cujas props exigem `string | undefined` (sem `null`).
+
+**Diagnóstico:** `ProductCardActionsProps` declarava `productSku?: string | null` e `productImageUrl?: string | null`, mas o único consumidor real (`ProductCard.tsx:227-233`) só passa `product.sku` (tipo `string`, não-nulo) e `product.og_image_url || product.images[0]` (`string | undefined`, nunca `null`) — o `| null` na assinatura nunca correspondeu a um caso de uso real. Root cause: tipo declarado mais amplo do que o necessário, incompatível com o contrato mais estrito de `QuickAddToQuote` (`productSku?: string`, `productImageUrl?: string`).
+
+**Fix aplicado:**
+```ts
+// antes:
+productSku?: string | null;
+productImageUrl?: string | null;
+// depois:
+productSku?: string;
+productImageUrl?: string;
+```
+
+**Validação:**
+- `tscheck-files.mjs`: 2 → 0 erros (13 → 11 no programa inteiro).
+- `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `e0089363f9`).
+- Nenhum teste dedicado encontrado.
+- `typecheck:baseline`: 281 → 279 (226 arquivos), travado via `--update`.

@@ -13,8 +13,8 @@ import type { VariantActionMode } from "./VariantPickerDialog";
 interface ProductCardActionsProps {
   productId: string;
   productName: string;
-  productSku?: string | null;
-  productImageUrl?: string | null;
+  productSku?: string;
+  productImageUrl?: string;
   productPrice: number;
   productMinQuantity: number;
   isFavorited: boolean;
