@@ -20,7 +20,7 @@ import { PromptBank } from "@/components/magic-up/PromptBank";
 import { PromptGenerator } from "@/components/magic-up/PromptGenerator";
 import { cn } from "@/lib/utils";
 import { getCompanyDisplayName } from "@/types/crm";
-import type { useMagicUpState } from "@/hooks/useMagicUpState";
+import type { useMagicUpState, MagicUpProduct } from "@/hooks/useMagicUpState";
 import { MagicUpCampaignPanel } from "@/components/magic-up/MagicUpCampaignPanel";
 import { MagicUpBrandKitPanel } from "@/components/magic-up/MagicUpBrandKitPanel";
 import { MagicUpCreativeControls } from "@/components/magic-up/MagicUpCreativeControls";
@@ -174,7 +174,7 @@ function ProductCard({ m }: { m: MagicUpStateReturn }) {
         <ProductSearchCombobox
           products={m.products}
           selectedProduct={m.selectedProduct}
-          onSelect={(p) => m.handleSelectProduct(p)}
+          onSelect={(p) => m.handleSelectProduct(p as MagicUpProduct | null)}
           placeholder="Buscar produto por nome ou SKU..."
         />
 
@@ -484,7 +484,7 @@ function PreviewCard({ m }: { m: MagicUpStateReturn }) {
 function GenerateButton({ m }: { m: MagicUpStateReturn }) {
   return (
     <Button
-      onClick={m.handleGenerate}
+      onClick={() => m.handleGenerate()}
       disabled={!m.canGenerate || m.generating}
       className="w-full h-12 text-base gap-2"
       size="lg"

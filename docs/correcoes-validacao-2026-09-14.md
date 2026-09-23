@@ -6364,3 +6364,32 @@ return sortedValues[idx] ?? 0;
 - `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `8fcef44551`).
 - Nenhum teste dedicado encontrado para o arquivo.
 - `typecheck:baseline`: 184 → 182 (177 arquivos), travado via `--update`.
+
+## MagicUpConfigPanel.tsx (etapa 17)
+
+**Arquivo:** `src/pages/magic-up/MagicUpConfigPanel.tsx`
+
+**Erros originais (2×):**
+```
+src/pages/magic-up/MagicUpConfigPanel.tsx(177,50): error TS2345: Argument of type 'Product | null' is not assignable to parameter of type 'MagicUpProduct | null'.
+src/pages/magic-up/MagicUpConfigPanel.tsx(487,7): error TS2322: Type '(batchVariant?: MagicUpBatchVariant) => Promise<void>' is not assignable to type 'MouseEventHandler<HTMLButtonElement>'.
+```
+
+**Diagnóstico:**
+- Linha 177: `ProductSearchCombobox` (componente compartilhado) declara seu próprio tipo local `Product` com `images?: unknown` (mais frouxo, usado por múltiplas páginas), enquanto `useMagicUpState`'s `MagicUpProduct` exige `images: string[] | null`. O parâmetro do callback `onSelect` é tipado pela prop do combobox (`Product | null`), não pelo array real (`MagicUpProduct[]`) que de fato alimenta o componente — por isso o `m.handleSelectProduct(p)` falha, embora em runtime `p` seja sempre um `MagicUpProduct` genuíno (o mesmo objeto veio de `m.products`).
+- Linha 487: **bug de runtime real encontrado durante o diagnóstico** — `onClick={m.handleGenerate}` passava a função diretamente como `MouseEventHandler`; como `handleGenerate(batchVariant?: MagicUpBatchVariant)` ramifica de verdade sobre a truthiness de `batchVariant` (`batchVariant ? {...} : deps.brief`, `batchVariant || null` no payload enviado ao backend), um clique real passaria o objeto `MouseEvent` como `batchVariant`, corrompendo o payload de geração (tratado como variante de lote inválida em vez de `null`).
+
+**Fix aplicado:**
+```ts
+import type { useMagicUpState, MagicUpProduct } from "@/hooks/useMagicUpState";
+// ...
+onSelect={(p) => m.handleSelectProduct(p as MagicUpProduct | null)}
+// ...
+onClick={() => m.handleGenerate()}
+```
+
+**Validação:**
+- `tscheck-files.mjs`: 2 → 0 erros no arquivo.
+- `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `2ddbd8aa0d`).
+- Nenhum teste dedicado encontrado para o arquivo.
+- `typecheck:baseline`: 182 → 180 (176 arquivos), travado via `--update`.
