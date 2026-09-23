@@ -3,7 +3,7 @@
  * Permite reordenar itens arrastando e soltando
  */
 
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import {
   DndContext,
   type DragEndEvent,
@@ -392,7 +392,7 @@ export function DraggableQuoteItems({
               const showGroupHeader = item.kit_group_id && (!prevItem || prevItem.kit_group_id !== item.kit_group_id);
               
               return (
-                <React.Fragment key={item.id}>
+                <Fragment key={item.id}>
                   {showGroupHeader && (
                     <motion.div 
                       initial={{ opacity: 0, x: -20 }}
@@ -430,7 +430,7 @@ export function DraggableQuoteItems({
                     }
                     formatCurrency={formatCurrency}
                   />
-                </React.Fragment>
+                </Fragment>
               );
             })}
           </AnimatePresence>

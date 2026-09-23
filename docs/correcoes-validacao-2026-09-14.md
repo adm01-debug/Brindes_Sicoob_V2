@@ -5090,3 +5090,37 @@ onDownload={onDownload ? () => onDownload(images[g.currentIndex]!) : undefined}
 - `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `51c1b8e6e6`).
 - Nenhum teste dedicado encontrado.
 - `typecheck:baseline`: 271 → 269 (221 arquivos), travado via `--update`.
+
+## DraggableQuoteItems.tsx (etapa 17)
+
+**Arquivo:** `src/components/quotes/DraggableQuoteItems.tsx`
+
+**Erros originais (2×):**
+```
+src/components/quotes/DraggableQuoteItems.tsx(395,18): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+src/components/quotes/DraggableQuoteItems.tsx(433,19): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+```
+
+**Diagnóstico:** uso de `React.Fragment` sem import de `React` (arquivo só importava `{ useState }` de `"react"`). Grep do padrão estabelecido no codebase (`QuoteBuilderSummaryColumn.tsx:5,234,373`) confirma a convenção: importar `Fragment` nomeado e usar `<Fragment>` diretamente, sem namespace `React`.
+
+**Fix aplicado:**
+```tsx
+// antes:
+import { useState } from "react";
+...
+<React.Fragment key={item.id}>
+...
+</React.Fragment>
+// depois:
+import { Fragment, useState } from "react";
+...
+<Fragment key={item.id}>
+...
+</Fragment>
+```
+
+**Validação:**
+- `tscheck-files.mjs`: 2 → 0 erros (2 → 0 no programa inteiro).
+- `check-eslint-baseline.mjs`: 0 regressões, além de drift positivo (2 erros de lint eliminados) (referência `origin/main` em `058700f55d`).
+- Nenhum teste dedicado encontrado.
+- `typecheck:baseline`: 269 → 267 (220 arquivos), travado via `--update`.
