@@ -6532,3 +6532,25 @@ src/components/admin/connections/Bitrix24Tab.tsx(95,32): error TS2322: Type '(na
 - `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `9611946a6a`).
 - Nenhum teste dedicado encontrado para o arquivo.
 - `typecheck:baseline`: 172 → 171 (171 arquivos), travado via `--update`.
+
+## N8nTab.tsx (etapa 17)
+
+**Arquivo:** `src/components/admin/connections/N8nTab.tsx`
+
+**Erro original:**
+```
+src/components/admin/connections/N8nTab.tsx(83,34): error TS2322: Type '(names?: string[]) => Promise<SecretStatus[]>' is not assignable to type '() => void | Promise<void>'.
+```
+
+**Diagnóstico:** Bug idêntico ao já corrigido em `Bitrix24Tab.tsx` nesta mesma etapa — `<RefreshFromDbButton onRefreshed={list} />` passava `list` (`(names?: string[]) => Promise<SecretStatus[]>`) direto para a prop `onRefreshed?: () => void | Promise<void>`.
+
+**Fix aplicado:**
+```tsx
+<RefreshFromDbButton onRefreshed={() => { void list(); }} />
+```
+
+**Validação:**
+- `tscheck-files.mjs`: 1 → 0 erros no arquivo.
+- `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `239dd60ba9`).
+- Nenhum teste dedicado encontrado para o arquivo.
+- `typecheck:baseline`: 171 → 170 (170 arquivos), travado via `--update`.
