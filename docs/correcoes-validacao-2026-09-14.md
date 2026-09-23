@@ -6150,3 +6150,30 @@ Comentário do arquivo atualizado para refletir a normalização real de papéis
 - `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `022e650c4f`).
 - Nenhum teste dedicado encontrado para o arquivo.
 - `typecheck:baseline`: 200 → 198 (185 arquivos), travado via `--update`.
+
+## executive-summary.ts (etapa 17)
+
+**Arquivo:** `src/lib/bi/executive-summary.ts`
+
+**Erros originais (2×):**
+```
+src/lib/bi/executive-summary.ts(91,192): error TS2532: Object is possibly 'undefined'.
+src/lib/bi/executive-summary.ts(95,98): error TS2532: Object is possibly 'undefined'.
+```
+
+**Diagnóstico:** mesmo padrão de narrowing-não-retido em índice de array (`noUncheckedIndexedAccess`) já visto em outros arquivos desta etapa. `topGapLabel` já era derivado com segurança via `gaps[0]?.label ?? null`, mas o texto do insight reacessava `gaps[0].industrySharePct` diretamente em dois pontos — TS não retém a narrowing entre a atribuição de `topGapLabel` e esses acessos separados.
+
+**Fix aplicado:** extração de `topGap` local, seguindo o mesmo padrão já usado no arquivo para `favorite`/`favorite!`:
+```ts
+const topGap = gaps[0] ?? null;
+const topGapLabel = topGap?.label ?? null;
+// ...
+`${topGap!.industrySharePct.toFixed(0)}%` // nos dois pontos onde antes era gaps[0].industrySharePct
+```
+O `!` é seguro pelo mesmo motivo que o `favorite!` pré-existente: só é usado nos ramos onde `topGapLabel` (derivado de `topGap?.label`) é truthy.
+
+**Validação:**
+- `tscheck-files.mjs`: 2 → 0 erros no arquivo.
+- `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `35e4308471`).
+- Nenhum teste dedicado encontrado para o arquivo ou para `buildCategorySection`.
+- `typecheck:baseline`: 198 → 196 (184 arquivos), travado via `--update`.

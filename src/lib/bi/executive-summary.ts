@@ -84,15 +84,16 @@ export function buildCategorySection(
 
   const favorite = catAffinity?.favorite ?? clientCats[0] ?? null;
   const favoriteLabel = favorite?.label ?? null;
-  const topGapLabel = gaps[0]?.label ?? null;
+  const topGap = gaps[0] ?? null;
+  const topGapLabel = topGap?.label ?? null;
 
   let insight = "Sem dados suficientes para mapa de categorias.";
   if (favoriteLabel && topGapLabel) {
-    insight = `Cliente tem afinidade forte em "${favoriteLabel}" (${favorite!.revenueSharePct.toFixed(0)}% da receita). Oportunidade clara: introduzir "${topGapLabel}" — categoria que move ${gaps[0].industrySharePct.toFixed(0)}% do setor e ainda não está no mix.`;
+    insight = `Cliente tem afinidade forte em "${favoriteLabel}" (${favorite!.revenueSharePct.toFixed(0)}% da receita). Oportunidade clara: introduzir "${topGapLabel}" — categoria que move ${topGap!.industrySharePct.toFixed(0)}% do setor e ainda não está no mix.`;
   } else if (favoriteLabel) {
     insight = `Cliente concentrado em "${favoriteLabel}" (${favorite!.revenueSharePct.toFixed(0)}% da receita). Mix do setor sem GAPs relevantes para sugerir agora.`;
   } else if (topGapLabel) {
-    insight = `Sem histórico relevante do cliente. Categoria líder do setor: "${topGapLabel}" (${gaps[0].industrySharePct.toFixed(0)}%) — bom ponto de partida para prospecção.`;
+    insight = `Sem histórico relevante do cliente. Categoria líder do setor: "${topGapLabel}" (${topGap!.industrySharePct.toFixed(0)}%) — bom ponto de partida para prospecção.`;
   }
 
   const hasData = rows.length > 0 || gaps.length > 0;
