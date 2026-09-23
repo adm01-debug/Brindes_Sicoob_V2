@@ -4,28 +4,8 @@
  */
 import { logger } from "@/lib/logger";
 
-// Extend Window to include webkit prefixed SpeechRecognition
-interface SpeechRecognitionEvent extends Event {
-  results: SpeechRecognitionResultList;
-  resultIndex: number;
-}
-
-type SpeechRecognitionConstructor = new () => SpeechRecognition;
-
-interface SpeechRecognition extends EventTarget {
-  continuous: boolean;
-  interimResults: boolean;
-  lang: string;
-  maxAlternatives: number;
-  start(): void;
-  stop(): void;
-  abort(): void;
-  onresult: ((event: SpeechRecognitionEvent) => void) | null;
-  onerror: ((event: Event & { error: string }) => void) | null;
-  onend: (() => void) | null;
-  onstart: (() => void) | null;
-  onspeechend: (() => void) | null;
-}
+// SpeechRecognition / SpeechRecognitionEvent / window.webkitSpeechRecognition
+// já são declarados globalmente em src/types/speech-recognition.d.ts.
 
 export interface WebSpeechCallbacks {
   onSessionStarted: () => void;
@@ -45,8 +25,7 @@ export function isWebSpeechSupported(): boolean {
 }
 
 export function startWebSpeech(callbacks: WebSpeechCallbacks): boolean {
-  const SpeechRecognitionClass: SpeechRecognitionConstructor | undefined =
-    window.SpeechRecognition || window.webkitSpeechRecognition;
+  const SpeechRecognitionClass = window.SpeechRecognition || window.webkitSpeechRecognition;
 
   if (!SpeechRecognitionClass) {
     callbacks.onError(new Error("Web Speech API não suportada neste navegador."));
@@ -76,8 +55,8 @@ export function startWebSpeech(callbacks: WebSpeechCallbacks): boolean {
       let finalText = "";
 
       for (let i = event.resultIndex; i < event.results.length; i++) {
-        const result = event.results[i];
-        const transcript = result[0].transcript;
+        const result = event.results[i]!;
+        const transcript = result[0]!.transcript;
 
         if (result.isFinal) {
           finalText += transcript;

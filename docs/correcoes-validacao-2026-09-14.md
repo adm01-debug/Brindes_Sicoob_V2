@@ -2871,3 +2871,27 @@ Esse hook é consumido por `AuthContext.tsx` (linha 88), que calcula `mfaRequire
 - `check-eslint-baseline.mjs`: 0 regressões (3335 erros globais, referência `origin/main` em `6a5a23c6f6`).
 - Teste dedicado `tests/hooks/useTechniquePricing.test.ts`: 16/16 passou.
 - `typecheck:baseline`: 525 → 521 (317 arquivos), travado via `--update`.
+
+## webSpeechFallback.ts (etapa 17)
+
+**Arquivo:** `src/hooks/voice/webSpeechFallback.ts`
+
+**Erros originais (4×):**
+- TS2322 (linha 48 — `{ new (): SpeechRecognition; prototype: SpeechRecognition; }` não atribuível a `SpeechRecognitionConstructor`).
+- TS18048/TS2532 (linha 80 — `result` possivelmente `undefined`).
+- TS18048 (linha 82 — `result` possivelmente `undefined`).
+
+**Diagnóstico:**
+- Linha 48: o arquivo declarava localmente suas próprias interfaces `SpeechRecognitionEvent`, `SpeechRecognition` e o tipo `SpeechRecognitionConstructor` — duplicando (com shape ligeiramente diferente) as declarações ambiente globais já existentes em `src/types/speech-recognition.d.ts` (usadas por outras partes do app: busca por voz, chat expert). Como o arquivo é um módulo (tem `import`/`export`), suas interfaces locais *sombreiam* as globais só dentro dele — mas `window.SpeechRecognition`/`window.webkitSpeechRecognition` (tipados via `interface Window` global) sempre resolvem para a interface `SpeechRecognition` **global**, que não é estruturalmente idêntica à local (ex.: assinaturas de `onerror`/`onresult` com `this` diferente). Resultado: incompatibilidade de tipo.
+- Linhas 80/82: `const result = event.results[i];` — `event.results` é `SpeechRecognitionResultList` (global, com `[index: number]: SpeechRecognitionResult`), então sob `noUncheckedIndexedAccess` o acesso por índice é `SpeechRecognitionResult | undefined`. O laço `for (let i = event.resultIndex; i < event.results.length; i++)` garante estruturalmente que `i` está sempre dentro do intervalo válido — o TS não propaga essa garantia. Da mesma forma, `result[0]` assume a 1ª alternativa de reconhecimento, garantida pelo contrato da Web Speech API (sempre ≥1 alternativa) e reforçada aqui por `recognition.maxAlternatives = 1`.
+
+**Fix aplicado:**
+- Removidas as declarações locais duplicadas (`SpeechRecognitionEvent`, `SpeechRecognitionConstructor`, `SpeechRecognition`) — reaproveitando as globais de `speech-recognition.d.ts` (zero churn, elimina a causa raiz do conflito em vez de adicionar mais um cast).
+- `const SpeechRecognitionClass: SpeechRecognitionConstructor | undefined = ...` → `const SpeechRecognitionClass = ...` (inferência direta a partir do tipo global do `Window`).
+- `event.results[i]` → `event.results[i]!` e `result[0]` → `result[0]!` (asserções de não-nulo, estruturalmente seguras pela guarda do laço e pelo contrato da API, mesmo padrão já aplicado em `SearchWithSuggestions.tsx` nesta sessão).
+
+**Validação:**
+- `tscheck-files.mjs`: 4 → 0 erros (0 no programa inteiro).
+- `check-eslint-baseline.mjs`: 0 regressões (3335 erros globais, referência `origin/main` em `93b57b0527`).
+- Nenhum teste dedicado encontrado para este arquivo.
+- `typecheck:baseline`: 521 → 517 (316 arquivos), travado via `--update`.

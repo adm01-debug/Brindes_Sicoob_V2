@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-09-23T00:04:44.299Z",
-  "total": 521,
+  "generatedAt": "2026-09-23T00:10:21.869Z",
+  "total": 517,
   "files": {
     "src/components/admin/common/AdminDataTable.tsx": 2,
     "src/components/admin/connections/Bitrix24Tab.tsx": 1,
@@ -247,7 +247,6 @@
     "src/hooks/useVoiceAgent.ts": 1,
     "src/hooks/useVoiceCommandHistory.ts": 1,
     "src/hooks/useWorkspaceNotifications.tsx": 1,
-    "src/hooks/voice/webSpeechFallback.ts": 4,
     "src/lib/access/log-access-denied.ts": 1,
     "src/lib/admin-export-utils.ts": 1,
     "src/lib/audit-logger.ts": 1,
