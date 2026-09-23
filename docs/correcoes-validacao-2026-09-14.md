@@ -4889,3 +4889,29 @@ const flat = adaptPriceResponse(result as unknown as Record<string, unknown>);
 - `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `0fd02410ce`).
 - Nenhum teste dedicado encontrado.
 - `typecheck:baseline`: 285 → 283 (228 arquivos), travado via `--update`.
+
+## ProductCard.tsx (etapa 17)
+
+**Arquivo:** `src/components/products/ProductCard.tsx`
+
+**Erros originais (2×):** TS2322 (linhas 210 e 211) — `activeColorName` e `colorSpecificImage` (ambos `string | undefined`) passados para `ProductCardImage`, cujas props exigem `string | null`.
+
+**Diagnóstico:** `colorSpecificImage` é derivado de `variantImage || resolveColorImage(...)` e `activeColorName` de `currentVariant?.name || getActiveColorName(...)` — todas as fontes (`resolveColorImage`, `getActiveColorName`) retornam `string | undefined`, nunca `null`. `ProductCardImage` (`src/components/products/ProductCardImage.tsx:28-29`) segue a convenção `string | null` para "sem imagem/cor". Descompasso de convenção `undefined` vs `null` entre os dois arquivos, não um bug de guard do `noUncheckedIndexedAccess`.
+
+**Fix aplicado:**
+```ts
+// antes:
+const colorSpecificImage = useMemo(() => variantImage || resolveColorImage(product, activeColorFilter), [variantImage, product, activeColorFilter]);
+...
+const activeColorName = currentVariant?.name || getActiveColorName(product, activeColorFilter);
+// depois:
+const colorSpecificImage = useMemo(() => (variantImage || resolveColorImage(product, activeColorFilter)) ?? null, [variantImage, product, activeColorFilter]);
+...
+const activeColorName = (currentVariant?.name || getActiveColorName(product, activeColorFilter)) ?? null;
+```
+
+**Validação:**
+- `tscheck-files.mjs`: 2 → 0 erros (26 → 24 no programa inteiro).
+- `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `d633b08773`).
+- Teste dedicado `tests/components/products/ProductCard.test.tsx`: 15/15 passando.
+- `typecheck:baseline`: 283 → 281 (227 arquivos), travado via `--update`.

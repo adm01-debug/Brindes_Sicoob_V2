@@ -161,11 +161,11 @@ export const ProductCard = memo(forwardRef<HTMLElement, ProductCardProps>(functi
   const hasHighlightedColor = !!matchedHighlightColor;
 
   const variantImage = currentVariant?.image;
-  const colorSpecificImage = useMemo(() => variantImage || resolveColorImage(product, activeColorFilter), [variantImage, product, activeColorFilter]);
+  const colorSpecificImage = useMemo(() => (variantImage || resolveColorImage(product, activeColorFilter)) ?? null, [variantImage, product, activeColorFilter]);
   const rawImageUrl = colorSpecificImage || product.og_image_url || product.images[0] || null;
   const cardImageUrl = useMemo(() => rawImageUrl ? getCdnUrl(rawImageUrl, "card") : "/placeholder.svg", [rawImageUrl]);
   const cardSrcSet = useMemo(() => colorSpecificImage ? undefined : (rawImageUrl ? getSrcSet(rawImageUrl) : undefined), [colorSpecificImage, rawImageUrl]);
-  const activeColorName = currentVariant?.name || getActiveColorName(product, activeColorFilter);
+  const activeColorName = (currentVariant?.name || getActiveColorName(product, activeColorFilter)) ?? null;
 
   const imageBounds = useProductBounds(cardImageUrl !== "/placeholder.svg" ? cardImageUrl : null, { whiteThreshold: 230, margin: 0.01, maxSize: 384 });
   const isOversizedImage = imageBounds.detected && imageBounds.fractionX >= 0.86 && imageBounds.fractionY >= 0.86;
