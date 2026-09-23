@@ -110,7 +110,7 @@ export function NoveltyProductGrid() {
 
   // Favorites & Compare stores for ProductListItem integration
   const { isFavorite, toggleFavorite } = useFavoritesStore();
-  const { isInCompare, addToCompare, removeFromCompare, canAdd: canAddToCompare } = useComparisonStore();
+  const { isInCompare, addToCompare, removeFromCompare, canAddMore: canAddToCompare } = useComparisonStore();
   const onToggleCompare = useCallback((productId: string) => {
     if (isInCompare(productId)) { removeFromCompare(productId); return { added: false, isFull: false }; }
     const result = addToCompare(productId);

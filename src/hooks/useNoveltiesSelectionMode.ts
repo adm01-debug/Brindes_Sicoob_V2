@@ -159,7 +159,7 @@ export function useNoveltiesSelectionMode({ selectionMode, filteredProducts }: U
     return filteredProducts.filter(p => ids.includes(p.product_id)).map(noveltyToProduct);
   }, [selectedIds, filteredProducts]);
 
-  const firstSelectedId = selectedIds.size > 0 ? Array.from(selectedIds)[0] : "";
+  const firstSelectedId = selectedIds.size > 0 ? Array.from(selectedIds)[0]! : "";
   const firstSelectedProduct = filteredProducts.find(p => p.product_id === firstSelectedId);
 
   return {

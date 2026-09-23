@@ -4670,3 +4670,34 @@ export function SkeletonShimmer({ className, style, children }: SkeletonShimmerP
 - `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `da800e0da9`).
 - Nenhum teste dedicado encontrado.
 - `typecheck:baseline`: 301 → 299 (236 arquivos), travado via `--update`.
+
+## NoveltyProductGrid.tsx (etapa 17)
+
+**Arquivo:** `src/components/novelties/NoveltyProductGrid.tsx` (+ `src/hooks/useNoveltiesSelectionMode.ts`)
+
+**Erros originais (2×):**
+- TS2339 (linha 113) — `const { ..., canAdd: canAddToCompare } = useComparisonStore();` — `ComparisonStore` não possui `canAdd`.
+- TS2322 (linha 287) — `<AddToCollectionModal productId={sel.firstSelectedId} .../>` — `firstSelectedId` tipado `string | undefined`, prop exige `string`.
+
+**Diagnóstico:**
+- Bug real de nome de propriedade: `useComparisonStore.ts` expõe `canAddMore`, não `canAdd` (confirmado via grep na store). Import estava usando um nome que nunca existiu.
+- `firstSelectedId` vem de `useNoveltiesSelectionMode.ts:162`: `selectedIds.size > 0 ? Array.from(selectedIds)[0] : ""`. Apesar do guard `size > 0`, o TS não correlaciona esse guard com o acesso de índice em um array recém-criado por `Array.from(...)`, tipando o resultado como `string | undefined`. Corrigido na origem (no hook), não no call site.
+
+**Fix aplicado:**
+```ts
+// NoveltyProductGrid.tsx — antes:
+const { isInCompare, addToCompare, removeFromCompare, canAdd: canAddToCompare } = useComparisonStore();
+// depois:
+const { isInCompare, addToCompare, removeFromCompare, canAddMore: canAddToCompare } = useComparisonStore();
+
+// useNoveltiesSelectionMode.ts — antes:
+const firstSelectedId = selectedIds.size > 0 ? Array.from(selectedIds)[0] : "";
+// depois:
+const firstSelectedId = selectedIds.size > 0 ? Array.from(selectedIds)[0]! : "";
+```
+
+**Validação:**
+- `tscheck-files.mjs`: 2 → 0 erros no arquivo-alvo (22 no programa inteiro, pré-existentes/fora de escopo — inclui 1 erro pré-existente não relacionado em `useNoveltiesSelectionMode.ts:23`).
+- `check-eslint-baseline.mjs`: 0 regressões nos 2 arquivos alterados (referência `origin/main` em `cb03bd82a2`).
+- Nenhum teste dedicado encontrado.
+- `typecheck:baseline`: 299 → 297 (235 arquivos), travado via `--update`.
