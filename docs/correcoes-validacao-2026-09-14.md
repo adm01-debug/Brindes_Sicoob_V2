@@ -3327,3 +3327,25 @@ Esse hook é consumido por `AuthContext.tsx` (linha 88), que calcula `mfaRequire
 - `check-eslint-baseline.mjs`: 0 regressões (3334 erros globais, referência `origin/main` em `a07bfed97a`).
 - Teste dedicado encontrado (`tests/components/simulator/UpsellPlusPlus.test.ts`, importa `upsell-engine.ts`): 11/11 passaram.
 - `typecheck:baseline`: 441 → 438 (292 arquivos), travado via `--update`.
+
+## InlinePriceCalculator.tsx (etapa 17)
+
+**Arquivo:** `src/components/products/InlinePriceCalculator.tsx`
+
+**Erros originais (3×):** TS2532 (linha 62 — `tiers[0]` possivelmente `undefined`); TS2339 ×2 (linhas 88, 92 — `Property 'records' does not exist on type '{}'`).
+
+**Diagnóstico:**
+- Linha 62: `tiers.length > 0 ? tiers[0].unitPrice : basePrice` — guard de comprimento no próprio ternário garante `tiers[0]` definido no ramo verdadeiro; padrão já usado nesta sessão (`KitComparisonDialog.tsx`, `upsell-engine.ts`).
+- Linhas 88/92: `variantResponse?.data?.records || variantResponse?.records || [...]` — **código morto/incorreto**. `invokeExternalDb<T>` (`src/lib/external-db/bridge.ts`) já retorna `InvokeResult<T>` desembrulhado (não existe campo `.data` no retorno — isso é `response.data` já resolvido internamente antes de retornar). O acesso `.data` só existiria via a assinatura de índice `[key: string]: unknown`; combinado a encadeamento opcional (`?.`), o TypeScript estreita `unknown` para `{}` (`NonNullable<unknown>`), daí o erro "`records` não existe em `{}`". Esse padrão `.data?.records` é característico de quem chama `invokeBridge` diretamente (que retorna `{success, data, error}`), não `invokeExternalDb` (já desembrulhado) — confirmado lendo a implementação de `invokeExternalDb` em `bridge.ts`. Como o campo `.data` nunca existe de fato no retorno de `invokeExternalDb`, o ramo era sempre `undefined` em runtime — remover não muda comportamento, só corrige o código morto/confuso.
+- Ao remover `.data?.records`, restou `variantResponse?.records` com `T` não inferível (nenhum argumento depende de `T`) — `variants[0].id` gerava novo erro TS2571 (`Object is of type 'unknown'`). Corrigido especificando o parâmetro de tipo explícito `invokeExternalDb<{ id: string }>(...)`, consistente com o retorno já tipado usado em `sources[0] as SupplierSourcePricing` logo abaixo.
+
+**Fix aplicado:**
+- `tiers[0]!.unitPrice` (asserção justificada pelo guard `tiers.length > 0` no mesmo ternário).
+- Remoção do ramo morto `variantResponse?.data?.records` / `sourceResponse?.data?.records`, mantendo `variantResponse?.records || []` / `sourceResponse?.records || []` (mesma convenção de fallback real já usada em `products.ts:73`).
+- `invokeExternalDb<{ id: string }>(...)` para o fetch de `product_variants`, permitindo `variants[0]!.id` sem cast (guard `variants.length === 0` já garante o retorno antecipado).
+
+**Validação:**
+- `tscheck-files.mjs`: 3 → 0 erros (5 no programa inteiro).
+- `check-eslint-baseline.mjs`: 0 regressões (3333 erros globais, referência `origin/main` em `a694d598eb`) — **drift positivo**: 1 erro de lint eliminado como bônus (código morto removido).
+- Nenhum teste dedicado encontrado para este arquivo.
+- `typecheck:baseline`: 438 → 435 (291 arquivos), travado via `--update`.

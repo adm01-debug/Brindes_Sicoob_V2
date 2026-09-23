@@ -59,7 +59,7 @@ const extractPriceTiersFromSource = (source: SupplierSourcePricing, basePrice: n
     }
   }
   tiers.sort((a, b) => a.quantity - b.quantity);
-  const refPrice = tiers.length > 0 ? tiers[0].unitPrice : basePrice;
+  const refPrice = tiers.length > 0 ? tiers[0]!.unitPrice : basePrice;
   tiers.forEach((tier, idx) => {
     tier.discount = idx === 0 ? 0 : (refPrice > 0 ? Math.max(0, Math.round((1 - tier.unitPrice / refPrice) * 100)) : 0);
   });
@@ -84,12 +84,12 @@ export function InlinePriceCalculator({
       try {
         const variantFilters: Record<string, unknown> = { product_id: productId, is_active: true };
         if (variantId) variantFilters.id = variantId;
-        const variantResponse = await invokeExternalDb({ table: "product_variants", operation: "select", select: "id", filters: variantFilters, range: [0, 1] });
-        const variants = variantResponse?.data?.records || variantResponse?.records || [];
+        const variantResponse = await invokeExternalDb<{ id: string }>({ table: "product_variants", operation: "select", select: "id", filters: variantFilters, range: [0, 1] });
+        const variants = variantResponse?.records || [];
         if (variants.length === 0) { setPriceTiers([]); setIsLoading(false); return; }
-        const targetVariantId = variants[0].id as string;
+        const targetVariantId = variants[0]!.id;
         const sourceResponse = await invokeExternalDb({ table: "variant_supplier_sources", operation: "select", select: "id,cost_price,cost_price_1,cost_price_2,cost_price_3,cost_price_4,cost_price_5,min_qty_1,min_qty_2,min_qty_3,min_qty_4,min_qty_5", filters: { variant_id: targetVariantId, is_active: true, is_preferred: true }, range: [0, 1] });
-        const sources = sourceResponse?.data?.records || sourceResponse?.records || [];
+        const sources = sourceResponse?.records || [];
         if (sources.length > 0) {
           setPriceTiers(extractPriceTiersFromSource(sources[0] as SupplierSourcePricing, basePrice));
         } else { setPriceTiers([]); }
