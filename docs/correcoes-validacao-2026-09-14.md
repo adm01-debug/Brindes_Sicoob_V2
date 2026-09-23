@@ -3602,3 +3602,25 @@ const { char, hasFakeCaret, isActive } = inputOTPContext.slots[index] ?? {
 - `check-eslint-baseline.mjs`: 0 regressões (3331 erros globais, referência `origin/main` em `994485fdbe`).
 - Nenhum teste dedicado encontrado.
 - `typecheck:baseline`: 401 → 398 (279 arquivos), travado via `--update`.
+
+## useCatalogState.ts (etapa 17)
+
+**Arquivo:** `src/hooks/useCatalogState.ts` (fix aplicado nos hooks de origem: `useColorEnrichment.ts` e `useFavoriteQuickAdd.ts`)
+
+**Erros originais (3×):**
+- TS2339 (linha 155) — `isFetching` não existe no retorno de `useColorEnrichment`.
+- TS2345 ×2 (linhas 236, 240) — `Product` de `@/types/product-catalog` não é atribuível a `Product` de `@/types/product` (dois tipos `Product` distintos no codebase: um DB-oriented, outro runtime/UI).
+
+**Diagnóstico:**
+1. `useColorEnrichment.ts` retornava apenas `{ data, isLoading }`, mas o hook internamente já usa `useQuery` (React Query) que expõe `isFetching` — gap real de API, não um erro de uso. `isFetching` é a semântica correta aqui (o hook faz enriquecimento incremental em background conforme novos produtos entram na página, então `isLoading` sozinho não cobre re-fetches subsequentes).
+2. `useFavoriteQuickAdd.ts` importava `Product` de `@/types/product` (tipo DB-oriented), mas seu único consumidor (`useCatalogState.ts`) sempre passa produtos do tipo `@/types/product-catalog` (runtime/UI, usado em todo o catálogo). Confirmado via `grep` que `useFavoriteQuickAdd` não tem outros consumidores no codebase. O hook só acessa `product.id` e `product.price`, presentes em ambos os tipos — a incompatibilidade era puramente estrutural/nominal em campos não utilizados.
+
+**Fix aplicado:**
+- `useColorEnrichment.ts`: `return { data: resultMap, isLoading: query.isLoading, isFetching: query.isFetching };`
+- `useFavoriteQuickAdd.ts`: `import type { Product } from "@/types/product-catalog";` (era `@/types/product`) — corrige na fonte em vez de fazer cast no ponto de chamada.
+
+**Validação:**
+- `tscheck-files.mjs` (3 arquivos): 3 → 0 erros (22 no programa inteiro, era 25).
+- `check-eslint-baseline.mjs`: 0 regressões (3331 erros globais, referência `origin/main` em `a5adfc5cfe`).
+- Nenhum teste dedicado encontrado para nenhum dos 3 arquivos.
+- `typecheck:baseline`: 398 → 395 (278 arquivos), travado via `--update`.

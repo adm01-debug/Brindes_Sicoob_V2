@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useFavoritesStore, type FavoriteVariantInfo } from "@/stores/useFavoritesStore";
 import { useFavoriteLists, useFavoriteListItems } from "@/hooks/useFavoriteLists";
-import type { Product } from "@/types/product";
+import type { Product } from "@/types/product-catalog";
 import { toast } from "sonner";
 
 const LAST_LIST_KEY = "favorites-last-used-list-id";

@@ -293,5 +293,5 @@ export function useColorEnrichment({ productIds, colorGroups, colorVariations }:
   // Return accumulated map even when query isn't running (for already-enriched products)
   const resultMap = query.data || (accumulatedMapRef.current.size > 0 ? accumulatedMapRef.current : undefined);
 
-  return { data: resultMap, isLoading: query.isLoading };
+  return { data: resultMap, isLoading: query.isLoading, isFetching: query.isFetching };
 }

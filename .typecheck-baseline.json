@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-09-23T03:28:20.486Z",
-  "total": 398,
+  "generatedAt": "2026-09-23T03:32:46.468Z",
+  "total": 395,
   "files": {
     "src/components/admin/common/AdminDataTable.tsx": 2,
     "src/components/admin/connections/Bitrix24Tab.tsx": 1,
@@ -173,7 +173,6 @@
     "src/hooks/stock/stockFetcher.ts": 2,
     "src/hooks/useCatalogPrefetch.ts": 1,
     "src/hooks/useCatalogRealStats.ts": 1,
-    "src/hooks/useCatalogState.ts": 3,
     "src/hooks/useCategoriesTree.ts": 1,
     "src/hooks/useCategoryIcons.ts": 3,
     "src/hooks/useClientOrdersHistory.ts": 1,
