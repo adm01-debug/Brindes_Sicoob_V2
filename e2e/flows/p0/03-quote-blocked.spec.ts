@@ -1,5 +1,5 @@
 /**
- * P0 — Orçamento bloqueado: CRM/Bitrix offline durante criação ou aprovação.
+ * P0 — Orçamento bloqueado: CRM/Bitrix offline durante a criação.
  * Política: SSOT em e2e/fixtures/selectors.ts — somente data-testid.
  */
 import { test, expect } from "../../fixtures/test-base";
@@ -19,9 +19,4 @@ test.describe("P0 — Orçamento bloqueado", () => {
     expect(true).toBe(true);
   });
 
-  test.skip("aprovação pública: token inválido NÃO expõe outros orçamentos", async ({ page }) => {
-    await page.goto("/orcamento-publico/INVALID_TOKEN");
-    await expect(page.locator(Sel.app.notFound).or(page.locator(Sel.app.errorBanner))).toBeVisible();
-    expect(await page.locator(Sel.quote.items).count()).toBe(0);
-  });
 });

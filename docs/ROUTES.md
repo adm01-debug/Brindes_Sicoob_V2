@@ -62,8 +62,9 @@
 |------|------------|
 | `/login` | `@/pages/Auth` |
 | `/reset-password` | `@/pages/ResetPassword` |
-| `/approve/:token` | `@/pages/PublicQuoteApprovalPage` |
-| `/proposta/:token` | `@/pages/PublicQuoteApprovalPage` |
+| `/approve/:token` | `@/pages/QuoteApprovalPage` |
+| `/proposta/:token` | `@/pages/QuoteApprovalPage` |
+| `/public/orcamento/:token/aprovacao` | `@/pages/QuoteApprovalPage` |
 | `/kit/:token` | `@/pages/PublicKitViewPage` |
 | `/lista-publica/:token` | `@/pages/PublicFavoriteListPage` |
 | `/colecao-publica/:token` | `@/pages/PublicCollectionPage` |
