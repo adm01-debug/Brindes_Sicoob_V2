@@ -82,7 +82,7 @@ export function ImageUploadButton({
           lastError = err;
           
           // Se for bloqueio de segurança (403), interrompe as tentativas
-          if (error.status === 403 || (error.context?.context?.status === 403)) {
+          if (err.status === 403 || (err.context?.context?.status === 403)) {
             break;
           }
 
@@ -116,7 +116,7 @@ export function ImageUploadButton({
       // Extract path from URL
       const urlParts = currentImageUrl.split("/personalization-images/");
       if (urlParts.length > 1) {
-        const filePath = urlParts[1];
+        const filePath = urlParts[1]!;
         await supabase.storage.from("personalization-images").remove([filePath]);
       }
       onRemove();

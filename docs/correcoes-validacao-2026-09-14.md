@@ -3041,3 +3041,23 @@ Esse hook é consumido por `AuthContext.tsx` (linha 88), que calcula `mfaRequire
 - `check-eslint-baseline.mjs`: 0 regressões (3334 erros globais, referência `origin/main` em `87cb3ee53b`).
 - Nenhum teste dedicado encontrado para este arquivo.
 - `typecheck:baseline`: 489 → 486 (308 arquivos), travado via `--update`.
+
+## ImageUploadButton.tsx (etapa 17)
+
+**Arquivo:** `src/components/admin/ImageUploadButton.tsx`
+
+**Erros originais (3×):** TS18046 ×2 (linha 85 — `error` do tipo `unknown`), TS2322 (linha 120 — `string | undefined` não atribuível a `string`).
+
+**Diagnóstico — bug real de produção encontrado (linha 85):** dentro do `catch (error: unknown)`, o código já extraía corretamente `const err = error as Error & { status?: number; context?: any };` (linha 81), mas na linha seguinte usava `error.status`/`error.context` (a variável `unknown` original, não tipada) em vez de `err.status`/`err.context` — erro de digitação que quebrava a checagem de tipo. Efeito em produção: a lógica de "interromper retry em bloqueio de segurança 403" nunca compilaria sem o cast incorreto camuflado — o `err` extraído existia sem propósito, e o código só funcionava em runtime porque JS não é tipado (o acesso a `.status` em `unknown` não falha em runtime, mas o TS corretamente barra em compile-time).
+
+**Fix aplicado (85):** trocado `error.status`/`error.context` por `err.status`/`err.context` (usar a variável já corretamente tipada, sem introduzir cast novo).
+
+**Diagnóstico (linha 120):** `urlParts[1]` acessado dentro de `if (urlParts.length > 1)` — guarda estrutural garante o índice, mas `noUncheckedIndexedAccess` não propaga.
+
+**Fix aplicado (120):** asserção de não-nulo (`urlParts[1]!`), mesmo padrão já usado para acessos indexados protegidos por checagem de `.length`.
+
+**Validação:**
+- `tscheck-files.mjs`: 3 → 0 erros (0 no programa inteiro).
+- `check-eslint-baseline.mjs`: 0 regressões (3334 erros globais, referência `origin/main` em `263b141289`).
+- Nenhum teste dedicado encontrado para este arquivo.
+- `typecheck:baseline`: 486 → 483 (307 arquivos), travado via `--update`.
