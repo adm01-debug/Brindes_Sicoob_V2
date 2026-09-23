@@ -4360,3 +4360,30 @@ const last = sparkData[sparkData.length - 1]!.value;
 - `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `09edea12a`).
 - Nenhum teste dedicado encontrado.
 - `typecheck:baseline`: 323 → 321 (247 arquivos), travado via `--update`.
+
+## CartEmptyStateSmart.tsx (etapa 17)
+
+**Arquivo:** `src/components/cart/CartEmptyStateSmart.tsx`
+
+**Erros originais (2×):** TS2532 (linhas 73 e 75) — `topTemplates[0].items` e `topTemplates[0].name`.
+
+**Diagnóstico:** mesmo padrão de guarda não-propagada: `topTemplates.length > 0` no ternário garante que `topTemplates[0]` existe dentro do branch truthy, mas TS não propaga essa garantia para as 2 indexações separadas.
+
+**Fix aplicado:**
+```tsx
+// antes:
+onClick={() => onApplyTemplate(topTemplates[0].items)}
+...
+Aplicar "{topTemplates[0].name}"
+
+// depois:
+onClick={() => onApplyTemplate(topTemplates[0]!.items)}
+...
+Aplicar "{topTemplates[0]!.name}"
+```
+
+**Validação:**
+- `tscheck-files.mjs`: 2 → 0 erros (3 no programa inteiro, pré-existentes/fora de escopo).
+- `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `875d19d93`).
+- Nenhum teste dedicado encontrado.
+- `typecheck:baseline`: 321 → 319 (246 arquivos), travado via `--update`.

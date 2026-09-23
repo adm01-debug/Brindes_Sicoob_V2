@@ -70,9 +70,9 @@ export function CartEmptyStateSmart({
                 size="sm"
                 variant="outline"
                 className="w-full gap-1.5 text-xs"
-                onClick={() => onApplyTemplate(topTemplates[0].items)}
+                onClick={() => onApplyTemplate(topTemplates[0]!.items)}
               >
-                Aplicar "{topTemplates[0].name}" <ArrowRight className="h-3 w-3" />
+                Aplicar "{topTemplates[0]!.name}" <ArrowRight className="h-3 w-3" />
               </Button>
             </>
           ) : (
