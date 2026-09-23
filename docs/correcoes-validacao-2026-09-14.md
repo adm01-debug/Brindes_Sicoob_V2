@@ -3578,3 +3578,27 @@ Esse hook é consumido por `AuthContext.tsx` (linha 88), que calcula `mfaRequire
 - `check-eslint-baseline.mjs`: 0 regressões (3331 erros globais, referência `origin/main` em `7ecef7650e`).
 - Nenhum teste dedicado encontrado.
 - `typecheck:baseline`: 404 → 401 (280 arquivos), travado via `--update`.
+
+## input-otp.tsx (etapa 17)
+
+**Arquivo:** `src/components/ui/input-otp.tsx`
+
+**Erros originais (3×):** TS2339 (linha 29) — `char`, `hasFakeCaret`, `isActive` não existem em `SlotProps | undefined`.
+
+**Diagnóstico:** componente shadcn/ui (`InputOTPSlot`) não usado em nenhum lugar do código-fonte (`grep` confirma zero consumidores além do próprio arquivo e do barrel `src/components/ui/index.ts`) — mas é um primitivo de UI reutilizável, não uma feature morta, então não foi removido. `inputOTPContext.slots[index]` (contexto da biblioteca terceira `input-otp`, tipo `RenderProps.slots: SlotProps[]`) tipa como `SlotProps | undefined` sob `noUncheckedIndexedAccess`, pois `index` é uma prop fornecida por quem renderiza o slot (fora do controle deste arquivo) — sem garantia estrutural local de que está dentro dos limites do array.
+
+**Fix aplicado:** fallback defensivo (não asserção), consistente com o precedente de `MockupPreview.tsx`/`WizardMockupPreview.tsx` para dados vindos de biblioteca terceira:
+```tsx
+const { char, hasFakeCaret, isActive } = inputOTPContext.slots[index] ?? {
+  char: null,
+  hasFakeCaret: false,
+  isActive: false,
+  placeholderChar: null,
+};
+```
+
+**Validação:**
+- `tscheck-files.mjs`: 3 → 0 erros (0 no programa inteiro).
+- `check-eslint-baseline.mjs`: 0 regressões (3331 erros globais, referência `origin/main` em `994485fdbe`).
+- Nenhum teste dedicado encontrado.
+- `typecheck:baseline`: 401 → 398 (279 arquivos), travado via `--update`.
