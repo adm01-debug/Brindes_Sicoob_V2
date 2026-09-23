@@ -106,7 +106,7 @@ export function SecretsManagerHealthPanel({ className }: { className?: string })
   // mesmo sem clicar em "Testar agora".
   const inferredBoot = useMemo(() => {
     for (let i = samples.length - 1; i >= 0; i--) {
-      const s = samples[i];
+      const s = samples[i]!;
       if (s.action === "list" || s.action === "status") return s;
     }
     return null;

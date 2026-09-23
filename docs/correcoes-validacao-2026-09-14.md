@@ -4129,3 +4129,24 @@ const fmt = formats[0]!;
 - `check-eslint-baseline.mjs`: 0 regressões (3331 erros globais, referência `origin/main` em `684b32e516`).
 - Nenhum teste dedicado encontrado.
 - `typecheck:baseline`: 341 → 339 (256 arquivos), travado via `--update`.
+
+## SecretsManagerHealthPanel.tsx (etapa 17)
+
+**Arquivo:** `src/components/admin/connections/SecretsManagerHealthPanel.tsx`
+
+**Erros originais (2×):** TS18048 (linha 110, 2 ocorrências na mesma linha) — `s.action === "list" || s.action === "status"`, `s` possivelmente `undefined`.
+
+**Diagnóstico:** mesmo padrão de guarda-não-propagada de `noUncheckedIndexedAccess` já resolvido várias vezes nesta etapa — `samples[i]` dentro de um loop `for (let i = samples.length - 1; i >= 0; i--)` está sempre dentro dos limites do array por construção (`i` varre de `length - 1` até `0`), mas o TS não propaga essa garantia pro tipo do acesso indexado. Aplicada asserção de não-nulo.
+
+**Fix aplicado:**
+```ts
+// antes: const s = samples[i];
+// depois:
+const s = samples[i]!;
+```
+
+**Validação:**
+- `tscheck-files.mjs`: 2 → 0 erros (0 no programa inteiro).
+- `check-eslint-baseline.mjs`: 0 regressões (3331 erros globais, referência `origin/main` em `3aac0e0fda`).
+- Nenhum teste dedicado encontrado.
+- `typecheck:baseline`: 339 → 337 (255 arquivos), travado via `--update`.
