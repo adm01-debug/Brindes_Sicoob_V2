@@ -6576,3 +6576,26 @@ const { secrets, list, isLoading: secretsLoading } = useSecretsManager();
 - `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `1549ea8f0f`).
 - Nenhum teste dedicado encontrado para o arquivo.
 - `typecheck:baseline`: 170 → 169 (169 arquivos), travado via `--update`.
+
+## KeysValidationTab.tsx (etapa 17)
+
+**Arquivo:** `src/components/admin/connections/KeysValidationTab.tsx`
+
+**Erro original:**
+```
+src/components/admin/connections/KeysValidationTab.tsx(191,20): error TS2339: Property 'loading' does not exist on type '{ secrets: SecretStatus[]; isLoading: boolean; ... }'.
+```
+
+**Diagnóstico:** `const { secrets, list, loading } = useSecretsManager();` — mesmo bug de raiz já encontrado em `DataSourceDebugTab.tsx`: o hook `useSecretsManager()` expõe a propriedade `isLoading`, não `loading`. Bug real de runtime, não apenas de tipagem: `loading` ficava sempre `undefined`, então toda a lógica de UI que dependia dessa flag (`disabled={loading}` na linha 273, `className={cn(..., loading && "animate-spin")}` na linha 274, verificação em skeleton na linha 287, e checagem de estado na linha 372) nunca refletia o carregamento real dos secrets.
+
+**Fix aplicado:**
+```ts
+const { secrets, list, isLoading: loading } = useSecretsManager();
+```
+Alias mantém o nome local `loading` inalterado, evitando renomear as 4 outras ocorrências no arquivo (diff mínimo).
+
+**Validação:**
+- `tscheck-files.mjs`: 1 → 0 erros no arquivo.
+- `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `eb0efbdedb`).
+- Nenhum teste dedicado encontrado para o arquivo.
+- `typecheck:baseline`: 169 → 168 (168 arquivos), travado via `--update`.
