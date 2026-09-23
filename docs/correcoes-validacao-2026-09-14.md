@@ -4150,3 +4150,27 @@ const s = samples[i]!;
 - `check-eslint-baseline.mjs`: 0 regressões (3331 erros globais, referência `origin/main` em `3aac0e0fda`).
 - Nenhum teste dedicado encontrado.
 - `typecheck:baseline`: 339 → 337 (255 arquivos), travado via `--update`.
+
+## OrdersHeatmap.tsx (etapa 17)
+
+**Arquivo:** `src/components/admin/OrdersHeatmap.tsx`
+
+**Erros originais (2×):** TS2532 (linha 29, 2 ocorrências na mesma linha/coluna) — `matrix[d.getDay()][d.getHours()] += 1`, dois riscos separados de "Object is possibly undefined": o acesso `matrix[d.getDay()]` (array externo) e, em seguida, indexar o resultado com `[d.getHours()]` (array interno).
+
+**Diagnóstico:** `noUncheckedIndexedAccess` torna QUALQUER acesso indexado a array em `T | undefined`, mesmo quando o índice é provadamente válido por construção — aqui `d.getDay()` retorna sempre 0-6 (`matrix` tem exatamente 7 linhas, `Array.from({length: 7}, ...)`) e `d.getHours()` retorna sempre 0-23 (cada linha tem exatamente 24 colunas, `Array(24).fill(0)`), mas o TS não propaga essa garantia geométrica. Como são 2 indexações encadeadas na mesma expressão (`matrix[row][col]`), o compilador reporta o erro 2×. Fix: extrair a linha (`row = matrix[d.getDay()]!`, único ponto que precisa de asserção de não-nulo, já que a garantia de índice válido é a mesma usada em toda a etapa) e trocar a atribuição composta `+= 1` por atribuição direta com fallback `??` na leitura (`row[h] = (row[h] ?? 0) + 1`), que evita precisar de uma segunda asserção — grava (write) num índice de array sempre é permitido pra um valor `number`, mesmo que o tipo de leitura (read) daquele índice seja `number | undefined`.
+
+**Fix aplicado:**
+```ts
+// antes:
+matrix[d.getDay()][d.getHours()] += 1;
+
+// depois:
+const row = matrix[d.getDay()]!;
+row[d.getHours()] = (row[d.getHours()] ?? 0) + 1;
+```
+
+**Validação:**
+- `tscheck-files.mjs`: 2 → 0 erros (0 no programa inteiro).
+- `check-eslint-baseline.mjs`: 0 regressões (3331 erros globais, referência `origin/main` em `54d5ba150f`).
+- Nenhum teste dedicado encontrado.
+- `typecheck:baseline`: 337 → 335 (254 arquivos), travado via `--update`.

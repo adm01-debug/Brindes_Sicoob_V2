@@ -26,7 +26,8 @@ export function OrdersHeatmap() {
       const matrix: number[][] = Array.from({ length: 7 }, () => Array(24).fill(0));
       orders?.forEach(r => {
         const d = new Date(r.created_at);
-        matrix[d.getDay()][d.getHours()] += 1;
+        const row = matrix[d.getDay()]!;
+        row[d.getHours()] = (row[d.getHours()] ?? 0) + 1;
       });
       
       const flat = matrix.flat();
