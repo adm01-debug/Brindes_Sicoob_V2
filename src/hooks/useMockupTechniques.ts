@@ -129,7 +129,7 @@ function useAllTechniqueDimensions(techniques: Technique[], shouldFetch: boolean
         limit: 200,
       });
 
-      if (!techResult.records.length) return new Map<string, { maxWidth: number | null; maxHeight: number | null }>();
+      if (!techResult.records?.length) return new Map<string, { maxWidth: number | null; maxHeight: number | null }>();
 
       // 2. Fetch ALL faixas in one query
       const faixaResult = await invokeExternalDb<{ tabela_preco_gravacao_id: string; largura_max: number | null; altura_max: number | null }>({
@@ -141,7 +141,7 @@ function useAllTechniqueDimensions(techniques: Technique[], shouldFetch: boolean
 
       // Group faixas by technique ID
       const faixasByTech = new Map<string, FaixaPreco[]>();
-      for (const f of faixaResult.records) {
+      for (const f of faixaResult.records ?? []) {
         const key = f.tabela_preco_gravacao_id;
         if (!faixasByTech.has(key)) faixasByTech.set(key, []);
         faixasByTech.get(key)!.push(f);
@@ -150,7 +150,7 @@ function useAllTechniqueDimensions(techniques: Technique[], shouldFetch: boolean
       // Build code → dimensions map
       const codeMap = new Map<string, { maxWidth: number | null; maxHeight: number | null }>();
 
-      for (const tech of techResult.records) {
+      for (const tech of techResult.records ?? []) {
         const faixas = faixasByTech.get(tech.id) || [];
         if (!faixas.length) continue;
 

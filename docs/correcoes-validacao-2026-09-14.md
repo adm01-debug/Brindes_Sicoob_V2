@@ -3670,3 +3670,24 @@ const rest = future.slice(1);
 - `check-eslint-baseline.mjs`: 0 regressões (3331 erros globais, referência `origin/main` em `41168f357f`).
 - Nenhum teste dedicado encontrado.
 - `typecheck:baseline`: 390 → 387 (274 arquivos), travado via `--update`.
+
+## useMockupTechniques.ts (etapa 17)
+
+**Arquivo:** `src/hooks/useMockupTechniques.ts`
+
+**Erros originais (3×):** TS18048 (linhas 132, 144, 153) — `noUncheckedIndexedAccess`/optionalidade em `techResult.records` e `faixaResult.records`, retornados por `invokeExternalDb<T>()`.
+
+**Diagnóstico:** `InvokeResult<T>.records` (`src/lib/external-db/invoke.ts:46`) é declarado como `records?: T[]` — opcionalidade real e intencional, não um gap de tipagem: o próprio `invokeExternalDbSingle` (`src/lib/external-db/bridge.ts:100`) já guarda com `if (!result.records?.length)` antes de acessar `records[0]`. É um valor de fronteira (resposta de bridge HTTP externo) que pode legitimamente não trazer `records` em certos payloads — mesma categoria de "fallback defensivo" já aplicada em `input-otp.tsx`/`WizardMockupPreview.tsx` nesta etapa, não um caso de asserção não-nula.
+
+**Fix aplicado:** fallback defensivo nos 3 pontos de acesso:
+```ts
+if (!techResult.records?.length) return new Map(...);
+for (const f of faixaResult.records ?? []) { ... }
+for (const tech of techResult.records ?? []) { ... }
+```
+
+**Validação:**
+- `tscheck-files.mjs`: 3 → 0 erros (8 → 5 no programa inteiro — sem cascata adicional).
+- `check-eslint-baseline.mjs`: 0 regressões (3331 erros globais, referência `origin/main` em `4d734d409b`).
+- Nenhum teste dedicado encontrado.
+- `typecheck:baseline`: 387 → 384 (273 arquivos), travado via `--update`.
