@@ -3802,3 +3802,30 @@ const minTierPrice = tiers[0]!.unitPrice;
 - `check-eslint-baseline.mjs`: 0 regressões (3331 erros globais, referência `origin/main` em `294d159c0b`).
 - Nenhum teste dedicado encontrado (consumidores `Auth.tsx`/`AuthContext.tsx` não têm teste direto destas funções).
 - `typecheck:baseline`: 372 → 369 (268 arquivos), travado via `--update`.
+
+## kit-og-image.ts (etapa 17)
+
+**Arquivo:** `src/lib/kit-og-image.ts`
+
+**Erros originais (3×):** TS2345 (linha 86) + TS2322 (linhas 89, 102) — dentro de `wrapText()`, `words[n]` (de `const words = text.split(/\s+/)`) tipado `string | undefined` sob `noUncheckedIndexedAccess`, usado em `test`/`line` que exigem `string`.
+
+**Diagnóstico:** não é valor genuinamente nullable — é o caso clássico de for-loop limitado (`for (let n = 0; n < words.length; n++)`), onde `n` está sempre dentro do intervalo de `words` por construção. Confirmado precedente já estabelecido no código para exatamente este padrão: `useProductVideoGallery.ts:197` (`files[i]!`), `useProductImageGallery.ts:213` (`files[i]!`), `webSpeechFallback.ts:58-59` (`event.results[i]!`, `result[0]!.transcript`).
+
+**Fix aplicado:** asserção de não-nulo nos 3 pontos de acesso a `words[n]` dentro do loop limitado:
+```ts
+// antes:
+const test = line ? `${line} ${words[n]}` : words[n];
+// ...
+line = words[n];
+// depois:
+const test = line ? `${line} ${words[n]!}` : words[n]!;
+// ...
+line = words[n]!;
+```
+(O erro da linha 102 — `line = test;` — resolveu junto, como consequência do tipo de `test` virar `string`.)
+
+**Validação:**
+- `tscheck-files.mjs`: 3 → 0 erros (3 → 0 no programa inteiro).
+- `check-eslint-baseline.mjs`: 0 regressões (3331 erros globais, referência `origin/main` em `21bf897289`).
+- Nenhum teste dedicado encontrado (`find` por `*kit-og-image*` só retorna o próprio arquivo fonte).
+- `typecheck:baseline`: 369 → 366 (267 arquivos), travado via `--update`.

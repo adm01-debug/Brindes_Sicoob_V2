@@ -82,11 +82,11 @@ function wrapText(
   let line = "";
   let lines = 0;
   for (let n = 0; n < words.length; n++) {
-    const test = line ? `${line} ${words[n]}` : words[n];
+    const test = line ? `${line} ${words[n]!}` : words[n]!;
     const w = ctx.measureText(test).width;
     if (w > maxWidth && line) {
       ctx.fillText(line, x, y + lines * lineHeight);
-      line = words[n];
+      line = words[n]!;
       lines += 1;
       if (lines >= maxLines - 1) {
         // last line — truncate remaining words with ellipsis

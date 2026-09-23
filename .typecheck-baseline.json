@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-09-23T04:10:35.636Z",
-  "total": 369,
+  "generatedAt": "2026-09-23T04:17:27.346Z",
+  "total": 366,
   "files": {
     "src/components/admin/common/AdminDataTable.tsx": 2,
     "src/components/admin/connections/Bitrix24Tab.tsx": 1,
@@ -219,7 +219,6 @@
     "src/lib/external-db/batch-import.ts": 2,
     "src/lib/external-db/bridge.ts": 1,
     "src/lib/external-db/price-tables.ts": 1,
-    "src/lib/kit-og-image.ts": 3,
     "src/lib/pdf/whitelabel-comparison.ts": 2,
     "src/lib/personalization/repositories/technique.repository.ts": 1,
     "src/lib/personalization/rpc-validator.ts": 1,
