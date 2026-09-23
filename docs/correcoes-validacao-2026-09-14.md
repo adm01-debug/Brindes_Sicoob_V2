@@ -3854,3 +3854,29 @@ let tierUsed = table.faixas[0]!;
 - `check-eslint-baseline.mjs`: 0 regressões (3331 erros globais, referência `origin/main` em `fda841f3b5`).
 - Nenhum teste dedicado encontrado; busca por consumidores (`calculatePricing`, `calculateBatchPricing`, `comparePricing`, `findBestTechnique`, `calculateQuantitySavings`) em `tests/` não retornou nenhum arquivo.
 - `typecheck:baseline`: 366 → 363 (266 arquivos), travado via `--update`.
+
+## AdminVerbasPage.tsx (etapa 17)
+
+**Arquivo:** `src/pages/admin/AdminVerbasPage.tsx`
+
+**Erros originais (3×):** TS2339 (linhas 62, 63, 64) — em `exportAuditToCSV()`, acesso a `log.event_type`, `log.metadata` e `log.payload`, campos que nunca existiram na tabela real `admin_audit_log` (confirmado em `src/integrations/supabase/types.ts:483-503`: colunas reais são `action`, `details`, `user_id`, `resource_type`, etc.).
+
+**Diagnóstico:** não é gap de tipagem — é drift de schema. A query já usa `select('*')` na tabela real, então o tipo inferido reflete corretamente as colunas existentes; o código é que referenciava nomes de colunas de uma versão anterior/diferente do schema. Confirmado o mapeamento correto comparando com o padrão já estabelecido em `RecentAuditTable.tsx` (mesma tabela): `action` pro nome do evento, `details` (Json) pro payload, `user_id` pra identificar o usuário (sem campo de e-mail embutido — `RecentAuditTable.tsx` resolve e-mail via join separado com `profiles`, fora do escopo desta correção pontual). Sem essa correção, a exportação CSV já estava quebrada em produção: `event_type`/`metadata`/`payload` sempre `undefined` em runtime, então toda linha exportava "Evento" vazio, "Usuario" sempre "Sistema" e "Detalhes" como a string `"undefined"` — não era um recurso funcionando.
+
+**Fix aplicado:**
+```ts
+// antes:
+Evento: log.event_type,
+Usuario: log.metadata?.user_email || 'Sistema',
+Detalhes: JSON.stringify(log.payload)
+// depois:
+Evento: log.action,
+Usuario: log.user_id || 'Sistema',
+Detalhes: JSON.stringify(log.details)
+```
+
+**Validação:**
+- `tscheck-files.mjs`: 3 → 0 erros (0 no programa inteiro).
+- `check-eslint-baseline.mjs`: 0 regressões (3331 erros globais, referência `origin/main` em `654f73dc95`).
+- Nenhum teste dedicado encontrado.
+- `typecheck:baseline`: 363 → 360 (265 arquivos), travado via `--update`.

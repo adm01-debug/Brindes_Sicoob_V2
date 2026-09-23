@@ -59,9 +59,9 @@ export default function AdminVerbasPage() {
       const XLSX = await import('@e965/xlsx');
       const ws = XLSX.utils.json_to_sheet(auditLogs.map(log => ({
         Data: format(new Date(log.created_at), 'dd/MM/yyyy HH:mm'),
-        Evento: log.event_type,
-        Usuario: log.metadata?.user_email || 'Sistema',
-        Detalhes: JSON.stringify(log.payload)
+        Evento: log.action,
+        Usuario: log.user_id || 'Sistema',
+        Detalhes: JSON.stringify(log.details)
       })));
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, "Histórico");
