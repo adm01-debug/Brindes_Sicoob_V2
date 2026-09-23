@@ -3624,3 +3624,23 @@ const { char, hasFakeCaret, isActive } = inputOTPContext.slots[index] ?? {
 - `check-eslint-baseline.mjs`: 0 regressões (3331 erros globais, referência `origin/main` em `a5adfc5cfe`).
 - Nenhum teste dedicado encontrado para nenhum dos 3 arquivos.
 - `typecheck:baseline`: 398 → 395 (278 arquivos), travado via `--update`.
+
+## useCategoryIcons.ts (etapa 17)
+
+**Arquivo:** `src/hooks/useCategoryIcons.ts`
+
+**Erros originais (3×):**
+- TS2769 (linha 17) — `useQuery<CategoryIcon[]>` sem overload compatível: `description` retornado pelo Supabase é `string | null`, mas a interface `CategoryIcon.description` era `string | undefined` (opcional sem `null`).
+- TS18048 (linha 122) + TS2345 (linha 124) — `nameLower.split(/[\s|]/)[0]` tipando como `string | undefined` sob `noUncheckedIndexedAccess`.
+
+**Diagnóstico:** gap real entre o schema do Supabase (coluna `description` nullable) e a interface local `CategoryIcon`, que só previa `undefined`. Corrigido na fonte (o tipo, não o call site). Para `firstWord`, `String.prototype.split()` garante array não-vazio pela spec ECMAScript — precedente já estabelecido no codebase em `useMarketIntelligenceMacro.ts:54,80` (`.split('T')[0]!`), reaplicado aqui.
+
+**Fix aplicado:**
+- `description?: string;` → `description?: string | null;`
+- `nameLower.split(/[\s|]/)[0]` → `nameLower.split(/[\s|]/)[0]!`
+
+**Validação:**
+- `tscheck-files.mjs`: 3 → 0 erros (0 no programa inteiro).
+- `check-eslint-baseline.mjs`: 0 regressões (3331 erros globais, referência `origin/main` em `4f328fdb9a`).
+- Nenhum teste dedicado encontrado.
+- `typecheck:baseline`: 395 → 390 (275 arquivos) — o fix na fonte eliminou também 2 erros em cascata (`ExternalCategoryFilter.tsx` e `ProductCategoryBadges.tsx`, 1 cada, consumidores de `getCategoryIcon`/`CategoryIcon`), travado via `--update`.

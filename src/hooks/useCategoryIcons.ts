@@ -5,7 +5,7 @@ export interface CategoryIcon {
   id: string;
   category_name: string;
   icon: string;
-  description?: string;
+  description?: string | null;
 }
 
 /**
@@ -118,7 +118,7 @@ export function getCategoryIcon(
   }
   
   // 4. Busca por primeira palavra significativa no banco
-  const firstWord = nameLower.split(/[\s|]/)[0];
+  const firstWord = nameLower.split(/[\s|]/)[0]!;
   if (firstWord.length > 2) {
     const firstWordMatch = icons.find(
       i => i.category_name.toLowerCase().includes(firstWord)
