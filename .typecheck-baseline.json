@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-09-23T03:09:58.301Z",
-  "total": 410,
+  "generatedAt": "2026-09-23T03:14:17.749Z",
+  "total": 407,
   "files": {
     "src/components/admin/common/AdminDataTable.tsx": 2,
     "src/components/admin/connections/Bitrix24Tab.tsx": 1,
@@ -142,7 +142,6 @@
     "src/components/settings/NotificationOmnichannelPanel.tsx": 2,
     "src/components/settings/NotificationPreferences.tsx": 1,
     "src/components/settings/theme/BorderRadiusControl.tsx": 1,
-    "src/components/sicoob/orders/OrderAddItemDialog.tsx": 3,
     "src/components/sicoob/orders/OrderPilotApprovalsTab.tsx": 1,
     "src/components/simulator/MockupPreview.tsx": 3,
     "src/components/simulator/TechniqueCard.tsx": 2,

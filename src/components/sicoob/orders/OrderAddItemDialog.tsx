@@ -86,7 +86,7 @@ export function OrderAddItemDialog({ onAdd, isPending }: OrderAddItemDialogProps
                 <SelectContent>
                   <SelectItem value="all">Todas as Categorias</SelectItem>
                   {categories?.map(c => (
-                    <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                    <SelectItem key={String(c.id)} value={String(c.id)}>{c.name}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -133,13 +133,13 @@ export function OrderAddItemDialog({ onAdd, isPending }: OrderAddItemDialogProps
             <div className="space-y-2 animate-in fade-in slide-in-from-top-2">
               <Label>Cor/Variante</Label>
               <div className="flex flex-wrap gap-2">
-                {selectedProduct.colors.map((color: string) => (
+                {selectedProduct.colors.map((color) => (
                   <button
-                    key={color}
-                    className={`px-3 py-1 text-xs rounded-full border transition-all ${selectedVariantColor === color ? 'bg-primary text-white border-primary' : 'bg-background hover:border-primary'}`}
-                    onClick={() => setSelectedVariantColor(color)}
+                    key={color.name}
+                    className={`px-3 py-1 text-xs rounded-full border transition-all ${selectedVariantColor === color.name ? 'bg-primary text-white border-primary' : 'bg-background hover:border-primary'}`}
+                    onClick={() => setSelectedVariantColor(color.name)}
                   >
-                    {color}
+                    {color.name}
                   </button>
                 ))}
               </div>
@@ -158,7 +158,7 @@ export function OrderAddItemDialog({ onAdd, isPending }: OrderAddItemDialogProps
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => setIsOpen(false)}>Cancelar</Button>
-          <Button disabled={!selectedProductId || (selectedProduct?.colors?.length > 0 && !selectedVariantColor) || isPending} onClick={handleConfirm}>
+          <Button disabled={!selectedProductId || ((selectedProduct?.colors?.length ?? 0) > 0 && !selectedVariantColor) || isPending} onClick={handleConfirm}>
             {isPending ? "Adicionando..." : "Confirmar"}
           </Button>
         </DialogFooter>

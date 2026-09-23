@@ -3518,3 +3518,25 @@ Esse hook é consumido por `AuthContext.tsx` (linha 88), que calcula `mfaRequire
 - `check-eslint-baseline.mjs`: 0 regressões (3331 erros globais, referência `origin/main` em `f337ef7d31`).
 - Nenhum teste dedicado encontrado.
 - `typecheck:baseline`: 413 → 410 (283 arquivos), travado via `--update`.
+
+## OrderAddItemDialog.tsx (etapa 17)
+
+**Arquivo:** `src/components/sicoob/orders/OrderAddItemDialog.tsx`
+
+**Erros originais (3×):** TS2322 (linha 89 — `Type 'string | number' is not assignable to type 'string'`), TS2345 (linha 136 — `(color: string) => JSX.Element` não compatível com callback esperado), TS18048 (linha 161 — `'selectedProduct.colors.length' is possibly 'undefined'`).
+
+**Diagnóstico:**
+- Linha 89: `Category.id` (`src/hooks/useCategories.ts:6`) é `string | number` (dado vindo do catálogo externo Promobrind, sem tipo fixo), mas `SelectItem`'s `value` exige `string`. Mesmo padrão já resolvido em `IntelligenceFilterBar.tsx:148-149` (`String(cat.id)`).
+- Linha 136: `selectedProduct.colors` é `ProductColor[]` (`src/types/product-catalog.ts:8-17` — objeto com `name`, `hex`, `group`, etc.), não `string[]`. O código tratava cada `color` como string diretamente, quando deveria usar `color.name`.
+- Linha 161: `selectedProduct?.colors?.length > 0` — com encadeamento opcional, o resultado de `selectedProduct?.colors?.length` é `number | undefined` (por causa do `selectedProduct?.`, já que `colors` em si é campo obrigatório do tipo `Product`); comparar `undefined > 0` é rejeitado pelo TS em modo estrito.
+
+**Fix aplicado:**
+- `value={c.id}` → `value={String(c.id)}` (e `key` também, por consistência), replicando o padrão de `IntelligenceFilterBar.tsx`.
+- `selectedProduct.colors.map((color: string) => ...)` → `.map((color) => ...)` usando `color.name` para key, comparação e label (tipo `ProductColor` inferido corretamente).
+- `selectedProduct?.colors?.length > 0` → `(selectedProduct?.colors?.length ?? 0) > 0`.
+
+**Validação:**
+- `tscheck-files.mjs`: 3 → 0 erros (5 no programa inteiro).
+- `check-eslint-baseline.mjs`: 0 regressões (3331 erros globais, referência `origin/main` em `9d901baaa7`).
+- Nenhum teste dedicado encontrado.
+- `typecheck:baseline`: 410 → 407 (282 arquivos), travado via `--update`.
