@@ -1,12 +1,11 @@
 {
-  "generatedAt": "2026-09-23T12:32:48.619Z",
-  "total": 167,
+  "generatedAt": "2026-09-23T12:38:31.193Z",
+  "total": 166,
   "files": {
     "src/components/admin/connections/secretNormalizers.ts": 1,
     "src/components/admin/connections/SmokeTestChecklist.tsx": 1,
     "src/components/admin/connections/useIncidentTimeline72h.ts": 1,
     "src/components/admin/connections/useRecentIncidents.ts": 1,
-    "src/components/admin/connections/useSeverityChangeNotifier.ts": 1,
     "src/components/admin/DiscountApprovalQueue.tsx": 1,
     "src/components/admin/DiscountManagementPanel.tsx": 1,
     "src/components/admin/products/BulkImportDialog.tsx": 1,

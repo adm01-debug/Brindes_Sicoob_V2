@@ -6622,3 +6622,26 @@ Diff mínimo: converte o `undefined` impossível de ocorrer em runtime para `nul
 - `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `5b14a88171`).
 - Nenhum teste dedicado encontrado para o arquivo.
 - `typecheck:baseline`: 168 → 167 (167 arquivos), travado via `--update`.
+
+## useSeverityChangeNotifier.ts (etapa 17)
+
+**Arquivo:** `src/components/admin/connections/useSeverityChangeNotifier.ts`
+
+**Erro original:**
+```
+src/components/admin/connections/useSeverityChangeNotifier.ts(117,7): error TS2353: Object literal may only specify known properties, and 'important' does not exist in type 'ExternalToast'.
+```
+
+**Diagnóstico:** O objeto passado para `toast(...)` incluía `important: sev === "P0"`, mas a biblioteca instalada (`sonner@1.7.4`) nunca teve essa propriedade em `ExternalToast`/`ToastT` — não é uma regressão de versão, o conceito de "important" simplesmente não existe na API do Sonner (é de outra lib de toast, como `react-toastify`). É código morto: a propriedade era ignorada silenciosamente em runtime e não tinha nenhum efeito. A persistência do toast P0 já é garantida corretamente por `duration: Infinity` na linha anterior.
+
+**Fix aplicado:**
+```ts
+// removida a linha:
+important: sev === "P0",
+```
+
+**Validação:**
+- `tscheck-files.mjs`: 1 → 0 erros no arquivo.
+- `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `5b14a88171`).
+- Nenhum teste dedicado encontrado para o arquivo.
+- `typecheck:baseline`: 167 → 166 (166 arquivos), travado via `--update`.
