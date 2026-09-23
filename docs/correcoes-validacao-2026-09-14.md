@@ -5925,3 +5925,30 @@ export function getProductImageUrl(
 - `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `51651e8c23`).
 - Teste dedicado `tests/lib/product-types.test.ts`: 14/14 passaram.
 - `typecheck:baseline`: 216 → 214 (193 arquivos), travado via `--update`.
+
+## usePasswordBreachCheck.tsx (etapa 17)
+
+**Arquivo:** `src/hooks/usePasswordBreachCheck.tsx`
+
+**Erros originais (2×):**
+```
+src/hooks/usePasswordBreachCheck.tsx(54,13): error TS18048: 'hashSuffix' is possibly 'undefined'.
+src/hooks/usePasswordBreachCheck.tsx(55,32): error TS18048: 'count' is possibly 'undefined'.
+```
+
+**Diagnóstico:** não é só formalidade de tipo — é um risco real de runtime. `text.split('\n')` sobre a resposta da API k-anonymity do HIBP (Have I Been Pwned) pode gerar uma última linha vazia (por causa de um `\n`/`\r\n` final na resposta). Ao desestruturar `const [hashSuffix, count] = line.split(':')` nessa linha vazia, `count` (e possivelmente `hashSuffix`) fica `undefined`. Sem guarda, `parseInt(count.trim(), 10)` lançaria `TypeError: Cannot read properties of undefined` em produção, não só um erro de compilação.
+
+**Fix aplicado:**
+```ts
+for (const line of hashes) {
+  const [hashSuffix, count] = line.split(':');
+  if (hashSuffix === undefined || count === undefined) continue;
+  if (hashSuffix.trim() === suffix) {
+    const breachCount = parseInt(count.trim(), 10);
+```
+
+**Validação:**
+- `tscheck-files.mjs`: 2 → 0 erros (0 no programa inteiro).
+- `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `6c3d12493a`).
+- Teste dedicado `tests/hooks/usePasswordBreachCheck.test.tsx`: 5/5 passaram.
+- `typecheck:baseline`: 214 → 212 (192 arquivos), travado via `--update`.

@@ -51,6 +51,7 @@ export function usePasswordBreachCheck() {
       
       for (const line of hashes) {
         const [hashSuffix, count] = line.split(':');
+        if (hashSuffix === undefined || count === undefined) continue;
         if (hashSuffix.trim() === suffix) {
           const breachCount = parseInt(count.trim(), 10);
           setResult({
