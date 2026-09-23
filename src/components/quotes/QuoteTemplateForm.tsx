@@ -186,7 +186,7 @@ export function QuoteTemplateForm({
               <Label htmlFor="category">Categoria</Label>
               <Input
                 id="category"
-                value={formData.category}
+                value={formData.category || ""}
                 onChange={(e) => updateField("category", e.target.value)}
                 placeholder="Ex: Kits, Eventos, Promocional"
               />
@@ -198,7 +198,7 @@ export function QuoteTemplateForm({
                 type="number"
                 min={1}
                 max={365}
-                value={formData.validity_days}
+                value={formData.validity_days || 30}
                 onChange={(e) => updateField("validity_days", parseInt(e.target.value) || 30)}
               />
             </div>

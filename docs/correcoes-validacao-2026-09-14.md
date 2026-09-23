@@ -5289,3 +5289,34 @@ export interface BulkAction {
 - `check-eslint-baseline.mjs`: 0 regressões (apenas `BulkActionsBar.tsx` foi de fato alterado).
 - Nenhum teste dedicado encontrado para `QuotesConfigurableList.tsx` ou `BulkActionsBar.tsx`.
 - `typecheck:baseline`: 259 → 257 (215 arquivos), travado via `--update`.
+
+## QuoteTemplateForm.tsx (etapa 17)
+
+**Arquivo:** `src/components/quotes/QuoteTemplateForm.tsx`
+
+**Erros originais (2×):**
+```
+src/components/quotes/QuoteTemplateForm.tsx(189,17): error TS2322: Type 'string | null | undefined' is not assignable to type 'string | number | readonly string[] | undefined'.
+src/components/quotes/QuoteTemplateForm.tsx(201,17): error TS2322: Type 'number | null | undefined' is not assignable to type 'string | number | readonly string[] | undefined'.
+```
+
+**Diagnóstico:** `CreateTemplateInput = Partial<Omit<QuoteTemplate, 'id' | 'created_at' | 'updated_at'>> & Pick<QuoteTemplate, 'name'>` herda `category: string | null` e `validity_days: number | null` de `QuoteTemplate`, tornando ambos `string | null | undefined` / `number | null | undefined` no formulário. O prop `value` do `<Input>` do shadcn/ui não aceita `null`. O próprio arquivo já usa a convenção `valor || default` para outros campos nullable do mesmo `formData` (ex.: `formData.description || ""` linha 211, `formData.notes || ""` linha 307, `formData.discount_percent || ""` linha 245) — aplicado o mesmo padrão aos dois campos sinalizados.
+
+**Fix aplicado:**
+```tsx
+// antes:
+value={formData.category}
+...
+value={formData.validity_days}
+// depois:
+value={formData.category || ""}
+...
+value={formData.validity_days || 30}
+```
+(`30` reaproveita o mesmo default já usado na inicialização do `useState`, linha 45: `validity_days: template?.validity_days || 30`.)
+
+**Validação:**
+- `tscheck-files.mjs`: 2 → 0 erros (13 → 11 no programa inteiro).
+- `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `54bba7945b`).
+- Nenhum teste dedicado encontrado.
+- `typecheck:baseline`: 257 → 255 (214 arquivos), travado via `--update`.
