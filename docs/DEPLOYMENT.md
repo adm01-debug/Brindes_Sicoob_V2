@@ -19,9 +19,11 @@ npm ci
    `sicoob_internal_function_secret` no Vault. Os dois segredos internos devem
    ter o mesmo valor aleatório de pelo menos 32 caracteres.
 
-4. Aplicar migrations somente após revisão, primeiro no ambiente de construção:
+4. Publicar primeiro as Edge Functions que substituem os caminhos privilegiados
+   legados. Isso garante que a revogação das RPCs no banco não deixa a aplicação
+   sem um caminho autenticado equivalente:
 ```bash
-npx supabase db push --linked
+npx supabase functions deploy send-notification process-batch-export monthly-health-report system-healthcheck external-connections-sync --project-ref cfmzkthhgliqelozlmwu
 ```
 
 5. Compilar:
@@ -29,7 +31,21 @@ npx supabase db push --linked
 npm run build
 ```
 
-6. Publicar o frontend pelo provedor configurado e cada Edge Function pelo CLI Supabase autenticado. Não existe script `npm run deploy` neste repositório.
+6. Publicar o frontend pelo provedor configurado.
+
+7. Aplicar somente as migrations novas e revisadas em ordem de versão no ambiente
+   de construção. **Não executar `supabase db push --linked`** enquanto o ledger
+   histórico estiver divergente: ele tentaria reaplicar centenas de arquivos que
+   não representam o baseline remoto. Neste lote, aplicar
+   `20260923110000_harden_internal_operations.sql`,
+   `20260923111000_schedule_secure_export_worker.sql` e
+   `20260923112000_fix_connection_sync_and_favorites.sql`, registrando cada uma
+   no ledger na mesma transação de aplicação.
+
+8. Verificar após a aplicação: as três versões aparecem no ledger, as chamadas
+   anônimas às funções internas retornam `401` ou `503`, a sincronização externa
+   exige sessão de supervisor e o cron `process-export-queue` existe somente
+   quando os dois segredos do Vault foram configurados.
 
 ## Production Checklist
 - [ ] Environment variables configured
