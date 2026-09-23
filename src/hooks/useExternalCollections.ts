@@ -50,7 +50,7 @@ export function useExternalCollections() {
         limit: 100,
       });
       // Filtrar no cliente se o campo existir
-      return result.records.filter(c => c.is_active !== false);
+      return (result.records ?? []).filter(c => c.is_active !== false);
     },
     staleTime: 5 * 60 * 1000, // 5 minutos
   });
@@ -97,7 +97,7 @@ export function useExternalCollectionProductCounts(collectionIds: string[]) {
       });
       
       const counts = new Map<string, number>();
-      for (const r of result.records) {
+      for (const r of result.records ?? []) {
         counts.set(r.collection_id, (counts.get(r.collection_id) || 0) + 1);
       }
       return counts;

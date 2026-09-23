@@ -5844,3 +5844,28 @@ icon: icon || DEFAULT_ICONS[0]!,
 - `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `5f7bb5e6d2`).
 - Testes dedicados `tests/hooks/useCollections.test.ts` + `tests/hooks/useCollections.test.tsx`: 14/14 passaram.
 - `typecheck:baseline`: 222 → 220 (196 arquivos), travado via `--update`.
+
+## useExternalCollections.ts (etapa 17)
+
+**Arquivo:** `src/hooks/useExternalCollections.ts`
+
+**Erros originais (2×):**
+```
+src/hooks/useExternalCollections.ts(53,14): error TS18048: 'result.records' is possibly 'undefined'.
+src/hooks/useExternalCollections.ts(100,23): error TS18048: 'result.records' is possibly 'undefined'.
+```
+
+**Diagnóstico:** `InvokeResult<T>.records` (`src/lib/external-db/invoke.ts:46`) é genuinamente opcional (`records?: T[]`) — o bridge pode não retornar o campo. `.filter(...)` e `for...of` direto sobre `result.records` chamam método/iteram um valor possivelmente `undefined`. O idioma já estabelecido no restante do codebase para esse mesmo tipo (`src/lib/external-db/products.ts:71`) é `result.records ?? []`.
+
+**Fix aplicado:**
+```ts
+return (result.records ?? []).filter(c => c.is_active !== false);
+...
+for (const r of result.records ?? []) {
+```
+
+**Validação:**
+- `tscheck-files.mjs`: 2 → 0 erros (5 no programa inteiro).
+- `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `fa5f539d65`).
+- Sem teste dedicado encontrado.
+- `typecheck:baseline`: 220 → 218 (195 arquivos), travado via `--update`.
