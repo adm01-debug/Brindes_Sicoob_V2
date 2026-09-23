@@ -9,7 +9,7 @@ import { VIDEO_TYPES } from './types';
 
 interface Props {
   video: ExternalVideo;
-  onSave: (data: { title?: string; description?: string; video_type?: string }) => void;
+  onSave: (data: { title?: string | null; description?: string | null; video_type?: string }) => void;
   onCancel: () => void;
 }
 

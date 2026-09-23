@@ -27,7 +27,7 @@ interface Props {
   unlinkVideoFromVariant: (linkId: string) => void;
   regenerateThumbnail: (video: ExternalVideo) => void;
   requestRemove: (videoId: string) => void;
-  updateVideoMeta: (videoId: string, data: { title?: string; description?: string; video_type?: string }) => void;
+  updateVideoMeta: (videoId: string, data: { title?: string | null; description?: string | null; video_type?: string }) => void;
   handleDragStart: (index: number) => void;
   handleDragOver: (e: React.DragEvent, index: number) => void;
   handleDrop: (e: React.DragEvent, index: number) => void;

@@ -4232,3 +4232,26 @@ for (let i = 0; i < reordered.length; i++) {
 - `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `99127776c`).
 - Nenhum teste dedicado encontrado (existe um componente homônimo em `personalization-manager/`, não relacionado).
 - `typecheck:baseline`: 333 → 331 (252 arquivos), travado via `--update`.
+
+## VideoMetaEditor.tsx (etapa 17)
+
+**Arquivo:** `src/components/admin/products/video-gallery/VideoMetaEditor.tsx` (+ `VideoGrid.tsx` e `useProductVideoGallery.ts`, mesma cadeia de tipo)
+
+**Erros originais (2×):** TS2322 (linha 42) — `Type 'string | null' is not assignable to type 'string | undefined'` em `title: title.trim() || null` e `description: description.trim() || null`.
+
+**Diagnóstico:** `git log -p` no arquivo mostra que essas 2 linhas usavam originalmente `null as any` — um cast explícito pra contornar exatamente essa incompatibilidade de tipo — que foi removido numa limpeza anterior sem corrigir a declaração de tipo subjacente. Ou seja, `null` aqui é comportamento **intencional**: o objeto `data` é serializado via `JSON.stringify` dentro de `supabase.functions.invoke` (edge function `external-db-bridge`, operação `update`), e `JSON.stringify` **preserva** chaves com valor `null` mas **descarta** chaves com valor `undefined` — então usar `null` é o que de fato permite ao usuário limpar o título/descrição do vídeo salvando o campo vazio; usar `undefined` (pra satisfazer o tipo `string | undefined` declarado) quebraria essa funcionalidade silenciosamente, já que a chave nem seria enviada no update. O fix correto é alargar o tipo — não o valor — pra refletir o comportamento real e intencional, em toda a cadeia de props que carrega esse shape (`VideoMetaEditor.onSave` → `VideoGrid.updateVideoMeta` → `useProductVideoGallery.updateVideoMeta`).
+
+**Fix aplicado (3 arquivos, mesmo campo em cada um):**
+```ts
+// antes:
+{ title?: string; description?: string; video_type?: string }
+
+// depois:
+{ title?: string | null; description?: string | null; video_type?: string }
+```
+
+**Validação:**
+- `tscheck-files.mjs` (3 arquivos): 2 → 0 erros (1 no programa inteiro, pré-existente/fora de escopo).
+- `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `155e558b0`).
+- Nenhum teste dedicado encontrado para os 3 arquivos.
+- `typecheck:baseline`: 331 → 329 (251 arquivos), travado via `--update`.
