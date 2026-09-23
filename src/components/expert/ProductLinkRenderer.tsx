@@ -49,12 +49,12 @@ export function ProductAwareLink({ href, children, ...props }: React.AnchorHTMLA
     if (isProductProtocol) {
       const urlPart = href!.slice(PRODUCT_HREF_PREFIX.length);
       const [id, fragment] = urlPart.split("#");
-      productId = id;
+      productId = id!;
       if (fragment?.startsWith("img=")) {
         try { imageUrl = decodeURIComponent(fragment.slice(4)); } catch { /* ignore */ }
       }
     } else {
-      productId = isProductPath![1];
+      productId = isProductPath![1]!;
     }
 
     // Extract name from children (strip the 🔗 emoji)

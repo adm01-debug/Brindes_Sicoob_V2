@@ -4528,3 +4528,34 @@ Idioma `??= []` já estabelecido no codebase (`ComparisonShortcutsCheatsheet.tsx
 - `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `d9c0561657`).
 - Nenhum teste dedicado encontrado.
 - `typecheck:baseline`: 311 → 309 (241 arquivos), travado via `--update`.
+
+## ProductLinkRenderer.tsx (etapa 17)
+
+**Arquivo:** `src/components/expert/ProductLinkRenderer.tsx`
+
+**Erros originais (2×):**
+- TS2322 (linha 52) — `id` de `urlPart.split("#")` desestruturado como `string | undefined`.
+- TS2322 (linha 57) — `isProductPath![1]` (grupo de captura da regex) como `string | undefined`.
+
+**Diagnóstico:** ambos são casos seguros por invariante não propagada. `String.prototype.split` sempre retorna pelo menos 1 elemento, então `id` (primeira posição da desestruturação) é sempre definido. `isProductPath` já foi verificado truthy pela condição `if (isProductProtocol || isProductPath)`, e a regex `/^\/produto\/([a-f0-9-]+)/i` tem grupo de captura obrigatório — se o match ocorreu, o grupo 1 sempre existe.
+
+**Fix aplicado:**
+```ts
+// antes:
+const [id, fragment] = urlPart.split("#");
+productId = id;
+...
+productId = isProductPath![1];
+
+// depois:
+const [id, fragment] = urlPart.split("#");
+productId = id!;
+...
+productId = isProductPath![1]!;
+```
+
+**Validação:**
+- `tscheck-files.mjs`: 2 → 0 erros (0 no programa inteiro).
+- `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `eb0dce9fde`).
+- Nenhum teste dedicado encontrado.
+- `typecheck:baseline`: 309 → 307 (240 arquivos), travado via `--update`.
