@@ -12,7 +12,6 @@ import {
   GitCompare,
   ShoppingCart,
   Package,
-  Star,
   Sparkles,
   Clock,
   TrendingUp,
@@ -354,12 +353,6 @@ export function EnhancedProductCard({
           <Badge variant="secondary" className="text-[10px]">
             {product.supplier?.name || "Fornecedor"}
           </Badge>
-          {product.rating && (
-            <div className="flex items-center gap-1 text-xs text-muted-foreground">
-              <Star className="h-3 w-3 fill-warning text-warning" />
-              {product.rating.toFixed(1)}
-            </div>
-          )}
         </div>
 
         {/* Name */}

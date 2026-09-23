@@ -4856,3 +4856,36 @@ const flat = adaptPriceResponse(result as unknown as Record<string, unknown>);
 - `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `cbfed5c3f7`).
 - Nenhum teste dedicado encontrado (existe `ConfigurationPanelV6.tsx` no mesmo diretório, componente distinto).
 - `typecheck:baseline`: 287 → 285 (229 arquivos), travado via `--update`.
+
+## EnhancedProductCard.tsx (etapa 17)
+
+**Arquivo:** `src/components/products/EnhancedProductCard.tsx`
+
+**Erros originais (2×):** TS2339 (linhas 357 e 360) — `product.rating` e `product.rating.toFixed(1)`, propriedade `rating` inexistente no tipo `Product`.
+
+**Diagnóstico:** bug genuíno, não falso positivo do `noUncheckedIndexedAccess`. A interface `Product` (`src/types/product-catalog.ts`) nunca teve campo `rating`/avaliação — não há nenhum campo relacionado (nota, avaliação, reviews) em todo o tipo, nem em nenhum outro card de produto do catálogo (`ProductCard.tsx`, `ProductCardActions.tsx`, `ProductCardImage.tsx`). O bloco de estrelas era código morto desde a origem: nunca existiu dado real para popular `rating`, e o próprio componente `EnhancedProductCard` só é reexportado pelo barrel `components/products/index.ts`, sem nenhum consumidor real no app. Removido o bloco (e o import não utilizado do ícone `Star`, único uso no arquivo) em vez de forjar um campo/cast — não há schema real a decodificar.
+
+**Fix aplicado:**
+```tsx
+// antes:
+<Badge variant="secondary" className="text-[10px]">
+  {product.supplier?.name || "Fornecedor"}
+</Badge>
+{product.rating && (
+  <div className="flex items-center gap-1 text-xs text-muted-foreground">
+    <Star className="h-3 w-3 fill-warning text-warning" />
+    {product.rating.toFixed(1)}
+  </div>
+)}
+// depois:
+<Badge variant="secondary" className="text-[10px]">
+  {product.supplier?.name || "Fornecedor"}
+</Badge>
+```
+(+ remoção do import `Star` de `lucide-react`, sem outros usos no arquivo)
+
+**Validação:**
+- `tscheck-files.mjs`: 2 → 0 erros (5 no programa inteiro).
+- `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `0fd02410ce`).
+- Nenhum teste dedicado encontrado.
+- `typecheck:baseline`: 285 → 283 (228 arquivos), travado via `--update`.
