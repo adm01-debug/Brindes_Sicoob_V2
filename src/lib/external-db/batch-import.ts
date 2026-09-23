@@ -103,7 +103,7 @@ export async function checkExistingSkus(skus: string[]): Promise<Set<string>> {
         limit: 100,
       });
 
-      const records = response?.data?.records ?? (response as Record<string, unknown>)?.records ?? [];
+      const records = response?.data?.records ?? (response as unknown as Record<string, unknown>)?.records ?? [];
       if (Array.isArray(records)) {
         records.forEach((r: { sku: string }) => {
           if (r.sku) existingSkus.add(r.sku);
@@ -156,7 +156,7 @@ export async function executeBatchImport(
         ...(mode === 'upsert' ? { onConflict: 'sku' } : {}),
       });
 
-      const records = response?.data?.records ?? (response as Record<string, unknown>)?.records ?? [];
+      const records = response?.data?.records ?? (response as unknown as Record<string, unknown>)?.records ?? [];
       const insertedCount = Array.isArray(records) ? records.length : 0;
 
       result.succeeded += insertedCount;

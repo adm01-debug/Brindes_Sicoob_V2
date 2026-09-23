@@ -6177,3 +6177,27 @@ O `!` é seguro pelo mesmo motivo que o `favorite!` pré-existente: só é usado
 - `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `35e4308471`).
 - Nenhum teste dedicado encontrado para o arquivo ou para `buildCategorySection`.
 - `typecheck:baseline`: 198 → 196 (184 arquivos), travado via `--update`.
+
+## batch-import.ts (etapa 17)
+
+**Arquivo:** `src/lib/external-db/batch-import.ts`
+
+**Erros originais (2×):**
+```
+src/lib/external-db/batch-import.ts(106,51): error TS2352: Conversion of type 'BridgeResponse<{ records: { sku: string; }[]; count: number | null; }>' to type 'Record<string, unknown>' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/lib/external-db/batch-import.ts(159,51): error TS2352: Conversion of type 'BridgeResponse<{ records: { id: string; sku: string; name: string; }[]; count: number; }>' to type 'Record<string, unknown>' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+```
+
+**Diagnóstico:** `BridgeResponse<T>` (`src/lib/external-db/bridge.ts`) tem forma fixa `{ success, data, error? }` — não overlap suficiente com `Record<string, unknown>` para um `as` direto. O fallback `(response as Record<string, unknown>)?.records` é defensivo (cobre uma variação legada onde `records` viria no topo da resposta, fora de `data`), não código morto a remover. Padrão de conversão em dois passos (`as unknown as Record<string, unknown>`) já é idiomático no codebase (`useGravacaoPriceV2.ts`, `useCustomizationPrice.ts`, `notifications-metrics.ts`, entre outros).
+
+**Fix aplicado:**
+```ts
+const records = response?.data?.records ?? (response as unknown as Record<string, unknown>)?.records ?? [];
+```
+Aplicado nos dois pontos (linhas 106 e 159), sem alterar o comportamento do fallback defensivo.
+
+**Validação:**
+- `tscheck-files.mjs`: 2 → 0 erros no arquivo.
+- `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `85fae603f7`).
+- Nenhum teste dedicado encontrado para o arquivo.
+- `typecheck:baseline`: 196 → 194 (183 arquivos), travado via `--update`.
