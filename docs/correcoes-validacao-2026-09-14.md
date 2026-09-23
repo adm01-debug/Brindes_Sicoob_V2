@@ -6303,3 +6303,36 @@ const supervisorCount = useMemo(
 - `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `629c319f45`).
 - Nenhum teste dedicado encontrado para o arquivo.
 - `typecheck:baseline`: 188 → 186 (179 arquivos), travado via `--update`.
+
+## UserAssignmentTab.tsx (etapa 17)
+
+**Arquivo:** `src/pages/admin/sicoob/tabs/UserAssignmentTab.tsx`
+
+**Erros originais (2×):**
+```
+src/pages/admin/sicoob/tabs/UserAssignmentTab.tsx(211,32): error TS2339: Property 'name' does not exist on type '{ address: string | null; ...; codigo: string; ...; updated_at: string; }'.
+src/pages/admin/sicoob/tabs/UserAssignmentTab.tsx(236,32): error TS2339: Property 'name' does not exist on type '{ cidade: string | null; codigo: string; ...; nome: string; ...; updated_at: string; }'.
+```
+
+**Diagnóstico:** as tabelas reais `cooperativas` e `postos_atendimento` (ver `src/integrations/supabase/types.ts`) têm a coluna `nome` (e `codigo`), não `name`/`code`. O componente usava `c.name`/`p.name` (dropdowns de Singular/PA, alimentados por `select("*")` nessas tabelas) — erro de tipagem real, não falso positivo.
+
+**Bug de runtime correlato encontrado durante o diagnóstico (mesmo arquivo, mesma causa raiz):** as duas queries auxiliares usavam `.order("name")` (coluna inexistente — quebraria a query com erro do Postgres em produção) e a query principal de usuários fazia embed `cooperativa:cooperativas(name, code)` / `pa:postos_atendimento(name, code)` (também colunas inexistentes, o que quebraria a query inteira de usuários, não só os dropdowns). Corrigido junto por ser a mesma causa raiz, no mesmo arquivo, sem ampliar escopo.
+
+**Fix aplicado:**
+```ts
+// query principal:
+cooperativa:cooperativas(nome, codigo),
+pa:postos_atendimento(nome, codigo)
+// queries auxiliares:
+.from("cooperativas").select("*").order("nome")
+.from("postos_atendimento").select("*").order("nome")
+// render:
+{c.nome}
+{p.nome}
+```
+
+**Validação:**
+- `tscheck-files.mjs`: 2 → 0 erros no arquivo.
+- `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `68f0489b45`).
+- Nenhum teste dedicado encontrado para o arquivo.
+- `typecheck:baseline`: 186 → 184 (178 arquivos), travado via `--update`.

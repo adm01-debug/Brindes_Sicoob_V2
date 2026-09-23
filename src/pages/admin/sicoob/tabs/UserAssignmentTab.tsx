@@ -47,8 +47,8 @@ export const UserAssignmentTab = () => {
           cooperativa_id,
           pa_id,
           approval_threshold,
-          cooperativa:cooperativas(name, code),
-          pa:postos_atendimento(name, code)
+          cooperativa:cooperativas(nome, codigo),
+          pa:postos_atendimento(nome, codigo)
         `)
         .order("full_name");
       if (error) throw error;
@@ -59,7 +59,7 @@ export const UserAssignmentTab = () => {
   const { data: cooperativas } = useQuery({
     queryKey: ["cooperativas"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("cooperativas").select("*").order("name");
+      const { data, error } = await supabase.from("cooperativas").select("*").order("nome");
       if (error) throw error;
       return data;
     },
@@ -68,7 +68,7 @@ export const UserAssignmentTab = () => {
   const { data: pas } = useQuery({
     queryKey: ["postos_atendimento"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("postos_atendimento").select("*").order("name");
+      const { data, error } = await supabase.from("postos_atendimento").select("*").order("nome");
       if (error) throw error;
       return data;
     },
@@ -208,7 +208,7 @@ export const UserAssignmentTab = () => {
                         <SelectItem value="none">Nenhuma</SelectItem>
                         {cooperativas?.map((c) => (
                           <SelectItem key={c.id} value={c.id}>
-                            {c.name}
+                            {c.nome}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -233,7 +233,7 @@ export const UserAssignmentTab = () => {
                         <SelectItem value="none">Nenhum</SelectItem>
                         {getPAsForCoop(user.cooperativa_id).map((p) => (
                           <SelectItem key={p.id} value={p.id}>
-                            {p.name}
+                            {p.nome}
                           </SelectItem>
                         ))}
                       </SelectContent>
