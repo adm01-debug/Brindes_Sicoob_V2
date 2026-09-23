@@ -5894,3 +5894,34 @@ return (variantsResult.records ?? []).map(v => {
 - `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `cb514b2406`).
 - Sem teste dedicado encontrado.
 - `typecheck:baseline`: 218 → 216 (194 arquivos), travado via `--update`.
+
+## useKitBuilderTransformers.ts (etapa 17)
+
+**Arquivo:** `src/hooks/useKitBuilderTransformers.ts` (fix real em `src/lib/external-db/product-types.ts`)
+
+**Erros originais (2×):**
+```
+src/hooks/useKitBuilderTransformers.ts(64,34): error TS2345: Argument of type 'ExternalProductForKit' is not assignable to parameter of type 'Pick<PromobrindProduct, "image_url" | "primary_image_url" | "images">'.
+  Types of property 'images' are incompatible.
+    Type 'string[] | null | undefined' is not assignable to type 'string[] | null'.
+src/hooks/useKitBuilderTransformers.ts(96,34): error TS2345: (mesmo erro)
+```
+
+**Diagnóstico:** `getProductImageUrl` (`src/lib/external-db/product-types.ts`) tem assinatura `Pick<PromobrindProduct, 'primary_image_url' | 'image_url' | 'images'>`, onde `images: string[] | null` é obrigatório. `ExternalProductForKit.images` (`src/lib/kit-builder/types.ts`) é opcional (`images?: string[] | null`). A própria implementação de `getProductImageUrl` já trata isso com segurança (`product.images?.[0] ?? null`) — a assinatura é que estava mais restritiva que o corpo da função exigia. Fix na declaração (não no call site) para refletir o que a função de fato suporta.
+
+**Fix aplicado:**
+```ts
+export function getProductImageUrl(
+  product: {
+    primary_image_url: PromobrindProduct['primary_image_url'];
+    image_url: PromobrindProduct['image_url'];
+    images?: PromobrindProduct['images'];
+  },
+): string | null {
+```
+
+**Validação:**
+- `tscheck-files.mjs`: 2 → 0 erros (5 no programa inteiro). Nenhuma mudança necessária em `useKitBuilderTransformers.ts` — fix isolado na declaração compartilhada.
+- `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `51651e8c23`).
+- Teste dedicado `tests/lib/product-types.test.ts`: 14/14 passaram.
+- `typecheck:baseline`: 216 → 214 (193 arquivos), travado via `--update`.

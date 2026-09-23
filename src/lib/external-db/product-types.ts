@@ -86,7 +86,11 @@ export interface PromobrindProduct {
 }
 
 export function getProductImageUrl(
-  product: Pick<PromobrindProduct, 'primary_image_url' | 'image_url' | 'images'>,
+  product: {
+    primary_image_url: PromobrindProduct['primary_image_url'];
+    image_url: PromobrindProduct['image_url'];
+    images?: PromobrindProduct['images'];
+  },
 ): string | null {
   return product.primary_image_url || product.image_url || (product.images?.[0] ?? null);
 }
