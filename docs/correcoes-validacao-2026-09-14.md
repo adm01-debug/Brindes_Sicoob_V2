@@ -5564,3 +5564,34 @@ return { group: parts[0]!.trim(), variation: parts.slice(1).join(' | ').trim() }
 - `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `79ea9525d2`).
 - Sem teste dedicado encontrado (`find -iname "*PersonalizationSummary*"` retornou apenas o próprio componente e `MobilePersonalizationSummary.tsx`).
 - `typecheck:baseline`: 241 → 239 (206 arquivos), travado via `--update`.
+
+## chart.tsx (etapa 17)
+
+**Arquivo:** `src/components/ui/chart.tsx`
+
+**Erros originais (2×):**
+```
+src/components/ui/chart.tsx(129,34): error TS18048: 'item' is possibly 'undefined'.
+src/components/ui/chart.tsx(129,50): error TS18048: 'item' is possibly 'undefined'.
+```
+
+**Diagnóstico:** `const [item] = payload;` desestrutura o primeiro elemento de `payload` (array), tipado como possivelmente `undefined` sob `noUncheckedIndexedAccess` — a checagem `!payload?.length` na linha anterior garante que o array não está vazio, mas o TypeScript não propaga essa garantia através da desestruturação.
+
+**Fix aplicado:**
+```ts
+// antes:
+const [item] = payload;
+const key = `${labelKey || item.dataKey || item.name || "value"}`;
+// depois:
+const [item] = payload;
+if (!item) {
+  return null;
+}
+const key = `${labelKey || item.dataKey || item.name || "value"}`;
+```
+
+**Validação:**
+- `tscheck-files.mjs`: 2 → 0 erros (0 no programa inteiro).
+- `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `d5332c388d`).
+- Sem teste dedicado encontrado.
+- `typecheck:baseline`: 239 → 237 (205 arquivos), travado via `--update`.
