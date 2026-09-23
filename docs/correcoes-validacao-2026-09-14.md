@@ -4077,3 +4077,34 @@ if (!isStepComplete(WIZARD_STEPS[i]!, state)) {
 - `check-eslint-baseline.mjs`: 0 regressões (3331 erros globais, referência `origin/main` em `2bdef0344a`).
 - Nenhum teste dedicado encontrado (`tests/integration/simulator-wizard-pricing-parity.test.ts` testa paridade de preço, não importa nenhuma das funções alteradas). Consumidores identificados via grep (`useSimulatorWizard.ts`, `WizardStepIndicator.tsx`) não têm teste dedicado.
 - `typecheck:baseline`: 346 → 343 (258 arquivos), travado via `--update`.
+
+## AdminDataTable.tsx (etapa 17)
+
+**Arquivo:** `src/components/admin/common/AdminDataTable.tsx`
+
+**Erros originais (2×):** TS2322 (linhas 282-283) — `columns={columns}` e `onRowClick={onRowClick}` passados pro subcomponente `DataTableRow`, `Column<T>[]` e `((row: T) => void) | undefined` (tipos do componente pai, genéricos em `T`) não batem com `Column<{ id?: string | number | undefined }>[]` e `((row: { id?: string | number | undefined }) => void) | undefined` (tipos "achatados" do subcomponente).
+
+**Diagnóstico:** limitação conhecida de TypeScript + `React.memo` — `DataTableRow` é um componente genérico (`<T extends { id?: string | number }>`), mas a assinatura de tipo de `React.memo` (`memo<P extends object>(Component: FunctionComponent<P>): NamedExoticComponent<P>`) não preserva parâmetros de tipo genéricos: ao envolver `DataTableRow` em `React.memo(...)`, o TS precisa fixar `T` num tipo concreto único, e resolve isso usando o *constraint* declarado (`{ id?: string | number }`) em vez do `T` real de cada chamada. Resultado: o componente memoizado exportado fica com props "achatadas" pro constraint, incompatíveis com o `T` específico usado no componente pai (`AdminDataTable<T>`). Não é um bug de runtime — é só a assinatura de tipo do wrapper `memo` que perde a genericidade; o comportamento em runtime já estava correto. Fix: idioma padrão do ecossistema React+TS pra esse caso — fazer cast do resultado de `React.memo(...)` de volta pra uma função genérica explícita via `as <T extends ...>(props: {...}) => React.ReactElement`, preservando tanto a genericidade nos call sites quanto a memoização em runtime (não removida, já que remover o memo seria mudança de comportamento/performance não pedida pelo erro de tipo).
+
+**Fix aplicado:**
+```tsx
+// antes:
+const DataTableRow = React.memo(function DataTableRow<T extends { id?: string | number }>({ ... }: {...}) {
+  // ...
+});
+
+// depois:
+const DataTableRow = React.memo(function DataTableRow<T extends { id?: string | number }>({ ... }: {...}) {
+  // ...
+}) as <T extends { id?: string | number }>(props: {
+  row: T;
+  columns: Column<T>[];
+  onRowClick?: (row: T) => void;
+}) => React.ReactElement;
+```
+
+**Validação:**
+- `tscheck-files.mjs`: 2 → 0 erros (0 no programa inteiro).
+- `check-eslint-baseline.mjs`: 0 regressões (3331 erros globais, referência `origin/main` em `620d9ce914`).
+- Nenhum teste dedicado encontrado.
+- `typecheck:baseline`: 343 → 341 (257 arquivos), travado via `--update`.

@@ -78,7 +78,11 @@ const DataTableRow = React.memo(function DataTableRow<T extends { id?: string | 
       ))}
     </TableRow>
   );
-});
+}) as <T extends { id?: string | number }>(props: {
+  row: T;
+  columns: Column<T>[];
+  onRowClick?: (row: T) => void;
+}) => React.ReactElement;
 
 export function AdminDataTable<T extends { id?: string | number }>({
   data,
