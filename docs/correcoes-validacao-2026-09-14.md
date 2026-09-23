@@ -3153,3 +3153,19 @@ Esse hook é consumido por `AuthContext.tsx` (linha 88), que calcula `mfaRequire
 - `check-eslint-baseline.mjs`: 0 regressões (3334 erros globais, referência `origin/main` em `0afdcbff16`).
 - Nenhum teste dedicado encontrado para este arquivo.
 - `typecheck:baseline`: 471 → 468 (302 arquivos), travado via `--update`.
+
+## KitComparisonDialog.tsx (etapa 17)
+
+**Arquivo:** `src/components/kit-builder/KitComparisonDialog.tsx`
+
+**Erros originais (3×):** TS2532 (linha 61 — `Object is possibly 'undefined'` no `.id` do resultado de `reduce`), TS18048 ×2 (linha 61 — `min` possivelmente `undefined` em `min.total_price` e `min.kit_quantity`).
+
+**Diagnóstico:** `kits.reduce((min, k) => ..., kits[0])` usa `kits[0]` como valor inicial do `reduce`, tipado `KitForComparison | undefined` sob `noUncheckedIndexedAccess`, o que propaga `undefined` para o tipo de `min` no callback e para o retorno do `reduce` (`.id` na linha 61). A linha 34, `if (kits.length < 2) return null;`, é um guard estrutural no topo do próprio componente que garante `kits.length >= 2` antes de qualquer execução da linha 61 — invariante intrínseco à função, não dependente de quem a chama.
+
+**Fix aplicado:** asserção de não-nulo em `kits[0]!` (valor inicial do `reduce`), justificada pelo guard `kits.length < 2` já presente no início da função.
+
+**Validação:**
+- `tscheck-files.mjs`: 3 → 0 erros (0 no programa inteiro).
+- `check-eslint-baseline.mjs`: 0 regressões (3334 erros globais, referência `origin/main` em `5ad652109e`).
+- Nenhum teste dedicado encontrado para este arquivo.
+- `typecheck:baseline`: 468 → 465 (301 arquivos), travado via `--update`.

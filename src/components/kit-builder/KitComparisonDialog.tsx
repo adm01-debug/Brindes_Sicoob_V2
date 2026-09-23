@@ -58,7 +58,7 @@ export function KitComparisonDialog({ open, onOpenChange, kits }: KitComparisonD
   ];
 
   // Find the cheapest kit for highlighting
-  const cheapestId = kits.reduce((min, k) => Number(k.total_price) / Math.max(k.kit_quantity, 1) < Number(min.total_price) / Math.max(min.kit_quantity, 1) ? k : min, kits[0]).id;
+  const cheapestId = kits.reduce((min, k) => Number(k.total_price) / Math.max(k.kit_quantity, 1) < Number(min.total_price) / Math.max(min.kit_quantity, 1) ? k : min, kits[0]!).id;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
