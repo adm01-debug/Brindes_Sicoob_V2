@@ -107,7 +107,7 @@ export function ReplenishmentProductGrid() {
   const toggleSelectionMode = useCallback(() => { setSelectionMode(prev => { if (prev) sel.clearSelection(); return !prev; }); }, [sel]);
 
   const { isFavorite, toggleFavorite } = useFavoritesStore();
-  const { isInCompare, addToCompare, removeFromCompare, canAdd: canAddToCompare } = useComparisonStore();
+  const { isInCompare, addToCompare, removeFromCompare, canAddMore: canAddToCompare } = useComparisonStore();
 
   const onToggleCompare = useCallback((productId: string) => {
     if (isInCompare(productId)) { removeFromCompare(productId); return { added: false, isFull: false }; }

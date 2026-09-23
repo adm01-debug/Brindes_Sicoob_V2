@@ -5348,3 +5348,39 @@ setRightId(versions[versions.length - 1]!.id);
 - `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `87c6a56d44`).
 - Nenhum teste dedicado encontrado.
 - `typecheck:baseline`: 255 → 253 (213 arquivos), travado via `--update`.
+
+## ReplenishmentProductGrid.tsx (etapa 17)
+
+**Arquivo:** `src/components/replenishments/ReplenishmentProductGrid.tsx`
+
+**Erros originais (2×):**
+```
+src/components/replenishments/ReplenishmentProductGrid.tsx(110,57): error TS2339: Property 'canAdd' does not exist on type 'ComparisonStore'.
+src/components/replenishments/ReplenishmentProductGrid.tsx(267,102): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+```
+
+**Diagnóstico:**
+1. (linha 110) Erro de nome de propriedade: `ComparisonStore` (`src/stores/useComparisonStore.ts`) expõe o campo `canAddMore`, não `canAdd`. Confirmado via grep que o padrão irmão `NoveltyProductGrid.tsx:113` já usa corretamente `canAddMore: canAddToCompare`.
+2. (linha 267) `sel.firstSelectedId` (de `useReplenishmentsSelectionMode.ts:139`) era `selectedIds.size > 0 ? Array.from(selectedIds)[0] : ""` — sob `noUncheckedIndexedAccess`, `Array.from(selectedIds)[0]` tipa como `string | undefined`, mesmo estando dentro do guard `size > 0`. `AddToCollectionModal`'s prop `productId` exige `string` não-opcional. Fix aplicado na raiz (declaração do hook), não no call site.
+
+**Fix aplicado:**
+```ts
+// ReplenishmentProductGrid.tsx — antes:
+const { isInCompare, addToCompare, removeFromCompare, canAdd: canAddToCompare } = useComparisonStore();
+// depois:
+const { isInCompare, addToCompare, removeFromCompare, canAddMore: canAddToCompare } = useComparisonStore();
+```
+```ts
+// useReplenishmentsSelectionMode.ts — antes:
+const firstSelectedId = selectedIds.size > 0 ? Array.from(selectedIds)[0] : "";
+// depois:
+const firstSelectedId = selectedIds.size > 0 ? (Array.from(selectedIds)[0] ?? "") : "";
+```
+
+**Nota:** durante a validação foi encontrado 1 erro pré-existente e não relacionado em `useReplenishmentsSelectionMode.ts(16,10)` (TS2352, conversão de tipo `Product`), confirmado via `git stash` que já existia antes desta sessão — fora do escopo deste fix, não tocado.
+
+**Validação:**
+- `tscheck-files.mjs`: 2 → 0 erros no arquivo-alvo (24 → 22 no programa inteiro, contando o erro pré-existente não relacionado).
+- `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `900804f780`).
+- Teste dedicado `tests/hooks/useReplenishmentsSelectionMode.test.ts`: 4/4 passaram.
+- `typecheck:baseline`: 253 → 251 (212 arquivos), travado via `--update`.
