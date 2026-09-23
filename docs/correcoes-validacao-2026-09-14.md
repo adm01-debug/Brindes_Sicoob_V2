@@ -5508,3 +5508,29 @@ User ID: {item.user_id!.substring(0, 8)}...
 - `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `7d68cc404e`).
 - Sem teste dedicado encontrado (`find -iname "*NotificationOmnichannel*"` retornou apenas o hook e o próprio componente).
 - `typecheck:baseline`: 245 → 243 (208 arquivos), travado via `--update`.
+
+## TechniqueCard.tsx (etapa 17)
+
+**Arquivo:** `src/components/simulator/TechniqueCard.tsx`
+
+**Erros originais (2×):**
+```
+src/components/simulator/TechniqueCard.tsx(261,160): error TS2345: Argument of type 'number | undefined' is not assignable to parameter of type 'number'.
+src/components/simulator/TechniqueCard.tsx(261,207): error TS2345: Argument of type 'number | undefined' is not assignable to parameter of type 'number'.
+```
+
+**Diagnóstico:** `val.split('x').map(Number)` retorna `number[]`; com `noUncheckedIndexedAccess`, a desestruturação `const [w, h] = ...` tipa `w` e `h` como `number | undefined`. Confirmado em `useTechniquePricingOptions.ts` que `val` sempre vem de `SizeOption.value`, construído como `` `${width}x${height}` `` (chave única de largura×altura), garantindo 2 segmentos numéricos válidos no split — mesmo padrão de guarda não propagada já tratado em outros arquivos da etapa 17.
+
+**Fix aplicado:**
+```tsx
+// antes:
+onValueChange={(val) => { const [w, h] = val.split('x').map(Number); onUpdateSetting('width', w); setTimeout(() => onUpdateSetting('height', h), 0); }}
+// depois:
+onValueChange={(val) => { const [w, h] = val.split('x').map(Number); onUpdateSetting('width', w!); setTimeout(() => onUpdateSetting('height', h!), 0); }}
+```
+
+**Validação:**
+- `tscheck-files.mjs`: 2 → 0 erros (11 → 9 no programa inteiro).
+- `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `d1b2f346be`).
+- Teste dedicado `tests/components/simulator/TechniqueCard.test.tsx`: 2/2 passaram.
+- `typecheck:baseline`: 243 → 241 (207 arquivos), travado via `--update`.

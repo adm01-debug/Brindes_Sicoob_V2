@@ -258,7 +258,7 @@ function InlineConfigForm({
       {showSize && sizeOptions.length > 0 && (
         <div className="space-y-1.5 col-span-2">
           <Label className="text-xs text-muted-foreground flex items-center gap-1"><Ruler className="h-3 w-3" />Tamanho</Label>
-          <Select value={`${settings.width}x${settings.height}`} onValueChange={(val) => { const [w, h] = val.split('x').map(Number); onUpdateSetting('width', w); setTimeout(() => onUpdateSetting('height', h), 0); }}>
+          <Select value={`${settings.width}x${settings.height}`} onValueChange={(val) => { const [w, h] = val.split('x').map(Number); onUpdateSetting('width', w!); setTimeout(() => onUpdateSetting('height', h!), 0); }}>
             <SelectTrigger className="h-9" onClick={(e) => e.stopPropagation()}><SelectValue /></SelectTrigger>
             <SelectContent>{sizeOptions.map((opt) => <SelectItem key={opt.value} value={opt.value}>{opt.label} ({opt.areaCm2} cm²)</SelectItem>)}</SelectContent>
           </Select>
