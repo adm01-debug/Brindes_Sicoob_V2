@@ -6014,3 +6014,26 @@ const handleTouchMove = useCallback((e: TouchEvent) => {
 - `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `3d8477ab99`).
 - Nenhum teste dedicado encontrado para o arquivo.
 - `typecheck:baseline`: 210 → 208 (190 arquivos), travado via `--update`.
+
+## useRamoAtividadeFilter.ts (etapa 17)
+
+**Arquivo:** `src/hooks/useRamoAtividadeFilter.ts`
+
+**Erros originais (2×):**
+```
+src/hooks/useRamoAtividadeFilter.ts(69,59): error TS7006: Parameter 's' implicitly has an 'any' type.
+src/hooks/useRamoAtividadeFilter.ts(135,35): error TS7006: Parameter 's' implicitly has an 'any' type.
+```
+
+**Diagnóstico:** `const byRamo = segmentosData?.byRamo || new Map();` — o fallback `new Map()` sem argumentos de tipo é inferido como `Map<any, any>`. Isso alarga a união do `||` para `Map<string, SegmentoComplete[]> | Map<any, any>`, e o TypeScript resolve `.get()` sobre essa união como `any`. Consequência em cascata: `byRamo.get(ramoSlug)` vira `any` em `toggleRamo` (linha 69) e em `getSelectedSegmentosForRamo` (linha 135), fazendo os callbacks de `.map`/`.filter` terem parâmetro implícito `any`.
+
+**Fix aplicado:**
+```ts
+const byRamo = segmentosData?.byRamo || new Map<string, SegmentoComplete[]>();
+```
+
+**Validação:**
+- `tscheck-files.mjs`: 2 → 0 erros (0 no programa inteiro).
+- `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `202adeb2cc`).
+- Nenhum teste dedicado encontrado para o arquivo.
+- `typecheck:baseline`: 208 → 206 (189 arquivos), travado via `--update`.

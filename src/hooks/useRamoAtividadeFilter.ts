@@ -53,7 +53,7 @@ export function useRamoAtividadeFilter(): UseRamoAtividadeFilterReturn {
 
   const groups = groupsData?.groups || [];
   const segmentos = segmentosData?.segmentos || [];
-  const byRamo = segmentosData?.byRamo || new Map();
+  const byRamo = segmentosData?.byRamo || new Map<string, SegmentoComplete[]>();
   const totalGroups = groupsData?.totalGroups || 0;
   const totalSegmentos = groupsData?.totalSegmentos || 0;
 
