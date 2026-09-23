@@ -3998,3 +3998,57 @@ acc[perm.category].push(perm);
 - `check-eslint-baseline.mjs`: 0 regressões (3331 erros globais, referência `origin/main` em `a9445d5100`).
 - Nenhum teste dedicado encontrado.
 - `typecheck:baseline`: 352 → 349 (260 arquivos), travado via `--update`.
+
+## GestorAuditPage.tsx (etapa 17)
+
+**Arquivo:** `src/pages/sicoob/GestorAuditPage.tsx`
+
+**Erros originais (3×):** TS2339 (linhas 43 e 123) — `Property 'postos_atendimento' does not exist on type 'SelectQueryError<"could not find the relation between sicoob_manager_audit and sicoob_orders">'`; TS2769 (linha 105) — `format(new Date(log.created_at), ...)`, nenhum overload do construtor `Date` bate.
+
+**Diagnóstico (TS2339 ×2 — bug real de produção, não só de tipagem):** a query fazia `supabase.from('sicoob_manager_audit').select('*, sicoob_orders(id, total_amount, postos_atendimento(nome))')`, um embed que depende de FK declarada entre as duas tabelas. Conferindo o schema real (`src/integrations/supabase/types.ts`) e a migration original (`supabase/migrations/20260503220418_...sql:38-45`), `sicoob_manager_audit.order_id` é `UUID NOT NULL` **sem** `REFERENCES sicoob_orders(id)` — a tabela nunca teve essa FK no banco, por isso `Relationships: []` no tipo gerado e o PostgREST nunca consegue resolver esse embed, nem em runtime (não é só o TS reclamando — a query real do Supabase sempre retornaria erro "could not find a relationship..." pra essa combinação). Ou seja, a tela de auditoria do gestor está quebrada desde a origem: `auditLogs` nunca carrega dados de fato, e a UI cai num estado "sem mensagem nem lista" (não bate `length === 0` pois `data` fica `undefined` no erro). Confirmado que `sicoob_orders.pa_id → postos_atendimento.id` tem FK válida (usada com sucesso em `GestorConsolidatedOrdersPage.tsx:122` com o mesmo shape `"id, total_amount, postos_atendimento(nome)"`), então o problema é específico do lado `sicoob_manager_audit → sicoob_orders`. Fix seguindo o padrão já estabelecido no repo para exatamente essa forma de erro (`useStepUpAttempts.ts:85-104`, busca em 2 etapas com merge via `Map` no cliente): busca `sicoob_manager_audit.select('*')` isolado, extrai os `order_id` únicos, busca `sicoob_orders` (com o embed `postos_atendimento` que tem FK válida) via `.in('id', orderIds)`, e mescla no cliente atribuindo `sicoob_orders` a cada log. Resolve tanto o erro de tipo quanto o bug real de runtime, sem exigir migration de schema (que ficaria fora do alcance desta etapa — alterar constraint em produção é mudança de schema, não fix de código).
+
+**Diagnóstico (TS2769):** `sicoob_manager_audit.created_at` é `string | null` no schema (nullable, apesar do `DEFAULT now()` na migration). `new Date(log.created_at)` não aceita `null` em nenhum overload do construtor `Date`. Fix: guarda condicional antes de formatar, mesmo padrão já usado em `useQuoteViewData.ts` (`quote.created_at ? format(...) : ''`).
+
+**Fix aplicado:**
+```ts
+// antes:
+const { data, error } = await supabase
+  .from('sicoob_manager_audit')
+  .select(`*, sicoob_orders (id, total_amount, postos_atendimento (nome))`)
+  .order('created_at', { ascending: false })
+  .limit(100);
+if (error) throw error;
+return data;
+
+// depois:
+const { data, error } = await supabase
+  .from('sicoob_manager_audit')
+  .select('*')
+  .order('created_at', { ascending: false })
+  .limit(100);
+if (error) throw error;
+
+const orderIds = Array.from(new Set((data ?? []).map((log) => log.order_id)));
+const { data: orders, error: ordersError } = await supabase
+  .from('sicoob_orders')
+  .select('id, total_amount, postos_atendimento (nome)')
+  .in('id', orderIds);
+if (ordersError) throw ordersError;
+
+const ordersById = new Map((orders ?? []).map((order) => [order.id, order]));
+return (data ?? []).map((log) => ({
+  ...log,
+  sicoob_orders: ordersById.get(log.order_id) ?? null,
+}));
+
+// JSX — antes: {format(new Date(log.created_at), 'dd/MM/yyyy HH:mm:ss')}
+// depois:
+{log.created_at ? format(new Date(log.created_at), 'dd/MM/yyyy HH:mm:ss') : '-'}
+```
+
+**Validação:**
+- `tscheck-files.mjs`: 3 → 0 erros (0 no programa inteiro).
+- `check-eslint-baseline.mjs`: 0 regressões (3331 erros globais, referência `origin/main` em `bf5edf0479`).
+- Nenhum teste dedicado encontrado (`find` por `*GestorAudit*` só retorna o próprio componente e o bundle de build).
+- `typecheck:baseline`: 349 → 346 (259 arquivos), travado via `--update`.
+- **Nota (achado, fora de escopo):** a causa raiz de fato é a ausência da FK `sicoob_manager_audit.order_id → sicoob_orders.id` no banco real — o fix de código acima resolve o erro de tipo e o bug de runtime sem precisar de migration, mas o ideal a longo prazo seria adicionar essa constraint via migration formal (`supabase/migrations/`) pra permitir embed nativo do PostgREST; não aplicado aqui por exigir validação de dados órfãos em produção antes de adicionar a constraint, o que foge do escopo desta etapa (fix de erros de TS).

@@ -19,14 +19,7 @@ export default function GestorAuditPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('sicoob_manager_audit')
-        .select(`
-          *,
-          sicoob_orders (
-            id,
-            total_amount,
-            postos_atendimento (nome)
-          )
-        `)
+        .select('*')
         .order('created_at', { ascending: false })
         .limit(100);
 
@@ -34,11 +27,30 @@ export default function GestorAuditPage() {
         console.error("Error fetching audit logs:", error);
         throw error;
       }
-      return data;
+
+      // sicoob_manager_audit.order_id não tem FK declarada para sicoob_orders no schema,
+      // então o PostgREST não consegue resolver o embed diretamente — busca em 2 etapas.
+      const orderIds = Array.from(new Set((data ?? []).map((log) => log.order_id)));
+      const { data: orders, error: ordersError } = await supabase
+        .from('sicoob_orders')
+        .select('id, total_amount, postos_atendimento (nome)')
+        .in('id', orderIds);
+
+      if (ordersError) {
+        console.error("Error fetching related orders:", ordersError);
+        throw ordersError;
+      }
+
+      const ordersById = new Map((orders ?? []).map((order) => [order.id, order]));
+
+      return (data ?? []).map((log) => ({
+        ...log,
+        sicoob_orders: ordersById.get(log.order_id) ?? null,
+      }));
     }
   });
 
-  const filteredLogs = auditLogs?.filter(log => 
+  const filteredLogs = auditLogs?.filter(log =>
     log.action.toLowerCase().includes(searchTerm.toLowerCase()) ||
     log.sicoob_orders?.postos_atendimento?.nome?.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -102,7 +114,7 @@ export default function GestorAuditPage() {
                     {filteredLogs?.map((log) => (
                       <TableRow key={log.id}>
                         <TableCell className="text-xs">
-                          {format(new Date(log.created_at), 'dd/MM/yyyy HH:mm:ss')}
+                          {log.created_at ? format(new Date(log.created_at), 'dd/MM/yyyy HH:mm:ss') : '-'}
                         </TableCell>
                         <TableCell>
                           <Badge 
