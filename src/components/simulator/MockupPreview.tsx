@@ -46,7 +46,7 @@ export function MockupPreview({
 
   // Dimensões em pixels baseadas na área real
   const logoDimensions = useMemo(() => {
-    const baseScale = logoScale[0] / 100;
+    const baseScale = (logoScale[0] ?? 100) / 100;
     const widthPx = option.width * 10 * baseScale; // ~10px por cm
     const heightPx = option.height * 10 * baseScale;
     return { width: widthPx, height: heightPx };
@@ -213,7 +213,7 @@ export function MockupPreview({
                     </label>
                     <Slider
                       value={[logoPosition.x]}
-                      onValueChange={([x]) => setLogoPosition(p => ({ ...p, x }))}
+                      onValueChange={([x]) => setLogoPosition(p => ({ ...p, x: x ?? p.x }))}
                       min={10}
                       max={90}
                       step={5}
@@ -226,7 +226,7 @@ export function MockupPreview({
                     </label>
                     <Slider
                       value={[logoPosition.y]}
-                      onValueChange={([y]) => setLogoPosition(p => ({ ...p, y }))}
+                      onValueChange={([y]) => setLogoPosition(p => ({ ...p, y: y ?? p.y }))}
                       min={10}
                       max={90}
                       step={5}

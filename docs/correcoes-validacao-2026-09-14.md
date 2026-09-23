@@ -3540,3 +3540,25 @@ Esse hook é consumido por `AuthContext.tsx` (linha 88), que calcula `mfaRequire
 - `check-eslint-baseline.mjs`: 0 regressões (3331 erros globais, referência `origin/main` em `9d901baaa7`).
 - Nenhum teste dedicado encontrado.
 - `typecheck:baseline`: 410 → 407 (282 arquivos), travado via `--update`.
+
+## MockupPreview.tsx (etapa 17)
+
+**Arquivo:** `src/components/simulator/MockupPreview.tsx`
+
+**Erros originais (3×):** TS2532 (linha 49 — `Object is possibly 'undefined'`), TS2345×2 (linhas 216, 229 — callbacks de `onValueChange` do `Slider` retornando `{x: number|undefined}`/`{y: number|undefined}` incompatíveis com `SetStateAction<{x:number,y:number}>`).
+
+**Diagnóstico:**
+- `logoScale` é `number[]` (`useState([100])`); com `noUncheckedIndexedAccess`, `logoScale[0]` tipa como `number | undefined`.
+- Nos 2 sliders de posição, a desestruturação `([x]) => ...`/`([y]) => ...` do array `number[]` recebido no callback do `Slider` (Radix) também tipa o elemento como `number | undefined` pelo mesmo motivo.
+- Diferente dos casos anteriores de índice "estruturalmente garantido por array de mesmo tamanho construído localmente" (ex.: `FocusTrap.tsx`, `VoiceVisualEffects.tsx`), aqui o array vem de um callback de biblioteca terceira (Radix `Slider`) — não é uma garantia que o código do projeto controla diretamente, então optou-se por fallback defensivo em vez de asserção de não-nulo.
+
+**Fix aplicado:**
+- `logoScale[0] / 100` → `(logoScale[0] ?? 100) / 100` (100 é o valor inicial padrão do estado).
+- `setLogoPosition(p => ({ ...p, x }))` → `setLogoPosition(p => ({ ...p, x: x ?? p.x }))` (mantém a posição anterior se o callback não fornecer valor).
+- Mesma correção espelhada para `y`.
+
+**Validação:**
+- `tscheck-files.mjs`: 3 → 0 erros (0 no programa inteiro).
+- `check-eslint-baseline.mjs`: 0 regressões (3331 erros globais, referência `origin/main` em `b9b9e8948d`).
+- Nenhum teste dedicado encontrado.
+- `typecheck:baseline`: 407 → 404 (281 arquivos), travado via `--update`.
