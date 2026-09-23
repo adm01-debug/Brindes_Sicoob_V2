@@ -3,7 +3,7 @@
  * Salva rascunhos automaticamente no localStorage com indicador visual
  */
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Cloud, CloudOff, Check, Loader2, AlertCircle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
@@ -24,7 +24,6 @@ interface QuoteAutoSaveProps {
   data: any;
   onChange?: (hasUnsavedChanges: boolean) => void;
   onRestore?: (data: any) => void;
-  debounceMs?: number;
   className?: string;
 }
 
@@ -33,78 +32,52 @@ export function QuoteAutoSave({
   data,
   onChange,
   onRestore,
-  debounceMs = 2000,
   className,
 }: QuoteAutoSaveProps) {
   const [status, setStatus] = useState<SaveStatus>("idle");
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
-  
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const dataRef = useRef(data);
+
   const initialDataRef = useRef<string | null>(null);
 
-  const { saveDraft, loadDraft } = useAutoSave(quoteId);
+  const { restore } = useAutoSave({
+    key: quoteId || "new",
+    data,
+    enabled: true,
+    onSave: () => {
+      setLastSaved(new Date());
+      setStatus("saved");
+      setTimeout(() => setStatus("idle"), 2000);
+    },
+  });
 
   // Salvar estado inicial para comparação
   useEffect(() => {
     initialDataRef.current = JSON.stringify(data);
   }, [quoteId]);
 
-  // Detectar mudanças
+  // Detectar mudanças (persistência real é feita pelo useAutoSave, debounced internamente)
   useEffect(() => {
-    dataRef.current = data;
-    
     const currentData = JSON.stringify(data);
     const hasChanges = currentData !== initialDataRef.current;
-    
+
     setHasUnsavedChanges(hasChanges);
     onChange?.(hasChanges);
-    
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-    }
-    
-    if (hasChanges) {
-      setStatus("idle");
-      timeoutRef.current = setTimeout(() => {
-        handleSave();
-      }, debounceMs);
-    }
-    
-    return () => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
-    };
-  }, [data, debounceMs, onChange]);
 
-  const handleSave = useCallback(() => {
-    if (!navigator.onLine) {
-      setStatus("offline");
-      return;
+    if (hasChanges) {
+      setStatus(navigator.onLine ? "saving" : "offline");
     }
-    
-    setStatus("saving");
-    const success = saveDraft(dataRef.current);
-    
-    if (success) {
-      setLastSaved(new Date());
-      setStatus("saved");
-      setTimeout(() => setStatus("idle"), 2000);
-    } else {
-      setStatus("error");
-    }
-  }, [saveDraft]);
+  }, [data, onChange]);
 
   // Restauração automática se houver draft no carregamento
   useEffect(() => {
     if (onRestore) {
-      const draft = loadDraft();
+      const draft = restore();
       if (draft && JSON.stringify(draft) !== JSON.stringify(data)) {
         onRestore(draft);
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const getStatusIcon = () => {

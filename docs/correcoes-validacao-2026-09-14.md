@@ -3396,3 +3396,26 @@ Esse hook é consumido por `AuthContext.tsx` (linha 88), que calcula `mfaRequire
 - `check-eslint-baseline.mjs` (3 arquivos): 0 regressões (3333 erros globais, referência `origin/main` em `2f420e6e8a`).
 - Teste dedicado encontrado (`tests/hooks/useQuoteTemplates.test.tsx`): 1/1 passou. Nenhum teste dedicado para `templateExport.ts`.
 - `typecheck:baseline`: 432 → 428 (289 arquivos), travado via `--update` — gate confirmou "✅ Sem regressões de tipagem" após o fix de `templateExport.ts`.
+
+## QuoteAutoSave.tsx (etapa 17)
+
+**Arquivo:** `src/components/quotes/QuoteAutoSave.tsx`
+
+**Erros originais (3×):** TS2339 ×2 (linha 47 — `Property 'saveDraft'/'loadDraft' does not exist on type '{ restore: () => unknown; clear: () => void; lastSaved: string; }'`); TS2345 (linha 47 — argumento `string | undefined` incompatível com `AutoSaveOptions<unknown>`).
+
+**Diagnóstico — bug funcional real, não só lacuna de tipo:**
+- O componente chamava `const { saveDraft, loadDraft } = useAutoSave(quoteId)`, assumindo uma API antiga do hook (`saveDraft(data): boolean`, `loadDraft(): T | null`, chamada posicional com `quoteId`).
+- O hook real em `src/hooks/useAutoSave.ts` tem assinatura completamente diferente: `useAutoSave<T>({ key, data, onSave, interval, enabled })`, retornando `{ restore, clear, lastSaved }`. Não existem `saveDraft`/`loadDraft`.
+- **Isso não é apenas um erro de compilação — é um bug ativo em produção.** `QuoteAutoSave` é renderizado em `src/pages/QuoteBuilderPage.tsx` (tela de criação/edição de orçamento) com `onRestore` sempre definido. Em runtime (ignorando tipos), `saveDraft`/`loadDraft` desestruturados do retorno real do hook são `undefined`. O efeito de restauração no mount chama `loadDraft()` imediatamente — `TypeError: loadDraft is not a function` ao montar a página; e `handleSave` (disparado pelo debounce 2s após qualquer edição) chama `saveDraft(...)` — mesmo erro. O auto-save de orçamentos estava quebrado.
+
+**Fix aplicado:**
+- Reescrita da integração com o hook real: `useAutoSave({ key: quoteId || "new", data, enabled: true, onSave: () => {...} })`, deixando o hook cuidar da persistência (localStorage) e do debounce interno (2s, fixo) — elimina o timer duplicado que o componente mantinha (`timeoutRef`/`handleSave` manual), que reimplementava exatamente o que o hook já faz.
+- Removido o prop `debounceMs` (não usado por nenhum call site real — único consumidor é `QuoteBuilderPage.tsx`, que não o passa — e o hook atual não expõe um debounce configurável; manter o prop seria uma configuração morta/enganosa).
+- `loadDraft()` → `restore()` (mesma semântica: lê o rascunho salvo do `localStorage`).
+- Indicador de status "offline" preservado via checagem de `navigator.onLine` na detecção de mudanças (persistência local em si não depende de rede, então o `useAutoSave` continua salvando mesmo offline — o indicador é só informativo, correção de um design smell do código antigo que bloqueava o save local por falta de rede).
+
+**Validação:**
+- `tscheck-files.mjs`: 3 → 0 erros (0 no programa inteiro).
+- `check-eslint-baseline.mjs`: 0 regressões (3332 erros globais, referência `origin/main` em `6c17008a2b`) — drift positivo: 1 erro de lint eliminado.
+- Nenhum teste dedicado pré-existente. **Teste de fumaça temporário criado e executado** (`@testing-library/react`, não commitado — apenas para diagnóstico): (1) monta sem lançar erro e chama `onRestore` com o draft salvo do `localStorage`, confirmando o fix do crash de mount; (2) após mudança de `data` + avanço de 2.1s de timers falsos, confirma persistência real no `localStorage`. Ambos passaram; removido do repositório após validação.
+- `typecheck:baseline`: 428 → 425 (288 arquivos), travado via `--update`.
