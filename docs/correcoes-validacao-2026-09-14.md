@@ -6276,3 +6276,30 @@ if (data?.value) setTheme(data.value as unknown as typeof theme);
 - `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `a5e3eb0f5f`).
 - Nenhum teste dedicado encontrado para o arquivo.
 - `typecheck:baseline`: 190 → 188 (180 arquivos), travado via `--update`.
+
+## AdminUsuariosPage.tsx (etapa 17)
+
+**Arquivo:** `src/pages/admin/AdminUsuariosPage.tsx`
+
+**Erros originais (2×):**
+```
+src/pages/admin/AdminUsuariosPage.tsx(88,58): error TS2367: This comparison appears to be unintentional because the types '"vendedor" | "dev" | "gestor_compras" | "gerente_pa" | "comprador_pac" | "comprador_singular" | "agente"' and '"admin"' have no overlap.
+src/pages/admin/AdminUsuariosPage.tsx(88,80): error TS2367: This comparison appears to be unintentional because the types '"vendedor" | "dev" | "gestor_compras" | "gerente_pa" | "comprador_pac" | "comprador_singular" | "agente"' and '"manager"' have no overlap.
+```
+
+**Diagnóstico:** mesmo padrão de código morto já visto em `visibility-scope.ts` — `u.role` é `AppRole` (de `@/lib/roles`), união que nunca inclui `"admin"`/`"manager"` (esses são legados normalizados para `"supervisor"` em `normalizeAssignedRoles`, em `src/lib/access/role-policy.ts`, antes de os dados chegarem ao estado `users`). O detalhe que explicava a mensagem de erro mostrar apenas 7 membros na união (sem `"supervisor"`): o TypeScript aplica *narrowing* sucessivo em cadeias `||` de igualdade — ao checar `u.role === "supervisor"` primeiro, o compilador exclui `"supervisor"` da união antes de avaliar as comparações seguintes, restando a união de 7 membros que de fato não tem overlap com `"admin"`/`"manager"`.
+
+**Fix aplicado:** remoção das comparações mortas, mantendo apenas a comparação válida:
+```ts
+// Legado "admin"/"manager" é normalizado para "supervisor" em normalizeAssignedRoles antes de chegar aqui.
+const supervisorCount = useMemo(
+  () => users.filter((u) => u.role === "supervisor").length,
+  [users]
+);
+```
+
+**Validação:**
+- `tscheck-files.mjs`: 2 → 0 erros no arquivo.
+- `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `629c319f45`).
+- Nenhum teste dedicado encontrado para o arquivo.
+- `typecheck:baseline`: 188 → 186 (179 arquivos), travado via `--update`.

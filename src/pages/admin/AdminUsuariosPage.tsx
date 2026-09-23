@@ -84,8 +84,9 @@ export default function AdminUsuariosPage() {
   useEffect(() => { fetchUsers(); }, [fetchUsers]);
 
   const devCount = useMemo(() => users.filter((u) => u.role === "dev").length, [users]);
+  // Legado "admin"/"manager" é normalizado para "supervisor" em normalizeAssignedRoles antes de chegar aqui.
   const supervisorCount = useMemo(
-    () => users.filter((u) => u.role === "supervisor" || u.role === "admin" || u.role === "manager").length,
+    () => users.filter((u) => u.role === "supervisor").length,
     [users]
   );
   const agenteCount = useMemo(() => users.filter((u) => u.role === "vendedor").length, [users]);
