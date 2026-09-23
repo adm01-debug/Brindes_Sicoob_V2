@@ -154,7 +154,7 @@ function calculateRecommendationScore(
   
   // Adicionar score de popularidade
   const popularityKey = Object.keys(POPULARITY_SCORES).find(k => code.includes(k));
-  const popularityScore = popularityKey ? POPULARITY_SCORES[popularityKey] : 30;
+  const popularityScore = popularityKey ? (POPULARITY_SCORES[popularityKey] ?? 30) : 30;
   score += popularityScore * 0.3; // 30% do peso para popularidade
   
   // Normalizar score para 0-100
@@ -174,7 +174,7 @@ function calculateRecommendationScore(
   return {
     score,
     matchedKeywords,
-    reason: reasons.length > 0 ? reasons[0] : 'Técnica compatível',
+    reason: reasons.length > 0 ? reasons[0]! : 'Técnica compatível',
   };
 }
 
@@ -201,8 +201,8 @@ export function useTechniqueRecommendations(
       const popularityKey = Object.keys(POPULARITY_SCORES).find(
         k => (technique.code?.toUpperCase() || '').includes(k)
       );
-      const popularityScore = popularityKey ? POPULARITY_SCORES[popularityKey] : 30;
-      
+      const popularityScore = popularityKey ? (POPULARITY_SCORES[popularityKey] ?? 30) : 30;
+
       return {
         ...technique,
         recommendation: {

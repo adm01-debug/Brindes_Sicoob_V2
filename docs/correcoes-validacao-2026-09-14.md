@@ -3738,3 +3738,26 @@ const orderIds = (orderItems || []).map(o => o.order_id).filter((id): id is stri
 - `check-eslint-baseline.mjs`: 0 regressões (3331 erros globais, referência `origin/main` em `08a17a1d6d`).
 - Nenhum teste dedicado encontrado.
 - `typecheck:baseline`: 381 → 378 (271 arquivos), travado via `--update`.
+
+## useTechniqueRecommendations.ts (etapa 17)
+
+**Arquivo:** `src/hooks/useTechniqueRecommendations.ts`
+
+**Erros originais (3×):** TS18048 (linha 158) + TS2322 (linhas 177, 214) — `noUncheckedIndexedAccess` em `POPULARITY_SCORES[popularityKey]` (índice `string` dinâmico, mesmo vindo de `Object.keys(POPULARITY_SCORES).find(...)` do próprio objeto) e em `reasons[0]` (guardado por `reasons.length > 0` na mesma função).
+
+**Diagnóstico:**
+- `popularityScore` (2 ocorrências, linhas 157 e 204): `POPULARITY_SCORES[popularityKey]` tipa `number | undefined` mesmo com `popularityKey` garantidamente uma chave válida do objeto — TS não correlaciona `Object.keys(obj).find` com o índice do próprio `obj`. Fallback defensivo (`?? 30`) mantém a mesma semântica do `else` já existente no ternário.
+- `reasons[0]` (linha 177): estruturalmente seguro pelo guard local `reasons.length > 0` da mesma função — mesmo padrão de `useKitUndoRedo.ts` nesta etapa.
+
+**Fix aplicado:**
+```ts
+const popularityScore = popularityKey ? (POPULARITY_SCORES[popularityKey] ?? 30) : 30;
+// ...
+reason: reasons.length > 0 ? reasons[0]! : 'Técnica compatível',
+```
+
+**Validação:**
+- `tscheck-files.mjs`: 3 → 0 erros (3 → 0 no programa inteiro).
+- `check-eslint-baseline.mjs`: 0 regressões (3331 erros globais, referência `origin/main` em `40fa7d2384`).
+- Nenhum teste dedicado encontrado.
+- `typecheck:baseline`: 378 → 375 (270 arquivos), travado via `--update`.
