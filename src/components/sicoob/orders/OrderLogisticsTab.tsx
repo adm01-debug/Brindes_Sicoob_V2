@@ -13,6 +13,7 @@ import { sicoobDocumentIngestService } from '@/services/sicoob/documentIngestSer
 interface OrderLogisticsTabProps {
   orderId: string;
   orderStatus: OrderStatus;
+  canManage: boolean;
 }
 
 const DELIVERY_IMAGE_EXTENSIONS: Record<string, string> = {
@@ -21,7 +22,7 @@ const DELIVERY_IMAGE_EXTENSIONS: Record<string, string> = {
   'image/webp': 'webp',
 };
 
-export function OrderLogisticsTab({ orderId, orderStatus }: OrderLogisticsTabProps) {
+export function OrderLogisticsTab({ orderId, orderStatus, canManage }: OrderLogisticsTabProps) {
   const { data: shipment, isLoading } = useSicoobShipment(orderId);
   const updateShipment = useUpdateSicoobShipment();
   const [trackingCode, setTrackingCode] = useState('');
@@ -29,8 +30,8 @@ export function OrderLogisticsTab({ orderId, orderStatus }: OrderLogisticsTabPro
   const [deliveryPhotoUrl, setDeliveryPhotoUrl] = useState<string | null>(null);
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const canManageTracking = ['in_separation', 'in_transit', 'logistic'].includes(orderStatus);
-  const canConfirmDelivery = orderStatus === 'in_transit' || orderStatus === 'logistic';
+  const canManageTracking = canManage && ['in_separation', 'in_transit', 'logistic'].includes(orderStatus);
+  const canConfirmDelivery = canManage && (orderStatus === 'in_transit' || orderStatus === 'logistic');
 
   useEffect(() => {
     setTrackingCode(shipment?.tracking_code || '');
