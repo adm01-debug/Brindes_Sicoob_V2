@@ -4052,3 +4052,28 @@ return (data ?? []).map((log) => ({
 - Nenhum teste dedicado encontrado (`find` por `*GestorAudit*` só retorna o próprio componente e o bundle de build).
 - `typecheck:baseline`: 349 → 346 (259 arquivos), travado via `--update`.
 - **Nota (achado, fora de escopo):** a causa raiz de fato é a ausência da FK `sicoob_manager_audit.order_id → sicoob_orders.id` no banco real — o fix de código acima resolve o erro de tipo e o bug de runtime sem precisar de migration, mas o ideal a longo prazo seria adicionar essa constraint via migration formal (`supabase/migrations/`) pra permitir embed nativo do PostgREST; não aplicado aqui por exigir validação de dados órfãos em produção antes de adicionar a constraint, o que foge do escopo desta etapa (fix de erros de TS).
+
+## simulator-wizard.ts (etapa 17)
+
+**Arquivo:** `src/types/domain/simulator-wizard.ts`
+
+**Erros originais (3×):** TS2322 (linhas 285 e 293) — `return WIZARD_STEPS[index ± 1]` em `getNextStep`/`getPreviousStep`, tipo `WizardStep | undefined` não bate com o retorno declarado `WizardStep | null`; TS2345 (linha 326) — `isStepComplete(WIZARD_STEPS[i], state)` em `canNavigateToStep`, argumento `WizardStep | undefined` não bate com o parâmetro `WizardStep`.
+
+**Diagnóstico:** mesmo padrão de guarda-não-propagada de `noUncheckedIndexedAccess` já resolvido em `FocusTrap.tsx` nesta etapa — acesso por índice a um array (`WIZARD_STEPS`, 4 elementos fixos) já protegido por checagem numérica anterior, mas o TS não propaga essa garantia pro tipo do acesso indexado. Em `getNextStep`/`getPreviousStep`, o `if (index < WIZARD_STEPS.length - 1)` / `if (index > 0)` já garante que `index ± 1` está dentro dos limites do array antes do acesso. Em `canNavigateToStep`, o loop `for (let i = 0; i < targetIndex; i++)` com `targetIndex = getStepIndex(targetStep)` (sempre em `[0, WIZARD_STEPS.length - 1]`, já que `WizardStep` é união fechada de 4 literais todos presentes em `WIZARD_STEPS`) garante `i` sempre dentro dos limites. Todos os 3 pontos são seguros por construção — aplicada asserção de não-nulo (`!`), mesmo idioma já usado em `FocusTrap.tsx`.
+
+**Fix aplicado:**
+```ts
+// getNextStep/getPreviousStep — antes: return WIZARD_STEPS[index + 1]; / return WIZARD_STEPS[index - 1];
+// depois:
+return WIZARD_STEPS[index + 1]!; / return WIZARD_STEPS[index - 1]!;
+
+// canNavigateToStep — antes: if (!isStepComplete(WIZARD_STEPS[i], state)) {
+// depois:
+if (!isStepComplete(WIZARD_STEPS[i]!, state)) {
+```
+
+**Validação:**
+- `tscheck-files.mjs`: 3 → 0 erros (0 no programa inteiro).
+- `check-eslint-baseline.mjs`: 0 regressões (3331 erros globais, referência `origin/main` em `2bdef0344a`).
+- Nenhum teste dedicado encontrado (`tests/integration/simulator-wizard-pricing-parity.test.ts` testa paridade de preço, não importa nenhuma das funções alteradas). Consumidores identificados via grep (`useSimulatorWizard.ts`, `WizardStepIndicator.tsx`) não têm teste dedicado.
+- `typecheck:baseline`: 346 → 343 (258 arquivos), travado via `--update`.

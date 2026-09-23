@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-09-23T04:56:00.267Z",
-  "total": 346,
+  "generatedAt": "2026-09-23T05:00:26.588Z",
+  "total": 343,
   "files": {
     "src/components/admin/common/AdminDataTable.tsx": 2,
     "src/components/admin/connections/Bitrix24Tab.tsx": 1,
@@ -255,7 +255,6 @@
     "src/services/admin/UserService.ts": 1,
     "src/services/sicoob/orderService.ts": 1,
     "src/stores/useNavigationStore.ts": 2,
-    "src/types/domain/simulator-wizard.ts": 3,
     "src/types/index.ts": 1,
     "src/utils/color-group-hex.ts": 1,
     "src/utils/color-matching.ts": 1,
