@@ -101,10 +101,10 @@ export async function detectProductBounds(
     for (let y = 0; y < h; y++) {
       for (let x = 0; x < w; x++) {
         const i = (y * w + x) * 4;
-        const r = data[i];
-        const g = data[i + 1];
-        const b = data[i + 2];
-        const a = data[i + 3];
+        const r = data[i]!;
+        const g = data[i + 1]!;
+        const b = data[i + 2]!;
+        const a = data[i + 3]!;
 
         // Skip transparent pixels
         if (a < alphaThreshold) continue;

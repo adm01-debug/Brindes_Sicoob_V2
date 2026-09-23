@@ -2913,3 +2913,19 @@ Esse hook é consumido por `AuthContext.tsx` (linha 88), que calcula `mfaRequire
 - `check-eslint-baseline.mjs`: 0 regressões (3335 erros globais, referência `origin/main` em `bb3cdf3af8`).
 - Nenhum teste dedicado encontrado para este arquivo.
 - `typecheck:baseline`: 517 → 513 (315 arquivos), travado via `--update`.
+
+## product-bounds-detector.ts (etapa 17)
+
+**Arquivo:** `src/lib/product-bounds-detector.ts`
+
+**Erros originais (4×):** TS18048 (linhas 110, 113 ×3 — `a`/`r`/`g`/`b` possivelmente `undefined`).
+
+**Diagnóstico:** `data` é um `Uint8ClampedArray` (`ImageData.data` do canvas), e `noUncheckedIndexedAccess` também se aplica a typed arrays. `i = (y * w + x) * 4` com `x` variando em `[0, w-1]` e `y` em `[0, h-1]` (ambos garantidos pelos laços `for`) — o índice máximo `i + 3` nunca excede `data.length - 1`, já que o contrato da Canvas API garante `data.length === w * h * 4`. Estruturalmente seguro.
+
+**Fix aplicado:** asserção de não-nulo nos 4 acessos (`data[i]!`, `data[i + 1]!`, `data[i + 2]!`, `data[i + 3]!`).
+
+**Validação:**
+- `tscheck-files.mjs`: 4 → 0 erros (0 no programa inteiro).
+- `check-eslint-baseline.mjs`: 0 regressões (3335 erros globais, referência `origin/main` em `7bffabccea`).
+- Nenhum teste dedicado encontrado para este arquivo.
+- `typecheck:baseline`: 513 → 509 (314 arquivos), travado via `--update`.
