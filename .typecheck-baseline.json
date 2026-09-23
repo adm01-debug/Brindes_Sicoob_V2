@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-09-23T12:02:40.049Z",
-  "total": 174,
+  "generatedAt": "2026-09-23T12:10:08.797Z",
+  "total": 172,
   "files": {
     "src/components/admin/connections/Bitrix24Tab.tsx": 1,
     "src/components/admin/connections/DataSourceDebugTab.tsx": 1,
@@ -173,7 +173,6 @@
     "src/types/index.ts": 1,
     "src/utils/color-group-hex.ts": 1,
     "src/utils/color-matching.ts": 1,
-    "src/utils/color-variant-carousel.ts": 1,
-    "src/utils/excelExport.ts": 2
+    "src/utils/color-variant-carousel.ts": 1
   }
 }

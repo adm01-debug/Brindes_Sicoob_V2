@@ -53,7 +53,7 @@ export interface ExcelColumn<T = any> {
  * });
  * ```
  */
-export async function exportToExcel<T = Record<string, unknown>>(config: ExcelExportConfig<T>): Promise<void> {
+export async function exportToExcel<T extends Record<string, unknown> = Record<string, unknown>>(config: ExcelExportConfig<T>): Promise<void> {
   const {
     filename,
     sheetName = 'Dados',
@@ -132,7 +132,7 @@ export async function exportToExcel<T = Record<string, unknown>>(config: ExcelEx
 /**
  * Exporta múltiplas planilhas em um único arquivo
  */
-export async function exportMultipleSheets<T = Record<string, unknown>>(
+export async function exportMultipleSheets<T extends Record<string, unknown> = Record<string, unknown>>(
   filename: string,
   sheets: Array<{
     sheetName: string;

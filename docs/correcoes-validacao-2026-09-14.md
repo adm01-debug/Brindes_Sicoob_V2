@@ -6485,3 +6485,28 @@ if (last && last.pathname === item.pathname && last.search === item.search) {
 - `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `dc6a82fa2c`).
 - Nenhum teste dedicado encontrado para o arquivo.
 - `typecheck:baseline`: 176 → 174 (173 arquivos), travado via `--update`.
+
+## excelExport.ts (etapa 17)
+
+**Arquivo:** `src/utils/excelExport.ts`
+
+**Erros originais (2×):**
+```
+src/utils/excelExport.ts(72,38): error TS2345: Argument of type 'T' is not assignable to parameter of type 'Record<string, any>'.
+src/utils/excelExport.ts(153,40): error TS2345: Argument of type 'T' is not assignable to parameter of type 'Record<string, any>'.
+```
+
+**Diagnóstico:** `exportToExcel<T = Record<string, unknown>>` e `exportMultipleSheets<T = Record<string, unknown>>` declaram `T` com valor-padrão mas sem constraint — um genérico sem `extends` não é assignável a `Record<string, any>` mesmo com esse default, pois o TS não pode garantir que o tipo inferido no call site seja um objeto indexável. Ambas as funções passam `row: T` para `getNestedValue(obj: Record<string, any>, path: string)` nas linhas 72 e 153. Padrão de constraint já estabelecido no repo para esse exato cenário: `useAuditLog.ts` usa `<T extends Record<string, unknown>>` em três funções (`auditedInsert`/`auditedUpdate`/`auditedDelete`). Único call site real do módulo (`QuotesListPage.tsx:431`, via dynamic import) já passa `data` como array de objetos literais — compatível com a constraint mais estrita.
+
+**Fix aplicado:**
+```ts
+export async function exportToExcel<T extends Record<string, unknown> = Record<string, unknown>>(config: ExcelExportConfig<T>): Promise<void> {
+// ...
+export async function exportMultipleSheets<T extends Record<string, unknown> = Record<string, unknown>>(
+```
+
+**Validação:**
+- `tscheck-files.mjs`: 2 → 0 erros no arquivo.
+- `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `b72a75ed54`).
+- Nenhum teste dedicado encontrado para o arquivo.
+- `typecheck:baseline`: 174 → 172 (172 arquivos), travado via `--update`. **A partir deste ponto, todos os arquivos restantes têm exatamente 1 erro cada — fim do tier de 2 erros.**
