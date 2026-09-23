@@ -6201,3 +6201,28 @@ Aplicado nos dois pontos (linhas 106 e 159), sem alterar o comportamento do fall
 - `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `85fae603f7`).
 - Nenhum teste dedicado encontrado para o arquivo.
 - `typecheck:baseline`: 196 → 194 (183 arquivos), travado via `--update`.
+
+## whitelabel-comparison.ts (etapa 17)
+
+**Arquivo:** `src/lib/pdf/whitelabel-comparison.ts`
+
+**Erros originais (2×):**
+```
+src/lib/pdf/whitelabel-comparison.ts(94,40): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+src/lib/pdf/whitelabel-comparison.ts(94,60): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+```
+
+**Diagnóstico:** `hexToRgb` já fazia `if (!m || m.length < 3) return [...]` para descartar match malformado, mas `noUncheckedIndexedAccess` não deriva de uma checagem de `.length` que `m[0]`/`m[1]`/`m[2]` são definidos — cada acesso por índice continua `string | undefined` isoladamente.
+
+**Fix aplicado:** desestruturação com checagem explícita de `undefined`, preservando o fallback de cor já existente:
+```ts
+const [r, g, b] = m;
+if (r === undefined || g === undefined || b === undefined) return [15, 23, 42];
+return [parseInt(r, 16), parseInt(g, 16), parseInt(b, 16)];
+```
+
+**Validação:**
+- `tscheck-files.mjs`: 2 → 0 erros no arquivo.
+- `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `0e921a4896`).
+- Nenhum teste dedicado encontrado para o arquivo.
+- `typecheck:baseline`: 194 → 192 (182 arquivos), travado via `--update`.

@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-09-23T11:01:37.882Z",
-  "total": 194,
+  "generatedAt": "2026-09-23T11:06:32.971Z",
+  "total": 192,
   "files": {
     "src/components/admin/connections/Bitrix24Tab.tsx": 1,
     "src/components/admin/connections/DataSourceDebugTab.tsx": 1,
@@ -142,7 +142,6 @@
     "src/lib/edge-function-client.ts": 1,
     "src/lib/external-db/bridge.ts": 1,
     "src/lib/external-db/price-tables.ts": 1,
-    "src/lib/pdf/whitelabel-comparison.ts": 2,
     "src/lib/personalization/repositories/technique.repository.ts": 1,
     "src/lib/personalization/rpc-validator.ts": 1,
     "src/lib/personalization/selectors.ts": 1,

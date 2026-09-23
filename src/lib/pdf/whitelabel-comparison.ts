@@ -91,7 +91,9 @@ export async function exportWhitelabelComparisonPDF(opts: {
 function hexToRgb(hex: string): [number, number, number] {
   const m = hex.replace("#", "").match(/.{1,2}/g);
   if (!m || m.length < 3) return [15, 23, 42];
-  return [parseInt(m[0], 16), parseInt(m[1], 16), parseInt(m[2], 16)];
+  const [r, g, b] = m;
+  if (r === undefined || g === undefined || b === undefined) return [15, 23, 42];
+  return [parseInt(r, 16), parseInt(g, 16), parseInt(b, 16)];
 }
 
 async function fetchImageAsDataUrl(url: string): Promise<string | null> {
