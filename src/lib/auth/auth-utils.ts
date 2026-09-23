@@ -30,8 +30,6 @@ const ROLE_HIERARCHY: AppRole[] = [
   "gestor_compras",
   "comprador_singular",
   "supervisor",
-  "admin",
-  "manager",
   "gerente_pa",
   "comprador_pac",
   "agente",
@@ -61,7 +59,6 @@ export function getDefaultRouteByRole(role: AppRole | null): string {
 
   switch (role) {
     case "dev":
-    case "admin":
     case "supervisor":
       return "/admin/telemetria";
     case "gestor_compras":

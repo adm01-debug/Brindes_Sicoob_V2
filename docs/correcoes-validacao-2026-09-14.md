@@ -3782,3 +3782,23 @@ const minTierPrice = tiers[0]!.unitPrice;
 - `check-eslint-baseline.mjs`: 0 regressões (3331 erros globais, referência `origin/main` em `8e8943e29a`).
 - Nenhum teste dedicado encontrado.
 - `typecheck:baseline`: 375 → 372 (269 arquivos), travado via `--update`.
+
+## auth-utils.ts (etapa 17)
+
+**Arquivo:** `src/lib/auth/auth-utils.ts`
+
+**Erros originais (3×):** TS2322 (linhas 33, 34) + TS2678 (linha 64) — literais `"admin"` e `"manager"` em `ROLE_HIERARCHY: AppRole[]` e `case "admin":` no `switch` de `getDefaultRouteByRole`, mas `AppRole` (`src/lib/roles.ts:20-28`) não inclui esses valores — só existem como aliases legados.
+
+**Diagnóstico:** não é gap de tipagem — são literais mortos. Confirmado via `src/lib/access/role-policy.ts:7` (`normalizeAssignedRoles`) que já normaliza `"admin"`/`"manager"` → `"supervisor"` no ponto em que as roles são buscadas do banco (`useUserRoles.ts:38`), antes de qualquer valor tipado `AppRole` circular pelo app. Ou seja, um `AppRole` genuíno nunca pode ser literalmente `"admin"`/`"manager"` — são remanescentes de antes do rename canônico para `"supervisor"`.
+
+**Fix aplicado:** remoção dos literais mortos (não substituição/cast):
+```ts
+// ROLE_HIERARCHY: removidas as linhas "admin" e "manager" (supervisor já cobre a posição na hierarquia)
+// switch: removido `case "admin":` (supervisor já cobre a mesma rota)
+```
+
+**Validação:**
+- `tscheck-files.mjs`: 3 → 0 erros (5 → 2 no programa inteiro).
+- `check-eslint-baseline.mjs`: 0 regressões (3331 erros globais, referência `origin/main` em `294d159c0b`).
+- Nenhum teste dedicado encontrado (consumidores `Auth.tsx`/`AuthContext.tsx` não têm teste direto destas funções).
+- `typecheck:baseline`: 372 → 369 (268 arquivos), travado via `--update`.
