@@ -26,7 +26,7 @@ interface Permission {
 interface RolePermission {
   id: string;
   role: AppRole;
-  permission_id: string;
+  permission_code: string;
 }
 
 const ROLES: { value: AppRole; label: string; description: string; icon: React.ReactNode }[] = [
@@ -76,20 +76,20 @@ export default function RolePermissionsPage() {
     }
   };
 
-  const hasPermission = (permissionId: string, role: AppRole): boolean => {
-    const key = `${role}-${permissionId}`;
+  const hasPermission = (permissionCode: string, role: AppRole): boolean => {
+    const key = `${role}-${permissionCode}`;
     if (pendingChanges.has(key)) {
       return pendingChanges.get(key)!;
     }
-    return rolePermissions.some(rp => rp.role === role && rp.permission_id === permissionId);
+    return rolePermissions.some(rp => rp.role === role && rp.permission_code === permissionCode);
   };
 
-  const togglePermission = (permissionId: string, role: AppRole) => {
-    const key = `${role}-${permissionId}`;
-    const currentValue = hasPermission(permissionId, role);
-    
+  const togglePermission = (permissionCode: string, role: AppRole) => {
+    const key = `${role}-${permissionCode}`;
+    const currentValue = hasPermission(permissionCode, role);
+
     const newChanges = new Map(pendingChanges);
-    const originalValue = rolePermissions.some(rp => rp.role === role && rp.permission_id === permissionId);
+    const originalValue = rolePermissions.some(rp => rp.role === role && rp.permission_code === permissionCode);
     
     if (currentValue === originalValue) {
       newChanges.set(key, !currentValue);
@@ -105,15 +105,15 @@ export default function RolePermissionsPage() {
     
     setIsSaving(true);
     try {
-      const toAdd: { role: AppRole; permission_id: string }[] = [];
-      const toRemove: { role: AppRole; permission_id: string }[] = [];
+      const toAdd: { role: AppRole; permission_code: string }[] = [];
+      const toRemove: { role: AppRole; permission_code: string }[] = [];
 
       pendingChanges.forEach((shouldHave, key) => {
-        const [role, permissionId] = key.split('-') as [AppRole, string];
+        const [role, permissionCode] = key.split('-') as [AppRole, string];
         if (shouldHave) {
-          toAdd.push({ role, permission_id: permissionId });
+          toAdd.push({ role, permission_code: permissionCode });
         } else {
-          toRemove.push({ role, permission_id: permissionId });
+          toRemove.push({ role, permission_code: permissionCode });
         }
       });
 
@@ -123,7 +123,7 @@ export default function RolePermissionsPage() {
           .from('role_permissions')
           .delete()
           .eq('role', item.role)
-          .eq('permission_id', item.permission_id);
+          .eq('permission_code', item.permission_code);
       }
 
       // Add permissions
@@ -148,8 +148,8 @@ export default function RolePermissionsPage() {
       : permissions;
     
     permsToSelect.forEach(perm => {
-      const key = `${role}-${perm.id}`;
-      const alreadyHas = rolePermissions.some(rp => rp.role === role && rp.permission_id === perm.id);
+      const key = `${role}-${perm.code}`;
+      const alreadyHas = rolePermissions.some(rp => rp.role === role && rp.permission_code === perm.code);
       if (!alreadyHas) {
         newChanges.set(key, true);
       }
@@ -165,8 +165,8 @@ export default function RolePermissionsPage() {
       : permissions;
     
     permsToDeselect.forEach(perm => {
-      const key = `${role}-${perm.id}`;
-      const alreadyHas = rolePermissions.some(rp => rp.role === role && rp.permission_id === perm.id);
+      const key = `${role}-${perm.code}`;
+      const alreadyHas = rolePermissions.some(rp => rp.role === role && rp.permission_code === perm.code);
       if (alreadyHas) {
         newChanges.set(key, false);
       } else {
@@ -178,19 +178,18 @@ export default function RolePermissionsPage() {
   };
 
   const groupedPermissions = permissions.reduce((acc, perm) => {
-    if (!acc[perm.category]) acc[perm.category] = [];
-    acc[perm.category].push(perm);
+    (acc[perm.category] ??= []).push(perm);
     return acc;
   }, {} as Record<string, Permission[]>);
 
   const getCategoryStats = (category: string, role: AppRole) => {
     const categoryPerms = groupedPermissions[category] || [];
-    const assigned = categoryPerms.filter(p => hasPermission(p.id, role)).length;
+    const assigned = categoryPerms.filter(p => hasPermission(p.code, role)).length;
     return { assigned, total: categoryPerms.length };
   };
 
   const getTotalStats = (role: AppRole) => {
-    const assigned = permissions.filter(p => hasPermission(p.id, role)).length;
+    const assigned = permissions.filter(p => hasPermission(p.code, role)).length;
     return { assigned, total: permissions.length };
   };
 
@@ -322,8 +321,8 @@ export default function RolePermissionsPage() {
                             <ScrollArea className="max-h-[400px]">
                               <div className="divide-y">
                                 {perms.map(perm => {
-                                  const isChecked = hasPermission(perm.id, selectedRole);
-                                  const key = `${selectedRole}-${perm.id}`;
+                                  const isChecked = hasPermission(perm.code, selectedRole);
+                                  const key = `${selectedRole}-${perm.code}`;
                                   const hasChange = pendingChanges.has(key);
                                   
                                   return (
@@ -331,10 +330,10 @@ export default function RolePermissionsPage() {
                                       key={perm.id} 
                                       className={`flex items-center gap-4 px-4 py-3 hover:bg-muted/30 transition-colors ${hasChange ? 'bg-primary/5' : ''}`}
                                     >
-                                      <Checkbox 
+                                      <Checkbox
                                         id={perm.id}
                                         checked={isChecked}
-                                        onCheckedChange={() => togglePermission(perm.id, selectedRole)}
+                                        onCheckedChange={() => togglePermission(perm.code, selectedRole)}
                                       />
                                       <div className="flex-1 min-w-0">
                                         <label 
@@ -395,15 +394,15 @@ export default function RolePermissionsPage() {
                               <div className="text-xs text-muted-foreground">{perm.code}</div>
                             </td>
                             {ROLES.map(role => {
-                              const has = hasPermission(perm.id, role.value);
-                              const key = `${role.value}-${perm.id}`;
+                              const has = hasPermission(perm.code, role.value);
+                              const key = `${role.value}-${perm.code}`;
                               const hasChange = pendingChanges.has(key);
-                              
+
                               return (
                                 <td key={role.value} className="text-center py-2 px-3">
-                                  <Checkbox 
+                                  <Checkbox
                                     checked={has}
-                                    onCheckedChange={() => togglePermission(perm.id, role.value)}
+                                    onCheckedChange={() => togglePermission(perm.code, role.value)}
                                     className={hasChange ? 'border-primary' : ''}
                                   />
                                 </td>

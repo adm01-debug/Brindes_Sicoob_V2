@@ -3954,3 +3954,47 @@ const newQuote = await reorderQuote(id!);
 - Nenhum teste dedicado encontrado (`tests/hooks/useQuotes-helpers.test.ts` testa apenas helpers puros, sem importar o hook).
 - `typecheck:baseline`: 357 → 352 (261 arquivos; 3 arquivos melhoraram), travado via `--update`.
 - **Nota:** durante a validação, foi descoberto um erro pré-existente e não-relacionado em `useQuotes.ts:56` (`newQuote.id` possivelmente `undefined` atribuído a `quoteId: string` em `QuoteService.logHistory`) — fora do escopo desta correção (não está entre os 3 erros do arquivo alvo, e existia antes desta mudança); candidato para uma futura etapa.
+
+## RolePermissionsPage.tsx (etapa 17)
+
+**Arquivo:** `src/pages/RolePermissionsPage.tsx`
+
+**Erros originais (3×):** TS2345 (linha 71) — `setRolePermissions(rolePermRes.data || [])`, dado real não bate com a interface local `RolePermission`; TS2769 (linha 131) — `supabase.from('role_permissions').insert(toAdd)`, nenhum overload bate com o shape enviado; TS2532 (linha 182) — `acc[perm.category].push(perm)` possivelmente `undefined` no reduce de agrupamento.
+
+**Diagnóstico (schema drift, TS2345 + TS2769):** a interface local `RolePermission` (linha 26-30) e toda a lógica do componente assumiam uma FK `permission_id: string` ligando `role_permissions` → `permissions.id`. A tabela real (`src/integrations/supabase/types.ts`) não tem essa coluna — `role_permissions` só tem `permission_code: string`, que referencia `permissions.code` (não `permissions.id`). Isso não era só um erro de tipo: em runtime, `rp.permission_id` sempre foi `undefined` pra toda linha retornada do Supabase, então `hasPermission()` sempre retornava `false` e a matriz de permissões sempre aparecia zerada/desmarcada pra qualquer role — bug real de produção, não só de tipagem. Fix: renomear o campo pra `permission_code` na interface e em toda comparação/gravação (`hasPermission`, `togglePermission`, `saveChanges`, `selectAllForRole`, `deselectAllForRole`), e trocar o identificador usado como chave de casamento de `perm.id` pra `perm.code` em todos os pontos de chamada (a UI React/`Checkbox id=`/`key=` continuam usando `perm.id` normalmente, pois ali é só identidade única de DOM/lista, não a chave de negócio).
+
+**Diagnóstico (TS2532):** mesmo padrão de group-by-reduce já resolvido em `TechniqueMultiSelector.tsx:49` — `if (!acc[k]) acc[k] = []` seguido de `acc[k].push(...)` em statement separado não propaga a garantia de não-nulo sob `noUncheckedIndexedAccess`. Reaproveitado o idioma já usado lá: `(acc[k] ??= []).push(...)`, que resolve guarda + atribuição numa única expressão.
+
+**Fix aplicado:**
+```ts
+// interface — antes: permission_id: string;
+// depois:
+permission_code: string;
+
+// hasPermission/togglePermission — comparação:
+// antes: rp.permission_id === permissionId
+// depois:
+rp.permission_code === permissionCode
+
+// saveChanges — insert/delete:
+// antes: { role, permission_id: permissionId } / .eq('permission_id', item.permission_id)
+// depois:
+{ role, permission_code: permissionCode } / .eq('permission_code', item.permission_code)
+
+// call sites (hasPermission/togglePermission/selectAllForRole/deselectAllForRole):
+// antes: hasPermission(perm.id, role) / togglePermission(perm.id, role)
+// depois:
+hasPermission(perm.code, role) / togglePermission(perm.code, role)
+
+// groupedPermissions — antes:
+if (!acc[perm.category]) acc[perm.category] = [];
+acc[perm.category].push(perm);
+// depois:
+(acc[perm.category] ??= []).push(perm);
+```
+
+**Validação:**
+- `tscheck-files.mjs`: 3 → 0 erros (0 no programa inteiro).
+- `check-eslint-baseline.mjs`: 0 regressões (3331 erros globais, referência `origin/main` em `a9445d5100`).
+- Nenhum teste dedicado encontrado.
+- `typecheck:baseline`: 352 → 349 (260 arquivos), travado via `--update`.
