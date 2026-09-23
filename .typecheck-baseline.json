@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-09-23T00:40:56.965Z",
-  "total": 497,
+  "generatedAt": "2026-09-23T00:47:29.391Z",
+  "total": 493,
   "files": {
     "src/components/admin/common/AdminDataTable.tsx": 2,
     "src/components/admin/connections/Bitrix24Tab.tsx": 1,
@@ -302,7 +302,6 @@
     "src/pages/sicoob/GestorDashboardPage.tsx": 2,
     "src/pages/sicoob/orders/OrdersPage.tsx": 1,
     "src/pages/sicoob/PADashboardPage.tsx": 1,
-    "src/pages/SystemStatusPage.tsx": 4,
     "src/services/admin/UserService.ts": 1,
     "src/services/materialService.ts": 4,
     "src/services/sicoob/orderService.ts": 1,

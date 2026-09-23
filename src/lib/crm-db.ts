@@ -55,6 +55,8 @@ interface CrmBatchResult {
   success: boolean;
   data?: { records: unknown[]; count: number };
   error?: string;
+  unavailable?: boolean;
+  warning?: string;
 }
 
 /**

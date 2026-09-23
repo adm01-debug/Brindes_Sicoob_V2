@@ -2987,3 +2987,23 @@ Esse hook é consumido por `AuthContext.tsx` (linha 88), que calcula `mfaRequire
 - `check-eslint-baseline.mjs`: 0 regressões (3335 erros globais, referência `origin/main` em `fc8523743b`).
 - Nenhum teste dedicado encontrado para este arquivo.
 - `typecheck:baseline`: 501 → 497 (311 arquivos), travado via `--update`.
+
+## SystemStatusPage.tsx (etapa 17)
+
+**Arquivo:** `src/pages/SystemStatusPage.tsx` (+ `src/lib/crm-db.ts`, tipo compartilhado)
+
+**Erros originais (4×):** TS2769 (linha 161 — overload de `.from()` não bate), TS2322 (linha 202 — `"batch"` não atribuível ao union de `operation`), TS2339 ×2 (linhas 210, 215 — propriedade `error` não existe no retorno de `invokeCrmDb`).
+
+**Diagnóstico — bug real encontrado (linha 161, tabela inexistente):** `infraTables` incluía `"error_logs"`, uma tabela que **nunca existiu** no schema — confirmado via `grep` em `src/integrations/supabase/types.ts` (ausente) e busca em todas as migrations (nenhum `CREATE TABLE ... error_logs`). Arqueologia via `git log -S` mostrou que essa string foi introduzida uma única vez (commit `a1e122973`, genérico "Changes" de codegen) e nunca corrigida. O `as any` no acesso (`(supabase.from(t) as any).select(...)`) mascarava o erro de tipo, mas o efeito real em produção era o check "Infraestrutura de Segurança" **sempre reportar falha** (a query numa tabela inexistente sempre retorna erro), mesmo com IP whitelist, city whitelist e telemetria 100% operacionais — falso alarme permanente nesta página de diagnóstico.
+
+**Fix aplicado (161):** removida `"error_logs"` do array `infraTables` (não havia substituto óbvio — nenhuma tabela real de "log de erro genérico" foi encontrada no schema nem em uso em nenhum outro lugar do código; documentado aqui como achado, não inventada uma tabela nova). Removido também o `as any`, que não é mais necessário — com as 3 tabelas restantes (`ip_whitelist`, `city_whitelist`, `telemetry_events`, todas reais), `.from(t)` resolve nos overloads corretos do client tipado.
+
+**Diagnóstico (linhas 202/210/215, uso incorreto de API):** `runCrmHealthCheck` chamava `invokeCrmDb<...>({ operation: "batch", ... })` — mas `CrmQuery.operation` (em `src/lib/crm-db.ts`) só aceita `"select" | "search" | "insert" | "update" | "delete"`, nunca `"batch"` (erro na linha 202). Além disso, o tipo de retorno de `invokeCrmDb`, `CrmResponse<T> = { data: T; count?: number }`, **nunca** tem campo `error` — em caso de falha, a função lança exceção (`throw`) em vez de retornar um objeto com `.error` (erros 210/215). O código parecia ter sido escrito assumindo um contrato de API que `invokeCrmDb` nunca teve. Já existe, no mesmo arquivo, uma função dedicada e testada pra exatamente esse caso: `invokeCrmBatch(queries: CrmBatchQuery[]): Promise<CrmBatchResult[]>` (coberta por `tests/lib/crm-db-fixed.test.ts`), que já é usada internamente pelo endpoint de batch e devolve o array de resultados por tabela diretamente.
+
+**Fix aplicado (202/210/215):** troca de `invokeCrmDb({ operation: "batch", ... })` por `invokeCrmBatch(queries)` (reaproveitamento de helper já testado — "zero churn", não duplicação de lógica), com tratamento de erro via `try/catch` (já que `invokeCrmBatch` lança exceção em vez de retornar `.error`) preservando a mesma mensagem de fallback pro usuário. Corrigido também um gap real de tipo em `CrmBatchResult` (interface compartilhada em `crm-db.ts`): faltavam os campos `unavailable?: boolean` e `warning?: string`, que a edge function `crm-db-bridge` **já envia de verdade** no modo batch (confirmado lendo `supabase/functions/crm-db-bridge/index.ts`, linhas 610-611) — a interface client-side estava desatualizada em relação ao contrato real do servidor.
+
+**Validação:**
+- `tscheck-files.mjs`: 4 → 0 erros em `SystemStatusPage.tsx` (1 erro pré-existente e não relacionado permanece em `crm-db.ts`, linha 168 — `BridgeOperation` — já estava no baseline antes desta correção, não foi introduzido nem tocado por ela).
+- `check-eslint-baseline.mjs`: 0 regressões (3334 erros globais, referência `origin/main` em `0bb7a408cd`) — **drift positivo**: 1 erro eliminado (o `as any` removido).
+- Teste dedicado `tests/lib/crm-db-fixed.test.ts` (cobre `invokeCrmBatch`, tocado indiretamente): 14/14 passou. Nenhum teste dedicado para `SystemStatusPage.tsx`.
+- `typecheck:baseline`: 497 → 493 (310 arquivos), travado via `--update`.

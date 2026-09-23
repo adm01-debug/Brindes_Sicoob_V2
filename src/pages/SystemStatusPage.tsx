@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { supabase, supabasePublishableKey, supabaseUrl } from "@/integrations/supabase/client";
-import { invokeCrmDb } from "@/lib/crm-db";
+import { invokeCrmBatch } from "@/lib/crm-db";
 import {
   CheckCircle,
   XCircle,
@@ -155,10 +155,10 @@ export default function SystemStatusPage() {
 
     // 7. Security & Telemetry tables
     try {
-      const infraTables = ["ip_whitelist", "city_whitelist", "error_logs", "telemetry_events"] as const;
+      const infraTables = ["ip_whitelist", "city_whitelist", "telemetry_events"] as const;
       const checks = await Promise.all(
         infraTables.map(async (t) => {
-          const { error } = await (supabase.from(t) as any).select("id", { count: "exact", head: true });
+          const { error } = await supabase.from(t).select("id", { count: "exact", head: true });
           return { table: t, ok: !error, msg: error?.message };
         })
       );
@@ -168,7 +168,7 @@ export default function SystemStatusPage() {
         name: "Infraestrutura de Segurança",
         status: allOk ? "ok" : "error",
         message: allOk
-          ? "IP Whitelist, City Whitelist, Logs e Telemetria operacionais"
+          ? "IP Whitelist, City Whitelist e Telemetria operacionais"
           : `Falha em: ${failed.map((f) => f.table).join(", ")}`,
         icon: <TableProperties className="h-5 w-5 text-indigo-500" />,
       });
@@ -195,29 +195,12 @@ export default function SystemStatusPage() {
     }));
     setCrmTables([...tableResults]);
 
-    const batchResult = await invokeCrmDb<
-      { success: boolean; results: Array<{ success: boolean; data?: { records: unknown[]; count: number }; error?: string; unavailable?: boolean; warning?: string }> }
-    >({
-      table: "companies", // ignored for batch
-      operation: "batch",
-      queries: CRM_CRITICAL_TABLES.map((t) => ({
-        table: t,
-        select: "id",
-        limit: 1,
-      })),
-    });
-
-    if (batchResult.error || !batchResult.data?.results) {
-      setCrmTables(
-        CRM_CRITICAL_TABLES.map((t) => ({
-          name: t,
-          status: "error" as const,
-          message: batchResult.error || "Falha na verificação em lote",
-        }))
+    try {
+      const results = await invokeCrmBatch(
+        CRM_CRITICAL_TABLES.map((t) => ({ table: t, select: "id", limit: 1 }))
       );
-    } else {
       const updatedResults = CRM_CRITICAL_TABLES.map((t, i) => {
-        const r = batchResult.data!.results[i];
+        const r = results[i];
         if (!r) return { name: t, status: "error" as const, message: "Sem resposta" };
         if (r.unavailable) return { name: t, status: "error" as const, message: r.warning || "Tabela ausente" };
         if (!r.success) return { name: t, status: "error" as const, message: r.error || "Erro desconhecido" };
@@ -229,6 +212,14 @@ export default function SystemStatusPage() {
         };
       });
       setCrmTables(updatedResults);
+    } catch (err) {
+      setCrmTables(
+        CRM_CRITICAL_TABLES.map((t) => ({
+          name: t,
+          status: "error" as const,
+          message: err instanceof Error ? err.message : "Falha na verificação em lote",
+        }))
+      );
     }
 
     setIsCheckingCrm(false);
