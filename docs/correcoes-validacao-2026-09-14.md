@@ -4409,3 +4409,34 @@ const product = products[currentIndex]!;
 - `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `19c41b5a2d`).
 - Nenhum teste dedicado encontrado.
 - `typecheck:baseline`: 319 → 317 (245 arquivos), travado via `--update`.
+
+## CollectionTableView.tsx (etapa 17)
+
+**Arquivo:** `src/components/collections/CollectionTableView.tsx`
+
+**Erros originais (2×):**
+- TS2339 (linha 79) — `collection.iconColor` não existe em `Collection`.
+- TS2322 (linha 93) — props `isSelected`/`onToggle` não existem em `SelectionCheckboxProps`.
+
+**Diagnóstico:** 2 bugs reais isolados, não drift de schema:
+1. `Collection` (em `useCollections.ts`) tem o campo `color`, não `iconColor`. Confirmado via grep que todos os outros 8 componentes de coleção (`CollectionGridCard.tsx`, `CollectionListItem.tsx`, `ExternalCollectionCard.tsx`, etc.) usam `collection.color` — `iconColor` era um erro de digitação isolado neste arquivo.
+2. `SelectionCheckbox` (`src/components/common/SelectionCheckbox.tsx`) expõe as props `checked`/`onChange`, não `isSelected`/`onToggle`. Confirmado via grep que todos os 15 outros usos no codebase (`ProductGrid.tsx`, `NoveltyCards.tsx`, `ReplenishmentCards.tsx`, etc.) usam `checked`/`onChange` — este era o único ponto com a API errada.
+
+**Fix aplicado:**
+```tsx
+// antes:
+const iconColor = collection.iconColor || "#6366f1";
+...
+<SelectionCheckbox isSelected={isSelected} onToggle={onToggleSelect} size="sm" />
+
+// depois:
+const iconColor = collection.color || "#6366f1";
+...
+<SelectionCheckbox checked={isSelected} onChange={onToggleSelect} size="sm" />
+```
+
+**Validação:**
+- `tscheck-files.mjs`: 2 → 0 erros (9 no programa inteiro, pré-existentes/fora de escopo).
+- `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `f33dde48e8`).
+- Nenhum teste dedicado encontrado (`ExternalCollectionTableView.tsx` é componente homônimo não relacionado).
+- `typecheck:baseline`: 317 → 315 (244 arquivos), travado via `--update`.

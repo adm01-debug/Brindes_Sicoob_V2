@@ -76,7 +76,7 @@ function CollectionTableRow({
 }: CollectionTableRowProps) {
   const previewImage = products[0]?.images?.[0];
   const iconChar = collection.icon || "📁";
-  const iconColor = collection.iconColor || "#6366f1";
+  const iconColor = collection.color || "#6366f1";
 
   return (
     <motion.tr
@@ -90,7 +90,7 @@ function CollectionTableRow({
       onClick={onNavigate}
     >
       <td className="w-10 px-3 py-2.5" onClick={(e) => e.stopPropagation()}>
-        <SelectionCheckbox isSelected={isSelected} onToggle={onToggleSelect} size="sm" />
+        <SelectionCheckbox checked={isSelected} onChange={onToggleSelect} size="sm" />
       </td>
       <td className="px-3 py-2.5">
         <div className="flex items-center gap-2.5">
