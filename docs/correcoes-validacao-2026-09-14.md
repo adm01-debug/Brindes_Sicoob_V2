@@ -4591,3 +4591,25 @@ Corrigir apenas a declaração do `useState` expôs 2 novos erros TS2345 nos out
 - `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `ce2588a863`).
 - Nenhum teste dedicado encontrado.
 - `typecheck:baseline`: 307 → 305 (239 arquivos), travado via `--update`.
+
+## TrendsTour.tsx (etapa 17)
+
+**Arquivo:** `src/components/intelligence/TrendsTour.tsx`
+
+**Erros originais (2×):** TS18048 (linhas 61 e 69) — `current.title` e `current.body` acessando `current` possivelmente `undefined`, oriundo de `const current = STEPS[step]`.
+
+**Diagnóstico:** `STEPS` é um array literal fixo com 4 passos. `step` só é incrementado via `setStep(s => s + 1)`, e o botão "Próximo" só existe quando `!isLast` (isto é, `step < STEPS.length - 1`), então `step` nunca excede os limites do array. `noUncheckedIndexedAccess` não enxerga essa invariante imperativa entre o clique do botão e o índice usado no render.
+
+**Fix aplicado:**
+```ts
+// antes:
+const current = STEPS[step];
+// depois:
+const current = STEPS[step]!;
+```
+
+**Validação:**
+- `tscheck-files.mjs`: 2 → 0 erros (0 no programa inteiro).
+- `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `77a03c307f`).
+- Nenhum teste dedicado encontrado.
+- `typecheck:baseline`: 305 → 303 (238 arquivos), travado via `--update`.

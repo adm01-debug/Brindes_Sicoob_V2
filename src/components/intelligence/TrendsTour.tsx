@@ -40,7 +40,7 @@ export function TrendsTour() {
 
   if (!visible) return null;
 
-  const current = STEPS[step];
+  const current = STEPS[step]!;
   const isLast = step === STEPS.length - 1;
 
   const dismiss = () => {
