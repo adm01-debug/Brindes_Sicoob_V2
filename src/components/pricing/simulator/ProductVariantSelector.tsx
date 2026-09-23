@@ -74,10 +74,10 @@ export function ProductVariantSelector({
       <div className="p-3 rounded-lg bg-muted/50 flex items-center gap-3">
         <div
           className="w-6 h-6 rounded-full border-2 border-border"
-          style={{ backgroundColor: variants[0].hex || '#888' }}
+          style={{ backgroundColor: variants[0]!.hex || '#888' }}
         />
         <span className="text-sm">
-          Cor: <strong>{variants[0].name}</strong>
+          Cor: <strong>{variants[0]!.name}</strong>
         </span>
       </div>
     );

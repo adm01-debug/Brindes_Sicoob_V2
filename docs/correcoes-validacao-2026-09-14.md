@@ -4772,3 +4772,29 @@ onValueChange={(vals) => onChange({ ...value, highlightContrast: vals[0]! })}
 - `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `efedcef7d6`).
 - Nenhum teste dedicado encontrado.
 - `typecheck:baseline`: 293 → 291 (232 arquivos), travado via `--update`.
+
+## ProductVariantSelector.tsx (etapa 17)
+
+**Arquivo:** `src/components/pricing/simulator/ProductVariantSelector.tsx`
+
+**Erros originais (2×):** TS2532 (linhas 77 e 80) — `variants[0].hex` e `variants[0].name` acessando objeto possivelmente `undefined`.
+
+**Diagnóstico:** Bloco guardado por `if (variants.length === 1 && !hasSizes)` (linha 72) — `variants[0]` é garantidamente definido nesse branch, mas `noUncheckedIndexedAccess` não correlaciona o guard de comprimento com o acesso de índice.
+
+**Fix aplicado:**
+```tsx
+// antes:
+style={{ backgroundColor: variants[0].hex || '#888' }}
+...
+Cor: <strong>{variants[0].name}</strong>
+// depois:
+style={{ backgroundColor: variants[0]!.hex || '#888' }}
+...
+Cor: <strong>{variants[0]!.name}</strong>
+```
+
+**Validação:**
+- `tscheck-files.mjs`: 2 → 0 erros (0 no programa inteiro).
+- `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `30aef8f058`).
+- Nenhum teste dedicado encontrado.
+- `typecheck:baseline`: 291 → 289 (231 arquivos), travado via `--update`.

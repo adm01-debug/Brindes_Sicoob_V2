@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-09-23T06:45:30.217Z",
-  "total": 291,
+  "generatedAt": "2026-09-23T06:48:57.628Z",
+  "total": 289,
   "files": {
     "src/components/admin/connections/Bitrix24Tab.tsx": 1,
     "src/components/admin/connections/DataSourceDebugTab.tsx": 1,
@@ -65,7 +65,6 @@
     "src/components/pricing/ProductPriceSimulator.tsx": 1,
     "src/components/pricing/simulator/MultiEngravingResult.tsx": 1,
     "src/components/pricing/simulator/ProductSearch.tsx": 1,
-    "src/components/pricing/simulator/ProductVariantSelector.tsx": 2,
     "src/components/pricing/simulator/QuantityAndResult.tsx": 1,
     "src/components/pricing/simulator/TechniqueSelector.tsx": 2,
     "src/components/product-registration/sections/MediaAttributesSection.tsx": 1,
