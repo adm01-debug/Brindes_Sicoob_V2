@@ -44,14 +44,14 @@ const TECHNIQUE_MATCH_ORDER: Array<{ pattern: string; key: string }> = [
 ];
 
 export function getTechniqueFilter(techniqueCode?: string | null, techniqueName?: string): TechniqueFilter {
-  if (!techniqueCode && !techniqueName) return TECHNIQUE_FILTERS.default;
+  if (!techniqueCode && !techniqueName) return TECHNIQUE_FILTERS.default!;
   const combined = [techniqueCode, techniqueName].filter(Boolean).join(" ").toLowerCase();
   for (const rule of TECHNIQUE_MATCH_ORDER) {
     if (combined.includes(rule.pattern)) {
-      return TECHNIQUE_FILTERS[rule.key];
+      return TECHNIQUE_FILTERS[rule.key]!;
     }
   }
-  return TECHNIQUE_FILTERS.default;
+  return TECHNIQUE_FILTERS.default!;
 }
 
 export function clamp(value: number, min: number, max: number) {

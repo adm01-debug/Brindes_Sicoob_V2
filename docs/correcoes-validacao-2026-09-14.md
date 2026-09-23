@@ -3201,3 +3201,19 @@ Esse hook é consumido por `AuthContext.tsx` (linha 88), que calcula `mfaRequire
 - `check-eslint-baseline.mjs`: 0 regressões (3334 erros globais, referência `origin/main` em `3610add7a1`).
 - Nenhum teste dedicado encontrado para este arquivo.
 - `typecheck:baseline`: 462 → 459 (299 arquivos), travado via `--update`.
+
+## logoTechniqueFilters.ts (etapa 17)
+
+**Arquivo:** `src/components/mockup/logo-editor/logoTechniqueFilters.ts`
+
+**Erros originais (3×):** TS2322 ×3 (linhas 47, 51, 54 — `TechniqueFilter | undefined` não atribuível a `TechniqueFilter` nos retornos de `getTechniqueFilter`).
+
+**Diagnóstico:** `TECHNIQUE_FILTERS: Record<string, TechniqueFilter>` faz com que qualquer acesso (`TECHNIQUE_FILTERS.default`, `TECHNIQUE_FILTERS[rule.key]`) retorne `TechniqueFilter | undefined` sob `noUncheckedIndexedAccess`, mesmo para chaves conhecidas por acesso literal. Verificado programaticamente que toda `key` usada em `TECHNIQUE_MATCH_ORDER` (14 entradas) existe como propriedade literal em `TECHNIQUE_FILTERS` (14 chaves, incluindo `default`) — invariante fechado e estático dentro do próprio arquivo, sem dependência de dado externo/runtime.
+
+**Fix aplicado:** asserção de não-nulo nos 3 pontos de retorno (`TECHNIQUE_FILTERS.default!`, `TECHNIQUE_FILTERS[rule.key]!`, `TECHNIQUE_FILTERS.default!`), justificada pela correspondência fechada e verificada entre as duas listas de chaves no mesmo arquivo.
+
+**Validação:**
+- `tscheck-files.mjs`: 3 → 0 erros (0 no programa inteiro).
+- `check-eslint-baseline.mjs`: 0 regressões (3334 erros globais, referência `origin/main` em `d28b11da01`).
+- Nenhum teste dedicado encontrado para este arquivo.
+- `typecheck:baseline`: 459 → 456 (298 arquivos), travado via `--update`.
