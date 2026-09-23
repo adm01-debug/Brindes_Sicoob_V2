@@ -3562,3 +3562,19 @@ Esse hook é consumido por `AuthContext.tsx` (linha 88), que calcula `mfaRequire
 - `check-eslint-baseline.mjs`: 0 regressões (3331 erros globais, referência `origin/main` em `b9b9e8948d`).
 - Nenhum teste dedicado encontrado.
 - `typecheck:baseline`: 407 → 404 (281 arquivos), travado via `--update`.
+
+## WizardMockupPreview.tsx (etapa 17)
+
+**Arquivo:** `src/components/simulator/wizard/WizardMockupPreview.tsx`
+
+**Erros originais (3×):** TS2532 (linha 46) + TS2345×2 (linhas 180, 190) — idênticos aos de `MockupPreview.tsx` (o próprio cabeçalho do arquivo documenta que foi "Adapted from MockupPreview for the wizard's Personalization type").
+
+**Diagnóstico:** mesma causa raiz de `MockupPreview.tsx`: `logoScale[0]` (`noUncheckedIndexedAccess`) e desestruturação `([x])`/`([y])` do callback `onValueChange` do `Slider` (Radix) tipando como `number | undefined`.
+
+**Fix aplicado:** idêntico a `MockupPreview.tsx` — `(logoScale[0] ?? 100) / 100`, e `x: x ?? p.x` / `y: y ?? p.y` nos dois `setLogoPosition`.
+
+**Validação:**
+- `tscheck-files.mjs`: 3 → 0 erros (3 no programa inteiro).
+- `check-eslint-baseline.mjs`: 0 regressões (3331 erros globais, referência `origin/main` em `7ecef7650e`).
+- Nenhum teste dedicado encontrado.
+- `typecheck:baseline`: 404 → 401 (280 arquivos), travado via `--update`.

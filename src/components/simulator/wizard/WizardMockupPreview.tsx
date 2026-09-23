@@ -43,7 +43,7 @@ export function WizardMockupPreview({
   const [logoPosition, setLogoPosition] = useState({ x: 50, y: 45 });
 
   const logoDimensions = useMemo(() => {
-    const scale = logoScale[0] / 100;
+    const scale = (logoScale[0] ?? 100) / 100;
     return {
       width: personalization.specs.width * 10 * scale,
       height: personalization.specs.height * 10 * scale,
@@ -177,7 +177,7 @@ export function WizardMockupPreview({
                   </label>
                   <Slider
                     value={[logoPosition.x]}
-                    onValueChange={([x]) => setLogoPosition(p => ({ ...p, x }))}
+                    onValueChange={([x]) => setLogoPosition(p => ({ ...p, x: x ?? p.x }))}
                     min={10} max={90} step={5}
                   />
                 </div>
@@ -187,7 +187,7 @@ export function WizardMockupPreview({
                   </label>
                   <Slider
                     value={[logoPosition.y]}
-                    onValueChange={([y]) => setLogoPosition(p => ({ ...p, y }))}
+                    onValueChange={([y]) => setLogoPosition(p => ({ ...p, y: y ?? p.y }))}
                     min={10} max={90} step={5}
                   />
                 </div>
