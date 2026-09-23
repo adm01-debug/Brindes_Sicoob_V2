@@ -74,7 +74,7 @@ export function ProductRow({ item }: { item: ProposalItem }) {
     let heightCm = p.height_cm;
     if ((!widthCm || !heightCm) && p.notes) {
       const dimMatch = p.notes.match(/\|\s*([\d.]+)×([\d.]+)cm/);
-      if (dimMatch) { widthCm = parseFloat(dimMatch[1]); heightCm = parseFloat(dimMatch[2]); }
+      if (dimMatch) { widthCm = parseFloat(dimMatch[1]!); heightCm = parseFloat(dimMatch[2]!); }
     }
     if (widthCm && heightCm) s += ` ${widthCm}×${heightCm}cm`;
     if (p.colors_count) s += ` | ${p.colors_count} cor${p.colors_count > 1 ? "es" : ""}`;

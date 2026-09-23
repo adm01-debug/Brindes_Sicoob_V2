@@ -4724,3 +4724,25 @@ const firstSelectedId = selectedIds.size > 0 ? Array.from(selectedIds)[0]! : "";
 - `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `df194c2e93`).
 - Nenhum teste dedicado encontrado.
 - `typecheck:baseline`: 297 → 295 (234 arquivos), travado via `--update`.
+
+## ProposalSections.tsx (etapa 17)
+
+**Arquivo:** `src/components/pdf/ProposalSections.tsx`
+
+**Erros originais (2×):** TS2345 (linha 77) — `parseFloat(dimMatch[1])` e `parseFloat(dimMatch[2])` recebendo `string | undefined` onde `parseFloat` exige `string`.
+
+**Diagnóstico:** Mesmo padrão de `ProductLinkRenderer.tsx`: `dimMatch` vem de `p.notes.match(/\|\s*([\d.]+)×([\d.]+)cm/)`, com 2 grupos de captura obrigatórios (sem `?`). Após o guard `if (dimMatch)`, os índices 1 e 2 são garantidamente strings, mas `noUncheckedIndexedAccess` tipa qualquer acesso indexado de array (incluindo `RegExpMatchArray`) como `T | undefined`.
+
+**Fix aplicado:**
+```ts
+// antes:
+if (dimMatch) { widthCm = parseFloat(dimMatch[1]); heightCm = parseFloat(dimMatch[2]); }
+// depois:
+if (dimMatch) { widthCm = parseFloat(dimMatch[1]!); heightCm = parseFloat(dimMatch[2]!); }
+```
+
+**Validação:**
+- `tscheck-files.mjs`: 2 → 0 erros (0 no programa inteiro).
+- `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `ad84a7d0da`).
+- Nenhum teste dedicado encontrado.
+- `typecheck:baseline`: 295 → 293 (233 arquivos), travado via `--update`.
