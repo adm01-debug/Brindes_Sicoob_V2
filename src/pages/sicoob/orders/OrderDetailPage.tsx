@@ -20,9 +20,7 @@ import {
   Image as ImageIcon,
   History,
   ArrowUpCircle,
-  ShieldCheck,
   ClipboardCheck,
-  Fingerprint,
   Stamp,
   X
 } from "lucide-react";
@@ -333,11 +331,11 @@ export default function OrderDetailPage() {
                 className="gap-2 text-xs h-9 border-sicoob-green/30 text-sicoob-green-dark hover:bg-sicoob-green/5"
                 onClick={handleExportDossier}
               >
-                <ShieldCheck className="h-3.5 w-3.5" />
-                Dossiê de Conformidade
+                <FileText className="h-3.5 w-3.5" />
+                Exportar dossiê do pedido
               </Button>
               <div className="flex items-center justify-center gap-1.5 text-[8px] uppercase tracking-tighter text-muted-foreground font-bold">
-                <Fingerprint className="h-2 w-2" /> Certificado Digital Sicoob
+                Relatório operacional
               </div>
             </div>
 

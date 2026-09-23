@@ -121,7 +121,6 @@ export const exportOrderDossier = ({
     finalY + 20,
     { align: "center" }
   );
-  doc.text("Meta 10/10 Excellence Compliance System", 105, finalY + 25, { align: "center" });
 
   doc.save(`Dossie-Sicoob-${orderData.order_number}.pdf`);
 };
