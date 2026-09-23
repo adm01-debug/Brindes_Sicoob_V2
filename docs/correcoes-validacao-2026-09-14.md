@@ -5418,3 +5418,33 @@ onRemoveFromHistory={(_e, term) => s.handleRemoveFromHistory(term)}
 - `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `ac02c4c2e3`).
 - Teste dedicado `tests/components/search/GlobalSearchPalette.test.tsx`: 1/1 passou.
 - `typecheck:baseline`: 251 → 249 (211 arquivos), travado via `--update`.
+
+## useGlobalSearch.ts (etapa 17)
+
+**Arquivo:** `src/components/search/useGlobalSearch.ts`
+
+**Erros originais (2×):**
+```
+src/components/search/useGlobalSearch.ts(206,27): error TS2345: Argument of type 'PromobrindProduct[]' is not assignable to parameter of type 'readonly ExternalProduct[]'.
+src/components/search/useGlobalSearch.ts(207,69): error TS2345: Argument of type 'Fuse<ExternalProduct>' is not assignable to parameter of type 'Fuse<PromobrindProduct>'.
+```
+
+**Diagnóstico:** `filteredProducts` (resultado de `dedupeById([...prefixData, ...broadData])`, onde ambos vêm de `fetchPromobrindProducts`) é `PromobrindProduct[]`, mas `createProductFuseOptions<ExternalProduct>()` instanciava o `Fuse` com o tipo genérico errado (`ExternalProduct`, não usado em nenhum outro ponto do arquivo). Confirmado que `PromobrindProduct` (`src/lib/external-db/product-types.ts`) satisfaz a constraint `SearchableProductLike` (possui `id`, `name`, `sku`, `supplier_reference`, `brand`, `category_name`).
+
+**Fix aplicado:**
+```ts
+// antes:
+import type { ExternalProduct } from "@/types/external-db";
+...
+const fuse = new Fuse(filteredProducts, createProductFuseOptions<ExternalProduct>());
+// depois:
+import type { PromobrindProduct } from "@/lib/external-db";
+...
+const fuse = new Fuse(filteredProducts, createProductFuseOptions<PromobrindProduct>());
+```
+
+**Validação:**
+- `tscheck-files.mjs`: 2 → 0 erros (12 → 10 no programa inteiro).
+- `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `9c8455fd25`).
+- Teste dedicado `tests/hooks/useGlobalSearch-voice.test.ts`: 11/11 passaram.
+- `typecheck:baseline`: 249 → 247 (210 arquivos), travado via `--update`.

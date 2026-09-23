@@ -13,7 +13,7 @@ import { usePopularSearchItems } from "@/hooks/search/usePopularSearchItems";
 import { useVoiceSearchAction } from "@/hooks/search/useVoiceSearchAction";
 import Fuse from "fuse.js";
 import { createProductFuseOptions, rankProductSearchResults } from "@/utils/product-search";
-import type { ExternalProduct } from "@/types/external-db";
+import type { PromobrindProduct } from "@/lib/external-db";
 
 export type SearchResultType = "product" | "client" | "quote" | "order" | "collection" | "kit" | "mockup" | "art_file" | "cart_template" | "reminder" | "conversation" | "magic_up" | "category" | "component" | "media";
 
@@ -203,7 +203,7 @@ async function executeProductSearch(intent: SearchIntent, searchQuery: string): 
       filteredProducts = filteredProducts.filter(p => p.category_name?.toLowerCase().includes(cat));
     }
 
-    const fuse = new Fuse(filteredProducts, createProductFuseOptions<ExternalProduct>());
+    const fuse = new Fuse(filteredProducts, createProductFuseOptions<PromobrindProduct>());
     return rankProductSearchResults(filteredProducts, productQuery, fuse).map(p => ({
       id: p.id, title: p.name,
       subtitle: `SKU: ${p.sku} • ${p.category_name || "Catálogo"}`,
