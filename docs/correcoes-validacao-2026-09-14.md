@@ -5201,3 +5201,33 @@ newItems[idx]!.unit_price = price;
 - `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `f32191096b`).
 - Nenhum teste dedicado encontrado.
 - `typecheck:baseline`: 263 → 261 (217 arquivos), travado via `--update`.
+
+## QuoteKanbanBoard.tsx (etapa 17)
+
+**Arquivo:** `src/components/quotes/QuoteKanbanBoard.tsx`
+
+**Erros originais (2×):**
+```
+src/components/quotes/QuoteKanbanBoard.tsx(105,9): error TS2532: Object is possibly 'undefined'.
+src/components/quotes/QuoteKanbanBoard.tsx(169,13): error TS2322: Type 'Quote[] | undefined' is not assignable to type 'Quote[]'.
+```
+
+**Diagnóstico:** padrão `noUncheckedIndexedAccess` em `Record<string, Quote[]>`. `map`/`columns` é inicializado com `KANBAN_STATUSES.forEach((s) => (map[s] = []))` — todo status de `KANBAN_STATUSES` recebe um array vazio. (1) `map[q.status]` no `forEach` de `initialQuotes` está dentro do `if (KANBAN_STATUSES.includes(q.status as any))`, garantindo que a chave existe. (2) `columns[status]` no JSX está dentro de `KANBAN_STATUSES.map((status) => ...)`, iterando exatamente as mesmas chaves usadas na inicialização.
+
+**Fix aplicado:**
+```ts
+// antes:
+map[q.status].push(q);
+...
+quotes={columns[status]}
+// depois:
+map[q.status]!.push(q);
+...
+quotes={columns[status]!}
+```
+
+**Validação:**
+- `tscheck-files.mjs`: 2 → 0 erros (14 → 12 no programa inteiro).
+- `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `3c05696462`).
+- Nenhum teste dedicado encontrado.
+- `typecheck:baseline`: 261 → 259 (216 arquivos), travado via `--update`.

@@ -102,7 +102,7 @@ export function QuoteKanbanBoard({
     KANBAN_STATUSES.forEach((s) => (map[s] = []));
     initialQuotes.forEach((q) => {
       if (KANBAN_STATUSES.includes(q.status as any)) {
-        map[q.status].push(q);
+        map[q.status]!.push(q);
       }
     });
     return map;
@@ -166,7 +166,7 @@ export function QuoteKanbanBoard({
           <KanbanColumn
             key={status}
             status={status}
-            quotes={columns[status]}
+            quotes={columns[status]!}
             onQuoteClick={(id) => navigate(`/orcamentos/${id}`)}
             onQuickView={(quote) => setQuickViewQuote(quote)}
             isReadOnly={['approved', 'rejected'].includes(status) && !isSupervisorOrAbove}
