@@ -44,7 +44,7 @@ export const PresetsBar = React.forwardRef<HTMLDivElement, PresetsBarProps>(
     const [selectedPreset, setSelectedPreset] = useState<FilterPreset | null>(null);
     const [newPresetName, setNewPresetName] = useState("");
     const [newPresetDescription, setNewPresetDescription] = useState("");
-    const [newPresetColor, setNewPresetColor] = useState(PRESET_COLORS[0]);
+    const [newPresetColor, setNewPresetColor] = useState(PRESET_COLORS[0]!);
     const [newPresetEmoji, setNewPresetEmoji] = useState("📦");
     const [isSaving, setIsSaving] = useState(false);
 
@@ -56,7 +56,7 @@ export const PresetsBar = React.forwardRef<HTMLDivElement, PresetsBarProps>(
     const resetForm = useCallback(() => {
       setNewPresetName("");
       setNewPresetDescription("");
-      setNewPresetColor(PRESET_COLORS[0]);
+      setNewPresetColor(PRESET_COLORS[0]!);
       setNewPresetEmoji("📦");
     }, []);
 
@@ -130,7 +130,7 @@ export const PresetsBar = React.forwardRef<HTMLDivElement, PresetsBarProps>(
       setSelectedPreset(preset);
       setNewPresetName(preset.name);
       setNewPresetDescription(preset.description || "");
-      setNewPresetColor(preset.color || PRESET_COLORS[0]);
+      setNewPresetColor(preset.color || PRESET_COLORS[0]!);
       setNewPresetEmoji(preset.icon || "📦");
       setIsEditOpen(true);
     }, []);

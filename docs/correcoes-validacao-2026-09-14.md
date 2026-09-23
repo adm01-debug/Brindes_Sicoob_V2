@@ -4559,3 +4559,35 @@ productId = isProductPath![1]!;
 - `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `eb0dce9fde`).
 - Nenhum teste dedicado encontrado.
 - `typecheck:baseline`: 309 → 307 (240 arquivos), travado via `--update`.
+
+## PresetsBar.tsx (etapa 17)
+
+**Arquivo:** `src/components/filters/PresetsBar.tsx`
+
+**Erros originais (2×, na verdade 3 pontos):** TS2322 (linhas 347 e 376) — `newPresetColor` inferido como `string | undefined` na declaração `useState(PRESET_COLORS[0])`, propagando o tipo opcional para os 2 usos em `<ColorEmojiPicker color={newPresetColor} />`.
+
+**Diagnóstico:** `PRESET_COLORS` (`preset-utils.ts`) é um array literal fixo com 10 cores — `PRESET_COLORS[0]` é sempre definido, mas `noUncheckedIndexedAccess` tipa como `string | undefined`. Como o `useState` inicial usa essa expressão sem asserção, o tipo do estado inteiro (`newPresetColor: string | undefined`) se propaga por todo o componente. Corrigido na origem (declaração do estado) em vez de nos 2 pontos de uso reportados pelo TS — os quais são só sintomas.
+
+**Fix aplicado:**
+```ts
+// antes:
+const [newPresetColor, setNewPresetColor] = useState(PRESET_COLORS[0]);
+...
+setNewPresetColor(PRESET_COLORS[0]);
+...
+setNewPresetColor(preset.color || PRESET_COLORS[0]);
+
+// depois:
+const [newPresetColor, setNewPresetColor] = useState(PRESET_COLORS[0]!);
+...
+setNewPresetColor(PRESET_COLORS[0]!);
+...
+setNewPresetColor(preset.color || PRESET_COLORS[0]!);
+```
+Corrigir apenas a declaração do `useState` expôs 2 novos erros TS2345 nos outros 2 pontos que também passam `PRESET_COLORS[0]` sem asserção para o setter agora tipado como `string` — corrigidos na mesma passada.
+
+**Validação:**
+- `tscheck-files.mjs`: 2 → 0 erros (6 no programa inteiro, pré-existentes/fora de escopo).
+- `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `ce2588a863`).
+- Nenhum teste dedicado encontrado.
+- `typecheck:baseline`: 307 → 305 (239 arquivos), travado via `--update`.
