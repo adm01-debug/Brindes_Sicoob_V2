@@ -6065,3 +6065,28 @@ const isAchieved =
 - `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `3214f4af73`).
 - Teste dedicado `tests/hooks/useSalesGoals.test.tsx`: 1/1 passou.
 - `typecheck:baseline`: 206 → 204 (188 arquivos), travado via `--update`.
+
+## useSparklineSales.tsx (etapa 17)
+
+**Arquivo:** `src/hooks/useSparklineSales.tsx`
+
+**Erros originais (2×):**
+```
+src/hooks/useSparklineSales.tsx(108,5): error TS2532: Object is possibly 'undefined'.
+src/hooks/useSparklineSales.tsx(108,34): error TS2532: Object is possibly 'undefined'.
+```
+
+**Diagnóstico:** `noUncheckedIndexedAccess` clássico. O código já fazia `if (!map[row.product_id]) map[row.product_id] = {};` antes de usar, mas o TypeScript não retém o estreitamento entre dois acessos por índice separados (`map[row.product_id]` é reavaliado do zero em cada expressão, sem cache de tipo).
+
+**Fix aplicado:**
+```ts
+const productMap = map[row.product_id] ?? (map[row.product_id] = {});
+productMap[date] = (productMap[date] || 0) + (row.units_depleted || 0);
+```
+Idioma que garante e captura o valor (existente ou recém-criado) em uma constante local tipada, eliminando os acessos repetidos por índice — sem non-null assertion.
+
+**Validação:**
+- `tscheck-files.mjs`: 2 → 0 erros no arquivo.
+- `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `379a2d7345`).
+- Nenhum teste dedicado encontrado para o arquivo.
+- `typecheck:baseline`: 204 → 202 (187 arquivos), travado via `--update`.

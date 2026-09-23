@@ -104,8 +104,8 @@ async function fetchSupplierSparklineBatch(productIds: string[]): Promise<Sparkl
     if (!row.product_id) continue;
     const date = row.summary_date?.substring(0, 10);
     if (!date) continue;
-    if (!map[row.product_id]) map[row.product_id] = {};
-    map[row.product_id][date] = (map[row.product_id][date] || 0) + (row.units_depleted || 0);
+    const productMap = map[row.product_id] ?? (map[row.product_id] = {});
+    productMap[date] = (productMap[date] || 0) + (row.units_depleted || 0);
   }
 
   // Generate contiguous 30-day arrays
