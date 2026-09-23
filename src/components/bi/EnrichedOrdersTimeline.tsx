@@ -35,8 +35,8 @@ export function EnrichedOrdersTimeline({ clientId }: Props) {
 
   const trend = useMemo(() => {
     if (sparkData.length < 2) return "stable" as const;
-    const first = sparkData[0].value;
-    const last = sparkData[sparkData.length - 1].value;
+    const first = sparkData[0]!.value;
+    const last = sparkData[sparkData.length - 1]!.value;
     const delta = ((last - first) / first) * 100;
     if (delta > 15) return "up" as const;
     if (delta < -15) return "down" as const;

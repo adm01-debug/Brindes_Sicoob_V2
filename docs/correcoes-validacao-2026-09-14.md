@@ -4335,3 +4335,28 @@ Preserva os valores default dos parâmetros (`attempt = 0`, `silent = false`) in
 - `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `582cafbc0`).
 - Nenhum teste dedicado encontrado.
 - `typecheck:baseline`: 325 → 323 (248 arquivos), travado via `--update`.
+
+## EnrichedOrdersTimeline.tsx (etapa 17)
+
+**Arquivo:** `src/components/bi/EnrichedOrdersTimeline.tsx`
+
+**Erros originais (2×):** TS2532 (linhas 38 e 39) — `sparkData[0].value` e `sparkData[sparkData.length - 1].value`.
+
+**Diagnóstico:** mesmo padrão de guarda não-propagada: `if (sparkData.length < 2) return "stable";` garante, no restante da função, que `sparkData` tem pelo menos 2 elementos — logo `sparkData[0]` e `sparkData[sparkData.length - 1]` são sempre seguros. TS não propaga a garantia do early-return pra essas 2 indexações.
+
+**Fix aplicado:**
+```ts
+// antes:
+const first = sparkData[0].value;
+const last = sparkData[sparkData.length - 1].value;
+
+// depois:
+const first = sparkData[0]!.value;
+const last = sparkData[sparkData.length - 1]!.value;
+```
+
+**Validação:**
+- `tscheck-files.mjs`: 2 → 0 erros (2 no programa inteiro, pré-existentes/fora de escopo).
+- `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `09edea12a`).
+- Nenhum teste dedicado encontrado.
+- `typecheck:baseline`: 323 → 321 (247 arquivos), travado via `--update`.

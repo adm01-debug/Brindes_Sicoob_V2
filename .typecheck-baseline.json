@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-09-23T05:40:52.002Z",
-  "total": 323,
+  "generatedAt": "2026-09-23T05:44:21.302Z",
+  "total": 321,
   "files": {
     "src/components/admin/connections/Bitrix24Tab.tsx": 1,
     "src/components/admin/connections/DataSourceDebugTab.tsx": 1,
@@ -29,7 +29,6 @@
     "src/components/ai/AIMockupAssistant.tsx": 1,
     "src/components/auth/KnownDevicesManager.tsx": 1,
     "src/components/bi/ClientSeasonalityHeatmap.tsx": 1,
-    "src/components/bi/EnrichedOrdersTimeline.tsx": 2,
     "src/components/cart/CartEmptyStateSmart.tsx": 2,
     "src/components/cart/CouponInput.tsx": 1,
     "src/components/catalog/BulkVariantWizard.tsx": 2,
