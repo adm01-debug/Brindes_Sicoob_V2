@@ -3440,3 +3440,23 @@ Esse hook é consumido por `AuthContext.tsx` (linha 88), que calcula `mfaRequire
 - `check-eslint-baseline.mjs`: 0 regressões (3332 erros globais, referência `origin/main` em `10a0b137f4`) — a versão inline (sem extrair a função) gerou uma regressão real de `complexity` (0→1), corrigida extraindo a lógica para `getRejectionNotes`.
 - Nenhum teste dedicado encontrado.
 - `typecheck:baseline`: 425 → 422 (287 arquivos), travado via `--update`.
+
+## ContactSelector.tsx (etapa 17)
+
+**Arquivo:** `src/components/quotes/company-contact/ContactSelector.tsx`
+
+**Erros originais (3×):** TS2322 (linha 43, colunas 123/145/167 — `Type 'string | null' is not assignable to type 'string | undefined'`).
+
+**Diagnóstico:**
+- `ContactDropdown` (dentro do `onClick` do botão de cada contato) repassa `contact.email`, `contact.phone`, `contact.cargo` diretamente para `onContactInfoChange`, cujo parâmetro é `SelectedContactInfo` (`src/components/quotes/CompanyContactSelector.tsx:17`) — `email?`, `phone?`, `cargo?` como `string | undefined`.
+- `ContactOption` (`src/components/quotes/company-contact/shared-types.tsx:16-22`) declara esses 3 campos como `string | null` (dados vindos do banco, coluna nullable) — incompatibilidade estrutural `null` vs `undefined`.
+- O componente irmão no mesmo arquivo, `SingleContactDisplay` (linhas 56-64), já resolve exatamente essa conversão corretamente com `contact.email || undefined` etc. — padrão já estabelecido e só não replicado em `ContactDropdown`.
+
+**Fix aplicado:**
+- Linha 43: `email: contact.email, phone: contact.phone, cargo: contact.cargo` → `email: contact.email || undefined, phone: contact.phone || undefined, cargo: contact.cargo || undefined`, espelhando o padrão já correto de `SingleContactDisplay` no mesmo arquivo (zero churn — nenhuma abstração nova, só replicação do padrão existente).
+
+**Validação:**
+- `tscheck-files.mjs`: 3 → 0 erros (1 no programa inteiro).
+- `check-eslint-baseline.mjs`: 0 regressões (3332 erros globais, referência `origin/main` em `aef3042ecc`).
+- Teste dedicado do componente pai encontrado e executado: `tests/components/quotes/CompanyContactSelector.test.tsx` — 2/2 passaram.
+- `typecheck:baseline`: 422 → 419 (286 arquivos), travado via `--update`.
