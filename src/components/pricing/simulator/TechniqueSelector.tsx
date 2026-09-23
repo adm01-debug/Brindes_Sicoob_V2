@@ -58,7 +58,7 @@ export function TechniqueSelector({
     setSelectedLocation(null);
     onSelect(null);
     if (comp.locations.length === 1) {
-      handleLocationSelect(comp.locations[0], comp);
+      handleLocationSelect(comp.locations[0]!, comp);
     }
   };
 
@@ -67,7 +67,7 @@ export function TechniqueSelector({
     onSelect(null);
     const primaryTech = loc.techniques.find((t) => t.isPrimary);
     if (loc.techniques.length === 1 || primaryTech) {
-      const techToSelect = primaryTech || loc.techniques[0];
+      const techToSelect = primaryTech || loc.techniques[0]!;
       handleTechniqueSelect(techToSelect, loc, comp);
     }
   };

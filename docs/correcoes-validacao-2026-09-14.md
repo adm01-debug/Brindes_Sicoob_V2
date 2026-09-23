@@ -4798,3 +4798,31 @@ Cor: <strong>{variants[0]!.name}</strong>
 - `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `30aef8f058`).
 - Nenhum teste dedicado encontrado.
 - `typecheck:baseline`: 291 → 289 (231 arquivos), travado via `--update`.
+
+## TechniqueSelector.tsx (pricing/simulator, etapa 17)
+
+**Arquivo:** `src/components/pricing/simulator/TechniqueSelector.tsx`
+
+**Erros originais (2×):** TS2345 (linhas 61 e 71) — `handleLocationSelect(comp.locations[0], comp)` e `loc.techniques[0]` passando `LocationData | undefined` / `TechniqueData | undefined` onde os parâmetros exigem valores definidos.
+
+**Diagnóstico:**
+- Linha 61: guardado por `if (comp.locations.length === 1)` — `comp.locations[0]` é garantidamente definido nesse branch.
+- Linha 71: `const techToSelect = primaryTech || loc.techniques[0]` dentro de `if (loc.techniques.length === 1 || primaryTech)` — se `primaryTech` é falsy, a condição só foi satisfeita porque `loc.techniques.length === 1`, garantindo `loc.techniques[0]` definido. TS não correlaciona o `||` da condição externa com o fallback do `||` interno.
+
+**Fix aplicado:**
+```ts
+// antes:
+handleLocationSelect(comp.locations[0], comp);
+...
+const techToSelect = primaryTech || loc.techniques[0];
+// depois:
+handleLocationSelect(comp.locations[0]!, comp);
+...
+const techToSelect = primaryTech || loc.techniques[0]!;
+```
+
+**Validação:**
+- `tscheck-files.mjs`: 2 → 0 erros (5 no programa inteiro, pré-existentes/fora de escopo).
+- `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `9f5c75dcea`).
+- Nenhum teste dedicado encontrado (existe um componente homônimo em `personalization/`, sem relação).
+- `typecheck:baseline`: 289 → 287 (230 arquivos), travado via `--update`.
