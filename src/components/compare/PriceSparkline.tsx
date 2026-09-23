@@ -61,8 +61,8 @@ export function PriceSparkline({ productId, className }: Props) {
     );
   }
 
-  const first = data[0].price;
-  const last = data[data.length - 1].price;
+  const first = data[0]!.price;
+  const last = data[data.length - 1]!.price;
   const pct = first > 0 ? ((last - first) / first) * 100 : 0;
   const down = pct < -0.5;
   const up = pct > 0.5;

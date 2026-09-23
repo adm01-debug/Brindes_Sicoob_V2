@@ -4467,3 +4467,27 @@ const iconColor = collection.color || "#6366f1";
 - `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `b59cb4edcd`).
 - Nenhum teste dedicado encontrado.
 - `typecheck:baseline`: 315 → 313 (243 arquivos), travado via `--update`.
+
+## PriceSparkline.tsx (etapa 17)
+
+**Arquivo:** `src/components/compare/PriceSparkline.tsx`
+
+**Erros originais (2×):** TS2532 (linhas 64 e 65) — `data[0].price` e `data[data.length - 1].price`.
+
+**Diagnóstico:** mesmo padrão de guarda não-propagada: `if (data.length < 2) return (...)` garante que `data` tem pelo menos 2 elementos no restante da função. TS não propaga a garantia do early-return.
+
+**Fix aplicado:**
+```ts
+// antes:
+const first = data[0].price;
+const last = data[data.length - 1].price;
+// depois:
+const first = data[0]!.price;
+const last = data[data.length - 1]!.price;
+```
+
+**Validação:**
+- `tscheck-files.mjs`: 2 → 0 erros (0 no programa inteiro).
+- `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `c5a6c4add5`).
+- Nenhum teste dedicado encontrado.
+- `typecheck:baseline`: 313 → 311 (242 arquivos), travado via `--update`.
