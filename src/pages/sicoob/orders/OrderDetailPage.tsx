@@ -20,9 +20,7 @@ import {
   Image as ImageIcon,
   History,
   ArrowUpCircle,
-  ShieldCheck,
   ClipboardCheck,
-  Fingerprint,
   Stamp,
   X
 } from "lucide-react";
@@ -134,6 +132,15 @@ export default function OrderDetailPage() {
   });
   const isOverThreshold = needsApproval(orderTotal);
   const isOverBudget = orderTotal > remainingBudget;
+  const canManageFulfillment = canManageSicoobOrderFulfillment(orderData, profile, roles);
+  const allowedTabs = useMemo(() => {
+    const tabs = ["status", "timeline", "comments"];
+    if (canManageFulfillment) tabs.push("logistics", "invoices");
+    if (isSupervisorOrAbove) {
+      tabs.push("payments", "approvals");
+    }
+    return tabs;
+  }, [canManageFulfillment, isSupervisorOrAbove]);
 
   const handleRequestApproval = async () => {
     if (!orderData) return;
@@ -269,17 +276,7 @@ export default function OrderDetailPage() {
   if (!orderData) return null;
 
   const canApprove = isSupervisorOrAbove || (isGerentePa && orderData?.pa_id === profile?.pa_id);
-  const canManageFulfillment = canManageSicoobOrderFulfillment(orderData, profile, roles);
-  
-  // Controle de permissões por aba
-  const allowedTabs = useMemo(() => {
-    const tabs = ["status", "timeline", "comments"];
-    if (canManageFulfillment) tabs.push("logistics", "invoices");
-    if (isSupervisorOrAbove) {
-      tabs.push("payments", "approvals");
-    }
-    return tabs;
-  }, [canManageFulfillment, isSupervisorOrAbove]);
+  const canEditOrderItems = canManageFulfillment && canEditSicoobOrderItems(orderData.status);
 
   return (
     <>
@@ -336,11 +333,11 @@ export default function OrderDetailPage() {
                 className="gap-2 text-xs h-9 border-sicoob-green/30 text-sicoob-green-dark hover:bg-sicoob-green/5"
                 onClick={handleExportDossier}
               >
-                <ShieldCheck className="h-3.5 w-3.5" />
-                Dossiê de Conformidade
+                <FileText className="h-3.5 w-3.5" />
+                Exportar dossiê do pedido
               </Button>
               <div className="flex items-center justify-center gap-1.5 text-[8px] uppercase tracking-tighter text-muted-foreground font-bold">
-                <Fingerprint className="h-2 w-2" /> Certificado Digital Sicoob
+                Relatório operacional
               </div>
             </div>
 
@@ -449,7 +446,7 @@ export default function OrderDetailPage() {
                     <Package className="h-5 w-5" />
                     Itens do Pedido
                   </div>
-                  {canManageFulfillment && canEditSicoobOrderItems(orderData.status) && (
+                  {canEditOrderItems && (
                     <OrderAddItemDialog 
                       onAdd={(data) => addItem.mutate(data)}
                       isPending={addItem.isPending}
@@ -481,7 +478,7 @@ export default function OrderDetailPage() {
                             <p className="text-xs text-muted-foreground">Personalização: {formatOrderCurrency(item.personalization_amount)}</p>
                           )}
                         </div>
-                        {canManageFulfillment && canEditSicoobOrderItems(orderData.status) && (
+                        {canEditOrderItems && (
                           <Button 
                             variant="ghost" 
                             size="icon" 

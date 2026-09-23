@@ -11,6 +11,12 @@ export interface SicoobOrderActor {
   user_id?: string | null;
 }
 
+const hasAnyRole = (roles: readonly string[], allowedRoles: readonly string[]) =>
+  roles.some((role) => allowedRoles.includes(role));
+
+const sameDefinedId = (left?: string | null, right?: string | null) =>
+  Boolean(left) && left === right;
+
 /**
  * Define quem pode operar itens, logística e notas fiscais de um pedido.
  * A interface reduz ações indevidas; o banco continua sendo a autoridade
@@ -23,22 +29,14 @@ export function canManageSicoobOrderFulfillment(
 ): boolean {
   if (!order) return false;
 
-  if (roles.includes('dev') || roles.includes('supervisor')) return true;
+  const canOperateByRole = [
+    hasAnyRole(roles, ['dev', 'supervisor']),
+    hasAnyRole(roles, ['gestor_compras', 'comprador_singular']) &&
+      sameDefinedId(actor?.cooperativa_id, order.cooperative_id),
+    hasAnyRole(roles, ['gerente_pa', 'comprador_pac']) && sameDefinedId(actor?.pa_id, order.pa_id),
+    sameDefinedId(order.created_by, actor?.user_id),
+    sameDefinedId(order.created_by, actor?.id),
+  ];
 
-  if (
-    (roles.includes('gestor_compras') || roles.includes('comprador_singular'))
-    && Boolean(actor?.cooperativa_id)
-    && actor.cooperativa_id === order.cooperative_id
-  ) return true;
-
-  if (
-    (roles.includes('gerente_pa') || roles.includes('comprador_pac'))
-    && Boolean(actor?.pa_id)
-    && actor.pa_id === order.pa_id
-  ) return true;
-
-  return Boolean(
-    order.created_by
-    && (order.created_by === actor?.user_id || order.created_by === actor?.id),
-  );
+  return canOperateByRole.some(Boolean);
 }
