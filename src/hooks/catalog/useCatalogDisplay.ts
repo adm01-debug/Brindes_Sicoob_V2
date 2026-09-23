@@ -30,13 +30,12 @@ export function useCatalogDisplay() {
   const [sortBy, setSortBy] = useState<SortOption>("name");
 
   // Responsive clamp: force appropriate columns on small screens
+  // (3 é o mínimo válido de ColumnCount — 4 colunas só fica disponível a partir de 768px, ver columnOptions em ColumnSelector.tsx)
   useEffect(() => {
     const handleResize = () => {
       const w = window.innerWidth;
-      if (w < 640 && gridColumns > 1) {
-        setGridColumnsState(1);
-      } else if (w >= 640 && w < 768 && gridColumns > 2) {
-        setGridColumnsState(2);
+      if (w < 768 && gridColumns > 3) {
+        setGridColumnsState(3);
       }
     };
     handleResize();

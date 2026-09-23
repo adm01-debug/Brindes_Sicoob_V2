@@ -5718,3 +5718,36 @@ Asserção de não-nulo nos dois acessos, garantida pelo limite do próprio `for
 - `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `6cd8d45719`).
 - Sem teste dedicado encontrado.
 - `typecheck:baseline`: 231 → 229 (201 arquivos), travado via `--update`.
+
+## useCatalogDisplay.ts (etapa 17)
+
+**Arquivo:** `src/hooks/catalog/useCatalogDisplay.ts`
+
+**Erros originais (2×):**
+```
+src/hooks/catalog/useCatalogDisplay.ts(37,29): error TS2345: Argument of type '1' is not assignable to parameter of type 'SetStateAction<ColumnCount>'.
+src/hooks/catalog/useCatalogDisplay.ts(39,29): error TS2345: Argument of type '2' is not assignable to parameter of type 'SetStateAction<ColumnCount>'.
+```
+
+**Diagnóstico:** O `useEffect` de "clamp responsivo" tentava forçar `gridColumns` para `1` (largura < 640px) ou `2` (640–768px), mas `ColumnCount` (definido em `src/components/products/ColumnSelector.tsx`) é `3 | 4 | 5 | 6 | 8` — **1 e 2 nunca foram valores válidos**. Confirmado que essa não era só uma checagem de tipo estrita demais: o próprio `ColumnSelector.tsx` já usa `3` como piso real (tanto em `columnOptions` — `{ value: 3, minWidth: 0 }` — quanto no fallback de `getDefaultColumns()` para `window.innerWidth < 1024`), e `gridColumns` desse hook é consumido de verdade em `src/pages/Index.tsx` → `CatalogContent.tsx`, que passa o valor para um grid cujas classes CSS só cobrem 3/4/5/6/8 colunas. Ou seja, o clamp para 1/2 era lógica morta/quebrada desde sempre — nunca poderia ter funcionado corretamente, pois nenhum consumidor downstream sabe renderizar 1 ou 2 colunas.
+
+**Fix aplicado:**
+```ts
+// antes:
+if (w < 640 && gridColumns > 1) {
+  setGridColumnsState(1);
+} else if (w >= 640 && w < 768 && gridColumns > 2) {
+  setGridColumnsState(2);
+}
+// depois:
+if (w < 768 && gridColumns > 3) {
+  setGridColumnsState(3);
+}
+```
+Os dois ramos inválidos foram colapsados em um único clamp para o piso real (`3`), alinhado ao limiar de `768px` em que `columnOptions` libera a próxima opção (`4` colunas). Corrige o erro de tipo na raiz (nenhum literal inválido) e corrige o comportamento: agora o clamp de fato aterrissa num `ColumnCount` que o grid sabe renderizar.
+
+**Validação:**
+- `tscheck-files.mjs`: 2 → 0 erros (0 no programa inteiro).
+- `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `71ea0a13ff`).
+- Sem teste dedicado encontrado.
+- `typecheck:baseline`: 229 → 227 (200 arquivos), travado via `--update`.
