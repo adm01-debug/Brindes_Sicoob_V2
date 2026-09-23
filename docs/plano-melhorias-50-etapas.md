@@ -57,7 +57,9 @@ ver doc de correções), zero regras de proteção em `main`.
 25. Blindar `image-proxy` contra SSRF — **não necessário**: já tem allowlist de domínio, anti-hotlinking e rate limit.
 26. Isolar/remover `external-db-inspect`/`migrate-helper` — **não necessário**: a primeira já exige role `dev`, a segunda já é stub 410 sem chamador.
 27. Fechar gap de `search_path` em `SECURITY DEFINER` (10 de 362 funções sem verificação clara — checar contra o Postgres real do projeto, não via MCP genérico).
-28. Adicionar Content-Security-Policy (hoje zero).
+28. Adicionar Content-Security-Policy — ✅ corrigido: `public/_headers` cobre
+    hospedagem compatível e `vercel.json` entrega a mesma política na Vercel;
+    o cenário `csp-providers.mjs` bloqueia divergência entre provedores.
 29. `.env.production` — **corrigido**: `ANON_KEY`/`PROJECT_ID` são usados em 4 lugares reais (`PublicComparisonPage.tsx` e afins); não tocar sem mapear todos os usos.
 30. Secret scanning no pre-commit e no GitHub (gitleaks).
 31. Promover checks de RLS/escopo (`test:rls`, `check:seller-scope`) a required no CI.
