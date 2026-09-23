@@ -56,6 +56,8 @@ export function OrderLogisticsTab({ orderId, orderStatus, canManage }: OrderLogi
   }, [shipment?.delivery_photo_path]);
 
   const handleUpdateTracking = async () => {
+    if (!canManageTracking) return;
+
     try {
       await updateShipment.mutateAsync({
         orderId,
@@ -72,6 +74,11 @@ export function OrderLogisticsTab({ orderId, orderStatus, canManage }: OrderLogi
   };
 
   const handlePhotoUpload = async (event: ChangeEvent<HTMLInputElement>) => {
+    if (!canConfirmDelivery) {
+      event.target.value = '';
+      return;
+    }
+
     const file = event.target.files?.[0];
     if (!file) return;
     if (!DELIVERY_IMAGE_EXTENSIONS[file.type]) {

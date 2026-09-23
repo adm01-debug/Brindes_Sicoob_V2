@@ -44,6 +44,11 @@ export function OrderInvoicesTab({ orderId, canManage }: OrderInvoicesTabProps) 
   };
 
   const handleFileUpload = async (event: ChangeEvent<HTMLInputElement>, type: 'xml' | 'pdf') => {
+    if (!canManage) {
+      event.target.value = '';
+      return;
+    }
+
     const file = event.target.files?.[0];
     if (!file) return;
 
