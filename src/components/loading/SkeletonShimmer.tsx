@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import { type ReactNode } from "react";
+import { type CSSProperties, type ReactNode } from "react";
 
 /**
  * Enhanced Skeleton with shimmer effect
@@ -8,10 +8,11 @@ import { type ReactNode } from "react";
 
 interface SkeletonShimmerProps {
   className?: string;
+  style?: CSSProperties;
   children?: ReactNode;
 }
 
-export function SkeletonShimmer({ className, children }: SkeletonShimmerProps) {
+export function SkeletonShimmer({ className, style, children }: SkeletonShimmerProps) {
   return (
     <div
       className={cn(
@@ -21,6 +22,7 @@ export function SkeletonShimmer({ className, children }: SkeletonShimmerProps) {
         "before:bg-gradient-to-r before:from-transparent before:via-white/20 before:to-transparent",
         className
       )}
+      style={style}
       aria-hidden="true"
       role="presentation"
     >

@@ -4635,3 +4635,38 @@ const current = STEPS[step]!;
 - `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `7d13683a06`).
 - Nenhum teste dedicado encontrado.
 - `typecheck:baseline`: 303 → 301 (237 arquivos), travado via `--update`.
+
+## SkeletonShimmer.tsx (etapa 17)
+
+**Arquivo:** `src/components/loading/SkeletonShimmer.tsx`
+
+**Erros originais (2×):** TS2322 (linhas 53 e 230) — `<SkeletonShimmer style={...} />` em `TextSkeleton` e `ChartSkeleton` passando uma prop `style` que `SkeletonShimmerProps` não declarava.
+
+**Diagnóstico:** Bug real de API, não coerção de tipo — `SkeletonShimmerProps` só expunha `className` e `children`, mas o componente base sempre teve casos de uso legítimos que precisam de `style` inline (largura da última linha de texto, altura aleatória das barras do gráfico). Corrigido adicionando `style?: CSSProperties` à interface e repassando ao `<div>` renderizado, em vez de remover o uso de `style` nos 2 call sites.
+
+**Fix aplicado:**
+```tsx
+// antes:
+interface SkeletonShimmerProps {
+  className?: string;
+  children?: ReactNode;
+}
+export function SkeletonShimmer({ className, children }: SkeletonShimmerProps) {
+  return <div className={cn(...)} aria-hidden="true" role="presentation">{children}</div>;
+}
+// depois:
+interface SkeletonShimmerProps {
+  className?: string;
+  style?: CSSProperties;
+  children?: ReactNode;
+}
+export function SkeletonShimmer({ className, style, children }: SkeletonShimmerProps) {
+  return <div className={cn(...)} style={style} aria-hidden="true" role="presentation">{children}</div>;
+}
+```
+
+**Validação:**
+- `tscheck-files.mjs`: 2 → 0 erros (0 no programa inteiro).
+- `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `da800e0da9`).
+- Nenhum teste dedicado encontrado.
+- `typecheck:baseline`: 301 → 299 (236 arquivos), travado via `--update`.
