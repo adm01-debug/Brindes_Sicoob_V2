@@ -69,7 +69,7 @@ export function ProposalProductTable({ items, showHeader = true, startIndex = 0,
       groups.push({ kitName: gid ? (item.kit_name || "Kit") : null, items: [] });
       currentGroupId = gid;
     }
-    groups[groups.length - 1].items.push({ item, globalIdx: startIndex + idx });
+    groups[groups.length - 1]!.items.push({ item, globalIdx: startIndex + idx });
   });
 
   return (
@@ -133,8 +133,8 @@ export function ProposalProductTable({ items, showHeader = true, startIndex = 0,
                 if ((!widthCm || !heightCm) && p.notes) {
                   const dimMatch = p.notes.match(/\|\s*([\d.]+)×([\d.]+)cm/);
                   if (dimMatch) {
-                    widthCm = parseFloat(dimMatch[1]);
-                    heightCm = parseFloat(dimMatch[2]);
+                    widthCm = parseFloat(dimMatch[1]!);
+                    heightCm = parseFloat(dimMatch[2]!);
                   }
                 }
                 if (widthCm && heightCm) s += ` ${widthCm}×${heightCm}cm`;

@@ -3257,3 +3257,21 @@ Esse hook é consumido por `AuthContext.tsx` (linha 88), que calcula `mfaRequire
 - `check-eslint-baseline.mjs`: 0 regressões (3334 erros globais, referência `origin/main` em `26fb457fe4`).
 - Nenhum teste dedicado encontrado para este arquivo.
 - `typecheck:baseline`: 453 → 450 (296 arquivos), travado via `--update`.
+
+## ProposalProductTable.tsx (etapa 17)
+
+**Arquivo:** `src/components/pdf/proposal/ProposalProductTable.tsx`
+
+**Erros originais (3×):** TS2532 (linha 72 — `groups[groups.length - 1]` possivelmente `undefined`); TS2345 ×2 (linhas 136-137 — `dimMatch[1]`/`dimMatch[2]` como `string | undefined` passados para `parseFloat(string)`).
+
+**Diagnóstico:**
+- Linha 72: dentro do `items.forEach`, `groups.push(...)` roda sempre que `gid !== currentGroupId || gid === null`. Na primeira iteração `currentGroupId` é `undefined` e `gid` nunca é `undefined` (é `string | null`), então a condição é sempre verdadeira e `groups.push` sempre roda antes do primeiro acesso a `groups[groups.length - 1]`. Nas iterações em que a condição é falsa (sem push), isso só acontece porque uma iteração anterior já teve `gid === currentGroupId`, o que exige que essa iteração anterior tenha rodado o push — logo `groups.length >= 1` é um invariante de loop garantido dentro da própria função, mesma classe de garantia já usada em `KitComparisonDialog.tsx`.
+- Linhas 136-137: `dimMatch` vem de `p.notes.match(/\|\s*([\d.]+)×([\d.]+)cm/)`, checado com `if (dimMatch)`. Os 2 grupos de captura do regex são obrigatórios (sem `?` opcional), então sempre que `dimMatch` é truthy, `dimMatch[1]` e `dimMatch[2]` são strings garantidas — invariante fechado e verificável estaticamente pelo próprio padrão do regex, confinado a este arquivo.
+
+**Fix aplicado:** asserção de não-nulo nos 3 pontos (`groups[groups.length - 1]!`, `dimMatch[1]!`, `dimMatch[2]!`).
+
+**Validação:**
+- `tscheck-files.mjs`: 3 → 0 erros (2 no programa inteiro).
+- `check-eslint-baseline.mjs`: 0 regressões (3334 erros globais, referência `origin/main` em `f03632768f`).
+- Nenhum teste dedicado encontrado para este arquivo.
+- `typecheck:baseline`: 450 → 447 (295 arquivos), travado via `--update`.
