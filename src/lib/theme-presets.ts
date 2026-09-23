@@ -578,6 +578,7 @@ function boostGlowAlpha(shadow: string, alpha: number): string {
   const matches = shadow.match(/\/\s*[0-9.]+\s*\)/g);
   if (!matches || matches.length === 0) return shadow;
   const last = matches[matches.length - 1];
+  if (last === undefined) return shadow;
   const idx = shadow.lastIndexOf(last);
   return shadow.slice(0, idx) + `/ ${alpha})` + shadow.slice(idx + last.length);
 }

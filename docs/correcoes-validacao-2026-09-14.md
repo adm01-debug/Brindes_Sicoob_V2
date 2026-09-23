@@ -6226,3 +6226,28 @@ return [parseInt(r, 16), parseInt(g, 16), parseInt(b, 16)];
 - `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `0e921a4896`).
 - Nenhum teste dedicado encontrado para o arquivo.
 - `typecheck:baseline`: 194 → 192 (182 arquivos), travado via `--update`.
+
+## theme-presets.ts (etapa 17)
+
+**Arquivo:** `src/lib/theme-presets.ts`
+
+**Erros originais (2×):**
+```
+src/lib/theme-presets.ts(581,34): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+src/lib/theme-presets.ts(582,68): error TS18048: 'last' is possibly 'undefined'.
+```
+
+**Diagnóstico:** `boostGlowAlpha` já guardava `!matches || matches.length === 0`, mas `noUncheckedIndexedAccess` não deriva daí que `matches[matches.length - 1]` (o último item) é definido — mesmo padrão de narrowing-não-retido em índice de array já visto em outros arquivos desta etapa.
+
+**Fix aplicado:**
+```ts
+const last = matches[matches.length - 1];
+if (last === undefined) return shadow;
+const idx = shadow.lastIndexOf(last);
+```
+
+**Validação:**
+- `tscheck-files.mjs`: 2 → 0 erros no arquivo.
+- `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `07f340a8fb`).
+- Teste dedicado `tests/lib/theme-presets.test.ts`: 166/166 passaram.
+- `typecheck:baseline`: 192 → 190 (181 arquivos), travado via `--update`.
