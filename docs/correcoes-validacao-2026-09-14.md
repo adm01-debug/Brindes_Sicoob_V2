@@ -4613,3 +4613,25 @@ const current = STEPS[step]!;
 - `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `77a03c307f`).
 - Nenhum teste dedicado encontrado.
 - `typecheck:baseline`: 305 → 303 (238 arquivos), travado via `--update`.
+
+## KitOnboardingTour.tsx (etapa 17)
+
+**Arquivo:** `src/components/kit-builder/KitOnboardingTour.tsx`
+
+**Erros originais (2×):** TS18048 (linhas 54 e 55) — `current.title` e `current.desc` acessando `current` possivelmente `undefined`, oriundo de `const current = STEPS[step]`.
+
+**Diagnóstico:** Padrão idêntico ao de `TrendsTour.tsx`: `STEPS` é um array literal fixo com 4 passos, e `step` só avança via `onClick={() => setStep(step + 1)}` dentro do branch `step < STEPS.length - 1`, nunca excedendo os limites do array. `noUncheckedIndexedAccess` não enxerga essa invariante imperativa.
+
+**Fix aplicado:**
+```ts
+// antes:
+const current = STEPS[step];
+// depois:
+const current = STEPS[step]!;
+```
+
+**Validação:**
+- `tscheck-files.mjs`: 2 → 0 erros (0 no programa inteiro).
+- `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `7d13683a06`).
+- Nenhum teste dedicado encontrado.
+- `typecheck:baseline`: 303 → 301 (237 arquivos), travado via `--update`.

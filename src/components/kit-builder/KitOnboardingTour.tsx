@@ -32,7 +32,7 @@ export function KitOnboardingTour() {
 
   if (!open) return null;
 
-  const current = STEPS[step];
+  const current = STEPS[step]!;
 
   return (
     <div className="fixed inset-0 z-[80] bg-background/80 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in">
