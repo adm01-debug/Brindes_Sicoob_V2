@@ -5231,3 +5231,61 @@ quotes={columns[status]!}
 - `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `3c05696462`).
 - Nenhum teste dedicado encontrado.
 - `typecheck:baseline`: 261 → 259 (216 arquivos), travado via `--update`.
+
+## QuotesConfigurableList.tsx (etapa 17)
+
+**Arquivo:** `src/components/quotes/QuotesConfigurableList.tsx`
+
+**Erros originais (2×, mesma linha):**
+```
+src/components/quotes/QuotesConfigurableList.tsx(283,13): error TS2322: Type '{ id: string; label: string; icon: Element; variant: "outline"; onClick: (ids: string[]) => void; } | { id: string; label: string; icon: Element; variant: "outline"; onClick: (ids: string[]) => void; } | { ...; }' is not assignable to type 'BulkAction'.
+src/components/quotes/QuotesConfigurableList.tsx(283,13): error TS2353: Object literal may only specify known properties, and 'disabled' does not exist in type 'BulkAction'.
+```
+
+**Diagnóstico:** não é um erro de tipagem isolado — é um bug real de feature incompleta. O call site em `QuotesConfigurableList.tsx` já constrói corretamente a ação "Excluir" com `disabled: !isSupervisor`, mas a interface `BulkAction` (`src/components/common/BulkActionsBar.tsx`) não tinha o campo `disabled`, e o `actions.map(...)` do componente compartilhado nunca aplicava nenhum estado de desabilitado ao `<Button>`. Ou seja, mesmo que o tipo permitisse o campo, a intenção de bloquear "Excluir" para não-supervisores era silenciosamente ignorada na UI. Confirmado via grep que não há outro consumidor de `BulkAction` dependendo da ausência de `disabled`, e que a interface homônima em `src/components/products/VariantGridMatrix.tsx` é um tipo não relacionado (shape diferente). Fix aplicado na raiz (componente compartilhado), não no call site, que já estava correto.
+
+**Fix aplicado (`src/components/common/BulkActionsBar.tsx`):**
+```ts
+// antes:
+export interface BulkAction {
+  id: string;
+  label: string;
+  icon: ReactNode;
+  variant?: "default" | "destructive" | "outline" | "secondary" | "ghost";
+  onClick: (ids: string[]) => void;
+}
+// depois:
+export interface BulkAction {
+  id: string;
+  label: string;
+  icon: ReactNode;
+  variant?: "default" | "destructive" | "outline" | "secondary" | "ghost";
+  onClick: (ids: string[]) => void;
+  disabled?: boolean;
+}
+```
+```tsx
+// antes:
+          <Button
+            key={action.id}
+            variant={action.variant || "secondary"}
+            size="sm"
+            className="text-xs gap-1.5"
+            onClick={() => action.onClick([...selectedIds])}
+          >
+// depois:
+          <Button
+            key={action.id}
+            variant={action.variant || "secondary"}
+            size="sm"
+            className="text-xs gap-1.5"
+            disabled={action.disabled}
+            onClick={() => action.onClick([...selectedIds])}
+          >
+```
+
+**Validação:**
+- `tscheck-files.mjs`: 2 → 0 erros (14 → 12 no programa inteiro).
+- `check-eslint-baseline.mjs`: 0 regressões (apenas `BulkActionsBar.tsx` foi de fato alterado).
+- Nenhum teste dedicado encontrado para `QuotesConfigurableList.tsx` ou `BulkActionsBar.tsx`.
+- `typecheck:baseline`: 259 → 257 (215 arquivos), travado via `--update`.
