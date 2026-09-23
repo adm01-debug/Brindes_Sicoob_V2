@@ -18,10 +18,11 @@ export default function GestorDashboardPage() {
   const { data: profile } = useQuery({
     queryKey: ["user-profile", user?.id],
     queryFn: async () => {
+      if (!user?.id) return null;
       const { data, error } = await supabase
         .from('profiles')
         .select('id, user_id, full_name, avatar_url, role, cooperativa_id, pa_id')
-        .eq('user_id', user?.id)
+        .eq('user_id', user.id)
         .single();
       if (error) throw error;
       return data;
@@ -99,7 +100,7 @@ export default function GestorDashboardPage() {
       <div className="container mx-auto p-6 space-y-8 animate-fade-in">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
           <div className="space-y-2">
-            <HierarchyPath paId={profile?.pa_id} />
+            <HierarchyPath paId={profile?.pa_id ?? undefined} />
             <h1 className="text-3xl font-bold font-display tracking-tight text-sicoob-green-dark flex items-center gap-2">
               <ShieldCheck className="h-7 w-7 text-sicoob-green" />
               Gestão de Governança Singular

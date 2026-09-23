@@ -6422,3 +6422,40 @@ if (type === 'excel') {
 - `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `c021d16e5f`).
 - Nenhum teste dedicado encontrado para o arquivo.
 - `typecheck:baseline`: 180 → 178 (175 arquivos), travado via `--update`.
+
+## GestorDashboardPage.tsx (etapa 17)
+
+**Arquivo:** `src/pages/sicoob/GestorDashboardPage.tsx`
+
+**Erros originais (2×):**
+```
+src/pages/sicoob/GestorDashboardPage.tsx(24,24): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+src/pages/sicoob/GestorDashboardPage.tsx(102,28): error TS2322: Type 'string | null | undefined' is not assignable to type 'string | undefined'.
+```
+
+**Diagnóstico:**
+1. (linha 24) `useQuery({ queryKey: ["user-profile", user?.id], queryFn: async () => { ... .eq('user_id', user?.id) ... }, enabled: !!user?.id })` — o guard `enabled: !!user?.id` garante que `queryFn` só executa com `user.id` definido, mas essa narrowing não se propaga para dentro do closure do `queryFn` (limitação conhecida da tipagem do React Query). Padrão já estabelecido em múltiplos hooks do repo (`useAiUsage.ts`, `useSalesGoals.ts`, `useMagicUpState.ts`, `useCustomKitPersistence.ts`, `useSellerDashboardStats.ts`, `KitLibraryPage.tsx`) resolve isso com um guard de early-return dentro do próprio `queryFn` (`if (!user?.id) return ...;`), o que também estreita o tipo para as linhas seguintes.
+2. (linha 102) `<HierarchyPath paId={profile?.pa_id} />` — `profile?.pa_id` é `string | null | undefined` (coluna nullable de `profiles` + optional chaining), mas `HierarchyPathProps.paId` (`src/components/sicoob/HierarchyPath.tsx:8`) só aceita `string | undefined`. Componente é local a este fluxo (não teria sentido ampliar seu tipo só para aceitar `null`); mais simples e correto converter `null` → `undefined` no call site.
+
+**Fix aplicado:**
+```ts
+// queryFn (linha ~20):
+queryFn: async () => {
+  if (!user?.id) return null;
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('id, user_id, full_name, avatar_url, role, cooperativa_id, pa_id')
+    .eq('user_id', user.id)
+    .single();
+  if (error) throw error;
+  return data;
+},
+// render (linha 103):
+<HierarchyPath paId={profile?.pa_id ?? undefined} />
+```
+
+**Validação:**
+- `tscheck-files.mjs`: 2 → 0 erros no arquivo.
+- `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `dc6a82fa2c`).
+- Nenhum teste dedicado encontrado para o arquivo.
+- `typecheck:baseline`: 178 → 176 (174 arquivos), travado via `--update`.
