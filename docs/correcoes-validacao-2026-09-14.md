@@ -5595,3 +5595,38 @@ const key = `${labelKey || item.dataKey || item.name || "value"}`;
 - `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `d5332c388d`).
 - Sem teste dedicado encontrado.
 - `typecheck:baseline`: 239 → 237 (205 arquivos), travado via `--update`.
+
+## StatusBadge.tsx (etapa 17)
+
+**Arquivo:** `src/components/ui/StatusBadge.tsx`
+
+**Erros originais (2×):**
+```
+src/components/ui/StatusBadge.tsx(98,11): error TS2430: Interface 'StatusBadgeProps' incorrectly extends interface 'VariantProps<...>'.
+src/components/ui/StatusBadge.tsx(118,43): error TS2322: Type 'string' is not assignable to type '"draft" | "pending" | ... | null | undefined'.
+```
+
+**Diagnóstico:** `StatusBadgeProps.status` era tipado como `keyof typeof statusLabels`, mas `statusLabels` é `Record<string, string>` — a anotação de tipo genérica descarta as chaves literais, então `keyof typeof statusLabels` resolve para `string` puro, não para a união literal dos 17 status válidos. Isso torna `status: string` incompatível com o `status?: "draft" | ... | null` herdado de `VariantProps<typeof statusBadgeVariants>` (erro na extensão da interface) e com o parâmetro esperado por `statusBadgeVariants({ status, size })` (erro na chamada).
+
+**Fix aplicado:**
+```ts
+// antes:
+interface StatusBadgeProps extends VariantProps<typeof statusBadgeVariants> {
+  status: keyof typeof statusLabels;
+  ...
+}
+// depois:
+type StatusVariant = NonNullable<VariantProps<typeof statusBadgeVariants>["status"]>;
+
+interface StatusBadgeProps extends VariantProps<typeof statusBadgeVariants> {
+  status: StatusVariant;
+  ...
+}
+```
+Tipo derivado diretamente da configuração real do `cva` (fonte da verdade), em vez de inferido de um `Record<string, ...>` genérico. `statusIcons`/`statusLabels` seguem indexáveis normalmente pois `StatusVariant` é subconjunto de `string`.
+
+**Validação:**
+- `tscheck-files.mjs`: 2 → 0 erros (0 no programa inteiro).
+- `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `bd390c352d`).
+- Sem teste dedicado encontrado. Sem consumidores externos (`StatusBadge`/`mapToStatus` re-exportados em `ui/index.ts` mas não importados em nenhum outro arquivo).
+- `typecheck:baseline`: 237 → 235 (204 arquivos), travado via `--update`.

@@ -95,8 +95,10 @@ const statusLabels: Record<string, string> = {
   loading: "Carregando",
 };
 
+type StatusVariant = NonNullable<VariantProps<typeof statusBadgeVariants>["status"]>;
+
 interface StatusBadgeProps extends VariantProps<typeof statusBadgeVariants> {
-  status: keyof typeof statusLabels;
+  status: StatusVariant;
   label?: string;
   showIcon?: boolean;
   className?: string;
