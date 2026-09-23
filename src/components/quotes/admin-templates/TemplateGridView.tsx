@@ -55,7 +55,7 @@ export function TemplateGridView({ templatesBySeller, getSellerName, formatCurre
                 <CardContent>
                   <div className="space-y-2 text-sm">
                     <div className="flex items-center justify-between text-muted-foreground">
-                      <span className="flex items-center gap-1"><Package className="h-3.5 w-3.5" />{template.items_data.length} {template.items_data.length === 1 ? "item" : "itens"}</span>
+                      <span className="flex items-center gap-1"><Package className="h-3.5 w-3.5" />{(template.items_data ?? []).length} {(template.items_data ?? []).length === 1 ? "item" : "itens"}</span>
                       <span className="font-medium text-foreground">{formatCurrency(calculateTotal(template))}</span>
                     </div>
                     <div className="pt-2 border-t text-xs text-muted-foreground">Atualizado em {format(new Date(template.updated_at), "dd/MM/yyyy", { locale: ptBR })}</div>

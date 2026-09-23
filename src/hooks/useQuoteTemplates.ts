@@ -43,6 +43,8 @@ export interface QuoteTemplate {
   internal_notes: string | null;
   category: string | null;
   validity_days: number | null;
+  created_at: string;
+  updated_at: string;
 }
 
 export type CreateTemplateInput = Partial<Omit<QuoteTemplate, 'id' | 'created_at' | 'updated_at'>> &

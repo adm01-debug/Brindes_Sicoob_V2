@@ -3372,3 +3372,27 @@ Esse hook é consumido por `AuthContext.tsx` (linha 88), que calcula `mfaRequire
 - `check-eslint-baseline.mjs`: 0 regressões (3333 erros globais, referência `origin/main` em `f10e70b225`).
 - Nenhum teste dedicado encontrado para nenhum dos dois arquivos.
 - `typecheck:baseline`: 435 → 432 (290 arquivos), travado via `--update`.
+
+## TemplateGridView.tsx (etapa 17)
+
+**Arquivos:** `src/components/quotes/admin-templates/TemplateGridView.tsx`, `src/hooks/useQuoteTemplates.ts`, `src/utils/templateExport.ts` (regressão colateral corrigida)
+
+**Erros originais (3×, nos 2 primeiros arquivos):** TS18047 ×2 (linha 58 — `template.items_data` possivelmente `null`); TS2339 (linha 61 — `Property 'updated_at' does not exist on type 'QuoteTemplate'`).
+
+**Diagnóstico:**
+- Linha 58: `template.items_data` é `QuoteTemplateItem[] | null` no tipo `QuoteTemplate` — reflete fielmente a coluna `items_data: Json | null` do banco (genuinamente nulável em runtime, não uma lacuna de tipo). Mesmo padrão de fallback já usado em `AdminTemplatesManager.tsx:106` e `useQuoteBuilderState.ts:250`.
+- Linha 61: `QuoteTemplate` (em `useQuoteTemplates.ts`) nunca declarava `created_at`/`updated_at`, embora (a) o `Row` real de `quote_templates` em `src/integrations/supabase/types.ts` (linhas 7349-7414) declare ambos como `string` sempre presentes; (b) `fetchTemplates` faça `select("*")` e depois `data as QuoteTemplate[]` (o objeto em runtime sempre tem os dois campos); (c) `CreateTemplateInput` já referenciasse `Omit<QuoteTemplate, 'id' | 'created_at' | 'updated_at'>`, indicando que os campos deveriam existir na interface. Lacuna de completude de tipo, não risco de runtime — corrigido na origem (interface), não com cast no consumidor.
+
+**Fix aplicado:**
+- `TemplateGridView.tsx`: `(template.items_data ?? []).length` (×2), substituindo `template.items_data.length`.
+- `useQuoteTemplates.ts`: adicionados `created_at: string;` e `updated_at: string;` à interface `QuoteTemplate`.
+
+**Regressão colateral detectada e corrigida:**
+- O gate obrigatório `npm run typecheck:baseline` (sem `--update`) revelou que alargar `QuoteTemplate` com campos obrigatórios quebrou `src/utils/templateExport.ts` (0 → 1 erro, TS2322): `ExportedTemplate.templates` era tipado como `Omit<QuoteTemplate, 'id' | 'seller_id'>[]`, e o literal construído em `exportTemplatesToJson` (linha 19) nunca incluiu `created_at`/`updated_at` — um formato de exportação/importação que legitimamente não carrega timestamps (são regenerados na criação/importação).
+- Fix: `Omit<QuoteTemplate, 'id' | 'seller_id' | 'created_at' | 'updated_at'>[]`, mesma convenção já usada por `CreateTemplateInput` em `useQuoteTemplates.ts`.
+
+**Validação:**
+- `tscheck-files.mjs` (3 arquivos): 3 → 0 erros (10 no programa inteiro).
+- `check-eslint-baseline.mjs` (3 arquivos): 0 regressões (3333 erros globais, referência `origin/main` em `2f420e6e8a`).
+- Teste dedicado encontrado (`tests/hooks/useQuoteTemplates.test.tsx`): 1/1 passou. Nenhum teste dedicado para `templateExport.ts`.
+- `typecheck:baseline`: 432 → 428 (289 arquivos), travado via `--update` — gate confirmou "✅ Sem regressões de tipagem" após o fix de `templateExport.ts`.
