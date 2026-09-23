@@ -2961,3 +2961,29 @@ Esse hook é consumido por `AuthContext.tsx` (linha 88), que calcula `mfaRequire
 - `check-eslint-baseline.mjs`: 0 regressões (3335 erros globais, referência `origin/main` em `d5034bfffa`).
 - Nenhum teste dedicado encontrado para este arquivo.
 - `typecheck:baseline`: 505 → 501 (312 arquivos), travado via `--update`.
+
+## useFiltersPageState.ts (etapa 17)
+
+**Arquivo:** `src/pages/filters/useFiltersPageState.ts`
+
+**Erros originais (4×):** TS2345 (linhas 119, 121 — `1`/`2` não atribuíveis a `SetStateAction<ColumnCount>`), TS2339 (linha 205 — `toLowerCase` não existe em `never`), TS2322 (linha 273 — `string | undefined` não atribuível a `string`).
+
+**Diagnóstico — bug real de produção encontrado (linhas 119/121):** o `useEffect` "Responsive clamp" chamava `setGridColumns(1)`/`setGridColumns(2)` em telas estreitas. Arqueologia via `git log`/`git show` confirmou que `ColumnCount` (`3 | 4 | 5 | 6 | 8`, em `ColumnSelector.tsx`) nunca incluiu `1` ou `2` desde a criação do tipo (commit `cb8ffe894`, 2026-02-26) — e o bloco de clamp foi adicionado depois (commit `a0572f847`, 2026-04-05) sem alinhar com o tipo já existente. Ou seja, **o código nasceu type-invalid**, não é regressão de refactor posterior. Como o Vite não type-checa em runtime, o bloco executava de fato e gravava valores `1`/`2` fora do domínio do tipo — e como nem esse efeito nem o `ColumnSelector.tsx` (que tem seu próprio `useEffect` interno, sempre montado, que já clampa pra baixo até o piso válido de `3` quando a tela estreita) restauram o valor ao alargar a tela de novo, isso criava um bug latente de "grid preso em contagem baixa de colunas após redimensionar de volta pro desktop". Confirmado também que `LayoutPopover.tsx` e `FiltersPage.tsx` só consomem `gridColumns` como `ColumnCount` estrito — nenhum consumidor depende dos valores 1/2.
+
+**Fix aplicado (119/121):** removido o bloco inteiro do `useEffect` "Responsive clamp" (era redundante com o clamp interno de `ColumnSelector.tsx`, sempre montado na página via `columnSelector={<ColumnSelector value={state.gridColumns} onChange={state.setGridColumns} />}` em `FiltersPage.tsx`) — corrige o erro de tipo e o bug latente na mesma mudança, sem introduzir nenhum comportamento novo.
+
+**Diagnóstico (linha 205):** `Product.materials` (`src/types/product-catalog.ts`) é tipado `string[]` sempre (não-opcional, nunca `string`). Sob esse tipo, o branch `else` do ternário `Array.isArray(product.materials) ? ... : (product.materials || '')` é estruturalmente inalcançável — o TS prova isso estreitando `product.materials` pra `never` nesse branch, e a expressão `(never || '').toLowerCase()` propaga o `never`, travando o erro.
+
+**Fix aplicado (205):** simplificado o ternário para `product.materials.join(' ').toLowerCase()` (remoção de código morto comprovadamente inalcançável, sem mudança de comportamento — o branch `else` nunca executava).
+
+**Nota de risco funcional (fora do escopo desta correção de tipo):** `mapLightweightToProduct` em `src/hooks/useProductsLightweight.ts` (linha 59) grava `materials: []` sempre, hardcoded — ou seja, pra qualquer produto carregado via `useProductsCatalog` (usado por esta página), `product.materials` é sempre um array vazio em produção. Isso significa que o filtro de fallback por texto livre (`filters.materiais`, quando `!hasMaterialFilter`) nunca encontra nenhum produto: `materialsStr` é sempre `''`, e `''.includes(qualquerTermoNãoVazio)` é sempre `false`, então **todo produto é filtrado quando esse fallback está ativo**. Não corrigido nesta etapa — populair `materials` de verdade no mapper "lightweight" é mudança funcional/de dados fora do escopo de um fix de tipo (`useProductsLightweight.ts` documenta explicitamente no cabeçalho que não faz enriquecimento de cor/variante; pode ser decisão de design deliberada). Fica registrado para investigação futura.
+
+**Diagnóstico (linha 273):** `filters.datasComemorativas[0]` é acessado dentro de um `if (filters.datasComemorativas.length > 0)` — a guarda de `.length` garante estruturalmente que o índice 0 existe, mas o TS não propaga esse narrowing pra acesso indexado sob `noUncheckedIndexedAccess`.
+
+**Fix aplicado (273):** asserção de não-nulo (`filters.datasComemorativas[0]!`), mesmo padrão já usado no restante da sessão para acessos indexados protegidos por checagem de `.length` que o TS não propaga.
+
+**Validação:**
+- `tscheck-files.mjs`: 4 → 0 erros (21 no programa inteiro).
+- `check-eslint-baseline.mjs`: 0 regressões (3335 erros globais, referência `origin/main` em `fc8523743b`).
+- Nenhum teste dedicado encontrado para este arquivo.
+- `typecheck:baseline`: 501 → 497 (311 arquivos), travado via `--update`.

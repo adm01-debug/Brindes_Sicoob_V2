@@ -110,21 +110,6 @@ export function useFiltersPageState() {
   const [viewMode, setViewMode] = useState<"grid" | "list" | "table">("grid");
   const [selectionMode, setSelectionMode] = useState(false);
   const [gridColumns, setGridColumns] = useState<ColumnCount>(getDefaultColumns);
-
-  // Responsive clamp: force appropriate columns on small screens
-  useEffect(() => {
-    const handleResize = () => {
-      const w = window.innerWidth;
-      if (w < 640 && gridColumns > 1) {
-        setGridColumns(1);
-      } else if (w >= 640 && w < 768 && gridColumns > 2) {
-        setGridColumns(2);
-      }
-    };
-    handleResize();
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, [gridColumns]);
   const [voiceOverlayOpen, setVoiceOverlayOpen] = useState(false);
   const [commandAction, setCommandAction] = useState<string | null>(null);
   const [appliedFilters, setAppliedFilters] = useState<Array<{ type: "category" | "color" | "price" | "material" | "stock" | "featured" | "kit"; label: string }>>([]);
@@ -202,7 +187,7 @@ export function useFiltersPageState() {
     if (filters.ramosAtividade?.length > 0 || filters.segmentosAtividade?.length > 0) result = result.filter(product => { const ramos = product.tags?.ramo || []; const nichos = product.tags?.nicho || []; const matchesRamo = filters.ramosAtividade?.length ? filters.ramosAtividade.some(r => ramos.some((t: string) => t.toLowerCase().includes(r.toLowerCase()))) : true; const matchesSegmento = filters.segmentosAtividade?.length ? filters.segmentosAtividade.some(s => nichos.some((t: string) => t.toLowerCase().includes(s.toLowerCase()))) : true; return matchesRamo || matchesSegmento; });
     if (hasMaterialFilter && materialFilteredProductIds.size > 0) result = result.filter(p => materialFilteredProductIds.has(p.id));
     else if (hasMaterialFilter && materialFilteredProductIds.size === 0 && !isLoadingMaterialFilter) result = [];
-    if (!hasMaterialFilter && filters.materiais.length > 0) result = result.filter(product => { const materialsStr = Array.isArray(product.materials) ? product.materials.join(' ').toLowerCase() : (product.materials || '').toLowerCase(); return filters.materiais.some(m => materialsStr.includes(m.toLowerCase())); });
+    if (!hasMaterialFilter && filters.materiais.length > 0) result = result.filter(product => { const materialsStr = product.materials.join(' ').toLowerCase(); return filters.materiais.some(m => materialsStr.includes(m.toLowerCase())); });
     const priceFilterActive = filters.priceRange[0] > 0 || filters.priceRange[1] < 9999;
     if (priceFilterActive) result = result.filter(product => product.price >= filters.priceRange[0] && product.price <= filters.priceRange[1]);
     if (filters.minStock > 0) result = result.filter(product => { if (product.variations && product.variations.length > 0) return product.variations.some((v: Record<string, unknown>) => ((v.stock as number) ?? 0) >= filters.minStock); return (product.stock || 0) >= filters.minStock; });
@@ -270,7 +255,7 @@ export function useFiltersPageState() {
     if (filters.categories.length > 0) summary.push({ label: "Categorias", value: `${filters.categories.length} selecionada${filters.categories.length > 1 ? 's' : ''}`, key: "categories" });
     if (filters.suppliers.length > 0) summary.push({ label: "Fornecedores", value: `${filters.suppliers.length} selecionado${filters.suppliers.length > 1 ? 's' : ''}`, key: "suppliers" });
     if (filters.publicoAlvo.length > 0) summary.push({ label: "Público-Alvo", value: filters.publicoAlvo.slice(0, 2).join(", ") + (filters.publicoAlvo.length > 2 ? ` +${filters.publicoAlvo.length - 2}` : ""), key: "publicoAlvo" });
-    if (filters.datasComemorativas.length > 0) summary.push({ label: "Datas", value: filters.datasComemorativas[0], key: "datasComemorativas" });
+    if (filters.datasComemorativas.length > 0) summary.push({ label: "Datas", value: filters.datasComemorativas[0]!, key: "datasComemorativas" });
     if (filters.endomarketing.length > 0) summary.push({ label: "Endomarketing", value: filters.endomarketing.slice(0, 2).join(", "), key: "endomarketing" });
     const totalMateriais = (filters.materialGroups?.length || 0) + (filters.materialTypes?.length || 0) + filters.materiais.length;
     if (totalMateriais > 0) summary.push({ label: "Materiais", value: `${totalMateriais} selecionado${totalMateriais > 1 ? 's' : ''}`, key: "materiais" });
