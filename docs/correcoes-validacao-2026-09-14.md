@@ -5976,3 +5976,41 @@ return history[newIndex] ?? null;
 - `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `f3ad724996`).
 - Nenhum teste dedicado encontrado para o arquivo.
 - `typecheck:baseline`: 212 → 210 (191 arquivos), travado via `--update`.
+
+## usePullToRefresh.ts (etapa 17)
+
+**Arquivo:** `src/hooks/usePullToRefresh.ts`
+
+**Erros originais (2×):**
+```
+src/hooks/usePullToRefresh.ts(12,24): error TS2532: Object is possibly 'undefined'.
+src/hooks/usePullToRefresh.ts(20,22): error TS2532: Object is possibly 'undefined'.
+```
+
+**Diagnóstico:** risco real de runtime, não só formalidade de tipo. `e.touches[0]` (`TouchList`) é tipado `Touch | undefined` sob `noUncheckedIndexedAccess`. Embora `touchstart`/`touchmove` normalmente tragam pelo menos um touch, a spec do DOM não garante isso — um evento com `touches` vazio faria `e.touches[0].pageY` lançar `TypeError` em produção, tanto em `handleTouchStart` quanto em `handleTouchMove`.
+
+**Fix aplicado:**
+```ts
+const handleTouchStart = useCallback((e: TouchEvent) => {
+  const touch = e.touches[0];
+  if (window.scrollY === 0 && touch) {
+    startY.current = touch.pageY;
+    isDragging.current = true;
+  }
+}, []);
+
+const handleTouchMove = useCallback((e: TouchEvent) => {
+  if (!isDragging.current || isRefreshing) return;
+
+  const touch = e.touches[0];
+  if (!touch) return;
+
+  const currentY = touch.pageY;
+  const distance = currentY - startY.current;
+```
+
+**Validação:**
+- `tscheck-files.mjs`: 2 → 0 erros (0 no programa inteiro).
+- `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `3d8477ab99`).
+- Nenhum teste dedicado encontrado para o arquivo.
+- `typecheck:baseline`: 210 → 208 (190 arquivos), travado via `--update`.

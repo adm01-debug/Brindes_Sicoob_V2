@@ -8,8 +8,9 @@ export function usePullToRefresh(onRefresh: () => Promise<void>, options = { thr
 
   const handleTouchStart = useCallback((e: TouchEvent) => {
     // Only allow pull to refresh if at the top of the page
-    if (window.scrollY === 0) {
-      startY.current = e.touches[0].pageY;
+    const touch = e.touches[0];
+    if (window.scrollY === 0 && touch) {
+      startY.current = touch.pageY;
       isDragging.current = true;
     }
   }, []);
@@ -17,7 +18,10 @@ export function usePullToRefresh(onRefresh: () => Promise<void>, options = { thr
   const handleTouchMove = useCallback((e: TouchEvent) => {
     if (!isDragging.current || isRefreshing) return;
 
-    const currentY = e.touches[0].pageY;
+    const touch = e.touches[0];
+    if (!touch) return;
+
+    const currentY = touch.pageY;
     const distance = currentY - startY.current;
 
     if (distance > 0) {

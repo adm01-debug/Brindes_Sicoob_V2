@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-09-23T09:54:49.209Z",
-  "total": 210,
+  "generatedAt": "2026-09-23T09:59:00.532Z",
+  "total": 208,
   "files": {
     "src/components/admin/connections/Bitrix24Tab.tsx": 1,
     "src/components/admin/connections/DataSourceDebugTab.tsx": 1,
@@ -120,7 +120,6 @@
     "src/hooks/usePrintAreas.ts": 1,
     "src/hooks/useProductRegistrationImport.ts": 1,
     "src/hooks/useProductsByColor.ts": 1,
-    "src/hooks/usePullToRefresh.ts": 2,
     "src/hooks/usePushNotifications.tsx": 1,
     "src/hooks/useQuoteFunnel.ts": 1,
     "src/hooks/useQuoteHistory.ts": 1,
