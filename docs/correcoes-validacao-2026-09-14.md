@@ -5869,3 +5869,28 @@ for (const r of result.records ?? []) {
 - `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `fa5f539d65`).
 - Sem teste dedicado encontrado.
 - `typecheck:baseline`: 220 → 218 (195 arquivos), travado via `--update`.
+
+## useExternalVariantStock.ts (etapa 17)
+
+**Arquivo:** `src/hooks/useExternalVariantStock.ts`
+
+**Erros originais (2×):**
+```
+src/hooks/useExternalVariantStock.ts(63,25): error TS18048: 'imagesResult.records' is possibly 'undefined'.
+src/hooks/useExternalVariantStock.ts(85,14): error TS18048: 'variantsResult.records' is possibly 'undefined'.
+```
+
+**Diagnóstico:** mesmo padrão de `InvokeResult<T>.records` opcional já visto em `useExternalCollections.ts` nesta etapa — `for...of` e `.map()` direto sobre o campo opcional.
+
+**Fix aplicado:**
+```ts
+for (const img of imagesResult.records ?? []) {
+...
+return (variantsResult.records ?? []).map(v => {
+```
+
+**Validação:**
+- `tscheck-files.mjs`: 2 → 0 erros (5 no programa inteiro).
+- `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `cb514b2406`).
+- Sem teste dedicado encontrado.
+- `typecheck:baseline`: 218 → 216 (194 arquivos), travado via `--update`.

@@ -60,7 +60,7 @@ export function useExternalVariantStock(productId: string | undefined) {
       const imagesByVariantId = new Map<string, string>();
       const primaryImages = new Set<string>();
 
-      for (const img of imagesResult.records) {
+      for (const img of imagesResult.records ?? []) {
         if (!img.url_cdn) continue;
         if (img.image_type === 'box') continue;
 
@@ -82,7 +82,7 @@ export function useExternalVariantStock(productId: string | undefined) {
         }
       }
 
-      return variantsResult.records.map(v => {
+      return (variantsResult.records ?? []).map(v => {
         const variantImage = imagesByVariantId.get(v.id) || null;
         const colorImage = v.color_code ? imagesByCode.get(v.color_code.toUpperCase()) : null;
         const isMainImage = v.selected_thumbnail ? primaryImages.has(v.selected_thumbnail) : false;
