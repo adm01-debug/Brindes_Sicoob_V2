@@ -51,8 +51,8 @@ export function useCollectionsPageState() {
   }>({
     name: "",
     description: "",
-    color: defaultColors[0],
-    icon: defaultIcons[0],
+    color: defaultColors[0] ?? "#8B5CF6",
+    icon: defaultIcons[0] ?? "📁",
     clientId: null,
     clientName: null,
   });
@@ -88,7 +88,7 @@ export function useCollectionsPageState() {
 
   // CRUD handlers
   const resetForm = useCallback(() => {
-    setFormData({ name: "", description: "", color: defaultColors[0], icon: defaultIcons[0], clientId: null, clientName: null });
+    setFormData({ name: "", description: "", color: defaultColors[0] ?? "#8B5CF6", icon: defaultIcons[0] ?? "📁", clientId: null, clientName: null });
   }, [defaultColors, defaultIcons]);
 
   const handleCreate = useCallback(() => {

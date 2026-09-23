@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-09-23T00:24:36.277Z",
-  "total": 505,
+  "generatedAt": "2026-09-23T00:29:43.372Z",
+  "total": 501,
   "files": {
     "src/components/admin/common/AdminDataTable.tsx": 2,
     "src/components/admin/connections/Bitrix24Tab.tsx": 1,
@@ -286,7 +286,6 @@
     "src/pages/admin/telemetry/useOptimizationQueue.ts": 1,
     "src/pages/admin/telemetry/useProductsListingLatencyAlert.ts": 2,
     "src/pages/admin/telemetry/useResolveProductsSelectComparison.ts": 1,
-    "src/pages/collections/useCollectionsPageState.ts": 4,
     "src/pages/CollectionsPage.tsx": 1,
     "src/pages/filters/useFiltersPageState.ts": 4,
     "src/pages/FiltersPage.tsx": 1,

@@ -2945,3 +2945,19 @@ Esse hook é consumido por `AuthContext.tsx` (linha 88), que calcula `mfaRequire
 - `check-eslint-baseline.mjs`: 0 regressões (3335 erros globais, referência `origin/main` em `19a7c52ae1`).
 - Teste dedicado `tests/lib/supplier-colors.test.ts`: 8/8 passou.
 - `typecheck:baseline`: 509 → 505 (313 arquivos), travado via `--update`.
+
+## useCollectionsPageState.ts (etapa 17)
+
+**Arquivo:** `src/pages/collections/useCollectionsPageState.ts`
+
+**Erros originais (4×):** TS2322 (linhas 54, 55, 91×2 — `defaultColors[0]`/`defaultIcons[0]` tipados `string | undefined` não atribuíveis a `color`/`icon: string`).
+
+**Diagnóstico:** `defaultColors`/`defaultIcons` vêm de `useCollectionsContext()`, cuja interface (`CollectionsContextType` em `src/contexts/CollectionsContext.tsx`) os declara como `string[]` — um array plano sem garantia de não-vazio no tipo, embora a única implementação real (`DEFAULT_COLORS`/`DEFAULT_ICONS` em `src/hooks/useCollections.ts`) seja um array literal fixo de 8 elementos. Como o contrato do tipo do Context não garante isso (diferente de um array literal indexado na mesma função), tratado como genuinely-nullable-per-contrato, não como acesso estruturalmente seguro.
+
+**Fix aplicado:** fallback real nos 3 pontos de uso (`defaultColors[0] ?? "#8B5CF6"`, `defaultIcons[0] ?? "📁"`), usando os mesmos valores do primeiro elemento de `DEFAULT_COLORS`/`DEFAULT_ICONS` como default — mesmo padrão já usado em outros consumidores do mesmo context (`CollectionsPage.tsx` usa `col.color || defaultColors[0]`).
+
+**Validação:**
+- `tscheck-files.mjs`: 4 → 0 erros (36 no programa inteiro).
+- `check-eslint-baseline.mjs`: 0 regressões (3335 erros globais, referência `origin/main` em `d5034bfffa`).
+- Nenhum teste dedicado encontrado para este arquivo.
+- `typecheck:baseline`: 505 → 501 (312 arquivos), travado via `--update`.
