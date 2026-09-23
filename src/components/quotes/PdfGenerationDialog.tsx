@@ -212,6 +212,7 @@ export function PdfGenerationDialog({
         .getPublicUrl(filePath);
         
       const { error: updateError } = await supabase
+        // rls-allow: transição por orçamento identificado; RLS valida ownership
         .from("quotes")
         .update({ 
           status: "approved", 

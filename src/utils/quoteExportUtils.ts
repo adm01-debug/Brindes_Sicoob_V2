@@ -22,6 +22,7 @@ export async function exportQuotesAsZip(quoteIds: string[], userId: string) {
   if (!folder) throw new Error("Could not create ZIP folder");
 
   const { data: quotes, error } = await supabase
+    // rls-allow: exportação por ids selecionados; RLS valida cada orçamento
     .from("quotes")
     .select("id, quote_number, approved_pdf_url")
     .in("id", quoteIds)

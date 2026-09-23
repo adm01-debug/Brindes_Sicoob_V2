@@ -23,6 +23,7 @@ export class OrderService {
     const pageSize = filters?.pageSize || 20;
     
     let q = supabase
+      // rls-allow: scope self aplicado abaixo no mesmo builder; demais papéis dependem de RLS
       .from("orders")
       .select("*", { count: 'exact' })
       .order("created_at", { ascending: false });
@@ -61,6 +62,7 @@ export class OrderService {
 
   static async getById(orderId: string) {
     if (!orderId) return null;
+    // rls-allow: lookup por id; RLS valida ownership e organização
     const { data: order, error: orderError } = await supabase.from("orders").select("*").eq("id", orderId).maybeSingle();
     if (orderError) throw orderError;
     if (!order) return null;
@@ -76,6 +78,7 @@ export class OrderService {
 
   static async update(orderId: string, patch: Partial<OrderRow>) {
     const { error } = await supabase
+      // rls-allow: atualização por id; RLS valida ownership e organização
       .from("orders")
       .update({ ...patch, updated_at: new Date().toISOString() })
       .eq("id", orderId);
@@ -313,6 +316,7 @@ export class OrderService {
 
   static async getSmartAlerts() {
     const { data: pending } = await supabase
+      // rls-allow: alerta administrativo; RLS aplica papel e organização
       .from("orders")
       .select("id, created_at")
       .eq("status", "enviado_gestor");
@@ -380,6 +384,7 @@ export class OrderService {
     const newOrderNumber = `RE-${original.order_number.replace('PED-', '')}-${Math.floor(Math.random() * 1000)}`;
     
     const { data: newOrder, error: insErr } = await supabase
+      // rls-allow: criação contém seller_id do pedido de origem; RLS valida inserção
       .from("orders")
       .insert({
         ...original,

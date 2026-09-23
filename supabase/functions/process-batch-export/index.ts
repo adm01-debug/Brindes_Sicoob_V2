@@ -1,6 +1,9 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { createStructuredLogger } from "../_shared/structured-logger.ts";
 import { getOrCreateRequestId } from "../_shared/request-id.ts";
+import { requireInternalService } from "../_shared/internal-service-auth.ts";
+
+const errorMessage = (error: unknown) => error instanceof Error ? error.message : "erro_desconhecido";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -11,6 +14,15 @@ Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
+  if (req.method !== 'POST') {
+    return new Response(JSON.stringify({ error: 'metodo_nao_permitido' }), {
+      status: 405,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+
+  const denied = await requireInternalService(req)
+  if (denied) return denied
 
   const requestId = getOrCreateRequestId(req);
   const log = createStructuredLogger({ fn: "process-batch-export", requestId, req });
@@ -111,17 +123,18 @@ Deno.serve(async (req) => {
         jobLog.info("processing_job_ok", { record_count: exportData.length });
         results.push({ id: job.id, status: 'completed' })
       } catch (jobError) {
-        jobLog.error("processing_job_failed", { err: jobError.message });
+        const message = errorMessage(jobError);
+        jobLog.error("processing_job_failed", { err: message });
         await supabaseClient
           .from('export_jobs')
           .update({ 
             status: 'failed', 
-            error_message: jobError.message,
+            error_message: message,
             updated_at: new Date().toISOString() 
           })
           .eq('id', job.id)
         
-        results.push({ id: job.id, status: 'failed', error: jobError.message })
+        results.push({ id: job.id, status: 'failed', error: message })
       }
     }
 
@@ -131,8 +144,9 @@ Deno.serve(async (req) => {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     }));
   } catch (error) {
-    log.error("export_batch_failed", { err: error.message });
-    return log.respond(new Response(JSON.stringify({ error: error.message }), {
+    const message = errorMessage(error);
+    log.error("export_batch_failed", { err: message });
+    return log.respond(new Response(JSON.stringify({ error: message }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 400,
     }));

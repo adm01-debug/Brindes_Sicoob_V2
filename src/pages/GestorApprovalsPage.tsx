@@ -52,6 +52,7 @@ export default function GestorApprovalsPage() {
     queryKey: ["pending_approvals_list"],
     queryFn: async () => {
       const { data, error } = await supabase
+        // rls-allow: fila de gestor; RLS aplica cooperativa e papel
         .from("orders")
         .select(`
           *,
@@ -145,6 +146,7 @@ export default function GestorApprovalsPage() {
       const order = pendingOrders?.find(o => o.id === orderId);
       
       const { error: updateError } = await supabase
+        // rls-allow: decisão por pedido; RLS valida gestor e organização
         .from("orders")
         .update({ status: "aprovado_gestor" })
         .eq("id", orderId);
@@ -169,6 +171,7 @@ export default function GestorApprovalsPage() {
       const order = pendingOrders?.find(o => o.id === orderId);
       
       const { error: updateError } = await supabase
+        // rls-allow: decisão por pedido; RLS valida gestor e organização
         .from("orders")
         .update({ status: "cancelado" })
         .eq("id", orderId);

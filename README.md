@@ -95,7 +95,7 @@ do Sicoob que integra:
 
 ### Pré-requisitos
 
-- Node.js 18+
+- Node.js 24+
 - npm
 
 ### Instalação
@@ -103,7 +103,7 @@ do Sicoob que integra:
 ```bash
 # Clone o repositório
 git clone <repo-url>
-cd promo-brindes
+cd Brindes_Sicoob_V2
 
 # Instale dependências
 npm install
@@ -164,12 +164,12 @@ src/
 
 supabase/
 ├── config.toml       # Configuração do projeto Supabase
-├── functions/        # 104 Edge Functions com entrypoint
+├── functions/        # 106 Edge Functions com entrypoint
 │   ├── _shared/      # Utilitários compartilhados (CORS, auth, validação)
 │   ├── expert-chat/  # Assistente IA
 │   ├── external-db-bridge/ # Bridge para banco externo
 │   └── ...
-└── migrations/       # 529 migrations SQL versionadas
+└── migrations/       # 533 migrations SQL versionadas
 ```
 
 ---

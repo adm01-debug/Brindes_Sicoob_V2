@@ -10,6 +10,7 @@ import { ptBR } from "date-fns/locale";
 export async function generateQuotePDF(quoteId: string) {
   try {
     const { data: quote, error } = await supabase
+      // rls-allow: documento por id; RLS valida ownership e organização
       .from("quotes")
       .select(`
         *,

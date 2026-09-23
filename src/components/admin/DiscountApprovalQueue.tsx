@@ -21,6 +21,7 @@ export function DiscountApprovalQueue() {
     queryKey: ["discount-approval-queue"],
     queryFn: async () => {
       const { data, error } = await supabase
+        // rls-allow: fila exclusiva de supervisor; policy valida a cooperativa
         .from("discount_approval_requests")
         .select("*, quotes:quote_id(quote_number, client_name, client_company, total, subtotal, discount_percent, negotiation_markup_percent, real_subtotal, real_discount_percent)")
         .eq("status", "pending")
@@ -34,6 +35,7 @@ export function DiscountApprovalQueue() {
     mutationFn: async ({ id, approved, request }: { id: string; approved: boolean, request: any }) => {
       const { data: u } = await supabase.auth.getUser();
       const { error } = await supabase
+        // rls-allow: decisão por solicitação; policy valida supervisor e escopo
         .from("discount_approval_requests")
         .update({
           status: approved ? "approved" : "rejected",
@@ -155,4 +157,3 @@ export function DiscountApprovalQueue() {
     </div>
   );
 }
-

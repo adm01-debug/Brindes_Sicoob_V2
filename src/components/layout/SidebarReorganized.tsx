@@ -241,6 +241,7 @@ export const SidebarReorganized = React.forwardRef<HTMLElement, SidebarProps>(
     queryKey: ["pending-discount-approvals-count"],
     queryFn: async () => {
       const { count } = await supabase
+        // rls-allow: badge de supervisor; RLS limita a fila autorizada
         .from("discount_approval_requests")
         .select("*", { count: "exact", head: true })
         .eq("status", "pending");
@@ -256,6 +257,7 @@ export const SidebarReorganized = React.forwardRef<HTMLElement, SidebarProps>(
     queryKey: ["pending-pac-requests-count"],
     queryFn: async () => {
       const { count } = await supabase
+        // rls-allow: badge de aprovação singular; RLS limita a hierarquia
         .from("quotes")
         .select("*", { count: "exact", head: true })
         .eq("status", "pending_singular_approval");

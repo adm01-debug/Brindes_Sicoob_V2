@@ -25,6 +25,7 @@ export default function VerificationPage() {
 
       try {
         const { data, error } = await supabase
+          // rls-allow: visualização por token/identificador; RLS aplica a policy pública específica
           .from("quotes")
           .select(`
             id, quote_number, status, total, created_at, updated_at, 

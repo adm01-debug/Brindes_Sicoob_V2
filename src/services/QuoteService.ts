@@ -86,6 +86,7 @@ function mapOrderItemToQuoteItem(item: {
 
 export class QuoteService {
   static async list(params: { userId: string, scope: SalesScope, orgId: string | null }): Promise<Quote[]> {
+    // rls-allow: scope self aplicado no builder seguinte; demais papéis dependem de RLS
     let q = supabase.from("quotes").select("*").order("created_at", { ascending: false }).limit(500);
     q = applySellerScope(q, { scope: params.scope, userId: params.userId });
     
@@ -105,6 +106,7 @@ export class QuoteService {
   static async getById(quoteId: string): Promise<Quote | null> {
     if (!quoteId) return null;
     try {
+      // rls-allow: lookup por id; RLS valida ownership e organização
       const { data: quoteData, error: qErr } = await supabase.from("quotes").select("*").eq("id", quoteId).maybeSingle();
       if (qErr) {
         logger.error("Error fetching quote:", qErr);
@@ -143,6 +145,7 @@ export class QuoteService {
       const totals = calculateQuoteTotals(params.quote, params.items, params.quote.negotiation_markup_percent, params.quote.discount_percent ? 'percent' : 'amount', params.quote.discount_percent || params.quote.discount_amount || 0);
       const insertPayload = buildInsertPayload(params.quote, params.userId, params.orgId, totals);
       
+      // rls-allow: payload contém seller_id do ator; RLS valida inserção
       const { data: inserted, error: insErr } = await supabase.from("quotes").insert(insertPayload).select("*").single();
       if (insErr) {
         logger.error("Error creating quote:", insErr);
@@ -174,6 +177,7 @@ export class QuoteService {
       const updatePayload = buildUpdatePayload({ ...params.quote, row_version: oldQuote.row_version }, totals);
       
       const { data: updated, error: updErr } = await supabase
+        // rls-allow: atualização por id; RLS valida ownership e organização
         .from("quotes")
         .update(updatePayload)
         .eq("id", params.quoteId)
@@ -251,6 +255,7 @@ export class QuoteService {
   }
 
   static async delete(quoteId: string) {
+    // rls-allow: exclusão por id; RLS valida ownership e organização
     const { error } = await supabase.from("quotes").delete().eq("id", quoteId);
     if (error) throw error;
   }
@@ -283,6 +288,7 @@ export class QuoteService {
   }
 
   static async reorderFromOrder(orderId: string, userId: string, orgId: string | null): Promise<Quote> {
+    // rls-allow: origem identificada; RLS valida ownership e organização
     const { data: order, error: orderErr } = await supabase.from("orders").select("*").eq("id", orderId).single();
     if (orderErr) throw orderErr;
     
@@ -358,6 +364,7 @@ export class QuoteService {
 
   static async listToConsolidate(singularId: string) {
     const { data, error } = await supabase
+      // rls-allow: consolidação filtra singular; RLS valida a hierarquia do ator
       .from("quotes")
       .select("*")
       .eq("singular_id", singularId)

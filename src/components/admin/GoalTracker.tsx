@@ -13,6 +13,7 @@ export function GoalTracker() {
       startOfMonth.setHours(0, 0, 0, 0);
 
       const { data: orders } = await supabase
+        // rls-allow: indicador administrativo; RLS aplica papel e organização
         .from("orders")
         .select("total")
         .gte("created_at", startOfMonth.toISOString());

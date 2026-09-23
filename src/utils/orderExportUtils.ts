@@ -12,6 +12,7 @@ export async function exportOrdersToExcel(orderIds: string[]) {
 
   try {
     const { data, error } = await supabase
+      // rls-allow: exportação por ids selecionados; RLS valida cada pedido
       .from("orders")
       .select("order_number, client_company, status, total, created_at")
       .in("id", orderIds);
