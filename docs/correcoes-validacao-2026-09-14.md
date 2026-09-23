@@ -3761,3 +3761,24 @@ reason: reasons.length > 0 ? reasons[0]! : 'Técnica compatível',
 - `check-eslint-baseline.mjs`: 0 regressões (3331 erros globais, referência `origin/main` em `40fa7d2384`).
 - Nenhum teste dedicado encontrado.
 - `typecheck:baseline`: 378 → 375 (270 arquivos), travado via `--update`.
+
+## useTecnicasUnificadas.ts (etapa 17)
+
+**Arquivo:** `src/hooks/useTecnicasUnificadas.ts`
+
+**Erros originais (3×):** TS18048 (linhas 185, 204) + TS2532 (linha 191) — `noUncheckedIndexedAccess` em `tiers[0]` (função deprecated `calculatePriceForQuantityLegacy`), usado tanto para inicializar `selectedTier` quanto para calcular `minTierPrice`.
+
+**Diagnóstico:** estruturalmente seguro pelo guard local da própria função — `if (tiers.length === 0) return null;` logo acima garante `tiers.length >= 1` para ambos os acessos a `tiers[0]`. Mesmo padrão de `useKitUndoRedo.ts`/`useTechniqueRecommendations.ts` nesta etapa.
+
+**Fix aplicado:**
+```ts
+let selectedTier = tiers[0]!;
+// ...
+const minTierPrice = tiers[0]!.unitPrice;
+```
+
+**Validação:**
+- `tscheck-files.mjs`: 3 → 0 erros (15 → 12 no programa inteiro).
+- `check-eslint-baseline.mjs`: 0 regressões (3331 erros globais, referência `origin/main` em `8e8943e29a`).
+- Nenhum teste dedicado encontrado.
+- `typecheck:baseline`: 375 → 372 (269 arquivos), travado via `--update`.

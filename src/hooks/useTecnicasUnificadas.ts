@@ -175,7 +175,7 @@ export function calculatePriceForQuantityLegacy(
   
   if (tiers.length === 0) return null;
   
-  let selectedTier = tiers[0];
+  let selectedTier = tiers[0]!;
   for (const tier of tiers) {
     if (quantity >= tier.minQuantity) {
       selectedTier = tier;
@@ -188,7 +188,7 @@ export function calculatePriceForQuantityLegacy(
   const handlingPrice = table.handling_price || 0;
   const grandTotal = totalPrice + setupPrice + handlingPrice;
   
-  const minTierPrice = tiers[0].unitPrice;
+  const minTierPrice = tiers[0]!.unitPrice;
   const savingsPerUnit = minTierPrice - unitPrice;
   const percentageOff = minTierPrice > 0 ? ((minTierPrice - unitPrice) / minTierPrice) * 100 : 0;
   
