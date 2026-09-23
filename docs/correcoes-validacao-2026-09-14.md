@@ -6510,3 +6510,25 @@ export async function exportMultipleSheets<T extends Record<string, unknown> = R
 - `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `b72a75ed54`).
 - Nenhum teste dedicado encontrado para o arquivo.
 - `typecheck:baseline`: 174 → 172 (172 arquivos), travado via `--update`. **A partir deste ponto, todos os arquivos restantes têm exatamente 1 erro cada — fim do tier de 2 erros.**
+
+## Bitrix24Tab.tsx (etapa 17)
+
+**Arquivo:** `src/components/admin/connections/Bitrix24Tab.tsx`
+
+**Erro original:**
+```
+src/components/admin/connections/Bitrix24Tab.tsx(95,32): error TS2322: Type '(names?: string[]) => Promise<SecretStatus[]>' is not assignable to type '() => void | Promise<void>'.
+```
+
+**Diagnóstico:** `<RefreshFromDbButton onRefreshed={list} />` passava `list` (de `useSecretsManager()`, assinatura `(names?: string[]) => Promise<SecretStatus[]>`) diretamente para a prop `onRefreshed?: () => void | Promise<void>` de `RefreshFromDbButton`. Padrão já estabelecido no mesmo diretório para esse exato cenário: `SupabaseConnectionsTab.tsx:179` já usa `onRefreshed={() => { void list(); }}` para descartar o valor de retorno. `N8nTab.tsx:83` tem o mesmo bug (`onRefreshed={list}`), será corrigido como unidade separada.
+
+**Fix aplicado:**
+```tsx
+<RefreshFromDbButton onRefreshed={() => { void list(); }} />
+```
+
+**Validação:**
+- `tscheck-files.mjs`: 1 → 0 erros no arquivo.
+- `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `9611946a6a`).
+- Nenhum teste dedicado encontrado para o arquivo.
+- `typecheck:baseline`: 172 → 171 (171 arquivos), travado via `--update`.
