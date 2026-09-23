@@ -10,6 +10,10 @@ const workers = [
   'send-scheduled-reports',
   'quote-followup-reminders',
   'connections-health-check',
+  'collections-watcher',
+  'favorites-watcher',
+  'comparison-price-watcher',
+  'ownership-audit',
 ];
 
 const config = readFileSync('supabase/config.toml', 'utf8');

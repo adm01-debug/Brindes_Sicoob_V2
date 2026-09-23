@@ -43,3 +43,15 @@ verify_jwt = false
 
 [functions.connections-health-check]
 verify_jwt = false
+
+[functions.collections-watcher]
+verify_jwt = false
+
+[functions.favorites-watcher]
+verify_jwt = false
+
+[functions.comparison-price-watcher]
+verify_jwt = false
+
+[functions.ownership-audit]
+verify_jwt = false
