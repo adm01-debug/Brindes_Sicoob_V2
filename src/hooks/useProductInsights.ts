@@ -50,18 +50,18 @@ export function useProductInsights(productId?: string, productSku?: string) {
         .eq('product_sku', productSku);
 
       const allQuantities = [
-        ...(quoteItems || []).map(q => q.quantity),
-        ...(orderItems || []).map(o => o.quantity)
+        ...(quoteItems || []).map(q => q.quantity ?? 0),
+        ...(orderItems || []).map(o => o.quantity ?? 0)
       ];
       const averageQuantity = allQuantities.length > 0
-        ? allQuantities.reduce((a, b) => a + (b ?? 0), 0) / allQuantities.length
+        ? allQuantities.reduce((a, b) => a + b, 0) / allQuantities.length
         : 0;
 
       const conversionRate = quotesCount && quotesCount > 0
         ? ((ordersCount || 0) / quotesCount) * 100
         : 0;
 
-      const orderIds = (orderItems || []).map(o => o.order_id);
+      const orderIds = (orderItems || []).map(o => o.order_id).filter((id): id is string => id !== null);
       let topSegments: ProductInsight['topSegments'] = [];
       
       if (orderIds.length > 0) {

@@ -3712,3 +3712,29 @@ return result.records?.[0]?.url_cdn || null;     // fetchPrimaryImage
 - `check-eslint-baseline.mjs`: 0 regressões (3331 erros globais, referência `origin/main` em `c0727e8118`).
 - Nenhum teste dedicado encontrado.
 - `typecheck:baseline`: 384 → 381 (272 arquivos), travado via `--update`.
+
+## useProductInsights.ts (etapa 17)
+
+**Arquivo:** `src/hooks/useProductInsights.ts`
+
+**Erros originais (3×):** TS2531 + TS18047 (linha 57) — `allQuantities.reduce((a, b) => a + (b ?? 0), 0)` com array `(number | null)[]` fazia o TS escolher o overload de `reduce` sem generics (`(T, T) => T`), tipando o acumulador `a` também como `number | null`; TS2345 (linha 72) — `orderIds` como `(string | null)[]` não assinalável a `readonly string[]` esperado por `.in('id', orderIds)`.
+
+**Diagnóstico:** `quote_items.quantity`/`order_items.quantity`/`order_items.order_id` são colunas nullable no Supabase. O `b ?? 0` já existente dentro do `reduce` mostrava a intenção correta (tratar quantidade nula como 0) — só precisava ser aplicado na construção do array, não dentro do callback, para o TS inferir `number[]` e escolher o overload genérico correto. Para `orderIds`, aplicado o mesmo padrão de type-guard filter já usado em `useReplenishments.ts:161-162`/`useKitStockValidation.ts:44`.
+
+**Fix aplicado:**
+```ts
+const allQuantities = [
+  ...(quoteItems || []).map(q => q.quantity ?? 0),
+  ...(orderItems || []).map(o => o.quantity ?? 0)
+];
+// ...
+const averageQuantity = allQuantities.reduce((a, b) => a + b, 0) / allQuantities.length;
+
+const orderIds = (orderItems || []).map(o => o.order_id).filter((id): id is string => id !== null);
+```
+
+**Validação:**
+- `tscheck-files.mjs`: 3 → 0 erros (4 → 1 no programa inteiro).
+- `check-eslint-baseline.mjs`: 0 regressões (3331 erros globais, referência `origin/main` em `08a17a1d6d`).
+- Nenhum teste dedicado encontrado.
+- `typecheck:baseline`: 381 → 378 (271 arquivos), travado via `--update`.
