@@ -81,8 +81,8 @@ export function QuoteVersionCompare({ open, onOpenChange, versions, currentQuote
 
   useEffect(() => {
     if (versions.length >= 2) {
-      setLeftId(versions[versions.length - 2].id);
-      setRightId(versions[versions.length - 1].id);
+      setLeftId(versions[versions.length - 2]!.id);
+      setRightId(versions[versions.length - 1]!.id);
     }
   }, [versions]);
 

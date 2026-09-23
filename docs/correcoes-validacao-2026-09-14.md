@@ -5320,3 +5320,31 @@ value={formData.validity_days || 30}
 - `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `54bba7945b`).
 - Nenhum teste dedicado encontrado.
 - `typecheck:baseline`: 257 → 255 (214 arquivos), travado via `--update`.
+
+## QuoteVersionCompare.tsx (etapa 17)
+
+**Arquivo:** `src/components/quotes/QuoteVersionCompare.tsx`
+
+**Erros originais (2×):**
+```
+src/components/quotes/QuoteVersionCompare.tsx(84,17): error TS2532: Object is possibly 'undefined'.
+src/components/quotes/QuoteVersionCompare.tsx(85,18): error TS2532: Object is possibly 'undefined'.
+```
+
+**Diagnóstico:** padrão `noUncheckedIndexedAccess`. Ambos os acessos (`versions[versions.length - 2]` e `versions[versions.length - 1]`) estão dentro do `if (versions.length >= 2)`, que garante `versions.length - 2 >= 0` e `versions.length - 1 >= 0` — índices sempre dentro dos limites do array.
+
+**Fix aplicado:**
+```ts
+// antes:
+setLeftId(versions[versions.length - 2].id);
+setRightId(versions[versions.length - 1].id);
+// depois:
+setLeftId(versions[versions.length - 2]!.id);
+setRightId(versions[versions.length - 1]!.id);
+```
+
+**Validação:**
+- `tscheck-files.mjs`: 2 → 0 erros (14 → 12 no programa inteiro).
+- `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `87c6a56d44`).
+- Nenhum teste dedicado encontrado.
+- `typecheck:baseline`: 255 → 253 (213 arquivos), travado via `--update`.
