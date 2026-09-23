@@ -5036,3 +5036,29 @@ img.src = allMedia[selectedIndex]!;
 - `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `92c2716d5e`).
 - Teste dedicado `tests/components/products/ProductGallery.test.tsx` executado: 3/3 passou.
 - `typecheck:baseline`: 275 → 273 (223 arquivos), travado via `--update`.
+
+## usePhotoDownload.ts (etapa 17)
+
+**Arquivo:** `src/components/products/share/usePhotoDownload.ts`
+
+**Erros originais (2×):**
+```
+src/components/products/share/usePhotoDownload.ts(27,42): error TS2769: No overload matches this call.
+src/components/products/share/usePhotoDownload.ts(29,25): error TS18048: 'url' is possibly 'undefined'.
+```
+
+**Diagnóstico:** padrão `noUncheckedIndexedAccess` clássico — `images[i]` dentro de `for (let i = 0; i < images.length; i++)`, acesso provavelmente seguro pelo limite explícito do loop. O `undefined` propagava para `fetch(url, ...)` (erro de overload) e `url.split(...)` (erro 18048).
+
+**Fix aplicado:**
+```ts
+// antes:
+const url = images[i];
+// depois:
+const url = images[i]!;
+```
+
+**Validação:**
+- `tscheck-files.mjs`: 2 → 0 erros (2 → 0 no programa inteiro).
+- `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `6722e74365`).
+- Nenhum teste dedicado encontrado.
+- `typecheck:baseline`: 273 → 271 (222 arquivos), travado via `--update`.

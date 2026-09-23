@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-09-23T07:27:02.065Z",
-  "total": 273,
+  "generatedAt": "2026-09-23T07:30:32.817Z",
+  "total": 271,
   "files": {
     "src/components/admin/connections/Bitrix24Tab.tsx": 1,
     "src/components/admin/connections/DataSourceDebugTab.tsx": 1,
@@ -73,7 +73,6 @@
     "src/components/products/ProductQuickActions.tsx": 1,
     "src/components/products/ProductQuickView.tsx": 1,
     "src/components/products/share/ShareContactSelector.tsx": 1,
-    "src/components/products/share/usePhotoDownload.ts": 2,
     "src/components/products/share/WhatsAppPreview.tsx": 1,
     "src/components/products/ShareActions.tsx": 1,
     "src/components/products/ZoomableGallery.tsx": 2,

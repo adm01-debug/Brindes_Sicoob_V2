@@ -22,7 +22,7 @@ export function usePhotoDownload() {
 
       try {
         for (let i = 0; i < images.length; i++) {
-          const url = images[i];
+          const url = images[i]!;
           try {
             const response = await fetch(url, { mode: "cors" });
             const blob = await response.blob();
