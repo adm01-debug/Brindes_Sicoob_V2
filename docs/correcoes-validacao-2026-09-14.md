@@ -3169,3 +3169,19 @@ Esse hook é consumido por `AuthContext.tsx` (linha 88), que calcula `mfaRequire
 - `check-eslint-baseline.mjs`: 0 regressões (3334 erros globais, referência `origin/main` em `5ad652109e`).
 - Nenhum teste dedicado encontrado para este arquivo.
 - `typecheck:baseline`: 468 → 465 (301 arquivos), travado via `--update`.
+
+## SidebarReorganized.tsx (etapa 17)
+
+**Arquivo:** `src/components/layout/SidebarReorganized.tsx`
+
+**Erros originais (3×):** TS2741 ×3 (linhas 174, 179, 184 — `Property 'href' is missing in type '{...}' but required in type 'NavItem'`) nos itens "Estrutura SICOOB", "Marketing" e "Financeiro" do grupo `admin`, que têm `children` mas não definem `href` própria.
+
+**Diagnóstico — bug real de produção encontrado:** `NavItem.href` é `string` obrigatório em `SidebarNavGroup.tsx`, mas os 3 itens acima (grupos que só existem para abrir um submenu, sem rota própria) nunca definiram essa propriedade — o componente já tolera isso na renderização (`if (item.children && item.children.length > 0) { ... }` nunca lê `item.href` nesse ramo), mas `hasActiveItem = group.items.some((item) => isItemActive(item.href, item.exact))` (linha 78 de `SidebarNavGroup.tsx`) roda para **todo** item do grupo, inclusive os 3 sem href, e o wrapper local `isItemActive` (linha 66) chama `href.includes('?')` **sem guarda de nulidade** antes de delegar para `isNavItemActive` (que só aí trata `if (!href) return false`). Resultado: `TypeError: Cannot read properties of undefined (reading 'includes')` ao renderizar a sidebar para um admin em qualquer rota que não seja alcançada pelos itens anteriores do grupo `admin` no `.some()` — por exemplo `/admin/singulares`, `/admin/pas`, `/admin/cooperativas`, `/admin/newsletter`, `/admin/campanhas`, `/admin/cms`, `/admin/verbas` (todas rotas-filhas desses 3 grupos, cujo próprio pai nunca tem href e é alcançado antes de qualquer `return true` do `.some()`). O teste dedicado existente (`tests/components/layout/SidebarNavGroup.test.tsx`) não cobre esse cenário (usa apenas item folha com `href` definida), por isso o bug não foi pego antes.
+
+**Fix aplicado:** adicionada `href: ''` aos 3 itens-contêiner, dentro do próprio `SidebarReorganized.tsx` (sem tocar no tipo compartilhado `NavItem` nem em `SidebarNavGroup.tsx`, mantendo diff mínimo). `''` satisfaz o tipo, `''.includes('?')` não lança, e `isNavItemActive(pathname, '', exact)` já retorna `false` por sua própria guarda `if (!href) return false` — comportamento idêntico ao item nunca estar "ativo" por si mesmo, que é o correto (a expansão do submenu já é decidida separadamente via `item.children?.some(child => isItemActive(child.href, ...))`, usando o href de cada filho).
+
+**Validação:**
+- `tscheck-files.mjs`: 3 → 0 erros (234 → 231 no programa inteiro).
+- `check-eslint-baseline.mjs`: 0 regressões (3334 erros globais, referência `origin/main` em `19e663b687`).
+- Teste dedicado `tests/components/layout/SidebarNavGroup.test.tsx`: 1 passou (não cobre o cenário do bug corrigido, ver diagnóstico acima).
+- `typecheck:baseline`: 465 → 462 (300 arquivos), travado via `--update`.

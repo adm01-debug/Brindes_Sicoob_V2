@@ -171,17 +171,17 @@ const navGroups: NavGroup[] = [
         { icon: Palette, label: "Gravação", href: "/admin/cadastros?tab=personalizacao" },
         { icon: Filter, label: "Categorias", href: "/admin/categories" },
       ]},
-      { icon: Landmark, label: "Estrutura SICOOB", adminOnly: true, children: [
+      { icon: Landmark, label: "Estrutura SICOOB", href: '', adminOnly: true, children: [
         { icon: Landmark, label: "Singulares", href: "/admin/singulares" },
         { icon: Building, label: "Postos de Atendimento", href: "/admin/pas" },
         { icon: Users, label: "Parceiros", href: "/admin/cooperativas" },
       ]},
-      { icon: Megaphone, label: "Marketing", adminOnly: true, children: [
+      { icon: Megaphone, label: "Marketing", href: '', adminOnly: true, children: [
         { icon: Mail, label: "Newsletter", href: "/admin/newsletter" },
         { icon: Megaphone, label: "Campanhas", href: "/admin/campanhas" },
         { icon: LayoutGrid, label: "CMS", href: "/admin/cms" },
       ]},
-      { icon: DollarSign, label: "Financeiro", adminOnly: true, children: [
+      { icon: DollarSign, label: "Financeiro", href: '', adminOnly: true, children: [
         { icon: Wallet, label: "Verbas", href: "/admin/verbas" },
       ]},
       { icon: Activity, label: "Telemetria", href: "/admin/telemetria", devOnly: true },
