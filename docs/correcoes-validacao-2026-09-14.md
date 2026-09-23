@@ -4939,3 +4939,29 @@ productImageUrl?: string;
 - `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `e0089363f9`).
 - Nenhum teste dedicado encontrado.
 - `typecheck:baseline`: 281 → 279 (226 arquivos), travado via `--update`.
+
+## ProductCardImage.tsx (etapa 17)
+
+**Arquivo:** `src/components/products/ProductCardImage.tsx`
+
+**Erros originais (2×):** TS2532 (linhas 74 e 80) — `e.touches[0]` e `e.changedTouches[0]` "possibly undefined".
+
+**Diagnóstico:** padrão `noUncheckedIndexedAccess` em `TouchList` (índice de array). Ambos os acessos ocorrem dentro de handlers `onTouchStart`/`onTouchEnd` só anexados quando `hasMultipleVariants` é true — e por definição do DOM, um evento `touchstart`/`touchend` sempre tem ao menos 1 item em `touches`/`changedTouches` respectivamente. TS não modela essa garantia da Touch Events API.
+
+**Fix aplicado:**
+```ts
+// antes:
+(e.currentTarget as HTMLElement & { _swipeX?: number })._swipeX = e.touches[0].clientX;
+...
+const diff = e.changedTouches[0].clientX - startX;
+// depois:
+(e.currentTarget as HTMLElement & { _swipeX?: number })._swipeX = e.touches[0]!.clientX;
+...
+const diff = e.changedTouches[0]!.clientX - startX;
+```
+
+**Validação:**
+- `tscheck-files.mjs`: 2 → 0 erros (9 → 7 no programa inteiro).
+- `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `4403a7aab1`).
+- Nenhum teste dedicado encontrado.
+- `typecheck:baseline`: 279 → 277 (225 arquivos), travado via `--update`.

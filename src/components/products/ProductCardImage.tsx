@@ -71,13 +71,13 @@ export const ProductCardImage = memo(function ProductCardImage({
       className="relative aspect-[4/5] overflow-hidden product-img-container bg-muted/30"
       style={{ zIndex: 0 }}
       onTouchStart={hasMultipleVariants ? (e) => {
-        (e.currentTarget as HTMLElement & { _swipeX?: number })._swipeX = e.touches[0].clientX;
+        (e.currentTarget as HTMLElement & { _swipeX?: number })._swipeX = e.touches[0]!.clientX;
       } : undefined}
       onTouchEnd={hasMultipleVariants ? (e) => {
         const el = e.currentTarget as HTMLElement & { _swipeX?: number };
         const startX = el._swipeX;
         if (startX == null) return;
-        const diff = e.changedTouches[0].clientX - startX;
+        const diff = e.changedTouches[0]!.clientX - startX;
         if (Math.abs(diff) > 40) {
           e.stopPropagation();
           onVariantChange(diff < 0
