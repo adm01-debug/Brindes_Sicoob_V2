@@ -6251,3 +6251,28 @@ const idx = shadow.lastIndexOf(last);
 - `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `07f340a8fb`).
 - Teste dedicado `tests/lib/theme-presets.test.ts`: 166/166 passaram.
 - `typecheck:baseline`: 192 → 190 (181 arquivos), travado via `--update`.
+
+## AdminCMSPage.tsx (etapa 17)
+
+**Arquivo:** `src/pages/admin/AdminCMSPage.tsx`
+
+**Erros originais (2×):**
+```
+src/pages/admin/AdminCMSPage.tsx(249,37): error TS2345: Argument of type 'string | number | true | { [key: string]: Json | undefined; } | Json[]' is not assignable to parameter of type 'SetStateAction<{ site_title: string; ... }>'.
+src/pages/admin/AdminCMSPage.tsx(359,33): error TS2345: Argument of type 'string | number | true | { [key: string]: Json | undefined; } | Json[]' is not assignable to parameter of type 'SetStateAction<{ primary_color: string; ... }>'.
+```
+
+**Diagnóstico:** `SeoTab`/`VisualTab` leem `cms_config.value` (coluna `Json` do Supabase) e passam direto para `setSeoConfig`/`setTheme`, cujo estado local tem forma fixa (mesma forma que `handleSaveSeo`/`handleSaveVisual` gravam via upsert — round-trip auto-consistente). `Json` é a union ampla do tipo gerado pelo Supabase, sem relação estrutural com o shape local.
+
+**Fix aplicado:** cast em dois passos via `unknown`, mesmo padrão já usado nesta etapa (`batch-import.ts`):
+```ts
+if (data?.value) setSeoConfig(data.value as unknown as typeof seoConfig);
+// ...
+if (data?.value) setTheme(data.value as unknown as typeof theme);
+```
+
+**Validação:**
+- `tscheck-files.mjs`: 2 → 0 erros no arquivo.
+- `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `a5e3eb0f5f`).
+- Nenhum teste dedicado encontrado para o arquivo.
+- `typecheck:baseline`: 190 → 188 (180 arquivos), travado via `--update`.

@@ -246,7 +246,7 @@ function SeoTab() {
   useEffect(() => {
     const fetchSeo = async () => {
       const { data } = await supabase.from('cms_config').select('*').eq('key', 'seo_global').single();
-      if (data?.value) setSeoConfig(data.value);
+      if (data?.value) setSeoConfig(data.value as unknown as typeof seoConfig);
     };
     fetchSeo();
   }, []);
@@ -356,7 +356,7 @@ function VisualTab() {
   useEffect(() => {
     const fetchVisual = async () => {
       const { data } = await supabase.from('cms_config').select('*').eq('key', 'visual_identity').single();
-      if (data?.value) setTheme(data.value);
+      if (data?.value) setTheme(data.value as unknown as typeof theme);
     };
     fetchVisual();
   }, []);
