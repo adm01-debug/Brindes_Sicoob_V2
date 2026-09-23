@@ -11,7 +11,7 @@ export interface SupplierColorConfig {
 }
 
 // Mapeamento de cores por fornecedor (baseado em palavras-chave no nome)
-const SUPPLIER_COLORS: Record<string, SupplierColorConfig> = {
+const SUPPLIER_COLORS = {
   // XBZ - Azul Royal
   xbz: {
     bg: 'bg-[#4169E1]/15',
@@ -46,7 +46,7 @@ const SUPPLIER_COLORS: Record<string, SupplierColorConfig> = {
     border: 'border-orange/30',
     hex: '#FFBB00',
   },
-};
+} satisfies Record<string, SupplierColorConfig>;
 
 /**
  * Retorna as classes de cor para um fornecedor específico

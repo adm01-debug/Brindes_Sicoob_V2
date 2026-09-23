@@ -2929,3 +2929,19 @@ Esse hook é consumido por `AuthContext.tsx` (linha 88), que calcula `mfaRequire
 - `check-eslint-baseline.mjs`: 0 regressões (3335 erros globais, referência `origin/main` em `7bffabccea`).
 - Nenhum teste dedicado encontrado para este arquivo.
 - `typecheck:baseline`: 513 → 509 (314 arquivos), travado via `--update`.
+
+## supplier-colors.ts (etapa 17)
+
+**Arquivo:** `src/lib/supplier-colors.ts`
+
+**Erros originais (4×):** TS2322 (linhas 61, 64, 67, 71 — `SupplierColorConfig | undefined` não atribuível a `SupplierColorConfig`).
+
+**Diagnóstico:** `SUPPLIER_COLORS` era tipado explicitamente como `Record<string, SupplierColorConfig>`. Sob `noUncheckedIndexedAccess`, o acesso por ponto (`SUPPLIER_COLORS.xbz`, `.spot`, `.asia`, `.default`) a uma propriedade que só existe via assinatura de índice (`[key: string]: T`) — e não como propriedade nomeada no tipo — é tratado como leitura pela assinatura de índice, retornando `T | undefined`, mesmo a chave sendo um literal conhecido definido no próprio objeto.
+
+**Fix aplicado:** troca da anotação explícita `Record<string, SupplierColorConfig>` por `satisfies Record<string, SupplierColorConfig>` no fechamento do objeto literal. Isso preserva o tipo literal inferido do objeto (com as chaves exatas `xbz`, `spot`, `stricker`, `asia`, `default` como propriedades nomeadas, não via índice) enquanto ainda valida que cada entrada cumpre `SupplierColorConfig` — fix de causa raiz (não é uma asserção mascarando o sintoma), e reaproveita um padrão já usado no codebase (`useMagicUpState.ts`, `useClientCategoryAffinity.ts`, `product-search.ts`).
+
+**Validação:**
+- `tscheck-files.mjs`: 4 → 0 erros (0 no programa inteiro).
+- `check-eslint-baseline.mjs`: 0 regressões (3335 erros globais, referência `origin/main` em `19a7c52ae1`).
+- Teste dedicado `tests/lib/supplier-colors.test.ts`: 8/8 passou.
+- `typecheck:baseline`: 509 → 505 (313 arquivos), travado via `--update`.
