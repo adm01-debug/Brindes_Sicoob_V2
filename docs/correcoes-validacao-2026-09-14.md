@@ -6123,3 +6123,30 @@ results.forEach((result, idx) => {
 - `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `7010e46e8d`).
 - Nenhum teste dedicado encontrado para o arquivo.
 - `typecheck:baseline`: 202 → 200 (186 arquivos), travado via `--update`.
+
+## visibility-scope.ts (etapa 17)
+
+**Arquivo:** `src/lib/auth/visibility-scope.ts`
+
+**Erros originais (2×):**
+```
+src/lib/auth/visibility-scope.ts(21,18): error TS2367: This comparison appears to be unintentional because the types 'AppRole | null' and '"admin"' have no overlap.
+src/lib/auth/visibility-scope.ts(21,38): error TS2367: This comparison appears to be unintentional because the types 'AppRole | null' and '"manager"' have no overlap.
+```
+
+**Diagnóstico:** código morto pré-refatoração da hierarquia de papéis. `AppRole` (`src/lib/roles.ts`) não inclui mais `"admin"`/`"manager"` como valores literais — são aliases legados. Rastreando a cadeia real: `useUserRoles` (`src/hooks/auth/useUserRoles.ts`) popula `userRoles` chamando `normalizeAssignedRoles` (`src/lib/access/role-policy.ts:7`), que já converte `"admin"`/`"manager"` para `"supervisor"` no momento da busca, antes de qualquer estado ser setado. `role` (via `getHighestRole(userRoles)` em `AuthContext.tsx`) portanto nunca pode ser literalmente `"admin"` ou `"manager"` — as comparações em `visibility-scope.ts` jamais eram verdadeiras. Confirmado que o comportamento efetivo hoje já era: apenas `isDev` concede escopo `"all"`; legado admin/manager cai em `"supervisor"` → escopo `"team"`.
+
+**Fix aplicado:** remoção das comparações inalcançáveis, preservando o comportamento real (que já dependia só de `isDev`):
+```ts
+// antes:
+if (isDev || role === "admin" || role === "manager") return "all";
+// depois:
+if (isDev) return "all";
+```
+Comentário do arquivo atualizado para refletir a normalização real de papéis legados.
+
+**Validação:**
+- `tscheck-files.mjs`: 2 → 0 erros no arquivo.
+- `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `022e650c4f`).
+- Nenhum teste dedicado encontrado para o arquivo.
+- `typecheck:baseline`: 200 → 198 (185 arquivos), travado via `--update`.
