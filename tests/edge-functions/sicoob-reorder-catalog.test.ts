@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   buildVerifiedReorderItems,
   personalizationRequestsFromSnapshot,
+  ReorderValidationError,
   type CatalogProduct,
   type CatalogVariant,
   type SourceItem,
@@ -52,7 +53,7 @@ describe('catálogo vigente da recompra Sicoob', () => {
       [product],
       [variant],
       '2026-09-12T20:00:00.000Z',
-    )).toThrow('Estoque insuficiente');
+    )).toThrow(ReorderValidationError);
   });
 
   it('usa o preço vigente da variante e preserva cada item de origem', () => {

@@ -17,6 +17,14 @@ export interface ReorderPersonalizationRequest {
   height?: number | null;
 }
 
+/** Erro de regra comercial seguro para apresentar a quem iniciou a recompra. */
+export class ReorderValidationError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "ReorderValidationError";
+  }
+}
+
 export interface VerifiedReorderItem {
   source_order_item_id: string;
   product_id: string;
@@ -37,7 +45,7 @@ export interface VerifiedReorderItem {
 function optionalPositiveNumber(value: unknown, field: string): number | undefined {
   if (value == null || value === '') return undefined;
   const parsed = Number(value);
-  if (!Number.isFinite(parsed) || parsed <= 0) throw new Error(`A ${field} da personalização histórica é inválida.`);
+  if (!Number.isFinite(parsed) || parsed <= 0) throw new ReorderValidationError(`A ${field} da personalização histórica é inválida.`);
   return parsed;
 }
 
@@ -51,16 +59,16 @@ export function personalizationRequestsFromSnapshot(snapshot: SourceItem['person
 
   return entries.map((entry) => {
     if (!entry || typeof entry !== 'object' || Array.isArray(entry)) {
-      throw new Error('A personalização histórica está incompleta e precisa ser revisada.');
+      throw new ReorderValidationError('A personalização histórica está incompleta e precisa ser revisada.');
     }
     const raw = entry as Record<string, unknown>;
     const techniqueId = raw.techniqueId ?? raw.technique_id ?? raw.area_id;
     if (typeof techniqueId !== 'string' || !techniqueId.trim()) {
-      throw new Error('A técnica da personalização histórica precisa ser revisada.');
+      throw new ReorderValidationError('A técnica da personalização histórica precisa ser revisada.');
     }
     const colorsValue = optionalPositiveNumber(raw.colors ?? raw.colors_count ?? raw.num_cores, 'quantidade de cores');
     if (colorsValue !== undefined && !Number.isInteger(colorsValue)) {
-      throw new Error('A quantidade de cores da personalização histórica é inválida.');
+      throw new ReorderValidationError('A quantidade de cores da personalização histórica é inválida.');
     }
     return {
       techniqueId: techniqueId.trim(),
@@ -121,22 +129,22 @@ export function buildVerifiedReorderItems(
   const resolved: ResolvedItem[] = items.map((source) => {
     const product = source.product_id ? productsById.get(source.product_id) : undefined;
     if (!product || product.is_active === false || product.active === false) {
-      throw new Error(`O produto “${source.product_name}” não está mais disponível no catálogo.`);
+      throw new ReorderValidationError(`O produto “${source.product_name}” não está mais disponível no catálogo.`);
     }
 
     const variant = source.variant_id ? variantsById.get(source.variant_id) : undefined;
     if (source.variant_id && (!variant || variant.product_id !== product.id || variant.is_active === false)) {
-      throw new Error(`A variante de “${product.name}” não está mais disponível.`);
+      throw new ReorderValidationError(`A variante de “${product.name}” não está mais disponível.`);
     }
 
     const quantity = Number(source.quantity);
     const minimum = Number(product.min_quantity ?? 1);
     const stock = Number(variant ? variant.stock_quantity : product.stock_quantity);
     const price = Number(variant?.sale_price ?? product.sale_price ?? product.base_price ?? 0);
-    if (!Number.isInteger(quantity) || quantity <= 0) throw new Error(`A quantidade de “${product.name}” é inválida.`);
-    if (!Number.isFinite(price) || price <= 0) throw new Error(`O produto “${product.name}” está sem preço vigente.`);
-    if (!Number.isFinite(minimum) || minimum <= 0) throw new Error(`A quantidade mínima de “${product.name}” é inválida.`);
-    if (!Number.isFinite(stock) || stock < 0) throw new Error(`O estoque de “${product.name}” está inválido.`);
+    if (!Number.isInteger(quantity) || quantity <= 0) throw new ReorderValidationError(`A quantidade de “${product.name}” é inválida.`);
+    if (!Number.isFinite(price) || price <= 0) throw new ReorderValidationError(`O produto “${product.name}” está sem preço vigente.`);
+    if (!Number.isFinite(minimum) || minimum <= 0) throw new ReorderValidationError(`A quantidade mínima de “${product.name}” é inválida.`);
+    if (!Number.isFinite(stock) || stock < 0) throw new ReorderValidationError(`O estoque de “${product.name}” está inválido.`);
 
     return {
       source,
@@ -163,9 +171,9 @@ export function buildVerifiedReorderItems(
   }
   for (const demand of demandByStock.values()) {
     if (demand.quantity < demand.minimum) {
-      throw new Error(`A quantidade mínima vigente de “${demand.name}” é ${demand.minimum}.`);
+      throw new ReorderValidationError(`A quantidade mínima vigente de “${demand.name}” é ${demand.minimum}.`);
     }
-    if (demand.quantity > demand.stock) throw new Error(`Estoque insuficiente para “${demand.name}”.`);
+    if (demand.quantity > demand.stock) throw new ReorderValidationError(`Estoque insuficiente para “${demand.name}”.`);
   }
 
   return resolved.map(({ source, product, variant, quantity, minimum, price }) => ({
