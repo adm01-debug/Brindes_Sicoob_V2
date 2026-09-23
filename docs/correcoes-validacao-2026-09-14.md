@@ -5534,3 +5534,33 @@ onValueChange={(val) => { const [w, h] = val.split('x').map(Number); onUpdateSet
 - `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `d1b2f346be`).
 - Teste dedicado `tests/components/simulator/TechniqueCard.test.tsx`: 2/2 passaram.
 - `typecheck:baseline`: 243 → 241 (207 arquivos), travado via `--update`.
+
+## PersonalizationSummary.tsx (etapa 17)
+
+**Arquivo:** `src/components/simulator/wizard/PersonalizationSummary.tsx`
+
+**Erros originais (2×):**
+```
+src/components/simulator/wizard/PersonalizationSummary.tsx(62,21): error TS2532: Object is possibly 'undefined'.
+src/components/simulator/wizard/PersonalizationSummary.tsx(377,22): error TS2322: Type '"ghost"' is not assignable to type '"default" | "destructive" | "outline" | "secondary" | "success" | "accent" | "warning" | null | undefined'.
+```
+
+**Diagnóstico:** (1) `parts[0]` em `shortTechniqueName` é `string | undefined` sob `noUncheckedIndexedAccess`, mas o `if (parts.length >= 2)` já garante a existência do índice 0. (2) `<Badge variant="ghost">` usa uma variante que não existe em `badge.tsx` (`default | secondary | destructive | outline | accent | success | warning`) — bug de cópia do variant `"ghost"` do componente `Button` (que existe e é usado corretamente em outros arquivos, ex. `DiscountApprovalHeaderBadge.tsx`, `SelectedItemsBadges.tsx`), aplicado por engano num `Badge`. O `className` customizado já sobrescreve cor/estilo, então `outline` (mesma variante usada nos badges irmãos do mesmo bloco) é o valor correto.
+
+**Fix aplicado:**
+```tsx
+// antes:
+return { group: parts[0].trim(), variation: parts.slice(1).join(' | ').trim() };
+...
+<Badge variant="ghost" className="text-[9px] font-mono px-1 py-0 h-3.5 cursor-help text-muted-foreground/60 hover:text-muted-foreground">
+// depois:
+return { group: parts[0]!.trim(), variation: parts.slice(1).join(' | ').trim() };
+...
+<Badge variant="outline" className="text-[9px] font-mono px-1 py-0 h-3.5 cursor-help text-muted-foreground/60 hover:text-muted-foreground">
+```
+
+**Validação:**
+- `tscheck-files.mjs`: 2 → 0 erros (10 → 8 no programa inteiro).
+- `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `79ea9525d2`).
+- Sem teste dedicado encontrado (`find -iname "*PersonalizationSummary*"` retornou apenas o próprio componente e `MobilePersonalizationSummary.tsx`).
+- `typecheck:baseline`: 241 → 239 (206 arquivos), travado via `--update`.

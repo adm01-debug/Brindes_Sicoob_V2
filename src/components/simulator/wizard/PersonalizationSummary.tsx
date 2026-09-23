@@ -59,7 +59,7 @@ interface PersonalizationSummaryProps {
 function shortTechniqueName(name: string): { group: string; variation?: string } {
   const parts = name.split(/\s*\|\s*/);
   if (parts.length >= 2) {
-    return { group: parts[0].trim(), variation: parts.slice(1).join(' | ').trim() };
+    return { group: parts[0]!.trim(), variation: parts.slice(1).join(' | ').trim() };
   }
   return { group: name };
 }
@@ -374,7 +374,7 @@ function PersonalizationRow({
         {pers.pricing.budgetCode && (
           <Tooltip>
             <TooltipTrigger asChild>
-              <Badge variant="ghost" className="text-[9px] font-mono px-1 py-0 h-3.5 cursor-help text-muted-foreground/60 hover:text-muted-foreground">
+              <Badge variant="outline" className="text-[9px] font-mono px-1 py-0 h-3.5 cursor-help text-muted-foreground/60 hover:text-muted-foreground">
                 ⌘
               </Badge>
             </TooltipTrigger>
