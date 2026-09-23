@@ -84,7 +84,7 @@ export function useTechniquePricing(techniqueCode: string | null) {
           maxColors: t.max_colors || 1,
           maxAreaWidth: t.max_area_width_cm || 0,
           maxAreaHeight: t.max_area_height_cm || 0,
-          areaCm2: (t.max_area_width_cm || 0) * (t.max_area_height_cm || 0),
+          areaCm2: (Number(t.max_area_width_cm) || 0) * (Number(t.max_area_height_cm) || 0),
           priceByColor: t.price_by_color || false,
           priceByArea: t.price_by_area || false,
           setupPrice: t.setup_price || 0,
@@ -182,10 +182,10 @@ export function useTechniquePricing(techniqueCode: string | null) {
 
     // Se não encontrou exata, pegar a primeira que suporta as cores
     if (!matching && hasPriceByColor) {
-      return priceOptions.find(opt => opt.maxColors >= colors) || priceOptions[0];
+      return priceOptions.find(opt => opt.maxColors >= colors) || priceOptions[0]!;
     }
 
-    return matching || priceOptions[0];
+    return matching || priceOptions[0]!;
   }, [priceOptions, hasPriceByColor]);
 
   return {

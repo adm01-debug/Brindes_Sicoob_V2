@@ -2849,3 +2849,25 @@ Esse hook é consumido por `AuthContext.tsx` (linha 88), que calcula `mfaRequire
 - `check-eslint-baseline.mjs`: 0 regressões (3335 erros globais, referência `origin/main` em `67f05e5bf5`).
 - Nenhum teste dedicado encontrado para este hook.
 - `typecheck:baseline`: 529 → 525 (318 arquivos), travado via `--update`.
+
+## useTechniquePricing.ts (etapa 17)
+
+**Arquivo:** `src/hooks/useTechniquePricing.ts`
+
+**Erros originais (4×):**
+- TS2362/TS2363 (linha 87 — operandos de multiplicação tipados `unknown`).
+- TS2322 ×2 (linhas 185, 188 — `TechniquePriceOption | undefined` não atribuível a `TechniquePriceOption | null`).
+
+**Diagnóstico:**
+- Linha 87: `areaCm2: (t.max_area_width_cm || 0) * (t.max_area_height_cm || 0)` — `t: Record<string, unknown>` (parâmetro anotado explicitamente no `.map()`), então `t.max_area_width_cm` é `unknown`. Diferente dos campos vizinhos (`maxColors: t.max_colors || 1`, etc.), que não geram erro porque `matchingTables` é `any` (herdado de `data.data.records` vindo de `supabase.functions.invoke(...)`, não tipado) — quando a base é `any`, `.map()`/`.filter()` retornam `any` e a atribuição a `TechniquePriceOption[]` não é checada. Mas a operação aritmética `unknown * unknown` é checada independentemente do contexto de atribuição, pois o TS valida os operandos do operador `*` pela própria expressão.
+- Linhas 185/188: `findMatchingTable` já retorna cedo (`if (priceOptions.length === 0) return null;`) antes de qualquer uso de `priceOptions[0]` — logo, no restante da função, `priceOptions[0]` é estruturalmente garantido definido, apesar do TS não propagar essa garantia sob `noUncheckedIndexedAccess`.
+
+**Fix aplicado:**
+- `(t.max_area_width_cm || 0) * (t.max_area_height_cm || 0)` → `(Number(t.max_area_width_cm) || 0) * (Number(t.max_area_height_cm) || 0)` (coerção numérica explícita).
+- `priceOptions[0]` → `priceOptions[0]!` nas duas linhas de retorno (asserção de não-nulo, estruturalmente segura pela guarda de `length === 0` no topo da função).
+
+**Validação:**
+- `tscheck-files.mjs`: 4 → 0 erros (0 no programa inteiro).
+- `check-eslint-baseline.mjs`: 0 regressões (3335 erros globais, referência `origin/main` em `6a5a23c6f6`).
+- Teste dedicado `tests/hooks/useTechniquePricing.test.ts`: 16/16 passou.
+- `typecheck:baseline`: 525 → 521 (317 arquivos), travado via `--update`.

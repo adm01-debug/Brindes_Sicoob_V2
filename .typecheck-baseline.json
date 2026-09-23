@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-09-22T23:58:39.970Z",
-  "total": 525,
+  "generatedAt": "2026-09-23T00:04:44.299Z",
+  "total": 521,
   "files": {
     "src/components/admin/common/AdminDataTable.tsx": 2,
     "src/components/admin/connections/Bitrix24Tab.tsx": 1,
@@ -241,7 +241,6 @@
     "src/hooks/useSparklineSales.tsx": 2,
     "src/hooks/useSupplierNames.ts": 2,
     "src/hooks/useSupplierSalesRanking.ts": 1,
-    "src/hooks/useTechniquePricing.ts": 4,
     "src/hooks/useTechniqueRecommendations.ts": 3,
     "src/hooks/useTecnicasUnificadas.ts": 3,
     "src/hooks/useVariantSupplierSources.ts": 1,
