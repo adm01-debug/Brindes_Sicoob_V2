@@ -134,7 +134,7 @@ export function usePersonalizationData(selectedProduct: string | null) {
     queryFn: async () => {
       if (!components?.length) return [];
       const componentIds = components.map((c) => c.id);
-      const { data, error } = await untypedFrom("product_component_locations")
+      const { data, error } = await untypedFrom<Location>("product_component_locations")
           .select("*")
           .in("component_id", componentIds);
       if (error) throw error;
@@ -163,7 +163,7 @@ export function usePersonalizationData(selectedProduct: string | null) {
     queryFn: async () => {
       if (!locations?.length) return [];
       const locationIds = locations.map((l) => l.id);
-      const { data, error } = await untypedFrom("product_component_location_techniques")
+      const { data, error } = await untypedFrom<LocationTechnique>("product_component_location_techniques")
           .select("*")
           .in("component_location_id", locationIds);
       if (error) throw error;

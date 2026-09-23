@@ -4174,3 +4174,29 @@ row[d.getHours()] = (row[d.getHours()] ?? 0) + 1;
 - `check-eslint-baseline.mjs`: 0 regressões (3331 erros globais, referência `origin/main` em `54d5ba150f`).
 - Nenhum teste dedicado encontrado.
 - `typecheck:baseline`: 337 → 335 (254 arquivos), travado via `--update`.
+
+## usePersonalizationData.ts (etapa 17)
+
+**Arquivo:** `src/components/admin/personalization/usePersonalizationData.ts`
+
+**Erros originais (2×):** TS2352 (linhas 141 e 170) — `Conversion of type 'Record<string, unknown>[] | null' to type 'Location[]' may be a mistake because neither type sufficiently overlaps with the other` (e o mesmo para `LocationTechnique[]`).
+
+**Diagnóstico:** `untypedFrom<T>(table)` é genérico e por padrão assume `T = Record<string, unknown>` quando o chamador não especifica o parâmetro de tipo — foi exatamente o caso aqui: `untypedFrom("product_component_locations")` e `untypedFrom("product_component_location_techniques")` foram chamados sem `<Location>`/`<LocationTechnique>`, então `data` ficou tipado como `Record<string, unknown>[] | null`, tipo estrutural genérico demais pra conversão direta via `as` para as interfaces específicas (índice de assinatura vs. campos nomeados não se sobrepõem o suficiente aos olhos do TS). Não é um bug de runtime — a query e os dados retornados sempre foram corretos — apenas a inferência de tipo não usava o parâmetro genérico que a própria função já provê para esse propósito.
+
+**Fix aplicado:**
+```ts
+// antes:
+const { data, error } = await untypedFrom("product_component_locations")...
+return data as Location[];
+
+// depois:
+const { data, error } = await untypedFrom<Location>("product_component_locations")...
+return data as Location[];
+```
+(mesmo padrão para `untypedFrom<LocationTechnique>("product_component_location_techniques")`.)
+
+**Validação:**
+- `tscheck-files.mjs`: 2 → 0 erros (5 no programa inteiro, pré-existentes/fora de escopo).
+- `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `490337b20`).
+- Nenhum teste dedicado encontrado; consumidores (`ProductPersonalizationManager.tsx`, `GroupInheritance.tsx`, `ProductSelector.tsx`) também sem testes dedicados.
+- `typecheck:baseline`: 335 → 333 (253 arquivos), travado via `--update`.
