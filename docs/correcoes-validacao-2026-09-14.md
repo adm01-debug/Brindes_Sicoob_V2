@@ -5786,3 +5786,36 @@ if (state.isEditingPersonalization && currentPersonalization) {
 - `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `686b1b3b5c`).
 - Teste dedicado `tests/hooks/useSimulatorWizard.test.ts`: 16/16 passaram.
 - `typecheck:baseline`: 227 → 224 (198 arquivos, 2 arquivos melhoraram), travado via `--update`.
+
+## stockFetcher.ts (etapa 17)
+
+**Arquivo:** `src/hooks/stock/stockFetcher.ts`
+
+**Erros originais (2×):**
+```
+src/hooks/stock/stockFetcher.ts(264,11): error TS2322: Type '{ ...; id?: string | undefined; ... }' is not assignable to type 'VariantStock'.
+src/hooks/stock/stockFetcher.ts(267,72): error TS2532: Object is possibly 'undefined'.
+```
+
+**Diagnóstico:** dentro do fallback de estoque no nível do produto (`sumVariantStock === 0 && productLevelStock > 0`), o bloco `if (variants.length === 1)` reacessa `variants[0]` duas vezes (no spread `...variants[0]` e em `variants[0].reservedStock`) — cada acesso por índice é uma expressão nova para o `noUncheckedIndexedAccess`, que não propaga o narrowing entre elas, mesmo garantido pelo `length === 1`. Mesmo padrão já visto em `useChurnRisk.ts` e `useSimulatorWizard.ts` nesta etapa.
+
+**Fix aplicado:**
+```ts
+const firstVariant = variants[0];
+if (variants.length === 1 && firstVariant) {
+  const daysUntilStockout = calculateDaysUntilStockout(productLevelStock);
+  variants[0] = {
+    ...firstVariant,
+    currentStock: productLevelStock,
+    availableStock: calculateAvailableStock(productLevelStock, firstVariant.reservedStock),
+    status: calculateStockStatus(productLevelStock, minStock, undefined, 0, daysUntilStockout),
+    daysUntilStockout,
+  };
+} else {
+```
+
+**Validação:**
+- `tscheck-files.mjs`: 2 → 0 erros (0 no programa inteiro para este arquivo).
+- `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `7949e5f0c1`).
+- Sem teste dedicado ao arquivo isolado; rodados `tests/stock-performance.test.ts` + `tests/stock-module.test.tsx` (ambos exercitam `stockFetcher.ts`): 140/140 passaram.
+- `typecheck:baseline`: 224 → 222 (197 arquivos), travado via `--update`.

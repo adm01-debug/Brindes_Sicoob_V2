@@ -259,12 +259,13 @@ export async function fetchAndProcessStockData(): Promise<{
 
       if (sumVariantStock === 0 && productLevelStock > 0) {
         const minStock = product.min_quantity || 10;
-        if (variants.length === 1) {
+        const firstVariant = variants[0];
+        if (variants.length === 1 && firstVariant) {
           const daysUntilStockout = calculateDaysUntilStockout(productLevelStock);
           variants[0] = {
-            ...variants[0],
+            ...firstVariant,
             currentStock: productLevelStock,
-            availableStock: calculateAvailableStock(productLevelStock, variants[0].reservedStock),
+            availableStock: calculateAvailableStock(productLevelStock, firstVariant.reservedStock),
             status: calculateStockStatus(productLevelStock, minStock, undefined, 0, daysUntilStockout),
             daysUntilStockout,
           };
