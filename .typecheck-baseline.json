@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-09-23T03:37:03.895Z",
-  "total": 390,
+  "generatedAt": "2026-09-23T03:41:06.098Z",
+  "total": 387,
   "files": {
     "src/components/admin/common/AdminDataTable.tsx": 2,
     "src/components/admin/connections/Bitrix24Tab.tsx": 1,
@@ -182,7 +182,6 @@
     "src/hooks/useKitBuilderTransformers.ts": 2,
     "src/hooks/useKitStockForecast.ts": 1,
     "src/hooks/useKitTemplates.ts": 1,
-    "src/hooks/useKitUndoRedo.ts": 3,
     "src/hooks/useMagicUpGeneration.ts": 1,
     "src/hooks/useMockupTechniques.ts": 3,
     "src/hooks/useNoveltiesSelectionMode.ts": 1,

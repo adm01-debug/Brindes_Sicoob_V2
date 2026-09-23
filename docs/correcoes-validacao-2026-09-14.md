@@ -3644,3 +3644,29 @@ const { char, hasFakeCaret, isActive } = inputOTPContext.slots[index] ?? {
 - `check-eslint-baseline.mjs`: 0 regressões (3331 erros globais, referência `origin/main` em `4f328fdb9a`).
 - Nenhum teste dedicado encontrado.
 - `typecheck:baseline`: 395 → 390 (275 arquivos) — o fix na fonte eliminou também 2 erros em cascata (`ExternalCategoryFilter.tsx` e `ProductCategoryBadges.tsx`, 1 cada, consumidores de `getCategoryIcon`/`CategoryIcon`), travado via `--update`.
+
+## useKitUndoRedo.ts (etapa 17)
+
+**Arquivo:** `src/hooks/useKitUndoRedo.ts`
+
+**Erros originais (3×):** TS2322 (linhas 47, 57) + TS2345 (linha 55) — `noUncheckedIndexedAccess` em `newHistory[newHistory.length - 1]` (em `undo`) e na desestruturação `const [next, ...rest] = future` (em `redo`), ambos tipando como `| undefined` contra o retorno declarado `UndoRedoSnapshot | null`.
+
+**Diagnóstico:** ambos os casos são estruturalmente seguros pelo próprio controle de fluxo da função:
+- `undo()`: guard `if (history.length <= 1) return null;` garante `history.length >= 2`; após `newHistory.pop()`, `newHistory.length >= 1`, então `newHistory[newHistory.length - 1]` sempre existe.
+- `redo()`: guard `if (future.length === 0) return null;` garante `future.length >= 1`, então `future[0]` sempre existe.
+
+**Fix aplicado:** asserção não-nula nos dois pontos, já que a garantia vem do próprio guard local (mesmo padrão de `FocusTrap.tsx`/`VoiceVisualEffects.tsx`):
+```ts
+// undo():
+const prev = newHistory[newHistory.length - 1]!;
+
+// redo(): trocada a desestruturação (não é possível aplicar `!` num binding pattern) por indexação explícita
+const next = future[0]!;
+const rest = future.slice(1);
+```
+
+**Validação:**
+- `tscheck-files.mjs`: 3 → 0 erros (0 no programa inteiro).
+- `check-eslint-baseline.mjs`: 0 regressões (3331 erros globais, referência `origin/main` em `41168f357f`).
+- Nenhum teste dedicado encontrado.
+- `typecheck:baseline`: 390 → 387 (274 arquivos), travado via `--update`.
