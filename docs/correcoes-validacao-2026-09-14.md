@@ -4307,3 +4307,31 @@ mentions.push({ id: match[1]!, name: match[2]!, imageUrl: match[3] });
 - `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `24dc11fd0`).
 - Nenhum teste dedicado encontrado.
 - `typecheck:baseline`: 327 → 325 (249 arquivos), travado via `--update`.
+
+## QuickTestLogin.tsx (etapa 17)
+
+**Arquivo:** `src/components/auth/QuickTestLogin.tsx`
+
+**Erros originais (2×):** TS2322 (linhas 165 e 186) — `checkIntegrity` (`(attempt?: number) => Promise<void>`) e `runSeed` (`(silent?: boolean) => Promise<boolean>`) passados diretamente como `onClick`, incompatíveis com `MouseEventHandler<HTMLButtonElement>`.
+
+**Diagnóstico:** bug real de comportamento, não só de tipagem — como `onClick={checkIntegrity}`/`onClick={runSeed}` passam a função direto, o React invoca com o `MouseEvent` do clique como primeiro argumento. Em `checkIntegrity(attempt = 0)`, o clique manual no botão de refresh passaria o `MouseEvent` como `attempt`, quebrando o backoff (`attempt < 2`) caso o check falhe nesse clique. Em `runSeed(silent = false)`, o clique no botão "Corrigir Agora" passaria o `MouseEvent` como `silent` — como um objeto é sempre truthy, `if (!silent)` nunca é verdadeiro nesse fluxo, então o toast de sucesso ("Seed realizado com sucesso!") **nunca aparecia** ao clicar manualmente em "Corrigir Agora", mesmo quando o seed funcionava — silenciando indevidamente o feedback pro usuário.
+
+**Fix aplicado:**
+```tsx
+// antes:
+onClick={checkIntegrity}
+...
+onClick={runSeed}
+
+// depois:
+onClick={() => checkIntegrity()}
+...
+onClick={() => runSeed()}
+```
+Preserva os valores default dos parâmetros (`attempt = 0`, `silent = false`) independente do evento de clique, corrigindo tanto o erro de tipo quanto o bug real de feedback ausente.
+
+**Validação:**
+- `tscheck-files.mjs`: 2 → 0 erros (2 no programa inteiro, pré-existentes/fora de escopo).
+- `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `582cafbc0`).
+- Nenhum teste dedicado encontrado.
+- `typecheck:baseline`: 325 → 323 (248 arquivos), travado via `--update`.

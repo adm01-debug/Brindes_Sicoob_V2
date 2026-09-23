@@ -162,7 +162,7 @@ export function QuickTestLogin() {
             variant="ghost" 
             size="icon" 
             className="h-6 w-6" 
-            onClick={checkIntegrity}
+            onClick={() => checkIntegrity()}
             disabled={isValidating || isSeeding}
           >
             <RefreshCcw className={`h-3 w-3 ${isValidating ? 'animate-spin' : ''}`} />
@@ -183,7 +183,7 @@ export function QuickTestLogin() {
                 variant="outline" 
                 size="sm" 
                 className="h-6 text-[9px] px-2 bg-background ml-2" 
-                onClick={runSeed}
+                onClick={() => runSeed()}
                 disabled={isSeeding}
               >
                 {isSeeding ? "Reparando..." : "Corrigir Agora"}
