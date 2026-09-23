@@ -5151,3 +5151,23 @@ item.stock_available !== null && item.stock_available !== undefined && item.stoc
 - `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `eff76ef999`).
 - 3 testes dedicados encontrados e executados: `QuoteBuilderSummaryColumn.staleReactivity.test.tsx`, `QuoteBuilderSummaryColumn.staleFilter.test.tsx`, `QuoteBuilderSummaryColumn.confirmAll.test.tsx` — 15/15 passou.
 - `typecheck:baseline`: 267 → 265 (219 arquivos), travado via `--update`.
+
+## QuoteHistoryPanel.tsx (etapa 17)
+
+**Arquivo:** `src/components/quotes/QuoteHistoryPanel.tsx`
+
+**Erros originais (2×):**
+```
+src/components/quotes/QuoteHistoryPanel.tsx(2,10): error TS2300: Duplicate identifier 'motion'.
+src/components/quotes/QuoteHistoryPanel.tsx(226,10): error TS2300: Duplicate identifier 'motion'.
+```
+
+**Diagnóstico:** código morto genuíno — `import { motion } from "framer-motion";` duplicado, solto após o fechamento do componente (linha 226, depois do `}` final), redundante com o import já existente na linha 2 (`import { motion, AnimatePresence } from "framer-motion";`). Sem nenhum uso entre as duas declarações que justificasse a segunda.
+
+**Fix aplicado:** removida a linha de import duplicada e órfã no final do arquivo.
+
+**Validação:**
+- `tscheck-files.mjs`: 2 → 0 erros (5 → 3 no programa inteiro).
+- `check-eslint-baseline.mjs`: 0 regressões, além de drift positivo (2 erros de lint eliminados) (referência `origin/main` em `1fb2812dfc`).
+- Nenhum teste dedicado encontrado.
+- `typecheck:baseline`: 265 → 263 (218 arquivos), travado via `--update`.

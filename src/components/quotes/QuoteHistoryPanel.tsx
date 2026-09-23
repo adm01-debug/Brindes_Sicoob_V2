@@ -222,5 +222,3 @@ function HistoryEntry({ entry, isFirst }: { entry: QuoteHistoryEntry; isFirst: b
     </div>
   );
 }
-
-import { motion } from "framer-motion";
