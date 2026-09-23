@@ -204,14 +204,14 @@ export function useCollections() {
     (name: string, description?: string, color?: string, icon?: string, clientId?: string | null, clientName?: string | null): Collection => {
       const tempId = `temp-${Date.now()}`;
       const now = new Date().toISOString();
-      const chosenColor = color || DEFAULT_COLORS[Math.floor(Math.random() * DEFAULT_COLORS.length)];
+      const chosenColor = color || DEFAULT_COLORS[Math.floor(Math.random() * DEFAULT_COLORS.length)]!;
 
       const newCollection: Collection = {
         id: tempId,
         name,
         description,
         color: chosenColor,
-        icon: icon || DEFAULT_ICONS[0],
+        icon: icon || DEFAULT_ICONS[0]!,
         isFeatured: false,
         clientId: clientId ?? null,
         clientName: clientName ?? null,

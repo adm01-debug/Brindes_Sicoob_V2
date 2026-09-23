@@ -5819,3 +5819,28 @@ if (variants.length === 1 && firstVariant) {
 - `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `7949e5f0c1`).
 - Sem teste dedicado ao arquivo isolado; rodados `tests/stock-performance.test.ts` + `tests/stock-module.test.tsx` (ambos exercitam `stockFetcher.ts`): 140/140 passaram.
 - `typecheck:baseline`: 224 → 222 (197 arquivos), travado via `--update`.
+
+## useCollections.ts (etapa 17)
+
+**Arquivo:** `src/hooks/useCollections.ts`
+
+**Erros originais (2×):**
+```
+src/hooks/useCollections.ts(213,9): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+src/hooks/useCollections.ts(214,9): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+```
+
+**Diagnóstico:** em `createCollection`, `chosenColor = color || DEFAULT_COLORS[Math.floor(Math.random() * DEFAULT_COLORS.length)]` e `icon || DEFAULT_ICONS[0]` acessam arrays literais fixas e não-vazias (`DEFAULT_COLORS`/`DEFAULT_ICONS`, 8 itens cada) por índice — com `noUncheckedIndexedAccess` o TS tipa o acesso como `string | undefined`, mas o índice é sempre válido (random limitado ao `length`, ou `0` fixo). O objeto resultante é atribuído a `const newCollection: Collection`, que exige `color`/`icon: string` (não opcionais), gerando o erro. (Casos irmãos como `row.icon_color || DEFAULT_COLORS[0]` em `dbToCollection` não erram porque `row: any` colapsa toda a expressão `||` para `any`.)
+
+**Fix aplicado:**
+```ts
+const chosenColor = color || DEFAULT_COLORS[Math.floor(Math.random() * DEFAULT_COLORS.length)]!;
+...
+icon: icon || DEFAULT_ICONS[0]!,
+```
+
+**Validação:**
+- `tscheck-files.mjs`: 2 → 0 erros (7 no programa inteiro, dependências do arquivo).
+- `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `5f7bb5e6d2`).
+- Testes dedicados `tests/hooks/useCollections.test.ts` + `tests/hooks/useCollections.test.tsx`: 14/14 passaram.
+- `typecheck:baseline`: 222 → 220 (196 arquivos), travado via `--update`.
