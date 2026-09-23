@@ -68,17 +68,6 @@ export function SegmentoCheckbox({
           </p>
         )}
       </div>
-
-      {segmento.product_count !== undefined && segmento.product_count > 0 && (
-        <span className={cn(
-          "text-xs px-1.5 py-0.5 rounded",
-          isSelected 
-            ? "bg-primary/20 text-primary" 
-            : "bg-muted text-muted-foreground"
-        )}>
-          {segmento.product_count}
-        </span>
-      )}
     </label>
   );
 }

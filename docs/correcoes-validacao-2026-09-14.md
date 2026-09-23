@@ -3460,3 +3460,23 @@ Esse hook é consumido por `AuthContext.tsx` (linha 88), que calcula `mfaRequire
 - `check-eslint-baseline.mjs`: 0 regressões (3332 erros globais, referência `origin/main` em `aef3042ecc`).
 - Teste dedicado do componente pai encontrado e executado: `tests/components/quotes/CompanyContactSelector.test.tsx` — 2/2 passaram.
 - `typecheck:baseline`: 422 → 419 (286 arquivos), travado via `--update`.
+
+## SegmentoCheckbox.tsx (etapa 17)
+
+**Arquivo:** `src/components/ramo-atividade/SegmentoCheckbox.tsx`
+
+**Erros originais (3×):** TS2339 (linha 72×2, 79 — `Property 'product_count' does not exist on type 'SegmentoComplete'`).
+
+**Diagnóstico:**
+- O componente exibia um badge com `segmento.product_count`, mas `SegmentoComplete` (`src/types/ramo-atividade.ts:87-101`) nunca declarou esse campo.
+- Rastreamento completo do pipeline de dados (`ramoAtividadeService.getSegmentosCompletos` → `useSegmentosCompletos` → `RamoAtividadeGroupAccordion` → `SegmentoCheckbox`): **nenhum ponto do domínio ramo-atividade calcula contagem de produtos por segmento**. O campo irmão `RamoAtividadeGroup.products_using` (mesmo domínio, nível de grupo) existe no tipo mas também nunca é atribuído em `getRamosComEstatisticas` — confirma que a funcionalidade de contagem de produtos nunca foi implementada em nenhum nível deste domínio (diferente do domínio paralelo `materialService.ts`, que de fato calcula e atribui `products_using`).
+- Não é um campo nullable de runtime (não é caso de guard `?? undefined`) — é uma propriedade que estruturalmente nunca existiu em nenhuma fonte de dados real; portanto não fabricar suporte de tipo para um dado que nunca é calculado.
+
+**Fix aplicado:**
+- Removido o bloco morto do badge de contagem (linhas 72-81) — mesmo princípio do prop `debounceMs` removido em `QuoteAutoSave.tsx`: código nunca alimentado por nenhum dado real não deve fingir suporte de tipo, deve ser removido.
+
+**Validação:**
+- `tscheck-files.mjs`: 3 → 0 erros (0 no programa inteiro).
+- `check-eslint-baseline.mjs`: 0 regressões (3331 erros globais, referência `origin/main` em `43e517e964`) — drift positivo: 1 erro de lint eliminado.
+- Nenhum teste dedicado encontrado.
+- `typecheck:baseline`: 419 → 416 (285 arquivos), travado via `--update`.
