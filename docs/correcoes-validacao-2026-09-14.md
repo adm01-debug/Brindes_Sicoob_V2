@@ -6459,3 +6459,29 @@ queryFn: async () => {
 - `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `dc6a82fa2c`).
 - Nenhum teste dedicado encontrado para o arquivo.
 - `typecheck:baseline`: 178 → 176 (174 arquivos), travado via `--update`.
+
+## useNavigationStore.ts (etapa 17)
+
+**Arquivo:** `src/stores/useNavigationStore.ts`
+
+**Erros originais (2×):**
+```
+src/stores/useNavigationStore.ts(29,35): error TS2532: Object is possibly 'undefined'.
+src/stores/useNavigationStore.ts(29,76): error TS2532: Object is possibly 'undefined'.
+```
+
+**Diagnóstico:** `noUncheckedIndexedAccess` — o guard `history.length > 0` não estreita o tipo de `history[0]` (acesso por índice continua `NavigationHistoryItem | undefined`), então as duas leituras subsequentes de `history[0].pathname`/`history[0].search` disparam o erro apesar da checagem de tamanho já garantir o acesso seguro em runtime. Padrão já estabelecido no repo (`useSuppliersManager.ts`, `useNewSupplierForm.ts`) resolve isso extraindo o elemento para uma constante local e testando-a diretamente, em vez de reindexar o array.
+
+**Fix aplicado:**
+```ts
+const last = history[0];
+if (last && last.pathname === item.pathname && last.search === item.search) {
+  return;
+}
+```
+
+**Validação:**
+- `tscheck-files.mjs`: 2 → 0 erros no arquivo.
+- `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `dc6a82fa2c`).
+- Nenhum teste dedicado encontrado para o arquivo.
+- `typecheck:baseline`: 176 → 174 (173 arquivos), travado via `--update`.

@@ -26,7 +26,8 @@ export const useNavigationStore = create<NavigationState>()(
       push: (item) => {
         const { history } = get();
         // Evitar duplicados consecutivos
-        if (history.length > 0 && history[0].pathname === item.pathname && history[0].search === item.search) {
+        const last = history[0];
+        if (last && last.pathname === item.pathname && last.search === item.search) {
           return;
         }
         set({ history: [item, ...history].slice(0, 20), direction: 'forward' }); // Limitar a 20 itens
