@@ -75,7 +75,7 @@ export function ExportButton({
   };
 
   if (formats.length === 1) {
-    const fmt = formats[0];
+    const fmt = formats[0]!;
     return (
       <Button
         size={size}

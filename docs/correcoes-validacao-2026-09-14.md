@@ -4108,3 +4108,24 @@ const DataTableRow = React.memo(function DataTableRow<T extends { id?: string | 
 - `check-eslint-baseline.mjs`: 0 regressões (3331 erros globais, referência `origin/main` em `620d9ce914`).
 - Nenhum teste dedicado encontrado.
 - `typecheck:baseline`: 343 → 341 (257 arquivos), travado via `--update`.
+
+## ExportButton.tsx (etapa 17)
+
+**Arquivo:** `src/components/admin/connections/ExportButton.tsx`
+
+**Erros originais (2×):** TS2345 (linha 84) — `handle(fmt)`, `"csv" | "json" | undefined` não bate com o parâmetro `"csv" | "json"`; TS18048 (linha 88) — `fmt.toUpperCase()`, `fmt` possivelmente `undefined`.
+
+**Diagnóstico:** mesmo padrão de guarda-não-propagada de `noUncheckedIndexedAccess` já resolvido em `FocusTrap.tsx`/`simulator-wizard.ts` nesta etapa — `const fmt = formats[0]` dentro do bloco `if (formats.length === 1)` já está protegido pela checagem de tamanho imediatamente acima (garante que o índice 0 existe), mas o TS não propaga essa garantia pro tipo do acesso indexado. Aplicada asserção de não-nulo.
+
+**Fix aplicado:**
+```ts
+// antes: const fmt = formats[0];
+// depois:
+const fmt = formats[0]!;
+```
+
+**Validação:**
+- `tscheck-files.mjs`: 2 → 0 erros no arquivo alvo (1 erro remanescente no programa/probe, pré-existente e não-relacionado, fora de escopo).
+- `check-eslint-baseline.mjs`: 0 regressões (3331 erros globais, referência `origin/main` em `684b32e516`).
+- Nenhum teste dedicado encontrado.
+- `typecheck:baseline`: 341 → 339 (256 arquivos), travado via `--update`.
