@@ -86,6 +86,7 @@ import { OrderAddItemDialog } from "@/components/sicoob/orders/OrderAddItemDialo
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { sicoobApprovalService } from "@/services/sicoob/approvalService";
+import { canManageSicoobOrderFulfillment } from "@/lib/sicoob/order-permissions";
 
 import { OrderStatus, canEditSicoobOrderItems, canSicoobTransitionTo, ORDER_STATUS_CONFIG } from "@/types/sicoob/orders";
 
@@ -268,14 +269,7 @@ export default function OrderDetailPage() {
   if (!orderData) return null;
 
   const canApprove = isSupervisorOrAbove || (isGerentePa && orderData?.pa_id === profile?.pa_id);
-  const canManageFulfillment = Boolean(
-    orderData && (
-      roles.includes('dev') || roles.includes('supervisor')
-      || ((roles.includes('gestor_compras') || roles.includes('comprador_singular')) && profile?.cooperativa_id === orderData.cooperative_id)
-      || ((roles.includes('gerente_pa') || roles.includes('comprador_pac')) && profile?.pa_id === orderData.pa_id)
-      || orderData.created_by === profile?.user_id || orderData.created_by === profile?.id
-    )
-  );
+  const canManageFulfillment = canManageSicoobOrderFulfillment(orderData, profile, roles);
   
   // Controle de permissões por aba
   const allowedTabs = useMemo(() => {
