@@ -194,9 +194,9 @@ export function useProductVideoGallery(productId?: string) {
       let successCount = 0;
       for (let i = 0; i < files.length; i++) {
         setUploadProgress(i + 1);
-        const result = await uploadFile(files[i]);
+        const result = await uploadFile(files[i]!);
         if (!result) continue;
-        const videoId = await createExternalVideoRecord(result.url, result.size, files[i].name, result.thumbnailUrl);
+        const videoId = await createExternalVideoRecord(result.url, result.size, files[i]!.name, result.thumbnailUrl);
         if (videoId && uploadVariant !== 'none') {
           const variant = variantMap.get(uploadVariant);
           if (variant) {
@@ -287,7 +287,7 @@ export function useProductVideoGallery(productId?: string) {
     if (dragIndex === null || dragIndex === dropIndex) { setDragIndex(null); setDragOverIndex(null); return; }
     const reordered = [...filteredVideos];
     const [moved] = reordered.splice(dragIndex, 1);
-    reordered.splice(dropIndex, 0, moved);
+    reordered.splice(dropIndex, 0, moved!);
     setDragIndex(null);
     setDragOverIndex(null);
     // Persist order

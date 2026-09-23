@@ -3085,3 +3085,19 @@ Esse hook é consumido por `AuthContext.tsx` (linha 88), que calcula `mfaRequire
 - `check-eslint-baseline.mjs`: 0 regressões (3334 erros globais, referência `origin/main` em `357f80600f`).
 - Nenhum teste dedicado encontrado para `MockupPromptManager.tsx`/`PromptDialogs.tsx`.
 - `typecheck:baseline`: 483 → 480 (306 arquivos), travado via `--update`.
+
+## useProductVideoGallery.ts (etapa 17)
+
+**Arquivo:** `src/components/admin/products/video-gallery/useProductVideoGallery.ts`
+
+**Erros originais (3×):** TS2345 (linha 197 — `File | undefined` não atribuível a `File`), TS2532 (linha 199 — objeto possivelmente `undefined`), TS2345 (linha 290 — `ExternalVideo | undefined` não atribuível a `ExternalVideo`).
+
+**Diagnóstico:** todos os 3 são acessos estruturalmente protegidos que o `noUncheckedIndexedAccess` não propaga. Linhas 197/199: `files[i]` dentro de `for (let i = 0; i < files.length; i++)` — o laço garante `i < files.length`. Linha 290: `const [moved] = reordered.splice(dragIndex, 1);` dentro de `handleVideoDrop` — `dragIndex` é sempre um índice válido de `reordered` (`= [...filteredVideos]`), pois é definido via `handleVideoDragStart(index)` chamado a partir de `filteredVideos.map((video, index) => ...)` em `VideoGrid.tsx` (confirmado por grep), garantindo `splice` sempre retorna exatamente 1 elemento removido.
+
+**Fix aplicado:** asserção de não-nulo nos 3 pontos (`files[i]!` nas linhas 197/199, `moved!` na linha 290), mesmo padrão já usado no restante da sessão para acessos indexados/desestruturados estruturalmente garantidos por laço ou por origem do índice.
+
+**Validação:**
+- `tscheck-files.mjs`: 3 → 0 erros (0 no programa inteiro).
+- `check-eslint-baseline.mjs`: 0 regressões (3334 erros globais, referência `origin/main` em `aa64b3cfff`).
+- Nenhum teste dedicado encontrado para este arquivo.
+- `typecheck:baseline`: 480 → 477 (305 arquivos), travado via `--update`.
