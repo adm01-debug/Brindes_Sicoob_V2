@@ -5,13 +5,13 @@ import test from 'node:test';
 const read = (path) => readFileSync(path, 'utf8');
 
 test('operações internas validam o segredo antes de criar cliente privilegiado', () => {
-  for (const name of ['send-notification', 'process-batch-export', 'monthly-health-report']) {
+  for (const name of ['send-notification', 'process-batch-export', 'monthly-health-report', 'connections-auto-test']) {
     const source = read(`supabase/functions/${name}/index.ts`);
     const guard = source.indexOf('requireInternalService(req)');
     const client = source.indexOf('createClient(');
     assert.ok(guard >= 0, `${name} deve exigir segredo interno`);
     assert.ok(client >= 0 && guard < client, `${name} não pode criar service_role antes do guard`);
-    assert.ok(source.indexOf("req.method !== 'POST'") < guard, `${name} deve rejeitar método antes do guard`);
+    assert.ok(source.search(/req\.method !== ['"]POST['"]/) < guard, `${name} deve rejeitar método antes do guard`);
   }
 });
 
@@ -59,6 +59,20 @@ test('cron de exportação usa Vault e não aponta para projeto legado', () => {
     'o cron só pode ser criado depois de validar os segredos do Vault',
   );
   assert.doesNotMatch(schedule, /bojgeppypmtormfjsyun|service_role_key/);
+});
+
+test('crons de conexões usam Vault e não mantêm credenciais no agendamento', () => {
+  const migration = read('supabase/migrations/20260923140000_secure_legacy_connection_crons.sql');
+
+  assert.match(migration, /public\.dispatch_sicoob_connections_auto_test\(\)/);
+  assert.match(migration, /public\.dispatch_sicoob_external_db_keepalive\(\)/);
+  assert.match(migration, /name = 'sicoob_project_url'/);
+  assert.match(migration, /name = 'sicoob_internal_function_secret'/);
+  assert.match(migration, /'x-sicoob-internal-secret', v_internal_secret/);
+  assert.match(migration, /cron\.unschedule\(jobid\)/);
+  assert.match(migration, /SELECT public\.dispatch_sicoob_connections_auto_test\(\)/);
+  assert.match(migration, /SELECT public\.dispatch_sicoob_external_db_keepalive\(\)/);
+  assert.doesNotMatch(migration, /nmojwpihnslkssljowjh|apikey|service_role_key|eyJ[a-zA-Z0-9_-]{20}/);
 });
 
 test('sync de conexões e favoritos respeitam a hierarquia e concorrência', () => {

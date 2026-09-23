@@ -1,4 +1,5 @@
 import { getCorsHeaders } from "../_shared/cors.ts";
+import { requireInternalService } from "../_shared/internal-service-auth.ts";
 // connections-auto-test: cron-driven (every 30min). Re-tests every active
 // connection in `external_connections` and updates last_test_* fields +
 // inserts a row in `connection_test_history` with triggered_by='cron'.
@@ -118,6 +119,18 @@ export async function processBatch<
 Deno.serve(async (req) => {
   const corsHeaders = getCorsHeaders(req);
   if (req.method === "OPTIONS") return new Response(null, { headers: getCorsHeaders(req) });
+  if (req.method !== "POST") {
+    return new Response(JSON.stringify({ error: "metodo_nao_permitido" }), {
+      status: 405,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+
+  // O gateway pode aceitar JWTs segundo uma configuração antiga. O cron e
+  // qualquer chamada interna precisam provar posse do segredo antes que esta
+  // função crie um cliente service_role.
+  const denied = await requireInternalService(req);
+  if (denied) return denied;
 
   const startedAt = Date.now();
   try {

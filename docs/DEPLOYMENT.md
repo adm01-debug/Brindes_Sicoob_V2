@@ -12,7 +12,10 @@
 npm ci
 ```
 
-2. Configurar `VITE_SUPABASE_URL` e `VITE_SUPABASE_PUBLISHABLE_KEY` no provedor de hospedagem. Este repositório não possui `.env.example` e não deve receber segredos administrativos em arquivos locais versionados.
+2. Configurar `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY` e
+   `VITE_SUPABASE_PROJECT_ID` no provedor de hospedagem. Use
+   `.env.production.example` apenas como referência local; o arquivo
+   `.env.production` nunca deve ser versionado.
 
 3. Antes das migrations de operações internas, configurar `INTERNAL_FUNCTION_SECRET`
    nas Edge Functions e os segredos `sicoob_project_url` e
@@ -23,7 +26,7 @@ npm ci
    legados. Isso garante que a revogação das RPCs no banco não deixa a aplicação
    sem um caminho autenticado equivalente:
 ```bash
-npx supabase functions deploy send-notification process-batch-export monthly-health-report system-healthcheck external-connections-sync --project-ref cfmzkthhgliqelozlmwu
+npx supabase functions deploy send-notification process-batch-export monthly-health-report connections-auto-test system-healthcheck external-connections-sync --project-ref cfmzkthhgliqelozlmwu
 ```
 
 5. Compilar:
@@ -39,14 +42,16 @@ npm run build
    não representam o baseline remoto. Neste lote, aplicar
    `20260923110000_harden_internal_operations.sql`,
    `20260923111000_schedule_secure_export_worker.sql`,
-   `20260923112000_fix_connection_sync_and_favorites.sql` e
-   `20260923130000_secure_sicoob_documents_and_exports.sql`, registrando cada uma
+   `20260923112000_fix_connection_sync_and_favorites.sql`,
+   `20260923130000_secure_sicoob_documents_and_exports.sql` e
+   `20260923140000_secure_legacy_connection_crons.sql`, registrando cada uma
    no ledger na mesma transação de aplicação.
 
-8. Verificar após a aplicação: as três versões aparecem no ledger, as chamadas
+8. Verificar após a aplicação: as cinco versões aparecem no ledger, as chamadas
    anônimas às funções internas retornam `401` ou `503`, a sincronização externa
-   exige sessão de supervisor e o cron `process-export-queue` existe somente
-   quando os dois segredos do Vault foram configurados.
+   exige sessão de supervisor e os crons `process-export-queue`,
+   `connections-auto-test` e `external-db-bridge-keepalive` existem somente
+   quando os segredos necessários do Vault foram configurados.
 
 ## Production Checklist
 - [ ] Environment variables configured
