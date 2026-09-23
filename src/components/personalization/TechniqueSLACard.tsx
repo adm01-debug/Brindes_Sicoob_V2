@@ -80,10 +80,10 @@ export function TechniqueSLACard({
         orderBy: { column: "estimated_days", ascending: true },
         limit: 100,
       });
-      return result.records.map(t => ({
+      return (result.records ?? []).map(t => ({
         ...t,
-        setup_cost: (t as ExternalTechnique).setup_price ?? t.setup_cost,
-        unit_cost: (t as ExternalTechnique).handling_price ?? t.unit_cost,
+        setup_cost: (t as unknown as ExternalTechnique).setup_price ?? t.setup_cost,
+        unit_cost: (t as unknown as ExternalTechnique).handling_price ?? t.unit_cost,
       }));
     },
   });

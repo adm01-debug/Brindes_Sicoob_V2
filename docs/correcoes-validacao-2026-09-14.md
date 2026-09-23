@@ -3293,3 +3293,19 @@ Esse hook é consumido por `AuthContext.tsx` (linha 88), que calcula `mfaRequire
 - `check-eslint-baseline.mjs`: 0 regressões (3334 erros globais, referência `origin/main` em `ca80716c26`).
 - Nenhum teste dedicado encontrado para este arquivo.
 - `typecheck:baseline`: 447 → 444 (294 arquivos), travado via `--update`.
+
+## TechniqueSLACard.tsx (etapa 17)
+
+**Arquivo:** `src/components/personalization/TechniqueSLACard.tsx`
+
+**Erros originais (3×):** TS18048 (linha 83 — `result.records` possivelmente `undefined`); TS2352 ×2 (linhas 85-86 — conversão de `Technique` para `ExternalTechnique` via `as` direto).
+
+**Diagnóstico:** idêntico ao de `TechniqueSelector.tsx` (mesma sessão) — mesma interface local `Technique`, mesmo `invokeExternalDb<Technique>` com `InvokeResult<T>.records?: T[]` genuinamente opcional, mesmo cast para `ExternalTechnique` (campos extras `setup_price`/`handling_price` do BD externo não presentes na view estreita `Technique`).
+
+**Fix aplicado:** `result.records ?? []` (fallback real); `(t as unknown as ExternalTechnique)` nos 2 pontos — mesmo padrão aplicado em `TechniqueSelector.tsx` nesta mesma etapa.
+
+**Validação:**
+- `tscheck-files.mjs`: 3 → 0 erros (5 no programa inteiro).
+- `check-eslint-baseline.mjs`: 0 regressões (3334 erros globais, referência `origin/main` em `ef816309db`).
+- Nenhum teste dedicado encontrado para este arquivo.
+- `typecheck:baseline`: 444 → 441 (293 arquivos), travado via `--update`.
