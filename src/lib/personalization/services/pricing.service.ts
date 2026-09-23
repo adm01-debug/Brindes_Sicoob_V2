@@ -271,8 +271,12 @@ function calculatePriceFromTable(
 ): PriceCalculationResult {
   const { quantity, colors } = params;
 
+  if (table.faixas.length === 0) {
+    throw new Error(`Tabela de preço "${table.codigoTabelaOpcao}" não possui faixas de quantidade configuradas`);
+  }
+
   // Encontrar faixa adequada
-  let tierUsed = table.faixas[0];
+  let tierUsed = table.faixas[0]!;
   for (const faixa of table.faixas) {
     if (quantity >= faixa.quantidadeMinima) {
       tierUsed = faixa;

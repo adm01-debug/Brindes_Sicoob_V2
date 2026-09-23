@@ -3829,3 +3829,28 @@ line = words[n]!;
 - `check-eslint-baseline.mjs`: 0 regressões (3331 erros globais, referência `origin/main` em `21bf897289`).
 - Nenhum teste dedicado encontrado (`find` por `*kit-og-image*` só retorna o próprio arquivo fonte).
 - `typecheck:baseline`: 369 → 366 (267 arquivos), travado via `--update`.
+
+## pricing.service.ts (etapa 17)
+
+**Arquivo:** `src/lib/personalization/services/pricing.service.ts`
+
+**Erros originais (3×):** TS18048 (linhas 284, 308, 315) — em `calculatePriceFromTable()`, `let tierUsed = table.faixas[0]` tipado `FaixaQuantidade | undefined` sob `noUncheckedIndexedAccess`, usado depois como se fosse sempre definido (`tierUsed.precoUnitario`, `tierUsed.faixa`, `tierUsed.slaDias`).
+
+**Diagnóstico:** não é caso estruturalmente provável (não é for-loop limitado nem guarda local pré-existente) — `table.faixas` é dado de fronteira genuíno: construído em `transformers.ts:73-88` a partir de até 15 campos opcionais (`min_qty_N`/`price_N`) vindos do banco externo, podendo legitimamente resultar em array vazio pra uma tabela de preço malformada/incompleta. O `PriceTableRepository.findBestMatch()` que fornece a tabela não garante `faixas.length > 0`. Sem guarda, hoje em runtime um `faixas` vazio já geraria um `TypeError` genérico (`Cannot read properties of undefined`) ao acessar `tierUsed.precoUnitario` — mascarado, não evitado.
+
+**Fix aplicado:** guarda explícita no início da função, que falha com mensagem descritiva (mesmo padrão de `invokeExternalDbSingle` em `bridge.ts`, que lança erro claro ao invés de deixar `undefined` se propagar), preservando a assinatura pública da função (usada em 4 pontos de chamada como `PriceCalculationResult` não-nulo — mudar o retorno pra nullable geraria churn desnecessário nesses consumidores):
+```ts
+// antes:
+let tierUsed = table.faixas[0];
+// depois:
+if (table.faixas.length === 0) {
+  throw new Error(`Tabela de preço "${table.codigoTabelaOpcao}" não possui faixas de quantidade configuradas`);
+}
+let tierUsed = table.faixas[0]!;
+```
+
+**Validação:**
+- `tscheck-files.mjs`: 3 → 0 erros (8 → 5 no programa inteiro, cascata).
+- `check-eslint-baseline.mjs`: 0 regressões (3331 erros globais, referência `origin/main` em `fda841f3b5`).
+- Nenhum teste dedicado encontrado; busca por consumidores (`calculatePricing`, `calculateBatchPricing`, `comparePricing`, `findBestTechnique`, `calculateQuantitySavings`) em `tests/` não retornou nenhum arquivo.
+- `typecheck:baseline`: 366 → 363 (266 arquivos), travado via `--update`.
