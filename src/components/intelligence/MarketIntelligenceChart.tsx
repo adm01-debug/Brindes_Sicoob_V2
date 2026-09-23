@@ -52,7 +52,7 @@ function generateMockMarketData(days: number) {
   for (let i = days - 1; i >= 0; i--) {
     const d = new Date(now);
     d.setDate(d.getDate() - i);
-    const dateStr = d.toISOString().split('T')[0];
+    const dateStr = d.toISOString().split('T')[0]!;
 
     const dayOfWeek = d.getDay();
     const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
@@ -71,7 +71,9 @@ function generateMockMarketData(days: number) {
   const totalRestocked30d = daily.reduce((s, p) => s + p.restocked, 0);
   const activeDays = daily.filter(d => d.depleted > 0).length;
 
-  const topDay = daily.reduce((best, d) => d.depleted > (best?.depleted ?? 0) ? d : best, daily[0]);
+  const topDay = daily.length > 0
+    ? daily.reduce((best, d) => (d.depleted > best.depleted ? d : best), daily[0]!)
+    : null;
 
   const mockSuppliers: MacroSupplierMetrics[] = [
     { supplierId: 'mock-supplier-1', avgDailyDepletion7d: 10.2, currentStock: 659, totalDepleted: 420, totalRestocked: 200, velocityTrend: 1.26, daysToStockout: 64 },
@@ -87,7 +89,7 @@ function generateMockMarketData(days: number) {
     totalCurrentStock: stock,
     avgDailyDepletion: activeDays > 0 ? totalDepleted30d / activeDays : 0,
     supplierCount: 4,
-    topDepletionDay: { date: topDay.date, value: topDay.depleted },
+    topDepletionDay: topDay ? { date: topDay.date, value: topDay.depleted } : null,
   };
 
   const mockSupplierNames = new Map<string, string>([

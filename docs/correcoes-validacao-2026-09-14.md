@@ -3135,3 +3135,21 @@ Esse hook é consumido por `AuthContext.tsx` (linha 88), que calcula `mfaRequire
 - `check-eslint-baseline.mjs`: 0 regressões (3334 erros globais, referência `origin/main` em `84f4b0a318`) — tentativa inicial com `React.RefObject` introduziu 1 regressão `no-undef` (`React` não importado), corrigida usando o `RefObject` local já importado.
 - Nenhum teste dedicado encontrado para este arquivo.
 - `typecheck:baseline`: 474 → 471 (303 arquivos), travado via `--update`.
+
+## MarketIntelligenceChart.tsx (etapa 17)
+
+**Arquivo:** `src/components/intelligence/MarketIntelligenceChart.tsx`
+
+**Erros originais (3×):** TS2322 (linha 65 — `string | undefined` não atribuível a `string`), TS18048 ×2 (linha 90 — `topDay` possivelmente `undefined`).
+
+**Diagnóstico (linha 55/65):** `d.toISOString().split('T')[0]` dentro de `generateMockMarketData` — `Date.prototype.toISOString()` sempre retorna o formato fixo `YYYY-MM-DDTHH:mm:ss.sssZ` conforme especificação ECMA-262, logo `.split('T')` sempre produz exatamente 2 elementos não vazios. `noUncheckedIndexedAccess` não propaga essa garantia de contrato de plataforma.
+
+**Diagnóstico (linhas 74/90):** `topDay = daily.reduce((best, d) => ..., daily[0])` — `daily[0]` é possivelmente `undefined` se `daily` estiver vazio, o que depende do parâmetro `days` recebido pelo componente (não garantido estruturalmente pela própria função `generateMockMarketData`, diferente do caso de `dateStr` acima). Verificado `src/hooks/useMarketIntelligenceMacro.ts` (linhas 27-34, 130, 137-138, 177): o hook real (dados não-mock) já define `MacroMarketKpis.topDepletionDay` como `{ date: string; value: number } | null` e usa seu próprio padrão `let topDepletionDay: ... | null = null;`, só atribuindo valor quando existe um "top day" válido. O consumidor no render (linha 292, `{kpis?.topDepletionDay && (...)}`) já trata `null`/ausência normalmente.
+
+**Fix aplicado:** asserção de não-nulo em `dateStr` (`d.toISOString().split('T')[0]!`), garantia de contrato de plataforma. Para `topDay`/`topDepletionDay`: guarda condicional real (`daily.length > 0 ? daily.reduce(..., daily[0]!) : null`, e `topDepletionDay: topDay ? { date: topDay.date, value: topDay.depleted } : null`), espelhando o padrão null-safe já estabelecido pelo hook real irmão — preferido a uma asserção de não-nulo pois o invariante de não-vacuidade de `daily` depende do parâmetro `days` recebido pelo chamador, não é intrínseco ao código da própria função.
+
+**Validação:**
+- `tscheck-files.mjs`: 3 → 0 erros (7 no programa inteiro).
+- `check-eslint-baseline.mjs`: 0 regressões (3334 erros globais, referência `origin/main` em `0afdcbff16`).
+- Nenhum teste dedicado encontrado para este arquivo.
+- `typecheck:baseline`: 471 → 468 (302 arquivos), travado via `--update`.
