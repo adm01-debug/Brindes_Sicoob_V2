@@ -6554,3 +6554,25 @@ src/components/admin/connections/N8nTab.tsx(83,34): error TS2322: Type '(names?:
 - `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `239dd60ba9`).
 - Nenhum teste dedicado encontrado para o arquivo.
 - `typecheck:baseline`: 171 → 170 (170 arquivos), travado via `--update`.
+
+## DataSourceDebugTab.tsx (etapa 17)
+
+**Arquivo:** `src/components/admin/connections/DataSourceDebugTab.tsx`
+
+**Erro original:**
+```
+src/components/admin/connections/DataSourceDebugTab.tsx(68,26): error TS2339: Property 'loading' does not exist on type '{ secrets: SecretStatus[]; isLoading: boolean; ... }'.
+```
+
+**Diagnóstico:** `const { secrets, list, loading: secretsLoading } = useSecretsManager();` — o hook `useSecretsManager()` expõe a propriedade `isLoading`, não `loading`. Bug real de nome de propriedade (não apenas tipagem): `secretsLoading` ficava sempre `undefined` em runtime, então `loading={secretsLoading || extLoading}` (linha 443) nunca refletia o estado real de carregamento dos secrets — apenas o de `extLoading`.
+
+**Fix aplicado:**
+```ts
+const { secrets, list, isLoading: secretsLoading } = useSecretsManager();
+```
+
+**Validação:**
+- `tscheck-files.mjs`: 1 → 0 erros no arquivo.
+- `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `1549ea8f0f`).
+- Nenhum teste dedicado encontrado para o arquivo.
+- `typecheck:baseline`: 170 → 169 (169 arquivos), travado via `--update`.
