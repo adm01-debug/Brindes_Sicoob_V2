@@ -4746,3 +4746,29 @@ if (dimMatch) { widthCm = parseFloat(dimMatch[1]!); heightCm = parseFloat(dimMat
 - `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `ad84a7d0da`).
 - Nenhum teste dedicado encontrado.
 - `typecheck:baseline`: 295 → 293 (233 arquivos), travado via `--update`.
+
+## ThemeCustomization.tsx (etapa 17)
+
+**Arquivo:** `src/components/personalization/ThemeCustomization.tsx`
+
+**Erros originais (2×):** TS2322 (linhas 37 e 47) — `onValueChange={([v]) => onChange({ ..., borderRadius: v })}` (e `highlightContrast`) passando `v: number | undefined` onde o campo exige `number`.
+
+**Diagnóstico:** `<Slider>` (Radix) sempre chama `onValueChange` com um array do mesmo tamanho passado em `value={[...]}` — aqui, sempre 1 elemento. A desestruturação de array `([v]) => ...` aciona `noUncheckedIndexedAccess` do mesmo jeito que um acesso indexado explícito, tipando `v` como `number | undefined`.
+
+**Fix aplicado:**
+```tsx
+// antes:
+onValueChange={([v]) => onChange({ ...value, borderRadius: v })}
+...
+onValueChange={([v]) => onChange({ ...value, highlightContrast: v })}
+// depois:
+onValueChange={(vals) => onChange({ ...value, borderRadius: vals[0]! })}
+...
+onValueChange={(vals) => onChange({ ...value, highlightContrast: vals[0]! })}
+```
+
+**Validação:**
+- `tscheck-files.mjs`: 2 → 0 erros (0 no programa inteiro).
+- `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `efedcef7d6`).
+- Nenhum teste dedicado encontrado.
+- `typecheck:baseline`: 293 → 291 (232 arquivos), travado via `--update`.

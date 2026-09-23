@@ -34,7 +34,7 @@ export function ThemeCustomization({ value, onChange }: ThemeCustomizationProps)
             min={0}
             max={24}
             step={1}
-            onValueChange={([v]) => onChange({ ...value, borderRadius: v })}
+            onValueChange={(vals) => onChange({ ...value, borderRadius: vals[0]! })}
           />
         </div>
         <div className="space-y-2">
@@ -44,7 +44,7 @@ export function ThemeCustomization({ value, onChange }: ThemeCustomizationProps)
             min={0}
             max={100}
             step={5}
-            onValueChange={([v]) => onChange({ ...value, highlightContrast: v })}
+            onValueChange={(vals) => onChange({ ...value, highlightContrast: vals[0]! })}
           />
         </div>
         <div className="flex items-center justify-between">
