@@ -3499,3 +3499,22 @@ Esse hook é consumido por `AuthContext.tsx` (linha 88), que calcula `mfaRequire
 - `check-eslint-baseline.mjs`: 0 regressões (3331 erros globais, referência `origin/main` em `a16350e4f5`).
 - Nenhum teste dedicado encontrado.
 - `typecheck:baseline`: 416 → 413 (284 arquivos), travado via `--update`.
+
+## usePhaseColors.ts (etapa 17)
+
+**Arquivo:** `src/components/search/voice/usePhaseColors.ts`
+
+**Erros originais (3×):** TS2322 (linha 8 — `Type 'number | undefined' is not assignable to type 'number'`, retorno de `getThemeHSL()`).
+
+**Diagnóstico:**
+- `parts = raw.split(/\s+/).map(parseFloat)` é `number[]`; com `noUncheckedIndexedAccess`, `parts[0]`/`parts[1]`/`parts[2]` tipam como `number | undefined`.
+- O guard `parts.length >= 3 && !parts.some(isNaN)` na mesma linha garante estruturalmente que os índices 0, 1 e 2 existem e são números válidos, mas o TS não propaga essa garantia de `.length` para o acesso por índice — mesmo padrão de guarda já resolvido em `ProductVariationAxesConfig.tsx`/`VirtualizedReplenishmentList.tsx`.
+
+**Fix aplicado:**
+- `[parts[0], parts[1], parts[2]]` → `[parts[0]!, parts[1]!, parts[2]!]`.
+
+**Validação:**
+- `tscheck-files.mjs`: 3 → 0 erros (1 no programa inteiro).
+- `check-eslint-baseline.mjs`: 0 regressões (3331 erros globais, referência `origin/main` em `f337ef7d31`).
+- Nenhum teste dedicado encontrado.
+- `typecheck:baseline`: 413 → 410 (283 arquivos), travado via `--update`.

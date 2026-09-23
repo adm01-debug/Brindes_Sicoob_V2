@@ -5,7 +5,7 @@ function getThemeHSL(): [number, number, number] {
   if (typeof window === "undefined") return [25, 95, 53];
   const raw = getComputedStyle(document.documentElement).getPropertyValue("--primary").trim();
   const parts = raw.split(/\s+/).map((s) => parseFloat(s));
-  if (parts.length >= 3 && !parts.some(isNaN)) return [parts[0], parts[1], parts[2]];
+  if (parts.length >= 3 && !parts.some(isNaN)) return [parts[0]!, parts[1]!, parts[2]!];
   return [25, 95, 53];
 }
 
