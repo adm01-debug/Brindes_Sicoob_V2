@@ -29,8 +29,8 @@ export function useChurnRisk(clientId: string | null | undefined): ChurnRiskResu
       const intervals: number[] = [];
       for (let i = 0; i < sortedOrders.length - 1; i++) {
         const diff =
-          (new Date(sortedOrders[i].date).getTime() -
-            new Date(sortedOrders[i + 1].date).getTime()) /
+          (new Date(sortedOrders[i]!.date).getTime() -
+            new Date(sortedOrders[i + 1]!.date).getTime()) /
           86400000;
         if (diff > 0) intervals.push(diff);
       }

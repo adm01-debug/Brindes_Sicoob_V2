@@ -5691,3 +5691,30 @@ return attachProfiles(data || []);
 - `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `18c1f923a5`) — ajustado para usar `Record<string, unknown>` em vez de `Record<string, any>` no cast interno do helper, evitando novo `no-explicit-any`.
 - Sem teste dedicado encontrado para `useAuditLog.ts`/`AuditHistory.tsx`.
 - `typecheck:baseline`: 233 → 231 (202 arquivos), travado via `--update`.
+
+## useChurnRisk.ts (etapa 17)
+
+**Arquivo:** `src/hooks/bi/useChurnRisk.ts`
+
+**Erros originais (2×):**
+```
+src/hooks/bi/useChurnRisk.ts(32,21): error TS2532: Object is possibly 'undefined'.
+src/hooks/bi/useChurnRisk.ts(33,22): error TS2532: Object is possibly 'undefined'.
+```
+
+**Diagnóstico:** Mesmo padrão de guarda-não-propagada já visto em `TechniqueCard.tsx`/`chart.tsx` nesta etapa. O loop `for (let i = 0; i < sortedOrders.length - 1; i++)` acessa `sortedOrders[i]` e `sortedOrders[i + 1]`, ambos sempre dentro dos limites do array por construção do próprio laço (`i` vai de `0` a `length-2`, então `i+1` vai de `1` a `length-1`), mas o `noUncheckedIndexedAccess` não propaga essa garantia para o acesso por índice.
+
+**Fix aplicado:**
+```ts
+// antes:
+new Date(sortedOrders[i].date).getTime() - new Date(sortedOrders[i + 1].date).getTime()
+// depois:
+new Date(sortedOrders[i]!.date).getTime() - new Date(sortedOrders[i + 1]!.date).getTime()
+```
+Asserção de não-nulo nos dois acessos, garantida pelo limite do próprio `for`.
+
+**Validação:**
+- `tscheck-files.mjs`: 2 → 0 erros (0 no programa inteiro).
+- `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `6cd8d45719`).
+- Sem teste dedicado encontrado.
+- `typecheck:baseline`: 231 → 229 (201 arquivos), travado via `--update`.
