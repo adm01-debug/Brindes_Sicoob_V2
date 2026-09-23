@@ -1,0 +1,21 @@
+{
+  "executado_em": "2026-09-23T19:17:40.456Z",
+  "statements": 1,
+  "results": [
+    {
+      "command": null,
+      "rowCount": 1,
+      "fields": [
+        "result",
+        "migrations_persistidas"
+      ],
+      "rows": [
+        {
+          "result": "SIMULACAO_OK_REVERTIDA",
+          "migrations_persistidas": 0
+        }
+      ]
+    }
+  ],
+  "notices": []
+}

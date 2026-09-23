@@ -1,0 +1,27 @@
+{
+  "executado_em": "2026-09-23T19:18:02.365Z",
+  "arquivo": "20260923112000_fix_connection_sync_and_favorites.sql",
+  "sha256": "72c5c6e1020fa2612e210a59bfd9b42ec5bcef9ce2b06824d6a624d702ce5851",
+  "resultado": {
+    "statements": 1,
+    "results": [
+      {
+        "command": null,
+        "rowCount": 1,
+        "fields": [
+          "version",
+          "name",
+          "conteudo_confere"
+        ],
+        "rows": [
+          {
+            "version": "20260923112000",
+            "name": "fix_connection_sync_and_favorites",
+            "conteudo_confere": true
+          }
+        ]
+      }
+    ],
+    "notices": []
+  }
+}

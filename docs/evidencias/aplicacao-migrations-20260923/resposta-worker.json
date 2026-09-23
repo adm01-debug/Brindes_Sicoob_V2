@@ -1,0 +1,27 @@
+{
+  "executado_em": "2026-09-23T19:18:35.612Z",
+  "statements": 1,
+  "results": [
+    {
+      "command": null,
+      "rowCount": 1,
+      "fields": [
+        "id",
+        "status_code",
+        "timed_out",
+        "error_msg",
+        "content"
+      ],
+      "rows": [
+        {
+          "id": 1,
+          "status_code": 200,
+          "timed_out": false,
+          "error_msg": null,
+          "content": "{\"processed\":0,\"results\":[]}"
+        }
+      ]
+    }
+  ],
+  "notices": []
+}

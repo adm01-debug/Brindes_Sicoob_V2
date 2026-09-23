@@ -1,0 +1,27 @@
+{
+  "executado_em": "2026-09-23T19:18:01.452Z",
+  "arquivo": "20260923110000_harden_internal_operations.sql",
+  "sha256": "b811274d71dfa17f8d4e73e0bb26598bf80214cd5a25db67915bc88f97366cfc",
+  "resultado": {
+    "statements": 1,
+    "results": [
+      {
+        "command": null,
+        "rowCount": 1,
+        "fields": [
+          "version",
+          "name",
+          "conteudo_confere"
+        ],
+        "rows": [
+          {
+            "version": "20260923110000",
+            "name": "harden_internal_operations",
+            "conteudo_confere": true
+          }
+        ]
+      }
+    ],
+    "notices": []
+  }
+}
