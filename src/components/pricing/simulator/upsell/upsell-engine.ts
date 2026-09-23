@@ -114,7 +114,7 @@ function suggestTechniqueUpgrades(
     );
 
     if (upgrades.length > 0) {
-      const best = upgrades[0];
+      const best = upgrades[0]!;
       suggestions.push({
         id: `upgrade-${eng.id}-${best.techniqueCode}`,
         type: "technique_upgrade",

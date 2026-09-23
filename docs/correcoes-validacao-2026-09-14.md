@@ -3309,3 +3309,21 @@ Esse hook é consumido por `AuthContext.tsx` (linha 88), que calcula `mfaRequire
 - `check-eslint-baseline.mjs`: 0 regressões (3334 erros globais, referência `origin/main` em `ef816309db`).
 - Nenhum teste dedicado encontrado para este arquivo.
 - `typecheck:baseline`: 444 → 441 (293 arquivos), travado via `--update`.
+
+## upsell-engine.ts (etapa 17)
+
+**Arquivo:** `src/components/pricing/simulator/upsell/upsell-engine.ts`
+
+**Erros originais (3×):** TS18048 (linhas 119, 121, 122 — `best` possivelmente `undefined`).
+
+**Diagnóstico:**
+- Dentro de `suggestTechniqueUpgrades`, `const upgrades = availableTechniques.filter(...)` produz `ProductTechnique[]`; o `noUncheckedIndexedAccess` torna `upgrades[0]` do tipo `ProductTechnique | undefined`.
+- O guard `if (upgrades.length > 0) { const best = upgrades[0]; ... }` garante estruturalmente, dentro do mesmo escopo de função, que `upgrades[0]` está definido — mesma classe de justificativa já usada em `KitComparisonDialog.tsx` nesta sessão (guard de comprimento controlando diretamente o acesso ao índice).
+
+**Fix aplicado:** `const best = upgrades[0]!;` — asserção não-nula justificada pelo guard de comprimento imediatamente anterior, sem alterar comportamento em runtime.
+
+**Validação:**
+- `tscheck-files.mjs`: 3 → 0 erros (0 no programa inteiro).
+- `check-eslint-baseline.mjs`: 0 regressões (3334 erros globais, referência `origin/main` em `a07bfed97a`).
+- Teste dedicado encontrado (`tests/components/simulator/UpsellPlusPlus.test.ts`, importa `upsell-engine.ts`): 11/11 passaram.
+- `typecheck:baseline`: 441 → 438 (292 arquivos), travado via `--update`.
