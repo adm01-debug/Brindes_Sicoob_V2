@@ -23,6 +23,10 @@ interface ProductCustomizationOptionsProps {
   onSelectionChange?: (personalizations: PersonalizationItem[]) => void;
 }
 
+function resolveNumCores(price: CustomizationPriceResponseV6): number {
+  return price.num_cores ?? 1;
+}
+
 export function ProductCustomizationOptions({
   productId,
   quantity = 100,
@@ -53,7 +57,7 @@ export function ProductCustomizationOptions({
         grupoTecnica: technique.grupo_tecnica,
         width: dimensions?.width,
         height: dimensions?.height,
-        numberOfColors: price.num_cores,
+        numberOfColors: resolveNumCores(price),
         usaDimensao: technique.usa_dimensao,
         price,
       });
@@ -68,7 +72,7 @@ export function ProductCustomizationOptions({
 
   // Set first location as active when data loads
   if (options?.locations?.length && !activeLocation) {
-    setActiveLocation(options.locations[0].location_code);
+    setActiveLocation(options.locations[0]!.location_code);
   }
 
   if (isLoading) {

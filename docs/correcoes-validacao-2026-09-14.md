@@ -4965,3 +4965,44 @@ const diff = e.changedTouches[0]!.clientX - startX;
 - `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `4403a7aab1`).
 - Nenhum teste dedicado encontrado.
 - `typecheck:baseline`: 279 → 277 (225 arquivos), travado via `--update`.
+
+## ProductCustomizationOptions.tsx (etapa 17)
+
+**Arquivo:** `src/components/products/ProductCustomizationOptions.tsx`
+
+**Erros originais (2×):**
+```
+src/components/products/ProductCustomizationOptions.tsx(56,9): error TS2322: Type 'number | undefined' is not assignable to type 'number'.
+src/components/products/ProductCustomizationOptions.tsx(71,23): error TS2532: Object is possibly 'undefined'.
+```
+
+**Diagnóstico:** (1) `price.num_cores` é opcional em `CustomizationPriceResponseV6`, mas `numberOfColors` no `PersonalizationItem` exige `number`; grep dos usos existentes de `num_cores ??` no repo (`price-response.adapter.ts:93,131`) confirma o fallback canônico `?? 1` (a contagem de cores de uma personalização concluída nunca é legitimamente zero — o `?? 0` usado em `ConfigurationPanelV6.tsx` é um sentinel distinto para "ainda não calculado"). (2) `options.locations[0]` sob `noUncheckedIndexedAccess`, mesmo padrão de guarda-não-propagada já usado no restante do código — o acesso só ocorre dentro do `if (options?.locations?.length && !activeLocation)`, provando que o índice 0 existe.
+
+**Fix aplicado (1ª passada):**
+```ts
+// antes:
+numberOfColors: price.num_cores,
+...
+setActiveLocation(options.locations[0].location_code);
+// depois:
+numberOfColors: price.num_cores ?? 1,
+...
+setActiveLocation(options.locations[0]!.location_code);
+```
+
+**Regressão auto-detectada:** `check-eslint-baseline.mjs` acusou nova violação de `complexity` no `handlePriceCalculated` (`useCallback`, linha 42): o `??` adicionado elevou a complexidade ciclomática de 10 para 11 (máximo permitido: 10). A violação pré-existente na função principal do componente (linha 26, complexidade 15) é baseline e não foi afetada.
+
+**Fix corretivo:** extraída função helper em nível de módulo — uma chamada de função não soma à complexidade do chamador:
+```ts
+function resolveNumCores(price: CustomizationPriceResponseV6): number {
+  return price.num_cores ?? 1;
+}
+// call site:
+numberOfColors: resolveNumCores(price),
+```
+
+**Validação:**
+- `tscheck-files.mjs`: 2 → 0 erros (7 → 5 no programa inteiro).
+- `check-eslint-baseline.mjs`: 0 regressões após o fix corretivo (referência `origin/main` em `76834b6553`).
+- Teste dedicado ao componente não encontrado; teste relacionado do hook (`tests/hooks/useProductCustomizationOptions.smoke.test.ts`) executado: 2/2 passou.
+- `typecheck:baseline`: 277 → 275 (224 arquivos), travado via `--update`.
