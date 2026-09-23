@@ -56,7 +56,7 @@ interface TelemetryRow {
 function percentile(sortedValues: number[], p: number): number {
   if (sortedValues.length === 0) return 0;
   const idx = Math.min(sortedValues.length - 1, Math.floor((sortedValues.length - 1) * p));
-  return sortedValues[idx];
+  return sortedValues[idx] ?? 0;
 }
 
 function summarize(rows: TelemetryRow[]) {
@@ -137,7 +137,7 @@ export function useProductsListingLatencyAlert() {
           message: `Latência média ${current.avgMs}ms ≥ teto absoluto de ${SLA_HARD_CEILING_MS}ms.`,
         });
       } else if (current.avgMs >= SLA_MEDIAN_MS) {
-        severity = severity === 'critical' ? 'critical' : 'warning';
+        severity = 'warning';
         reasons.push({
           code: 'sla-breach',
           message: `Latência média ${current.avgMs}ms ≥ SLA alvo de ${SLA_MEDIAN_MS}ms.`,

@@ -6336,3 +6336,31 @@ pa:postos_atendimento(nome, codigo)
 - `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `68f0489b45`).
 - Nenhum teste dedicado encontrado para o arquivo.
 - `typecheck:baseline`: 186 → 184 (178 arquivos), travado via `--update`.
+
+## useProductsListingLatencyAlert.ts (etapa 17)
+
+**Arquivo:** `src/pages/admin/telemetry/useProductsListingLatencyAlert.ts`
+
+**Erros originais (2×):**
+```
+src/pages/admin/telemetry/useProductsListingLatencyAlert.ts(59,3): error TS2322: Type 'number | undefined' is not assignable to type 'number'.
+src/pages/admin/telemetry/useProductsListingLatencyAlert.ts(140,20): error TS2367: This comparison appears to be unintentional because the types '"ok"' and '"critical"' have no overlap.
+```
+
+**Diagnóstico:**
+- Linha 59: `percentile()` indexa `sortedValues[idx]` com `idx` calculado via `Math.min`/`Math.floor` — sempre dentro dos limites do array (já há guarda de array vazio na linha anterior), mas `noUncheckedIndexedAccess` tipa o acesso como `number | undefined`.
+- Linha 140: `severity` é `let severity: LatencyAlertSeverity = 'ok'` e só é reatribuído para `'critical'` dentro do `if (current.avgMs >= SLA_HARD_CEILING_MS)`. A linha 140 está no `else if` irmão desse mesmo `if` — logo, nesse ramo o compilador sabe que a atribuição a `'critical'` não ocorreu, restando só `'ok'` como valor possível de `severity`; o ternário `severity === 'critical' ? 'critical' : 'warning'` é código morto que sempre resolve para `'warning'`.
+
+**Fix aplicado:**
+```ts
+return sortedValues[idx] ?? 0;
+// ...
+} else if (current.avgMs >= SLA_MEDIAN_MS) {
+  severity = 'warning';
+```
+
+**Validação:**
+- `tscheck-files.mjs`: 2 → 0 erros no arquivo.
+- `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `8fcef44551`).
+- Nenhum teste dedicado encontrado para o arquivo.
+- `typecheck:baseline`: 184 → 182 (177 arquivos), travado via `--update`.
