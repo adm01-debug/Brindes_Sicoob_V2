@@ -79,7 +79,7 @@ export function OrderComments({ orderId }: OrderCommentsProps) {
       </CardHeader>
 
       <CardContent className="flex-1 flex flex-col gap-4 overflow-hidden pt-0">
-        {totalCount !== undefined && totalCount > pageSize && (
+        {totalCount !== undefined && totalCount !== null && totalCount > pageSize && (
           <div className="flex items-center justify-center gap-2 py-2 border-b">
             <Button 
               variant="ghost" 

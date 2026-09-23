@@ -4701,3 +4701,26 @@ const firstSelectedId = selectedIds.size > 0 ? Array.from(selectedIds)[0]! : "";
 - `check-eslint-baseline.mjs`: 0 regressões nos 2 arquivos alterados (referência `origin/main` em `cb03bd82a2`).
 - Nenhum teste dedicado encontrado.
 - `typecheck:baseline`: 299 → 297 (235 arquivos), travado via `--update`.
+
+## OrderComments.tsx (etapa 17)
+
+**Arquivo:** `src/components/orders/OrderComments.tsx`
+
+**Erros originais (2×):** TS18047 (linhas 82 e 89) — `totalCount` possivelmente `null` em `totalCount > pageSize` e `page * pageSize >= totalCount`.
+
+**Diagnóstico:** `totalCount` vem de `data?.count` (`useOrderComments.ts:38`), que é `number | null | undefined` (assinatura padrão do `count` do Supabase). O guard existente `totalCount !== undefined` só eliminava `undefined`, deixando `null` sem narrowing — daí o segundo uso (linha 89), dentro do mesmo bloco condicional, ainda via `totalCount` como `number | null`.
+
+**Fix aplicado:**
+```tsx
+// antes:
+{totalCount !== undefined && totalCount > pageSize && (
+// depois:
+{totalCount !== undefined && totalCount !== null && totalCount > pageSize && (
+```
+(Tentativa inicial com `!= null` foi revertida por violar a regra `eqeqeq` do ESLint — a forma explícita com `!==` foi usada em seu lugar.)
+
+**Validação:**
+- `tscheck-files.mjs`: 2 → 0 erros (2 no programa inteiro, pré-existentes).
+- `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `df194c2e93`).
+- Nenhum teste dedicado encontrado.
+- `typecheck:baseline`: 297 → 295 (234 arquivos), travado via `--update`.
