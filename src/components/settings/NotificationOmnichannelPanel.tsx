@@ -76,7 +76,7 @@ export function NotificationOmnichannelPanel() {
                   ) : (
                     scheduled?.map((item) => (
                       <TableRow key={item.id}>
-                        <TableCell className="font-medium text-xs">User ID: {item.user_id.substring(0, 8)}...</TableCell>
+                        <TableCell className="font-medium text-xs">User ID: {item.user_id!.substring(0, 8)}...</TableCell>
                         <TableCell>
                           <Badge variant="outline" className="capitalize">{item.channel}</Badge>
                         </TableCell>
@@ -163,7 +163,7 @@ export function NotificationOmnichannelPanel() {
                         <span className="text-muted-foreground">Tempo: {log.execution_time_ms}ms</span>
                       </div>
                       <span className="text-muted-foreground">
-                        {format(new Date(log.created_at), "HH:mm:ss")}
+                        {format(new Date(log.created_at!), "HH:mm:ss")}
                       </span>
                     </div>
                   ))

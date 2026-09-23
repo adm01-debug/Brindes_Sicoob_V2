@@ -5478,3 +5478,33 @@ onClick={() => handleRemoveCountry(country.id, country.city_name)}
 - `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `af4bc621af`).
 - Sem teste dedicado encontrado (`find -iname "*GeoBlockingManager*"` retornou apenas o próprio componente).
 - `typecheck:baseline`: 247 → 245 (209 arquivos), travado via `--update`.
+
+## NotificationOmnichannelPanel.tsx (etapa 17)
+
+**Arquivo:** `src/components/settings/NotificationOmnichannelPanel.tsx`
+
+**Erros originais (2×):**
+```
+src/components/settings/NotificationOmnichannelPanel.tsx(79,78): error TS18047: 'item.user_id' is possibly 'null'.
+src/components/settings/NotificationOmnichannelPanel.tsx(166,42): error TS2769: No overload matches this call.
+```
+
+**Diagnóstico:** ambos os campos vêm direto do Supabase (`scheduled_notifications.user_id` e `notification_logs.created_at`), tipados como `string | null` no schema (`user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE`, sem `NOT NULL`; `created_at TIMESTAMP ... DEFAULT now()`, nullable apenas pela definição da coluna). Na prática, `user_id` é sempre preenchido na criação do agendamento e `created_at` é sempre preenchido pelo `DEFAULT now()` — mesmo padrão de campos "nullable no schema, sempre presentes no fluxo real" já tratado em outros arquivos do projeto (ex.: `useQuotesDashboard.ts`, `useQuoteFunnel.ts`) com non-null assertion.
+
+**Fix aplicado:**
+```tsx
+// antes:
+User ID: {item.user_id.substring(0, 8)}...
+...
+{format(new Date(log.created_at), "HH:mm:ss")}
+// depois:
+User ID: {item.user_id!.substring(0, 8)}...
+...
+{format(new Date(log.created_at!), "HH:mm:ss")}
+```
+
+**Validação:**
+- `tscheck-files.mjs`: 2 → 0 erros (0 no programa inteiro).
+- `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `7d68cc404e`).
+- Sem teste dedicado encontrado (`find -iname "*NotificationOmnichannel*"` retornou apenas o hook e o próprio componente).
+- `typecheck:baseline`: 245 → 243 (208 arquivos), travado via `--update`.
