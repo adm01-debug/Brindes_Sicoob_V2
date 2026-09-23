@@ -3275,3 +3275,21 @@ Esse hook é consumido por `AuthContext.tsx` (linha 88), que calcula `mfaRequire
 - `check-eslint-baseline.mjs`: 0 regressões (3334 erros globais, referência `origin/main` em `f03632768f`).
 - Nenhum teste dedicado encontrado para este arquivo.
 - `typecheck:baseline`: 450 → 447 (295 arquivos), travado via `--update`.
+
+## TechniqueSelector.tsx (etapa 17)
+
+**Arquivo:** `src/components/personalization/TechniqueSelector.tsx`
+
+**Erros originais (3×):** TS18048 (linha 94 — `result.records` possivelmente `undefined`); TS2352 ×2 (linhas 96-97 — conversão de `Technique` para `ExternalTechnique` via `as` direto, tipos sem overlap suficiente).
+
+**Diagnóstico:**
+- `invokeExternalDb<T>` retorna `InvokeResult<T>` (`src/lib/external-db/invoke.ts`), cujo campo `records?: T[]` é genuinamente opcional — não é um falso positivo de `noUncheckedIndexedAccess`, é uma possibilidade real (ex.: resposta sem a chave `records`). Convenção já estabelecida em `src/lib/external-db/products.ts:73` (`result.records ?? []`).
+- `Technique` (interface local deste arquivo) e `ExternalTechnique` (`src/types/external-db.ts`, com índice `[key: string]: unknown`) não têm overlap estrutural suficiente para um `as` direto (`code: string | null` vs `code?: string`, `is_active` só existe em `Technique`, etc.) — mas ambos representam a mesma linha de dado bruto do BD externo, só que com "lentes" de tipagem diferentes (uma view estreita da app vs. o formato bruto com campos extras como `setup_price`/`handling_price`). Mesmo padrão já usado em `src/hooks/useExternalSimulator.ts:268` (`as unknown as ExternalPrintArea[]`).
+
+**Fix aplicado:** `result.records ?? []` (fallback real, não asserção — o valor é genuinamente opcional); `(t as unknown as ExternalTechnique)` nos 2 pontos, seguindo a recomendação do próprio compilador e o padrão já estabelecido no codebase.
+
+**Validação:**
+- `tscheck-files.mjs`: 3 → 0 erros (5 no programa inteiro).
+- `check-eslint-baseline.mjs`: 0 regressões (3334 erros globais, referência `origin/main` em `ca80716c26`).
+- Nenhum teste dedicado encontrado para este arquivo.
+- `typecheck:baseline`: 447 → 444 (294 arquivos), travado via `--update`.
