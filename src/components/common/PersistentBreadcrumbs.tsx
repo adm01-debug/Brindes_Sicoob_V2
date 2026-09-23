@@ -136,7 +136,7 @@ export const PersistentBreadcrumbs = forwardRef<HTMLElement, PersistentBreadcrum
         {breadcrumbs.length > 3 ? (
           <>
             {/* First Item */}
-            <BreadcrumbItem item={breadcrumbs[0]} index={0} />
+            <BreadcrumbItem item={breadcrumbs[0]!} index={0} />
             <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/30 shrink-0" />
             
             {/* Dropdown for middle items */}
@@ -161,7 +161,7 @@ export const PersistentBreadcrumbs = forwardRef<HTMLElement, PersistentBreadcrum
             
             {/* Last Item */}
             <BreadcrumbItem 
-              item={breadcrumbs[breadcrumbs.length - 1]} 
+              item={breadcrumbs[breadcrumbs.length - 1]!}
               index={breadcrumbs.length - 1} 
               isLast 
             />

@@ -4440,3 +4440,30 @@ const iconColor = collection.color || "#6366f1";
 - `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `f33dde48e8`).
 - Nenhum teste dedicado encontrado (`ExternalCollectionTableView.tsx` é componente homônimo não relacionado).
 - `typecheck:baseline`: 317 → 315 (244 arquivos), travado via `--update`.
+
+## PersistentBreadcrumbs.tsx (etapa 17)
+
+**Arquivo:** `src/components/common/PersistentBreadcrumbs.tsx`
+
+**Erros originais (2×):** TS2322 (linhas 139 e 164) — `breadcrumbs[0]` e `breadcrumbs[breadcrumbs.length - 1]` como `BreadcrumbItem | undefined` não atribuíveis à prop `item: BreadcrumbItem`.
+
+**Diagnóstico:** mesmo padrão de guarda não-propagada: `if (breadcrumbs.length === 0) return null;` (linha 109) mais `breadcrumbs.length > 3` (linha 136) garantem, dentro desse branch, que `breadcrumbs` tem pelo menos 4 elementos — logo `breadcrumbs[0]` e `breadcrumbs[breadcrumbs.length - 1]` são sempre seguros. TS não propaga a garantia entre os 2 guards e os 2 pontos de acesso.
+
+**Fix aplicado:**
+```tsx
+// antes:
+<BreadcrumbItem item={breadcrumbs[0]} index={0} />
+...
+<BreadcrumbItem item={breadcrumbs[breadcrumbs.length - 1]} index={breadcrumbs.length - 1} isLast />
+
+// depois:
+<BreadcrumbItem item={breadcrumbs[0]!} index={0} />
+...
+<BreadcrumbItem item={breadcrumbs[breadcrumbs.length - 1]!} index={breadcrumbs.length - 1} isLast />
+```
+
+**Validação:**
+- `tscheck-files.mjs`: 2 → 0 erros (4 no programa inteiro, pré-existentes/fora de escopo).
+- `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `b59cb4edcd`).
+- Nenhum teste dedicado encontrado.
+- `typecheck:baseline`: 315 → 313 (243 arquivos), travado via `--update`.
