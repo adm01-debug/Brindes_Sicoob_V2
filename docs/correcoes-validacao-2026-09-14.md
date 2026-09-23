@@ -5384,3 +5384,37 @@ const firstSelectedId = selectedIds.size > 0 ? (Array.from(selectedIds)[0] ?? ""
 - `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `900804f780`).
 - Teste dedicado `tests/hooks/useReplenishmentsSelectionMode.test.ts`: 4/4 passaram.
 - `typecheck:baseline`: 253 → 251 (212 arquivos), travado via `--update`.
+
+## GlobalSearchPalette.tsx (etapa 17)
+
+**Arquivo:** `src/components/search/GlobalSearchPalette.tsx`
+
+**Erros originais (2×):**
+```
+src/components/search/GlobalSearchPalette.tsx(135,20): error TS2532: Object is possibly 'undefined'.
+src/components/search/GlobalSearchPalette.tsx(250,15): error TS2322: Type '(term: string) => void' is not assignable to type '(e: MouseEvent<Element, MouseEvent>, term: string) => void'.
+```
+
+**Diagnóstico:**
+1. (linha 135) `typeConfig[s.searchIntent.type].label` — acesso computado a `Record`. O guard na mesma expressão JSX (`s.searchIntent.type !== "mixed" && typeConfig[s.searchIntent.type] && (...)`) já garante que a chave existe, mas o TypeScript não propaga a narrowing de um acesso computado para o acesso seguinte dentro do JSX — padrão equivalente ao `noUncheckedIndexedAccess`.
+2. (linha 250) **bug funcional real, não só de tipagem.** `GlobalSearchIdleState`'s prop `onRemoveFromHistory: (e: React.MouseEvent, term: string) => void` é invocada internamente como `onClick={e => onRemoveFromHistory(e, term)}` (2 argumentos posicionais). `s.handleRemoveFromHistory` (`useGlobalSearch.ts:169`) tem assinatura `(term: string) => void` — só 1 parâmetro. Se o TypeScript permitisse essa atribuição direta, em runtime o único parâmetro `term` receberia o **primeiro argumento posicional**, que é o `MouseEvent`, não a string do termo — quebrando `removeFromHistory()` silenciosamente. O erro do compilador está protegendo contra um bug real de wiring incorreto.
+
+**Fix aplicado:**
+```tsx
+// antes:
+{typeConfig[s.searchIntent.type].label}s
+// depois:
+{typeConfig[s.searchIntent.type]!.label}s
+```
+```tsx
+// antes:
+onRemoveFromHistory={s.handleRemoveFromHistory}
+// depois:
+onRemoveFromHistory={(_e, term) => s.handleRemoveFromHistory(term)}
+```
+
+**Validação:**
+- `tscheck-files.mjs`: 2 → 0 erros (16 → 14 no programa inteiro).
+- `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `ac02c4c2e3`).
+- Teste dedicado `tests/components/search/GlobalSearchPalette.test.tsx`: 1/1 passou.
+- `typecheck:baseline`: 251 → 249 (211 arquivos), travado via `--update`.

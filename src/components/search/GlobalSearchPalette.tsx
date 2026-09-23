@@ -132,7 +132,7 @@ export function GlobalSearchPalette() {
               <span className="text-[11px] font-semibold [color:hsl(var(--command-text-muted))]">Entendi:</span>
               {s.searchIntent.type !== "mixed" && typeConfig[s.searchIntent.type] && (
                 <Badge variant="outline" className="text-[11px] h-5.5 rounded-lg font-semibold [border-color:hsl(var(--command-border-strong))] [background-color:hsl(var(--command-accent))]">
-                  {typeConfig[s.searchIntent.type].label}s
+                  {typeConfig[s.searchIntent.type]!.label}s
                 </Badge>
               )}
               {s.searchIntent.filters.category && <Badge variant="secondary" className="text-[11px] h-5.5 rounded-lg [background-color:hsl(var(--command-accent))] [color:hsl(var(--command-text-muted))]">{s.searchIntent.filters.category}</Badge>}
@@ -247,7 +247,7 @@ export function GlobalSearchPalette() {
               quickActionsData={quickActions}
               onSuggestionClick={s.handleSuggestionClick}
               onSelect={s.handleSelect}
-              onRemoveFromHistory={s.handleRemoveFromHistory}
+              onRemoveFromHistory={(_e, term) => s.handleRemoveFromHistory(term)}
             />
           )}
         </CommandList>
