@@ -5659,4 +5659,35 @@ Removido o cast `as Record<string, unknown>` nas duas chamadas `.insert()` — o
 - `tscheck-files.mjs`: 2 → 0 erros (0 no programa inteiro).
 - `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `791ed00e86`).
 - Teste dedicado `tests/hooks/useAccessSecurity.test.ts`: 5/5 passaram.
-- `typecheck:baseline`: 237 → 235 (204 arquivos), travado via `--update`.
+- `typecheck:baseline`: 235 → 233 (203 arquivos), travado via `--update`.
+
+## useAuditLog.ts (etapa 17) — bug real de produção encontrado
+
+**Arquivo:** `src/hooks/admin/useAuditLog.ts`
+
+**Erros originais (2×):**
+```
+src/hooks/admin/useAuditLog.ts(201,10): error TS2352: Conversion of type '{ ...; profiles: SelectQueryError<...>; }[]' to type 'AuditLogEntry[]' may be a mistake because neither type sufficiently overlaps with the other.
+src/hooks/admin/useAuditLog.ts(249,10): error TS2352: Conversion of type '{ ...; profiles: SelectQueryError<...>; }[]' to type 'AuditLogEntry[]' may be a mistake because neither type sufficiently overlaps with the other.
+```
+
+**Diagnóstico:** `fetchAuditHistory` e `fetchAllAuditLogs` faziam `.select('*, profiles:user_id(full_name, email)')` na tabela `audit_log`, tentando embutir `profiles` via PostgREST usando `user_id` como chave de relacionamento. Só que a migration `supabase/migrations/20260916190000_create_audit_log.sql` documenta explicitamente que `audit_log.user_id` referencia `auth.users(id)` — **não** `profiles(id)`. A tabela `profiles` tem seu próprio `id` (gerado) e uma coluna separada `user_id` que referencia `auth.users(id)` (migration `20251214183243_...sql`). Como não existe FK de `audit_log.user_id` para `profiles.id`, o PostgREST não consegue resolver esse embed — o Supabase já sinaliza isso em tempo de compilação tipando `profiles` como `SelectQueryError<...>` (daí o TS2352). **Isso não é só um erro de tipo: é um bug real em produção.** Em runtime, esse embed inválido faz o Supabase retornar `error` (relação não encontrada no schema cache), e como o código só faz `console.error` + `return []` no catch de erro, `fetchAuditHistory` (consumida por `AuditHistory.tsx`, o componente que exibe o histórico de auditoria de um registro) **sempre retornava lista vazia**, silenciosamente, sem nenhum indício de falha na UI.
+
+**Fix aplicado:** Removido o embed `profiles:user_id(...)` do `.select()` de ambas as funções; adicionado helper `attachProfiles()` que busca os perfis separadamente via `.from('profiles').select('user_id, full_name, email').in('user_id', userIds)` e faz o join client-side por `user_id` — mesmo padrão já usado em `src/hooks/useSalesHistoryMacro.ts:83`. Isso corrige tanto o erro de tipo quanto o bug funcional: o histórico de auditoria volta a retornar os nomes/emails corretamente.
+```ts
+// antes (embed quebrado, sem FK real):
+.select(`*, profiles:user_id ( full_name, email )`)
+...
+return (data || []) as AuditLogEntry[];
+
+// depois (join client-side pela FK real, via auth.users.id):
+.select('*')
+...
+return attachProfiles(data || []);
+```
+
+**Validação:**
+- `tscheck-files.mjs`: 2 → 0 erros no arquivo (4→2 no programa inteiro; os 2 restantes são de outros arquivos, pré-existentes).
+- `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `18c1f923a5`) — ajustado para usar `Record<string, unknown>` em vez de `Record<string, any>` no cast interno do helper, evitando novo `no-explicit-any`.
+- Sem teste dedicado encontrado para `useAuditLog.ts`/`AuditHistory.tsx`.
+- `typecheck:baseline`: 233 → 231 (202 arquivos), travado via `--update`.

@@ -44,6 +44,32 @@ export interface AuditLogEntry {
   } | null;
 }
 
+// audit_log.user_id referencia auth.users(id), não profiles(id) — não há
+// FK direta pra embutir "profiles:user_id(...)" no select do PostgREST
+// (relação sempre falha em runtime, erro é engolido e a lista some vazia).
+// Join client-side via profiles.user_id, mesmo padrão de useSalesHistoryMacro.ts.
+async function attachProfiles(
+  rows: Array<Omit<AuditLogEntry, 'profiles' | 'old_values' | 'new_values'> & { old_values: unknown; new_values: unknown }>
+): Promise<AuditLogEntry[]> {
+  const userIds = [...new Set(rows.map(r => r.user_id).filter((id): id is string => !!id))];
+
+  const profileMap = new Map<string, { full_name: string | null; email: string | null }>();
+  if (userIds.length > 0) {
+    const { data: profiles } = await supabase
+      .from('profiles')
+      .select('user_id, full_name, email')
+      .in('user_id', userIds);
+    for (const p of profiles || []) profileMap.set(p.user_id, { full_name: p.full_name, email: p.email });
+  }
+
+  return rows.map(r => ({
+    ...r,
+    old_values: r.old_values as Record<string, unknown> | null,
+    new_values: r.new_values as Record<string, unknown> | null,
+    profiles: (r.user_id && profileMap.get(r.user_id)) || null,
+  }));
+}
+
 export function useAuditLog() {
   const { user } = useAuth();
 
@@ -182,13 +208,7 @@ export async function fetchAuditHistory(
 ): Promise<AuditLogEntry[]> {
   const { data, error } = await supabase
     .from('audit_log')
-    .select(`
-      *,
-      profiles:user_id (
-        full_name,
-        email
-      )
-    `)
+    .select('*')
     .eq('entity_type', entityType)
     .eq('entity_id', entityId)
     .order('created_at', { ascending: false });
@@ -198,7 +218,7 @@ export async function fetchAuditHistory(
     return [];
   }
 
-  return (data || []) as AuditLogEntry[];
+  return attachProfiles(data || []);
 }
 
 export async function fetchAllAuditLogs(
@@ -213,13 +233,7 @@ export async function fetchAllAuditLogs(
 ): Promise<AuditLogEntry[]> {
   let query = supabase
     .from('audit_log')
-    .select(`
-      *,
-      profiles:user_id (
-        full_name,
-        email
-      )
-    `)
+    .select('*')
     .order('created_at', { ascending: false })
     .limit(limit);
 
@@ -246,5 +260,5 @@ export async function fetchAllAuditLogs(
     return [];
   }
 
-  return (data || []) as AuditLogEntry[];
+  return attachProfiles(data || []);
 }
