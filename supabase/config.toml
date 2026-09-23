@@ -20,3 +20,26 @@ verify_jwt = false
 
 [functions.monthly-health-report]
 verify_jwt = false
+
+# Serviços assíncronos não aceitam JWT público: todos verificam
+# INTERNAL_FUNCTION_SECRET antes de instanciar qualquer cliente service_role.
+[functions.cleanup-notifications]
+verify_jwt = false
+
+[functions.process-queue]
+verify_jwt = false
+
+[functions.send-digest]
+verify_jwt = false
+
+[functions.process-scheduled-reports]
+verify_jwt = false
+
+[functions.send-scheduled-reports]
+verify_jwt = false
+
+[functions.quote-followup-reminders]
+verify_jwt = false
+
+[functions.connections-health-check]
+verify_jwt = false

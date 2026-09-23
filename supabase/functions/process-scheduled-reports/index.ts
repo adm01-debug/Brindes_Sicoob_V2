@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
+import { requireInternalService } from "../_shared/internal-service-auth.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -9,6 +10,13 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
   }
+  if (req.method !== "POST") {
+    return new Response(JSON.stringify({ error: "metodo_nao_permitido" }), {
+      status: 405, headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+  const denied = await requireInternalService(req);
+  if (denied) return denied;
 
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
@@ -118,7 +126,8 @@ Deno.serve(async (req) => {
 
         results.push({ id: report.id, status: "sent", email: report.email_to });
       } catch (err) {
-        results.push({ id: report.id, status: "error", error: (err as Error).message });
+        console.error("process-scheduled-reports report error:", err);
+        results.push({ id: report.id, status: "error", error: "erro_interno" });
       }
     }
 
@@ -126,7 +135,8 @@ Deno.serve(async (req) => {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (err) {
-    return new Response(JSON.stringify({ error: (err as Error).message }), {
+    console.error("process-scheduled-reports error:", err);
+    return new Response(JSON.stringify({ error: "erro_interno" }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });

@@ -4,7 +4,7 @@
 
 ## Convenções
 
-- **Auth**: `JWT` (verifica via `Authorization: Bearer`), `Public` (sem auth — webhook ou view pública), `Service` (apenas service-role)
+- **Auth**: `JWT` (verifica via `Authorization: Bearer`), `Public` (sem auth — webhook ou view pública), `Service` (cron ou Edge interna, com `INTERNAL_FUNCTION_SECRET` no cabeçalho `x-sicoob-internal-secret` antes de criar cliente `service_role`)
 - **CORS**: `Restrita` (allowlist em `_shared/cors.ts`) ou `Pública` (apenas `get-visitor-info`)
 - **Validação**: `Zod` (schema), `Manual` (checks ad-hoc), `N/A` (sem body)
 - **Rate Limit**: `RPC check_rate_limit` (DB) ou `RateLimiter` (in-memory) ou `Não`
