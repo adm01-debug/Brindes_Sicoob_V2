@@ -250,7 +250,7 @@ export function BulkVariantWizard({ open, onOpenChange, products, mode, onComple
 
   const handleSelect = useCallback(
     (variant: ExternalVariantStock | null) => {
-      const product = products[currentIndex];
+      const product = products[currentIndex]!;
       const newSelections = [...selections, { product, variant }];
 
       if (currentIndex + 1 >= products.length) {

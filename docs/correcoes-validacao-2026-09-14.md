@@ -4387,3 +4387,25 @@ Aplicar "{topTemplates[0]!.name}"
 - `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `875d19d93`).
 - Nenhum teste dedicado encontrado.
 - `typecheck:baseline`: 321 → 319 (246 arquivos), travado via `--update`.
+
+## BulkVariantWizard.tsx (etapa 17)
+
+**Arquivo:** `src/components/catalog/BulkVariantWizard.tsx`
+
+**Erros originais (2×):** TS2345 (linhas 257 e 260) — `{ product: Product | undefined; variant: ... }[]` não atribuível a `BulkVariantSelection[]`.
+
+**Diagnóstico:** `products[currentIndex]` retorna `Product | undefined` por `noUncheckedIndexedAccess`. `handleSelect` só é invocado via interação do usuário enquanto o step atual está renderizado (guardado por `if (!currentProduct) return null;` no corpo do componente), então `products[currentIndex]` é sempre definido no momento em que `handleSelect` roda — o TS não propaga essa garantia entre a checagem de render e o callback.
+
+**Fix aplicado:**
+```ts
+// antes:
+const product = products[currentIndex];
+// depois:
+const product = products[currentIndex]!;
+```
+
+**Validação:**
+- `tscheck-files.mjs`: 2 → 0 erros (7 no programa inteiro, pré-existentes/fora de escopo).
+- `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `19c41b5a2d`).
+- Nenhum teste dedicado encontrado.
+- `typecheck:baseline`: 319 → 317 (245 arquivos), travado via `--update`.
