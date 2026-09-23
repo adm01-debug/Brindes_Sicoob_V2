@@ -2,7 +2,10 @@
 
 Cenários **P0** (sistema fora do ar / dados corrompidos) conforme `docs/RUNBOOK.md`.
 
-Todos os testes neste diretório iniciam com `test.skip` / `it.skip` — cada um documenta:
+Os cenários dependentes de provedores ou de um ambiente Supabase controlado usam
+`test.skip` / `it.skip`. Os contratos que já podem ser exercitados localmente
+devem permanecer ativos e falhar caso a proteção correspondente seja removida.
+Cada cenário documenta:
 
 1. **Cenário**: descrição do incidente P0 que cobre.
 2. **Pré-condições**: estado do sistema necessário.
