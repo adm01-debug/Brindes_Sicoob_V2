@@ -3880,3 +3880,40 @@ Detalhes: JSON.stringify(log.details)
 - `check-eslint-baseline.mjs`: 0 regressões (3331 erros globais, referência `origin/main` em `654f73dc95`).
 - Nenhum teste dedicado encontrado.
 - `typecheck:baseline`: 363 → 360 (265 arquivos), travado via `--update`.
+
+## QARunDetailPage.tsx (etapa 17)
+
+**Arquivo:** `src/pages/admin/qa/QARunDetailPage.tsx`
+
+**Erros originais (3×):** TS2345 (linhas 28, 41) — `id` de `useParams()` tipado `string | undefined`, usado em `.eq("id", id)`/`.eq("run_id", id)` que exigem `string`; TS2322 (linha 157) — `variant={step.status === 'blocked' ? 'warning' : 'outline'}` no `Button`, mas `"warning"` não existe na união de variantes do componente.
+
+**Diagnóstico (id):** inicialmente apliquei o padrão `useParams<{ id: string }>()` usado em 8 outras páginas de detalhe do projeto (`QuoteDetailPage.tsx`, `OrderDetailPage.tsx`, etc.), mas isso sozinho não resolveu os erros — nesta versão do react-router (`useParams<ParamsOrKey>()` retorna `Partial<ParamsOrKey>` quando `ParamsOrKey` é um objeto), o genérico não elimina o `undefined`. Inspecionando `QuoteDetailPage.tsx` mais a fundo, o padrão completo usado lá é `enabled: !!id` no `useQuery` (garante que a `queryFn` só roda com `id` truthy) + `id!` no ponto de uso — mesma categoria de "guarda no mesmo escopo" já usada nesta etapa, só que via `enabled` do React Query em vez de um `if`.
+
+**Diagnóstico (variant "warning"):** não existe variante `"warning"` no `Button` (`src/components/ui/button.tsx`). Padrão já usado no mesmo arquivo (botão PASS, linha 143) e em `PasswordResetApproval.tsx:49` pra estado "warning": `variant="outline"` fixo + `className` condicional com os tokens Tailwind `bg-warning`/`text-warning`/`border-warning` (que existem e já são usados amplamente no projeto).
+
+**Fix aplicado:**
+```ts
+// useParams — antes: const { id } = useParams();
+// depois:
+const { id } = useParams<{ id: string }>();
+// ...
+const { data: run, isLoading: loadingRun } = useQuery({
+  queryKey: ["qa_run", id],
+  enabled: !!id,
+  queryFn: async () => {
+    const { data, error } = await supabase.from("qa_runs").select("*").eq("id", id!).single();
+    // ...
+// (mesmo padrão aplicado ao segundo useQuery, .eq("run_id", id!))
+
+// Button variant — antes:
+variant={step.status === 'blocked' ? 'warning' : 'outline'}
+// depois:
+variant="outline"
+className={step.status === 'blocked' ? 'bg-warning/10 text-warning border-warning/30 hover:bg-warning/20' : ''}
+```
+
+**Validação:**
+- `tscheck-files.mjs`: 3 → 0 erros (0 no programa inteiro).
+- `check-eslint-baseline.mjs`: 0 regressões (3331 erros globais, referência `origin/main` em `900ee841db`).
+- Nenhum teste dedicado encontrado.
+- `typecheck:baseline`: 360 → 357 (264 arquivos), travado via `--update`.

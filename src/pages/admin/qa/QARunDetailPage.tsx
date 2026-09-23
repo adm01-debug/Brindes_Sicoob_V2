@@ -14,18 +14,19 @@ import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 
 export default function QARunDetailPage() {
-  const { id } = useParams();
+  const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [newStepName, setNewStepName] = useState("");
 
   const { data: run, isLoading: loadingRun } = useQuery({
     queryKey: ["qa_run", id],
+    enabled: !!id,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("qa_runs")
         .select("*")
-        .eq("id", id)
+        .eq("id", id!)
         .single();
       if (error) throw error;
       return data;
@@ -34,11 +35,12 @@ export default function QARunDetailPage() {
 
   const { data: steps, isLoading: loadingSteps } = useQuery({
     queryKey: ["qa_run_steps", id],
+    enabled: !!id,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("qa_run_steps")
         .select("*")
-        .eq("run_id", id)
+        .eq("run_id", id!)
         .order("created_at", { ascending: true });
       if (error) throw error;
       return data;
@@ -152,9 +154,10 @@ export default function QARunDetailPage() {
                       >
                         <XCircle className="h-4 w-4 mr-1" /> FAIL
                       </Button>
-                      <Button 
-                        size="sm" 
-                        variant={step.status === 'blocked' ? 'warning' : 'outline'}
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className={step.status === 'blocked' ? 'bg-warning/10 text-warning border-warning/30 hover:bg-warning/20' : ''}
                         onClick={() => updateStepStatus.mutate({ stepId: step.id, status: 'blocked' })}
                       >
                         <AlertCircle className="h-4 w-4 mr-1" /> BLOCKED

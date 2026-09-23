@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-09-23T04:26:41.590Z",
-  "total": 360,
+  "generatedAt": "2026-09-23T04:31:47.402Z",
+  "total": 357,
   "files": {
     "src/components/admin/common/AdminDataTable.tsx": 2,
     "src/components/admin/connections/Bitrix24Tab.tsx": 1,
@@ -235,7 +235,6 @@
     "src/pages/admin/AdminUsuariosPage.tsx": 2,
     "src/pages/admin/ColorDocumentationPage.tsx": 1,
     "src/pages/admin/DevChallengeExamplesPage.tsx": 1,
-    "src/pages/admin/qa/QARunDetailPage.tsx": 3,
     "src/pages/admin/RLSAuditPage.tsx": 1,
     "src/pages/admin/sicoob/tabs/UserAssignmentTab.tsx": 2,
     "src/pages/admin/telemetry/useHighLimitTelemetry.ts": 1,
