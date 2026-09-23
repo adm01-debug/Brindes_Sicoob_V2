@@ -59,7 +59,7 @@ export function usePositionHistory(options: UsePositionHistoryOptions = {}) {
     isUndoRedoRef.current = true;
     const newIndex = historyIndex - 1;
     setHistoryIndex(newIndex);
-    return history[newIndex];
+    return history[newIndex] ?? null;
   }, [canUndo, historyIndex, history]);
 
   const redo = useCallback((): PositionState | null => {
@@ -67,7 +67,7 @@ export function usePositionHistory(options: UsePositionHistoryOptions = {}) {
     isUndoRedoRef.current = true;
     const newIndex = historyIndex + 1;
     setHistoryIndex(newIndex);
-    return history[newIndex];
+    return history[newIndex] ?? null;
   }, [canRedo, historyIndex, history]);
 
   const clear = useCallback(() => {

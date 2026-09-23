@@ -5952,3 +5952,27 @@ for (const line of hashes) {
 - `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `6c3d12493a`).
 - Teste dedicado `tests/hooks/usePasswordBreachCheck.test.tsx`: 5/5 passaram.
 - `typecheck:baseline`: 214 → 212 (192 arquivos), travado via `--update`.
+
+## usePositionHistory.ts (etapa 17)
+
+**Arquivo:** `src/hooks/usePositionHistory.ts`
+
+**Erros originais (2×):**
+```
+src/hooks/usePositionHistory.ts(62,5): error TS2322: Type 'PositionState | undefined' is not assignable to type 'PositionState | null'.
+src/hooks/usePositionHistory.ts(70,5): error TS2322: Type 'PositionState | undefined' is not assignable to type 'PositionState | null'.
+```
+
+**Diagnóstico:** clássico `noUncheckedIndexedAccess`. `undo()`/`redo()` retornam `history[newIndex]`, tipado `PositionState | null` na assinatura, mas o acesso por índice ao array retorna `PositionState | undefined`. Na prática o índice sempre está dentro dos limites (`canUndo`/`canRedo` já garantem isso antes de calcular `newIndex`), mas o compilador não consegue provar isso pela indexação.
+
+**Fix aplicado:**
+```ts
+return history[newIndex] ?? null;
+```
+(em `undo()` e `redo()`, coerção consistente com o tipo de retorno já declarado da função).
+
+**Validação:**
+- `tscheck-files.mjs`: 2 → 0 erros (0 no programa inteiro).
+- `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `f3ad724996`).
+- Nenhum teste dedicado encontrado para o arquivo.
+- `typecheck:baseline`: 212 → 210 (191 arquivos), travado via `--update`.
