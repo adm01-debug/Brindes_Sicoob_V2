@@ -47,17 +47,21 @@ d('RLS — seller persona', () => {
   });
 
   it('reads only own quotes', async () => {
-    const { data } = await seller!.from('quotes').select('id, seller_id').limit(50);
+    const { data, error } = await seller!.from('quotes').select('id, seller_id').limit(50);
     const userId = (await seller!.auth.getUser()).data.user?.id;
+    expect(error).toBeNull();
+    expect(userId).toBeDefined();
+    expect(data?.length).toBeGreaterThan(0);
     expect(data?.every((q) => q.seller_id === userId)).toBe(true);
   });
 
   it('cannot read other sellers quotes via filter bypass', async () => {
-    const { data } = await seller!.from('quotes').select('id').neq('seller_id', '00000000-0000-0000-0000-000000000000');
+    const { data, error } = await seller!.from('quotes').select('id, seller_id').neq('seller_id', '00000000-0000-0000-0000-000000000000');
     const userId = (await seller!.auth.getUser()).data.user?.id;
-    // RLS filtra antes do .neq, então só vê próprios
-    expect(data?.every(() => true)).toBe(true);
+    expect(error).toBeNull();
     expect(userId).toBeDefined();
+    expect(data?.length).toBeGreaterThan(0);
+    expect(data?.every((quote) => quote.seller_id === userId)).toBe(true);
   });
 });
 
@@ -76,6 +80,7 @@ d('RLS — admin persona', () => {
     const { data, error } = await admin!.from('quotes').select('id').limit(10);
     expect(error).toBeNull();
     expect(Array.isArray(data)).toBe(true);
+    expect(data?.length).toBeGreaterThan(0);
   });
 
   it('reads bot_detection_log', async () => {

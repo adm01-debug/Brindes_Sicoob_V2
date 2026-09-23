@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { sicoobDocumentIngestService } from "@/services/sicoob/documentIngestService";
 
 interface AddSicoobInvoiceInput {
   invoice_number: string;
@@ -65,11 +66,10 @@ export const useOrderInvoices = (orderId?: string) => {
         return;
       }
 
-      const { error: cleanupError } = await supabase.storage.from('sicoob-order-documents').remove([values.file_path]);
       toast.error('Não foi possível vincular a nota fiscal ao pedido.', {
-        description: cleanupError
-          ? `O arquivo órfão não pôde ser removido: ${cleanupError.message}`
-          : mutationError instanceof Error ? mutationError.message : undefined,
+        description: mutationError instanceof Error
+          ? `${mutationError.message} O documento verificado foi preservado para reconciliação.`
+          : 'O documento verificado foi preservado para reconciliação.',
       });
     },
   });
@@ -85,24 +85,13 @@ export const useOrderInvoices = (orderId?: string) => {
 
     if (!orderId) throw new Error('Pedido não identificado.');
     const extension = file.name.toLowerCase().endsWith('.xml') ? 'xml' : 'pdf';
-    const fileName = `${orderId}/invoices/${crypto.randomUUID()}.${extension}`;
-    
     try {
-      const { data, error } = await supabase.storage
-        .from('sicoob-order-documents')
-        .upload(fileName, file, {
-          upsert: false,
-          cacheControl: '3600'
-        });
-      
-      if (error) {
-        if (error.message.includes('already exists')) {
-          throw new Error("Arquivo já existe no servidor.");
-        }
-        throw error;
-      }
-      
-      return data.path;
+      const document = await sicoobDocumentIngestService.ingest(
+        orderId,
+        extension === 'xml' ? 'invoice_xml' : 'invoice_pdf',
+        file,
+      );
+      return document.path;
     } catch (err: unknown) {
       console.error("Upload error:", err);
       throw err;

@@ -87,7 +87,7 @@ import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { sicoobApprovalService } from "@/services/sicoob/approvalService";
 
-import { OrderStatus, canSicoobTransitionTo, ORDER_STATUS_CONFIG } from "@/types/sicoob/orders";
+import { OrderStatus, canEditSicoobOrderItems, canSicoobTransitionTo, ORDER_STATUS_CONFIG } from "@/types/sicoob/orders";
 
 const canTransitionTo = (current: OrderStatus, next: OrderStatus) => {
   return canSicoobTransitionTo(current, next);
@@ -127,6 +127,10 @@ export default function OrderDetailPage() {
   };
 
   const orderTotal = orderData?.total_amount || 0;
+  const formatOrderCurrency = (value?: number | null) => Number(value || 0).toLocaleString('pt-BR', {
+    style: 'currency',
+    currency: 'BRL',
+  });
   const isOverThreshold = needsApproval(orderTotal);
   const isOverBudget = orderTotal > remainingBudget;
 
@@ -230,25 +234,13 @@ export default function OrderDetailPage() {
   };
 
   const handleStatusUpdate = async (newStatus: OrderStatus) => {
-    const statusLabels: Record<OrderStatus, string> = {
-      draft: "Rascunho",
-      pending: "Pendente",
-      waiting_approval: "Aguardando Aprovação",
-      escalated_to_board: "Escalado para Diretoria",
-      confirmed: "Confirmado",
-      logistic: "Logística",
-      rejected: "Rejeitado",
-      completed: "Concluído",
-      cancelled: "Cancelado"
-    };
-
-    if (!confirm(`Deseja realmente alterar o status do pedido para "${statusLabels[newStatus]}"?`)) return;
+    if (!confirm(`Deseja realmente alterar o status do pedido para "${ORDER_STATUS_CONFIG[newStatus].label}"?`)) return;
     
     updateOrderStatusMutation.mutate({ 
       orderId: id!, 
       status: newStatus, 
       currentStatus: orderData?.status as OrderStatus,
-      observations: `Alteração manual de status para ${statusLabels[newStatus]}`
+      observations: `Alteração manual de status para ${ORDER_STATUS_CONFIG[newStatus].label}`
     });
   };
 
@@ -454,7 +446,7 @@ export default function OrderDetailPage() {
                     <Package className="h-5 w-5" />
                     Itens do Pedido
                   </div>
-                  {(orderData.status === 'pending' || orderData.status === 'draft') && (
+                  {canEditSicoobOrderItems(orderData.status) && (
                     <OrderAddItemDialog 
                       onAdd={(data) => addItem.mutate(data)}
                       isPending={addItem.isPending}
@@ -480,10 +472,13 @@ export default function OrderDetailPage() {
                       </div>
                       <div className="text-right flex items-center gap-4">
                         <div className={cn("transition-opacity", removeItem.isPending && "opacity-50")}>
-                          <p className="font-bold">R$ {Number(item.unit_price * item.quantity).toLocaleString('pt-BR')}</p>
+                          <p className="font-bold">{formatOrderCurrency(item.line_total_amount ?? (item.unit_price * item.quantity))}</p>
                           <p className="text-xs text-muted-foreground">Un: R$ {Number(item.unit_price).toLocaleString('pt-BR')}</p>
+                          {Number(item.personalization_amount || 0) > 0 && (
+                            <p className="text-xs text-muted-foreground">Personalização: {formatOrderCurrency(item.personalization_amount)}</p>
+                          )}
                         </div>
-                        {(orderData.status === 'pending' || orderData.status === 'draft') && (
+                        {canEditSicoobOrderItems(orderData.status) && (
                           <Button 
                             variant="ghost" 
                             size="icon" 
@@ -497,9 +492,18 @@ export default function OrderDetailPage() {
                       </div>
                     </div>
                   ))}
+                  {orderData.pricing_formula_version === 'brl-v1' && (
+                    <div className="space-y-1 pt-4 border-t text-sm text-muted-foreground" data-testid="order-commercial-breakdown">
+                      <div className="flex justify-between"><span>Produtos</span><span>{formatOrderCurrency(orderData.merchandise_amount)}</span></div>
+                      <div className="flex justify-between"><span>Personalizações</span><span>{formatOrderCurrency(orderData.personalization_amount)}</span></div>
+                      {Number(orderData.negotiation_markup_amount) > 0 && <div className="flex justify-between"><span>Ajuste comercial</span><span>{formatOrderCurrency(orderData.negotiation_markup_amount)}</span></div>}
+                      {Number(orderData.discount_amount) > 0 && <div className="flex justify-between"><span>Desconto</span><span>- {formatOrderCurrency(orderData.discount_amount)}</span></div>}
+                      {Number(orderData.shipping_amount) > 0 && <div className="flex justify-between"><span>Frete</span><span>{formatOrderCurrency(orderData.shipping_amount)}</span></div>}
+                    </div>
+                  )}
                   <div className="flex justify-between pt-4 border-t-2 border-dashed">
                     <span className="font-bold">Total do Pedido</span>
-                    <span className="text-xl font-bold text-primary">R$ {orderTotal.toLocaleString('pt-BR')}</span>
+                    <span className="text-xl font-bold text-primary">{formatOrderCurrency(orderTotal)}</span>
                   </div>
                 </div>
               </CardContent>

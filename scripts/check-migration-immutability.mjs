@@ -47,8 +47,10 @@ function verifiedRef(candidate) {
 function resolveBaseCommit() {
   const candidates = [
     process.env.MIGRATION_BASE_REF,
+    process.env.GITHUB_EVENT_BEFORE,
     process.env.GITHUB_BASE_REF ? `origin/${process.env.GITHUB_BASE_REF}` : null,
     "origin/main",
+    "HEAD^",
   ];
   const head = verifiedRef("HEAD");
   for (const candidate of candidates) {
@@ -61,9 +63,9 @@ function resolveBaseCommit() {
 const base = resolveBaseCommit();
 if (!base) {
   console.log(
-    "⚠️  Não foi possível resolver uma branch-base distinta de HEAD (checkout raso ou push direto em main) — pulando o gate.",
+    "❌ Não foi possível resolver uma base distinta de HEAD para validar a imutabilidade das migrations.",
   );
-  process.exit(0);
+  process.exit(1);
 }
 
 const diff = runGit([

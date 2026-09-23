@@ -67,6 +67,7 @@ import { useGlobalShortcuts } from "@/hooks/useGlobalShortcuts";
 import { OrderStatusBadge } from "@/components/sicoob/orders/OrderStatusBadge";
 import { OrderStatus, ORDER_STATUS_OPTIONS } from "@/types/sicoob/orders";
 import { sicoobOrderService } from "@/services/sicoob/orderService";
+import { isCommittedSicoobOrder, sumCommittedSicoobOrders } from "@/utils/sicoob/orderFinancials";
 import { sicoobCommonService } from "@/services/sicoob/commonService";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -136,8 +137,9 @@ export default function OrdersPage() {
     if (!allOrdersForStats.data) return null;
     
     const orders = allOrdersForStats.data;
-    const totalRevenue = orders.reduce((acc, o) => acc + (o.total_amount || 0), 0);
-    const avgTicket = orders.length > 0 ? totalRevenue / orders.length : 0;
+    const committedOrders = orders.filter(isCommittedSicoobOrder);
+    const totalRevenue = sumCommittedSicoobOrders(committedOrders);
+    const avgTicket = committedOrders.length > 0 ? totalRevenue / committedOrders.length : 0;
     
     const statusCounts = orders.reduce((acc, o) => {
       acc[o.status] = (acc[o.status] || 0) + 1;
@@ -411,7 +413,7 @@ export default function OrdersPage() {
               </CardHeader>
               <CardContent>
                 <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
-                  Calculado sobre os pedidos do recorte selecionado
+                  Calculado sobre pedidos confirmados ou posteriores
                 </div>
               </CardContent>
             </Card>

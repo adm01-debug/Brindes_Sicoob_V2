@@ -13,12 +13,21 @@ import { toast } from "sonner";
 
 export default function QuoteApprovalPage() {
   const { token } = useParams<{ token: string }>();
-  const { data: quote, isLoading } = useQuoteApprovalToken(token);
+  const { data: quote, isLoading, isError } = useQuoteApprovalToken(token);
   const [pendingResponse, setPendingResponse] = useState<"approved" | "rejected" | null>(null);
   const [submitted, setSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   if (isLoading) return <Skeleton className="max-w-2xl mx-auto mt-12 h-72" />;
+
+  if (isError) {
+    return (
+      <div className="container mx-auto p-12 text-center">
+        <PageSEO title="Serviço indisponível" description="Não foi possível consultar o orçamento" />
+        <p className="text-muted-foreground">Não foi possível consultar o orçamento. Tente novamente em instantes.</p>
+      </div>
+    );
+  }
 
   if (!quote) {
     return (
@@ -35,15 +44,16 @@ export default function QuoteApprovalPage() {
     if (!pendingResponse || isSubmitting) return;
     setIsSubmitting(true);
     try {
-      const { data, error } = await supabase.rpc("submit_signed_quote_response", {
-        _token: token!,
-        _response: pendingResponse,
-        _signer_name: sigData.name,
-        _signer_document: sigData.document,
-        _signature_data_url: sigData.signatureDataUrl,
+      const { data, error } = await supabase.functions.invoke("quote-approval", {
+        body: {
+          action: "respond",
+          token,
+          status: pendingResponse,
+          signer: sigData,
+        },
       });
       if (error) throw error;
-      if (data !== true) throw new Error("O link expirou, foi revogado ou já recebeu uma resposta. Atualize a página.");
+      if (data?.success !== true) throw new Error("O link expirou, foi revogado ou já recebeu uma resposta. Atualize a página.");
 
       setSubmitted(true);
       toast.success("Resposta registrada com sucesso");
@@ -62,7 +72,12 @@ export default function QuoteApprovalPage() {
         clientName={quote.client_name}
         total={Number(quote.total ?? 0)}
         validUntil={quote.valid_until}
-        status={isResponded ? "responded" : quote.status}
+        status={isResponded ? quote.response ?? "responded" : quote.status}
+        items={quote.items}
+        paymentTerms={quote.payment_terms}
+        deliveryTime={quote.delivery_time}
+        shippingCost={quote.shipping_cost}
+        notes={quote.notes}
         isResponded={isResponded}
         onApprove={() => setPendingResponse("approved")}
         onReject={() => setPendingResponse("rejected")}

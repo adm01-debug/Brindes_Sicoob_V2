@@ -1,8 +1,8 @@
 {
   "_comment": "Snapshot original da API/Storage com delta de migrations aplicado e verificado por SQL. Presença física e GRANT não substituem teste RLS por usuário nem prova de exposição de todas as rotas PostgREST.",
-  "generated_at": "2026-09-22T18:25:00Z",
+  "generated_at": "2026-09-22T22:00:00Z",
   "project_ref": "cfmzkthhgliqelozlmwu",
-  "source": "OpenAPI administrativo + Storage de 22/09; delta SQL verificado em pg_catalog e no ledger do projeto em 22/09",
+  "source": "OpenAPI administrativo + Storage de 22/09; delta SQL até 20260922225600 validado em PostgreSQL 16 descartável",
   "source_sha256": {
     "openapi": "1d17066521e7ab9d88ea78ad91b056a16a81727a19c8c4fbd1adf045a5333373",
     "buckets": "93367299e56f26fd0597379560a15cd40886b549e76853a5b82e170d50645201"
@@ -182,6 +182,7 @@
     "sicoob_delivery_allocations",
     "sicoob_delivery_destinations",
     "sicoob_delivery_receipt_events",
+    "sicoob_document_registry",
     "sicoob_kit_quote_requests",
     "sicoob_manager_audit",
     "sicoob_order_artwork_versions",
@@ -232,6 +233,7 @@
     "assert_sicoob_approval_actor",
     "audit_actor_email",
     "audit_all_rls_compliance",
+    "audit_empty_rls_policies",
     "audit_ownership_orphans",
     "audit_rls_coverage",
     "audit_rls_matrix",
@@ -275,7 +277,9 @@
     "cleanup_webhook_logs",
     "complete_optimization",
     "confirm_sicoob_order",
+    "consolidate_sicoob_quotes",
     "consume_step_up_token",
+    "convert_quote_to_sicoob_order",
     "copy_group_personalization_to_product",
     "create_organization_with_owner",
     "create_quote_version_atomic",
@@ -285,9 +289,11 @@
     "current_user_cooperativa_id",
     "current_user_pa_id",
     "decide_sicoob_order_artwork",
+    "dispatch_sicoob_approval_worker",
     "dispatch_sicoob_order_consolidation",
     "e2e_cleanup_check_rate_limit",
     "enqueue_optimization",
+    "enqueue_sicoob_approval_event",
     "enqueue_sicoob_approval_notifications",
     "ensure_admin_audit_log_partitions",
     "ensure_default_favorite_list",
@@ -359,6 +365,7 @@
     "mark_notification_read",
     "mark_step_up_password_verified",
     "mcp_audit_actor",
+    "mutate_sicoob_order_item",
     "normalize_quote_parent_root",
     "notify_hardening_regression",
     "prepare_sicoob_order_confirmation",
@@ -367,6 +374,8 @@
     "protect_sicoob_approval_policy_version",
     "provision_qa_accounts",
     "qa_preflight_check",
+    "queue_sicoob_approval_escalation",
+    "queue_sicoob_approval_notifications",
     "record_dev_route_telemetry",
     "record_mcp_access_violation",
     "record_platform_failure",
@@ -374,12 +383,14 @@
     "record_sicoob_delivery_receipt",
     "record_sicoob_order_payment",
     "refund_sicoob_order_payment",
+    "register_sicoob_clean_document",
     "reject_sicoob_order",
     "reject_sicoob_order_without_approval",
     "reorder_sicoob_order_as_quote",
     "repair_ownership_orphans",
     "request_sicoob_order_approval",
     "request_step_up_challenge",
+    "require_sicoob_artwork_before_production",
     "reset_optimization_queue",
     "retry_failed_webhook_deliveries",
     "search_products_semantic",
@@ -397,6 +408,11 @@
     "sicoob_actor_can_receive_destination",
     "sicoob_actor_can_request_approval",
     "sicoob_actor_can_view_all_consolidation",
+    "sicoob_current_actor_can_manage_consolidation",
+    "sicoob_current_actor_can_manage_fulfillment",
+    "sicoob_current_actor_can_receive_consolidation",
+    "sicoob_current_actor_can_receive_destination",
+    "sicoob_current_actor_can_view_all_consolidation",
     "snapshot_hardening_status",
     "submit_quote_response",
     "submit_signed_quote_response",
@@ -404,6 +420,7 @@
     "transition_sicoob_order_status",
     "upsert_sicoob_order_shipment",
     "validate_mcp_key",
+    "validate_sicoob_order_document",
     "verify_step_up_otp"
   ],
   "buckets": [
@@ -418,6 +435,7 @@
     "proposals",
     "qa-evidences",
     "quarantine",
+    "sicoob-document-quarantine",
     "sicoob-order-documents",
     "supplier-logos"
   ],
@@ -444,7 +462,25 @@
       "20260922167000",
       "20260922190000",
       "20260922200000",
-      "20260922210000"
+      "20260922210000",
+      "20260922223000",
+      "20260922224000",
+      "20260922224100",
+      "20260922224200",
+      "20260922224300",
+      "20260922224400",
+      "20260922224500",
+      "20260922224600",
+      "20260922224700",
+      "20260922224800",
+      "20260922224900",
+      "20260922225000",
+      "20260922225100",
+      "20260922225200",
+      "20260922225300",
+      "20260922225400",
+      "20260922225500",
+      "20260922225600"
     ],
     "relations": [
       "bitrix_clients",
@@ -456,7 +492,8 @@
       "product_group_location_techniques",
       "product_group_locations",
       "sales_goals",
-      "sicoob_approval_deliveries"
+      "sicoob_approval_deliveries",
+      "sicoob_document_registry"
     ],
     "functions": [
       "assert_database_auditor",
@@ -481,8 +518,9 @@
       "claim_sicoob_approval_delivery",
       "finish_sicoob_approval_delivery",
       "get_sicoob_approval_delivery_summary",
-      "queue_sicoob_approval_notifications"
+      "queue_sicoob_approval_notifications",
+      "register_sicoob_clean_document"
     ],
-    "checked_at": "2026-09-22T21:01:15Z"
+    "checked_at": "2026-09-22T23:26:59Z"
   }
 }

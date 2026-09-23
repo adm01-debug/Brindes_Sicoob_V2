@@ -22,11 +22,15 @@ export default defineConfig({
       reporter: ['text', 'json', 'html', 'json-summary'],
       reportsDirectory: './coverage',
       include: [
-        'src/hooks/useOrders.ts',
-        'src/hooks/useOrderExtensions.ts',
-        'src/hooks/useNotificationPreferences.ts',
-        'src/hooks/useExportJobs.ts',
-        'src/utils/orderExportUtils.ts'
+        'src/pages/QuoteApprovalPage.tsx',
+        'src/components/quotes/QuoteApprovalCard.tsx',
+        'src/hooks/useQuoteApprovalToken.ts',
+        'src/services/sicoob/fulfillmentService.ts',
+        'src/services/sicoob/documentIngestService.ts',
+        'src/types/sicoob/orders.ts',
+        'src/utils/sicoob/orderFinancials.ts',
+        'supabase/functions/sicoob-document-ingest/inspection.ts',
+        'supabase/functions/sicoob-document-ingest/scanner.ts',
       ],
       thresholds: {
           statements: 80,

@@ -54,6 +54,7 @@ jobs:
           python3 scripts/qa/simular-recompra-sicoob.py
           python3 scripts/qa/simular-kit-orcamento-sicoob.py
           python3 scripts/qa/simular-financeiro-arte-sicoob.py
+          python3 scripts/qa/simular-logistica-canonica.py
           python3 scripts/qa/simular-consolidacao-sicoob.py
 
   experiencia:

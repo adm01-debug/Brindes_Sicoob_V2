@@ -42,11 +42,12 @@ describe("QuoteService — Melhorias Recompra", () => {
         }
       }
     }));
-    vi.mock("@/lib/auth/apply-seller-scope", () => ({ applySellerScope: (q: any) => q }));
+    vi.doMock("@/lib/auth/apply-seller-scope", () => ({ applySellerScope: (q: any) => q }));
   });
 
   afterEach(() => {
     vi.doUnmock("@/integrations/supabase/client");
+    vi.doUnmock("@/lib/auth/apply-seller-scope");
     vi.clearAllMocks();
   });
 

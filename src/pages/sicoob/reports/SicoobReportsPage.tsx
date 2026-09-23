@@ -7,6 +7,7 @@ import autoTable from "jspdf-autotable";
 import * as XLSX from "@e965/xlsx";
 import { Button } from "@/components/ui/button";
 import { formatCurrency } from "@/lib/format";
+import { isCommittedSicoobOrder, sumCommittedSicoobOrders } from "@/utils/sicoob/orderFinancials";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -76,7 +77,8 @@ export default function SicoobReportsPage() {
     enabled: !!profile?.pa_id
   });
 
-  const totalSpent = ordersInRange?.reduce((acc, order) => acc + (order.total_amount || 0), 0) || 0;
+  const committedOrders = ordersInRange?.filter(isCommittedSicoobOrder) || [];
+  const totalSpent = sumCommittedSicoobOrders(committedOrders);
 
   const handleExportPDF = async () => {
     if (!ordersInRange || ordersInRange.length === 0) {
@@ -225,7 +227,7 @@ export default function SicoobReportsPage() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-sicoob-green-dark">{formatCurrency(totalSpent)}</div>
-              <p className="text-xs text-sicoob-green/70 mt-1">{ordersInRange?.length || 0} pedidos realizados</p>
+              <p className="text-xs text-sicoob-green/70 mt-1">{committedOrders.length} pedidos confirmados</p>
             </CardContent>
           </Card>
           <Card className="border-[1.5px]">
@@ -234,7 +236,7 @@ export default function SicoobReportsPage() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                {formatCurrency(ordersInRange?.length ? totalSpent / ordersInRange.length : 0)}
+                {formatCurrency(committedOrders.length ? totalSpent / committedOrders.length : 0)}
               </div>
               <p className="text-xs text-muted-foreground mt-1 text-status-transit/80 font-medium">Por pedido consolidado</p>
             </CardContent>

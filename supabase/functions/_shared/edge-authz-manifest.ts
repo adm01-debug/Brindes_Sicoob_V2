@@ -50,7 +50,7 @@ export const EDGE_AUTHZ_MANIFEST: Record<string, AuthzEntry> = {
   // ---------------- Públicas por design ----------------
   "migrate-helper": { category: "public", rationale: "Função desativada: retorna somente HTTP 410, sem acesso a ambiente ou banco" },
   "kit-public-view": { category: "public", rationale: "Visualização de kit por token público" },
-  "quote-public-view": { category: "public", rationale: "Aprovação de orçamento por token" },
+  "quote-public-view": { category: "public", rationale: "Endpoint legado inerte: retorna 410 sem acessar dados, credenciais ou rede" },
   "favorites-public-react": { category: "public", rationale: "Reactions anônimas em lista pública" },
   "comparisons-public-react": { category: "public", rationale: "Reactions em comparação pública" },
   "collections-public-react": { category: "public", rationale: "Reactions em coleção pública" },
@@ -105,7 +105,7 @@ export const EDGE_AUTHZ_MANIFEST: Record<string, AuthzEntry> = {
   "ownership-audit": { category: "service", rationale: "pg_cron diário — auditoria órfãos" },
   "sicoob-approval-notifications": {
     category: "service",
-    rationale: "Disparada por trigger/DB webhook em sicoob_approval_requests; envia notificações (Slack/e-mail) via service-role",
+    rationale: "Worker periódico da outbox de aprovações; autentica com segredo dedicado e usa a service role somente no banco",
     enforcedBy: "custom",
     skipAnonBypassTest: true,
   },
@@ -136,6 +136,11 @@ export const EDGE_AUTHZ_MANIFEST: Record<string, AuthzEntry> = {
     rationale: "Baixa a arte privada sob RLS, calcula sua identidade criptográfica e chama a RPC interna exclusiva de serviço",
     enforcedBy: "custom",
   },
+  "sicoob-document-ingest": {
+    category: "authenticated",
+    rationale: "Valida JWT e escopo do pedido antes de inspecionar, escanear e promover documentos privados",
+    enforcedBy: "custom",
+  },
   "generate-ad-image": { category: "authenticated", rationale: "Magic Up Ads do user" },
   "generate-ad-prompt": { category: "authenticated", rationale: "Magic Up Ads do user" },
   "generate-mockup": { category: "authenticated", rationale: "Mockup IA do user" },
@@ -162,6 +167,7 @@ export const EDGE_AUTHZ_MANIFEST: Record<string, AuthzEntry> = {
   "manage-users": { category: "supervisor", rationale: "Gestão de usuários via has_role inline", enforcedBy: "custom" },
   "block-ip-temporarily": { category: "supervisor", rationale: "Bloqueio de IP — has_role inline", enforcedBy: "custom" },
   "ownership-repair": { category: "supervisor", rationale: "Reparo de órfãos com autorização central e validação adicional na RPC", enforcedBy: "shared-authorize" },
+  "sicoob-approval-reconciliation": { category: "supervisor", rationale: "Reconciliação auditada de notificações incertas ou falhas", enforcedBy: "shared-authorize" },
   "error-monitor": { category: "supervisor", rationale: "Monitoramento de erros e alertas de sistema", enforcedBy: "shared-authorize" },
 
   // ---------------- Dev-only ----------------

@@ -1,0 +1,14 @@
+{
+  "ambiente": "PostgreSQL 16 descartável sem rede",
+  "remoto_validado": false,
+  "cenarios": {
+    "nao_pula_producao": true,
+    "separacao_vira_transito": true,
+    "compare_and_swap_rejeita_estado_antigo": true,
+    "caminho_traversal_rejeitado": true,
+    "comprovante_confirma_entrega": true,
+    "legado_continua_operacional": true,
+    "ator_fora_do_escopo_rejeitado": true,
+    "acl_minima": true
+  }
+}

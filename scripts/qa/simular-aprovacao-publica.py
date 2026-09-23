@@ -21,6 +21,7 @@ def actor(statement, who=SELLER, role='authenticated', check=True):
 def new_quote():
     ident = str(uuid.uuid4())
     sql(f"INSERT INTO public.quotes(id,seller_id,quote_number,client_name,total) VALUES ('{ident}','{SELLER}','TESTE','Cliente sintético',100);")
+    sql(f"INSERT INTO public.quote_items(quote_id,product_id,product_name,product_sku,quantity,unit_price,notes) VALUES ('{ident}','produto-1','Caneca térmica','CAN-001',10,10,'Gravação frontal');")
     return ident
 def issue(quote, token):
     return actor(f"INSERT INTO public.quote_approval_tokens(quote_id,token,seller_id) VALUES ('{quote}','{token}','{SELLER}');")
@@ -100,6 +101,81 @@ try:
     response = sql("BEGIN; SELECT clock_timestamp() < expires_at FROM public.quote_approval_tokens WHERE token='expira-no-lock'; SET LOCAL ROLE anon;" + signed('expira-no-lock') + "COMMIT;")
     blocker.communicate(timeout=20)
     checks['prazo_reavaliado_apos_espera'] = response.stdout.strip() == 't\nf'
+
+    # Contrato endurecido: somente a Edge Function (service_role) consulta e
+    # responde, com rate limit persistente e evidência HMAC versionada.
+    sql("INSERT INTO vault.decrypted_secrets(name,decrypted_secret) VALUES ('quote_approval_evidence_hmac','chave-sintetica-com-mais-de-trinta-e-dois-bytes-2026');")
+    hardened = (ROOT/'supabase/migrations/20260922225000_secure_public_quote_approval.sql').read_text()
+    sql(hardened)
+    checks['historico_legado_preservado'] = sql("SELECT count(*)>=1 FROM public.quote_approval_tokens WHERE signature_data_url IS NOT NULL AND signature_evidence IS NULL;").stdout.strip() == 't'
+    checks['anon_sem_acesso_direto'] = (
+      actor("SELECT public.get_public_quote_approval('valido');",role='anon',check=False).returncode != 0
+      and actor("SELECT public.submit_signed_quote_response('valido','approved','Pessoa','12345678901','"+SIGNATURE+"','127.0.0.1','teste');",role='anon',check=False).returncode != 0
+    )
+    viewed_quote = new_quote(); issue(viewed_quote, 'visualizado')
+    viewed_payload = json.loads(actor(
+      "SELECT public.get_public_quote_approval('visualizado');", role='service_role'
+    ).stdout)
+    first_viewed_at = sql("SELECT viewed_at::text FROM public.quote_approval_tokens WHERE token='visualizado';").stdout.strip()
+    actor("SELECT public.get_public_quote_approval('visualizado');", role='service_role')
+    checks['consulta_publica_registra_visualizacao']=viewed_payload['quote_number']=='TESTE' and bool(first_viewed_at)
+    checks['visualizacao_repetida_preserva_primeiro_instante']=sql(
+      f"SELECT viewed_at::text='{first_viewed_at}' FROM public.quote_approval_tokens WHERE token='visualizado';"
+    ).stdout.strip()=='t'
+    quote = new_quote(); issue(quote,'hmac-valido')
+    hardened_response = actor(
+      "SELECT public.submit_signed_quote_response('hmac-valido','approved','Pessoa Teste','12345678901','"+SIGNATURE+"','203.0.113.10','navegador-teste');",
+      role='service_role'
+    )
+    checks['resposta_hmac_confirmada'] = hardened_response.stdout.strip() == 't'
+    checks['evidencia_hmac_completa'] = sql("""
+      SELECT signature_algorithm='hmac-sha256-v1'
+        AND signer_ip='203.0.113.10' AND signer_user_agent='navegador-teste'
+        AND signature_key_id IS NOT NULL
+        AND signature_evidence->>'token_sha256'=encode(extensions.digest(convert_to('hmac-valido','UTF8'),'sha256'),'hex')
+        AND signature_hash=encode(extensions.hmac(convert_to(signature_evidence::text,'UTF8'),
+          convert_to('chave-sintetica-com-mais-de-trinta-e-dois-bytes-2026','UTF8'),'sha256'),'hex')
+      FROM public.quote_approval_tokens WHERE token='hmac-valido';
+    """).stdout.strip() == 't'
+    hmac_v1_id = sql("SELECT id FROM public.quote_approval_tokens WHERE token='hmac-valido';").stdout.strip()
+    checks['verificacao_criptografica_positiva'] = actor(f"SELECT public.verify_quote_approval_signature('{hmac_v1_id}');",role='service_role').stdout.strip() == 't'
+    checks['snapshot_comercial_assinado'] = sql("""
+      SELECT signature_evidence ? 'quote_snapshot'
+        AND signature_evidence->>'quote_snapshot_sha256' = encode(extensions.digest(
+          convert_to((signature_evidence->'quote_snapshot')::text,'UTF8'),'sha256'),'hex')
+        AND jsonb_array_length(signature_evidence->'quote_snapshot'->'items') = 1
+      FROM public.quote_approval_tokens WHERE token='hmac-valido';
+    """).stdout.strip() == 't'
+    checks['adulteracao_detectavel'] = sql("""
+      SELECT signature_hash<>encode(extensions.hmac(convert_to(
+          jsonb_set(signature_evidence,'{response}','\"rejected\"')::text,'UTF8'),
+          convert_to('chave-sintetica-com-mais-de-trinta-e-dois-bytes-2026','UTF8'),'sha256'),'hex')
+      FROM public.quote_approval_tokens WHERE token='hmac-valido';
+    """).stdout.strip() == 't'
+    sql(f"UPDATE public.quote_items SET quantity=11 WHERE quote_id=(SELECT quote_id::uuid FROM public.quote_approval_tokens WHERE id='{hmac_v1_id}');")
+    checks['alteracao_posterior_do_orcamento_detectada'] = actor(
+      f"SELECT NOT public.verify_quote_approval_signature('{hmac_v1_id}');", role='service_role'
+    ).stdout.strip() == 't'
+    sql(f"UPDATE public.quote_items SET quantity=10 WHERE quote_id=(SELECT quote_id::uuid FROM public.quote_approval_tokens WHERE id='{hmac_v1_id}');")
+    sql("INSERT INTO vault.decrypted_secrets(name,decrypted_secret) VALUES ('quote_approval_evidence_hmac_v2','segunda-chave-sintetica-com-mais-de-trinta-e-dois-bytes');")
+    actor("SELECT public.rotate_quote_approval_evidence_key('quote_approval_evidence_hmac_v2');",role='service_role')
+    rotated_quote = new_quote(); issue(rotated_quote,'hmac-v2')
+    actor("SELECT public.submit_signed_quote_response('hmac-v2','approved','Pessoa Teste','12345678901','"+SIGNATURE+"','203.0.113.12','teste-v2');",role='service_role')
+    hmac_v2_id = sql("SELECT id FROM public.quote_approval_tokens WHERE token='hmac-v2';").stdout.strip()
+    keys_differ = sql("SELECT count(DISTINCT signature_key_id)=2 FROM public.quote_approval_tokens WHERE token IN ('hmac-valido','hmac-v2');").stdout.strip() == 't'
+    checks['rotacao_preserva_verificacao_historica'] = keys_differ and actor(
+      f"SELECT public.verify_quote_approval_signature('{hmac_v1_id}') AND public.verify_quote_approval_signature('{hmac_v2_id}');",
+      role='service_role'
+    ).stdout.strip() == 't'
+    checks['versao_de_chave_nao_reutilizada'] = actor("SELECT public.rotate_quote_approval_evidence_key('quote_approval_evidence_hmac_v2');",role='service_role',check=False).returncode != 0
+    quote = new_quote(); issue(quote,'sem-chave')
+    sql("DELETE FROM vault.decrypted_secrets WHERE name='quote_approval_evidence_hmac_v2';")
+    denied = actor("SELECT public.submit_signed_quote_response('sem-chave','approved','Pessoa Teste','12345678901','"+SIGNATURE+"','203.0.113.11','teste');",role='service_role',check=False)
+    checks['chave_ausente_falha_fechada_e_reverte'] = denied.returncode != 0 and sql(
+      "SELECT q.status='sent' AND t.status='active' AND t.responded_at IS NULL FROM public.quotes q JOIN public.quote_approval_tokens t ON t.quote_id=q.id::text WHERE t.token='sem-chave';"
+    ).stdout.strip() == 't'
+    limits = [json.loads(actor("SELECT public.check_rate_limit('origem-token','quote-approval:respond',2,60,300);",role='service_role').stdout) for _ in range(3)]
+    checks['rate_limit_persistente'] = [item['allowed'] for item in limits] == [True,True,False]
     checks['acl_sem_violacoes'] = sql("SELECT count(*) FROM public.audit_security_definer_acl();").stdout.strip() == '0'
     assert all(checks.values()), checks
     print(json.dumps({'ambiente':'PostgreSQL 16 descartável sem rede','remoto_validado':False,'cenarios':checks},ensure_ascii=False,indent=2))

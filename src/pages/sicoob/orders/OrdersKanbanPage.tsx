@@ -87,19 +87,25 @@ const ROLE_PERMISSIONS: Record<
   SicoobRole,
   Array<{ from: StatusId; to: StatusId }>
 > = {
-  comprador: [{ from: "draft", to: "waiting_approval" }],
+  comprador: [{ from: "draft", to: "pending" }],
   supervisor: [
-    { from: "draft", to: "waiting_approval" },
+    { from: "draft", to: "pending" },
+    { from: "pending", to: "waiting_approval" },
     { from: "waiting_approval", to: "draft" },
   ],
   gestor: [
     { from: "waiting_approval", to: "confirmed" },
     { from: "waiting_approval", to: "draft" },
     { from: "confirmed", to: "logistic" },
+    { from: "confirmed", to: "in_production" },
   ],
   logistica: [
     { from: "confirmed", to: "logistic" },
     { from: "logistic", to: "completed" },
+    { from: "in_production", to: "in_separation" },
+    { from: "in_separation", to: "in_transit" },
+    { from: "in_transit", to: "delivered" },
+    { from: "delivered", to: "completed" },
   ],
 };
 

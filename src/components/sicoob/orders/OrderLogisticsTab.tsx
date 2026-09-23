@@ -8,16 +8,18 @@ import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useSicoobShipment, useUpdateSicoobShipment } from '@/hooks/sicoob/useSicoobFulfillment';
 import type { OrderStatus } from '@/types/sicoob/orders';
+import { sicoobDocumentIngestService } from '@/services/sicoob/documentIngestService';
 
 interface OrderLogisticsTabProps {
   orderId: string;
   orderStatus: OrderStatus;
 }
 
-function deliveryPath(orderId: string, file: File): string {
-  const safeName = file.name.toLowerCase().replace(/[^a-z0-9._-]/g, '-');
-  return `${orderId}/delivery/${Date.now()}-${safeName || 'comprovante.jpg'}`;
-}
+const DELIVERY_IMAGE_EXTENSIONS: Record<string, string> = {
+  'image/jpeg': 'jpg',
+  'image/png': 'png',
+  'image/webp': 'webp',
+};
 
 export function OrderLogisticsTab({ orderId, orderStatus }: OrderLogisticsTabProps) {
   const { data: shipment, isLoading } = useSicoobShipment(orderId);
@@ -27,8 +29,8 @@ export function OrderLogisticsTab({ orderId, orderStatus }: OrderLogisticsTabPro
   const [deliveryPhotoUrl, setDeliveryPhotoUrl] = useState<string | null>(null);
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const canManageTracking = orderStatus === 'confirmed' || orderStatus === 'logistic';
-  const canConfirmDelivery = orderStatus === 'logistic';
+  const canManageTracking = ['in_separation', 'in_transit', 'logistic'].includes(orderStatus);
+  const canConfirmDelivery = orderStatus === 'in_transit' || orderStatus === 'logistic';
 
   useEffect(() => {
     setTrackingCode(shipment?.tracking_code || '');
@@ -71,8 +73,8 @@ export function OrderLogisticsTab({ orderId, orderStatus }: OrderLogisticsTabPro
   const handlePhotoUpload = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
-    if (!file.type.startsWith('image/')) {
-      toast.error('Envie um arquivo de imagem para o comprovante.');
+    if (!DELIVERY_IMAGE_EXTENSIONS[file.type]) {
+      toast.error('Envie o comprovante em JPEG, PNG ou WebP.');
       return;
     }
     if (file.size > 5 * 1024 * 1024) {
@@ -80,24 +82,15 @@ export function OrderLogisticsTab({ orderId, orderStatus }: OrderLogisticsTabPro
       return;
     }
 
-    const path = deliveryPath(orderId, file);
     try {
       setIsUploadingPhoto(true);
-      const { error: uploadError } = await supabase.storage
-        .from('sicoob-order-documents')
-        .upload(path, file, { upsert: false, contentType: file.type });
-      if (uploadError) throw uploadError;
+      const document = await sicoobDocumentIngestService.ingest(orderId, 'delivery_proof', file);
 
-      try {
-        await updateShipment.mutateAsync({
-          orderId,
-          expectedOrderStatus: orderStatus,
-          deliveryPhotoPath: path,
-        });
-      } catch (error) {
-        await supabase.storage.from('sicoob-order-documents').remove([path]);
-        throw error;
-      }
+      await updateShipment.mutateAsync({
+        orderId,
+        expectedOrderStatus: orderStatus,
+        deliveryPhotoPath: document.path,
+      });
 
       toast.success('Comprovante enviado e entrega concluída.');
     } catch (error) {
@@ -118,7 +111,7 @@ export function OrderLogisticsTab({ orderId, orderStatus }: OrderLogisticsTabPro
         <Info className="h-5 w-5 text-blue-500 mt-0.5" />
         <div className="space-y-1">
           <p className="text-xs font-bold text-blue-900">Gestão de fluxo logístico</p>
-          <p className="text-[10px] text-blue-700 leading-relaxed">O rastreio move um pedido confirmado para logística. Um comprovante privado encerra apenas um pedido que já está em logística.</p>
+          <p className="text-[10px] text-blue-700 leading-relaxed">O rastreio move o pedido da separação para o trânsito. O comprovante privado confirma a entrega; pedidos legados em logística continuam aceitos.</p>
         </div>
       </div>
 
@@ -145,8 +138,8 @@ export function OrderLogisticsTab({ orderId, orderStatus }: OrderLogisticsTabPro
         <CardHeader><CardTitle className="text-lg flex items-center gap-2"><Camera className="h-5 w-5" />Comprovante de entrega</CardTitle></CardHeader>
         <CardContent>
           <div className="flex flex-col items-center justify-center p-6 border-2 border-dashed rounded-lg bg-muted/30">
-            {deliveryPhotoUrl ? <div className="space-y-4 text-center"><img src={deliveryPhotoUrl} alt="Comprovante de entrega" className="max-w-xs rounded-lg border shadow-sm mx-auto" /><Button variant="outline" size="sm" onClick={() => fileInputRef.current?.click()} disabled={!canConfirmDelivery || isUploadingPhoto}>Alterar comprovante</Button></div> : <div className="text-center space-y-3"><div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto"><Camera className="h-6 w-6 text-primary" /></div><div className="space-y-1"><p className="text-sm font-medium">Nenhum comprovante enviado</p><p className="text-xs text-muted-foreground">Envie uma imagem de até 5 MB quando a entrega estiver em logística.</p></div><Button onClick={() => fileInputRef.current?.click()} disabled={!canConfirmDelivery || isUploadingPhoto}>{isUploadingPhoto ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Plus className="h-4 w-4 mr-2" />}Enviar comprovante</Button></div>}
-            <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handlePhotoUpload} />
+            {deliveryPhotoUrl ? <div className="space-y-4 text-center"><img src={deliveryPhotoUrl} alt="Comprovante de entrega" className="max-w-xs rounded-lg border shadow-sm mx-auto" /><Button variant="outline" size="sm" onClick={() => fileInputRef.current?.click()} disabled={!canConfirmDelivery || isUploadingPhoto}>Alterar comprovante</Button></div> : <div className="text-center space-y-3"><div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto"><Camera className="h-6 w-6 text-primary" /></div><div className="space-y-1"><p className="text-sm font-medium">Nenhum comprovante enviado</p><p className="text-xs text-muted-foreground">Envie uma imagem de até 5 MB quando o pedido estiver em trânsito.</p></div><Button onClick={() => fileInputRef.current?.click()} disabled={!canConfirmDelivery || isUploadingPhoto}>{isUploadingPhoto ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Plus className="h-4 w-4 mr-2" />}Enviar comprovante</Button></div>}
+            <input type="file" ref={fileInputRef} className="hidden" accept="image/jpeg,image/png,image/webp" onChange={handlePhotoUpload} />
           </div>
         </CardContent>
       </Card>

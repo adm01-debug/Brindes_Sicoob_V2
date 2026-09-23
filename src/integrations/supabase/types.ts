@@ -157,6 +157,7 @@ export type Database = {
           created_at: string
           created_by: string
           delivery_photo_path: string | null
+          delivery_photo_uploaded_by: string | null
           estimated_delivery: string | null
           id: string
           order_id: string
@@ -170,6 +171,7 @@ export type Database = {
           created_at?: string
           created_by: string
           delivery_photo_path?: string | null
+          delivery_photo_uploaded_by?: string | null
           estimated_delivery?: string | null
           id?: string
           order_id: string
@@ -183,6 +185,7 @@ export type Database = {
           created_at?: string
           created_by?: string
           delivery_photo_path?: string | null
+          delivery_photo_uploaded_by?: string | null
           estimated_delivery?: string | null
           id?: string
           order_id?: string
@@ -6940,6 +6943,30 @@ export type Database = {
         }
         Relationships: []
       }
+      quote_approval_evidence_keys: {
+        Row: {
+          activated_at: string
+          id: string
+          is_active: boolean
+          retired_at: string | null
+          vault_secret_name: string
+        }
+        Insert: {
+          activated_at?: string
+          id?: string
+          is_active?: boolean
+          retired_at?: string | null
+          vault_secret_name: string
+        }
+        Update: {
+          activated_at?: string
+          id?: string
+          is_active?: boolean
+          retired_at?: string | null
+          vault_secret_name?: string
+        }
+        Relationships: []
+      }
       quote_approval_tokens: {
         Row: {
           client_email: string | null
@@ -6953,7 +6980,10 @@ export type Database = {
           response_notes: string | null
           seller_id: string
           signature_data_url: string | null
+          signature_evidence: Json | null
           signature_hash: string | null
+          signature_key_id: string | null
+          signature_algorithm: string | null
           signed_at: string | null
           signer_document: string | null
           signer_ip: string | null
@@ -6976,7 +7006,10 @@ export type Database = {
           response_notes?: string | null
           seller_id: string
           signature_data_url?: string | null
+          signature_evidence?: Json | null
           signature_hash?: string | null
+          signature_key_id?: string | null
+          signature_algorithm?: string | null
           signed_at?: string | null
           signer_document?: string | null
           signer_ip?: string | null
@@ -6999,7 +7032,10 @@ export type Database = {
           response_notes?: string | null
           seller_id?: string
           signature_data_url?: string | null
+          signature_evidence?: Json | null
           signature_hash?: string | null
+          signature_key_id?: string | null
+          signature_algorithm?: string | null
           signed_at?: string | null
           signer_document?: string | null
           signer_ip?: string | null
@@ -7010,7 +7046,15 @@ export type Database = {
           updated_at?: string
           viewed_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "quote_approval_tokens_signature_key_id_fkey"
+            columns: ["signature_key_id"]
+            isOneToOne: false
+            referencedRelation: "quote_approval_evidence_keys"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       quote_audit_logs: {
         Row: {
@@ -8255,6 +8299,151 @@ export type Database = {
         }
         Relationships: []
       }
+      sicoob_approval_deliveries: {
+        Row: {
+          attempts: number
+          available_at: string
+          channel: string
+          created_at: string
+          delivered_at: string | null
+          destination: string
+          event_kind: string
+          generation: number
+          id: string
+          last_error_code: string | null
+          lease_expires_at: string | null
+          lease_token: string | null
+          payload: Json
+          provider_id: string | null
+          reconciliation: Json | null
+          request_id: string
+          setting_id: string | null
+          state: string
+          supersedes_delivery_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          attempts?: number
+          available_at?: string
+          channel: string
+          created_at?: string
+          delivered_at?: string | null
+          destination: string
+          event_kind?: string
+          generation?: number
+          id?: string
+          last_error_code?: string | null
+          lease_expires_at?: string | null
+          lease_token?: string | null
+          payload: Json
+          provider_id?: string | null
+          reconciliation?: Json | null
+          request_id: string
+          setting_id?: string | null
+          state?: string
+          supersedes_delivery_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          attempts?: number
+          available_at?: string
+          channel?: string
+          created_at?: string
+          delivered_at?: string | null
+          destination?: string
+          event_kind?: string
+          generation?: number
+          id?: string
+          last_error_code?: string | null
+          lease_expires_at?: string | null
+          lease_token?: string | null
+          payload?: Json
+          provider_id?: string | null
+          reconciliation?: Json | null
+          request_id?: string
+          setting_id?: string | null
+          state?: string
+          supersedes_delivery_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sicoob_approval_deliveries_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "sicoob_approval_requests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sicoob_approval_deliveries_setting_id_fkey"
+            columns: ["setting_id"]
+            isOneToOne: false
+            referencedRelation: "pa_notification_settings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sicoob_approval_deliveries_supersedes_delivery_id_fkey"
+            columns: ["supersedes_delivery_id"]
+            isOneToOne: false
+            referencedRelation: "sicoob_approval_deliveries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sicoob_approval_delivery_archive: {
+        Row: {
+          archive_id: string
+          archived_at: string
+          delivery_id: string
+          delivery_record: Json
+          retention_reason: string
+        }
+        Insert: {
+          archive_id?: string
+          archived_at?: string
+          delivery_id: string
+          delivery_record: Json
+          retention_reason: string
+        }
+        Update: {
+          archive_id?: string
+          archived_at?: string
+          delivery_id?: string
+          delivery_record?: Json
+          retention_reason?: string
+        }
+        Relationships: []
+      }
+      sicoob_approval_worker_dispatches: {
+        Row: {
+          completed_at: string | null
+          error_message: string | null
+          id: string
+          request_id: number
+          requested_at: string
+          state: string
+          status_code: number | null
+        }
+        Insert: {
+          completed_at?: string | null
+          error_message?: string | null
+          id?: string
+          request_id: number
+          requested_at?: string
+          state?: string
+          status_code?: number | null
+        }
+        Update: {
+          completed_at?: string | null
+          error_message?: string | null
+          id?: string
+          request_id?: number
+          requested_at?: string
+          state?: string
+          status_code?: number | null
+        }
+        Relationships: []
+      }
       sicoob_approval_policies: {
         Row: {
           cooperative_id: string | null
@@ -8893,9 +9082,12 @@ export type Database = {
           is_pilot_order: boolean | null
           notes: string | null
           pa_id: string | null
+          requires_artwork: boolean
           sla_deadline: string | null
           sla_status: string | null
           status: string
+          source_quote_id: string | null
+          source_quote_snapshot: Json | null
           total_amount: number | null
           tracking_code: string | null
           updated_at: string
@@ -8917,9 +9109,12 @@ export type Database = {
           is_pilot_order?: boolean | null
           notes?: string | null
           pa_id?: string | null
+          requires_artwork?: boolean
           sla_deadline?: string | null
           sla_status?: string | null
           status?: string
+          source_quote_id?: string | null
+          source_quote_snapshot?: Json | null
           total_amount?: number | null
           tracking_code?: string | null
           updated_at?: string
@@ -8941,9 +9136,12 @@ export type Database = {
           is_pilot_order?: boolean | null
           notes?: string | null
           pa_id?: string | null
+          requires_artwork?: boolean
           sla_deadline?: string | null
           sla_status?: string | null
           status?: string
+          source_quote_id?: string | null
+          source_quote_snapshot?: Json | null
           total_amount?: number | null
           tracking_code?: string | null
           updated_at?: string
@@ -9910,6 +10108,35 @@ export type Database = {
       }
     }
     Functions: {
+      archive_sicoob_approval_deliveries: {
+        Args: { p_batch_size?: number }
+        Returns: number
+      }
+      mark_overdue_sicoob_payments: { Args: never; Returns: number }
+      dispatch_sicoob_approval_worker: { Args: never; Returns: number }
+      monitor_sicoob_approval_worker: { Args: never; Returns: Json }
+      quote_approval_content_snapshot: {
+        Args: { p_quote_id: string }
+        Returns: Json
+      }
+      reconcile_sicoob_approval_delivery: {
+        Args: {
+          p_delivery_id: string
+          p_operator?: string
+          p_provider_id?: string
+          p_reason?: string
+          p_resolution: string
+        }
+        Returns: string
+      }
+      rotate_quote_approval_evidence_key: {
+        Args: { p_vault_secret_name: string }
+        Returns: string
+      }
+      verify_quote_approval_signature: {
+        Args: { p_token_id: string }
+        Returns: boolean
+      }
       copy_group_personalization_to_product: {
         Args: { p_membership_id: string }
         Returns: number
@@ -10134,6 +10361,31 @@ export type Database = {
       confirm_sicoob_order: {
         Args: { p_expected_status: string; p_order_id: string }
         Returns: undefined
+      }
+      consolidate_sicoob_quotes: {
+        Args: { p_notes?: string | null; p_quote_ids: string[]; p_singular_id: string }
+        Returns: Json
+      }
+      convert_quote_to_sicoob_order: {
+        Args: { p_quote_id: string }
+        Returns: {
+          id: string
+          order_number: string
+          status: string
+          total_amount: number
+        }[]
+      }
+      mutate_sicoob_order_item: {
+        Args: {
+          p_action: string
+          p_item_id?: string | null
+          p_order_id: string
+          p_product_id?: string | null
+          p_product_name?: string | null
+          p_quantity?: number | null
+          p_unit_price?: number | null
+        }
+        Returns: number
       }
       prepare_sicoob_order_confirmation: {
         Args: {
@@ -10835,6 +11087,8 @@ export type Database = {
           _signer_name: string
           _signer_document: string
           _signature_data_url: string
+          _signer_ip: string
+          _signer_user_agent: string
         }
         Returns: boolean
       }

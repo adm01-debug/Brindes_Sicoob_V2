@@ -11,6 +11,8 @@ CONTAINER = "sicoob-finance-art-" + uuid.uuid4().hex[:10]
 FIXTURE = ROOT / "tests/scenarios/sql/sicoob-finance-artwork-fixture.sql"
 MIGRATION = ROOT / "supabase/migrations/20260912180000_sicoob_finance_artwork.sql"
 FOLLOWUP_MIGRATION = ROOT / "supabase/migrations/20260913120003_sicoob_finance_artwork_followup.sql"
+POLICY_WRAPPER_MIGRATION = ROOT / "supabase/migrations/20260922224100_sicoob_storage_policy_wrapper.sql"
+OVERDUE_MIGRATION = ROOT / "supabase/migrations/20260922225200_materialize_overdue_sicoob_payments.sql"
 CREATOR = "11111111-1111-1111-1111-111111111111"
 APPROVER = "22222222-2222-2222-2222-222222222222"
 ORDER = "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"
@@ -84,6 +86,19 @@ try:
     sql(FIXTURE.read_text())
     sql(MIGRATION.read_text())
     sql(FOLLOWUP_MIGRATION.read_text())
+    sql("""
+      CREATE SCHEMA cron;
+      CREATE TABLE cron.job(jobid bigserial PRIMARY KEY,jobname text UNIQUE, schedule text, command text);
+      CREATE FUNCTION cron.unschedule(bigint) RETURNS boolean LANGUAGE sql AS
+        $$ DELETE FROM cron.job WHERE jobid=$1 RETURNING true $$;
+      CREATE FUNCTION cron.schedule(text,text,text) RETURNS bigint LANGUAGE sql AS
+        $$ INSERT INTO cron.job(jobname,schedule,command) VALUES($1,$2,$3) RETURNING jobid $$;
+    """)
+    sql(OVERDUE_MIGRATION.read_text())
+    sql("""
+      REVOKE EXECUTE ON FUNCTION public.sicoob_actor_can_manage_fulfillment(uuid,uuid) FROM PUBLIC, anon, authenticated;
+    """)
+    sql(POLICY_WRAPPER_MIGRATION.read_text())
     sql(f"""
       INSERT INTO auth.users VALUES ('{CREATOR}'), ('{APPROVER}');
       INSERT INTO public.user_roles VALUES ('{APPROVER}', 'supervisor');
@@ -96,6 +111,11 @@ try:
     assert scalar(sql("""
       SELECT has_function_privilege(
         'authenticated', 'public.sicoob_actor_can_manage_fulfillment(uuid,uuid)', 'EXECUTE'
+      )::text;
+    """)) == "false"
+    assert scalar(sql("""
+      SELECT has_function_privilege(
+        'authenticated', 'public.sicoob_current_actor_can_manage_fulfillment(uuid)', 'EXECUTE'
       )::text;
     """)) == "true"
     assert scalar(sql("""
@@ -227,7 +247,24 @@ try:
       );
     """, check=False)
     assert repeated_refund.returncode != 0 and "Somente uma parcela paga" in repeated_refund.stderr
-    result["pagamentos"] = "ator sem papel financeiro recusado e gestor de compras reconhecido; criação em estornado e sobrescrita sem versão recusadas; fatura, método e valores de parcela liquidada imutáveis; soma limitada; estorno formal preservou quitação e gravou motivo, data e ator"
+    overdue_id = scalar(actor_sql(APPROVER, f"""
+      SELECT public.record_sicoob_order_payment(
+        '{ORDER}', 2, 10, CURRENT_DATE - 1, 'pending', NULL, 'boleto', 'ERP-VENCIDO', NULL
+      );
+    """))
+    future_id = scalar(actor_sql(APPROVER, f"""
+      SELECT public.record_sicoob_order_payment(
+        '{ORDER}', 3, 10, CURRENT_DATE + 1, 'pending', NULL, 'boleto', 'ERP-FUTURO', NULL
+      );
+    """))
+    assert scalar(sql("SELECT public.mark_overdue_sicoob_payments();")) == "1"
+    assert scalar(sql(f"SELECT status FROM public.sicoob_order_payments WHERE id='{overdue_id}';")) == "overdue"
+    assert scalar(sql(f"SELECT status FROM public.sicoob_order_payments WHERE id='{future_id}';")) == "pending"
+    assert scalar(sql("SELECT public.mark_overdue_sicoob_payments();")) == "0"
+    direct_overdue_tamper = sql(f"UPDATE public.sicoob_order_payments SET status='pending' WHERE id='{overdue_id}';", check=False)
+    assert direct_overdue_tamper.returncode != 0 and "fluxo financeiro formal" in direct_overdue_tamper.stderr
+    assert scalar(sql("SELECT schedule || '|' || command FROM cron.job WHERE jobname='sicoob-materialize-overdue-payments';")) == "17 * * * *|SELECT public.mark_overdue_sicoob_payments();"
+    result["pagamentos"] = "ator sem papel financeiro recusado e gestor de compras reconhecido; criação em estornado e sobrescrita sem versão recusadas; fatura, método e valores de parcela liquidada imutáveis; soma limitada; estorno formal preservou quitação; vencimento materializado no banco, idempotente e agendado no calendário de Brasília"
 
     artwork_path1 = f"{ORDER}/artwork/v1.pdf"
     forged_artwork = actor_sql(CREATOR, f"""

@@ -30,10 +30,21 @@ jobs:
         run: |
           node scripts/scan-rls-security.mjs > reports/rls-status.txt
 
+      - name: Security Definer ACL Scan
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: npm run check:security-definer-acl
+
       - name: Cross-Organization Access Test
         env:
           SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
-          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
+          RLS_TEST_USER_A_EMAIL: ${{ secrets.RLS_TEST_USER_A_EMAIL }}
+          RLS_TEST_USER_A_PASSWORD: ${{ secrets.RLS_TEST_USER_A_PASSWORD }}
+          RLS_TEST_USER_B_EMAIL: ${{ secrets.RLS_TEST_USER_B_EMAIL }}
+          RLS_TEST_USER_B_PASSWORD: ${{ secrets.RLS_TEST_USER_B_PASSWORD }}
+          RLS_TEST_PRIVATE_QUOTE_B_ID: ${{ secrets.RLS_TEST_PRIVATE_QUOTE_B_ID }}
         run: |
           node scripts/test-rls-compliance.mjs > reports/rls-cross-check.txt
 
@@ -70,6 +81,4 @@ jobs:
             ENTERPRISE_AUDIT_REPORT_V6.md
             AUDIT_EXPORT_FILTERED.md
             FINAL_ENTERPRISE_AUDIT_REPORT.md
-
-
 

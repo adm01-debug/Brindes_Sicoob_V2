@@ -32,3 +32,10 @@ test('endpoint legado não anuncia email enfileirado sem fila ou provedor', asyn
 test('email legado continua recusando sessão inválida', async () => {
   assert.equal((await app(false)(request())).status,401);
 });
+test('endpoint legado recusa método, JSON e evento inválidos sem transporte', async () => {
+  const handler=app();
+  assert.equal((await handler(new Request('https://simulacao.invalid',{method:'GET',headers:{Authorization:'Bearer token'}}))).status,405);
+  assert.equal((await handler(new Request('https://simulacao.invalid',{method:'POST',headers:{Authorization:'Bearer token'},body:'{'}))).status,400);
+  const unknown=new Request('https://simulacao.invalid',{method:'POST',headers:{Authorization:'Bearer token'},body:JSON.stringify({event_type:'desconhecido',recipient_email:'qa@example.invalid'})});
+  assert.equal((await handler(unknown)).status,422);
+});

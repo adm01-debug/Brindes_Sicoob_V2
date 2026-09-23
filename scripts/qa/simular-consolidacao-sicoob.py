@@ -11,6 +11,8 @@ CONTAINER = "sicoob-consolidation-" + uuid.uuid4().hex[:10]
 FIXTURE = ROOT / "tests/scenarios/sql/sicoob-consolidation-fixture.sql"
 MIGRATION = ROOT / "supabase/migrations/20260912190000_sicoob_consolidation_distribution.sql"
 FOLLOWUP_MIGRATION = ROOT / "supabase/migrations/20260913120004_sicoob_consolidation_distribution_followup.sql"
+POLICY_WRAPPER_MIGRATION = ROOT / "supabase/migrations/20260922224000_sicoob_policy_helper_wrappers.sql"
+REFERENTIAL_INTEGRITY_MIGRATION = ROOT / "supabase/migrations/20260922224900_consolidation_referential_integrity.sql"
 MANAGER = "11111111-1111-1111-1111-111111111111"
 SELLER = "22222222-2222-2222-2222-222222222222"
 PA_RECEIVER = "33333333-3333-3333-3333-333333333333"
@@ -79,8 +81,20 @@ try:
     wait_for_postgres(command, CONTAINER)
 
     sql(FIXTURE.read_text())
+    sql(f"""
+      CREATE TABLE public.cooperativas (id uuid PRIMARY KEY);
+      INSERT INTO public.cooperativas (id) VALUES ('{COOP}'), ('{OTHER_COOP}');
+    """)
     sql(MIGRATION.read_text())
     sql(FOLLOWUP_MIGRATION.read_text())
+    sql("""
+      REVOKE EXECUTE ON FUNCTION public.sicoob_actor_can_manage_consolidation(uuid,uuid) FROM PUBLIC, anon, authenticated;
+      REVOKE EXECUTE ON FUNCTION public.sicoob_actor_can_receive_consolidation(uuid,uuid) FROM PUBLIC, anon, authenticated;
+      REVOKE EXECUTE ON FUNCTION public.sicoob_actor_can_receive_destination(uuid,uuid) FROM PUBLIC, anon, authenticated;
+      REVOKE EXECUTE ON FUNCTION public.sicoob_actor_can_view_all_consolidation(uuid,uuid) FROM PUBLIC, anon, authenticated;
+    """)
+    sql(POLICY_WRAPPER_MIGRATION.read_text())
+    sql(REFERENTIAL_INTEGRITY_MIGRATION.read_text())
     sql(f"""
       INSERT INTO auth.users VALUES ('{MANAGER}'), ('{SELLER}'), ('{PA_RECEIVER}'), ('{OUTSIDER}'), ('{OTHER_SELLER}');
       INSERT INTO public.user_roles VALUES
@@ -108,6 +122,17 @@ try:
         public.sicoob_delivery_receipt_events, public.sicoob_order_items TO authenticated;
     """)
 
+    assert scalar(sql("""
+      SELECT has_function_privilege(
+        'authenticated', 'public.sicoob_actor_can_manage_consolidation(uuid,uuid)', 'EXECUTE'
+      )::text;
+    """)) == "false"
+    assert scalar(sql("""
+      SELECT has_function_privilege(
+        'authenticated', 'public.sicoob_current_actor_can_manage_consolidation(uuid)', 'EXECUTE'
+      )::text;
+    """)) == "true"
+
     wrong_seller = actor_sql(MANAGER, f"""
       SELECT public.create_sicoob_order_consolidation(
         ARRAY['{ORDER1}'::uuid, '{ORDER2}'::uuid], '{OTHER_SELLER}', 'f0000000-0000-0000-0000-000000000001'
@@ -126,6 +151,24 @@ try:
       );
     """))
     assert consolidation == repeated
+    assert scalar(sql("""
+      SELECT count(*) FROM pg_constraint
+      WHERE conrelid = 'public.order_consolidations'::regclass
+        AND conname IN (
+          'order_consolidations_singular_id_fkey',
+          'order_consolidations_vendedor_id_fkey'
+        )
+        AND NOT convalidated;
+    """)) == "2"
+    orphan_reference = sql(f"""
+      BEGIN;
+      SET LOCAL app.sicoob_consolidation_operation = 'create';
+      UPDATE public.order_consolidations
+      SET vendedor_id = '99999999-9999-9999-9999-999999999999'
+      WHERE id = '{consolidation}';
+      ROLLBACK;
+    """, check=False)
+    assert orphan_reference.returncode != 0 and "foreign key constraint" in orphan_reference.stderr
     changed_retry = actor_sql(MANAGER, f"""
       SELECT public.create_sicoob_order_consolidation(
         ARRAY['{ORDER1}'::uuid], '{SELLER}', '{KEY}'

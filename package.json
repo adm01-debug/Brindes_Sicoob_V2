@@ -58,6 +58,7 @@
     "e2e:smoke-coverage-doc": "node scripts/e2e-smoke-coverage-doc.mjs",
     "e2e:smoke-coverage-check": "node scripts/e2e-smoke-coverage-doc.mjs --check",
     "check:security-definer-acl": "node scripts/check-security-definer-acl.mjs",
+    "check:critical-test-skips": "node scripts/check-critical-test-skip-budget.mjs",
     "check:npm-audit": "node scripts/check-npm-audit.mjs",
     "seed:qa": "node scripts/seed-qa.mjs",
     "test:rls": "node scripts/test-rls.mjs",

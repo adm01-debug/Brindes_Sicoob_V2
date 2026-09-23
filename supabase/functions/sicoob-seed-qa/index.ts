@@ -119,14 +119,26 @@ Deno.serve(async (req) => {
       report.details.push("Created additional PA for consolidation validation");
     } else if (scenario === "alcada-gestor") {
       steps.push("Submeter pedido > R$ 5.000", "Verificar status 'Aguardando Aprovação'", "Aprovar via Gestor de Compras");
-      await supabase.from("sicoob_orders").insert({
+      const { error: orderError } = await supabase.from("sicoob_orders").upsert({
         id: "00000000-0000-0000-0000-0000000000d1",
+        cooperative_id: "00000000-0000-0000-0000-0000000000c1",
         pa_id: "00000000-0000-0000-0000-0000000000b1",
-        solicitante_id: "00000000-0000-0000-0000-0000000000a1",
-        status: "pendente_aprovacao",
+        created_by: QA_USERS[0].id,
+        status: "waiting_approval",
         total_amount: 7500.00,
         notes: "Pedido QA excedendo alçada para teste de fluxo de aprovação"
-      });
+      }, { onConflict: "id", ignoreDuplicates: true });
+      if (orderError) throw orderError;
+      const { error: approvalError } = await supabase.from("sicoob_approval_requests").upsert({
+        id: "00000000-0000-0000-0000-0000000000e1",
+        order_id: "00000000-0000-0000-0000-0000000000d1",
+        requester_id: QA_USERS[0].id,
+        status: "pending",
+        amount_at_request: 7500.00,
+        threshold_at_request: 5000.00,
+        request_reason: "Pedido QA excedendo a alçada do PA",
+      }, { onConflict: "id", ignoreDuplicates: true });
+      if (approvalError) throw approvalError;
       report.details.push("Created pending order R$ 7.500 in sicoob_orders for approval flow testing");
     } else if (scenario === "rls-cross") {
       steps.push("Tentar acessar PA de outra Singular", "Verificar erro 403 / Lista vazia");

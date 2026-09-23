@@ -1,0 +1,34 @@
+# Baseline histórica triada em 22/09/2026.
+# Cada fingerprint é específico por commit/arquivo/regra; novos achados continuam bloqueados.
+# A presença aqui não comprova rotação. Consulte docs/auditoria-validacao-2026-09-22.md.
+0b408728dcf14ad7227c7e19a744c7cb4af598fb:src/lib/webhook-events-payload-samples.ts:generic-api-key:118
+0b408728dcf14ad7227c7e19a744c7cb4af598fb:src/lib/webhook-events-payload-samples.ts:generic-api-key:125
+1fc02cc6a1f25a537c2404ae43026c27c0cbd706:src/lib/supabase-gravacao.ts:jwt:6
+472ae394dc07b0e8cb09a7dd71f84521a5efd6ec:tests/e2e/quotes-flow.test.ts:generic-api-key:183
+48fc273d19694e0042495f1690d27c7a77201701:src/lib/supabase-gravacao.ts:jwt:6
+4bcf939b517d18c24de0d9963bb2546f4a917f9c:tests/components/kit-builder/DashboardAndManagement.test.tsx:generic-api-key:144
+635178b92cf508b65d476ca9350e71981e069742:.env:jwt:20
+670657909554f554bffa8518a3faa14c1f5c2416:supabase/migrations/20260424154125_0988f1e1-658b-423c-ae58-d4166a59fc10.sql:jwt:19
+6b090cca21484879d2bd3fcd616f3526e3ac2a66:.env:jwt:2
+6fbb120be89e27753690822369f08ad074a834fd:supabase/functions/_shared/credentials.test.ts:generic-api-key:442
+6fbb120be89e27753690822369f08ad074a834fd:supabase/migrations/20260429163414_schedule_connections_auto_test_cron.sql:jwt:31
+9bf9b2554994ee2678e845bbf4ddb9ee497a2ce9:docs/execucao/evidencias/correcoes-20260922/manifesto-codigo-testado.json:generic-api-key:12
+9bf9b2554994ee2678e845bbf4ddb9ee497a2ce9:docs/execucao/evidencias/correcoes-20260922/manifesto-codigo-testado.json:generic-api-key:13
+9bf9b2554994ee2678e845bbf4ddb9ee497a2ce9:docs/execucao/evidencias/correcoes-20260922/manifesto-codigo-testado.json:generic-api-key:20
+9bf9b2554994ee2678e845bbf4ddb9ee497a2ce9:docs/execucao/evidencias/correcoes-20260922/manifesto-codigo-testado.json:generic-api-key:33
+9bf9b2554994ee2678e845bbf4ddb9ee497a2ce9:docs/execucao/evidencias/correcoes-20260922/tipos-versus-api.json:generic-api-key:3
+9bf9b2554994ee2678e845bbf4ddb9ee497a2ce9:scripts/db/.inventory-cache.json:generic-api-key:7
+a846206e95a7d4b8aae7af0b354345279dcd43df:SUPABASE_FIX.md:generic-api-key:45
+c27c477033f8bf10937551c57e85dc81532749ce:.env:jwt:20
+c413061b9ef92b6dd2b79e06e981c6e3d6b6958c:docs/execucao/evidencias/correcoes-20260922/manifesto-codigo-testado.json:generic-api-key:12
+c413061b9ef92b6dd2b79e06e981c6e3d6b6958c:docs/execucao/evidencias/correcoes-20260922/manifesto-codigo-testado.json:generic-api-key:13
+c413061b9ef92b6dd2b79e06e981c6e3d6b6958c:docs/execucao/evidencias/correcoes-20260922/manifesto-codigo-testado.json:generic-api-key:20
+c413061b9ef92b6dd2b79e06e981c6e3d6b6958c:docs/execucao/evidencias/correcoes-20260922/manifesto-codigo-testado.json:generic-api-key:33
+c413061b9ef92b6dd2b79e06e981c6e3d6b6958c:docs/execucao/evidencias/correcoes-20260922/tipos-versus-api.json:generic-api-key:3
+c413061b9ef92b6dd2b79e06e981c6e3d6b6958c:scripts/db/.inventory-cache.json:generic-api-key:7
+d75459d28da0c8164c26861cd6358b147930425a:supabase/functions/migrate-helper/index.ts:generic-api-key:5
+da5d49b6d91ee059b1ba150b14a686c117c1118b:supabase/functions/migrate-helper/index.ts:generic-api-key:5
+f9510465755f73c5db248ed76d5edfce69a7fbdd:.env.production:jwt:2
+f9510465755f73c5db248ed76d5edfce69a7fbdd:.env.production:jwt:3
+fae31e0246c2d27566a59eeacc3155847c6fe406:src/integrations/supabase/client.ts:jwt:10
+fafc9a06cf9750330856f2d0366fd69e69ad5ff7:tmp/proposta_nova-1.html:generic-api-key:596

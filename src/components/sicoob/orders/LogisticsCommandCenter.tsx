@@ -30,36 +30,22 @@ export function LogisticsCommandCenter({ orderId, trackingCode, status }: Logist
   };
 
   const steps = React.useMemo(() => {
-    const isLogistic = status === 'logistic';
-    const isCompleted = status === 'completed';
-    const isConfirmed = ['confirmed', 'logistic', 'completed'].includes(status);
-    
-    return [
-      { 
-        label: "Pedido Confirmado", 
-        date: isConfirmed ? "Processado" : "Pendente", 
-        status: isConfirmed ? "completed" : "current", 
-        icon: CheckCircle2 
-      },
-      { 
-        label: "Em Produção", 
-        date: isConfirmed ? "Em andamento" : "Aguardando", 
-        status: isConfirmed ? (isLogistic || isCompleted ? "completed" : "current") : "pending", 
-        icon: Package 
-      },
-      { 
-        label: "Em Trânsito", 
-        date: isLogistic ? "Despachado" : (isCompleted ? "Entregue" : "Aguardando"), 
-        status: isLogistic ? "current" : (isCompleted ? "completed" : "pending"), 
-        icon: Truck 
-      },
-      { 
-        label: "Entrega no PA", 
-        date: isCompleted ? "Confirmado" : "Aguardando atualização",
-        status: isCompleted ? "completed" : "pending", 
-        icon: MapPin 
-      },
+    const stages = [
+      { id: 'confirmed', label: 'Confirmado', icon: CheckCircle2 },
+      { id: 'in_production', label: 'Em Produção', icon: Package },
+      { id: 'in_separation', label: 'Em Separação', icon: Package },
+      { id: 'in_transit', label: 'Em Trânsito', icon: Truck },
+      { id: 'delivered', label: 'Entrega no PA', icon: MapPin },
     ];
+    const normalizedStatus = status === 'logistic' ? 'in_transit' : status;
+    const stageIndex = normalizedStatus === 'completed'
+      ? stages.length
+      : stages.findIndex(stage => stage.id === normalizedStatus);
+    return stages.map((stage, index) => ({
+      ...stage,
+      date: index < stageIndex ? 'Concluído' : index === stageIndex ? 'Em andamento' : 'Aguardando',
+      status: index < stageIndex ? 'completed' : index === stageIndex ? 'current' : 'pending',
+    }));
   }, [status]);
 
   return (

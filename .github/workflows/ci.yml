@@ -38,6 +38,8 @@ jobs:
         run: npm run lint:baseline
 
       - name: Bloquear edição de migration já mesclada
+        env:
+          GITHUB_EVENT_BEFORE: ${{ github.event.before }}
         run: node scripts/check-migration-immutability.mjs
 
       - name: Bloquear referências de runtime sem objeto correspondente no banco
@@ -49,37 +51,12 @@ jobs:
           node scripts/check-edge-authorization.mjs
 
       - name: Executar cenários de arquitetura e segurança
-        run: npm run test:scenarios
+        run: |
+          npm run check:critical-test-skips
+          npm run test:scenarios
 
-      - name: Executar testes críticos de sessão, acesso, pedidos e kits
-        run: >-
-          npx vitest run
-          tests/components/pages/Auth.test.tsx
-          tests/components/ProtectedRoute.test.tsx
-          tests/components/AdminRoute.test.tsx
-          tests/components/DevRoute.test.tsx
-          tests/hooks/useUserRoles-race.test.tsx
-          tests/sicoob/route-access-scenarios.test.tsx
-          tests/services/sicoobOrderService.test.ts
-          tests/hooks/useKitStockValidation.test.tsx
-          tests/hooks/useKitAutoSave.test.tsx
-          tests/hooks/useOrderPayments.test.ts
-          tests/components/sicoob/OrderPilotApprovalsTab.test.tsx
-          tests/pages/kit-builder/useKitBuilderQuote.test.ts
-          tests/edge-functions/sicoob-kit-quote-catalog.test.ts
-          tests/edge-functions/sicoob-artwork-register.test.ts
-          tests/edge-functions/cors.test.ts
-          tests/lib/error-reporter.test.ts
-          tests/edge-functions/migration-health-check.test.ts
-          tests/edge-functions/product-webhook.test.ts
-          tests/pages/trends-queries.test.ts
-          tests/pages/TrendsKpiCards.test.tsx
-          tests/pages/QuoteApprovalPage.test.tsx
-          tests/hooks/useQuoteApprovalToken.test.ts
-          tests/hooks/useQuoteApproval.test.ts
-          tests/hooks/useTransactionalEmail.test.ts
-          tests/components/admin/connections/ZoneRefreshButton.collapsed.test.tsx
-          tests/hooks/useWebAuthn.test.tsx
+      - name: Executar a suíte completa com gate de cobertura
+        run: npm run test:coverage:ci
 
       - uses: denoland/setup-deno@v2
         with:
@@ -98,11 +75,15 @@ jobs:
           deno check supabase/functions/sicoob-reorder/index.ts
           deno check supabase/functions/sicoob-kit-quote/index.ts
           deno check supabase/functions/sicoob-artwork-register/index.ts
+          deno check supabase/functions/sicoob-document-ingest/index.ts
           deno check supabase/functions/_shared/authorize.ts
           deno check supabase/functions/admin-audit-hook/index.ts
           deno check supabase/functions/quote-approval/index.ts
+          deno check supabase/functions/quote-public-view/index.ts
           deno check supabase/functions/sicoob-approval-notifications/index.ts
+          deno check supabase/functions/sicoob-approval-reconciliation/index.ts
           deno check supabase/functions/send-transactional-email/index.ts
+          deno check supabase/functions/step-up-verify/index.ts
           deno check supabase/functions/migration-health-check/index.ts
           deno check supabase/functions/product-webhook/index.ts
           deno check supabase/functions/mcp-keys-revoke/index.ts
@@ -124,6 +105,21 @@ jobs:
 
       - name: Simular fila durável de aprovação e falhas de entrega
         run: python3 scripts/qa/simular-outbox-aprovacao.py
+
+      - name: Simular agendamento seguro da outbox via Vault
+        run: python3 scripts/qa/simular-agendamento-outbox.py
+
+      - name: Simular conversão atômica de orçamento em pedido Sicoob
+        run: python3 scripts/qa/simular-conversao-pedido-sicoob.py
+
+      - name: Simular integridade dos documentos Sicoob
+        run: python3 scripts/qa/simular-documentos-sicoob.py
+
+      - name: Simular logística canônica Sicoob
+        run: python3 scripts/qa/simular-logistica-canonica.py
+
+      - name: Simular consolidação atômica dos orçamentos
+        run: python3 scripts/qa/simular-consolidacao-orcamentos.py
 
       - name: Compilar artefato de produção
         env:

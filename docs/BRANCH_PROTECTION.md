@@ -1,83 +1,37 @@
-# 🔒 Branch Protection — `main`
+# Proteção da branch `main`
 
-**Status alvo:** ✅ Ativa
-**Configuração final:** UI do GitHub (não pode ser feita via API com `GITHUB_TOKEN` padrão)
-**Defesa em profundidade:** este repo tem o workflow `branch-protection-sentinel.yml` como camada CI auxiliar.
+## Estado observado em 22/09/2026
 
----
+A regra remota exige uma revisão, mas não possui status checks obrigatórios e
+permite bypass administrativo. PRs recentes foram mesclados com jobs em falha
+porque o orçamento do GitHub Actions impediu a inicialização. Portanto, a
+proteção atual não comprova qualidade nem segurança do conteúdo mesclado.
 
-## 1. Por que isso importa
+## Configuração alvo
 
-Sem branch protection:
-- Qualquer pessoa com acesso write pode `git push --force` em `main` e reescrever histórico
-- PRs podem ser mergeados sem revisão
-- Gitleaks pode falhar e ser ignorado
-- Builds quebrados podem entrar em `main`
+Em <https://github.com/adm01-debug/Brindes_Sicoob_V2/settings/branches>, a
+regra de `main` deve exigir:
 
-Com branch protection:
-- Force-push bloqueado
-- PR + 1 approval obrigatórios
-- CI checks (Gitleaks) bloqueiam merge se falharem
-- Histórico imutável → audit trail confiável
+- pull request com pelo menos uma aprovação;
+- descarte de aprovação após novo commit;
+- resolução de todas as conversas;
+- branch atualizada antes do merge;
+- checks de qualidade, Sicoob, segurança, drift de migrations e E2E aplicáveis;
+- aplicação da regra também a administradores;
+- force push e exclusão desativados.
 
-## 2. Como ativar (passo a passo no UI)
+Os nomes exatos dos checks devem ser selecionados a partir de uma execução
+verde, pois o GitHub registra o nome do job, não apenas o arquivo do workflow.
+O `branch-protection-sentinel.yml` fornece auditoria complementar; ele não
+substitui a regra do GitHub.
 
-1. Acessar https://github.com/adm01-debug/Promo_Gifts/settings/branches
-2. Clicar em **Add branch protection rule**
-3. Em **Branch name pattern**: digitar `main`
-4. Marcar (ordem recomendada):
-   - ☑ **Require a pull request before merging**
-     - ☑ Require approvals → `1`
-     - ☑ Dismiss stale pull request approvals when new commits are pushed
-   - ☑ **Require status checks to pass before merging**
-     - ☑ Require branches to be up to date before merging
-     - Adicionar ao "Search for status checks":
-       - `gitleaks` (de `.github/workflows/security.yml`)
-       - `branch-protection-sentinel` (de `.github/workflows/branch-protection-sentinel.yml`)
-   - ☑ **Require conversation resolution before merging**
-   - ☑ **Do not allow bypassing the above settings**
-   - ☐ Allow force pushes (deixar **DESmarcado**)
-   - ☐ Allow deletions (deixar **DESmarcado**)
-5. Clicar em **Create**
+## Validação após configurar
 
-## 3. Validação
+1. Abrir um PR sem aprovação e confirmar que o merge está bloqueado.
+2. Fazer um check obrigatório falhar e confirmar que uma aprovação não libera o merge.
+3. Tentar bypass com conta administrativa e confirmar a recusa.
+4. Confirmar que force push e exclusão de `main` são recusados.
+5. Registrar data, responsável e captura da configuração na evidência de release.
 
-### Teste 1 — Force push deve falhar
-
-```bash
-git checkout main
-git commit --allow-empty -m "test: force push attempt"
-git push --force origin main
-```
-
-Resultado esperado:
-```
-! [remote rejected] main -> main (protected branch hook declined)
-```
-
-### Teste 2 — PR sem approval não merge
-
-Abrir um PR simples e clicar em **Merge** sem aprovar primeiro. O botão deve estar **desabilitado**.
-
-### Teste 3 — CI vermelho bloqueia merge
-
-Abrir PR com `package.json` malformado de propósito. Mesmo com 1 approval, merge fica bloqueado até CI ficar verde.
-
-## 4. Workflow auxiliar (defesa em profundidade)
-
-`.github/workflows/branch-protection-sentinel.yml` é uma camada CI que detecta padrões anômalos de push em `main` e falha o build. **Não substitui a configuração UI**, mas:
-
-- Documenta a política como código
-- Serve de audit log na aba Actions
-- Cobre o caso de admin contornar inadvertidamente
-
-## 5. Exceções operacionais
-
-Nenhuma. Hotfixes seguem o mesmo fluxo PR + approval. Se houver incidente que exija bypass, registrar em `docs/INCIDENTS/` com justificativa.
-
-## 6. Revisão periódica
-
-A cada trimestre:
-- Confirmar que regra continua ativa
-- Revisar lista de status checks obrigatórios
-- Auditar logs de override
+Hotfixes seguem PR, revisão e checks. Exceções precisam de incidente registrado
+e revisão posterior; não devem permanecer como bypass permanente.

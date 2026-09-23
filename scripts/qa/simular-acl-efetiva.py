@@ -44,6 +44,28 @@ try:
     checks['heranca_authenticated_trigger_detectada'] = count("function_name='acl_trigger_fixture' AND granted_to='authenticated'") == 1
     checks['anon_nao_chama_gate'] = sql('SET ROLE anon; SELECT * FROM public.audit_security_definer_acl();', False).returncode != 0
     checks['service_chama_gate'] = sql('SET ROLE service_role; SELECT * FROM public.audit_security_definer_acl();', False).returncode == 0
+    sql("""
+      CREATE FUNCTION public.get_user_pa_id() RETURNS uuid LANGUAGE sql SECURITY DEFINER AS 'SELECT NULL::uuid';
+      CREATE FUNCTION public.get_user_cooperative_id() RETURNS uuid LANGUAGE sql SECURITY DEFINER AS 'SELECT NULL::uuid';
+      CREATE FUNCTION public.get_user_singular_id() RETURNS uuid LANGUAGE sql SECURITY DEFINER AS 'SELECT NULL::uuid';
+      CREATE FUNCTION public.is_kit_owner(uuid,uuid) RETURNS boolean LANGUAGE sql SECURITY DEFINER AS 'SELECT false';
+      CREATE FUNCTION public.is_kit_collaborator(uuid,uuid) RETURNS boolean LANGUAGE sql SECURITY DEFINER AS 'SELECT false';
+    """)
+    grant_migration = (ROOT / 'supabase/migrations/20260922224200_sicoob_policy_helper_grants.sql').read_text()
+    sql(grant_migration)
+    policy_helpers = [
+      'can_manage(uuid)', 'get_user_pa_id()', 'get_user_cooperative_id()',
+      'get_user_singular_id()', 'is_kit_owner(uuid,uuid)',
+      'is_kit_collaborator(uuid,uuid)',
+    ]
+    for signature in policy_helpers:
+        key = signature.replace('()', '').replace('(', '_').replace(')', '').replace(',', '_')
+        checks['authenticated_executa_' + key] = sql(
+            f"SELECT has_function_privilege('authenticated','public.{signature}','EXECUTE');"
+        ).stdout.strip() == 't'
+        checks['anon_nao_executa_' + key] = sql(
+            f"SELECT has_function_privilege('anon','public.{signature}','EXECUTE');"
+        ).stdout.strip() == 'f'
     assert all(checks.values()), checks
     print(json.dumps({'ambiente': 'PostgreSQL descartável sem rede', 'remoto_validado': False, 'cenarios': checks}, ensure_ascii=False, indent=2))
 finally:

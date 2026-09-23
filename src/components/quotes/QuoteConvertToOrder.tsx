@@ -34,7 +34,7 @@ export function QuoteConvertToOrder({ quoteId, status, onConverted }: QuoteConve
       organizationId: currentOrg?.id || null,
     }, {
       onSuccess: (order) => {
-        navigate(`/pedidos/${order.id}`);
+        navigate(`/sicoob/pedidos/${order.id}`);
         onConverted?.();
       }
     });

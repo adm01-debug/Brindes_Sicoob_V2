@@ -33,45 +33,21 @@ const d = enabled ? describe : describe.skip;
 
 d('RLS coverage — no public table with RLS enabled and zero policies', () => {
   it('returns an empty list of offending tables', async () => {
-    // Usa a função pg_meta exposta via REST — equivalente ao lint 0008.
-    // SQL: tabelas em public com relrowsecurity=true e sem entrada em pg_policy.
-    const sql = `
-      SELECT c.relname AS table_name
-      FROM pg_class c
-      JOIN pg_namespace n ON n.oid = c.relnamespace
-      WHERE n.nspname = 'public'
-        AND c.relkind = 'r'
-        AND c.relrowsecurity = true
-        AND NOT EXISTS (SELECT 1 FROM pg_policy p WHERE p.polrelid = c.oid)
-      ORDER BY c.relname;
-    `.trim();
-
-    // Endpoint pg-meta query (Supabase Studio interno). Quando indisponível,
-    // o teste é considerado inconclusivo — o gate de CI tradicional usa
-    // `supabase db lint` para pegar o mesmo lint 0008.
-    const endpoint = `${URL!.replace(/\/$/, '')}/pg-meta/default/query`;
-    let res: Response;
-    try {
-      res = await fetch(endpoint, {
-        method: 'POST',
-        headers: {
-          apikey: SERVICE_KEY!,
-          Authorization: `Bearer ${SERVICE_KEY}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ query: sql }),
-      });
-    } catch {
-      // Sem acesso ao endpoint pg-meta — pula sem falhar.
-      return;
-    }
-
+    const endpoint = `${URL!.replace(/\/$/, '')}/rest/v1/rpc/audit_empty_rls_policies`;
+    const res = await fetch(endpoint, {
+      method: 'POST',
+      headers: {
+        apikey: SERVICE_KEY!,
+        Authorization: `Bearer ${SERVICE_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: '{}',
+    });
     if (!res.ok) {
-      // pg-meta não disponível neste ambiente — pula.
-      return;
+      throw new Error(`A auditoria RLS falhou com HTTP ${res.status}: ${await res.text()}`);
     }
-
     const rows = (await res.json()) as Array<{ table_name: string }>;
+    expect(Array.isArray(rows), 'A auditoria RLS retornou contrato inválido').toBe(true);
     expect(
       rows,
       `As seguintes tabelas em public têm RLS habilitado mas ZERO policies:\n` +

@@ -8,26 +8,6 @@ export function useSicoobOrderItems(orderId?: string) {
   const { isVendedorRole, isAdmin } = useAuth();
 
 
-  const updateOrderTotal = async (orderId: string) => {
-    const { data: items, error: itemsError } = await supabase
-      .from("sicoob_order_items")
-      .select("total_price")
-      .eq("order_id", orderId);
-
-    if (itemsError) throw itemsError;
-
-    const total = items.reduce((sum, item) => sum + Number(item.total_price || 0), 0);
-
-    const { error: orderError } = await supabase
-      .from("sicoob_orders")
-      .update({ total_amount: total, updated_at: new Date().toISOString() })
-      .eq("id", orderId);
-
-    if (orderError) throw orderError;
-    
-    return total;
-  };
-
   const addItem = useMutation({
     mutationFn: async ({
       productId,
@@ -45,36 +25,17 @@ export function useSicoobOrderItems(orderId?: string) {
       }
       if (!orderId) throw new Error("Order ID is required");
 
-      // Validar status do pedido antes de adicionar
-      const { data: order, error: orderCheckError } = await supabase
-        .from("sicoob_orders")
-        .select("status")
-        .eq("id", orderId)
-        .single();
-      
-      if (orderCheckError) throw orderCheckError;
-      if (order?.status !== 'pending' && order?.status !== 'draft') {
-        throw new Error(`Não é possível adicionar itens a um pedido com status "${order?.status}".`);
-      }
-
-
-
-      const totalPrice = quantity * unitPrice;
-
-      const { error: itemError } = await supabase
-        .from("sicoob_order_items")
-        .insert({
-          order_id: orderId,
-          product_id: productId,
-          product_name: productName,
-          quantity,
-          unit_price: unitPrice,
-          total_price: totalPrice,
-        });
-
-      if (itemError) throw itemError;
-
-      return await updateOrderTotal(orderId);
+      const { data, error } = await supabase.rpc("mutate_sicoob_order_item", {
+        p_order_id: orderId,
+        p_action: "add",
+        p_item_id: null,
+        p_product_id: productId,
+        p_product_name: productName,
+        p_quantity: quantity,
+        p_unit_price: unitPrice,
+      });
+      if (error) throw error;
+      return Number(data);
     },
     onSuccess: () => {
       toast.success("Item adicionado com sucesso", {
@@ -100,28 +61,17 @@ export function useSicoobOrderItems(orderId?: string) {
       }
       if (!orderId) throw new Error("Order ID is required");
 
-      // Validar status do pedido antes de remover
-      const { data: order, error: orderCheckError } = await supabase
-        .from("sicoob_orders")
-        .select("status")
-        .eq("id", orderId)
-        .single();
-      
-      if (orderCheckError) throw orderCheckError;
-      if (order?.status !== 'pending' && order?.status !== 'draft') {
-        throw new Error(`Não é possível remover itens de um pedido com status "${order?.status}".`);
-      }
-
-
-
-      const { error: deleteError } = await supabase
-        .from("sicoob_order_items")
-        .delete()
-        .eq("id", itemId);
-
-      if (deleteError) throw deleteError;
-
-      return await updateOrderTotal(orderId);
+      const { data, error } = await supabase.rpc("mutate_sicoob_order_item", {
+        p_order_id: orderId,
+        p_action: "remove",
+        p_item_id: itemId,
+        p_product_id: null,
+        p_product_name: null,
+        p_quantity: null,
+        p_unit_price: null,
+      });
+      if (error) throw error;
+      return Number(data);
     },
     onSuccess: () => {
       toast.success("Item removido com sucesso", {

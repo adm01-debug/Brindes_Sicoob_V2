@@ -4,6 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { sicoobApprovalService } from "@/services/sicoob/approvalService";
 import { sicoobOrderService } from "@/services/sicoob/orderService";
+import { canSicoobTransitionTo, type OrderStatus } from "@/types/sicoob/orders";
 
 export interface ApprovalRequest {
   id: string;
@@ -123,21 +124,8 @@ export const useApprovalRequests = (orderId?: string) => {
   });
 
   const updateStatus = useMutation({
-    mutationFn: async (payload: { orderId: string; newStatus: string; previousStatus: string; comment?: string }) => {
-      // 1. Definir transições permitidas (SSOT com o Kanban)
-      const ALLOWED_TRANSITIONS: Record<string, string[]> = {
-        draft: ["pending", "cancelled"],
-        pending: ["waiting_approval", "confirmed", "cancelled"],
-        waiting_approval: ["confirmed", "rejected", "escalated_to_board", "cancelled"],
-        escalated_to_board: ["confirmed", "rejected", "cancelled"],
-        confirmed: ["logistic", "cancelled"],
-        logistic: ["completed", "cancelled"],
-        rejected: ["draft", "pending"],
-        completed: [],
-        cancelled: [],
-      };
-
-      if (!ALLOWED_TRANSITIONS[payload.previousStatus]?.includes(payload.newStatus)) {
+    mutationFn: async (payload: { orderId: string; newStatus: OrderStatus; previousStatus: OrderStatus; comment?: string }) => {
+      if (!canSicoobTransitionTo(payload.previousStatus, payload.newStatus)) {
         throw new Error(`Transição de "${payload.previousStatus}" para "${payload.newStatus}" não é permitida.`);
       }
 

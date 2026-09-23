@@ -12,7 +12,7 @@ export const sicoobStatsService = {
       supabase.from("pa_budgets").select("*").eq("pa_id", paId)
         .order("ano", { ascending: false }).order("mes", { ascending: false }).limit(1).maybeSingle(),
       supabase.from("sicoob_orders").select("*", { count: "exact", head: true }).eq("pa_id", paId)
-        .in("status", ["pending", "waiting_approval", "confirmed", "logistic"]),
+        .in("status", ["pending", "waiting_approval", "confirmed", "logistic", "in_production", "in_separation", "in_transit", "delivered"]),
       supabase.from("sicoob_orders").select("*", { count: "exact", head: true }).eq("pa_id", paId)
         .in("status", ["waiting_approval", "escalated_to_board"]),
       supabase.from("sicoob_orders").select("*", { count: "exact", head: true }).eq("pa_id", paId)
@@ -45,7 +45,7 @@ export const sicoobStatsService = {
     const [portfolioResult, activeResult, salesResult, historyResult] = await Promise.all([
       supabase.from("sicoob_orders").select("pa_id").eq("created_by", sellerUserId),
       supabase.from("sicoob_orders").select("*", { count: "exact", head: true })
-        .eq("created_by", sellerUserId).in("status", ["pending", "waiting_approval", "confirmed", "logistic"]),
+        .eq("created_by", sellerUserId).in("status", ["pending", "waiting_approval", "confirmed", "logistic", "in_production", "in_separation", "in_transit", "delivered"]),
       supabase.from("sicoob_orders")
         .select("total_amount, pa_id, pa:postos_atendimento(nome)")
         .eq("created_by", sellerUserId).eq("status", "completed").gte("updated_at", firstDay),
