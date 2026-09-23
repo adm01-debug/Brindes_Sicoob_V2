@@ -4826,3 +4826,33 @@ const techToSelect = primaryTech || loc.techniques[0]!;
 - `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `9f5c75dcea`).
 - Nenhum teste dedicado encontrado (existe um componente homônimo em `personalization/`, sem relação).
 - `typecheck:baseline`: 289 → 287 (230 arquivos), travado via `--update`.
+
+## ConfigurationPanel.tsx (products/customization, etapa 17)
+
+**Arquivo:** `src/components/products/customization/ConfigurationPanel.tsx`
+
+**Erros originais (2×):**
+- TS18048 (linha 74) — `result.records[0]` acessado sem checagem; `result.records` é `T[] | undefined`.
+- TS2345 (linha 120) — `adaptPriceResponse(result)` recebendo `CustomizationPriceResponse` onde o parâmetro exige `Record<string, unknown> | null | undefined`.
+
+**Diagnóstico:**
+- Linha 74: `InvokeResult<T>` (`src/lib/external-db/invoke.ts`) declara `records?: T[]`, então `result.records` pode ser `undefined` mesmo após o `await` — não há guard prévio no código.
+- Linha 120: `CustomizationPriceResponse` (`src/hooks/useGravacaoPriceV2.ts`) é uma interface sem index signature, portanto não é estruturalmente atribuível a `Record<string, unknown>`. Este é o mesmo padrão já resolvido em `useWizardPricing.ts` (2×) e `simulationPriceFetcher.ts`, onde a chamada usa `result as unknown as Record<string, unknown>`.
+
+**Fix aplicado:**
+```ts
+// antes:
+const faixa = result.records[0];
+...
+const flat = adaptPriceResponse(result);
+// depois:
+const faixa = result.records?.[0];
+...
+const flat = adaptPriceResponse(result as unknown as Record<string, unknown>);
+```
+
+**Validação:**
+- `tscheck-files.mjs`: 2 → 0 erros (7 → 5 no programa inteiro).
+- `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `cbfed5c3f7`).
+- Nenhum teste dedicado encontrado (existe `ConfigurationPanelV6.tsx` no mesmo diretório, componente distinto).
+- `typecheck:baseline`: 287 → 285 (229 arquivos), travado via `--update`.

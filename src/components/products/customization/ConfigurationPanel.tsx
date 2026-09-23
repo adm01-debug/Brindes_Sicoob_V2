@@ -71,7 +71,7 @@ export function ConfigurationPanel({ area, quantity, onPriceCalculated }: Config
         });
         if (cancelled) return;
 
-        const faixa = result.records[0];
+        const faixa = result.records?.[0];
         const hasDimension = !!(faixa && faixa.largura_min !== null);
         setUsaDimensao(hasDimension);
       } catch {
@@ -117,7 +117,7 @@ export function ConfigurationPanel({ area, quantity, onPriceCalculated }: Config
       );
 
       if (result?.success) {
-        const flat = adaptPriceResponse(result);
+        const flat = adaptPriceResponse(result as unknown as Record<string, unknown>);
         setPriceData(flat);
         onPriceCalculated(area.area_id, flat);
       } else {
