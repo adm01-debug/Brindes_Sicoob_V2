@@ -180,7 +180,7 @@ function LatencySparkline({ items, width = 64, height = 18 }: { items: TestHisto
               )}
             />
           ))}
-          <circle cx={last.x} cy={last.y} r={2.4} className="fill-transparent stroke-foreground/40" strokeWidth={0.6} />
+          <circle cx={last!.x} cy={last!.y} r={2.4} className="fill-transparent stroke-foreground/40" strokeWidth={0.6} />
         </svg>
       </TooltipTrigger>
       <TooltipContent side="top">
@@ -427,7 +427,7 @@ export function ConnectionTestHistoryPanel({
   useEffect(() => {
     if (prevRefreshKeyRef.current === refreshKey) return;
     prevRefreshKeyRef.current = refreshKey;
-    if (items.length > 0) setHighlightId(items[0].id);
+    if (items.length > 0) setHighlightId(items[0]!.id);
   }, [refreshKey, items]);
 
   const goToLatestFailure = (e?: React.MouseEvent) => {

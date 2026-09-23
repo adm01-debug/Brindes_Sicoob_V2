@@ -3025,3 +3025,19 @@ Esse hook é consumido por `AuthContext.tsx` (linha 88), que calcula `mfaRequire
 - `check-eslint-baseline.mjs`: 0 regressões (3334 erros globais, referência `origin/main` em `739620b9f4`).
 - Nenhum teste dedicado encontrado para este arquivo.
 - `typecheck:baseline`: 493 → 489 (309 arquivos), travado via `--update`.
+
+## ConnectionTestHistoryPanel.tsx (etapa 17)
+
+**Arquivo:** `src/components/admin/connections/ConnectionTestHistoryPanel.tsx`
+
+**Erros originais (3×):** TS18048 ×2 (linha 183 — `last` possivelmente `undefined`), TS2532 (linha 430 — objeto possivelmente `undefined`).
+
+**Diagnóstico:** ambos os pontos são acesso indexado protegido por checagem de `.length` que o `noUncheckedIndexedAccess` não propaga. Linha 183: `const last = points[points.length - 1]` dentro de `LatencySparkline`, com guarda anterior `if (sorted.length < 2) return null;` — `points` é derivado de `sorted.map(...)`, mesma cardinalidade, então `sorted.length >= 2` garante `points.length >= 2` e `last` sempre definido. Linha 430: `items[0].id` dentro de `if (items.length > 0) setHighlightId(items[0].id);` — a guarda garante o índice 0.
+
+**Fix aplicado:** asserção de não-nulo nos 2 pontos (`last!.x`/`last!.y`, `items[0]!.id`), mesmo padrão já usado no restante da sessão para acessos indexados estruturalmente protegidos por checagem de `.length` que o TS não propaga.
+
+**Validação:**
+- `tscheck-files.mjs`: 3 → 0 erros (3 no programa inteiro).
+- `check-eslint-baseline.mjs`: 0 regressões (3334 erros globais, referência `origin/main` em `87cb3ee53b`).
+- Nenhum teste dedicado encontrado para este arquivo.
+- `typecheck:baseline`: 489 → 486 (308 arquivos), travado via `--update`.
