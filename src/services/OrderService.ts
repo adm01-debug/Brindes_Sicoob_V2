@@ -284,14 +284,31 @@ export class OrderService {
   static async getApprovalHistory(orderId: string) {
     const { data, error } = await supabase
       .from("order_approval_history")
-      .select(`
-        *,
-        approver:approver_id(full_name)
-      `)
+      .select("*")
       .eq("order_id", orderId)
       .order("created_at", { ascending: false });
     if (error) throw error;
-    return data;
+
+    // approver_id referencia auth.users(id), sem FK para profiles — o PostgREST
+    // não consegue embutir `approver:approver_id(...)`. Busca-se profiles à parte.
+    const approverIds = Array.from(
+      new Set((data ?? []).map((h) => h.approver_id).filter((id): id is string => !!id))
+    );
+    const approverMap = new Map<string, { full_name: string | null }>();
+    if (approverIds.length > 0) {
+      const { data: approvers } = await supabase
+        .from("profiles")
+        .select("user_id, full_name")
+        .in("user_id", approverIds);
+      for (const a of approvers ?? []) {
+        approverMap.set(a.user_id, { full_name: a.full_name });
+      }
+    }
+
+    return (data ?? []).map((h) => ({
+      ...h,
+      approver: h.approver_id ? approverMap.get(h.approver_id) ?? null : null,
+    }));
   }
 
   static async getSmartAlerts() {

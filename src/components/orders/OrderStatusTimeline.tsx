@@ -2,7 +2,7 @@
  * OrderStatusTimeline — visualização horizontal do progresso do pedido.
  */
 import { Check, Circle, XCircle, Clock, Package, Truck, CheckCircle2, ShieldCheck, History, Info } from "lucide-react";
-import { ORDER_STATUS_FLOW, ORDER_STATUS_LABELS } from "@/hooks/orders/useOrders";
+import { ORDER_STATUS_FLOW, ORDER_STATUS_LABELS, type OrderStatus } from "@/hooks/orders/useOrders";
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import { OrderService } from "@/services/OrderService";
@@ -12,6 +12,10 @@ import { format } from "date-fns";
 interface OrderStatusTimelineProps {
   status: string;
   orderId?: string;
+}
+
+function formatApprovalDate(createdAt: string | null): string | null {
+  return createdAt ? format(new Date(createdAt), "dd/MM/yyyy HH:mm") : null;
 }
 
 const statusIcons: Record<string, any> = {
@@ -54,7 +58,7 @@ export function OrderStatusTimeline({ status, orderId }: OrderStatusTimelineProp
           <span className="font-semibold uppercase tracking-wider text-[10px] text-muted-foreground">Progresso do Pedido</span>
           <div className="flex items-center gap-2">
             <h3 className="font-bold text-lg text-foreground capitalize">
-              {ORDER_STATUS_LABELS[status] || status.replace('_', ' ')}
+              {ORDER_STATUS_LABELS[status as OrderStatus] || status.replace('_', ' ')}
             </h3>
             {latestApproval && (
               <TooltipProvider>
@@ -73,7 +77,7 @@ export function OrderStatusTimeline({ status, orderId }: OrderStatusTimelineProp
                     <div className="space-y-1 text-xs">
                       <p><strong>Resultado:</strong> {latestApproval.decision === 'approved' ? 'Aprovado' : 'Reprovado'}</p>
                       <p><strong>Aprovador:</strong> {latestApproval.approver?.full_name || 'Sistema'}</p>
-                      <p><strong>Data:</strong> {format(new Date(latestApproval.created_at), "dd/MM/yyyy HH:mm")}</p>
+                      <p><strong>Data:</strong> {formatApprovalDate(latestApproval.created_at)}</p>
                       {latestApproval.reason && (
                         <p className="text-muted-foreground italic mt-1">"{latestApproval.reason}"</p>
                       )}

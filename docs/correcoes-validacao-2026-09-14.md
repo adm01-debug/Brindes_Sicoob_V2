@@ -3217,3 +3217,27 @@ Esse hook é consumido por `AuthContext.tsx` (linha 88), que calcula `mfaRequire
 - `check-eslint-baseline.mjs`: 0 regressões (3334 erros globais, referência `origin/main` em `d28b11da01`).
 - Nenhum teste dedicado encontrado para este arquivo.
 - `typecheck:baseline`: 459 → 456 (298 arquivos), travado via `--update`.
+
+## OrderStatusTimeline.tsx (etapa 17)
+
+**Arquivo:** `src/components/orders/OrderStatusTimeline.tsx` (+ `src/services/OrderService.ts`)
+
+**Erros originais (3×):**
+- TS7053 (linha 57): `ORDER_STATUS_LABELS[status]` — `status` é `string` solto (prop do componente), mas `ORDER_STATUS_LABELS: Record<OrderStatus, string>` exige uma chave do union literal `OrderStatus`.
+- TS2339 (linha 75) e TS2769 (linha 76): `latestApproval.approver?.full_name` e `format(new Date(latestApproval.created_at), ...)` — ambos poluídos pelo tipo de erro do PostgREST (`SelectQueryError<"could not find the relation...">`), efeito colateral do bug real descrito abaixo.
+
+**Diagnóstico:**
+1. **Cast de status (zero-churn):** convenção já estabelecida em `src/hooks/orders/useOrders.ts` (linhas 53, 69-70) para indexar `ORDER_STATUS_LABELS` com uma variável de status tipada como `string` solto: `ORDER_STATUS_LABELS[status as OrderStatus] || fallback`.
+2. **Bug real de produção (não é só erro de tipo):** `OrderService.getApprovalHistory` fazia um join embutido do Supabase `approver:approver_id(full_name)`. Conferido em `src/integrations/supabase/types.ts` que `order_approval_history.Relationships` só tem FK para `orders` via `order_id` — **não existe FK de `approver_id` para `profiles`** (`approver_id` referencia `auth.users(id)`, tabela que o PostgREST não consegue embutir via join declarativo). Resultado: essa query lança erro (`if (error) throw error`) **toda vez que é executada em produção**, deixando o badge "Decisão de Alçada" em `OrderStatusTimeline.tsx` permanentemente quebrado/invisível, de forma silenciosa (o `useQuery` só retorna `data: undefined`, sem UI de erro visível). O mesmo bug, com a mesma causa raiz, já está documentado e corrigido em `src/pages/GestorApprovalsPage.tsx` (linhas 89-90, comentário inline explicando exatamente isso).
+3. **Data nula:** ao remover o join quebrado, `created_at: string | null` (tipo real da coluna) deixou de estar mascarado pelo erro de tipo do PostgREST, expondo a necessidade real de guarda contra `null` — mesmo padrão já usado no componente irmão `src/components/orders/OrderHistoryTimeline.tsx` (linha 38: `event.created_at && format(new Date(event.created_at), ...)`).
+
+**Fix aplicado:**
+- `OrderStatusTimeline.tsx` linha 57: `ORDER_STATUS_LABELS[status as OrderStatus] || status.replace('_', ' ')`.
+- `OrderService.getApprovalHistory`: removido o join embutido quebrado; query agora busca `order_approval_history.*` isolada, coleta os `approver_id` distintos, busca `profiles(user_id, full_name)` separadamente, monta um `Map` e mescla `approver: approverMap.get(h.approver_id) ?? null` em cada linha — replicando o padrão de duas etapas já estabelecido e testado em `GestorApprovalsPage.tsx`.
+- `OrderStatusTimeline.tsx`: extraída a formatação da data para uma função de módulo `formatApprovalDate(createdAt: string | null)` (guarda o `null` fora do escopo do componente) em vez de um `&&` inline no JSX — isso evitou um novo ponto de decisão dentro de `OrderStatusTimeline` (que já estava na complexidade ciclomática máxima permitida, 10/10; um guard inline elevaria para 11 e quebraria o lint). Também trocado o import de `OrderStatus` para `import { type OrderStatus }`, satisfazendo `@typescript-eslint/consistent-type-imports` (é usado apenas como tipo).
+
+**Validação:**
+- `tscheck-files.mjs`: 3 → 0 erros (9 → 6 no programa inteiro).
+- `check-eslint-baseline.mjs`: 0 regressões (3334 erros globais, referência `origin/main` em `b2bfb9e928`).
+- Teste dedicado `tests/services/orderService.test.ts`: 5 passaram (não cobre especificamente `getApprovalHistory`, mas confirma que nenhum outro método do `OrderService` regrediu).
+- `typecheck:baseline`: 456 → 453 (297 arquivos), travado via `--update`.
