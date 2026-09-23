@@ -5629,4 +5629,34 @@ Tipo derivado diretamente da configuração real do `cva` (fonte da verdade), em
 - `tscheck-files.mjs`: 2 → 0 erros (0 no programa inteiro).
 - `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `bd390c352d`).
 - Sem teste dedicado encontrado. Sem consumidores externos (`StatusBadge`/`mapToStatus` re-exportados em `ui/index.ts` mas não importados em nenhum outro arquivo).
+
+## useAccessSecurity.ts (etapa 17)
+
+**Arquivo:** `src/hooks/admin/useAccessSecurity.ts`
+
+**Erros originais (2×):**
+```
+src/hooks/admin/useAccessSecurity.ts(90,15): error TS2769: No overload matches this call.
+src/hooks/admin/useAccessSecurity.ts(119,15): error TS2769: No overload matches this call.
+```
+
+**Diagnóstico:** As chamadas `.insert({...} as Record<string, unknown>)` em `addIp` (linha 90, tabela `ip_whitelist`) e `addCity` (linha 119, tabela `city_whitelist`) forçavam o objeto literal a um tipo genérico `Record<string, unknown>` antes de repassá-lo ao método `.insert()` do client Supabase tipado. O `.insert()` do supabase-js v2 é sobrecarregado com base no tipo `Insert` gerado para cada tabela (`TablesInsert<'ip_whitelist'>` exige `ip_address: string`; `TablesInsert<'city_whitelist'>` exige `city_name: string`, ambos com os demais campos opcionais) — nenhuma das sobrecargas aceita um `Record<string, unknown>` genérico, resultando em TS2769. Os `.update()` do mesmo arquivo usam o mesmo cast (linhas 77, 111, 140) mas não erram, pois a sobrecarga de `update()` é mais permissiva com objetos parciais genéricos.
+
+**Fix aplicado:**
+```ts
+// antes:
+.insert({ ip_address, label: label || null } as Record<string, unknown>)
+...
+.insert({ city_name, state: state || null, country_code } as Record<string, unknown>)
+// depois:
+.insert({ ip_address, label: label || null })
+...
+.insert({ city_name, state: state || null, country_code })
+```
+Removido o cast `as Record<string, unknown>` nas duas chamadas `.insert()` — os objetos literais já satisfazem naturalmente os tipos `Insert` reais das tabelas (`ip_address`/`city_name` obrigatórios e presentes; `label`/`state` como `string | null` batem com `?: string | null`; `country_code` como `string` bate com `?: string`), então o cast era desnecessário e mascarava a checagem de tipo do client Supabase.
+
+**Validação:**
+- `tscheck-files.mjs`: 2 → 0 erros (0 no programa inteiro).
+- `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `791ed00e86`).
+- Teste dedicado `tests/hooks/useAccessSecurity.test.ts`: 5/5 passaram.
 - `typecheck:baseline`: 237 → 235 (204 arquivos), travado via `--update`.

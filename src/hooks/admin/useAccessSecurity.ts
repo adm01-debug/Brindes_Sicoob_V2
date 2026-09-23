@@ -87,7 +87,7 @@ export function useAccessSecurity() {
   const addIp = async (ip_address: string, label?: string) => {
     const { data, error } = await supabase
       .from("ip_whitelist")
-      .insert({ ip_address, label: label || null } as Record<string, unknown>)
+      .insert({ ip_address, label: label || null })
       .select()
       .single();
     if (error) {
@@ -116,7 +116,7 @@ export function useAccessSecurity() {
   const addCity = async (city_name: string, state?: string, country_code = "BR") => {
     const { data, error } = await supabase
       .from("city_whitelist")
-      .insert({ city_name, state: state || null, country_code } as Record<string, unknown>)
+      .insert({ city_name, state: state || null, country_code })
       .select()
       .single();
     if (error) {
