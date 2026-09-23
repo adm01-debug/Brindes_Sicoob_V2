@@ -133,7 +133,7 @@ export function ProductGallery({
               <video src={allMedia[selectedIndex]} controls className="w-full h-full object-contain animate-fade-in" poster={displayImages[0]} />
             ) : (
               <img
-                src={getCdnUrl(allMedia[selectedIndex], 'large')}
+                src={getCdnUrl(allMedia[selectedIndex]!, 'large')}
                 alt={`${productName} - Imagem ${selectedIndex + 1}`} title={productName}
                 className={cn(
                   "w-full h-full object-contain transition-all duration-700 ease-out",
@@ -144,7 +144,7 @@ export function ProductGallery({
                 style={{ transform: `scale(${zoom}) translate(${pan.x / zoom}px, ${pan.y / zoom}px)` }}
                 draggable={false}
                 onLoad={() => setIsImageLoading(false)}
-                onError={(e) => { const img = e.currentTarget; if (!img.dataset.fallback) { img.dataset.fallback = '1'; img.src = allMedia[selectedIndex]; } }}
+                onError={(e) => { const img = e.currentTarget; if (!img.dataset.fallback) { img.dataset.fallback = '1'; img.src = allMedia[selectedIndex]!; } }}
               />
             )}
           </div>

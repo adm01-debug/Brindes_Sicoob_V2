@@ -5006,3 +5006,33 @@ numberOfColors: resolveNumCores(price),
 - `check-eslint-baseline.mjs`: 0 regressões após o fix corretivo (referência `origin/main` em `76834b6553`).
 - Teste dedicado ao componente não encontrado; teste relacionado do hook (`tests/hooks/useProductCustomizationOptions.smoke.test.ts`) executado: 2/2 passou.
 - `typecheck:baseline`: 277 → 275 (224 arquivos), travado via `--update`.
+
+## ProductGallery.tsx (etapa 17)
+
+**Arquivo:** `src/components/products/ProductGallery.tsx`
+
+**Erros originais (2×):**
+```
+src/components/products/ProductGallery.tsx(136,32): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+src/components/products/ProductGallery.tsx(147,121): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+```
+
+**Diagnóstico:** padrão `noUncheckedIndexedAccess` em `allMedia[selectedIndex]` (`allMedia = [...displayImages, ...displayVideos]`, ambos `string[]`). Ambos os acessos ocorrem dentro do branch `!isVideo(selectedIndex)` (linha 132), onde `isVideo` retorna `index >= displayImages.length` — logo `selectedIndex < displayImages.length`, e como `displayImages` é o prefixo de `allMedia`, o acesso é sempre válido nesse branch. TS não propaga essa garantia por não fazer narrowing de índice de array a partir de uma chamada de função.
+
+**Fix aplicado:**
+```ts
+// antes:
+src={getCdnUrl(allMedia[selectedIndex], 'large')}
+...
+img.src = allMedia[selectedIndex];
+// depois:
+src={getCdnUrl(allMedia[selectedIndex]!, 'large')}
+...
+img.src = allMedia[selectedIndex]!;
+```
+
+**Validação:**
+- `tscheck-files.mjs`: 2 → 0 erros (2 → 0 no programa inteiro).
+- `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `92c2716d5e`).
+- Teste dedicado `tests/components/products/ProductGallery.test.tsx` executado: 3/3 passou.
+- `typecheck:baseline`: 275 → 273 (223 arquivos), travado via `--update`.
