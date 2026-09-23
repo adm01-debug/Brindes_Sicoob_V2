@@ -1,0 +1,50 @@
+{
+  "data": "2026-09-23",
+  "ambiente": "construcao",
+  "project_ref": "cfmzkthhgliqelozlmwu",
+  "banco": {
+    "tabelas_publicas": 226,
+    "rotinas_publicas": 263,
+    "ledger_inicial": "20260922210000",
+    "migrations_lote_aplicadas": 18,
+    "migrations_lote_md5_exato": 18,
+    "ledger_final": "20260923100000",
+    "constraints_historicas_validadas": 4,
+    "funcoes_lote_presentes": 34,
+    "tabelas_lote_presentes": 4,
+    "crons_lote_ativos": 4,
+    "gatilhos_lote_ativos": 4,
+    "indices_publicos_invalidos": 0,
+    "duplicidades_orcamento_convertido": 0,
+    "duplicidades_evento_outbox": 0,
+    "pagamentos_vencidos_pendentes": 0,
+    "orfaos_consolidacao": 0,
+    "funcoes_administrativas_executaveis_por_anon": 0
+  },
+  "edge_functions": {
+    "diretorios_locais": 105,
+    "http_200": 98,
+    "http_404": 6,
+    "timeout": 1,
+    "operacionais_ausentes": [
+      "sicoob-approval-reconciliation",
+      "sicoob-artwork-register",
+      "sicoob-document-ingest",
+      "sicoob-kit-quote",
+      "sicoob-reorder"
+    ],
+    "stub_inerte_ausente": "migrate-helper",
+    "inconclusiva": "generate-mockup-nanobanana"
+  },
+  "configuracao_pendente": {
+    "vault": [
+      "sicoob_project_url",
+      "sicoob_approval_worker_secret"
+    ],
+    "scanner": [
+      "SICOOB_MALWARE_SCANNER_URL",
+      "SICOOB_MALWARE_SCANNER_TOKEN"
+    ],
+    "deploy_edge": "A conta do CLI recebe HTTP 403 e o MCP não oferece operação de deploy."
+  }
+}
