@@ -3349,3 +3349,26 @@ Esse hook é consumido por `AuthContext.tsx` (linha 88), que calcula `mfaRequire
 - `check-eslint-baseline.mjs`: 0 regressões (3333 erros globais, referência `origin/main` em `a694d598eb`) — **drift positivo**: 1 erro de lint eliminado como bônus (código morto removido).
 - Nenhum teste dedicado encontrado para este arquivo.
 - `typecheck:baseline`: 438 → 435 (291 arquivos), travado via `--update`.
+
+## StockHistoryChart.tsx (etapa 17)
+
+**Arquivo:** `src/components/products/StockHistoryChart.tsx` (fix aplicado em `src/components/products/useStockChartData.ts`)
+
+**Erros originais (3×):** TS2532 (linhas 161, 164, 165 — `demandLabel[marketDemandLevel]` possivelmente `undefined`).
+
+**Diagnóstico:**
+- `demandLabel` (definido em `useStockChartData.ts`) era tipado como `Record<string, { text: string; color: string }>`. Com `noUncheckedIndexedAccess`, QUALQUER indexação em `Record<string, T>` produz `T | undefined`, independente do tipo da chave.
+- `marketDemandLevel` vem de um `useMemo` cujo corpo só retorna 5 literais fixos (`'very-high' | 'high' | 'moderate' | 'low' | 'unknown'`) — uma enumeração fechada e estaticamente verificável dentro do mesmo arquivo — e `demandLabel` já cobre exatamente essas 5 chaves.
+- Em vez de suprimir com asserção de não-nulo em 3 pontos de uso (no arquivo consumidor), a correção correta na origem é estreitar o tipo de `demandLabel` para `Record<MarketDemandLevel, {...}>` (chave literal fechada, não `string` genérico) — o TypeScript então sabe que a indexação é exaustiva e para de adicionar `| undefined`, eliminando os 3 erros no arquivo consumidor sem tocar nele.
+
+**Fix aplicado (em `useStockChartData.ts`):**
+- Novo tipo exportado `export type MarketDemandLevel = 'very-high' | 'high' | 'moderate' | 'low' | 'unknown';`.
+- `useMemo<MarketDemandLevel>(...)` anota explicitamente o retorno do cálculo de `marketDemandLevel`.
+- `demandLabel: Record<MarketDemandLevel, { text: string; color: string }>` substitui `Record<string, ...>`.
+- Zero mudanças em `StockHistoryChart.tsx` — o fix na origem do tipo já elimina os 3 erros no consumidor.
+
+**Validação:**
+- `tscheck-files.mjs` (`StockHistoryChart.tsx` e `useStockChartData.ts`): 3 → 0 erros (7 no programa inteiro).
+- `check-eslint-baseline.mjs`: 0 regressões (3333 erros globais, referência `origin/main` em `f10e70b225`).
+- Nenhum teste dedicado encontrado para nenhum dos dois arquivos.
+- `typecheck:baseline`: 435 → 432 (290 arquivos), travado via `--update`.

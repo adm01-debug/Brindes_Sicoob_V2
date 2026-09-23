@@ -29,6 +29,8 @@ import {
   type MockIntelligenceData,
 } from "@/lib/stock-chart-utils";
 
+export type MarketDemandLevel = 'very-high' | 'high' | 'moderate' | 'low' | 'unknown';
+
 export function useStockChartData(productId: string) {
   const [period, setPeriod] = useState<string>('30');
   const [showCost, setShowCost] = useState(false);
@@ -131,7 +133,7 @@ export function useStockChartData(productId: string) {
   const trend = safeVelocityTrend(bestVelocity?.velocity_trend);
   const trendDisplay = formatVelocityTrendCommercial(trend);
 
-  const marketDemandLevel = useMemo(() => {
+  const marketDemandLevel = useMemo<MarketDemandLevel>(() => {
     if (!bestVelocity) return 'unknown';
     const v = safeNumber(bestVelocity.avg_daily_depletion_7d);
     if (v == null) return 'unknown';
@@ -141,7 +143,7 @@ export function useStockChartData(productId: string) {
     return 'low';
   }, [bestVelocity]);
 
-  const demandLabel: Record<string, { text: string; color: string }> = {
+  const demandLabel: Record<MarketDemandLevel, { text: string; color: string }> = {
     'very-high': { text: 'Muito Alta', color: 'text-destructive' },
     'high': { text: 'Alta', color: 'text-warning' },
     'moderate': { text: 'Moderada', color: 'text-primary' },
