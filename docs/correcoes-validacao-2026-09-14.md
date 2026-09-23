@@ -6090,3 +6090,36 @@ Idioma que garante e captura o valor (existente ou recém-criado) em uma constan
 - `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `379a2d7345`).
 - Nenhum teste dedicado encontrado para o arquivo.
 - `typecheck:baseline`: 204 → 202 (187 arquivos), travado via `--update`.
+
+## useSupplierNames.ts (etapa 17)
+
+**Arquivo:** `src/hooks/useSupplierNames.ts`
+
+**Erros originais (2×):**
+```
+src/hooks/useSupplierNames.ts(40,21): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+src/hooks/useSupplierNames.ts(40,51): error TS2532: Object is possibly 'undefined'.
+```
+
+**Diagnóstico:** risco real de runtime, não só formalidade de tipo. `uniqueIds[idx]` (`noUncheckedIndexedAccess`) é `string | undefined` — na prática `results.length` sempre bate com `uniqueIds.length` (mesma origem via `uniqueIds.map(...)` ao montar as queries em batch), mas nada no tipo de `invokeBatchBridge` garante essa correspondência 1:1. Sem guarda, `uniqueIds[idx].slice(0, 6)` lançaria `TypeError` em produção se esse invariante fosse violado por qualquer motivo (ex.: bug futuro em `invokeBatchBridge`).
+
+**Fix aplicado:**
+```ts
+results.forEach((result, idx) => {
+  const supplierId = uniqueIds[idx];
+  if (!supplierId) return;
+
+  if (result.success && result.data?.records?.length) {
+    const record = result.data.records[0] as { id: string; name: string };
+    map.set(record.id, record.name);
+  } else {
+    map.set(supplierId, `Fornecedor ${supplierId.slice(0, 6)}`);
+  }
+});
+```
+
+**Validação:**
+- `tscheck-files.mjs`: 2 → 0 erros no arquivo.
+- `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `7010e46e8d`).
+- Nenhum teste dedicado encontrado para o arquivo.
+- `typecheck:baseline`: 202 → 200 (186 arquivos), travado via `--update`.

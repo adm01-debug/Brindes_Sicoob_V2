@@ -33,11 +33,14 @@ export function useSupplierNames(supplierIds: string[]) {
         const map = new Map<string, string>();
 
         results.forEach((result, idx) => {
+          const supplierId = uniqueIds[idx];
+          if (!supplierId) return;
+
           if (result.success && result.data?.records?.length) {
             const record = result.data.records[0] as { id: string; name: string };
             map.set(record.id, record.name);
           } else {
-            map.set(uniqueIds[idx], `Fornecedor ${uniqueIds[idx].slice(0, 6)}`);
+            map.set(supplierId, `Fornecedor ${supplierId.slice(0, 6)}`);
           }
         });
 
