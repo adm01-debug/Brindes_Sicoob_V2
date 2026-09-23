@@ -29,7 +29,7 @@ export function ChatInputBar({
     recognition.maxAlternatives = 1;
     toast.info("🎙️ Ouvindo… fale agora", { duration: 3000 });
     recognition.onresult = (event: SpeechRecognitionEvent) => {
-      const transcript = event.results[0][0].transcript;
+      const transcript = event.results[0]![0]!.transcript;
       if (transcript) {
         setInput(transcript);
         isFromVoiceRef.current = true;
@@ -56,7 +56,7 @@ export function ChatInputBar({
         </motion.div>
       )}
       <div className="flex gap-2 items-end">
-        <textarea ref={inputRef} value={input}
+        <textarea ref={inputRef as RefObject<HTMLTextAreaElement>} value={input}
           onChange={e => { setInput(e.target.value); e.target.style.height = "auto"; e.target.style.height = Math.min(e.target.scrollHeight, 120) + "px"; }}
           onKeyDown={onKeyDown} placeholder="Pergunte ao Flow…" disabled={isLoading} rows={1}
           className="flex-1 min-h-[40px] max-h-[120px] rounded-xl border border-border/30 bg-muted/20 text-sm px-3 py-2.5 resize-none focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary/20 focus-visible:border-primary/25 transition-all placeholder:text-muted-foreground/40 disabled:opacity-50" />

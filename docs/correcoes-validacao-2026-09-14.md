@@ -3117,3 +3117,21 @@ Esse hook é consumido por `AuthContext.tsx` (linha 88), que calcula `mfaRequire
 - `check-eslint-baseline.mjs`: 0 regressões (3334 erros globais, referência `origin/main` em `7610d92924`).
 - Nenhum teste dedicado encontrado para este arquivo.
 - `typecheck:baseline`: 477 → 474 (304 arquivos), travado via `--update`.
+
+## ChatInputBar.tsx (etapa 17)
+
+**Arquivo:** `src/components/expert/chat/ChatInputBar.tsx`
+
+**Erros originais (3×):** TS2532 ×2 (linha 32 — acesso encadeado possivelmente `undefined`), TS2322 (linha 59 — `RefObject<HTMLTextAreaElement | null>` não atribuível a `LegacyRef<HTMLTextAreaElement> | undefined`).
+
+**Diagnóstico (linha 32):** `event.results[0][0].transcript` dentro do callback `recognition.onresult` — `results[0]` (primeiro resultado reconhecido) e `[0]` (primeira alternativa, com `maxAlternatives = 1` configurado na linha 29) são garantidos presentes pelo próprio contrato da Web Speech API: o evento `onresult` só dispara quando há ao menos 1 resultado com ao menos 1 alternativa. `noUncheckedIndexedAccess` não propaga essa garantia de contrato de API do navegador.
+
+**Diagnóstico (linha 59):** o prop `inputRef: RefObject<HTMLTextAreaElement | null>` não é estruturalmente aceito pelo atributo JSX `ref` da tag `<textarea>` (que espera `LegacyRef<HTMLTextAreaElement>`), sob a versão instalada de `@types/react` (18.3.12). Mesmo padrão de discrepância entre `RefObject<T | null>` e o `ref` prop de elemento já resolvido alhures no repo (`src/components/bi/BIAiCopilot.tsx:147`, `scrollRef as React.RefObject<HTMLDivElement>`).
+
+**Fix aplicado:** asserção de não-nulo em cascata na linha 32 (`event.results[0]![0]!.transcript`), mesmo padrão já usado na sessão para garantias de contrato de API de plataforma. Linha 59: cast `inputRef as RefObject<HTMLTextAreaElement>` (usando o `RefObject` já importado do módulo, não `React.RefObject`, pois o arquivo não importa o namespace `React` — evita novo erro `no-undef` do ESLint), mesmo padrão já estabelecido em `BIAiCopilot.tsx`.
+
+**Validação:**
+- `tscheck-files.mjs`: 3 → 0 erros (0 no programa inteiro).
+- `check-eslint-baseline.mjs`: 0 regressões (3334 erros globais, referência `origin/main` em `84f4b0a318`) — tentativa inicial com `React.RefObject` introduziu 1 regressão `no-undef` (`React` não importado), corrigida usando o `RefObject` local já importado.
+- Nenhum teste dedicado encontrado para este arquivo.
+- `typecheck:baseline`: 474 → 471 (303 arquivos), travado via `--update`.
