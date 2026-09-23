@@ -55,7 +55,7 @@ export function MockupPromptManager() {
         }),
       ]);
       if (cr.error) throw cr.error;
-      setConfigs((cr.data || []) as PromptConfig[]); setTechniques(tr.records);
+      setConfigs((cr.data || []) as PromptConfig[]); setTechniques(tr.records ?? []);
     } catch (err: unknown) { toast.error("Erro ao carregar configurações", { description: err instanceof Error ? err.message : undefined }); }
     finally { setIsLoading(false); }
   };
@@ -67,9 +67,18 @@ export function MockupPromptManager() {
     const edited = getEdited(config); if (!hasChanges(config)) return;
     setSavingId(config.id);
     try {
-      await supabase.from("mockup_prompt_history").insert({ config_id: config.id, version: config.version, prompt_text: config.prompt_text, ai_model: config.ai_model, changed_by: user?.id, change_notes: changeNotes[config.id] || null });
+      // Nota: o histórico é gravado automaticamente pelo trigger
+      // trg_log_mockup_prompt_change (BEFORE UPDATE em mockup_prompt_configs),
+      // que já incrementa version e insere em mockup_prompt_history — não
+      // inserir manualmente aqui.
       const { error } = await supabase.from("mockup_prompt_configs").update({ prompt_text: edited.prompt_text, ai_model: edited.ai_model, version: config.version + 1, updated_by: user?.id }).eq("id", config.id);
       if (error) throw error;
+      // Anexa a nota de mudança na linha de histórico que o trigger acabou de criar
+      // (o trigger não recebe change_notes — ele só grava config_id/old_prompt/new_prompt/version).
+      const note = changeNotes[config.id];
+      if (note) {
+        await supabase.from("mockup_prompt_history").update({ change_notes: note }).eq("config_id", config.id).eq("version", config.version + 1);
+      }
       toast.success(`Prompt "${config.label}" salvo (v${config.version + 1})`);
       setEditedPrompts(p => { const n = { ...p }; delete n[config.id]; return n; });
       setChangeNotes(p => { const n = { ...p }; delete n[config.id]; return n; });
@@ -82,14 +91,14 @@ export function MockupPromptManager() {
     setHistoryDialog({ configId, label }); setHistoryLoading(true);
     try {
       const { data, error } = await supabase.from("mockup_prompt_history").select("*").eq("config_id", configId).order("version", { ascending: false });
-      if (error) throw error; setHistory((data || []) as PromptHistory[]);
+      if (error) throw error; setHistory(data || []);
     } catch { toast.error("Erro ao carregar histórico"); }
     finally { setHistoryLoading(false); }
   };
 
   const restoreVersion = (entry: PromptHistory) => {
     if (!historyDialog) return;
-    setEditedPrompts(p => ({ ...p, [historyDialog.configId]: { prompt_text: entry.prompt_text, ai_model: entry.ai_model } }));
+    setEditedPrompts(p => ({ ...p, [historyDialog.configId]: { prompt_text: entry.new_prompt, ai_model: entry.ai_model } }));
     setChangeNotes(p => ({ ...p, [historyDialog.configId]: `Restaurado da versão ${entry.version}` }));
     setHistoryDialog(null); toast.info(`Versão ${entry.version} carregada. Clique em Salvar para confirmar.`);
   };

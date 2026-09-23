@@ -11,7 +11,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Loader2, History, Plus, TestTube, RotateCcw } from "lucide-react";
 
 export interface PromptHistory {
-  id: string; config_id: string; version: number; prompt_text: string;
+  id: string; config_id: string; config_key: string; version: number;
+  old_prompt: string | null; new_prompt: string;
   ai_model: string; changed_by: string | null; changed_at: string; change_notes: string | null;
 }
 
@@ -49,7 +50,7 @@ export function HistoryDialog({ open, label, history, loading, onClose, onRestor
                   </CardHeader>
                   <CardContent>
                     <div className="text-xs mb-1 text-muted-foreground">Modelo: {entry.ai_model}</div>
-                    <pre className="text-xs bg-muted/50 p-3 rounded-md whitespace-pre-wrap max-h-40 overflow-auto">{entry.prompt_text}</pre>
+                    <pre className="text-xs bg-muted/50 p-3 rounded-md whitespace-pre-wrap max-h-40 overflow-auto">{entry.new_prompt}</pre>
                   </CardContent>
                 </Card>
               ))}

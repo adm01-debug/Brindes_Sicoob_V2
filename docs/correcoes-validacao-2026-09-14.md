@@ -3061,3 +3061,27 @@ Esse hook é consumido por `AuthContext.tsx` (linha 88), que calcula `mfaRequire
 - `check-eslint-baseline.mjs`: 0 regressões (3334 erros globais, referência `origin/main` em `263b141289`).
 - Nenhum teste dedicado encontrado para este arquivo.
 - `typecheck:baseline`: 486 → 483 (307 arquivos), travado via `--update`.
+
+## MockupPromptManager.tsx (etapa 17)
+
+**Arquivo:** `src/components/admin/MockupPromptManager.tsx` (+ tipo compartilhado `src/components/admin/mockup-prompts/PromptDialogs.tsx`)
+
+**Erros originais (3×):** TS2345 (linha 58 — `Technique[] | undefined` não atribuível a `Technique[]`), TS2769 (linha 70 — nenhuma sobrecarga de `.insert()` compatível), TS2352 (linha 85 — cast `as PromptHistory[]` "pode ser um engano").
+
+**Diagnóstico — bug real de produção encontrado (linhas 66-82, `handleSave`):** o código fazia `.insert()` manual em `mockup_prompt_history` usando um schema desatualizado (coluna `prompt_text`, sem a coluna obrigatória `config_key`). Investigação nas migrations (`20260222134246_...` vs `20260416200125_...`) e em `src/integrations/supabase/types.ts` (fonte de verdade do schema ao vivo) revelou que: (1) a tabela `mockup_prompt_history` viva usa `config_key`/`old_prompt`/`new_prompt`, não `prompt_text`; (2) existe um trigger `BEFORE UPDATE` (`trg_log_mockup_prompt_change`, função `log_mockup_prompt_change()`) em `mockup_prompt_configs` que já incrementa `version` e insere automaticamente a linha de histórico correta sempre que `prompt_text`/`ai_model` muda. Ou seja, o insert manual era redundante com o trigger E usava um schema errado — em produção, **todo salvamento de prompt quebrava antes de chegar ao update real**, pois o insert malformado lançava exceção primeiro.
+
+**Fix aplicado (66-82):** removido o insert manual; o histórico agora é gravado automaticamente pelo trigger do banco. Como o trigger não recebe `change_notes` (feature de UI existente em `PromptEditor.tsx`, input de texto), foi adicionado um `.update()` de acompanhamento em `mockup_prompt_history` (filtrado por `config_id` + `version`) para anexar a nota à linha que o trigger acabou de criar — preserva a feature sem duplicar a lógica de versionamento do trigger.
+
+**Fix aplicado (interface `PromptHistory`, em `PromptDialogs.tsx`):** realinhado campo a campo com o `Row` real da tabela (`config_key: string; old_prompt: string | null; new_prompt: string;` substituindo o antigo `prompt_text: string`). Atualizado o único outro uso do campo (`HistoryDialog`, exibição do `<pre>`: `entry.prompt_text` → `entry.new_prompt`) e, em `MockupPromptManager.tsx`, `restoreVersion` (`entry.prompt_text` → `entry.new_prompt` ao restaurar uma versão antiga no editor).
+
+**Fix aplicado (linha 58):** `setTechniques(tr.records)` → `setTechniques(tr.records ?? [])` — mesmo padrão já estabelecido no repo para respostas opcionais de `invokeExternalDb`/`InvokeResult<T>.records`.
+
+**Fix aplicado (linha 85, `openHistory`):** com a interface `PromptHistory` agora idêntica ao `Row` gerado da tabela, o cast `(data || []) as PromptHistory[]` tornou-se redundante — confirmado via `tscheck-files.mjs` que `setHistory(data || [])` (sem cast) compila com 0 erros.
+
+**Nota arquitetural (fora de escopo):** o trigger `trg_log_mockup_prompt_change` não captura `change_notes` no seu `INSERT` fixo — poderia ser corrigido na própria função do trigger (mudança de migration/arquitetura), mas isso está fora do escopo desta tarefa de zerar erros de TS ("zero churn"; só se justificaria mudança de arquitetura por decisão de negócio).
+
+**Validação:**
+- `tscheck-files.mjs`: 3 → 0 erros em ambos os arquivos (10 no programa inteiro).
+- `check-eslint-baseline.mjs`: 0 regressões (3334 erros globais, referência `origin/main` em `357f80600f`).
+- Nenhum teste dedicado encontrado para `MockupPromptManager.tsx`/`PromptDialogs.tsx`.
+- `typecheck:baseline`: 483 → 480 (306 arquivos), travado via `--update`.
