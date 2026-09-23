@@ -4284,3 +4284,26 @@ const label =
 - `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `40dd1337b`).
 - Nenhum teste dedicado encontrado.
 - `typecheck:baseline`: 329 → 327 (250 arquivos), travado via `--update`.
+
+## AIChat.tsx (etapa 17)
+
+**Arquivo:** `src/components/ai/AIChat.tsx`
+
+**Erros originais (2×):** TS2322 (linha 68) — `match[1]`/`match[2]` (`string | undefined`) não atribuíveis a `id: string`/`name: string` de `ProductMention`.
+
+**Diagnóstico:** mesmo padrão de guarda não-propagada, desta vez em captura de regex: `PRODUCT_PATTERN = /\[\[PRODUTO:([^:]+):([^:]+)(?::([^\]]+))?\]\]/g` tem os grupos 1 e 2 obrigatórios (sem `?`) e o grupo 3 opcional (`(?:...)?`, refletido corretamente em `imageUrl?: string`). Dentro do loop `while ((match = PRODUCT_PATTERN.exec(text)) !== null)`, se `match` não é `null`, os grupos 1 e 2 sempre casaram (a regex exige ambos pra dar match), mas `noUncheckedIndexedAccess` torna `match[1]`/`match[2]` em `string | undefined` mesmo assim.
+
+**Fix aplicado:**
+```ts
+// antes:
+mentions.push({ id: match[1], name: match[2], imageUrl: match[3] });
+
+// depois:
+mentions.push({ id: match[1]!, name: match[2]!, imageUrl: match[3] });
+```
+
+**Validação:**
+- `tscheck-files.mjs`: 2 → 0 erros (0 no programa inteiro).
+- `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `24dc11fd0`).
+- Nenhum teste dedicado encontrado.
+- `typecheck:baseline`: 327 → 325 (249 arquivos), travado via `--update`.

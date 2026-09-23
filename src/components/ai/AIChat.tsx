@@ -65,7 +65,7 @@ function extractProductMentions(text: string): ProductMention[] {
   let match: RegExpExecArray | null;
   PRODUCT_PATTERN.lastIndex = 0;
   while ((match = PRODUCT_PATTERN.exec(text)) !== null) {
-    mentions.push({ id: match[1], name: match[2], imageUrl: match[3] });
+    mentions.push({ id: match[1]!, name: match[2]!, imageUrl: match[3] });
   }
   return mentions;
 }
