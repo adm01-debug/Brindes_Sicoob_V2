@@ -66,7 +66,7 @@ export default function ProductDetail() {
     featured: product.featured, newArrival: product.newArrival, onSale: product.onSale,
     lowStock: product.stockStatus === 'low-stock', stock: product.stock,
   } : undefined, [product?.featured, product?.newArrival, product?.onSale, product?.stockStatus, product?.stock]);
-  const { badges: intellBadges, turnoverScore: intellTurnover, isDemo: intellIsDemo } = useProductIntelligenceBadges(id, catalogFlags);
+  const { badges: intellBadges, turnoverScore: intellTurnover } = useProductIntelligenceBadges(id, catalogFlags);
 
   const { data: viewCount = 0 } = useQuery({
     queryKey: ["product-views-count", id],
@@ -185,7 +185,7 @@ export default function ProductDetail() {
       />
 
       <div className="max-w-[1600px] mx-auto space-y-4 md:space-y-6 xl:space-y-8 animate-fade-in pb-20 md:pb-0 min-w-0 overflow-x-hidden xl:px-4 2xl:px-8">
-        <IntelligenceBadges badges={intellBadges} turnoverScore={intellTurnover} isDemo={intellIsDemo} />
+        <IntelligenceBadges badges={intellBadges} turnoverScore={intellTurnover} />
 
         <ProductDetailHero
           product={product} id={id || ''} selectedVariation={selectedVariation}
