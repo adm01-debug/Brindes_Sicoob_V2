@@ -1,6 +1,6 @@
 /**
  * Business logic hook for StockHistoryChart.
- * Extracts data fetching, mock data generation, and derived insights.
+ * Extracts data fetching and derived insights from the external catalog.
  */
 import { useMemo, useState } from "react";
 import {
@@ -10,23 +10,15 @@ import {
   aggregateDailySummaryByDate,
   extractUniqueSupplierIds,
   getActiveFlags,
-  type IntelligenceFlag,
   type StockVelocity,
 } from "@/hooks/useStockHistory";
 import { useSupplierNames } from "@/hooks/useSupplierNames";
 import {
   safeVelocityTrend,
   safeNumber,
-  generateMockStockData,
-  generateMockVelocity,
-  generateMockVelocities,
-  generateMockIntelligence,
-  generateMockSupplierNames,
   formatVelocityTrendCommercial,
   safeParseDateForChart,
-  isRealIntelligence,
   safePriceChanges,
-  type MockIntelligenceData,
 } from "@/lib/stock-chart-utils";
 
 export type MarketDemandLevel = 'very-high' | 'high' | 'moderate' | 'low' | 'unknown';
@@ -56,20 +48,13 @@ export function useStockChartData(productId: string) {
 
   const hasData = !!summaries?.length;
   const hasError = !!(summaryError || velocityError || intelligenceError);
-  const isDemo = !hasData && !hasError;
-
-  // Mock data
-  const mockVelocities = useMemo(() => generateMockVelocities(productId), [productId]);
-  const mockIntel = useMemo(() => generateMockIntelligence(productId), [productId]);
-  const mockSupplierNames = useMemo(() => generateMockSupplierNames(productId), [productId]);
 
   // Supplier names
   const supplierIds = useMemo(
-    () => hasData ? extractUniqueSupplierIds(summaries!) : (isDemo ? mockVelocities.map(v => v.supplier_id) : []),
-    [summaries, hasData, isDemo, mockVelocities]
+    () => hasData ? extractUniqueSupplierIds(summaries!) : [],
+    [summaries, hasData]
   );
-  const { data: realSupplierNamesMap } = useSupplierNames(hasData ? supplierIds : []);
-  const supplierNamesMap = hasData ? realSupplierNamesMap : (isDemo ? mockSupplierNames : undefined);
+  const { data: supplierNamesMap } = useSupplierNames(supplierIds);
 
   const supplierOptions = useMemo(() => {
     if (supplierIds.length <= 1) return [];
@@ -80,10 +65,8 @@ export function useStockChartData(productId: string) {
   }, [supplierIds, supplierNamesMap]);
 
   // Chart data
-  const mockChartData = useMemo(() => generateMockStockData(productId, days), [days, productId]);
-
   const chartData = useMemo(() => {
-    if (!hasData) return mockChartData;
+    if (!hasData) return [];
     const supplierId = selectedSupplier === 'all' ? undefined : selectedSupplier;
     const aggregated = aggregateDailySummaryByDate(summaries!, supplierId);
     const cutoff = new Date();
@@ -95,11 +78,11 @@ export function useStockChartData(productId: string) {
         if (parsed) acc.push({ ...d, ...parsed });
         return acc;
       }, []);
-  }, [summaries, days, hasData, mockChartData, selectedSupplier]);
+  }, [summaries, days, hasData, selectedSupplier]);
 
   // Effective data
-  const effectiveIntelligence = intelligence ?? (isDemo ? mockIntel : null);
-  const effectiveVelocities = velocity?.length ? velocity : (isDemo ? mockVelocities : []);
+  const effectiveIntelligence = intelligence ?? null;
+  const effectiveVelocities = useMemo(() => velocity ?? [], [velocity]);
 
   const bestVelocity = useMemo(() => {
     if (effectiveVelocities.length) {
@@ -115,18 +98,7 @@ export function useStockChartData(productId: string) {
 
   const flags = useMemo(() => {
     if (!effectiveIntelligence) return [];
-    if (isRealIntelligence(effectiveIntelligence)) {
-      return getActiveFlags(effectiveIntelligence);
-    }
-    const mock = effectiveIntelligence as MockIntelligenceData;
-    const result: IntelligenceFlag[] = [];
-    if (mock.is_hot_product) result.push('hot-product');
-    if (mock.is_stockout_risk) result.push('stockout-risk');
-    if (mock.is_stagnant) result.push('stagnant');
-    if (mock.is_negotiation_opportunity) result.push('negotiation-opportunity');
-    if (mock.has_frequent_restock) result.push('frequent-restock');
-    if (mock.abc_classification === 'A') result.push('class-a');
-    return result;
+    return getActiveFlags(effectiveIntelligence);
   }, [effectiveIntelligence]);
 
   // Derived commercial insights
@@ -183,7 +155,6 @@ export function useStockChartData(productId: string) {
     loadingSummary,
     hasData,
     hasError,
-    isDemo,
 
     // Data
     chartData,
