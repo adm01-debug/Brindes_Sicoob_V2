@@ -17,11 +17,10 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { formatCurrency } from "@/lib/format";
-import { Quote, QuoteItem } from "@/hooks/quotes/quoteTypes";
-import { Package, Hash, Layers, PieChart, FileText, Search, Filter, ChevronDown, ChevronRight, ArrowUpDown, Download, History, Share2, Save, X, Calendar, Clock, RefreshCw } from "lucide-react";
+import type { Quote, QuoteItem } from "@/hooks/quotes/quoteTypes";
+import { Package, Hash, Layers, PieChart, FileText, Search, ChevronDown, ChevronRight, ArrowUpDown, Download, History, Share2, Save, X, Calendar, Clock, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { toast } from "sonner";
 import { 
   DropdownMenu, 
@@ -33,6 +32,9 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface SavedView {
   id: string;
@@ -41,15 +43,16 @@ interface SavedView {
   sortConfig: { key: string; direction: 'asc' | 'desc' } | null;
 }
 
-interface ChangeLogEntry {
+interface QuoteHistoryEntry {
   id: string;
-  date: string;
-  user: string;
-  type: 'price' | 'quantity' | 'status' | 'personalization';
-  sku?: string;
-  description: string;
-  oldValue?: string;
-  newValue?: string;
+  quote_id: string;
+  action: string;
+  description: string | null;
+  old_value: string | null;
+  new_value: string | null;
+  created_at: string;
+  user_id: string | null;
+  profiles: { full_name: string | null } | null;
 }
 
 interface QuoteConsolidationPanelProps {
@@ -137,46 +140,40 @@ export function QuoteConsolidationPanel({
   };
 
   const [activeTab, setActiveTab] = useState<'items' | 'history'>('items');
-  const [historyFilter, setHistoryFilter] = useState<{ type?: string; sku?: string }>({ type: undefined, sku: undefined });
+  const [historyFilter, setHistoryFilter] = useState<{ action?: string; search?: string }>({ action: undefined, search: undefined });
+  const quoteIds = useMemo(
+    () => quotes.flatMap((quote) => quote.id ? [quote.id] : []),
+    [quotes]
+  );
+  const historyQuery = useQuery({
+    queryKey: ["quote-consolidation-history", quoteIds],
+    enabled: activeTab === 'history' && quoteIds.length > 0,
+    queryFn: async (): Promise<QuoteHistoryEntry[]> => {
+      const { data, error } = await supabase
+        .from("quote_history")
+        .select("id, quote_id, action, description, old_value, new_value, created_at, user_id, profiles(full_name)")
+        .in("quote_id", quoteIds)
+        .order("created_at", { ascending: false });
 
-  // Simulação de log de mudanças para demonstração (em prod viria do quote_history filtrado)
-  const mockHistory: ChangeLogEntry[] = useMemo(() => {
-    const entries: ChangeLogEntry[] = [];
-    quotes.forEach(q => {
-      if (q.created_at) {
-        entries.push({
-          id: `created-${q.id}`,
-          date: q.created_at,
-          user: q.seller_id || "Sistema",
-          type: 'status',
-          description: `Orçamento #${q.quote_number} criado.`
-        });
-      }
-      q.items?.forEach(item => {
-        if (q.updated_at) {
-          entries.push({
-            id: `qty-${q.id}-${item.product_sku}`,
-            date: q.updated_at,
-            user: q.seller_id || "Sistema",
-            type: 'quantity',
-            sku: item.product_sku,
-            description: `Alteração de quantidade no item ${item.product_name}.`,
-            oldValue: "-",
-            newValue: `${item.quantity} un`
-          });
-        }
-      });
-    });
-    return entries.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-  }, [quotes]);
+      if (error) throw error;
+      return (data ?? []) as unknown as QuoteHistoryEntry[];
+    },
+  });
+
+  const historyActions = useMemo(
+    () => [...new Set((historyQuery.data ?? []).map((entry) => entry.action))],
+    [historyQuery.data]
+  );
 
   const filteredHistory = useMemo(() => {
-    return mockHistory.filter(entry => {
-      const matchesType = !historyFilter.type || entry.type === historyFilter.type;
-      const matchesSku = !historyFilter.sku || entry.sku?.toLowerCase().includes(historyFilter.sku.toLowerCase());
-      return matchesType && matchesSku;
+    const search = historyFilter.search?.trim().toLowerCase();
+    return (historyQuery.data ?? []).filter(entry => {
+      const matchesAction = !historyFilter.action || entry.action === historyFilter.action;
+      const matchesSearch = !search || [entry.action, entry.description, entry.old_value, entry.new_value]
+        .some((value) => value?.toLowerCase().includes(search));
+      return matchesAction && matchesSearch;
     });
-  }, [mockHistory, historyFilter]);
+  }, [historyQuery.data, historyFilter]);
 
   const toggleExpand = (key: string) => {
     setExpandedItems(prev => 
@@ -369,7 +366,7 @@ export function QuoteConsolidationPanel({
           <Layers className="h-4 w-4" /> Itens Consolidados
         </Button>
         <Button variant={activeTab === 'history' ? 'default' : 'ghost'} size="sm" onClick={() => setActiveTab('history')} className="h-8 gap-2">
-          <History className="h-4 w-4" /> Log de Mudanças
+          <History className="h-4 w-4" /> Eventos registrados
         </Button>
       </div>
 
@@ -545,36 +542,47 @@ export function QuoteConsolidationPanel({
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0">
             <div>
-              <CardTitle className="text-lg font-bold">Rastreabilidade de Mudanças</CardTitle>
-              <CardDescription>Auditoria detalhada de alterações por item e SKU.</CardDescription>
+              <CardTitle className="text-lg font-bold">Eventos registrados</CardTitle>
+              <CardDescription>Eventos persistidos nos orçamentos selecionados.</CardDescription>
             </div>
             <div className="flex items-center gap-3">
               <div className="relative w-48">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
                 <Input 
-                  placeholder="Buscar por SKU..." 
-                  value={historyFilter.sku || ""}
-                  onChange={(e) => setHistoryFilter(prev => ({ ...prev, sku: e.target.value }))}
+                  placeholder="Buscar no histórico..."
+                  value={historyFilter.search || ""}
+                  onChange={(e) => setHistoryFilter(prev => ({ ...prev, search: e.target.value }))}
                   className="pl-8 h-8 text-xs font-mono"
                 />
               </div>
-              <Select value={historyFilter.type || "all"} onValueChange={(v) => setHistoryFilter(prev => ({ ...prev, type: v === 'all' ? undefined : v }))}>
+              <Select value={historyFilter.action || "all"} onValueChange={(v) => setHistoryFilter(prev => ({ ...prev, action: v === 'all' ? undefined : v }))}>
                 <SelectTrigger className="w-[140px] h-8 text-xs">
-                  <SelectValue placeholder="Tipo de Alteração" />
+                  <SelectValue placeholder="Ação" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Todos os tipos</SelectItem>
-                  <SelectItem value="price">Preço</SelectItem>
-                  <SelectItem value="quantity">Quantidade</SelectItem>
-                  <SelectItem value="status">Status</SelectItem>
+                  <SelectItem value="all">Todas as ações</SelectItem>
+                  {historyActions.map((action) => (
+                    <SelectItem key={action} value={action}>{action}</SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {filteredHistory.length === 0 ? (
-                <div className="py-12 text-center text-muted-foreground italic">Nenhuma alteração encontrada nos filtros atuais.</div>
+              {historyQuery.isLoading ? (
+                <div className="space-y-3" aria-label="Carregando eventos registrados">
+                  {[0, 1, 2].map((index) => <Skeleton key={index} className="h-20" />)}
+                </div>
+              ) : historyQuery.isError ? (
+                <div className="py-12 text-center text-muted-foreground">
+                  <p>Não foi possível carregar os eventos registrados.</p>
+                  <Button variant="outline" size="sm" className="mt-3" onClick={() => historyQuery.refetch()}>
+                    Tentar novamente
+                  </Button>
+                </div>
+              ) : filteredHistory.length === 0 ? (
+                <div className="py-12 text-center text-muted-foreground italic">Nenhum evento registrado para os filtros atuais.</div>
               ) : (
                 <div className="relative space-y-0 before:absolute before:inset-0 before:ml-5 before:-translate-x-px before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-muted-foreground/20 before:to-transparent">
                   {filteredHistory.map((entry) => (
@@ -585,25 +593,24 @@ export function QuoteConsolidationPanel({
                           <div className="flex items-center gap-2">
                             <span className="text-[10px] font-bold text-muted-foreground uppercase flex items-center gap-1">
                               <Calendar className="h-3 w-3" />
-                              {format(new Date(entry.date), "dd/MM/yyyy", { locale: ptBR })}
+                              {format(new Date(entry.created_at), "dd/MM/yyyy", { locale: ptBR })}
                               <Clock className="h-3 w-3 ml-1" />
-                              {format(new Date(entry.date), "HH:mm")}
+                              {format(new Date(entry.created_at), "HH:mm")}
                             </span>
-                            <Badge variant="outline" className="text-[9px] h-4 font-mono uppercase tracking-widest">{entry.type}</Badge>
-                            {entry.sku && <Badge className="text-[9px] h-4 bg-primary/10 text-primary border-primary/20 font-mono">SKU: {entry.sku}</Badge>}
+                            <Badge variant="outline" className="text-[9px] h-4 font-mono uppercase tracking-widest">{entry.action}</Badge>
                           </div>
-                          <p className="text-sm font-medium leading-relaxed">{entry.description}</p>
-                          {(entry.oldValue || entry.newValue) && (
+                          <p className="text-sm font-medium leading-relaxed">{entry.description || entry.action}</p>
+                          {(entry.old_value || entry.new_value) && (
                             <div className="flex items-center gap-3 text-xs pt-1">
-                              {entry.oldValue && <span className="text-muted-foreground line-through decoration-destructive/50">{entry.oldValue}</span>}
+                              {entry.old_value && <span className="text-muted-foreground line-through decoration-destructive/50">{entry.old_value}</span>}
                               <span className="text-muted-foreground">→</span>
-                              {entry.newValue && <span className="font-bold text-primary">{entry.newValue}</span>}
+                              {entry.new_value && <span className="font-bold text-primary">{entry.new_value}</span>}
                             </div>
                           )}
                         </div>
                         <div className="text-right">
                           <span className="text-[10px] font-medium text-muted-foreground block uppercase">Alterado por</span>
-                          <span className="text-xs font-semibold">{entry.user}</span>
+                          <span className="text-xs font-semibold">{entry.profiles?.full_name || (entry.user_id ? "Usuário sem nome disponível" : "Sistema")}</span>
                         </div>
                       </div>
                     </div>
