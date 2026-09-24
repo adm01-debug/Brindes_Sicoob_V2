@@ -26,7 +26,6 @@ import { ProductDetailSkeleton } from "@/components/products/ProductDetailSkelet
 import { EmptyState } from "@/components/ui/EmptyState";
 import { IntelligenceBadges } from "@/components/common/IntelligenceBadges";
 import { useProductIntelligenceBadges } from "@/hooks/useProductIntelligenceBadges";
-import { useSupplierTrust } from "@/hooks/useSupplierTrust";
 import { FloatingCompareBar } from "@/components/compare/FloatingCompareBar";
 import { MobileProductActions } from "@/components/mobile/MobileProductActions";
 import { useRecentlyViewedStore } from "@/stores/useRecentlyViewedStore";
@@ -52,7 +51,6 @@ export default function ProductDetail() {
   const { addToRecentlyViewed } = useRecentlyViewedStore();
 
   const { data: product, isLoading, isError } = useProduct(id || "");
-  const { data: supplierTrust } = useSupplierTrust(id);
   const { data: similarItems = [] } = useSimilarProducts(product);
   const aiCandidates = useMemo<ProductForRecommendation[]>(
     () => similarItems.slice(0, 12).map((it) => ({
@@ -192,7 +190,7 @@ export default function ProductDetail() {
         <ProductDetailHero
           product={product} id={id || ''} selectedVariation={selectedVariation}
           setSelectedVariation={setSelectedVariation} isFavorite={isFavorite}
-          onToggleFavorite={handleFavorite} viewCount={viewCount} supplierTrust={supplierTrust}
+          onToggleFavorite={handleFavorite} viewCount={viewCount}
           onOpenPackagingModal={() => setPackagingModalOpen(true)}
           onOpenFutureStock={() => setFutureStockOpen(true)}
           onOpenSupplierComparison={() => setSupplierCompareOpen(true)}

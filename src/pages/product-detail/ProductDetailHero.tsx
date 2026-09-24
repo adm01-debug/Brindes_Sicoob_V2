@@ -41,7 +41,6 @@ interface ProductDetailHeroProps {
   isFavorite: boolean;
   onToggleFavorite: () => void;
   viewCount: number;
-  supplierTrust: any;
   onOpenPackagingModal: () => void;
   onOpenFutureStock: () => void;
   onOpenSupplierComparison: () => void;
@@ -49,6 +48,8 @@ interface ProductDetailHeroProps {
 
 const formatPrice = (price: number) =>
   new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(price);
+
+const EMPTY_SUPPLIER_TRUST = { isVerified: false, deliveryDays: null, avgRating: null };
 
 const getStockStatusInfo = (status: string) => {
   switch (status) {
@@ -61,7 +62,7 @@ const getStockStatusInfo = (status: string) => {
 
 export function ProductDetailHero({
   product, id, selectedVariation, setSelectedVariation,
-  isFavorite, onToggleFavorite, viewCount, supplierTrust,
+  isFavorite, onToggleFavorite, viewCount,
   onOpenPackagingModal, onOpenFutureStock, onOpenSupplierComparison,
 }: ProductDetailHeroProps) {
   const navigate = useNavigate();
@@ -270,7 +271,7 @@ export function ProductDetailHero({
               {/* Trust + Social proof */}
               <div className="space-y-2.5 pt-1">
                 <DynamicTrustBadges
-                  trust={supplierTrust ?? { isVerified: false, deliveryDays: null, avgRating: null }}
+                  trust={EMPTY_SUPPLIER_TRUST}
                   productFlags={{ newArrival: product?.newArrival ?? false, onSale: product?.onSale ?? false, featured: product?.featured ?? false, minQuantity: product?.minQuantity }}
                   className="text-[10px]"
                 />
