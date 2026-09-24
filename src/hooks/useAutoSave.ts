@@ -1,5 +1,4 @@
-import { useEffect, useRef, useCallback } from "react";
-import { toast } from "sonner";
+import { useEffect, useRef, useCallback, useState } from "react";
 import { createClientLogger } from "@/lib/telemetry/structuredLogger";
 
 const log = createClientLogger("autosave");
@@ -8,6 +7,7 @@ interface AutoSaveOptions<T> {
   key: string;
   data: T;
   onSave?: (data: T) => void | Promise<void>;
+  onError?: (error: Error) => void;
   interval?: number;
   enabled?: boolean;
 }
@@ -20,11 +20,13 @@ export function useAutoSave<T>({
   key,
   data,
   onSave,
+  onError,
   interval = 30000, // 30 segundos
   enabled = true,
 }: AutoSaveOptions<T>) {
   const lastSavedData = useRef<string>(JSON.stringify(data));
   const saveTimeout = useRef<NodeJS.Timeout | null>(null);
+  const [lastError, setLastError] = useState<Error | null>(null);
 
   const save = useCallback(async () => {
     const currentDataStr = JSON.stringify(data);
@@ -42,11 +44,15 @@ export function useAutoSave<T>({
       }
       
       lastSavedData.current = currentDataStr;
+      setLastError(null);
       log.info("saved", { key });
     } catch (error) {
-      log.error("save_failed", { key, error });
+      const saveError = error instanceof Error ? error : new Error("Não foi possível salvar o rascunho.");
+      setLastError(saveError);
+      onError?.(saveError);
+      log.error("save_failed", { key, error: saveError });
     }
-  }, [key, data, onSave]);
+  }, [key, data, onError, onSave]);
 
   useEffect(() => {
     if (!enabled) return;
@@ -79,5 +85,5 @@ export function useAutoSave<T>({
     localStorage.removeItem(`autosave_${key}`);
   }, [key]);
 
-  return { restore, clear, lastSaved: lastSavedData.current };
+  return { restore, clear, lastSaved: lastSavedData.current, lastError };
 }
