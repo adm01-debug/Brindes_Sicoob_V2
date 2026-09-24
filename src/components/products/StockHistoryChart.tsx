@@ -50,7 +50,7 @@ export function StockHistoryChart({ productId }: StockHistoryChartProps) {
     showCost, setShowCost,
     selectedSupplier, setSelectedSupplier,
     days,
-    loadingSummary, hasData, hasError, isDemo,
+    loadingSummary, hasData, hasError,
     chartData, effectiveIntelligence, effectiveVelocities,
     bestVelocity, flags, supplierOptions, supplierNamesMap,
     trend, trendDisplay, marketDemandLevel, demandLabel,
@@ -95,7 +95,6 @@ export function StockHistoryChart({ productId }: StockHistoryChartProps) {
             </CardTitle>
             <CardDescription className="mt-1">
               Como o mercado está comprando este produto · {days} dias
-              {isDemo && <Badge variant="outline" className="ml-2 text-[10px] px-1.5 py-0">dados ilustrativos</Badge>}
               {hasError && hasData && <Badge variant="outline" className="ml-2 text-[10px] px-1.5 py-0 bg-destructive/10 text-destructive border-destructive/30">dados parciais</Badge>}
             </CardDescription>
           </div>
@@ -196,23 +195,31 @@ export function StockHistoryChart({ productId }: StockHistoryChartProps) {
         </div>
 
         {/* Chart */}
-        <div className="h-[160px] sm:h-[200px] w-full">
-          <ResponsiveContainer width="100%" height="100%">
-            <ComposedChart data={chartData} margin={{ top: 5, right: 5, left: 0, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-              <XAxis dataKey="dateFormatted" tick={{ fontSize: 10 }} className="fill-muted-foreground" interval="preserveStartEnd" />
-              <YAxis yAxisId="stock" tick={{ fontSize: 10 }} className="fill-muted-foreground" width={50} />
-              <YAxis yAxisId="flow" orientation="right" hide />
-              <Tooltip content={({ active, payload }: any) => (
-                <MarketTooltip active={active} payload={payload} showCost={showCost} />
-              )} />
-              <Legend wrapperStyle={{ fontSize: '10px', paddingTop: '4px' }} iconSize={8} formatter={(value: string) => <span className="text-muted-foreground text-[10px]">{value}</span>} />
-              <Area yAxisId="stock" type="monotone" dataKey="stockClose" stroke="hsl(var(--primary))" fill="hsl(var(--primary) / 0.15)" strokeWidth={2} name="Disponível" dot={false} activeDot={{ r: 4 }} />
-              <Bar yAxisId="flow" dataKey="depleted" fill="hsl(var(--destructive) / 0.4)" name="Compras do mercado" radius={[2, 2, 0, 0]} barSize={4} />
-              <Bar yAxisId="flow" dataKey="restocked" fill="hsl(142 71% 45% / 0.5)" name="Reposição" radius={[2, 2, 0, 0]} barSize={4} />
-            </ComposedChart>
-          </ResponsiveContainer>
-        </div>
+        {chartData.length === 0 ? (
+          <div className="flex h-[160px] items-center justify-center rounded-lg border border-dashed border-border px-6 text-center sm:h-[200px]">
+            <p className="text-sm text-muted-foreground">
+              O histórico de estoque ainda não está disponível para este produto.
+            </p>
+          </div>
+        ) : (
+          <div className="h-[160px] sm:h-[200px] w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <ComposedChart data={chartData} margin={{ top: 5, right: 5, left: 0, bottom: 5 }}>
+                <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+                <XAxis dataKey="dateFormatted" tick={{ fontSize: 10 }} className="fill-muted-foreground" interval="preserveStartEnd" />
+                <YAxis yAxisId="stock" tick={{ fontSize: 10 }} className="fill-muted-foreground" width={50} />
+                <YAxis yAxisId="flow" orientation="right" hide />
+                <Tooltip content={({ active, payload }: any) => (
+                  <MarketTooltip active={active} payload={payload} showCost={showCost} />
+                )} />
+                <Legend wrapperStyle={{ fontSize: '10px', paddingTop: '4px' }} iconSize={8} formatter={(value: string) => <span className="text-muted-foreground text-[10px]">{value}</span>} />
+                <Area yAxisId="stock" type="monotone" dataKey="stockClose" stroke="hsl(var(--primary))" fill="hsl(var(--primary) / 0.15)" strokeWidth={2} name="Disponível" dot={false} activeDot={{ r: 4 }} />
+                <Bar yAxisId="flow" dataKey="depleted" fill="hsl(var(--destructive) / 0.4)" name="Compras do mercado" radius={[2, 2, 0, 0]} barSize={4} />
+                <Bar yAxisId="flow" dataKey="restocked" fill="hsl(142 71% 45% / 0.5)" name="Reposição" radius={[2, 2, 0, 0]} barSize={4} />
+              </ComposedChart>
+            </ResponsiveContainer>
+          </div>
+        )}
 
         {/* Supplier comparison cards */}
         {effectiveVelocities.length > 1 && supplierNamesMap && (
@@ -227,7 +234,6 @@ export function StockHistoryChart({ productId }: StockHistoryChartProps) {
               <span>
                 Fornecedor alterou preço {priceChanges}x nos últimos 30 dias —
                 <span className="text-foreground font-medium"> trave seu custo ao cotar</span>
-                {isDemo && ' (demo)'}
               </span>
             </div>
           )}
