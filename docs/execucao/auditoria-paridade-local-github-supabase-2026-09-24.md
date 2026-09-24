@@ -6,7 +6,7 @@ A auditoria usou operações de leitura; não alterou banco, Storage nem funçõ
 
 ## Resultado verificável
 
-**Não há paridade completa.** O código local não coincide com o `main` remoto; os tipos TypeScript omitem relações, rotinas e colunas que a API real expõe; seis Edge Functions versionadas não estão implantadas; e a configuração pública versionada contém duas chaves que a API rejeita. A paridade das migrations com o ledger, das policies/ACLs, dos dados e dos segredos não pode ser atestada com o acesso administrativo disponível nesta sessão.
+**Não há paridade completa.** O código local não coincide com o `main` remoto; os tipos TypeScript omitem relações, rotinas e colunas que a API real expõe; seis Edge Functions versionadas não estão implantadas; e a configuração pública versionada contém duas chaves que a API rejeita. A chave administrativa permite executar RPCs de auditoria no projeto correto; elas verificaram cobertura RLS e uma classe de ACLs. A paridade das migrations com o ledger, dos demais objetos SQL, dos dados e dos segredos ainda não pode ser atestada.
 
 | Superfície | Evidência atual | Situação |
 |---|---|---|
@@ -18,7 +18,8 @@ A auditoria usou operações de leitura; não alterou banco, Storage nem funçõ
 | Colunas das relações comuns | 11 colunas remotas ausentes dos tipos, concentradas em 4 relações; nenhuma coluna tipada extra nas 208 relações comuns | Divergente |
 | Edge Functions do GitHub × gateway remoto | 106 sondagens `OPTIONS`: 98 HTTP 200, 1 HTTP 204, 6 HTTP 404, 1 timeout | Divergente |
 | Storage | 14 buckets listados pelo serviço; os dois buckets Sicoob de documentos são privados | Parcialmente verificado |
-| Migrations, policies, triggers, cron, Vault, ACL | Sem conexão SQL/ledger administrativo com o projeto-alvo; OpenAPI e REST não mostram essas estruturas | Não verificável nesta sessão |
+| RLS e ACL por RPCs de auditoria | 230 tabelas/partições públicas com RLS habilitado; 8 sem policies; auditoria de ACL `SECURITY DEFINER` sem achados | Parcialmente verificado |
+| Migrations, triggers, cron, Vault, demais grants/objetos SQL | Sem conexão SQL/ledger administrativo com o projeto-alvo; as RPCs disponíveis não expõem o ledger nem o catálogo completo | Não verificável nesta sessão |
 | Dados de negócio e arquivos Storage | Não há expectativa de versionar registros de clientes/pedidos no GitHub; conteúdo e integridade não auditados | Não verificável nesta sessão |
 
 ### Diferenças de Git
@@ -48,7 +49,7 @@ Colunas remotas omitidas dos tipos:
 | `sicoob_order_shipments` | `delivery_document_id` |
 | `sicoob_orders` | `commercial_subtotal_amount`, `discount_amount`, `merchandise_amount`, `negotiation_markup_amount`, `personalization_amount`, `pricing_formula_version`, `shipping_amount` |
 
-A comparação é de nomes e colunas expostos pelo PostgREST; não valida tipos, nulidade, índices, RLS, grants nem equivalência de definição SQL.
+A comparação acima é de nomes e colunas expostos pelo PostgREST; não valida tipos, nulidade, índices, grants nem equivalência de definição SQL. RLS foi sondado separadamente pelas RPCs de auditoria descritas abaixo.
 
 ### Edge, Storage e configuração
 
@@ -58,11 +59,23 @@ O Storage listou `avatars`, `component-media`, `exports`, `mockup-art-files`, `o
 
 `.env.production` aponta para o projeto correto, mas as duas chaves nele (`VITE_SUPABASE_PUBLISHABLE_KEY` e `VITE_SUPABASE_ANON_KEY`) receberam HTTP `401` do endpoint REST do próprio projeto. Uma chave administrativa fornecida pelo operador permitiu ler o OpenAPI e listar buckets, o que separa falha de credencial pública de indisponibilidade geral do serviço. O GitHub lista os nomes `SUPABASE_ACCESS_TOKEN` e quatro variáveis públicas `VITE_*`; a API do GitHub não revela seus valores, então não há confirmação de equivalência ou validade desses secrets. Não há `SUPABASE_DB_URL` no ambiente local desta sessão nem na lista de secrets do repositório.
 
+### Auditoria RLS e ACL pelo projeto correto
+
+A chave administrativa permitiu chamar, por GET, as RPCs de leitura `check_tables_rls()`, `audit_rls_coverage()`, `audit_empty_rls_policies()`, `audit_rls_matrix()` e `audit_security_definer_acl()`. Elas executam consultas ao catálogo do próprio projeto e ampliam a evidência além do OpenAPI:
+
+- `check_tables_rls()`: 230 tabelas/partições públicas, nenhuma com RLS desabilitado.
+- `audit_empty_rls_policies()`: oito tabelas com RLS e sem policies — `bitrix_clients`, `bitrix_deals`, `bitrix_sync_logs`, `quote_approval_evidence_keys`, `sicoob_approval_deliveries`, `sicoob_approval_delivery_archive`, `sicoob_approval_worker_dispatches`, `webhook_configs`. A ausência pode ser intencional para negar acesso direto; conferir o contrato de cada uma antes de alterar.
+- `audit_rls_coverage()`: 56 entradas por operações ausentes, sendo duas classificadas como `high` e 54 como `medium`; não significa 56 vulnerabilidades, pois escritas diretas podem ser bloqueadas por desenho.
+- `audit_rls_matrix()`: 484 combinações tabela/operação; 304 `ok`, 128 `medium`, 50 `review` e duas `high` (`SELECT` em `access_blocked_log` e `webhook_configs`); nenhuma `critical`. `review` sinaliza predicados diferentes e exige revisão semântica.
+- `audit_security_definer_acl()`: zero achados segundo a allowlist e as regras implementadas nessa função. Isso não substitui a inspeção de todos os grants efetivos.
+
+`check_migration_status()` também respondeu, mas retorna papéis e RLS de quatro tabelas; **não** é uma leitura do ledger de migrations. Nenhuma RPC de auditoria foi chamada com método de escrita.
+
 ### Histórico e limite da prova
 
-A evidência versionada de 2026-09-23 (`docs/evidencias/reconciliacao-remota-20260923/resumo.json`) registra 18 migrations aplicadas com MD5 exato e ledger até `20260923100000`, quatro constraints validadas e 226 tabelas/263 rotinas públicas por SQL. É **evidência histórica**, não uma nova leitura do ledger em 24/09. As rotinas `dispatch_sicoob_export_worker`, `sync_external_connections_from_credentials` e `ensure_default_favorite_list` aparecem hoje no OpenAPI, compatíveis com objetos das migrations posteriores, mas essa presença isolada não prova aplicação completa, ordem, checksum ou sucesso de todos os passos. As 216 relações do OpenAPI não são diretamente comparáveis às 226 tabelas da consulta SQL histórica, pois a API filtra exposição/permissões e inclui views.
+A evidência versionada de 2026-09-23 (`docs/evidencias/reconciliacao-remota-20260923/resumo.json`) registra 18 migrations aplicadas com MD5 exato e ledger até `20260923100000`, quatro constraints validadas e 226 tabelas/263 rotinas públicas por SQL. É **evidência histórica**, não uma nova leitura do ledger em 24/09. As rotinas `dispatch_sicoob_export_worker`, `sync_external_connections_from_credentials` e `ensure_default_favorite_list` aparecem hoje no OpenAPI, compatíveis com objetos das migrations posteriores, mas essa presença isolada não prova aplicação completa, ordem, checksum ou sucesso de todos os passos. As 216 relações do OpenAPI não são diretamente comparáveis às 226 tabelas da consulta SQL histórica, pois a API filtra exposição/permissões e inclui views. A RPC SQL `check_tables_rls()` retornou **230 tabelas/partições públicas em 24/09**, todas com RLS habilitado; a diferença de quatro frente à fotografia histórica requer identificação pelo catálogo/ledger.
 
-O MCP legado informado anteriormente retornou `403`; os MCPs SQL conectados nesta sessão apontam para outros bancos e não contêm `public.sicoob_orders`. O CLI Supabase autenticado não lista o projeto-alvo, e por isso não oferece `db diff`, leitura do ledger nem deploy Edge aqui. Nenhuma conclusão sobre ausência de dados, migrations ou políticas foi inferida a partir desses acessos inadequados.
+O MCP legado informado anteriormente retornou `403`; os MCPs SQL conectados nesta sessão apontam para outros bancos e não contêm `public.sicoob_orders`. O CLI Supabase autenticado não lista o projeto-alvo, e por isso não oferece `db diff`, leitura do ledger nem deploy Edge aqui. Nenhuma conclusão sobre ausência de dados ou migrations foi inferida a partir desses acessos inadequados. A chave do projeto permitiu executar RPCs de auditoria SQL já existentes no banco correto, sem acesso SQL arbitrário.
 
 ## Ordem de reconciliação
 
