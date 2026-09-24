@@ -1,5 +1,8 @@
 # Plano de reconciliação e hardening do banco em 50 etapas
 
+> **Revisão de 24/09/2026:** [matriz atual dos planos, lacunas e testes executados](../execucao/revisao-do-plano-2026-09-24.md). As marcações históricas abaixo não certificam conclusão integral; a revisão distingue código, implantação e homologação.
+
+
 > **Revisão de 22/09/2026:** ambiente em construção. Consulte os
 > [achados, correções testadas e pendências atuais](../execucao/correcoes-reconciliacao-20260922.md).
 > A etapa 26 permanece parcial: a varredura ampliada ainda encontra referências

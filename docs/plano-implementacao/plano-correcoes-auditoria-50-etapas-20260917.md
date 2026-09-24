@@ -1,5 +1,8 @@
 # Plano de correções da auditoria tripla em 50 etapas
 
+> **Revisão de 24/09/2026:** [matriz atual dos planos, lacunas e testes executados](../execucao/revisao-do-plano-2026-09-24.md). As marcações históricas abaixo não certificam conclusão integral; a revisão distingue código, implantação e homologação.
+
+
 > **Revisão de 22/09/2026:** o projeto está em construção. A
 > [execução atual, com evidências e estado das 50 etapas](../execucao/correcoes-reconciliacao-20260922.md)
 > corrige premissas deste documento: não aplicar migrations históricas em bloco,

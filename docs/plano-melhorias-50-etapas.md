@@ -1,5 +1,8 @@
 # Runbook de correções e melhorias — 50 etapas
 
+> **Revisão de 24/09/2026:** [matriz atual dos planos, lacunas e testes executados](execucao/revisao-do-plano-2026-09-24.md). As marcações históricas abaixo não certificam conclusão integral; a revisão distingue código, implantação e homologação.
+
+
 > Versão em texto do plano publicado como artifact em 2026-09-13
 > (https://claude.ai/code/artifact/71600452-aedf-447a-8da3-580ac2050a2e).
 > Ver também [correcoes-validacao-2026-09-13.md](./correcoes-validacao-2026-09-13.md) e

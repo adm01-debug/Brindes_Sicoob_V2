@@ -1,0 +1,72 @@
+[
+  {
+    "baseRefName": "main",
+    "headRefName": "fix/sicoob-reorder-errors-202973",
+    "number": 29,
+    "title": "Sanitiza falhas operacionais na recompra Sicoob",
+    "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/29"
+  },
+  {
+    "baseRefName": "main",
+    "headRefName": "fix/sicoob-edge-guards-202973",
+    "number": 28,
+    "title": "Protege workers internos com autenticação de serviço",
+    "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/28"
+  },
+  {
+    "baseRefName": "main",
+    "headRefName": "fix/sicoob-csp-202635",
+    "number": 27,
+    "title": "fix(segurança): entrega CSP pela Vercel",
+    "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/27"
+  },
+  {
+    "baseRefName": "fix/sicoob-p0-operacional-20260923",
+    "headRefName": "fix/sicoob-aprovacao-legada-20260923",
+    "number": 26,
+    "title": "fix(sicoob): remove aprovação pública legada",
+    "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/26"
+  },
+  {
+    "baseRefName": "main",
+    "headRefName": "fix/sicoob-rbac-operacional-20260923",
+    "number": 25,
+    "title": "fix(sicoob): alinha controles operacionais ao escopo",
+    "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/25"
+  },
+  {
+    "baseRefName": "main",
+    "headRefName": "fix/sicoob-p0-operacional-20260923",
+    "number": 24,
+    "title": "fix(sicoob): protege documentos, exportações e crons",
+    "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/24"
+  },
+  {
+    "baseRefName": "main",
+    "headRefName": "fix/sicoob-aplicar-migrations-20260923",
+    "number": 23,
+    "title": "docs: comprova aplicação das três migrations no Sicoob",
+    "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/23"
+  },
+  {
+    "baseRefName": "main",
+    "headRefName": "fix/sicoob-reconciliacao-remota-20260923",
+    "number": 21,
+    "title": "Reconcilia banco de construção e valida constraints Sicoob",
+    "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/21"
+  },
+  {
+    "baseRefName": "main",
+    "headRefName": "audit/sicoob-api-20260922",
+    "number": 14,
+    "title": "Registra auditoria real da API, permissões e contratos Supabase",
+    "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/14"
+  },
+  {
+    "baseRefName": "main",
+    "headRefName": "audit/sicoob-20260922",
+    "number": 13,
+    "title": "Registra evidências da auditoria local e GitHub de 22/09",
+    "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/13"
+  }
+]

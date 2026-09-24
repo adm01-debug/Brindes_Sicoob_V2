@@ -1,0 +1,79 @@
+{
+  "commit_codigo": "6193793a7fad6ec7e1dacd0e68075e3685016e28",
+  "data": "2026-09-24",
+  "vitest": {
+    "aprovados": 5472,
+    "falhos": 0,
+    "ignorados": 113,
+    "arquivos": 385,
+    "ignorados_por_arquivo": {
+      "tests/integration/discountApprovalFlow.test.ts": 1,
+      "tests/p0/auth-recovery.test.ts": 7,
+      "tests/p0/edge-functions-failing.test.ts": 8,
+      "tests/p0/external-integrations.test.ts": 8,
+      "tests/p0/rls-data-integrity.test.ts": 7,
+      "tests/p0/webhooks-resilience.test.ts": 9,
+      "tests/rls/e2e-cleanup-rate-limit.test.ts": 4,
+      "tests/rls/no-empty-rls-policies.test.ts": 1,
+      "tests/rls/personas.test.ts": 9,
+      "tests/security/edge-authz-bypass.test.ts": 58,
+      "tests/lib/personalization/adapters/price-response.adapter.test.ts": 1
+    }
+  },
+  "cenarios_node": {
+    "aprovados": 195,
+    "falhos": 0
+  },
+  "typecheck": {
+    "erros": 166,
+    "baseline": 166,
+    "regressoes": 0
+  },
+  "eslint": {
+    "erros_globais": 3314,
+    "arquivos_aplicacao_alterados": 0,
+    "regressoes": 0,
+    "limite": "gate diferencial; não significa lint global aprovado"
+  },
+  "build": {
+    "aprovado": true
+  },
+  "bundle": {
+    "chunks": 627,
+    "bytes": 9646997,
+    "gzip_bytes": 2930801,
+    "gate": "aprovado com avisos em lucide-react e VoiceSearchOverlayConnected"
+  },
+  "runtime_refs": {
+    "cache_generated_at": "2026-09-22T22:00:00Z",
+    "files_scanned": 2050,
+    "references_scanned": 1075,
+    "broken": [],
+    "blocking": [],
+    "allowed": []
+  },
+  "edge_authz": {
+    "declaradas": 106,
+    "verificadas_estaticamente": 106
+  },
+  "skips_criticos": {
+    "declarados": 44,
+    "limite": 44
+  },
+  "reproducao_rascunhos": {
+    "lacunas_reproduzidas": 2,
+    "limite": "passar a sonda comprova reprodução da lacuna; não aprova a funcionalidade"
+  },
+  "instalacao": {
+    "comando": "npm ci --ignore-scripts --no-audit --no-fund",
+    "pacotes": 1081,
+    "nota": "a primeira execução foi invalidada pelo link PPTX quebrado do node_modules compartilhado; os resultados acima usam instalação isolada"
+  },
+  "inventario_arquivos": {
+    "migrations": 534,
+    "prefixos_duplicados": {},
+    "pdfs_public": 0,
+    "probes": 0,
+    "bun_lock": false
+  }
+}
