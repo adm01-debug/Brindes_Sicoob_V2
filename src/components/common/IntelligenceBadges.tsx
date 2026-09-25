@@ -54,11 +54,10 @@ const badgeConfig: Record<IntelligenceBadgeType, {
 interface IntelligenceBadgesProps {
   badges: IntelligenceBadge[];
   turnoverScore?: number | null;
-  isDemo?: boolean;
   className?: string;
 }
 
-export function IntelligenceBadges({ badges, turnoverScore, isDemo, className }: IntelligenceBadgesProps) {
+export function IntelligenceBadges({ badges, turnoverScore, className }: IntelligenceBadgesProps) {
   if (!badges.length) return null;
 
   return (
@@ -95,7 +94,7 @@ export function IntelligenceBadges({ badges, turnoverScore, isDemo, className }:
         );
       })}
 
-      {turnoverScore != null && (
+      {turnoverScore !== null && turnoverScore !== undefined && (
         <Tooltip>
           <TooltipTrigger asChild>
             <motion.div
@@ -116,12 +115,6 @@ export function IntelligenceBadges({ badges, turnoverScore, isDemo, className }:
             </p>
           </TooltipContent>
         </Tooltip>
-      )}
-
-      {isDemo && (
-        <Badge variant="outline" className="text-[10px] px-1.5 py-0 text-muted-foreground border-border">
-          dados ilustrativos
-        </Badge>
       )}
     </div>
   );
