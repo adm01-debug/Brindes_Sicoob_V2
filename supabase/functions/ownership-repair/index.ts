@@ -26,6 +26,18 @@ Deno.serve(async (req) => {
   try {
     const auth = await authorize(req, { requireRole: "supervisor", enforceServerSide: true });
     if (!auth.ok) return auth.response;
+
+    // A RPC também exige admin ou dev. Não aceite supervisor/manager aqui para
+    // depois devolver uma falha de banco: o usuário precisa receber 403 claro
+    // antes de qualquer tentativa de reparo.
+    const { data: privilegedRoles, error: rolesError } = await auth.supabaseAdmin
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", auth.user.id)
+      .in("role", ["admin", "dev"]);
+    if (rolesError) return json({ error: "role_lookup_failed" }, 500);
+    if (!privilegedRoles?.length) return json({ error: "forbidden" }, 403);
+
     const userClient = auth.supabaseUser;
 
     let body: { report_id?: string; dry_run?: boolean; triggered_by?: string } = {};

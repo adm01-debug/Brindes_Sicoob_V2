@@ -54,14 +54,28 @@ describe("P0 — RLS e integridade", () => {
   });
 
   // ─── mcp_keys (segurança crítica) ─────────────────────────────────────
-  it.skip("mcp_keys: NUNCA retorna `secret_key` em SELECT após o INSERT inicial", async () => {
-    // TODO(P0): cobrir mem://features/mcp-keys-audit.
-    expect(true).toBe(true);
+  it("mcp_keys: persiste somente hash e a emissão não seleciona o segredo", () => {
+    const schema = source("supabase/migrations/20260419130037_5f01e5dd-e3d5-4d26-8a08-328d432a05aa.sql");
+    const issue = source("supabase/functions/mcp-keys-issue/index.ts");
+
+    expect(schema).toMatch(/key_hash text NOT NULL UNIQUE/);
+    expect(schema).not.toMatch(/\bsecret_key\b/);
+    expect(issue).toContain("key_hash: hash");
+    expect(issue).toContain('.select("id, key_prefix, scopes, expires_at, created_at")');
+    expect(issue).not.toMatch(/\.select\([^)]*key_hash/);
   });
 
-  it.skip("mcp_keys: revogação automática quando emissor perde role 'dev'", async () => {
-    // TODO(P0): mem://features/mcp-keys-auto-revocation — trigger + cron.
-    expect(true).toBe(true);
+  it("mcp_keys: revoga chave full quando o emissor perde o papel dev", () => {
+    const revocation = source("supabase/migrations/20260426122751_c0bc82e4-dc78-47da-8da4-74691b181d3d.sql");
+    const validation = source("supabase/migrations/20260426123111_389cc935-b988-47b5-8296-1d3a8214ece2.sql");
+
+    expect(revocation).toContain("AFTER DELETE ON public.user_roles");
+    expect(revocation).toContain("AND role = 'dev'::app_role");
+    expect(revocation).toContain("AND '*' = ANY(scopes)");
+    expect(revocation).toContain("'creator_lost_dev_role'");
+    expect(revocation).toContain("'*/15 * * * *'");
+    expect(validation).toContain("'grantor_lost_dev_at_use'");
+    expect(validation).toContain("'grantor_lost_dev'::text");
   });
 
   // ─── workspace_notifications ──────────────────────────────────────────
@@ -83,8 +97,17 @@ describe("P0 — RLS e integridade", () => {
     expect(simulation).toContain("rollback");
   });
 
-  it.skip("ownership-repair: dry-run NÃO modifica dados", async () => {
-    // TODO(P0): mem://features/ownership-repair-tooling.
-    expect(true).toBe(true);
+  it("ownership-repair: dry-run evita mutações e exige admin/dev antes da RPC", () => {
+    const migration = source("supabase/migrations/20260426145642_948756c0-6c4a-4be4-8757-9533bd4e291a.sql");
+    const worker = source("supabase/functions/ownership-repair/index.ts");
+
+    expect(migration).toContain("IF NOT _dry_run THEN");
+    expect(migration).toContain("INSERT INTO public.ownership_repair_logs");
+    expect(migration).toContain("dry_run, triggered_by, triggered_by_label");
+    expect(migration).toContain("REVOKE ALL ON FUNCTION public.repair_ownership_orphans");
+    expect(worker).toContain("const dryRun = body.dry_run !== false");
+    expect(worker).toContain('authorize(req, { requireRole: "supervisor", enforceServerSide: true })');
+    expect(worker).toContain('.in("role", ["admin", "dev"])');
+    expect(worker).toContain('return json({ error: "forbidden" }, 403)');
   });
 });

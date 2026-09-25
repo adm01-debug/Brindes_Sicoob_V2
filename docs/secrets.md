@@ -15,7 +15,7 @@ dois gates de CI ficam vermelhos. Ninguém tinha essa lista consolidada antes.
 | `SUPABASE_URL` | várias (client admin) | Supabase (automático) |
 | `SUPABASE_SERVICE_ROLE_KEY` | várias (client admin) | Supabase (automático) |
 | `SUPABASE_ANON_KEY` | várias | Supabase (automático) |
-| `VITE_SUPABASE_URL` / `VITE_SUPABASE_PUBLISHABLE_KEY` | build do frontend | GitHub secret + `.env.production` |
+| `VITE_SUPABASE_URL` / `VITE_SUPABASE_PUBLISHABLE_KEY` / `VITE_SUPABASE_PROJECT_ID` | build do frontend | segredo/configuração do provedor de hospedagem; usar `.env.production.example` somente como modelo local |
 | `EXTERNAL_SUPABASE_URL` / `EXTERNAL_SUPABASE_SERVICE_KEY` | `categories-api`, `external-db-inspect` (catálogo externo) | **preencher** |
 | `CRM_SUPABASE_URL` / `CRM_SUPABASE_ANON_KEY` / `CRM_SUPABASE_SERVICE_KEY` | `crm-db-bridge` | **preencher** |
 | `BITRIX24_WEBHOOK_URL` | `bitrix-sync` | **preencher** |
@@ -25,7 +25,7 @@ dois gates de CI ficam vermelhos. Ninguém tinha essa lista consolidada antes.
 | `RESEND_API_KEY` | e-mail da fila de aprovações Sicoob e relatórios | **configuração remota ainda não verificada** |
 | `NOTIFICATION_FROM_EMAIL` | endereço remetente do Resend na fila de aprovações; somente email, sem nome de exibição | **configuração remota ainda não verificada** |
 | `SICOOB_APPROVAL_WORKER_SECRET` | autenticação HTTP dedicada do worker da outbox, sem transmitir a service role | **configuração remota ainda não verificada** |
-| `INTERNAL_FUNCTION_SECRET` | `send-notification`, `process-batch-export` e `monthly-health-report`; autentica chamadas de cron/Edge antes de criar cliente service role | **configurar nas Edge Functions antes de publicar** |
+| `INTERNAL_FUNCTION_SECRET` | `send-notification`, `process-batch-export`, `monthly-health-report` e `connections-auto-test`; autentica chamadas de cron/Edge antes de criar cliente service role | **configurar nas Edge Functions antes de publicar** |
 | `VIRUSTOTAL_API_KEY` | scan de upload | **preencher** |
 | `GITHUB_PAT` | `github-credentials-test`, `github-fix-config` | **preencher — escopo mínimo necessário** |
 | `LOVABLE_API_KEY` | integração Lovable | **preencher** |
@@ -49,14 +49,14 @@ O agendamento da outbox exige ainda dois segredos no Supabase Vault:
 `SICOOB_APPROVAL_WORKER_SECRET`). Sem ambos, o job permanece inerte, registra
 um aviso e não realiza chamadas externas.
 
-As três funções internas acima exigem o mesmo
+As quatro funções internas acima exigem o mesmo
 `INTERNAL_FUNCTION_SECRET` no ambiente das Edge Functions e o cabeçalho
 `x-sicoob-internal-secret` em cada chamada de cron ou de outra função. Sem o
 segredo, elas respondem `503`; com credencial ausente ou inválida, respondem
 `401`. O valor deve ser aleatório, exclusivo deste ambiente e nunca pode ser
 enviado ao navegador ou versionado no repositório.
 
-O cron de exportações usa a cópia desse valor no Vault com o nome
+Os crons de exportações e de conexões usam a cópia desse valor no Vault com o nome
 `sicoob_internal_function_secret`; os dois nomes devem conter exatamente o
 mesmo segredo. A URL usada por esse cron é `sicoob_project_url`, também no
 Vault. Sem os dois valores, o job apenas registra aviso e não faz chamada HTTP.

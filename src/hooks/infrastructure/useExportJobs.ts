@@ -2,6 +2,10 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
+type ExportRpcClient = {
+  rpc: (name: "retry_own_sicoob_export_job", args: { p_job_id: string }) => Promise<{ data: boolean | null; error: Error | null }>;
+};
+
 export interface ExportJob {
   id: string;
   user_id: string;
@@ -11,6 +15,7 @@ export interface ExportJob {
   status: 'pending' | 'processing' | 'completed' | 'failed';
   attempts: number;
   file_url?: string;
+  file_path?: string;
   error_message?: string;
   total_count: number;
   created_at: string;
@@ -87,12 +92,9 @@ export function useExportJobs() {
 
   const retryJob = useMutation({
     mutationFn: async (jobId: string) => {
-      const { error } = await supabase
-        .from("export_jobs")
-        .update({ status: "pending", attempts: 0, error_message: null })
-        .eq("id", jobId);
-
+      const { data, error } = await (supabase as unknown as ExportRpcClient).rpc("retry_own_sicoob_export_job", { p_job_id: jobId });
       if (error) throw error;
+      if (data !== true) throw new Error("A exportação não pôde ser reenfileirada.");
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["export_jobs"] });
