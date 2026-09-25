@@ -18,6 +18,7 @@
 .env.production
 .env.*.local
 .env.local
+.vercel
 .idea
 .nyc_output/
 .storybook/
