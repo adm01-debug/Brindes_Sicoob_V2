@@ -1,0 +1,16 @@
+{
+  "collected_at": "2026-09-22T14:01:59.104418+00:00",
+  "source": ".env.production do snapshot",
+  "source_sha256": "68215d4999e7e5d40b7c5628d083edba406a15433b665a14b47b71bad36f37cf",
+  "probes": [
+    {
+      "variable": "VITE_SUPABASE_ANON_KEY",
+      "http": 200
+    },
+    {
+      "variable": "VITE_SUPABASE_PUBLISHABLE_KEY",
+      "http": 200
+    }
+  ],
+  "conclusion": "As duas chaves legadas versionadas foram aceitas no endpoint de dados nesta retomada."
+}
