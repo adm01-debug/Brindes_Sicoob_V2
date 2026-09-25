@@ -1,5 +1,8 @@
 # Plano de implementação do portal Sicoob
 
+> **Revisão de 24/09/2026:** [matriz atual dos planos, lacunas e testes executados](../execucao/revisao-do-plano-2026-09-24.md). As marcações históricas abaixo não certificam conclusão integral; a revisão distingue código, implantação e homologação.
+
+
 **100 etapas × 10 subetapas = 1.000 itens obrigatórios.** Todos começam pendentes. O plano combina estratégia de serviço, UI/UX, identidade visual, acessibilidade e operação de compras das cooperativas.
 
 ## Arquivos

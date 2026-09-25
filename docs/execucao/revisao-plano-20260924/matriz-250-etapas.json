@@ -1,0 +1,3517 @@
+[
+  {
+    "id": "E001",
+    "titulo": "Fixar o ponto de partida verificável",
+    "plano_origem": "docs/plano-implementacao/plano-100-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Inventários e commit atual registrados; domínio, responsáveis nominais e ambiente segregado ainda sem aceite completo.",
+    "evidencias": [
+      "docs/execucao/auditoria-paridade-local-github-supabase-2026-09-24.md"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "E002",
+    "titulo": "Conter exposição de credenciais e ferramentas de teste",
+    "plano_origem": "docs/plano-implementacao/plano-100-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Stubs e controles locais existem; rotação histórica e versão exata das funções publicadas não foram certificadas.",
+    "evidencias": [
+      "scripts/check-edge-authorization.mjs",
+      "supabase/functions/_shared/edge-authz-manifest.ts",
+      "docs/secrets.md",
+      ".env.production"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "E003",
+    "titulo": "Garantir catálogo externo exclusivamente de consulta",
+    "plano_origem": "docs/plano-implementacao/plano-100-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Ponte bloqueia escrita localmente; confirmar privilégio mínimo da identidade na origem e retirar controles de edição incompatíveis.",
+    "evidencias": [
+      "src/hooks/useExternalDatabase.ts",
+      "supabase/functions/external-db-bridge/index.ts",
+      "tests/scenarios/catalogo-somente-leitura.mjs"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "E004",
+    "titulo": "Planejar pesquisa com compradores e marketing",
+    "plano_origem": "docs/plano-implementacao/plano-100-etapas.md",
+    "estado": "V",
+    "significado": "Validação ou decisão externa/operacional pendente",
+    "diagnostico_e_condicao_de_fechamento": "Pesquisa documental e perfis públicos existem; faltam consentimento, recrutamento e sessões com compradores/marketing.",
+    "evidencias": [
+      "docs/pesquisa/2026-09-11/dossie.md",
+      "docs/pesquisa/2026-09-11/anexos/perfis-profissionais.md"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "E005",
+    "titulo": "Definir perfis funcionais e trabalhos a realizar",
+    "plano_origem": "docs/plano-implementacao/plano-100-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Perfis e hipóteses estão documentados; necessidades observadas e critérios validados com participantes ainda pendem.",
+    "evidencias": [
+      "docs/pesquisa/2026-09-11/dossie.md",
+      "docs/pesquisa/2026-09-11/anexos/perfis-profissionais.md"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "E006",
+    "titulo": "Mapear a jornada atual e a jornada pretendida",
+    "plano_origem": "docs/plano-implementacao/plano-100-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Jornada pretendida está mapeada; tempos, passagens manuais e tarefas reais ainda não foram observados integralmente.",
+    "evidencias": [
+      "docs/pesquisa/2026-09-11/dossie.md",
+      "docs/pesquisa/2026-09-11/anexos/perfis-profissionais.md",
+      "docs/plano-implementacao/plano.json",
+      "docs/execucao/validacao-do-plano.md"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "E007",
+    "titulo": "Desenhar o serviço por trás da interface",
+    "plano_origem": "docs/plano-implementacao/plano-100-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Código cobre partes da operação, mas promessas de rastreio e atendimento ainda não têm processo completo demonstrado.",
+    "evidencias": [
+      "docs/plano-implementacao/plano.json",
+      "docs/execucao/validacao-do-plano.md",
+      "src/pages/sicoob/LogisticsReportPage.tsx",
+      "src/routes/config/sicoob.ts"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "E008",
+    "titulo": "Configurar governança por cooperativa",
+    "plano_origem": "docs/plano-implementacao/plano-100-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Políticas por cooperativa e snapshot existem; duas cooperativas com regras vigentes diferentes ainda não foram homologadas.",
+    "evidencias": [
+      "src/services/sicoob/approvalService.ts",
+      "supabase/migrations/20260922161000_repair_sicoob_approval_policy_snapshot.sql",
+      "docs/execucao/revisao-plano-20260924/simular-conversao-pedido-sicoob.json",
+      "docs/execucao/revisao-plano-20260924/simular-documentos-sicoob.json",
+      "docs/execucao/revisao-plano-20260924/simular-consolidacao-sicoob.json",
+      "docs/execucao/revisao-plano-20260924/simular-outbox-aprovacao.json"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "E009",
+    "titulo": "Definir resultados e instrumentos de medição",
+    "plano_origem": "docs/plano-implementacao/plano-100-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Indicadores de pedidos usam consultas reais em parte; rota logística ainda apresenta KPIs fixos e faltam métricas operacionais conciliadas.",
+    "evidencias": [
+      "src/services/sicoob/statsService.ts",
+      "src/pages/sicoob/LogisticsReportPage.tsx",
+      "src/routes/config/sicoob.ts"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "E010",
+    "titulo": "Definir escopo e ordem das entregas",
+    "plano_origem": "docs/plano-implementacao/plano-100-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Planos definem dependências, mas sobreposição de documentos e ausência de donos/prazos impedem fechamento do escopo.",
+    "evidencias": [
+      "docs/plano-implementacao/plano.json",
+      "docs/execucao/validacao-do-plano.md",
+      "docs/execucao/decisoes_pendentes.md"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "E011",
+    "titulo": "Consolidar o modelo de dados do portal",
+    "plano_origem": "docs/plano-implementacao/plano-100-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Modelo canônico evoluiu; drift de tipos, contratos legados e ledger completo ainda exigem reconciliação.",
+    "evidencias": [
+      "src/integrations/supabase/types.ts",
+      "scripts/db/compare-types-api.mjs",
+      "src/services/sicoob/orderService.ts",
+      "src/services/sicoob/budgetService.ts",
+      "supabase/migrations/20260922224500_convert_quote_to_sicoob_order.sql"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "E012",
+    "titulo": "Unificar permissões por ação e escopo",
+    "plano_origem": "docs/plano-implementacao/plano-100-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Autorização compartilhada existe e gate estático passa; PR #25 ajusta ações de UI e #28 workers ainda fora do main.",
+    "evidencias": [
+      "scripts/check-edge-authorization.mjs",
+      "supabase/functions/_shared/edge-authz-manifest.ts",
+      "docs/execucao/revisao-plano-20260924/prs-abertos.json"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "E013",
+    "titulo": "Implementar isolamento de dados e anexos",
+    "plano_origem": "docs/plano-implementacao/plano-100-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "RLS habilitado e testes locais existem; falta isolamento autenticado entre cooperativas, inclusive anexos e exportações.",
+    "evidencias": [
+      "docs/execucao/auditoria-paridade-local-github-supabase-2026-09-24.md",
+      "src/services/sicoob/documentIngestService.ts",
+      "supabase/functions/sicoob-document-ingest/index.ts",
+      "supabase/functions/sicoob-document-ingest/scanner.ts"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "E014",
+    "titulo": "Corrigir rotas e contrato de autenticação",
+    "plano_origem": "docs/plano-implementacao/plano-100-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Rotas por papel têm testes; login e jornada real com credenciais válidas não foram certificados no Supabase.",
+    "evidencias": [
+      "src/routes/config/sicoob.ts",
+      "src/routes/config/public.ts",
+      "tests/sicoob/route-access-scenarios.test.tsx",
+      "docs/execucao/revisao-plano-20260924/checks.json"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "E015",
+    "titulo": "Definir autenticação confiável e acessível",
+    "plano_origem": "docs/plano-implementacao/plano-100-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Passkey insegura foi desativada corretamente; chaves públicas versionadas inválidas e métodos externos requerem validação real.",
+    "evidencias": [
+      "src/hooks/useWebAuthn.ts",
+      "src/contexts/AuthContext.tsx",
+      "docs/secrets.md",
+      ".env.production"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "E016",
+    "titulo": "Implementar convites e vínculos organizacionais",
+    "plano_origem": "docs/plano-implementacao/plano-100-etapas.md",
+    "estado": "N",
+    "significado": "Funcionalidade/artefato não localizado no escopo pesquisado",
+    "diagnostico_e_condicao_de_fechamento": "Atribuição administrativa e convite de colaboração de kit existem; convite institucional com papel, escopo, expiração/revogação não foi localizado.",
+    "evidencias": [
+      "src/services/sicoob/userService.ts",
+      "src/pages/admin/sicoob/tabs/UserAssignmentTab.tsx"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "E017",
+    "titulo": "Tornar verba e compromissos consistentes",
+    "plano_origem": "docs/plano-implementacao/plano-100-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Atomicidade de verba e total tem evidência local; estados planejado/reservado/comprometido/consumido e virada de período ainda incompletos.",
+    "evidencias": [
+      "src/services/sicoob/orderService.ts",
+      "src/services/sicoob/budgetService.ts",
+      "supabase/migrations/20260922224500_convert_quote_to_sicoob_order.sql",
+      "docs/execucao/revisao-plano-20260924/simular-conversao-pedido-sicoob.json",
+      "docs/execucao/revisao-plano-20260924/simular-documentos-sicoob.json",
+      "docs/execucao/revisao-plano-20260924/simular-consolidacao-sicoob.json",
+      "docs/execucao/revisao-plano-20260924/simular-outbox-aprovacao.json"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "E018",
+    "titulo": "Corrigir aprovação privilegiada no servidor",
+    "plano_origem": "docs/plano-implementacao/plano-100-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Decisões no servidor e versões possuem migrations/testes; personas e concorrência no fluxo remoto completo ainda pendem.",
+    "evidencias": [
+      "src/services/sicoob/approvalService.ts",
+      "supabase/migrations/20260922161000_repair_sicoob_approval_policy_snapshot.sql",
+      "docs/execucao/revisao-plano-20260924/simular-conversao-pedido-sicoob.json",
+      "docs/execucao/revisao-plano-20260924/simular-documentos-sicoob.json",
+      "docs/execucao/revisao-plano-20260924/simular-consolidacao-sicoob.json",
+      "docs/execucao/revisao-plano-20260924/simular-outbox-aprovacao.json"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "E019",
+    "titulo": "Restabelecer qualidade de build e testes",
+    "plano_origem": "docs/plano-implementacao/plano-100-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Build e suítes locais passam; 166 erros TS, 3314 lint, 113 testes ignorados e CI remoto impedem declarar qualidade encerrada.",
+    "evidencias": [
+      "docs/execucao/revisao-plano-20260924/checks.json"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "E020",
+    "titulo": "Preparar ambiente de validação e observabilidade",
+    "plano_origem": "docs/plano-implementacao/plano-100-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Monitores, testes descartáveis e relatórios existem; faltam alerta entregue, incidente controlado e ambiente Supabase segregado.",
+    "evidencias": [
+      "src/lib/error-reporter.ts",
+      "docs/execucao/autorizacao-observabilidade-20260922.md",
+      "docs/execucao/revisao-plano-20260924/protecao-github.json",
+      ".github/workflows/ci.yml"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "E021",
+    "titulo": "Organizar a arquitetura de informação",
+    "plano_origem": "docs/plano-implementacao/plano-100-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Navegação implementada; encontrabilidade com participantes e adequação dos termos ao comprador ainda não demonstradas.",
+    "evidencias": [
+      "src/routes/config/sicoob.ts",
+      "src/routes/config/public.ts",
+      "tests/sicoob/route-access-scenarios.test.tsx",
+      "docs/pesquisa/2026-09-11/dossie.md",
+      "docs/pesquisa/2026-09-11/anexos/perfis-profissionais.md"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "E022",
+    "titulo": "Construir taxonomia útil para brindes",
+    "plano_origem": "docs/plano-implementacao/plano-100-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Taxonomia/filtros existem; sinônimos e atributos úteis precisam de validação do público e da origem real.",
+    "evidencias": [
+      "src/hooks/useExternalDatabase.ts",
+      "supabase/functions/external-db-bridge/index.ts",
+      "tests/scenarios/catalogo-somente-leitura.mjs",
+      "docs/pesquisa/2026-09-11/dossie.md",
+      "docs/pesquisa/2026-09-11/anexos/perfis-profissionais.md"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "E023",
+    "titulo": "Projetar o comportamento da busca",
+    "plano_origem": "docs/plano-implementacao/plano-100-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Busca/histórico evoluíram; relevância e recuperação precisam de consultas reais e tarefa com comprador.",
+    "evidencias": [
+      "src/hooks/useExternalDatabase.ts",
+      "supabase/functions/external-db-bridge/index.ts",
+      "tests/scenarios/catalogo-somente-leitura.mjs",
+      "src/stores/useRecentlyViewedStore.ts",
+      "src/contexts/AuthContext.tsx",
+      "tests/stores/useRecentlyViewedStore.test.ts"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "E024",
+    "titulo": "Projetar filtros e ordenação",
+    "plano_origem": "docs/plano-implementacao/plano-100-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Filtros e ordenação implementados; preservar contexto/variantes e homologar no mobile com dados do catálogo.",
+    "evidencias": [
+      "src/hooks/useExternalDatabase.ts",
+      "supabase/functions/external-db-bridge/index.ts",
+      "tests/scenarios/catalogo-somente-leitura.mjs"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "E025",
+    "titulo": "Desenhar navegação entre cooperativas e unidades",
+    "plano_origem": "docs/plano-implementacao/plano-100-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Há contexto de papéis; troca de unidade e preservação de rascunhos ainda precisam de contrato coerente e testes de sessão.",
+    "evidencias": [
+      "src/routes/config/sicoob.ts",
+      "src/routes/config/public.ts",
+      "tests/sicoob/route-access-scenarios.test.tsx",
+      "src/hooks/useAutoSave.ts",
+      "src/components/quotes/QuoteAutoSave.tsx",
+      "src/pages/QuoteBuilderPage.tsx",
+      "scripts/revisao/rascunhos-20260924.cenarios.tsx"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "E026",
+    "titulo": "Estabelecer linguagem e conteúdo de interface",
+    "plano_origem": "docs/plano-implementacao/plano-100-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Textos operacionais evoluíram, mas rastreamento em tempo real ainda é prometido por página de dados fixos.",
+    "evidencias": [
+      "src/pages/sicoob/LogisticsReportPage.tsx",
+      "src/routes/config/sicoob.ts",
+      "docs/plano-implementacao/plano.json",
+      "docs/execucao/validacao-do-plano.md"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "E027",
+    "titulo": "Padronizar formulários e entrada de dados",
+    "plano_origem": "docs/plano-implementacao/plano-100-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Formulários usam componentes comuns; falha de autosave ainda não chega ao estado de erro do consumidor.",
+    "evidencias": [
+      "src/hooks/useAutoSave.ts",
+      "src/components/quotes/QuoteAutoSave.tsx",
+      "src/pages/QuoteBuilderPage.tsx",
+      "scripts/revisao/rascunhos-20260924.cenarios.tsx",
+      "vitest.config.ts",
+      "docs/execucao/revisao-plano-20260924/checks.json"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "E028",
+    "titulo": "Definir estados vazios, falhas e recuperação",
+    "plano_origem": "docs/plano-implementacao/plano-100-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Falhas explícitas existem em serviços; autosave e previsão de kit ainda ocultam condições de erro em caminhos específicos.",
+    "evidencias": [
+      "src/hooks/useAutoSave.ts",
+      "src/components/quotes/QuoteAutoSave.tsx",
+      "src/pages/QuoteBuilderPage.tsx",
+      "scripts/revisao/rascunhos-20260924.cenarios.tsx",
+      "src/hooks/useKitStockForecast.ts"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "E029",
+    "titulo": "Planejar avisos e notificações por evento",
+    "plano_origem": "docs/plano-implementacao/plano-100-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Outbox durável foi implementada e 57 cenários passaram; entrega de provedor, configuração e reconciliação remota faltam.",
+    "evidencias": [
+      "supabase/functions/sicoob-approval-notifications/index.ts",
+      "supabase/functions/sicoob-approval-reconciliation/index.ts",
+      "scripts/check-edge-authorization.mjs",
+      "supabase/functions/_shared/edge-authz-manifest.ts"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "E030",
+    "titulo": "Validar fluxos em protótipos de baixa fidelidade",
+    "plano_origem": "docs/plano-implementacao/plano-100-etapas.md",
+    "estado": "V",
+    "significado": "Validação ou decisão externa/operacional pendente",
+    "diagnostico_e_condicao_de_fechamento": "Demos e protótipos existem; tarefas completas e compreensão por compradores não foram validadas com participantes.",
+    "evidencias": [
+      "docs/pesquisa/2026-09-11/dossie.md",
+      "docs/pesquisa/2026-09-11/anexos/perfis-profissionais.md",
+      "src/pages/sicoob/StorefrontDemoPage.tsx",
+      "docs/execucao/revisao-implementacao-2026-09-12/validacao-navegador.json"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "E031",
+    "titulo": "Definir direção visual com a marca Sicoob",
+    "plano_origem": "docs/plano-implementacao/plano-100-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Direção Sicoob aparece nas telas; aprovação vigente de marca pela cooperativa e telas operacionais completas permanecem pendentes.",
+    "evidencias": [
+      "src/pages/sicoob/StorefrontDemoPage.tsx",
+      "docs/execucao/revisao-implementacao-2026-09-12/validacao-navegador.json"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "E032",
+    "titulo": "Estabelecer grade, espaçamento e densidade",
+    "plano_origem": "docs/plano-implementacao/plano-100-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Grade e demos responsivas existem; telas reais extensas exigem verificação atual de sobreposição, densidade e ação fixa.",
+    "evidencias": [
+      "src/pages/sicoob/StorefrontDemoPage.tsx",
+      "docs/execucao/revisao-implementacao-2026-09-12/validacao-navegador.json"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "E033",
+    "titulo": "Definir tipografia e hierarquia de leitura",
+    "plano_origem": "docs/plano-implementacao/plano-100-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Hierarquia tipográfica implementada; ampliação, fallback de fonte e tarefas reais ainda não têm aceite manual completo.",
+    "evidencias": [
+      "src/pages/sicoob/StorefrontDemoPage.tsx",
+      "docs/execucao/revisao-implementacao-2026-09-12/validacao-navegador.json"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "E034",
+    "titulo": "Definir cores semânticas e contraste",
+    "plano_origem": "docs/plano-implementacao/plano-100-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Tokens e testes automatizados dão base; alto contraste, ausência de cor e todas as combinações não foram homologados.",
+    "evidencias": [
+      "src/pages/sicoob/StorefrontDemoPage.tsx",
+      "docs/execucao/revisao-implementacao-2026-09-12/validacao-navegador.json",
+      "vitest.config.ts",
+      "docs/execucao/revisao-plano-20260924/checks.json"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "E035",
+    "titulo": "Padronizar imagens, ícones e representação de produto",
+    "plano_origem": "docs/plano-implementacao/plano-100-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Imagens e mockups existem; distinguir prova técnica, simulação e fotografia em toda a compra e validar ativos oficiais.",
+    "evidencias": [
+      "src/pages/sicoob/StorefrontDemoPage.tsx",
+      "docs/execucao/revisao-implementacao-2026-09-12/validacao-navegador.json",
+      "supabase/functions/sicoob-artwork-register/index.ts",
+      "supabase/migrations/20260912180000_sicoob_finance_artwork.sql"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "E036",
+    "titulo": "Implementar tokens de design",
+    "plano_origem": "docs/plano-implementacao/plano-100-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Tokens existem; consistência de troca de tema entre catálogo, documentos e operação ainda precisa de revisão integral.",
+    "evidencias": [
+      "src/pages/sicoob/StorefrontDemoPage.tsx",
+      "docs/execucao/revisao-implementacao-2026-09-12/validacao-navegador.json"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "E037",
+    "titulo": "Consolidar componentes de ação e formulário",
+    "plano_origem": "docs/plano-implementacao/plano-100-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Componentes compartilhados existem; estados de erro/foco e alvos de todas as jornadas ainda não estão certificados.",
+    "evidencias": [
+      "src/pages/sicoob/StorefrontDemoPage.tsx",
+      "docs/execucao/revisao-implementacao-2026-09-12/validacao-navegador.json",
+      "vitest.config.ts",
+      "docs/execucao/revisao-plano-20260924/checks.json"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "E038",
+    "titulo": "Consolidar tabelas, listas e visualização de estados",
+    "plano_origem": "docs/plano-implementacao/plano-100-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Tabelas/listas implementadas; seleção e dados confiáveis exigem revisão nas páginas que ainda usam simulação.",
+    "evidencias": [
+      "src/pages/sicoob/StorefrontDemoPage.tsx",
+      "docs/execucao/revisao-implementacao-2026-09-12/validacao-navegador.json",
+      "src/pages/sicoob/LogisticsReportPage.tsx",
+      "src/routes/config/sicoob.ts"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "E039",
+    "titulo": "Projetar feedback e movimento com propósito",
+    "plano_origem": "docs/plano-implementacao/plano-100-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Animações e feedback existem; validar redução de movimento e confirmação operacional em todas as tarefas críticas.",
+    "evidencias": [
+      "src/pages/sicoob/StorefrontDemoPage.tsx",
+      "docs/execucao/revisao-implementacao-2026-09-12/validacao-navegador.json"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "E040",
+    "titulo": "Governar o sistema de design",
+    "plano_origem": "docs/plano-implementacao/plano-100-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Sistema visual é utilizado, porém governança de variantes, exceções e responsável nominal não está consolidada.",
+    "evidencias": [
+      "src/pages/sicoob/StorefrontDemoPage.tsx",
+      "docs/execucao/revisao-implementacao-2026-09-12/validacao-navegador.json",
+      "docs/execucao/decisoes_pendentes.md"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "E041",
+    "titulo": "Redesenhar a experiência de acesso",
+    "plano_origem": "docs/plano-implementacao/plano-100-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Página de acesso redesenhada e passkey desativada; login, recuperação e sessão real ainda dependem de homologação.",
+    "evidencias": [
+      "src/hooks/useWebAuthn.ts",
+      "src/contexts/AuthContext.tsx",
+      "src/pages/sicoob/StorefrontDemoPage.tsx",
+      "docs/execucao/revisao-implementacao-2026-09-12/validacao-navegador.json"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "E042",
+    "titulo": "Criar início orientado às pendências",
+    "plano_origem": "docs/plano-implementacao/plano-100-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Dashboards consultam pedidos/verbas; validar período ativo, pendências e contexto após troca de unidade.",
+    "evidencias": [
+      "src/services/sicoob/statsService.ts"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "E043",
+    "titulo": "Implementar listagem de catálogo útil",
+    "plano_origem": "docs/plano-implementacao/plano-100-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Catálogo funcional implementado; versão loja demonstrativa não certifica o fluxo real com variantes e condições comerciais.",
+    "evidencias": [
+      "src/hooks/useExternalDatabase.ts",
+      "supabase/functions/external-db-bridge/index.ts",
+      "tests/scenarios/catalogo-somente-leitura.mjs"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "E044",
+    "titulo": "Implementar busca com recuperação de intenção",
+    "plano_origem": "docs/plano-implementacao/plano-100-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Busca existe; falta amostra de consultas prioritárias validada e falhas reais da origem ensaiadas.",
+    "evidencias": [
+      "src/hooks/useExternalDatabase.ts",
+      "supabase/functions/external-db-bridge/index.ts",
+      "tests/scenarios/catalogo-somente-leitura.mjs",
+      "docs/pesquisa/2026-09-11/dossie.md",
+      "docs/pesquisa/2026-09-11/anexos/perfis-profissionais.md"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "E045",
+    "titulo": "Implementar filtros acessíveis e persistentes",
+    "plano_origem": "docs/plano-implementacao/plano-100-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Persistência e filtros possuem implementação; acessibilidade e retomada em dispositivo real ainda pendem.",
+    "evidencias": [
+      "src/hooks/useExternalDatabase.ts",
+      "supabase/functions/external-db-bridge/index.ts",
+      "tests/scenarios/catalogo-somente-leitura.mjs",
+      "vitest.config.ts",
+      "docs/execucao/revisao-plano-20260924/checks.json"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "E046",
+    "titulo": "Construir página de produto para decisão",
+    "plano_origem": "docs/plano-implementacao/plano-100-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Página de produto e personalização existem; comprovar decisões com dados vigentes e separar estimativa de contratação.",
+    "evidencias": [
+      "src/hooks/useExternalDatabase.ts",
+      "supabase/functions/external-db-bridge/index.ts",
+      "tests/scenarios/catalogo-somente-leitura.mjs"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "E047",
+    "titulo": "Especificar personalização sem ambiguidade",
+    "plano_origem": "docs/plano-implementacao/plano-100-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Técnicas/templates e cópia atômica existem; insuficiência de dados ainda requer fluxo de análise manual com responsável.",
+    "evidencias": [
+      "supabase/functions/sicoob-kit-quote/catalog.ts",
+      "tests/edge-functions/sicoob-kit-quote-catalog.test.ts",
+      "supabase/migrations/20260922152000_group_personalization_templates.sql"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "E048",
+    "titulo": "Implementar simulação transparente de custo e prazo",
+    "plano_origem": "docs/plano-implementacao/plano-100-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Cálculo comercial evoluiu; tributos, prazo firme e comportamento da previsão sem dados continuam sem aceite integral.",
+    "evidencias": [
+      "src/services/sicoob/orderService.ts",
+      "src/services/sicoob/budgetService.ts",
+      "supabase/migrations/20260922224500_convert_quote_to_sicoob_order.sql",
+      "src/hooks/useKitStockForecast.ts"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "E049",
+    "titulo": "Implementar comparação de alternativas",
+    "plano_origem": "docs/plano-implementacao/plano-100-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Comparador de produtos existe; equivalência comercial entre cotações institucionais não está demonstrada.",
+    "evidencias": [
+      "src/hooks/useExternalDatabase.ts",
+      "supabase/functions/external-db-bridge/index.ts",
+      "tests/scenarios/catalogo-somente-leitura.mjs"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "E050",
+    "titulo": "Organizar favoritos e coleções compartilhadas",
+    "plano_origem": "docs/plano-implementacao/plano-100-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Favoritos/coleções e vistos recentes existem; compartilhar entre cooperativas exige ensaio RLS/expiração real.",
+    "evidencias": [
+      "src/stores/useRecentlyViewedStore.ts",
+      "src/contexts/AuthContext.tsx",
+      "tests/stores/useRecentlyViewedStore.test.ts",
+      "src/hooks/useExternalDatabase.ts",
+      "supabase/functions/external-db-bridge/index.ts",
+      "tests/scenarios/catalogo-somente-leitura.mjs"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "E051",
+    "titulo": "Criar briefing de campanha e necessidade",
+    "plano_origem": "docs/plano-implementacao/plano-100-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Magic Up possui briefing criativo; briefing institucional para compra com destinos, verba e prazos permanece incompleto.",
+    "evidencias": [
+      "src/hooks/useMagicUpState.ts",
+      "src/pages/magic-up/MagicUpConfigPanel.tsx",
+      "docs/execucao/evidencias/etapa24_magic_up_20260917.md",
+      "docs/plano-implementacao/plano.json",
+      "docs/execucao/validacao-do-plano.md"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "E052",
+    "titulo": "Planejar campanhas e marcos de prazo",
+    "plano_origem": "docs/plano-implementacao/plano-100-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Campanhas genéricas existem; marcos regressivos de cotação/arte/produção e conflitos de prazo não estão integrados.",
+    "evidencias": [
+      "src/hooks/useMagicUpState.ts",
+      "src/pages/magic-up/MagicUpConfigPanel.tsx",
+      "docs/execucao/evidencias/etapa24_magic_up_20260917.md",
+      "docs/plano-implementacao/plano.json",
+      "docs/execucao/validacao-do-plano.md"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "E053",
+    "titulo": "Organizar biblioteca de marcas e arquivos",
+    "plano_origem": "docs/plano-implementacao/plano-100-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Versionamento e identidade de arte existem; biblioteca institucional com propriedade/permite uso e proteção entre cooperativas ainda parcial.",
+    "evidencias": [
+      "supabase/functions/sicoob-artwork-register/index.ts",
+      "supabase/migrations/20260912180000_sicoob_finance_artwork.sql",
+      "src/services/sicoob/documentIngestService.ts",
+      "supabase/functions/sicoob-document-ingest/index.ts",
+      "supabase/functions/sicoob-document-ingest/scanner.ts"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "E054",
+    "titulo": "Produzir prova técnica da personalização",
+    "plano_origem": "docs/plano-implementacao/plano-100-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Registro de arte validado localmente; Edge sicoob-artwork-register ausente impede comprovação do fluxo publicado.",
+    "evidencias": [
+      "supabase/functions/sicoob-artwork-register/index.ts",
+      "supabase/migrations/20260912180000_sicoob_finance_artwork.sql",
+      "scripts/check-edge-authorization.mjs",
+      "supabase/functions/_shared/edge-authz-manifest.ts"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "E055",
+    "titulo": "Construir kits com composição verificável",
+    "plano_origem": "docs/plano-implementacao/plano-100-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Servidor valida estoque/preço/demanda agregada; capacidade física da embalagem não demonstrada e Edge de kit retorna 404.",
+    "evidencias": [
+      "supabase/functions/sicoob-kit-quote/catalog.ts",
+      "tests/edge-functions/sicoob-kit-quote-catalog.test.ts",
+      "scripts/check-edge-authorization.mjs",
+      "supabase/functions/_shared/edge-authz-manifest.ts"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "E056",
+    "titulo": "Planejar distribuição por PA e destino",
+    "plano_origem": "docs/plano-implementacao/plano-100-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Destinos, alocações e somas funcionam na simulação; importação assistida, custo/prazo de redistribuição e E2E real ainda faltam.",
+    "evidencias": [
+      "src/pages/sicoob/GestorConsolidatedOrdersPage.tsx",
+      "supabase/migrations/20260912190000_sicoob_consolidation_distribution.sql",
+      "docs/execucao/revisao-plano-20260924/simular-conversao-pedido-sicoob.json",
+      "docs/execucao/revisao-plano-20260924/simular-documentos-sicoob.json",
+      "docs/execucao/revisao-plano-20260924/simular-consolidacao-sicoob.json",
+      "docs/execucao/revisao-plano-20260924/simular-outbox-aprovacao.json"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "E057",
+    "titulo": "Criar carrinho de solicitação institucional",
+    "plano_origem": "docs/plano-implementacao/plano-100-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Editor/carrinho existe; rascunho novo compartilhado por chave e preservação completa de campanha/distribuição permanecem lacunas.",
+    "evidencias": [
+      "src/hooks/useAutoSave.ts",
+      "src/components/quotes/QuoteAutoSave.tsx",
+      "src/pages/QuoteBuilderPage.tsx",
+      "scripts/revisao/rascunhos-20260924.cenarios.tsx",
+      "src/services/sicoob/orderService.ts",
+      "src/services/sicoob/budgetService.ts",
+      "supabase/migrations/20260922224500_convert_quote_to_sicoob_order.sql"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "E058",
+    "titulo": "Apresentar orçamento com custo total claro",
+    "plano_origem": "docs/plano-implementacao/plano-100-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Totais comerciais reconciliados na conversão e nos testes; tributos/condições e proposta real exigem aceite comercial.",
+    "evidencias": [
+      "src/services/sicoob/orderService.ts",
+      "src/services/sicoob/budgetService.ts",
+      "supabase/migrations/20260922224500_convert_quote_to_sicoob_order.sql",
+      "docs/execucao/revisao-plano-20260924/simular-conversao-pedido-sicoob.json",
+      "docs/execucao/revisao-plano-20260924/simular-documentos-sicoob.json",
+      "docs/execucao/revisao-plano-20260924/simular-consolidacao-sicoob.json",
+      "docs/execucao/revisao-plano-20260924/simular-outbox-aprovacao.json"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "E059",
+    "titulo": "Versionar propostas e preservar decisões",
+    "plano_origem": "docs/plano-implementacao/plano-100-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Versionamento atômico e snapshots existem; concorrência remota e vínculo item/arte/documento na jornada inteira ainda precisam de prova.",
+    "evidencias": [
+      "src/services/sicoob/orderService.ts",
+      "src/services/sicoob/budgetService.ts",
+      "supabase/migrations/20260922224500_convert_quote_to_sicoob_order.sql",
+      "supabase/functions/sicoob-artwork-register/index.ts",
+      "supabase/migrations/20260912180000_sicoob_finance_artwork.sql"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "E060",
+    "titulo": "Comparar cotações e justificar a escolha",
+    "plano_origem": "docs/plano-implementacao/plano-100-etapas.md",
+    "estado": "N",
+    "significado": "Funcionalidade/artefato não localizado no escopo pesquisado",
+    "diagnostico_e_condicao_de_fechamento": "Comparador de produtos não cobre cotação institucional externa com fornecedor, validade, duas/três propostas e exceção de fornecedor único.",
+    "evidencias": [
+      "docs/plano-implementacao/plano.json",
+      "docs/execucao/validacao-do-plano.md"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "E061",
+    "titulo": "Formalizar a solicitação de compra",
+    "plano_origem": "docs/plano-implementacao/plano-100-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Conversão e idempotência locais existem; envio real com sessão recuperada, prazo e destinatário correto ainda não foi homologado.",
+    "evidencias": [
+      "src/services/sicoob/orderService.ts",
+      "src/services/sicoob/budgetService.ts",
+      "supabase/migrations/20260922224500_convert_quote_to_sicoob_order.sql",
+      "docs/execucao/revisao-plano-20260924/simular-conversao-pedido-sicoob.json",
+      "docs/execucao/revisao-plano-20260924/simular-documentos-sicoob.json",
+      "docs/execucao/revisao-plano-20260924/simular-consolidacao-sicoob.json",
+      "docs/execucao/revisao-plano-20260924/simular-outbox-aprovacao.json"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "E062",
+    "titulo": "Construir a experiência de verba e saldo",
+    "plano_origem": "docs/plano-implementacao/plano-100-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Verba/saldo implementados; quatro estados financeiros e virada de competência ainda precisam de modelagem/aceite completo.",
+    "evidencias": [
+      "src/services/sicoob/orderService.ts",
+      "src/services/sicoob/budgetService.ts",
+      "supabase/migrations/20260922224500_convert_quote_to_sicoob_order.sql",
+      "src/services/sicoob/statsService.ts"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "E063",
+    "titulo": "Criar fila de aprovações orientada a decisão",
+    "plano_origem": "docs/plano-implementacao/plano-100-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Fila de aprovações existe; remessa de notificações e revisão dos papéis operacionais pendem no remoto.",
+    "evidencias": [
+      "src/services/sicoob/approvalService.ts",
+      "supabase/migrations/20260922161000_repair_sicoob_approval_policy_snapshot.sql",
+      "supabase/functions/sicoob-approval-notifications/index.ts",
+      "supabase/functions/sicoob-approval-reconciliation/index.ts"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "E064",
+    "titulo": "Implementar decisão financeira compreensível",
+    "plano_origem": "docs/plano-implementacao/plano-100-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Decisão financeira é protegida no servidor; falta ensaio por alçada e comparação comercial exigida pela cooperativa.",
+    "evidencias": [
+      "src/services/sicoob/approvalService.ts",
+      "supabase/migrations/20260922161000_repair_sicoob_approval_policy_snapshot.sql",
+      "docs/execucao/revisao-plano-20260924/simular-conversao-pedido-sicoob.json",
+      "docs/execucao/revisao-plano-20260924/simular-documentos-sicoob.json",
+      "docs/execucao/revisao-plano-20260924/simular-consolidacao-sicoob.json",
+      "docs/execucao/revisao-plano-20260924/simular-outbox-aprovacao.json"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "E065",
+    "titulo": "Implementar aprovação formal da arte",
+    "plano_origem": "docs/plano-implementacao/plano-100-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Versão imutável e bloqueio de produção evoluíram; publicação da Edge e competência de marca precisam de validação autenticada.",
+    "evidencias": [
+      "supabase/functions/sicoob-artwork-register/index.ts",
+      "supabase/migrations/20260912180000_sicoob_finance_artwork.sql",
+      "docs/execucao/revisao-plano-20260924/simular-conversao-pedido-sicoob.json",
+      "docs/execucao/revisao-plano-20260924/simular-documentos-sicoob.json",
+      "docs/execucao/revisao-plano-20260924/simular-consolidacao-sicoob.json",
+      "docs/execucao/revisao-plano-20260924/simular-outbox-aprovacao.json"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "E066",
+    "titulo": "Tratar exceções sem perder governança",
+    "plano_origem": "docs/plano-implementacao/plano-100-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Escalonamento/justificativas existem; autorização excepcional com validade e recálculo de efeitos não está completa.",
+    "evidencias": [
+      "src/services/sicoob/approvalService.ts",
+      "supabase/migrations/20260922161000_repair_sicoob_approval_policy_snapshot.sql"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "E067",
+    "titulo": "Administrar substituições e delegações temporárias",
+    "plano_origem": "docs/plano-implementacao/plano-100-etapas.md",
+    "estado": "N",
+    "significado": "Funcionalidade/artefato não localizado no escopo pesquisado",
+    "diagnostico_e_condicao_de_fechamento": "Delegação temporária com delegante, substituto, competências, vigência e revogação não foi localizada no módulo.",
+    "evidencias": [
+      "src/services/sicoob/userService.ts",
+      "src/pages/admin/sicoob/tabs/UserAssignmentTab.tsx",
+      "src/services/sicoob/approvalService.ts",
+      "supabase/migrations/20260922161000_repair_sicoob_approval_policy_snapshot.sql"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "E068",
+    "titulo": "Tornar o histórico de decisões auditável",
+    "plano_origem": "docs/plano-implementacao/plano-100-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Trilhas de eventos existem; reconstrução integral com documentos e atores reais ainda não foi demonstrada.",
+    "evidencias": [
+      "supabase/functions/sicoob-artwork-register/index.ts",
+      "supabase/migrations/20260912180000_sicoob_finance_artwork.sql",
+      "src/pages/sicoob/GestorConsolidatedOrdersPage.tsx",
+      "supabase/migrations/20260912190000_sicoob_consolidation_distribution.sql",
+      "src/services/sicoob/orderService.ts",
+      "src/services/sicoob/budgetService.ts",
+      "supabase/migrations/20260922224500_convert_quote_to_sicoob_order.sql"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "E069",
+    "titulo": "Controlar revisões e cancelamentos",
+    "plano_origem": "docs/plano-implementacao/plano-100-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Cancelamento/estorno têm controles; cancelamento parcial por item/destino e aceite do fornecedor não estão completos.",
+    "evidencias": [
+      "src/services/sicoob/orderService.ts",
+      "src/services/sicoob/budgetService.ts",
+      "supabase/migrations/20260922224500_convert_quote_to_sicoob_order.sql",
+      "src/services/sicoob/approvalService.ts",
+      "supabase/migrations/20260922161000_repair_sicoob_approval_policy_snapshot.sql"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "E070",
+    "titulo": "Implementar acompanhamento do ciclo do pedido",
+    "plano_origem": "docs/plano-implementacao/plano-100-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Estados canônicos e eventos implementados; acompanhamento integral por item/destino e integração com fornecedor ainda parcial.",
+    "evidencias": [
+      "src/services/sicoob/fulfillmentService.ts",
+      "src/components/sicoob/orders/OrderLogisticsTab.tsx",
+      "docs/execucao/revisao-plano-20260924/simular-conversao-pedido-sicoob.json",
+      "docs/execucao/revisao-plano-20260924/simular-documentos-sicoob.json",
+      "docs/execucao/revisao-plano-20260924/simular-consolidacao-sicoob.json",
+      "docs/execucao/revisao-plano-20260924/simular-outbox-aprovacao.json"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "E071",
+    "titulo": "Formalizar a passagem do pedido ao fornecedor",
+    "plano_origem": "docs/plano-implementacao/plano-100-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Pacotes e exportações existem; aceite do fornecedor e tratamento de divergência antes de produzir não estão homologados.",
+    "evidencias": [
+      "docs/plano-implementacao/plano.json",
+      "docs/execucao/validacao-do-plano.md",
+      "supabase/functions/sicoob-artwork-register/index.ts",
+      "supabase/migrations/20260912180000_sicoob_finance_artwork.sql"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "E072",
+    "titulo": "Acompanhar produção e controle de qualidade",
+    "plano_origem": "docs/plano-implementacao/plano-100-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Arte aprovada é pré-requisito no servidor; rastreabilidade de material, lote, rejeição e inspeção de qualidade continua incompleta.",
+    "evidencias": [
+      "supabase/functions/sicoob-artwork-register/index.ts",
+      "supabase/migrations/20260912180000_sicoob_finance_artwork.sql",
+      "src/services/sicoob/fulfillmentService.ts",
+      "src/components/sicoob/orders/OrderLogisticsTab.tsx"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "E073",
+    "titulo": "Reconfirmar disponibilidade sem escrever no catálogo",
+    "plano_origem": "docs/plano-implementacao/plano-100-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Reconsulta de catálogo implementada; não representa reserva. Confirmar SLA, múltiplos e evidência de compromisso comercial.",
+    "evidencias": [
+      "supabase/functions/sicoob-kit-quote/catalog.ts",
+      "tests/edge-functions/sicoob-kit-quote-catalog.test.ts",
+      "supabase/functions/sicoob-reorder/catalog.ts",
+      "supabase/functions/sicoob-reorder/index.ts"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "E074",
+    "titulo": "Preparar expedição e entregas por destino",
+    "plano_origem": "docs/plano-implementacao/plano-100-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Expedição e saldo por destino existem em SQL/UI; comprovantes dependem de ingestão ausente e processo de endereço pendente.",
+    "evidencias": [
+      "src/pages/sicoob/GestorConsolidatedOrdersPage.tsx",
+      "supabase/migrations/20260912190000_sicoob_consolidation_distribution.sql",
+      "src/services/sicoob/documentIngestService.ts",
+      "supabase/functions/sicoob-document-ingest/index.ts",
+      "supabase/functions/sicoob-document-ingest/scanner.ts"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "E075",
+    "titulo": "Oferecer rastreio e previsão confiáveis",
+    "plano_origem": "docs/plano-implementacao/plano-100-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Aba de pedido possui dados operacionais; relatório global ativo permanece simulado e falta rastreio de transportadora homologado.",
+    "evidencias": [
+      "src/pages/sicoob/LogisticsReportPage.tsx",
+      "src/routes/config/sicoob.ts",
+      "src/services/sicoob/fulfillmentService.ts",
+      "src/components/sicoob/orders/OrderLogisticsTab.tsx"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "E076",
+    "titulo": "Registrar recebimento e conferência",
+    "plano_origem": "docs/plano-implementacao/plano-100-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Recebimento parcial/idempotente passou em PostgreSQL sintético; homologação no PA e aceite de qualidade seguem pendentes.",
+    "evidencias": [
+      "src/pages/sicoob/GestorConsolidatedOrdersPage.tsx",
+      "supabase/migrations/20260912190000_sicoob_consolidation_distribution.sql",
+      "docs/execucao/revisao-plano-20260924/simular-conversao-pedido-sicoob.json",
+      "docs/execucao/revisao-plano-20260924/simular-documentos-sicoob.json",
+      "docs/execucao/revisao-plano-20260924/simular-consolidacao-sicoob.json",
+      "docs/execucao/revisao-plano-20260924/simular-outbox-aprovacao.json"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "E077",
+    "titulo": "Resolver faltas, avarias e devoluções",
+    "plano_origem": "docs/plano-implementacao/plano-100-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Recebimento registra falta/avaria; protocolo, investigação, reposição/crédito, reabertura e solução completa não foram localizados.",
+    "evidencias": [
+      "src/pages/sicoob/GestorConsolidatedOrdersPage.tsx",
+      "supabase/migrations/20260912190000_sicoob_consolidation_distribution.sql"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "E078",
+    "titulo": "Conciliar documentos financeiros e entrega",
+    "plano_origem": "docs/plano-implementacao/plano-100-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Pagamentos/notas possuem serviços; scanner e ingestão não homologados impedem fechamento financeiro documental completo.",
+    "evidencias": [
+      "src/services/sicoob/documentIngestService.ts",
+      "supabase/functions/sicoob-document-ingest/index.ts",
+      "supabase/functions/sicoob-document-ingest/scanner.ts",
+      "src/services/sicoob/orderService.ts",
+      "src/services/sicoob/budgetService.ts",
+      "supabase/migrations/20260922224500_convert_quote_to_sicoob_order.sql"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "E079",
+    "titulo": "Facilitar recompra com revalidação",
+    "plano_origem": "docs/plano-implementacao/plano-100-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Nova consulta/idempotência implementadas; Edge retorna 404 e sanitização de erros ainda está no PR #29.",
+    "evidencias": [
+      "supabase/functions/sicoob-reorder/catalog.ts",
+      "supabase/functions/sicoob-reorder/index.ts",
+      "scripts/check-edge-authorization.mjs",
+      "supabase/functions/_shared/edge-authz-manifest.ts",
+      "docs/execucao/revisao-plano-20260924/prs-abertos.json"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "E080",
+    "titulo": "Oferecer ajuda contextual e atendimento",
+    "plano_origem": "docs/plano-implementacao/plano-100-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Ajuda e componentes de suporte existem; protocolo com acompanhamento da solicitação no contexto Sicoob não foi comprovado.",
+    "evidencias": [
+      "docs/plano-implementacao/plano.json",
+      "docs/execucao/validacao-do-plano.md"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "E081",
+    "titulo": "Auditar acessibilidade da jornada completa",
+    "plano_origem": "docs/plano-implementacao/plano-100-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Axe e testes locais não substituem teclado, zoom e leitor de tela da compra/aprovação/recebimento reais.",
+    "evidencias": [
+      "src/pages/sicoob/StorefrontDemoPage.tsx",
+      "docs/execucao/revisao-implementacao-2026-09-12/validacao-navegador.json",
+      "vitest.config.ts",
+      "docs/execucao/revisao-plano-20260924/checks.json"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "E082",
+    "titulo": "Validar uso móvel em situações reais",
+    "plano_origem": "docs/plano-implementacao/plano-100-etapas.md",
+    "estado": "V",
+    "significado": "Validação ou decisão externa/operacional pendente",
+    "diagnostico_e_condicao_de_fechamento": "Demos foram testadas historicamente em larguras móveis; aparelhos reais, upload orientado e interrupções ainda exigem ensaio.",
+    "evidencias": [
+      "src/pages/sicoob/StorefrontDemoPage.tsx",
+      "docs/execucao/revisao-implementacao-2026-09-12/validacao-navegador.json"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "E083",
+    "titulo": "Testar responsividade e conteúdo extremo",
+    "plano_origem": "docs/plano-implementacao/plano-100-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Layouts responsivos existem; endereços longos, grandes valores e múltiplos destinos precisam de varredura visual atual.",
+    "evidencias": [
+      "src/pages/sicoob/StorefrontDemoPage.tsx",
+      "docs/execucao/revisao-implementacao-2026-09-12/validacao-navegador.json"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "E084",
+    "titulo": "Otimizar desempenho percebido e carregamento",
+    "plano_origem": "docs/plano-implementacao/plano-100-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Build/orçamento de chunks passaram; Lighthouse só cobre login e faltam métricas das jornadas e de campo.",
+    "evidencias": [
+      "scripts/qa/check-bundle-budget.mjs",
+      ".github/workflows/lighthouse.yml",
+      ".github/workflows/bundle-check.yml"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "E085",
+    "titulo": "Validar resiliência e preservação do trabalho",
+    "plano_origem": "docs/plano-implementacao/plano-100-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Idempotência SQL evoluiu, mas recuperação local tem lacunas reproduzidas e interrupção da jornada real ainda não foi ensaiada.",
+    "evidencias": [
+      "src/hooks/useAutoSave.ts",
+      "src/components/quotes/QuoteAutoSave.tsx",
+      "src/pages/QuoteBuilderPage.tsx",
+      "scripts/revisao/rascunhos-20260924.cenarios.tsx",
+      "docs/execucao/revisao-plano-20260924/simular-conversao-pedido-sicoob.json",
+      "docs/execucao/revisao-plano-20260924/simular-documentos-sicoob.json",
+      "docs/execucao/revisao-plano-20260924/simular-consolidacao-sicoob.json",
+      "docs/execucao/revisao-plano-20260924/simular-outbox-aprovacao.json"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "E086",
+    "titulo": "Verificar segurança das jornadas integradas",
+    "plano_origem": "docs/plano-implementacao/plano-100-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Autorização estática e ACL parcial verificadas; 58 testes de bypass ignorados e PRs de hardening abertos impedem aceite integral.",
+    "evidencias": [
+      "docs/execucao/auditoria-paridade-local-github-supabase-2026-09-24.md",
+      "docs/execucao/revisao-plano-20260924/prs-abertos.json"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "E087",
+    "titulo": "Validar privacidade e ciclo de vida dos dados",
+    "plano_origem": "docs/plano-implementacao/plano-100-etapas.md",
+    "estado": "V",
+    "significado": "Validação ou decisão externa/operacional pendente",
+    "diagnostico_e_condicao_de_fechamento": "Retenção/privacidade têm artefatos, mas solicitação de titular, revogação e responsabilidade operacional ainda não foram ensaiadas.",
+    "evidencias": [
+      "docs/secrets.md",
+      ".env.production",
+      "docs/plano-implementacao/plano.json",
+      "docs/execucao/validacao-do-plano.md"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "E088",
+    "titulo": "Conduzir testes de usabilidade com tarefas completas",
+    "plano_origem": "docs/plano-implementacao/plano-100-etapas.md",
+    "estado": "V",
+    "significado": "Validação ou decisão externa/operacional pendente",
+    "diagnostico_e_condicao_de_fechamento": "Pesquisa pública não equivale a usabilidade observada. Realizar tarefas, registrar barreiras e retestar com participantes.",
+    "evidencias": [
+      "docs/pesquisa/2026-09-11/dossie.md",
+      "docs/pesquisa/2026-09-11/anexos/perfis-profissionais.md"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "E089",
+    "titulo": "Construir indicadores operacionais verdadeiros",
+    "plano_origem": "docs/plano-implementacao/plano-100-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Parte dos indicadores foi corrigida; métricas falsas de logística e falta de amostra conciliada impedem aceite.",
+    "evidencias": [
+      "src/services/sicoob/statsService.ts",
+      "src/pages/sicoob/LogisticsReportPage.tsx",
+      "src/routes/config/sicoob.ts"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "E090",
+    "titulo": "Concluir homologação funcional e de conteúdo",
+    "plano_origem": "docs/plano-implementacao/plano-100-etapas.md",
+    "estado": "V",
+    "significado": "Validação ou decisão externa/operacional pendente",
+    "diagnostico_e_condicao_de_fechamento": "Suítes locais passaram no escopo, mas cenários remotos obrigatórios e conteúdo completo ainda não foram homologados.",
+    "evidencias": [
+      "docs/execucao/revisao-plano-20260924/checks.json",
+      "docs/plano-implementacao/plano.json",
+      "docs/execucao/validacao-do-plano.md"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "E091",
+    "titulo": "Ensaiar a compra integral antes do piloto",
+    "plano_origem": "docs/plano-implementacao/plano-100-etapas.md",
+    "estado": "V",
+    "significado": "Validação ou decisão externa/operacional pendente",
+    "diagnostico_e_condicao_de_fechamento": "Não há evidência de compra integral com três destinos, revisão de arte, fornecedor, recebimento e conciliação.",
+    "evidencias": [
+      "docs/plano-implementacao/plano.json",
+      "docs/execucao/validacao-do-plano.md",
+      "scripts/check-edge-authorization.mjs",
+      "supabase/functions/_shared/edge-authz-manifest.ts"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "E092",
+    "titulo": "Revisar a experiência final e a aplicação da marca",
+    "plano_origem": "docs/plano-implementacao/plano-100-etapas.md",
+    "estado": "V",
+    "significado": "Validação ou decisão externa/operacional pendente",
+    "diagnostico_e_condicao_de_fechamento": "Revisão de marca e conteúdo final com responsável Sicoob ainda não está documentada.",
+    "evidencias": [
+      "src/pages/sicoob/StorefrontDemoPage.tsx",
+      "docs/execucao/revisao-implementacao-2026-09-12/validacao-navegador.json",
+      "docs/pesquisa/2026-09-11/dossie.md",
+      "docs/pesquisa/2026-09-11/anexos/perfis-profissionais.md"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "E093",
+    "titulo": "Preparar a cooperativa piloto e seus dados",
+    "plano_origem": "docs/plano-implementacao/plano-100-etapas.md",
+    "estado": "V",
+    "significado": "Validação ou decisão externa/operacional pendente",
+    "diagnostico_e_condicao_de_fechamento": "Preparação do piloto depende de cooperativa, papéis, políticas, endereços e verba aprovados por responsáveis reais.",
+    "evidencias": [
+      "scripts/seed-qa.mjs",
+      "supabase/functions/sicoob-seed-qa/index.ts",
+      "docs/plano-implementacao/plano.json",
+      "docs/execucao/validacao-do-plano.md"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "E094",
+    "titulo": "Preparar operação, suporte e treinamento",
+    "plano_origem": "docs/plano-implementacao/plano-100-etapas.md",
+    "estado": "V",
+    "significado": "Validação ou decisão externa/operacional pendente",
+    "diagnostico_e_condicao_de_fechamento": "Runbooks existem; treinamento e execução independente por operação/suporte não foram demonstrados.",
+    "evidencias": [
+      "docs/RUNBOOKS/MCP_DDL_APPLICATION.md",
+      "docs/DEPLOYMENT.md",
+      "docs/plano-implementacao/plano.json",
+      "docs/execucao/validacao-do-plano.md"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "E095",
+    "titulo": "Preparar release e decisão de lançamento",
+    "plano_origem": "docs/plano-implementacao/plano-100-etapas.md",
+    "estado": "V",
+    "significado": "Validação ou decisão externa/operacional pendente",
+    "diagnostico_e_condicao_de_fechamento": "Bloqueadores de configuração, implantação e homologação permanecem. Release operacional não deve ser declarada pronta.",
+    "evidencias": [
+      "docs/execucao/revisao-plano-20260924/protecao-github.json",
+      ".github/workflows/ci.yml",
+      "scripts/check-edge-authorization.mjs",
+      "supabase/functions/_shared/edge-authz-manifest.ts"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "E096",
+    "titulo": "Publicar o piloto e verificar produção",
+    "plano_origem": "docs/plano-implementacao/plano-100-etapas.md",
+    "estado": "V",
+    "significado": "Validação ou decisão externa/operacional pendente",
+    "diagnostico_e_condicao_de_fechamento": "Publicação piloto em produção é etapa futura; o usuário confirmou que o projeto segue em construção.",
+    "evidencias": [
+      "docs/plano-implementacao/plano.json",
+      "docs/execucao/validacao-do-plano.md"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "E097",
+    "titulo": "Acompanhar a primeira compra real até o recebimento",
+    "plano_origem": "docs/plano-implementacao/plano-100-etapas.md",
+    "estado": "V",
+    "significado": "Validação ou decisão externa/operacional pendente",
+    "diagnostico_e_condicao_de_fechamento": "Primeira compra real não foi realizada nem deve ser inferida de testes sintéticos.",
+    "evidencias": [
+      "docs/plano-implementacao/plano.json",
+      "docs/execucao/validacao-do-plano.md"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "E098",
+    "titulo": "Medir o piloto e corrigir fricções comprovadas",
+    "plano_origem": "docs/plano-implementacao/plano-100-etapas.md",
+    "estado": "V",
+    "significado": "Validação ou decisão externa/operacional pendente",
+    "diagnostico_e_condicao_de_fechamento": "Sem piloto real não há amostra operacional de resultado ou melhoria mensurada.",
+    "evidencias": [
+      "docs/plano-implementacao/plano.json",
+      "docs/execucao/validacao-do-plano.md",
+      "src/services/sicoob/statsService.ts"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "E099",
+    "titulo": "Validar uma segunda cooperativa com regras diferentes",
+    "plano_origem": "docs/plano-implementacao/plano-100-etapas.md",
+    "estado": "V",
+    "significado": "Validação ou decisão externa/operacional pendente",
+    "diagnostico_e_condicao_de_fechamento": "Segunda cooperativa exige regras distintas e isolamento; delegação temporária ainda não foi implementada.",
+    "evidencias": [
+      "src/services/sicoob/approvalService.ts",
+      "supabase/migrations/20260922161000_repair_sicoob_approval_policy_snapshot.sql",
+      "src/services/sicoob/userService.ts",
+      "src/pages/admin/sicoob/tabs/UserAssignmentTab.tsx"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "E100",
+    "titulo": "Encerrar a implantação e estabelecer evolução contínua",
+    "plano_origem": "docs/plano-implementacao/plano-100-etapas.md",
+    "estado": "V",
+    "significado": "Validação ou decisão externa/operacional pendente",
+    "diagnostico_e_condicao_de_fechamento": "Nenhuma evidência atual permite encerrar formalmente as 100 etapas ou atribuir nota 10/10.",
+    "evidencias": [
+      "docs/plano-implementacao/plano.json",
+      "docs/execucao/validacao-do-plano.md",
+      "docs/execucao/revisao-plano-20260924/checks.json"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "R01",
+    "titulo": "Congelar mudanças no projeto remoto",
+    "plano_origem": "docs/plano-implementacao/plano-reconciliacao-50-etapas.md",
+    "estado": "R",
+    "significado": "Premissa a substituir; não executar literalmente",
+    "diagnostico_e_condicao_de_fechamento": "Congelamento de produção não se aplica literalmente ao ambiente de construção autorizado. Falta definir um caminho auditável de aplicação remota e registrar exceções.",
+    "evidencias": [
+      "docs/execucao/auditoria-paridade-local-github-supabase-2026-09-24.md"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "R02",
+    "titulo": "Proteger a branch `main` ✅ (aplicado em 16/09/2026)",
+    "plano_origem": "docs/plano-implementacao/plano-reconciliacao-50-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Há uma revisão obrigatória, mas sem checks obrigatórios e enforce_admins=false. Reforçar proteção e comprovar bloqueio de bypass.",
+    "evidencias": [
+      "docs/execucao/revisao-plano-20260924/protecao-github.json",
+      ".github/workflows/ci.yml"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "R03",
+    "titulo": "Cadastrar secrets e ambientes do GitHub",
+    "plano_origem": "docs/plano-implementacao/plano-reconciliacao-50-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Environments existem, mas os secrets de teste/SQL não aparecem no escopo do repositório. Conferir segredos por environment, personas e execução autenticada.",
+    "evidencias": [
+      "docs/execucao/revisao-plano-20260924/protecao-github.json",
+      ".github/workflows/ci.yml",
+      "docs/secrets.md",
+      ".env.production"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "R04",
+    "titulo": "Fechar o ciclo dos PRs #8 e #9",
+    "plano_origem": "docs/plano-implementacao/plano-reconciliacao-50-etapas.md",
+    "estado": "H",
+    "significado": "Evidência histórica; falta revalidação atual",
+    "diagnostico_e_condicao_de_fechamento": "Artefatos de reconciliação estão incorporados; o fechamento histórico dos PRs #8/#9 não foi reauditado individualmente nesta rodada.",
+    "evidencias": [
+      "docs/execucao/correcoes-reconciliacao-20260922.md",
+      "docs/auditoria-validacao-2026-09-22.md"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "R05",
+    "titulo": "Backup lógico completo e verificação de PITR",
+    "plano_origem": "docs/plano-implementacao/plano-reconciliacao-50-etapas.md",
+    "estado": "V",
+    "significado": "Validação ou decisão externa/operacional pendente",
+    "diagnostico_e_condicao_de_fechamento": "Não há evidência atual de restauração integral nem PITR testado. Produzir backup com hash e ensaiar restore em ambiente descartável.",
+    "evidencias": [
+      "docs/execucao/correcoes-reconciliacao-20260922.md",
+      "docs/auditoria-validacao-2026-09-22.md"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "R06",
+    "titulo": "Declarar o baseline auditável",
+    "plano_origem": "docs/plano-implementacao/plano-reconciliacao-50-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Há snapshots datados, porém não foi localizada a tag baseline prevista nem prova de restore correspondente. Fixar baseline único reproduzível.",
+    "evidencias": [
+      "docs/execucao/correcoes-reconciliacao-20260922.md",
+      "docs/auditoria-validacao-2026-09-22.md",
+      "docs/execucao/auditoria-paridade-local-github-supabase-2026-09-24.md"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "R07",
+    "titulo": "Inventário completo do schema remoto",
+    "plano_origem": "docs/plano-implementacao/plano-reconciliacao-50-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "OpenAPI, buckets e RPCs RLS foram observados; catálogo completo de funções, triggers, cron e grants ainda sem fotografia SQL atual.",
+    "evidencias": [
+      "docs/execucao/auditoria-paridade-local-github-supabase-2026-09-24.md"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "R08",
+    "titulo": "Gerar e versionar `schema.sql` baseline",
+    "plano_origem": "docs/plano-implementacao/plano-reconciliacao-50-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Baseline aplicada foi recuperada como migration, mas isso não equivale ao dump completo schema.sql e dados de referência reproduzíveis.",
+    "evidencias": [
+      "supabase/migrations/20260915143442_sicoob_reconciliation_baseline.sql",
+      "supabase/migrations_archive/2026-09/20260915160000_sicoob_reconciliation_baseline.sql",
+      "docs/execucao/evidencias/baseline_diff_20260917.md"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "R09",
+    "titulo": "Classificar as 503 migrations históricas ⏳ (parcial — 42/503 classificados em 16/09/2026)",
+    "plano_origem": "docs/plano-implementacao/plano-reconciliacao-50-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "468 migrations fora do ledger têm classificação estática histórica. Rever dependências e equivalência semântica contra o ledger atual antes de aplicar.",
+    "evidencias": [
+      "docs/execucao/evidencias/retomada-mcp-20260922/migration-backlog-classification.json"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "R10",
+    "titulo": "Resolver prefixos de versão duplicados ✅ (concluído em 16/09/2026)",
+    "plano_origem": "docs/plano-implementacao/plano-reconciliacao-50-etapas.md",
+    "estado": "L",
+    "significado": "Implementado no escopo local/documental indicado",
+    "diagnostico_e_condicao_de_fechamento": "Versão canônica e cópia histórica arquivada estão separadas. Preservar unicidade e o gate de migrations nas próximas alterações.",
+    "evidencias": [
+      "supabase/migrations/20260915143442_sicoob_reconciliation_baseline.sql",
+      "supabase/migrations_archive/2026-09/20260915160000_sicoob_reconciliation_baseline.sql",
+      "docs/execucao/evidencias/baseline_diff_20260917.md"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "R11",
+    "titulo": "Arquivar migrations superadas ⏳ (parcial — 1 de N clusters arquivados em 16/09/2026)",
+    "plano_origem": "docs/plano-implementacao/plano-reconciliacao-50-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "O baseline divergente está arquivado; a classificação histórica completa ainda não autoriza arquivar ou reaplicar todo o backlog.",
+    "evidencias": [
+      "supabase/migrations/20260915143442_sicoob_reconciliation_baseline.sql",
+      "supabase/migrations_archive/2026-09/20260915160000_sicoob_reconciliation_baseline.sql",
+      "docs/execucao/evidencias/baseline_diff_20260917.md",
+      "docs/execucao/evidencias/retomada-mcp-20260922/migration-backlog-classification.json"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "R12",
+    "titulo": "Reparar o ledger `supabase_migrations.schema_migrations`",
+    "plano_origem": "docs/plano-implementacao/plano-reconciliacao-50-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Comparador bidirecional e evidência de lotes aplicados existem. Falta leitura atual dos 534 arquivos contra o ledger integral.",
+    "evidencias": [
+      "scripts/db/check-migration-ledger-drift.mjs",
+      ".github/workflows/migration-ledger-drift.yml",
+      "docs/execucao/correcoes-reconciliacao-20260922.md",
+      "docs/auditoria-validacao-2026-09-22.md"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "R13",
+    "titulo": "Validar drift zero",
+    "plano_origem": "docs/plano-implementacao/plano-reconciliacao-50-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Drift zero não demonstrado; há oito relações, vinte RPCs e onze colunas remotas sem tipos. Corrigir tipos e executar diff administrativo.",
+    "evidencias": [
+      "scripts/db/check-migration-ledger-drift.mjs",
+      ".github/workflows/migration-ledger-drift.yml",
+      "src/integrations/supabase/types.ts",
+      "scripts/db/compare-types-api.mjs"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "R14",
+    "titulo": "Criar ambiente de staging a partir do baseline",
+    "plano_origem": "docs/plano-implementacao/plano-reconciliacao-50-etapas.md",
+    "estado": "V",
+    "significado": "Validação ou decisão externa/operacional pendente",
+    "diagnostico_e_condicao_de_fechamento": "PostgreSQL descartável está disponível, mas não há homologação segregada equivalente ao Supabase com Auth, Storage e provedores.",
+    "evidencias": [
+      "docs/execucao/correcoes-reconciliacao-20260922.md",
+      "docs/auditoria-validacao-2026-09-22.md"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "R15",
+    "titulo": "Pipeline \"Supabase Preview\" por PR",
+    "plano_origem": "docs/plano-implementacao/plano-reconciliacao-50-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Preview aparece nos checks, porém isso não comprova branch de banco por PR, seed, testes RLS e descarte. Homologar pipeline completo.",
+    "evidencias": [
+      "docs/execucao/revisao-plano-20260924/protecao-github.json",
+      ".github/workflows/ci.yml"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "R16",
+    "titulo": "Seed determinístico de homologação",
+    "plano_origem": "docs/plano-implementacao/plano-reconciliacao-50-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Seed e controles de acesso existem; personas autenticadas de duas cooperativas e sua execução remota seguem sem evidência atual.",
+    "evidencias": [
+      "scripts/seed-qa.mjs",
+      "supabase/functions/sicoob-seed-qa/index.ts"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "R17",
+    "titulo": "Smoke de conectividade e gates básicos em staging",
+    "plano_origem": "docs/plano-implementacao/plano-reconciliacao-50-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Build/testes locais e leituras de API funcionam; login e jornadas autenticadas com o schema real não foram certificados.",
+    "evidencias": [
+      "docs/execucao/revisao-plano-20260924/checks.json",
+      "docs/execucao/auditoria-paridade-local-github-supabase-2026-09-24.md"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "R18",
+    "titulo": "Migration única e idempotente para as 11 tabelas Sicoob ✅ (11/11 aplicadas em 16/09/2026)",
+    "plano_origem": "docs/plano-implementacao/plano-reconciliacao-50-etapas.md",
+    "estado": "H",
+    "significado": "Evidência histórica; falta revalidação atual",
+    "diagnostico_e_condicao_de_fechamento": "Tabelas operacionais aparecem na API e há evidência histórica de aplicação. Conferir definições e ledger atual antes de encerrar etapa estrutural.",
+    "evidencias": [
+      "docs/execucao/correcoes-reconciliacao-20260922.md",
+      "docs/auditoria-validacao-2026-09-22.md",
+      "docs/execucao/auditoria-paridade-local-github-supabase-2026-09-24.md"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "R19",
+    "titulo": "Índices das tabelas Sicoob ✅ (confirmado em 16/09/2026, sem ação necessária)",
+    "plano_origem": "docs/plano-implementacao/plano-reconciliacao-50-etapas.md",
+    "estado": "H",
+    "significado": "Evidência histórica; falta revalidação atual",
+    "diagnostico_e_condicao_de_fechamento": "Índices foram verificados historicamente; nova inspeção de validade, cobertura de FKs e planos reais não foi realizada nesta rodada.",
+    "evidencias": [
+      "docs/execucao/correcoes-reconciliacao-20260922.md",
+      "docs/auditoria-validacao-2026-09-22.md"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "R20",
+    "titulo": "RLS e policies por papel nas tabelas Sicoob ✅ (matriz extraída em 16/09/2026)",
+    "plano_origem": "docs/plano-implementacao/plano-reconciliacao-50-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "230 tabelas/partições públicas têm RLS habilitado. Isso não substitui testes de isolamento por usuário, ação e cooperativa.",
+    "evidencias": [
+      "docs/execucao/auditoria-paridade-local-github-supabase-2026-09-24.md"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "R21",
+    "titulo": "RPCs atômicas de escrita ⏳ (verificação estrutural feita em 16/09/2026, teste dinâmico pendente)",
+    "plano_origem": "docs/plano-implementacao/plano-reconciliacao-50-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "RPCs atômicas existem e a simulação de conversão passou 22 cenários. Falta ensaio autenticado remoto e a jornada com catálogo real.",
+    "evidencias": [
+      "src/services/sicoob/orderService.ts",
+      "src/services/sicoob/budgetService.ts",
+      "supabase/migrations/20260922224500_convert_quote_to_sicoob_order.sql",
+      "docs/execucao/revisao-plano-20260924/simular-conversao-pedido-sicoob.json",
+      "docs/execucao/revisao-plano-20260924/simular-documentos-sicoob.json",
+      "docs/execucao/revisao-plano-20260924/simular-consolidacao-sicoob.json",
+      "docs/execucao/revisao-plano-20260924/simular-outbox-aprovacao.json"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "R22",
+    "titulo": "RPCs de consulta e apoio",
+    "plano_origem": "docs/plano-implementacao/plano-reconciliacao-50-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Helpers de consulta existem no contrato remoto; tipos, overloads e consumidores ainda precisam de reconciliação completa.",
+    "evidencias": [
+      "docs/execucao/auditoria-paridade-local-github-supabase-2026-09-24.md",
+      "src/integrations/supabase/types.ts",
+      "scripts/db/compare-types-api.mjs"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "R23",
+    "titulo": "Testes SQL de invariantes (pgTAP ou script)",
+    "plano_origem": "docs/plano-implementacao/plano-reconciliacao-50-etapas.md",
+    "estado": "L",
+    "significado": "Implementado no escopo local/documental indicado",
+    "diagnostico_e_condicao_de_fechamento": "Simulações SQL de conversão, documentos, distribuição e outbox executadas no PostgreSQL descartável. O aceite é local, sem certificação remota.",
+    "evidencias": [
+      "docs/execucao/revisao-plano-20260924/simular-conversao-pedido-sicoob.json",
+      "docs/execucao/revisao-plano-20260924/simular-documentos-sicoob.json",
+      "docs/execucao/revisao-plano-20260924/simular-consolidacao-sicoob.json",
+      "docs/execucao/revisao-plano-20260924/simular-outbox-aprovacao.json"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "R24",
+    "titulo": "View `v_sicoob_hierarchy` e views de leitura ✅ (achado real corrigido em 16/09/2026)",
+    "plano_origem": "docs/plano-implementacao/plano-reconciliacao-50-etapas.md",
+    "estado": "H",
+    "significado": "Evidência histórica; falta revalidação atual",
+    "diagnostico_e_condicao_de_fechamento": "Correções de views e security_invoker registradas historicamente. Revalidar definições e leitura como usuário de outra cooperativa.",
+    "evidencias": [
+      "docs/execucao/correcoes-reconciliacao-20260922.md",
+      "docs/auditoria-validacao-2026-09-22.md"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "R25",
+    "titulo": "Buckets de Storage e policies ✅ (concluído em 16/09/2026)",
+    "plano_origem": "docs/plano-implementacao/plano-reconciliacao-50-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Buckets privados existem; ingestão documental depende de Edge ausente e scanner não homologado. Falta upload/download autenticado ponta a ponta.",
+    "evidencias": [
+      "docs/execucao/auditoria-paridade-local-github-supabase-2026-09-24.md",
+      "src/services/sicoob/documentIngestService.ts",
+      "supabase/functions/sicoob-document-ingest/index.ts",
+      "supabase/functions/sicoob-document-ingest/scanner.ts"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "R26",
+    "titulo": "Corrigir as 37 referências de runtime a objetos inexistentes ⏳ (parcial — 4 corrigidas, 5 achados reais confirmados ao vivo pendentes em 16/09/2026)",
+    "plano_origem": "docs/plano-implementacao/plano-reconciliacao-50-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Gate atual encontrou 1075 referências sem quebra contra cache de 22/09. Atualizar snapshot e cobrir chamadas dinâmicas; nomes não provam funcionalidade.",
+    "evidencias": [
+      "scripts/db/check-runtime-refs.mjs",
+      "tests/scenarios/runtime-references.mjs"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "R27",
+    "titulo": "Integridade financeira e de orçamento ✅ (achado real corrigido em 16/09/2026)",
+    "plano_origem": "docs/plano-implementacao/plano-reconciliacao-50-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Totais, conversão e itens atômicos possuem testes. Faltam fechamento de período, estados financeiros completos e reconciliação com pedidos reais de teste.",
+    "evidencias": [
+      "src/services/sicoob/orderService.ts",
+      "src/services/sicoob/budgetService.ts",
+      "supabase/migrations/20260922224500_convert_quote_to_sicoob_order.sql",
+      "docs/execucao/revisao-plano-20260924/simular-conversao-pedido-sicoob.json",
+      "docs/execucao/revisao-plano-20260924/simular-documentos-sicoob.json",
+      "docs/execucao/revisao-plano-20260924/simular-consolidacao-sicoob.json",
+      "docs/execucao/revisao-plano-20260924/simular-outbox-aprovacao.json"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "R28",
+    "titulo": "Habilitar RLS em `notification_templates`, `webhook_configs`, `webhook_logs` ✅ (aplicado em 16/09/2026)",
+    "plano_origem": "docs/plano-implementacao/plano-reconciliacao-50-etapas.md",
+    "estado": "L",
+    "significado": "Implementado no escopo local/documental indicado",
+    "diagnostico_e_condicao_de_fechamento": "RPC administrativa confirmou RLS habilitado em todas as 230 tabelas/partições públicas, incluindo as três previstas. Não significa policies semanticamente corretas.",
+    "evidencias": [
+      "docs/execucao/auditoria-paridade-local-github-supabase-2026-09-24.md"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "R29",
+    "titulo": "Policies para `access_security_settings` e `device_login_notifications` ✅ (aplicado em 16/09/2026)",
+    "plano_origem": "docs/plano-implementacao/plano-reconciliacao-50-etapas.md",
+    "estado": "H",
+    "significado": "Evidência histórica; falta revalidação atual",
+    "diagnostico_e_condicao_de_fechamento": "Policies registradas e RLS atual ativo; falta execução das ações positivas e negativas com personas reais para estas tabelas.",
+    "evidencias": [
+      "docs/execucao/correcoes-reconciliacao-20260922.md",
+      "docs/auditoria-validacao-2026-09-22.md",
+      "docs/execucao/auditoria-paridade-local-github-supabase-2026-09-24.md"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "R30",
+    "titulo": "Auditoria das 507 policies ✅ (33 revisadas em 16/09/2026, 2 corrigidas)",
+    "plano_origem": "docs/plano-implementacao/plano-reconciliacao-50-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Auditoria de matriz produziu 484 combinações e 50 predicados a revisar; marcação histórica de 33 policies não encerra auditoria de todas as policies.",
+    "evidencias": [
+      "docs/execucao/auditoria-paridade-local-github-supabase-2026-09-24.md"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "R31",
+    "titulo": "Auditoria das 203 funções (SECURITY DEFINER, search_path, ACL) ✅ (achado crítico de metodologia corrigido em 16/09/2026)",
+    "plano_origem": "docs/plano-implementacao/plano-reconciliacao-50-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "RPC de ACL SECURITY DEFINER retornou zero achados sob suas regras. Search_path, todos os grants e contratos autenticados ainda exigem catálogo completo.",
+    "evidencias": [
+      "docs/execucao/auditoria-paridade-local-github-supabase-2026-09-24.md"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "R32",
+    "titulo": "Revisar as 96 Edge Functions com `verify_jwt=false` ⏳ (parcial — achado registrado em 16/09/2026)",
+    "plano_origem": "docs/plano-implementacao/plano-reconciliacao-50-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Manifesto cobre 106 funções estaticamente; PR #28 ainda endurece workers não incorporados. Validar comportamento e código implantado.",
+    "evidencias": [
+      "scripts/check-edge-authorization.mjs",
+      "supabase/functions/_shared/edge-authz-manifest.ts",
+      "docs/execucao/revisao-plano-20260924/prs-abertos.json"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "R33",
+    "titulo": "Reconciliar `auth.users` ↔ `profiles` ✅ (aplicado em 16/09/2026, com ressalvas)",
+    "plano_origem": "docs/plano-implementacao/plano-reconciliacao-50-etapas.md",
+    "estado": "H",
+    "significado": "Evidência histórica; falta revalidação atual",
+    "diagnostico_e_condicao_de_fechamento": "Reconciliação auth.users/profiles tem evidência histórica; não foi repetida contagem atual nem ensaio de expiração/revogação de sessão.",
+    "evidencias": [
+      "docs/execucao/correcoes-reconciliacao-20260922.md",
+      "docs/auditoria-validacao-2026-09-22.md"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "R34",
+    "titulo": "Rotação de credenciais e trilha",
+    "plano_origem": "docs/plano-implementacao/plano-reconciliacao-50-etapas.md",
+    "estado": "V",
+    "significado": "Validação ou decisão externa/operacional pendente",
+    "diagnostico_e_condicao_de_fechamento": "Rotação efetiva das credenciais históricas não foi comprovada no provedor. Registrar apenas nomes, datas e evidência de invalidação.",
+    "evidencias": [
+      "docs/secrets.md",
+      ".env.production"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "R35",
+    "titulo": "Publicar as 4 Edge Functions ausentes via CI",
+    "plano_origem": "docs/plano-implementacao/plano-reconciliacao-50-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Cinco funções operacionais Sicoob retornaram 404 em 24/09. Publicar e executar chamadas autenticadas de cada fluxo.",
+    "evidencias": [
+      "scripts/check-edge-authorization.mjs",
+      "supabase/functions/_shared/edge-authz-manifest.ts",
+      "docs/execucao/auditoria-paridade-local-github-supabase-2026-09-24.md"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "R36",
+    "titulo": "Diff automático deploy ↔ repositório de Edge Functions",
+    "plano_origem": "docs/plano-implementacao/plano-reconciliacao-50-etapas.md",
+    "estado": "N",
+    "significado": "Funcionalidade/artefato não localizado no escopo pesquisado",
+    "diagnostico_e_condicao_de_fechamento": "Existe inventário/ping, mas não foi localizado diff automático do código implantado contra o repositório. OPTIONS não compara versões.",
+    "evidencias": [
+      "scripts/check-edge-authorization.mjs",
+      "supabase/functions/_shared/edge-authz-manifest.ts"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "R37",
+    "titulo": "Regenerar `types.ts` e travar no CI",
+    "plano_origem": "docs/plano-implementacao/plano-reconciliacao-50-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Tipos têm drift confirmado e não há prova de geração administrativa integral com gate de diff ativo.",
+    "evidencias": [
+      "src/integrations/supabase/types.ts",
+      "scripts/db/compare-types-api.mjs",
+      "docs/execucao/auditoria-paridade-local-github-supabase-2026-09-24.md"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "R38",
+    "titulo": "Zerar baseline de typecheck/lint no módulo Sicoob",
+    "plano_origem": "docs/plano-implementacao/plano-reconciliacao-50-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Baseline TypeScript permite 166 erros globais e lint registra 3314. Medir e eliminar dívida do escopo Sicoob sem confundir ratchet com zero erros.",
+    "evidencias": [
+      "docs/execucao/revisao-plano-20260924/checks.json"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "R39",
+    "titulo": "Testes de contrato e integração contra staging",
+    "plano_origem": "docs/plano-implementacao/plano-reconciliacao-50-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "5472 testes passaram, 113 foram ignorados. Faltam Auth/Storage/Edge e isolamento real em staging com personas.",
+    "evidencias": [
+      "docs/execucao/revisao-plano-20260924/checks.json"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "R40",
+    "titulo": "Partições de `admin_audit_log` e automação ✅ (aplicado em 16/09/2026)",
+    "plano_origem": "docs/plano-implementacao/plano-reconciliacao-50-etapas.md",
+    "estado": "H",
+    "significado": "Evidência histórica; falta revalidação atual",
+    "diagnostico_e_condicao_de_fechamento": "Particionamento consta em evidências históricas; RLS atual alcança partições, mas agendamento e horizonte de partições não foram revalidados por SQL.",
+    "evidencias": [
+      "docs/execucao/correcoes-reconciliacao-20260922.md",
+      "docs/auditoria-validacao-2026-09-22.md",
+      "docs/execucao/auditoria-paridade-local-github-supabase-2026-09-24.md"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "R41",
+    "titulo": "Limpar `admin_audit_log_old` e `admin_audit_log_archive` ✅ (aplicado em 16/09/2026)",
+    "plano_origem": "docs/plano-implementacao/plano-reconciliacao-50-etapas.md",
+    "estado": "H",
+    "significado": "Evidência histórica; falta revalidação atual",
+    "diagnostico_e_condicao_de_fechamento": "Limpeza foi registrada em 16/09; não executar novas exclusões sem inventário e retenção atuais.",
+    "evidencias": [
+      "docs/execucao/correcoes-reconciliacao-20260922.md",
+      "docs/auditoria-validacao-2026-09-22.md"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "R42",
+    "titulo": "Políticas de retenção com pg_cron ✅ (aplicado em 16/09/2026)",
+    "plano_origem": "docs/plano-implementacao/plano-reconciliacao-50-etapas.md",
+    "estado": "H",
+    "significado": "Evidência histórica; falta revalidação atual",
+    "diagnostico_e_condicao_de_fechamento": "Retenção via cron consta historicamente. Confirmar jobs ativos, última execução e volume removido no catálogo administrativo atual.",
+    "evidencias": [
+      "docs/execucao/correcoes-reconciliacao-20260922.md",
+      "docs/auditoria-validacao-2026-09-22.md"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "R43",
+    "titulo": "Agendar rotinas que hoje só existem como Edge Function ⏳ (parcial)",
+    "plano_origem": "docs/plano-implementacao/plano-reconciliacao-50-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Cron e dispatcher existem em migrations; segredos/entrega real pendem e PR #24 corrige crons legados ainda não incorporados.",
+    "evidencias": [
+      "supabase/functions/sicoob-approval-notifications/index.ts",
+      "supabase/functions/sicoob-approval-reconciliation/index.ts",
+      "docs/execucao/revisao-plano-20260924/prs-abertos.json"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "R44",
+    "titulo": "Auditoria de índices e consultas ✅ (parcial, valor priorizado — 16/09/2026)",
+    "plano_origem": "docs/plano-implementacao/plano-reconciliacao-50-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Auditoria histórica foi parcial. Faltam planos reais, cobertura e latência por jornada no projeto atual.",
+    "evidencias": [
+      "docs/execucao/correcoes-reconciliacao-20260922.md",
+      "docs/auditoria-validacao-2026-09-22.md"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "R45",
+    "titulo": "VACUUM, ANALYZE e autovacuum ✅ (verificado, sem ação necessária — 16/09/2026)",
+    "plano_origem": "docs/plano-implementacao/plano-reconciliacao-50-etapas.md",
+    "estado": "H",
+    "significado": "Evidência histórica; falta revalidação atual",
+    "diagnostico_e_condicao_de_fechamento": "VACUUM/autovacuum foram verificados em 16/09. Não há nova leitura operacional; não tratar a fotografia antiga como prova atual.",
+    "evidencias": [
+      "docs/execucao/correcoes-reconciliacao-20260922.md",
+      "docs/auditoria-validacao-2026-09-22.md"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "R46",
+    "titulo": "Tornar os workflows verdes e obrigatórios",
+    "plano_origem": "docs/plano-implementacao/plano-reconciliacao-50-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Checks existem, mas não são obrigatórios e o CI remoto não forneceu validação executada do lote. Restaurar execução e exigir gates.",
+    "evidencias": [
+      "docs/execucao/revisao-plano-20260924/protecao-github.json",
+      ".github/workflows/ci.yml",
+      "docs/execucao/revisao-plano-20260924/checks.json"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "R47",
+    "titulo": "Gates de migration no PR",
+    "plano_origem": "docs/plano-implementacao/plano-reconciliacao-50-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Comparador e workflow diário existem; SUPABASE_DB_URL não está configurado no escopo observado. Demonstrar detecção de drift em execução real.",
+    "evidencias": [
+      "scripts/db/check-migration-ledger-drift.mjs",
+      ".github/workflows/migration-ledger-drift.yml"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "R48",
+    "titulo": "Observabilidade e alertas",
+    "plano_origem": "docs/plano-implementacao/plano-reconciliacao-50-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Telemetria e monitores possuem código; confirmar DSN, provedores, alertas e recuperação em incidente controlado.",
+    "evidencias": [
+      "src/lib/error-reporter.ts",
+      "docs/execucao/autorizacao-observabilidade-20260922.md"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "R49",
+    "titulo": "Runbooks operacionais",
+    "plano_origem": "docs/plano-implementacao/plano-reconciliacao-50-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Runbooks versionados existem, mas instruções e snapshots de datas distintas divergem. Atualizar procedimentos e ensaiar execução independente.",
+    "evidencias": [
+      "docs/RUNBOOKS/MCP_DDL_APPLICATION.md",
+      "docs/DEPLOYMENT.md"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "R50",
+    "titulo": "Homologação final e gate de release",
+    "plano_origem": "docs/plano-implementacao/plano-reconciliacao-50-etapas.md",
+    "estado": "V",
+    "significado": "Validação ou decisão externa/operacional pendente",
+    "diagnostico_e_condicao_de_fechamento": "Sem compra integral homologada, catálogo com ACL confirmada e fechamento dos bloqueadores. Piloto real é etapa futura do projeto em construção.",
+    "evidencias": [
+      "docs/execucao/revisao-plano-20260924/checks.json",
+      "docs/plano-implementacao/plano.json",
+      "docs/execucao/validacao-do-plano.md"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "C01",
+    "titulo": "Atualizar `main` local",
+    "plano_origem": "docs/plano-implementacao/plano-correcoes-auditoria-50-etapas-20260917.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "O diretório principal está dois commits atrás do main consultado e possui três edições locais. Integrar preservando essas alterações.",
+    "evidencias": [
+      "docs/execucao/auditoria-paridade-local-github-supabase-2026-09-24.md"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "C02",
+    "titulo": "Abrir PR retroativa para os commits sem revisão",
+    "plano_origem": "docs/plano-implementacao/plano-correcoes-auditoria-50-etapas-20260917.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Novos lotes usam PR; a revisão retroativa específica e o bypass histórico ainda não têm encerramento comprovado nesta rodada.",
+    "evidencias": [
+      "docs/execucao/correcoes-reconciliacao-20260922.md",
+      "docs/auditoria-validacao-2026-09-22.md",
+      "docs/execucao/revisao-plano-20260924/protecao-github.json",
+      ".github/workflows/ci.yml"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "C03",
+    "titulo": "Revisar e mergear a PR retroativa",
+    "plano_origem": "docs/plano-implementacao/plano-correcoes-auditoria-50-etapas-20260917.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "PRs #22 e #30 incorporados; #24–#29 continuam abertos. Revisão e merge não substituem execução de CI.",
+    "evidencias": [
+      "docs/execucao/revisao-plano-20260924/prs-abertos.json",
+      "docs/execucao/revisao-plano-20260924/protecao-github.json",
+      ".github/workflows/ci.yml"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "C04",
+    "titulo": "Limpar artefatos untracked nos worktrees",
+    "plano_origem": "docs/plano-implementacao/plano-correcoes-auditoria-50-etapas-20260917.md",
+    "estado": "R",
+    "significado": "Premissa a substituir; não executar literalmente",
+    "diagnostico_e_condicao_de_fechamento": "Artefatos Graphify ignorados são úteis à auditoria; remover dados de outros worktrees não é necessário para concluir correções funcionais.",
+    "evidencias": [
+      "docs/execucao/auditoria-paridade-local-github-supabase-2026-09-24.md"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "C05",
+    "titulo": "Extrair o SQL real de `20260915143442_sicoob_reconciliation_baseline`",
+    "plano_origem": "docs/plano-implementacao/plano-correcoes-auditoria-50-etapas-20260917.md",
+    "estado": "L",
+    "significado": "Implementado no escopo local/documental indicado",
+    "diagnostico_e_condicao_de_fechamento": "SQL da versão 20260915143442 existe no repositório, com evidência histórica de extração. Preservar origem e hash.",
+    "evidencias": [
+      "supabase/migrations/20260915143442_sicoob_reconciliation_baseline.sql",
+      "supabase/migrations_archive/2026-09/20260915160000_sicoob_reconciliation_baseline.sql",
+      "docs/execucao/evidencias/baseline_diff_20260917.md"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "C06",
+    "titulo": "Comparar com `20260915160000_sicoob_reconciliation_baseline.sql`",
+    "plano_origem": "docs/plano-implementacao/plano-correcoes-auditoria-50-etapas-20260917.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Diff versionado existe, mas normalização textual não demonstra equivalência semântica integral. Revisão desse limite continua necessária.",
+    "evidencias": [
+      "supabase/migrations/20260915143442_sicoob_reconciliation_baseline.sql",
+      "supabase/migrations_archive/2026-09/20260915160000_sicoob_reconciliation_baseline.sql",
+      "docs/execucao/evidencias/baseline_diff_20260917.md"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "C07",
+    "titulo": "Resolver o arquivo duplicado/divergente",
+    "plano_origem": "docs/plano-implementacao/plano-correcoes-auditoria-50-etapas-20260917.md",
+    "estado": "L",
+    "significado": "Implementado no escopo local/documental indicado",
+    "diagnostico_e_condicao_de_fechamento": "20260915160000 está em migrations_archive; 20260915143442 permanece como versão ativa canônica.",
+    "evidencias": [
+      "supabase/migrations/20260915143442_sicoob_reconciliation_baseline.sql",
+      "supabase/migrations_archive/2026-09/20260915160000_sicoob_reconciliation_baseline.sql",
+      "docs/execucao/evidencias/baseline_diff_20260917.md"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "C08",
+    "titulo": "Reparar o ledger para essa versão",
+    "plano_origem": "docs/plano-implementacao/plano-correcoes-auditoria-50-etapas-20260917.md",
+    "estado": "H",
+    "significado": "Evidência histórica; falta revalidação atual",
+    "diagnostico_e_condicao_de_fechamento": "Reconciliação da baseline foi comprovada anteriormente sem repair artificial. Falta leitura atual do ledger, não aplicar repair por suposição.",
+    "evidencias": [
+      "scripts/db/check-migration-ledger-drift.mjs",
+      ".github/workflows/migration-ledger-drift.yml",
+      "docs/execucao/correcoes-reconciliacao-20260922.md",
+      "docs/auditoria-validacao-2026-09-22.md"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "C09",
+    "titulo": "Aplicar o subsistema Bitrix (13 migrations já escritas, nunca aplicadas)",
+    "plano_origem": "docs/plano-implementacao/plano-correcoes-auditoria-50-etapas-20260917.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Cache Bitrix seguro foi implementado e três tabelas existem na API. Falta homologar sync/Kanban com credenciais e dados de teste.",
+    "evidencias": [
+      "supabase/functions/bitrix-sync/index.ts",
+      "supabase/migrations/20260922160000_bitrix_secure_cache.sql",
+      "docs/execucao/auditoria-paridade-local-github-supabase-2026-09-24.md"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "C10",
+    "titulo": "Aplicar `create_quote_version_atomic` (migration + followup já escritos)",
+    "plano_origem": "docs/plano-implementacao/plano-correcoes-auditoria-50-etapas-20260917.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "create_quote_version_atomic está exposta e possui migration/testes; repetir concorrência e criação de versão pelo fluxo autenticado.",
+    "evidencias": [
+      "src/services/sicoob/orderService.ts",
+      "src/services/sicoob/budgetService.ts",
+      "supabase/migrations/20260922224500_convert_quote_to_sicoob_order.sql",
+      "docs/execucao/auditoria-paridade-local-github-supabase-2026-09-24.md"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "C11",
+    "titulo": "Aplicar `check_rls_enabled`/`get_enum_values` (migration já escrita)",
+    "plano_origem": "docs/plano-implementacao/plano-correcoes-auditoria-50-etapas-20260917.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "check_rls_enabled/get_enum_values existem; ausência original foi superada. Falta validar versão implantada da Edge de health-check.",
+    "evidencias": [
+      "docs/execucao/auditoria-paridade-local-github-supabase-2026-09-24.md",
+      "scripts/check-edge-authorization.mjs",
+      "supabase/functions/_shared/edge-authz-manifest.ts"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "C12",
+    "titulo": "Reauditar ACL/RLS de tudo aplicado nas Etapas 9-11 com o método correto",
+    "plano_origem": "docs/plano-implementacao/plano-correcoes-auditoria-50-etapas-20260917.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "RLS ativo e auditoria ACL sem achados; testes positivos/negativos por papel nos contratos recém-aplicados não estão completos.",
+    "evidencias": [
+      "docs/execucao/auditoria-paridade-local-github-supabase-2026-09-24.md"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "C13",
+    "titulo": "Varredura dirigida \"migration existe, nunca aplicada\" para os itens restantes",
+    "plano_origem": "docs/plano-implementacao/plano-correcoes-auditoria-50-etapas-20260917.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Classificação estática de 468 versões existe. Completar análise semântica de ordem/dependências e atualizar frente ao estado remoto.",
+    "evidencias": [
+      "docs/execucao/evidencias/retomada-mcp-20260922/migration-backlog-classification.json"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "C14",
+    "titulo": "`sicoob_budgets`: confirmar identidade com `cooperativa_budgets`",
+    "plano_origem": "docs/plano-implementacao/plano-correcoes-auditoria-50-etapas-20260917.md",
+    "estado": "L",
+    "significado": "Implementado no escopo local/documental indicado",
+    "diagnostico_e_condicao_de_fechamento": "Serviço usa cooperativa_budgets/pa_budgets. Não recriar sicoob_budgets; homologação de competência é pendência distinta.",
+    "evidencias": [
+      "src/services/sicoob/orderService.ts",
+      "src/services/sicoob/budgetService.ts",
+      "supabase/migrations/20260922224500_convert_quote_to_sicoob_order.sql"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "C15",
+    "titulo": "`products`/`companies` nos call-sites locais: apontar para o client externo",
+    "plano_origem": "docs/plano-implementacao/plano-correcoes-auditoria-50-etapas-20260917.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Gate estático não acusa referências ausentes; controles legados ainda tentam escrita na ponte somente leitura. Ensaiar rotas públicas/CRM.",
+    "evidencias": [
+      "scripts/db/check-runtime-refs.mjs",
+      "tests/scenarios/runtime-references.mjs",
+      "src/hooks/useExternalDatabase.ts",
+      "supabase/functions/external-db-bridge/index.ts",
+      "tests/scenarios/catalogo-somente-leitura.mjs"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "C16",
+    "titulo": "Corrigir os 2 buckets errados (mecânico)",
+    "plano_origem": "docs/plano-implementacao/plano-correcoes-auditoria-50-etapas-20260917.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Nomes de buckets antigos corrigidos no inventário; falta comprovação de upload autenticado e leitura no escopo correto.",
+    "evidencias": [
+      "scripts/db/check-runtime-refs.mjs",
+      "tests/scenarios/runtime-references.mjs",
+      "docs/execucao/auditoria-paridade-local-github-supabase-2026-09-24.md"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "C17",
+    "titulo": "`set_config` em `mcp-keys-revoke`: criar wrapper exposto corretamente",
+    "plano_origem": "docs/plano-implementacao/plano-correcoes-auditoria-50-etapas-20260917.md",
+    "estado": "L",
+    "significado": "Implementado no escopo local/documental indicado",
+    "diagnostico_e_condicao_de_fechamento": "Chamada separada de set_config removida. Não criar wrapper que prometa contexto transacional entre requisições; atomicidade log/revogação é limite separado.",
+    "evidencias": [
+      "supabase/functions/mcp-keys-revoke/index.ts"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "C18",
+    "titulo": "`error_logs`: decidir considerando que Sentry já está integrado",
+    "plano_origem": "docs/plano-implementacao/plano-correcoes-auditoria-50-etapas-20260917.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "error_logs foi substituída por telemetry_events e Sentry permanece opcional. Falta entrega real e DSN confirmado.",
+    "evidencias": [
+      "src/lib/error-reporter.ts",
+      "docs/execucao/autorizacao-observabilidade-20260922.md"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "C19",
+    "titulo": "Escrever `scripts/db/check-runtime-refs.mjs`",
+    "plano_origem": "docs/plano-implementacao/plano-correcoes-auditoria-50-etapas-20260917.md",
+    "estado": "L",
+    "significado": "Implementado no escopo local/documental indicado",
+    "diagnostico_e_condicao_de_fechamento": "Verificador AST e cenários existem; execução atual analisou 2050 arquivos e 1075 referências sem quebra, com limite de cache explícito.",
+    "evidencias": [
+      "scripts/db/check-runtime-refs.mjs",
+      "tests/scenarios/runtime-references.mjs",
+      "docs/execucao/revisao-plano-20260924/checks.json"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "C20",
+    "titulo": "Adicionar o script ao CI",
+    "plano_origem": "docs/plano-implementacao/plano-correcoes-auditoria-50-etapas-20260917.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Gate integrado ao ci.yml; falta execução remota obrigatória e bloqueio comprovado em PR de regressão.",
+    "evidencias": [
+      "scripts/db/check-runtime-refs.mjs",
+      "tests/scenarios/runtime-references.mjs",
+      "docs/execucao/revisao-plano-20260924/protecao-github.json",
+      ".github/workflows/ci.yml"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "C21",
+    "titulo": "Registrar as 21 tabelas/views órfãs com dono nomeado",
+    "plano_origem": "docs/plano-implementacao/plano-correcoes-auditoria-50-etapas-20260917.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Inventário dos objetos órfãos existe; donos nominais, intenção operacional atual e prazos não estão consolidados.",
+    "evidencias": [
+      "docs/execucao/evidencias/orfaos_banco_20260917.md",
+      "docs/execucao/evidencias/funcoes_orfas_20260917.md"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "C22",
+    "titulo": "Família `pontos_atendimento`/`singulares`/`pa_singularidades` vs. `postos_atendimento`/`cooperativas`",
+    "plano_origem": "docs/plano-implementacao/plano-correcoes-auditoria-50-etapas-20260917.md",
+    "estado": "V",
+    "significado": "Validação ou decisão externa/operacional pendente",
+    "diagnostico_e_condicao_de_fechamento": "Famílias de PAs legadas exigem FKs/contagens atuais e decisão de retenção antes de qualquer remoção.",
+    "evidencias": [
+      "docs/execucao/evidencias/orfaos_banco_20260917.md",
+      "docs/execucao/evidencias/funcoes_orfas_20260917.md"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "C23",
+    "titulo": "`blog_posts`",
+    "plano_origem": "docs/plano-implementacao/plano-correcoes-auditoria-50-etapas-20260917.md",
+    "estado": "V",
+    "significado": "Validação ou decisão externa/operacional pendente",
+    "diagnostico_e_condicao_de_fechamento": "Ausência de rota de blog não prova ausência de consumidor externo. Definir destino do recurso com base em uso real.",
+    "evidencias": [
+      "docs/execucao/evidencias/orfaos_banco_20260917.md",
+      "docs/execucao/evidencias/funcoes_orfas_20260917.md"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "C24",
+    "titulo": "\"Magic Up\": 3 das 6 tabelas nunca usadas",
+    "plano_origem": "docs/plano-implementacao/plano-correcoes-auditoria-50-etapas-20260917.md",
+    "estado": "N",
+    "significado": "Funcionalidade/artefato não localizado no escopo pesquisado",
+    "diagnostico_e_condicao_de_fechamento": "magic_up_comments/public_shares/reactions continuam sem consumidor funcional fora dos tipos. Implementar colaboração ou retirar do escopo formalmente.",
+    "evidencias": [
+      "src/hooks/useMagicUpState.ts",
+      "src/pages/magic-up/MagicUpConfigPanel.tsx",
+      "docs/execucao/evidencias/etapa24_magic_up_20260917.md"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "C25",
+    "titulo": "RPCs Sicoob prontas mas nunca chamadas (`sicoob_performance_reports`, `sicoob_approval_policies`, `sicoob_order_shipments`)",
+    "plano_origem": "docs/plano-implementacao/plano-correcoes-auditoria-50-etapas-20260917.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Telas e serviços operacionais agora existem; arte, kits, recompra, ingestão e reconciliação dependem de funções remotas ausentes.",
+    "evidencias": [
+      "src/services/sicoob/fulfillmentService.ts",
+      "src/components/sicoob/orders/OrderLogisticsTab.tsx",
+      "scripts/check-edge-authorization.mjs",
+      "supabase/functions/_shared/edge-authz-manifest.ts"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "C26",
+    "titulo": "Views `sicoob_budget_audit`/`v_full_scope_grants` → `AuditEvidenceDashboard.tsx`",
+    "plano_origem": "docs/plano-implementacao/plano-correcoes-auditoria-50-etapas-20260917.md",
+    "estado": "N",
+    "significado": "Funcionalidade/artefato não localizado no escopo pesquisado",
+    "diagnostico_e_condicao_de_fechamento": "Nenhum consumidor das duas views foi localizado no src fora dos tipos. Ligar sicoob_budget_audit/v_full_scope_grants à tela e testar como admin.",
+    "evidencias": [
+      "src/pages/admin/AuditEvidenceDashboard.tsx"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "C27",
+    "titulo": "Classificar as 43 funções órfãs",
+    "plano_origem": "docs/plano-implementacao/plano-correcoes-auditoria-50-etapas-20260917.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Lista histórica de funções órfãs existe; dependências internas, triggers e crons exigem catálogo completo para classificação definitiva.",
+    "evidencias": [
+      "docs/execucao/evidencias/orfaos_banco_20260917.md",
+      "docs/execucao/evidencias/funcoes_orfas_20260917.md"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "C28",
+    "titulo": "Buckets órfãos `order-documents` e `component-media`",
+    "plano_origem": "docs/plano-implementacao/plano-correcoes-auditoria-50-etapas-20260917.md",
+    "estado": "V",
+    "significado": "Validação ou decisão externa/operacional pendente",
+    "diagnostico_e_condicao_de_fechamento": "order-documents/component-media existem. Decisão de remoção exige objetos, dependências e intenção atuais; não remover por snapshot antigo vazio.",
+    "evidencias": [
+      "docs/execucao/auditoria-paridade-local-github-supabase-2026-09-24.md",
+      "docs/execucao/evidencias/orfaos_banco_20260917.md",
+      "docs/execucao/evidencias/funcoes_orfas_20260917.md"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "C29",
+    "titulo": "Job de CI: drift de ledger de migrations",
+    "plano_origem": "docs/plano-implementacao/plano-correcoes-auditoria-50-etapas-20260917.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Workflow diário e comparador implementados; sem execução real atual do ledger por falta da conexão SQL no escopo observado.",
+    "evidencias": [
+      "scripts/db/check-migration-ledger-drift.mjs",
+      ".github/workflows/migration-ledger-drift.yml"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "C30",
+    "titulo": "Investigar e corrigir o gap de branch protection",
+    "plano_origem": "docs/plano-implementacao/plano-correcoes-auditoria-50-etapas-20260917.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Causa operacional confirmada: enforce_admins=false e ausência de required checks. Mitigação ainda não aplicada.",
+    "evidencias": [
+      "docs/execucao/revisao-plano-20260924/protecao-github.json",
+      ".github/workflows/ci.yml"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "C31",
+    "titulo": "Alerta de \"commit sem PR há mais de N dias\"",
+    "plano_origem": "docs/plano-implementacao/plano-correcoes-auditoria-50-etapas-20260917.md",
+    "estado": "N",
+    "significado": "Funcionalidade/artefato não localizado no escopo pesquisado",
+    "diagnostico_e_condicao_de_fechamento": "Não foi localizado workflow que alerte commits/branches sem PR após prazo. Implementar e testar com caso conhecido.",
+    "evidencias": [
+      "docs/execucao/revisao-plano-20260924/protecao-github.json",
+      ".github/workflows/ci.yml"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "C32",
+    "titulo": "Runbook: aplicar DDL via MCP corretamente",
+    "plano_origem": "docs/plano-implementacao/plano-correcoes-auditoria-50-etapas-20260917.md",
+    "estado": "L",
+    "significado": "Implementado no escopo local/documental indicado",
+    "diagnostico_e_condicao_de_fechamento": "Runbook MCP/DDL está versionado e a execução documenta simulação e ledger. Não implica que todos os fluxos remotos já o obedecem.",
+    "evidencias": [
+      "docs/RUNBOOKS/MCP_DDL_APPLICATION.md",
+      "docs/DEPLOYMENT.md"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "C33",
+    "titulo": "Varredura dedicada a `.storage.from()` quebrado em 2 linhas",
+    "plano_origem": "docs/plano-implementacao/plano-correcoes-auditoria-50-etapas-20260917.md",
+    "estado": "L",
+    "significado": "Implementado no escopo local/documental indicado",
+    "diagnostico_e_condicao_de_fechamento": "Varredura suporta storage multilinha e não encontrou nomes quebrados contra o cache. Validar periodicamente contra snapshot novo.",
+    "evidencias": [
+      "scripts/db/check-runtime-refs.mjs",
+      "tests/scenarios/runtime-references.mjs"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "C34",
+    "titulo": "Persistir o relatório da auditoria tripla",
+    "plano_origem": "docs/plano-implementacao/plano-correcoes-auditoria-50-etapas-20260917.md",
+    "estado": "L",
+    "significado": "Implementado no escopo local/documental indicado",
+    "diagnostico_e_condicao_de_fechamento": "Relatório da auditoria tripla está versionado; esta revisão acrescenta estado atual sem reescrever o histórico.",
+    "evidencias": [
+      "docs/execucao/correcoes-reconciliacao-20260922.md",
+      "docs/auditoria-validacao-2026-09-22.md"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "C35",
+    "titulo": "Atualizar a Etapa 26 do plano principal",
+    "plano_origem": "docs/plano-implementacao/plano-correcoes-auditoria-50-etapas-20260917.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Há ligações entre plano e execução, mas vários checkboxes históricos continuam abertos ou superados. Usar a matriz atual como adendo.",
+    "evidencias": [
+      "docs/execucao/correcoes-reconciliacao-20260922.md",
+      "docs/auditoria-validacao-2026-09-22.md"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "C36",
+    "titulo": "Atualizar \"Estado medido\" do plano principal",
+    "plano_origem": "docs/plano-implementacao/plano-correcoes-auditoria-50-etapas-20260917.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Números dos documentos originais estão desatualizados; esta revisão publica novas métricas vinculadas ao commit 6193793a7.",
+    "evidencias": [
+      "docs/execucao/correcoes-reconciliacao-20260922.md",
+      "docs/auditoria-validacao-2026-09-22.md",
+      "docs/execucao/revisao-plano-20260924/checks.json"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "C37",
+    "titulo": "Documento único de decisões arquiteturais pendentes",
+    "plano_origem": "docs/plano-implementacao/plano-correcoes-auditoria-50-etapas-20260917.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Documento de decisões existe, porém ainda afirma ausência de RPCs/tabelas hoje presentes. Atualizar decisões para não reabrir lacunas já resolvidas.",
+    "evidencias": [
+      "docs/execucao/decisoes_pendentes.md"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "C38",
+    "titulo": "Levar as decisões pendentes para quem decide",
+    "plano_origem": "docs/plano-implementacao/plano-correcoes-auditoria-50-etapas-20260917.md",
+    "estado": "V",
+    "significado": "Validação ou decisão externa/operacional pendente",
+    "diagnostico_e_condicao_de_fechamento": "Decisões de negócio/participantes não foram inventadas. Registrar responsáveis e aceite para colaboração, legados e políticas comerciais.",
+    "evidencias": [
+      "docs/execucao/decisoes_pendentes.md"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "C39",
+    "titulo": "Rerun completo do `check-runtime-refs.mjs`",
+    "plano_origem": "docs/plano-implementacao/plano-correcoes-auditoria-50-etapas-20260917.md",
+    "estado": "L",
+    "significado": "Implementado no escopo local/documental indicado",
+    "diagnostico_e_condicao_de_fechamento": "Rerun completo do verificador passou com zero órfãos detectados. Cache de 22/09 e chamadas dinâmicas limitam a conclusão.",
+    "evidencias": [
+      "scripts/db/check-runtime-refs.mjs",
+      "tests/scenarios/runtime-references.mjs",
+      "docs/execucao/revisao-plano-20260924/checks.json"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "C40",
+    "titulo": "Suite de testes pós-correção",
+    "plano_origem": "docs/plano-implementacao/plano-correcoes-auditoria-50-etapas-20260917.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Vitest, Node, build e ratchets passaram; 113 skips e dívidas globais permanecem. Isso não encerra contratos remotos.",
+    "evidencias": [
+      "docs/execucao/revisao-plano-20260924/checks.json"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "C41",
+    "titulo": "Teste manual dos fluxos críticos corrigidos",
+    "plano_origem": "docs/plano-implementacao/plano-correcoes-auditoria-50-etapas-20260917.md",
+    "estado": "V",
+    "significado": "Validação ou decisão externa/operacional pendente",
+    "diagnostico_e_condicao_de_fechamento": "Quatro jornadas completas com login, catálogo, mockup e Bitrix não foram homologadas. Funções ausentes e configuração bloqueiam parte delas.",
+    "evidencias": [
+      "docs/plano-implementacao/plano.json",
+      "docs/execucao/validacao-do-plano.md",
+      "scripts/check-edge-authorization.mjs",
+      "supabase/functions/_shared/edge-authz-manifest.ts"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "C42",
+    "titulo": "Confirmar `main` == branch de trabalho pós-merge",
+    "plano_origem": "docs/plano-implementacao/plano-correcoes-auditoria-50-etapas-20260917.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Worktree desta revisão usa main atual; diretório principal e branches de correção ainda divergem. Não afirmar paridade de todos os worktrees.",
+    "evidencias": [
+      "docs/execucao/auditoria-paridade-local-github-supabase-2026-09-24.md",
+      "docs/execucao/revisao-plano-20260924/prs-abertos.json"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "C43",
+    "titulo": "Confirmar reparo do ledger para o escopo desta rodada",
+    "plano_origem": "docs/plano-implementacao/plano-correcoes-auditoria-50-etapas-20260917.md",
+    "estado": "H",
+    "significado": "Evidência histórica; falta revalidação atual",
+    "diagnostico_e_condicao_de_fechamento": "Hashes de lotes foram confirmados em 23/09. Leitura atual do ledger ainda falta, inclusive versões posteriores.",
+    "evidencias": [
+      "docs/execucao/correcoes-reconciliacao-20260922.md",
+      "docs/auditoria-validacao-2026-09-22.md",
+      "scripts/db/check-migration-ledger-drift.mjs",
+      ".github/workflows/migration-ledger-drift.yml"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "C44",
+    "titulo": "Nota de mudanças para stakeholders externos",
+    "plano_origem": "docs/plano-implementacao/plano-correcoes-auditoria-50-etapas-20260917.md",
+    "estado": "R",
+    "significado": "Premissa a substituir; não executar literalmente",
+    "diagnostico_e_condicao_de_fechamento": "Ambiente é construção; não há autorização para mensagens a terceiros nesta auditoria. Registrar aceite interno quando aplicável.",
+    "evidencias": [
+      "docs/plano-implementacao/plano.json",
+      "docs/execucao/validacao-do-plano.md"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "C45",
+    "titulo": "Atualizar CHANGELOG/nota de release",
+    "plano_origem": "docs/plano-implementacao/plano-correcoes-auditoria-50-etapas-20260917.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Notas de mudança existem em relatórios; não foi comprovada release versionada ou CHANGELOG automatizado do lote.",
+    "evidencias": [
+      "docs/execucao/correcoes-reconciliacao-20260922.md",
+      "docs/auditoria-validacao-2026-09-22.md"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "C46",
+    "titulo": "Backlog formal das decisões não resolvidas",
+    "plano_origem": "docs/plano-implementacao/plano-correcoes-auditoria-50-etapas-20260917.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Backlog está documentado; faltam responsáveis nominais, prazo e critérios de encerramento para decisões remanescentes.",
+    "evidencias": [
+      "docs/execucao/decisoes_pendentes.md"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "C47",
+    "titulo": "Agendar `check-runtime-refs.mjs` semanalmente (não só por PR)",
+    "plano_origem": "docs/plano-implementacao/plano-correcoes-auditoria-50-etapas-20260917.md",
+    "estado": "N",
+    "significado": "Funcionalidade/artefato não localizado no escopo pesquisado",
+    "diagnostico_e_condicao_de_fechamento": "Verificador usa cache local e não foi localizado agendamento semanal que renove snapshot e execute a comparação.",
+    "evidencias": [
+      "scripts/db/check-runtime-refs.mjs",
+      "tests/scenarios/runtime-references.mjs",
+      "docs/execucao/revisao-plano-20260924/protecao-github.json",
+      ".github/workflows/ci.yml"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "C48",
+    "titulo": "Reforçar a prioridade da Fase 2 (staging) do plano principal",
+    "plano_origem": "docs/plano-implementacao/plano-correcoes-auditoria-50-etapas-20260917.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Simulações PostgreSQL descartáveis executadas; equivalência com Auth/Storage/provedores de staging continua pendente.",
+    "evidencias": [
+      "docs/execucao/revisao-plano-20260924/simular-conversao-pedido-sicoob.json",
+      "docs/execucao/revisao-plano-20260924/simular-documentos-sicoob.json",
+      "docs/execucao/revisao-plano-20260924/simular-consolidacao-sicoob.json",
+      "docs/execucao/revisao-plano-20260924/simular-outbox-aprovacao.json",
+      "docs/plano-implementacao/plano.json",
+      "docs/execucao/validacao-do-plano.md"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "C49",
+    "titulo": "Prazo de decisão para os órfãos remanescentes",
+    "plano_origem": "docs/plano-implementacao/plano-correcoes-auditoria-50-etapas-20260917.md",
+    "estado": "V",
+    "significado": "Validação ou decisão externa/operacional pendente",
+    "diagnostico_e_condicao_de_fechamento": "Prazos e responsáveis por recursos órfãos não estão definidos de forma auditável.",
+    "evidencias": [
+      "docs/execucao/decisoes_pendentes.md"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "C50",
+    "titulo": "Retrospectiva: por que a Etapa 26 original não pegou esses achados",
+    "plano_origem": "docs/plano-implementacao/plano-correcoes-auditoria-50-etapas-20260917.md",
+    "estado": "L",
+    "significado": "Implementado no escopo local/documental indicado",
+    "diagnostico_e_condicao_de_fechamento": "Retrospectiva e cenários cobrem wrappers, partições, ACL e contexto transacional; limites de chamadas dinâmicas estão explícitos.",
+    "evidencias": [
+      "docs/execucao/correcoes-reconciliacao-20260922.md",
+      "docs/auditoria-validacao-2026-09-22.md",
+      "scripts/db/check-runtime-refs.mjs",
+      "tests/scenarios/runtime-references.mjs"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "T01",
+    "titulo": "Preservar o worktree órfão (`~/hermes-workspaces/chat-sicoob-20260911130857`) antes de qualquer outra ação",
+    "plano_origem": "docs/plano-melhorias-50-etapas.md",
+    "estado": "H",
+    "significado": "Evidência histórica; falta revalidação atual",
+    "diagnostico_e_condicao_de_fechamento": "Worktree histórico está preservado e foi publicado em lotes anteriores. Não remover cópias sem reconciliar commits e dados locais.",
+    "evidencias": [
+      "docs/execucao/correcoes-reconciliacao-20260922.md",
+      "docs/auditoria-validacao-2026-09-22.md"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "T02",
+    "titulo": "Fast-forward de `main` local para `origin/main` + reinstalar dependências.",
+    "plano_origem": "docs/plano-melhorias-50-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Main local está atrás e com três edições; dependências isoladas desta auditoria foram reinstaladas, mas checkout principal não foi integrado.",
+    "evidencias": [
+      "docs/execucao/auditoria-paridade-local-github-supabase-2026-09-24.md"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "T03",
+    "titulo": "Configurar `E2E_USER_EMAIL`, `E2E_USER_PASSWORD`, `E2E_ADMIN_EMAIL`, `E2E_ADMIN_PASSWORD` nos secrets do GitHub.",
+    "plano_origem": "docs/plano-melhorias-50-etapas.md",
+    "estado": "V",
+    "significado": "Validação ou decisão externa/operacional pendente",
+    "diagnostico_e_condicao_de_fechamento": "Secrets E2E não aparecem na lista do repositório; conferir environments e criar personas mínimas antes de testar a jornada real.",
+    "evidencias": [
+      "docs/secrets.md",
+      ".env.production"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "T04",
+    "titulo": "Configurar `SUPABASE_URL`/`SUPABASE_SERVICE_ROLE_KEY` (ambiente restrito) para o workflow de compliance agendado.",
+    "plano_origem": "docs/plano-melhorias-50-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Workflow de compliance existe, porém credenciais administrativas e personas não estão demonstradas na execução remota atual.",
+    "evidencias": [
+      "docs/secrets.md",
+      ".env.production",
+      "docs/execucao/revisao-plano-20260924/protecao-github.json",
+      ".github/workflows/ci.yml"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "T05",
+    "titulo": "Atualizar e mesclar o PR aberto do worktree.",
+    "plano_origem": "docs/plano-melhorias-50-etapas.md",
+    "estado": "H",
+    "significado": "Evidência histórica; falta revalidação atual",
+    "diagnostico_e_condicao_de_fechamento": "PR #7 consta como incorporado no registro histórico. Não confundir esse merge com implantação das funções Sicoob ainda ausentes.",
+    "evidencias": [
+      "docs/execucao/correcoes-reconciliacao-20260922.md",
+      "docs/auditoria-validacao-2026-09-22.md"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "T06",
+    "titulo": "Fechar PRs cujo conteúdo já foi absorvido por outro merge, apagando as branches.",
+    "plano_origem": "docs/plano-melhorias-50-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Dez PRs continuam abertos, inclusive evidências históricas e correções sobrepostas. Revisar absorção e dependência antes de fechar branches.",
+    "evidencias": [
+      "docs/execucao/revisao-plano-20260924/prs-abertos.json"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "T07",
+    "titulo": "Ativar proteção de branch em `main` (PR obrigatório, checks obrigatórios, sem force-push).",
+    "plano_origem": "docs/plano-melhorias-50-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Uma revisão é exigida, mas faltam checks obrigatórios e bloqueio de bypass administrativo.",
+    "evidencias": [
+      "docs/execucao/revisao-plano-20260924/protecao-github.json",
+      ".github/workflows/ci.yml"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "T08",
+    "titulo": "Um só gerenciador de pacotes",
+    "plano_origem": "docs/plano-melhorias-50-etapas.md",
+    "estado": "L",
+    "significado": "Implementado no escopo local/documental indicado",
+    "diagnostico_e_condicao_de_fechamento": "npm/package-lock é o caminho ativo; instalação isolada por npm ci passou. Consolidar futuras mudanças pelo mesmo gerenciador.",
+    "evidencias": [
+      "package.json",
+      "vendor/pptxgenjs-browser/proveniencia.json",
+      "tests/scenarios/artefatos-e-redirecionamentos.mjs"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "T09",
+    "titulo": "Tirar artefatos gerados (`dependencies.json`, `api_usage.json`, `service_map.txt`, etc.) do controle de versão.",
+    "plano_origem": "docs/plano-melhorias-50-etapas.md",
+    "estado": "L",
+    "significado": "Implementado no escopo local/documental indicado",
+    "diagnostico_e_condicao_de_fechamento": "Artefatos técnicos gerados estão ignorados. A auditoria preserva evidências intencionais versionadas e não adiciona caches/dependências.",
+    "evidencias": [
+      "docs/execucao/auditoria-paridade-local-github-supabase-2026-09-24.md"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "T10",
+    "titulo": "Tirar PDFs grandes de `public/` para fora do bundle servido.",
+    "plano_origem": "docs/plano-melhorias-50-etapas.md",
+    "estado": "L",
+    "significado": "Implementado no escopo local/documental indicado",
+    "diagnostico_e_condicao_de_fechamento": "PDFs do plano ficam em docs; não são incluídos por padrão no build de public. Manter política de distribuição de documentos.",
+    "evidencias": [
+      "package.json",
+      "vendor/pptxgenjs-browser/proveniencia.json",
+      "tests/scenarios/artefatos-e-redirecionamentos.mjs"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "T11",
+    "titulo": "Impedir volta de arquivos de sonda (`tsconfig.probe.*`)",
+    "plano_origem": "docs/plano-melhorias-50-etapas.md",
+    "estado": "L",
+    "significado": "Implementado no escopo local/documental indicado",
+    "diagnostico_e_condicao_de_fechamento": "Sondas tsconfig não fazem parte das alterações atuais; manter gate e limpeza de artefatos temporários.",
+    "evidencias": [
+      "docs/execucao/auditoria-paridade-local-github-supabase-2026-09-24.md"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "T12",
+    "titulo": "Convenção de commits aplicada por hook + isolar edições automáticas (Lovable) do fluxo direto em `main`",
+    "plano_origem": "docs/plano-melhorias-50-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Hooks locais não substituem regra remota; integração do editor automatizado e convenção de commits ainda precisam de contrato confirmado.",
+    "evidencias": [
+      "docs/execucao/revisao-plano-20260924/protecao-github.json",
+      ".github/workflows/ci.yml"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "T13",
+    "titulo": "Consolidar os três diretórios de teste (`tests/`, `src/tests/`, `src/test/`) numa convenção só.",
+    "plano_origem": "docs/plano-melhorias-50-etapas.md",
+    "estado": "N",
+    "significado": "Funcionalidade/artefato não localizado no escopo pesquisado",
+    "diagnostico_e_condicao_de_fechamento": "tests, src/tests e src/test continuam coexistindo. Definir convenção de coleta sem perder fixtures e setup.",
+    "evidencias": [
+      "vitest.config.ts",
+      "docs/execucao/revisao-plano-20260924/checks.json"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "T14",
+    "titulo": "Política de migrations: nome padronizado, revisão obrigatória, imutabilidade após merge.",
+    "plano_origem": "docs/plano-melhorias-50-etapas.md",
+    "estado": "L",
+    "significado": "Implementado no escopo local/documental indicado",
+    "diagnostico_e_condicao_de_fechamento": "Gate de imutabilidade e política versionada existem; a aplicação de cada migration ainda requer prova remota própria.",
+    "evidencias": [
+      "scripts/db/check-migration-ledger-drift.mjs",
+      ".github/workflows/migration-ledger-drift.yml"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "T15",
+    "titulo": "Corrigir nomes de scripts de lint mal nomeados.",
+    "plano_origem": "docs/plano-melhorias-50-etapas.md",
+    "estado": "L",
+    "significado": "Implementado no escopo local/documental indicado",
+    "diagnostico_e_condicao_de_fechamento": "Scripts lint:check e lint:baseline estão definidos com propósito distinto e usados pelo projeto.",
+    "evidencias": [
+      "package.json",
+      "vendor/pptxgenjs-browser/proveniencia.json",
+      "tests/scenarios/artefatos-e-redirecionamentos.mjs"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "T16",
+    "titulo": "Transformar o baseline de typecheck em ratchet por arquivo",
+    "plano_origem": "docs/plano-melhorias-50-etapas.md",
+    "estado": "L",
+    "significado": "Implementado no escopo local/documental indicado",
+    "diagnostico_e_condicao_de_fechamento": "Ratchet TypeScript por arquivo existe e execução atual passou com 166 erros no baseline. Não é typecheck global limpo.",
+    "evidencias": [
+      "docs/execucao/revisao-plano-20260924/checks.json"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "T17",
+    "titulo": "Zerar os 10 arquivos com mais erros de tipo, começando por `QuoteService.ts`.",
+    "plano_origem": "docs/plano-melhorias-50-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "A redução histórica foi ampla; restam 166 erros globais. Congelar objetivo mensurável e concluir sem supressões indiscriminadas.",
+    "evidencias": [
+      "docs/execucao/revisao-plano-20260924/checks.json"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "T18",
+    "titulo": "Regenerar o baseline de ESLint",
+    "plano_origem": "docs/plano-melhorias-50-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Lint diferencial passou sem arquivos de aplicação alterados; 3314 erros globais permanecem e snapshot precisa ter escopo explícito.",
+    "evidencias": [
+      "docs/execucao/revisao-plano-20260924/checks.json"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "T19",
+    "titulo": "Reduzir os `any` explícitos, começando por `src/App.tsx` e `src/lib/`.",
+    "plano_origem": "docs/plano-melhorias-50-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "any e wrappers não tipados continuam presentes. Regenerar contratos e reduzir casts nos fluxos críticos com testes.",
+    "evidencias": [
+      "src/integrations/supabase/types.ts",
+      "scripts/db/compare-types-api.mjs"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "T20",
+    "titulo": "Trocar `console.*` pelo logger estruturado",
+    "plano_origem": "docs/plano-melhorias-50-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Logger estruturado existe, mas console e falhas silenciosas ainda ocorrem. Priorizar erros úteis ao usuário/operador.",
+    "evidencias": [
+      "src/lib/error-reporter.ts",
+      "docs/execucao/autorizacao-observabilidade-20260922.md"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "T21",
+    "titulo": "Auditar cada `eslint-disable`/`ts-ignore`",
+    "plano_origem": "docs/plano-melhorias-50-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Supressões ainda existem; não há registro atual de revisão completa com justificativa individual de cada ocorrência.",
+    "evidencias": [
+      "docs/execucao/revisao-plano-20260924/checks.json"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "T22",
+    "titulo": "Tratar `types.ts` gerado com detecção de drift em CI.",
+    "plano_origem": "docs/plano-melhorias-50-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Drift real de tipos confirmado; falta gate de geração/diff contra o projeto-alvo em CI.",
+    "evidencias": [
+      "src/integrations/supabase/types.ts",
+      "scripts/db/compare-types-api.mjs",
+      "docs/execucao/auditoria-paridade-local-github-supabase-2026-09-24.md"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "T23",
+    "titulo": "Quebrar os arquivos acima de 700 linhas em `pages/sicoob/orders/` e afins.",
+    "plano_origem": "docs/plano-melhorias-50-etapas.md",
+    "estado": "N",
+    "significado": "Funcionalidade/artefato não localizado no escopo pesquisado",
+    "diagnostico_e_condicao_de_fechamento": "OrdersPage tem 906 linhas e OrderDetailPage 757. Decomposição prevista ainda não concluída; preservar contratos ao refatorar.",
+    "evidencias": [
+      "src/pages/sicoob/orders/OrderDetailPage.tsx",
+      "src/pages/sicoob/orders/OrdersPage.tsx"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "T24",
+    "titulo": "Classificar as edge functions restantes",
+    "plano_origem": "docs/plano-melhorias-50-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Manifesto estático 106/106 passou, mas hardening adicional do PR #28 não foi incorporado nem implantado.",
+    "evidencias": [
+      "scripts/check-edge-authorization.mjs",
+      "supabase/functions/_shared/edge-authz-manifest.ts",
+      "docs/execucao/revisao-plano-20260924/prs-abertos.json"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "T25",
+    "titulo": "Blindar `image-proxy` contra SSRF",
+    "plano_origem": "docs/plano-melhorias-50-etapas.md",
+    "estado": "L",
+    "significado": "Implementado no escopo local/documental indicado",
+    "diagnostico_e_condicao_de_fechamento": "image-proxy possui controles existentes e testes; plano original tratava parte deles como ausente. Manter revisão de allowlist e comportamento remoto.",
+    "evidencias": [
+      "supabase/functions/image-proxy/index.ts"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "T26",
+    "titulo": "Isolar/remover `external-db-inspect`/`migrate-helper`",
+    "plano_origem": "docs/plano-melhorias-50-etapas.md",
+    "estado": "L",
+    "significado": "Implementado no escopo local/documental indicado",
+    "diagnostico_e_condicao_de_fechamento": "migrate-helper é stub e external-db-inspect tem controle técnico no código. Paridade remota e rotação histórica são pendências distintas.",
+    "evidencias": [
+      "scripts/check-edge-authorization.mjs",
+      "supabase/functions/_shared/edge-authz-manifest.ts"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "T27",
+    "titulo": "Fechar gap de `search_path` em `SECURITY DEFINER` (10 de 362 funções sem verificação clara",
+    "plano_origem": "docs/plano-melhorias-50-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Auditoria ACL sem achados não cobre automaticamente todos os search_path. Revalidar catálogo PostgreSQL completo.",
+    "evidencias": [
+      "docs/execucao/auditoria-paridade-local-github-supabase-2026-09-24.md"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "T28",
+    "titulo": "Adicionar Content-Security-Policy (hoje zero).",
+    "plano_origem": "docs/plano-melhorias-50-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "CSP pela Vercel está no PR #27 aberto. Presença em branch não significa header entregue pelo main/deploy.",
+    "evidencias": [
+      "docs/execucao/revisao-plano-20260924/prs-abertos.json"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "T29",
+    "titulo": "`.env.production`",
+    "plano_origem": "docs/plano-melhorias-50-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "As duas chaves públicas versionadas recebem 401; PR #24 propõe env de exemplo. Validar valores do build e dos ambientes.",
+    "evidencias": [
+      "docs/secrets.md",
+      ".env.production"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "T30",
+    "titulo": "Secret scanning no pre-commit e no GitHub (gitleaks).",
+    "plano_origem": "docs/plano-melhorias-50-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Workflow de Gitleaks existe; execução do PR #30 falhou antes de alocar runner. Confirmar hook, baseline e resultado remoto executado.",
+    "evidencias": [
+      "docs/execucao/revisao-plano-20260924/protecao-github.json",
+      ".github/workflows/ci.yml"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "T31",
+    "titulo": "Promover checks de RLS/escopo (`test:rls`, `check:seller-scope`) a required no CI.",
+    "plano_origem": "docs/plano-melhorias-50-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Checks de RLS/escopo existem, mas não são required e parte dos testes depende de personas ausentes.",
+    "evidencias": [
+      "docs/execucao/revisao-plano-20260924/protecao-github.json",
+      ".github/workflows/ci.yml",
+      "docs/execucao/revisao-plano-20260924/checks.json"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "T32",
+    "titulo": "Rate limiting real (compartilhado, não em memória por instância) nas functions públicas.",
+    "plano_origem": "docs/plano-melhorias-50-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Há rate limiting compartilhado em partes do backend; revisar todas as funções públicas e provar concorrência/múltiplas instâncias.",
+    "evidencias": [
+      "scripts/check-edge-authorization.mjs",
+      "supabase/functions/_shared/edge-authz-manifest.ts"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "T33",
+    "titulo": "Cobrir as edge functions `sicoob-*` com testes de auth/idempotência.",
+    "plano_origem": "docs/plano-melhorias-50-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Auth/idempotência de kit, recompra e arte têm testes; cinco funções operacionais faltam no remoto e há 58 casos de bypass ignorados.",
+    "evidencias": [
+      "vitest.config.ts",
+      "docs/execucao/revisao-plano-20260924/checks.json",
+      "docs/execucao/revisao-plano-20260924/simular-conversao-pedido-sicoob.json",
+      "docs/execucao/revisao-plano-20260924/simular-documentos-sicoob.json",
+      "docs/execucao/revisao-plano-20260924/simular-consolidacao-sicoob.json",
+      "docs/execucao/revisao-plano-20260924/simular-outbox-aprovacao.json"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "T34",
+    "titulo": "E2E: falhar em `main`, avisar (não bloquear) em PR de fork sem secrets.",
+    "plano_origem": "docs/plano-melhorias-50-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Gates condicionais existem; CI atual não fornece prova executada em main e persistem 113 skips. Garantir falha explícita para contratos obrigatórios.",
+    "evidencias": [
+      "docs/execucao/revisao-plano-20260924/protecao-github.json",
+      ".github/workflows/ci.yml",
+      "docs/execucao/revisao-plano-20260924/checks.json"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "T35",
+    "titulo": "Verificar se os thresholds de cobertura (80%/75%) refletem a realidade medida.",
+    "plano_origem": "docs/plano-melhorias-50-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Cobertura configurada mede oito arquivos críticos, não o sistema inteiro. Rodada atual não recalculou cobertura; não extrapolar percentuais históricos.",
+    "evidencias": [
+      "vitest.config.ts",
+      "docs/execucao/revisao-plano-20260924/checks.json"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "T36",
+    "titulo": "Política de flaky: quarentena com prazo de 14 dias, não supressão silenciosa.",
+    "plano_origem": "docs/plano-melhorias-50-etapas.md",
+    "estado": "N",
+    "significado": "Funcionalidade/artefato não localizado no escopo pesquisado",
+    "diagnostico_e_condicao_de_fechamento": "Não foi localizada política operacional completa de quarentena com dono e prazo de 14 dias; skips não possuem esse aceite geral.",
+    "evidencias": [
+      "vitest.config.ts",
+      "docs/execucao/revisao-plano-20260924/checks.json"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "T37",
+    "titulo": "Consolidar os 10 workflows em ~4, com setup comum extraído.",
+    "plano_origem": "docs/plano-melhorias-50-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Há onze workflows no diretório; consolidação em cerca de quatro e setup comum não foi concluída.",
+    "evidencias": [
+      "docs/execucao/revisao-plano-20260924/protecao-github.json",
+      ".github/workflows/ci.yml"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "T38",
+    "titulo": "Desacoplar `build` de `npm audit` (rede não deve poder quebrar deploy).",
+    "plano_origem": "docs/plano-melhorias-50-etapas.md",
+    "estado": "L",
+    "significado": "Implementado no escopo local/documental indicado",
+    "diagnostico_e_condicao_de_fechamento": "Build executa vite build e passou sem depender de npm audit. Auditoria de dependências continua como gate próprio.",
+    "evidencias": [
+      "package.json",
+      "vendor/pptxgenjs-browser/proveniencia.json",
+      "tests/scenarios/artefatos-e-redirecionamentos.mjs"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "T39",
+    "titulo": "Testes de invariante (pgTAP ou `tests/scenarios`) para as migrations atômicas de Sicoob.",
+    "plano_origem": "docs/plano-melhorias-50-etapas.md",
+    "estado": "L",
+    "significado": "Implementado no escopo local/documental indicado",
+    "diagnostico_e_condicao_de_fechamento": "195 cenários Node e quatro simulações SQL executados nesta rodada, com escopo e isolamento declarados.",
+    "evidencias": [
+      "docs/execucao/revisao-plano-20260924/simular-conversao-pedido-sicoob.json",
+      "docs/execucao/revisao-plano-20260924/simular-documentos-sicoob.json",
+      "docs/execucao/revisao-plano-20260924/simular-consolidacao-sicoob.json",
+      "docs/execucao/revisao-plano-20260924/simular-outbox-aprovacao.json"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "T40",
+    "titulo": "Decidir o destino dos simuladores Python em `scripts/qa/`.",
+    "plano_origem": "docs/plano-melhorias-50-etapas.md",
+    "estado": "L",
+    "significado": "Implementado no escopo local/documental indicado",
+    "diagnostico_e_condicao_de_fechamento": "Simuladores Python são versionados e executáveis contra PostgreSQL descartável; permanecem ferramentas de QA, sem inferir implantação.",
+    "evidencias": [
+      "docs/execucao/revisao-plano-20260924/simular-conversao-pedido-sicoob.json",
+      "docs/execucao/revisao-plano-20260924/simular-documentos-sicoob.json",
+      "docs/execucao/revisao-plano-20260924/simular-consolidacao-sicoob.json",
+      "docs/execucao/revisao-plano-20260924/simular-outbox-aprovacao.json"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "T41",
+    "titulo": "Orçamento de bundle com número que falha, não só warning.",
+    "plano_origem": "docs/plano-melhorias-50-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Gate por chunks passou com dois avisos; orçamento total/por rota ainda não está comprovado. Build gerou cerca de 9,65 MB brutos.",
+    "evidencias": [
+      "scripts/qa/check-bundle-budget.mjs",
+      ".github/workflows/lighthouse.yml",
+      ".github/workflows/bundle-check.yml"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "T42",
+    "titulo": "Garantir que `mockData.ts`/telas de dev não vão pro bundle de produção",
+    "plano_origem": "docs/plano-melhorias-50-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Rota logística ativa ainda usa dados fixos e KPIs simulados. Demonstração deve ser explícita ou substituída por dados reais.",
+    "evidencias": [
+      "src/pages/sicoob/LogisticsReportPage.tsx",
+      "src/routes/config/sicoob.ts",
+      "docs/plano-implementacao/plano.json",
+      "docs/execucao/validacao-do-plano.md"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "T43",
+    "titulo": "Justificar ou substituir `vendor/pptxgenjs-browser`.",
+    "plano_origem": "docs/plano-melhorias-50-etapas.md",
+    "estado": "L",
+    "significado": "Implementado no escopo local/documental indicado",
+    "diagnostico_e_condicao_de_fechamento": "Vendor PPTX tem proveniência e teste de arquivo válido; instalação limpa corrigiu apenas o link local quebrado. Manter rastreabilidade.",
+    "evidencias": [
+      "package.json",
+      "vendor/pptxgenjs-browser/proveniencia.json",
+      "tests/scenarios/artefatos-e-redirecionamentos.mjs",
+      "docs/execucao/revisao-plano-20260924/checks.json"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "T44",
+    "titulo": "Carregar sob demanda o painel admin de conexões.",
+    "plano_origem": "docs/plano-melhorias-50-etapas.md",
+    "estado": "L",
+    "significado": "Implementado no escopo local/documental indicado",
+    "diagnostico_e_condicao_de_fechamento": "Painel de conexões é chunk separado no build; tamanho de cerca de 402 kB bruto ainda merece orçamento e análise de carregamento.",
+    "evidencias": [
+      "package.json",
+      "vendor/pptxgenjs-browser/proveniencia.json",
+      "tests/scenarios/artefatos-e-redirecionamentos.mjs"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "T45",
+    "titulo": "Lighthouse com thresholds que realmente falham o CI.",
+    "plano_origem": "docs/plano-melhorias-50-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Lighthouse tem thresholds bloqueantes, porém cobre somente /login e falta execução atual nas jornadas autenticadas.",
+    "evidencias": [
+      "scripts/qa/check-bundle-budget.mjs",
+      ".github/workflows/lighthouse.yml",
+      ".github/workflows/bundle-check.yml"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "T46",
+    "titulo": "Tags semver + CHANGELOG automático (release-please/changesets).",
+    "plano_origem": "docs/plano-melhorias-50-etapas.md",
+    "estado": "N",
+    "significado": "Funcionalidade/artefato não localizado no escopo pesquisado",
+    "diagnostico_e_condicao_de_fechamento": "Não foram localizados release-please/changesets e pipeline de tags/CHANGELOG automático correspondente ao plano.",
+    "evidencias": [
+      "docs/execucao/revisao-plano-20260924/protecao-github.json",
+      ".github/workflows/ci.yml"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "T47",
+    "titulo": "Inventário canônico de segredos e variáveis de ambiente.",
+    "plano_origem": "docs/plano-melhorias-50-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Inventário de nomes existe, mas várias linhas ainda estão sem configuração/dono/rotação confirmados e há premissas antigas.",
+    "evidencias": [
+      "docs/secrets.md",
+      ".env.production"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "T48",
+    "titulo": "Ligar alertas nas functions de monitoramento já existentes (`health-check`, `error-monitor`).",
+    "plano_origem": "docs/plano-melhorias-50-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Monitores e dispatchers existem; entrega real de alertas, segredos e recuperação não foram homologados no ambiente correto.",
+    "evidencias": [
+      "src/lib/error-reporter.ts",
+      "docs/execucao/autorizacao-observabilidade-20260922.md",
+      "supabase/functions/sicoob-approval-notifications/index.ts",
+      "supabase/functions/sicoob-approval-reconciliation/index.ts"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "T49",
+    "titulo": "Política de branches/worktrees",
+    "plano_origem": "docs/plano-melhorias-50-etapas.md",
+    "estado": "P",
+    "significado": "Parcial — implementação ou integração incompleta",
+    "diagnostico_e_condicao_de_fechamento": "Worktrees isolados são usados; várias branches antigas e PRs abertos demonstram que limpeza e fechamento semanal ainda pendem.",
+    "evidencias": [
+      "docs/execucao/auditoria-paridade-local-github-supabase-2026-09-24.md",
+      "docs/execucao/revisao-plano-20260924/prs-abertos.json"
+    ],
+    "conclusao_integral_certificada": false
+  },
+  {
+    "id": "T50",
+    "titulo": "Painel de dívida técnica com tendência semanal (typecheck, eslint, `any`, cobertura, bundle).",
+    "plano_origem": "docs/plano-melhorias-50-etapas.md",
+    "estado": "N",
+    "significado": "Funcionalidade/artefato não localizado no escopo pesquisado",
+    "diagnostico_e_condicao_de_fechamento": "Há baselines e relatórios pontuais; não foi localizado painel consolidado com tendência semanal de tipos, lint, any, cobertura e bundle.",
+    "evidencias": [
+      "docs/execucao/revisao-plano-20260924/checks.json"
+    ],
+    "conclusao_integral_certificada": false
+  }
+]

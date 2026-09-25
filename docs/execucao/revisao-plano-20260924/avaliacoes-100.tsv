@@ -1,0 +1,101 @@
+id	estado	evidencias	diagnostico_e_condicao_de_fechamento
+E001	P	repo;banco	Inventários e commit atual registrados; domínio, responsáveis nominais e ambiente segregado ainda sem aceite completo.
+E002	P	edges;segredos	Stubs e controles locais existem; rotação histórica e versão exata das funções publicadas não foram certificadas.
+E003	P	catalogo	Ponte bloqueia escrita localmente; confirmar privilégio mínimo da identidade na origem e retirar controles de edição incompatíveis.
+E004	V	pesquisa	Pesquisa documental e perfis públicos existem; faltam consentimento, recrutamento e sessões com compradores/marketing.
+E005	P	pesquisa	Perfis e hipóteses estão documentados; necessidades observadas e critérios validados com participantes ainda pendem.
+E006	P	pesquisa;produto	Jornada pretendida está mapeada; tempos, passagens manuais e tarefas reais ainda não foram observados integralmente.
+E007	P	produto;logistica	Código cobre partes da operação, mas promessas de rastreio e atendimento ainda não têm processo completo demonstrado.
+E008	P	politicas;sql	Políticas por cooperativa e snapshot existem; duas cooperativas com regras vigentes diferentes ainda não foram homologadas.
+E009	P	indicadores;logistica	Indicadores de pedidos usam consultas reais em parte; rota logística ainda apresenta KPIs fixos e faltam métricas operacionais conciliadas.
+E010	P	produto;decisoes	Planos definem dependências, mas sobreposição de documentos e ausência de donos/prazos impedem fechamento do escopo.
+E011	P	tipos;financeiro	Modelo canônico evoluiu; drift de tipos, contratos legados e ledger completo ainda exigem reconciliação.
+E012	P	edges;prs	Autorização compartilhada existe e gate estático passa; PR #25 ajusta ações de UI e #28 workers ainda fora do main.
+E013	P	banco;documentos	RLS habilitado e testes locais existem; falta isolamento autenticado entre cooperativas, inclusive anexos e exportações.
+E014	P	rotas;checks	Rotas por papel têm testes; login e jornada real com credenciais válidas não foram certificados no Supabase.
+E015	P	auth;segredos	Passkey insegura foi desativada corretamente; chaves públicas versionadas inválidas e métodos externos requerem validação real.
+E016	N	usuarios	Atribuição administrativa e convite de colaboração de kit existem; convite institucional com papel, escopo, expiração/revogação não foi localizado.
+E017	P	financeiro;sql	Atomicidade de verba e total tem evidência local; estados planejado/reservado/comprometido/consumido e virada de período ainda incompletos.
+E018	P	politicas;sql	Decisões no servidor e versões possuem migrations/testes; personas e concorrência no fluxo remoto completo ainda pendem.
+E019	P	checks	Build e suítes locais passam; 166 erros TS, 3314 lint, 113 testes ignorados e CI remoto impedem declarar qualidade encerrada.
+E020	P	monitoramento;governanca	Monitores, testes descartáveis e relatórios existem; faltam alerta entregue, incidente controlado e ambiente Supabase segregado.
+E021	P	rotas;pesquisa	Navegação implementada; encontrabilidade com participantes e adequação dos termos ao comprador ainda não demonstradas.
+E022	P	catalogo;pesquisa	Taxonomia/filtros existem; sinônimos e atributos úteis precisam de validação do público e da origem real.
+E023	P	catalogo;recentes	Busca/histórico evoluíram; relevância e recuperação precisam de consultas reais e tarefa com comprador.
+E024	P	catalogo	Filtros e ordenação implementados; preservar contexto/variantes e homologar no mobile com dados do catálogo.
+E025	P	rotas;rascunhos	Há contexto de papéis; troca de unidade e preservação de rascunhos ainda precisam de contrato coerente e testes de sessão.
+E026	P	logistica;produto	Textos operacionais evoluíram, mas rastreamento em tempo real ainda é prometido por página de dados fixos.
+E027	P	rascunhos;testes	Formulários usam componentes comuns; falha de autosave ainda não chega ao estado de erro do consumidor.
+E028	P	rascunhos;previsao	Falhas explícitas existem em serviços; autosave e previsão de kit ainda ocultam condições de erro em caminhos específicos.
+E029	P	outbox;edges	Outbox durável foi implementada e 57 cenários passaram; entrega de provedor, configuração e reconciliação remota faltam.
+E030	V	pesquisa;design	Demos e protótipos existem; tarefas completas e compreensão por compradores não foram validadas com participantes.
+E031	P	design	Direção Sicoob aparece nas telas; aprovação vigente de marca pela cooperativa e telas operacionais completas permanecem pendentes.
+E032	P	design	Grade e demos responsivas existem; telas reais extensas exigem verificação atual de sobreposição, densidade e ação fixa.
+E033	P	design	Hierarquia tipográfica implementada; ampliação, fallback de fonte e tarefas reais ainda não têm aceite manual completo.
+E034	P	design;testes	Tokens e testes automatizados dão base; alto contraste, ausência de cor e todas as combinações não foram homologados.
+E035	P	design;arte	Imagens e mockups existem; distinguir prova técnica, simulação e fotografia em toda a compra e validar ativos oficiais.
+E036	P	design	Tokens existem; consistência de troca de tema entre catálogo, documentos e operação ainda precisa de revisão integral.
+E037	P	design;testes	Componentes compartilhados existem; estados de erro/foco e alvos de todas as jornadas ainda não estão certificados.
+E038	P	design;logistica	Tabelas/listas implementadas; seleção e dados confiáveis exigem revisão nas páginas que ainda usam simulação.
+E039	P	design	Animações e feedback existem; validar redução de movimento e confirmação operacional em todas as tarefas críticas.
+E040	P	design;decisoes	Sistema visual é utilizado, porém governança de variantes, exceções e responsável nominal não está consolidada.
+E041	P	auth;design	Página de acesso redesenhada e passkey desativada; login, recuperação e sessão real ainda dependem de homologação.
+E042	P	indicadores	Dashboards consultam pedidos/verbas; validar período ativo, pendências e contexto após troca de unidade.
+E043	P	catalogo	Catálogo funcional implementado; versão loja demonstrativa não certifica o fluxo real com variantes e condições comerciais.
+E044	P	catalogo;pesquisa	Busca existe; falta amostra de consultas prioritárias validada e falhas reais da origem ensaiadas.
+E045	P	catalogo;testes	Persistência e filtros possuem implementação; acessibilidade e retomada em dispositivo real ainda pendem.
+E046	P	catalogo	Página de produto e personalização existem; comprovar decisões com dados vigentes e separar estimativa de contratação.
+E047	P	kit;personalizacao	Técnicas/templates e cópia atômica existem; insuficiência de dados ainda requer fluxo de análise manual com responsável.
+E048	P	financeiro;previsao	Cálculo comercial evoluiu; tributos, prazo firme e comportamento da previsão sem dados continuam sem aceite integral.
+E049	P	catalogo	Comparador de produtos existe; equivalência comercial entre cotações institucionais não está demonstrada.
+E050	P	recentes;catalogo	Favoritos/coleções e vistos recentes existem; compartilhar entre cooperativas exige ensaio RLS/expiração real.
+E051	P	magic;produto	Magic Up possui briefing criativo; briefing institucional para compra com destinos, verba e prazos permanece incompleto.
+E052	P	magic;produto	Campanhas genéricas existem; marcos regressivos de cotação/arte/produção e conflitos de prazo não estão integrados.
+E053	P	arte;documentos	Versionamento e identidade de arte existem; biblioteca institucional com propriedade/permite uso e proteção entre cooperativas ainda parcial.
+E054	P	arte;edges	Registro de arte validado localmente; Edge sicoob-artwork-register ausente impede comprovação do fluxo publicado.
+E055	P	kit;edges	Servidor valida estoque/preço/demanda agregada; capacidade física da embalagem não demonstrada e Edge de kit retorna 404.
+E056	P	distribuicao;sql	Destinos, alocações e somas funcionam na simulação; importação assistida, custo/prazo de redistribuição e E2E real ainda faltam.
+E057	P	rascunhos;financeiro	Editor/carrinho existe; rascunho novo compartilhado por chave e preservação completa de campanha/distribuição permanecem lacunas.
+E058	P	financeiro;sql	Totais comerciais reconciliados na conversão e nos testes; tributos/condições e proposta real exigem aceite comercial.
+E059	P	financeiro;arte	Versionamento atômico e snapshots existem; concorrência remota e vínculo item/arte/documento na jornada inteira ainda precisam de prova.
+E060	N	produto	Comparador de produtos não cobre cotação institucional externa com fornecedor, validade, duas/três propostas e exceção de fornecedor único.
+E061	P	financeiro;sql	Conversão e idempotência locais existem; envio real com sessão recuperada, prazo e destinatário correto ainda não foi homologado.
+E062	P	financeiro;indicadores	Verba/saldo implementados; quatro estados financeiros e virada de competência ainda precisam de modelagem/aceite completo.
+E063	P	politicas;outbox	Fila de aprovações existe; remessa de notificações e revisão dos papéis operacionais pendem no remoto.
+E064	P	politicas;sql	Decisão financeira é protegida no servidor; falta ensaio por alçada e comparação comercial exigida pela cooperativa.
+E065	P	arte;sql	Versão imutável e bloqueio de produção evoluíram; publicação da Edge e competência de marca precisam de validação autenticada.
+E066	P	politicas	Escalonamento/justificativas existem; autorização excepcional com validade e recálculo de efeitos não está completa.
+E067	N	usuarios;politicas	Delegação temporária com delegante, substituto, competências, vigência e revogação não foi localizada no módulo.
+E068	P	arte;distribuicao;financeiro	Trilhas de eventos existem; reconstrução integral com documentos e atores reais ainda não foi demonstrada.
+E069	P	financeiro;politicas	Cancelamento/estorno têm controles; cancelamento parcial por item/destino e aceite do fornecedor não estão completos.
+E070	P	fulfillment;sql	Estados canônicos e eventos implementados; acompanhamento integral por item/destino e integração com fornecedor ainda parcial.
+E071	P	produto;arte	Pacotes e exportações existem; aceite do fornecedor e tratamento de divergência antes de produzir não estão homologados.
+E072	P	arte;fulfillment	Arte aprovada é pré-requisito no servidor; rastreabilidade de material, lote, rejeição e inspeção de qualidade continua incompleta.
+E073	P	kit;recompra	Reconsulta de catálogo implementada; não representa reserva. Confirmar SLA, múltiplos e evidência de compromisso comercial.
+E074	P	distribuicao;documentos	Expedição e saldo por destino existem em SQL/UI; comprovantes dependem de ingestão ausente e processo de endereço pendente.
+E075	P	logistica;fulfillment	Aba de pedido possui dados operacionais; relatório global ativo permanece simulado e falta rastreio de transportadora homologado.
+E076	P	distribuicao;sql	Recebimento parcial/idempotente passou em PostgreSQL sintético; homologação no PA e aceite de qualidade seguem pendentes.
+E077	P	distribuicao	Recebimento registra falta/avaria; protocolo, investigação, reposição/crédito, reabertura e solução completa não foram localizados.
+E078	P	documentos;financeiro	Pagamentos/notas possuem serviços; scanner e ingestão não homologados impedem fechamento financeiro documental completo.
+E079	P	recompra;edges;prs	Nova consulta/idempotência implementadas; Edge retorna 404 e sanitização de erros ainda está no PR #29.
+E080	P	produto	Ajuda e componentes de suporte existem; protocolo com acompanhamento da solicitação no contexto Sicoob não foi comprovado.
+E081	P	design;testes	Axe e testes locais não substituem teclado, zoom e leitor de tela da compra/aprovação/recebimento reais.
+E082	V	design	Demos foram testadas historicamente em larguras móveis; aparelhos reais, upload orientado e interrupções ainda exigem ensaio.
+E083	P	design	Layouts responsivos existem; endereços longos, grandes valores e múltiplos destinos precisam de varredura visual atual.
+E084	P	bundle	Build/orçamento de chunks passaram; Lighthouse só cobre login e faltam métricas das jornadas e de campo.
+E085	P	rascunhos;sql	Idempotência SQL evoluiu, mas recuperação local tem lacunas reproduzidas e interrupção da jornada real ainda não foi ensaiada.
+E086	P	banco;prs	Autorização estática e ACL parcial verificadas; 58 testes de bypass ignorados e PRs de hardening abertos impedem aceite integral.
+E087	V	segredos;produto	Retenção/privacidade têm artefatos, mas solicitação de titular, revogação e responsabilidade operacional ainda não foram ensaiadas.
+E088	V	pesquisa	Pesquisa pública não equivale a usabilidade observada. Realizar tarefas, registrar barreiras e retestar com participantes.
+E089	P	indicadores;logistica	Parte dos indicadores foi corrigida; métricas falsas de logística e falta de amostra conciliada impedem aceite.
+E090	V	checks;produto	Suítes locais passaram no escopo, mas cenários remotos obrigatórios e conteúdo completo ainda não foram homologados.
+E091	V	produto;edges	Não há evidência de compra integral com três destinos, revisão de arte, fornecedor, recebimento e conciliação.
+E092	V	design;pesquisa	Revisão de marca e conteúdo final com responsável Sicoob ainda não está documentada.
+E093	V	seed;produto	Preparação do piloto depende de cooperativa, papéis, políticas, endereços e verba aprovados por responsáveis reais.
+E094	V	runbooks;produto	Runbooks existem; treinamento e execução independente por operação/suporte não foram demonstrados.
+E095	V	governanca;edges	Bloqueadores de configuração, implantação e homologação permanecem. Release operacional não deve ser declarada pronta.
+E096	V	produto	Publicação piloto em produção é etapa futura; o usuário confirmou que o projeto segue em construção.
+E097	V	produto	Primeira compra real não foi realizada nem deve ser inferida de testes sintéticos.
+E098	V	produto;indicadores	Sem piloto real não há amostra operacional de resultado ou melhoria mensurada.
+E099	V	politicas;usuarios	Segunda cooperativa exige regras distintas e isolamento; delegação temporária ainda não foi implementada.
+E100	V	produto;checks	Nenhuma evidência atual permite encerrar formalmente as 100 etapas ou atribuir nota 10/10.
