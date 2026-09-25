@@ -10,11 +10,12 @@ import { toast } from "sonner";
 
 interface OrderInvoicesTabProps {
   orderId: string;
+  canManage: boolean;
 }
 
 type Invoice = NonNullable<ReturnType<typeof useOrderInvoices>["invoices"]>[number];
 
-export function OrderInvoicesTab({ orderId }: OrderInvoicesTabProps) {
+export function OrderInvoicesTab({ orderId, canManage }: OrderInvoicesTabProps) {
   const { invoices, addInvoice, uploadFile, getInvoiceDownloadUrl, isLoading, error } = useOrderInvoices(orderId);
   const [invoiceNumber, setInvoiceNumber] = useState("");
   const [uploadProgress, setUploadProgress] = useState(0);
@@ -43,6 +44,11 @@ export function OrderInvoicesTab({ orderId }: OrderInvoicesTabProps) {
   };
 
   const handleFileUpload = async (event: ChangeEvent<HTMLInputElement>, type: 'xml' | 'pdf') => {
+    if (!canManage) {
+      event.target.value = '';
+      return;
+    }
+
     const file = event.target.files?.[0];
     if (!file) return;
 
@@ -77,7 +83,7 @@ export function OrderInvoicesTab({ orderId }: OrderInvoicesTabProps) {
 
   return (
     <div className="space-y-6">
-      <Card>
+      {canManage && <Card>
         <CardHeader>
           <CardTitle className="text-lg flex items-center gap-2">
             <Upload className="h-5 w-5" />
@@ -134,7 +140,7 @@ export function OrderInvoicesTab({ orderId }: OrderInvoicesTabProps) {
             </div>
           )}
         </CardContent>
-      </Card>
+      </Card>}
 
       <InvoiceList invoices={invoices} downloadingId={downloadingId} onDownload={handleDownload} />
     </div>

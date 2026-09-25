@@ -84,6 +84,7 @@ import { OrderAddItemDialog } from "@/components/sicoob/orders/OrderAddItemDialo
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { sicoobApprovalService } from "@/services/sicoob/approvalService";
+import { canManageSicoobOrderFulfillment } from "@/lib/sicoob/order-permissions";
 
 import { OrderStatus, canEditSicoobOrderItems, canSicoobTransitionTo, ORDER_STATUS_CONFIG } from "@/types/sicoob/orders";
 
@@ -95,7 +96,7 @@ export default function OrderDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const { profile, isSupervisorOrAbove, isGerentePa } = useAuth();
+  const { profile, roles, isSupervisorOrAbove, isGerentePa } = useAuth();
   
   const [requestReason, setRequestReason] = useState("");
   const [rejectionReason, setRejectionReason] = useState("");
@@ -131,6 +132,15 @@ export default function OrderDetailPage() {
   });
   const isOverThreshold = needsApproval(orderTotal);
   const isOverBudget = orderTotal > remainingBudget;
+  const canManageFulfillment = canManageSicoobOrderFulfillment(orderData, profile, roles);
+  const allowedTabs = useMemo(() => {
+    const tabs = ["status", "timeline", "comments"];
+    if (canManageFulfillment) tabs.push("logistics", "invoices");
+    if (isSupervisorOrAbove) {
+      tabs.push("payments", "approvals");
+    }
+    return tabs;
+  }, [canManageFulfillment, isSupervisorOrAbove]);
 
   const handleRequestApproval = async () => {
     if (!orderData) return;
@@ -266,15 +276,7 @@ export default function OrderDetailPage() {
   if (!orderData) return null;
 
   const canApprove = isSupervisorOrAbove || (isGerentePa && orderData?.pa_id === profile?.pa_id);
-  
-  // Controle de permissões por aba
-  const allowedTabs = useMemo(() => {
-    const tabs = ["status", "logistics", "invoices", "timeline", "comments"];
-    if (isSupervisorOrAbove) {
-      tabs.push("payments", "approvals");
-    }
-    return tabs;
-  }, [isSupervisorOrAbove]);
+  const canEditOrderItems = canManageFulfillment && canEditSicoobOrderItems(orderData.status);
 
   return (
     <>
@@ -444,7 +446,7 @@ export default function OrderDetailPage() {
                     <Package className="h-5 w-5" />
                     Itens do Pedido
                   </div>
-                  {canEditSicoobOrderItems(orderData.status) && (
+                  {canEditOrderItems && (
                     <OrderAddItemDialog 
                       onAdd={(data) => addItem.mutate(data)}
                       isPending={addItem.isPending}
@@ -476,7 +478,7 @@ export default function OrderDetailPage() {
                             <p className="text-xs text-muted-foreground">Personalização: {formatOrderCurrency(item.personalization_amount)}</p>
                           )}
                         </div>
-                        {canEditSicoobOrderItems(orderData.status) && (
+                        {canEditOrderItems && (
                           <Button 
                             variant="ghost" 
                             size="icon" 
@@ -615,13 +617,13 @@ export default function OrderDetailPage() {
 
               {allowedTabs.includes("logistics") && (
                 <TabsContent value="logistics" className="pt-6">
-                    <OrderLogisticsTab orderId={id!} orderStatus={orderData.status} />
+                    <OrderLogisticsTab orderId={id!} orderStatus={orderData.status} canManage={canManageFulfillment} />
                 </TabsContent>
               )}
 
               {allowedTabs.includes("invoices") && (
                 <TabsContent value="invoices" className="pt-6">
-                  <OrderInvoicesTab orderId={id!} />
+                  <OrderInvoicesTab orderId={id!} canManage={canManageFulfillment} />
                 </TabsContent>
               )}
 
@@ -658,7 +660,7 @@ export default function OrderDetailPage() {
                 <CardTitle className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Produção e Logística</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="space-y-2">
+                {canManageFulfillment && <div className="space-y-2">
                   <Label className="text-xs">Status do Workflow</Label>
                   <Select 
                     value={orderData.status || 'pending'} 
@@ -675,7 +677,7 @@ export default function OrderDetailPage() {
                       ))}
                     </SelectContent>
                   </Select>
-                </div>
+                </div>}
 
                 <div className="flex items-center justify-between text-sm pt-2 border-t">
                   <span className="text-muted-foreground flex items-center gap-2">
