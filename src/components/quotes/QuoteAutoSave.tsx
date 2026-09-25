@@ -27,6 +27,13 @@ interface QuoteAutoSaveProps {
   className?: string;
 }
 
+export function createQuoteDraftId(): string {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID();
+  }
+  return `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+}
+
 export function QuoteAutoSave({
   quoteId,
   data,
@@ -39,9 +46,11 @@ export function QuoteAutoSave({
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
   const initialDataRef = useRef<string | null>(null);
+  const [draftId] = useState(createQuoteDraftId);
+  const storageKey = quoteId ? `quote:${quoteId}` : `draft:${draftId}`;
 
-  const { restore } = useAutoSave({
-    key: quoteId || "new",
+  const { restore, lastError } = useAutoSave({
+    key: storageKey,
     data,
     enabled: true,
     onSave: () => {
@@ -49,12 +58,17 @@ export function QuoteAutoSave({
       setStatus("saved");
       setTimeout(() => setStatus("idle"), 2000);
     },
+    onError: () => setStatus("error"),
   });
 
   // Salvar estado inicial para comparação
   useEffect(() => {
     initialDataRef.current = JSON.stringify(data);
-  }, [quoteId]);
+  }, [storageKey]);
+
+  useEffect(() => {
+    if (lastError) setStatus("error");
+  }, [lastError]);
 
   // Detectar mudanças (persistência real é feita pelo useAutoSave, debounced internamente)
   useEffect(() => {
@@ -78,7 +92,7 @@ export function QuoteAutoSave({
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [restore, storageKey]);
 
   const getStatusIcon = () => {
     switch (status) {
@@ -138,4 +152,3 @@ export function QuoteAutoSave({
     </Tooltip>
   );
 }
-
