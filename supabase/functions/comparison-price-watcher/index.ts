@@ -1,4 +1,5 @@
 import { getCorsHeaders } from "../_shared/cors.ts";
+import { requireInternalService } from "../_shared/internal-service-auth.ts";
 /**
  * comparison-price-watcher (C6 #7) — Cron diário.
  * Cruza user_comparisons ativas com price_history; se houve queda > 5% nos
@@ -12,6 +13,13 @@ const LOOKBACK_DAYS = 7;
 Deno.serve(async (req) => {
   const corsHeaders = getCorsHeaders(req);
   if (req.method === "OPTIONS") return new Response(null, { headers: getCorsHeaders(req) });
+  if (req.method !== "POST") {
+    return new Response(JSON.stringify({ error: "metodo_nao_permitido" }), {
+      status: 405, headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+  const denied = await requireInternalService(req);
+  if (denied) return denied;
 
   const supabase = createClient(
     Deno.env.get("SUPABASE_URL")!,
@@ -104,7 +112,8 @@ Deno.serve(async (req) => {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e) {
-    return new Response(JSON.stringify({ ok: false, error: String(e), stats }), {
+    console.error("[comparison-price-watcher]", e);
+    return new Response(JSON.stringify({ ok: false, error: "erro_interno", stats }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });

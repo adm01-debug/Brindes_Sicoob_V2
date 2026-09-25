@@ -13,7 +13,7 @@
  *   - "supervisor":      exige role >= supervisor (admin/dev).
  *   - "dev":             exige role dev.
  *   - "service":         só pode ser chamada server-to-server (cron / outra edge),
- *                        verify_jwt true + tipicamente service_role no caller.
+ *                        validando segredo interno dedicado antes do service_role.
  *   - "scoped":          autenticação custom (token/HMAC/scope MCP) — validada
  *                        in-function com lógica própria.
  *
@@ -101,7 +101,7 @@ export const EDGE_AUTHZ_MANIFEST: Record<string, AuthzEntry> = {
   "send-notification": { category: "service", rationale: "Disparo interno entre edges protegido por segredo dedicado", enforcedBy: "custom" },
   "connections-health-check": { category: "service", rationale: "pg_cron — health connections" },
   "connections-auto-test": { category: "service", rationale: "pg_cron — auto-test connections" },
-  "connections-hub-audit": { category: "service", rationale: "pg_cron diário — auditoria" },
+  "connections-hub-audit": { category: "dev", rationale: "Auditoria administrativa autenticada por papel dev" },
   "ownership-audit": { category: "service", rationale: "pg_cron diário — auditoria órfãos" },
   "sicoob-approval-notifications": {
     category: "service",

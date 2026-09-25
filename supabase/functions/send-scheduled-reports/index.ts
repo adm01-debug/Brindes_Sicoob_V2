@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
+import { requireInternalService } from "../_shared/internal-service-auth.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -9,6 +10,13 @@ Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
   }
+  if (req.method !== "POST") {
+    return new Response(JSON.stringify({ error: "metodo_nao_permitido" }), {
+      status: 405, headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+  const denied = await requireInternalService(req);
+  if (denied) return denied;
 
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
@@ -62,7 +70,8 @@ Deno.serve(async (req: Request) => {
         results.push({ id: report.id, status: "sent" });
       } catch (err) {
         console.error(`Error processing report ${report.id}:`, err);
-        results.push({ id: report.id, status: "error", error: err instanceof Error ? err.message : "Unknown error" });
+        console.error("send-scheduled-reports report error:", err);
+        results.push({ id: report.id, status: "error", error: "erro_interno" });
       }
     }
 
@@ -71,7 +80,7 @@ Deno.serve(async (req: Request) => {
     });
   } catch (err) {
     console.error("send-scheduled-reports error:", err);
-    return new Response(JSON.stringify({ error: err instanceof Error ? err.message : "Internal error" }), {
+    return new Response(JSON.stringify({ error: "erro_interno" }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });

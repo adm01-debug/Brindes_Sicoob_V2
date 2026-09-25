@@ -1,4 +1,5 @@
 import { getCorsHeaders } from "../_shared/cors.ts";
+import { requireInternalService } from "../_shared/internal-service-auth.ts";
 // favorites-watcher: cron diário que detecta quedas de preço em favoritos
 // e gera workspace_notifications (categoria "favorites") com dedupe 24h.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.95.0";
@@ -31,6 +32,13 @@ async function alreadyNotified(service: import("../_shared/supabase-client-adapt
 Deno.serve(async (req) => {
   const corsHeaders = getCorsHeaders(req);
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
+  if (req.method !== "POST") {
+    return new Response(JSON.stringify({ error: "metodo_nao_permitido" }), {
+      status: 405, headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+  const denied = await requireInternalService(req);
+  if (denied) return denied;
 
   try {
     const service = createClient(
@@ -123,9 +131,8 @@ Deno.serve(async (req) => {
       { headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
   } catch (e) {
-    const msg = e instanceof Error ? e.message : "unknown";
-    console.error("[favorites-watcher]", msg);
-    return new Response(JSON.stringify({ ok: false, error: msg }), {
+    console.error("[favorites-watcher]", e);
+    return new Response(JSON.stringify({ ok: false, error: "erro_interno" }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
