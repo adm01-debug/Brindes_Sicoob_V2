@@ -4,6 +4,7 @@ import { getCorsHeaders, handleCorsPreflightIfNeeded } from "../_shared/cors.ts"
 import {
   buildVerifiedReorderItems,
   personalizationRequestsFromSnapshot,
+  ReorderValidationError,
   type CatalogProduct,
   type CatalogVariant,
   type SourceItem,
@@ -161,13 +162,17 @@ Deno.serve(withStructuredLogging("sicoob-reorder", async (req) => {
         ]);
         if (options.error) throw options.error;
         if (price.error) throw price.error;
-        personalizations.push(buildVerifiedPersonalization(
-          request,
-          { ...verifiedItem, line_id: sourceItem.id, kind: 'item' },
-          bridgeRpcData(options.data),
-          bridgeRpcData(price.data),
-          checkedAt,
-        ));
+        try {
+          personalizations.push(buildVerifiedPersonalization(
+            request,
+            { ...verifiedItem, line_id: sourceItem.id, kind: 'item' },
+            bridgeRpcData(options.data),
+            bridgeRpcData(price.data),
+            checkedAt,
+          ));
+        } catch {
+          throw new ReorderValidationError('A personalização do item precisa ser revisada antes da recompra.');
+        }
       }
       currentItems.push({ ...verifiedItem, personalizations });
     }
@@ -183,7 +188,10 @@ Deno.serve(withStructuredLogging("sicoob-reorder", async (req) => {
     if (!quoteId) throw new Error("O banco não confirmou a criação do orçamento.");
     return json(req, { quoteId });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Não foi possível refazer o pedido.";
-    return json(req, { error: message }, 400);
+    if (error instanceof ReorderValidationError) {
+      return json(req, { error: error.message }, 409);
+    }
+    console.error("[sicoob-reorder] falha operacional", error);
+    return json(req, { error: "erro_interno" }, 500);
   }
 }));
