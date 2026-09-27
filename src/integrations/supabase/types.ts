@@ -7300,17 +7300,23 @@ export type Database = {
       }
       quote_items: {
         Row: {
+          catalog_available_stock: number | null
           catalog_checked_at: string | null
+          catalog_minimum_quantity: number | null
+          catalog_stock_is_reserved: boolean
+          catalog_valid_until: string | null
           color_hex: string | null
           color_name: string | null
           created_at: string
           display_order: number | null
           gender: string | null
+          historical_unit_price: number | null
           id: string
           kit_group_id: string | null
           kit_name: string | null
           notes: string | null
           price_confirmed_at: string | null
+          price_changed: boolean
           product_id: string | null
           product_image_url: string | null
           product_name: string
@@ -7327,17 +7333,23 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          catalog_available_stock?: number | null
           catalog_checked_at?: string | null
+          catalog_minimum_quantity?: number | null
+          catalog_stock_is_reserved?: boolean
+          catalog_valid_until?: string | null
           color_hex?: string | null
           color_name?: string | null
           created_at?: string
           display_order?: number | null
           gender?: string | null
+          historical_unit_price?: number | null
           id?: string
           kit_group_id?: string | null
           kit_name?: string | null
           notes?: string | null
           price_confirmed_at?: string | null
+          price_changed?: boolean
           product_id?: string | null
           product_image_url?: string | null
           product_name: string
@@ -7354,17 +7366,23 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          catalog_available_stock?: number | null
           catalog_checked_at?: string | null
+          catalog_minimum_quantity?: number | null
+          catalog_stock_is_reserved?: boolean
+          catalog_valid_until?: string | null
           color_hex?: string | null
           color_name?: string | null
           created_at?: string
           display_order?: number | null
           gender?: string | null
+          historical_unit_price?: number | null
           id?: string
           kit_group_id?: string | null
           kit_name?: string | null
           notes?: string | null
           price_confirmed_at?: string | null
+          price_changed?: boolean
           product_id?: string | null
           product_image_url?: string | null
           product_name?: string
@@ -7461,6 +7479,9 @@ export type Database = {
           approved_at: string | null
           approved_by: string | null
           approved_pdf_url: string | null
+          catalog_revalidated_at: string | null
+          catalog_stock_is_reserved: boolean
+          catalog_valid_until: string | null
           bitrix_deal_id: string | null
           bitrix_quote_id: string | null
           client_cnpj: string | null
@@ -7492,6 +7513,9 @@ export type Database = {
           real_discount_percent: number | null
           real_subtotal: number | null
           rejection_notes: string | null
+          reorder_price_changed_items: number
+          reorder_source_order_id: string | null
+          reorder_source_quote_id: string | null
           row_version: number
           seller_id: string
           sent_at: string | null
@@ -7514,6 +7538,9 @@ export type Database = {
           approved_at?: string | null
           approved_by?: string | null
           approved_pdf_url?: string | null
+          catalog_revalidated_at?: string | null
+          catalog_stock_is_reserved?: boolean
+          catalog_valid_until?: string | null
           bitrix_deal_id?: string | null
           bitrix_quote_id?: string | null
           client_cnpj?: string | null
@@ -7545,6 +7572,9 @@ export type Database = {
           real_discount_percent?: number | null
           real_subtotal?: number | null
           rejection_notes?: string | null
+          reorder_price_changed_items?: number
+          reorder_source_order_id?: string | null
+          reorder_source_quote_id?: string | null
           row_version?: number
           seller_id: string
           sent_at?: string | null
@@ -7567,6 +7597,9 @@ export type Database = {
           approved_at?: string | null
           approved_by?: string | null
           approved_pdf_url?: string | null
+          catalog_revalidated_at?: string | null
+          catalog_stock_is_reserved?: boolean
+          catalog_valid_until?: string | null
           bitrix_deal_id?: string | null
           bitrix_quote_id?: string | null
           client_cnpj?: string | null
@@ -7598,6 +7631,9 @@ export type Database = {
           real_discount_percent?: number | null
           real_subtotal?: number | null
           rejection_notes?: string | null
+          reorder_price_changed_items?: number
+          reorder_source_order_id?: string | null
+          reorder_source_quote_id?: string | null
           row_version?: number
           seller_id?: string
           sent_at?: string | null

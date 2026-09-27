@@ -234,7 +234,7 @@ export const sicoobOrderService = {
       if (res.status === 'fulfilled') {
         successes.push(res.value);
       } else {
-        failures.push({ id: orderIds[index], reason: res.reason?.message || "Erro desconhecido" });
+        failures.push({ id: orderIds[index]!, reason: res.reason?.message || "Erro desconhecido" });
       }
     });
 
@@ -249,6 +249,28 @@ export const sicoobOrderService = {
     const newQuoteId = typeof data?.quoteId === 'string' ? data.quoteId : null;
     if (!newQuoteId) throw new Error('A recompra não retornou o orçamento criado.');
     return newQuoteId;
+  },
+
+  async revalidateReorderQuote(quoteId: string): Promise<{
+    catalogValidUntil: string | null;
+    priceChangedItems: number;
+    stockIsReserved: false;
+  }> {
+    const { data, error } = await supabase.functions.invoke('sicoob-reorder', {
+      body: { revalidateQuoteId: quoteId },
+    });
+    if (error) {
+      if (typeof data?.error === 'string') throw new Error(data.error);
+      throw error;
+    }
+    if (data?.quoteId !== quoteId || data?.stockIsReserved !== false) {
+      throw new Error('O servidor não confirmou a revalidação segura da recompra.');
+    }
+    return {
+      catalogValidUntil: typeof data.catalogValidUntil === 'string' ? data.catalogValidUntil : null,
+      priceChangedItems: Number(data.priceChangedItems ?? 0),
+      stockIsReserved: false,
+    };
   },
 
   async duplicateSicoobOrder(orderId: string): Promise<string> {

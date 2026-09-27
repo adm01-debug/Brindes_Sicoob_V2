@@ -222,29 +222,13 @@ export function useQuotes() {
     try {
       let newQuote;
       if (itemIds && itemIds.length > 0) {
-        // Lógica de duplicação parcial
-        const original = await QuoteService.getById(quoteId);
-        if (!original) throw new Error("Orçamento não encontrado");
-        
-        const selectedItems = (original.items || []).filter(item => item.id && itemIds.includes(item.id));
-        newQuote = await QuoteService.create({
-          quote: { 
-            client_id: original.client_id, 
-            client_name: original.client_name,
-            client_company: original.client_company,
-            status: 'draft',
-            notes: `Itens duplicados do orçamento #${original.quote_number}`
-          },
-          items: selectedItems,
-          userId: user.id,
-          orgId
-        });
+        throw new Error("A recompra parcial exige uma nova seleção no catálogo para não reutilizar preço ou estoque antigos.");
       } else {
         newQuote = await QuoteService.reorder(quoteId, user.id, orgId);
       }
       
-      toast.success("Orçamento duplicado!", {
-        description: `Novo orçamento #${newQuote.quote_number} criado como rascunho.`
+      toast.success("Orçamento de recompra criado", {
+        description: `Preço, mínimo e estoque foram reconsultados para o orçamento #${newQuote.quote_number}.`
       });
       fetchQuotes();
       return newQuote;
