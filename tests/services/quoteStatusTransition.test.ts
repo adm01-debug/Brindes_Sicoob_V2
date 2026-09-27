@@ -15,7 +15,7 @@ vi.mock("@/integrations/supabase/client", () => ({
   },
 }));
 
-import { updateQuoteStatusAtomically } from "@/services/quoteStatusTransition";
+import { approveQuoteWithPdfAtomically, updateQuoteStatusAtomically } from "@/services/quoteStatusTransition";
 
 describe("updateQuoteStatusAtomically", () => {
   beforeEach(() => {
@@ -51,5 +51,21 @@ describe("updateQuoteStatusAtomically", () => {
 
     await expect(updateQuoteStatusAtomically("quote-1", "pending"))
       .rejects.toEqual(error);
+  });
+
+  it("vincula o PDF e a aprovação na RPC específica", async () => {
+    H.rpc.mockResolvedValue({
+      data: [{ id: "quote-1", status: "approved", row_version: 8, approved_pdf_url: "https://arquivos.test/assinada.pdf" }],
+      error: null,
+    });
+
+    await expect(approveQuoteWithPdfAtomically("quote-1", "https://arquivos.test/assinada.pdf"))
+      .resolves.toMatchObject({ status: "approved", approved_pdf_url: "https://arquivos.test/assinada.pdf" });
+    expect(H.rpc).toHaveBeenCalledWith("approve_quote_with_pdf_atomic", {
+      p_quote_id: "quote-1",
+      p_expected_quote_row_version: 7,
+      p_approved_pdf_url: "https://arquivos.test/assinada.pdf",
+      p_notes: null,
+    });
   });
 });

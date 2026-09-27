@@ -10414,6 +10414,20 @@ export type Database = {
           seller_id: string
         }[]
       }
+      approve_quote_with_pdf_atomic: {
+        Args: {
+          p_approved_pdf_url: string
+          p_expected_quote_row_version: number
+          p_notes?: string | null
+          p_quote_id: string
+        }
+        Returns: {
+          approved_pdf_url: string
+          id: string
+          row_version: number
+          status: string
+        }[]
+      }
       convert_quote_to_sicoob_order: {
         Args: { p_quote_id: string }
         Returns: {

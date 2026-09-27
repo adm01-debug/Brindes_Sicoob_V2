@@ -40,3 +40,29 @@ export async function updateQuoteStatusAtomically(
   }
   return transition;
 }
+
+export async function approveQuoteWithPdfAtomically(
+  quoteId: string,
+  approvedPdfUrl: string,
+  notes?: string,
+): Promise<QuoteStatusTransition & { approved_pdf_url: string }> {
+  const { data: quote, error: quoteError } = await supabase
+    .from("quotes")
+    .select("id, row_version")
+    .eq("id", quoteId)
+    .single();
+  if (quoteError) throw quoteError;
+
+  const { data, error } = await supabase.rpc("approve_quote_with_pdf_atomic", {
+    p_quote_id: quoteId,
+    p_expected_quote_row_version: quote.row_version,
+    p_approved_pdf_url: approvedPdfUrl,
+    p_notes: notes ?? null,
+  });
+  if (error) throw error;
+  const approved = data?.[0];
+  if (!approved) {
+    throw new Error("A aprovação com PDF não foi confirmada pelo banco.");
+  }
+  return approved;
+}
