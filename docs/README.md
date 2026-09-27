@@ -125,3 +125,7 @@
 **Mantido por:** Pink e Cerébro (adm01-debug)  
 **Última revisão completa:** 27/12/2025  
 **Status:** ✅ Documentação atualizada e completa
+
+## Plano atual de correções do portal Sicoob
+
+[Plano de 150 etapas — 27/09/2026](plano-implementacao/plano-150-etapas-20260927/plano.md). Inclui frentes de banco, integridade de orçamentos, operação, segurança e experiência de loja, com testes e checklist obrigatório.

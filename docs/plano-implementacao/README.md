@@ -51,3 +51,7 @@ Foram atualizados 126 diagnósticos, verificadas 37 regressões e reproduzidas n
 A [revisão das 1.000 subetapas](../execucao/revisao-implementacao-2026-09-11.md) confronta o plano com código, evidências locais e CI do commit `6f1c5f9`. O resultado é: **76 com evidência local delimitada, 622 parciais, 157 não demonstradas/localizadas e 145 dependentes de validação externa**. Nenhuma etapa está formalmente encerrada. Esses números não são uma nota de qualidade nem um percentual de implantação.
 
 Consulte a [matriz pesquisável](../execucao/revisao-implementacao/consulta.html), a [matriz em Markdown](../execucao/revisao-implementacao/matriz.md) ou o [CSV com os 1.000 diagnósticos](../execucao/revisao-implementacao/matriz.csv). A revisão preserva IDs, ações e checkboxes originais; registra também correções de afirmações excessivas do checkpoint e do benchmark.
+
+## Plano de correções em 150 etapas — 27/09/2026
+
+[Plano detalhado](plano-150-etapas-20260927/plano.md), [dados estruturados](plano-150-etapas-20260927/plano.json), [acompanhamento CSV](plano-150-etapas-20260927/etapas.csv) e [rastreabilidade](plano-150-etapas-20260927/rastreabilidade.csv). Baseado na auditoria de 27/09: 15 fases, 150 etapas, 900 itens de checklist pendentes, dependências, simulações e critérios de aceite. Esta entrega cria o plano; não executa as correções nem substitui os aceites dos planos anteriores.
