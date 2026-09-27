@@ -4,6 +4,7 @@
   "producao_verificada": false,
   "documentos": "nota vinculada ao pedido Sicoob; bucket privado e remoção restrita de órfão preservados",
   "pagamentos": "ator sem papel financeiro recusado e gestor de compras reconhecido; criação em estornado e sobrescrita sem versão recusadas; fatura, método e valores de parcela liquidada imutáveis; soma limitada; estorno formal preservou quitação; vencimento materializado no banco, idempotente e agendado no calendário de Brasília",
-  "arte": "chamada autenticada com identidade forjada recusada; hash e fotografia aceitos somente do verificador servidor; repetição idempotente; autoaprovação recusada; versões preservadas; produção bloqueada sem aprovação e nova arte recusada após logística",
+  "arte": "chamada autenticada com identidade forjada recusada; hash e fotografia aceitos somente do verificador servidor; repetição idempotente; autoaprovação recusada; versões preservadas; arte aprovada não autoriza despesa; produção bloqueada sem ambos os pré-requisitos; nova arte recusada após logística",
+  "cenario_s17": "pedido pendente permaneceu pendente mesmo com arte vigente aprovada; pedido confirmado com arte pendente foi bloqueado; pedido confirmado com arte aprovada iniciou logística",
   "resultado": "aprovado"
 }

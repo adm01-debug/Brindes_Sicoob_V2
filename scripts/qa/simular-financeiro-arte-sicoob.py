@@ -13,9 +13,11 @@ MIGRATION = ROOT / "supabase/migrations/20260912180000_sicoob_finance_artwork.sq
 FOLLOWUP_MIGRATION = ROOT / "supabase/migrations/20260913120003_sicoob_finance_artwork_followup.sql"
 POLICY_WRAPPER_MIGRATION = ROOT / "supabase/migrations/20260922224100_sicoob_storage_policy_wrapper.sql"
 OVERDUE_MIGRATION = ROOT / "supabase/migrations/20260922225200_materialize_overdue_sicoob_payments.sql"
+STATUS_MIGRATION = ROOT / "supabase/migrations/20260911143000_sicoob_order_budget_atomicity.sql"
 CREATOR = "11111111-1111-1111-1111-111111111111"
 APPROVER = "22222222-2222-2222-2222-222222222222"
 ORDER = "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"
+PENDING_ORDER = "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb"
 HASH1 = "a" * 64
 HASH2 = "b" * 64
 
@@ -86,6 +88,10 @@ try:
     sql(FIXTURE.read_text())
     sql(MIGRATION.read_text())
     sql(FOLLOWUP_MIGRATION.read_text())
+    status_source = STATUS_MIGRATION.read_text()
+    status_start = status_source.index("CREATE OR REPLACE FUNCTION public.validate_order_status_transition()")
+    status_end = status_source.index("CREATE OR REPLACE FUNCTION public.sicoob_actor_can_approve", status_start)
+    sql(status_source[status_start:status_end])
     sql("""
       CREATE SCHEMA cron;
       CREATE TABLE cron.job(jobid bigserial PRIMARY KEY,jobname text UNIQUE, schedule text, command text);
@@ -103,6 +109,7 @@ try:
       INSERT INTO auth.users VALUES ('{CREATOR}'), ('{APPROVER}');
       INSERT INTO public.user_roles VALUES ('{APPROVER}', 'supervisor');
       INSERT INTO public.sicoob_orders VALUES ('{ORDER}', '{CREATOR}', 'confirmed', 125.50, true);
+      INSERT INTO public.sicoob_orders VALUES ('{PENDING_ORDER}', '{CREATOR}', 'pending', 80.00, true);
       GRANT USAGE ON SCHEMA public, storage TO authenticated;
       GRANT SELECT ON public.sicoob_orders TO authenticated;
       GRANT SELECT, INSERT, DELETE ON storage.objects TO authenticated;
@@ -294,6 +301,21 @@ try:
     assert self_decision.returncode != 0 and "Aprovador inválido" in self_decision.stderr
     actor_sql(APPROVER, f"SELECT public.decide_sicoob_order_artwork('{artwork1}', 'approved', NULL);")
 
+    pending_artwork_path = f"{PENDING_ORDER}/artwork/v1.pdf"
+    pending_artwork = scalar(service_sql(f"""
+      SELECT public.create_sicoob_order_artwork_version(
+        '{CREATOR}', '{PENDING_ORDER}', '{pending_artwork_path}', '{HASH2}',
+        '{artwork_identity(pending_artwork_path, HASH2)}'::jsonb
+      );
+    """))
+    actor_sql(APPROVER, f"SELECT public.decide_sicoob_order_artwork('{pending_artwork}', 'approved', NULL);")
+    unauthorized_production = sql(
+        f"UPDATE public.sicoob_orders SET status='in_production' WHERE id='{PENDING_ORDER}';",
+        check=False,
+    )
+    assert unauthorized_production.returncode != 0 and "Transição de status inválida" in unauthorized_production.stderr
+    assert scalar(sql(f"SELECT status FROM public.sicoob_orders WHERE id='{PENDING_ORDER}';")) == "pending"
+
     artwork_path2 = f"{ORDER}/artwork/v2.pdf"
     artwork2 = scalar(service_sql(f"""
       SELECT public.create_sicoob_order_artwork_version(
@@ -321,7 +343,8 @@ try:
       );
     """, check=False)
     assert late_artwork.returncode != 0 and "após o início" in late_artwork.stderr
-    result["arte"] = "chamada autenticada com identidade forjada recusada; hash e fotografia aceitos somente do verificador servidor; repetição idempotente; autoaprovação recusada; versões preservadas; produção bloqueada sem aprovação e nova arte recusada após logística"
+    result["arte"] = "chamada autenticada com identidade forjada recusada; hash e fotografia aceitos somente do verificador servidor; repetição idempotente; autoaprovação recusada; versões preservadas; arte aprovada não autoriza despesa; produção bloqueada sem ambos os pré-requisitos; nova arte recusada após logística"
+    result["cenario_s17"] = "pedido pendente permaneceu pendente mesmo com arte vigente aprovada; pedido confirmado com arte pendente foi bloqueado; pedido confirmado com arte aprovada iniciou logística"
 
     result["resultado"] = "aprovado"
     evidence = ROOT / "docs/execucao/evidencias/financeiro-arte-sicoob.json"
