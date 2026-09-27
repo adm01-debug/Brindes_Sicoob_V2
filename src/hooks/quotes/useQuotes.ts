@@ -191,23 +191,22 @@ export function useQuotes() {
       const uniqueQuoteIds = [...new Set(quoteIds)];
       const { data: accessibleQuotes, error: accessError } = await supabase
         .from("quotes")
-        .select("id")
+        .select("id, row_version")
         .in("id", uniqueQuoteIds);
       if (accessError) throw accessError;
       ensureQuotesAreAccessible(accessibleQuotes, uniqueQuoteIds.length);
 
-      const bulkUpdate: TablesUpdate<"quotes"> = {
-        status,
-        ...(notes ? { rejection_notes: notes } : {}),
-        ...(status === 'approved' ? { approved_at: new Date().toISOString(), approved_by: user.id } : {}),
-      };
-
-      const { data: updatedRows, error } = await supabase
-        // rls-allow: atualização por id; RLS valida ownership
-        .from("quotes")
-        .update(bulkUpdate)
-        .in("id", uniqueQuoteIds)
-        .select("id");
+      const expectedVersions = uniqueQuoteIds.map((id) => {
+        const quote = accessibleQuotes.find((candidate) => candidate.id === id);
+        if (!quote) throw new Error("Um ou mais orçamentos não foram encontrados ou não estão no seu escopo.");
+        return quote.row_version;
+      });
+      const { data: updatedRows, error } = await supabase.rpc("bulk_update_quote_status_atomic", {
+        p_quote_ids: uniqueQuoteIds,
+        p_expected_row_versions: expectedVersions,
+        p_status: status,
+        p_notes: notes ?? null,
+      });
 
       ensureQuoteMutationApplied(
         updatedRows,
@@ -215,20 +214,6 @@ export function useQuotes() {
         uniqueQuoteIds.length,
         "Atualização concorrente detectada. Recarregue a lista antes de tentar novamente.",
       );
-
-      // Log history for each
-      const promises = uniqueQuoteIds.map(id =>
-        QuoteService.logHistory({
-          quoteId: id,
-          userId: user.id,
-          action: "bulk_status_changed",
-          description: `Status alterado em massa para "${STATUS_LABELS[status]}"`,
-          fieldChanged: "status",
-          newValue: status,
-          metadata: { notes, isBulk: true }
-        })
-      );
-      await Promise.all(promises);
 
       toast.success(`${uniqueQuoteIds.length} orçamentos atualizados!`);
       fetchQuotes();

@@ -10366,6 +10366,19 @@ export type Database = {
         Args: { p_notes?: string | null; p_quote_ids: string[]; p_singular_id: string }
         Returns: Json
       }
+      bulk_update_quote_status_atomic: {
+        Args: {
+          p_expected_row_versions: number[]
+          p_notes?: string | null
+          p_quote_ids: string[]
+          p_status: string
+        }
+        Returns: {
+          id: string
+          row_version: number
+          status: string
+        }[]
+      }
       convert_quote_to_sicoob_order: {
         Args: { p_quote_id: string }
         Returns: {
