@@ -1,9 +1,26 @@
 {
   "ambiente": "PostgreSQL 16 descartável, --network none; somente dados sintéticos",
-  "migracao": "supabase/migrations/20260912190000_sicoob_consolidation_distribution.sql",
+  "migracoes": [
+    "supabase/migrations/20260912190000_sicoob_consolidation_distribution.sql",
+    "supabase/migrations/20260927213000_sicoob_consolidation_concurrency.sql"
+  ],
   "producao_verificada": false,
-  "criacao": "vendedor de outra Singular recusado; dois pedidos vinculados atomicamente; repetição idempotente limitada ao mesmo ator e conteúdo; lote inválido sem órfãos",
-  "distribuicao": "PA inativo e endereço incompleto recusados sem mutação parcial; itens distribuídos integralmente; despacho moveu lote e pedidos para logística; PA enxergou somente seu destino; escrita direta bloqueada",
+  "banco_canonico_de_construcao": {
+    "projeto": "cfmzkthhgliqelozlmwu",
+    "motor": "PostgreSQL 17.6",
+    "verificado_em_utc": "2026-09-27T20:40:55Z",
+    "migration": "20260927213000_sicoob_consolidation_concurrency",
+    "sha256": "9f27b62c3e450a0dcdb4e5384665538b0580bbf37cebf97d1285f5ac0f268a7a",
+    "preflight_com_rollback": "aprovado",
+    "ledger": "uma entrada canônica",
+    "indices": 5,
+    "fks_nao_validadas": 0,
+    "acl": "authenticated com execução; anon e PUBLIC sem execução",
+    "smoke_transacional": "aprovado com rollback: retry idempotente, 2 destinos, 15 unidades, fotografia obsoleta recusada, redistribuição, despacho, parcial, excesso recusado e avaria",
+    "limpeza": "zero usuários, cooperativas, pedidos ou lotes sintéticos persistidos; zero triggers desabilitados"
+  },
+  "criacao": "vendedor de outra Singular recusado; duas chamadas concorrentes e a repetição sequencial retornaram o mesmo lote; dois pedidos vinculados atomicamente; chave limitada ao mesmo ator e conteúdo; FKs validadas; lote inválido sem órfãos",
+  "distribuicao": "PA inativo, endereço incompleto e fotografia desatualizada recusados sem mutação parcial; atualização refez destinos; itens distribuídos integralmente; despacho moveu lote e pedidos para logística; PA enxergou somente seu destino; escrita direta bloqueada",
   "recebimento": "retry idempotente não duplicou quantidades; parciais acumulados por destino; excesso e ator externo recusados; divergência manteve os pedidos em logística; avaria preservada em evento imutável",
   "resultado": "aprovado"
 }
