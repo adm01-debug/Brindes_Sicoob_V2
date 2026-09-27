@@ -8498,10 +8498,75 @@ export type Database = {
           },
         ]
       }
+      sicoob_approval_delegations: {
+        Row: {
+          competencies: string[]
+          cooperative_id: string
+          created_at: string
+          delegate_id: string
+          delegator_id: string
+          ends_at: string
+          id: string
+          pa_id: string | null
+          reason: string
+          revocation_reason: string | null
+          revoked_at: string | null
+          revoked_by: string | null
+          starts_at: string
+        }
+        Insert: {
+          competencies: string[]
+          cooperative_id: string
+          created_at?: string
+          delegate_id: string
+          delegator_id: string
+          ends_at: string
+          id?: string
+          pa_id?: string | null
+          reason: string
+          revocation_reason?: string | null
+          revoked_at?: string | null
+          revoked_by?: string | null
+          starts_at: string
+        }
+        Update: {
+          competencies?: string[]
+          cooperative_id?: string
+          created_at?: string
+          delegate_id?: string
+          delegator_id?: string
+          ends_at?: string
+          id?: string
+          pa_id?: string | null
+          reason?: string
+          revocation_reason?: string | null
+          revoked_at?: string | null
+          revoked_by?: string | null
+          starts_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sicoob_approval_delegations_cooperative_id_fkey"
+            columns: ["cooperative_id"]
+            isOneToOne: false
+            referencedRelation: "cooperativas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sicoob_approval_delegations_pa_id_fkey"
+            columns: ["pa_id"]
+            isOneToOne: false
+            referencedRelation: "postos_atendimento"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       sicoob_approval_requests: {
         Row: {
+          approval_delegation_id: string | null
           amount_at_request: number
           approver_id: string | null
+          authority_delegator_id: string | null
           created_at: string
           id: string
           metadata: Json | null
@@ -8514,8 +8579,10 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          approval_delegation_id?: string | null
           amount_at_request: number
           approver_id?: string | null
+          authority_delegator_id?: string | null
           created_at?: string
           id?: string
           metadata?: Json | null
@@ -8528,8 +8595,10 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          approval_delegation_id?: string | null
           amount_at_request?: number
           approver_id?: string | null
+          authority_delegator_id?: string | null
           created_at?: string
           id?: string
           metadata?: Json | null
@@ -8542,6 +8611,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "sicoob_approval_requests_approval_delegation_id_fkey"
+            columns: ["approval_delegation_id"]
+            isOneToOne: false
+            referencedRelation: "sicoob_approval_delegations"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "sicoob_approval_requests_order_id_fkey"
             columns: ["order_id"]
@@ -10181,6 +10257,16 @@ export type Database = {
         }
         Returns: { policy_id: string | null; policy_version: string; forbid_self_approval: boolean; require_active_membership: boolean }[]
       }
+      list_sicoob_approval_delegate_candidates: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          cooperativa_id: string
+          email: string | null
+          full_name: string | null
+          pa_id: string | null
+          user_id: string
+        }[]
+      }
       get_sicoob_order_shipment: {
         Args: {
           p_order_id: string
@@ -10257,6 +10343,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      sicoob_current_actor_approval_authority: {
+        Args: { p_competence?: string; p_order_id: string }
+        Returns: Json
+      }
       upsert_sicoob_order_shipment: {
         Args: {
           p_carrier_name?: string
@@ -10276,6 +10366,16 @@ export type Database = {
       approve_sicoob_order: {
         Args: { p_manager_id: string; p_order_id: string; p_request_id: string }
         Returns: undefined
+      }
+      create_sicoob_approval_delegation: {
+        Args: {
+          p_competencies: string[]
+          p_delegate_id: string
+          p_ends_at: string
+          p_reason: string
+          p_starts_at: string
+        }
+        Returns: string
       }
       add_sicoob_order_invoice: {
         Args: {
@@ -11064,6 +11164,10 @@ export type Database = {
           p_order_id: string
           p_reason: string
         }
+        Returns: undefined
+      }
+      revoke_sicoob_approval_delegation: {
+        Args: { p_delegation_id: string; p_reason: string }
         Returns: undefined
       }
       request_sicoob_order_approval: {

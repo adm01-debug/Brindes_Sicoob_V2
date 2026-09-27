@@ -50,6 +50,7 @@ jobs:
           python3 scripts/qa/simular-verba-atomica.py
           python3 scripts/qa/simular-eventos-status-sicoob.py
           python3 scripts/qa/simular-politica-aprovacao-sicoob.py
+          python3 scripts/qa/simular-delegacao-aprovacao-sicoob.py
           python3 scripts/qa/simular-versionamento-orcamento-atomico.py
           python3 scripts/qa/simular-recompra-sicoob.py
           python3 scripts/qa/simular-kit-orcamento-sicoob.py

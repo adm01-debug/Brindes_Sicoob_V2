@@ -1,0 +1,47 @@
+{
+  "ambiente": "PostgreSQL 17 descartável, sem rede e apenas com dados sintéticos",
+  "migracoes": [
+    "supabase/migrations/20260911143000_sicoob_order_budget_atomicity.sql",
+    "supabase/migrations/20260912110000_sicoob_order_status_events.sql",
+    "supabase/migrations/20260912120000_sicoob_approval_policy_guards.sql",
+    "supabase/migrations/20260912140000_sicoob_approval_confirmation_followup.sql",
+    "supabase/migrations/20260912160000_sicoob_approval_policy_snapshot.sql",
+    "supabase/migrations/20260927203000_sicoob_approval_delegations.sql",
+    "supabase/migrations/20260927204500_sicoob_delegated_authority_indicator.sql"
+  ],
+  "producao_verificada": false,
+  "concessao": "prazo, competências, escopo e autoridade do delegante validados no servidor",
+  "integridade": "sobreposição e ciclo recíproco foram bloqueados",
+  "decisao_delegada": "ator real, delegante, origem da autoridade e pedido aprovado ficaram correlacionados",
+  "revogacao": "revogação é imediata, auditável e invalida a decisão ainda na mesma sessão autenticada",
+  "expiracao": "vigência é reavaliada no instante da decisão, sem depender da interface",
+  "revalidacao": "mudança de unidade do substituto e perda de autoridade do titular anulam o poder delegado",
+  "conflitos": "autoaprovação do substituto, conflito do delegante e pedido fora do escopo foram negados",
+  "acl": "RPCs públicas mínimas; resolvedor e helper parametrizado permanecem privados",
+  "resultado": "aprovado",
+  "banco_canonico_verificado": true,
+  "projeto_canonico": "cfmzkthhgliqelozlmwu",
+  "postgres_remoto": "17.6",
+  "aplicacao_remota": {
+    "ledger": true,
+    "tabela_delegacoes": true,
+    "colunas_rastreabilidade": true,
+    "rpc_criacao_autenticada": true,
+    "anon_bloqueado": true,
+    "resolvedor_privado": true,
+    "vigencia_reavaliada_na_decisao": true,
+    "migration_indicador_no_ledger": true,
+    "papel_do_substituto_validado": true,
+    "rpc_candidatos_escopados": true,
+    "rpc_indicador_autenticada": true,
+    "indicador_bloqueado_para_anon": true,
+    "indicador_usa_resolvedor_canonico": true
+  },
+  "deploy_aplicacao": {
+    "id": "dpl_67aGUGrNqo8B7UHKvEgify2i3hbB",
+    "url_canonica": "https://brindes-sicoob-v2.vercel.app",
+    "build_modulos": 5800,
+    "placeholders_de_backend_ausentes": true,
+    "referencia_do_projeto_canonico_presente": true
+  }
+}
