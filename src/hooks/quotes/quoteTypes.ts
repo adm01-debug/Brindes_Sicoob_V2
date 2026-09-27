@@ -47,6 +47,9 @@ export interface QuoteItem {
   price_freshness_threshold_days?: number | null;
   /** Timestamp em que o vendedor confirmou o preço com o fornecedor durante a montagem do orçamento. Quando preenchido, o badge de preço defasado é suprimido neste item. */
   price_confirmed_at?: string | null;
+  /** Identidade da variação no catálogo externo, necessária para estoque e Bitrix. */
+  source_variant_id?: string | null;
+  source_variant_sku?: string | null;
   personalizations?: QuoteItemPersonalization[];
 }
 

@@ -60,6 +60,25 @@ describe("quoteHelpers — persistência do price_confirmed_at (save)", () => {
   });
 });
 
+describe("quoteHelpers — vínculo da variante do catálogo", () => {
+  it("persiste a variante selecionada para validar estoque e sincronizar o Bitrix", () => {
+    const [payload] = buildItemsInsertPayload(
+      [makeItem({ source_variant_id: "variant-1", source_variant_sku: "CAN-001-VERDE" })],
+      "quote-1",
+    );
+
+    expect(payload.source_variant_id).toBe("variant-1");
+    expect(payload.source_variant_sku).toBe("CAN-001-VERDE");
+  });
+
+  it("envia null para produto sem variação selecionada", () => {
+    const [payload] = buildItemsInsertPayload([makeItem()], "quote-1");
+
+    expect(payload.source_variant_id).toBeNull();
+    expect(payload.source_variant_sku).toBeNull();
+  });
+});
+
 describe("quoteHelpers — load (espelha o mapeamento do fetchQuote)", () => {
   // Espelha o `(itemsData || []).map((item) => ({ ...item, personalizations: [...] }))`
   // de `useQuotes.fetchQuote` para garantir que o spread preserva o campo.

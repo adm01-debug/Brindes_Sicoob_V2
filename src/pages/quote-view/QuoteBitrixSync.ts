@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { generateProposalPDFv2 } from "@/utils/proposalPdfReactGenerator";
 import { toast } from "sonner";
 import { logger } from "@/lib/logger";
+import type { TablesUpdate } from "@/integrations/supabase/types";
 import type { ProposalTemplateData } from "@/components/pdf/ProposalHtmlTemplate";
 import type { Quote } from "@/hooks/quotes/useQuotes";
 import { bitrixCircuitBreaker } from "@/utils/resilience";
@@ -69,7 +70,7 @@ export async function syncQuoteToBitrix({
   const parsedBitrixId = result?.quote_id ? Number(result.quote_id) : null;
   const bitrixQuoteIdFromResponse = parsedBitrixId && !isNaN(parsedBitrixId) ? parsedBitrixId : null;
 
-  const crmUpdates: Record<string, unknown> = { status: "sent" };
+  const crmUpdates: TablesUpdate<"quotes"> = { status: "sent" };
   if (bitrixQuoteIdFromResponse) crmUpdates.bitrix_quote_id = String(bitrixQuoteIdFromResponse);
 
   try {

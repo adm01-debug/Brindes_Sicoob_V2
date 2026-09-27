@@ -9,6 +9,8 @@ import { useSalesScope } from "@/lib/auth/visibility-scope";
 import { createClientLogger } from "@/lib/telemetry/structuredLogger";
 import { toast } from "sonner";
 import { QuoteService } from "@/services/QuoteService";
+import type { TablesUpdate } from "@/integrations/supabase/types";
+import { ensureQuoteMutationApplied, ensureQuotesAreAccessible } from "./quoteStatusMutationGuards";
 import type { Quote, QuoteItem, PersonalizationTechnique } from "./quoteTypes";
 // Re-export the canonical quote types so consumers can import them from this hook.
 export type { Quote, QuoteItem, QuoteItemPersonalization, PersonalizationTechnique } from "./quoteTypes";
@@ -52,6 +54,9 @@ export function useQuotes() {
     setIsLoading(true);
     try {
       const newQuote = await QuoteService.create({ quote, items, userId: user.id, orgId });
+      if (!newQuote.id) {
+        throw new Error("O orçamento criado não retornou um identificador.");
+      }
       await QuoteService.logHistory({
         quoteId: newQuote.id,
         userId: user.id,
@@ -108,7 +113,7 @@ export function useQuotes() {
       if (fetchErr) throw fetchErr;
       const oldStatus = quote?.status || "draft";
       
-      const updateData: Partial<Quote> & { approved_at?: string; approved_by?: string; rejection_notes?: string } = { status };
+      const updateData: TablesUpdate<"quotes"> = { status };
       if (notes) updateData.rejection_notes = notes;
       if (isApprovalDecision) {
         updateData.approved_at = new Date().toISOString();
@@ -123,12 +128,12 @@ export function useQuotes() {
         .eq("row_version", quote.row_version || 1)
         .select("id");
       
-      if (error || !updatedRows?.length) {
-        if (error?.code === 'PGRST116' || !updatedRows?.length) {
-          throw new Error("Concorrência detectada: Este orçamento foi modificado por outro usuário. Por favor, recarregue a página.");
-        }
-        throw error;
-      }
+      ensureQuoteMutationApplied(
+        updatedRows,
+        error,
+        1,
+        "Concorrência detectada: Este orçamento foi modificado por outro usuário. Por favor, recarregue a página.",
+      );
 
       // Logic for notifications
       if (status === 'pending_singular_approval') {
@@ -189,25 +194,27 @@ export function useQuotes() {
         .select("id")
         .in("id", uniqueQuoteIds);
       if (accessError) throw accessError;
-      if ((accessibleQuotes?.length ?? 0) !== uniqueQuoteIds.length) {
-        throw new Error("Um ou mais orçamentos não foram encontrados ou não estão no seu escopo.");
-      }
+      ensureQuotesAreAccessible(accessibleQuotes, uniqueQuoteIds.length);
+
+      const bulkUpdate: TablesUpdate<"quotes"> = {
+        status,
+        ...(notes ? { rejection_notes: notes } : {}),
+        ...(status === 'approved' ? { approved_at: new Date().toISOString(), approved_by: user.id } : {}),
+      };
 
       const { data: updatedRows, error } = await supabase
         // rls-allow: atualização por id; RLS valida ownership
         .from("quotes")
-        .update({ 
-          status,
-          ...(notes ? { rejection_notes: notes } : {}),
-          ...(status === 'approved' ? { approved_at: new Date().toISOString(), approved_by: user.id } : {})
-        } as Partial<Quote>)
+        .update(bulkUpdate)
         .in("id", uniqueQuoteIds)
         .select("id");
 
-      if (error) throw error;
-      if ((updatedRows?.length ?? 0) !== uniqueQuoteIds.length) {
-        throw new Error("Atualização concorrente detectada. Recarregue a lista antes de tentar novamente.");
-      }
+      ensureQuoteMutationApplied(
+        updatedRows,
+        error,
+        uniqueQuoteIds.length,
+        "Atualização concorrente detectada. Recarregue a lista antes de tentar novamente.",
+      );
 
       // Log history for each
       const promises = uniqueQuoteIds.map(id =>
