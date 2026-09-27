@@ -423,7 +423,7 @@ export default function OrdersKanbanPage() {
                   variant="outline" 
                   size="sm" 
                   className="h-9 rounded-xl border-border/40 bg-sicoob-green text-white hover:bg-sicoob-green-dark"
-                  onClick={() => navigate("/sicoob/pedidos/novo")}
+                  onClick={() => navigate("/catalogo")}
                 >
                   <Plus className="h-4 w-4 mr-2" />
                   Novo Pedido

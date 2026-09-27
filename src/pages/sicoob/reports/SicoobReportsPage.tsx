@@ -12,7 +12,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { ptBR } from "date-fns/locale";
-import { format } from "date-fns";
+import { endOfDay, format } from "date-fns";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { DateRange } from "react-day-picker";
@@ -23,6 +23,7 @@ import { Badge } from "@/components/ui/badge";
 import { OrderStatusBadge } from "@/components/sicoob/orders/OrderStatusBadge";
 import type { OrderStatus } from "@/types/sicoob/orders";
 import { toast } from "sonner";
+import { formatMeasuredCurrency, SAVINGS_NOT_MEASURED } from "@/lib/sicoob/operationalMetrics";
 
 const REPORTS = [
   { title: "Consumo por Ponto de Atendimento", desc: "Detalhamento de gastos e orçamentos por agência (PA).", icon: FileBarChart, type: "PDF / Excel" },
@@ -30,6 +31,17 @@ const REPORTS = [
   { title: "Auditoria de Aprovações SICOOB", desc: "Log completo de quem aprovou ou rejeitou cada pedido.", icon: FileText, type: "PDF" },
   { title: "Performance de Logística", desc: "Métricas de prazos de entrega e ocorrências de transporte.", icon: FileBarChart, type: "PDF" },
 ];
+
+function getScopeLabel(paId?: string | null, cooperativeId?: string | null) {
+  if (paId) return `PA ${paId}`;
+  if (cooperativeId) return `Cooperativa ${cooperativeId}`;
+  return "Escopo não identificado";
+}
+
+function getPeriodLabel(date?: DateRange) {
+  if (!date?.from) return "Todo o período";
+  return `${format(date.from, "dd/MM/yyyy")} até ${date.to ? format(date.to, "dd/MM/yyyy") : format(new Date(), "dd/MM/yyyy")}`;
+}
 
 export default function SicoobReportsPage() {
   const { profile } = useAuth();
@@ -39,42 +51,45 @@ export default function SicoobReportsPage() {
     to: new Date()
   });
 
-  const { data: budgetHistory } = useQuery({
-    queryKey: ["pa-budget-history", profile?.pa_id],
+  const scopeId = profile?.pa_id ?? profile?.cooperativa_id;
+  const scopeLabel = getScopeLabel(profile?.pa_id, profile?.cooperativa_id);
+  const { data: budgetHistory, isLoading: isBudgetLoading, error: budgetError } = useQuery({
+    queryKey: ["sicoob-budget-history", profile?.pa_id, profile?.cooperativa_id],
     queryFn: async () => {
-      if (!profile?.pa_id) return [];
-      const { data, error } = await supabase
+      if (!scopeId) return [];
+      let query = supabase
         .from("pa_budgets")
         .select("*")
-        .eq("pa_id", profile.pa_id)
         .order("ano", { ascending: false })
         .order("mes", { ascending: false })
         .limit(12);
+      query = profile?.pa_id ? query.eq("pa_id", profile.pa_id) : query.eq("cooperative_id", profile!.cooperativa_id!);
+      const { data, error } = await query;
       if (error) throw error;
       return data;
     },
-    enabled: !!profile?.pa_id
+    enabled: Boolean(scopeId),
   });
 
-  const { data: ordersInRange } = useQuery({
-    queryKey: ["pa-orders-range", profile?.pa_id, date?.from, date?.to],
+  const { data: ordersInRange, isLoading: isOrdersLoading, error: ordersError } = useQuery({
+    queryKey: ["sicoob-orders-range", profile?.pa_id, profile?.cooperativa_id, date?.from, date?.to],
     queryFn: async () => {
-      if (!profile?.pa_id || !date?.from) return [];
+      if (!scopeId || !date?.from) return [];
       let query = supabase
         .from("sicoob_orders")
         .select("*")
-        .eq("pa_id", profile.pa_id)
         .gte("created_at", date.from.toISOString());
+      query = profile?.pa_id ? query.eq("pa_id", profile.pa_id) : query.eq("cooperative_id", profile!.cooperativa_id!);
       
       if (date.to) {
-        query = query.lte("created_at", date.to.toISOString());
+        query = query.lte("created_at", endOfDay(date.to).toISOString());
       }
 
       const { data, error } = await query.order("created_at", { ascending: false });
       if (error) throw error;
       return data;
     },
-    enabled: !!profile?.pa_id
+    enabled: Boolean(scopeId && date?.from),
   });
 
   const committedOrders = ordersInRange?.filter(isCommittedSicoobOrder) || [];
@@ -95,11 +110,9 @@ export default function SicoobReportsPage() {
       
       doc.setFontSize(10);
       doc.setTextColor(100, 100, 100);
-      const periodLabel = date?.from 
-        ? `${format(date.from, "dd/MM/yyyy")} até ${date.to ? format(date.to, "dd/MM/yyyy") : format(new Date(), "dd/MM/yyyy")}`
-        : "Todo o período";
+      const periodLabel = getPeriodLabel(date);
       doc.text(`Período: ${periodLabel}`, 14, 28);
-      doc.text(`PA: ${profile?.pa_id || "Não identificado"}`, 14, 34);
+      doc.text(`Escopo: ${scopeLabel}`, 14, 34);
 
       const tableData = ordersInRange.map(o => [
         format(new Date(o.created_at), "dd/MM/yyyy"),
@@ -226,7 +239,7 @@ export default function SicoobReportsPage() {
               <CardTitle className="text-sm font-medium text-sicoob-green-dark">Gasto no Período</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-sicoob-green-dark">{formatCurrency(totalSpent)}</div>
+              <div className="text-2xl font-bold text-sicoob-green-dark">{formatMeasuredCurrency(totalSpent, committedOrders.length, formatCurrency)}</div>
               <p className="text-xs text-sicoob-green/70 mt-1">{committedOrders.length} pedidos confirmados</p>
             </CardContent>
           </Card>
@@ -236,18 +249,18 @@ export default function SicoobReportsPage() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                {formatCurrency(committedOrders.length ? totalSpent / committedOrders.length : 0)}
+                {formatMeasuredCurrency(committedOrders.length ? totalSpent / committedOrders.length : 0, committedOrders.length, formatCurrency)}
               </div>
               <p className="text-xs text-muted-foreground mt-1 text-status-transit/80 font-medium">Por pedido consolidado</p>
             </CardContent>
           </Card>
           <Card className="border-[1.5px]">
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Economia Estimada</CardTitle>
+              <CardTitle className="text-sm font-medium">Economia comprovada</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-green-600">{formatCurrency(totalSpent * 0.12)}</div>
-              <p className="text-xs text-muted-foreground mt-1">Via compra centralizada (Singular)</p>
+              <div className="text-2xl font-bold text-muted-foreground">Não medida</div>
+              <p className="text-xs text-muted-foreground mt-1">{SAVINGS_NOT_MEASURED}</p>
             </CardContent>
           </Card>
         </div>
@@ -264,7 +277,7 @@ export default function SicoobReportsPage() {
                 <CardTitle className="text-lg flex items-center gap-2 text-sicoob-green-dark">
                   <Search className="h-5 w-5" /> Movimentações do Período
                 </CardTitle>
-                <CardDescription>Lista detalhada de todos os débitos em verba para o intervalo selecionado.</CardDescription>
+                <CardDescription>Lista detalhada dos pedidos no intervalo; o total considera somente estados confirmados.</CardDescription>
               </CardHeader>
               <CardContent>
                 <Table>
@@ -277,7 +290,11 @@ export default function SicoobReportsPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {ordersInRange?.length === 0 ? (
+                    {isOrdersLoading ? (
+                      <TableRow><TableCell colSpan={4} className="py-8 text-center text-muted-foreground">Carregando dados do período…</TableCell></TableRow>
+                    ) : ordersError ? (
+                      <TableRow><TableCell colSpan={4} className="py-8 text-center text-destructive">Não foi possível medir o período selecionado.</TableCell></TableRow>
+                    ) : ordersInRange?.length === 0 ? (
                       <TableRow>
                         <TableCell colSpan={4} className="text-center py-8 text-muted-foreground italic">
                           Nenhuma movimentação encontrada no período.
@@ -301,6 +318,9 @@ export default function SicoobReportsPage() {
 
           <TabsContent value="history" className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {isBudgetLoading && <p className="text-sm text-muted-foreground">Carregando histórico medido…</p>}
+              {budgetError && <p role="alert" className="text-sm text-destructive">Não foi possível carregar o histórico de verba.</p>}
+              {!isBudgetLoading && !budgetError && budgetHistory?.length === 0 && <p className="text-sm text-muted-foreground">Nenhuma competência de verba foi registrada neste escopo.</p>}
               {budgetHistory?.map((bh: any) => (
                 <Card key={bh.id} className="border-[1.5px] hover:border-sicoob-green/30 transition-colors">
                   <CardHeader className="pb-2">
@@ -309,7 +329,7 @@ export default function SicoobReportsPage() {
                          {format(new Date(bh.ano, bh.mes - 1), "MMMM 'de' yyyy", { locale: ptBR })}
                        </CardTitle>
                        <Badge variant="outline" className="bg-sicoob-green/5 text-sicoob-green border-sicoob-green/20">
-                         {((bh.verba_consumida / bh.verba_total) * 100).toFixed(0)}% Utilizado
+                         {Number(bh.verba_total) > 0 ? `${((bh.verba_consumida / bh.verba_total) * 100).toFixed(0)}% utilizado` : "Base total não informada"}
                        </Badge>
                     </div>
                   </CardHeader>
