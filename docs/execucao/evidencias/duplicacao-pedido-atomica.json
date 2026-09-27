@@ -1,0 +1,26 @@
+{
+  "ambiente": "PostgreSQL 17 descartável, --network none; dados sintéticos",
+  "migracao": "supabase/migrations/20260927200207_duplicate_order_atomic.sql",
+  "producao_verificada": false,
+  "atomicidade": "falha injetada na cópia de item reverte cabeçalho, itens, logística, auditoria e chave",
+  "idempotencia": "repetição e duas chamadas concorrentes retornam um único pedido",
+  "totais": "subtotal e total são recalculados no servidor a partir dos itens",
+  "autorizacao": "anon sem EXECUTE; UUID alheio e pedido vazio recusados",
+  "integridade": "order_items usa uuid, FK real e cascata; estados e transições reconciliados",
+  "efeitos_externos": "rascunho duplicado não dispara webhook antes da conclusão transacional",
+  "auditoria": "evento da duplicação e RPC de auditoria persistem no schema canônico",
+  "resultado": "aprovado",
+  "banco_canonico_de_construcao_verificado": true,
+  "verificacao_canonica": {
+    "projeto": "cfmzkthhgliqelozlmwu",
+    "postgres": "17.6",
+    "migration_version": "20260927200207 + 20260927200500 + 20260927201017",
+    "preflight": "migration completa executada em BEGIN/ROLLBACK",
+    "smoke_autenticado": "cadastro 200, login 200, cabeçalho 201, itens 201, RPC 200 e repetição 200",
+    "resultado": "dois itens, um evento, uma chave, zero pedidos incompletos; subtotal 25 e total 24",
+    "webhook": "rascunho RE-* não publica order.created; dispatcher aponta para o projeto canônico e não pode ser executado por anon/authenticated",
+    "indices_fk": "source_order_id e duplicated_order_id possuem índices próprios no banco canônico",
+    "advisors": "zero alerta de desempenho relacionado; um aviso de SECURITY DEFINER autenticado é intencional, pois a RPC é a fronteira transacional, exige auth.uid, revalida escopo no servidor, fixa search_path e nega anon/PUBLIC",
+    "limpeza": "zero pedidos, itens, chaves, eventos e usuários QA remanescentes"
+  }
+}

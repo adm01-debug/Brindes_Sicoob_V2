@@ -5130,11 +5130,53 @@ export type Database = {
           },
         ]
       }
+      order_duplicate_requests: {
+        Row: {
+          actor_id: string
+          created_at: string
+          duplicated_order_id: string
+          id: string
+          idempotency_key: string
+          source_order_id: string
+        }
+        Insert: {
+          actor_id: string
+          created_at?: string
+          duplicated_order_id: string
+          id?: string
+          idempotency_key: string
+          source_order_id: string
+        }
+        Update: {
+          actor_id?: string
+          created_at?: string
+          duplicated_order_id?: string
+          id?: string
+          idempotency_key?: string
+          source_order_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_duplicate_requests_duplicated_order_id_fkey"
+            columns: ["duplicated_order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_duplicate_requests_source_order_id_fkey"
+            columns: ["source_order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       order_items: {
         Row: {
           created_at: string
           id: string
-          order_id: string | null
+          order_id: string
           organization_id: string | null
           product_id: string | null
           product_image_url: string | null
@@ -5146,7 +5188,7 @@ export type Database = {
         Insert: {
           created_at?: string
           id?: string
-          order_id?: string | null
+          order_id: string
           organization_id?: string | null
           product_id?: string | null
           product_image_url?: string | null
@@ -5158,7 +5200,7 @@ export type Database = {
         Update: {
           created_at?: string
           id?: string
-          order_id?: string | null
+          order_id?: string
           organization_id?: string | null
           product_id?: string | null
           product_image_url?: string | null
@@ -5168,6 +5210,13 @@ export type Database = {
           unit_price?: number | null
         }
         Relationships: [
+          {
+            foreignKeyName: "order_items_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "order_items_organization_id_fkey"
             columns: ["organization_id"]
@@ -11103,6 +11152,10 @@ export type Database = {
           p_order_id: string
         }
         Returns: string
+      }
+      duplicate_order_atomic: {
+        Args: { p_idempotency_key: string; p_order_id: string }
+        Returns: Database["public"]["Tables"]["orders"]["Row"][]
       }
       log_quote_action: {
         Args: { _action: string; _metadata?: Json; _quote_id: string }
