@@ -41,7 +41,9 @@ export function useDiscountApproval() {
   const [pendingRequests, setPendingRequests] = useState<DiscountApprovalWithQuote[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Request approval (seller action)
+  // O núcleo da aprovação é uma RPC: pedido, status e histórico precisam
+  // confirmar juntos. Notificação é deliberadamente posterior até a outbox
+  // transacional estar integrada; uma falha dela fica visível ao operador.
   const requestApproval = useCallback(async (
     quoteId: string,
     requestedPercent: number,
@@ -50,105 +52,84 @@ export function useDiscountApproval() {
   ): Promise<boolean> => {
     if (!user) return false;
     try {
-      const { error } = await supabase
-        // rls-allow: fluxo de aprovação admin/seller; RLS filtra por papel
-        .from("discount_approval_requests")
-        .insert({
-          quote_id: quoteId,
-          seller_id: user.id,
-          requested_discount_percent: requestedPercent,
-          max_allowed_percent: maxAllowedPercent,
-          seller_notes: sellerNotes || null,
-        });
-      if (error) {
-        await logRlsDenial(error, {
+      const { data: quote, error: quoteError } = await supabase
+        .from("quotes")
+        .select("id, row_version")
+        .eq("id", quoteId)
+        .single();
+      if (quoteError) throw quoteError;
+
+      const { data: result, error } = await supabase.rpc("request_discount_approval_atomic", {
+        p_quote_id: quoteId,
+        p_expected_quote_row_version: quote.row_version,
+        p_requested_discount_percent: requestedPercent,
+        p_seller_notes: sellerNotes || null,
+      });
+      if (error || !result || result.length !== 1) {
+        if (error) await logRlsDenial(error, {
           table: "discount_approval_requests", op: "INSERT",
           endpoint: "useDiscountApproval.requestApproval",
           targetId: quoteId,
           targetSellerId: user.id,
-          policyHint: "dar_insert_scope",
+          policyHint: "request_discount_approval_atomic",
           querySummary: `requestedPct=${requestedPercent}`,
         });
-        throw error;
+        throw error ?? new Error("A solicitação de desconto não foi confirmada.");
       }
 
-      // Set quote status to pending_approval so UI shows correct state
-      await supabase
-        // rls-allow: fluxo de aprovação admin/seller; RLS filtra por papel
-        .from("quotes")
-        .update({ status: "pending_approval" })
-        .eq("id", quoteId);
+      const approval = result[0];
+      if (!approval) throw new Error("A solicitação de desconto não retornou confirmação.");
+      const authoritativeLimit = Number(approval.max_allowed_percent);
+      const markup = Number(approval.negotiation_markup_percent ?? 0);
+      try {
+        if (markup > 0) {
+          const { error: auditError } = await supabase.from("admin_audit_log").insert({
+            user_id: user.id,
+            action: "quote_negotiation_markup_applied",
+            resource_type: "quote",
+            resource_id: quoteId,
+            details: {
+              negotiation_markup_percent: markup,
+              real_discount_percent: approval.real_discount_percent,
+              max_allowed_percent: authoritativeLimit,
+              request_id: approval.request_id,
+              context: "discount_approval_request",
+            },
+          });
+          if (auditError) throw auditError;
+        }
 
-      // Buscar contexto do orçamento (markup + aparente) para auditoria e história
-      const { data: quoteCtx } = await supabase
-        // rls-allow: fluxo de aprovação admin/seller; RLS filtra por papel
-        .from("quotes")
-        .select("discount_percent, negotiation_markup_percent, real_discount_percent")
-        .eq("id", quoteId)
-        .maybeSingle();
-      const markup = Number(quoteCtx?.negotiation_markup_percent ?? 0);
-      const apparent = Number(quoteCtx?.discount_percent ?? 0);
-
-      // Log in quote history (incluindo flag de markup)
-      await supabase.from("quote_history").insert({
-        quote_id: quoteId,
-        user_id: user.id,
-        action: "discount_approval_requested",
-        description: markup > 0
-          ? `Solicitação de desconto REAL ${requestedPercent.toFixed(2)}% (aparente ${apparent.toFixed(1)}% com markup +${markup.toFixed(1)}%, limite ${maxAllowedPercent}%)`
-          : `Solicitação de desconto de ${requestedPercent}% (limite: ${maxAllowedPercent}%)`,
-        field_changed: "discount",
-        new_value: `${requestedPercent}%`,
-        metadata: {
-          seller_notes: sellerNotes || null,
-          apparent_discount_percent: apparent,
-          real_discount_percent: requestedPercent,
-          negotiation_markup_percent: markup,
-        },
-      });
-
-      // Audit trail dedicado quando há markup (visibilidade admin)
-      if (markup > 0) {
-        await supabase.from("admin_audit_log").insert({
-          user_id: user.id,
-          action: "quote_negotiation_markup_applied",
-          resource_type: "quote",
-          resource_id: quoteId,
-          details: {
-            negotiation_markup_percent: markup,
-            apparent_discount_percent: apparent,
-            real_discount_percent: requestedPercent,
-            max_allowed_percent: maxAllowedPercent,
-            context: "discount_approval_request",
-          },
-        });
-      }
-
-      // Notify all admins
-      const { data: adminRoles } = await supabase
-        .from("user_roles")
-        .select("user_id")
-        .eq("role", "admin");
-      if (adminRoles && adminRoles.length > 0) {
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("full_name")
-          .eq("user_id", user.id)
-          .maybeSingle();
-        const sellerName = profile?.full_name || "Vendedor";
-        const msg = markup > 0
-          ? `${sellerName} solicitou desconto real de ${requestedPercent.toFixed(2)}% (aparente ${apparent.toFixed(1)}% com markup +${markup.toFixed(1)}%, limite ${maxAllowedPercent}%)`
-          : `${sellerName} solicitou ${requestedPercent.toFixed(1)}% de desconto (limite: ${maxAllowedPercent}%)`;
-        await supabase.from("workspace_notifications").insert(
-          adminRoles.map(a => ({
-            user_id: a.user_id,
-            title: "Solicitação de desconto",
-            message: msg,
-            type: "warning",
-            category: "discount",
-            action_url: "/admin/usuarios?tab=discounts",
-          }))
-        );
+        const { data: adminRoles, error: rolesError } = await supabase
+          .from("user_roles")
+          .select("user_id")
+          .eq("role", "admin");
+        if (rolesError) throw rolesError;
+        if (adminRoles?.length) {
+          const { data: profile, error: profileError } = await supabase
+            .from("profiles")
+            .select("full_name")
+            .eq("user_id", user.id)
+            .maybeSingle();
+          if (profileError) throw profileError;
+          const sellerName = profile?.full_name || "Vendedor";
+          const message = markup > 0
+            ? `${sellerName} solicitou desconto real de ${requestedPercent.toFixed(2)}% (markup +${markup.toFixed(1)}%, limite ${authoritativeLimit}%).`
+            : `${sellerName} solicitou ${requestedPercent.toFixed(1)}% de desconto (limite ${authoritativeLimit}%).`;
+          const { error: notificationError } = await supabase.from("workspace_notifications").insert(
+            adminRoles.map((admin) => ({
+              user_id: admin.user_id,
+              title: "Solicitação de desconto",
+              message,
+              type: "warning",
+              category: "discount",
+              action_url: "/admin/usuarios?tab=discounts",
+            })),
+          );
+          if (notificationError) throw notificationError;
+        }
+      } catch (notificationError) {
+        console.error("A solicitação foi registrada, mas a notificação falhou:", notificationError);
+        toast.warning("Solicitação registrada, mas a notificação precisa ser reenviada.");
       }
 
       toast.success("Solicitação de aprovação enviada ao admin!");
@@ -160,7 +141,6 @@ export function useDiscountApproval() {
     }
   }, [user]);
 
-  // Respond to approval (admin action)
   const respondToApproval = useCallback(async (
     requestId: string,
     approved: boolean,
@@ -168,74 +148,54 @@ export function useDiscountApproval() {
   ): Promise<boolean> => {
     if (!user) return false;
     try {
-      const { data: request, error: updateError } = await supabase
-        // rls-allow: fluxo de aprovação admin/seller; RLS filtra por papel
+      const { data: request, error: requestError } = await supabase
         .from("discount_approval_requests")
-        .update({
-          status: approved ? "approved" : "rejected",
-          admin_id: user.id,
-          admin_notes: adminNotes || null,
-          responded_at: new Date().toISOString(),
-        })
+        .select("id, quote_id")
         .eq("id", requestId)
-        .select()
         .single();
-      if (updateError) {
-        await logRlsDenial(updateError, {
+      if (requestError) throw requestError;
+      const { data: quote, error: quoteError } = await supabase
+        .from("quotes")
+        .select("id, row_version")
+        .eq("id", request.quote_id)
+        .single();
+      if (quoteError) throw quoteError;
+
+      const { data: result, error } = await supabase.rpc("respond_discount_approval_atomic", {
+        p_request_id: requestId,
+        p_expected_quote_row_version: quote.row_version,
+        p_approved: approved,
+        p_admin_notes: adminNotes || null,
+      });
+      if (error || !result || result.length !== 1) {
+        if (error) await logRlsDenial(error, {
           table: "discount_approval_requests", op: "UPDATE",
           endpoint: "useDiscountApproval.respondToApproval",
           targetId: requestId,
-          policyHint: "dar_update_scope",
+          policyHint: "respond_discount_approval_atomic",
           querySummary: `decision=${approved ? "approved" : "rejected"}`,
         });
-        throw updateError;
+        throw error ?? new Error("A decisão de desconto não foi confirmada.");
       }
 
-      const typedReq = request as DiscountApprovalRequest;
-
-      // Update quote status: approved → pending (ready to send), rejected → draft (needs adjustment)
-      const newStatus = approved ? "pending" : "draft";
-      const [quoteUpdateResult, historyResult] = await Promise.all([
-        supabase
-          // rls-allow: fluxo de aprovação admin/seller; RLS filtra por papel
-          .from("quotes")
-          .update({ status: newStatus })
-          .eq("id", typedReq.quote_id),
-        // Log in quote history for auditability
-        supabase
-          .from("quote_history")
-          .insert({
-            quote_id: typedReq.quote_id,
-            user_id: user.id,
-            action: approved ? "discount_approved" : "discount_rejected",
-            description: approved
-              ? `Desconto de ${typedReq.requested_discount_percent}% aprovado pelo admin`
-              : `Desconto de ${typedReq.requested_discount_percent}% rejeitado pelo admin`,
-            field_changed: "discount",
-            old_value: `${typedReq.max_allowed_percent}%`,
-            new_value: `${typedReq.requested_discount_percent}%`,
-            metadata: { admin_notes: adminNotes || null, status: approved ? "approved" : "rejected" },
-          }),
-      ]);
-
-      if (quoteUpdateResult.error) {
-        console.error("Failed to update quote status:", quoteUpdateResult.error);
+      const decision = result[0];
+      if (!decision) throw new Error("A decisão de desconto não retornou confirmação.");
+      try {
+        const { error: notificationError } = await supabase.from("workspace_notifications").insert({
+          user_id: decision.seller_id,
+          title: approved ? "Desconto aprovado ✅" : "Desconto rejeitado ❌",
+          message: approved
+            ? `Seu desconto de ${decision.requested_discount_percent}% foi aprovado. O orçamento está pronto para envio.`
+            : `Seu desconto de ${decision.requested_discount_percent}% foi rejeitado.${adminNotes ? ` Motivo: ${adminNotes}` : " Ajuste o desconto e tente novamente."}`,
+          type: approved ? "success" : "error",
+          category: "discount",
+          action_url: `/orcamentos/${decision.quote_id}`,
+        });
+        if (notificationError) throw notificationError;
+      } catch (notificationError) {
+        console.error("A decisão foi registrada, mas a notificação falhou:", notificationError);
+        toast.warning("Decisão registrada, mas a notificação precisa ser reenviada.");
       }
-      if (historyResult.error) {
-        console.error("Failed to log quote history:", historyResult.error);
-      }
-
-      // Notify the seller
-      await supabase.from("workspace_notifications").insert({
-        user_id: typedReq.seller_id,
-        title: approved ? "Desconto aprovado ✅" : "Desconto rejeitado ❌",
-        message: approved
-          ? `Seu desconto de ${typedReq.requested_discount_percent}% foi aprovado. O orçamento está pronto para envio.`
-          : `Seu desconto de ${typedReq.requested_discount_percent}% foi rejeitado.${adminNotes ? ` Motivo: ${adminNotes}` : " Ajuste o desconto e tente novamente."}`,
-        type: approved ? "success" : "error",
-        category: "discount",
-        action_url: `/orcamentos/${typedReq.quote_id}`,
-      });
 
       toast.success(approved ? "Desconto aprovado!" : "Desconto rejeitado");
       return true;

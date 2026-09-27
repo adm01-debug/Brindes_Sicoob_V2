@@ -331,7 +331,10 @@ export function useQuoteBuilderState() {
       client_id: clientId || undefined, client_name: contactInfo?.name || undefined,
       client_company: companyInfo?.name || undefined, client_cnpj: companyInfo?.cnpj || undefined,
       client_email: contactInfo?.email || undefined, client_phone: contactInfo?.phone || undefined,
-      status: finalStatus, 
+      // A solicitação de desconto é concluída pela RPC após este salvamento.
+      // Persistir `pending_approval` antes dela deixava o orçamento sem pedido
+      // correspondente caso a segunda chamada falhasse.
+      status: finalStatus === "pending_approval" ? "pending" : finalStatus,
       tags: tags,
       discount_percent: discountType === "percent" ? discountValue : 0,
       discount_amount: discountType === "amount" ? discountValue : 0,

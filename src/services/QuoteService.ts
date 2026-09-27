@@ -350,7 +350,7 @@ export class QuoteService {
       ...(params.metadata || {})
     };
 
-    await supabase.from("quote_history").insert({
+    const { error } = await supabase.from("quote_history").insert({
       quote_id: params.quoteId,
       user_id: params.userId,
       action: params.action,
@@ -360,6 +360,10 @@ export class QuoteService {
       new_value: params.newValue || null,
       metadata: clientMetadata as Json,
     });
+    if (error) {
+      logger.error("Erro ao registrar histórico do orçamento:", error);
+      throw error;
+    }
   }
 
   static async listToConsolidate(singularId: string) {
