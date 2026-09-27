@@ -13,7 +13,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useRBAC } from "@/hooks/useRBAC";
-import { useQuotes } from "@/hooks/quotes/useQuotes";
+import { useDiscountApproval } from "@/hooks/useDiscountApproval";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
@@ -27,7 +27,7 @@ interface Props {
 
 export function QuoteManagerApprovalBanner({ quoteId, status, realDiscountPercent, maxDiscountPercent, onActionComplete }: Props) {
   const { isSupervisorOrAbove } = useRBAC();
-  const { updateQuoteStatus, logQuoteHistory } = useQuotes();
+  const { getApprovalStatus, respondToApproval } = useDiscountApproval();
   const [isProcessing, setIsProcessing] = useState(false);
   const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
   const [notes, setNotes] = useState("");
@@ -38,11 +38,15 @@ export function QuoteManagerApprovalBanner({ quoteId, status, realDiscountPercen
   if (!isPending) return null;
 
   const handleApprove = async () => {
+    if (!canApprove) {
+      toast.error("Você não possui alçada para responder esta solicitação.");
+      return;
+    }
     setIsProcessing(true);
     try {
-      const ok = await updateQuoteStatus(quoteId, "pending"); // Volta para pendente (pronto para enviar) ou aprovado interno
+      const request = await getApprovalStatus(quoteId);
+      const ok = request ? await respondToApproval(request.id, true) : false;
       if (ok) {
-        await logQuoteHistory(quoteId, "approved", "Desconto aprovado pelo gestor");
         toast.success("Desconto aprovado! O orçamento agora pode ser enviado ao cliente.");
         onActionComplete?.();
       }
@@ -52,6 +56,10 @@ export function QuoteManagerApprovalBanner({ quoteId, status, realDiscountPercen
   };
 
   const handleReject = async () => {
+    if (!canApprove) {
+      toast.error("Você não possui alçada para responder esta solicitação.");
+      return;
+    }
     if (!notes.trim()) {
       toast.error("Por favor, informe o motivo da reprovação");
       return;
@@ -59,9 +67,9 @@ export function QuoteManagerApprovalBanner({ quoteId, status, realDiscountPercen
 
     setIsProcessing(true);
     try {
-      const ok = await updateQuoteStatus(quoteId, "draft", notes);
+      const request = await getApprovalStatus(quoteId);
+      const ok = request ? await respondToApproval(request.id, false, notes) : false;
       if (ok) {
-        await logQuoteHistory(quoteId, "rejected", "Desconto reprovado pelo gestor", { notes });
         toast.success("Orçamento devolvido como rascunho para ajuste");
         setRejectDialogOpen(false);
         onActionComplete?.();
@@ -102,7 +110,7 @@ export function QuoteManagerApprovalBanner({ quoteId, status, realDiscountPercen
             size="sm" 
             className="h-10 px-4 gap-2 border-amber-300 text-amber-700 hover:bg-amber-100"
             onClick={() => { setNotes(""); setRejectDialogOpen(true); }}
-            disabled={isProcessing}
+            disabled={isProcessing || !canApprove}
           >
             <XCircle className="h-4 w-4" />
             Reprovar
@@ -111,7 +119,7 @@ export function QuoteManagerApprovalBanner({ quoteId, status, realDiscountPercen
             size="sm" 
             className="h-10 px-6 gap-2 bg-amber-600 hover:bg-amber-700 text-white shadow-md transition-all active:scale-95"
             onClick={handleApprove}
-            disabled={isProcessing}
+            disabled={isProcessing || !canApprove}
           >
             {isProcessing ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
             Aprovar Desconto
@@ -148,7 +156,7 @@ export function QuoteManagerApprovalBanner({ quoteId, status, realDiscountPercen
               variant="destructive" 
               className="gap-2"
               onClick={handleReject}
-              disabled={isProcessing || !notes.trim()}
+              disabled={isProcessing || !notes.trim() || !canApprove}
             >
               {isProcessing ? <Loader2 className="h-4 w-4 animate-spin" /> : <XCircle className="h-4 w-4" />}
               Confirmar Reprovação

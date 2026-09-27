@@ -10379,6 +10379,18 @@ export type Database = {
           status: string
         }[]
       }
+      append_quote_history_note: {
+        Args: {
+          p_action: string
+          p_description: string
+          p_field_changed?: string | null
+          p_metadata?: Json
+          p_new_value?: string | null
+          p_old_value?: string | null
+          p_quote_id: string
+        }
+        Returns: string
+      }
       request_discount_approval_atomic: {
         Args: {
           p_expected_quote_row_version: number

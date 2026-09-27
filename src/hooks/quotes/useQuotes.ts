@@ -93,12 +93,15 @@ export function useQuotes() {
   const updateQuoteStatus = async (quoteId: string, status: Quote["status"], notes?: string) => {
     if (!user) return false;
     
-    // Permission check for status transitions
-    const isRestrictedTransition = ['approved', 'rejected', 'approved_singular', 'rejected_singular'].includes(status);
-    
-    // Check if transition is to one of the final/manager states
-    if (isRestrictedTransition && !isSupervisorOrAbove) {
-      toast.error("Apenas supervisores podem aprovar ou rejeitar orçamentos");
+    const isSingularDecision = ['approved_singular', 'rejected_singular'].includes(status);
+    const isManagerDecision = ['approved', 'rejected'].includes(status);
+
+    if (isSingularDecision && !(isGestorCompras || isDev || isSupervisorOrAbove)) {
+      toast.error("Apenas o comprador autorizado da Singular pode decidir esta solicitação.");
+      return false;
+    }
+    if (isManagerDecision && !isSupervisorOrAbove) {
+      toast.error("Apenas supervisores podem aprovar ou rejeitar orçamentos.");
       return false;
     }
 

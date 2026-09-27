@@ -44,6 +44,7 @@ import { cn } from "@/lib/utils";
 import { Quote, QuoteItem } from "@/hooks/quotes/quoteTypes";
 import { useRBAC } from "@/hooks/useRBAC";
 import confetti from "canvas-confetti";
+import { toast } from "sonner";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useQuotesStockStatus } from "@/hooks/quote/useQuotesStockStatus";
 import {
@@ -139,6 +140,10 @@ export function QuoteKanbanBoard({
 
     const currentQuote = initialQuotes.find((q) => q.id === activeQuoteId);
     if (currentQuote && newStatus && currentQuote.status !== newStatus) {
+      if (newStatus === "approved") {
+        toast.error("A aprovação final exige o PDF assinado no detalhe do orçamento.");
+        return;
+      }
       const success = await updateQuoteStatus(activeQuoteId, newStatus as any);
       
       if (success && newStatus === 'approved') {
