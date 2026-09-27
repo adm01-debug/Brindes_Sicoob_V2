@@ -1,0 +1,61 @@
+{
+  "commit_codigo": "3094cbab22adfa012edcca5278680fa739df46ca",
+  "data": "2026-09-27",
+  "documentos_inventariados": 355,
+  "etapas_documentais": 250,
+  "benchmark": 32,
+  "requisitos_indexados": 1000,
+  "avaliacoes_reavaliadas": 82,
+  "avaliacoes_historicas_preservadas": 200,
+  "requisitos_individuais_reensaiados": 0,
+  "etapas_produto_formalmente_encerradas": 0,
+  "legenda": {
+    "L": "Implementado no escopo local/documental indicado",
+    "P": "Parcial — implementação ou integração incompleta",
+    "N": "Funcionalidade/artefato não localizado no escopo pesquisado",
+    "V": "Validação ou decisão externa/operacional pendente",
+    "H": "Evidência histórica; falta revalidação atual",
+    "R": "Premissa a substituir; não executar literalmente"
+  },
+  "contagens_documentais_nao_percentual_de_produto": {
+    "E": {
+      "P": 81,
+      "V": 16,
+      "N": 3
+    },
+    "R": {
+      "R": 1,
+      "P": 31,
+      "H": 10,
+      "V": 4,
+      "L": 3,
+      "N": 1
+    },
+    "C": {
+      "P": 26,
+      "R": 2,
+      "L": 10,
+      "H": 2,
+      "V": 6,
+      "N": 4
+    },
+    "T": {
+      "H": 2,
+      "P": 27,
+      "V": 1,
+      "L": 15,
+      "N": 5
+    },
+    "B": {
+      "L": 5,
+      "P": 23,
+      "V": 4
+    }
+  },
+  "limites": [
+    "Inventário não equivale a revisão semântica de cada documento.",
+    "200 diagnósticos são históricos; não foram convertidos em certificação atual.",
+    "As etapas se sobrepõem; não somar como percentual de produto concluído.",
+    "Sem novo teste integral, aplicação de migration ou publicação de Edge nesta revisão."
+  ]
+}

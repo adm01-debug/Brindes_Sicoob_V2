@@ -1,5 +1,7 @@
 # 📚 Documentação do Gifts Store
 
+> **Revisão atual do Sicoob (27/09/2026):** [planos, implementação e lacunas verificadas](execucao/revisao-do-plano-2026-09-27.md). O índice legado abaixo não certifica o estado atual; há referências históricas indisponíveis.
+
 > Sistema de Catálogo de Brindes Promocionais  
 > **Idioma:** Português do Brasil 🇧🇷  
 > **Última atualização:** 27/12/2025

@@ -1,5 +1,7 @@
 # Plano de implementação do portal Sicoob
 
+> **Adendo de 27/09/2026:** [revisão das 250 etapas e 32 melhorias](../execucao/revisao-do-plano-2026-09-27.md), com data de cada diagnóstico e sondas de falhas remanescentes.
+
 > **Revisão de 24/09/2026:** [matriz atual dos planos, lacunas e testes executados](../execucao/revisao-do-plano-2026-09-24.md). As marcações históricas abaixo não certificam conclusão integral; a revisão distingue código, implantação e homologação.
 
 

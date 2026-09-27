@@ -1,0 +1,39 @@
+{
+  "commit": "3094cbab22adfa012edcca5278680fa739df46ca",
+  "data": "2026-09-27",
+  "npm_ci": {
+    "exit_code": 0
+  },
+  "edge_authorization": {
+    "exit_code": 0,
+    "declaradas": 106,
+    "encontradas": 106,
+    "limite": "Estático"
+  },
+  "migration_immutability": {
+    "exit_code": 0
+  },
+  "runtime_refs": {
+    "exit_code": 1,
+    "cache": "2026-09-22T22:00:00Z",
+    "arquivos": 2055,
+    "referencias": 1080,
+    "ausentes": [
+      {
+        "arquivo": "src/hooks/quotes/useQuotes.ts",
+        "linha": 115,
+        "rpc": "bulk_update_quote_status_atomic"
+      },
+      {
+        "arquivo": "src/hooks/quotes/useQuotes.ts",
+        "linha": 184,
+        "rpc": "bulk_update_quote_status_atomic"
+      }
+    ]
+  },
+  "limites": [
+    "Não executados E2E autenticado, suíte integral ou novo build nesta rodada.",
+    "Sondas que reproduzem falhas não certificam o produto.",
+    "Nenhuma alteração funcional, de banco remoto ou implantação nesta revisão."
+  ]
+}

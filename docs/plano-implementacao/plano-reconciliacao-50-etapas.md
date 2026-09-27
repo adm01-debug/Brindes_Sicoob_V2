@@ -1,5 +1,7 @@
 # Plano de reconciliação e hardening do banco em 50 etapas
 
+> **Adendo de 27/09/2026:** [estado de implementação, evidências e limites](../execucao/revisao-do-plano-2026-09-27.md). Preservadas as marcações históricas abaixo.
+
 > **Revisão de 24/09/2026:** [matriz atual dos planos, lacunas e testes executados](../execucao/revisao-do-plano-2026-09-24.md). As marcações históricas abaixo não certificam conclusão integral; a revisão distingue código, implantação e homologação.
 
 

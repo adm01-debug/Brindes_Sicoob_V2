@@ -1,0 +1,805 @@
+{
+  "numTotalTestSuites": 30,
+  "numPassedTestSuites": 30,
+  "numFailedTestSuites": 0,
+  "numPendingTestSuites": 0,
+  "numTotalTests": 54,
+  "numPassedTests": 54,
+  "numFailedTests": 0,
+  "numPendingTests": 0,
+  "numTodoTests": 0,
+  "snapshot": {
+    "added": 0,
+    "failure": false,
+    "filesAdded": 0,
+    "filesRemoved": 0,
+    "filesRemovedList": [],
+    "filesUnmatched": 0,
+    "filesUpdated": 0,
+    "matched": 0,
+    "total": 0,
+    "unchecked": 0,
+    "uncheckedKeysByFile": [],
+    "unmatched": 0,
+    "updated": 0,
+    "didUpdate": false
+  },
+  "startTime": 1790522940201,
+  "success": true,
+  "testResults": [
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "QuoteConsolidationPanel — eventos registrados"
+          ],
+          "fullName": "QuoteConsolidationPanel — eventos registrados consulta e apresenta somente o evento persistido no histórico",
+          "status": "passed",
+          "title": "consulta e apresenta somente o evento persistido no histórico",
+          "duration": 173.06972700000006,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1790522941611,
+      "endTime": 1790522941784.0698,
+      "status": "passed",
+      "message": "",
+      "name": "tests/components/QuoteConsolidationPanel.history.test.tsx"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "QuoteHistoryTimeline"
+          ],
+          "fullName": "QuoteHistoryTimeline busca os nomes separadamente, sem depender de relação inexistente",
+          "status": "passed",
+          "title": "busca os nomes separadamente, sem depender de relação inexistente",
+          "duration": 41.8686009999999,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1790522941535,
+      "endTime": 1790522941576.8687,
+      "status": "passed",
+      "message": "",
+      "name": "tests/components/QuoteHistoryTimeline.test.tsx"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "DynamicTrustBadges"
+          ],
+          "fullName": "DynamicTrustBadges não apresenta confiança de fornecedor sem dados auditáveis",
+          "status": "passed",
+          "title": "não apresenta confiança de fornecedor sem dados auditáveis",
+          "duration": 15.66064300000005,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "DynamicTrustBadges"
+          ],
+          "fullName": "DynamicTrustBadges mantém os selos factuais do produto",
+          "status": "passed",
+          "title": "mantém os selos factuais do produto",
+          "duration": 21.07132899999999,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1790522941290,
+      "endTime": 1790522941327.0713,
+      "status": "passed",
+      "message": "",
+      "name": "tests/components/SocialProof.test.tsx"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "quoteConsolidationHelpers"
+          ],
+          "fullName": "quoteConsolidationHelpers agrega linhas repetidas da mesma origem sem perder quantidade ou valor",
+          "status": "passed",
+          "title": "agrega linhas repetidas da mesma origem sem perder quantidade ou valor",
+          "duration": 3.709447999999952,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "quoteConsolidationHelpers"
+          ],
+          "fullName": "quoteConsolidationHelpers não funde produtos sem SKU quando os IDs são diferentes",
+          "status": "passed",
+          "title": "não funde produtos sem SKU quando os IDs são diferentes",
+          "duration": 0.45547800000008465,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "quoteConsolidationHelpers"
+          ],
+          "fullName": "quoteConsolidationHelpers escapa CSV e neutraliza fórmulas em campos textuais",
+          "status": "passed",
+          "title": "escapa CSV e neutraliza fórmulas em campos textuais",
+          "duration": 0.5454580000000533,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1790522941067,
+      "endTime": 1790522941071.5454,
+      "status": "passed",
+      "message": "",
+      "name": "tests/components/quoteConsolidationHelpers.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "useStockChartData"
+          ],
+          "fullName": "useStockChartData não cria histórico, fornecedores ou indicadores quando a fonte não retorna dados",
+          "status": "passed",
+          "title": "não cria histórico, fornecedores ou indicadores quando a fonte não retorna dados",
+          "duration": 9.963615000000118,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "useStockChartData"
+          ],
+          "fullName": "useStockChartData mantém o histórico retornado pela fonte externa",
+          "status": "passed",
+          "title": "mantém o histórico retornado pela fonte externa",
+          "duration": 3.0019109999998363,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1790522941546,
+      "endTime": 1790522941559.002,
+      "status": "passed",
+      "message": "",
+      "name": "tests/components/useStockChartData.real-data.test.tsx"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "quoteHelpers — persistência do price_confirmed_at (save)"
+          ],
+          "fullName": "quoteHelpers — persistência do price_confirmed_at (save) inclui price_confirmed_at no payload quando o vendedor confirmou",
+          "status": "passed",
+          "title": "inclui price_confirmed_at no payload quando o vendedor confirmou",
+          "duration": 1.0830060000000685,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "quoteHelpers — persistência do price_confirmed_at (save)"
+          ],
+          "fullName": "quoteHelpers — persistência do price_confirmed_at (save) envia null quando o vendedor ainda NÃO confirmou",
+          "status": "passed",
+          "title": "envia null quando o vendedor ainda NÃO confirmou",
+          "duration": 0.2550650000000587,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "quoteHelpers — persistência do price_confirmed_at (save)"
+          ],
+          "fullName": "quoteHelpers — persistência do price_confirmed_at (save) normaliza undefined → null (defensivo contra serialização)",
+          "status": "passed",
+          "title": "normaliza undefined → null (defensivo contra serialização)",
+          "duration": 0.18453099999999267,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "quoteHelpers — persistência do price_confirmed_at (save)"
+          ],
+          "fullName": "quoteHelpers — persistência do price_confirmed_at (save) preserva o estado por item em uma lista mista",
+          "status": "passed",
+          "title": "preserva o estado por item em uma lista mista",
+          "duration": 0.5581620000000385,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "quoteHelpers — vínculo da variante do catálogo"
+          ],
+          "fullName": "quoteHelpers — vínculo da variante do catálogo persiste a variante selecionada para validar estoque e sincronizar o Bitrix",
+          "status": "passed",
+          "title": "persiste a variante selecionada para validar estoque e sincronizar o Bitrix",
+          "duration": 0.23390500000004977,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "quoteHelpers — vínculo da variante do catálogo"
+          ],
+          "fullName": "quoteHelpers — vínculo da variante do catálogo envia null para produto sem variação selecionada",
+          "status": "passed",
+          "title": "envia null para produto sem variação selecionada",
+          "duration": 0.11174400000004425,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "quoteHelpers — load (espelha o mapeamento do fetchQuote)"
+          ],
+          "fullName": "quoteHelpers — load (espelha o mapeamento do fetchQuote) preserva price_confirmed_at vindo do banco",
+          "status": "passed",
+          "title": "preserva price_confirmed_at vindo do banco",
+          "duration": 0.1372879999998986,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "quoteHelpers — load (espelha o mapeamento do fetchQuote)"
+          ],
+          "fullName": "quoteHelpers — load (espelha o mapeamento do fetchQuote) preserva price_confirmed_at = null quando o item nunca foi confirmado",
+          "status": "passed",
+          "title": "preserva price_confirmed_at = null quando o item nunca foi confirmado",
+          "duration": 0.08185300000002371,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "quoteHelpers — load (espelha o mapeamento do fetchQuote)"
+          ],
+          "fullName": "quoteHelpers — load (espelha o mapeamento do fetchQuote) round-trip: save → load preserva o timestamp exato",
+          "status": "passed",
+          "title": "round-trip: save → load preserva o timestamp exato",
+          "duration": 0.19313599999998132,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1790522941042,
+      "endTime": 1790522941045.193,
+      "status": "passed",
+      "message": "",
+      "name": "tests/hooks/quoteHelpers.priceConfirmed.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "quoteStatusMutationGuards"
+          ],
+          "fullName": "quoteStatusMutationGuards recusa atualização sem linha retornada",
+          "status": "passed",
+          "title": "recusa atualização sem linha retornada",
+          "duration": 1.610636999999997,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "quoteStatusMutationGuards"
+          ],
+          "fullName": "quoteStatusMutationGuards preserva a falha retornada pelo banco",
+          "status": "passed",
+          "title": "preserva a falha retornada pelo banco",
+          "duration": 0.4369460000000345,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "quoteStatusMutationGuards"
+          ],
+          "fullName": "quoteStatusMutationGuards recusa lote parcial antes do registro do histórico",
+          "status": "passed",
+          "title": "recusa lote parcial antes do registro do histórico",
+          "duration": 0.7299250000000939,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "quoteStatusMutationGuards"
+          ],
+          "fullName": "quoteStatusMutationGuards aceita somente o número exato de linhas",
+          "status": "passed",
+          "title": "aceita somente o número exato de linhas",
+          "duration": 0.4118060000000696,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1790522941048,
+      "endTime": 1790522941051.4119,
+      "status": "passed",
+      "message": "",
+      "name": "tests/hooks/quoteStatusMutationGuards.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "useAutoSave"
+          ],
+          "fullName": "useAutoSave persiste apenas no namespace informado, preservando rascunhos simultâneos",
+          "status": "passed",
+          "title": "persiste apenas no namespace informado, preservando rascunhos simultâneos",
+          "duration": 17.76283699999999,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "useAutoSave"
+          ],
+          "fullName": "useAutoSave expõe falha de persistência para a interface e permite nova tentativa",
+          "status": "passed",
+          "title": "expõe falha de persistência para a interface e permite nova tentativa",
+          "duration": 6.529051999999979,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1790522941061,
+      "endTime": 1790522941085.529,
+      "status": "passed",
+      "message": "",
+      "name": "tests/hooks/useAutoSave.test.tsx"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "calculateKitStockForecast"
+          ],
+          "fullName": "calculateKitStockForecast confirma fechamento imediato somente quando o saldo canônico cobre toda a demanda",
+          "status": "passed",
+          "title": "confirma fechamento imediato somente quando o saldo canônico cobre toda a demanda",
+          "duration": 1.9592660000000706,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "calculateKitStockForecast"
+          ],
+          "fullName": "calculateKitStockForecast agrega linhas repetidas e só libera uma data após a reposição cobrir o déficit inteiro",
+          "status": "passed",
+          "title": "agrega linhas repetidas e só libera uma data após a reposição cobrir o déficit inteiro",
+          "duration": 0.862822000000051,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "calculateKitStockForecast"
+          ],
+          "fullName": "calculateKitStockForecast não inventa data de fechamento quando as entradas futuras não cobrem a quantidade necessária",
+          "status": "passed",
+          "title": "não inventa data de fechamento quando as entradas futuras não cobrem a quantidade necessária",
+          "duration": 0.35421199999996134,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "calculateKitStockForecast"
+          ],
+          "fullName": "calculateKitStockForecast respeita a variante escolhida e não usa estoque de outro SKU como cobertura",
+          "status": "passed",
+          "title": "respeita a variante escolhida e não usa estoque de outro SKU como cobertura",
+          "duration": 0.2307090000001608,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1790522941308,
+      "endTime": 1790522941311.3542,
+      "status": "passed",
+      "message": "",
+      "name": "tests/hooks/useKitStockForecast.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "calculateQuoteStockIssues"
+          ],
+          "fullName": "calculateQuoteStockIssues acumula a demanda de linhas repetidas do mesmo produto",
+          "status": "passed",
+          "title": "acumula a demanda de linhas repetidas do mesmo produto",
+          "duration": 1.3908549999999877,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "calculateQuoteStockIssues"
+          ],
+          "fullName": "calculateQuoteStockIssues valida a variante escolhida sem usar estoque de outras variantes",
+          "status": "passed",
+          "title": "valida a variante escolhida sem usar estoque de outras variantes",
+          "duration": 0.2598360000000639,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "calculateQuoteStockIssues"
+          ],
+          "fullName": "calculateQuoteStockIssues prioriza a quantidade atual da fonte mais recente",
+          "status": "passed",
+          "title": "prioriza a quantidade atual da fonte mais recente",
+          "duration": 0.21693300000004,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "calculateQuoteStockIssues"
+          ],
+          "fullName": "calculateQuoteStockIssues marca variante selecionada que não foi retornada pelo catálogo",
+          "status": "passed",
+          "title": "marca variante selecionada que não foi retornada pelo catálogo",
+          "duration": 0.15092100000003938,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "calculateQuoteStockIssues"
+          ],
+          "fullName": "calculateQuoteStockIssues ignora itens manuais sem produto de catálogo",
+          "status": "passed",
+          "title": "ignora itens manuais sem produto de catálogo",
+          "duration": 0.1346009999999751,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1790522941307,
+      "endTime": 1790522941309.217,
+      "status": "passed",
+      "message": "",
+      "name": "tests/hooks/useQuotesStockStatus.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "sicoobFulfillmentService"
+          ],
+          "fullName": "sicoobFulfillmentService envia estado esperado e caminho privado ao RPC transacional",
+          "status": "passed",
+          "title": "envia estado esperado e caminho privado ao RPC transacional",
+          "duration": 3.5556199999999762,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "sicoobFulfillmentService"
+          ],
+          "fullName": "sicoobFulfillmentService não trata retorno inválido como atualização bem-sucedida: null",
+          "status": "passed",
+          "title": "não trata retorno inválido como atualização bem-sucedida: null",
+          "duration": 2.559033999999997,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "sicoobFulfillmentService"
+          ],
+          "fullName": "sicoobFulfillmentService não trata retorno inválido como atualização bem-sucedida: {}",
+          "status": "passed",
+          "title": "não trata retorno inválido como atualização bem-sucedida: {}",
+          "duration": 0.7465680000000248,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "sicoobFulfillmentService"
+          ],
+          "fullName": "sicoobFulfillmentService não trata retorno inválido como atualização bem-sucedida: undefined",
+          "status": "passed",
+          "title": "não trata retorno inválido como atualização bem-sucedida: undefined",
+          "duration": 0.9749349999999595,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "sicoobFulfillmentService"
+          ],
+          "fullName": "sicoobFulfillmentService não trata retorno inválido como atualização bem-sucedida: {\"id\":\"ship-1\",\"order_id\":\"order-1\",\"status\":\"in_transit\"}",
+          "status": "passed",
+          "title": "não trata retorno inválido como atualização bem-sucedida: {\"id\":\"ship-1\",\"order_id\":\"order-1\",\"status\":\"in_transit\"}",
+          "duration": 0.28906000000006316,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "sicoobFulfillmentService"
+          ],
+          "fullName": "sicoobFulfillmentService aceita uma remessa completa retornada pelo contrato canônico",
+          "status": "passed",
+          "title": "aceita uma remessa completa retornada pelo contrato canônico",
+          "duration": 0.44953099999997903,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "sicoobFulfillmentService"
+          ],
+          "fullName": "sicoobFulfillmentService consulta a remessa pelo RPC e aceita ausência de registro",
+          "status": "passed",
+          "title": "consulta a remessa pelo RPC e aceita ausência de registro",
+          "duration": 0.7941640000000234,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "sicoobFulfillmentService"
+          ],
+          "fullName": "sicoobFulfillmentService propaga erros das RPCs de consulta e atualização",
+          "status": "passed",
+          "title": "propaga erros das RPCs de consulta e atualização",
+          "duration": 0.5409180000000333,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1790522941072,
+      "endTime": 1790522941082.541,
+      "status": "passed",
+      "message": "",
+      "name": "tests/services/sicoobFulfillmentService.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "listSicoobLogisticsTracking"
+          ],
+          "fullName": "listSicoobLogisticsTracking não consulta remessas quando não há pedido no fluxo logístico",
+          "status": "passed",
+          "title": "não consulta remessas quando não há pedido no fluxo logístico",
+          "duration": 6.644919000000073,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "listSicoobLogisticsTracking"
+          ],
+          "fullName": "listSicoobLogisticsTracking combina pedidos e remessas canônicas sem criar dados de demonstração",
+          "status": "passed",
+          "title": "combina pedidos e remessas canônicas sem criar dados de demonstração",
+          "duration": 4.002870999999914,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "listSicoobLogisticsTracking"
+          ],
+          "fullName": "listSicoobLogisticsTracking propaga falhas da fonte de remessas para a tela exibir estado de erro",
+          "status": "passed",
+          "title": "propaga falhas da fonte de remessas para a tela exibir estado de erro",
+          "duration": 0.716446000000019,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1790522941062,
+      "endTime": 1790522941073.7166,
+      "status": "passed",
+      "message": "",
+      "name": "tests/services/sicoobLogisticsReportService.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "controles operacionais de pedidos"
+          ],
+          "fullName": "controles operacionais de pedidos não oferece anexar NF para quem não gerencia o pedido",
+          "status": "passed",
+          "title": "não oferece anexar NF para quem não gerencia o pedido",
+          "duration": 20.064701000000014,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "controles operacionais de pedidos"
+          ],
+          "fullName": "controles operacionais de pedidos bloqueia rastreio e comprovante mesmo se um evento for disparado fora da interface",
+          "status": "passed",
+          "title": "bloqueia rastreio e comprovante mesmo se um evento for disparado fora da interface",
+          "duration": 76.13323199999991,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1790522941253,
+      "endTime": 1790522941350.1333,
+      "status": "passed",
+      "message": "",
+      "name": "tests/components/sicoob/OrderOperationalTabs.test.tsx"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "canManageSicoobOrderFulfillment"
+          ],
+          "fullName": "canManageSicoobOrderFulfillment libera o papel técnico dev",
+          "status": "passed",
+          "title": "libera o papel técnico dev",
+          "duration": 3.336985000000027,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "canManageSicoobOrderFulfillment"
+          ],
+          "fullName": "canManageSicoobOrderFulfillment libera o papel técnico supervisor",
+          "status": "passed",
+          "title": "libera o papel técnico supervisor",
+          "duration": 0.7064149999999927,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "canManageSicoobOrderFulfillment"
+          ],
+          "fullName": "canManageSicoobOrderFulfillment libera gestor_compras somente na cooperativa do pedido",
+          "status": "passed",
+          "title": "libera gestor_compras somente na cooperativa do pedido",
+          "duration": 1.099525999999969,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "canManageSicoobOrderFulfillment"
+          ],
+          "fullName": "canManageSicoobOrderFulfillment libera comprador_singular somente na cooperativa do pedido",
+          "status": "passed",
+          "title": "libera comprador_singular somente na cooperativa do pedido",
+          "duration": 1.024291000000062,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "canManageSicoobOrderFulfillment"
+          ],
+          "fullName": "canManageSicoobOrderFulfillment libera gerente_pa somente no PA do pedido",
+          "status": "passed",
+          "title": "libera gerente_pa somente no PA do pedido",
+          "duration": 1.4393159999999625,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "canManageSicoobOrderFulfillment"
+          ],
+          "fullName": "canManageSicoobOrderFulfillment libera comprador_pac somente no PA do pedido",
+          "status": "passed",
+          "title": "libera comprador_pac somente no PA do pedido",
+          "duration": 0.3508150000000114,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "canManageSicoobOrderFulfillment"
+          ],
+          "fullName": "canManageSicoobOrderFulfillment libera o criador pelo user_id ou id do perfil, sem ampliar outros atores",
+          "status": "passed",
+          "title": "libera o criador pelo user_id ou id do perfil, sem ampliar outros atores",
+          "duration": 0.4133789999999635,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "canManageSicoobOrderFulfillment"
+          ],
+          "fullName": "canManageSicoobOrderFulfillment nega pedidos e papéis ausentes",
+          "status": "passed",
+          "title": "nega pedidos e papéis ausentes",
+          "duration": 1.1728219999999965,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1790522941061,
+      "endTime": 1790522941071.1729,
+      "status": "passed",
+      "message": "",
+      "name": "tests/lib/sicoob/order-permissions.test.ts"
+    }
+  ]
+}
