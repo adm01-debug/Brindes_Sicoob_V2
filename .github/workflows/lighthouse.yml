@@ -3,8 +3,13 @@ name: Lighthouse Performance Audit
 on:
   pull_request:
     branches: [main]
-  push:
-    branches: [main]
+    paths-ignore:
+      - 'docs/**'
+      - '*.md'
+      - '.github/CODEOWNERS'
+
+permissions:
+  contents: read
 
 concurrency:
   group: lighthouse-${{ github.workflow }}-${{ github.ref }}
@@ -13,21 +18,34 @@ concurrency:
 jobs:
   lighthouse:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
-      
+
       - uses: actions/setup-node@v4
         with:
           node-version: 24
           cache: 'npm'
-          
+
       - name: Install dependencies
-        run: npm ci
-        
+        run: npm ci --no-audit --no-fund
+
       - name: Build project
+        env:
+          VITE_SUPABASE_URL: http://127.0.0.1:59999
+          VITE_SUPABASE_PUBLISHABLE_KEY: chave-sintetica-apenas-para-build
         run: npm run build
-        
+
       - name: Run Lighthouse CI
         run: npx --yes @lhci/cli@0.13.0 autorun
         env:
           LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
+
+      - name: Upload Lighthouse reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lighthouse-reports
+          path: .lighthouseci/
+          if-no-files-found: warn
+          retention-days: 14

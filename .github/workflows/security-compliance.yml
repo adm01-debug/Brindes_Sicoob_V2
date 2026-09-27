@@ -2,14 +2,26 @@ name: Enterprise Compliance & Audit Reporting
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [main]
+    paths-ignore:
+      - 'docs/**'
+      - '*.md'
+      - '.github/CODEOWNERS'
   schedule:
-    - cron: '0 0 * * 0' # Weekly scan every Sunday
+    - cron: '0 0 * * 0'
   workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: compliance-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   compliance-audit:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
         with:
@@ -21,7 +33,10 @@ jobs:
           cache: npm
 
       - name: Instalar dependências reproduzíveis
-        run: npm ci
+        run: npm ci --no-audit --no-fund
+
+      - name: Preparar diretório de relatórios
+        run: mkdir -p reports
 
       - name: Database RLS Scan
         env:
@@ -57,12 +72,6 @@ jobs:
           node scripts/validate-audit-links.mjs
           node scripts/test-audit-scripts.mjs
 
-      - name: Generate PDF Report
-        run: |
-          # If a markdown-to-pdf tool was available, we would run it here. 
-          # For now we ensure the .md is clean and artifact-ready.
-          cp DOSSIA_AUDITORIA_ENTERPRISE_V5.md reports/dossier-v5.md
-
       - name: Generate Filtered Audit Exports
         env:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
@@ -75,10 +84,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: enterprise-compliance-v10
-          path: |
-            reports/
-            DOSSIA_AUDITORIA_ENTERPRISE_V5.md
-            ENTERPRISE_AUDIT_REPORT_V6.md
-            AUDIT_EXPORT_FILTERED.md
-            FINAL_ENTERPRISE_AUDIT_REPORT.md
+          path: reports/
+          if-no-files-found: warn
 

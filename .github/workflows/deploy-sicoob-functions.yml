@@ -16,6 +16,7 @@ jobs:
     if: inputs.confirmar == 'PUBLICAR'
     name: Publicar funções canônicas Sicoob
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     environment: construction
     env:
       SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
@@ -38,7 +39,6 @@ jobs:
         run: |
           set -euo pipefail
           for function_name in \
-            migrate-helper \
             sicoob-approval-reconciliation \
             sicoob-artwork-register \
             sicoob-document-ingest \
@@ -53,7 +53,6 @@ jobs:
           set -euo pipefail
           published_functions="$(supabase functions list --project-ref "$SUPABASE_PROJECT_ID" --output-format json)"
           for function_name in \
-            migrate-helper \
             sicoob-approval-reconciliation \
             sicoob-artwork-register \
             sicoob-document-ingest \

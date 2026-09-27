@@ -4,11 +4,12 @@ name: E2E (Playwright)
 # e autenticadas. Artefatos (HTML, screenshots, vídeos e traces) são publicados.
 
 on:
-  push:
-    branches: [main]
   pull_request:
     branches: [main]
   workflow_dispatch:
+
+permissions:
+  contents: read
 
 concurrency:
   group: e2e-${{ github.workflow }}-${{ github.ref }}
@@ -32,10 +33,12 @@ jobs:
       E2E_USER_PASSWORD: ${{ secrets.E2E_USER_PASSWORD }}
       E2E_ADMIN_EMAIL: ${{ secrets.E2E_ADMIN_EMAIL }}
       E2E_ADMIN_PASSWORD: ${{ secrets.E2E_ADMIN_PASSWORD }}
+      VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+      VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@v4
         with:
           node-version: '24'
           cache: 'npm'
@@ -52,7 +55,7 @@ jobs:
           fi
 
       - name: Cache Playwright browsers
-        uses: actions/cache@v5
+        uses: actions/cache@v4
         with:
           path: ~/.cache/ms-playwright
           key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
@@ -141,7 +144,7 @@ jobs:
 
       - name: Upload Playwright report do gate
         if: always()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v4
         with:
           name: playwright-report-smoke-gate
           path: playwright-report
@@ -149,7 +152,7 @@ jobs:
 
       - name: Upload smoke summary (markdown + json)
         if: always()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v4
         with:
           name: e2e-smoke-summary
           path: |
@@ -160,7 +163,7 @@ jobs:
 
       - name: Upload evidências do gate
         if: always()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v4
         with:
           name: e2e-evidence-smoke-gate
           path: |
@@ -169,19 +172,15 @@ jobs:
           retention-days: 7
 
   e2e-regression:
-    name: E2E regression — shard ${{ matrix.shard }}/4
+    name: E2E regression — shard ${{ matrix.shard }}/2
     needs: e2e
     if: needs.e2e.result == 'success'
     runs-on: ubuntu-latest
-    # A simulação local listou 954 casos de regressão exclusivos + o setup
-    # comum, em quatro partes de 239/239/238/238. Cada runner recebe dois
-    # workers, com margem suficiente para a parte mais lenta sem baixar a
-    # cobertura nem mascarar timeout por aumento artificial do limite.
     timeout-minutes: 25
     strategy:
       fail-fast: false
       matrix:
-        shard: [1, 2, 3, 4]
+        shard: [1, 2]
     env:
       CI: 'true'
       FORCE_COLOR: '0'
@@ -190,10 +189,12 @@ jobs:
       E2E_USER_PASSWORD: ${{ secrets.E2E_USER_PASSWORD }}
       E2E_ADMIN_EMAIL: ${{ secrets.E2E_ADMIN_EMAIL }}
       E2E_ADMIN_PASSWORD: ${{ secrets.E2E_ADMIN_PASSWORD }}
+      VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+      VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@v4
         with:
           node-version: '24'
           cache: 'npm'
@@ -202,7 +203,7 @@ jobs:
         run: npm ci --no-audit --no-fund
 
       - name: Cache Playwright browsers
-        uses: actions/cache@v5
+        uses: actions/cache@v4
         with:
           path: ~/.cache/ms-playwright
           key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
@@ -213,11 +214,11 @@ jobs:
 
       # SEM --max-failures: cada shard registra todas as falhas de sua parte.
       # O gate anterior já validou o smoke e a ausência de test.only.
-      - name: Run E2E regression (shard ${{ matrix.shard }}/4)
+      - name: Run E2E regression (shard ${{ matrix.shard }}/2)
         run: |
           npx playwright test \
             --grep-invert @smoke \
-            --shard=${{ matrix.shard }}/4 \
+            --shard=${{ matrix.shard }}/2 \
             --workers=2 \
             --pass-with-no-tests \
             --reporter=github,line,html,json,junit
@@ -235,14 +236,14 @@ jobs:
         if: always() && hashFiles('playwright-report/feature-summary.md') != ''
         run: |
           {
-            echo "## 🧪 E2E Feature Summary — shard ${{ matrix.shard }}/4"
+            echo "## 🧪 E2E Feature Summary — shard ${{ matrix.shard }}/2"
             echo ""
             cat playwright-report/feature-summary.md
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Upload Playwright report
         if: always()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v4
         with:
           name: playwright-report-shard-${{ matrix.shard }}
           path: playwright-report
@@ -250,7 +251,7 @@ jobs:
 
       - name: Upload feature summary (markdown)
         if: always()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v4
         with:
           name: e2e-feature-summary-shard-${{ matrix.shard }}
           path: playwright-report/feature-summary.md
@@ -259,7 +260,7 @@ jobs:
 
       - name: Upload evidence artifacts
         if: always()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v4
         with:
           name: e2e-evidence-shard-${{ matrix.shard }}
           path: |
@@ -270,5 +271,5 @@ jobs:
       - name: 🛑 Fail job se regression registrou falhas
         if: steps.e2e_run.outcome == 'failure'
         run: |
-          echo "::error title=Regression failed::Algumas specs do shard ${{ matrix.shard }}/4 falharam — veja o resumo acima e os artifacts do shard (HTML, screenshots, vídeos e trace)."
+          echo "::error title=Regression failed::Algumas specs do shard ${{ matrix.shard }}/2 falharam — veja o resumo acima e os artifacts do shard (HTML, screenshots, vídeos e trace)."
           exit 1

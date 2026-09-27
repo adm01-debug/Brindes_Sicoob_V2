@@ -25,7 +25,14 @@ jobs:
           cache: npm
 
       - name: Instalar dependências
-        run: npm ci
+        run: npm ci --no-audit --no-fund
+
+      - name: Verificar secret obrigatório
+        run: |
+          if [ -z "${{ secrets.SUPABASE_DB_URL }}" ]; then
+            echo "::error::Secret SUPABASE_DB_URL não configurado. Configure em Settings > Secrets and variables > Actions."
+            exit 1
+          fi
 
       - name: Comparar ledger remoto contra arquivos locais
         env:

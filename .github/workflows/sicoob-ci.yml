@@ -73,17 +73,25 @@ jobs:
         with:
           node-version: 24
           cache: npm
-      - run: npm ci
+      - run: npm ci --no-audit --no-fund
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+          restore-keys: playwright-${{ runner.os }}-
       - name: Instalar Chromium
         run: npx playwright install --with-deps chromium
-      - name: Iniciar servidor local sintético
+      - name: Build de produção sintético
         env:
           VITE_SUPABASE_URL: http://127.0.0.1:59999
           VITE_SUPABASE_PUBLISHABLE_KEY: chave-sintetica-apenas-para-qa
+        run: npm run build
+      - name: Iniciar servidor de preview
         run: |
-          npm run dev -- --host 127.0.0.1 --port 4178 > /tmp/portal-sicoob-vite.log 2>&1 &
-          for tentativa in {1..45}; do
-            if curl --fail --silent http://127.0.0.1:4178/login > /dev/null; then
+          npx vite preview --host 127.0.0.1 --port 4178 > /tmp/portal-sicoob-vite.log 2>&1 &
+          for i in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:4178/ > /dev/null; then
               exit 0
             fi
             sleep 1
