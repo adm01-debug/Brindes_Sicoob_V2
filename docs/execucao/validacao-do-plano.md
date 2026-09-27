@@ -30,7 +30,7 @@ A simulação antecedeu as alterações funcionais. Esta matriz registra falhas 
 | S13 | Dois pedidos disputam o último saldo de verba | E017, E018, E064 | Bloqueio de linha e débito único aprovados em PostgreSQL descartável | [Registro](evidencias/verba-atomica.json) |
 | S14 | Aprovação repetida após timeout da primeira resposta | E018, E064 | Confirmação repetida bloqueada sem segundo débito | [Registro](evidencias/verba-atomica.json) |
 | S15 | Preço ou quantidade muda durante a aprovação | E058, E059, E064 | Controle de versão recusa decisão sobre estado antigo | [Registro](evidencias/verba-atomica.json) |
-| S16 | Arte alterada depois de autorizada | E054, E065 | Exige aprovação da versão exata e bloqueio da produção | Pendente |
+| S16 | Arte alterada depois de autorizada | E054, E065 | Nova versão preserva a anterior, volta a `pending` e bloqueia produção até novo aceite; alteração após logística é recusada | [Registro](evidencias/financeiro-arte-sicoob.json) |
 | S17 | Arte aprovada sem despesa autorizada | E064, E065, E072 | Decisões independentes; pré-requisitos precisam coexistir | Pendente |
 | S18 | Cancelamento parcial ou repetido libera verba duas vezes | E017, E069 | Estorno único e repetição bloqueada no teste transacional local | [Registro](evidencias/verba-atomica.json) |
 | S19 | Verba ausente, negativa, de outro PA ou período encerrado | E017, E062 | Saldo insuficiente e escopo alheio bloqueados; períodos reais ainda dependem da política vigente | [Registro](evidencias/verba-atomica.json) |
@@ -39,7 +39,7 @@ A simulação antecedeu as alterações funcionais. Esta matriz registra falhas 
 | S22 | Recompra reutiliza preço ou estoque antigo | E073, E079 | Nova consulta e validade explícita; nenhuma reserva no catálogo mestre | Pendente |
 | S23 | Falha entre cabeçalho e itens deixa pedido incompleto | E059, E061 | Criação atômica, validação de totais e recuperação | Pendente |
 | S24 | Entrega em vários PAs apresenta divergência de quantidade | E056, E074, E076 | Soma distribuída, recebimento parcial e saldo por destino | Pendente |
-| S25 | Upload de arte tem tipo falso ou arquivo malformado | E053, E054, E086 | Validação no servidor e armazenamento com escopo | Pendente |
+| S25 | Upload de arte tem tipo falso ou arquivo malformado | E053, E054, E086 | Edge Function canônica inspeciona assinatura, fechamento e conteúdo ativo antes do hash e do registro | [Registro](evidencias/atomicidade-orcamento-e-inspecao-arte-20260927.md) |
 | S26 | Convite expirado ou vínculo removido mantém sessão | E016, E013 | Expiração e revogação precisam valer no servidor | Pendente |
 | S27 | Relatório sem dados apresenta confiança ou economia fixa | E009, E089 | Exibir ausência de medição; remover indicadores fabricados | Pendente |
 | S28 | Formulário falha com teclado, zoom ou leitor de tela | E027, E037, E081 | Demonstrações passaram axe; teclado, zoom e leitor de tela da jornada real permanecem pendentes | [Resultado visual](evidencias/visual/demo-resultado.json) |
