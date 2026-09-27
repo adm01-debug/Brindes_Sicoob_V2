@@ -79,6 +79,7 @@ import { OrderPilotApprovalsTab } from "@/components/sicoob/orders/OrderPilotApp
 import { OrderCommentsTab } from "@/components/sicoob/orders/OrderCommentsTab";
 import { OrderBudgetIntelligence } from "@/components/sicoob/orders/OrderBudgetIntelligence";
 import { LogisticsCommandCenter } from "@/components/sicoob/orders/LogisticsCommandCenter";
+import { OrderProductionReadiness } from "@/components/sicoob/orders/OrderProductionReadiness";
 import { OneClickReorder } from "@/components/orders/OneClickReorder";
 import { OrderAddItemDialog } from "@/components/sicoob/orders/OrderAddItemDialog";
 import { cn } from "@/lib/utils";
@@ -436,6 +437,12 @@ export default function OrderDetailPage() {
             ) : null}
           </div>
         </div>
+
+        <OrderProductionReadiness
+          orderId={orderData.id}
+          orderStatus={orderData.status}
+          requiresArtwork={orderData.requires_artwork}
+        />
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-6">

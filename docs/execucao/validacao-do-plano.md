@@ -31,7 +31,7 @@ A simulação antecedeu as alterações funcionais. Esta matriz registra falhas 
 | S14 | Aprovação repetida após timeout da primeira resposta | E018, E064 | Confirmação repetida bloqueada sem segundo débito | [Registro](evidencias/verba-atomica.json) |
 | S15 | Preço ou quantidade muda durante a aprovação | E058, E059, E064 | Controle de versão recusa decisão sobre estado antigo | [Registro](evidencias/verba-atomica.json) |
 | S16 | Arte alterada depois de autorizada | E054, E065 | Nova versão preserva a anterior, volta a `pending` e bloqueia produção até novo aceite; alteração após logística é recusada | [Registro](evidencias/financeiro-arte-sicoob.json) |
-| S17 | Arte aprovada sem despesa autorizada | E064, E065, E072 | Decisões independentes; pré-requisitos precisam coexistir | Pendente |
+| S17 | Arte aprovada sem despesa autorizada | E064, E065, E072 | Pedido pendente permanece sem liberação mesmo com arte aprovada; pedido confirmado também exige a arte vigente aprovada | [Registro](evidencias/financeiro-arte-sicoob.json) |
 | S18 | Cancelamento parcial ou repetido libera verba duas vezes | E017, E069 | Estorno único e repetição bloqueada no teste transacional local | [Registro](evidencias/verba-atomica.json) |
 | S19 | Verba ausente, negativa, de outro PA ou período encerrado | E017, E062 | Saldo insuficiente e escopo alheio bloqueados; períodos reais ainda dependem da política vigente | [Registro](evidencias/verba-atomica.json) |
 | S20 | Usuário de uma cooperativa fornece UUID de outra | E013, E068, E086 | Testes negativos reais de RLS; conector do portal indisponível | Pendente |
