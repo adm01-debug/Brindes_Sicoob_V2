@@ -35,7 +35,7 @@ A simulação antecedeu as alterações funcionais. Esta matriz registra falhas 
 | S18 | Cancelamento parcial ou repetido libera verba duas vezes | E017, E069 | Estorno único e repetição bloqueada no teste transacional local | [Registro](evidencias/verba-atomica.json) |
 | S19 | Verba ausente, negativa, de outro PA ou período encerrado | E017, E062 | Saldo insuficiente e escopo alheio bloqueados; períodos reais ainda dependem da política vigente | [Registro](evidencias/verba-atomica.json) |
 | S20 | Usuário de uma cooperativa fornece UUID de outra | E013, E068, E086 | Políticas usam o pedido pai e o vínculo ativo; leitura e decisão por UUID alheio retornam zero | [Registro](evidencias/rls-cruzada-sicoob.json) |
-| S21 | Delegação vence durante a análise | E067 | Validar vigência no instante da decisão, no servidor | Pendente |
+| S21 | Delegação vence durante a análise | E067 | Vigência, revogação, escopo, autoridade do titular e conflitos são reavaliados no servidor a cada decisão; ator real e origem ficam auditados | [Registro](evidencias/delegacao-aprovacao-sicoob.json) |
 | S22 | Recompra reutiliza preço ou estoque antigo | E073, E079 | Nova consulta e validade explícita; nenhuma reserva no catálogo mestre | Pendente |
 | S23 | Falha entre cabeçalho e itens deixa pedido incompleto | E059, E061 | Criação atômica, validação de totais e recuperação | Pendente |
 | S24 | Entrega em vários PAs apresenta divergência de quantidade | E056, E074, E076 | Soma distribuída, recebimento parcial e saldo por destino | Pendente |

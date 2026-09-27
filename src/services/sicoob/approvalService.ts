@@ -1,5 +1,22 @@
 import { supabase } from "@/integrations/supabase/client";
 
+export type ApprovalAuthority = {
+  can_decide: boolean;
+  source: "direct" | "delegated" | "none";
+  delegation_id?: string | null;
+  authority_delegator_id?: string | null;
+  ends_at?: string | null;
+};
+
+const readAuthority = (value: unknown): ApprovalAuthority => {
+  if (!value || typeof value !== "object") return { can_decide: false, source: "none" };
+  const candidate = value as Partial<ApprovalAuthority>;
+  if (!candidate.can_decide || !["direct", "delegated"].includes(candidate.source ?? "")) {
+    return { can_decide: false, source: "none" };
+  }
+  return { ...candidate, can_decide: true, source: candidate.source as "direct" | "delegated" };
+};
+
 export const sicoobApprovalService = {
   async requestOrderApproval(params: {
     orderId: string;
@@ -59,16 +76,35 @@ export const sicoobApprovalService = {
       }
     }
 
-    return (data ?? []).map((r) => ({
-      ...r,
-      sicoob_orders: r.sicoob_orders
-        ? {
-            ...r.sicoob_orders,
-            profiles: r.sicoob_orders.created_by
-              ? profileMap.get(r.sicoob_orders.created_by) ?? null
-              : null,
-          }
-        : null,
+    return Promise.all((data ?? []).map(async (r) => {
+      const [approveResult, rejectResult] = await Promise.all([
+        supabase.rpc("sicoob_current_actor_approval_authority", {
+          p_order_id: r.order_id,
+          p_competence: "approve_order",
+        }),
+        supabase.rpc("sicoob_current_actor_approval_authority", {
+          p_order_id: r.order_id,
+          p_competence: "reject_order",
+        }),
+      ]);
+      if (approveResult.error) throw approveResult.error;
+      if (rejectResult.error) throw rejectResult.error;
+
+      return {
+        ...r,
+        approval_authority: {
+          approve: readAuthority(approveResult.data),
+          reject: readAuthority(rejectResult.data),
+        },
+        sicoob_orders: r.sicoob_orders
+          ? {
+              ...r.sicoob_orders,
+              profiles: r.sicoob_orders.created_by
+                ? profileMap.get(r.sicoob_orders.created_by) ?? null
+                : null,
+            }
+          : null,
+      };
     }));
   },
 
