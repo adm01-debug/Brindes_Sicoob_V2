@@ -17,6 +17,7 @@ from pathlib import Path
 CONTAINER = "sicoob-desconto-atomico-20260927"
 ROOT = Path(__file__).resolve().parents[2]
 MIGRATIONS = (
+    ROOT / "supabase/migrations/20260927109950_quote_status_enum_preflight.sql",
     ROOT / "supabase/migrations/20260927162240_discount_approval_atomic.sql",
     ROOT / "supabase/migrations/20260927163021_quote_pdf_approval_atomic.sql",
 )
