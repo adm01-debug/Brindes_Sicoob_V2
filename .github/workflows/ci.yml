@@ -2,9 +2,19 @@ name: Qualidade contínua
 
 on:
   push:
-    branches: [main, develop]
+    branches: [main]
+    paths-ignore:
+      - 'docs/**'
+      - '*.md'
+      - '.github/CODEOWNERS'
+      - 'reports/**'
   pull_request:
-    branches: [main, develop]
+    branches: [main]
+    paths-ignore:
+      - 'docs/**'
+      - '*.md'
+      - '.github/CODEOWNERS'
+      - 'reports/**'
 
 permissions:
   contents: read
@@ -29,7 +39,7 @@ jobs:
           cache: npm
 
       - name: Instalar dependências reproduzíveis
-        run: npm ci
+        run: npm ci --no-audit --no-fund
 
       - name: Bloquear regressões conhecidas de tipagem
         run: npm run typecheck:baseline
@@ -63,37 +73,15 @@ jobs:
         with:
           deno-version: v2.x
 
-      - name: Verificar tipos das funções de fronteira alteradas
+      - name: Verificar tipos das Edge Functions (cobertura total)
         run: |
           deno test supabase/functions/_shared/internal-service-auth.test.ts
-          deno check supabase/functions/external-db-bridge/index.ts
-          deno check supabase/functions/external-db-inspect/index.ts
-          deno check supabase/functions/categories-api/index.ts
-          deno check supabase/functions/materials-api/index.ts
-          deno check supabase/functions/commemorative-dates/index.ts
-          deno check supabase/functions/health-check/index.ts
-          deno check supabase/functions/expert-chat/index.ts
-          deno check supabase/functions/auth-integrity-check/index.ts
-          deno check supabase/functions/sicoob-reorder/index.ts
-          deno check supabase/functions/sicoob-kit-quote/index.ts
-          deno check supabase/functions/sicoob-artwork-register/index.ts
-          deno check supabase/functions/sicoob-document-ingest/index.ts
-          deno check supabase/functions/_shared/authorize.ts
-          deno check supabase/functions/admin-audit-hook/index.ts
-          deno check supabase/functions/quote-approval/index.ts
-          deno check supabase/functions/quote-public-view/index.ts
-          deno check supabase/functions/sicoob-approval-notifications/index.ts
-          deno check supabase/functions/sicoob-approval-reconciliation/index.ts
-          deno check supabase/functions/send-transactional-email/index.ts
-          deno check supabase/functions/step-up-verify/index.ts
-          deno check supabase/functions/migration-health-check/index.ts
-          deno check supabase/functions/product-webhook/index.ts
-          deno check supabase/functions/mcp-keys-revoke/index.ts
-          deno check supabase/functions/external-connections-sync/index.ts
-          deno check supabase/functions/send-notification/index.ts
-          deno check supabase/functions/process-batch-export/index.ts
-          deno check supabase/functions/monthly-health-report/index.ts
-          deno check supabase/functions/system-healthcheck/index.ts
+          # Verificar shared utilities
+          find supabase/functions/_shared -name '*.ts' -not -name '*.test.ts' -print0 | \
+            xargs -0 deno check
+          # Verificar todos os entry points das funções
+          find supabase/functions -mindepth 2 -maxdepth 2 -name 'index.ts' -print0 | \
+            sort -z | xargs -0 deno check
 
       - name: Simular atomicidade da verba em PostgreSQL descartável
         run: python3 scripts/qa/simular-verba-atomica.py

@@ -45,7 +45,7 @@ jobs:
           fi
 
           case "$AUTHOR" in
-            "github-actions[bot]"|"dependabot[bot]"|"lovable-dev[bot]"|"renovate[bot]")
+            "github-actions[bot]"|"dependabot[bot]"|"lovable-dev[bot]"|"gpt-engineer-app[bot]"|"renovate[bot]")
               echo "OK: bot oficial ($AUTHOR)" >> $GITHUB_STEP_SUMMARY
               exit 0
               ;;

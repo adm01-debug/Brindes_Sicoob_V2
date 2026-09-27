@@ -1,38 +1,26 @@
-# Pull Request
+## O que muda
 
-## 📝 Descrição
-<!-- Descreva o que este PR faz em 1-3 frases -->
+<!-- Descreva em 1-3 linhas o que esta PR modifica e por quê. -->
 
-## 🎯 Tipo de mudança
-- [ ] 🐛 Bug fix (mudança não-breaking que corrige um problema)
-- [ ] ✨ Nova feature (mudança não-breaking que adiciona funcionalidade)
-- [ ] 💥 Breaking change (correção/feature que quebra compatibilidade)
-- [ ] 📚 Documentação
-- [ ] 🎨 Refatoração (sem mudança funcional)
-- [ ] ⚡ Performance
-- [ ] 🔒 Segurança
+## Tipo de mudança
 
-## 🔗 Issue relacionada
-<!-- Closes #123 -->
+- [ ] Fix (correção de bug)
+- [ ] Feat (nova funcionalidade)
+- [ ] Chore (manutenção, CI, docs)
+- [ ] Infra (banco, deploy, configuração)
 
-## ✅ Checklist
-- [ ] Código segue o style guide do projeto (ESLint passa)
-- [ ] `npx tsc --noEmit` passa sem erros
-- [ ] Testes passam (`npm run test`)
-- [ ] Adicionei testes para novas funcionalidades quando aplicável
-- [ ] Atualizei a documentação (README/CHANGELOG/docs/) se necessário
-- [ ] Não há `console.log` em código de produção (apenas `logger.*`)
-- [ ] Não há secrets/credenciais hardcoded
-- [ ] RLS revisado se houve mudança em tabelas
-- [ ] Edge functions: input validado com Zod
-- [ ] Componentes UI: tokens semânticos (sem cores hardcoded)
-- [ ] Memória atualizada (`mem://`) se a mudança afetar arquitetura/regras
+## Evidência verificada
 
-## 🧪 Como testar
-<!-- Passos para o reviewer reproduzir/validar -->
+<!-- O que você rodou/viu para confirmar que funciona? (log, query, screenshot, URL) -->
 
-## 📸 Screenshots (se UI)
-<!-- Antes / Depois -->
+## Checklist
 
-## ⚠️ Notas para o reviewer
-<!-- Algo que mereça atenção especial -->
+- [ ] Não quebra nenhuma funcionalidade existente
+- [ ] Migrations são imutáveis (não edita arquivo já mergeado)
+- [ ] Secrets/credenciais não estão hardcoded no código
+- [ ] PRs de banco/migrations deixei **sem** squash-merge automático
+
+---
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+https://claude.ai/code/session_01AP1isQxX3w6D7nw4D5fgdB
