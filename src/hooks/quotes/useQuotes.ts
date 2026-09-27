@@ -55,12 +55,6 @@ export function useQuotes() {
       if (!newQuote.id) {
         throw new Error("O orçamento criado não retornou um identificador.");
       }
-      await QuoteService.logHistory({
-        quoteId: newQuote.id,
-        userId: user.id,
-        action: "created",
-        description: `Orçamento ${newQuote.quote_number} criado`
-      });
       toast.success("Orçamento criado!");
       fetchQuotes();
       return newQuote;

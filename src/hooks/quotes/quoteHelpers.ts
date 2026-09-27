@@ -1,8 +1,14 @@
 /**
  * quoteHelpers — Cálculos e payloads reutilizáveis de orçamentos
  */
-import type { TablesInsert, TablesUpdate } from "@/integrations/supabase/types";
+import type { Json, TablesInsert, TablesUpdate } from "@/integrations/supabase/types";
 import type { Quote, QuoteItem } from "./quoteTypes";
+
+const emptyToNull = (value: string | null | undefined): string | null => value || null;
+const numberOr = (value: number | null | undefined, fallback: number): number => value ?? fallback;
+const nullableNumber = (value: number | null | undefined): number | null => value ?? null;
+const arrayOrEmpty = <T>(value: T[] | null | undefined): T[] => value ?? [];
+const quoteItemUnitCost = (item: QuoteItem): number => item.unit_cost || item.unit_price * 0.7;
 
 export function calculateQuoteTotals(quote: Partial<Quote>, items: QuoteItem[], negotiationMarkup?: number, discountType: 'percent' | 'amount' = 'percent', discountValue: number = 0) {
   // Subtotal real = soma direta dos itens + personalizações (sem markup)
@@ -164,6 +170,46 @@ export function buildPersonalizationsInsertPayload(
     unit_cost: p.unit_cost || 0,
     total_cost: p.total_cost || 0,
     notes: p.notes,
+  }));
+}
+
+/**
+ * Monta o documento recebido pela RPC transacional. IDs, vínculo ao orçamento,
+ * ordem e totais derivados são definidos novamente no banco.
+ */
+export function buildAtomicQuoteItems(items: QuoteItem[]): Json[] {
+  return items.map((item) => ({
+    product_id: emptyToNull(item.product_id),
+    product_name: item.product_name,
+    product_sku: emptyToNull(item.product_sku),
+    product_image_url: emptyToNull(item.product_image_url),
+    quantity: item.quantity,
+    unit_price: item.unit_price,
+    unit_cost: quoteItemUnitCost(item),
+    color_name: emptyToNull(item.color_name),
+    color_hex: emptyToNull(item.color_hex),
+    size_code: emptyToNull(item.size_code),
+    gender: emptyToNull(item.gender),
+    notes: emptyToNull(item.notes),
+    kit_group_id: emptyToNull(item.kit_group_id),
+    kit_name: emptyToNull(item.kit_name),
+    source_variant_id: emptyToNull(item.source_variant_id),
+    source_variant_sku: emptyToNull(item.source_variant_sku),
+    price_confirmed_at: emptyToNull(item.price_confirmed_at),
+    personalizations: arrayOrEmpty(item.personalizations).map((personalization) => ({
+      technique_id: emptyToNull(personalization.technique_id),
+      technique_name: emptyToNull(personalization.technique_name),
+      colors_count: numberOr(personalization.colors_count, 1),
+      positions_count: numberOr(personalization.positions_count, 1),
+      area_cm2: nullableNumber(personalization.area_cm2),
+      width_cm: nullableNumber(personalization.width_cm),
+      height_cm: nullableNumber(personalization.height_cm),
+      personalized_quantity: nullableNumber(personalization.personalized_quantity),
+      setup_cost: numberOr(personalization.setup_cost, 0),
+      unit_cost: numberOr(personalization.unit_cost, 0),
+      total_cost: numberOr(personalization.total_cost, 0),
+      notes: emptyToNull(personalization.notes),
+    })),
   }));
 }
 

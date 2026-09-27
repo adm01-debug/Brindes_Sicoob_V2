@@ -1,0 +1,11 @@
+{
+  "ambiente": "PostgreSQL 17 descartável, --network none; dados sintéticos",
+  "migracao": "supabase/migrations/20260927190000_atomic_quote_save.sql",
+  "producao_verificada": false,
+  "acl": "anon sem EXECUTE; authenticated autorizado e sujeito a RLS",
+  "atomicidade": "falha após cabeçalho e primeiro item reverte criação e atualização integralmente",
+  "concorrencia": "row_version obsoleto recusado sem alterar itens ou histórico",
+  "totais": "subtotal, desconto, frete e custo recalculados no servidor",
+  "governanca": "escopo organizacional e edição de orçamento enviado recusados",
+  "resultado": "aprovado"
+}

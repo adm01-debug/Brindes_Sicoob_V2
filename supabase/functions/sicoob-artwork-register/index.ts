@@ -4,9 +4,9 @@ import { getCorsHeaders, handleCorsPreflightIfNeeded } from '../_shared/cors.ts'
 import {
   ARTWORK_BUCKET,
   MAX_ARTWORK_BYTES,
-  assertArtworkContentType,
   assertArtworkPath,
   buildArtworkIdentity,
+  inspectArtworkBytes,
   sha256Hex,
 } from './identity.ts';
 
@@ -58,14 +58,14 @@ Deno.serve(withStructuredLogging("sicoob-artwork-register", async (req) => {
     if (file.size <= 0 || file.size > MAX_ARTWORK_BYTES) {
       return json(req, { error: 'O arquivo de arte está vazio ou excede 20 MB.' }, 413);
     }
-    assertArtworkContentType(body.filePath, file.type);
-
-    const hash = await sha256Hex(await file.arrayBuffer());
+    const content = await file.arrayBuffer();
+    const inspectedContentType = inspectArtworkBytes(body.filePath, file.type, content);
+    const hash = await sha256Hex(content);
     const identity = buildArtworkIdentity({
       filePath: body.filePath,
       sha256: hash,
       byteSize: file.size,
-      contentType: file.type,
+      contentType: inspectedContentType,
       verifiedAt: new Date().toISOString(),
     });
 
