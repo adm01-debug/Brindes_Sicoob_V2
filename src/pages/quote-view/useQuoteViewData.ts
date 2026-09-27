@@ -209,10 +209,7 @@ export function useQuoteViewData(id: string | undefined) {
       const result = await syncQuoteToBitrix({
         quote,
         proposalData,
-        bitrixCompanyId,
-        userEmail: user?.email,
         logQuoteHistory,
-        onBitrixCompanyIdFound: (newId) => setBitrixCompanyId(newId),
       });
       if (result.success && result.updatedQuote) {
         setQuote((prev) => (prev ? { ...prev, ...result.updatedQuote } : prev));

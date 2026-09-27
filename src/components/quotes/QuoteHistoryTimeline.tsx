@@ -4,7 +4,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Clock, History, User, Info } from "lucide-react";
+import { History, User, Info } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
@@ -12,6 +12,16 @@ import { cn } from "@/lib/utils";
 interface QuoteHistoryTimelineProps {
   quoteId: string;
 }
+
+type TimelineEvent = {
+  id: string;
+  action: string;
+  description: string | null;
+  metadata: unknown;
+  created_at: string;
+  user_id: string | null;
+  actor_name?: string | null;
+};
 
 function getRejectionNotes(metadata: unknown): string | null {
   if (!metadata || typeof metadata !== 'object' || Array.isArray(metadata)) return null;
@@ -23,13 +33,23 @@ export function QuoteHistoryTimeline({ quoteId }: QuoteHistoryTimelineProps) {
   const { data, isLoading } = useQuery({
     queryKey: ["quote-history", quoteId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data: history, error } = await supabase
         .from("quote_history")
-        .select("*, profiles(full_name)")
+        .select("id, action, description, metadata, created_at, user_id")
         .eq("quote_id", quoteId)
         .order("created_at", { ascending: false });
       if (error) throw error;
-      return data || [];
+
+      const userIds = [...new Set((history ?? []).map((event) => event.user_id).filter((id): id is string => !!id))];
+      if (!userIds.length) return (history ?? []) as TimelineEvent[];
+
+      const { data: profiles, error: profilesError } = await supabase
+        .from("profiles")
+        .select("user_id, full_name")
+        .in("user_id", userIds);
+      if (profilesError) throw profilesError;
+      const names = new Map((profiles ?? []).map((profile) => [profile.user_id, profile.full_name]));
+      return (history ?? []).map((event) => ({ ...event, actor_name: event.user_id ? names.get(event.user_id) ?? null : null })) as TimelineEvent[];
     },
   });
 
@@ -78,7 +98,7 @@ export function QuoteHistoryTimeline({ quoteId }: QuoteHistoryTimelineProps) {
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
                   <span className="inline-flex items-center gap-1">
                     <User className="h-3 w-3" />
-                    {(event.profiles as any)?.full_name || "Sistema"}
+                    {event.actor_name || (event.user_id ? "Usuário sem nome disponível" : "Sistema")}
                   </span>
                   {rejectionNotes && (
                     <span className="inline-flex items-center gap-1 text-destructive font-medium">
@@ -101,4 +121,3 @@ export function QuoteHistoryTimeline({ quoteId }: QuoteHistoryTimelineProps) {
     </div>
   );
 }
-

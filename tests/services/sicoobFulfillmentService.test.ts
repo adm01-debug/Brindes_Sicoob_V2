@@ -11,9 +11,16 @@ import { sicoobFulfillmentService } from '@/services/sicoob/fulfillmentService';
 describe('sicoobFulfillmentService', () => {
   beforeEach(() => vi.clearAllMocks());
 
+  const validShipment = {
+    id: 'ship-1', order_id: 'order-1', status: 'in_transit',
+    carrier_name: 'Correios', tracking_code: 'AB123', estimated_delivery: null,
+    actual_delivery_at: null, delivery_photo_path: null,
+    created_at: '2026-09-27T12:00:00.000Z', updated_at: '2026-09-27T12:00:00.000Z',
+  };
+
   it('envia estado esperado e caminho privado ao RPC transacional', async () => {
     rpc.mockResolvedValue({
-      data: { id: 'ship-1', order_id: 'order-1', status: 'delivered' },
+      data: { ...validShipment, status: 'delivered' },
       error: null,
     });
 
@@ -33,16 +40,25 @@ describe('sicoobFulfillmentService', () => {
     });
   });
 
-  it('não trata resposta vazia como atualização bem-sucedida', async () => {
-    rpc.mockResolvedValue({ data: null, error: null });
+  it.each([null, {}, [], { id: 'ship-1', order_id: 'order-1', status: 'in_transit' }])(
+    'não trata retorno inválido como atualização bem-sucedida: %j',
+    async (data) => {
+      rpc.mockResolvedValue({ data, error: null });
+      await expect(sicoobFulfillmentService.updateShipment({
+        orderId: 'order-1', expectedOrderStatus: 'in_separation', carrierName: 'Correios', trackingCode: 'AB123',
+      })).rejects.toThrow(/registro válido/i);
+    },
+  );
 
+  it('aceita uma remessa completa retornada pelo contrato canônico', async () => {
+    rpc.mockResolvedValue({ data: validShipment, error: null });
     await expect(sicoobFulfillmentService.updateShipment({
       orderId: 'order-1', expectedOrderStatus: 'in_separation', carrierName: 'Correios', trackingCode: 'AB123',
-    })).rejects.toThrow(/registro válido/i);
+    })).resolves.toEqual(validShipment);
   });
 
   it('consulta a remessa pelo RPC e aceita ausência de registro', async () => {
-    rpc.mockResolvedValueOnce({ data: { id: 'ship-1', order_id: 'order-1' }, error: null });
+    rpc.mockResolvedValueOnce({ data: validShipment, error: null });
     await expect(sicoobFulfillmentService.getShipment('order-1')).resolves.toMatchObject({ id: 'ship-1' });
     expect(rpc).toHaveBeenLastCalledWith('get_sicoob_order_shipment', { p_order_id: 'order-1' });
 

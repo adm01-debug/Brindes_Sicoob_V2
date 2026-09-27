@@ -19,6 +19,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { getPriceFreshness } from "@/utils/price-freshness";
 import type { SelectedCompanyInfo, SelectedContactInfo } from "@/components/quotes/CompanyContactSelector";
 import type { ExternalVariantStock } from "@/hooks/useExternalVariantStock";
+import { getQuoteItemVariantIdentity } from "@/hooks/quotes/quoteVariantIdentity";
 import type { QuoteBuilderStep } from "@/components/quotes/QuoteBuilderStepper";
 import { calculateQuoteTotals, formatCurrency, calculateItemTotal, calculateItemPersonalizationTotal } from "@/utils/quote-calculations";
 import type { Product, DiscountType, DeliveryMode } from "@/types/quote-builder";
@@ -185,6 +186,7 @@ export function useQuoteBuilderState() {
           unit_cost: product.costPrice || 0,
           color_name: colorName, color_hex: colorHex, size_code: sizeCode,
           bitrix_product_id: variant?.bitrix_product_id ?? null,
+          ...getQuoteItemVariantIdentity(variant),
           price_updated_at: product.priceUpdatedAt ?? null,
           price_freshness_threshold_days: product.priceFreshnessThresholdDays ?? null,
           stock_available: variant?.stock_quantity ?? product.totalStock ?? null,

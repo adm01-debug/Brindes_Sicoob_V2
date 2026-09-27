@@ -9,6 +9,8 @@ import { useSalesScope } from "@/lib/auth/visibility-scope";
 import { createClientLogger } from "@/lib/telemetry/structuredLogger";
 import { toast } from "sonner";
 import { QuoteService } from "@/services/QuoteService";
+import type { TablesUpdate } from "@/integrations/supabase/types";
+import { ensureQuoteMutationApplied, ensureQuotesAreAccessible } from "./quoteStatusMutationGuards";
 import type { Quote, QuoteItem, PersonalizationTechnique } from "./quoteTypes";
 // Re-export the canonical quote types so consumers can import them from this hook.
 export type { Quote, QuoteItem, QuoteItemPersonalization, PersonalizationTechnique } from "./quoteTypes";
@@ -52,6 +54,9 @@ export function useQuotes() {
     setIsLoading(true);
     try {
       const newQuote = await QuoteService.create({ quote, items, userId: user.id, orgId });
+      if (!newQuote.id) {
+        throw new Error("O orçamento criado não retornou um identificador.");
+      }
       await QuoteService.logHistory({
         quoteId: newQuote.id,
         userId: user.id,
@@ -108,26 +113,27 @@ export function useQuotes() {
       if (fetchErr) throw fetchErr;
       const oldStatus = quote?.status || "draft";
       
-      const updateData: Partial<Quote> & { approved_at?: string; approved_by?: string; rejection_notes?: string } = { status };
+      const updateData: TablesUpdate<"quotes"> = { status };
       if (notes) updateData.rejection_notes = notes;
       if (isApprovalDecision) {
         updateData.approved_at = new Date().toISOString();
         updateData.approved_by = user.id;
       }
 
-      const { error } = await supabase
+      const { data: updatedRows, error } = await supabase
         // rls-allow: atualização por id; RLS valida ownership
         .from("quotes")
         .update(updateData)
         .eq("id", quoteId)
-        .eq("row_version", quote.row_version || 1);
+        .eq("row_version", quote.row_version || 1)
+        .select("id");
       
-      if (error) {
-        if (error.code === 'PGRST116') {
-          throw new Error("Concorrência detectada: Este orçamento foi modificado por outro usuário. Por favor, recarregue a página.");
-        }
-        throw error;
-      }
+      ensureQuoteMutationApplied(
+        updatedRows,
+        error,
+        1,
+        "Concorrência detectada: Este orçamento foi modificado por outro usuário. Por favor, recarregue a página.",
+      );
 
       // Logic for notifications
       if (status === 'pending_singular_approval') {
@@ -182,20 +188,36 @@ export function useQuotes() {
 
     setIsLoading(true);
     try {
-      const { error } = await supabase
+      const uniqueQuoteIds = [...new Set(quoteIds)];
+      const { data: accessibleQuotes, error: accessError } = await supabase
+        .from("quotes")
+        .select("id")
+        .in("id", uniqueQuoteIds);
+      if (accessError) throw accessError;
+      ensureQuotesAreAccessible(accessibleQuotes, uniqueQuoteIds.length);
+
+      const bulkUpdate: TablesUpdate<"quotes"> = {
+        status,
+        ...(notes ? { rejection_notes: notes } : {}),
+        ...(status === 'approved' ? { approved_at: new Date().toISOString(), approved_by: user.id } : {}),
+      };
+
+      const { data: updatedRows, error } = await supabase
         // rls-allow: atualização por id; RLS valida ownership
         .from("quotes")
-        .update({ 
-          status,
-          ...(notes ? { rejection_notes: notes } : {}),
-          ...(status === 'approved' ? { approved_at: new Date().toISOString(), approved_by: user.id } : {})
-        } as Partial<Quote>)
-        .in("id", quoteIds);
+        .update(bulkUpdate)
+        .in("id", uniqueQuoteIds)
+        .select("id");
 
-      if (error) throw error;
+      ensureQuoteMutationApplied(
+        updatedRows,
+        error,
+        uniqueQuoteIds.length,
+        "Atualização concorrente detectada. Recarregue a lista antes de tentar novamente.",
+      );
 
       // Log history for each
-      const promises = quoteIds.map(id => 
+      const promises = uniqueQuoteIds.map(id =>
         QuoteService.logHistory({
           quoteId: id,
           userId: user.id,
@@ -208,7 +230,7 @@ export function useQuotes() {
       );
       await Promise.all(promises);
 
-      toast.success(`${quoteIds.length} orçamentos atualizados!`);
+      toast.success(`${uniqueQuoteIds.length} orçamentos atualizados!`);
       fetchQuotes();
       return true;
     } catch (err) {

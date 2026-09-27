@@ -140,6 +140,8 @@ export function buildItemsInsertPayload(
       sort_order: index,
       kit_group_id: item.kit_group_id || null,
       kit_name: item.kit_name || null,
+      source_variant_id: item.source_variant_id || null,
+      source_variant_sku: item.source_variant_sku || null,
       price_confirmed_at: item.price_confirmed_at ?? null,
       subtotal: itemSubtotal,
       total_price: itemSubtotal,

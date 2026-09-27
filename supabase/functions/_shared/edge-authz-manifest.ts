@@ -82,7 +82,7 @@ export const EDGE_AUTHZ_MANIFEST: Record<string, AuthzEntry> = {
 
   // ---------------- Webhooks (assinatura própria) ----------------
   "webhook-inbound": { category: "scoped", rationale: "HMAC-SHA256 inline" },
-  "webhook-dispatcher": { category: "scoped", rationale: "Disparo via service-role / cron" },
+  "webhook-dispatcher": { category: "scoped", rationale: "Disparo interno com segredo; teste/replay exigem supervisor", enforcedBy: "custom" },
   "product-webhook": { category: "public", rationale: "Endpoint inerte: retorna 410, sem acesso a dados ou segredos" },
 
   // ---------------- Cron / service-to-service ----------------
