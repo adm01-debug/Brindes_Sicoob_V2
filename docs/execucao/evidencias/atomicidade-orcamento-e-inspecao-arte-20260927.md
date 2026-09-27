@@ -45,3 +45,23 @@ Ambiente: construção; dados sintéticos; nenhuma compra real.
 
 O resultado estruturado da simulação transacional está em
 `salvamento-orcamento-atomico.json`.
+
+## Aplicação canônica
+
+- PR [#47](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/47)
+  mesclado em `main` no commit `658e6368b708a7e78e732238b41b58bb7af2d290`.
+- Migration `20260927190000_atomic_quote_save` aplicada e registrada em
+  `supabase_migrations.schema_migrations` no projeto
+  `cfmzkthhgliqelozlmwu`.
+- Verificação pós-aplicação: função presente; `authenticated` com `EXECUTE`;
+  `anon` sem `EXECUTE`.
+- `sicoob-artwork-register` publicada como `ACTIVE`, versão 1, com
+  `verify_jwt=true`; o código foi baixado novamente pela API e conferido.
+- Smoke negativo remoto sem JWT: HTTP 401
+  (`UNAUTHORIZED_NO_AUTH_HEADER`).
+
+O projeto já usava as 100 posições de Edge Functions. Para publicar o controle
+de arte, a função de diagnóstico `e2e-auth-test` foi retirada do ambiente de
+construção: ela é exclusiva de `dev`, não possui chamada em aplicação, CI ou
+cron, e seu fonte permanece versionado para recuperação. A troca manteve 100
+funções remotas e priorizou o fluxo operacional de arte.
