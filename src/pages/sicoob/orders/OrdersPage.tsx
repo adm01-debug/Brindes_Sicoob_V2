@@ -536,7 +536,7 @@ export default function OrdersPage() {
               Kanban
             </Button>
             {canCreateOrder && (
-              <Button onClick={() => navigate("/sicoob/pedidos/novo")}>
+              <Button onClick={() => navigate("/catalogo")}>
                 <Plus className="h-4 w-4 mr-2" />
                 Novo Pedido
               </Button>

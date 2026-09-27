@@ -1,0 +1,85 @@
+{
+  "scenario": "S27",
+  "validated_at": "2026-09-27",
+  "status": "completed",
+  "risk": "Relatórios sem amostra apresentavam zero como medição, economia derivada por percentual fixo e recomendações com confiança inventada.",
+  "implemented": {
+    "seller_panel": [
+      "consulta pedidos criados pelo usuário autenticado",
+      "classifica estados aguardando, aprovados e rejeitados",
+      "soma somente pedidos confirmados ou concluídos",
+      "exibe amostra e declara ausência de meta configurada"
+    ],
+    "financial_report": [
+      "restringe pedidos e verba ao PA ou cooperativa do perfil",
+      "considera o fim completo do último dia selecionado",
+      "exibe Sem dados quando não há pedido consolidado",
+      "remove economia fixa de 12% e declara falta de preço de referência"
+    ],
+    "kpis": [
+      "restringe eventos concluídos ao PA ou cooperativa",
+      "deduplica eventos por pedido e preserva a conclusão mais recente",
+      "informa período, amostra e instante de atualização",
+      "não exporta série sem amostra"
+    ],
+    "recurrence": [
+      "remove produtos e percentuais fixos",
+      "usa somente pedidos concluídos do usuário nos últimos 12 meses",
+      "exige ao menos três pedidos e recorrência em dois pedidos distintos",
+      "mostra frequência observada, unidades e última ocorrência",
+      "abre o catálogo real sem afirmar que um rascunho foi persistido"
+    ],
+    "navigation": "Ações Novo pedido apontam para /catalogo; a rota inexistente /sicoob/pedidos/novo foi eliminada dos consumidores auditados."
+  },
+  "database": {
+    "schema_change_required": false,
+    "data_change_required": false,
+    "tables_read": [
+      "public.sicoob_orders",
+      "public.sicoob_order_items",
+      "public.sicoob_order_history",
+      "public.pa_budgets"
+    ],
+    "connector_check": "A tentativa de leitura agregada pelo conector Supabase nesta sessão foi recusada por permissão administrativa; nenhuma escrita foi tentada. Os contratos usados já constam nos tipos gerados e nas tabelas canônicas validadas nos lotes anteriores."
+  },
+  "validation": {
+    "focused_tests": {
+      "files_passed": 1,
+      "tests_passed": 5
+    },
+    "full_tests": {
+      "files_passed": 396,
+      "files_skipped": 8,
+      "tests_passed": 5559,
+      "tests_skipped": 112
+    },
+    "build": {
+      "status": "passed",
+      "modules_transformed": 5804
+    },
+    "typecheck_baseline": {
+      "status": "passed",
+      "current_errors": 158,
+      "baseline_errors": 166,
+      "regressions": 0
+    },
+    "lint_baseline": {
+      "status": "passed",
+      "global_errors": 3269,
+      "new_errors_in_changed_files": 0,
+      "existing_errors_removed": 3
+    },
+    "dependency_audit": {
+      "status": "passed"
+    },
+    "static_guards": [
+      "nenhuma ocorrência de 94%, 87%, 82%, totalSpent * 0.12 ou valores de meta fictícios nos módulos auditados",
+      "nenhuma ocorrência de /sicoob/pedidos/novo em src"
+    ]
+  },
+  "limitations": [
+    "Economia não é calculada até que preço de referência comparável seja persistido.",
+    "Recorrência observada não é apresentada como previsão, causalidade ou confiança estatística.",
+    "A leitura administrativa agregada do banco precisa ser repetida quando a permissão do conector Supabase voltar a estar disponível."
+  ]
+}
