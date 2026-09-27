@@ -1,3 +1,4 @@
+import { useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { logRlsDenial } from "@/lib/security/rls-denial-logger";
@@ -132,11 +133,15 @@ export function canTransitionTo(current: string, next: string): boolean {
 export function useOrderActions() {
   const qc = useQueryClient();
   const { user } = useAuth();
+  const pendingDuplicateKeys = useRef(new Map<string, string>());
 
   const duplicateOrder = async (orderId: string): Promise<OrderRow | null> => {
     if (!user) return null;
+    const idempotencyKey = pendingDuplicateKeys.current.get(orderId) ?? crypto.randomUUID();
+    pendingDuplicateKeys.current.set(orderId, idempotencyKey);
     try {
-      const newOrder = await OrderService.duplicate(orderId, user.id);
+      const newOrder = await OrderService.duplicate(orderId, idempotencyKey);
+      pendingDuplicateKeys.current.delete(orderId);
       qc.invalidateQueries({ queryKey: ["orders"] });
       toast.success("Pedido duplicado com sucesso");
       return newOrder;

@@ -53,6 +53,7 @@ jobs:
           python3 scripts/qa/simular-delegacao-aprovacao-sicoob.py
           python3 scripts/qa/simular-versionamento-orcamento-atomico.py
           python3 scripts/qa/simular-recompra-sicoob.py
+          python3 scripts/qa/simular-duplicacao-pedido-atomica.py
           python3 scripts/qa/simular-notification-preferences-auth.py
           python3 scripts/qa/simular-kit-orcamento-sicoob.py
           python3 scripts/qa/simular-financeiro-arte-sicoob.py

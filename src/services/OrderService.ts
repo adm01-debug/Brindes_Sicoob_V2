@@ -94,29 +94,62 @@ export class OrderService {
       .eq("order_id", orderId)
       .maybeSingle();
     if (error) throw error;
-    return data as OrderLogistics | null;
+    if (!data) return null;
+
+    const { data: order, error: orderError } = await supabase
+      .from("orders")
+      .select("shipping_type")
+      .eq("id", orderId)
+      .maybeSingle();
+    if (orderError) throw orderError;
+
+    return {
+      id: data.id,
+      order_id: data.order_id,
+      tracking_number: data.tracking_code,
+      carrier: data.carrier_name,
+      shipping_type: order?.shipping_type ?? null,
+      estimated_delivery: data.estimated_delivery,
+      actual_delivery: data.actual_delivery,
+      status: data.delivery_status,
+      created_at: data.created_at ?? new Date(0).toISOString(),
+      updated_at: data.updated_at ?? new Date(0).toISOString(),
+    } satisfies OrderLogistics;
   }
 
   static async upsertLogistics(orderId: string, values: Partial<OrderLogistics>) {
     const existing = await this.getLogistics(orderId);
+    const logisticsValues = {
+      ...(values.tracking_number !== undefined && { tracking_code: values.tracking_number }),
+      ...(values.carrier !== undefined && { carrier_name: values.carrier }),
+      ...(values.estimated_delivery !== undefined && { estimated_delivery: values.estimated_delivery }),
+      ...(values.actual_delivery !== undefined && { actual_delivery: values.actual_delivery }),
+      ...(values.status !== undefined && { delivery_status: values.status }),
+    };
+    let saved;
     if (existing) {
       const { data, error } = await supabase
         .from("order_logistics")
-        .update(values)
+        .update(logisticsValues)
         .eq("id", existing.id)
         .select()
         .single();
       if (error) throw error;
-      return data;
+      saved = data;
     } else {
       const { data, error } = await supabase
         .from("order_logistics")
-        .insert({ order_id: orderId, ...values })
+        .insert({ order_id: orderId, ...logisticsValues })
         .select()
         .single();
       if (error) throw error;
-      return data;
+      saved = data;
     }
+
+    if (values.shipping_type !== undefined) {
+      await this.update(orderId, { shipping_type: values.shipping_type });
+    }
+    return saved;
   }
 
   // Invoices Methods
@@ -190,21 +223,22 @@ export class OrderService {
     metadata: any;
     createdByName?: string;
   }) {
-    await supabase.rpc('log_order_audit_event', {
+    const { error } = await supabase.rpc('log_order_audit_event', {
       p_order_id: params.orderId,
       p_event_type: params.eventType,
       p_description: params.description,
       p_metadata: params.metadata,
       p_created_by_name: params.createdByName
     });
+    if (error) throw error;
   }
 
   static async listAuditEvents(orderId: string, filters?: { event_type?: string, search?: string }) {
     let query = supabase
       .from('order_audit_events')
-      .select('*')
+      .select('*, created_at:occurred_at')
       .eq('order_id', orderId)
-      .order('created_at', { ascending: false });
+      .order('occurred_at', { ascending: false });
 
     if (filters?.event_type && filters.event_type !== 'all') {
       query = query.eq('event_type', filters.event_type);
@@ -373,63 +407,21 @@ export class OrderService {
     }
   }
 
-  static async duplicate(orderId: string, sellerId: string): Promise<OrderRow> {
-    const result = await this.getById(orderId);
-    if (!result) throw new Error("Pedido não encontrado");
-    const { order: original, items } = result;
-
-    // Copy logistics if exists
-    const logistics = await this.getLogistics(orderId);
-
-    const newOrderNumber = `RE-${original.order_number.replace('PED-', '')}-${Math.floor(Math.random() * 1000)}`;
-    
-    const { data: newOrder, error: insErr } = await supabase
-      // rls-allow: criação contém seller_id do pedido de origem; RLS valida inserção
-      .from("orders")
-      .insert({
-        ...original,
-        id: undefined,
-        order_number: newOrderNumber,
-        status: "rascunho",
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-        seller_id: sellerId
-      })
-      .select()
-      .single();
-
-    if (insErr) throw insErr;
-
-    // Deep copy items
-    if (items?.length) {
-      const newItems = items.map(it => ({
-        ...it,
-        id: undefined, // Ensure new IDs
-        order_id: newOrder.id,
-      }));
-      await supabase.from("order_items").insert(newItems);
-    }
-
-    // Deep copy logistics
-    if (logistics) {
-      await supabase.from("order_logistics").insert({
-        ...logistics,
-        id: undefined,
-        order_id: newOrder.id,
-        tracking_code: null, // Reset tracking on duplication
-        status: 'pending'
-      });
-    }
-
-    // Log the event
-    await this.logAudit({
-      orderId: newOrder.id,
-      eventType: 'ORDER_DUPLICATED',
-      description: `Pedido duplicado a partir do pedido #${original.order_number}`,
-      metadata: { originalOrderId: orderId }
+  static async duplicate(
+    orderId: string,
+    idempotencyKey: string = crypto.randomUUID(),
+  ): Promise<OrderRow> {
+    const { data, error } = await supabase.rpc("duplicate_order_atomic", {
+      p_order_id: orderId,
+      p_idempotency_key: idempotencyKey,
     });
+    if (error) throw error;
 
-    return newOrder as OrderRow;
+    const duplicated = Array.isArray(data) ? data[0] : data;
+    if (!duplicated?.id || !duplicated?.order_number) {
+      throw new Error("O banco não confirmou a duplicação integral do pedido");
+    }
+    return duplicated as OrderRow;
   }
 
   static async convertQuoteToOrder({ quoteId }: ConvertQuoteToOrderParams): Promise<ConvertedOrder> {

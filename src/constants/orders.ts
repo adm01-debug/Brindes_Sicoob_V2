@@ -54,13 +54,13 @@ export const VALID_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
 
 export const FULFILLMENT_LABELS: Record<string, string> = {
   unfulfilled: "Não Processado",
-  partial: "Parcial",
+  partially_fulfilled: "Parcial",
   fulfilled: "Completo",
 };
 
 export const FULFILLMENT_COLORS: Record<string, string> = {
   unfulfilled: "bg-warning/20 text-warning border-warning/30",
-  partial: "bg-warning/15 text-warning/80 border-warning/25",
+  partially_fulfilled: "bg-warning/15 text-warning/80 border-warning/25",
   fulfilled: "bg-primary/20 text-primary border-primary/30",
 };
 
@@ -69,4 +69,3 @@ export function canTransitionTo(current: string, next: string): boolean {
   const validNext = VALID_TRANSITIONS[current as OrderStatus] || [];
   return validNext.includes(next as OrderStatus);
 }
-
