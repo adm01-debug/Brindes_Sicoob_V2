@@ -13,6 +13,7 @@ FIXTURE = ROOT / "tests/scenarios/sql/sicoob-reorder-fixture.sql"
 MIGRATION = ROOT / "supabase/migrations/20260912170000_sicoob_reorder_atomic.sql"
 QUOTE_VERSIONING_FOLLOWUP = ROOT / "supabase/migrations/20260913120001_quote_versioning_atomic_followup.sql"
 FOLLOWUP_MIGRATION = ROOT / "supabase/migrations/20260913120002_sicoob_reorder_atomic_followup.sql"
+VALIDITY_MIGRATION = ROOT / "supabase/migrations/20260927210000_sicoob_reorder_catalog_validity.sql"
 
 CREATOR = "11111111-1111-1111-1111-111111111111"
 UNAUTHORIZED = "22222222-2222-2222-2222-222222222222"
@@ -22,6 +23,8 @@ ORG = "cccccccc-cccc-cccc-cccc-cccccccccccc"
 ORDER = "dddddddd-dddd-dddd-dddd-dddddddddddd"
 ITEM = "eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee"
 PRODUCT = "ffffffff-ffff-ffff-ffff-ffffffffffff"
+SOURCE_QUOTE = "99999999-9999-4999-8999-999999999999"
+SOURCE_QUOTE_ITEM = "88888888-8888-4888-8888-888888888888"
 
 
 def command(args, *, stdin=None, check=True):
@@ -54,18 +57,23 @@ def scalar(response):
     return values[-1]
 
 
-def payload(*, name="Caneca vigente", price=25, checked="now()"):
+def payload(*, name="Caneca vigente", price=25, checked="now()", source_item_id=ITEM):
     checked_value = scalar(sql(f"SELECT ({checked})::timestamptz;"))
     return json.dumps([{
-        "source_order_item_id": ITEM,
+        "source_order_item_id": source_item_id,
         "product_id": PRODUCT,
         "product_name": name,
         "product_sku": "CAN-ATUAL",
         "quantity": 2,
         "unit_price": price,
         "minimum_quantity": 1,
+        "available_stock": 20,
+        "historical_unit_price": 10,
+        "price_changed": price != 10,
+        "stock_is_reserved": False,
         "source_variant_id": None,
         "catalog_checked_at": checked_value,
+        "catalog_valid_until": scalar(sql(f"SELECT (({checked})::timestamptz + interval '5 minutes');")),
         "personalizations": [{
             "line_id": ITEM,
             "technique_id": "laser-atual",
@@ -87,11 +95,22 @@ def request_hash(suffix=ORDER):
     return hashlib.sha256(json.dumps({"source_order_id": suffix}, separators=(",", ":")).encode()).hexdigest()
 
 
-result = {
+def quote_request_hash(suffix=SOURCE_QUOTE):
+    return hashlib.sha256(json.dumps({"source_quote_id": suffix}, separators=(",", ":")).encode()).hexdigest()
+
+
+EVIDENCE = ROOT / "docs/execucao/evidencias/recompra-sicoob.json"
+result = json.loads(EVIDENCE.read_text()) if EVIDENCE.exists() else {}
+simulation = {
     "ambiente": "PostgreSQL 16 descartável, --network none; somente dados sintéticos",
-    "migracao": str(MIGRATION.relative_to(ROOT)),
-    "producao_verificada": False,
+    "migracoes": [
+        str(MIGRATION.relative_to(ROOT)),
+        str(QUOTE_VERSIONING_FOLLOWUP.relative_to(ROOT)),
+        str(FOLLOWUP_MIGRATION.relative_to(ROOT)),
+        str(VALIDITY_MIGRATION.relative_to(ROOT)),
+    ],
 }
+result["simulacao_local"] = simulation
 
 try:
     command([
@@ -104,6 +123,7 @@ try:
     sql(MIGRATION.read_text())
     sql(QUOTE_VERSIONING_FOLLOWUP.read_text())
     sql(FOLLOWUP_MIGRATION.read_text())
+    sql(VALIDITY_MIGRATION.read_text())
     sql(f"""
       INSERT INTO public.cooperativas VALUES ('{COOPERATIVE}', 'Cooperativa sintética');
       INSERT INTO public.postos_atendimento VALUES ('{PA}', '{COOPERATIVE}', 'PA sintético');
@@ -149,21 +169,25 @@ try:
         || '|' || q.organization_id::text || '|' || q.total::text
         || '|' || count(DISTINCT qi.id)::text || '|' || count(DISTINCT qp.id)::text
         || '|' || bool_and(qp.technique_id='laser-atual' AND qp.notes LIKE '%reenviada e aprovada%')::text
+        || '|' || q.reorder_source_order_id::text
+        || '|' || (q.catalog_valid_until > q.catalog_revalidated_at)::text
+        || '|' || q.catalog_stock_is_reserved::text
+        || '|' || bool_and(qi.catalog_available_stock=20 AND qi.price_changed AND qi.catalog_stock_is_reserved=false)::text
       FROM public.quotes q JOIN public.quote_items qi ON qi.quote_id = q.id
       LEFT JOIN public.quote_item_personalizations qp ON qp.quote_item_id = qi.id
       WHERE q.id = '{quote_id}'
       GROUP BY q.id;
     """))
-    assert persisted == f"true|{PA}|{COOPERATIVE}|{ORG}|68.00|1|1|true", persisted
+    assert persisted == f"true|{PA}|{COOPERATIVE}|{ORG}|68.00|1|1|true|{ORDER}|true|false|true", persisted
     assert scalar(sql("SELECT count(*) FROM public.quotes;")) == "1"
-    result["atomicidade_e_hierarquia"] = "orçamento, item e personalização reprecificada gravados juntos; PA não foi escrito em client_id; hierarquia veio do pedido; arte marcada para nova aprovação"
+    simulation["atomicidade_e_hierarquia"] = "orçamento, item e personalização reprecificada gravados juntos; origem, diferença de preço e validade ficaram auditáveis; PA não foi escrito em client_id; arte exige nova aprovação"
     lookup_quote_id = scalar(sql(f"""
       SELECT public.get_sicoob_reorder_idempotency(
         '{CREATOR}', '{ORDER}', 'recompra-teste-0001', '{request_hash()}'
       );
     """))
     assert lookup_quote_id == quote_id
-    result["idempotencia"] = "retry após resposta perdida ignorou mudanças posteriores de nome, preço e data do catálogo e não duplicou o orçamento"
+    simulation["idempotencia"] = "retry após resposta perdida ignorou mudanças posteriores de nome, preço e data do catálogo e não duplicou o orçamento"
 
     changed_payload = payload(price=26)
     changed = actor_sql(CREATOR, f"""
@@ -187,7 +211,66 @@ try:
       );
     """, check=False)
     assert stale.returncode != 0 and "consultados novamente" in stale.stderr
-    result["guardas"] = "RPC indisponível ao navegador; conteúdo divergente, usuário fora do escopo e consulta de catálogo vencida foram recusados"
+    simulation["guardas"] = "RPC indisponível ao navegador; conteúdo divergente, usuário fora do escopo e consulta de catálogo vencida foram recusados"
+
+    sql(f"""
+      UPDATE public.quotes
+      SET catalog_revalidated_at=now()-interval '10 minutes',
+          catalog_valid_until=now()-interval '5 minutes'
+      WHERE id='{quote_id}';
+      UPDATE public.quote_items
+      SET catalog_valid_until=now()-interval '5 minutes'
+      WHERE quote_id='{quote_id}';
+    """)
+    stale_transition = sql(f"UPDATE public.quotes SET status='pending' WHERE id='{quote_id}';", check=False)
+    assert stale_transition.returncode != 0 and "revalide o catálogo" in stale_transition.stderr
+
+    refreshed_payload = payload(price=27)
+    refreshed_quote_id = scalar(actor_sql(CREATOR, f"""
+      SELECT public.refresh_sicoob_reorder_quote(
+        '{quote_id}', $payload${refreshed_payload}$payload$::jsonb, '{CREATOR}'
+      );
+    """))
+    assert refreshed_quote_id == quote_id
+    refreshed = scalar(sql(f"""
+      SELECT qi.unit_price::text || '|' || q.reorder_price_changed_items::text
+        || '|' || (q.catalog_valid_until > now())::text || '|' || q.catalog_stock_is_reserved::text
+      FROM public.quotes q JOIN public.quote_items qi ON qi.quote_id=q.id
+      WHERE q.id='{quote_id}';
+    """))
+    assert refreshed == "27|1|true|false", refreshed
+    simulation["validade_explicita"] = "transição com consulta vencida foi recusada; nova consulta substituiu o snapshot atomicamente; estoque continuou informativo e não reservado"
+
+    sql(f"""
+      INSERT INTO public.quotes (
+        id, client_name, seller_id, status, subtotal, total, organization_id, pa_id, singular_id
+      ) VALUES (
+        '{SOURCE_QUOTE}', 'Cliente histórico', '{CREATOR}', 'approved', 20, 20, '{ORG}', '{PA}', '{COOPERATIVE}'
+      );
+      INSERT INTO public.quote_items (
+        id, quote_id, product_id, product_name, quantity, unit_price, sort_order
+      ) VALUES (
+        '{SOURCE_QUOTE_ITEM}', '{SOURCE_QUOTE}', '{PRODUCT}', 'Caneca histórica do orçamento', 2, 10, 0
+      );
+    """)
+    quote_payload = payload(price=31, source_item_id=SOURCE_QUOTE_ITEM)
+    requote_id = scalar(actor_sql(CREATOR, f"""
+      SELECT public.reorder_sicoob_quote_as_quote(
+        '{SOURCE_QUOTE}', $payload${quote_payload}$payload$::jsonb,
+        'recompra-orcamento-0001', '{CREATOR}', '{quote_request_hash()}'
+      );
+    """))
+    requote = scalar(sql(f"""
+      SELECT q.reorder_source_quote_id::text || '|' || qi.unit_price::text
+        || '|' || qi.historical_unit_price::text || '|' || qi.price_changed::text
+        || '|' || q.catalog_stock_is_reserved::text
+      FROM public.quotes q JOIN public.quote_items qi ON qi.quote_id=q.id
+      WHERE q.id='{requote_id}';
+    """))
+    assert requote == f"{SOURCE_QUOTE}|31|10.0000|true|false", requote
+    assert scalar(sql(f"SELECT unit_price::text FROM public.quote_items WHERE id='{SOURCE_QUOTE_ITEM}';")) == "10"
+    assert scalar(sql("SELECT count(*) FROM public.sicoob_quote_reorder_requests;")) == "1"
+    simulation["recompra_de_orcamento"] = "orçamento aprovado foi usado apenas como referência; nova proposta recebeu preço vigente e a origem histórica permaneceu imutável"
 
     sql("""
       CREATE FUNCTION public.fail_reorder_item() RETURNS trigger LANGUAGE plpgsql AS $$
@@ -205,13 +288,12 @@ try:
       );
     """, check=False)
     assert failed.returncode != 0 and "falha sintética" in failed.stderr
-    assert scalar(sql("SELECT count(*) FROM public.quotes;")) == "1"
+    assert scalar(sql("SELECT count(*) FROM public.quotes;")) == "3"
     assert scalar(sql("SELECT count(*) FROM public.sicoob_reorder_requests;")) == "1"
-    result["rollback"] = "falha forçada no item não deixou cabeçalho nem registro idempotente órfão"
+    simulation["rollback"] = "falha forçada no item não deixou cabeçalho nem registro idempotente órfão"
 
-    result["resultado"] = "aprovado"
-    evidence = ROOT / "docs/execucao/evidencias/recompra-sicoob.json"
-    evidence.write_text(json.dumps(result, ensure_ascii=False, indent=2) + "\n")
+    simulation["resultado"] = "aprovado"
+    EVIDENCE.write_text(json.dumps(result, ensure_ascii=False, indent=2) + "\n")
     print(json.dumps(result, ensure_ascii=False))
 finally:
     command(["docker", "rm", "-f", CONTAINER], check=False)

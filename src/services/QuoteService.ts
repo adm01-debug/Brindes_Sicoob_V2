@@ -33,57 +33,6 @@ function mapDbQuoteItemRow(
   } as QuoteItem;
 }
 
-/**
- * Traduz uma linha de `orders` (colunas nulas no banco) pros campos de
- * cliente/entrega de `Partial<Quote>` (opcionais, sem `null`). Extraído de
- * `QuoteService.reorderFromOrder` só para manter a complexidade ciclomática
- * do método sob o limite do lint.
- */
-function mapOrderToQuoteFields(order: {
-  client_id: string | null;
-  client_name: string | null;
-  client_email: string | null;
-  client_phone: string | null;
-  client_company: string | null;
-  payment_terms: string | null;
-  delivery_time: string | null;
-  shipping_type: string | null;
-  order_number: string;
-}): Partial<Quote> {
-  return {
-    client_id: order.client_id ?? undefined,
-    client_name: order.client_name ?? undefined,
-    client_email: order.client_email ?? undefined,
-    client_phone: order.client_phone ?? undefined,
-    client_company: order.client_company ?? undefined,
-    payment_terms: order.payment_terms ?? undefined,
-    delivery_time: order.delivery_time ?? undefined,
-    shipping_type: order.shipping_type ?? undefined,
-    notes: `Recompra do pedido #${order.order_number}.`,
-    status: 'draft',
-  };
-}
-
-/** Mesma ideia acima, para uma linha de `order_items` virar `QuoteItem`. */
-function mapOrderItemToQuoteItem(item: {
-  product_id: string | null;
-  product_sku: string | null;
-  product_name: string | null;
-  product_image_url: string | null;
-  quantity: number | null;
-  unit_price: number | null;
-}): QuoteItem {
-  return {
-    product_id: item.product_id ?? "",
-    product_sku: item.product_sku ?? undefined,
-    product_name: item.product_name ?? "",
-    product_image_url: item.product_image_url ?? undefined,
-    quantity: item.quantity ?? 0,
-    unit_price: item.unit_price ?? 0,
-    personalizations: [],
-  };
-}
-
 function describeQuoteHeaderChanges(oldQuote: Quote, newQuote: Partial<Quote>): string[] {
   const changes: string[] = [];
   if (newQuote.discount_percent !== undefined && newQuote.discount_percent !== oldQuote.discount_percent) {
@@ -264,49 +213,39 @@ export class QuoteService {
   }
 
   static async reorder(quoteId: string, userId: string, orgId: string | null): Promise<Quote> {
-    const original = await this.getById(quoteId);
-    if (!original) throw new Error("Orçamento original não encontrado");
-
-    // Clean sensitive/metadata for the new quote
-    // (converted_at nunca existiu na tabela quotes nem no tipo Quote —
-    //  removido daqui; ver docs/correcoes-validacao-2026-09-13.md)
-    const {
-      id, created_at, updated_at, quote_number, status,
-      total, subtotal, discount_amount,
-      ...cleanQuote
-    } = original;
-    
-    const newQuote: Partial<Quote> = {
-      ...cleanQuote,
-      status: 'draft',
-      notes: `Recompra do orçamento #${original.quote_number}. ${original.notes || ''}`,
-    };
-
-    return this.create({
-      quote: newQuote,
-      items: original.items || [],
-      userId,
-      orgId
+    void userId;
+    void orgId;
+    const { data, error } = await supabase.functions.invoke('sicoob-reorder', {
+      body: { sourceQuoteId: quoteId, idempotencyKey: crypto.randomUUID() },
     });
+    if (error) {
+      if (typeof data?.error === 'string') throw new Error(data.error);
+      throw error;
+    }
+    if (typeof data?.quoteId !== 'string') {
+      throw new Error('A recompra não retornou o novo orçamento.');
+    }
+    const reordered = await this.getById(data.quoteId);
+    if (!reordered) throw new Error('O orçamento de recompra não ficou acessível após a criação.');
+    return reordered;
   }
 
   static async reorderFromOrder(orderId: string, userId: string, orgId: string | null): Promise<Quote> {
-    // rls-allow: origem identificada; RLS valida ownership e organização
-    const { data: order, error: orderErr } = await supabase.from("orders").select("*").eq("id", orderId).single();
-    if (orderErr) throw orderErr;
-    
-    const { data: items, error: itemsErr } = await supabase.from("order_items").select("*").eq("order_id", orderId);
-    if (itemsErr) throw itemsErr;
-
-    const newQuote = mapOrderToQuoteFields(order);
-    const quoteItems: QuoteItem[] = (items || []).map(mapOrderItemToQuoteItem);
-
-    return this.create({
-      quote: newQuote,
-      items: quoteItems,
-      userId,
-      orgId
+    void userId;
+    void orgId;
+    const { data, error } = await supabase.functions.invoke('sicoob-reorder', {
+      body: { orderId, idempotencyKey: crypto.randomUUID() },
     });
+    if (error) {
+      if (typeof data?.error === 'string') throw new Error(data.error);
+      throw error;
+    }
+    if (typeof data?.quoteId !== 'string') {
+      throw new Error('A recompra não retornou o novo orçamento.');
+    }
+    const reordered = await this.getById(data.quoteId);
+    if (!reordered) throw new Error('O orçamento de recompra não ficou acessível após a criação.');
+    return reordered;
   }
 
   static async logHistory(params: {

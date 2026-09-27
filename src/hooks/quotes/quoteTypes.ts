@@ -50,6 +50,13 @@ export interface QuoteItem {
   /** Identidade da variação no catálogo externo, necessária para estoque e Bitrix. */
   source_variant_id?: string | null;
   source_variant_sku?: string | null;
+  catalog_checked_at?: string | null;
+  catalog_valid_until?: string | null;
+  catalog_available_stock?: number | null;
+  catalog_minimum_quantity?: number | null;
+  historical_unit_price?: number | null;
+  price_changed?: boolean;
+  catalog_stock_is_reserved?: boolean;
   personalizations?: QuoteItemPersonalization[];
 }
 
@@ -100,6 +107,12 @@ export interface Quote {
   approved_by?: string;
   approved_pdf_url?: string;
   tags?: string[];
+  reorder_source_order_id?: string | null;
+  reorder_source_quote_id?: string | null;
+  catalog_revalidated_at?: string | null;
+  catalog_valid_until?: string | null;
+  catalog_stock_is_reserved?: boolean;
+  reorder_price_changed_items?: number;
 }
 
 export interface PersonalizationTechnique {

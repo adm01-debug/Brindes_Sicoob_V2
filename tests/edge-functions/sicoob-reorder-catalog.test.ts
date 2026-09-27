@@ -17,6 +17,9 @@ const product: CatalogProduct = {
   is_active: true,
   stock_quantity: 100,
   min_quantity: 1,
+  min_order_quantity: 1,
+  price_last_verified_at: '2026-09-12T19:00:00.000Z',
+  price_freshness_threshold_days: 60,
 };
 
 const variant: CatalogVariant = {
@@ -43,6 +46,7 @@ function source(id: string, quantity: number): SourceItem {
     color_hex: null,
     size_code: null,
     personalization_snapshot: null,
+    unit_price: 18,
   };
 }
 
@@ -67,6 +71,42 @@ describe('catálogo vigente da recompra Sicoob', () => {
     expect(result).toHaveLength(2);
     expect(result.map((item) => item.source_order_item_id)).toEqual(['item-1', 'item-2']);
     expect(result.every((item) => item.unit_price === 24.5)).toBe(true);
+    expect(result.every((item) => item.historical_unit_price === 18)).toBe(true);
+    expect(result.every((item) => item.price_changed)).toBe(true);
+    expect(result.every((item) => item.available_stock === 10)).toBe(true);
+    expect(result.every((item) => item.stock_is_reserved === false)).toBe(true);
+    expect(result.every((item) => item.catalog_valid_until === '2026-09-12T20:05:00.000Z')).toBe(true);
+  });
+
+  it('usa o maior mínimo vigente informado pelo catálogo', () => {
+    expect(() => buildVerifiedReorderItems(
+      [source('item-1', 4)],
+      [{ ...product, min_quantity: 2, min_order_quantity: 5 }],
+      [variant],
+      '2026-09-12T20:00:00.000Z',
+    )).toThrow('quantidade mínima vigente');
+  });
+
+  it('recusa preço cuja confirmação do fornecedor venceu', () => {
+    expect(() => buildVerifiedReorderItems(
+      [source('item-1', 4)],
+      [{
+        ...product,
+        price_last_verified_at: '2026-05-01T00:00:00.000Z',
+        price_freshness_threshold_days: 30,
+      }],
+      [variant],
+      '2026-09-12T20:00:00.000Z',
+    )).toThrow('venceu');
+  });
+
+  it('recusa produto marcado como indisponível mesmo com saldo numérico', () => {
+    expect(() => buildVerifiedReorderItems(
+      [source('item-1', 4)],
+      [{ ...product, is_stockout: true }],
+      [variant],
+      '2026-09-12T20:00:00.000Z',
+    )).toThrow('indisponível');
   });
 
   it('avalia a quantidade mínima sobre a demanda total do SKU', () => {

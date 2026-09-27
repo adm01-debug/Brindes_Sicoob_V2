@@ -14,7 +14,7 @@ interface Props {
 }
 
 /**
- * OneClickReorderQuote — Permite ao Gerente PA duplicar um orçamento anterior rapidamente.
+ * Recompra segura: usa o orçamento aprovado como referência e reconsulta o catálogo.
  */
 export function OneClickReorderQuote({ quoteId, variant = "outline", className, showLabel = true }: Props) {
   const [isProcessing, setIsProcessing] = useState(false);
@@ -49,7 +49,7 @@ export function OneClickReorderQuote({ quoteId, variant = "outline", className, 
       ) : (
         <RotateCcw className="h-4 w-4 mr-2" />
       )}
-      {showLabel && "Comprar novamente"}
+      {showLabel && "Recomprar com valores atuais"}
     </Button>
   );
 }

@@ -18,6 +18,7 @@ import { QuoteHistoryPanel } from "@/components/quotes/QuoteHistoryPanel";
 import { toast } from "sonner";
 import { QuoteStatusTimeline } from "@/components/quotes/QuoteStatusTimeline";
 import { QuoteValidityBanner } from "@/components/quotes/QuoteValidityBanner";
+import { ReorderCatalogValidityBanner } from "@/components/quotes/ReorderCatalogValidityBanner";
 import { QuoteConvertToOrder } from "@/components/quotes/QuoteConvertToOrder";
 import { QuoteSingularApprovalActions } from "@/components/quotes/QuoteSingularApprovalActions";
 import { QuoteMobileActionBar } from "@/components/quotes/QuoteMobileActionBar";
@@ -235,6 +236,17 @@ export default function QuoteViewPage() {
             <QuoteStatusTimeline status={quote.status} createdAt={quote.created_at} updatedAt={quote.updated_at} clientResponseAt={quote.client_response_at} isSyncing={isSyncing} />
           </div>
           <QuoteValidityBanner validUntil={quote.valid_until} status={quote.status} pdfUrl={quote.approved_pdf_url} onDownloadPdf={handleDownloadPDF} />
+        </div>
+
+        <div className="print:hidden">
+          <ReorderCatalogValidityBanner
+            quoteId={id}
+            onRevalidated={async () => {
+              if (!id) return;
+              const refreshed = await fetchQuote(id);
+              setQuote(refreshed);
+            }}
+          />
         </div>
         
         {/* Next Action Banner */}

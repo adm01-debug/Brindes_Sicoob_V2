@@ -57,6 +57,10 @@ CREATE TABLE public.quotes (
   quote_number text NOT NULL DEFAULT ('ORC-' || nextval('public.quote_number_seq')),
   client_id uuid,
   client_name text,
+  client_email text,
+  client_phone text,
+  client_company text,
+  client_cnpj text,
   seller_id uuid NOT NULL,
   status text NOT NULL DEFAULT 'draft',
   subtotal numeric NOT NULL DEFAULT 0,
@@ -66,7 +70,16 @@ CREATE TABLE public.quotes (
   organization_id uuid,
   pa_id uuid,
   singular_id uuid,
-  created_at timestamptz DEFAULT now()
+  payment_terms text,
+  delivery_time text,
+  shipping_type text,
+  shipping_cost numeric,
+  valid_until date,
+  is_latest_version boolean NOT NULL DEFAULT true,
+  deleted_at timestamptz,
+  row_version integer NOT NULL DEFAULT 1,
+  created_at timestamptz DEFAULT now(),
+  updated_at timestamptz DEFAULT now()
 );
 CREATE TABLE public.quote_items (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -87,7 +100,8 @@ CREATE TABLE public.quote_items (
   source_variant_id text,
   source_variant_sku text,
   catalog_checked_at timestamptz,
-  sort_order integer DEFAULT 0
+  sort_order integer DEFAULT 0,
+  updated_at timestamptz DEFAULT now()
 );
 CREATE TABLE public.quote_item_personalizations (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -104,6 +118,34 @@ CREATE TABLE public.quote_item_personalizations (
   notes text,
   created_at timestamptz DEFAULT now()
 );
+
+CREATE TABLE public.quote_history (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  quote_id uuid NOT NULL REFERENCES public.quotes(id) ON DELETE CASCADE,
+  user_id uuid,
+  action text NOT NULL,
+  description text,
+  field_changed text,
+  old_value text,
+  new_value text,
+  metadata jsonb DEFAULT '{}'::jsonb,
+  created_at timestamptz DEFAULT now()
+);
+
+CREATE FUNCTION public.can_manage_quote_scope(p_actor_id uuid, p_quote_id uuid)
+RETURNS boolean LANGUAGE sql STABLE AS $$
+  SELECT EXISTS (
+    SELECT 1 FROM public.quotes q
+    WHERE q.id = p_quote_id
+      AND (
+        q.seller_id = p_actor_id
+        OR EXISTS (
+          SELECT 1 FROM public.user_roles ur
+          WHERE ur.user_id = p_actor_id AND ur.role IN ('admin', 'dev', 'supervisor')
+        )
+      )
+  )
+$$;
 
 CREATE FUNCTION public.set_quote_hierarchy()
 RETURNS trigger LANGUAGE plpgsql AS $$

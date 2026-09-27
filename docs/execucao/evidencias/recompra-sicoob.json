@@ -1,10 +1,58 @@
 {
-  "ambiente": "PostgreSQL 16 descartável, --network none; somente dados sintéticos",
-  "migracao": "supabase/migrations/20260912170000_sicoob_reorder_atomic.sql",
-  "producao_verificada": false,
-  "atomicidade_e_hierarquia": "orçamento, item e personalização reprecificada gravados juntos; PA não foi escrito em client_id; hierarquia veio do pedido; arte marcada para nova aprovação",
-  "idempotencia": "retry após resposta perdida ignorou mudanças posteriores de nome, preço e data do catálogo e não duplicou o orçamento",
-  "guardas": "RPC indisponível ao navegador; conteúdo divergente, usuário fora do escopo e consulta de catálogo vencida foram recusados",
-  "rollback": "falha forçada no item não deixou cabeçalho nem registro idempotente órfão",
-  "resultado": "aprovado"
+  "ambiente_canonico": "PostgreSQL 17.6 do projeto cfmzkthhgliqelozlmwu",
+  "migracao_canonica": "supabase/migrations/20260927210000_sicoob_reorder_catalog_validity.sql",
+  "banco_canonico": {
+    "aplicada": true,
+    "ledger": true,
+    "tabela_idempotencia_orcamento": true,
+    "rpc_recompra_orcamento": true,
+    "rpc_revalidacao": true,
+    "gatilho_validade": true,
+    "rpc_revalidacao_authenticated": false,
+    "rpc_revalidacao_service_role": true
+  },
+  "edge_function": {
+    "slug": "sicoob-reorder",
+    "status": "ACTIVE",
+    "versao": 1,
+    "verify_jwt": true,
+    "sem_jwt": 401,
+    "jwt_invalido": 401,
+    "jwt_valido_payload_incompleto": 400,
+    "validacao_negocio_alcancada": true
+  },
+  "reparo_auth_detectado_no_smoke": {
+    "migracao": "supabase/migrations/20260927194036_restore_notification_preferences.sql",
+    "simulacao_regressao": "scripts/qa/simular-notification-preferences-auth.py",
+    "causa": "o trigger de novo usuário referenciava public.notification_preferences ausente no banco canônico",
+    "migration_canonica": true,
+    "rls_e_policy_canonicas": true,
+    "trigger_auth_canonico": true,
+    "usuarios_existentes_com_backfill": true,
+    "cadastro_temporario": 201,
+    "preferencias_padrao_criadas": 1,
+    "login_temporario": 200,
+    "usuario_temporario_excluido": true,
+    "preferencias_removidas_em_cascata": true
+  },
+  "capacidade_edge": "o projeto estava no limite de 100 funções; sicoob-seed-debug, diagnóstico de desenvolvimento reimplantável a partir do código versionado, foi retirado do runtime para liberar a vaga operacional",
+  "publicacao_web": "build Vite publicado; raiz canônica HTTP 200; executor temporário removido e sua rota retorna HTTP 404",
+  "producao_verificada": true,
+  "resultado_canonico": "aprovado",
+  "simulacao_local": {
+    "ambiente": "PostgreSQL 16 descartável, --network none; somente dados sintéticos",
+    "migracoes": [
+      "supabase/migrations/20260912170000_sicoob_reorder_atomic.sql",
+      "supabase/migrations/20260913120001_quote_versioning_atomic_followup.sql",
+      "supabase/migrations/20260913120002_sicoob_reorder_atomic_followup.sql",
+      "supabase/migrations/20260927210000_sicoob_reorder_catalog_validity.sql"
+    ],
+    "atomicidade_e_hierarquia": "orçamento, item e personalização reprecificada gravados juntos; origem, diferença de preço e validade ficaram auditáveis; PA não foi escrito em client_id; arte exige nova aprovação",
+    "idempotencia": "retry após resposta perdida ignorou mudanças posteriores de nome, preço e data do catálogo e não duplicou o orçamento",
+    "guardas": "RPC indisponível ao navegador; conteúdo divergente, usuário fora do escopo e consulta de catálogo vencida foram recusados",
+    "validade_explicita": "transição com consulta vencida foi recusada; nova consulta substituiu o snapshot atomicamente; estoque continuou informativo e não reservado",
+    "recompra_de_orcamento": "orçamento aprovado foi usado apenas como referência; nova proposta recebeu preço vigente e a origem histórica permaneceu imutável",
+    "rollback": "falha forçada no item não deixou cabeçalho nem registro idempotente órfão",
+    "resultado": "aprovado"
+  }
 }

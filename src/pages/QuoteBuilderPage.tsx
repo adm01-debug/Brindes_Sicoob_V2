@@ -42,6 +42,7 @@ import { useQuoteBuilderState } from "@/hooks/useQuoteBuilderState";
 import { useUnsavedChangesGuard } from "@/hooks/useUnsavedChangesGuard";
 import { UnsavedChangesDialog } from "@/components/common/UnsavedChangesDialog";
 import { TagManager } from "@/components/quotes/TagManager";
+import { ReorderCatalogValidityBanner } from "@/components/quotes/ReorderCatalogValidityBanner";
 
 export default function QuoteBuilderPage() {
   const s = useQuoteBuilderState();
@@ -128,6 +129,12 @@ export default function QuoteBuilderPage() {
 
         {/* Stepper */}
         <QuoteBuilderStepper completedSteps={s.completedSteps} />
+
+        <ReorderCatalogValidityBanner
+          quoteId={s.quoteId}
+          hasUnsavedChanges={s.hasUnsavedData}
+          onRevalidated={() => window.location.reload()}
+        />
 
         {/* Template notifications */}
         {s.templateApplied && (
