@@ -24,6 +24,10 @@ export const publicRoutes = [
     path: "/reset-password", 
     component: lazyWithRetry(() => import("@/pages/ResetPassword")) 
   }),
+  defineRoute({
+    path: "/convite/:token",
+    component: lazyWithRetry(() => import("@/pages/sicoob/SicoobInvitationAcceptPage")),
+  }),
   defineRoute({ 
     path: "/verificacao", 
     component: lazyWithRetry(() => import("@/pages/VerificationPage")) 
