@@ -17,13 +17,19 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { untypedFrom } from "@/lib/supabase-untyped";
+import {
+  firstInvitationError,
+  type InvitationField,
+  type InvitationFormErrors,
+  validateInvitationForm,
+} from "@/lib/sicoob/invitationForm";
 
 interface CooperativeRow {
   id: string;
@@ -97,6 +103,7 @@ export default function SicoobInvitationsPage() {
   const [expiresInHours, setExpiresInHours] = useState("48");
   const [issuedLink, setIssuedLink] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<InvitationFormErrors>({});
 
   const roleOptions = useMemo(
     () => ROLE_OPTIONS.filter((option) => isDev || !option.managerOnly),
@@ -167,6 +174,7 @@ export default function SicoobInvitationsPage() {
       setIssuedLink(link);
       setCopied(false);
       setEmail("");
+      setFieldErrors({});
       await queryClient.invalidateQueries({ queryKey: ["sicoob-invitations"] });
       toast.success("Convite emitido. Copie o link e envie pelo canal institucional aprovado.");
     },
@@ -205,15 +213,23 @@ export default function SicoobInvitationsPage() {
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    const errors = validateInvitationForm({
+      email,
+      cooperativeId,
+      role: selectedRole?.value ?? "",
+      paId,
+      expiresInHours,
+      requiresPa: Boolean(selectedRole?.requiresPa),
+    });
+    setFieldErrors(errors);
+    const firstError = firstInvitationError(errors);
+    if (firstError) {
+      document.getElementById(`invitation-${firstError}`)?.focus();
+      toast.error("Revise os campos indicados no formulário.");
+      return;
+    }
+    if (!selectedRole) return;
     const hours = Number(expiresInHours);
-    if (!email.trim() || !cooperativeId || !selectedRole || !Number.isInteger(hours) || hours < 1 || hours > 168) {
-      toast.error("Revise email, cooperativa, papel e validade.");
-      return;
-    }
-    if (selectedRole.requiresPa && !paId) {
-      toast.error("Selecione o PA para esse papel.");
-      return;
-    }
     issueInvitation.mutate({
       email: email.trim().toLowerCase(),
       cooperativeId,
@@ -221,6 +237,10 @@ export default function SicoobInvitationsPage() {
       role: selectedRole.value,
       hours,
     });
+  };
+
+  const clearFieldError = (field: InvitationField) => {
+    setFieldErrors((current) => ({ ...current, [field]: undefined }));
   };
 
   const copyLink = async () => {
@@ -249,57 +269,83 @@ export default function SicoobInvitationsPage() {
       <div className="grid gap-6 lg:grid-cols-[minmax(0,420px)_1fr]">
         <Card>
           <CardHeader>
-            <CardTitle>Novo convite</CardTitle>
+            <h2 className="text-2xl font-semibold leading-none tracking-tight">Novo convite</h2>
             <CardDescription>A conta deve ser criada em Usuários antes do convite e entrar com o mesmo email informado abaixo.</CardDescription>
           </CardHeader>
           <CardContent>
-            <form className="space-y-4" onSubmit={handleSubmit}>
+            <form className="space-y-4" onSubmit={handleSubmit} noValidate aria-busy={issueInvitation.isPending}>
               <div className="space-y-2">
                 <Label htmlFor="invitation-email">Email institucional</Label>
-                <Input id="invitation-email" type="email" autoComplete="email" value={email} onChange={(event) => setEmail(event.target.value)} required />
+                <Input
+                  id="invitation-email"
+                  type="email"
+                  autoComplete="email"
+                  value={email}
+                  onChange={(event) => { setEmail(event.target.value); clearFieldError("email"); }}
+                  aria-invalid={Boolean(fieldErrors.email)}
+                  aria-describedby={fieldErrors.email ? "invitation-email-error" : undefined}
+                  required
+                />
+                {fieldErrors.email && <p id="invitation-email-error" role="alert" className="text-sm text-destructive">{fieldErrors.email}</p>}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="invitation-cooperative">Cooperativa</Label>
-                <Select value={cooperativeId} onValueChange={(value) => { setCooperativeId(value); setPaId(""); }}>
-                  <SelectTrigger id="invitation-cooperative"><SelectValue placeholder="Selecione" /></SelectTrigger>
+                <Select value={cooperativeId} onValueChange={(value) => { setCooperativeId(value); setPaId(""); clearFieldError("cooperative"); clearFieldError("pa"); }}>
+                  <SelectTrigger id="invitation-cooperative" aria-invalid={Boolean(fieldErrors.cooperative)} aria-describedby={fieldErrors.cooperative ? "invitation-cooperative-error" : undefined}><SelectValue placeholder="Selecione" /></SelectTrigger>
                   <SelectContent>
                     {(cooperativesQuery.data ?? []).map((cooperative) => (
                       <SelectItem key={cooperative.id} value={cooperative.id}>{cooperative.codigo} · {cooperative.nome}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
+                {fieldErrors.cooperative && <p id="invitation-cooperative-error" role="alert" className="text-sm text-destructive">{fieldErrors.cooperative}</p>}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="invitation-role">Papel</Label>
-                <Select value={role} onValueChange={(value) => { setRole(value); setPaId(""); }}>
-                  <SelectTrigger id="invitation-role"><SelectValue /></SelectTrigger>
+                <Select value={role} onValueChange={(value) => { setRole(value); setPaId(""); clearFieldError("role"); clearFieldError("pa"); }}>
+                  <SelectTrigger id="invitation-role" aria-invalid={Boolean(fieldErrors.role)} aria-describedby={fieldErrors.role ? "invitation-role-error" : undefined}><SelectValue /></SelectTrigger>
                   <SelectContent>
                     {roleOptions.map((option) => <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>)}
                   </SelectContent>
                 </Select>
+                {fieldErrors.role && <p id="invitation-role-error" role="alert" className="text-sm text-destructive">{fieldErrors.role}</p>}
               </div>
               {selectedRole?.requiresPa && (
                 <div className="space-y-2">
                   <Label htmlFor="invitation-pa">Posto de atendimento</Label>
-                  <Select value={paId} onValueChange={setPaId}>
-                    <SelectTrigger id="invitation-pa"><SelectValue placeholder="Selecione" /></SelectTrigger>
+                  <Select value={paId} onValueChange={(value) => { setPaId(value); clearFieldError("pa"); }}>
+                    <SelectTrigger id="invitation-pa" aria-invalid={Boolean(fieldErrors.pa)} aria-describedby={fieldErrors.pa ? "invitation-pa-error" : undefined}><SelectValue placeholder="Selecione" /></SelectTrigger>
                     <SelectContent>
                       {(pasQuery.data ?? []).map((pa) => <SelectItem key={pa.id} value={pa.id}>{pa.codigo} · {pa.nome}</SelectItem>)}
                     </SelectContent>
                   </Select>
+                  {fieldErrors.pa && <p id="invitation-pa-error" role="alert" className="text-sm text-destructive">{fieldErrors.pa}</p>}
                 </div>
               )}
               <div className="space-y-2">
                 <Label htmlFor="invitation-expiry">Validade em horas</Label>
-                <Input id="invitation-expiry" type="number" min={1} max={168} step={1} value={expiresInHours} onChange={(event) => setExpiresInHours(event.target.value)} />
+                <Input
+                  id="invitation-expiry"
+                  type="number"
+                  min={1}
+                  max={168}
+                  step={1}
+                  value={expiresInHours}
+                  onChange={(event) => { setExpiresInHours(event.target.value); clearFieldError("expiry"); }}
+                  aria-invalid={Boolean(fieldErrors.expiry)}
+                  aria-describedby={fieldErrors.expiry ? "invitation-expiry-error" : "invitation-expiry-hint"}
+                />
+                <p id="invitation-expiry-hint" className="text-xs text-muted-foreground">Entre 1 hora e 7 dias.</p>
+                {fieldErrors.expiry && <p id="invitation-expiry-error" role="alert" className="text-sm text-destructive">{fieldErrors.expiry}</p>}
               </div>
               <Button className="w-full gap-2" disabled={issueInvitation.isPending} type="submit">
                 {issueInvitation.isPending ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Mail className="h-4 w-4" />}
                 Emitir convite
               </Button>
             </form>
+            {issueInvitation.error && <p role="alert" className="mt-3 text-sm text-destructive">Não foi possível emitir o convite. Revise os dados ou tente novamente.</p>}
             {issuedLink && (
-              <div className="mt-5 space-y-2 rounded-lg border border-sicoob-green/30 bg-sicoob-green/5 p-3">
+              <div role="status" aria-live="polite" className="mt-5 space-y-2 rounded-lg border border-sicoob-green/30 bg-sicoob-green/5 p-3">
                 <p className="text-sm font-medium">Link exibido uma única vez</p>
                 <p className="break-all font-mono text-xs text-muted-foreground">{issuedLink}</p>
                 <Button size="sm" variant="outline" className="gap-2" onClick={copyLink}>
@@ -312,12 +358,15 @@ export default function SicoobInvitationsPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Histórico recente</CardTitle>
+            <h2 className="text-2xl font-semibold leading-none tracking-tight">Histórico recente</h2>
             <CardDescription>Reenvie emitindo outro convite para o mesmo escopo; o link anterior será invalidado.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
-            {invitationsQuery.isLoading && <p className="text-sm text-muted-foreground">Carregando convites…</p>}
+            {invitationsQuery.isLoading && <p role="status" aria-live="polite" className="text-sm text-muted-foreground">Carregando convites…</p>}
             {invitationsQuery.error && <p role="alert" className="text-sm text-destructive">Não foi possível carregar os convites.</p>}
+            {!invitationsQuery.isLoading && !invitationsQuery.error && (invitationsQuery.data?.length ?? 0) === 0 && (
+              <p className="rounded-lg border border-dashed p-8 text-center text-sm text-muted-foreground">Nenhum convite foi emitido neste escopo.</p>
+            )}
             {(invitationsQuery.data ?? []).map((invitation) => {
               const status = effectiveStatus(invitation);
               return (
@@ -382,9 +431,6 @@ export default function SicoobInvitationsPage() {
                 </article>
               );
             })}
-            {!invitationsQuery.isLoading && (invitationsQuery.data?.length ?? 0) === 0 && (
-              <p className="rounded-lg border border-dashed p-8 text-center text-sm text-muted-foreground">Nenhum convite emitido no seu escopo.</p>
-            )}
           </CardContent>
         </Card>
       </div>

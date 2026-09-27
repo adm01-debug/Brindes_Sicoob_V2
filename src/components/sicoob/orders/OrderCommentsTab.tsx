@@ -48,25 +48,29 @@ export const OrderCommentsTab = ({ orderId }: OrderCommentsTabProps) => {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4" aria-busy={addComment.isPending}>
             <div className="relative">
+              <Label htmlFor="order-comment" className="sr-only">Comentário do pedido</Label>
               <Textarea
+                id="order-comment"
                 placeholder="Escreva uma mensagem... Use @ para mencionar gestores."
                 value={newComment}
                 onChange={(e) => setNewComment(e.target.value)}
                 className="min-h-[100px] resize-none border-muted-foreground/20 focus-visible:ring-sicoob-green pr-12"
+                aria-describedby="order-comment-hint"
               />
+              <p id="order-comment-hint" className="sr-only">Digite arroba para mencionar um gestor.</p>
               {newComment.includes("@") && (
-                <div className="absolute bottom-full left-0 w-48 bg-white border rounded-md shadow-lg z-50 mb-1 p-1">
+                <div className="absolute bottom-full left-0 z-50 mb-1 w-48 rounded-md border bg-white p-1 shadow-lg" aria-label="Sugestões de menção">
                   <p className="text-[9px] font-bold text-muted-foreground px-2 py-1 uppercase">Mencionar Gestor</p>
-                  <Button variant="ghost" size="sm" className="w-full justify-start h-8 text-xs gap-2" onClick={() => setNewComment(newComment.split("@")[0] + "@Admin Central ")}>
+                  <Button type="button" variant="ghost" size="sm" className="w-full justify-start h-8 text-xs gap-2" onClick={() => setNewComment(newComment.split("@")[0] + "@Admin Central ")}>
                     <Avatar className="h-5 w-5"><AvatarFallback className="text-[8px]">AC</AvatarFallback></Avatar>
                     Admin Central
                   </Button>
                 </div>
               )}
             </div>
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               {isSupervisorOrAbove ? (
                 <div className="flex items-center space-x-2">
                   <Switch 
@@ -111,7 +115,7 @@ export const OrderCommentsTab = ({ orderId }: OrderCommentsTabProps) => {
 
       <div className="space-y-4">
         {isLoading ? (
-          <div className="text-center py-8 text-muted-foreground animate-pulse">Carregando mensagens...</div>
+          <div role="status" aria-live="polite" className="text-center py-8 text-muted-foreground animate-pulse">Carregando mensagens...</div>
         ) : comments?.length === 0 ? (
           <div className="text-center py-12 border-2 border-dashed rounded-xl bg-muted/10">
             <MessageSquare className="h-8 w-8 text-muted-foreground/30 mx-auto mb-2" />
