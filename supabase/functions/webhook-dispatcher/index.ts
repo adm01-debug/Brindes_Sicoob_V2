@@ -7,12 +7,9 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 import { crypto } from "https://deno.land/std@0.224.0/crypto/mod.ts";
 import { encodeHex } from "https://deno.land/std@0.224.0/encoding/hex.ts";
 import { z } from "https://deno.land/x/zod@v3.23.8/mod.ts";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
-};
+import { getCorsHeaders, handleCorsPreflightIfNeeded } from "../_shared/cors.ts";
+import { authorize } from "../_shared/authorize.ts";
+import { requireInternalService } from "../_shared/internal-service-auth.ts";
 
 const BodySchema = z.object({
   event: z.string().min(1),
@@ -43,14 +40,17 @@ async function payloadHash(payload: string): Promise<string> {
 }
 
 Deno.serve(async (req) => {
-  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+  const preflight = handleCorsPreflightIfNeeded(req);
+  if (preflight) return preflight;
+  const corsHeaders = getCorsHeaders(req);
+  if (req.method !== "POST") {
+    return new Response(JSON.stringify({ error: "method_not_allowed" }), {
+      status: 405,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
 
   try {
-    const supabase = createClient(
-      Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
-    );
-
     const parsed = BodySchema.safeParse(await req.json().catch(() => ({})));
     if (!parsed.success) {
       return new Response(JSON.stringify({ error: "Invalid body" }), {
@@ -59,6 +59,21 @@ Deno.serve(async (req) => {
     }
     let { event, payload } = parsed.data;
     const { replay_delivery_id, test_mode, test_webhook_id } = parsed.data;
+
+    // Disparos operacionais são exclusivos de cron/Edge por segredo dedicado.
+    // Teste e replay podem causar efeitos externos e por isso exigem supervisor.
+    if (test_mode || replay_delivery_id) {
+      const auth = await authorize(req, { requireRole: "supervisor", enforceServerSide: true });
+      if (!auth.ok) return auth.response;
+    } else {
+      const denied = await requireInternalService(req, "WEBHOOK_DISPATCHER_SECRET");
+      if (denied) return denied;
+    }
+
+    const supabase = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+    );
 
     // Test mode (Onda 13 #9): single-shot, no retries, no DB write, no breaker
     if (test_mode) {

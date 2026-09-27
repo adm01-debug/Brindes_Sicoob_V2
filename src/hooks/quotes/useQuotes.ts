@@ -115,15 +115,16 @@ export function useQuotes() {
         updateData.approved_by = user.id;
       }
 
-      const { error } = await supabase
+      const { data: updatedRows, error } = await supabase
         // rls-allow: atualização por id; RLS valida ownership
         .from("quotes")
         .update(updateData)
         .eq("id", quoteId)
-        .eq("row_version", quote.row_version || 1);
+        .eq("row_version", quote.row_version || 1)
+        .select("id");
       
-      if (error) {
-        if (error.code === 'PGRST116') {
+      if (error || !updatedRows?.length) {
+        if (error?.code === 'PGRST116' || !updatedRows?.length) {
           throw new Error("Concorrência detectada: Este orçamento foi modificado por outro usuário. Por favor, recarregue a página.");
         }
         throw error;
@@ -182,7 +183,17 @@ export function useQuotes() {
 
     setIsLoading(true);
     try {
-      const { error } = await supabase
+      const uniqueQuoteIds = [...new Set(quoteIds)];
+      const { data: accessibleQuotes, error: accessError } = await supabase
+        .from("quotes")
+        .select("id")
+        .in("id", uniqueQuoteIds);
+      if (accessError) throw accessError;
+      if ((accessibleQuotes?.length ?? 0) !== uniqueQuoteIds.length) {
+        throw new Error("Um ou mais orçamentos não foram encontrados ou não estão no seu escopo.");
+      }
+
+      const { data: updatedRows, error } = await supabase
         // rls-allow: atualização por id; RLS valida ownership
         .from("quotes")
         .update({ 
@@ -190,12 +201,16 @@ export function useQuotes() {
           ...(notes ? { rejection_notes: notes } : {}),
           ...(status === 'approved' ? { approved_at: new Date().toISOString(), approved_by: user.id } : {})
         } as Partial<Quote>)
-        .in("id", quoteIds);
+        .in("id", uniqueQuoteIds)
+        .select("id");
 
       if (error) throw error;
+      if ((updatedRows?.length ?? 0) !== uniqueQuoteIds.length) {
+        throw new Error("Atualização concorrente detectada. Recarregue a lista antes de tentar novamente.");
+      }
 
       // Log history for each
-      const promises = quoteIds.map(id => 
+      const promises = uniqueQuoteIds.map(id =>
         QuoteService.logHistory({
           quoteId: id,
           userId: user.id,
@@ -208,7 +223,7 @@ export function useQuotes() {
       );
       await Promise.all(promises);
 
-      toast.success(`${quoteIds.length} orçamentos atualizados!`);
+      toast.success(`${uniqueQuoteIds.length} orçamentos atualizados!`);
       fetchQuotes();
       return true;
     } catch (err) {

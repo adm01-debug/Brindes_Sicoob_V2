@@ -5,7 +5,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { generateProposalPDFv2 } from "@/utils/proposalPdfReactGenerator";
 import { toast } from "sonner";
 import { logger } from "@/lib/logger";
-import { selectCrmById } from "@/lib/crm-db";
 import type { ProposalTemplateData } from "@/components/pdf/ProposalHtmlTemplate";
 import type { Quote } from "@/hooks/quotes/useQuotes";
 import { bitrixCircuitBreaker } from "@/utils/resilience";
@@ -13,19 +12,13 @@ import { bitrixCircuitBreaker } from "@/utils/resilience";
 interface SyncBitrixParams {
   quote: Quote;
   proposalData: ProposalTemplateData;
-  bitrixCompanyId: string | null;
-  userEmail?: string;
   logQuoteHistory: (quoteId: string, action: string, description: string, meta?: Record<string, unknown>) => Promise<void>;
-  onBitrixCompanyIdFound?: (id: string) => void;
 }
 
 export async function syncQuoteToBitrix({
   quote,
   proposalData,
-  bitrixCompanyId,
-  userEmail,
   logQuoteHistory,
-  onBitrixCompanyIdFound,
 }: SyncBitrixParams): Promise<{
   success: boolean;
   updatedQuote?: Partial<Quote>;
@@ -38,42 +31,6 @@ export async function syncQuoteToBitrix({
   }
   const quoteId = quote.id;
 
-  let effectiveBitrixCompanyId = bitrixCompanyId;
-
-  if (!effectiveBitrixCompanyId && quote.client_id) {
-    try {
-      const company = await selectCrmById<any>("companies", quote.client_id);
-      const bId = company?.bitrix_company_id ?? company?.bitrix_id;
-      if (bId) {
-        effectiveBitrixCompanyId = String(bId);
-        onBitrixCompanyIdFound?.(String(bId));
-      }
-    } catch { /* ignore */ }
-  }
-
-  if (!effectiveBitrixCompanyId) {
-    toast.error("Empresa sem ID Bitrix24", {
-      description: "Esta empresa não possui um vínculo com o Bitrix24.",
-    });
-    return { success: false };
-  }
-
-  const itemsSemBitrixId = quote.items?.filter(item => !item.bitrix_product_id) || [];
-  const itensSincronizaveis = quote.items?.filter(item => !!item.bitrix_product_id) || [];
-
-  if (itensSincronizaveis.length === 0) {
-    toast.error("Nenhum produto com ID Bitrix24");
-    return { success: false };
-  }
-
-  if (itemsSemBitrixId.length > 0) {
-    const nomes = itemsSemBitrixId.map(i => `${i.product_name}${i.color_name ? ` - ${i.color_name}` : ''}`).join(", ");
-    toast.warning(`${itemsSemBitrixId.length} produto(s) excluído(s) da sincronização`, {
-      description: `Sem ID Bitrix24: ${nomes}`,
-      duration: 7000,
-    });
-  }
-
   logQuoteHistory(quoteId, "sync_started", "Sincronização com Bitrix24 iniciada").catch(() => {});
 
   // Generate PDF and upload
@@ -85,14 +42,11 @@ export async function syncQuoteToBitrix({
     const storagePath = `quotes/${quoteId}/${filename}`;
     const { error: uploadError } = await supabase.storage
       .from("proposals")
-      .upload(storagePath, blob, { contentType: "application/pdf", upsert: true });
+    .upload(storagePath, blob, { contentType: "application/pdf", upsert: true });
 
     if (uploadError) {
       logger.warn("PDF upload failed:", uploadError);
-    } else {
-      const { data: urlData } = supabase.storage.from("proposals").getPublicUrl(storagePath);
-      pdfStorageUrl = urlData.publicUrl;
-    }
+    } else pdfStorageUrl = storagePath;
   } catch (pdfErr) {
     logger.warn("PDF generation failed:", pdfErr);
   }
@@ -100,9 +54,7 @@ export async function syncQuoteToBitrix({
   const { data, error } = await bitrixCircuitBreaker.execute(() => 
     supabase.functions.invoke("sync-quote-bitrix", {
       body: {
-        quote, proposalData, pdfUrl: pdfStorageUrl, filename,
-        bitrixCompanyId: effectiveBitrixCompanyId, sellerEmail: userEmail,
-        shippingType: quote.shipping_type, shippingCost: quote.shipping_cost,
+        quoteId, pdfPath: pdfStorageUrl,
       },
     })
   );

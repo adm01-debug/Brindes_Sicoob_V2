@@ -52,7 +52,7 @@ interface QuoteHistoryEntry {
   new_value: string | null;
   created_at: string;
   user_id: string | null;
-  profiles: { full_name: string | null } | null;
+  actor_name?: string | null;
 }
 
 interface QuoteConsolidationPanelProps {
@@ -149,14 +149,23 @@ export function QuoteConsolidationPanel({
     queryKey: ["quote-consolidation-history", quoteIds],
     enabled: activeTab === 'history' && quoteIds.length > 0,
     queryFn: async (): Promise<QuoteHistoryEntry[]> => {
-      const { data, error } = await supabase
+      const { data: history, error } = await supabase
         .from("quote_history")
-        .select("id, quote_id, action, description, old_value, new_value, created_at, user_id, profiles(full_name)")
+        .select("id, quote_id, action, description, old_value, new_value, created_at, user_id")
         .in("quote_id", quoteIds)
         .order("created_at", { ascending: false });
 
       if (error) throw error;
-      return (data ?? []) as unknown as QuoteHistoryEntry[];
+      const userIds = [...new Set((history ?? []).map((entry) => entry.user_id).filter((id): id is string => !!id))];
+      if (!userIds.length) return (history ?? []) as QuoteHistoryEntry[];
+
+      const { data: profiles, error: profilesError } = await supabase
+        .from("profiles")
+        .select("user_id, full_name")
+        .in("user_id", userIds);
+      if (profilesError) throw profilesError;
+      const names = new Map((profiles ?? []).map((profile) => [profile.user_id, profile.full_name]));
+      return (history ?? []).map((entry) => ({ ...entry, actor_name: entry.user_id ? names.get(entry.user_id) ?? null : null })) as QuoteHistoryEntry[];
     },
   });
 
@@ -610,7 +619,7 @@ export function QuoteConsolidationPanel({
                         </div>
                         <div className="text-right">
                           <span className="text-[10px] font-medium text-muted-foreground block uppercase">Alterado por</span>
-                          <span className="text-xs font-semibold">{entry.profiles?.full_name || (entry.user_id ? "Usuário sem nome disponível" : "Sistema")}</span>
+                          <span className="text-xs font-semibold">{entry.actor_name || (entry.user_id ? "Usuário sem nome disponível" : "Sistema")}</span>
                         </div>
                       </div>
                     </div>
