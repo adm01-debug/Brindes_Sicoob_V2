@@ -35,6 +35,7 @@ vi.mock('@/integrations/supabase/client', () => {
         signOut: vi.fn().mockResolvedValue({}),
       },
       from: mockFrom,
+      rpc: vi.fn().mockResolvedValue({ data: [{ active: true, reason: 'active' }], error: null }),
     },
   };
 });
@@ -68,6 +69,7 @@ describe('AuthContext', () => {
     vi.clearAllMocks();
     (globalThis as any).__authCb = null;
     vi.mocked(supabase.auth.getSession).mockResolvedValue({ data: { session: null } } as any);
+    vi.mocked(supabase.rpc).mockResolvedValue({ data: [{ active: true, reason: 'active' }], error: null } as any);
   });
 
   it('throws error when useAuth is used outside AuthProvider', () => {
@@ -196,5 +198,24 @@ describe('AuthContext', () => {
       expect(screen.getByTestId('role').textContent).toBe('none');
       expect(screen.getByTestId('isSeller').textContent).toBe('false');
     }, { timeout: 3000 });
+  });
+
+  it('encerra a sessão local quando o vínculo foi revogado', async () => {
+    const mockUser = { id: 'user-revoked', email: 'revoked@test.com' };
+    const mockSession = { user: mockUser };
+    vi.mocked(supabase.auth.getSession).mockResolvedValue({ data: { session: mockSession } } as any);
+    vi.mocked(supabase.rpc).mockResolvedValue({
+      data: [{ active: false, reason: 'membership_revoked' }],
+      error: null,
+    } as any);
+
+    await act(async () => {
+      render(<AuthProvider><AuthConsumer /></AuthProvider>);
+    });
+
+    await waitFor(() => {
+      expect(supabase.auth.signOut).toHaveBeenCalledWith({ scope: 'local' });
+    });
+    expect(supabase.from).not.toHaveBeenCalledWith('user_roles');
   });
 });

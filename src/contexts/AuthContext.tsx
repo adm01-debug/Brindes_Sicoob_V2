@@ -63,6 +63,30 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+interface SicoobAccessState {
+  active: boolean;
+  reason: string;
+}
+
+async function getSicoobAccessState(): Promise<SicoobAccessState> {
+  const { data, error } = await supabase.rpc("get_sicoob_access_state" as never);
+  if (error) throw error;
+  const state = (data as unknown as SicoobAccessState[] | null)?.[0];
+  return state ?? { active: false, reason: "missing_access_state" };
+}
+
+async function closeRevokedLocalSession(reason: string): Promise<void> {
+  try {
+    sessionStorage.setItem("sicoob_access_ended_reason", reason);
+  } catch {
+    // O encerramento da sessão não depende do armazenamento do navegador.
+  }
+  await supabase.auth.signOut({ scope: "local" });
+  void import("sonner").then(({ toast }) => {
+    toast.error("Seu vínculo de acesso não está mais ativo. Entre novamente ou fale com o gestor.");
+  });
+}
+
 function hasPersistedSession(): boolean {
   if (typeof localStorage === "undefined") return true;
 
@@ -100,6 +124,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         return;
       }
 
+      const accessState = await getSicoobAccessState();
+      if (!accessState.active) {
+        authDebug("AuthContext.fetchUserData", "access revoked", { reason: accessState.reason });
+        await closeRevokedLocalSession(accessState.reason);
+        return;
+      }
+
       await Promise.all([
         fetchProfile(userId),
         fetchRoles(userId),
@@ -111,6 +142,38 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (mountedRef.current) setIsLoading(false);
     }
   }, [fetchProfile, fetchRoles, fetchAAL]);
+
+  // O JWT pode continuar criptograficamente válido por alguns minutos depois
+  // de o vínculo ser removido. O banco já bloqueia o papel imediatamente; esta
+  // revalidação encerra também a sessão local ao voltar para a aba ou, no
+  // máximo, no próximo intervalo.
+  useEffect(() => {
+    if (!user?.id) return;
+    let validating = false;
+    const validateAccess = async () => {
+      if (validating) return;
+      validating = true;
+      try {
+        const state = await getSicoobAccessState();
+        if (!state.active) await closeRevokedLocalSession(state.reason);
+      } catch (error) {
+        authDebugError("AuthContext.validateAccess", "revalidation failed", error);
+      } finally {
+        validating = false;
+      }
+    };
+    const onVisibilityChange = () => {
+      if (document.visibilityState === "visible") void validateAccess();
+    };
+    const interval = globalThis.setInterval(() => void validateAccess(), 60_000);
+    globalThis.addEventListener("focus", validateAccess);
+    document.addEventListener("visibilitychange", onVisibilityChange);
+    return () => {
+      globalThis.clearInterval(interval);
+      globalThis.removeEventListener("focus", validateAccess);
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+    };
+  }, [user?.id]);
 
 
 // Removed large monolithic fetchUserData in favor of modular hooks above

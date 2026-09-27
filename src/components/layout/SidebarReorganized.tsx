@@ -79,6 +79,12 @@ const navGroups: NavGroup[] = [
     defaultOpen: true,
     items: [
       { icon: Gauge, label: "Painel Gestor", href: "/gestor", adminOnly: true },
+      {
+        icon: Mail,
+        label: "Convites institucionais",
+        href: "/gestor/convites",
+        allowedRoles: ['dev', 'supervisor', 'gestor_compras', 'comprador_singular'],
+      },
       { icon: Building, label: "Painel PA", href: "/dashboard-pa" },
       { icon: Users, label: "Minha Carteira", href: "/vendedor/dashboard" },
     ],
