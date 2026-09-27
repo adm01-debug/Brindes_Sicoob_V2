@@ -1,5 +1,4 @@
 import { useState, useMemo } from "react";
-import confetti from "canvas-confetti";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 // import { MainLayout } from "@/components/layout/MainLayout";
@@ -415,15 +414,16 @@ export function QuotesListPage() {
                 onDelete={(id) => setDeleteConfirmId(id)}
                 onBulkDelete={(ids) => setBulkDeleteIds(ids)}
                 onBulkStatusChange={async (ids, status) => {
+                  if (status === "approved") {
+                    toast.error("A aprovação final exige o PDF assinado no detalhe de cada orçamento.");
+                    return;
+                  }
                   let successCount = 0;
                   for (const id of ids) {
                     const ok = await updateQuoteStatus(id, status as Quote["status"]);
                     if (ok) successCount++;
                   }
                   toast.success(`${successCount} orçamento(s) atualizado(s)`);
-                  if (status === "approved" && successCount > 0) {
-                    confetti({ particleCount: 80, spread: 60, origin: { y: 0.7 }, colors: ["hsl(25,100%,50%)", "hsl(142,71%,45%)", "hsl(217,91%,60%)"] });
-                  }
                 }}
                 onBulkExport={(ids) => {
                   const selected = filteredQuotes.filter((q) => ids.includes(q.id!));
@@ -452,15 +452,8 @@ export function QuotesListPage() {
                 }}
                 onDuplicate={(id) => reorderQuote(id)}
                 onMarkApproved={async (id) => {
-                  const ok = await updateQuoteStatus(id, "approved");
-                  if (ok) {
-                    confetti({
-                      particleCount: 80,
-                      spread: 60,
-                      origin: { y: 0.7 },
-                      colors: ["hsl(25,100%,50%)", "hsl(142,71%,45%)", "hsl(217,91%,60%)"],
-                    });
-                  }
+                  toast.info("Gere e assine o PDF no detalhe do orçamento para concluir a aprovação.");
+                  navigate(`/orcamentos/${id}`);
                 }}
               />
             )}

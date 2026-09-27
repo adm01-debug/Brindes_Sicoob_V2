@@ -5,7 +5,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import "../components/render-helpers";
 import { act } from "@testing-library/react";
 import { renderHookWithProviders } from "./_helpers/render-hook-providers";
-import { mockFromOnce, resetSupabaseMocks } from "./_helpers/mock-supabase-builder";
+import { mockFromOnce, mockRpcOnce, resetSupabaseMocks } from "./_helpers/mock-supabase-builder";
 import { useQuoteHistory } from "@/hooks/useQuoteHistory";
 
 beforeEach(() => {
@@ -37,15 +37,15 @@ describe("useQuoteHistory", () => {
   });
 
   it("addHistoryEntry retorna true em sucesso", async () => {
-    mockFromOnce({ data: null, error: null });
+    mockRpcOnce({ data: "h1", error: null });
     const { result } = renderHookWithProviders(() => useQuoteHistory());
     let ok = false;
     await act(async () => { ok = await result.current.addHistoryEntry("q1", "test", "desc"); });
     expect(ok).toBe(true);
   });
 
-  it("logStatusChanged usa labels traduzidas e chama insert", async () => {
-    mockFromOnce({ data: null, error: null });
+  it("logStatusChanged usa labels traduzidas e chama a RPC", async () => {
+    mockRpcOnce({ data: "h1", error: null });
     const { result } = renderHookWithProviders(() => useQuoteHistory());
     let ok = false;
     await act(async () => { ok = await result.current.logStatusChanged("q1", "draft", "approved"); });

@@ -9,6 +9,7 @@ import type { TablesUpdate } from "@/integrations/supabase/types";
 import type { ProposalTemplateData } from "@/components/pdf/ProposalHtmlTemplate";
 import type { Quote } from "@/hooks/quotes/useQuotes";
 import { bitrixCircuitBreaker } from "@/utils/resilience";
+import { updateQuoteStatusAtomically } from "@/services/quoteStatusTransition";
 
 interface SyncBitrixParams {
   quote: Quote;
@@ -70,13 +71,16 @@ export async function syncQuoteToBitrix({
   const parsedBitrixId = result?.quote_id ? Number(result.quote_id) : null;
   const bitrixQuoteIdFromResponse = parsedBitrixId && !isNaN(parsedBitrixId) ? parsedBitrixId : null;
 
-  const crmUpdates: TablesUpdate<"quotes"> = { status: "sent" };
+  const crmUpdates: TablesUpdate<"quotes"> = {};
   if (bitrixQuoteIdFromResponse) crmUpdates.bitrix_quote_id = String(bitrixQuoteIdFromResponse);
 
-  try {
-    // rls-allow: update por id; RLS valida ownership
-    await supabase.from("quotes").update(crmUpdates).eq("id", quoteId);
-  } catch { /* ignore */ }
+  if (Object.keys(crmUpdates).length > 0) {
+    const { error: crmUpdateError } = await supabase.from("quotes").update(crmUpdates).eq("id", quoteId);
+    if (crmUpdateError) throw crmUpdateError;
+  }
+  if (quote.status !== "sent") {
+    await updateQuoteStatusAtomically(quoteId, "sent", "Sincronização com Bitrix24 concluída");
+  }
 
   await logQuoteHistory(quoteId, "sync_success",
     `Sincronizado com Bitrix24${bitrixQuoteIdFromResponse ? ` — ID Bitrix: ${bitrixQuoteIdFromResponse}` : ""}`,
