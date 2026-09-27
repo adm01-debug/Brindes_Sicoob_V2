@@ -1,0 +1,73 @@
+{
+  "scenario": "S28",
+  "validated_at": "2026-09-27",
+  "status": "completed",
+  "surfaces": [
+    "/gestor/convites",
+    "/convite/:token",
+    "aba de comentários do pedido"
+  ],
+  "implemented": [
+    "validação inline com aria-invalid e aria-describedby",
+    "foco movido para o primeiro campo inválido",
+    "ordem de foco determinística: email, cooperativa, papel, PA e validade",
+    "erros, carregamentos e resultados anunciados por alert/status e aria-live",
+    "hierarquia de títulos corrigida para h1 e h2",
+    "botão de menção definido como type=button para impedir submissão acidental",
+    "comentários empilham ações em largura estreita",
+    "ação de aceite anuncia estado pendente e falha persistente"
+  ],
+  "automated_validation": {
+    "focused": {
+      "files_passed": 4,
+      "tests_passed": 10,
+      "axe_scans_passed": 2,
+      "keyboard_scenarios": [
+        "primeiro erro recebe foco",
+        "menção por teclado não envia comentário"
+      ]
+    },
+    "full_suite": {
+      "files_passed": 400,
+      "files_skipped": 8,
+      "tests_passed": 5569,
+      "tests_skipped": 112
+    },
+    "build": {
+      "status": "passed",
+      "modules_transformed": 5805
+    },
+    "typecheck_baseline": {
+      "status": "passed",
+      "current_errors": 158,
+      "baseline_errors": 166,
+      "regressions": 0
+    },
+    "lint_baseline": {
+      "status": "passed",
+      "new_errors_in_changed_files": 0
+    },
+    "dependency_audit": "passed"
+  },
+  "browser_reflow": {
+    "deployment_id": "dpl_9DgbncyB3g9QAHLyp4iXx9QMuXZa",
+    "deployment_status": "Ready",
+    "viewport": "320x800 CSS pixels",
+    "zoom_equivalence": "200% sobre viewport físico de 640 px",
+    "client_width": 320,
+    "scroll_width": 320,
+    "horizontal_overflow": false,
+    "main_visible": true,
+    "h1": "Convite institucional",
+    "page_errors": 0
+  },
+  "infrastructure_reconciliation": {
+    "finding": "O primeiro preview entregava HTML e chunks, mas a aplicação abortava por ausência das variáveis públicas do Supabase.",
+    "action": "VITE_SUPABASE_URL e VITE_SUPABASE_PUBLISHABLE_KEY foram copiadas do ambiente Production para Preview sem expor os valores.",
+    "result": "Redeploy do mesmo commit inicializou a aplicação e permitiu o smoke real."
+  },
+  "database": {
+    "schema_change_required": false,
+    "data_change_required": false
+  }
+}
