@@ -9,12 +9,10 @@ import { useSalesScope } from "@/lib/auth/visibility-scope";
 import { createClientLogger } from "@/lib/telemetry/structuredLogger";
 import { toast } from "sonner";
 import { QuoteService } from "@/services/QuoteService";
-import type { TablesUpdate } from "@/integrations/supabase/types";
 import { ensureQuoteMutationApplied, ensureQuotesAreAccessible } from "./quoteStatusMutationGuards";
 import type { Quote, QuoteItem, PersonalizationTechnique } from "./quoteTypes";
 // Re-export the canonical quote types so consumers can import them from this hook.
 export type { Quote, QuoteItem, QuoteItemPersonalization, PersonalizationTechnique } from "./quoteTypes";
-import { STATUS_LABELS } from "./quoteHelpers";
 import { invokeExternalDb } from "@/lib/external-db";
 import { useRBAC } from "@/hooks/useRBAC";
 import { invokeEdgeFunction } from "@/lib/edge-function-client";
@@ -98,9 +96,6 @@ export function useQuotes() {
     // Permission check for status transitions
     const isRestrictedTransition = ['approved', 'rejected', 'approved_singular', 'rejected_singular'].includes(status);
     
-    // Check for "approved" specifically to set approved_by/at correctly
-    const isApprovalDecision = ['approved', 'approved_singular'].includes(status);
-    
     // Check if transition is to one of the final/manager states
     if (isRestrictedTransition && !isSupervisorOrAbove) {
       toast.error("Apenas supervisores podem aprovar ou rejeitar orçamentos");
@@ -108,25 +103,21 @@ export function useQuotes() {
     }
 
     try {
-      // rls-allow: lookup por id; RLS valida ownership antes da transição
-      const { data: quote, error: fetchErr } = await supabase.from("quotes").select("*").eq("id", quoteId).single();
-      if (fetchErr) throw fetchErr;
-      const oldStatus = quote?.status || "draft";
-      
-      const updateData: TablesUpdate<"quotes"> = { status };
-      if (notes) updateData.rejection_notes = notes;
-      if (isApprovalDecision) {
-        updateData.approved_at = new Date().toISOString();
-        updateData.approved_by = user.id;
-      }
-
-      const { data: updatedRows, error } = await supabase
-        // rls-allow: atualização por id; RLS valida ownership
+      // rls-allow: consulta a versão e dados de notificação; a RPC valida o escopo
+      // e aplica a transição sob lock, evitando a janela entre leitura e escrita.
+      const { data: quote, error: fetchErr } = await supabase
         .from("quotes")
-        .update(updateData)
+        .select("id, row_version, singular_id, quote_number, status")
         .eq("id", quoteId)
-        .eq("row_version", quote.row_version || 1)
-        .select("id");
+        .single();
+      if (fetchErr) throw fetchErr;
+
+      const { data: updatedRows, error } = await supabase.rpc("bulk_update_quote_status_atomic", {
+        p_quote_ids: [quoteId],
+        p_expected_row_versions: [quote.row_version],
+        p_status: status,
+        p_notes: notes ?? null,
+      });
       
       ensureQuoteMutationApplied(
         updatedRows,
@@ -155,17 +146,6 @@ export function useQuotes() {
         }
       }
 
-      await QuoteService.logHistory({
-        quoteId,
-        userId: user.id,
-        action: "status_changed",
-        description: `Status alterado de "${STATUS_LABELS[oldStatus]}" para "${STATUS_LABELS[status]}"`,
-        fieldChanged: "status",
-        oldValue: oldStatus,
-        newValue: status,
-        metadata: { notes }
-      });
-
       toast.success("Status atualizado");
       fetchQuotes();
       return true;
@@ -191,23 +171,22 @@ export function useQuotes() {
       const uniqueQuoteIds = [...new Set(quoteIds)];
       const { data: accessibleQuotes, error: accessError } = await supabase
         .from("quotes")
-        .select("id")
+        .select("id, row_version")
         .in("id", uniqueQuoteIds);
       if (accessError) throw accessError;
       ensureQuotesAreAccessible(accessibleQuotes, uniqueQuoteIds.length);
 
-      const bulkUpdate: TablesUpdate<"quotes"> = {
-        status,
-        ...(notes ? { rejection_notes: notes } : {}),
-        ...(status === 'approved' ? { approved_at: new Date().toISOString(), approved_by: user.id } : {}),
-      };
-
-      const { data: updatedRows, error } = await supabase
-        // rls-allow: atualização por id; RLS valida ownership
-        .from("quotes")
-        .update(bulkUpdate)
-        .in("id", uniqueQuoteIds)
-        .select("id");
+      const expectedVersions = uniqueQuoteIds.map((id) => {
+        const quote = accessibleQuotes.find((candidate) => candidate.id === id);
+        if (!quote) throw new Error("Um ou mais orçamentos não foram encontrados ou não estão no seu escopo.");
+        return quote.row_version;
+      });
+      const { data: updatedRows, error } = await supabase.rpc("bulk_update_quote_status_atomic", {
+        p_quote_ids: uniqueQuoteIds,
+        p_expected_row_versions: expectedVersions,
+        p_status: status,
+        p_notes: notes ?? null,
+      });
 
       ensureQuoteMutationApplied(
         updatedRows,
@@ -215,20 +194,6 @@ export function useQuotes() {
         uniqueQuoteIds.length,
         "Atualização concorrente detectada. Recarregue a lista antes de tentar novamente.",
       );
-
-      // Log history for each
-      const promises = uniqueQuoteIds.map(id =>
-        QuoteService.logHistory({
-          quoteId: id,
-          userId: user.id,
-          action: "bulk_status_changed",
-          description: `Status alterado em massa para "${STATUS_LABELS[status]}"`,
-          fieldChanged: "status",
-          newValue: status,
-          metadata: { notes, isBulk: true }
-        })
-      );
-      await Promise.all(promises);
 
       toast.success(`${uniqueQuoteIds.length} orçamentos atualizados!`);
       fetchQuotes();

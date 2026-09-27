@@ -54,6 +54,7 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.ownership-audit]
+verify_jwt = false
 
 # Disparo de integração autentica cron/Edge por WEBHOOK_DISPATCHER_SECRET;
 # teste e replay usam JWT de supervisor no próprio handler.
