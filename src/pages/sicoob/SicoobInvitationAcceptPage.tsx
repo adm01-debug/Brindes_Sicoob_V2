@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import { PageSEO } from "@/components/seo/PageSEO";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader } from "@/components/ui/card";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -88,11 +88,11 @@ export default function SicoobInvitationAcceptPage() {
           <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-sicoob-green/10 text-sicoob-green">
             <ShieldCheck className="h-8 w-8" />
           </div>
-          <CardTitle className="text-2xl text-sicoob-dark-blue">Convite institucional</CardTitle>
+          <h1 className="text-2xl font-semibold leading-none tracking-tight text-sicoob-dark-blue">Convite institucional</h1>
           <CardDescription>Confira a entidade, a unidade e as responsabilidades antes de aceitar.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-5">
-          {invitationQuery.isLoading && <div className="flex justify-center py-10"><Loader2 className="h-8 w-8 animate-spin" /></div>}
+          {invitationQuery.isLoading && <div role="status" aria-live="polite" className="flex justify-center gap-2 py-10 text-sm text-muted-foreground"><Loader2 aria-hidden="true" className="h-8 w-8 animate-spin" /><span className="sr-only">Validando convite…</span></div>}
           {invitationQuery.error && <p role="alert" className="rounded-lg bg-destructive/10 p-4 text-sm text-destructive">Não foi possível validar o convite.</p>}
           {!invitationQuery.isLoading && !invitationQuery.error && !invitation && (
             <p role="alert" className="rounded-lg bg-destructive/10 p-4 text-sm text-destructive">Convite inválido ou não encontrado.</p>
@@ -118,11 +118,12 @@ export default function SicoobInvitationAcceptPage() {
                 <Button asChild className="w-full"><Link to={redirect}>Entrar com o email convidado</Link></Button>
               )}
               {canAccept && user && (
-                <Button className="w-full gap-2" disabled={acceptInvitation.isPending} onClick={() => acceptInvitation.mutate()}>
-                  {acceptInvitation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
-                  Aceitar vínculo e responsabilidades
+                <Button className="w-full gap-2" aria-busy={acceptInvitation.isPending} disabled={acceptInvitation.isPending} onClick={() => acceptInvitation.mutate()}>
+                  {acceptInvitation.isPending ? <Loader2 aria-hidden="true" className="h-4 w-4 animate-spin" /> : <CheckCircle2 aria-hidden="true" className="h-4 w-4" />}
+                  {acceptInvitation.isPending ? "Ativando vínculo…" : "Aceitar vínculo e responsabilidades"}
                 </Button>
               )}
+              {acceptInvitation.error && <p role="alert" className="rounded-lg bg-destructive/10 p-4 text-sm text-destructive">Não foi possível aceitar o convite. Confirme a conta e solicite um novo link se necessário.</p>}
             </>
           )}
         </CardContent>
