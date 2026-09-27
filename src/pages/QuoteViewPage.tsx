@@ -3,7 +3,6 @@ import { useParams, useNavigate } from "react-router-dom";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { ArrowLeft, Copy, CreditCard, Edit2, Eye, FileText, History, Loader2, Monitor, MoreHorizontal, Package, Printer, RefreshCw, Shield, ShieldCheck, Truck, Undo2 } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
 // import { MainLayout } from "@/components/layout/MainLayout";
 import { PageSEO } from "@/components/seo/PageSEO";
 import { formatPaymentTerms, formatDeliveryTime } from "@/components/pdf/ProposalHtmlTemplate";
@@ -37,6 +36,7 @@ import { PdfGenerationDialog } from "@/components/quotes/PdfGenerationDialog";
 import { QUOTE_STATUS_CONFIG } from "@/lib/quote-status-config";
 import { useQuoteViewData } from "./quote-view/useQuoteViewData";
 import { useDiscountApproval, type DiscountApprovalRequest } from "@/hooks/useDiscountApproval";
+import { updateQuoteStatusAtomically } from "@/services/quoteStatusTransition";
 
 const statusConfig = Object.fromEntries(
   Object.entries(QUOTE_STATUS_CONFIG).map(([k, v]) => [k, { label: v.label, variant: v.badgeVariant }])
@@ -53,7 +53,7 @@ export default function QuoteViewPage() {
     isGeneratingPDF, isSyncing, approvalLink,
     showPresentation, setShowPresentation, proposalData,
     handleDownloadPDF, handleWhatsAppShare, handleShareLink,
-    handleSyncBitrix, fetchQuote, logQuoteHistory, reorderQuote,
+    handleSyncBitrix, fetchQuote, reorderQuote,
   } = useQuoteViewData(id);
 
   useEffect(() => {
@@ -158,9 +158,7 @@ export default function QuoteViewPage() {
                     onClick={async () => {
                       try {
                         if (!quote.id) return;
-                        // rls-allow: lookup por id; RLS valida ownership
-                        await supabase.from("quotes").update({ status: "pending" } as Record<string, unknown>).eq("id", quote.id);
-                        await logQuoteHistory(quote.id, "status_change", "Status revertido para Pendente", { oldValue: "sent", newValue: "pending" });
+                        await updateQuoteStatusAtomically(quote.id, "pending", "Sincronização com Bitrix24 cancelada");
                         setQuote((prev) => prev ? { ...prev, status: "pending" } : prev);
                         toast.success("Sincronização cancelada");
                       } catch (err: unknown) {

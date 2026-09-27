@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
 
 export interface QuoteHistoryEntry {
   id: string;
@@ -16,7 +15,6 @@ export interface QuoteHistoryEntry {
 }
 
 export function useQuoteHistory() {
-  const { user } = useAuth();
   const [history, setHistory] = useState<QuoteHistoryEntry[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -65,16 +63,15 @@ export function useQuoteHistory() {
         language: navigator.language
       };
 
-      const { error } = await supabase.from("quote_history").insert({
-        quote_id: quoteId,
-        user_id: user?.id || null,
-        action,
-        description,
-        field_changed: options?.fieldChanged || null,
-        old_value: options?.oldValue || null,
-        new_value: options?.newValue || null,
-        metadata: auditMetadata,
-      } as Record<string, unknown>);
+      const { error } = await supabase.rpc("append_quote_history_note", {
+        p_quote_id: quoteId,
+        p_action: action,
+        p_description: description,
+        p_field_changed: options?.fieldChanged || null,
+        p_old_value: options?.oldValue || null,
+        p_new_value: options?.newValue || null,
+        p_metadata: auditMetadata,
+      });
 
       if (error) throw error;
       return true;

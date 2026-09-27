@@ -10379,6 +10379,67 @@ export type Database = {
           status: string
         }[]
       }
+      append_quote_history_note: {
+        Args: {
+          p_action: string
+          p_description: string
+          p_field_changed?: string | null
+          p_metadata?: Json
+          p_new_value?: string | null
+          p_old_value?: string | null
+          p_quote_id: string
+        }
+        Returns: string
+      }
+      request_discount_approval_atomic: {
+        Args: {
+          p_expected_quote_row_version: number
+          p_quote_id: string
+          p_requested_discount_percent: number
+          p_seller_notes?: string | null
+        }
+        Returns: {
+          max_allowed_percent: number
+          negotiation_markup_percent: number
+          quote_id: string
+          quote_row_version: number
+          real_discount_percent: number
+          request_id: string
+          requested_discount_percent: number
+          seller_id: string
+        }[]
+      }
+      respond_discount_approval_atomic: {
+        Args: {
+          p_admin_notes?: string | null
+          p_approved: boolean
+          p_expected_quote_row_version: number
+          p_request_id: string
+        }
+        Returns: {
+          max_allowed_percent: number
+          quote_id: string
+          quote_row_version: number
+          request_id: string
+          request_status: string
+          requested_discount_percent: number
+          seller_id: string
+        }[]
+      }
+      approve_quote_with_pdf_atomic: {
+        Args: {
+          p_approved_pdf_url: string
+          p_expected_quote_row_version: number
+          p_notes?: string | null
+          p_quote_id: string
+        }
+        Returns: {
+          approved_pdf_url: string
+          id: string
+          row_version: number
+          status: string
+        }[]
+      }
       convert_quote_to_sicoob_order: {
         Args: { p_quote_id: string }
         Returns: {

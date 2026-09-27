@@ -6645,3 +6645,16 @@ important: sev === "P0",
 - `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `5b14a88171`).
 - Nenhum teste dedicado encontrado para o arquivo.
 - `typecheck:baseline`: 167 → 166 (166 arquivos), travado via `--update`.
+
+## secretNormalizers.ts (reconciliação de 27/09/2026)
+
+**Arquivo:** `src/components/admin/connections/secretNormalizers.ts`
+
+O grupo capturado por `stripBearer` é tipado como `string | undefined` sob
+`noUncheckedIndexedAccess`. O retorno agora usa `m[1] ?? s`, mantendo o contrato
+`string` e a string original como fallback defensivo. A mudança foi preservada
+da cópia local anterior à atualização do `main`.
+
+**Validação:** `typecheck:baseline` aprovado: 162 diagnósticos atuais frente a
+166 no baseline, sem regressão. A correção reduz um diagnóstico frente ao
+mesmo código sem esse fallback.

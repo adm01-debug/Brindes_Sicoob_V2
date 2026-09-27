@@ -42,7 +42,7 @@ function stripBearer(s: string, changes: string[]): string {
   const m = s.match(/^Bearer\s+(.+)$/i);
   if (m) {
     changes.push("prefixo Bearer removido");
-    return m[1];
+    return m[1] ?? s;
   }
   return s;
 }

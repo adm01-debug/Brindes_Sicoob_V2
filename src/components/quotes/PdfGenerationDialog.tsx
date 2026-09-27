@@ -22,6 +22,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuoteHistory } from "@/hooks/useQuoteHistory";
 import { v4 as uuidv4 } from 'uuid';
+import { approveQuoteWithPdfAtomically } from "@/services/quoteStatusTransition";
 
 type Stage = "preview" | "generating" | "ready";
 
@@ -57,7 +58,7 @@ export function PdfGenerationDialog({
   trigger,
 }: PdfGenerationDialogProps) {
   const { profile } = useAuth();
-  const { logPdfGenerated, logStatusChanged } = useQuoteHistory();
+  const { logPdfGenerated } = useQuoteHistory();
   const [open, setOpen] = useState(false);
   const [stage, setStage] = useState<Stage>("preview");
   const [progress, setProgress] = useState(0);
@@ -199,36 +200,18 @@ export function PdfGenerationDialog({
     setIsFinalizing(true);
     try {
       const fileName = `${quoteNumber || quoteId}_v${pdfVersion}_signed.pdf`;
-      const filePath = `signed/${fileName}`;
+      const filePath = `quotes/${quoteId}/${fileName}`;
       
-      const { data: uploadData, error: uploadError } = await supabase.storage
+      const { error: uploadError } = await supabase.storage
         .from("proposals")
         .upload(filePath, pdfBlob, { upsert: true });
         
       if (uploadError) throw uploadError;
       
-      const { data: { publicUrl } } = supabase.storage
-        .from("proposals")
-        .getPublicUrl(filePath);
-        
-      const { error: updateError } = await supabase
-        // rls-allow: transição por orçamento identificado; RLS valida ownership
-        .from("quotes")
-        .update({ 
-          status: "approved", 
-          approved_pdf_url: publicUrl,
-          updated_at: new Date().toISOString()
-        } as any)
-        .eq("id", quoteId);
-        
-      if (updateError) throw updateError;
-
-      if (quoteId) {
-        logStatusChanged(quoteId, quoteStatus || "pending", "approved");
-      }
+      await approveQuoteWithPdfAtomically(quoteId, filePath);
       
       toast.success("Orçamento aprovado e PDF assinado salvo!");
-      onStatusUpdate?.("approved", publicUrl);
+      onStatusUpdate?.("approved", filePath);
       setOpen(false);
     } catch (error) {
       console.error("Error finalizing quote:", error);
