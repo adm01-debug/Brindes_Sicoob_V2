@@ -1,6 +1,10 @@
 -- Atualização em lote precisa alterar cabeçalho e histórico no mesmo commit.
 -- O frontend envia a versão que leu; conflito, perda de escopo ou ID inválido
 -- aborta o lote inteiro antes de escrever a primeira linha.
+-- O gatilho legado criava uma segunda entrada de histórico para toda mudança de
+-- status. A RPC abaixo é a única responsável por esse evento, no mesmo commit.
+DROP TRIGGER IF EXISTS tr_log_quote_status_change ON public.quotes;
+
 CREATE OR REPLACE FUNCTION public.bulk_update_quote_status_atomic(
   p_quote_ids uuid[],
   p_expected_row_versions integer[],
@@ -64,8 +68,12 @@ BEGIN
 
   FOR v_index IN SELECT generate_subscripts(p_quote_ids, 1)
   LOOP
+    SELECT * INTO v_quote
+    FROM public.quotes
+    WHERE quotes.id = p_quote_ids[v_index];
+
     UPDATE public.quotes AS q
-    SET status = p_status,
+    SET status = p_status::public.quote_status,
         rejection_notes = COALESCE(p_notes, q.rejection_notes),
         approved_at = CASE WHEN p_status IN ('approved', 'approved_singular') THEN now() ELSE q.approved_at END,
         approved_by = CASE WHEN p_status IN ('approved', 'approved_singular') THEN v_actor_id ELSE q.approved_by END,
