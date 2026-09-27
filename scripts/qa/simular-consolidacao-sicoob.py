@@ -1,6 +1,7 @@
 """Valida consolidação, destinos e recebimentos parciais sem rede."""
 from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor
+import hashlib
 import json
 import subprocess
 import time
@@ -15,6 +16,7 @@ FOLLOWUP_MIGRATION = ROOT / "supabase/migrations/20260913120004_sicoob_consolida
 POLICY_WRAPPER_MIGRATION = ROOT / "supabase/migrations/20260922224000_sicoob_policy_helper_wrappers.sql"
 REFERENTIAL_INTEGRITY_MIGRATION = ROOT / "supabase/migrations/20260922224900_consolidation_referential_integrity.sql"
 CONCURRENCY_MIGRATION = ROOT / "supabase/migrations/20260927213000_sicoob_consolidation_concurrency.sql"
+EVIDENCE = ROOT / "docs/execucao/evidencias/consolidacao-sicoob.json"
 MANAGER = "11111111-1111-1111-1111-111111111111"
 SELLER = "22222222-2222-2222-2222-222222222222"
 PA_RECEIVER = "33333333-3333-3333-3333-333333333333"
@@ -77,6 +79,12 @@ result = {
     ],
     "producao_verificada": False,
 }
+if EVIDENCE.exists():
+    previous_result = json.loads(EVIDENCE.read_text())
+    canonical_database = previous_result.get("banco_canonico_de_construcao")
+    migration_sha256 = hashlib.sha256(CONCURRENCY_MIGRATION.read_bytes()).hexdigest()
+    if canonical_database and canonical_database.get("sha256") == migration_sha256:
+        result["banco_canonico_de_construcao"] = canonical_database
 
 try:
     command([
@@ -295,8 +303,7 @@ try:
     result["recebimento"] = "retry idempotente não duplicou quantidades; parciais acumulados por destino; excesso e ator externo recusados; divergência manteve os pedidos em logística; avaria preservada em evento imutável"
 
     result["resultado"] = "aprovado"
-    evidence = ROOT / "docs/execucao/evidencias/consolidacao-sicoob.json"
-    evidence.write_text(json.dumps(result, ensure_ascii=False, indent=2) + "\n")
+    EVIDENCE.write_text(json.dumps(result, ensure_ascii=False, indent=2) + "\n")
     print(json.dumps(result, ensure_ascii=False))
 finally:
     command(["docker", "rm", "-f", CONTAINER], check=False)
