@@ -128,6 +128,11 @@ try:
     result["cenario_s20"] = "gestores e comprador PA viram apenas o próprio escopo; UUID alheio, itens, histórico, logs e aprovação cruzada retornaram zero; perfil inativo perdeu acesso; supervisor manteve escopo global explícito"
     result["resultado"] = "aprovado"
     evidence = ROOT / "docs/execucao/evidencias/rls-cruzada-sicoob.json"
+    if evidence.exists():
+        previous = json.loads(evidence.read_text())
+        if previous.get("producao_verificada") is True:
+            for field in ("producao_verificada", "projeto_canonico", "postgres_remoto", "aplicacao_remota"):
+                result[field] = previous[field]
     evidence.write_text(json.dumps(result, ensure_ascii=False, indent=2) + "\n")
     print(json.dumps(result, ensure_ascii=False))
 finally:
