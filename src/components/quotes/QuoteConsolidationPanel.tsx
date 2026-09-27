@@ -17,7 +17,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { formatCurrency } from "@/lib/format";
-import type { Quote, QuoteItem } from "@/hooks/quotes/quoteTypes";
+import type { Quote } from "@/hooks/quotes/quoteTypes";
 import { Package, Hash, Layers, PieChart, FileText, Search, ChevronDown, ChevronRight, ArrowUpDown, Download, History, Share2, Save, X, Calendar, Clock, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -35,12 +35,13 @@ import { ptBR } from "date-fns/locale";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
+import { consolidateQuoteItems, toSafeCsvCell, type ConsolidationSortConfig, type ConsolidationSortKey } from "./quoteConsolidationHelpers";
 
 interface SavedView {
   id: string;
   name: string;
   searchTerm: string;
-  sortConfig: { key: string; direction: 'asc' | 'desc' } | null;
+  sortConfig: ConsolidationSortConfig;
 }
 
 interface QuoteHistoryEntry {
@@ -71,7 +72,7 @@ export function QuoteConsolidationPanel({
     return urlParams.get('q_search') || localStorage.getItem('quote_consolidation_search') || "";
   });
   
-  const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' } | null>(() => {
+  const [sortConfig, setSortConfig] = useState<ConsolidationSortConfig>(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const urlSort = urlParams.get('q_sort');
     if (urlSort) {
@@ -203,10 +204,9 @@ export function QuoteConsolidationPanel({
       item.sources.length
     ]);
 
-    const csvContent = [
-      headers.join(","),
-      ...rows.map(row => row.join(","))
-    ].join("\n");
+    const csvContent = [headers, ...rows]
+      .map((row) => row.map(toSafeCsvCell).join(","))
+      .join("\n");
 
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement("a");
@@ -217,11 +217,12 @@ export function QuoteConsolidationPanel({
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    window.setTimeout(() => URL.revokeObjectURL(url), 0);
     toast.success("Exportação concluída!");
   };
 
 
-  const handleSort = (key: string) => {
+  const handleSort = (key: ConsolidationSortKey) => {
     setSortConfig(prev => ({
       key,
       direction: prev?.key === key && prev.direction === 'asc' ? 'desc' : 'asc'
@@ -231,73 +232,9 @@ export function QuoteConsolidationPanel({
   const consolidatedData = useMemo(() => {
     if (!quotes || quotes.length === 0) return null;
 
-    const itemsMap = new Map<string, {
-      product_name: string;
-      product_sku: string | undefined;
-      total_quantity: number;
-      average_price: number;
-      total_value: number;
-      quotes_count: number;
-      sources: string[];
-    }>();
-
-    let totalGlobal = 0;
-    let totalItems = 0;
-
-    quotes.forEach(quote => {
-      quote.items?.forEach((item: QuoteItem) => {
-        const matchesSearch = 
-          item.product_name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-          (item.product_sku && item.product_sku.toLowerCase().includes(searchTerm.toLowerCase()));
-
-        if (!matchesSearch) return;
-
-        const key = item.product_sku || item.product_id || item.product_name;
-        const existing = itemsMap.get(key);
-        
-        const quantity = item.quantity || 0;
-        const unitPrice = item.unit_price || 0;
-        const subtotal = quantity * unitPrice;
-
-        if (existing) {
-          existing.total_quantity += quantity;
-          existing.total_value += subtotal;
-          existing.average_price = existing.total_value / existing.total_quantity;
-          existing.quotes_count += 1;
-          if (quote.quote_number && !existing.sources.includes(quote.quote_number)) {
-            existing.sources.push(quote.quote_number);
-          }
-        } else {
-          itemsMap.set(key, {
-            product_name: item.product_name,
-            product_sku: item.product_sku,
-            total_quantity: quantity,
-            average_price: unitPrice,
-            total_value: subtotal,
-            quotes_count: 1,
-            sources: quote.quote_number ? [quote.quote_number] : []
-          });
-        }
-
-        totalGlobal += subtotal;
-        totalItems += quantity;
-      });
-    });
-
-    const items = Array.from(itemsMap.values()).filter(item => {
-      return item.product_name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-             (item.product_sku && item.product_sku.toLowerCase().includes(searchTerm.toLowerCase()));
-    });
-
-    if (sortConfig) {
-      items.sort((a: any, b: any) => {
-        const aVal = a[sortConfig.key];
-        const bVal = b[sortConfig.key];
-        if (aVal < bVal) return sortConfig.direction === 'asc' ? -1 : 1;
-        if (aVal > bVal) return sortConfig.direction === 'asc' ? 1 : -1;
-        return 0;
-      });
-    }
+    const items = consolidateQuoteItems(quotes, searchTerm, sortConfig);
+    const totalGlobal = items.reduce((sum, item) => sum + item.total_value, 0);
+    const totalItems = items.reduce((sum, item) => sum + item.total_quantity, 0);
 
     return {
       items,
@@ -474,17 +411,8 @@ export function QuoteConsolidationPanel({
                 </TableHeader>
                 <TableBody>
                   {consolidatedData.items.map((item) => {
-                    const key = item.product_sku || item.product_name;
+                    const key = item.key;
                     const isExpanded = expandedItems.includes(key);
-                    
-                    const itemSources = quotes.filter(q => 
-                      q.items?.some(i => (i.product_sku || i.product_name) === key)
-                    ).map(q => ({
-                      number: q.quote_number,
-                      qty: q.items?.find(i => (i.product_sku || i.product_name) === key)?.quantity || 0,
-                      price: q.items?.find(i => (i.product_sku || i.product_name) === key)?.unit_price || 0,
-                      client: q.client_name || q.client_company
-                    }));
 
                     return (
                       <React.Fragment key={key}>
@@ -521,16 +449,16 @@ export function QuoteConsolidationPanel({
                               <div className="p-4 space-y-3 animate-in fade-in slide-in-from-top-1 duration-200">
                                 <h4 className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest px-2">Detalhamento por Origem</h4>
                                 <div className="grid grid-cols-1 gap-2">
-                                  {itemSources.map((source, sIdx) => (
-                                    <div key={sIdx} className="flex items-center justify-between text-xs p-2 rounded bg-background border border-border/40">
+                                  {item.sources.map((source) => (
+                                    <div key={source.key} className="flex items-center justify-between text-xs p-2 rounded bg-background border border-border/40">
                                       <div className="flex flex-col gap-0.5">
                                         <span className="font-semibold text-primary">#{source.number}</span>
                                         <span className="text-[10px] text-muted-foreground">{source.client}</span>
                                       </div>
                                       <div className="flex gap-6 text-[11px]">
-                                        <span>Qtd: <strong>{source.qty}</strong></span>
-                                        <span>Preço: <strong>{formatCurrency(source.price)}</strong></span>
-                                        <span>Total: <strong>{formatCurrency(source.qty * source.price)}</strong></span>
+                                        <span>Qtd: <strong>{source.quantity}</strong></span>
+                                        <span>Preço médio: <strong>{formatCurrency(source.quantity ? source.total_value / source.quantity : 0)}</strong></span>
+                                        <span>Total: <strong>{formatCurrency(source.total_value)}</strong></span>
                                       </div>
                                     </div>
                                   ))}
