@@ -2,19 +2,41 @@ name: Monthly DB Audit
 
 on:
   schedule:
-    - cron: '0 0 1 * *' # Monthly on the 1st
-  workflow_dispatch: # Allow manual trigger
+    - cron: '0 0 1 * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: db-audit-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   performance-audit:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-node@v4
         with:
           node-version: 24
+          cache: npm
+
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --no-audit --no-fund
+
+      - name: Verificar secrets obrigatórios
+        run: |
+          MISSING=""
+          [ -z "${{ secrets.VITE_SUPABASE_URL }}" ] && MISSING="$MISSING VITE_SUPABASE_URL"
+          [ -z "${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}" ] && MISSING="$MISSING SUPABASE_SERVICE_ROLE_KEY"
+          if [ -n "$MISSING" ]; then
+            echo "::error::Secrets ausentes:$MISSING. Configure em Settings > Secrets and variables > Actions."
+            exit 1
+          fi
+
       - name: Run Audit
         env:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
