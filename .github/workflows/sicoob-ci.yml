@@ -56,6 +56,7 @@ jobs:
           python3 scripts/qa/simular-financeiro-arte-sicoob.py
           python3 scripts/qa/simular-logistica-canonica.py
           python3 scripts/qa/simular-consolidacao-sicoob.py
+          python3 scripts/qa/simular-rls-cruzada-sicoob.py
 
   experiencia:
     name: Entrada e demonstração responsivas
