@@ -15,7 +15,11 @@ import { formatCurrency } from "@/lib/format";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { normalizeAssignedRoles } from "@/lib/access/role-policy";
-import { getConsolidationIntent, getDeliveryReceiptIntent } from "@/lib/sicoob/consolidation-intent";
+import {
+  getConsolidationIntent,
+  getDeliveryReceiptIntent,
+  validateDeliveryReceiptInput,
+} from "@/lib/sicoob/consolidation-intent";
 
 interface Allocation {
   id: string;
@@ -76,6 +80,34 @@ function ManagementOnly({ allowed, children }: { allowed: boolean; children: Rea
   return allowed ? <>{children}</> : null;
 }
 
+function getReceiptFormState(
+  allocation: Allocation | null,
+  input: { received: number; damaged: number; missing: number; notes: string },
+) {
+  if (!allocation) return { remaining: 0, error: null };
+  const remaining = allocation.quantity
+    - allocation.received_quantity
+    - allocation.damaged_quantity
+    - allocation.missing_quantity;
+  return { remaining, error: validateDeliveryReceiptInput({ ...input, remaining }) };
+}
+
+function assertDistributionResult(value: unknown): void {
+  if (!Number.isInteger(value) || Number(value) < 1) {
+    throw new Error("O banco não confirmou itens nos destinos.");
+  }
+}
+
+function assertReceiptInput(input: Parameters<typeof validateDeliveryReceiptInput>[0]): void {
+  const error = validateDeliveryReceiptInput(input);
+  if (error) throw new Error(error);
+}
+
+function ReceiptValidationMessage({ error, remaining }: { error: string | null; remaining: number }) {
+  if (error) return <p className="text-sm text-destructive" role="alert">{error}</p>;
+  return <p className="text-sm text-muted-foreground">Saldo pendente: {remaining} unidade(s).</p>;
+}
+
 export default function GestorConsolidatedOrdersPage() {
   const queryClient = useQueryClient();
   const { roles } = useAuth();
@@ -91,6 +123,7 @@ export default function GestorConsolidatedOrdersPage() {
   const [damaged, setDamaged] = useState(0);
   const [missing, setMissing] = useState(0);
   const [notes, setNotes] = useState("");
+  const receiptFormState = getReceiptFormState(receiptAllocation, { received, damaged, missing, notes });
 
   const consolidationsQuery = useQuery({
     queryKey: ["sicoob-consolidations"],
@@ -182,9 +215,31 @@ export default function GestorConsolidatedOrdersPage() {
     onError: (error) => toast.error(error instanceof Error ? error.message : "Não foi possível despachar."),
   });
 
+  const refreshDistributionMutation = useMutation({
+    mutationFn: async (consolidationId: string) => {
+      const { data, error } = await supabase.rpc("allocate_sicoob_consolidation_by_order_pa", {
+        p_consolidation_id: consolidationId,
+      });
+      if (error) throw error;
+      assertDistributionResult(data);
+    },
+    onSuccess: async () => {
+      await invalidate();
+      toast.success("Destinos e endereços atualizados.");
+    },
+    onError: (error) => toast.error(error instanceof Error ? error.message : "Não foi possível atualizar os destinos."),
+  });
+
   const receiptMutation = useMutation({
     mutationFn: async () => {
       if (!receiptAllocation) throw new Error("Selecione um item de destino.");
+      assertReceiptInput({
+        received,
+        damaged,
+        missing,
+        notes,
+        remaining: receiptFormState.remaining,
+      });
       receiptIntentRef.current = getDeliveryReceiptIntent(receiptIntentRef.current, {
         allocationId: receiptAllocation.id,
         received,
@@ -216,7 +271,7 @@ export default function GestorConsolidatedOrdersPage() {
     onError: (error) => toast.error(error instanceof Error ? error.message : "Não foi possível registrar o recebimento."),
   });
 
-  const consolidations = consolidationsQuery.data ?? [];
+  const consolidations = useMemo(() => consolidationsQuery.data ?? [], [consolidationsQuery.data]);
   const summary = useMemo(
     () =>
       consolidations.reduce(
@@ -273,7 +328,9 @@ export default function GestorConsolidatedOrdersPage() {
         consolidations={consolidations}
         isLoading={consolidationsQuery.isLoading}
         isDispatching={dispatchMutation.isPending}
+        isRefreshing={refreshDistributionMutation.isPending}
         onDispatch={(id) => dispatchMutation.mutate(id)}
+        onRefresh={(id) => refreshDistributionMutation.mutate(id)}
         canDispatch={canManage}
         onReceive={(allocation, remaining) => {
           setReceiptAllocation(allocation);
@@ -335,24 +392,25 @@ export default function GestorConsolidatedOrdersPage() {
           <div className="grid grid-cols-3 gap-3">
             <div className="space-y-2">
               <Label htmlFor="received">Recebidas</Label>
-              <Input id="received" type="number" min={0} value={received} onChange={(event) => setReceived(Number(event.target.value))} />
+              <Input id="received" type="number" min={0} max={receiptFormState.remaining} step={1} value={received} onChange={(event) => setReceived(Number(event.target.value))} />
             </div>
             <div className="space-y-2">
               <Label htmlFor="damaged">Avariadas</Label>
-              <Input id="damaged" type="number" min={0} value={damaged} onChange={(event) => setDamaged(Number(event.target.value))} />
+              <Input id="damaged" type="number" min={0} max={receiptFormState.remaining} step={1} value={damaged} onChange={(event) => setDamaged(Number(event.target.value))} />
             </div>
             <div className="space-y-2">
               <Label htmlFor="missing">Faltantes</Label>
-              <Input id="missing" type="number" min={0} value={missing} onChange={(event) => setMissing(Number(event.target.value))} />
+              <Input id="missing" type="number" min={0} max={receiptFormState.remaining} step={1} value={missing} onChange={(event) => setMissing(Number(event.target.value))} />
             </div>
           </div>
           <div className="space-y-2">
             <Label htmlFor="receipt-notes">Observação da divergência</Label>
             <Input id="receipt-notes" value={notes} onChange={(event) => setNotes(event.target.value)} placeholder="Obrigatória para avaria ou falta" />
           </div>
+          <ReceiptValidationMessage {...receiptFormState} />
           <DialogFooter>
             <Button variant="outline" onClick={() => { setReceiptAllocation(null); receiptIntentRef.current = null; }}>Cancelar</Button>
-            <Button onClick={() => receiptMutation.mutate()} disabled={receiptMutation.isPending}>Registrar recebimento</Button>
+            <Button onClick={() => receiptMutation.mutate()} disabled={receiptMutation.isPending || Boolean(receiptFormState.error)}>Registrar recebimento</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -394,14 +452,18 @@ function ConsolidationList({
   consolidations,
   isLoading,
   isDispatching,
+  isRefreshing,
   onDispatch,
+  onRefresh,
   canDispatch,
   onReceive,
 }: {
   consolidations: Consolidation[];
   isLoading: boolean;
   isDispatching: boolean;
+  isRefreshing: boolean;
   onDispatch: (id: string) => void;
+  onRefresh: (id: string) => void;
   canDispatch: boolean;
   onReceive: (allocation: Allocation, remaining: number) => void;
 }) {
@@ -414,7 +476,9 @@ function ConsolidationList({
       key={consolidation.id}
       consolidation={consolidation}
       isDispatching={isDispatching}
+      isRefreshing={isRefreshing}
       onDispatch={onDispatch}
+      onRefresh={onRefresh}
       canDispatch={canDispatch}
       onReceive={onReceive}
     />
@@ -424,18 +488,21 @@ function ConsolidationList({
 function ConsolidationCard({
   consolidation,
   isDispatching,
+  isRefreshing,
   onDispatch,
+  onRefresh,
   canDispatch,
   onReceive,
 }: {
   consolidation: Consolidation;
   isDispatching: boolean;
+  isRefreshing: boolean;
   onDispatch: (id: string) => void;
+  onRefresh: (id: string) => void;
   canDispatch: boolean;
   onReceive: (allocation: Allocation, remaining: number) => void;
 }) {
-  const progress = progressOf(consolidation);
-  const mayReceive = ["sent", "partially_received"].includes(consolidation.status);
+  const [progress, mayReceive] = [progressOf(consolidation), ["sent", "partially_received"].includes(consolidation.status)];
   return (
     <Card className="border-[1.5px]">
       <CardHeader className="gap-3 md:flex-row md:items-start md:justify-between">
@@ -448,19 +515,17 @@ function ConsolidationCard({
             {consolidation.order_count} pedido(s) · {formatCurrency(Number(consolidation.total_value))} · {consolidation.sicoob_delivery_destinations.length} destino(s)
           </CardDescription>
         </div>
-        {canDispatch && consolidation.status === "pending_seller" && (
-          <Button size="sm" className="gap-2" onClick={() => onDispatch(consolidation.id)} disabled={isDispatching}>
-            <Truck className="h-4 w-4" /> Confirmar despacho
-          </Button>
-        )}
+        <PendingDispatchActions
+          visible={canDispatch && consolidation.status === "pending_seller"}
+          consolidationId={consolidation.id}
+          isDispatching={isDispatching}
+          isRefreshing={isRefreshing}
+          onDispatch={onDispatch}
+          onRefresh={onRefresh}
+        />
       </CardHeader>
       <CardContent className="space-y-5">
-        <div className="space-y-2">
-          <div className="flex justify-between text-xs text-muted-foreground">
-            <span>Recebimento conciliado</span><span>{progress.accounted}/{progress.expected} unidades</span>
-          </div>
-          <Progress value={progress.percent} className="h-2" />
-        </div>
+        <ConsolidationProgress progress={progress} />
         <div className="grid gap-4 xl:grid-cols-2">
           {consolidation.sicoob_delivery_destinations.map((destination) => (
             <DestinationCard key={destination.id} destination={destination} mayReceive={mayReceive} onReceive={onReceive} />
@@ -471,16 +536,81 @@ function ConsolidationCard({
   );
 }
 
+function ConsolidationProgress({ progress }: { progress: ReturnType<typeof progressOf> }) {
+  return (
+    <div className="space-y-2">
+      <div className="flex justify-between text-xs text-muted-foreground">
+        <span>Recebimento conciliado</span><span>{progress.accounted}/{progress.expected} unidades</span>
+      </div>
+      <Progress value={progress.percent} className="h-2" />
+    </div>
+  );
+}
+
+function PendingDispatchActions({
+  visible,
+  consolidationId,
+  isDispatching,
+  isRefreshing,
+  onDispatch,
+  onRefresh,
+}: {
+  visible: boolean;
+  consolidationId: string;
+  isDispatching: boolean;
+  isRefreshing: boolean;
+  onDispatch: (id: string) => void;
+  onRefresh: (id: string) => void;
+}) {
+  if (!visible) return null;
+  return (
+    <div className="flex flex-wrap gap-2">
+      <Button variant="outline" size="sm" onClick={() => onRefresh(consolidationId)} disabled={isRefreshing || isDispatching}>
+        Atualizar destinos
+      </Button>
+      <Button size="sm" className="gap-2" onClick={() => onDispatch(consolidationId)} disabled={isDispatching || isRefreshing}>
+        <Truck className="h-4 w-4" /> Confirmar despacho
+      </Button>
+    </div>
+  );
+}
+
+function getDestinationProgress(destination: Destination) {
+  return destination.sicoob_delivery_allocations.reduce(
+    (summary, allocation) => ({
+      expected: summary.expected + allocation.quantity,
+      accounted: summary.accounted
+        + allocation.received_quantity
+        + allocation.damaged_quantity
+        + allocation.missing_quantity,
+    }),
+    { expected: 0, accounted: 0 },
+  );
+}
+
+function getDestinationAddress(destination: Destination): string {
+  return [
+    destination.address_snapshot.endereco,
+    destination.address_snapshot.cidade,
+    destination.address_snapshot.uf,
+  ].filter((value): value is string => typeof value === "string" && value.trim().length > 0).join(" · ");
+}
+
 function DestinationCard({ destination, mayReceive, onReceive }: {
   destination: Destination;
   mayReceive: boolean;
   onReceive: (allocation: Allocation, remaining: number) => void;
 }) {
+  const destinationProgress = getDestinationProgress(destination);
+  const address = getDestinationAddress(destination);
   return (
     <div className="rounded-xl border bg-muted/20 p-4">
       <div className="mb-3 flex items-center justify-between gap-2">
-        <div className="font-semibold">{destination.destination_name}</div>
-        <Badge variant="secondary">{destination.sicoob_delivery_allocations.length} item(ns)</Badge>
+        <div>
+          <div className="font-semibold">{destination.destination_name}</div>
+          {address && <div className="text-xs text-muted-foreground">{address}</div>}
+        </div>
+        <Badge variant="secondary">{destinationProgress.accounted}/{destinationProgress.expected} conciliadas</Badge>
       </div>
       <div className="space-y-2">
         {destination.sicoob_delivery_allocations.map((allocation) => {

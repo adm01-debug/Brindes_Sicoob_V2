@@ -1,9 +1,12 @@
 {
   "ambiente": "PostgreSQL 16 descartável, --network none; somente dados sintéticos",
-  "migracao": "supabase/migrations/20260912190000_sicoob_consolidation_distribution.sql",
+  "migracoes": [
+    "supabase/migrations/20260912190000_sicoob_consolidation_distribution.sql",
+    "supabase/migrations/20260927213000_sicoob_consolidation_concurrency.sql"
+  ],
   "producao_verificada": false,
-  "criacao": "vendedor de outra Singular recusado; dois pedidos vinculados atomicamente; repetição idempotente limitada ao mesmo ator e conteúdo; lote inválido sem órfãos",
-  "distribuicao": "PA inativo e endereço incompleto recusados sem mutação parcial; itens distribuídos integralmente; despacho moveu lote e pedidos para logística; PA enxergou somente seu destino; escrita direta bloqueada",
+  "criacao": "vendedor de outra Singular recusado; duas chamadas concorrentes e a repetição sequencial retornaram o mesmo lote; dois pedidos vinculados atomicamente; chave limitada ao mesmo ator e conteúdo; FKs validadas; lote inválido sem órfãos",
+  "distribuicao": "PA inativo, endereço incompleto e fotografia desatualizada recusados sem mutação parcial; atualização refez destinos; itens distribuídos integralmente; despacho moveu lote e pedidos para logística; PA enxergou somente seu destino; escrita direta bloqueada",
   "recebimento": "retry idempotente não duplicou quantidades; parciais acumulados por destino; excesso e ator externo recusados; divergência manteve os pedidos em logística; avaria preservada em evento imutável",
   "resultado": "aprovado"
 }
