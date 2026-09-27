@@ -15,9 +15,28 @@ export interface UpdateSicoobShipmentInput {
   deliveryPhotoPath?: string;
 }
 
+function isNullableString(value: unknown): value is string | null {
+  return value === null || typeof value === 'string';
+}
+
+function hasShipmentIdentity(shipment: Record<string, unknown>): boolean {
+  return ['id', 'order_id', 'created_at', 'updated_at'].every((field) => typeof shipment[field] === 'string');
+}
+
+function hasShipmentDetails(shipment: Record<string, unknown>): boolean {
+  return ['carrier_name', 'tracking_code', 'estimated_delivery', 'actual_delivery_at', 'delivery_photo_path']
+    .every((field) => isNullableString(shipment[field]));
+}
+
 function parseShipment(data: unknown): SicoobOrderShipment | null {
-  if (!data || typeof data !== 'object') return null;
-  return data as SicoobOrderShipment;
+  if (!data || typeof data !== 'object' || Array.isArray(data)) return null;
+  const shipment = data as Record<string, unknown>;
+  if (
+    !hasShipmentIdentity(shipment) ||
+    !['pending', 'in_transit', 'delivered'].includes(String(shipment.status)) ||
+    !hasShipmentDetails(shipment)
+  ) return null;
+  return shipment as unknown as SicoobOrderShipment;
 }
 
 /** Chama funções transacionais Sicoob, sem tocar nas tabelas legadas de pedidos. */
