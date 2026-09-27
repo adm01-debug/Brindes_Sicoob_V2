@@ -2,8 +2,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { applySellerScope } from "@/lib/auth/apply-seller-scope";
 import type { SalesScope } from "@/lib/auth/visibility-scope";
 import type { Json } from "@/integrations/supabase/types";
-import { Quote, QuoteItem, QuoteItemPersonalization, PersonalizationTechnique } from "@/hooks/quotes/quoteTypes";
-import { calculateQuoteTotals, buildInsertPayload, buildUpdatePayload, buildItemsInsertPayload, buildPersonalizationsInsertPayload } from "@/hooks/quotes/quoteHelpers";
+import type { Quote, QuoteItem, QuoteItemPersonalization } from "@/hooks/quotes/quoteTypes";
+import { calculateQuoteTotals, buildInsertPayload, buildUpdatePayload, buildAtomicQuoteItems } from "@/hooks/quotes/quoteHelpers";
 import { logger } from "@/lib/logger";
 
 /**
@@ -84,6 +84,75 @@ function mapOrderItemToQuoteItem(item: {
   };
 }
 
+function describeQuoteHeaderChanges(oldQuote: Quote, newQuote: Partial<Quote>): string[] {
+  const changes: string[] = [];
+  if (newQuote.discount_percent !== undefined && newQuote.discount_percent !== oldQuote.discount_percent) {
+    changes.push(`Desconto alterado de ${oldQuote.discount_percent}% para ${newQuote.discount_percent}%`);
+  }
+  if (newQuote.negotiation_markup_percent !== undefined
+      && newQuote.negotiation_markup_percent !== oldQuote.negotiation_markup_percent) {
+    changes.push(`Markup alterado de ${oldQuote.negotiation_markup_percent}% para ${newQuote.negotiation_markup_percent}%`);
+  }
+
+  return changes;
+}
+
+const sameQuoteItem = (left: QuoteItem, right: QuoteItem): boolean =>
+  left.product_id === right.product_id && left.color_name === right.color_name;
+
+function describeQuoteItemChanges(oldItems: QuoteItem[], newItems: QuoteItem[]): string[] {
+  const changes: string[] = [];
+  for (const oldItem of oldItems) {
+    const stillExists = newItems.some((item) => sameQuoteItem(item, oldItem));
+    if (!stillExists) changes.push(`Item removido: ${oldItem.product_name}`);
+  }
+  for (const newItem of newItems) {
+    const oldItem = oldItems.find((item) => sameQuoteItem(item, newItem));
+    if (!oldItem) {
+      changes.push(`Item adicionado: ${newItem.product_name} (${newItem.quantity}x)`);
+      continue;
+    }
+    if (newItem.quantity !== oldItem.quantity) {
+      changes.push(`Quantidade de ${newItem.product_name} alterada: ${oldItem.quantity} -> ${newItem.quantity}`);
+    }
+    if (newItem.unit_price !== oldItem.unit_price) {
+      changes.push(`Preço unitário de ${newItem.product_name} alterado: R$${oldItem.unit_price} -> R$${newItem.unit_price}`);
+    }
+  }
+  return changes;
+}
+
+function describeQuoteChanges(oldQuote: Quote, newQuote: Partial<Quote>, newItems: QuoteItem[]): string[] {
+  return [
+    ...describeQuoteHeaderChanges(oldQuote, newQuote),
+    ...describeQuoteItemChanges(oldQuote.items || [], newItems),
+  ];
+}
+
+function calculateDocumentTotals(quote: Partial<Quote>, items: QuoteItem[]) {
+  const discountType = quote.discount_percent ? 'percent' : 'amount';
+  const discountValue = quote.discount_percent || quote.discount_amount || 0;
+  return calculateQuoteTotals(quote, items, quote.negotiation_markup_percent, discountType, discountValue);
+}
+
+function quoteHistoryOrDefault(changes: string[]): Json {
+  return changes.length > 0 ? changes : ['Orçamento atualizado'];
+}
+
+function assertAtomicQuoteResult(data: Json | null, message: string): Quote {
+  if (!data || typeof data !== 'object' || Array.isArray(data)) throw new Error(message);
+  return data as unknown as Quote;
+}
+
+function throwQuoteSaveError(error: { code?: string; message?: string } | null, context: string): void {
+  if (!error) return;
+  if (error.code === '40001') {
+    throw new Error("Concorrência detectada: Este orçamento foi modificado por outro usuário. Por favor, recarregue a página.");
+  }
+  logger.error(context, error);
+  throw error;
+}
+
 export class QuoteService {
   static async list(params: { userId: string, scope: SalesScope, orgId: string | null }): Promise<Quote[]> {
     // rls-allow: scope self aplicado no builder seguinte; demais papéis dependem de RLS
@@ -142,21 +211,17 @@ export class QuoteService {
 
   static async create(params: { quote: Partial<Quote>, items: QuoteItem[], userId: string, orgId: string | null }): Promise<Quote> {
     try {
-      const totals = calculateQuoteTotals(params.quote, params.items, params.quote.negotiation_markup_percent, params.quote.discount_percent ? 'percent' : 'amount', params.quote.discount_percent || params.quote.discount_amount || 0);
+      const totals = calculateDocumentTotals(params.quote, params.items);
       const insertPayload = buildInsertPayload(params.quote, params.userId, params.orgId, totals);
-      
-      // rls-allow: payload contém seller_id do ator; RLS valida inserção
-      const { data: inserted, error: insErr } = await supabase.from("quotes").insert(insertPayload).select("*").single();
-      if (insErr) {
-        logger.error("Error creating quote:", insErr);
-        throw insErr;
-      }
-
-      if (params.items.length > 0) {
-        await this.insertItemsWithPersonalizations(params.items, inserted.id);
-      }
-
-      return inserted as Quote;
+      const { data: inserted, error: insErr } = await supabase.rpc('save_quote_atomic', {
+        p_quote: insertPayload as Json,
+        p_items: buildAtomicQuoteItems(params.items),
+        p_quote_id: null,
+        p_expected_row_version: null,
+        p_history: ['Orçamento criado'] as Json,
+      });
+      throwQuoteSaveError(insErr, "Error creating quote:");
+      return assertAtomicQuoteResult(inserted, 'O banco não retornou o orçamento criado.');
     } catch (err) {
       logger.error("Unexpected error in QuoteService.create:", err);
       throw err;
@@ -173,81 +238,19 @@ export class QuoteService {
       const oldQuote = await this.getById(params.quoteId);
       if (!oldQuote) throw new Error("Orçamento não encontrado para atualização");
 
-      const totals = calculateQuoteTotals(params.quote, params.items, params.quote.negotiation_markup_percent, params.quote.discount_percent ? 'percent' : 'amount', params.quote.discount_percent || params.quote.discount_amount || 0);
+      const totals = calculateDocumentTotals(params.quote, params.items);
       const updatePayload = buildUpdatePayload({ ...params.quote, row_version: oldQuote.row_version }, totals);
-      
-      const { data: updated, error: updErr } = await supabase
-        // rls-allow: atualização por id; RLS valida ownership e organização
-        .from("quotes")
-        .update(updatePayload)
-        .eq("id", params.quoteId)
-        .eq("row_version", oldQuote.row_version || 1)
-        .select("*")
-        .single();
-
-      if (updErr) {
-        if (updErr.code === 'PGRST116') {
-          throw new Error("Concorrência detectada: Este orçamento foi modificado por outro usuário. Por favor, recarregue a página.");
-        }
-        logger.error("Error updating quote:", updErr);
-        throw updErr;
-      }
-
-    // Granular Audit Logging
-    const changes: string[] = [];
-    
-    // 1. Header Changes
-    if (params.quote.discount_percent !== undefined && params.quote.discount_percent !== oldQuote.discount_percent) {
-      changes.push(`Desconto alterado de ${oldQuote.discount_percent}% para ${params.quote.discount_percent}%`);
-    }
-    if (params.quote.negotiation_markup_percent !== undefined && params.quote.negotiation_markup_percent !== oldQuote.negotiation_markup_percent) {
-      changes.push(`Markup alterado de ${oldQuote.negotiation_markup_percent}% para ${params.quote.negotiation_markup_percent}%`);
-    }
-    if (params.quote.status !== undefined && params.quote.status !== oldQuote.status) {
-      changes.push(`Status alterado de ${oldQuote.status} para ${params.quote.status}`);
-    }
-
-    // 2. Item Changes
-    const oldItems = oldQuote.items || [];
-    const newItems = params.items;
-
-    // Detect deleted items
-    oldItems.forEach(oldItem => {
-      const stillExists = newItems.some(newItem => newItem.product_id === oldItem.product_id && newItem.color_name === oldItem.color_name);
-      if (!stillExists) {
-        changes.push(`Item removido: ${oldItem.product_name}`);
-      }
-    });
-
-    // Detect added/modified items
-    newItems.forEach(newItem => {
-      const oldItem = oldItems.find(oi => oi.product_id === newItem.product_id && oi.color_name === newItem.color_name);
-      if (!oldItem) {
-        changes.push(`Item adicionado: ${newItem.product_name} (${newItem.quantity}x)`);
-      } else {
-        if (newItem.quantity !== oldItem.quantity) {
-          changes.push(`Quantidade de ${newItem.product_name} alterada: ${oldItem.quantity} -> ${newItem.quantity}`);
-        }
-        if (newItem.unit_price !== oldItem.unit_price) {
-          changes.push(`Preço unitário de ${newItem.product_name} alterado: R$${oldItem.unit_price} -> R$${newItem.unit_price}`);
-        }
-      }
-    });
-
-    // Log each change to history
-    for (const change of changes) {
-      await this.logHistory({
-        quoteId: params.quoteId,
-        userId: params.userId,
-        action: "updated",
-        description: change
+      const changes = describeQuoteChanges(oldQuote, params.quote, params.items);
+      const { data: updated, error: updErr } = await supabase.rpc('save_quote_atomic', {
+        p_quote: updatePayload as Json,
+        p_items: buildAtomicQuoteItems(params.items),
+        p_quote_id: params.quoteId,
+        p_expected_row_version: oldQuote.row_version || 1,
+        p_history: quoteHistoryOrDefault(changes),
       });
-    }
 
-    await supabase.from("quote_items").delete().eq("quote_id", params.quoteId);
-    await this.insertItemsWithPersonalizations(params.items, params.quoteId);
-
-      return updated as Quote;
+      throwQuoteSaveError(updErr, "Error updating quote:");
+      return assertAtomicQuoteResult(updated, 'O banco não retornou o orçamento atualizado.');
     } catch (err) {
       logger.error("Unexpected error in QuoteService.update:", err);
       throw err;
@@ -304,28 +307,6 @@ export class QuoteService {
       userId,
       orgId
     });
-  }
-
-  private static async insertItemsWithPersonalizations(items: QuoteItem[], quoteId: string) {
-    const itemsPayload = buildItemsInsertPayload(items, quoteId);
-    const { data: insertedItems, error: itemsErr } = await supabase.from("quote_items").insert(itemsPayload).select("*");
-    if (itemsErr) {
-      logger.error("Error inserting quote items:", itemsErr);
-      throw itemsErr;
-    }
-
-    for (let i = 0; i < items.length; i++) {
-      const item = items[i];
-      const insertedItem = insertedItems?.[i];
-      if (item && item.personalizations?.length && insertedItem) {
-        const persPayload = buildPersonalizationsInsertPayload(item.personalizations, insertedItem.id);
-        const { error: pErr } = await supabase.from("quote_item_personalizations").insert(persPayload);
-        if (pErr) {
-          logger.error("Error inserting personalizations for item:", insertedItem.id, pErr);
-          throw pErr;
-        }
-      }
-    }
   }
 
   static async logHistory(params: {

@@ -11102,6 +11102,16 @@ export type Database = {
         Returns: number
       }
       retry_failed_webhook_deliveries: { Args: never; Returns: Json }
+      save_quote_atomic: {
+        Args: {
+          p_expected_row_version?: number | null
+          p_history?: Json
+          p_items: Json
+          p_quote: Json
+          p_quote_id?: string | null
+        }
+        Returns: Json
+      }
       transition_sicoob_order_status: {
         Args: {
           p_comment?: string | null
