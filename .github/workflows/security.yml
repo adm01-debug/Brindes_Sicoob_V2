@@ -3,8 +3,18 @@ name: Security Scan
 on:
   pull_request:
     branches: [main]
+    paths-ignore:
+      - 'docs/**'
+      - '*.md'
+      - '.github/CODEOWNERS'
+      - 'reports/**'
   push:
     branches: [main]
+    paths-ignore:
+      - 'docs/**'
+      - '*.md'
+      - '.github/CODEOWNERS'
+      - 'reports/**'
   schedule:
     # Toda segunda-feira às 06:30 (UTC) — 03:30 BRT
     - cron: '30 6 * * 1'

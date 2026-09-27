@@ -33,7 +33,10 @@ jobs:
           cache: npm
 
       - name: Instalar dependências reproduzíveis
-        run: npm ci
+        run: npm ci --no-audit --no-fund
+
+      - name: Preparar diretório de relatórios
+        run: mkdir -p reports
 
       - name: Database RLS Scan
         env:
@@ -68,9 +71,6 @@ jobs:
           node scripts/generate-audit-dossier.mjs
           node scripts/validate-audit-links.mjs
           node scripts/test-audit-scripts.mjs
-
-      - name: Preparar diretório de relatórios
-        run: mkdir -p reports
 
       - name: Generate Filtered Audit Exports
         env:
