@@ -29,6 +29,7 @@ describe("formulário de convites acessível", () => {
     expect(email).toHaveAccessibleDescription("Informe um email institucional válido.");
     expect(cooperative).toHaveAttribute("aria-invalid", "true");
     expect(cooperative).toHaveAccessibleDescription("Selecione a cooperativa.");
+    expect(screen.getAllByText("Nenhum convite foi emitido neste escopo.")).toHaveLength(1);
     expect(await axe(container)).toHaveNoViolations();
   });
 });

@@ -364,7 +364,9 @@ export default function SicoobInvitationsPage() {
           <CardContent className="space-y-3">
             {invitationsQuery.isLoading && <p role="status" aria-live="polite" className="text-sm text-muted-foreground">Carregando convites…</p>}
             {invitationsQuery.error && <p role="alert" className="text-sm text-destructive">Não foi possível carregar os convites.</p>}
-            {!invitationsQuery.isLoading && !invitationsQuery.error && (invitationsQuery.data?.length ?? 0) === 0 && <p className="text-sm text-muted-foreground">Nenhum convite foi emitido neste escopo.</p>}
+            {!invitationsQuery.isLoading && !invitationsQuery.error && (invitationsQuery.data?.length ?? 0) === 0 && (
+              <p className="rounded-lg border border-dashed p-8 text-center text-sm text-muted-foreground">Nenhum convite foi emitido neste escopo.</p>
+            )}
             {(invitationsQuery.data ?? []).map((invitation) => {
               const status = effectiveStatus(invitation);
               return (
@@ -429,9 +431,6 @@ export default function SicoobInvitationsPage() {
                 </article>
               );
             })}
-            {!invitationsQuery.isLoading && (invitationsQuery.data?.length ?? 0) === 0 && (
-              <p className="rounded-lg border border-dashed p-8 text-center text-sm text-muted-foreground">Nenhum convite emitido no seu escopo.</p>
-            )}
           </CardContent>
         </Card>
       </div>
