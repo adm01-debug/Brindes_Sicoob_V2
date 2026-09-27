@@ -11,7 +11,7 @@ import { useDiscountApproval } from "@/hooks/useDiscountApproval";
 import { format, addDays } from "date-fns";
 import { toast } from "sonner";
 import { validateQuoteForm, QUOTE_FIELD_LABELS } from "@/lib/validations";
-import { useQuotes, type QuoteItem, type QuoteItemPersonalization } from "@/hooks/quotes/useQuotes";
+import { useQuotes, type Quote, type QuoteItem, type QuoteItemPersonalization } from "@/hooks/quotes/useQuotes";
 import { useQuoteTemplates, type QuoteTemplate, type QuoteTemplateItem } from "@/hooks/useQuoteTemplates";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRBAC } from "@/hooks/useRBAC";
@@ -35,7 +35,7 @@ export function useQuoteBuilderState() {
 
   const { user, roles: userRoles, isGerentePa } = useAuth();
   const { isSupervisorOrAbove } = useRBAC();
-  const { createQuote, updateQuote, fetchQuote, isLoading: quotesLoading } = useQuotes();
+  const { createQuote, updateQuote, updateQuoteStatus, fetchQuote, isLoading: quotesLoading } = useQuotes();
   const { templates } = useQuoteTemplates();
   const { myLimit: maxDiscountPercent } = useSellerDiscountLimits();
   const { requestApproval } = useDiscountApproval();
@@ -327,14 +327,15 @@ export function useQuoteBuilderState() {
       finalStatus = "pending_singular_approval";
     }
 
+    const currentQuote = isEditMode && quoteId ? await fetchQuote(quoteId) : null;
+    const persistedStatus = (isEditMode ? currentQuote?.status ?? currentStatus : "draft") as Quote["status"];
     const quoteData = {
       client_id: clientId || undefined, client_name: contactInfo?.name || undefined,
       client_company: companyInfo?.name || undefined, client_cnpj: companyInfo?.cnpj || undefined,
       client_email: contactInfo?.email || undefined, client_phone: contactInfo?.phone || undefined,
-      // A solicitação de desconto é concluída pela RPC após este salvamento.
-      // Persistir `pending_approval` antes dela deixava o orçamento sem pedido
-      // correspondente caso a segunda chamada falhasse.
-      status: finalStatus === "pending_approval" ? "pending" : finalStatus,
+      // Status é governança: toda criação começa como rascunho e qualquer
+      // mudança acontece pela RPC com lock, escopo e versão otimista.
+      status: persistedStatus,
       tags: tags,
       discount_percent: discountType === "percent" ? discountValue : 0,
       discount_amount: discountType === "amount" ? discountValue : 0,
@@ -347,23 +348,26 @@ export function useQuoteBuilderState() {
 
     let result;
     if (isEditMode && quoteId) { 
-      const currentQuote = await fetchQuote(quoteId);
       result = await updateQuote(quoteId, { ...quoteData, row_version: currentQuote?.row_version }, items); 
     } else { 
       result = await createQuote(quoteData, items); 
     }
 
-    if (result?.id && finalStatus === "pending_approval" && maxDiscountPercent != null) {
-      await requestApproval(result.id, totals.realDiscountPercent, maxDiscountPercent, sellerNotes);
-    }
-
     if (result) {
+      let transitionApplied = true;
+      if (finalStatus === "pending_approval" && maxDiscountPercent != null) {
+        transitionApplied = await requestApproval(result.id!, totals.realDiscountPercent, maxDiscountPercent, sellerNotes);
+      } else if (finalStatus !== persistedStatus) {
+        transitionApplied = await updateQuoteStatus(result.id!, finalStatus);
+      }
+      if (!transitionApplied) return;
+
       if (finalStatus === "pending_singular_approval") {
         toast.success("Solicitação enviada para aprovação da Singular!");
       }
       navigate(`/orcamentos/${result.id}`);
     }
-  }, [isDraftValid, isFormValid, validationErrors, clientId, contactInfo, companyInfo, discountType, discountValue, totals, notes, internalNotes, validUntil, paymentTerms, deliveryTime, shippingType, shippingCost, isEditMode, quoteId, items, navigate, updateQuote, createQuote, maxDiscountPercent, requestApproval, isGerentePa, userRoles]);
+  }, [isDraftValid, isFormValid, validationErrors, clientId, contactInfo, companyInfo, discountType, discountValue, totals, notes, internalNotes, validUntil, paymentTerms, deliveryTime, shippingType, shippingCost, isEditMode, quoteId, items, navigate, updateQuote, createQuote, updateQuoteStatus, fetchQuote, currentStatus, maxDiscountPercent, requestApproval, isGerentePa, userRoles]);
 
   return {
     navigate, quoteId, isEditMode, loadingQuote, hasUnsavedData, user,

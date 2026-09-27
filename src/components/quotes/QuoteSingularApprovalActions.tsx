@@ -24,7 +24,7 @@ interface Props {
 
 export function QuoteSingularApprovalActions({ quoteId, status, quoteNumber, onActionComplete }: Props) {
   const { isGestorCompras, isDev } = useAuth();
-  const { updateQuoteStatus, logQuoteHistory } = useQuotes();
+  const { updateQuoteStatus } = useQuotes();
   const [isProcessing, setIsProcessing] = useState(false);
   const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
   const [adjustDialogOpen, setAdjustDialogOpen] = useState(false);
@@ -66,7 +66,6 @@ export function QuoteSingularApprovalActions({ quoteId, status, quoteNumber, onA
     try {
       const ok = await updateQuoteStatus(quoteId, "approved_singular");
       if (ok) {
-        await logQuoteHistory(quoteId, "singular_approved", "Solicitação aprovada pelo comprador da Singular");
         toast.success("Orçamento aprovado!");
         onActionComplete?.();
       }

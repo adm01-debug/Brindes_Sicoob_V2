@@ -350,15 +350,14 @@ export class QuoteService {
       ...(params.metadata || {})
     };
 
-    const { error } = await supabase.from("quote_history").insert({
-      quote_id: params.quoteId,
-      user_id: params.userId,
-      action: params.action,
-      description: params.description,
-      field_changed: params.fieldChanged || null,
-      old_value: params.oldValue || null,
-      new_value: params.newValue || null,
-      metadata: clientMetadata as Json,
+    const { error } = await supabase.rpc("append_quote_history_note", {
+      p_quote_id: params.quoteId,
+      p_action: params.action,
+      p_description: params.description,
+      p_field_changed: params.fieldChanged || null,
+      p_old_value: params.oldValue || null,
+      p_new_value: params.newValue || null,
+      p_metadata: clientMetadata as Json,
     });
     if (error) {
       logger.error("Erro ao registrar histórico do orçamento:", error);

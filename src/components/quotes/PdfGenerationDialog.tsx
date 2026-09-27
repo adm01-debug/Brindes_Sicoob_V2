@@ -200,22 +200,18 @@ export function PdfGenerationDialog({
     setIsFinalizing(true);
     try {
       const fileName = `${quoteNumber || quoteId}_v${pdfVersion}_signed.pdf`;
-      const filePath = `signed/${fileName}`;
+      const filePath = `quotes/${quoteId}/${fileName}`;
       
-      const { data: uploadData, error: uploadError } = await supabase.storage
+      const { error: uploadError } = await supabase.storage
         .from("proposals")
         .upload(filePath, pdfBlob, { upsert: true });
         
       if (uploadError) throw uploadError;
       
-      const { data: { publicUrl } } = supabase.storage
-        .from("proposals")
-        .getPublicUrl(filePath);
-        
-      await approveQuoteWithPdfAtomically(quoteId, publicUrl);
+      await approveQuoteWithPdfAtomically(quoteId, filePath);
       
       toast.success("Orçamento aprovado e PDF assinado salvo!");
-      onStatusUpdate?.("approved", publicUrl);
+      onStatusUpdate?.("approved", filePath);
       setOpen(false);
     } catch (error) {
       console.error("Error finalizing quote:", error);
