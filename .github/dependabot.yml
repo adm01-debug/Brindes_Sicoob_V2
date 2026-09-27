@@ -32,9 +32,8 @@ updates:
           - "patch"
           - "major"
     ignore:
-      # Ignorar majors em prod (revisar caso a caso)
+      # Ignorar majors (revisar caso a caso)
       - dependency-name: "*"
-        dependency-type: "production"
         update-types: ["version-update:semver-major"]
 
   # GitHub Actions
