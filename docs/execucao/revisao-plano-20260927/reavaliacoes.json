@@ -1,0 +1,634 @@
+{
+  "E001": {
+    "diagnostico": "Base remota fixada em 3094cbab2. Diretório principal segue antigo e sujo; auditoria isolada. PR #42 não integra main. Domínio, responsáveis e ambiente segregado ainda exigem aceite.",
+    "evidencias": [
+      "docs/execucao/revisao-plano-20260927/github-prs.json"
+    ]
+  },
+  "E002": {
+    "diagnostico": "PRs #24–#29 e #40 estão em main; manifesto de autorização cobre 106/106 funções. Isso encerra a pendência de incorporação desses PRs, mas não comprova o código implantado, rotação ou todos os predicados por ator.",
+    "evidencias": [
+      "supabase/functions/_shared/edge-authz-manifest.ts",
+      "supabase/functions/webhook-dispatcher/index.ts",
+      "supabase/functions/sync-quote-bitrix/index.ts",
+      "docs/execucao/revisao-plano-20260927/github-prs.json"
+    ]
+  },
+  "E012": {
+    "diagnostico": "PRs #24–#29 e #40 estão em main; manifesto de autorização cobre 106/106 funções. Isso encerra a pendência de incorporação desses PRs, mas não comprova o código implantado, rotação ou todos os predicados por ator.",
+    "evidencias": [
+      "supabase/functions/_shared/edge-authz-manifest.ts",
+      "supabase/functions/webhook-dispatcher/index.ts",
+      "supabase/functions/sync-quote-bitrix/index.ts",
+      "docs/execucao/revisao-plano-20260927/github-prs.json"
+    ]
+  },
+  "R32": {
+    "diagnostico": "PRs #24–#29 e #40 estão em main; manifesto de autorização cobre 106/106 funções. Isso encerra a pendência de incorporação desses PRs, mas não comprova o código implantado, rotação ou todos os predicados por ator.",
+    "evidencias": [
+      "supabase/functions/_shared/edge-authz-manifest.ts",
+      "supabase/functions/webhook-dispatcher/index.ts",
+      "supabase/functions/sync-quote-bitrix/index.ts",
+      "docs/execucao/revisao-plano-20260927/github-prs.json"
+    ]
+  },
+  "T24": {
+    "diagnostico": "PRs #24–#29 e #40 estão em main; manifesto de autorização cobre 106/106 funções. Isso encerra a pendência de incorporação desses PRs, mas não comprova o código implantado, rotação ou todos os predicados por ator.",
+    "evidencias": [
+      "supabase/functions/_shared/edge-authz-manifest.ts",
+      "supabase/functions/webhook-dispatcher/index.ts",
+      "supabase/functions/sync-quote-bitrix/index.ts",
+      "docs/execucao/revisao-plano-20260927/github-prs.json"
+    ]
+  },
+  "E007": {
+    "diagnostico": "PR #32 substituiu dados fixos de logística por consultas e filtros reais. Sonda atual reproduz limite: busca só os primeiros 500 pedidos e filtra status depois; pode omitir pedidos logísticos mais antigos. Paginação/total e rastreio externo ainda precisam de validação.",
+    "evidencias": [
+      "src/services/sicoob/logisticsReportService.ts",
+      "src/pages/sicoob/LogisticsReportPage.tsx",
+      "scripts/revisao/lacunas-20260927.cenarios.tsx"
+    ]
+  },
+  "E009": {
+    "diagnostico": "PR #32 substituiu dados fixos de logística por consultas e filtros reais. Sonda atual reproduz limite: busca só os primeiros 500 pedidos e filtra status depois; pode omitir pedidos logísticos mais antigos. Paginação/total e rastreio externo ainda precisam de validação.",
+    "evidencias": [
+      "src/services/sicoob/logisticsReportService.ts",
+      "src/pages/sicoob/LogisticsReportPage.tsx",
+      "scripts/revisao/lacunas-20260927.cenarios.tsx"
+    ]
+  },
+  "E026": {
+    "diagnostico": "PR #32 substituiu dados fixos de logística por consultas e filtros reais. Sonda atual reproduz limite: busca só os primeiros 500 pedidos e filtra status depois; pode omitir pedidos logísticos mais antigos. Paginação/total e rastreio externo ainda precisam de validação.",
+    "evidencias": [
+      "src/services/sicoob/logisticsReportService.ts",
+      "src/pages/sicoob/LogisticsReportPage.tsx",
+      "scripts/revisao/lacunas-20260927.cenarios.tsx"
+    ]
+  },
+  "E038": {
+    "diagnostico": "PR #32 substituiu dados fixos de logística por consultas e filtros reais. Sonda atual reproduz limite: busca só os primeiros 500 pedidos e filtra status depois; pode omitir pedidos logísticos mais antigos. Paginação/total e rastreio externo ainda precisam de validação.",
+    "evidencias": [
+      "src/services/sicoob/logisticsReportService.ts",
+      "src/pages/sicoob/LogisticsReportPage.tsx",
+      "scripts/revisao/lacunas-20260927.cenarios.tsx"
+    ]
+  },
+  "E075": {
+    "diagnostico": "PR #32 substituiu dados fixos de logística por consultas e filtros reais. Sonda atual reproduz limite: busca só os primeiros 500 pedidos e filtra status depois; pode omitir pedidos logísticos mais antigos. Paginação/total e rastreio externo ainda precisam de validação.",
+    "evidencias": [
+      "src/services/sicoob/logisticsReportService.ts",
+      "src/pages/sicoob/LogisticsReportPage.tsx",
+      "scripts/revisao/lacunas-20260927.cenarios.tsx"
+    ]
+  },
+  "E089": {
+    "diagnostico": "PR #32 substituiu dados fixos de logística por consultas e filtros reais. Sonda atual reproduz limite: busca só os primeiros 500 pedidos e filtra status depois; pode omitir pedidos logísticos mais antigos. Paginação/total e rastreio externo ainda precisam de validação.",
+    "evidencias": [
+      "src/services/sicoob/logisticsReportService.ts",
+      "src/pages/sicoob/LogisticsReportPage.tsx",
+      "scripts/revisao/lacunas-20260927.cenarios.tsx"
+    ]
+  },
+  "T42": {
+    "diagnostico": "PR #32 substituiu dados fixos de logística por consultas e filtros reais. Sonda atual reproduz limite: busca só os primeiros 500 pedidos e filtra status depois; pode omitir pedidos logísticos mais antigos. Paginação/total e rastreio externo ainda precisam de validação.",
+    "evidencias": [
+      "src/services/sicoob/logisticsReportService.ts",
+      "src/pages/sicoob/LogisticsReportPage.tsx",
+      "scripts/revisao/lacunas-20260927.cenarios.tsx"
+    ]
+  },
+  "B21": {
+    "diagnostico": "PR #32 substituiu dados fixos de logística por consultas e filtros reais. Sonda atual reproduz limite: busca só os primeiros 500 pedidos e filtra status depois; pode omitir pedidos logísticos mais antigos. Paginação/total e rastreio externo ainda precisam de validação.",
+    "evidencias": [
+      "src/services/sicoob/logisticsReportService.ts",
+      "src/pages/sicoob/LogisticsReportPage.tsx",
+      "scripts/revisao/lacunas-20260927.cenarios.tsx"
+    ]
+  },
+  "B23": {
+    "diagnostico": "PR #32 substituiu dados fixos de logística por consultas e filtros reais. Sonda atual reproduz limite: busca só os primeiros 500 pedidos e filtra status depois; pode omitir pedidos logísticos mais antigos. Paginação/total e rastreio externo ainda precisam de validação.",
+    "evidencias": [
+      "src/services/sicoob/logisticsReportService.ts",
+      "src/pages/sicoob/LogisticsReportPage.tsx",
+      "scripts/revisao/lacunas-20260927.cenarios.tsx"
+    ]
+  },
+  "E011": {
+    "diagnostico": "Paridade integral não certificada. Duas chamadas à nova bulk_update_quote_status_atomic falham no gate de referências com cache de 22/09; a coleta de API de 27/09 também não a encontrou. Ledger/hash/DDL e tipos completos continuam sem reconciliação administrativa atual.",
+    "evidencias": [
+      "src/hooks/quotes/useQuotes.ts",
+      "scripts/db/check-runtime-refs.mjs",
+      "docs/execucao/revisao-plano-20260927/checks.json"
+    ]
+  },
+  "R12": {
+    "diagnostico": "Paridade integral não certificada. Duas chamadas à nova bulk_update_quote_status_atomic falham no gate de referências com cache de 22/09; a coleta de API de 27/09 também não a encontrou. Ledger/hash/DDL e tipos completos continuam sem reconciliação administrativa atual.",
+    "evidencias": [
+      "src/hooks/quotes/useQuotes.ts",
+      "scripts/db/check-runtime-refs.mjs",
+      "docs/execucao/revisao-plano-20260927/checks.json"
+    ]
+  },
+  "R13": {
+    "diagnostico": "Paridade integral não certificada. Duas chamadas à nova bulk_update_quote_status_atomic falham no gate de referências com cache de 22/09; a coleta de API de 27/09 também não a encontrou. Ledger/hash/DDL e tipos completos continuam sem reconciliação administrativa atual.",
+    "evidencias": [
+      "src/hooks/quotes/useQuotes.ts",
+      "scripts/db/check-runtime-refs.mjs",
+      "docs/execucao/revisao-plano-20260927/checks.json"
+    ]
+  },
+  "R37": {
+    "diagnostico": "Paridade integral não certificada. Duas chamadas à nova bulk_update_quote_status_atomic falham no gate de referências com cache de 22/09; a coleta de API de 27/09 também não a encontrou. Ledger/hash/DDL e tipos completos continuam sem reconciliação administrativa atual.",
+    "evidencias": [
+      "src/hooks/quotes/useQuotes.ts",
+      "scripts/db/check-runtime-refs.mjs",
+      "docs/execucao/revisao-plano-20260927/checks.json"
+    ]
+  },
+  "T22": {
+    "diagnostico": "Paridade integral não certificada. Duas chamadas à nova bulk_update_quote_status_atomic falham no gate de referências com cache de 22/09; a coleta de API de 27/09 também não a encontrou. Ledger/hash/DDL e tipos completos continuam sem reconciliação administrativa atual.",
+    "evidencias": [
+      "src/hooks/quotes/useQuotes.ts",
+      "scripts/db/check-runtime-refs.mjs",
+      "docs/execucao/revisao-plano-20260927/checks.json"
+    ]
+  },
+  "E015": {
+    "diagnostico": "Main retirou .env.production versionado e adicionou exemplo. As chaves públicas preservadas no diretório local responderam HTTP 200 na coleta de 27/09, superando o diagnóstico 401 de 24/09. Build implantado, login, recuperação e métodos externos ainda não foram homologados.",
+    "evidencias": [
+      ".env.production.example",
+      "docs/DEPLOYMENT.md"
+    ]
+  },
+  "T29": {
+    "diagnostico": "Main retirou .env.production versionado e adicionou exemplo. As chaves públicas preservadas no diretório local responderam HTTP 200 na coleta de 27/09, superando o diagnóstico 401 de 24/09. Build implantado, login, recuperação e métodos externos ainda não foram homologados.",
+    "evidencias": [
+      ".env.production.example",
+      "docs/DEPLOYMENT.md"
+    ]
+  },
+  "E019": {
+    "diagnostico": "54 testes direcionados passaram nesta revisão; oito sondas reproduzem lacunas e não são testes de produto aprovado. Suíte integral anterior: 5518 passaram/112 ignorados no lote #40/#41. Ratchet anterior: 163 erros TS, lint global 3288; não houve nova execução global nesta revisão. CI segue impedido pelo orçamento de Actions.",
+    "evidencias": [
+      "docs/execucao/revisao-plano-20260927/testes-direcionados.json",
+      "docs/execucao/revisao-plano-20260927/github-bloqueio-ci.json"
+    ]
+  },
+  "R38": {
+    "diagnostico": "54 testes direcionados passaram nesta revisão; oito sondas reproduzem lacunas e não são testes de produto aprovado. Suíte integral anterior: 5518 passaram/112 ignorados no lote #40/#41. Ratchet anterior: 163 erros TS, lint global 3288; não houve nova execução global nesta revisão. CI segue impedido pelo orçamento de Actions.",
+    "evidencias": [
+      "docs/execucao/revisao-plano-20260927/testes-direcionados.json",
+      "docs/execucao/revisao-plano-20260927/github-bloqueio-ci.json"
+    ]
+  },
+  "C40": {
+    "diagnostico": "54 testes direcionados passaram nesta revisão; oito sondas reproduzem lacunas e não são testes de produto aprovado. Suíte integral anterior: 5518 passaram/112 ignorados no lote #40/#41. Ratchet anterior: 163 erros TS, lint global 3288; não houve nova execução global nesta revisão. CI segue impedido pelo orçamento de Actions.",
+    "evidencias": [
+      "docs/execucao/revisao-plano-20260927/testes-direcionados.json",
+      "docs/execucao/revisao-plano-20260927/github-bloqueio-ci.json"
+    ]
+  },
+  "T16": {
+    "diagnostico": "54 testes direcionados passaram nesta revisão; oito sondas reproduzem lacunas e não são testes de produto aprovado. Suíte integral anterior: 5518 passaram/112 ignorados no lote #40/#41. Ratchet anterior: 163 erros TS, lint global 3288; não houve nova execução global nesta revisão. CI segue impedido pelo orçamento de Actions.",
+    "evidencias": [
+      "docs/execucao/revisao-plano-20260927/testes-direcionados.json",
+      "docs/execucao/revisao-plano-20260927/github-bloqueio-ci.json"
+    ]
+  },
+  "T17": {
+    "diagnostico": "54 testes direcionados passaram nesta revisão; oito sondas reproduzem lacunas e não são testes de produto aprovado. Suíte integral anterior: 5518 passaram/112 ignorados no lote #40/#41. Ratchet anterior: 163 erros TS, lint global 3288; não houve nova execução global nesta revisão. CI segue impedido pelo orçamento de Actions.",
+    "evidencias": [
+      "docs/execucao/revisao-plano-20260927/testes-direcionados.json",
+      "docs/execucao/revisao-plano-20260927/github-bloqueio-ci.json"
+    ]
+  },
+  "T18": {
+    "diagnostico": "54 testes direcionados passaram nesta revisão; oito sondas reproduzem lacunas e não são testes de produto aprovado. Suíte integral anterior: 5518 passaram/112 ignorados no lote #40/#41. Ratchet anterior: 163 erros TS, lint global 3288; não houve nova execução global nesta revisão. CI segue impedido pelo orçamento de Actions.",
+    "evidencias": [
+      "docs/execucao/revisao-plano-20260927/testes-direcionados.json",
+      "docs/execucao/revisao-plano-20260927/github-bloqueio-ci.json"
+    ]
+  },
+  "E025": {
+    "diagnostico": "Autosave passou a usar UUID por novo rascunho e expõe erro de escrita; testes confirmam esses avanços. Porém nova montagem gera outra chave e não recupera o rascunho. Orçamento existente usa quoteId sem identidade de usuário/cooperativa; logout não remove autosave. Corrigir recuperação e isolamento de sessão.",
+    "evidencias": [
+      "src/components/quotes/QuoteAutoSave.tsx",
+      "src/hooks/useAutoSave.ts",
+      "src/contexts/AuthContext.tsx",
+      "scripts/revisao/lacunas-20260927.cenarios.tsx"
+    ]
+  },
+  "E057": {
+    "diagnostico": "Autosave passou a usar UUID por novo rascunho e expõe erro de escrita; testes confirmam esses avanços. Porém nova montagem gera outra chave e não recupera o rascunho. Orçamento existente usa quoteId sem identidade de usuário/cooperativa; logout não remove autosave. Corrigir recuperação e isolamento de sessão.",
+    "evidencias": [
+      "src/components/quotes/QuoteAutoSave.tsx",
+      "src/hooks/useAutoSave.ts",
+      "src/contexts/AuthContext.tsx",
+      "scripts/revisao/lacunas-20260927.cenarios.tsx"
+    ]
+  },
+  "E085": {
+    "diagnostico": "Autosave passou a usar UUID por novo rascunho e expõe erro de escrita; testes confirmam esses avanços. Porém nova montagem gera outra chave e não recupera o rascunho. Orçamento existente usa quoteId sem identidade de usuário/cooperativa; logout não remove autosave. Corrigir recuperação e isolamento de sessão.",
+    "evidencias": [
+      "src/components/quotes/QuoteAutoSave.tsx",
+      "src/hooks/useAutoSave.ts",
+      "src/contexts/AuthContext.tsx",
+      "scripts/revisao/lacunas-20260927.cenarios.tsx"
+    ]
+  },
+  "B16": {
+    "diagnostico": "Autosave passou a usar UUID por novo rascunho e expõe erro de escrita; testes confirmam esses avanços. Porém nova montagem gera outra chave e não recupera o rascunho. Orçamento existente usa quoteId sem identidade de usuário/cooperativa; logout não remove autosave. Corrigir recuperação e isolamento de sessão.",
+    "evidencias": [
+      "src/components/quotes/QuoteAutoSave.tsx",
+      "src/hooks/useAutoSave.ts",
+      "src/contexts/AuthContext.tsx",
+      "scripts/revisao/lacunas-20260927.cenarios.tsx"
+    ]
+  },
+  "E027": {
+    "diagnostico": "Falha de escrita do autosave agora chega à interface via lastError/onError, com teste de recuperação. O aceite geral de formulários ainda depende de foco, validação e jornada acessível.",
+    "evidencias": [
+      "src/hooks/useAutoSave.ts",
+      "src/components/quotes/QuoteAutoSave.tsx",
+      "tests/hooks/useAutoSave.test.tsx"
+    ]
+  },
+  "E028": {
+    "diagnostico": "Autosave expõe erro e previsão de kit propaga falha da API; as duas lacunas anteriores foram corrigidas no código. Ainda há erros REST ignorados em QuoteService e notificações, prazo usa buffer fixo e a retomada de rascunho novo falha.",
+    "evidencias": [
+      "src/hooks/useKitStockForecast.ts",
+      "src/hooks/useAutoSave.ts",
+      "src/services/QuoteService.ts"
+    ]
+  },
+  "E048": {
+    "diagnostico": "Autosave expõe erro e previsão de kit propaga falha da API; as duas lacunas anteriores foram corrigidas no código. Ainda há erros REST ignorados em QuoteService e notificações, prazo usa buffer fixo e a retomada de rascunho novo falha.",
+    "evidencias": [
+      "src/hooks/useKitStockForecast.ts",
+      "src/hooks/useAutoSave.ts",
+      "src/services/QuoteService.ts"
+    ]
+  },
+  "E029": {
+    "diagnostico": "Outbox Sicoob possui implementação e testes históricos. Porém useQuotes ainda grava workspace_notifications separadamente após a RPC e ignora erro; aprovação em lote não executa o mesmo despacho. Não há garantia única de notificação entre esses caminhos nem homologação do provedor.",
+    "evidencias": [
+      "src/hooks/quotes/useQuotes.ts",
+      "docs/execucao/revisao-plano-20260924/simular-outbox-aprovacao.json"
+    ]
+  },
+  "E063": {
+    "diagnostico": "Outbox Sicoob possui implementação e testes históricos. Porém useQuotes ainda grava workspace_notifications separadamente após a RPC e ignora erro; aprovação em lote não executa o mesmo despacho. Não há garantia única de notificação entre esses caminhos nem homologação do provedor.",
+    "evidencias": [
+      "src/hooks/quotes/useQuotes.ts",
+      "docs/execucao/revisao-plano-20260924/simular-outbox-aprovacao.json"
+    ]
+  },
+  "E046": {
+    "diagnostico": "PRs #34–#38 retiraram selos/inteligência/histórico ilustrativos e usam estoque real. Identidade da variante foi preservada no #40. Validar vigência de preço, timestamp, fornecedor e disponibilidade na jornada remota; consulta não reserva estoque.",
+    "evidencias": [
+      "src/hooks/quote/useQuotesStockStatus.ts",
+      "src/components/products/useStockChartData.ts",
+      "src/components/common/SocialProof.tsx",
+      "src/hooks/quotes/quoteVariantIdentity.ts"
+    ]
+  },
+  "E073": {
+    "diagnostico": "PRs #34–#38 retiraram selos/inteligência/histórico ilustrativos e usam estoque real. Identidade da variante foi preservada no #40. Validar vigência de preço, timestamp, fornecedor e disponibilidade na jornada remota; consulta não reserva estoque.",
+    "evidencias": [
+      "src/hooks/quote/useQuotesStockStatus.ts",
+      "src/components/products/useStockChartData.ts",
+      "src/components/common/SocialProof.tsx",
+      "src/hooks/quotes/quoteVariantIdentity.ts"
+    ]
+  },
+  "E054": {
+    "diagnostico": "Registro/versionamento de arte existe no código; nova sondagem de 27/09 retorna 404 em sicoob-artwork-register. Publicação e ensaios positivos/negativos com responsável pela marca seguem pendentes.",
+    "evidencias": [
+      "supabase/functions/sicoob-artwork-register/index.ts",
+      "docs/execucao/revisao-plano-20260927/sondagem-edge.json"
+    ]
+  },
+  "E065": {
+    "diagnostico": "Registro/versionamento de arte existe no código; nova sondagem de 27/09 retorna 404 em sicoob-artwork-register. Publicação e ensaios positivos/negativos com responsável pela marca seguem pendentes.",
+    "evidencias": [
+      "supabase/functions/sicoob-artwork-register/index.ts",
+      "docs/execucao/revisao-plano-20260927/sondagem-edge.json"
+    ]
+  },
+  "B30": {
+    "diagnostico": "Registro/versionamento de arte existe no código; nova sondagem de 27/09 retorna 404 em sicoob-artwork-register. Publicação e ensaios positivos/negativos com responsável pela marca seguem pendentes.",
+    "evidencias": [
+      "supabase/functions/sicoob-artwork-register/index.ts",
+      "docs/execucao/revisao-plano-20260927/sondagem-edge.json"
+    ]
+  },
+  "E055": {
+    "diagnostico": "Preço, mínimo, variante e demanda agregada possuem validação no servidor. Previsão melhorou no #33. Falta capacidade física de embalagem; sicoob-kit-quote continua 404 em 27/09.",
+    "evidencias": [
+      "supabase/functions/sicoob-kit-quote/catalog.ts",
+      "src/hooks/useKitStockForecast.ts",
+      "docs/execucao/revisao-plano-20260927/sondagem-edge.json"
+    ]
+  },
+  "B19": {
+    "diagnostico": "Preço, mínimo, variante e demanda agregada possuem validação no servidor. Previsão melhorou no #33. Falta capacidade física de embalagem; sicoob-kit-quote continua 404 em 27/09.",
+    "evidencias": [
+      "supabase/functions/sicoob-kit-quote/catalog.ts",
+      "src/hooks/useKitStockForecast.ts",
+      "docs/execucao/revisao-plano-20260927/sondagem-edge.json"
+    ]
+  },
+  "E059": {
+    "diagnostico": "Versão/conversão e status em lote têm RPCs locais. Entretanto QuoteService.create/update gravam cabeçalho/itens/personalizações/histórico por chamadas separadas; sondas reproduzem cabeçalho salvo antes de falha e erro de exclusão ignorado. Update troca a versão original pela recém-consultada. Fechar atomicidade e conflito do editor, além de publicar a RPC nova.",
+    "evidencias": [
+      "src/services/QuoteService.ts",
+      "supabase/migrations/20260927110000_bulk_quote_status_atomic.sql",
+      "scripts/revisao/lacunas-20260927.cenarios.tsx"
+    ]
+  },
+  "E061": {
+    "diagnostico": "Versão/conversão e status em lote têm RPCs locais. Entretanto QuoteService.create/update gravam cabeçalho/itens/personalizações/histórico por chamadas separadas; sondas reproduzem cabeçalho salvo antes de falha e erro de exclusão ignorado. Update troca a versão original pela recém-consultada. Fechar atomicidade e conflito do editor, além de publicar a RPC nova.",
+    "evidencias": [
+      "src/services/QuoteService.ts",
+      "supabase/migrations/20260927110000_bulk_quote_status_atomic.sql",
+      "scripts/revisao/lacunas-20260927.cenarios.tsx"
+    ]
+  },
+  "R21": {
+    "diagnostico": "Versão/conversão e status em lote têm RPCs locais. Entretanto QuoteService.create/update gravam cabeçalho/itens/personalizações/histórico por chamadas separadas; sondas reproduzem cabeçalho salvo antes de falha e erro de exclusão ignorado. Update troca a versão original pela recém-consultada. Fechar atomicidade e conflito do editor, além de publicar a RPC nova.",
+    "evidencias": [
+      "src/services/QuoteService.ts",
+      "supabase/migrations/20260927110000_bulk_quote_status_atomic.sql",
+      "scripts/revisao/lacunas-20260927.cenarios.tsx"
+    ]
+  },
+  "B06": {
+    "diagnostico": "Versão/conversão e status em lote têm RPCs locais. Entretanto QuoteService.create/update gravam cabeçalho/itens/personalizações/histórico por chamadas separadas; sondas reproduzem cabeçalho salvo antes de falha e erro de exclusão ignorado. Update troca a versão original pela recém-consultada. Fechar atomicidade e conflito do editor, além de publicar a RPC nova.",
+    "evidencias": [
+      "src/services/QuoteService.ts",
+      "supabase/migrations/20260927110000_bulk_quote_status_atomic.sql",
+      "scripts/revisao/lacunas-20260927.cenarios.tsx"
+    ]
+  },
+  "E068": {
+    "diagnostico": "Histórico imutável e agrupamento por eventos foram incorporados em #39/#40. Migration #41 remove o trigger global de status, mas QuoteViewPage e outros caminhos ainda escrevem status diretamente. Sonda SQL reproduz ausência de evento pelo gatilho removido; logHistory ignora erro REST. Centralizar todos os escritores e provar trilha completa.",
+    "evidencias": [
+      "supabase/migrations/20260927110000_bulk_quote_status_atomic.sql",
+      "src/pages/QuoteViewPage.tsx",
+      "src/hooks/useDiscountApproval.ts",
+      "src/services/QuoteService.ts",
+      "scripts/revisao/simular-status-20260927.py"
+    ]
+  },
+  "E074": {
+    "diagnostico": "Controle por papel e documentos privados/exportações entraram via #24/#25. Ingestão sicoob-document-ingest continua 404 em 27/09; scanner real, upload/download por escopo e conciliação financeira continuam sem homologação ponta a ponta.",
+    "evidencias": [
+      "src/components/sicoob/orders/OrderInvoicesTab.tsx",
+      "supabase/migrations/20260923130000_secure_sicoob_documents_and_exports.sql",
+      "docs/execucao/revisao-plano-20260927/sondagem-edge.json"
+    ]
+  },
+  "E078": {
+    "diagnostico": "Controle por papel e documentos privados/exportações entraram via #24/#25. Ingestão sicoob-document-ingest continua 404 em 27/09; scanner real, upload/download por escopo e conciliação financeira continuam sem homologação ponta a ponta.",
+    "evidencias": [
+      "src/components/sicoob/orders/OrderInvoicesTab.tsx",
+      "supabase/migrations/20260923130000_secure_sicoob_documents_and_exports.sql",
+      "docs/execucao/revisao-plano-20260927/sondagem-edge.json"
+    ]
+  },
+  "R25": {
+    "diagnostico": "Controle por papel e documentos privados/exportações entraram via #24/#25. Ingestão sicoob-document-ingest continua 404 em 27/09; scanner real, upload/download por escopo e conciliação financeira continuam sem homologação ponta a ponta.",
+    "evidencias": [
+      "src/components/sicoob/orders/OrderInvoicesTab.tsx",
+      "supabase/migrations/20260923130000_secure_sicoob_documents_and_exports.sql",
+      "docs/execucao/revisao-plano-20260927/sondagem-edge.json"
+    ]
+  },
+  "E079": {
+    "diagnostico": "Sanitização de erros do #29 está em main. Revalidação e idempotência existem, porém sicoob-reorder continua 404 em 27/09. Confirmar versão remota e completar recompra com mudança de preço/estoque.",
+    "evidencias": [
+      "supabase/functions/sicoob-reorder/index.ts",
+      "docs/execucao/revisao-plano-20260927/sondagem-edge.json"
+    ]
+  },
+  "B27": {
+    "diagnostico": "Sanitização de erros do #29 está em main. Revalidação e idempotência existem, porém sicoob-reorder continua 404 em 27/09. Confirmar versão remota e completar recompra com mudança de preço/estoque.",
+    "evidencias": [
+      "supabase/functions/sicoob-reorder/index.ts",
+      "docs/execucao/revisao-plano-20260927/sondagem-edge.json"
+    ]
+  },
+  "E086": {
+    "diagnostico": "Hardening de workers, webhooks, documentos, exportações e CSP está em main. Autorização estática passa, mas rotas remotas não provam código implantado; testes por persona e contratos ignorados seguem pendentes.",
+    "evidencias": [
+      "supabase/functions/_shared/edge-authz-manifest.ts",
+      "docs/execucao/revisao-plano-20260927/sondagem-edge.json"
+    ]
+  },
+  "E090": {
+    "diagnostico": "Cinco funções operacionais seguem 404 em 27/09. Workflow de publicação existe, mas execução 36329081604 não iniciou por orçamento de Actions. Restabelecer execução/acesso ao projeto, publicar lote revisado e executar cenários por papel; código local não encerra homologação.",
+    "evidencias": [
+      ".github/workflows/deploy-sicoob-functions.yml",
+      "docs/execucao/revisao-plano-20260927/github-bloqueio-ci.json",
+      "docs/execucao/revisao-plano-20260927/sondagem-edge.json"
+    ]
+  },
+  "E095": {
+    "diagnostico": "Cinco funções operacionais seguem 404 em 27/09. Workflow de publicação existe, mas execução 36329081604 não iniciou por orçamento de Actions. Restabelecer execução/acesso ao projeto, publicar lote revisado e executar cenários por papel; código local não encerra homologação.",
+    "evidencias": [
+      ".github/workflows/deploy-sicoob-functions.yml",
+      "docs/execucao/revisao-plano-20260927/github-bloqueio-ci.json",
+      "docs/execucao/revisao-plano-20260927/sondagem-edge.json"
+    ]
+  },
+  "R35": {
+    "diagnostico": "Cinco funções operacionais seguem 404 em 27/09. Workflow de publicação existe, mas execução 36329081604 não iniciou por orçamento de Actions. Restabelecer execução/acesso ao projeto, publicar lote revisado e executar cenários por papel; código local não encerra homologação.",
+    "evidencias": [
+      ".github/workflows/deploy-sicoob-functions.yml",
+      "docs/execucao/revisao-plano-20260927/github-bloqueio-ci.json",
+      "docs/execucao/revisao-plano-20260927/sondagem-edge.json"
+    ]
+  },
+  "C25": {
+    "diagnostico": "Cinco funções operacionais seguem 404 em 27/09. Workflow de publicação existe, mas execução 36329081604 não iniciou por orçamento de Actions. Restabelecer execução/acesso ao projeto, publicar lote revisado e executar cenários por papel; código local não encerra homologação.",
+    "evidencias": [
+      ".github/workflows/deploy-sicoob-functions.yml",
+      "docs/execucao/revisao-plano-20260927/github-bloqueio-ci.json",
+      "docs/execucao/revisao-plano-20260927/sondagem-edge.json"
+    ]
+  },
+  "T33": {
+    "diagnostico": "Cinco funções operacionais seguem 404 em 27/09. Workflow de publicação existe, mas execução 36329081604 não iniciou por orçamento de Actions. Restabelecer execução/acesso ao projeto, publicar lote revisado e executar cenários por papel; código local não encerra homologação.",
+    "evidencias": [
+      ".github/workflows/deploy-sicoob-functions.yml",
+      "docs/execucao/revisao-plano-20260927/github-bloqueio-ci.json",
+      "docs/execucao/revisao-plano-20260927/sondagem-edge.json"
+    ]
+  },
+  "R02": {
+    "diagnostico": "Proteção consultada em 27/09: uma revisão obrigatória, required_status_checks=null e enforce_admins=false. CI não iniciou por orçamento. Corrigir orçamento e exigir checks apropriados antes de certificar proteção.",
+    "evidencias": [
+      "docs/execucao/revisao-plano-20260927/github-protecao.json",
+      "docs/execucao/revisao-plano-20260927/github-bloqueio-ci.json"
+    ]
+  },
+  "R46": {
+    "diagnostico": "Proteção consultada em 27/09: uma revisão obrigatória, required_status_checks=null e enforce_admins=false. CI não iniciou por orçamento. Corrigir orçamento e exigir checks apropriados antes de certificar proteção.",
+    "evidencias": [
+      "docs/execucao/revisao-plano-20260927/github-protecao.json",
+      "docs/execucao/revisao-plano-20260927/github-bloqueio-ci.json"
+    ]
+  },
+  "C30": {
+    "diagnostico": "Proteção consultada em 27/09: uma revisão obrigatória, required_status_checks=null e enforce_admins=false. CI não iniciou por orçamento. Corrigir orçamento e exigir checks apropriados antes de certificar proteção.",
+    "evidencias": [
+      "docs/execucao/revisao-plano-20260927/github-protecao.json",
+      "docs/execucao/revisao-plano-20260927/github-bloqueio-ci.json"
+    ]
+  },
+  "T07": {
+    "diagnostico": "Proteção consultada em 27/09: uma revisão obrigatória, required_status_checks=null e enforce_admins=false. CI não iniciou por orçamento. Corrigir orçamento e exigir checks apropriados antes de certificar proteção.",
+    "evidencias": [
+      "docs/execucao/revisao-plano-20260927/github-protecao.json",
+      "docs/execucao/revisao-plano-20260927/github-bloqueio-ci.json"
+    ]
+  },
+  "T31": {
+    "diagnostico": "Proteção consultada em 27/09: uma revisão obrigatória, required_status_checks=null e enforce_admins=false. CI não iniciou por orçamento. Corrigir orçamento e exigir checks apropriados antes de certificar proteção.",
+    "evidencias": [
+      "docs/execucao/revisao-plano-20260927/github-protecao.json",
+      "docs/execucao/revisao-plano-20260927/github-bloqueio-ci.json"
+    ]
+  },
+  "R26": {
+    "diagnostico": "Gate reexecutado: 2055 arquivos, 1080 referências; FALHOU em duas chamadas à bulk_update_quote_status_atomic. Cache é de 22/09. Não mascarar falha por allowlist; publicar contrato aprovado e renovar inventário autenticado.",
+    "evidencias": [
+      "scripts/db/check-runtime-refs.mjs",
+      "src/hooks/quotes/useQuotes.ts",
+      "docs/execucao/revisao-plano-20260927/checks.json"
+    ],
+    "estado": "P"
+  },
+  "C19": {
+    "diagnostico": "Gate reexecutado: 2055 arquivos, 1080 referências; FALHOU em duas chamadas à bulk_update_quote_status_atomic. Cache é de 22/09. Não mascarar falha por allowlist; publicar contrato aprovado e renovar inventário autenticado.",
+    "evidencias": [
+      "scripts/db/check-runtime-refs.mjs",
+      "src/hooks/quotes/useQuotes.ts",
+      "docs/execucao/revisao-plano-20260927/checks.json"
+    ],
+    "estado": "P"
+  },
+  "C39": {
+    "diagnostico": "Gate reexecutado: 2055 arquivos, 1080 referências; FALHOU em duas chamadas à bulk_update_quote_status_atomic. Cache é de 22/09. Não mascarar falha por allowlist; publicar contrato aprovado e renovar inventário autenticado.",
+    "evidencias": [
+      "scripts/db/check-runtime-refs.mjs",
+      "src/hooks/quotes/useQuotes.ts",
+      "docs/execucao/revisao-plano-20260927/checks.json"
+    ],
+    "estado": "P"
+  },
+  "R39": {
+    "diagnostico": "Testes direcionados atuais 54/54 passaram; sondas de auditoria reproduzem lacunas. A suíte integral anterior ainda tinha 112 skips. Auth/Storage/Edge/personas e CI remoto não foram integralmente homologados.",
+    "evidencias": [
+      "docs/execucao/revisao-plano-20260927/testes-direcionados.json",
+      "docs/execucao/revisao-plano-20260927/github-bloqueio-ci.json"
+    ]
+  },
+  "T34": {
+    "diagnostico": "Testes direcionados atuais 54/54 passaram; sondas de auditoria reproduzem lacunas. A suíte integral anterior ainda tinha 112 skips. Auth/Storage/Edge/personas e CI remoto não foram integralmente homologados.",
+    "evidencias": [
+      "docs/execucao/revisao-plano-20260927/testes-direcionados.json",
+      "docs/execucao/revisao-plano-20260927/github-bloqueio-ci.json"
+    ]
+  },
+  "R43": {
+    "diagnostico": "Migration de crons seguros e workers internos estão em main (#24/#28). Última execução real, segredos, entrega e versão remota ainda precisam de prova; merge não agenda nem aplica migration.",
+    "evidencias": [
+      "supabase/migrations/20260923140000_secure_legacy_connection_crons.sql",
+      "supabase/functions/connections-auto-test/index.ts"
+    ]
+  },
+  "C01": {
+    "diagnostico": "Main remoto 3094cbab2; diretório principal permanece em 6b71bdc09 com três alterações e dois documentos não rastreados. Worktree de auditoria nasce do main atual. Correção local de normalizador está no PR #42, ainda aberto. Não há paridade de todos os diretórios.",
+    "evidencias": [
+      "docs/execucao/revisao-plano-20260927/github-prs.json"
+    ]
+  },
+  "C42": {
+    "diagnostico": "Main remoto 3094cbab2; diretório principal permanece em 6b71bdc09 com três alterações e dois documentos não rastreados. Worktree de auditoria nasce do main atual. Correção local de normalizador está no PR #42, ainda aberto. Não há paridade de todos os diretórios.",
+    "evidencias": [
+      "docs/execucao/revisao-plano-20260927/github-prs.json"
+    ]
+  },
+  "T02": {
+    "diagnostico": "Main remoto 3094cbab2; diretório principal permanece em 6b71bdc09 com três alterações e dois documentos não rastreados. Worktree de auditoria nasce do main atual. Correção local de normalizador está no PR #42, ainda aberto. Não há paridade de todos os diretórios.",
+    "evidencias": [
+      "docs/execucao/revisao-plano-20260927/github-prs.json"
+    ]
+  },
+  "C03": {
+    "diagnostico": "PRs #21–#41 incorporados. Único PR aberto no momento da coleta: #42 (normalizador, compatibilidade de enum e relatório de paridade). Revisão obrigatória e CI bloqueado impedem tratar seu conteúdo como main.",
+    "evidencias": [
+      "docs/execucao/revisao-plano-20260927/github-prs.json"
+    ]
+  },
+  "T06": {
+    "diagnostico": "PRs #21–#41 incorporados. Único PR aberto no momento da coleta: #42 (normalizador, compatibilidade de enum e relatório de paridade). Revisão obrigatória e CI bloqueado impedem tratar seu conteúdo como main.",
+    "evidencias": [
+      "docs/execucao/revisao-plano-20260927/github-prs.json"
+    ]
+  },
+  "C09": {
+    "diagnostico": "Cache Bitrix seguro existe; #40 endureceu sync-quote-bitrix e bitrix-sync. OPTIONS responde 200, sem prova da versão implantada. Homologar credenciais, escopo, falhas e sincronização com dados sintéticos.",
+    "evidencias": [
+      "supabase/functions/sync-quote-bitrix/index.ts",
+      "supabase/functions/bitrix-sync/index.ts",
+      "docs/execucao/revisao-plano-20260927/sondagem-edge.json"
+    ]
+  },
+  "C35": {
+    "diagnostico": "Adendo de 27/09 atualiza o inventário de 250 etapas e 32 melhorias, diferencia diagnósticos reavaliados e históricos e registra oito sondas de lacunas. Não altera aceites nem baixa os mil requisitos sem evidência individual.",
+    "evidencias": [
+      "docs/execucao/revisao-do-plano-2026-09-27.md"
+    ],
+    "estado": "L"
+  },
+  "C36": {
+    "diagnostico": "Adendo de 27/09 atualiza o inventário de 250 etapas e 32 melhorias, diferencia diagnósticos reavaliados e históricos e registra oito sondas de lacunas. Não altera aceites nem baixa os mil requisitos sem evidência individual.",
+    "evidencias": [
+      "docs/execucao/revisao-do-plano-2026-09-27.md"
+    ],
+    "estado": "L"
+  },
+  "T23": {
+    "diagnostico": "OrdersPage e OrderDetailPage continuam extensas; controles por papel no #25 não equivalem à decomposição prevista. Medir linhas e separar responsabilidades preservando contratos quando priorizado.",
+    "evidencias": [
+      "src/pages/sicoob/orders/OrdersPage.tsx",
+      "src/pages/sicoob/orders/OrderDetailPage.tsx"
+    ]
+  },
+  "T28": {
+    "diagnostico": "CSP de Vercel entrou em main via #27; verificar headers do domínio efetivamente publicado e integrações. Implementação local concluída no escopo de configuração, entrega remota não certificada.",
+    "evidencias": [
+      "vercel.json",
+      "public/_headers",
+      "tests/scenarios/csp-providers.mjs"
+    ],
+    "estado": "L"
+  },
+  "T37": {
+    "diagnostico": "Workflows receberam concurrency no #37 e workflow manual de deploy foi adicionado. Não houve consolidação em cerca de quatro com setup comum; prioridade deve preservar gates e recuperar execução remota.",
+    "evidencias": [
+      ".github/workflows/deploy-sicoob-functions.yml",
+      ".github/workflows/ci.yml"
+    ]
+  },
+  "B26": {
+    "diagnostico": "Previsão agora usa entradas por variante, soma demanda e distingue erro de consulta; requisito de níveis de confiança ainda ausente e buffer permanece fixo em três dias. Há implementação parcial relevante, não ausência total.",
+    "evidencias": [
+      "src/hooks/useKitStockForecast.ts",
+      "tests/hooks/useKitStockForecast.test.ts"
+    ],
+    "estado": "P"
+  }
+}

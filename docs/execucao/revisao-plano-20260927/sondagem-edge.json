@@ -1,0 +1,47 @@
+{
+  "data_utc": "2026-09-27T15:29:12.411579+00:00",
+  "projeto": "cfmzkthhgliqelozlmwu",
+  "limite": "Sondagem de rota; não comprova versão implantada nem autorização funcional.",
+  "resultados": [
+    {
+      "funcao": "sicoob-approval-reconciliation",
+      "metodo": "OPTIONS",
+      "http": 404
+    },
+    {
+      "funcao": "sicoob-artwork-register",
+      "metodo": "OPTIONS",
+      "http": 404
+    },
+    {
+      "funcao": "sicoob-document-ingest",
+      "metodo": "OPTIONS",
+      "http": 404
+    },
+    {
+      "funcao": "sicoob-kit-quote",
+      "metodo": "OPTIONS",
+      "http": 404
+    },
+    {
+      "funcao": "sicoob-reorder",
+      "metodo": "OPTIONS",
+      "http": 404
+    },
+    {
+      "funcao": "webhook-dispatcher",
+      "metodo": "OPTIONS",
+      "http": 200
+    },
+    {
+      "funcao": "webhook-inbound",
+      "metodo": "OPTIONS",
+      "http": 200
+    },
+    {
+      "funcao": "sync-quote-bitrix",
+      "metodo": "OPTIONS",
+      "http": 200
+    }
+  ]
+}
