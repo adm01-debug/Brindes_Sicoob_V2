@@ -1,0 +1,1212 @@
+{
+  "data": "2026-09-28",
+  "projeto_supabase": "cfmzkthhgliqelozlmwu",
+  "github_base_sha": "55638f79bd7f233838bbe5f039d3276012cfce6d",
+  "migrations": {
+    "repo": 559,
+    "ledger": 97,
+    "ausentes_historicas": [
+      "004",
+      "005",
+      "20241231000000",
+      "20241231000001",
+      "20250102000000",
+      "20251214183243",
+      "20251214184441",
+      "20251214185543",
+      "20251214185703",
+      "20251214194907",
+      "20251214200524",
+      "20251214201605",
+      "20251214202150",
+      "20251214204856",
+      "20251214205410",
+      "20251214205550",
+      "20251214212212",
+      "20251215002227",
+      "20251215002803",
+      "20251215011449",
+      "20251215113936",
+      "20251215164521",
+      "20251220110803",
+      "20251220131225",
+      "20251220131603",
+      "20251220140213",
+      "20251220141234",
+      "20251220181526",
+      "20251227100001",
+      "20251227100002",
+      "20251227100003",
+      "20251227100004",
+      "20251227100005",
+      "20251227100006",
+      "20251227100007",
+      "20251227100008",
+      "20251227100009",
+      "20251227170236",
+      "20251227175512",
+      "20251228100001",
+      "20251228100002",
+      "20251228100003",
+      "20251228100004",
+      "20251228100005",
+      "20251228100006",
+      "20251228100007",
+      "20251228100008",
+      "20251228100009",
+      "20251228100010",
+      "20251228100011",
+      "20251228100012",
+      "20251231023800",
+      "20251231024259",
+      "20251231024837",
+      "20251231025239",
+      "20251231121324",
+      "20251231124614",
+      "20251231130817",
+      "20260102",
+      "20260107013155",
+      "20260107141013",
+      "20260107141630",
+      "20260108014732",
+      "20260108173818",
+      "20260109125132",
+      "20260109154430",
+      "20260109154850",
+      "20260109202835",
+      "20260109210025",
+      "20260110114755",
+      "20260110114831",
+      "20260110114839",
+      "20260110122053",
+      "20260201155941",
+      "20260208141021",
+      "20260211135257",
+      "20260213150148",
+      "20260213150342",
+      "20260213150532",
+      "20260213151101",
+      "20260213151403",
+      "20260214005421",
+      "20260214152115",
+      "20260215185444",
+      "20260216110718",
+      "20260216125012",
+      "20260219024635",
+      "20260219121904",
+      "20260219133353",
+      "20260220001443",
+      "20260220174735",
+      "20260222134246",
+      "20260222203852",
+      "20260226190748",
+      "20260226200633",
+      "20260301135215",
+      "20260301142954",
+      "20260301143055",
+      "20260301150840",
+      "20260304004120",
+      "20260304014416",
+      "20260304014707",
+      "20260305220938",
+      "20260306011448",
+      "20260306011719",
+      "20260306011759",
+      "20260306013723",
+      "20260312110229",
+      "20260312111512",
+      "20260312115440",
+      "20260312124638",
+      "20260314133410",
+      "20260314134333",
+      "20260314172451",
+      "20260314175106",
+      "20260314190936",
+      "20260314190948",
+      "20260314192448",
+      "20260317020422",
+      "20260317140334",
+      "20260317155554",
+      "20260317194959",
+      "20260317195011",
+      "20260317200129",
+      "20260317205124",
+      "20260317205135",
+      "20260317212837",
+      "20260317213620",
+      "20260317214344",
+      "20260317214358",
+      "20260317221652",
+      "20260317221910",
+      "20260317222414",
+      "20260317222739",
+      "20260320135344",
+      "20260320141635",
+      "20260320171208",
+      "20260321200700",
+      "20260322010007",
+      "20260322133758",
+      "20260322143211",
+      "20260322170128",
+      "20260322174557",
+      "20260322215809",
+      "20260322222206",
+      "20260322224817",
+      "20260323145546",
+      "20260323162846",
+      "20260323164400",
+      "20260323225021",
+      "20260324114359",
+      "20260324201423",
+      "20260325124134",
+      "20260325152410",
+      "20260326160831",
+      "20260326191912",
+      "20260326193116",
+      "20260326193133",
+      "20260326233438",
+      "20260330104621",
+      "20260402110456",
+      "20260402110748",
+      "20260402112639",
+      "20260404160306",
+      "20260404163500",
+      "20260404163525",
+      "20260404163550",
+      "20260404163714",
+      "20260404163738",
+      "20260404164044",
+      "20260404164132",
+      "20260404164216",
+      "20260404164259",
+      "20260404171222",
+      "20260405151750",
+      "20260405222509",
+      "20260406124228",
+      "20260406202212",
+      "20260406210155",
+      "20260406210254",
+      "20260407014300",
+      "20260410165642",
+      "20260411210929",
+      "20260412182408",
+      "20260412183140",
+      "20260412184314",
+      "20260412231916",
+      "20260412231951",
+      "20260412232015",
+      "20260412232711",
+      "20260413005750",
+      "20260414193435",
+      "20260414232135",
+      "20260414232158",
+      "20260414234635",
+      "20260415010140",
+      "20260416153503",
+      "20260416153731",
+      "20260416154332",
+      "20260416180602",
+      "20260416181632",
+      "20260416182003",
+      "20260416182133",
+      "20260416183342",
+      "20260416183415",
+      "20260416183821",
+      "20260416184056",
+      "20260416190742",
+      "20260416194706",
+      "20260416195918",
+      "20260416200125",
+      "20260416200310",
+      "20260416220648",
+      "20260416231122",
+      "20260416231145",
+      "20260416232134",
+      "20260416235610",
+      "20260417000818",
+      "20260417001408",
+      "20260417002650",
+      "20260417005020",
+      "20260417011314",
+      "20260417015121",
+      "20260417112433",
+      "20260417115234",
+      "20260417170750",
+      "20260417170948",
+      "20260417171441",
+      "20260417174309",
+      "20260418131950",
+      "20260418175315",
+      "20260418183756",
+      "20260418191039",
+      "20260419024908",
+      "20260419024928",
+      "20260419024944",
+      "20260419025022",
+      "20260419120255",
+      "20260419121414",
+      "20260419125044",
+      "20260419130037",
+      "20260419132122",
+      "20260419184445",
+      "20260419185334",
+      "20260420123931",
+      "20260420130407",
+      "20260420142509",
+      "20260420142542",
+      "20260420164558",
+      "20260420172157",
+      "20260420185009",
+      "20260423145604",
+      "20260423150337",
+      "20260423155736",
+      "20260423161848",
+      "20260423163018",
+      "20260423165603",
+      "20260423183908",
+      "20260423184705",
+      "20260423184855",
+      "20260423185624",
+      "20260423190222",
+      "20260423190831",
+      "20260423193705",
+      "20260424105620",
+      "20260424110636",
+      "20260424152415",
+      "20260424154125",
+      "20260424155746",
+      "20260424160905",
+      "20260424213841",
+      "20260425104654",
+      "20260425104801",
+      "20260425164021",
+      "20260425172528",
+      "20260425175855",
+      "20260425192845",
+      "20260425194004",
+      "20260425194941",
+      "20260425200038",
+      "20260425201131",
+      "20260425202739",
+      "20260425202806",
+      "20260425203103",
+      "20260425203612",
+      "20260425205426",
+      "20260425210505",
+      "20260425212616",
+      "20260425212807",
+      "20260425213721",
+      "20260425213902",
+      "20260425214848",
+      "20260426010557",
+      "20260426013235",
+      "20260426101255",
+      "20260426101707",
+      "20260426102150",
+      "20260426102335",
+      "20260426103109",
+      "20260426105906",
+      "20260426110946",
+      "20260426113207",
+      "20260426122751",
+      "20260426123111",
+      "20260426124539",
+      "20260426124745",
+      "20260426125603",
+      "20260426130335",
+      "20260426130639",
+      "20260426130701",
+      "20260426131442",
+      "20260426134439",
+      "20260426134707",
+      "20260426135145",
+      "20260426135521",
+      "20260426142016",
+      "20260426142609",
+      "20260426145642",
+      "20260426200011",
+      "20260426200348",
+      "20260426224900",
+      "20260427114657",
+      "20260427115542",
+      "20260427121006",
+      "20260427122230",
+      "20260427143410",
+      "20260427211500",
+      "20260427212820",
+      "20260427213016",
+      "20260427213631",
+      "20260427213832",
+      "20260427213920",
+      "20260428140401",
+      "20260429155414",
+      "20260429163414",
+      "20260429163441",
+      "20260502143016",
+      "20260502143127",
+      "20260502143634",
+      "20260502143725",
+      "20260502144243",
+      "20260502144935",
+      "20260502145232",
+      "20260502145324",
+      "20260502145450",
+      "20260502145927",
+      "20260502150619",
+      "20260502151143",
+      "20260502151242",
+      "20260502151315",
+      "20260502151402",
+      "20260502151453",
+      "20260502151937",
+      "20260502152103",
+      "20260502152357",
+      "20260502153004",
+      "20260502153425",
+      "20260502153449",
+      "20260502164733",
+      "20260502171158",
+      "20260502174252",
+      "20260502174647",
+      "20260502175334",
+      "20260502175730",
+      "20260502175826",
+      "20260502180058",
+      "20260502181222",
+      "20260503000000",
+      "20260503000001",
+      "20260503000002",
+      "20260503150940",
+      "20260503151319",
+      "20260503151554",
+      "20260503151802",
+      "20260503152237",
+      "20260503152751",
+      "20260503154024",
+      "20260503155656",
+      "20260503155739",
+      "20260503160341",
+      "20260503160908",
+      "20260503172408",
+      "20260503172430",
+      "20260503175512",
+      "20260503180135",
+      "20260503195511",
+      "20260503202526",
+      "20260503202621",
+      "20260503202640",
+      "20260503203000",
+      "20260503204301",
+      "20260503204735",
+      "20260503210523",
+      "20260503210856",
+      "20260503211140",
+      "20260503213627",
+      "20260503213724",
+      "20260503213812",
+      "20260503213831",
+      "20260503214537",
+      "20260503214557",
+      "20260503215747",
+      "20260503220418",
+      "20260503220434",
+      "20260504134352",
+      "20260504135425",
+      "20260504153856",
+      "20260504155449",
+      "20260504161835",
+      "20260504182837",
+      "20260504185946",
+      "20260504190144",
+      "20260504190214",
+      "20260504190237",
+      "20260504210640",
+      "20260504210817",
+      "20260504211355",
+      "20260504211811",
+      "20260504214012",
+      "20260504214118",
+      "20260504220833",
+      "20260504220853",
+      "20260504221011",
+      "20260509142451",
+      "20260509144812",
+      "20260509152729",
+      "20260509153326",
+      "20260509153530",
+      "20260509175720",
+      "20260509175929",
+      "20260513143138",
+      "20260513143158",
+      "20260513164754",
+      "20260513165451",
+      "20260513171226",
+      "20260513180124",
+      "20260513180300",
+      "20260513183129",
+      "20260513184420",
+      "20260513184540",
+      "20260513184639",
+      "20260513184723",
+      "20260514211229",
+      "20260514211357",
+      "20260514211439",
+      "20260514211741",
+      "20260515134426",
+      "20260515134521",
+      "20260515134700",
+      "20260515134729",
+      "20260515134800",
+      "20260515134847",
+      "20260515134918",
+      "20260517124846",
+      "20260517131757",
+      "20260517131828",
+      "20260519121302",
+      "20260521103842",
+      "20260522141706",
+      "20260522200433",
+      "20260529192614",
+      "20260529193319"
+    ],
+    "sem_statement_unico": [
+      [
+        "001",
+        18
+      ],
+      [
+        "002",
+        7
+      ],
+      [
+        "003",
+        4
+      ],
+      [
+        "20260911143000",
+        null
+      ],
+      [
+        "20260912090000",
+        null
+      ],
+      [
+        "20260912110000",
+        null
+      ],
+      [
+        "20260912120000",
+        null
+      ],
+      [
+        "20260912140000",
+        null
+      ],
+      [
+        "20260912160000",
+        null
+      ],
+      [
+        "20260912170000",
+        null
+      ],
+      [
+        "20260912180000",
+        null
+      ],
+      [
+        "20260912190000",
+        null
+      ],
+      [
+        "20260912200000",
+        null
+      ],
+      [
+        "20260913120002",
+        null
+      ],
+      [
+        "20260913120003",
+        null
+      ],
+      [
+        "20260913120004",
+        null
+      ],
+      [
+        "20260913120005",
+        null
+      ],
+      [
+        "20260916100000",
+        null
+      ],
+      [
+        "20260916110000",
+        null
+      ],
+      [
+        "20260916120000",
+        null
+      ],
+      [
+        "20260916130000",
+        null
+      ],
+      [
+        "20260927100000",
+        6
+      ],
+      [
+        "20260927110000",
+        5
+      ],
+      [
+        "20260927110100",
+        4
+      ],
+      [
+        "20260927162240",
+        8
+      ],
+      [
+        "20260927163021",
+        4
+      ],
+      [
+        "20260927171216",
+        0
+      ],
+      [
+        "20260927190000",
+        null
+      ]
+    ],
+    "diferencas_textuais_sem_mudanca_logica": [
+      [
+        "20260915143442",
+        "sicoob_reconciliation_baseline"
+      ],
+      [
+        "20260927109950",
+        "quote_status_enum_preflight"
+      ],
+      [
+        "20260927110050",
+        "quote_status_enum_compatibility"
+      ],
+      [
+        "20260927110200",
+        "quote_status_workflow_validation"
+      ]
+    ],
+    "idempotency_hash_divergente": []
+  },
+  "edge_functions": {
+    "publicadas": 100,
+    "arquivos_remotos_comparados": 142,
+    "arquivos_divergentes": [],
+    "nao_publicadas": [
+      "e2e-auth-test",
+      "migrate-helper",
+      "sicoob-seed-debug",
+      "error-monitor",
+      "qa-block-monitor",
+      "generate-mockup-nanobanana"
+    ],
+    "fontes": [
+      {
+        "arquivo": "_shared/ai-usage.ts",
+        "sha256": "22f0077b4ff1381c5dce121bd67396b5a79bbae8b090f1afe1106a00306aecab"
+      },
+      {
+        "arquivo": "_shared/approval-delivery.ts",
+        "sha256": "f037770ab78b8b50b206462ea00036630f87c9be1c05c186417eef048289688b"
+      },
+      {
+        "arquivo": "_shared/audit-log.ts",
+        "sha256": "7bdbc74985b3892e171d7ceaf8c801e7e2fdcaf733bda214722bac8bc934fd63"
+      },
+      {
+        "arquivo": "_shared/auth.ts",
+        "sha256": "e7bb673ad09739a671fccc1bc56de2d836d52593cd73a9c07ca535c09fd39427"
+      },
+      {
+        "arquivo": "_shared/authorize.ts",
+        "sha256": "be76ca59e3fff2434dae00fa83f43921a97f080cd83d93ff361ef2b36a60b9cc"
+      },
+      {
+        "arquivo": "_shared/bot-protection.ts",
+        "sha256": "f44ec2a185fdc7934a6623b87bf6a9e8ee8f44533b5eebbc8f168184cd268075"
+      },
+      {
+        "arquivo": "_shared/catalog-redaction.ts",
+        "sha256": "a64f772872faf18cb0abc4f9bdc7c6257dad9ff0701c0c7b03fd6e5f5b271b5b"
+      },
+      {
+        "arquivo": "_shared/circuit-breaker.ts",
+        "sha256": "8eb8f4f51dd9fdd61fdb4b478a6ec4efccd22567d3c9dea5c1e75c55511ce4de"
+      },
+      {
+        "arquivo": "_shared/connection-test-runner.ts",
+        "sha256": "891409bcc5ade8f6d71cbb46b62a167622828e30c7871034ae914f0349befbdd"
+      },
+      {
+        "arquivo": "_shared/connection-timeouts.ts",
+        "sha256": "b50728112573805ebef4628bab78afb2be06680ba27084923ed68e49931646e6"
+      },
+      {
+        "arquivo": "_shared/cors.ts",
+        "sha256": "f8a252d34b66b908601a61434621cea18881d4709708d4c459520a44e0570935"
+      },
+      {
+        "arquivo": "_shared/credentials.ts",
+        "sha256": "efbf46b07119290dc7d664dd93063ee510f1edb7d7f305cdb32fb5da5ba05986"
+      },
+      {
+        "arquivo": "_shared/external-db-aliases.ts",
+        "sha256": "1a83d4839fbae96971f0dcf68525d85cdb8e4a5ed277f68a446384308a975373"
+      },
+      {
+        "arquivo": "_shared/external-db-cache.ts",
+        "sha256": "ec1990da508055517b0e21782eec3b279808102587364238b290a86521b4236f"
+      },
+      {
+        "arquivo": "_shared/external-db-config.ts",
+        "sha256": "1ec2a4501dde4e3f7e76a4f8f2f5082a9c758817868056ddc0edb238b883aed2"
+      },
+      {
+        "arquivo": "_shared/external-db-telemetry.ts",
+        "sha256": "748bcebdd382327cd4c5fd43c779e02523febee7d5b1a1fe1463ca20428e69c1"
+      },
+      {
+        "arquivo": "_shared/external-fetch.ts",
+        "sha256": "1a1496c932c1087529494add476897799858ceeabcfe219b11032717ca6b4cc1"
+      },
+      {
+        "arquivo": "_shared/external-read-only.ts",
+        "sha256": "09d296581b2dd74e6c0f77f640bf31a60ade604b7c736c4df093a6ef38966df5"
+      },
+      {
+        "arquivo": "_shared/internal-service-auth.ts",
+        "sha256": "3134dd5f50c2d6c333137872510ad1029e06a2ba0f3ccfd3aacee9c63589fa81"
+      },
+      {
+        "arquivo": "_shared/mcp-scopes.ts",
+        "sha256": "12cc35e69bbd9737e6fe258b444cd4f18355b2492441dd0dbcc711d427d95308"
+      },
+      {
+        "arquivo": "_shared/mcp-violations.ts",
+        "sha256": "530a1bddbaea3cf596844e290f0c899ac4158f776825294d291ce4fe8e9479ce"
+      },
+      {
+        "arquivo": "_shared/pgrest-filter.ts",
+        "sha256": "4757208582bd03e038d60262a3b2835f4607e147ed09414026d0a44d8ea6f528"
+      },
+      {
+        "arquivo": "_shared/rate-limiter.ts",
+        "sha256": "d0b234ca98a6e3863893656e4ffdfa739b6b2f7c5cd95c71197b767fa15ca915"
+      },
+      {
+        "arquivo": "_shared/request-id.ts",
+        "sha256": "3b07d392cc7b52fd61c0b9e9345e0ff569d40e0a559f6b82f857590aa7e8f251"
+      },
+      {
+        "arquivo": "_shared/retry-backoff.ts",
+        "sha256": "601a555cfc0d037728979f2987a6377da190ec755682a86b73282954e85e27f6"
+      },
+      {
+        "arquivo": "_shared/step-up-otp-delivery.ts",
+        "sha256": "df06e382790b6b649d3c6202878be5e9b980af2445914d9b76477ee4a6fd985b"
+      },
+      {
+        "arquivo": "_shared/structured-logger.ts",
+        "sha256": "d94234e3fb6d230aaebddb1592ca990923c72be58a44c3fc5d6cc169109b6190"
+      },
+      {
+        "arquivo": "_shared/supabase-client-adapter.ts",
+        "sha256": "3fc8b83bec33ceec162c157afe6807858e4754136d9a9662f4129bf74cf71610"
+      },
+      {
+        "arquivo": "_shared/zod-validate.ts",
+        "sha256": "04ad9d1143fd296350b249481e856c34f983d0f0dbc6c92ce51c2f77461a30db"
+      },
+      {
+        "arquivo": "admin-audit-hook/index.ts",
+        "sha256": "71a9cbff0d87f43488cec48a8c0df0a9cc36daac754ea9b5841b9fe4d131ffb8"
+      },
+      {
+        "arquivo": "ai-recommendations/index.ts",
+        "sha256": "149326896abe3c54fa959978e88398045126f352092f58f0cd8712c6b1e76777"
+      },
+      {
+        "arquivo": "analyze-logo-colors/index.ts",
+        "sha256": "c8b92a97f6145888bfe0d6f898d2683fb6bb783a4ba8d47b5413aed1d8128ca8"
+      },
+      {
+        "arquivo": "auth-integrity-check/index.ts",
+        "sha256": "1e81708369ea298504d3ad9d3230b4431fa3acc0acaec80da2b9e7a5d0130a4b"
+      },
+      {
+        "arquivo": "bi-copilot/index.ts",
+        "sha256": "d6f3860ae1fd1798dc93ad08cc7884e8be1963c1053e92db5f7c56bba01db1af"
+      },
+      {
+        "arquivo": "bi-share-dossier/index.ts",
+        "sha256": "6dd60d9e55b592517c0594fa4dc17bcd08853e9bdbfee895f40b1c09ae24c648"
+      },
+      {
+        "arquivo": "bitrix-sync/index.ts",
+        "sha256": "c956f81ccfe2f3461340c4ffb8f3ea6298fe86057a15eb15ba38cc8960abc7b1"
+      },
+      {
+        "arquivo": "block-ip-temporarily/index.ts",
+        "sha256": "8a41fa536bb5dd02e63712ce8d9fa42b62adc1a3dca35265f2cdf9f7642fad89"
+      },
+      {
+        "arquivo": "categories-api/index.ts",
+        "sha256": "61316fccf56b14791af558d5216efe3a36cda06817d38bab26bde5e66a56faa7"
+      },
+      {
+        "arquivo": "cleanup-notifications/index.ts",
+        "sha256": "e71f0d9bc0f2c7712851faa7a27c6456f38096416e5ca0c0a5ebdbcc34b88327"
+      },
+      {
+        "arquivo": "cleanup-novelties/index.ts",
+        "sha256": "175abef1423f3169302fb242a064e05e6ba119ef6e65ab98687a101c13569cc4"
+      },
+      {
+        "arquivo": "cnpj-lookup/index.ts",
+        "sha256": "88772aa85844b545ed4587ec4890173643c6d86cf8f0d193e7d0b58e3bf6888b"
+      },
+      {
+        "arquivo": "collections-public-react/index.ts",
+        "sha256": "354edadfb76fa91dc94bca891aa9d32bf9c5b3186221d44da3bd4448939ac0e1"
+      },
+      {
+        "arquivo": "collections-watcher/index.ts",
+        "sha256": "eb8e387256628ada20e4bf69a3f201dd76e4d69d6976b705a8577529eec38f31"
+      },
+      {
+        "arquivo": "commemorative-dates/index.ts",
+        "sha256": "c28add48de80d92de7b8da1f78d059796078cab6461fa7316c19ab4206a6dfcb"
+      },
+      {
+        "arquivo": "comparison-ai-advisor/index.ts",
+        "sha256": "46780c305048a1ac11a6633fe45fed916b7d76fb524629adca002169f8d7f1f9"
+      },
+      {
+        "arquivo": "comparison-price-watcher/index.ts",
+        "sha256": "251ae0d6552c6f30f0fbb71dbec2b41846560ecd55818c4c9a275e9851620982"
+      },
+      {
+        "arquivo": "comparisons-public-react/index.ts",
+        "sha256": "03ee182d5ed84d4fafdd3e7002856c7df1e5b9d0cb7e086cf18b0aa5ddea73cb"
+      },
+      {
+        "arquivo": "connection-tester/index.ts",
+        "sha256": "28eda66faf9194c7d94e2e960baf521893d01954b3adc5b1aa442ea1669d6eb2"
+      },
+      {
+        "arquivo": "connections-auto-test/index.ts",
+        "sha256": "5272c2b509252d5cd24aaeefd129efb2f4fe0918f16696ba8f32fb5f8816f66b"
+      },
+      {
+        "arquivo": "connections-health-check/index.ts",
+        "sha256": "a62e928442d51a62ddb4ef4b2e2d30f37404d38d8a120adde8fdfe204c24d5e9"
+      },
+      {
+        "arquivo": "connections-hub-audit/index.ts",
+        "sha256": "cb8395bd9d1de5d6b4ec037f46a9a789f8e9acce55782bd4d6bceede5aabd2ee"
+      },
+      {
+        "arquivo": "crm-db-bridge/index.ts",
+        "sha256": "bbb8b97abca881bf4e05b5898abf3fdb61cf81d6e4146db1ca1a824615bdbc90"
+      },
+      {
+        "arquivo": "detect-new-device/index.ts",
+        "sha256": "82d0267d9599f7e3f19f9ae24901c866eb60c6dba0ea00969529d8ce39ba399d"
+      },
+      {
+        "arquivo": "dropbox-list/index.ts",
+        "sha256": "5b26163264f5057c3b869a15c1ad7087e279d44def9951034576d190960638ce"
+      },
+      {
+        "arquivo": "e2e-cleanup/index.ts",
+        "sha256": "2cb8f0275f4dcf3c4e7ab2cddd368fa12b8e0ac6c2f8e4347e75985ae831cc0d"
+      },
+      {
+        "arquivo": "elevenlabs-scribe-token/index.ts",
+        "sha256": "97d10ccef429a51b1a6d4eaff319cfca1ef6927085dde509ebc91e194dc99c0c"
+      },
+      {
+        "arquivo": "elevenlabs-tts/index.ts",
+        "sha256": "bf1d9449ee43688627fafd28d0b374af57f70f0c1defbc8412c1723ed19f1a91"
+      },
+      {
+        "arquivo": "expert-chat/index.ts",
+        "sha256": "11b68e3699f6abd8d20f794f776ffbfca37cee029286db8966b2e9c4ca74dd6b"
+      },
+      {
+        "arquivo": "external-connections-sync/index.ts",
+        "sha256": "25ccf93d3b84aefb67de49d6356ba0c59513208612eaa08970ecd9bf238f7070"
+      },
+      {
+        "arquivo": "external-db-bridge/index.ts",
+        "sha256": "e8b756c32f25c5b23046a82106a1d4776106903e3664c41c95cf5fa980f1bf62"
+      },
+      {
+        "arquivo": "external-db-inspect/index.ts",
+        "sha256": "702085d0bb288c0c2910f8356312fcddde78b1a89ec36248602b709c44239d97"
+      },
+      {
+        "arquivo": "favorites-public-react/index.ts",
+        "sha256": "9aea02f3d22c8e0e938c35c3a99d2243f0e315ffcdc5a499e2590cc1520ab7cf"
+      },
+      {
+        "arquivo": "favorites-watcher/index.ts",
+        "sha256": "1b876ade3ddb7e7296fe28fd8ff7c4fad30f3cfc8f19f8aa02ec84b1e4943517"
+      },
+      {
+        "arquivo": "force-global-logout/index.ts",
+        "sha256": "05d0fed313656d480269673bdff40ec5019a08d5bb74215ac69cfbcc855514ff"
+      },
+      {
+        "arquivo": "full-op-diagnostics/index.ts",
+        "sha256": "b8b6cf6a9f0e4d923365afb81336752a0f877838607b60e343b00fd58c4284dc"
+      },
+      {
+        "arquivo": "generate-ad-image/index.ts",
+        "sha256": "a8f1f5b67aa2a33d86f51d1fc0c788c0a51b3c31f20365b94dbc4e4cf10cd1f7"
+      },
+      {
+        "arquivo": "generate-ad-prompt/index.ts",
+        "sha256": "5a75f428f7786aa3e9b09f033a8fb4923a8a747a435d7c21eed314bbdaa251d4"
+      },
+      {
+        "arquivo": "generate-mockup/index.ts",
+        "sha256": "2ca32112c42b927b13dcff4e522e67def617d5e83fbc0b7694047b14dc7dfad6"
+      },
+      {
+        "arquivo": "generate-product-seo/index.ts",
+        "sha256": "f294eabf3bd09cdb9d0db98af016dc171d45757cee5794f79200950e97cfbcaa"
+      },
+      {
+        "arquivo": "get-app-logs/index.ts",
+        "sha256": "e363ace37408a2da9896da4ac2ae494fa6c794c1fa4d3e90daad42edabebcdf9"
+      },
+      {
+        "arquivo": "get-visitor-info/index.ts",
+        "sha256": "e8a94a6128295a74568b2f328a52c5ee7a1a50cae49fe73081e28a117a326d5c"
+      },
+      {
+        "arquivo": "github-credentials-test/index.ts",
+        "sha256": "a553bea1af15cd2b24f3194c77ad976388dde167207d3de5ae87100d28d8ef19"
+      },
+      {
+        "arquivo": "github-fix-config/index.ts",
+        "sha256": "27951633f6fd68aaeef2cf544a4fcd0e217ad03d8d7d5682f791ff7d85b65847"
+      },
+      {
+        "arquivo": "health-check/index.ts",
+        "sha256": "f6334479f6c9e5b5f288d5cdb7f168f6fe7ff4fbf1dacee79ca2625b1d8d20c3"
+      },
+      {
+        "arquivo": "image-proxy/index.ts",
+        "sha256": "c6059641e22cecea45dd172c3aaa4dfb261564c662956df4aeb5442269f634ef"
+      },
+      {
+        "arquivo": "kit-ai-builder/index.ts",
+        "sha256": "67296ab6e61343bdcb19b73c98d14ccb45e72660c19cc67a2a266e801ac55361"
+      },
+      {
+        "arquivo": "kit-identity-suggest/index.ts",
+        "sha256": "9ae747e45eb9f364d2fbccbb619f13387c9226a360bf65b1912900794db3a7d0"
+      },
+      {
+        "arquivo": "kit-public-view/index.ts",
+        "sha256": "5b888866e33ae4305d1e954c6e2c319890b0666c31badeb302d1d4d7ddd4c606"
+      },
+      {
+        "arquivo": "log-login-attempt/index.ts",
+        "sha256": "e3713cd5106303ee88e5e5750bf6060a8181a4a8b0127fbfcbd8b37a5d9c9f03"
+      },
+      {
+        "arquivo": "magic-up-score/index.ts",
+        "sha256": "146c294326354793a753329bc72478f0ff250b7049ec3840ffe24b7750e413e7"
+      },
+      {
+        "arquivo": "manage-users/index.ts",
+        "sha256": "181979a12a630402db263e776ff7be2b9998ad30f20e9fa77228b0469ac15ae8"
+      },
+      {
+        "arquivo": "market-intelligence-insights/index.ts",
+        "sha256": "63eb4cfdee600939b39285a18253f65bb348dd9384074961e4b3fb8c6e069288"
+      },
+      {
+        "arquivo": "materials-api/index.ts",
+        "sha256": "360d739bbcb0823ecdc2ada23b7ae1697d61b51397637056b2a695525d170cca"
+      },
+      {
+        "arquivo": "mcp-keys-issue/index.ts",
+        "sha256": "2e8fe6fc779f790185fca8b58ea9ef640a7d233761d33e5501e33569e2ae742b"
+      },
+      {
+        "arquivo": "mcp-keys-revoke/index.ts",
+        "sha256": "ee1d000b5a4fe29986e23ca9a1318ec1a5a76044ccc119fa709ab2ca8b9d9da6"
+      },
+      {
+        "arquivo": "mcp-keys-rotate/index.ts",
+        "sha256": "c03e9ea0a384e59b794bba8076f0db3037e541092e47aeb39bf0e4e1cb79c613"
+      },
+      {
+        "arquivo": "mcp-keys-update/index.ts",
+        "sha256": "255f0aa15ccfec5167e9ff29e248d55b6459928444604aa9634cd69593222dbf"
+      },
+      {
+        "arquivo": "mcp-server/deno.json",
+        "sha256": "a8c762b53d2dcdb055da2244a2d6d481e9515af5348f075c5708fe23b577fc31"
+      },
+      {
+        "arquivo": "mcp-server/index.ts",
+        "sha256": "0d8472dfc58aa1b637ccbb70a1258273769008e7a67bf0a17b593e112a3360b4"
+      },
+      {
+        "arquivo": "migration-health-check/contract.ts",
+        "sha256": "751856032e3d6ce5426995efb41f61234672feaab97e431a66c27c32436ce0dd"
+      },
+      {
+        "arquivo": "migration-health-check/deno.json",
+        "sha256": "a8c762b53d2dcdb055da2244a2d6d481e9515af5348f075c5708fe23b577fc31"
+      },
+      {
+        "arquivo": "migration-health-check/index.ts",
+        "sha256": "12b68266fef1b8b5841941d32df91f67715c2067e20d8116f9477c9e5ce54d64"
+      },
+      {
+        "arquivo": "monthly-health-report/index.ts",
+        "sha256": "85349dca09740fb313b6e73f2cfe48058547ad56b86b4bdcd245c868e25d4e98"
+      },
+      {
+        "arquivo": "ownership-audit/index.ts",
+        "sha256": "cd09ac156ae6ed75399a0d62a6b6db04747e1eb84d01b2adff8876579c593b02"
+      },
+      {
+        "arquivo": "ownership-repair/index.ts",
+        "sha256": "359d04bd2b519e50369a27a29991c7e5b1dc8894a42638f9e798d7fd32a0befd"
+      },
+      {
+        "arquivo": "process-batch-export/index.ts",
+        "sha256": "b7a447b23c329fce36f5a6be48e9d464118c8b3e677fabeda2276afcb7826466"
+      },
+      {
+        "arquivo": "process-queue/index.ts",
+        "sha256": "972ea0f8da890f34b14f349d14418c4adfd870ea6aa879a44b5e8ca1add5cdd4"
+      },
+      {
+        "arquivo": "process-scheduled-reports/index.ts",
+        "sha256": "462b48643bb9e73ee1955fd644bbab4c2691b49ab38894ce6add2c4816b93039"
+      },
+      {
+        "arquivo": "product-webhook/index.ts",
+        "sha256": "d417220b83c87a8e46a302fdd556cf9461897ff07bbc844a2d38e9436a89099f"
+      },
+      {
+        "arquivo": "quote-approval/index.ts",
+        "sha256": "61766bed337111b1af2fadf43e2527b33c3362bdac25a130a92cbee252c590e9"
+      },
+      {
+        "arquivo": "quote-followup-reminders/index.ts",
+        "sha256": "9eaaadcff9a8e2bae51d0f7343c7f76b97ec5fb00e775cc56a450b5dad96f17f"
+      },
+      {
+        "arquivo": "quote-public-view/index.ts",
+        "sha256": "ea461d427029a2e5169c51b08040e373cfe90d49ad94c9eb87f0f3dfb115c9bc"
+      },
+      {
+        "arquivo": "quote-sync/deno.json",
+        "sha256": "d2ab39f65b3c872258a89d36e8982194646f630a485a80d4526974829864562c"
+      },
+      {
+        "arquivo": "quote-sync/index.ts",
+        "sha256": "49fdbf628c1bacb60f146171ea6af652645701d926e9010d6a0042b3db42b16d"
+      },
+      {
+        "arquivo": "rate-limit-check/index.ts",
+        "sha256": "bd724dd105c199f8c93933a1bf42fd497bf28089dade756b12562e4da181b597"
+      },
+      {
+        "arquivo": "rls-audit/index.ts",
+        "sha256": "be82b170870bd28468815accea9261197c73fec4afb53b7321b4fa9d97b799e2"
+      },
+      {
+        "arquivo": "rls-integration-tests/index.ts",
+        "sha256": "1daa8aad34d623c32bc757c65fba31fb5ef45e9a3829a5bbcf3df2bfbb074ec7"
+      },
+      {
+        "arquivo": "rls-matrix-export/index.ts",
+        "sha256": "01b04ec476b5742fb18dfc37c0d433e068c3f8f27c1d1bef01a85226004a265a"
+      },
+      {
+        "arquivo": "secrets-manager/index.ts",
+        "sha256": "fdb18ef25185ff1c52797aff9f0ce2f37b06136d9f635dac8e66ce73ab8254cd"
+      },
+      {
+        "arquivo": "secure-upload/index.ts",
+        "sha256": "bcf7b048e29a28319223bf16e5c9a25d12ccf930a0ae9518844541a62c0cb2df"
+      },
+      {
+        "arquivo": "semantic-search/index.ts",
+        "sha256": "de0592b261e19535b72b121a1fb625e00f974eb7fedb2163c88ef7ef4463ee4c"
+      },
+      {
+        "arquivo": "send-digest/index.ts",
+        "sha256": "bca7ec07438a4865af5c88054c20e19736124ec8b1d2024064f9075eb865131c"
+      },
+      {
+        "arquivo": "send-notification/index.ts",
+        "sha256": "d4d28a9235df572a093763241bb50c1fe9c4b639f9bb855fe69fd33c3c903c19"
+      },
+      {
+        "arquivo": "send-scheduled-reports/index.ts",
+        "sha256": "610975b22986c3ee7efefafc9dc4b7a13d77c955ab3c2c29eff603293a29e967"
+      },
+      {
+        "arquivo": "send-transactional-email/index.ts",
+        "sha256": "62d94a99e85e7ea4a6efb14051ef90fc97ebd2c3ce68b996ba3a6b3321d9296c"
+      },
+      {
+        "arquivo": "sicoob-approval-notifications/index.ts",
+        "sha256": "90d14d1621c725a454f998147dd01b13c7875e80fb1f59ecb9d1b14663d901ba"
+      },
+      {
+        "arquivo": "sicoob-approval-reconciliation/index.ts",
+        "sha256": "354f09937931558e85907203cf5c413edeff2341066783c6e4d4de5f4119daa3"
+      },
+      {
+        "arquivo": "sicoob-artwork-register/identity.ts",
+        "sha256": "1c6fc706768f3d3ae83dc01176340f7ce84923e3dce562081f44f0b35fe247f9"
+      },
+      {
+        "arquivo": "sicoob-artwork-register/index.ts",
+        "sha256": "536f57decd58827d38d15ab6ece7890db2f38c3c4c59e79d5103542f48697257"
+      },
+      {
+        "arquivo": "sicoob-document-ingest/index.ts",
+        "sha256": "26f99920fbc6e232a91ad300e2f7ac1ec2264db66dfdf5d4e2493c8145e99d56"
+      },
+      {
+        "arquivo": "sicoob-document-ingest/inspection.ts",
+        "sha256": "9367a157decfcaa7ade1d69ecaafa35292a8de58d33291055ba5aeb1b717e10a"
+      },
+      {
+        "arquivo": "sicoob-document-ingest/scanner.ts",
+        "sha256": "128212d176a3705f7558aafd851c335e8d805e3a8bdca9397a83966843dc18bf"
+      },
+      {
+        "arquivo": "sicoob-kit-quote/catalog.ts",
+        "sha256": "4ae2aba8856286a2181ef797cb60c636a238a65388b2a7ee9cd9d1f634af4609"
+      },
+      {
+        "arquivo": "sicoob-kit-quote/idempotency.ts",
+        "sha256": "18f718a89862068e938c101996a82dc20ca3fa7b8d2754e19eee58e5e3d48c4c"
+      },
+      {
+        "arquivo": "sicoob-kit-quote/index.ts",
+        "sha256": "77bfecf1569f4bf26f829779555fbbf49369eb65b9ab6fd2ae31f81bd0daf543"
+      },
+      {
+        "arquivo": "sicoob-reorder/catalog.ts",
+        "sha256": "3bbb270ba881f20d96ff46820cb741bf6e6cbd066ba647cd720c7f61b77b0aa5"
+      },
+      {
+        "arquivo": "sicoob-reorder/idempotency.ts",
+        "sha256": "f92284ddf7fe6e1bf82f75dfd3304e2aed7d76da80099a07182f7edcb83a2917"
+      },
+      {
+        "arquivo": "sicoob-reorder/index.ts",
+        "sha256": "421373aece9881637c1d55f4822be7b1561d2dc317d2b7427091a540f317d67d"
+      },
+      {
+        "arquivo": "sicoob-seed/index.ts",
+        "sha256": "b9e266a978fb8f05e82374ac758b85ad101eca204380a03b8339cb0b6621de66"
+      },
+      {
+        "arquivo": "sicoob-seed-qa/index.ts",
+        "sha256": "2b408d308bbbe17d0ffe9ec209a5357c3ee087fb98b1ab267111a0f3ef9cf9d4"
+      },
+      {
+        "arquivo": "step-up-verify/index.ts",
+        "sha256": "1eb666a5e88e3d77c241b6105b10f18b5d1a591d81b7f8c60a26d5f3139b9c2d"
+      },
+      {
+        "arquivo": "sync-quote-bitrix/index.ts",
+        "sha256": "844231eb50bce2a911d3e73d020a45fc9f27c4d4abf0bf6caf7b4d8bde3ae1fc"
+      },
+      {
+        "arquivo": "system-healthcheck/index.ts",
+        "sha256": "7bd646e0831a58d21ceb52f2924524f6d6fced07037415ba77f091ed194cc644"
+      },
+      {
+        "arquivo": "trends-insights/index.ts",
+        "sha256": "f6139a4e5a5e8df38bd0aaa9dc378714a49333b583fbcbd398a5d74875684d87"
+      },
+      {
+        "arquivo": "validate-access/index.ts",
+        "sha256": "f2220e23a9602a2afef80c10dc5d64f6054026c28a3a8da45f51717fb9b371d5"
+      },
+      {
+        "arquivo": "verify-email/index.ts",
+        "sha256": "41fe28b8bac5afd1181562aac0d1a8e1b2bc4c635f77bc02c05c6ca75f056cc4"
+      },
+      {
+        "arquivo": "visual-search/index.ts",
+        "sha256": "fe68be21be0ee329dcc0c2962c0ad87801d0ecffaf30a85671c0522017d1893a"
+      },
+      {
+        "arquivo": "voice-agent/index.ts",
+        "sha256": "1a1a036c932e6707628cf2af6c6155be733dbcdb3430605ce527987f92a01ae1"
+      },
+      {
+        "arquivo": "voice-agent/parseAiResponse.ts",
+        "sha256": "0bb82ca5c232ffe864f7812aff1eeb8d1de28b90b0a2919a3e671c2b2db152df"
+      },
+      {
+        "arquivo": "voice-agent/systemPrompt.ts",
+        "sha256": "8f7b859296f0e8c4a4629e0156cc8b7fb53a7eca75136bfaff27ca9484940712"
+      },
+      {
+        "arquivo": "webhook-dispatcher/index.ts",
+        "sha256": "5b76c15218e7fdabba976721900599fbcb50b7713a2f605dc7f52dcaf6a7d299"
+      },
+      {
+        "arquivo": "webhook-inbound/index.ts",
+        "sha256": "03bf9d6aef2f52e1850d14df1038ab17eb3e015c718a8aa09a84e0042efaf677"
+      }
+    ]
+  },
+  "validacoes": {
+    "vitest_aprovados": 5569,
+    "vitest_ignorados": 112,
+    "cenarios_aprovados": 202,
+    "typecheck_atual": 158,
+    "typecheck_baseline": 166,
+    "build": "aprovado",
+    "lint_baseline": "sem_regressoes",
+    "post_sem_sessao": {
+      "sicoob-kit-quote": 401,
+      "sicoob-document-ingest": 401,
+      "sicoob-approval-reconciliation": 401,
+      "sicoob-approval-notifications": 401,
+      "process-batch-export": 401,
+      "quote-approval": 400
+    }
+  },
+  "segredos_conferidos_apenas_por_nome": {
+    "SICOOB_APPROVAL_WORKER_SECRET": "presente",
+    "SICOOB_MALWARE_SCANNER_URL": "ausente",
+    "SICOOB_MALWARE_SCANNER_TOKEN": "ausente",
+    "SICOOB_QA_USER_PASSWORD": "ausente"
+  }
+}
