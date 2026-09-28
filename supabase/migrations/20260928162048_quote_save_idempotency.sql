@@ -8,16 +8,20 @@ CREATE TABLE public.quote_save_idempotency (
   quote_id uuid NOT NULL REFERENCES public.quotes(id) ON DELETE CASCADE,
   created_at timestamptz NOT NULL DEFAULT now(),
   PRIMARY KEY (actor_id, idempotency_key),
-  CONSTRAINT quote_save_idempotency_payload_hash_check CHECK (length(payload_hash) = 32)
+  CONSTRAINT quote_save_idempotency_payload_hash_check CHECK (length(payload_hash) = 64)
 );
 
 ALTER TABLE public.quote_save_idempotency ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY quote_save_idempotency_actor_only
+CREATE POLICY quote_save_idempotency_select_own
   ON public.quote_save_idempotency
-  FOR ALL TO authenticated
-  USING (actor_id = auth.uid())
-  WITH CHECK (actor_id = auth.uid());
+  FOR SELECT TO authenticated
+  USING ((SELECT auth.uid()) = actor_id);
+
+CREATE POLICY quote_save_idempotency_insert_own
+  ON public.quote_save_idempotency
+  FOR INSERT TO authenticated
+  WITH CHECK ((SELECT auth.uid()) = actor_id);
 
 CREATE OR REPLACE FUNCTION public.save_quote_atomic_idempotent(
   p_quote jsonb,
@@ -44,7 +48,10 @@ BEGIN
     RAISE EXCEPTION USING ERRCODE = '22023', MESSAGE = 'Cabeçalho ou itens do orçamento são inválidos.';
   END IF;
 
-  v_payload_hash := md5(p_quote::text || ':' || COALESCE(p_items, '[]'::jsonb)::text);
+  v_payload_hash := encode(
+    extensions.digest(p_quote::text || ':' || COALESCE(p_items, '[]'::jsonb)::text, 'sha256'),
+    'hex'
+  );
   PERFORM pg_advisory_xact_lock(
     hashtextextended('quote-save:' || v_actor_id::text || ':' || p_idempotency_key::text, 0)
   );
@@ -73,7 +80,7 @@ END;
 $function$;
 
 REVOKE ALL ON TABLE public.quote_save_idempotency FROM PUBLIC, anon;
-GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.quote_save_idempotency TO authenticated;
+GRANT SELECT, INSERT ON TABLE public.quote_save_idempotency TO authenticated;
 REVOKE ALL ON FUNCTION public.save_quote_atomic_idempotent(jsonb, jsonb, uuid, jsonb) FROM PUBLIC, anon;
 GRANT EXECUTE ON FUNCTION public.save_quote_atomic_idempotent(jsonb, jsonb, uuid, jsonb) TO authenticated;
 

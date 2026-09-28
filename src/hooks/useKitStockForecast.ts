@@ -36,7 +36,7 @@ export interface ForecastSupplierSource {
 export function kitStockForecastQueryKey(items: KitItem[], kitQuantity: number): readonly string[] {
   const itemSignature = items
     .map((item) => `${item.id}:${item.selectedVariantId ?? "produto"}:${item.quantity}`)
-    .sort()
+    .sort((left, right) => left.localeCompare(right))
     .join("|");
   return ['kit-stock-forecast', itemSignature, String(kitQuantity)];
 }
