@@ -136,7 +136,7 @@ jobs:
 
       - name: Upload Playwright report do gate
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         continue-on-error: true
         with:
           name: playwright-report-smoke-gate
@@ -145,7 +145,7 @@ jobs:
 
       - name: Upload smoke summary (markdown + json)
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         continue-on-error: true
         with:
           name: e2e-smoke-summary
@@ -157,7 +157,7 @@ jobs:
 
       - name: Upload evidências do gate
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         continue-on-error: true
         with:
           name: e2e-evidence-smoke-gate
@@ -238,7 +238,7 @@ jobs:
 
       - name: Upload Playwright report
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         continue-on-error: true
         with:
           name: playwright-report-shard-${{ matrix.shard }}
@@ -247,7 +247,7 @@ jobs:
 
       - name: Upload feature summary (markdown)
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         continue-on-error: true
         with:
           name: e2e-feature-summary-shard-${{ matrix.shard }}
@@ -257,7 +257,7 @@ jobs:
 
       - name: Upload evidence artifacts
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         continue-on-error: true
         with:
           name: e2e-evidence-shard-${{ matrix.shard }}
