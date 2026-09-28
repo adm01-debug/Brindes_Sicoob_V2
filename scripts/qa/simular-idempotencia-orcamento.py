@@ -1,7 +1,7 @@
 """Valida retries, concorrência, hash completo e RLS do salvamento idempotente."""
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
-import hashlib, json, subprocess, time, uuid
+import json, subprocess, time, uuid
 from postgres_ready import wait_for_postgres
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -89,14 +89,12 @@ try:
     checks["concorrencia_serializada"] = results[0] == results[1] and scalar(sql("SELECT count(*) FROM quotes;")) == "2"
 
     legacy_key = uuid.uuid4()
-    legacy_hash = hashlib.md5((json.dumps(header, sort_keys=True, separators=(",", ":")) + ":" + json.dumps(items, sort_keys=True, separators=(",", ":"))).encode()).hexdigest()
     # jsonb::text usa espaços; o banco calcula o hash legado diretamente para evitar
     # que a serialização do Python faça parte do contrato do teste.
     sql(f"""
       INSERT INTO quote_save_idempotency(actor_id,idempotency_key,payload_hash,quote_id)
       SELECT '{SELLER}','{legacy_key}',md5($q${json.dumps(header)}$q$::jsonb::text || ':' || $i${json.dumps(items)}$i$::jsonb::text),'{first}';
     """)
-    del legacy_hash
     checks["retry_md5_legado_preservado"] = scalar(rpc(legacy_key, header, items, ["Ignorado no hash legado"])) == first
 
     other_quote = uuid.uuid4()

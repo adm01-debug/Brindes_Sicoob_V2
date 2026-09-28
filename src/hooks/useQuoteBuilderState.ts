@@ -26,6 +26,19 @@ import type { Product, DiscountType, DeliveryMode } from "@/types/quote-builder"
 import { useQuoteProductSearch } from "@/hooks/quote/useQuoteProductSearch";
 import { useQuoteInitialization } from "@/hooks/quote/useQuoteInitialization";
 
+export function validateBudgetForSubmission<T>(
+  budget: T | null,
+  error: unknown,
+): { ok: true; budget: T } | { ok: false; message: string } {
+  if (error) {
+    return { ok: false, message: "Não foi possível validar a verba do PA. Tente novamente antes de enviar." };
+  }
+  if (!budget) {
+    return { ok: false, message: "A verba desta competência ainda não foi configurada para o seu PA." };
+  }
+  return { ok: true, budget };
+}
+
 export function useQuoteBuilderState() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -298,17 +311,24 @@ export function useQuoteBuilderState() {
         toast.error("Seu perfil não possui um Ponto de Atendimento vinculado.");
         return;
       }
-      const { data: budget } = await supabase
+      const { data: budget, error: budgetError } = await supabase
         .from('pa_budgets')
         .select('*')
         .eq('pa_id', profile.pa_id)
         .eq('ano', new Date().getFullYear())
         .eq('mes', new Date().getMonth() + 1)
         .maybeSingle();
-      
-      if (budget) {
+
+      const budgetValidation = validateBudgetForSubmission(budget, budgetError);
+      if (!budgetValidation.ok) {
+        toast.error(budgetValidation.message);
+        return;
+      }
+      const validatedBudget = budgetValidation.budget;
+
+      if (validatedBudget) {
         // 1. Check Alçada (transaction limit)
-        const limiteAlcada = budget.limite_alcada ?? 0;
+        const limiteAlcada = validatedBudget.limite_alcada ?? 0;
         if (limiteAlcada > 0 && totals.total > limiteAlcada) {
           toast.error("Limite de alçada excedido!", {
             description: `Este pedido (R$ ${totals.total.toLocaleString()}) supera seu limite de R$ ${limiteAlcada.toLocaleString()}.`
@@ -317,8 +337,8 @@ export function useQuoteBuilderState() {
         }
         
         // 2. Check remaining monthly budget
-        const remaining = budget.verba_total - (budget.verba_consumida || 0);
-        if (budget.verba_total > 0 && totals.total > remaining) {
+        const remaining = validatedBudget.verba_total - (validatedBudget.verba_consumida || 0);
+        if (validatedBudget.verba_total > 0 && totals.total > remaining) {
           toast.error("Verba insuficiente!", {
             description: `Você possui apenas R$ ${remaining.toLocaleString()} de verba disponível este mês.`
           });
@@ -374,7 +394,7 @@ export function useQuoteBuilderState() {
         transitionApplied = await updateQuoteStatus(result.id!, finalStatus);
       }
       if (!transitionApplied) {
-        toast.warning("O orçamento foi salvo como rascunho, mas a transição solicitada falhou. Tente novamente na tela do orçamento.");
+        toast.warning("O orçamento foi salvo, mas não foi possível confirmar o status final. Consulte a tela do orçamento antes de tentar novamente.");
         navigate(`/orcamentos/${result.id}`);
         return;
       }

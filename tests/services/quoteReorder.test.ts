@@ -16,6 +16,7 @@ import { QuoteService } from '@/services/QuoteService';
 describe('QuoteService.reorder', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    sessionStorage.clear();
   });
 
   it('usa a Edge Function de revalidação em vez de copiar preço no navegador', async () => {
@@ -43,6 +44,24 @@ describe('QuoteService.reorder', () => {
     await expect(QuoteService.reorder('quote-aprovada', 'ator-1', null)).rejects.toThrow(
       'O preço venceu',
     );
+  });
+
+  it('reutiliza a chave após perda de resposta e encerra a intenção após sucesso', async () => {
+    mocks.invoke
+      .mockResolvedValueOnce({ data: null, error: new Error('timeout') })
+      .mockResolvedValueOnce({ data: { quoteId: 'nova-quote' }, error: null })
+      .mockResolvedValueOnce({ data: { quoteId: 'outra-quote' }, error: null });
+    vi.spyOn(QuoteService, 'getById')
+      .mockResolvedValueOnce({ id: 'nova-quote' } as never)
+      .mockResolvedValueOnce({ id: 'outra-quote' } as never);
+
+    await expect(QuoteService.reorder('quote-aprovada', 'ator-1', null)).rejects.toThrow('timeout');
+    await expect(QuoteService.reorder('quote-aprovada', 'ator-1', null)).resolves.toMatchObject({ id: 'nova-quote' });
+    await expect(QuoteService.reorder('quote-aprovada', 'ator-1', null)).resolves.toMatchObject({ id: 'outra-quote' });
+
+    const keys = mocks.invoke.mock.calls.map((call) => call[1].body.idempotencyKey);
+    expect(keys[1]).toBe(keys[0]);
+    expect(keys[2]).not.toBe(keys[1]);
   });
 
   it('envia a chave estável de criação para a RPC idempotente', async () => {

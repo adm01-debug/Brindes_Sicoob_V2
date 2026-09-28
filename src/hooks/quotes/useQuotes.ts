@@ -105,7 +105,7 @@ export function useQuotes() {
       const { data: quote, error: fetchErr } = await supabase
         // rls-allow: lookup pré-RPC por UUID; a RLS valida o escopo e a RPC revalida sob lock.
         .from("quotes")
-        .select("id, row_version, singular_id, quote_number, status")
+        .select("id, row_version")
         .eq("id", quoteId)
         .single();
       if (fetchErr) throw fetchErr;
@@ -123,26 +123,6 @@ export function useQuotes() {
         1,
         "Concorrência detectada: Este orçamento foi modificado por outro usuário. Por favor, recarregue a página.",
       );
-
-      // Logic for notifications
-      if (status === 'pending_singular_approval') {
-        const { data: buyers } = await supabase.from('profiles')
-          .select('user_id')
-          .eq('cooperativa_id', quote?.singular_id || '')
-          .in('role', ['gestor_compras', 'comprador_singular']);
-        
-        if (buyers?.length) {
-          const notifs = buyers.map(b => ({
-            user_id: b.user_id,
-            title: "Nova solicitação de PAC",
-            message: `O PAC enviou o orçamento ${quote?.quote_number} para aprovação.`,
-            type: 'info',
-            category: 'approval',
-            action_url: `/orcamentos/${quoteId}`
-          }));
-          await supabase.from('workspace_notifications').insert(notifs);
-        }
-      }
 
       toast.success("Status atualizado");
       fetchQuotes();

@@ -58,6 +58,8 @@ async function fetchBudgetHistoryPage(
     .select("id, pa_id, ano, mes, verba_total, verba_consumida, postos_atendimento(nome)")
     .order("ano", { ascending: false })
     .order("mes", { ascending: false })
+    .order("pa_id", { ascending: true })
+    .order("id", { ascending: true })
     .range(offset, offset + pageSize - 1);
   query = paId ? query.eq("pa_id", paId) : query.in("pa_id", cooperativePaIds);
   const { data, error } = await query;
@@ -65,7 +67,7 @@ async function fetchBudgetHistoryPage(
   return (data ?? []) as RawBudgetHistoryRow[];
 }
 
-async function fetchAllBudgetHistoryRows(paId: string | null | undefined, cooperativePaIds: string[]) {
+export async function fetchAllBudgetHistoryRows(paId: string | null | undefined, cooperativePaIds: string[]) {
   const pageSize = 1000;
   const rows: RawBudgetHistoryRow[] = [];
   for (let offset = 0; ; offset += pageSize) {
