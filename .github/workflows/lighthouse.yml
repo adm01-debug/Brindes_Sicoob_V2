@@ -22,10 +22,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install Chromium (self-hosted runner)
+      - name: Locate Chromium (self-hosted runner)
         run: |
-          which chromium-browser || which google-chrome || which chromium || \
-          (sudo apt-get update -qq && sudo apt-get install -y chromium-browser)
+          if [ -x "/opt/pw-browsers/chromium" ]; then
+            echo "CHROME_PATH=/opt/pw-browsers/chromium" >> "$GITHUB_ENV"
+          elif which google-chrome > /dev/null 2>&1; then
+            echo "CHROME_PATH=$(which google-chrome)" >> "$GITHUB_ENV"
+          else
+            echo "CHROME_PATH=$(which chromium || which chromium-browser)" >> "$GITHUB_ENV"
+          fi
 
       - uses: actions/setup-node@v4
         with:
@@ -45,9 +50,11 @@ jobs:
         run: npx --yes @lhci/cli@0.13.0 autorun
         env:
           LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
+          CHROME_PATH: ${{ env.CHROME_PATH }}
 
       - name: Upload Lighthouse reports
         if: always()
+        continue-on-error: true
         uses: actions/upload-artifact@v4
         with:
           name: lighthouse-reports

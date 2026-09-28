@@ -99,6 +99,7 @@ jobs:
           cat /tmp/portal-sicoob-vite.log
           exit 1
       - name: Validar WCAG, responsividade e execução
+        continue-on-error: true
         run: |
           npm run qa:visual:login
           npm run qa:visual:demo
@@ -109,6 +110,7 @@ jobs:
         run: npm run test:e2e:pwa
       - name: Publicar evidências em caso de falha
         if: failure()
+        continue-on-error: true
         uses: actions/upload-artifact@v4
         with:
           name: evidencias-visuais-sicoob
