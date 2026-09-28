@@ -48,7 +48,7 @@ jobs:
       # O runner self-hosted ainda expõe Node 12 no PATH. O analisador
       # JavaScript/TypeScript atual do CodeQL exige uma versão suportada.
       - name: Preparar Node.js para análise
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: '24'
 
