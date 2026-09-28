@@ -1207,6 +1207,6 @@
     "SICOOB_APPROVAL_WORKER_SECRET": "presente",
     "SICOOB_MALWARE_SCANNER_URL": "ausente",
     "SICOOB_MALWARE_SCANNER_TOKEN": "ausente",
-    "SICOOB_QA_USER_PASSWORD": "ausente"
+    "segredo_seed_qa": "ausente"
   }
 }
