@@ -11305,6 +11305,15 @@ export type Database = {
         }
         Returns: Json
       }
+      save_quote_atomic_idempotent: {
+        Args: {
+          p_history?: Json
+          p_idempotency_key: string
+          p_items: Json
+          p_quote: Json
+        }
+        Returns: Json
+      }
       transition_sicoob_order_status: {
         Args: {
           p_comment?: string | null

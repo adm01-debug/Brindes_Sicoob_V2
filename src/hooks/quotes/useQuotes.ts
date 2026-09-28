@@ -47,11 +47,11 @@ export function useQuotes() {
 
   const fetchQuote = (quoteId: string) => QuoteService.getById(quoteId);
 
-  const createQuote = async (quote: Partial<Quote>, items: QuoteItem[]) => {
+  const createQuote = async (quote: Partial<Quote>, items: QuoteItem[], idempotencyKey: string) => {
     if (!user) return null;
     setIsLoading(true);
     try {
-      const newQuote = await QuoteService.create({ quote, items, userId: user.id, orgId });
+      const newQuote = await QuoteService.create({ quote, items, userId: user.id, orgId, idempotencyKey });
       if (!newQuote.id) {
         throw new Error("O orçamento criado não retornou um identificador.");
       }
@@ -67,11 +67,11 @@ export function useQuotes() {
     }
   };
 
-  const updateQuote = async (quoteId: string, quote: Partial<Quote>, items: QuoteItem[]) => {
+  const updateQuote = async (quoteId: string, quote: Partial<Quote>, items: QuoteItem[], expectedRowVersion: number) => {
     if (!user) return null;
     setIsLoading(true);
     try {
-      const updated = await QuoteService.update({ quoteId, quote, items, userId: user.id });
+      const updated = await QuoteService.update({ quoteId, quote, items, userId: user.id, expectedRowVersion });
       toast.success("Orçamento atualizado!");
       fetchQuotes();
       return updated;

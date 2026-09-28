@@ -66,16 +66,17 @@ export default function QuoteBuilderPage() {
 
       <QuoteAutoSave
         quoteId={s.quoteId}
+        scopeId={s.user?.id}
         data={{ clientId: s.clientId, validUntil: s.validUntil, discountType: s.discountType, discountValue: s.discountValue, notes: s.notes, internalNotes: s.internalNotes, items: s.items, tags: s.tags }}
         onRestore={(data) => {
-          s.setClientId(data.clientId || "");
-          s.setValidUntil(data.validUntil || format(addDays(new Date(), 30), "yyyy-MM-dd"));
-          s.setDiscountType(data.discountType || "percent");
-          s.setDiscountValue(data.discountValue || 0);
-          s.setNotes(data.notes || "");
-          s.setInternalNotes(data.internalNotes || "");
-          s.setItems(data.items || []);
-          s.setTags(data.tags || []);
+          s.setClientId(typeof data.clientId === "string" ? data.clientId : "");
+          s.setValidUntil(typeof data.validUntil === "string" ? data.validUntil : format(addDays(new Date(), 30), "yyyy-MM-dd"));
+          s.setDiscountType(data.discountType === "amount" ? "amount" : "percent");
+          s.setDiscountValue(typeof data.discountValue === "number" ? data.discountValue : 0);
+          s.setNotes(typeof data.notes === "string" ? data.notes : "");
+          s.setInternalNotes(typeof data.internalNotes === "string" ? data.internalNotes : "");
+          s.setItems(Array.isArray(data.items) ? data.items as typeof s.items : []);
+          s.setTags(Array.isArray(data.tags) ? data.tags.filter((tag): tag is string => typeof tag === "string") : []);
           toast.success("Rascunho restaurado!");
         }}
         className="fixed top-20 right-4 z-40"

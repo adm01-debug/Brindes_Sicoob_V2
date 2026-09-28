@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { calculateKitStockForecast } from '@/hooks/useKitStockForecast';
+import { calculateKitStockForecast, kitStockForecastQueryKey } from '@/hooks/useKitStockForecast';
 import type { KitItem } from '@/lib/kit-builder';
 
 function item(overrides: Partial<KitItem> = {}): KitItem {
@@ -11,6 +11,13 @@ function item(overrides: Partial<KitItem> = {}): KitItem {
 }
 
 describe('calculateKitStockForecast', () => {
+  it('inclui a quantidade de cada item na chave de cache', () => {
+    const lowQuantity = kitStockForecastQueryKey([item({ quantity: 1 })], 1);
+    const highQuantity = kitStockForecastQueryKey([item({ quantity: 4 })], 1);
+
+    expect(lowQuantity).not.toEqual(highQuantity);
+  });
+
   it('confirma fechamento imediato somente quando o saldo canônico cobre toda a demanda', () => {
     const forecast = calculateKitStockForecast([item({ quantity: 2 })], 3, {
       products: [{ id: 'product-1', stock_quantity: 6 }], variants: [], sources: [],

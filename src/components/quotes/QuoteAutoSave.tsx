@@ -3,7 +3,7 @@
  * Salva rascunhos automaticamente no localStorage com indicador visual
  */
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { Cloud, CloudOff, Check, Loader2, AlertCircle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
@@ -21,9 +21,11 @@ type SaveStatus = "idle" | "saving" | "saved" | "error" | "offline";
 
 interface QuoteAutoSaveProps {
   quoteId?: string;
-  data: any;
+  /** Identificador do usuário autenticado; impede restauração entre contas. */
+  scopeId?: string | null;
+  data: unknown;
   onChange?: (hasUnsavedChanges: boolean) => void;
-  onRestore?: (data: any) => void;
+  onRestore?: (data: Record<string, unknown>) => void;
   className?: string;
 }
 
@@ -34,8 +36,18 @@ export function createQuoteDraftId(): string {
   return `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 }
 
+export function getQuoteDraftIdForScope(scopeId: string): string {
+  const sessionKey = `quote-new-draft:${scopeId}`;
+  const current = sessionStorage.getItem(sessionKey);
+  if (current) return current;
+  const draftId = createQuoteDraftId();
+  sessionStorage.setItem(sessionKey, draftId);
+  return draftId;
+}
+
 export function QuoteAutoSave({
   quoteId,
+  scopeId,
   data,
   onChange,
   onRestore,
@@ -46,13 +58,13 @@ export function QuoteAutoSave({
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
   const initialDataRef = useRef<string | null>(null);
-  const [draftId] = useState(createQuoteDraftId);
-  const storageKey = quoteId ? `quote:${quoteId}` : `draft:${draftId}`;
+  const draftId = useMemo(() => scopeId ? getQuoteDraftIdForScope(scopeId) : null, [scopeId]);
+  const storageKey = scopeId ? (quoteId ? `quote:${scopeId}:${quoteId}` : `draft:${scopeId}:${draftId}`) : "";
 
   const { restore, lastError } = useAutoSave({
     key: storageKey,
     data,
-    enabled: true,
+    enabled: Boolean(storageKey),
     onSave: () => {
       setLastSaved(new Date());
       setStatus("saved");
@@ -87,8 +99,8 @@ export function QuoteAutoSave({
   useEffect(() => {
     if (onRestore) {
       const draft = restore();
-      if (draft && JSON.stringify(draft) !== JSON.stringify(data)) {
-        onRestore(draft);
+      if (draft && typeof draft === "object" && !Array.isArray(draft) && JSON.stringify(draft) !== JSON.stringify(data)) {
+        onRestore(draft as Record<string, unknown>);
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -112,7 +124,7 @@ export function QuoteAutoSave({
       case "offline": return "Offline";
       default: return hasUnsavedChanges ? "Alterações não salvas" : lastSaved
         ? `Salvo às ${format(lastSaved, "HH:mm", { locale: ptBR })}`
-        : "Salvo automaticamente";
+        : "Salvo neste dispositivo";
     }
   };
 

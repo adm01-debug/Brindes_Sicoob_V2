@@ -22,6 +22,8 @@ const LOGISTICS_ORDER_STATUSES = new Set([
   'delivered',
   'completed',
 ]);
+const LOGISTICS_ORDER_STATUS_LIST = [...LOGISTICS_ORDER_STATUSES];
+const LOGISTICS_PAGE_SIZE = 200;
 
 function statusFromOrder(status: string): SicoobLogisticsStatus {
   if (status === 'delivered' || status === 'completed') return 'delivered';
@@ -35,8 +37,7 @@ function statusFromOrder(status: string): SicoobLogisticsStatus {
  * obedecem às policies RLS do usuário autenticado.
  */
 export async function listSicoobLogisticsTracking(): Promise<SicoobLogisticsTracking[]> {
-  const { orders } = await sicoobOrderService.listOrders({ page: 1, pageSize: 500 });
-  const logisticsOrders = orders.filter((order) => LOGISTICS_ORDER_STATUSES.has(order.status));
+  const logisticsOrders = await listAllLogisticsOrders();
 
   if (logisticsOrders.length === 0) return [];
 
@@ -51,6 +52,32 @@ export async function listSicoobLogisticsTracking(): Promise<SicoobLogisticsTrac
   const shipmentByOrderId = new Map((shipments ?? []).map((shipment) => [shipment.order_id, shipment]));
 
   return logisticsOrders.map((order) => trackingFromOrder(order, shipmentByOrderId.get(order.id)));
+}
+
+async function listAllLogisticsOrders(): Promise<SicoobOrder[]> {
+  const orders: SicoobOrder[] = [];
+  const seenIds = new Set<string>();
+  let page = 1;
+  let total = Number.POSITIVE_INFINITY;
+
+  while ((page - 1) * LOGISTICS_PAGE_SIZE < total) {
+    const result = await sicoobOrderService.listOrders({
+      statuses: LOGISTICS_ORDER_STATUS_LIST,
+      page,
+      pageSize: LOGISTICS_PAGE_SIZE,
+    });
+    total = result.total;
+    for (const order of result.orders) {
+      if (LOGISTICS_ORDER_STATUSES.has(order.status) && !seenIds.has(order.id)) {
+        seenIds.add(order.id);
+        orders.push(order);
+      }
+    }
+    if (result.orders.length < LOGISTICS_PAGE_SIZE) return orders;
+    page += 1;
+  }
+
+  return orders;
 }
 
 function trackingFromOrder(

@@ -56,6 +56,7 @@ export function useQuoteBuilderState() {
   const [tags, setTags] = useState<string[]>([]);
   const [quoteNumber, setQuoteNumber] = useState("");
   const [currentStatus, setCurrentStatus] = useState("draft");
+  const [expectedRowVersion, setExpectedRowVersion] = useState<number | null>(null);
   const [paymentTerms, setPaymentTerms] = useState("");
   const [deliveryTime, setDeliveryTime] = useState("");
   const [deliveryMode, setDeliveryMode] = useState<DeliveryMode>("prazo");
@@ -68,6 +69,7 @@ export function useQuoteBuilderState() {
   const [expandedItems, setExpandedItems] = useState<Set<number>>(new Set());
   const [activeItemIndex, setActiveItemIndex] = useState<number | null>(null);
   const [selectedItemIndexes, setSelectedItemIndexes] = useState<Set<number>>(new Set());
+  const createIdempotencyKeyRef = useRef<string | null>(null);
 
   // ── Modular Hooks ──
   const search = useQuoteProductSearch();
@@ -78,7 +80,7 @@ export function useQuoteBuilderState() {
     searchParams,
     setters: {
       setClientId, setContactId, setValidUntil, setNotes, setInternalNotes,
-      setQuoteNumber, setCurrentStatus, setContactInfo, setCompanyInfo,
+      setQuoteNumber, setCurrentStatus, setExpectedRowVersion, setContactInfo, setCompanyInfo,
       setDiscountType, setDiscountValue, setNegotiationMarkup, setPaymentTerms,
       setShippingType, setShippingCost, setDeliveryMode, setDeliveryDate,
       setDeliveryTime, setItems, setTags, setLoadingQuote, setActiveItemIndex, setExpandedItems
@@ -327,8 +329,12 @@ export function useQuoteBuilderState() {
       finalStatus = "pending_singular_approval";
     }
 
-    const currentQuote = isEditMode && quoteId ? await fetchQuote(quoteId) : null;
-    const persistedStatus = (isEditMode ? currentQuote?.status ?? currentStatus : "draft") as Quote["status"];
+    if (isEditMode && expectedRowVersion === null) {
+      toast.error("Não foi possível confirmar a versão do orçamento. Recarregue a página antes de salvar.");
+      return;
+    }
+
+    const persistedStatus = (isEditMode ? currentStatus : "draft") as Quote["status"];
     const quoteData = {
       client_id: clientId || undefined, client_name: contactInfo?.name || undefined,
       client_company: companyInfo?.name || undefined, client_cnpj: companyInfo?.cnpj || undefined,
@@ -347,13 +353,16 @@ export function useQuoteBuilderState() {
     };
 
     let result;
-    if (isEditMode && quoteId) { 
-      result = await updateQuote(quoteId, { ...quoteData, row_version: currentQuote?.row_version }, items); 
+    if (isEditMode && quoteId && expectedRowVersion !== null) {
+      result = await updateQuote(quoteId, { ...quoteData, row_version: expectedRowVersion }, items, expectedRowVersion);
     } else { 
-      result = await createQuote(quoteData, items); 
+      createIdempotencyKeyRef.current ??= crypto.randomUUID();
+      result = await createQuote(quoteData, items, createIdempotencyKeyRef.current);
     }
 
     if (result) {
+      createIdempotencyKeyRef.current = null;
+      if (isEditMode) setExpectedRowVersion(result.row_version ?? expectedRowVersion);
       let transitionApplied = true;
       if (finalStatus === "pending_approval" && maxDiscountPercent != null) {
         transitionApplied = await requestApproval(result.id!, totals.realDiscountPercent, maxDiscountPercent, sellerNotes);
@@ -367,7 +376,7 @@ export function useQuoteBuilderState() {
       }
       navigate(`/orcamentos/${result.id}`);
     }
-  }, [isDraftValid, isFormValid, validationErrors, clientId, contactInfo, companyInfo, discountType, discountValue, totals, notes, internalNotes, validUntil, paymentTerms, deliveryTime, shippingType, shippingCost, isEditMode, quoteId, items, navigate, updateQuote, createQuote, updateQuoteStatus, fetchQuote, currentStatus, maxDiscountPercent, requestApproval, isGerentePa, userRoles]);
+  }, [isDraftValid, isFormValid, validationErrors, clientId, contactInfo, companyInfo, discountType, discountValue, totals, notes, internalNotes, validUntil, paymentTerms, deliveryTime, shippingType, shippingCost, isEditMode, quoteId, items, navigate, updateQuote, createQuote, updateQuoteStatus, currentStatus, expectedRowVersion, maxDiscountPercent, requestApproval, isGerentePa, userRoles]);
 
   return {
     navigate, quoteId, isEditMode, loadingQuote, hasUnsavedData, user,

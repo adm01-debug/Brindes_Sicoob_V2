@@ -45,6 +45,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      # O runner self-hosted ainda expõe Node 12 no PATH. O analisador
+      # JavaScript/TypeScript atual do CodeQL exige uma versão suportada.
+      - name: Preparar Node.js para análise
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v4
         with:

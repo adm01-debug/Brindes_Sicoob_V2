@@ -158,16 +158,15 @@ export class QuoteService {
     }
   }
 
-  static async create(params: { quote: Partial<Quote>, items: QuoteItem[], userId: string, orgId: string | null }): Promise<Quote> {
+  static async create(params: { quote: Partial<Quote>, items: QuoteItem[], userId: string, orgId: string | null, idempotencyKey: string }): Promise<Quote> {
     try {
       const totals = calculateDocumentTotals(params.quote, params.items);
       const insertPayload = buildInsertPayload(params.quote, params.userId, params.orgId, totals);
-      const { data: inserted, error: insErr } = await supabase.rpc('save_quote_atomic', {
+      const { data: inserted, error: insErr } = await supabase.rpc('save_quote_atomic_idempotent', {
         p_quote: insertPayload as Json,
         p_items: buildAtomicQuoteItems(params.items),
-        p_quote_id: null,
-        p_expected_row_version: null,
         p_history: ['Orçamento criado'] as Json,
+        p_idempotency_key: params.idempotencyKey,
       });
       throwQuoteSaveError(insErr, "Error creating quote:");
       return assertAtomicQuoteResult(inserted, 'O banco não retornou o orçamento criado.');
@@ -181,20 +180,28 @@ export class QuoteService {
     quoteId: string, 
     quote: Partial<Quote>, 
     items: QuoteItem[],
-    userId: string 
+    userId: string,
+    expectedRowVersion: number,
   }): Promise<Quote> {
     try {
       const oldQuote = await this.getById(params.quoteId);
       if (!oldQuote) throw new Error("Orçamento não encontrado para atualização");
 
+      if (!Number.isInteger(params.expectedRowVersion) || params.expectedRowVersion < 1) {
+        throw new Error("A versão do orçamento não está disponível. Recarregue a página antes de salvar.");
+      }
+
       const totals = calculateDocumentTotals(params.quote, params.items);
-      const updatePayload = buildUpdatePayload({ ...params.quote, row_version: oldQuote.row_version }, totals);
+      const updatePayload = buildUpdatePayload({ ...params.quote, row_version: params.expectedRowVersion }, totals);
       const changes = describeQuoteChanges(oldQuote, params.quote, params.items);
       const { data: updated, error: updErr } = await supabase.rpc('save_quote_atomic', {
         p_quote: updatePayload as Json,
         p_items: buildAtomicQuoteItems(params.items),
         p_quote_id: params.quoteId,
-        p_expected_row_version: oldQuote.row_version || 1,
+        // A versão precisa ser aquela carregada pelo editor, nunca a de uma
+        // leitura feita no instante do salvamento. Caso outro usuário tenha
+        // gravado antes, a RPC recusa a atualização em vez de sobrescrever.
+        p_expected_row_version: params.expectedRowVersion,
         p_history: quoteHistoryOrDefault(changes),
       });
 
