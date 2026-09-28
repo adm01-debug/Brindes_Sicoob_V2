@@ -103,6 +103,7 @@ export function useQuotes() {
       // rls-allow: consulta a versão e dados de notificação; a RPC valida o escopo
       // e aplica a transição sob lock, evitando a janela entre leitura e escrita.
       const { data: quote, error: fetchErr } = await supabase
+        // rls-allow: lookup pré-RPC por UUID; a RLS valida o escopo e a RPC revalida sob lock.
         .from("quotes")
         .select("id, row_version, singular_id, quote_number, status")
         .eq("id", quoteId)
@@ -167,6 +168,7 @@ export function useQuotes() {
     try {
       const uniqueQuoteIds = [...new Set(quoteIds)];
       const { data: accessibleQuotes, error: accessError } = await supabase
+        // rls-allow: lookup pré-RPC por UUIDs; a RLS filtra o escopo e a RPC revalida sob lock.
         .from("quotes")
         .select("id, row_version")
         .in("id", uniqueQuoteIds);

@@ -1,0 +1,47 @@
+name: Aplicar migrations Sicoob
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirmar:
+        description: 'Digite APLICAR para atualizar o banco de construção'
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  migrate:
+    if: inputs.confirmar == 'APLICAR'
+    name: Reconciliar schema canônico de construção
+    runs-on: self-hosted
+    timeout-minutes: 20
+    environment: construction
+    env:
+      SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+    steps:
+      - name: Baixar fonte versionada
+        uses: actions/checkout@v4
+
+      - name: Configurar Supabase CLI
+        uses: supabase/setup-cli@v3
+        with:
+          version: 2.115.0
+
+      - name: Validar conexão administrativa
+        run: test -n "$SUPABASE_DB_URL"
+
+      - name: Registrar estado anterior
+        run: supabase migration list --db-url "$SUPABASE_DB_URL"
+
+      - name: Aplicar migrations pendentes
+        run: supabase db push --db-url "$SUPABASE_DB_URL" --include-all --yes
+
+      - name: Confirmar reconciliação do ledger
+        run: |
+          set -euo pipefail
+          supabase migration list --db-url "$SUPABASE_DB_URL"
+          supabase db push --db-url "$SUPABASE_DB_URL" --include-all --dry-run 2>&1 \
+            | tee /tmp/supabase-db-push-dry-run.txt
+          grep -Fq 'Remote database is up to date.' /tmp/supabase-db-push-dry-run.txt

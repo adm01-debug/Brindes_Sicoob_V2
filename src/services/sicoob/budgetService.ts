@@ -1,14 +1,29 @@
 import { supabase } from "@/integrations/supabase/client";
 
+async function getPaIdsByCooperative(cooperativeId: string) {
+  const { data, error } = await supabase
+    .from("postos_atendimento")
+    .select("id")
+    .eq("cooperativa_id", cooperativeId);
+  if (error) throw error;
+  return (data ?? []).map((pa) => pa.id);
+}
+
 export const sicoobBudgetService = {
   async getBudgets(filters?: { pa_id?: string; cooperative_id?: string }) {
+    let cooperativePaIds: string[] | null = null;
+    if (filters?.cooperative_id && filters.cooperative_id !== "all") {
+      cooperativePaIds = await getPaIdsByCooperative(filters.cooperative_id);
+      if (cooperativePaIds.length === 0) return [];
+    }
+
     let query = supabase.from("pa_budgets").select("*, postos_atendimento(nome)");
 
     if (filters?.pa_id && filters.pa_id !== "all") {
       query = query.eq("pa_id", filters.pa_id);
     }
-    if (filters?.cooperative_id && filters.cooperative_id !== "all") {
-      query = query.eq("cooperative_id", filters.cooperative_id);
+    if (cooperativePaIds) {
+      query = query.in("pa_id", cooperativePaIds);
     }
 
     const { data, error } = await query;

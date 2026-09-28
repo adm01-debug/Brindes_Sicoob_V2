@@ -1,6 +1,9 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import type { Database } from "@/integrations/supabase/types";
+
+type AccessSecurityUpdate = Database["public"]["Tables"]["access_security_settings"]["Update"];
 
 export interface IpWhitelistEntry {
   id: string;
@@ -74,7 +77,7 @@ export function useAccessSecurity() {
     if (!settings) return;
     const { error } = await supabase
       .from("access_security_settings")
-      .update(updates as Record<string, unknown>)
+      .update(updates as AccessSecurityUpdate)
       .eq("id", settings.id);
     if (error) {
       toast.error("Erro ao atualizar configurações");
@@ -108,7 +111,7 @@ export function useAccessSecurity() {
   };
 
   const toggleIp = async (id: string, is_active: boolean) => {
-    const { error } = await supabase.from("ip_whitelist").update({ is_active } as Record<string, unknown>).eq("id", id);
+    const { error } = await supabase.from("ip_whitelist").update({ is_active }).eq("id", id);
     if (error) { toast.error("Erro ao atualizar IP"); return; }
     setIps(prev => prev.map(ip => ip.id === id ? { ...ip, is_active } : ip));
   };
@@ -137,7 +140,7 @@ export function useAccessSecurity() {
   };
 
   const toggleCity = async (id: string, is_active: boolean) => {
-    const { error } = await supabase.from("city_whitelist").update({ is_active } as Record<string, unknown>).eq("id", id);
+    const { error } = await supabase.from("city_whitelist").update({ is_active }).eq("id", id);
     if (error) { toast.error("Erro ao atualizar cidade"); return; }
     setCities(prev => prev.map(c => c.id === id ? { ...c, is_active } : c));
   };

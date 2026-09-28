@@ -3,6 +3,9 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import type { Database } from "@/integrations/supabase/types";
+
+type FavoriteListUpdate = Database["public"]["Tables"]["favorite_lists"]["Update"];
 
 export interface FavoriteList {
   id: string;
@@ -117,10 +120,11 @@ export function useFavoriteLists() {
   });
 
   const updateList = useMutation({
-    mutationFn: async ({ id, ...patch }: Partial<FavoriteList> & { id: string }) => {
+    mutationFn: async ({ id, item_count: _itemCount, ...patch }: Partial<FavoriteList> & { id: string }) => {
+      const update: FavoriteListUpdate = patch;
       const { data, error } = await supabase
         .from("favorite_lists")
-        .update(patch)
+        .update(update)
         .eq("id", id)
         .select()
         .single();

@@ -3,6 +3,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import type { FilterState } from "./FilterPanel";
+import type { Database, Json } from "@/integrations/supabase/types";
+
+type SavedFilterUpdate = Database["public"]["Tables"]["saved_filters"]["Update"];
 
 export interface FilterPreset {
   id: string;
@@ -88,7 +91,7 @@ export function useFilterPresets(context: string = "catalog") {
             user_id: user.id,
             name: preset.name,
             description: preset.description || null,
-            filters: preset.filters as unknown as Record<string, unknown>,
+            filters: preset.filters as unknown as Json,
             context,
             icon: preset.icon || null,
             color: preset.color || null,
@@ -125,13 +128,16 @@ export function useFilterPresets(context: string = "catalog") {
   const updatePreset = useCallback(
     async (id: string, updates: Partial<Pick<FilterPreset, "name" | "description" | "icon" | "color" | "filters">>): Promise<FilterPreset | null> => {
       try {
-        const payload: Record<string, unknown> = {
-          ...updates,
+        const payload: SavedFilterUpdate = {
+          name: updates.name,
+          description: updates.description,
+          icon: updates.icon,
+          color: updates.color,
           updated_at: new Date().toISOString(),
         };
         // Cast filters to Json-compatible type for Supabase
         if (updates.filters) {
-          payload.filters = updates.filters as unknown as Record<string, unknown>;
+          payload.filters = updates.filters as unknown as Json;
         }
 
         const { data, error } = await supabase

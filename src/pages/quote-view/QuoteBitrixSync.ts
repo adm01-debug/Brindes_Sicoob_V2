@@ -75,6 +75,7 @@ export async function syncQuoteToBitrix({
   if (bitrixQuoteIdFromResponse) crmUpdates.bitrix_quote_id = String(bitrixQuoteIdFromResponse);
 
   if (Object.keys(crmUpdates).length > 0) {
+    // rls-allow: atualização por UUID após Edge autenticada; a RLS valida ownership/escopo.
     const { error: crmUpdateError } = await supabase.from("quotes").update(crmUpdates).eq("id", quoteId);
     if (crmUpdateError) throw crmUpdateError;
   }
