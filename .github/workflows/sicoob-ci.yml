@@ -112,7 +112,7 @@ jobs:
       - name: Publicar evidências em caso de falha
         if: failure()
         continue-on-error: true
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: evidencias-visuais-sicoob
           path: docs/execucao/evidencias/visual/
