@@ -1,0 +1,68 @@
+[
+  {
+    "simulador": "atomic",
+    "resultado": {
+      "ambiente": "PostgreSQL 17 descartável, --network none; dados sintéticos",
+      "migracao": "supabase/migrations/20260927190000_atomic_quote_save.sql",
+      "acl": "anon sem EXECUTE; authenticated autorizado e sujeito a RLS",
+      "atomicidade": "falha após cabeçalho e primeiro item reverte criação e atualização integralmente",
+      "concorrencia": "row_version obsoleto recusado sem alterar itens ou histórico",
+      "totais": "subtotal, desconto, frete e custo recalculados no servidor",
+      "governanca": "escopo organizacional e edição de orçamento enviado recusados",
+      "resultado": "aprovado",
+      "escopo_desta_execucao": "Somente fixture PostgreSQL local descartável; não revalida metadados remotos herdados pelo simulador."
+    }
+  },
+  {
+    "simulador": "invites",
+    "resultado": {
+      "ambiente": "PostgreSQL 16 descartável, --network none; somente dados sintéticos",
+      "migration": "supabase/migrations/20260927220000_sicoob_institutional_invitations.sql",
+      "migration_helper_papel": "supabase/migrations/20260927221000_sicoob_role_helper_target_validation.sql",
+      "migration_conta_existente": "supabase/migrations/20260927221500_sicoob_invitation_existing_account.sql",
+      "autoridade": "autoelevação, outra cooperativa, papel sem PA e email sem conta recusados; supervisor concede somente papel operacional",
+      "aceite": "email alheio recusado; dois aceites simultâneos criaram um único vínculo, papel mínimo e evento",
+      "validade": "expiração, revogação e vínculo ativo conflitante recusados",
+      "reenvio": "novo link substituiu o anterior; autoridade revogada do emissor foi reavaliada no aceite",
+      "revogacao_de_vinculo": "perfil, papéis e sessões revogados atomicamente; JWT antigo perdeu has_role imediatamente; gestor não revogou dev",
+      "integridade": "escrita direta negada por ACL/RLS e trilha de eventos imutável",
+      "resultado": "aprovado",
+      "escopo_desta_execucao": "Somente fixture PostgreSQL local descartável; não revalida metadados remotos herdados pelo simulador."
+    }
+  },
+  {
+    "simulador": "delegation",
+    "resultado": {
+      "ambiente": "PostgreSQL 17 descartável, sem rede e apenas com dados sintéticos",
+      "migracoes": [
+        "supabase/migrations/20260911143000_sicoob_order_budget_atomicity.sql",
+        "supabase/migrations/20260912110000_sicoob_order_status_events.sql",
+        "supabase/migrations/20260912120000_sicoob_approval_policy_guards.sql",
+        "supabase/migrations/20260912140000_sicoob_approval_confirmation_followup.sql",
+        "supabase/migrations/20260912160000_sicoob_approval_policy_snapshot.sql",
+        "supabase/migrations/20260927203000_sicoob_approval_delegations.sql",
+        "supabase/migrations/20260927204500_sicoob_delegated_authority_indicator.sql"
+      ],
+      "concessao": "prazo, competências, escopo e autoridade do delegante validados no servidor",
+      "integridade": "sobreposição e ciclo recíproco foram bloqueados",
+      "decisao_delegada": "ator real, delegante, origem da autoridade e pedido aprovado ficaram correlacionados",
+      "revogacao": "revogação é imediata, auditável e invalida a decisão ainda na mesma sessão autenticada",
+      "expiracao": "vigência é reavaliada no instante da decisão, sem depender da interface",
+      "revalidacao": "mudança de unidade do substituto e perda de autoridade do titular anulam o poder delegado",
+      "conflitos": "autoaprovação do substituto, conflito do delegante e pedido fora do escopo foram negados",
+      "acl": "RPCs públicas mínimas; resolvedor e helper parametrizado permanecem privados",
+      "resultado": "aprovado",
+      "escopo_desta_execucao": "Somente fixture PostgreSQL local descartável; não revalida metadados remotos herdados pelo simulador."
+    }
+  },
+  {
+    "simulador": "rls",
+    "resultado": {
+      "ambiente": "PostgreSQL 17 descartável, --network none; somente dados sintéticos",
+      "migracao": "supabase/migrations/20260927193000_sicoob_cross_cooperative_rls.sql",
+      "cenario_s20": "gestores e comprador PA viram apenas o próprio escopo; UUID alheio, itens, histórico, logs e aprovação cruzada retornaram zero; perfil inativo perdeu acesso; supervisor manteve escopo global explícito",
+      "resultado": "aprovado",
+      "escopo_desta_execucao": "Somente fixture PostgreSQL local descartável; não revalida metadados remotos herdados pelo simulador."
+    }
+  }
+]

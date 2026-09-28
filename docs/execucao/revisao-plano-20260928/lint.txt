@@ -1,0 +1,7 @@
+
+> @adm01-debug/gifts-store@2.0.0 lint:baseline
+> node scripts/check-eslint-baseline.mjs
+
+ESLint gate — 3269 erro(s) globais · referência: HEAD^ (8c36887439)
+Arquivos de aplicação alterados analisados: 0
+✅ Nenhuma regressão de lint nos arquivos alterados.

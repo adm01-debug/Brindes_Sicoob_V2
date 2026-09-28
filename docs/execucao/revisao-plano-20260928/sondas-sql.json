@@ -1,0 +1,1 @@
+{"ambiente": "PostgreSQL 17 descartável sem rede; fixture mínima", "banco_remoto_testado": false, "sondas_reproduzidas": ["Repetir a criação com o mesmo payload gera dois orçamentos distintos.", "Salvar novamente o mesmo item troca sua identidade no banco."], "limite": "Não simula todas as FKs/policies do canônico nem comprova perda remota de vínculos."}

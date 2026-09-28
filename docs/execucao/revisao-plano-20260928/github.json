@@ -1,0 +1,112 @@
+{
+  "coletado_em": "2026-09-28T14:48:01.048475+00:00",
+  "protecao_main": {
+    "checks": null,
+    "enforce_admins": false,
+    "reviews": 1
+  },
+  "runs": [
+    {
+      "conclusion": "",
+      "databaseId": 36438390082,
+      "headSha": "21e3822748c712e92b8b4bdf97b8be16995d3451",
+      "name": "Security Scan",
+      "status": "queued"
+    },
+    {
+      "conclusion": "",
+      "databaseId": 36438388779,
+      "headSha": "21e3822748c712e92b8b4bdf97b8be16995d3451",
+      "name": "Enterprise Compliance & Audit Reporting",
+      "status": "queued"
+    },
+    {
+      "conclusion": "",
+      "databaseId": 36438388734,
+      "headSha": "21e3822748c712e92b8b4bdf97b8be16995d3451",
+      "name": "CodeQL",
+      "status": "queued"
+    },
+    {
+      "conclusion": "",
+      "databaseId": 36438388997,
+      "headSha": "21e3822748c712e92b8b4bdf97b8be16995d3451",
+      "name": "Branch Protection Sentinel",
+      "status": "queued"
+    },
+    {
+      "conclusion": "",
+      "databaseId": 36438388773,
+      "headSha": "21e3822748c712e92b8b4bdf97b8be16995d3451",
+      "name": "Qualidade contínua",
+      "status": "queued"
+    },
+    {
+      "conclusion": "",
+      "databaseId": 36438389129,
+      "headSha": "21e3822748c712e92b8b4bdf97b8be16995d3451",
+      "name": "Portal Sicoob",
+      "status": "queued"
+    },
+    {
+      "conclusion": "",
+      "databaseId": 36438266638,
+      "headSha": "89ca16ef4b704412d0175d2949f33ffc36a37f8a",
+      "name": "Branch Protection Sentinel",
+      "status": "queued"
+    },
+    {
+      "conclusion": "cancelled",
+      "databaseId": 36438266383,
+      "headSha": "89ca16ef4b704412d0175d2949f33ffc36a37f8a",
+      "name": "Qualidade contínua",
+      "status": "completed"
+    },
+    {
+      "conclusion": "cancelled",
+      "databaseId": 36438266428,
+      "headSha": "89ca16ef4b704412d0175d2949f33ffc36a37f8a",
+      "name": "Enterprise Compliance & Audit Reporting",
+      "status": "completed"
+    },
+    {
+      "conclusion": "cancelled",
+      "databaseId": 36438266826,
+      "headSha": "89ca16ef4b704412d0175d2949f33ffc36a37f8a",
+      "name": "CodeQL",
+      "status": "completed"
+    },
+    {
+      "conclusion": "cancelled",
+      "databaseId": 36438266635,
+      "headSha": "89ca16ef4b704412d0175d2949f33ffc36a37f8a",
+      "name": "Security Scan",
+      "status": "completed"
+    },
+    {
+      "conclusion": "",
+      "databaseId": 36435271408,
+      "headSha": "8028c879dedb011cda4946ccd8d0e86a75558bef",
+      "name": "Branch Protection Sentinel",
+      "status": "queued"
+    }
+  ],
+  "compliance_observado": {
+    "run": 36435131519,
+    "resultado": "failure",
+    "etapa": "Database RLS Scan",
+    "tabelas_sem_rls": [],
+    "tabelas_sem_policy": [
+      "bitrix_clients",
+      "bitrix_deals",
+      "bitrix_sync_logs",
+      "order_duplicate_requests",
+      "quote_approval_evidence_keys",
+      "sicoob_approval_deliveries",
+      "sicoob_approval_delivery_archive",
+      "sicoob_approval_worker_dispatches",
+      "webhook_configs"
+    ],
+    "limite": "Falha do critério do scanner. Ausência de policy em tabela interna com RLS habilitado não prova acesso indevido."
+  }
+}
