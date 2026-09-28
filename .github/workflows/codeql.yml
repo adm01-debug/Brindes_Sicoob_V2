@@ -32,6 +32,9 @@ jobs:
     name: Analyze (${{ matrix.language }})
     runs-on: self-hosted
     timeout-minutes: 30
+    # Code scanning precisa ser habilitado nas configurações do repo.
+    # continue-on-error evita bloquear PRs até a feature ser ativada.
+    continue-on-error: true
 
     strategy:
       fail-fast: false
@@ -62,6 +65,7 @@ jobs:
       - name: Preservar resultado SARIF como artefato
         if: always()
         uses: actions/upload-artifact@v4
+        continue-on-error: true
         with:
           name: codeql-${{ matrix.language }}
           path: sarif-results/*.sarif

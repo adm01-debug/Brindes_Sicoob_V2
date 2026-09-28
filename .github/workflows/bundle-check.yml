@@ -41,6 +41,9 @@ jobs:
 
       - name: Upload bundle stats
         uses: actions/upload-artifact@v4
+        # Quota de artifact storage pode esgotar no plano gratuito;
+        # build e validação de orçamento já passaram e são o gate real.
+        continue-on-error: true
         with:
           name: bundle-stats
           path: |

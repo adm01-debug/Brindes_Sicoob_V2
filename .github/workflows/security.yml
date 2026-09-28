@@ -43,5 +43,8 @@ jobs:
         uses: gitleaks/gitleaks-action@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # HOME=/tmp garante que rootDirectory seja pai do workspace
+          # (runner roda como root: HOME=/root não é pai de /tmp/github-runner-work)
+          HOME: /tmp
           # GITLEAKS_LICENSE: necessário apenas para organizações
           # Para usuário pessoal, não precisa de licença
