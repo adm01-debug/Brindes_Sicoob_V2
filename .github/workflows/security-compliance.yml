@@ -20,7 +20,7 @@ concurrency:
 
 jobs:
   compliance-audit:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
@@ -86,4 +86,3 @@ jobs:
           name: enterprise-compliance-v10
           path: reports/
           if-no-files-found: warn
-

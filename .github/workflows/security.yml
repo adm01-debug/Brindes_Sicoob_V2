@@ -31,7 +31,7 @@ concurrency:
 jobs:
   gitleaks:
     name: Gitleaks — Secret Scan
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     timeout-minutes: 10
     steps:
       - name: Checkout
@@ -43,5 +43,5 @@ jobs:
         uses: gitleaks/gitleaks-action@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # GITLEAKS_LICENSE: necessário apenas para organizações
-          # Para usuário pessoal, não precisa de licença
+          HOME: /tmp
+          GITLEAKS_ENABLE_UPLOAD_ARTIFACT: "false"

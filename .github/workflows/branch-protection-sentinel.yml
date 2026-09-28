@@ -11,7 +11,7 @@ permissions:
 jobs:
   verify-merge-pattern:
     name: Verify push to main is from PR merge
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
