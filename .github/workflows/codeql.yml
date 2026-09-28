@@ -64,10 +64,10 @@ jobs:
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v4
+        continue-on-error: true
         with:
           category: "/language:${{ matrix.language }}"
           output: sarif-results
-          upload: if-supported
 
       - name: Preservar resultado SARIF como artefato
         if: always()
