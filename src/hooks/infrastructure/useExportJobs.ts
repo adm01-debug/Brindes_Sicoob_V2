@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import type { Json } from "@/integrations/supabase/types";
 
 type ExportRpcClient = {
   rpc: (name: "retry_own_sicoob_export_job", args: { p_job_id: string }) => Promise<{ data: boolean | null; error: Error | null }>;
@@ -71,7 +72,11 @@ export function useExportJobs() {
       const { data, error } = await supabase
         .from("export_jobs")
         .insert({
-          ...job,
+          entity_type: job.entity_type,
+          export_type: job.export_type,
+          filters: job.filters as Json,
+          error_message: job.error_message,
+          file_url: job.file_url,
           user_id: user.id,
           status: "pending",
         })

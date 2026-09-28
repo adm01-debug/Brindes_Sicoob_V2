@@ -3,7 +3,7 @@ import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
 const roots = ["tests/p0", "tests/rls", "tests/security"];
-const baseline = 44;
+const baseline = 41;
 const testFile = /\.test\.[cm]?[jt]sx?$/;
 const skipPattern = /\b(?:describe|it|test)\.skip\b|\bskipIf\b|\benabled\s*\?\s*describe\s*:\s*describe\.skip/g;
 

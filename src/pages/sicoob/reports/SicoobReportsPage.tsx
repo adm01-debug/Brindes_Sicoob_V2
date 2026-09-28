@@ -15,7 +15,7 @@ import { ptBR } from "date-fns/locale";
 import { endOfDay, format } from "date-fns";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { DateRange } from "react-day-picker";
+import type { DateRange } from "react-day-picker";
 import { cn } from "@/lib/utils";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -43,6 +43,32 @@ function getPeriodLabel(date?: DateRange) {
   return `${format(date.from, "dd/MM/yyyy")} até ${date.to ? format(date.to, "dd/MM/yyyy") : format(new Date(), "dd/MM/yyyy")}`;
 }
 
+async function fetchBudgetHistory(paId?: string | null, cooperativeId?: string | null) {
+  if (!paId && !cooperativeId) return [];
+
+  let cooperativePaIds: string[] = [];
+  if (!paId && cooperativeId) {
+    const { data: paRows, error: paError } = await supabase
+      .from("postos_atendimento")
+      .select("id")
+      .eq("cooperativa_id", cooperativeId);
+    if (paError) throw paError;
+    cooperativePaIds = (paRows ?? []).map((pa) => pa.id);
+    if (cooperativePaIds.length === 0) return [];
+  }
+
+  let query = supabase
+    .from("pa_budgets")
+    .select("*")
+    .order("ano", { ascending: false })
+    .order("mes", { ascending: false })
+    .limit(12);
+  query = paId ? query.eq("pa_id", paId) : query.in("pa_id", cooperativePaIds);
+  const { data, error } = await query;
+  if (error) throw error;
+  return data;
+}
+
 export default function SicoobReportsPage() {
   const { profile } = useAuth();
   const [isExporting, setIsExporting] = useState<'pdf' | 'xlsx' | null>(null);
@@ -55,19 +81,7 @@ export default function SicoobReportsPage() {
   const scopeLabel = getScopeLabel(profile?.pa_id, profile?.cooperativa_id);
   const { data: budgetHistory, isLoading: isBudgetLoading, error: budgetError } = useQuery({
     queryKey: ["sicoob-budget-history", profile?.pa_id, profile?.cooperativa_id],
-    queryFn: async () => {
-      if (!scopeId) return [];
-      let query = supabase
-        .from("pa_budgets")
-        .select("*")
-        .order("ano", { ascending: false })
-        .order("mes", { ascending: false })
-        .limit(12);
-      query = profile?.pa_id ? query.eq("pa_id", profile.pa_id) : query.eq("cooperative_id", profile!.cooperativa_id!);
-      const { data, error } = await query;
-      if (error) throw error;
-      return data;
-    },
+    queryFn: () => fetchBudgetHistory(profile?.pa_id, profile?.cooperativa_id),
     enabled: Boolean(scopeId),
   });
 

@@ -4,15 +4,21 @@ import { PageSEO } from "@/components/seo/PageSEO";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { ShieldCheck, FileText, AlertTriangle, User, Download, Search, Filter, ShieldAlert } from "lucide-react";
+import { Activity, ShieldCheck, FileText, AlertTriangle, Download, Search, ShieldAlert } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Badge } from "@/components/ui/badge";
-import { Activity } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import type { Database } from "@/integrations/supabase/types";
+
+type RLSAuditLog = Database["public"]["Tables"]["sicoob_rls_audit_logs"]["Row"];
+
+function csvCell(value: string | boolean | null) {
+  return `"${String(value ?? "").replace(/"/g, '""')}"`;
+}
 
 export default function RLSAuditPage() {
   const [search, setSearch] = useState("");
@@ -23,26 +29,23 @@ export default function RLSAuditPage() {
     queryFn: async () => {
       let query = supabase
         .from("sicoob_rls_audit_logs")
-        .select(`
-          *,
-          user:profiles!user_id(display_name, role)
-        `)
-        .order("created_at", { ascending: false });
+        .select("id, executed_at, table_name, status, issue_details, resolved")
+        .order("executed_at", { ascending: false });
 
       if (filter === "denied") {
-        query = query.eq("is_allowed", false);
+        query = query.eq("status", "failure");
       } else if (filter === "allowed") {
-        query = query.eq("is_allowed", true);
+        query = query.eq("status", "success");
       }
 
       const { data, error } = await query.limit(100);
       if (error) throw error;
       
       if (search) {
-        return data.filter((log: any) => 
+        return data.filter((log) =>
           log.table_name.toLowerCase().includes(search.toLowerCase()) ||
-          log.user?.display_name?.toLowerCase().includes(search.toLowerCase()) ||
-          log.policy_name?.toLowerCase().includes(search.toLowerCase())
+          log.status.toLowerCase().includes(search.toLowerCase()) ||
+          log.issue_details?.toLowerCase().includes(search.toLowerCase())
         );
       }
       
@@ -53,18 +56,16 @@ export default function RLSAuditPage() {
   const handleExportCSV = () => {
     if (!logs || logs.length === 0) return;
     
-    const headers = ["Data/Hora", "Usuário", "Papel", "Operação", "Tabela", "Status", "Política"];
-    const csvData = logs.map((log: any) => [
-      format(new Date(log.created_at), "yyyy-MM-dd HH:mm:ss"),
-      log.user?.display_name || "N/A",
-      log.user?.role || "N/A",
-      log.operation,
+    const headers = ["Data/Hora", "Tabela", "Status", "Resolvido", "Detalhes"];
+    const csvData = logs.map((log) => [
+      format(new Date(log.executed_at ?? 0), "yyyy-MM-dd HH:mm:ss"),
       log.table_name,
-      log.is_allowed ? "PERMITIDO" : "NEGADO",
-      log.policy_name || "N/A"
+      log.status === "success" ? "CONFORME" : "PROBLEMA",
+      log.resolved ? "SIM" : "NÃO",
+      log.issue_details || ""
     ]);
 
-    const csvContent = [headers, ...csvData].map(e => e.join(",")).join("\n");
+    const csvContent = [headers, ...csvData].map((row) => row.map(csvCell).join(",")).join("\n");
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement("a");
     const url = URL.createObjectURL(blob);
@@ -77,7 +78,7 @@ export default function RLSAuditPage() {
     toast.success("Relatório CSV exportado com sucesso!");
   };
 
-  const deniedCount = logs?.filter((l: any) => !l.is_allowed).length || 0;
+  const issueCount = logs?.filter((log) => log.status !== "success").length || 0;
 
   return (
     <>
@@ -100,8 +101,8 @@ export default function RLSAuditPage() {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">Acessos Permitidos</p>
-                  <p className="text-3xl font-bold text-success">{logs?.filter((l: any) => l.is_allowed).length || 0}</p>
+                  <p className="text-sm text-muted-foreground">Tabelas conformes</p>
+                  <p className="text-3xl font-bold text-success">{logs?.filter((log) => log.status === "success").length || 0}</p>
                 </div>
                 <ShieldCheck className="h-8 w-8 text-success/40" />
               </div>
@@ -112,8 +113,8 @@ export default function RLSAuditPage() {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">Acessos Negados</p>
-                  <p className="text-3xl font-bold text-destructive">{deniedCount}</p>
+                  <p className="text-sm text-muted-foreground">Problemas encontrados</p>
+                  <p className="text-3xl font-bold text-destructive">{issueCount}</p>
                 </div>
                 <ShieldAlert className="h-8 w-8 text-destructive/40" />
               </div>
@@ -126,7 +127,7 @@ export default function RLSAuditPage() {
                 <div>
                   <p className="text-sm text-muted-foreground">Última Operação</p>
                   <p className="text-lg font-bold truncate max-w-[150px]">
-                    {logs?.[0]?.operation || "N/A"}
+                    {logs?.[0]?.table_name || "N/A"}
                   </p>
                 </div>
                 <Activity className="h-8 w-8 text-muted-foreground/40" />
@@ -145,7 +146,7 @@ export default function RLSAuditPage() {
               <div className="relative w-64">
                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Buscar por tabela ou usuário..."
+                  placeholder="Buscar por tabela ou detalhe..."
                   className="pl-8"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
@@ -157,8 +158,8 @@ export default function RLSAuditPage() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Todos</SelectItem>
-                  <SelectItem value="allowed">Permitidos</SelectItem>
-                  <SelectItem value="denied">Negados</SelectItem>
+                  <SelectItem value="allowed">Conformes</SelectItem>
+                  <SelectItem value="denied">Com problema</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -172,46 +173,37 @@ export default function RLSAuditPage() {
                   <thead>
                     <tr className="border-b">
                       <th className="text-left p-3">Data/Hora</th>
-                      <th className="text-left p-3">Usuário</th>
-                      <th className="text-left p-3">Operação</th>
                       <th className="text-left p-3">Tabela</th>
                       <th className="text-left p-3">Status</th>
+                      <th className="text-left p-3">Resolvido</th>
                       <th className="text-left p-3">Detalhes</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {logs?.map((log: any) => (
+                    {logs?.map((log: RLSAuditLog) => (
                       <tr key={log.id} className="border-b hover:bg-muted/50">
                         <td className="p-3 text-muted-foreground">
-                          {format(new Date(log.created_at), "dd/MM/yyyy HH:mm:ss", { locale: ptBR })}
-                        </td>
-                        <td className="p-3">
-                          <div className="flex flex-col">
-                            <span className="font-medium">{log.user?.display_name || "Desconhecido"}</span>
-                            <span className="text-[10px] text-muted-foreground uppercase">{log.user?.role}</span>
-                          </div>
-                        </td>
-                        <td className="p-3">
-                          <Badge variant="outline">{log.operation}</Badge>
+                          {format(new Date(log.executed_at ?? 0), "dd/MM/yyyy HH:mm:ss", { locale: ptBR })}
                         </td>
                         <td className="p-3 font-mono text-xs">{log.table_name}</td>
                         <td className="p-3">
-                          {log.is_allowed ? (
-                            <Badge className="bg-success/20 text-success border-success/30">PERMITIDO</Badge>
+                          {log.status === "success" ? (
+                            <Badge className="bg-success/20 text-success border-success/30">CONFORME</Badge>
                           ) : (
                             <Badge variant="destructive" className="flex items-center gap-1 w-fit">
-                              <AlertTriangle className="h-3 w-3" /> NEGADO
+                              <AlertTriangle className="h-3 w-3" /> PROBLEMA
                             </Badge>
                           )}
                         </td>
+                        <td className="p-3">{log.resolved ? "Sim" : "Não"}</td>
                         <td className="p-3 text-xs text-muted-foreground max-w-xs truncate">
-                          {log.policy_name || "N/A"}
+                          {log.issue_details || "Nenhum problema identificado"}
                         </td>
                       </tr>
                     ))}
                     {!logs?.length && (
                       <tr>
-                        <td colSpan={6} className="p-8 text-center text-muted-foreground italic">
+                        <td colSpan={5} className="p-8 text-center text-muted-foreground italic">
                           Nenhum registro de auditoria encontrado.
                         </td>
                       </tr>

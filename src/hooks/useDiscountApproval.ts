@@ -56,6 +56,7 @@ export function useDiscountApproval() {
         .from("quotes")
         .select("id, row_version")
         .eq("id", quoteId)
+        .eq("seller_id", user.id)
         .single();
       if (quoteError) throw quoteError;
 
@@ -149,12 +150,14 @@ export function useDiscountApproval() {
     if (!user) return false;
     try {
       const { data: request, error: requestError } = await supabase
+        // rls-allow: decisão administrativa por UUID; a RPC valida papel, estado e concorrência.
         .from("discount_approval_requests")
         .select("id, quote_id")
         .eq("id", requestId)
         .single();
       if (requestError) throw requestError;
       const { data: quote, error: quoteError } = await supabase
+        // rls-allow: lookup administrativo pré-RPC; a RLS e a RPC validam autorização.
         .from("quotes")
         .select("id, row_version")
         .eq("id", request.quote_id)
