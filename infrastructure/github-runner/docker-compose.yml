@@ -1,0 +1,33 @@
+version: '3.8'
+
+# Self-hosted GitHub Actions runner para adm01-debug/brindes_sicoob_v2
+# Implanta no Portainer como stack "github-runner"
+# Variável obrigatória: RUNNER_TOKEN (registration token válido por 1h)
+# Para obter um novo token: github.com/adm01-debug/brindes_sicoob_v2/settings/actions/runners → New runner
+#
+# Deploy:
+#   Portainer → Stacks → Add Stack → colar este arquivo
+#   Em "Environment variables" definir RUNNER_TOKEN=<token>
+#   → Deploy the stack
+#
+# Verificação: github.com/adm01-debug/brindes_sicoob_v2/settings/actions/runners
+# Runner deve aparecer como "Idle" em ~30 segundos.
+
+services:
+  github-runner:
+    image: myoung34/github-runner:ubuntu-jammy
+    environment:
+      REPO_URL: https://github.com/adm01-debug/brindes_sicoob_v2
+      RUNNER_TOKEN: ${RUNNER_TOKEN}
+      RUNNER_NAME_PREFIX: vps-runner
+      LABELS: self-hosted,linux,x64
+      RUNNER_WORKDIR: /tmp/github-runner-work
+      DISABLE_AUTO_UPDATE: "1"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - runner-data:/home/runner
+    restart: unless-stopped
+
+volumes:
+  runner-data:
+    driver: local

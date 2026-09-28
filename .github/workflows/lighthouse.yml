@@ -17,10 +17,15 @@ concurrency:
 
 jobs:
   lighthouse:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
+
+      - name: Install Chromium (self-hosted runner)
+        run: |
+          which chromium-browser || which google-chrome || which chromium || \
+          (sudo apt-get update -qq && sudo apt-get install -y chromium-browser)
 
       - uses: actions/setup-node@v4
         with:

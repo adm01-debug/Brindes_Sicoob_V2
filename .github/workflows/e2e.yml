@@ -17,7 +17,7 @@ concurrency:
 
 jobs:
   e2e:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     # Gate curto e determinístico. A regressão completa roda em shards no job
     # seguinte, para não deixar que uma suíte extensa oculte uma falha básica.
     timeout-minutes: 15
@@ -117,15 +117,6 @@ jobs:
           exit 1
 
       # ─── HEADER STICKY GATE ─────────────────────────────────────────────
-      # Spec dedicado `e2e/flows/22-header-sticky.spec.ts` que valida que o
-      # `<header data-testid="app-header">` permanece `position: sticky` em
-      # y≈0 ao rolar — em todas as rotas autenticadas estáticas do catálogo,
-      # × 3 viewports (mobile/tablet/desktop), + cenários de pós-login e
-      # navegação encadeada entre módulos.
-      #
-      # Fail-fast (`--max-failures=1`): qualquer regressão de sticky
-      # invalida o run. Reporter `github` cria annotation clicável no PR
-      # apontando o spec exato; `list` deixa o log human-readable.
       - name: 🧲 Run E2E header-sticky gate (fail-fast por rota/viewport)
         id: e2e_header_sticky
         if: steps.e2e_smoke.outcome == 'success'
@@ -175,7 +166,7 @@ jobs:
     name: E2E regression — shard ${{ matrix.shard }}/2
     needs: e2e
     if: needs.e2e.result == 'success'
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     timeout-minutes: 25
     strategy:
       fail-fast: false

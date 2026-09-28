@@ -39,7 +39,7 @@ concurrency:
 jobs:
   transacoes:
     name: Verba e aprovação transacionais
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
@@ -63,7 +63,7 @@ jobs:
 
   experiencia:
     name: Entrada e demonstração responsivas
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
