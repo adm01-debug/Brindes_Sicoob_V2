@@ -11,37 +11,41 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: sicoob-construction-migrations
+  cancel-in-progress: false
+
 jobs:
   migrate:
-    if: inputs.confirmar == 'APLICAR'
-    name: Reconciliar schema canônico de construção
-    runs-on: self-hosted
+    if: github.ref == 'refs/heads/main' && inputs.confirmar == 'APLICAR'
+    name: Aplicar somente migrations autorizadas
+    runs-on: [self-hosted, Linux, X64]
     timeout-minutes: 20
     environment: construction
-    env:
-      SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
     steps:
-      - name: Baixar fonte versionada
+      - name: Baixar fonte versionada da main
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
-      - name: Configurar Supabase CLI
-        uses: supabase/setup-cli@45a513f8c64c0bc8e0e3dfe572b5c95be85f6359 # v3
+      - name: Configurar Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with:
-          version: 2.115.0
+          node-version: 24
+          cache: npm
 
-      - name: Validar conexão administrativa
-        run: test -n "$SUPABASE_DB_URL"
+      - name: Instalar cliente PostgreSQL reproduzível
+        run: npm ci --ignore-scripts --no-audit --no-fund
 
-      - name: Registrar estado anterior
-        run: supabase migration list --db-url "$SUPABASE_DB_URL"
+      - name: Preflight read-only da allowlist e do ledger
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: node scripts/db/apply-sicoob-migrations.mjs --check
 
-      - name: Aplicar migrations pendentes
-        run: supabase db push --db-url "$SUPABASE_DB_URL" --include-all --yes
+      - name: Aplicar allowlist com ledger atômico
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: node scripts/db/apply-sicoob-migrations.mjs --apply
 
-      - name: Confirmar reconciliação do ledger
-        run: |
-          set -euo pipefail
-          supabase migration list --db-url "$SUPABASE_DB_URL"
-          supabase db push --db-url "$SUPABASE_DB_URL" --include-all --dry-run 2>&1 \
-            | tee /tmp/supabase-db-push-dry-run.txt
-          grep -Fq 'Remote database is up to date.' /tmp/supabase-db-push-dry-run.txt
+      - name: Confirmar contrato e ledger remotos
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: node scripts/db/apply-sicoob-migrations.mjs --require-applied

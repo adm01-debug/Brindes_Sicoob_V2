@@ -80,7 +80,7 @@ assinaturas que as referenciem, pois são necessárias para verificar o históri
 | `E2E_USER_EMAIL` / `E2E_USER_PASSWORD` | `e2e.yml` | ❌ **ausente — causa da falha do PR #6 (etapa 03)** |
 | `E2E_ADMIN_EMAIL` / `E2E_ADMIN_PASSWORD` | `e2e.yml` | ❌ **ausente — idem** |
 | `SUPABASE_SERVICE_ROLE_KEY` | `security-compliance.yml` | ❌ **ausente — causa da falha do job agendado em `main` (etapa 04)** |
-| `SUPABASE_DB_URL` | `migration-ledger-drift.yml` | ❌ **ausente — impede comparar o ledger remoto** |
+| `SUPABASE_DB_URL` | `migration-ledger-drift.yml`, `apply-sicoob-migrations.yml` | ✅ configurado no repositório; uso de escrita restrito ao environment `construction` e à `main` protegida |
 | `RLS_TEST_USER_A_EMAIL` / `_PASSWORD` | `security-compliance.yml` | ❌ **ausente — persona autenticada de uma organização isolada** |
 | `RLS_TEST_USER_B_EMAIL` / `_PASSWORD` | `security-compliance.yml` | ❌ **ausente — proprietário da fixture privada** |
 | `RLS_TEST_PRIVATE_QUOTE_B_ID` | `security-compliance.yml` | ❌ **ausente — orçamento privado determinístico da persona B** |

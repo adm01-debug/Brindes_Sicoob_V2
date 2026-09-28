@@ -9,6 +9,13 @@ async function getPaIdsByCooperative(cooperativeId: string) {
   return (data ?? []).map((pa) => pa.id);
 }
 
+type BudgetPeriod = { year: number; month: number };
+
+function currentBudgetPeriod(): BudgetPeriod {
+  const now = new Date();
+  return { year: now.getFullYear(), month: now.getMonth() + 1 };
+}
+
 export const sicoobBudgetService = {
   async getBudgets(filters?: { pa_id?: string; cooperative_id?: string }) {
     let cooperativePaIds: string[] | null = null;
@@ -31,25 +38,29 @@ export const sicoobBudgetService = {
     return data;
   },
 
-  async getBudgetByPa(paId: string) {
+  async getBudgetByPa(paId: string, period: BudgetPeriod = currentBudgetPeriod()) {
     const { data, error } = await supabase
       .from("pa_budgets")
       .select("*")
       .eq("pa_id", paId)
+      .eq("ano", period.year)
+      .eq("mes", period.month)
       .maybeSingle();
 
     if (error) throw error;
     return data;
   },
 
-  async updateBudget(paId: string, usedAmount: number) {
-    const budget = await this.getBudgetByPa(paId);
+  async updateBudget(paId: string, usedAmount: number, period: BudgetPeriod = currentBudgetPeriod()) {
+    const budget = await this.getBudgetByPa(paId, period);
     if (!budget) return;
 
     const { error } = await supabase
       .from("pa_budgets")
       .update({ verba_consumida: usedAmount, updated_at: new Date().toISOString() })
-      .eq("pa_id", paId);
+      .eq("pa_id", paId)
+      .eq("ano", period.year)
+      .eq("mes", period.month);
 
     if (error) throw error;
   }

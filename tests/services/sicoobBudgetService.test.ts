@@ -10,9 +10,10 @@ import { sicoobBudgetService } from "@/services/sicoob/budgetService";
 
 function makeChain(result: { data: unknown; error: Error | null }) {
   const chain: Record<string, unknown> = {};
-  for (const method of ["select", "eq", "in"]) {
+  for (const method of ["select", "eq", "in", "update"]) {
     chain[method] = vi.fn().mockReturnValue(chain);
   }
+  chain.maybeSingle = vi.fn().mockResolvedValue(result);
   chain.then = (resolve: (value: typeof result) => unknown) => Promise.resolve(result).then(resolve);
   return chain;
 }
@@ -52,5 +53,32 @@ describe("sicoobBudgetService.getBudgets", () => {
 
     expect(budgetChain.eq as Mock).toHaveBeenCalledWith("pa_id", "pa-9");
     expect(mocks.from).toHaveBeenCalledExactlyOnceWith("pa_budgets");
+  });
+});
+
+describe("sicoobBudgetService por competência", () => {
+  it("consulta uma única competência do PA", async () => {
+    const chain = makeChain({ data: { id: "verba-maio" }, error: null });
+    mocks.from.mockReturnValue(chain);
+
+    await expect(sicoobBudgetService.getBudgetByPa("pa-1", { year: 2026, month: 5 }))
+      .resolves.toEqual({ id: "verba-maio" });
+
+    expect(chain.eq as Mock).toHaveBeenCalledWith("pa_id", "pa-1");
+    expect(chain.eq as Mock).toHaveBeenCalledWith("ano", 2026);
+    expect(chain.eq as Mock).toHaveBeenCalledWith("mes", 5);
+  });
+
+  it("atualiza somente a competência solicitada", async () => {
+    const readChain = makeChain({ data: { id: "verba-junho" }, error: null });
+    const updateChain = makeChain({ data: null, error: null });
+    mocks.from.mockReturnValueOnce(readChain).mockReturnValueOnce(updateChain);
+
+    await sicoobBudgetService.updateBudget("pa-2", 750, { year: 2026, month: 6 });
+
+    expect(updateChain.update as Mock).toHaveBeenCalledWith(expect.objectContaining({ verba_consumida: 750 }));
+    expect(updateChain.eq as Mock).toHaveBeenCalledWith("pa_id", "pa-2");
+    expect(updateChain.eq as Mock).toHaveBeenCalledWith("ano", 2026);
+    expect(updateChain.eq as Mock).toHaveBeenCalledWith("mes", 6);
   });
 });

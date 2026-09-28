@@ -33,7 +33,7 @@ export function useQuoteBuilderState() {
   const [searchParams] = useSearchParams();
   const isEditMode = Boolean(quoteId);
 
-  const { user, roles: userRoles, isGerentePa } = useAuth();
+  const { user, profile, roles: userRoles, isGerentePa } = useAuth();
   const { isSupervisorOrAbove } = useRBAC();
   const { createQuote, updateQuote, updateQuoteStatus, fetchQuote, isLoading: quotesLoading } = useQuotes();
   const { templates } = useQuoteTemplates();
@@ -294,10 +294,14 @@ export function useQuoteBuilderState() {
 
     // Budget threshold check for Sicoob PA users (PAC workflow)
     if (status !== "draft" && (isGerentePa || userRoles?.includes("comprador_pac"))) {
+      if (!profile?.pa_id) {
+        toast.error("Seu perfil não possui um Ponto de Atendimento vinculado.");
+        return;
+      }
       const { data: budget } = await supabase
         .from('pa_budgets')
         .select('*')
-        .eq('pa_id', clientId)
+        .eq('pa_id', profile.pa_id)
         .eq('ano', new Date().getFullYear())
         .eq('mes', new Date().getMonth() + 1)
         .maybeSingle();
@@ -369,14 +373,18 @@ export function useQuoteBuilderState() {
       } else if (finalStatus !== persistedStatus) {
         transitionApplied = await updateQuoteStatus(result.id!, finalStatus);
       }
-      if (!transitionApplied) return;
+      if (!transitionApplied) {
+        toast.warning("O orçamento foi salvo como rascunho, mas a transição solicitada falhou. Tente novamente na tela do orçamento.");
+        navigate(`/orcamentos/${result.id}`);
+        return;
+      }
 
       if (finalStatus === "pending_singular_approval") {
         toast.success("Solicitação enviada para aprovação da Singular!");
       }
       navigate(`/orcamentos/${result.id}`);
     }
-  }, [isDraftValid, isFormValid, validationErrors, clientId, contactInfo, companyInfo, discountType, discountValue, totals, notes, internalNotes, validUntil, paymentTerms, deliveryTime, shippingType, shippingCost, isEditMode, quoteId, items, navigate, updateQuote, createQuote, updateQuoteStatus, currentStatus, expectedRowVersion, maxDiscountPercent, requestApproval, isGerentePa, userRoles]);
+  }, [isDraftValid, isFormValid, validationErrors, clientId, contactInfo, companyInfo, discountType, discountValue, totals, notes, internalNotes, validUntil, paymentTerms, deliveryTime, shippingType, shippingCost, isEditMode, quoteId, items, navigate, updateQuote, createQuote, updateQuoteStatus, currentStatus, expectedRowVersion, maxDiscountPercent, requestApproval, isGerentePa, userRoles, profile?.pa_id]);
 
   return {
     navigate, quoteId, isEditMode, loadingQuote, hasUnsavedData, user,
