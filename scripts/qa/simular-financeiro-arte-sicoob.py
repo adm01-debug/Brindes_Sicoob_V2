@@ -256,12 +256,12 @@ try:
     assert repeated_refund.returncode != 0 and "Somente uma parcela paga" in repeated_refund.stderr
     overdue_id = scalar(actor_sql(APPROVER, f"""
       SELECT public.record_sicoob_order_payment(
-        '{ORDER}', 2, 10, CURRENT_DATE - 1, 'pending', NULL, 'boleto', 'ERP-VENCIDO', NULL
+        '{ORDER}', 2, 10, (NOW() AT TIME ZONE $$America/Sao_Paulo$$)::date - 1, 'pending', NULL, 'boleto', 'ERP-VENCIDO', NULL
       );
     """))
     future_id = scalar(actor_sql(APPROVER, f"""
       SELECT public.record_sicoob_order_payment(
-        '{ORDER}', 3, 10, CURRENT_DATE + 1, 'pending', NULL, 'boleto', 'ERP-FUTURO', NULL
+        '{ORDER}', 3, 10, (NOW() AT TIME ZONE $$America/Sao_Paulo$$)::date + 1, 'pending', NULL, 'boleto', 'ERP-FUTURO', NULL
       );
     """))
     assert scalar(sql("SELECT public.mark_overdue_sicoob_payments();")) == "1"
