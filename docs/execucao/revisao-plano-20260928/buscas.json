@@ -1,0 +1,42 @@
+[
+  {
+    "expressao": "magic_up_comments|magic_up_public_shares|magic_up_reactions|sicoob_budget_audit|v_full_scope_grants",
+    "escopo": [
+      "src"
+    ],
+    "excluido": "tipos gerados types.ts",
+    "codigo_saida": 1,
+    "ocorrencias": [],
+    "limite": "Busca textual orienta leitura; não prova inexistência de implementação com outro nome ou consumidor externo."
+  },
+  {
+    "expressao": "supplier.quote|vendor.quote|fornecedor único",
+    "escopo": [
+      "src"
+    ],
+    "excluido": "tipos gerados types.ts",
+    "codigo_saida": 1,
+    "ocorrencias": [],
+    "limite": "Busca textual orienta leitura; não prova inexistência de implementação com outro nome ou consumidor externo."
+  },
+  {
+    "expressao": "cronograma regressivo|marcos regressivos|regressive",
+    "escopo": [
+      "src"
+    ],
+    "excluido": "tipos gerados types.ts",
+    "codigo_saida": 1,
+    "ocorrencias": [],
+    "limite": "Busca textual orienta leitura; não prova inexistência de implementação com outro nome ou consumidor externo."
+  },
+  {
+    "expressao": "import.*csv|CSV|papaparse",
+    "escopo": [
+      "src/pages/sicoob/GestorConsolidatedOrdersPage.tsx"
+    ],
+    "excluido": "tipos gerados types.ts",
+    "codigo_saida": 1,
+    "ocorrencias": [],
+    "limite": "Busca textual orienta leitura; não prova inexistência de implementação com outro nome ou consumidor externo."
+  }
+]

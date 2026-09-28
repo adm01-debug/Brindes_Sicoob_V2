@@ -32,6 +32,8 @@
 O sistema está em construção e passa por auditorias de segurança, banco,
 contratos e experiência. O relatório consolidado mais recente é:
 
+- 📄 **[Revisão das 150 etapas — 28/09/2026](./docs/execucao/revisao-do-plano-2026-09-28.md)** — classificação individual, falhas reproduzidas e limites de homologação.
+
 - 📄 **[Revisão dos planos — 27/09/2026](./docs/execucao/revisao-do-plano-2026-09-27.md)** — avanços em main, lacunas reproduzidas e limites de implantação.
 
 - 📄 **[Auditoria de validação — 22/09/2026](./docs/auditoria-validacao-2026-09-22.md)**
