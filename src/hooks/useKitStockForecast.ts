@@ -33,6 +33,14 @@ export interface ForecastSupplierSource {
   next_date_3: string | null;
 }
 
+export function kitStockForecastQueryKey(items: KitItem[], kitQuantity: number): readonly string[] {
+  const itemSignature = items
+    .map((item) => `${item.id}:${item.selectedVariantId ?? "produto"}:${item.quantity}`)
+    .sort()
+    .join("|");
+  return ['kit-stock-forecast', itemSignature, String(kitQuantity)];
+}
+
 const BUFFER_DAYS = 3;
 
 interface Requirement {
@@ -218,12 +226,8 @@ export function calculateKitStockForecast(
 
 export function useKitStockForecast(items: KitItem[], kitQuantity: number) {
   const productIds = [...new Set(items.map((item) => item.id).filter(Boolean))].sort();
-  const selectedVariantIds = [...new Set(items
-    .map((item) => item.selectedVariantId)
-    .filter((id): id is string => Boolean(id)))].sort();
-
   return useQuery({
-    queryKey: ['kit-stock-forecast', productIds.join(','), selectedVariantIds.join(','), kitQuantity],
+    queryKey: kitStockForecastQueryKey(items, kitQuantity),
     queryFn: async (): Promise<KitStockForecast> => {
       if (productIds.length === 0) {
         return { idealClosingDate: null, bufferDays: BUFFER_DAYS, itemsAtRisk: [], ready: true, hasCompleteReplenishmentForecast: true };

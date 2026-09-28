@@ -25,6 +25,7 @@ describe('listSicoobLogisticsTracking', () => {
 
     await expect(listSicoobLogisticsTracking()).resolves.toEqual([]);
     expect(from).not.toHaveBeenCalled();
+    expect(listOrders).toHaveBeenCalledWith(expect.objectContaining({ statuses: expect.any(Array), page: 1, pageSize: 200 }));
   });
 
   it('combina pedidos e remessas canônicas sem criar dados de demonstração', async () => {
@@ -64,5 +65,21 @@ describe('listSicoobLogisticsTracking', () => {
     inFilter.mockResolvedValue({ data: null, error: failure });
 
     await expect(listSicoobLogisticsTracking()).rejects.toBe(failure);
+  });
+
+  it('percorre todas as páginas de pedidos logísticos antes de montar o rastreamento', async () => {
+    const firstPage = Array.from({ length: 200 }, (_, index) => ({
+      id: `order-${index}`, status: 'in_transit', order_number: `PED-${index}`,
+    }));
+    listOrders
+      .mockResolvedValueOnce({ orders: firstPage, total: 201 })
+      .mockResolvedValueOnce({ orders: [{ id: 'order-200', status: 'delivered', order_number: 'PED-200' }], total: 201 });
+    inFilter.mockResolvedValue({ data: [], error: null });
+
+    const tracking = await listSicoobLogisticsTracking();
+
+    expect(tracking).toHaveLength(201);
+    expect(listOrders).toHaveBeenNthCalledWith(1, expect.objectContaining({ page: 1, pageSize: 200 }));
+    expect(listOrders).toHaveBeenNthCalledWith(2, expect.objectContaining({ page: 2, pageSize: 200 }));
   });
 });

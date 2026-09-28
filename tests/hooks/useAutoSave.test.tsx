@@ -6,11 +6,13 @@ vi.mock('@/lib/telemetry/structuredLogger', () => ({
 }));
 
 import { useAutoSave } from '@/hooks/useAutoSave';
+import { getQuoteDraftIdForScope } from '@/components/quotes/QuoteAutoSave';
 
 describe('useAutoSave', () => {
   beforeEach(() => {
     vi.useFakeTimers();
     localStorage.clear();
+    sessionStorage.clear();
   });
 
   afterEach(() => {
@@ -29,8 +31,8 @@ describe('useAutoSave', () => {
     rerender({ key: 'draft-b', data: { title: 'Rascunho B' } });
     await act(async () => { await vi.advanceTimersByTimeAsync(2_000); });
 
-    expect(localStorage.getItem('autosave_draft-a')).toBe(JSON.stringify({ title: 'Rascunho A' }));
-    expect(localStorage.getItem('autosave_draft-b')).toBe(JSON.stringify({ title: 'Rascunho B' }));
+    expect(JSON.parse(localStorage.getItem('autosave_draft-a')!)).toMatchObject({ version: 1, data: { title: 'Rascunho A' } });
+    expect(JSON.parse(localStorage.getItem('autosave_draft-b')!)).toMatchObject({ version: 1, data: { title: 'Rascunho B' } });
   });
 
   it('expõe falha de persistência para a interface e permite nova tentativa', async () => {
@@ -53,6 +55,28 @@ describe('useAutoSave', () => {
 
     expect(setItem).toHaveBeenCalledTimes(2);
     expect(result.current.lastError).toBeNull();
-    expect(localStorage.getItem('autosave_draft-error')).toBe(JSON.stringify({ title: 'Tentativa nova' }));
+    expect(JSON.parse(localStorage.getItem('autosave_draft-error')!)).toMatchObject({ version: 1, data: { title: 'Tentativa nova' } });
+  });
+
+  it('restaura rascunho legado e descarta envelope vencido', () => {
+    localStorage.setItem('autosave_legado', JSON.stringify({ title: 'compatível' }));
+    localStorage.setItem('autosave_vencido', JSON.stringify({
+      version: 1,
+      savedAt: '2020-01-01T00:00:00.000Z',
+      data: { title: 'expirado' },
+    }));
+
+    const legacy = renderHook(() => useAutoSave({ key: 'legado', data: {} }));
+    const expired = renderHook(() => useAutoSave({ key: 'vencido', data: {} }));
+
+    expect(legacy.result.current.restore()).toEqual({ title: 'compatível' });
+    expect(expired.result.current.restore()).toBeNull();
+  });
+
+  it('mantém o mesmo rascunho novo por sessão e o separa por usuário', () => {
+    const firstUserDraft = getQuoteDraftIdForScope('usuario-1');
+
+    expect(getQuoteDraftIdForScope('usuario-1')).toBe(firstUserDraft);
+    expect(getQuoteDraftIdForScope('usuario-2')).not.toBe(firstUserDraft);
   });
 });

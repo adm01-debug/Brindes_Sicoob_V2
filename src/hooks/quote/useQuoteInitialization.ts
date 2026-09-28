@@ -19,6 +19,7 @@ interface InitParams {
     setInternalNotes: (v: string) => void;
     setQuoteNumber: (v: string) => void;
     setCurrentStatus: (v: string) => void;
+    setExpectedRowVersion: (v: number | null) => void;
     setContactInfo: (v: SelectedContactInfo | null) => void;
     setCompanyInfo: (v: SelectedCompanyInfo | null) => void;
     setDiscountType: (v: "percent" | "amount") => void;
@@ -52,6 +53,7 @@ export function useQuoteInitialization({ isEditMode, quoteId, fetchQuote, locati
         setters.setInternalNotes(quote.internal_notes || "");
         setters.setQuoteNumber(quote.quote_number || "");
         setters.setCurrentStatus(quote.status);
+        setters.setExpectedRowVersion(typeof quote.row_version === "number" && quote.row_version > 0 ? quote.row_version : null);
         if (quote.client_name) {
           setters.setContactInfo({ id: "", name: quote.client_name, email: quote.client_email || undefined, phone: quote.client_phone || undefined });
         }

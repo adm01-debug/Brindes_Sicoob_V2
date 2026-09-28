@@ -78,6 +78,7 @@ export const sicoobOrderService = {
   async listOrders(filters?: { 
     search?: string, 
     status?: string, 
+    statuses?: string[],
     pa_id?: string, 
     cooperative_id?: string,
     from?: string,
@@ -91,7 +92,9 @@ export const sicoobOrderService = {
     let query = supabase.from("sicoob_orders")
       .select("*, pa:postos_atendimento(nome), cooperativa:cooperativas(nome)", { count: "exact" });
 
-    if (filters?.status && filters.status !== "all") {
+    if (filters?.statuses?.length) {
+      query = query.in("status", filters.statuses);
+    } else if (filters?.status && filters.status !== "all") {
       query = query.eq("status", filters.status);
     }
     if (filters?.pa_id && filters.pa_id !== "all") {
