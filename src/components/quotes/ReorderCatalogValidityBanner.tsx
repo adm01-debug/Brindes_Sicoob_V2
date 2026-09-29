@@ -46,6 +46,7 @@ export function ReorderCatalogValidityBanner({
       return;
     }
     const { data, error } = await supabase
+      // rls-allow: query por id específico; RLS do banco garante acesso ao orçamento deste usuário
       .from('quotes')
       .select(
         'reorder_source_order_id,reorder_source_quote_id,catalog_revalidated_at,catalog_valid_until,catalog_stock_is_reserved,reorder_price_changed_items',

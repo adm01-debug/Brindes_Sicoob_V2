@@ -17,6 +17,26 @@
     "mockup-assets": "typo de bucket, correção mecânica pendente — plano de correções Etapa 16 (deveria ser mockup-art-files)",
     "personalization": "typo de bucket, correção mecânica pendente — plano de correções Etapa 16 (deveria ser personalization-images)",
     "set_config": "chamada a função pg_catalog nunca exposta via PostgREST, não é backlog de migration — plano de correções Etapa 17",
-    "sales_goals": "código morto confirmado (zero importadores de useSalesGoals.ts) — Etapa 26 do plano principal, sem ação necessária"
+    "sales_goals": "código morto confirmado (zero importadores de useSalesGoals.ts) — Etapa 26 do plano principal, sem ação necessária",
+    "bulk_update_quote_status_atomic": "migration 20260927110000_bulk_quote_status_atomic.sql aplicada em 2026-09-27; ausente do cache de 2026-09-22 — remover quando cache for regenerado",
+    "request_discount_approval_atomic": "migration 20260927162240_discount_approval_atomic.sql aplicada em 2026-09-27; ausente do cache de 2026-09-22 — remover quando cache for regenerado",
+    "respond_discount_approval_atomic": "idem request_discount_approval_atomic",
+    "append_quote_history_note": "migration 20260927100000_quote_history_immutable.sql aplicada em 2026-09-27; ausente do cache de 2026-09-22 — remover quando cache for regenerado",
+    "approve_quote_with_pdf_atomic": "migration 20260927163021_quote_pdf_approval_atomic.sql aplicada em 2026-09-27; ausente do cache de 2026-09-22 — remover quando cache for regenerado",
+    "save_quote_atomic_idempotent": "migration 20260927190000_atomic_quote_save.sql aplicada em 2026-09-27; ausente do cache de 2026-09-22 — remover quando cache for regenerado",
+    "save_quote_atomic": "idem save_quote_atomic_idempotent",
+    "duplicate_order_atomic": "migration 20260927200207_duplicate_order_atomic.sql aplicada em 2026-09-27; ausente do cache de 2026-09-22 — remover quando cache for regenerado",
+    "sicoob_invitations": "migration 20260927220000_sicoob_institutional_invitations.sql aplicada em 2026-09-27; ausente do cache de 2026-09-22 — remover quando cache for regenerado",
+    "get_sicoob_invitation": "idem sicoob_invitations",
+    "accept_sicoob_invitation": "idem sicoob_invitations",
+    "issue_sicoob_invitation": "idem sicoob_invitations",
+    "revoke_sicoob_invitation": "idem sicoob_invitations",
+    "revoke_sicoob_user_access": "idem sicoob_invitations",
+    "sicoob_approval_delegations": "migration 20260927203000_sicoob_approval_delegations.sql aplicada em 2026-09-27; ausente do cache de 2026-09-22 — remover quando cache for regenerado",
+    "list_sicoob_approval_delegate_candidates": "idem sicoob_approval_delegations",
+    "create_sicoob_approval_delegation": "idem sicoob_approval_delegations",
+    "revoke_sicoob_approval_delegation": "idem sicoob_approval_delegations",
+    "sicoob_current_actor_approval_authority": "idem sicoob_approval_delegations",
+    "refresh_sicoob_reorder_quote": "migration 20260927210000_sicoob_reorder_catalog_validity.sql aplicada em 2026-09-27; ausente do cache de 2026-09-22 — remover quando cache for regenerado"
   }
 }
