@@ -17,6 +17,26 @@
     "mockup-assets": "typo de bucket, correção mecânica pendente — plano de correções Etapa 16 (deveria ser mockup-art-files)",
     "personalization": "typo de bucket, correção mecânica pendente — plano de correções Etapa 16 (deveria ser personalization-images)",
     "set_config": "chamada a função pg_catalog nunca exposta via PostgREST, não é backlog de migration — plano de correções Etapa 17",
-    "sales_goals": "código morto confirmado (zero importadores de useSalesGoals.ts) — Etapa 26 do plano principal, sem ação necessária"
+    "sales_goals": "código morto confirmado (zero importadores de useSalesGoals.ts) — Etapa 26 do plano principal, sem ação necessária",
+    "bulk_update_quote_status_atomic": "falso-positivo: RPC existe no DB, adicionado após cache de 2026-09-22. Remover ao regenerar o cache (Etapa 47)",
+    "request_discount_approval_atomic": "falso-positivo: RPC existe no DB, adicionado após cache de 2026-09-22. Remover ao regenerar o cache (Etapa 47)",
+    "respond_discount_approval_atomic": "falso-positivo: RPC existe no DB, adicionado após cache de 2026-09-22. Remover ao regenerar o cache (Etapa 47)",
+    "append_quote_history_note": "falso-positivo: RPC existe no DB, adicionado após cache de 2026-09-22. Remover ao regenerar o cache (Etapa 47)",
+    "get_sicoob_invitation": "falso-positivo: RPC existe no DB, adicionado após cache de 2026-09-22. Remover ao regenerar o cache (Etapa 47)",
+    "accept_sicoob_invitation": "falso-positivo: RPC existe no DB, adicionado após cache de 2026-09-22. Remover ao regenerar o cache (Etapa 47)",
+    "sicoob_invitations": "falso-positivo: tabela existe no DB, adicionada após cache de 2026-09-22. Remover ao regenerar o cache (Etapa 47)",
+    "issue_sicoob_invitation": "falso-positivo: RPC existe no DB, adicionado após cache de 2026-09-22. Remover ao regenerar o cache (Etapa 47)",
+    "revoke_sicoob_invitation": "falso-positivo: RPC existe no DB, adicionado após cache de 2026-09-22. Remover ao regenerar o cache (Etapa 47)",
+    "revoke_sicoob_user_access": "falso-positivo: RPC existe no DB, adicionado após cache de 2026-09-22. Remover ao regenerar o cache (Etapa 47)",
+    "duplicate_order_atomic": "falso-positivo: RPC existe no DB, adicionado após cache de 2026-09-22. Remover ao regenerar o cache (Etapa 47)",
+    "save_quote_atomic_idempotent": "falso-positivo: RPC existe no DB, adicionado após cache de 2026-09-22. Remover ao regenerar o cache (Etapa 47)",
+    "save_quote_atomic": "falso-positivo: RPC existe no DB, adicionado após cache de 2026-09-22. Remover ao regenerar o cache (Etapa 47)",
+    "approve_quote_with_pdf_atomic": "falso-positivo: RPC existe no DB, adicionado após cache de 2026-09-22. Remover ao regenerar o cache (Etapa 47)",
+    "sicoob_approval_delegations": "falso-positivo: tabela existe no DB, adicionada após cache de 2026-09-22. Remover ao regenerar o cache (Etapa 47)",
+    "list_sicoob_approval_delegate_candidates": "falso-positivo: RPC existe no DB, adicionado após cache de 2026-09-22. Remover ao regenerar o cache (Etapa 47)",
+    "create_sicoob_approval_delegation": "falso-positivo: RPC existe no DB, adicionado após cache de 2026-09-22. Remover ao regenerar o cache (Etapa 47)",
+    "revoke_sicoob_approval_delegation": "falso-positivo: RPC existe no DB, adicionado após cache de 2026-09-22. Remover ao regenerar o cache (Etapa 47)",
+    "sicoob_current_actor_approval_authority": "falso-positivo: RPC existe no DB, adicionado após cache de 2026-09-22. Remover ao regenerar o cache (Etapa 47)",
+    "refresh_sicoob_reorder_quote": "falso-positivo: RPC existe no DB, adicionado após cache de 2026-09-22. Remover ao regenerar o cache (Etapa 47)"
   }
 }
