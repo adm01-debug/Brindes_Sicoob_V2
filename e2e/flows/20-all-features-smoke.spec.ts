@@ -181,6 +181,13 @@ const SMOKE_COVERAGE = [
   "dropbox",
 ] as const;
 
+/**
+ * Rotas públicas cobertas pelas seções 90-93 deste spec.
+ * Listadas separadamente pois não passam pelo loop `assertFeatureLoads`
+ * (usam auth-state vazio e assertivas próprias).
+ */
+const PUBLIC_SMOKE_COVERAGE = ["login", "reset-password"] as const;
+
 /** Map feature → entry do catálogo (lookup determinístico). */
 const ROUTE_BY_FEATURE = new Map(SMOKE_ROUTES.map((r) => [r.feature!, r]));
 
@@ -223,8 +230,9 @@ test.describe("@smoke Funcionalidades principais (gate de CI)", () => {
 
   // ----- Governança (último teste) -----
   test("99 · Cobertura smoke ↔ catálogo está sincronizada", async () => {
-    const gaps = findSmokeCoverageGaps(SMOKE_COVERAGE);
-    const unknown = findUnknownCoveredFeatures(SMOKE_COVERAGE);
+    const allCovered = [...SMOKE_COVERAGE, ...PUBLIC_SMOKE_COVERAGE];
+    const gaps = findSmokeCoverageGaps(allCovered);
+    const unknown = findUnknownCoveredFeatures(allCovered);
 
     const messages: string[] = [];
     if (gaps.length > 0) {
