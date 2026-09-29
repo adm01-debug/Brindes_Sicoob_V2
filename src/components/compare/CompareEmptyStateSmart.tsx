@@ -65,7 +65,7 @@ export function CompareEmptyStateSmart() {
           <GitCompare className="h-10 w-10 text-muted-foreground" />
         </div>
         <div className="text-center">
-          <h1 className="text-2xl font-display font-bold text-foreground mb-2">Comparador de Produtos</h1>
+          <h1 data-testid="page-title-comparador" className="text-2xl font-display font-bold text-foreground mb-2">Comparador de Produtos</h1>
           <p className="text-muted-foreground max-w-md">
             Selecione pelo menos 2 produtos para comparar lado a lado.
           </p>
