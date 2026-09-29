@@ -135,7 +135,7 @@ export function MainLayout({ children }: MainLayoutProps) {
               flex-col como parent direto para grudar enquanto a página inteira
               estiver rolando. `print:hidden` é aplicado no próprio <header>
               via Suspense fallback abaixo. */}
-          <Suspense fallback={<div style={{ height: 56 }} className="print:hidden" />}>
+          <Suspense fallback={<div data-testid="app-header" style={{ height: 56, position: "sticky", top: 0, zIndex: 50 }} className="print:hidden" />}>
             <Header 
               onMenuToggle={() => setSidebarOpen(!sidebarOpen)}
               searchQuery={searchQuery}
