@@ -66,7 +66,10 @@ async function assertHeaderSticky(
 ): Promise<"ok" | "redirected-to-login"> {
   await gotoAndSettle(page, routePath);
 
-  if (/\/login(\?|$)/.test(page.url())) {
+  // Aguarda redirect client-side pós-hydration (AdminRoute → /403, ProtectedRoute → /login)
+  await page.waitForURL(/\/(login|403)(\?|$)/, { timeout: 3000 }).catch(() => {});
+
+  if (/\/(login|403)(\?|$)/.test(page.url())) {
     return "redirected-to-login";
   }
 
@@ -257,4 +260,3 @@ test.describe("Header sticky — pós-login e navegação entre módulos", () =>
     }
   });
 });
-
