@@ -20,7 +20,7 @@ Ordem do array `SMOKE_COVERAGE`. Numeração bate com os títulos `NN · Nome` n
 
 | # | Feature | Descrição | Rota | Restrição |
 |---|---|---|---|---|
-| `01` | `dashboard-home` | Dashboard inicial | `/` | — |
+| `01` | `dashboard-home` | Vitrine inicial | `/` | — |
 | `02` | `dashboard-custom` | Dashboard customizável | `/dashboard` | — |
 | `03` | `catalog` | Catálogo de produtos | `/produtos` | — |
 | `04` | `catalog-filters` | Filtros avançados | `/filtros` | — |
