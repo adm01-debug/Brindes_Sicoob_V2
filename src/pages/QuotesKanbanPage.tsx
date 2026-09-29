@@ -120,7 +120,7 @@ export default function QuotesKanbanPage() {
     return (
       <>
         <div className="w-full max-w-[1920px] mx-auto px-3 sm:px-4 lg:px-6 xl:px-8 py-3 sm:py-4 space-y-3 sm:space-y-4 pb-24 md:pb-6 animate-fade-in">
-          <Skeleton className="h-10 w-64" />
+          <Skeleton data-testid="page-title-orcamentos-funil" className="h-10 w-64" />
           <div className="flex gap-4 overflow-x-auto">
             {[...Array(6)].map((_, i) => (
               <Skeleton key={i} className="min-w-[280px] h-[500px]" />
