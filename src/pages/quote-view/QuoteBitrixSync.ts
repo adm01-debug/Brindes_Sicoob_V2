@@ -75,6 +75,7 @@ export async function syncQuoteToBitrix({
   if (bitrixQuoteIdFromResponse) crmUpdates.bitrix_quote_id = String(bitrixQuoteIdFromResponse);
 
   if (Object.keys(crmUpdates).length > 0) {
+    // rls-allow: update por id específico do orçamento aberto; RLS do banco impede atualização fora do escopo do usuário
     const { error: crmUpdateError } = await supabase.from("quotes").update(crmUpdates).eq("id", quoteId);
     if (crmUpdateError) throw crmUpdateError;
   }

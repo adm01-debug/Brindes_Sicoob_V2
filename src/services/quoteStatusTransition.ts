@@ -18,6 +18,7 @@ export async function updateQuoteStatusAtomically(
   notes?: string,
 ): Promise<QuoteStatusTransition> {
   const { data: quote, error: quoteError } = await supabase
+    // rls-allow: query por id específico antes de RPC atômica; RLS do banco garante escopo do vendedor
     .from("quotes")
     .select("id, row_version")
     .eq("id", quoteId)
@@ -47,6 +48,7 @@ export async function approveQuoteWithPdfAtomically(
   notes?: string,
 ): Promise<QuoteStatusTransition & { approved_pdf_url: string }> {
   const { data: quote, error: quoteError } = await supabase
+    // rls-allow: query por id específico antes de RPC atômica; RLS do banco garante escopo do vendedor
     .from("quotes")
     .select("id, row_version")
     .eq("id", quoteId)

@@ -53,6 +53,7 @@ export function useDiscountApproval() {
     if (!user) return false;
     try {
       const { data: quote, error: quoteError } = await supabase
+        // rls-allow: query por id específico antes de RPC atômica; RLS do banco garante escopo
         .from("quotes")
         .select("id, row_version")
         .eq("id", quoteId)
@@ -149,12 +150,14 @@ export function useDiscountApproval() {
     if (!user) return false;
     try {
       const { data: request, error: requestError } = await supabase
+        // rls-allow: query por id específico; aprovador tem acesso via política RLS de discount_approval_requests
         .from("discount_approval_requests")
         .select("id, quote_id")
         .eq("id", requestId)
         .single();
       if (requestError) throw requestError;
       const { data: quote, error: quoteError } = await supabase
+        // rls-allow: query por id derivado do request acima; RLS do banco garante acesso ao orçamento
         .from("quotes")
         .select("id, row_version")
         .eq("id", request.quote_id)

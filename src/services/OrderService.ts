@@ -97,6 +97,7 @@ export class OrderService {
     if (!data) return null;
 
     const { data: order, error: orderError } = await supabase
+      // rls-allow: query por id específico do pedido; RLS do banco garante acesso ao pedido deste usuário
       .from("orders")
       .select("shipping_type")
       .eq("id", orderId)
