@@ -63,6 +63,10 @@ function parseTarget(target) {
   return { ...target, version, name, sql };
 }
 
+export function loadAuthorizedTargets() {
+  return TARGETS.map(parseTarget);
+}
+
 function validateEnvironment(connectionString) {
   if (!connectionString) throw new Error("SUPABASE_DB_URL não definida.");
   const parsed = new URL(connectionString);
@@ -337,7 +341,7 @@ async function validateContract(client, targets) {
   }
 }
 
-function buildManagementApiBatch(targets, before) {
+export function buildManagementApiBatch(targets, before) {
   const currentRows = targets
     .filter((target) => before.has(target.version))
     .map((target) => {
@@ -399,11 +403,11 @@ DO $sicoob_contract_guard$
 BEGIN
   IF to_regclass('public.quote_save_idempotency') IS NULL
      OR NOT (SELECT relrowsecurity FROM pg_class WHERE oid = 'public.quote_save_idempotency'::regclass)
-     OR (SELECT prosrc FROM pg_proc WHERE oid = to_regprocedure('public.save_quote_atomic_idempotent(jsonb,jsonb,uuid,jsonb)'))
+     OR (SELECT btrim(prosrc, E' \n\r\t') FROM pg_proc WHERE oid = to_regprocedure('public.save_quote_atomic_idempotent(jsonb,jsonb,uuid,jsonb)'))
         IS DISTINCT FROM ${idempotencyBody}
-     OR (SELECT prosrc FROM pg_proc WHERE oid = to_regprocedure('public.bulk_update_quote_status_atomic(uuid[],integer[],text,text)'))
+     OR (SELECT btrim(prosrc, E' \n\r\t') FROM pg_proc WHERE oid = to_regprocedure('public.bulk_update_quote_status_atomic(uuid[],integer[],text,text)'))
         IS DISTINCT FROM ${statusBody}
-     OR (SELECT prosrc FROM pg_proc WHERE oid = to_regprocedure('public.notify_singular_quote_submission()'))
+     OR (SELECT btrim(prosrc, E' \n\r\t') FROM pg_proc WHERE oid = to_regprocedure('public.notify_singular_quote_submission()'))
         IS DISTINCT FROM ${notificationBody}
      OR NOT has_function_privilege('authenticated', 'public.save_quote_atomic_idempotent(jsonb,jsonb,uuid,jsonb)', 'EXECUTE')
      OR has_function_privilege('anon', 'public.save_quote_atomic_idempotent(jsonb,jsonb,uuid,jsonb)', 'EXECUTE')
@@ -457,7 +461,7 @@ async function main() {
     throw new Error("Uso: apply-sicoob-migrations.mjs --verify-files|--check|--apply|--require-applied");
   }
 
-  const targets = TARGETS.map(parseTarget);
+  const targets = loadAuthorizedTargets();
   if (mode === "--verify-files") {
     console.log(JSON.stringify({
       project_ref: PROJECT_REF,
