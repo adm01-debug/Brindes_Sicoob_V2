@@ -16,6 +16,18 @@ import type { Database } from "@/integrations/supabase/types";
 
 type RLSAuditLog = Database["public"]["Tables"]["sicoob_rls_audit_logs"]["Row"];
 
+export function summarizeLatestRlsAuditLogs(logs: RLSAuditLog[] | undefined) {
+  const latestByTable = new Map<string, RLSAuditLog>();
+  for (const log of logs ?? []) {
+    if (!latestByTable.has(log.table_name)) latestByTable.set(log.table_name, log);
+  }
+  const latest = [...latestByTable.values()];
+  return {
+    conformingTables: latest.filter((log) => log.status === "success").length,
+    tablesWithIssues: latest.filter((log) => log.status !== "success").length,
+  };
+}
+
 function csvCell(value: string | boolean | null) {
   return `"${String(value ?? "").replace(/"/g, '""')}"`;
 }
@@ -78,7 +90,7 @@ export default function RLSAuditPage() {
     toast.success("Relatório CSV exportado com sucesso!");
   };
 
-  const issueCount = logs?.filter((log) => log.status !== "success").length || 0;
+  const auditSummary = summarizeLatestRlsAuditLogs(logs);
 
   return (
     <>
@@ -102,7 +114,7 @@ export default function RLSAuditPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">Tabelas conformes</p>
-                  <p className="text-3xl font-bold text-success">{logs?.filter((log) => log.status === "success").length || 0}</p>
+                  <p className="text-3xl font-bold text-success">{auditSummary.conformingTables}</p>
                 </div>
                 <ShieldCheck className="h-8 w-8 text-success/40" />
               </div>
@@ -114,7 +126,7 @@ export default function RLSAuditPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">Problemas encontrados</p>
-                  <p className="text-3xl font-bold text-destructive">{issueCount}</p>
+                  <p className="text-3xl font-bold text-destructive">{auditSummary.tablesWithIssues}</p>
                 </div>
                 <ShieldAlert className="h-8 w-8 text-destructive/40" />
               </div>

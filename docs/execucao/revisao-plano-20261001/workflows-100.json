@@ -521,7 +521,7 @@
       "constatacao": "Lighthouse usa target:filesystem e workflow publica .lighthouseci como artifact.",
       "pendencia": "Verificar retenção, acesso e disponibilidade efetiva do artefato quando quota estiver esgotada.",
       "fontes": [
-        ".lighthouserc.cjs:26",
+        ".lighthouserc.cjs:21",
         ".github/workflows/lighthouse.yml:68"
       ]
     },

@@ -9,8 +9,7 @@ function readPersisted(intent: string): string | null | undefined {
   try {
     if (!globalThis.sessionStorage) return undefined;
     const value = globalThis.sessionStorage.getItem(storageKey(intent));
-    if (!value) memoryKeys.delete(intent);
-    return value;
+    return value || memoryKeys.get(intent) || null;
   } catch {
     return undefined;
   }

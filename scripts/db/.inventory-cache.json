@@ -2,7 +2,7 @@
   "_comment": "Snapshot original da API/Storage com delta declarado nas migrations locais e validado pelos simuladores SQL. O delta local valida contratos do código, mas não comprova aplicação no banco canônico; a aplicação deve ser conferida separadamente pelo ledger remoto. Presença física e GRANT não substituem teste RLS por usuário nem prova de exposição de todas as rotas PostgREST.",
   "generated_at": "2026-09-22T22:00:00Z",
   "project_ref": "cfmzkthhgliqelozlmwu",
-  "source": "OpenAPI administrativo + Storage de 22/09; delta SQL local até 20260928130000 validado por migrations e simuladores",
+  "source": "OpenAPI administrativo + Storage de 22/09; objetos locais declarados até 20260928130000, enquanto verified_sql_delta registra apenas o lote conferido até 22/09. O delta posterior não comprova aplicação remota.",
   "source_sha256": {
     "openapi": "1d17066521e7ab9d88ea78ad91b056a16a81727a19c8c4fbd1adf045a5333373",
     "buckets": "93367299e56f26fd0597379560a15cd40886b549e76853a5b82e170d50645201"

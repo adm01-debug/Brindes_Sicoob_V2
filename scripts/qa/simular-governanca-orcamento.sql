@@ -183,7 +183,7 @@ INSERT INTO public.quotes(id,seller_id,singular_id,status,subtotal,discount_perc
 VALUES ('00000000-0000-0000-0000-000000000303','00000000-0000-0000-0000-000000000001','00000000-0000-0000-0000-000000000101','draft',100,0);
 SELECT status FROM public.bulk_update_quote_status_atomic(
   ARRAY['00000000-0000-0000-0000-000000000303'::uuid],
-  ARRAY[(SELECT row_version FROM public.quotes WHERE id='00000000-0000-0000-0000-000000000303')],
+  ARRAY[1],
   'pending_singular_approval'
 );
 CREATE TEMP TABLE retry_snapshot AS

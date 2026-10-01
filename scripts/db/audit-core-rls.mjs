@@ -22,11 +22,21 @@ function validateConnectionString(value) {
   return parsed.toString();
 }
 
+function normalizeRoles(value) {
+  if (Array.isArray(value)) return value;
+  if (typeof value === "string") {
+    return value.replace(/^\{|\}$/g, "").split(",").filter(Boolean);
+  }
+  return [];
+}
+
 export function isUnrestrictedPermissivePolicy(policy) {
-  const roles = Array.isArray(policy.roles) ? policy.roles : [];
+  const roles = normalizeRoles(policy.roles);
   const broadRole = roles.some((role) => ["public", "anon", "authenticated"].includes(role));
-  const trueUsing = String(policy.qual ?? "").replace(/[()\s]/g, "").toLowerCase() === "true";
-  const trueCheck = String(policy.with_check ?? "").replace(/[()\s]/g, "").toLowerCase() === "true";
+  const isTrueOrOmitted = (value) => value == null
+    || String(value).replace(/[()\s]/g, "").toLowerCase() === "true";
+  const trueUsing = isTrueOrOmitted(policy.qual);
+  const trueCheck = isTrueOrOmitted(policy.with_check);
   const unrestrictedExpression = policy.cmd === "INSERT"
     ? trueCheck
     : policy.cmd === "SELECT" || policy.cmd === "DELETE"
@@ -57,7 +67,7 @@ async function main() {
         c.relforcerowsecurity AS force_rls,
         p.policyname,
         p.permissive,
-        p.roles,
+        p.roles::text[] AS roles,
         p.cmd,
         p.qual,
         p.with_check

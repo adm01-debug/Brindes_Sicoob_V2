@@ -25,7 +25,7 @@ const TARGETS = [
   },
   {
     file: "supabase/migrations/20260928182000_idempotent_quote_status_notifications.sql",
-    sha256: "34c0cd19b985f1b8ba1a357a0ba97ca658b1050257ae9cc80d3eb54d3dfdc5b2",
+    sha256: "1bfe27ba7e9fddcfe08ed6fb16e1d0bd056cdff95b60a9a61a8f2548337a1a12",
   },
 ];
 

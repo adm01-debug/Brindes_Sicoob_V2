@@ -1,3 +1,4 @@
+// Executado pelo node:test; fica fora da descoberta do Vitest.
 import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
 import test from "node:test";

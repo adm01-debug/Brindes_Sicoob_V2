@@ -49,29 +49,40 @@ type RawBudgetHistoryRow = Omit<BudgetHistoryRow, "pa_count" | "pa_names"> & {
 
 async function fetchBudgetHistoryPage(
   paId: string | null | undefined,
-  cooperativePaIds: string[],
+  cooperativeId: string | null | undefined,
   offset: number,
   pageSize: number,
 ) {
+  const currentYear = new Date().getUTCFullYear();
   let query = supabase
     .from("pa_budgets")
-    .select("id, pa_id, ano, mes, verba_total, verba_consumida, postos_atendimento(nome)")
+    .select("id, pa_id, ano, mes, verba_total, verba_consumida, postos_atendimento!inner(nome, cooperativa_id)")
+    .gte("ano", currentYear - 1)
+    .lte("ano", currentYear)
     .order("ano", { ascending: false })
     .order("mes", { ascending: false })
     .order("pa_id", { ascending: true })
     .order("id", { ascending: true })
     .range(offset, offset + pageSize - 1);
-  query = paId ? query.eq("pa_id", paId) : query.in("pa_id", cooperativePaIds);
+  query = paId
+    ? query.eq("pa_id", paId)
+    : query.eq("postos_atendimento.cooperativa_id", cooperativeId!);
   const { data, error } = await query;
   if (error) throw error;
   return (data ?? []) as RawBudgetHistoryRow[];
 }
 
-export async function fetchAllBudgetHistoryRows(paId: string | null | undefined, cooperativePaIds: string[]) {
+export async function fetchAllBudgetHistoryRows(
+  paId: string | null | undefined,
+  cooperativeId: string | null | undefined,
+) {
+  if (paId) return fetchBudgetHistoryPage(paId, null, 0, 12);
+  if (!cooperativeId) return [];
+
   const pageSize = 1000;
   const rows: RawBudgetHistoryRow[] = [];
   for (let offset = 0; ; offset += pageSize) {
-    const page = await fetchBudgetHistoryPage(paId, cooperativePaIds, offset, pageSize);
+    const page = await fetchBudgetHistoryPage(null, cooperativeId, offset, pageSize);
     rows.push(...page);
     if (page.length < pageSize) return rows;
   }
@@ -128,19 +139,7 @@ function getPeriodLabel(date?: DateRange) {
 
 async function fetchBudgetHistory(paId?: string | null, cooperativeId?: string | null) {
   if (!paId && !cooperativeId) return [];
-
-  let cooperativePaIds: string[] = [];
-  if (!paId && cooperativeId) {
-    const { data: paRows, error: paError } = await supabase
-      .from("postos_atendimento")
-      .select("id")
-      .eq("cooperativa_id", cooperativeId);
-    if (paError) throw paError;
-    cooperativePaIds = (paRows ?? []).map((pa) => pa.id);
-    if (cooperativePaIds.length === 0) return [];
-  }
-
-  const rows = await fetchAllBudgetHistoryRows(paId, cooperativePaIds);
+  const rows = await fetchAllBudgetHistoryRows(paId, cooperativeId);
 
   if (paId) {
     return rows.slice(0, 12).map(toPaBudgetHistory);

@@ -19,6 +19,7 @@ vi.mock("@/integrations/supabase/client", () => ({
 import { sicoobOrderService } from "@/services/sicoob/orderService";
 
 beforeEach(() => {
+  vi.restoreAllMocks();
   vi.clearAllMocks();
   sessionStorage.clear();
   mocks.getUser.mockResolvedValue({ data: { user: { id: "gestor-1", email: "gestor@cooperativa.test" } } });
@@ -52,6 +53,27 @@ describe("sicoobOrderService.reorderOrder", () => {
     expect(retryCall).toBeDefined();
     const firstKey = firstCall![1].body.idempotencyKey;
     const retryKey = retryCall![1].body.idempotencyKey;
+    expect(firstKey).toEqual(expect.any(String));
+    expect(firstKey).not.toHaveLength(0);
+    expect(retryKey).toBe(firstKey);
+  });
+
+  it("preserva a chave em memória quando o sessionStorage recusa escrita", async () => {
+    vi.spyOn(Storage.prototype, "setItem").mockImplementationOnce(() => {
+      throw new DOMException("quota excedida", "QuotaExceededError");
+    });
+    mocks.invoke
+      .mockResolvedValueOnce({ data: null, error: new Error("timeout") })
+      .mockResolvedValueOnce({ data: { quoteId: "orcamento-1" }, error: null });
+
+    await expect(sicoobOrderService.reorderOrder("pedido-storage-indisponivel"))
+      .rejects.toThrow("timeout");
+    await expect(sicoobOrderService.reorderOrder("pedido-storage-indisponivel"))
+      .resolves.toBe("orcamento-1");
+
+    const firstKey = mocks.invoke.mock.calls[0]?.[1].body.idempotencyKey;
+    const retryKey = mocks.invoke.mock.calls[1]?.[1].body.idempotencyKey;
+    expect(firstKey).toEqual(expect.any(String));
     expect(retryKey).toBe(firstKey);
   });
 });

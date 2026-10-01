@@ -24,7 +24,7 @@ BEGIN
      OR cardinality(p_quote_ids) NOT BETWEEN 1 AND 100
      OR cardinality(p_quote_ids) <> cardinality(p_expected_row_versions)
      OR p_status NOT IN (
-       'draft', 'pending', 'sent', 'rejected', 'expired',
+       'draft', 'pending', 'sent', 'approved', 'rejected', 'expired',
        'pending_singular_approval',
        'approved_singular', 'rejected_singular'
      )
