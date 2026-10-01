@@ -38,3 +38,9 @@ jobs:
         env:
           SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
         run: node scripts/db/check-migration-ledger-drift.mjs
+
+      - name: Auditar RLS das tabelas centrais
+        if: always()
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: node scripts/db/audit-core-rls.mjs
