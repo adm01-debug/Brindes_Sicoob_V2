@@ -50,7 +50,9 @@ jobs:
       - name: Bloquear edição de migration já mesclada
         env:
           GITHUB_EVENT_BEFORE: ${{ github.event.before }}
-        run: node scripts/check-migration-immutability.mjs
+        run: |
+          node scripts/check-migration-immutability.mjs
+          node scripts/db/apply-sicoob-migrations.mjs --verify-files
 
       - name: Bloquear referências de runtime sem objeto correspondente no banco
         run: node scripts/db/check-runtime-refs.mjs
@@ -115,6 +117,12 @@ jobs:
 
       - name: Simular consolidação atômica dos orçamentos
         run: python3 scripts/qa/simular-consolidacao-orcamentos.py
+
+      - name: Simular idempotência e isolamento do salvamento de orçamentos
+        run: python3 scripts/qa/simular-idempotencia-orcamento.py
+
+      - name: Simular retry idempotente e notificação atômica de status
+        run: bash scripts/qa/simular-governanca-orcamento.sh
 
       - name: Compilar artefato de produção
         env:

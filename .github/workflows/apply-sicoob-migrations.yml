@@ -1,0 +1,51 @@
+name: Aplicar migrations Sicoob
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirmar:
+        description: 'Digite APLICAR para atualizar o banco de construção'
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sicoob-construction-migrations
+  cancel-in-progress: false
+
+jobs:
+  migrate:
+    if: github.ref == 'refs/heads/main' && inputs.confirmar == 'APLICAR'
+    name: Aplicar somente migrations autorizadas
+    runs-on: [self-hosted, Linux, X64]
+    timeout-minutes: 20
+    environment: construction
+    steps:
+      - name: Baixar fonte versionada da main
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Instalar cliente PostgreSQL reproduzível
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Preflight read-only da allowlist e do ledger
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: node scripts/db/apply-sicoob-migrations.mjs --check
+
+      - name: Aplicar allowlist com ledger atômico
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: node scripts/db/apply-sicoob-migrations.mjs --apply
+
+      - name: Confirmar contrato e ledger remotos
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: node scripts/db/apply-sicoob-migrations.mjs --require-applied

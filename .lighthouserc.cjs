@@ -5,6 +5,9 @@ module.exports = {
       startServerReadyPattern: 'Local',
       url: ['http://localhost:4173/login'],
       numberOfRuns: 3,
+      settings: {
+        chromeFlags: '--no-sandbox --disable-dev-shm-usage',
+      },
     },
     assert: {
       assertions: {

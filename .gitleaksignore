@@ -3,6 +3,12 @@
 # A presença aqui não comprova rotação. Consulte docs/auditoria-validacao-2026-09-22.md.
 0b408728dcf14ad7227c7e19a744c7cb4af598fb:src/lib/webhook-events-payload-samples.ts:generic-api-key:118
 0b408728dcf14ad7227c7e19a744c7cb4af598fb:src/lib/webhook-events-payload-samples.ts:generic-api-key:125
+1a768480b7487be70a557b5099b48e5517202150:docs/execucao/revisao-plano-20261001/fontes-sha256.json:generic-api-key:19
+1a768480b7487be70a557b5099b48e5517202150:docs/execucao/revisao-plano-20261001/fontes-sha256.json:generic-api-key:60
+1a768480b7487be70a557b5099b48e5517202150:docs/execucao/revisao-plano-20261001/fontes-sha256.json:generic-api-key:66
+1a768480b7487be70a557b5099b48e5517202150:docs/execucao/revisao-plano-20261001/fontes-sha256.json:generic-api-key:69
+1a768480b7487be70a557b5099b48e5517202150:docs/execucao/revisao-plano-20261001/fontes-sha256.json:sentry-access-token:138
+1a768480b7487be70a557b5099b48e5517202150:docs/execucao/revisao-plano-20261001/fontes-sha256.json:generic-api-key:178
 1fc02cc6a1f25a537c2404ae43026c27c0cbd706:src/lib/supabase-gravacao.ts:jwt:6
 472ae394dc07b0e8cb09a7dd71f84521a5efd6ec:tests/e2e/quotes-flow.test.ts:generic-api-key:183
 48fc273d19694e0042495f1690d27c7a77201701:src/lib/supabase-gravacao.ts:jwt:6

@@ -32,7 +32,9 @@
 O sistema está em construção e passa por auditorias de segurança, banco,
 contratos e experiência. O relatório consolidado mais recente é:
 
-- 📄 **[Revisão das 150 etapas — 28/09/2026](./docs/execucao/revisao-do-plano-2026-09-28.md)** — classificação individual, falhas reproduzidas e limites de homologação.
+- 📄 **[Execução e preflight do banco canônico — 01/10/2026](./docs/execucao/execucao-plano-2026-10-01.md)** — correções consolidadas, testes do candidato e consulta administrativa atual do Supabase.
+
+- 📄 **[Revisão das 150 etapas e dos workflows — 01/10/2026](./docs/execucao/revisao-do-plano-2026-10-01.md)** — implementação atual, falha de autorização reproduzida e limites de validação do banco.
 
 - 📄 **[Revisão dos planos — 27/09/2026](./docs/execucao/revisao-do-plano-2026-09-27.md)** — avanços em main, lacunas reproduzidas e limites de implantação.
 

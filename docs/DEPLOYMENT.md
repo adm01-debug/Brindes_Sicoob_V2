@@ -53,6 +53,16 @@ npm run build
    `connections-auto-test` e `external-db-bridge-keepalive` existem somente
    quando os segredos necessários do Vault foram configurados.
 
+9. Para o lote de idempotência de 28/09/2026, usar exclusivamente o workflow
+   manual `Aplicar migrations Sicoob` a partir da branch protegida `main`. Ele
+   autoriza pelos hashes SHA-256 somente as versões `20260928162048`,
+   `20260928173500` e `20260928182000`, faz preflight read-only e registra todo
+   o lote no ledger na mesma transação. O pós-check valida o corpo crítico das
+   RPCs, RLS, políticas, privilégios, constraints e o trigger de notificação
+   transacional. Não substituir esse fluxo por `db push --include-all`: o
+   backlog histórico fora do ledger continua existindo e não é uma fila de
+   migrations autorizadas.
+
 ## Production Checklist
 - [ ] Environment variables configured
 - [ ] Database migrated

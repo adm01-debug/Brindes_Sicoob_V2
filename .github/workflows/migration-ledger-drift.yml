@@ -1,5 +1,5 @@
 # Compara versões, nomes e conteúdo nos dois sentidos; pendências exigem classificação.
-# SUPABASE_DB_URL deve usar TLS com certificado verificado no ambiente remoto.
+# Usa a Management API para não depender da resolução IPv6 do host PostgreSQL.
 name: Migration ledger drift
 
 on:
@@ -29,12 +29,18 @@ jobs:
 
       - name: Verificar secret obrigatório
         run: |
-          if [ -z "${{ secrets.SUPABASE_DB_URL }}" ]; then
-            echo "::error::Secret SUPABASE_DB_URL não configurado. Configure em Settings > Secrets and variables > Actions."
+          if [ -z "${{ secrets.SUPABASE_ACCESS_TOKEN }}" ]; then
+            echo "::error::Secret SUPABASE_ACCESS_TOKEN não configurado."
             exit 1
           fi
 
       - name: Comparar ledger remoto contra arquivos locais
         env:
-          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
         run: node scripts/db/check-migration-ledger-drift.mjs
+
+      - name: Auditar RLS das tabelas centrais
+        if: always()
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: node scripts/db/audit-core-rls.mjs

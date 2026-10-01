@@ -1,0 +1,8 @@
+{
+  "data": "2026-10-01",
+  "projeto": "cfmzkthhgliqelozlmwu",
+  "sql_oficial": "MCP error -32600: You do not have permission to perform this action",
+  "mcp_customizado_health": "Management API 401: Unauthorized",
+  "sql_remoto_executado": false,
+  "efeitos_atuais_migrations": "Não verificados nesta revisão"
+}

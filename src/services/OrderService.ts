@@ -97,6 +97,7 @@ export class OrderService {
     if (!data) return null;
 
     const { data: order, error: orderError } = await supabase
+      // rls-allow: lookup por UUID para compor logística; a RLS valida ownership/organização.
       .from("orders")
       .select("shipping_type")
       .eq("id", orderId)

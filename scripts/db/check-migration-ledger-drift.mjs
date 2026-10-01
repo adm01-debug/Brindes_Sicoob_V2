@@ -4,7 +4,9 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { join, dirname, relative } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { createHash } from 'node:crypto';
+import { createSupabaseSqlClient } from './supabase-sql-client.mjs';
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
+const PROJECT_REF = 'cfmzkthhgliqelozlmwu';
 const hash = value => createHash('sha256').update(value).digest('hex');
 
 // Preserva literais e corpos SQL; diferenças normalizadas exigem revisão,
@@ -62,17 +64,19 @@ export function compareLedger(local, ledger) {
   return results;
 }
 async function fetchLedger() {
-  const connectionString = process.env.SUPABASE_DB_URL || process.env.DATABASE_URL;
-  if (!connectionString) throw new Error('SUPABASE_DB_URL não definida; ledger não verificado.');
-  const { Client } = await import('pg');
-  // TLS e CA são configurados pela URL; não desabilitamos certificados.
-  const client = new Client({ connectionString, connectionTimeoutMillis: 15000, application_name: 'sicoob-auditoria-ledger' });
+  const client = await createSupabaseSqlClient({
+    projectRef: PROJECT_REF,
+    readOnly: true,
+    applicationName: 'sicoob-auditoria-ledger',
+  });
   await client.connect();
   try {
-    await client.query('BEGIN READ ONLY');
-    await client.query("SET LOCAL statement_timeout = '30s'");
+    if (client.transport === 'postgres') {
+      await client.query('BEGIN READ ONLY');
+      await client.query("SET LOCAL statement_timeout = '30s'");
+    }
     const { rows } = await client.query('SELECT version, name, statements FROM supabase_migrations.schema_migrations ORDER BY version');
-    await client.query('ROLLBACK');
+    if (client.transport === 'postgres') await client.query('ROLLBACK');
     return rows;
   } finally { await client.end(); }
 }

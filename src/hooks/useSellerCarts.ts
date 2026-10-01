@@ -261,7 +261,7 @@ export function useSellerCarts() {
     mutationFn: async ({ cartId, notes }: { cartId: string; notes: string }) => {
       const { error } = await supabase
         .from("seller_carts")
-        .update({ notes: notes || null } as Record<string, unknown>)
+        .update({ notes: notes || null })
         .eq("id", cartId);
       if (error) throw error;
     },
@@ -275,7 +275,7 @@ export function useSellerCarts() {
     mutationFn: async ({ cartId, status }: { cartId: string; status: CartStatus }) => {
       const { error } = await supabase
         .from("seller_carts")
-        .update({ status } as Record<string, unknown>)
+        .update({ status })
         .eq("id", cartId);
       if (error) throw error;
     },

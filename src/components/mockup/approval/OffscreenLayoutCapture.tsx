@@ -107,7 +107,7 @@ export function OffscreenLayoutCapture({ request, onCaptured }: OffscreenLayoutC
         // Update DB record
         const { error: updateError } = await supabase
           .from("generated_mockups")
-          .update({ layout_url: urlData.publicUrl } as Record<string, unknown>)
+          .update({ layout_url: urlData.publicUrl })
           .eq("id", currentRecordId);
 
         if (updateError) {

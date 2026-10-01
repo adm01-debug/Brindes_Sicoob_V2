@@ -19,7 +19,9 @@ vi.mock("@/integrations/supabase/client", () => ({
 import { sicoobOrderService } from "@/services/sicoob/orderService";
 
 beforeEach(() => {
+  vi.restoreAllMocks();
   vi.clearAllMocks();
+  sessionStorage.clear();
   mocks.getUser.mockResolvedValue({ data: { user: { id: "gestor-1", email: "gestor@cooperativa.test" } } });
   mocks.rpc.mockResolvedValue({ data: null, error: null });
   mocks.invoke.mockResolvedValue({ data: { quoteId: "orcamento-1" }, error: null });
@@ -35,6 +37,44 @@ describe("sicoobOrderService.reorderOrder", () => {
     });
     expect(mocks.rpc).not.toHaveBeenCalled();
     expect(mocks.from).not.toHaveBeenCalled();
+  });
+
+  it("reutiliza a chave gerenciada quando a primeira resposta é perdida", async () => {
+    mocks.invoke
+      .mockResolvedValueOnce({ data: null, error: new Error("timeout") })
+      .mockResolvedValueOnce({ data: { quoteId: "orcamento-1" }, error: null });
+
+    await expect(sicoobOrderService.reorderOrder("pedido-retry")).rejects.toThrow("timeout");
+    await expect(sicoobOrderService.reorderOrder("pedido-retry")).resolves.toBe("orcamento-1");
+
+    const firstCall = mocks.invoke.mock.calls[0];
+    const retryCall = mocks.invoke.mock.calls[1];
+    expect(firstCall).toBeDefined();
+    expect(retryCall).toBeDefined();
+    const firstKey = firstCall![1].body.idempotencyKey;
+    const retryKey = retryCall![1].body.idempotencyKey;
+    expect(firstKey).toEqual(expect.any(String));
+    expect(firstKey).not.toHaveLength(0);
+    expect(retryKey).toBe(firstKey);
+  });
+
+  it("preserva a chave em memória quando o sessionStorage recusa escrita", async () => {
+    vi.spyOn(Storage.prototype, "setItem").mockImplementationOnce(() => {
+      throw new DOMException("quota excedida", "QuotaExceededError");
+    });
+    mocks.invoke
+      .mockResolvedValueOnce({ data: null, error: new Error("timeout") })
+      .mockResolvedValueOnce({ data: { quoteId: "orcamento-1" }, error: null });
+
+    await expect(sicoobOrderService.reorderOrder("pedido-storage-indisponivel"))
+      .rejects.toThrow("timeout");
+    await expect(sicoobOrderService.reorderOrder("pedido-storage-indisponivel"))
+      .resolves.toBe("orcamento-1");
+
+    const firstKey = mocks.invoke.mock.calls[0]?.[1].body.idempotencyKey;
+    const retryKey = mocks.invoke.mock.calls[1]?.[1].body.idempotencyKey;
+    expect(firstKey).toEqual(expect.any(String));
+    expect(retryKey).toBe(firstKey);
   });
 });
 

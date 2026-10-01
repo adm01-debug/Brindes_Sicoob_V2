@@ -1,6 +1,6 @@
-import { useEffect } from "react";
+import { useEffect, useId, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useQueryClient, QueryKey } from "@tanstack/react-query";
+import { useQueryClient, type QueryKey } from "@tanstack/react-query";
 import { logger } from "@/lib/logger";
 
 /**
@@ -17,11 +17,21 @@ export function useRealtimeSync(
 ) {
   const queryClient = useQueryClient();
   const event = options.event || '*';
+  const instanceId = useId();
+  const onDataChangeRef = useRef(options.onDataChange);
+  const queryKeyRef = useRef(options.queryKey);
+
+  useEffect(() => {
+    onDataChangeRef.current = options.onDataChange;
+    queryKeyRef.current = options.queryKey;
+  }, [options.onDataChange, options.queryKey]);
 
   useEffect(() => {
     logger.info(`Setting up realtime sync for table "${table}"`);
-    
-    const channelName = `realtime:${table}:${options.queryKey ? JSON.stringify(options.queryKey) : Date.now()}`;
+
+    // O nome precisa ser exclusivo por montagem. Dois consumidores da mesma
+    // tabela não podem reutilizar um canal que já recebeu subscribe().
+    const channelName = `realtime:${table}:${instanceId}`;
     const channel = supabase
       .channel(channelName)
       .on(
@@ -35,12 +45,10 @@ export function useRealtimeSync(
         (payload) => {
           logger.info(`Realtime change detected in "${table}":`, payload);
           
-          if (options.onDataChange) {
-            options.onDataChange(payload);
-          }
-          
-          if (options.queryKey) {
-            queryClient.invalidateQueries({ queryKey: options.queryKey });
+          onDataChangeRef.current?.(payload);
+
+          if (queryKeyRef.current) {
+            queryClient.invalidateQueries({ queryKey: queryKeyRef.current });
           }
         }
       )
@@ -53,5 +61,5 @@ export function useRealtimeSync(
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [table, options.queryKey, options.onDataChange, event, options.filter, queryClient]);
+  }, [table, event, options.filter, instanceId, queryClient]);
 }

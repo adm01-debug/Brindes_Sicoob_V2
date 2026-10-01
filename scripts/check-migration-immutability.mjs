@@ -47,8 +47,8 @@ function verifiedRef(candidate) {
 function resolveBaseCommit() {
   const candidates = [
     process.env.MIGRATION_BASE_REF,
-    process.env.GITHUB_EVENT_BEFORE,
     process.env.GITHUB_BASE_REF ? `origin/${process.env.GITHUB_BASE_REF}` : null,
+    process.env.GITHUB_EVENT_BEFORE,
     "origin/main",
     "HEAD^",
   ];
