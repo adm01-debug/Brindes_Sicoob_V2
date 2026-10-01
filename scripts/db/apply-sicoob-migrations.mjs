@@ -7,11 +7,11 @@
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { basename, join } from "node:path";
+import { pathToFileURL } from "node:url";
 import process from "node:process";
-import pg from "pg";
 import { normalizedSql } from "./check-migration-ledger-drift.mjs";
+import { createSupabaseSqlClient } from "./supabase-sql-client.mjs";
 
-const { Client } = pg;
 const ROOT = process.cwd();
 const PROJECT_REF = "cfmzkthhgliqelozlmwu";
 const TARGETS = [
@@ -49,7 +49,7 @@ function parseTarget(target) {
   const separator = filename.indexOf("_");
   const version = filename.slice(0, separator);
   const name = filename.slice(separator + 1, -4);
-  if (!filename.endsWith(".sql") || !/^\d{14}$/.test(version) || !name) {
+  if (!filename.endsWith(".sql") || !/^\d{14}$/.test(version) || !/^[a-z0-9_]+$/.test(name)) {
     throw new Error(`Nome de migration inválido: ${filename}`);
   }
   const sql = readFileSync(join(ROOT, target.file), "utf8");
@@ -84,13 +84,26 @@ function validateEnvironment(connectionString) {
       `SUPABASE_DB_URL deve apontar ao projeto ${PROJECT_REF}, banco postgres, porta 5432 e TLS verificado.`,
     );
   }
-  if (process.env.GITHUB_ACTIONS === "true" && process.env.GITHUB_REF !== "refs/heads/main") {
-    throw new Error("No GitHub Actions, migrations só podem ser aplicadas a partir de refs/heads/main.");
-  }
   // A conexão efetiva sempre usa validação completa do certificado, mesmo se
   // o secret legado omitir sslmode ou declarar apenas `require`.
   parsed.searchParams.set("sslmode", "verify-full");
   return parsed.toString();
+}
+
+function validateGitHubRef() {
+  if (process.env.GITHUB_ACTIONS === "true" && process.env.GITHUB_REF !== "refs/heads/main") {
+    throw new Error("No GitHub Actions, migrations só podem ser aplicadas a partir de refs/heads/main.");
+  }
+}
+
+function dollarQuote(value, label) {
+  let suffix = 0;
+  let delimiter;
+  do {
+    delimiter = `$sicoob_${label}${suffix || ""}$`;
+    suffix += 1;
+  } while (value.includes(delimiter));
+  return `${delimiter}${value}${delimiter}`;
 }
 
 function extractFunctionBody(sql, functionName) {
@@ -324,6 +337,120 @@ async function validateContract(client, targets) {
   }
 }
 
+function buildManagementApiBatch(targets, before) {
+  const currentRows = targets
+    .filter((target) => before.has(target.version))
+    .map((target) => {
+      const row = before.get(target.version);
+      return { version: row.version, name: row.name, statements: row.statements };
+    });
+  const versions = targets.map((target) => dollarQuote(target.version, "version")).join(", ");
+  const expectedState = dollarQuote(JSON.stringify(currentRows), "expected_state");
+  const pending = targets.filter((target) => !before.has(target.version));
+  const migrations = pending.map((target) => `
+${target.sql}
+INSERT INTO supabase_migrations.schema_migrations(version, statements, name)
+VALUES (
+  ${dollarQuote(target.version, "ledger_version")},
+  ARRAY[${dollarQuote(target.sql, "ledger_sql")}]::text[],
+  ${dollarQuote(target.name, "ledger_name")}
+);`).join("\n");
+  const idempotencyMigration = targets.find((target) => target.version === "20260928173500");
+  const statusMigration = targets.find((target) => target.version === "20260928182000");
+  if (!idempotencyMigration || !statusMigration) {
+    throw new Error("Allowlist incompleta para montar a validação transacional.");
+  }
+  const idempotencyBody = dollarQuote(
+    extractFunctionBody(idempotencyMigration.sql, "save_quote_atomic_idempotent"),
+    "idempotency_body",
+  );
+  const statusBody = dollarQuote(
+    extractFunctionBody(statusMigration.sql, "bulk_update_quote_status_atomic"),
+    "status_body",
+  );
+  const notificationBody = dollarQuote(
+    extractFunctionBody(statusMigration.sql, "notify_singular_quote_submission"),
+    "notification_body",
+  );
+
+  return `BEGIN;
+SET LOCAL statement_timeout = '2min';
+SELECT pg_advisory_xact_lock(hashtext('sicoob-allowlisted-migrations'));
+DO $sicoob_state_guard$
+BEGIN
+  IF (
+    SELECT COALESCE(
+      jsonb_agg(jsonb_build_object(
+        'version', version,
+        'name', name,
+        'statements', statements
+      ) ORDER BY version),
+      '[]'::jsonb
+    )
+    FROM supabase_migrations.schema_migrations
+    WHERE version = ANY(ARRAY[${versions}]::text[])
+  ) IS DISTINCT FROM ${expectedState}::jsonb THEN
+    RAISE EXCEPTION 'O ledger mudou depois do preflight; lote cancelado.';
+  END IF;
+END;
+$sicoob_state_guard$;
+${migrations}
+DO $sicoob_contract_guard$
+BEGIN
+  IF to_regclass('public.quote_save_idempotency') IS NULL
+     OR NOT (SELECT relrowsecurity FROM pg_class WHERE oid = 'public.quote_save_idempotency'::regclass)
+     OR (SELECT prosrc FROM pg_proc WHERE oid = to_regprocedure('public.save_quote_atomic_idempotent(jsonb,jsonb,uuid,jsonb)'))
+        IS DISTINCT FROM ${idempotencyBody}
+     OR (SELECT prosrc FROM pg_proc WHERE oid = to_regprocedure('public.bulk_update_quote_status_atomic(uuid[],integer[],text,text)'))
+        IS DISTINCT FROM ${statusBody}
+     OR (SELECT prosrc FROM pg_proc WHERE oid = to_regprocedure('public.notify_singular_quote_submission()'))
+        IS DISTINCT FROM ${notificationBody}
+     OR NOT has_function_privilege('authenticated', 'public.save_quote_atomic_idempotent(jsonb,jsonb,uuid,jsonb)', 'EXECUTE')
+     OR has_function_privilege('anon', 'public.save_quote_atomic_idempotent(jsonb,jsonb,uuid,jsonb)', 'EXECUTE')
+     OR EXISTS (
+       SELECT 1 FROM pg_proc p,
+         LATERAL aclexplode(COALESCE(p.proacl, acldefault('f', p.proowner))) a
+       WHERE p.oid = to_regprocedure('public.save_quote_atomic_idempotent(jsonb,jsonb,uuid,jsonb)')
+         AND a.grantee = 0 AND a.privilege_type = 'EXECUTE'
+     )
+     OR NOT has_function_privilege('authenticated', 'public.bulk_update_quote_status_atomic(uuid[],integer[],text,text)', 'EXECUTE')
+     OR has_function_privilege('anon', 'public.bulk_update_quote_status_atomic(uuid[],integer[],text,text)', 'EXECUTE')
+     OR EXISTS (
+       SELECT 1 FROM pg_proc p,
+         LATERAL aclexplode(COALESCE(p.proacl, acldefault('f', p.proowner))) a
+       WHERE p.oid = to_regprocedure('public.bulk_update_quote_status_atomic(uuid[],integer[],text,text)')
+         AND a.grantee = 0 AND a.privilege_type = 'EXECUTE'
+     )
+     OR has_function_privilege('authenticated', 'public.assert_quote_transition(uuid,public.quotes,text)', 'EXECUTE')
+     OR has_function_privilege('anon', 'public.assert_quote_transition(uuid,public.quotes,text)', 'EXECUTE')
+     OR EXISTS (
+       SELECT 1 FROM pg_proc p,
+         LATERAL aclexplode(COALESCE(p.proacl, acldefault('f', p.proowner))) a
+       WHERE p.oid = to_regprocedure('public.assert_quote_transition(uuid,public.quotes,text)')
+         AND a.grantee = 0 AND a.privilege_type = 'EXECUTE'
+     )
+     OR has_function_privilege('authenticated', 'public.notify_singular_quote_submission()', 'EXECUTE')
+     OR has_function_privilege('anon', 'public.notify_singular_quote_submission()', 'EXECUTE')
+     OR EXISTS (
+       SELECT 1 FROM pg_proc p,
+         LATERAL aclexplode(COALESCE(p.proacl, acldefault('f', p.proowner))) a
+       WHERE p.oid = to_regprocedure('public.notify_singular_quote_submission()')
+         AND a.grantee = 0 AND a.privilege_type = 'EXECUTE'
+     )
+     OR NOT EXISTS (
+       SELECT 1 FROM pg_trigger
+       WHERE tgrelid = 'public.quotes'::regclass
+         AND tgname = 'trg_notify_singular_quote_submission'
+         AND NOT tgisinternal
+         AND tgenabled = 'O'
+     ) THEN
+    RAISE EXCEPTION 'O contrato crítico não foi produzido; lote cancelado.';
+  END IF;
+END;
+$sicoob_contract_guard$;
+COMMIT;`;
+}
+
 async function main() {
   const mode = process.argv[2];
   if (!new Set(["--verify-files", "--check", "--apply", "--require-applied"]).has(mode)) {
@@ -340,11 +467,14 @@ async function main() {
     return;
   }
 
-  const connectionString = validateEnvironment(process.env.SUPABASE_DB_URL);
-  const client = new Client({
-    connectionString,
-    connectionTimeoutMillis: 15_000,
-    application_name: "sicoob-allowlisted-migrations",
+  validateGitHubRef();
+  if (!process.env.SUPABASE_ACCESS_TOKEN) {
+    process.env.SUPABASE_DB_URL = validateEnvironment(process.env.SUPABASE_DB_URL);
+  }
+  const client = await createSupabaseSqlClient({
+    projectRef: PROJECT_REF,
+    readOnly: mode !== "--apply",
+    applicationName: "sicoob-allowlisted-migrations",
   });
 
   await client.connect();
@@ -368,31 +498,39 @@ async function main() {
       return;
     }
 
-    await client.query("BEGIN");
-    try {
-      await client.query("SELECT pg_advisory_xact_lock(hashtext('sicoob-allowlisted-migrations'))");
-      const current = await readApplied(client, targets);
-      validateLedger(targets, current);
-      for (const target of targets) {
-        if (current.has(target.version)) {
-          console.log(`Migration ${target.version} já registrada; nenhuma escrita executada.`);
-          continue;
-        }
-        await client.query(target.sql);
-        await client.query(
-          `INSERT INTO supabase_migrations.schema_migrations(version, statements, name)
-           VALUES ($1, $2::text[], $3)`,
-          [target.version, [target.sql], target.name],
-        );
-        console.log(`Migration ${target.version} preparada na transação allowlisted.`);
+    if (client.transport === "management-api") {
+      if (pending.length) {
+        await client.query(buildManagementApiBatch(targets, before));
+      } else {
+        console.log("Todas as migrations autorizadas já estavam aplicadas; nenhuma escrita executada.");
       }
-      const prepared = await readApplied(client, targets);
-      validateLedger(targets, prepared);
-      await validateContract(client, targets);
-      await client.query("COMMIT");
-    } catch (error) {
-      await client.query("ROLLBACK");
-      throw error;
+    } else {
+      await client.query("BEGIN");
+      try {
+        await client.query("SELECT pg_advisory_xact_lock(hashtext('sicoob-allowlisted-migrations'))");
+        const current = await readApplied(client, targets);
+        validateLedger(targets, current);
+        for (const target of targets) {
+          if (current.has(target.version)) {
+            console.log(`Migration ${target.version} já registrada; nenhuma escrita executada.`);
+            continue;
+          }
+          await client.query(target.sql);
+          await client.query(
+            `INSERT INTO supabase_migrations.schema_migrations(version, statements, name)
+             VALUES ($1, $2::text[], $3)`,
+            [target.version, [target.sql], target.name],
+          );
+          console.log(`Migration ${target.version} preparada na transação allowlisted.`);
+        }
+        const prepared = await readApplied(client, targets);
+        validateLedger(targets, prepared);
+        await validateContract(client, targets);
+        await client.query("COMMIT");
+      } catch (error) {
+        await client.query("ROLLBACK");
+        throw error;
+      }
     }
 
     const after = await readApplied(client, targets);
@@ -406,7 +544,9 @@ async function main() {
   }
 }
 
-main().catch((error) => {
-  console.error(`[migrations] ${error instanceof Error ? error.message : String(error)}`);
-  process.exitCode = 1;
-});
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  main().catch((error) => {
+    console.error(`[migrations] ${error instanceof Error ? error.message : String(error)}`);
+    process.exitCode = 1;
+  });
+}

@@ -37,15 +37,15 @@ jobs:
 
       - name: Preflight read-only da allowlist e do ledger
         env:
-          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
         run: node scripts/db/apply-sicoob-migrations.mjs --check
 
       - name: Aplicar allowlist com ledger atômico
         env:
-          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
         run: node scripts/db/apply-sicoob-migrations.mjs --apply
 
       - name: Confirmar contrato e ledger remotos
         env:
-          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
         run: node scripts/db/apply-sicoob-migrations.mjs --require-applied

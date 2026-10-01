@@ -1,10 +1,9 @@
 #!/usr/bin/env node
 import process from "node:process";
-import pg from "pg";
+import { createSupabaseSqlClient } from "./supabase-sql-client.mjs";
 
-const { Client } = pg;
 const PROJECT_REF = "cfmzkthhgliqelozlmwu";
-const CORE_TABLES = ["categories", "suppliers", "products", "quotes"];
+const CORE_TABLES = ["profiles", "quote_history", "quotes", "workspace_notifications"];
 
 function validateConnectionString(value) {
   if (!value) throw new Error("SUPABASE_DB_URL não definida.");
@@ -37,15 +36,20 @@ export function isUnrestrictedPermissivePolicy(policy) {
 }
 
 async function main() {
-  const client = new Client({
-    connectionString: validateConnectionString(process.env.SUPABASE_DB_URL),
-    connectionTimeoutMillis: 15_000,
-    application_name: "sicoob-auditoria-core-rls",
+  if (!process.env.SUPABASE_ACCESS_TOKEN) {
+    process.env.SUPABASE_DB_URL = validateConnectionString(process.env.SUPABASE_DB_URL);
+  }
+  const client = await createSupabaseSqlClient({
+    projectRef: PROJECT_REF,
+    readOnly: true,
+    applicationName: "sicoob-auditoria-core-rls",
   });
   await client.connect();
   try {
-    await client.query("BEGIN READ ONLY");
-    await client.query("SET LOCAL statement_timeout = '30s'");
+    if (client.transport === "postgres") {
+      await client.query("BEGIN READ ONLY");
+      await client.query("SET LOCAL statement_timeout = '30s'");
+    }
     const { rows } = await client.query(`
       SELECT
         c.relname AS table_name,
@@ -64,8 +68,7 @@ async function main() {
       WHERE n.nspname = 'public' AND c.relname = ANY($1::text[])
       ORDER BY c.relname, p.policyname
     `, [CORE_TABLES]);
-    await client.query("ROLLBACK");
-
+    if (client.transport === "postgres") await client.query("ROLLBACK");
     const foundTables = new Set(rows.map((row) => row.table_name));
     const missingTables = CORE_TABLES.filter((table) => !foundTables.has(table));
     const rlsDisabled = [...new Set(rows.filter((row) => !row.rls_enabled).map((row) => row.table_name))];
