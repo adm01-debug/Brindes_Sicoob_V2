@@ -18,9 +18,9 @@ concurrency:
 jobs:
   e2e:
     runs-on: self-hosted
-    # Gate curto e determinístico. A regressão completa roda em shards no job
-    # seguinte, para não deixar que uma suíte extensa oculte uma falha básica.
-    timeout-minutes: 15
+    # O gate cobre 168 combinações de rota/viewport além do smoke. O limite
+    # inclui instalação, servidor e upload das evidências no runner próprio.
+    timeout-minutes: 35
     env:
       CI: 'true'
       # Logs limpos no GitHub Actions: sem códigos ANSI no console output
@@ -124,6 +124,7 @@ jobs:
         run: |
           npx playwright test \
             e2e/flows/22-header-sticky.spec.ts \
+            --workers=2 \
             --max-failures=1 \
             --reporter=github,list
         continue-on-error: true
