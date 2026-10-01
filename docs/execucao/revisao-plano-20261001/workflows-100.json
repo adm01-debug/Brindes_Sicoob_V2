@@ -1,0 +1,1151 @@
+{
+  "data": "2026-10-01",
+  "commit": "f1b4e0dd0ff33e5c78742ffa9d2cf5a7385d8e13",
+  "contagens": {
+    "S": 7,
+    "P": 27,
+    "N": 47,
+    "I": 12,
+    "V": 7
+  },
+  "etapas": [
+    {
+      "id": "W001",
+      "titulo": "💰 Restabelecer orçamento do Actions: definir spending limit > 0 em Settings → Billing, ou migrar o repo para uma organização com plano Team. Sem isso nenhuma outra etapa é verificável.",
+      "situacao": "S",
+      "constatacao": "Todos os workflows usam self-hosted; a API de 01/10 mostra três runners, um online, e runs recentes executadas. A premissa de nenhum runner por falta de minutos foi superada por outra solução. Não há prova de aumento do spending limit ou plano Team.",
+      "pendencia": "Reformular custo para infraestrutura self-hosted, capacidade e armazenamento; não presumir autorização para contratação.",
+      "fontes": [
+        "docs/execucao/revisao-plano-20261001/workflows-github.json",
+        "docs/execucao/revisao-plano-20261001/github.json",
+        ".github/workflows/ci.yml:29"
+      ]
+    },
+    {
+      "id": "W002",
+      "titulo": "Enquanto o orçamento estiver zerado, desativar os 9 workflows automáticos (github_disable_workflow) para parar 9 falhas por push e o ruído de notificações; reativar após a etapa 1.",
+      "situacao": "S",
+      "constatacao": "A suspensão temporária pressupunha ausência geral de execução. Actions está habilitado e existem runs concluídas em 29/09 e 01/10.",
+      "pendencia": "Encerrar ou substituir a medida temporária por decisão explícita, preservando falhas úteis e responsabilidades.",
+      "fontes": [
+        "docs/execucao/revisao-plano-20261001/workflows-github.json",
+        "docs/execucao/revisao-plano-20261001/github.json"
+      ]
+    },
+    {
+      "id": "W003",
+      "titulo": "🔐 Criar os 4 secrets do E2E (E2E_USER_EMAIL/PASSWORD, E2E_ADMIN_EMAIL/PASSWORD) com contas de homologação dedicadas.",
+      "situacao": "P",
+      "constatacao": "Os quatro nomes E2E_USER_EMAIL/PASSWORD e E2E_ADMIN_EMAIL/PASSWORD existem como secrets de repositório desde 28/09. A leitura de metadados não demonstra que as contas pertencem a homologação segregada.",
+      "pendencia": "Comprovar ambiente e personas dedicadas e autenticação no SHA candidato; não contar o E2E do PR75 como integrado.",
+      "fontes": [
+        "docs/execucao/revisao-plano-20261001/workflows-github.json",
+        ".github/workflows/e2e.yml:32",
+        "docs/execucao/revisao-plano-20261001/github.json"
+      ]
+    },
+    {
+      "id": "W004",
+      "titulo": "🔐 Criar environment compliance e nele SUPABASE_SERVICE_ROLE_KEY e SUPABASE_DB_URL (TLS verificado); nunca como secret de repo.",
+      "situacao": "P",
+      "constatacao": "SUPABASE_SERVICE_ROLE_KEY e SUPABASE_DB_URL existem como secrets do repositório; não existe environment compliance. O isolamento solicitado não foi implementado.",
+      "pendencia": "Isolar credenciais por ambiente protegido e verificar TLS sem divulgar valores; não considerar presença de nomes como conexão válida.",
+      "fontes": [
+        "docs/execucao/revisao-plano-20261001/workflows-github.json",
+        ".github/workflows/security-compliance.yml:22",
+        ".github/workflows/migration-ledger-drift.yml:37"
+      ]
+    },
+    {
+      "id": "W005",
+      "titulo": "🔐 Criar RLS_TEST_USER_A/B_EMAIL/PASSWORD e RLS_TEST_PRIVATE_QUOTE_B_ID (2 personas em cooperativas distintas + 1 orçamento privado) no environment compliance.",
+      "situacao": "N",
+      "constatacao": "Não existem os cinco nomes RLS_TEST_* nos secrets de repositório consultados; compliance também não existe. O workflow referencia esses nomes.",
+      "pendencia": "Preparar duas personas e orçamento privado autorizados em ambiente segregado, registrar escopo e executar isolamento cruzado.",
+      "fontes": [
+        "docs/execucao/revisao-plano-20261001/workflows-github.json",
+        ".github/workflows/security-compliance.yml:54"
+      ]
+    },
+    {
+      "id": "W006",
+      "titulo": "Após a etapa 1, disparar ci.yml por workflow_dispatch em main e registrar a primeira run verde como baseline (nomes exatos dos jobs alimentam a etapa 69).",
+      "situacao": "P",
+      "constatacao": "CI já executa em main, mas a run 36623808585 falhou em tipagem. ci.yml não declara workflow_dispatch. Não foi localizada baseline verde do SHA f1b4e0dd.",
+      "pendencia": "Corrigir regressões, habilitar execução manual se mantida a proposta e registrar run verde do candidato com nomes de jobs.",
+      "fontes": [
+        "docs/execucao/revisao-plano-20261001/github.json",
+        ".github/workflows/ci.yml:3",
+        "docs/execucao/revisao-plano-20261001/matriz-150.json"
+      ]
+    },
+    {
+      "id": "W007",
+      "titulo": "paths-ignore (docs/, /*.md, graphify-out/, reports/, .lovable/) em ci, e2e, bundle, lighthouse, codeql. PR só de doc não pode custar 150 min.",
+      "situacao": "P",
+      "constatacao": "ci, CodeQL, bundle e Lighthouse ignoram docs e Markdown da raiz, com conjuntos diferentes. E2E não possui paths-ignore; graphify-out e .lovable não estão cobertos uniformemente.",
+      "pendencia": "Definir filtros sem criar checks obrigatórios pendentes e validar PR documental e PR funcional.",
+      "fontes": [
+        ".github/workflows/ci.yml:6",
+        ".github/workflows/codeql.yml:6",
+        ".github/workflows/bundle-check.yml:6",
+        ".github/workflows/lighthouse.yml:6",
+        ".github/workflows/e2e.yml:6"
+      ]
+    },
+    {
+      "id": "W008",
+      "titulo": "Remover gatilho push: main de bundle-check, lighthouse e e2e (já validados no PR; com \"branch atualizada\" obrigatória — etapa 72 — a rerodada em main é redundante). Corta ~50% dos minutos.",
+      "situacao": "P",
+      "constatacao": "Bundle, Lighthouse e E2E deixaram de disparar por push em main. A proteção atual não exige branch atualizada nem checks, portanto a precondição declarada no plano não foi satisfeita.",
+      "pendencia": "Garantir a validação do commit que será mesclado antes de considerar segura a retirada da reexecução.",
+      "fontes": [
+        ".github/workflows/bundle-check.yml:3",
+        ".github/workflows/lighthouse.yml:3",
+        ".github/workflows/e2e.yml:6",
+        "docs/execucao/revisao-plano-20261001/github.json"
+      ]
+    },
+    {
+      "id": "W009",
+      "titulo": "Remover develop de ci.yml e master de security-compliance.yml (branches inexistentes).",
+      "situacao": "I",
+      "constatacao": "ci.yml e security-compliance.yml agora referenciam somente main nos gatilhos de branches.",
+      "pendencia": "Manter validação dos gatilhos ao mudar a estratégia de branches.",
+      "fontes": [
+        ".github/workflows/ci.yml:5",
+        ".github/workflows/security-compliance.yml:5"
+      ]
+    },
+    {
+      "id": "W010",
+      "titulo": "Regressão E2E (4 shards × 25 min) sai do PR: rodar em schedule noturno + workflow_dispatch + label e2e-full no PR. O smoke gate (≤ 15 min) continua no PR.",
+      "situacao": "P",
+      "constatacao": "Regressão caiu para dois shards, mas continua após smoke em todo PR; não há schedule noturno nem filtro por label e2e-full.",
+      "pendencia": "Definir e validar política de regressão que preserve cobertura e capacidade; revisar a estimativa antiga de quatro shards.",
+      "fontes": [
+        ".github/workflows/e2e.yml:6",
+        ".github/workflows/e2e.yml:175"
+      ]
+    },
+    {
+      "id": "W011",
+      "titulo": "Instalar webkit só no shard que executa projetos mobile; chromium nos demais (hoje 4 shards instalam os dois).",
+      "situacao": "N",
+      "constatacao": "Os dois shards ainda executam install chromium webkit; a divisão por browser/projeto não foi localizada.",
+      "pendencia": "Separar projetos e instalação por shard ou registrar alternativa com cobertura equivalente.",
+      "fontes": [
+        ".github/workflows/e2e.yml:210"
+      ]
+    },
+    {
+      "id": "W012",
+      "titulo": "Um build por PR: job build em ci.yml publica dist/ como artifact; bundle-check e lighthouse viram jobs que baixam o artifact (elimina 3 npm ci + 3 vite build).",
+      "situacao": "N",
+      "constatacao": "CI, bundle, Lighthouse e Sicoob continuam compilando em jobs independentes. Não há publicação/download compartilhado de dist.",
+      "pendencia": "Definir artefato único por SHA, parâmetros de build, integridade e consumidores.",
+      "fontes": [
+        ".github/workflows/ci.yml:119",
+        ".github/workflows/bundle-check.yml:33",
+        ".github/workflows/lighthouse.yml:55",
+        ".github/workflows/sicoob-ci.yml:86"
+      ]
+    },
+    {
+      "id": "W013",
+      "titulo": "Cache do Playwright também em sicoob-ci (instala Chromium do zero a cada run) e cache do Deno (~/.cache/deno) em ci.",
+      "situacao": "P",
+      "constatacao": "Sicoob agora possui actions/cache para ~/.cache/ms-playwright; ci.yml não declara cache Deno. Runner persistente não equivale a política explícita de cache.",
+      "pendencia": "Adicionar ou documentar cache Deno com invalidação e medir economia no runner adotado.",
+      "fontes": [
+        ".github/workflows/sicoob-ci.yml:78",
+        ".github/workflows/ci.yml:72"
+      ]
+    },
+    {
+      "id": "W014",
+      "titulo": "CodeQL sai de pull_request; fica push: main + semanal (7 min/PR sem resultado consumível — ver F13).",
+      "situacao": "N",
+      "constatacao": "CodeQL mantém pull_request, push main e schedule semanal. A decisão econômica/funcional da etapa 43 não está documentada.",
+      "pendencia": "Reavaliar gatilhos com consumo self-hosted e utilidade real dos resultados, sem remover cobertura por premissa antiga.",
+      "fontes": [
+        ".github/workflows/codeql.yml:3"
+      ]
+    },
+    {
+      "id": "W015",
+      "titulo": "Dividir ci.yml em jobs paralelos com needs: lint-type, unit, edge-deno, sql-sim, build. Hoje é um único job serial de até 25 min; falhar cedo economiza minutos.",
+      "situacao": "N",
+      "constatacao": "ci.yml continua com um único job qualidade, timeout de 25 minutos, executando sequencialmente lint, tipos, unidade, Deno, SQL e build.",
+      "pendencia": "Definir jobs e dependências compatíveis com a capacidade disponível; medir antes/depois.",
+      "fontes": [
+        ".github/workflows/ci.yml:26"
+      ]
+    },
+    {
+      "id": "W016",
+      "titulo": "Simulações Python: 11 em ci + 11 em sicoob-ci, 3 duplicadas (verba-atomica, logistica-canonica, consolidacao-*). Concentrar todas em sicoob-ci/transacoes (com paths) e remover de ci.yml.",
+      "situacao": "N",
+      "constatacao": "Simulações continuam em ci.yml e sicoob-ci.yml, incluindo duplicação de verba/logística; no Sicoob o passo inteiro ainda usa continue-on-error.",
+      "pendencia": "Consolidar sem perder cobertura e exigir falha real nas simulações obrigatórias.",
+      "fontes": [
+        ".github/workflows/ci.yml:86",
+        ".github/workflows/sicoob-ci.yml:48"
+      ]
+    },
+    {
+      "id": "W017",
+      "titulo": "Dependabot npm: weekly → monthly, open-pull-requests-limit: 5 → 2. Cada PR de dependência custa uma rodada inteira de CI.",
+      "situacao": "P",
+      "constatacao": "Dependabot npm permanece semanal e o limite é três PRs; houve redução em relação à referência antiga de cinco, mas não para mensal/dois.",
+      "pendencia": "Registrar cadência e limite escolhidos com base em capacidade e atualização de segurança.",
+      "fontes": [
+        ".github/dependabot.yml:8"
+      ]
+    },
+    {
+      "id": "W018",
+      "titulo": "timeout-minutes em todos os jobs sem limite (security-compliance, db-audit, bundle, lighthouse, gitleaks, deploy).",
+      "situacao": "I",
+      "constatacao": "Todos os jobs dos seis workflows citados possuem timeout explícito: compliance e DB 20 min, bundle/Lighthouse/deploy 15 min, Gitleaks 10 min.",
+      "pendencia": "Avaliar tempos observados e ajustar limites quando houver série representativa.",
+      "fontes": [
+        ".github/workflows/security-compliance.yml:24",
+        ".github/workflows/db-performance-audit.yml:18",
+        ".github/workflows/bundle-check.yml:21",
+        ".github/workflows/lighthouse.yml:21",
+        ".github/workflows/security.yml:35",
+        ".github/workflows/deploy-sicoob-functions.yml:19"
+      ]
+    },
+    {
+      "id": "W019",
+      "titulo": "concurrency + cancel-in-progress em security-compliance e db-performance-audit.",
+      "situacao": "I",
+      "constatacao": "Compliance e DB audit possuem concurrency por workflow/ref e cancel-in-progress=true.",
+      "pendencia": "Validar comportamento em reexecuções concorrentes no runner self-hosted.",
+      "fontes": [
+        ".github/workflows/security-compliance.yml:17",
+        ".github/workflows/db-performance-audit.yml:11"
+      ]
+    },
+    {
+      "id": "W020",
+      "titulo": "fetch-depth: 0 só onde é necessário (ci.yml para migration-immutability; gitleaks). sicoob-ci e security-compliance voltam ao clone raso.",
+      "situacao": "N",
+      "constatacao": "Ambos os jobs de Sicoob e o job compliance continuam com fetch-depth: 0.",
+      "pendencia": "Reavaliar necessidade do histórico em cada consumidor e usar clone raso quando suficiente.",
+      "fontes": [
+        ".github/workflows/sicoob-ci.yml:47",
+        ".github/workflows/sicoob-ci.yml:72",
+        ".github/workflows/security-compliance.yml:28"
+      ]
+    },
+    {
+      "id": "W021",
+      "titulo": "migration-ledger-drift: de diário para semanal até o secret existir (etapa 4); depois reavaliar diário.",
+      "situacao": "S",
+      "constatacao": "O secret DB_URL já existe; a medida semanal temporária condicionada à sua ausência perdeu a premissa. O drift permanece diário e falha por ENOTFOUND na run de 01/10.",
+      "pendencia": "Decidir frequência atual após corrigir conexão e isolamento; não classificar a run falha como reconciliação.",
+      "fontes": [
+        "docs/execucao/revisao-plano-20261001/workflows-github.json",
+        "docs/execucao/revisao-plano-20261001/github.json",
+        ".github/workflows/migration-ledger-drift.yml:7",
+        "docs/execucao/revisao-plano-20261001/matriz-150.json"
+      ]
+    },
+    {
+      "id": "W022",
+      "titulo": "npm ci --no-audit --no-fund uniforme (o audit já roda via check:npm-audit).",
+      "situacao": "I",
+      "constatacao": "Todos os comandos npm ci encontrados nos workflows Node usam --no-audit --no-fund; auditoria dedicada permanece em ci.yml.",
+      "pendencia": "Manter essa uniformidade ao introduzir novos jobs.",
+      "fontes": [
+        ".github/workflows/ci.yml:42",
+        ".github/workflows/e2e.yml:47",
+        ".github/workflows/bundle-check.yml:31",
+        ".github/workflows/db-performance-audit.yml:28",
+        ".github/workflows/sicoob-ci.yml:77"
+      ]
+    },
+    {
+      "id": "W023",
+      "titulo": "Composite action .github/actions/setup-node-deps (checkout + setup-node 24 + cache + npm ci) usada pelos 7 workflows Node — elimina drift de versões (F15).",
+      "situacao": "N",
+      "constatacao": "Não há .github/actions/setup-node-deps no main auditado; checkout/setup-node/npm ci continuam repetidos.",
+      "pendencia": "Criar composição somente com contratos claros de checkout, permissões e cache.",
+      "fontes": [
+        ".github/workflows/ci.yml:32",
+        ".github/workflows/e2e.yml:39",
+        ".github/workflows/bundle-check.yml:23"
+      ]
+    },
+    {
+      "id": "W024",
+      "titulo": "Registrar em docs/CI_CD.md a meta de custo: ≤ 30 min de Actions por PR e o procedimento de leitura mensal de uso (automatizado na etapa 92).",
+      "situacao": "N",
+      "constatacao": "docs/CI_CD.md ainda descreve o bloqueio de 22/09 e não registra meta de 30 minutos ou leitura mensal de uso.",
+      "pendencia": "Atualizar métricas para custo/tempo/capacidade self-hosted, responsáveis e orçamento autorizado.",
+      "fontes": [
+        "docs/CI_CD.md",
+        "docs/execucao/revisao-plano-20261001/workflows-github.json"
+      ]
+    },
+    {
+      "id": "W025",
+      "titulo": "deno check gerado por for f in supabase/functions/*/index.ts — hoje cobre 27 de 108 funções (F10).",
+      "situacao": "I",
+      "constatacao": "ci.yml usa find para todos os index.ts de Edge e utilitários compartilhados, substituindo a lista fixa. A run atual falha antes desse passo.",
+      "pendencia": "Executar e preservar resultado da cobertura integral no candidato; existência da enumeração não certifica todas as funções tipadas.",
+      "fontes": [
+        ".github/workflows/ci.yml:76",
+        "docs/execucao/revisao-plano-20261001/github.json"
+      ]
+    },
+    {
+      "id": "W026",
+      "titulo": "deno test supabase/functions/_shared/ inteiro (hoje só internal-service-auth.test.ts; credentials.test.ts é ignorado).",
+      "situacao": "N",
+      "constatacao": "O único deno test no CI continua restrito a internal-service-auth.test.ts; os demais arquivos shared não são executados como suíte.",
+      "pendencia": "Executar a suíte shared integral e resolver permissões e dependências de teste.",
+      "fontes": [
+        ".github/workflows/ci.yml:78"
+      ]
+    },
+    {
+      "id": "W027",
+      "titulo": "Mover a checagem \"demo não vai para produção\" (grep em dist/) para scripts/qa/check-dist-clean.mjs, reutilizada pelo job build único.",
+      "situacao": "P",
+      "constatacao": "As verificações de demonstração e ativos fictícios continuam inline no job de build; check-dist-clean.mjs e build compartilhado não foram localizados.",
+      "pendencia": "Extrair validação reutilizável e vinculá-la ao artefato exato publicado.",
+      "fontes": [
+        ".github/workflows/ci.yml:123"
+      ]
+    },
+    {
+      "id": "W028",
+      "titulo": "Baselines de lint/typecheck (111 KB JSON): step que falha se o baseline cresceu sem justificativa no PR, e rotina documentada de \"queimar baseline\" mensal.",
+      "situacao": "P",
+      "constatacao": "Há gates de regressão contra baselines, mas não foi localizado bloqueio específico ao crescimento dos próprios JSONs sem justificativa, nem rotina mensal de redução.",
+      "pendencia": "Revisar alteração dos baselines separadamente, registrar justificativa e plano de redução; não elevar limite para ocultar falhas atuais.",
+      "fontes": [
+        ".github/workflows/ci.yml:44",
+        "scripts/check-typecheck-baseline.mjs:60",
+        "scripts/check-eslint-baseline.mjs",
+        "docs/execucao/revisao-plano-20261001/matriz-150.json"
+      ]
+    },
+    {
+      "id": "W029",
+      "titulo": "sicoob-ci/experiencia mede WCAG/responsividade em npm run dev (sem minificação, sem SW). Trocar por vite preview do artifact da etapa 12.",
+      "situacao": "P",
+      "constatacao": "Sicoob passou a compilar produção e usar vite preview em 4178 para auditorias visuais. Ainda gera build próprio e mantém continue-on-error na auditoria visual.",
+      "pendencia": "Ligar ao artefato compartilhado, retirar falso verde e comprovar cobertura WCAG/responsividade no candidato.",
+      "fontes": [
+        ".github/workflows/sicoob-ci.yml:86",
+        ".github/workflows/sicoob-ci.yml:103"
+      ]
+    },
+    {
+      "id": "W030",
+      "titulo": "Substituir o loop for tentativa in {1..45} por npx wait-on; usar E2E_BASE_URL no teste PWA em vez de subir um segundo servidor.",
+      "situacao": "N",
+      "constatacao": "Sicoob mantém loop curl/sleep; Playwright PWA ainda executa npm run build e preview próprios, sem reaproveitar E2E_BASE_URL do primeiro servidor.",
+      "pendencia": "Usar readiness explícito e servidor único, verificando PWA no build de produção.",
+      "fontes": [
+        ".github/workflows/sicoob-ci.yml:91",
+        "playwright.pwa.config.ts:16"
+      ]
+    },
+    {
+      "id": "W031",
+      "titulo": "paths filter + check obrigatório = PR sem arquivo Sicoob fica bloqueado para sempre. Criar job sicoob-gate sem paths que conclui \"skipped OK\" (padrão dorny/paths-filter) antes de tornar obrigatório (etapa 69).",
+      "situacao": "N",
+      "constatacao": "sicoob-ci conserva paths no workflow inteiro; não existe job sicoob-gate sempre emitido.",
+      "pendencia": "Criar gate de resultado estável que trate paths não aplicáveis antes de adicioná-lo aos checks obrigatórios.",
+      "fontes": [
+        ".github/workflows/sicoob-ci.yml:3",
+        "docs/execucao/revisao-plano-20261001/github.json"
+      ]
+    },
+    {
+      "id": "W032",
+      "titulo": "permissions: contents: read em e2e.yml (único workflow de teste sem bloco).",
+      "situacao": "I",
+      "constatacao": "E2E declara permissions: contents: read no nível do workflow.",
+      "pendencia": "Preservar privilégio mínimo ao adicionar integrações.",
+      "fontes": [
+        ".github/workflows/e2e.yml:11"
+      ]
+    },
+    {
+      "id": "W033",
+      "titulo": "Criar .env.ci versionado (sem segredos) e apontar o webServer do Playwright para ele — .env.production não existe no runner (F11).",
+      "situacao": "N",
+      "constatacao": "Não foi localizado .env.ci; Playwright ainda executa source .env.production. O Bash desse comando não usa set -e: a ausência do arquivo, isoladamente, não prova que o servidor sempre termina antes do teste.",
+      "pendencia": "Remover a dependência local e validar carregamento exclusivo de configuração CI autorizada.",
+      "fontes": [
+        "playwright.config.ts:216",
+        ".github/workflows/e2e.yml:36"
+      ]
+    },
+    {
+      "id": "W034",
+      "titulo": "⚠️ Decidir contra qual Supabase o E2E roda: projeto de homologação dedicado (recomendado) e nunca produção. Definir VITE_SUPABASE_URL/KEY do job a partir de secrets E2E_SUPABASE_*.",
+      "situacao": "P",
+      "constatacao": "E2E agora injeta VITE_SUPABASE_URL/PUBLISHABLE_KEY, mas usa secrets genéricos do repositório; não existem nomes E2E_SUPABASE_* nem evidência de projeto de homologação segregado.",
+      "pendencia": "Registrar decisão de ambiente/personas antes de executar testes com escrita e demonstrar isolamento de produção.",
+      "fontes": [
+        "docs/execucao/revisao-plano-20261001/workflows-github.json",
+        ".github/workflows/e2e.yml:36",
+        "docs/execucao/revisao-plano-20261001/matriz-150.json"
+      ]
+    },
+    {
+      "id": "W035",
+      "titulo": "Regressão: remover continue-on-error: true + step final de fail; usar if: always() só nos uploads e deixar o step de teste falhar naturalmente.",
+      "situacao": "N",
+      "constatacao": "Regressão ainda usa continue-on-error:true e passo final que falha conforme outcome; a simplificação solicitada não está em main.",
+      "pendencia": "Deixar testes falharem naturalmente e preservar evidências com condições adequadas; garantir que ausência de credenciais não resulte em falso verde.",
+      "fontes": [
+        ".github/workflows/e2e.yml:214",
+        ".github/workflows/e2e.yml:269"
+      ]
+    },
+    {
+      "id": "W036",
+      "titulo": "Alinhar majors de checkout, setup-node, cache, upload-artifact entre todos os workflows (v4/v6/v7 misturados).",
+      "situacao": "P",
+      "constatacao": "Checkout está uniforme em v4, uploads em v7 e caches em v6; setup-node é v7 em vários jobs e v4 no CodeQL. Não há composição comum.",
+      "pendencia": "Alinhar versões suportadas e validar compatibilidade com self-hosted, sem trocar por major apenas por uniformidade.",
+      "fontes": [
+        ".github/workflows/ci.yml:36",
+        ".github/workflows/codeql.yml:51",
+        ".github/workflows/e2e.yml:61"
+      ]
+    },
+    {
+      "id": "W037",
+      "titulo": "🔐 .gitleaksignore: para cada um dos 31 fingerprints confirmar rotação (registrar em docs/RUNBOOKS/CREDENTIAL_ROTATION.md) e remover do ignore o que já foi rotacionado.",
+      "situacao": "V",
+      "constatacao": "Runbook de rotação ainda está aguardando execução e referencia outro projeto; não comprova revisão individual dos fingerprints. Um scan verde não comprova rotação.",
+      "pendencia": "Classificar cada ocorrência sem expor valores e comprovar a rotação quando necessária; rotacionar não elimina automaticamente um achado histórico, portanto revisar a regra de remoção do ignore.",
+      "fontes": [
+        ".gitleaksignore",
+        "docs/RUNBOOKS/CREDENTIAL_ROTATION.md",
+        "docs/execucao/revisao-plano-20261001/github.json"
+      ]
+    },
+    {
+      "id": "W038",
+      "titulo": "Gitleaks: manter em pull_request e push: main; schedule semanal → mensal (histórico não muda).",
+      "situacao": "P",
+      "constatacao": "Gitleaks mantém PR e push main, mas a agenda continua semanal. Há paths-ignore que também excluem documentação da varredura nesses eventos.",
+      "pendencia": "Reavaliar agenda e filtros considerando novos segredos possíveis em documentação, sem assumir que histórico jamais muda.",
+      "fontes": [
+        ".github/workflows/security.yml:3"
+      ]
+    },
+    {
+      "id": "W039",
+      "titulo": "Remover o cp dos 4 arquivos inexistentes e limpá-los da lista de upload (F8).",
+      "situacao": "I",
+      "constatacao": "Compliance não copia mais os quatro arquivos inexistentes; upload usa apenas reports/.",
+      "pendencia": "Comprovar execução completa do workflow após resolver as falhas anteriores de RLS.",
+      "fontes": [
+        ".github/workflows/security-compliance.yml:66",
+        ".github/workflows/security-compliance.yml:83",
+        "docs/execucao/revisao-plano-20261001/github.json"
+      ]
+    },
+    {
+      "id": "W040",
+      "titulo": "permissions: contents: read, concurrency, timeout-minutes: 15 em security-compliance.",
+      "situacao": "P",
+      "constatacao": "Compliance possui contents:read e concurrency, mas timeout é 20 minutos, não 15.",
+      "pendencia": "Registrar ou ajustar o limite escolhido e validar duração e cancelamento.",
+      "fontes": [
+        ".github/workflows/security-compliance.yml:14"
+      ]
+    },
+    {
+      "id": "W041",
+      "titulo": "Tirar security-compliance de push: main (usa service role de produção a cada merge) → só schedule semanal + workflow_dispatch, com environment: compliance.",
+      "situacao": "N",
+      "constatacao": "Compliance continua em push main, schedule e workflow_dispatch e não declara environment compliance.",
+      "pendencia": "Isolar credenciais e decidir disparos; preservar cobertura obrigatória independente de auditorias remotas.",
+      "fontes": [
+        ".github/workflows/security-compliance.yml:3",
+        "docs/execucao/revisao-plano-20261001/workflows-github.json"
+      ]
+    },
+    {
+      "id": "W042",
+      "titulo": "Persistir reports/*.txt como artifact e abrir issue automática quando test-rls-compliance reprovar (hoje o resultado morre no log).",
+      "situacao": "P",
+      "constatacao": "Saídas RLS são redirecionadas a reports/*.txt e reports/ tem upload, porém o upload não usa always() e nenhuma issue automática é criada. Falha inicial pode impedir o artefato.",
+      "pendencia": "Preservar relatório em falha e implementar notificação autorizada com conteúdo sanitizado.",
+      "fontes": [
+        ".github/workflows/security-compliance.yml:45",
+        ".github/workflows/security-compliance.yml:63",
+        ".github/workflows/security-compliance.yml:83"
+      ]
+    },
+    {
+      "id": "W043",
+      "titulo": "💰 CodeQL: sem GitHub Advanced Security no plano atual, upload: never gera SARIF que ninguém lê. Opção A: habilitar Code scanning (se o plano permitir) e vars.CODEQL_UPLOAD_ENABLED=true. Opção B (recomendada, custo zero): substituir por eslint-plugin-security + semgrep OSS com anotação no PR.",
+      "situacao": "S",
+      "constatacao": "A premissa upload:never foi substituída por upload:if-supported; CodeQL concluiu com sucesso no SHA atual. O job permanece continue-on-error e a API não mostra decisão de plano/custo ou consumo do SARIF.",
+      "pendencia": "Reabrir decisão com evidência de resultados consumíveis e custo real; sucesso do job não prova Code scanning habilitado.",
+      "fontes": [
+        ".github/workflows/codeql.yml:37",
+        ".github/workflows/codeql.yml:70",
+        "docs/execucao/revisao-plano-20261001/github.json",
+        "docs/execucao/revisao-plano-20261001/workflows-github.json"
+      ]
+    },
+    {
+      "id": "W044",
+      "titulo": "Enquanto 43 não é decidida: publicar resumo do SARIF (contagem por severidade) no $GITHUB_STEP_SUMMARY.",
+      "situacao": "N",
+      "constatacao": "Não há passo de contagem SARIF por severidade em GITHUB_STEP_SUMMARY; existe somente upload do artefato com erro tolerado.",
+      "pendencia": "Publicar resumo útil e definir responsável pelo tratamento dos achados.",
+      "fontes": [
+        ".github/workflows/codeql.yml:65"
+      ]
+    },
+    {
+      "id": "W045",
+      "titulo": "Lighthouse: upload.target: temporary-public-storage → filesystem + artifact. Hoje o relatório do build (rotas, chunks, HTML) vai para URL pública (F12).",
+      "situacao": "I",
+      "constatacao": "Lighthouse usa target:filesystem e workflow publica .lighthouseci como artifact.",
+      "pendencia": "Verificar retenção, acesso e disponibilidade efetiva do artefato quando quota estiver esgotada.",
+      "fontes": [
+        ".lighthouserc.cjs:26",
+        ".github/workflows/lighthouse.yml:68"
+      ]
+    },
+    {
+      "id": "W046",
+      "titulo": "Lighthouse e bundle-check buildam sem VITE_SUPABASE_URL → usar o artifact da etapa 12.",
+      "situacao": "P",
+      "constatacao": "Bundle e Lighthouse agora injetam valores sintéticos VITE para build, corrigindo a configuração ausente; continuam compilando separadamente.",
+      "pendencia": "Compartilhar artefato quando aprovado e distinguir build sintético de bundle publicado.",
+      "fontes": [
+        ".github/workflows/bundle-check.yml:34",
+        ".github/workflows/lighthouse.yml:56"
+      ]
+    },
+    {
+      "id": "W047",
+      "titulo": "Lighthouse: numberOfRuns: 3 → 2 e adicionar rota / além de /login.",
+      "situacao": "N",
+      "constatacao": "Configuração Lighthouse mantém três execuções e somente /login.",
+      "pendencia": "Adicionar a jornada / com escopo definido e avaliar estabilidade ao reduzir número de execuções.",
+      "fontes": [
+        ".lighthouserc.cjs:6"
+      ]
+    },
+    {
+      "id": "W048",
+      "titulo": "Bundle-check: permissions, timeout, if-no-files-found: error e comparação com baseline de main (hoje só orçamento absoluto; regressão de 20% dentro do orçamento passa).",
+      "situacao": "P",
+      "constatacao": "Bundle possui permissions e timeout, mas upload usa if-no-files-found:warn e continue-on-error; script aplica teto absoluto, sem comparação com main.",
+      "pendencia": "Implementar comparação reproduzível com baseline do mesmo tipo de build e exigir evidência mínima.",
+      "fontes": [
+        ".github/workflows/bundle-check.yml:11",
+        ".github/workflows/bundle-check.yml:42",
+        "scripts/qa/check-bundle-budget.mjs"
+      ]
+    },
+    {
+      "id": "W049",
+      "titulo": "db-performance-audit: além do secret (etapa 4), salvar saída como artifact e abrir issue com resumo. Falhou 4/4 desde julho e, mesmo verde, ninguém veria.",
+      "situacao": "P",
+      "constatacao": "Monthly DB Audit já executa com secret e concluiu verde em 01/10, mas não tem artifact nem issue. O script pode capturar erro de consulta sem tornar o job vermelho.",
+      "pendencia": "Preservar saída, falhar em erro real e notificar responsável; a execução cobre apenas seis SELECT LIMIT 100.",
+      "fontes": [
+        ".github/workflows/db-performance-audit.yml:40",
+        "scripts/db-performance-audit.mjs",
+        "docs/execucao/revisao-plano-20261001/github.json",
+        "docs/execucao/revisao-plano-20261001/matriz-150.json"
+      ]
+    },
+    {
+      "id": "W050",
+      "titulo": "migration-ledger-drift: ::error com a lista de pendências e issue \"Drift de migrations\" criada/atualizada automaticamente.",
+      "situacao": "P",
+      "constatacao": "Drift possui erro explícito para secret ausente e script de comparação, mas não há issue criada/atualizada. Run atual falha por DNS antes de comparar ledger.",
+      "pendencia": "Restabelecer acesso e emitir lista sanitizada de pendências com acompanhamento persistente.",
+      "fontes": [
+        ".github/workflows/migration-ledger-drift.yml:30",
+        "scripts/db/check-migration-ledger-drift.mjs",
+        "docs/execucao/revisao-plano-20261001/github.json",
+        "docs/execucao/revisao-plano-20261001/matriz-150.json"
+      ]
+    },
+    {
+      "id": "W051",
+      "titulo": "Sentinel: corrigir allowlist para gpt-engineer-app[bot] (F9).",
+      "situacao": "I",
+      "constatacao": "Allowlist do Sentinel inclui gpt-engineer-app[bot]; run do SHA atual está verde. Aceitar nome de autor não prova origem por PR.",
+      "pendencia": "Preservar evidência de associação commit/PR e não usar o Sentinel como substituto da proteção.",
+      "fontes": [
+        ".github/workflows/branch-protection-sentinel.yml:48",
+        "docs/execucao/revisao-plano-20261001/github.json"
+      ]
+    },
+    {
+      "id": "W052",
+      "titulo": "Sentinel é post-hoc (não impede nada). Após a etapa 70, converter em auditoria semanal que lista commits em main sem PR e abre issue.",
+      "situacao": "N",
+      "constatacao": "Sentinel permanece push main/workflow_dispatch, baseado em padrões de mensagem/autor; não há auditoria semanal por associação real de PR nem issue.",
+      "pendencia": "Reformular o detector após definir proteção efetiva e bypasses autorizados.",
+      "fontes": [
+        ".github/workflows/branch-protection-sentinel.yml:3",
+        ".github/workflows/branch-protection-sentinel.yml:38",
+        "docs/execucao/revisao-plano-20261001/github.json"
+      ]
+    },
+    {
+      "id": "W053",
+      "titulo": "Environment construction sem regra: adicionar required_reviewers (Joaquim) e deployment_branch_policy: main. Hoje qualquer push dispara publicação de funções.",
+      "situacao": "P",
+      "constatacao": "construction exige branches protegidas, mas não possui required_reviewers e permite bypass administrativo. O deploy existente é manual, contrariando a alegação antiga de qualquer push disparar publicação.",
+      "pendencia": "Definir revisão e política de branch efetiva para o environment e testar bloqueios; não presumir nomeação de aprovador.",
+      "fontes": [
+        "docs/execucao/revisao-plano-20261001/workflows-github.json",
+        ".github/workflows/deploy-sicoob-functions.yml:3"
+      ]
+    },
+    {
+      "id": "W054",
+      "titulo": "🔐 Mover SUPABASE_ACCESS_TOKEN do repo para o environment construction (escopo mínimo).",
+      "situacao": "N",
+      "constatacao": "SUPABASE_ACCESS_TOKEN permanece como secret do repositório; environment construction não contém secrets.",
+      "pendencia": "Restringir escopo de publicação ao ambiente com consumidores inventariados e validação de execução.",
+      "fontes": [
+        "docs/execucao/revisao-plano-20261001/workflows-github.json",
+        ".github/workflows/deploy-sicoob-functions.yml:20"
+      ]
+    },
+    {
+      "id": "W055",
+      "titulo": "Renomear o uso de VITE_SUPABASE_PROJECT_ID no deploy para SUPABASE_PROJECT_REF (VITE_* é variável de front, não credencial de deploy).",
+      "situacao": "N",
+      "constatacao": "Deploy continua mapeando secrets.VITE_SUPABASE_PROJECT_ID para SUPABASE_PROJECT_ID; SUPABASE_PROJECT_REF não foi adotado.",
+      "pendencia": "Usar nome canônico de projeto na configuração de entrega e validar identidade antes da publicação.",
+      "fontes": [
+        ".github/workflows/deploy-sicoob-functions.yml:21"
+      ]
+    },
+    {
+      "id": "W056",
+      "titulo": "Lista de 6 funções duplicada em 2 steps → env: FUNCTIONS; --no-verify-jwt só onde a função exige.",
+      "situacao": "P",
+      "constatacao": "--no-verify-jwt foi retirado e migrate-helper saiu da lista. As cinco funções ainda são repetidas nos dois steps, sem env FUNCTIONS.",
+      "pendencia": "Centralizar lista e preservar requisitos de autenticação por função com evidência pós-deploy.",
+      "fontes": [
+        ".github/workflows/deploy-sicoob-functions.yml:38",
+        ".github/workflows/deploy-sicoob-functions.yml:51"
+      ]
+    },
+    {
+      "id": "W057",
+      "titulo": "⚠️ migrate-helper está na lista de deploy — função de migração exposta como Edge Function. Validar que authorize.ts a protege ou retirar do deploy.",
+      "situacao": "I",
+      "constatacao": "migrate-helper foi retirado das listas de publicação e confirmação do workflow Sicoob. Isso satisfaz a alternativa de removê-lo deste deploy, sem certificar sua inexistência remota.",
+      "pendencia": "Manter a decisão rastreável e comprovar estado remoto separadamente quando houver acesso.",
+      "fontes": [
+        ".github/workflows/deploy-sicoob-functions.yml:41",
+        "docs/execucao/reconciliacao-online-2026-09-28.md"
+      ]
+    },
+    {
+      "id": "W058",
+      "titulo": "⚠️ Criar deploy-migrations.yml: supabase db push --dry-run em PR que toca supabase/migrations/; db push real por workflow_dispatch com environment protegido. Hoje migrations vão via SQL Editor e o ledger diverge (F19).",
+      "situacao": "N",
+      "constatacao": "Não existe deploy-migrations.yml. O guia proíbe db push --linked enquanto o ledger histórico divergir; o drift atual falha por conexão.",
+      "pendencia": "Desenhar entrega apenas após reconciliar baseline/ledger e aprovar ambiente; não implementar replay automático do histórico por literalidade do plano.",
+      "fontes": [
+        ".github/workflows/migration-ledger-drift.yml",
+        "docs/DEPLOYMENT.md:49",
+        "docs/execucao/revisao-plano-20261001/github.json"
+      ]
+    },
+    {
+      "id": "W059",
+      "titulo": "⚠️ Environment production para todas as 108 funções (não só 6 Sicoob), com lista gerada e aprovação obrigatória.",
+      "situacao": "N",
+      "constatacao": "Não existe pipeline de todas as funções com aprovação obrigatória. Production existe sem regras; o único deploy versionado cobre cinco funções em construction.",
+      "pendencia": "Inventariar funções elegíveis e exclusões antes de definir publicação integral protegida; a contagem antiga de 108 não é um contrato atual.",
+      "fontes": [
+        "docs/execucao/revisao-plano-20261001/workflows-github.json",
+        ".github/workflows/deploy-sicoob-functions.yml:41",
+        "docs/execucao/reconciliacao-online-2026-09-28.md"
+      ]
+    },
+    {
+      "id": "W060",
+      "titulo": "Pós-deploy smoke: chamar health-check e system-healthcheck após publicar e falhar o job se ≠ 200.",
+      "situacao": "N",
+      "constatacao": "Deploy apenas lista funções e confirma slugs; não executa health-check/system-healthcheck HTTP pós-publicação.",
+      "pendencia": "Definir smoke autenticado e critérios por função, vinculando SHA e versão publicada.",
+      "fontes": [
+        ".github/workflows/deploy-sicoob-functions.yml:51"
+      ]
+    },
+    {
+      "id": "W061",
+      "titulo": "⚠️ Vercel publica main sem esperar CI: ativar Deployment Protection / \"Ignored Build Step\" condicionado ao status do commit. 50 merges com CI vermelha já foram para produção (F3).",
+      "situacao": "V",
+      "constatacao": "O snapshot GitHub confirma ausência de checks obrigatórios; não foi obtida configuração atual do Vercel nem correlação de todos os merges com deploys. A afirmação histórica de 50 publicações não foi revalidada.",
+      "pendencia": "Comprovar gatilho e gate real no provedor, decisão de negócio e teste de bloqueio de candidato vermelho.",
+      "fontes": [
+        "docs/execucao/revisao-plano-20261001/github.json",
+        "docs/DEPLOYMENT.md",
+        "README.md"
+      ]
+    },
+    {
+      "id": "W062",
+      "titulo": "Definir em docs/DEPLOYMENT.md quem é produção: Vercel ou Lovable. Hoje dois publicadores para o mesmo branch.",
+      "situacao": "P",
+      "constatacao": "README apresenta Lovable como publicador e URL de produção; DEPLOYMENT ainda diz provedor configurado. Não há decisão inequívoca e atual que reconcilie Vercel e Lovable.",
+      "pendencia": "Nomear provedor/URL canônicos e vincular controle de promoção ao artefato e SHA.",
+      "fontes": [
+        "README.md",
+        "docs/DEPLOYMENT.md:42"
+      ]
+    },
+    {
+      "id": "W063",
+      "titulo": "Usar deployment_status do preview do Vercel como gate do E2E autenticado (elimina subir servidor no runner; environment Preview já existe).",
+      "situacao": "N",
+      "constatacao": "E2E não possui gatilho deployment_status e continua preparando servidor local via Playwright.",
+      "pendencia": "Decidir uso de preview autorizado, origem confiável e ambiente de dados antes da integração.",
+      "fontes": [
+        ".github/workflows/e2e.yml:6",
+        "playwright.config.ts:216"
+      ]
+    },
+    {
+      "id": "W064",
+      "titulo": "Preencher a coluna \"Configurado em\" de docs/secrets.md para cada secret de CI, com data (hoje 90% \"preencher\").",
+      "situacao": "P",
+      "constatacao": "O inventário possui localização de parte das variáveis, mas ainda afirma ausência de E2E/compliance já parcialmente superada e conserva linhas preencher. Não há datas individuais atuais.",
+      "pendencia": "Atualizar somente nomes, ambientes, responsáveis e datas a partir do inventário atual, sem copiar valores.",
+      "fontes": [
+        "docs/secrets.md:7",
+        "docs/execucao/revisao-plano-20261001/workflows-github.json"
+      ]
+    },
+    {
+      "id": "W065",
+      "titulo": "Agendar rotação semestral de SUPABASE_ACCESS_TOKEN (criado 23/09) e chaves VITE_* (08/09) no runbook.",
+      "situacao": "N",
+      "constatacao": "Runbook de rotação não estabelece calendário semestral para o token atual; permanece incidente pendente de outro projeto.",
+      "pendencia": "Definir validade/rotação por tipo de credencial e consumidores; não tratar chaves públicas VITE como segredo privado por prefixo.",
+      "fontes": [
+        "docs/RUNBOOKS/CREDENTIAL_ROTATION.md",
+        "docs/execucao/revisao-plano-20261001/workflows-github.json"
+      ]
+    },
+    {
+      "id": "W066",
+      "titulo": "Remover environment órfão Production – sicoob-csp-202635-1790202890178-XEua (deploy avulso do Vercel).",
+      "situacao": "N",
+      "constatacao": "A API de 01/10 ainda lista Production – sicoob-csp-202635-1790202890178-XEua. Sua condição de órfão não foi provada apenas pelo nome.",
+      "pendencia": "Confirmar vínculos de deploy, retenção e responsáveis antes de decidir remoção.",
+      "fontes": [
+        "docs/execucao/revisao-plano-20261001/workflows-github.json"
+      ]
+    },
+    {
+      "id": "W067",
+      "titulo": "🔐 E2E_CLEANUP_TOKEN + job pós-E2E chamando e2e-cleanup (dados de teste acumulam no projeto de homologação).",
+      "situacao": "P",
+      "constatacao": "Há helper E2E de limpeza, mas E2E_CLEANUP_TOKEN não consta nos secrets consultados nem nos jobs; não existe job pós-E2E.",
+      "pendencia": "Ligar cleanup autenticado apenas ao ambiente de teste e comprovar escopo/resultado, incluindo execução após falha.",
+      "fontes": [
+        "docs/execucao/revisao-plano-20261001/workflows-github.json",
+        ".github/workflows/e2e.yml",
+        "e2e/helpers/cleanup-client.ts:56"
+      ]
+    },
+    {
+      "id": "W068",
+      "titulo": "Eliminar duplicidade VITE_SUPABASE_ANON_KEY × VITE_SUPABASE_PUBLISHABLE_KEY (coexistem nos secrets e no código).",
+      "situacao": "P",
+      "constatacao": "Cliente principal usa PUBLISHABLE_KEY; o repositório remoto ainda contém VITE_SUPABASE_ANON_KEY e VITE_SUPABASE_PUBLISHABLE_KEY simultaneamente.",
+      "pendencia": "Inventariar consumidores e consolidar nomes sem excluir configuração utilizada por outro publicador.",
+      "fontes": [
+        "docs/execucao/revisao-plano-20261001/workflows-github.json",
+        "src/integrations/supabase/client.ts:34"
+      ]
+    },
+    {
+      "id": "W069",
+      "titulo": "Status checks obrigatórios em main: Segurança, contratos e build, e2e (smoke), Gitleaks — Secret Scan, bundle-stats, sicoob-gate. Hoje nenhum é obrigatório (F4).",
+      "situacao": "N",
+      "constatacao": "Proteção de main consultada em 01/10 não contém required_status_checks. sicoob-gate ainda não existe e qualidade atual falha.",
+      "pendencia": "Definir checks estáveis, corrigir os gates e provar bloqueio em PR com falha antes de aceitar a proteção.",
+      "fontes": [
+        "docs/execucao/revisao-plano-20261001/github.json",
+        ".github/workflows/sicoob-ci.yml",
+        ".github/workflows/ci.yml"
+      ]
+    },
+    {
+      "id": "W070",
+      "titulo": "enforce_admins: true — o bypass administrativo é a porta pela qual as 50 PRs vermelhas entraram.",
+      "situacao": "N",
+      "constatacao": "enforce_admins.enabled permanece false na proteção remota atual.",
+      "pendencia": "Definir bypass explícito e comprovar restrição administrativa segundo a política aprovada.",
+      "fontes": [
+        "docs/execucao/revisao-plano-20261001/github.json"
+      ]
+    },
+    {
+      "id": "W071",
+      "titulo": "required_conversation_resolution: true e require_last_push_approval: true.",
+      "situacao": "N",
+      "constatacao": "required_conversation_resolution.enabled=false e require_last_push_approval=false na API atual.",
+      "pendencia": "Habilitar controles após validar capacidade de revisão e testar PR com conversa/novo push pendentes.",
+      "fontes": [
+        "docs/execucao/revisao-plano-20261001/github.json"
+      ]
+    },
+    {
+      "id": "W072",
+      "titulo": "allow_update_branch: true + \"require branches to be up to date\" (justifica a etapa 8).",
+      "situacao": "N",
+      "constatacao": "allow_update_branch=false e não há required_status_checks/strict na proteção. A condição usada para retirar push gates não está comprovada.",
+      "pendencia": "Garantir atualização e checks do candidato antes do merge, registrando a política efetiva.",
+      "fontes": [
+        "docs/execucao/revisao-plano-20261001/workflows-github.json",
+        "docs/execucao/revisao-plano-20261001/github.json"
+      ]
+    },
+    {
+      "id": "W073",
+      "titulo": "delete_branch_on_merge: true (branches hermes-* acumulam).",
+      "situacao": "N",
+      "constatacao": "delete_branch_on_merge=false na configuração remota de 01/10.",
+      "pendencia": "Configurar limpeza futura conforme política, preservando worktrees e branches com trabalho não integrado.",
+      "fontes": [
+        "docs/execucao/revisao-plano-20261001/workflows-github.json"
+      ]
+    },
+    {
+      "id": "W074",
+      "titulo": "Desativar allow_merge_commit e allow_rebase_merge — AGENTS.md exige squash; o sentinel aceita 2 padrões porque a config permite 3.",
+      "situacao": "N",
+      "constatacao": "allow_merge_commit e allow_rebase_merge continuam true, além de squash. Configuração não restringe o fluxo ao exigido no AGENTS.",
+      "pendencia": "Alinhar métodos de merge à política vigente e validar resultado.",
+      "fontes": [
+        "docs/execucao/revisao-plano-20261001/workflows-github.json",
+        "AGENTS.md"
+      ]
+    },
+    {
+      "id": "W075",
+      "titulo": "Migrar de branch protection clássica para ruleset (bypass list explícita para Dependabot, linear history auditável).",
+      "situacao": "N",
+      "constatacao": "A consulta atual retorna zero rulesets; proteção clássica permanece ativa.",
+      "pendencia": "Decidir migração de governança com equivalência de bloqueios e bypasses explícitos; não exigir migração apenas para encerrar o item.",
+      "fontes": [
+        "docs/execucao/revisao-plano-20261001/github.json"
+      ]
+    },
+    {
+      "id": "W076",
+      "titulo": "💰 CODEOWNERS = @adm01-debug, autor de todas as PRs → revisão obrigatória vira auto-aprovação (F20). Decidir: segundo revisor humano, ou trocar exigência de review por \"checks verdes + CodeRabbit sem bloqueio\".",
+      "situacao": "V",
+      "constatacao": "CODEOWNERS continua apenas @adm01-debug e proteção exige uma aprovação sem code-owner review. Não foi localizada decisão de segundo revisor. A alegação de autoaprovação não deve ser assumida como mecanismo efetivo.",
+      "pendencia": "Formalizar política e responsável independente ou alternativa aprovada; não presumir custo ou redução de revisão.",
+      "fontes": [
+        ".github/CODEOWNERS",
+        "docs/execucao/revisao-plano-20261001/github.json"
+      ]
+    },
+    {
+      "id": "W077",
+      "titulo": "Unificar templates: manter PULL_REQUEST_TEMPLATE.md (tem plano de rollback) e apagar pull_request_template.md.",
+      "situacao": "N",
+      "constatacao": "PULL_REQUEST_TEMPLATE.md e pull_request_template.md continuam simultaneamente versionados.",
+      "pendencia": "Consolidar um template preservando critérios úteis de risco, evidência e rollback.",
+      "fontes": [
+        ".github/PULL_REQUEST_TEMPLATE.md",
+        ".github/pull_request_template.md"
+      ]
+    },
+    {
+      "id": "W078",
+      "titulo": "Um revisor de IA: manter CodeRabbit (config PT-BR) e desligar o Copilot PR reviewer.",
+      "situacao": "V",
+      "constatacao": "Configuração CodeRabbit permanece no repositório e environment copilot existe; esses fatos não comprovam se o reviewer automático do Copilot continua habilitado.",
+      "pendencia": "Consultar configuração efetiva e registrar decisão sobre revisores antes de desativar integrações.",
+      "fontes": [
+        ".coderabbit.yaml",
+        "docs/execucao/revisao-plano-20261001/workflows-github.json"
+      ]
+    },
+    {
+      "id": "W079",
+      "titulo": "Criar labels dependencies, automated, ci — o Dependabot ignora labels inexistentes silenciosamente.",
+      "situacao": "I",
+      "constatacao": "A API atual lista as três labels dependencies, automated e ci utilizadas pelo Dependabot.",
+      "pendencia": "Manter labels alinhadas à configuração.",
+      "fontes": [
+        "docs/execucao/revisao-plano-20261001/workflows-github.json",
+        ".github/dependabot.yml:13"
+      ]
+    },
+    {
+      "id": "W080",
+      "titulo": "Habilitar Dependabot alerts + security updates (desativados) e dependency-review-action em PR.",
+      "situacao": "N",
+      "constatacao": "Endpoint de vulnerability alerts responde disabled (404); automated-security-fixes retorna enabled=false. Não há dependency-review-action nos workflows.",
+      "pendencia": "Definir recursos disponíveis no plano e habilitar revisão/atualização de dependências com responsáveis, sem presumir contratação.",
+      "fontes": [
+        "docs/execucao/revisao-plano-20261001/workflows-github.json",
+        ".github/workflows/ci.yml",
+        ".github/dependabot.yml"
+      ]
+    },
+    {
+      "id": "W081",
+      "titulo": "Fixar toda action por SHA completo (uses: actions/checkout@<sha> # v4.x) e ativar sha_pinning_required.",
+      "situacao": "N",
+      "constatacao": "Actions continuam referenciadas por tags de versão e configuração remota mantém sha_pinning_required=false.",
+      "pendencia": "Fixar revisões verificadas e definir atualização automática auditável, validando suporte do runner.",
+      "fontes": [
+        "docs/execucao/revisao-plano-20261001/workflows-github.json",
+        ".github/workflows/ci.yml:32",
+        ".github/workflows/codeql.yml:56"
+      ]
+    },
+    {
+      "id": "W082",
+      "titulo": "allowed_actions: all → selected (GitHub-owned + verified + allowlist: gitleaks, supabase/setup-cli, denoland/setup-deno, dorny/paths-filter).",
+      "situacao": "N",
+      "constatacao": "Actions permissions permanece allowed_actions=all.",
+      "pendencia": "Construir allowlist compatível com os consumidores e validar antes de restringir.",
+      "fontes": [
+        "docs/execucao/revisao-plano-20261001/workflows-github.json"
+      ]
+    },
+    {
+      "id": "W083",
+      "titulo": "Job actionlint em PR que toca .github/ — pegaria master/develop inexistentes e permissions faltando.",
+      "situacao": "N",
+      "constatacao": "Não existe job actionlint. Além disso, validar YAML não demonstra existência de branches remotas nem implementa sozinho a política de permissions alegada no plano.",
+      "pendencia": "Adicionar lint com escopo e testes adequados, separando sintaxe de regras próprias de governança.",
+      "fontes": [
+        ".github/workflows/ci.yml",
+        "docs/plano-implementacao/plano-workflows-github-100-etapas-20260927.md"
+      ]
+    },
+    {
+      "id": "W084",
+      "titulo": "Job zizmor (auditoria de segurança de workflows) junto do actionlint.",
+      "situacao": "N",
+      "constatacao": "Não foi localizado job zizmor em nenhum dos 12 workflows.",
+      "pendencia": "Introduzir auditoria dos workflows, tratar achados relevantes e documentar exceções verificáveis.",
+      "fontes": [
+        ".github/workflows/ci.yml",
+        "docs/plano-implementacao/plano-workflows-github-100-etapas-20260927.md"
+      ]
+    },
+    {
+      "id": "W085",
+      "titulo": "permissions: explícito nos 5 workflows sem bloco (F14). O default do repo é read, mas defaults mudam.",
+      "situacao": "I",
+      "constatacao": "Os cinco workflows citados agora declaram permissions: contents: read explicitamente.",
+      "pendencia": "Manter privilégio mínimo e revisar permissões de novos jobs.",
+      "fontes": [
+        ".github/workflows/e2e.yml:11",
+        ".github/workflows/lighthouse.yml:11",
+        ".github/workflows/bundle-check.yml:11",
+        ".github/workflows/security-compliance.yml:14",
+        ".github/workflows/db-performance-audit.yml:8"
+      ]
+    },
+    {
+      "id": "W086",
+      "titulo": "Gitleaks com --redact e summary habilitado; hoje o log pode ecoar trechos do segredo detectado.",
+      "situacao": "V",
+      "constatacao": "security.yml usa gitleaks-action@v3 e desativa upload de artefato, mas não documenta flags de redação/summary. Ausência de --redact no YAML não prova ausência de redação na action.",
+      "pendencia": "Verificar implementação exata da action e sanitização dos logs sem expor amostras reais; fixar configuração reproduzível.",
+      "fontes": [
+        ".github/workflows/security.yml:42"
+      ]
+    },
+    {
+      "id": "W087",
+      "titulo": "retention-days explícito ≤ 7 em todos os artifacts (bundle-stats, enterprise-compliance estão em 90 dias com dados de produção).",
+      "situacao": "P",
+      "constatacao": "Parte dos artifacts E2E e Sicoob usa sete dias; resumos E2E usam 30, CodeQL/Lighthouse 14 e bundle/compliance não definem retenção.",
+      "pendencia": "Uniformizar retenção com necessidades de auditoria e capacidade; preservar evidências exigidas antes de reduzir.",
+      "fontes": [
+        ".github/workflows/e2e.yml:156",
+        ".github/workflows/codeql.yml:80",
+        ".github/workflows/lighthouse.yml:76",
+        ".github/workflows/bundle-check.yml:42",
+        ".github/workflows/security-compliance.yml:83"
+      ]
+    },
+    {
+      "id": "W088",
+      "titulo": "step-security/harden-runner em modo audit nos jobs que tocam segredos de produção (compliance, deploy).",
+      "situacao": "N",
+      "constatacao": "Não há step-security/harden-runner nos workflows. Todos usam self-hosted, premissa que exige verificar compatibilidade/efeito antes de aplicar a receita antiga.",
+      "pendencia": "Definir endurecimento adequado ao runner persistente e aos jobs privilegiados, com isolamento e evidência de rede.",
+      "fontes": [
+        ".github/workflows/security-compliance.yml:23",
+        ".github/workflows/deploy-sicoob-functions.yml:18",
+        "docs/execucao/revisao-plano-20261001/workflows-github.json"
+      ]
+    },
+    {
+      "id": "W089",
+      "titulo": "if: github.event.pull_request.head.repo.full_name == github.repository nos jobs que usam secrets (repo privado hoje; evita acidente se virar público).",
+      "situacao": "N",
+      "constatacao": "Não há condição explícita comparando head.repo.full_name com github.repository nos jobs com secrets. O repositório segue privado.",
+      "pendencia": "Definir execução confiável por evento e origem, sem aplicar expressão de PR indiscriminadamente a schedule/push.",
+      "fontes": [
+        "docs/execucao/revisao-plano-20261001/workflows-github.json",
+        ".github/workflows/e2e.yml",
+        ".github/workflows/security-compliance.yml"
+      ]
+    },
+    {
+      "id": "W090",
+      "titulo": "🔐⚠️ .gitleaksignore marca .env:jwt nos commits 635178b9 e 6b090cca: se a chave anon de produção foi commitada, rotacionar a chave anon do projeto Supabase.",
+      "situacao": "S",
+      "constatacao": "A instrução de rotacionar automaticamente chave anon por estar versionada conflita com a distinção de chave pública no próprio runbook; não foi comprovada exposição de segredo privado nessa revisão.",
+      "pendencia": "Classificar tipo, privilégio e exposição real antes de decisão de rotação; comprovar RLS e tratar credenciais privadas eventualmente comprometidas. Premissa superada não é aceite de segurança.",
+      "fontes": [
+        ".gitleaksignore",
+        "docs/RUNBOOKS/CREDENTIAL_ROTATION.md:30",
+        "docs/secrets.md"
+      ]
+    },
+    {
+      "id": "W091",
+      "titulo": "Job reutilizável notify: falha em main ou em schedule → mensagem no WhatsApp via Evolution (wpp2) ou issue automática. Hoje são 9 falhas por push sem ninguém ver.",
+      "situacao": "N",
+      "constatacao": "Não existe workflow reutilizável _notify.yml nem encaminhamento por issue nos workflows auditados.",
+      "pendencia": "Definir canal e responsável; qualquer envio externo exige autorização e conteúdo sanitizado.",
+      "fontes": [
+        ".github/workflows/ci.yml",
+        ".github/workflows/security-compliance.yml",
+        ".github/workflows/db-performance-audit.yml"
+      ]
+    },
+    {
+      "id": "W092",
+      "titulo": "actions-usage-report.yml mensal: grava reports/actions-usage-YYYYMM.md com minutos por workflow — evita repetir o bloqueio de 16/09.",
+      "situacao": "N",
+      "constatacao": "Não existe actions-usage-report.yml nem relatório mensal de consumo versionado localizado.",
+      "pendencia": "Medir execução, infraestrutura self-hosted, armazenamento e filas; decidir orçamento com responsável.",
+      "fontes": [
+        "docs/CI_CD.md",
+        "docs/execucao/revisao-plano-20261001/workflows-github.json"
+      ]
+    },
+    {
+      "id": "W093",
+      "titulo": "Apagar em lote as runs falhas de 16/09 → hoje (~1.000 de 4.037) para o painel do Actions voltar a ser legível.",
+      "situacao": "V",
+      "constatacao": "Não foi localizada evidência de limpeza em lote das runs históricas. A finalidade de legibilidade não justifica apagar evidência automaticamente.",
+      "pendencia": "Definir retenção e preservar diagnósticos antes de qualquer exclusão, se a ação ainda for desejada.",
+      "fontes": [
+        "docs/execucao/revisao-plano-20261001/github.json",
+        "docs/plano-implementacao/plano-workflows-github-100-etapas-20260927.md"
+      ]
+    },
+    {
+      "id": "W094",
+      "titulo": "Atualizar docs/CI_CD.md e docs/BRANCH_PROTECTION.md ao fim de cada fase (hoje descrevem 22/09).",
+      "situacao": "N",
+      "constatacao": "CI_CD e BRANCH_PROTECTION mantêm estado de 22/09 e narrativa de indisponibilidade geral que não representa os runners atuais.",
+      "pendencia": "Atualizar os documentos com dados de 01/10 e limites entre execução, proteção e publicação.",
+      "fontes": [
+        "docs/CI_CD.md",
+        "docs/BRANCH_PROTECTION.md",
+        "docs/execucao/revisao-plano-20261001/workflows-github.json",
+        "docs/execucao/revisao-plano-20261001/github.json"
+      ]
+    },
+    {
+      "id": "W095",
+      "titulo": "README: badges apontam para runs vermelhas; manter só ci.yml + security.yml depois de verdes.",
+      "situacao": "S",
+      "constatacao": "README atual possui badges estáticos de stack/build/estilo, sem badges apontando para runs vermelhas; a premissa textual não corresponde ao main auditado.",
+      "pendencia": "Decidir quais indicadores atuais acrescentar quando forem confiáveis; não declarar qualidade verde com base em badge estático.",
+      "fontes": [
+        "README.md:5",
+        "docs/execucao/revisao-plano-20261001/github.json"
+      ]
+    },
+    {
+      "id": "W096",
+      "titulo": "Remover reports/AUDIT_REPORT_*.md versionados e adicionar reports/ ao .gitignore (workflows escrevem lá; saída de CI não entra em commit).",
+      "situacao": "N",
+      "constatacao": "Dois AUDIT_REPORT_*.md continuam versionados em reports/ e .gitignore não ignora reports/.",
+      "pendencia": "Separar artefatos efêmeros de evidências que precisam de preservação antes de decidir remoção.",
+      "fontes": [
+        ".gitignore",
+        "reports/AUDIT_REPORT_631165be8.md",
+        "reports/AUDIT_REPORT_733ce6c62.md"
+      ]
+    },
+    {
+      "id": "W097",
+      "titulo": "Husky pre-push roda a suíte Vitest inteira (igual ao CI): trocar por vitest related --changed origin/main.",
+      "situacao": "N",
+      "constatacao": "pre-push continua executando typecheck:baseline, lint:baseline e toda a suíte Vitest.",
+      "pendencia": "Medir custo e definir seleção de testes que preserve contratos relevantes; validar a sintaxe e semântica da alternativa proposta.",
+      "fontes": [
+        ".husky/pre-push"
+      ]
+    },
+    {
+      "id": "W098",
+      "titulo": "AGENTS.md manda commitar com --no-verify, ou seja, o hook é ignorado por regra: alinhar (hook leve, sem --no-verify) ou remover o pre-push.",
+      "situacao": "S",
+      "constatacao": "AGENTS exige commit --no-verify, enquanto existe pre-push. --no-verify no commit não equivale a desativar o hook de push; o diagnóstico original mistura hooks diferentes.",
+      "pendencia": "Reescrever a decisão distinguindo pre-commit e pre-push e alinhar política real sem presumir bypass global.",
+      "fontes": [
+        "AGENTS.md",
+        ".husky/pre-commit",
+        ".husky/pre-push"
+      ]
+    },
+    {
+      "id": "W099",
+      "titulo": "Runbook \"CI vermelha em main\" em docs/RUNBOOK.md: quem re-roda, quando reverter, como usar github_get_run_failure_summary.",
+      "situacao": "N",
+      "constatacao": "RUNBOOK contém resposta a incidentes, mas não foi localizado procedimento específico de CI vermelha em main, responsáveis por rerun/reversão e evidência do candidato.",
+      "pendencia": "Escrever procedimento operacional com critérios de reexecução, reversão e escalonamento compatíveis com entrega real.",
+      "fontes": [
+        "docs/RUNBOOK.md",
+        "docs/CI_CD.md"
+      ]
+    },
+    {
+      "id": "W100",
+      "titulo": "Marco de encerramento: 30 dias consecutivos com main verde, ≤ 30 min de Actions por PR, zero push direto, deploy de produção só via workflow com aprovação. Evidência (links das runs) em docs/execucao/evidencias/.",
+      "situacao": "V",
+      "constatacao": "Não há janela comprovada de 30 dias verdes; o próprio SHA main atual tem qualidade/compliance/drift em falha. Custos por PR, ausência de push direto e promoção exclusiva aprovada não estão demonstrados.",
+      "pendencia": "Manter marco aberto e redefinir métricas para self-hosted, com série histórica e evidência de publicação antes de qualquer aceite.",
+      "fontes": [
+        "docs/execucao/revisao-plano-20261001/github.json",
+        "docs/execucao/revisao-plano-20261001/workflows-github.json",
+        "docs/execucao/revisao-plano-20261001/main-runs.json"
+      ]
+    }
+  ]
+}

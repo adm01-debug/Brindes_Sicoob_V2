@@ -1,0 +1,49 @@
+{
+  "data": "2026-10-01",
+  "commit": "f1b4e0dd0ff33e5c78742ffa9d2cf5a7385d8e13",
+  "vitest": {
+    "exit_code": 0,
+    "arquivos_aprovados": 400,
+    "arquivos_ignorados": 8,
+    "testes_aprovados": 5575,
+    "testes_ignorados": 112,
+    "falhas": 0
+  },
+  "cobertura": {
+    "escopo": "9 arquivos explícitos em vitest.config.ts, não cobertura global",
+    "statements": 93.95,
+    "branches": 86.79,
+    "functions": 97.22,
+    "lines": 97.58
+  },
+  "node": {
+    "aprovados": 202,
+    "falhas": 0
+  },
+  "typecheck": {
+    "exit_code": 1,
+    "diagnosticos": 179,
+    "baseline": 166,
+    "arquivos_regressao": 15
+  },
+  "lint": {
+    "exit_code": 0,
+    "erros_globais": 3265,
+    "arquivos_alterados_analisados": 0
+  },
+  "skips_criticos": {
+    "ocorrencias": 41,
+    "baseline": 44
+  },
+  "build": {
+    "exit_code": 0,
+    "limite": "alertas de chunks/imports; não comprova artefato remoto"
+  },
+  "sql": {
+    "atomicidade": "aprovada localmente",
+    "rls_pedidos": "aprovada localmente",
+    "status_orcamentos": "falha reproduzida fora de escopo"
+  },
+  "banco_remoto": "não acessível para SQL nesta revisão",
+  "encerramento_integral": false
+}
