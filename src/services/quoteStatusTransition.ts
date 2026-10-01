@@ -18,6 +18,7 @@ export async function updateQuoteStatusAtomically(
   notes?: string,
 ): Promise<QuoteStatusTransition> {
   const { data: quote, error: quoteError } = await supabase
+    // rls-allow: lookup pré-RPC por UUID; a RLS filtra o escopo e a RPC revalida sob lock.
     .from("quotes")
     .select("id, row_version")
     .eq("id", quoteId)
@@ -47,6 +48,7 @@ export async function approveQuoteWithPdfAtomically(
   notes?: string,
 ): Promise<QuoteStatusTransition & { approved_pdf_url: string }> {
   const { data: quote, error: quoteError } = await supabase
+    // rls-allow: lookup pré-RPC por UUID; a RLS filtra o escopo e a RPC revalida sob lock.
     .from("quotes")
     .select("id, row_version")
     .eq("id", quoteId)

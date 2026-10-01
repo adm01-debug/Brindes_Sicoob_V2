@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { beginReorderIntent, completeReorderIntent } from "./reorderIdempotency";
 import {
   canSicoobTransitionTo,
   type OrderStatus,
@@ -244,13 +245,16 @@ export const sicoobOrderService = {
     return { successes, failures };
   },
 
-  async reorderOrder(orderId: string, idempotencyKey = crypto.randomUUID()): Promise<string> {
+  async reorderOrder(orderId: string, suppliedKey?: string): Promise<string> {
+    const intent = `order:${orderId}`;
+    const { idempotencyKey, managed } = beginReorderIntent(intent, suppliedKey);
     const { data, error } = await supabase.functions.invoke('sicoob-reorder', {
       body: { orderId, idempotencyKey },
     });
     if (error) throw error;
     const newQuoteId = typeof data?.quoteId === 'string' ? data.quoteId : null;
     if (!newQuoteId) throw new Error('A recompra não retornou o orçamento criado.');
+    completeReorderIntent(intent, idempotencyKey, managed);
     return newQuoteId;
   },
 

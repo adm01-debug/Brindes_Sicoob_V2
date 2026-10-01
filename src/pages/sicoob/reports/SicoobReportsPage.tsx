@@ -15,7 +15,7 @@ import { ptBR } from "date-fns/locale";
 import { endOfDay, format } from "date-fns";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { DateRange } from "react-day-picker";
+import type { DateRange } from "react-day-picker";
 import { cn } from "@/lib/utils";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -32,6 +32,89 @@ const REPORTS = [
   { title: "Performance de Logística", desc: "Métricas de prazos de entrega e ocorrências de transporte.", icon: FileBarChart, type: "PDF" },
 ];
 
+type BudgetHistoryRow = {
+  id: string;
+  pa_id: string;
+  ano: number;
+  mes: number;
+  verba_total: number;
+  verba_consumida: number;
+  pa_count: number;
+  pa_names: string[];
+};
+
+type RawBudgetHistoryRow = Omit<BudgetHistoryRow, "pa_count" | "pa_names"> & {
+  postos_atendimento: { nome: string } | null;
+};
+
+async function fetchBudgetHistoryPage(
+  paId: string | null | undefined,
+  cooperativePaIds: string[],
+  offset: number,
+  pageSize: number,
+) {
+  let query = supabase
+    .from("pa_budgets")
+    .select("id, pa_id, ano, mes, verba_total, verba_consumida, postos_atendimento(nome)")
+    .order("ano", { ascending: false })
+    .order("mes", { ascending: false })
+    .order("pa_id", { ascending: true })
+    .order("id", { ascending: true })
+    .range(offset, offset + pageSize - 1);
+  query = paId ? query.eq("pa_id", paId) : query.in("pa_id", cooperativePaIds);
+  const { data, error } = await query;
+  if (error) throw error;
+  return (data ?? []) as RawBudgetHistoryRow[];
+}
+
+export async function fetchAllBudgetHistoryRows(paId: string | null | undefined, cooperativePaIds: string[]) {
+  const pageSize = 1000;
+  const rows: RawBudgetHistoryRow[] = [];
+  for (let offset = 0; ; offset += pageSize) {
+    const page = await fetchBudgetHistoryPage(paId, cooperativePaIds, offset, pageSize);
+    rows.push(...page);
+    if (page.length < pageSize) return rows;
+  }
+}
+
+function toPaBudgetHistory(row: RawBudgetHistoryRow): BudgetHistoryRow {
+  return {
+    ...row,
+    pa_count: 1,
+    pa_names: row.postos_atendimento?.nome ? [row.postos_atendimento.nome] : [],
+  };
+}
+
+function consolidateBudgetHistory(rows: RawBudgetHistoryRow[]) {
+  const periods = new Map<string, BudgetHistoryRow>();
+  for (const row of rows) {
+    const key = `${row.ano}-${String(row.mes).padStart(2, "0")}`;
+    const current = periods.get(key) ?? {
+      id: key,
+      pa_id: "",
+      ano: row.ano,
+      mes: row.mes,
+      verba_total: 0,
+      verba_consumida: 0,
+      pa_count: 0,
+      pa_names: [],
+    };
+    current.verba_total += Number(row.verba_total ?? 0);
+    current.verba_consumida += Number(row.verba_consumida ?? 0);
+    current.pa_count += 1;
+    const paName = row.postos_atendimento?.nome;
+    if (paName && !current.pa_names.includes(paName)) current.pa_names.push(paName);
+    periods.set(key, current);
+  }
+  return [...periods.values()]
+    .sort((left, right) => (right.ano - left.ano) || (right.mes - left.mes))
+    .slice(0, 12);
+}
+
+function getBudgetScopeDescription(paCount: number) {
+  return paCount > 1 ? `Consolidado de ${paCount} PAs` : "Competência do PA";
+}
+
 function getScopeLabel(paId?: string | null, cooperativeId?: string | null) {
   if (paId) return `PA ${paId}`;
   if (cooperativeId) return `Cooperativa ${cooperativeId}`;
@@ -41,6 +124,28 @@ function getScopeLabel(paId?: string | null, cooperativeId?: string | null) {
 function getPeriodLabel(date?: DateRange) {
   if (!date?.from) return "Todo o período";
   return `${format(date.from, "dd/MM/yyyy")} até ${date.to ? format(date.to, "dd/MM/yyyy") : format(new Date(), "dd/MM/yyyy")}`;
+}
+
+async function fetchBudgetHistory(paId?: string | null, cooperativeId?: string | null) {
+  if (!paId && !cooperativeId) return [];
+
+  let cooperativePaIds: string[] = [];
+  if (!paId && cooperativeId) {
+    const { data: paRows, error: paError } = await supabase
+      .from("postos_atendimento")
+      .select("id")
+      .eq("cooperativa_id", cooperativeId);
+    if (paError) throw paError;
+    cooperativePaIds = (paRows ?? []).map((pa) => pa.id);
+    if (cooperativePaIds.length === 0) return [];
+  }
+
+  const rows = await fetchAllBudgetHistoryRows(paId, cooperativePaIds);
+
+  if (paId) {
+    return rows.slice(0, 12).map(toPaBudgetHistory);
+  }
+  return consolidateBudgetHistory(rows);
 }
 
 export default function SicoobReportsPage() {
@@ -55,19 +160,7 @@ export default function SicoobReportsPage() {
   const scopeLabel = getScopeLabel(profile?.pa_id, profile?.cooperativa_id);
   const { data: budgetHistory, isLoading: isBudgetLoading, error: budgetError } = useQuery({
     queryKey: ["sicoob-budget-history", profile?.pa_id, profile?.cooperativa_id],
-    queryFn: async () => {
-      if (!scopeId) return [];
-      let query = supabase
-        .from("pa_budgets")
-        .select("*")
-        .order("ano", { ascending: false })
-        .order("mes", { ascending: false })
-        .limit(12);
-      query = profile?.pa_id ? query.eq("pa_id", profile.pa_id) : query.eq("cooperative_id", profile!.cooperativa_id!);
-      const { data, error } = await query;
-      if (error) throw error;
-      return data;
-    },
+    queryFn: () => fetchBudgetHistory(profile?.pa_id, profile?.cooperativa_id),
     enabled: Boolean(scopeId),
   });
 
@@ -321,7 +414,7 @@ export default function SicoobReportsPage() {
               {isBudgetLoading && <p className="text-sm text-muted-foreground">Carregando histórico medido…</p>}
               {budgetError && <p role="alert" className="text-sm text-destructive">Não foi possível carregar o histórico de verba.</p>}
               {!isBudgetLoading && !budgetError && budgetHistory?.length === 0 && <p className="text-sm text-muted-foreground">Nenhuma competência de verba foi registrada neste escopo.</p>}
-              {budgetHistory?.map((bh: any) => (
+              {budgetHistory?.map((bh) => (
                 <Card key={bh.id} className="border-[1.5px] hover:border-sicoob-green/30 transition-colors">
                   <CardHeader className="pb-2">
                     <div className="flex justify-between items-center">
@@ -334,6 +427,9 @@ export default function SicoobReportsPage() {
                     </div>
                   </CardHeader>
                   <CardContent className="space-y-4 pt-2">
+                     <p className="text-xs text-muted-foreground">
+                       {getBudgetScopeDescription(bh.pa_count)}
+                     </p>
                      <div className="grid grid-cols-2 gap-4">
                        <div className="space-y-1">
                          <span className="text-[10px] uppercase font-bold text-muted-foreground">Verba Total</span>

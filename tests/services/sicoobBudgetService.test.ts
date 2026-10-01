@@ -1,0 +1,84 @@
+import { beforeEach, describe, expect, it, vi, type Mock } from "vitest";
+
+const mocks = vi.hoisted(() => ({ from: vi.fn() }));
+
+vi.mock("@/integrations/supabase/client", () => ({
+  supabase: { from: mocks.from },
+}));
+
+import { sicoobBudgetService } from "@/services/sicoob/budgetService";
+
+function makeChain(result: { data: unknown; error: Error | null }) {
+  const chain: Record<string, unknown> = {};
+  for (const method of ["select", "eq", "in", "update"]) {
+    chain[method] = vi.fn().mockReturnValue(chain);
+  }
+  chain.maybeSingle = vi.fn().mockResolvedValue(result);
+  chain.then = (resolve: (value: typeof result) => unknown) => Promise.resolve(result).then(resolve);
+  return chain;
+}
+
+beforeEach(() => {
+  mocks.from.mockReset();
+});
+
+describe("sicoobBudgetService.getBudgets", () => {
+  it("resolve os PAs da cooperativa antes de filtrar as verbas", async () => {
+    const paChain = makeChain({ data: [{ id: "pa-1" }, { id: "pa-2" }], error: null });
+    const budgetChain = makeChain({ data: [{ id: "verba-1", pa_id: "pa-1" }], error: null });
+    mocks.from.mockImplementation((table: string) => table === "postos_atendimento" ? paChain : budgetChain);
+
+    const result = await sicoobBudgetService.getBudgets({ cooperative_id: "coop-1" });
+
+    expect(paChain.eq as Mock).toHaveBeenCalledWith("cooperativa_id", "coop-1");
+    expect(budgetChain.in as Mock).toHaveBeenCalledWith("pa_id", ["pa-1", "pa-2"]);
+    expect(result).toEqual([{ id: "verba-1", pa_id: "pa-1" }]);
+  });
+
+  it("retorna vazio sem consultar verbas quando a cooperativa não possui PA", async () => {
+    const paChain = makeChain({ data: [], error: null });
+    mocks.from.mockReturnValue(paChain);
+
+    await expect(sicoobBudgetService.getBudgets({ cooperative_id: "coop-vazia" })).resolves.toEqual([]);
+
+    expect(mocks.from).toHaveBeenCalledTimes(1);
+    expect(mocks.from).toHaveBeenCalledWith("postos_atendimento");
+  });
+
+  it("mantém o filtro direto por PA", async () => {
+    const budgetChain = makeChain({ data: [{ id: "verba-2", pa_id: "pa-9" }], error: null });
+    mocks.from.mockReturnValue(budgetChain);
+
+    await sicoobBudgetService.getBudgets({ pa_id: "pa-9" });
+
+    expect(budgetChain.eq as Mock).toHaveBeenCalledWith("pa_id", "pa-9");
+    expect(mocks.from).toHaveBeenCalledExactlyOnceWith("pa_budgets");
+  });
+});
+
+describe("sicoobBudgetService por competência", () => {
+  it("consulta uma única competência do PA", async () => {
+    const chain = makeChain({ data: { id: "verba-maio" }, error: null });
+    mocks.from.mockReturnValue(chain);
+
+    await expect(sicoobBudgetService.getBudgetByPa("pa-1", { year: 2026, month: 5 }))
+      .resolves.toEqual({ id: "verba-maio" });
+
+    expect(chain.eq as Mock).toHaveBeenCalledWith("pa_id", "pa-1");
+    expect(chain.eq as Mock).toHaveBeenCalledWith("ano", 2026);
+    expect(chain.eq as Mock).toHaveBeenCalledWith("mes", 5);
+  });
+
+  it("atualiza somente a competência solicitada", async () => {
+    const readChain = makeChain({ data: { id: "verba-junho" }, error: null });
+    const updateChain = makeChain({ data: null, error: null });
+    mocks.from.mockReturnValueOnce(readChain).mockReturnValueOnce(updateChain);
+
+    await sicoobBudgetService.updateBudget("pa-2", 750, { year: 2026, month: 6 });
+
+    expect(updateChain.update as Mock).toHaveBeenCalledWith(expect.objectContaining({ verba_consumida: 750 }));
+    expect(updateChain.eq as Mock).toHaveBeenCalledWith("pa_id", "pa-2");
+    expect(updateChain.eq as Mock).toHaveBeenCalledWith("ano", 2026);
+    expect(updateChain.eq as Mock).toHaveBeenCalledWith("mes", 6);
+  });
+});

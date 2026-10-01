@@ -1,7 +1,13 @@
 import { supabase } from "@/integrations/supabase/client";
 import { untypedFrom } from "@/lib/supabase-untyped";
 import { type UserWithRole, type AppRole } from "@/types/users";
-import { logger } from "@/lib/logger";
+import type { Database } from "@/integrations/supabase/types";
+
+type DatabaseRole = Database["public"]["Enums"]["app_role"];
+
+function toDatabaseRole(role: AppRole): DatabaseRole {
+  return role === "agente" ? "vendedor" : role;
+}
 
 type ProfileHierarchyRow = {
   id: string;
@@ -38,7 +44,7 @@ export class UserService {
   }
 
   static async updateRole(userId: string, newRole: AppRole) {
-    const { error } = await supabase.from("user_roles").update({ role: newRole }).eq("user_id", userId);
+    const { error } = await supabase.from("user_roles").update({ role: toDatabaseRole(newRole) }).eq("user_id", userId);
     if (error) throw error;
   }
 
@@ -49,7 +55,7 @@ export class UserService {
         email: params.email.trim(), 
         password: params.password, 
         full_name: params.full_name.trim(), 
-        role: params.role 
+        role: toDatabaseRole(params.role)
       },
     });
     if (error) throw error;
@@ -104,12 +110,16 @@ export class UserService {
     return data || [];
   }
 
-  static async updateHierarchy(userId: string, field: string, value: string | null) {
+  static async updateHierarchy(userId: string, field: "pa_id" | "singular_id" | "carteira_id", value: string | null) {
+    const update = field === "pa_id"
+      ? { pa_id: value }
+      : field === "singular_id"
+        ? { singular_id: value }
+        : { carteira_id: value };
     const { error } = await supabase
       .from("profiles")
-      .update({ [field]: value })
+      .update(update)
       .eq("id", userId);
     if (error) throw error;
   }
 }
-

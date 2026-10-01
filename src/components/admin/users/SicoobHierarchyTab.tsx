@@ -2,8 +2,7 @@ import React, { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Search, Building2, MapPin, Briefcase, Save, Loader2 } from "lucide-react";
+import { Search, Building2, MapPin, Briefcase, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
 import { UserService } from "@/services/admin/UserService";
@@ -11,15 +10,17 @@ import { UserService } from "@/services/admin/UserService";
 export function SicoobHierarchyTab() {
   const [searchQuery, setSearchQuery] = useState("");
   const { toast } = useToast();
-  const [updatingId, setUpdatingId] = useState<string | null>(null);
 
   const { data: users = [], isLoading, refetch } = useQuery({
     queryKey: ["sicoob-users-hierarchy"],
     queryFn: () => UserService.listHierarchy()
   });
 
-  const handleUpdateHierarchy = async (userId: string, field: string, value: string) => {
-    setUpdatingId(userId);
+  const handleUpdateHierarchy = async (
+    userId: string,
+    field: "pa_id" | "singular_id" | "carteira_id",
+    value: string,
+  ) => {
     try {
       const uuidValue = value.trim() || null;
       await UserService.updateHierarchy(userId, field, uuidValue);
@@ -29,14 +30,12 @@ export function SicoobHierarchyTab() {
         description: "Hierarquia atualizada com sucesso.",
       });
       refetch();
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         variant: "destructive",
         title: "Erro ao atualizar",
-        description: error.message,
+        description: error instanceof Error ? error.message : "Não foi possível atualizar a hierarquia.",
       });
-    } finally {
-      setUpdatingId(null);
     }
   };
 

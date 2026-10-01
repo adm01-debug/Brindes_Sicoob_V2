@@ -20,6 +20,7 @@ import { sicoobOrderService } from "@/services/sicoob/orderService";
 
 beforeEach(() => {
   vi.clearAllMocks();
+  sessionStorage.clear();
   mocks.getUser.mockResolvedValue({ data: { user: { id: "gestor-1", email: "gestor@cooperativa.test" } } });
   mocks.rpc.mockResolvedValue({ data: null, error: null });
   mocks.invoke.mockResolvedValue({ data: { quoteId: "orcamento-1" }, error: null });
@@ -35,6 +36,23 @@ describe("sicoobOrderService.reorderOrder", () => {
     });
     expect(mocks.rpc).not.toHaveBeenCalled();
     expect(mocks.from).not.toHaveBeenCalled();
+  });
+
+  it("reutiliza a chave gerenciada quando a primeira resposta é perdida", async () => {
+    mocks.invoke
+      .mockResolvedValueOnce({ data: null, error: new Error("timeout") })
+      .mockResolvedValueOnce({ data: { quoteId: "orcamento-1" }, error: null });
+
+    await expect(sicoobOrderService.reorderOrder("pedido-retry")).rejects.toThrow("timeout");
+    await expect(sicoobOrderService.reorderOrder("pedido-retry")).resolves.toBe("orcamento-1");
+
+    const firstCall = mocks.invoke.mock.calls[0];
+    const retryCall = mocks.invoke.mock.calls[1];
+    expect(firstCall).toBeDefined();
+    expect(retryCall).toBeDefined();
+    const firstKey = firstCall![1].body.idempotencyKey;
+    const retryKey = retryCall![1].body.idempotencyKey;
+    expect(retryKey).toBe(firstKey);
   });
 });
 

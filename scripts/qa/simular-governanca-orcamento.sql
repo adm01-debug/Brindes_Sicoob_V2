@@ -16,13 +16,19 @@ ALTER TABLE storage.objects ENABLE ROW LEVEL SECURITY;
 CREATE TYPE public.app_role AS ENUM ('admin','manager','supervisor','dev','vendedor','gestor_compras');
 CREATE TYPE public.quote_status AS ENUM ('draft','pending','sent','approved','rejected','expired','pending_approval','pending_singular_approval','approved_singular','rejected_singular');
 CREATE TABLE public.profiles (user_id uuid PRIMARY KEY, cooperativa_id uuid, pa_id uuid, role text);
+CREATE TABLE public.workspace_notifications (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(), user_id uuid NOT NULL,
+  title text NOT NULL, message text NOT NULL, type text NOT NULL DEFAULT 'info',
+  category text NOT NULL DEFAULT 'system', action_url text, metadata jsonb DEFAULT '{}'::jsonb
+);
 CREATE TABLE public.organization_members (organization_id uuid, user_id uuid);
 CREATE TABLE public.user_roles (user_id uuid, role public.app_role, UNIQUE(user_id, role));
 CREATE FUNCTION public.get_user_org_ids(p_user_id uuid) RETURNS SETOF uuid LANGUAGE sql STABLE SECURITY DEFINER SET search_path=pg_catalog,public AS $$
   SELECT organization_id FROM public.organization_members WHERE user_id = p_user_id
 $$;
 CREATE TABLE public.quotes (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(), seller_id uuid NOT NULL, organization_id uuid, pa_id uuid, singular_id uuid,
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(), quote_number text NOT NULL DEFAULT gen_random_uuid()::text,
+  seller_id uuid NOT NULL, organization_id uuid, pa_id uuid, singular_id uuid,
   status public.quote_status NOT NULL DEFAULT 'draft', row_version integer NOT NULL DEFAULT 1,
   subtotal numeric NOT NULL DEFAULT 100, discount_percent numeric NOT NULL DEFAULT 0, negotiation_markup_percent numeric NOT NULL DEFAULT 0,
   real_subtotal numeric, real_discount_percent numeric, approved_pdf_url text, approved_by uuid, approved_at timestamptz,
@@ -47,6 +53,7 @@ CREATE TRIGGER zz_bump_version BEFORE UPDATE ON public.quotes FOR EACH ROW EXECU
 GRANT USAGE ON SCHEMA public, auth TO authenticated;
 GRANT USAGE ON SCHEMA storage TO authenticated;
 GRANT SELECT, INSERT, UPDATE ON public.quotes, public.discount_approval_requests, public.quote_history TO authenticated;
+GRANT SELECT ON public.workspace_notifications TO authenticated;
 GRANT SELECT ON public.seller_discount_limits, public.user_roles, public.profiles, public.organization_members TO authenticated;
 GRANT SELECT, INSERT, UPDATE ON storage.objects TO authenticated;
 INSERT INTO public.profiles VALUES
@@ -61,6 +68,7 @@ INSERT INTO public.user_roles VALUES
   ('00000000-0000-0000-0000-000000000004','admin');
 INSERT INTO public.seller_discount_limits VALUES ('00000000-0000-0000-0000-000000000001', 10);
 \i /workspace/supabase/migrations/20260927171216_quote_approval_security_hardening.sql
+\i /workspace/supabase/migrations/20260928182000_idempotent_quote_status_notifications.sql
 CREATE TRIGGER bbb_validate_real_discount
 BEFORE INSERT OR UPDATE ON public.quotes
 FOR EACH ROW EXECUTE FUNCTION public.validate_quote_real_discount();
@@ -135,6 +143,69 @@ SELECT status FROM public.bulk_update_quote_status_atomic(
 );
 DO $$ BEGIN
   IF (SELECT status::text FROM public.quotes WHERE id='00000000-0000-0000-0000-000000000302') <> 'sent' THEN RAISE EXCEPTION 'transição atômica não aplicou'; END IF;
+END $$;
+CREATE TEMP TABLE unauthorized_retry_snapshot AS
+SELECT row_version,
+       (SELECT count(*) FROM public.quote_history
+        WHERE quote_id='00000000-0000-0000-0000-000000000302') AS history_count
+FROM public.quotes
+WHERE id='00000000-0000-0000-0000-000000000302';
+SET request.jwt.claim.sub = '00000000-0000-0000-0000-000000000003';
+DO $$ BEGIN
+  BEGIN
+    PERFORM public.bulk_update_quote_status_atomic(
+      ARRAY['00000000-0000-0000-0000-000000000302'::uuid],
+      ARRAY[(SELECT row_version FROM public.quotes WHERE id='00000000-0000-0000-0000-000000000302')],
+      'sent'
+    );
+    RAISE EXCEPTION 'retry do mesmo status por outra Singular foi aceito';
+  EXCEPTION WHEN insufficient_privilege THEN NULL;
+  END;
+  IF (SELECT row_version FROM public.quotes WHERE id='00000000-0000-0000-0000-000000000302')
+     <> (SELECT row_version FROM unauthorized_retry_snapshot) THEN
+    RAISE EXCEPTION 'retry não autorizado alterou row_version';
+  END IF;
+  IF (SELECT count(*) FROM public.quote_history
+      WHERE quote_id='00000000-0000-0000-0000-000000000302')
+     <> (SELECT history_count FROM unauthorized_retry_snapshot) THEN
+    RAISE EXCEPTION 'retry não autorizado gravou histórico';
+  END IF;
+  IF has_function_privilege(
+       'authenticated',
+       'public.assert_quote_transition(uuid, public.quotes, text)',
+       'EXECUTE'
+     ) THEN
+    RAISE EXCEPTION 'função auxiliar de transição continua exposta';
+  END IF;
+END $$;
+SET request.jwt.claim.sub = '00000000-0000-0000-0000-000000000001';
+INSERT INTO public.quotes(id,seller_id,singular_id,status,subtotal,discount_percent)
+VALUES ('00000000-0000-0000-0000-000000000303','00000000-0000-0000-0000-000000000001','00000000-0000-0000-0000-000000000101','draft',100,0);
+SELECT status FROM public.bulk_update_quote_status_atomic(
+  ARRAY['00000000-0000-0000-0000-000000000303'::uuid],
+  ARRAY[(SELECT row_version FROM public.quotes WHERE id='00000000-0000-0000-0000-000000000303')],
+  'pending_singular_approval'
+);
+CREATE TEMP TABLE retry_snapshot AS
+SELECT row_version FROM public.quotes WHERE id='00000000-0000-0000-0000-000000000303';
+SELECT status FROM public.bulk_update_quote_status_atomic(
+  ARRAY['00000000-0000-0000-0000-000000000303'::uuid],
+  ARRAY[(SELECT row_version FROM public.quotes WHERE id='00000000-0000-0000-0000-000000000303')],
+  'pending_singular_approval'
+);
+DO $$ BEGIN
+  IF (SELECT row_version FROM public.quotes WHERE id='00000000-0000-0000-0000-000000000303')
+     <> (SELECT row_version FROM retry_snapshot) THEN
+    RAISE EXCEPTION 'retry incrementou row_version';
+  END IF;
+  IF (SELECT count(*) FROM public.quote_history
+      WHERE quote_id='00000000-0000-0000-0000-000000000303' AND action='status_changed') <> 1 THEN
+    RAISE EXCEPTION 'retry duplicou histórico';
+  END IF;
+  IF (SELECT count(*) FROM public.workspace_notifications
+      WHERE metadata->>'quote_id'='00000000-0000-0000-0000-000000000303') <> 1 THEN
+    RAISE EXCEPTION 'notificação transacional ausente ou duplicada';
+  END IF;
 END $$;
 INSERT INTO storage.objects(bucket_id,name,owner)
 VALUES ('proposals','quotes/00000000-0000-0000-0000-000000000301/proposta-assinada.pdf','00000000-0000-0000-0000-000000000001');

@@ -6,6 +6,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
+import type { Json } from '@/integrations/supabase/types';
 
 export interface KitTemplateRow {
   id: string;
@@ -58,9 +59,9 @@ export function useKitTemplates() {
           name: `${template.name} (cópia)`,
           status: 'draft',
           kit_type: 'montado',
-          box_data: template.box_data,
-          items_data: template.items_data,
-          personalization_data: template.personalization_data,
+          box_data: template.box_data as Json,
+          items_data: template.items_data as Json,
+          personalization_data: template.personalization_data as Json,
           kit_quantity: 1,
           box_price: 0,
           items_price: 0,

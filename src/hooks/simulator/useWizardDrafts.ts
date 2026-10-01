@@ -7,6 +7,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import type { SimulatorWizardState, SelectedProduct, Personalization } from '@/types/domain/simulator-wizard';
+import type { Json } from '@/integrations/supabase/types';
 
 export interface WizardDraft {
   id: string;
@@ -56,9 +57,9 @@ export function useWizardDrafts() {
         .insert({
           user_id: user.id,
           title,
-          product_data: state.selectedProduct as unknown,
+          product_data: state.selectedProduct as unknown as Json,
           quantity: state.quantity,
-          personalizations: state.personalizations as unknown,
+          personalizations: state.personalizations as unknown as Json,
           wizard_step: state.currentStep,
         });
 

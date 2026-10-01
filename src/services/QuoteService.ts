@@ -5,6 +5,7 @@ import type { Json } from "@/integrations/supabase/types";
 import type { Quote, QuoteItem, QuoteItemPersonalization } from "@/hooks/quotes/quoteTypes";
 import { calculateQuoteTotals, buildInsertPayload, buildUpdatePayload, buildAtomicQuoteItems } from "@/hooks/quotes/quoteHelpers";
 import { logger } from "@/lib/logger";
+import { beginReorderIntent, completeReorderIntent } from "@/services/sicoob/reorderIdempotency";
 
 /**
  * Normaliza uma linha crua de `quote_items` (colunas nulas no banco) para o
@@ -222,8 +223,10 @@ export class QuoteService {
   static async reorder(quoteId: string, userId: string, orgId: string | null): Promise<Quote> {
     void userId;
     void orgId;
+    const intent = `quote:${quoteId}`;
+    const { idempotencyKey, managed } = beginReorderIntent(intent);
     const { data, error } = await supabase.functions.invoke('sicoob-reorder', {
-      body: { sourceQuoteId: quoteId, idempotencyKey: crypto.randomUUID() },
+      body: { sourceQuoteId: quoteId, idempotencyKey },
     });
     if (error) {
       if (typeof data?.error === 'string') throw new Error(data.error);
@@ -234,14 +237,17 @@ export class QuoteService {
     }
     const reordered = await this.getById(data.quoteId);
     if (!reordered) throw new Error('O orçamento de recompra não ficou acessível após a criação.');
+    completeReorderIntent(intent, idempotencyKey, managed);
     return reordered;
   }
 
   static async reorderFromOrder(orderId: string, userId: string, orgId: string | null): Promise<Quote> {
     void userId;
     void orgId;
+    const intent = `order:${orderId}`;
+    const { idempotencyKey, managed } = beginReorderIntent(intent);
     const { data, error } = await supabase.functions.invoke('sicoob-reorder', {
-      body: { orderId, idempotencyKey: crypto.randomUUID() },
+      body: { orderId, idempotencyKey },
     });
     if (error) {
       if (typeof data?.error === 'string') throw new Error(data.error);
@@ -252,6 +258,7 @@ export class QuoteService {
     }
     const reordered = await this.getById(data.quoteId);
     if (!reordered) throw new Error('O orçamento de recompra não ficou acessível após a criação.');
+    completeReorderIntent(intent, idempotencyKey, managed);
     return reordered;
   }
 

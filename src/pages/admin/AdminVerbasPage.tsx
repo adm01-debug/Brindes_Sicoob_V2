@@ -79,7 +79,7 @@ export default function AdminVerbasPage() {
       const { data, error } = await supabase
         .from('admin_audit_log')
         .select('*')
-        .eq('entity_type', 'pa_budgets')
+        .eq('resource_type', 'pa_budgets')
         .order('created_at', { ascending: false })
         .limit(50);
       if (error) throw error;
