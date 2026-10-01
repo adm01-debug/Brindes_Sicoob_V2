@@ -33,6 +33,17 @@ function sha256(value) {
   return createHash("sha256").update(value).digest("hex");
 }
 
+function hasTransactionControl(sql) {
+  const keywords = ["BEGIN", "COMMIT", "ROLLBACK"];
+  return sql.split("\n").some((line) => {
+    const normalized = line.trimStart().toUpperCase();
+    return keywords.some((keyword) => {
+      if (!normalized.startsWith(keyword)) return false;
+      return normalized.slice(keyword.length).trimStart().startsWith(";");
+    });
+  });
+}
+
 function parseTarget(target) {
   const filename = basename(target.file);
   const separator = filename.indexOf("_");
@@ -46,7 +57,7 @@ function parseTarget(target) {
   if (actualHash !== target.sha256) {
     throw new Error(`Hash não autorizado para ${filename}: ${actualHash}`);
   }
-  if (/^\s*(BEGIN|COMMIT|ROLLBACK)\s*;/im.test(sql) || /\bCONCURRENTLY\b/i.test(sql)) {
+  if (hasTransactionControl(sql) || /\bCONCURRENTLY\b/i.test(sql)) {
     throw new Error(`${filename} contém controle transacional incompatível com aplicação atômica.`);
   }
   return { ...target, version, name, sql };

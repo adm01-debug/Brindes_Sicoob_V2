@@ -1,16 +1,17 @@
 from pathlib import Path
-import subprocess,json,uuid,time
+import json,secrets,subprocess,tempfile,time,uuid
 root=Path(__file__).resolve().parents[3]
 name='auditoria-status-outubro-'+uuid.uuid4().hex[:8]
+password=secrets.token_urlsafe(24)
 def run(args,stdin=None):
  return subprocess.run(args,input=stdin,text=True,capture_output=True)
 def sql(s):
- r=run(['docker','exec','-i',name,'psql','-U','postgres','-v','ON_ERROR_STOP=1','-At'],s)
+ r=run(['docker','exec','-e',f'PGPASSWORD={password}','-i',name,'psql','-U','postgres','-v','ON_ERROR_STOP=1','-At'],s)
  if r.returncode: raise RuntimeError(r.stderr)
  return r.stdout
 out={'tipo':'Simulação PostgreSQL 17 descartável; nenhum banco remoto acessado','main':'f1b4e0dd0ff33e5c78742ffa9d2cf5a7385d8e13','pr75':'5d6a392643c3500dac74aca37bf5d4a93134de28'}
 try:
- r=run(['docker','run','-d','--rm','--name',name,'-e','POSTGRES_PASSWORD=postgres','postgres:17-alpine'])
+ r=run(['docker','run','-d','--rm','--name',name,'-e',f'POSTGRES_PASSWORD={password}','postgres:17-alpine'])
  if r.returncode: raise RuntimeError(r.stderr)
  for i in range(60):
   if run(['docker','exec',name,'pg_isready','-U','postgres']).returncode==0: break
@@ -35,5 +36,10 @@ try:
  out['resultado']='Falha confirmada em main: RPC escreve versão/histórico fora de escopo ao repetir mesmo status com versão conhecida. PR75 remove essa escrita mas retorna id/status/versão fora do escopo mesmo com versão incorreta.'
 finally:
  run(['docker','rm','-f',name])
-Path('/tmp/reproducao-status-fora-escopo-outubro.json').write_text(json.dumps(out,ensure_ascii=False,indent=2)+'\n')
+with tempfile.NamedTemporaryFile(
+ mode='w', encoding='utf-8', prefix='reproducao-status-fora-escopo-', suffix='.json', delete=False
+) as evidence:
+ json.dump(out,evidence,ensure_ascii=False,indent=2)
+ evidence.write('\n')
+ print(f'evidencia={evidence.name}')
 print(json.dumps(out,ensure_ascii=False,indent=2))
