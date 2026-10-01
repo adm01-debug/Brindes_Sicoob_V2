@@ -1,0 +1,38 @@
+[
+  {
+    "arquivo": "docs/plano-implementacao/plano-150-etapas-20260927/plano.json",
+    "commit": "f1b4e0dd0ff33e5c78742ffa9d2cf5a7385d8e13",
+    "sha256": "9155b0cfe00d0848ca8fd0310dde7893548eba5d1568f54d8630d240297c09a1",
+    "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/blob/f1b4e0dd0ff33e5c78742ffa9d2cf5a7385d8e13/docs/plano-implementacao/plano-150-etapas-20260927/plano.json"
+  },
+  {
+    "arquivo": "docs/plano-implementacao/plano-workflows-github-100-etapas-20260927.md",
+    "commit": "f1b4e0dd0ff33e5c78742ffa9d2cf5a7385d8e13",
+    "sha256": "47486e810cbbda052f5a23cdfd32fc98a0927d8e2487e9c5341ff0f09a927746",
+    "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/blob/f1b4e0dd0ff33e5c78742ffa9d2cf5a7385d8e13/docs/plano-implementacao/plano-workflows-github-100-etapas-20260927.md"
+  },
+  {
+    "arquivo": "docs/execucao/revisao-plano-20260927/requisitos-1000.csv",
+    "commit": "f1b4e0dd0ff33e5c78742ffa9d2cf5a7385d8e13",
+    "sha256": "577b894f6fa7188022dc71e99b0b06a2a2c11bb3caa6458d6d3fb7e8c7cc2657",
+    "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/blob/f1b4e0dd0ff33e5c78742ffa9d2cf5a7385d8e13/docs/execucao/revisao-plano-20260927/requisitos-1000.csv"
+  },
+  {
+    "arquivo": "docs/execucao/revisao-plano-20261001/matriz-150.json",
+    "commit": "194992624ec22a3f956413280934e825280e46de",
+    "sha256": "a39edb038b76fa068dfcddb7d24a151ba5a0a99451b74442164e52c2facdee33",
+    "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/blob/194992624ec22a3f956413280934e825280e46de/docs/execucao/revisao-plano-20261001/matriz-150.json"
+  },
+  {
+    "arquivo": "docs/execucao/revisao-plano-20261001/workflows-100.json",
+    "commit": "194992624ec22a3f956413280934e825280e46de",
+    "sha256": "f086c05b071e6dace5a53c94e946701548df02d972dfaf42899d02f1f6fb6a0a",
+    "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/blob/194992624ec22a3f956413280934e825280e46de/docs/execucao/revisao-plano-20261001/workflows-100.json"
+  },
+  {
+    "arquivo": "docs/execucao/revisao-do-plano-2026-10-01.md",
+    "commit": "194992624ec22a3f956413280934e825280e46de",
+    "sha256": "ec85877c5d829e1b89cbcd48e8415abe9fc80778cc8468e76c1438c5eff9da76",
+    "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/blob/194992624ec22a3f956413280934e825280e46de/docs/execucao/revisao-do-plano-2026-10-01.md"
+  }
+]
