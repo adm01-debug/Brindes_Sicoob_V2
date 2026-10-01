@@ -1,0 +1,54 @@
+{
+  "coletado_em": "2026-10-01T13:45:00-03:00",
+  "origem": "Supabase Management API",
+  "modo": "somente leitura",
+  "projeto": {
+    "ref": "cfmzkthhgliqelozlmwu",
+    "nome": "Brindes_Sicoob_V2",
+    "regiao": "us-east-1",
+    "status": "ACTIVE_HEALTHY",
+    "postgres": "17.6"
+  },
+  "ledger": {
+    "quantidade": 97,
+    "ultima_versao": "20260927221500",
+    "migrations_alvo_aplicadas": []
+  },
+  "preflight": {
+    "relacoes_presentes": [
+      "public.quotes",
+      "public.quote_history",
+      "public.workspace_notifications",
+      "public.profiles"
+    ],
+    "relacoes_ausentes": [
+      "public.quote_save_idempotency",
+      "public.categories",
+      "public.products",
+      "public.suppliers"
+    ],
+    "funcoes_presentes": [
+      "public.save_quote_atomic(jsonb,jsonb,uuid,integer,jsonb)",
+      "public.bulk_update_quote_status_atomic(uuid[],integer[],text,text)",
+      "public.assert_quote_transition(uuid,public.quotes,text)",
+      "public.can_manage_quote_scope(uuid,uuid)"
+    ],
+    "extensoes": {
+      "pgcrypto": true,
+      "extensions.digest(text,text)": true
+    },
+    "colunas_exigidas_ausentes": [],
+    "rls_quotes": {
+      "habilitado": true,
+      "policies": [
+        "quotes_delete_scope",
+        "quotes_insert_scope",
+        "quotes_role_access",
+        "quotes_select_scope",
+        "quotes_update_scope"
+      ],
+      "allow_all": false
+    }
+  },
+  "conclusao": "As três migrations allowlisted estão pendentes e têm pré-condições presentes. O PR #83 não corresponde ao schema canônico."
+}
