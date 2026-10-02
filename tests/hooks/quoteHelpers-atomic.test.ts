@@ -49,4 +49,23 @@ describe('documento transacional do orçamento', () => {
     expect(item).not.toHaveProperty('total_price');
     expect(item).toHaveProperty('unit_cost', 35);
   });
+
+  it('envia o id quando é um uuid de linha já persistida', () => {
+    const [persistido] = buildAtomicQuoteItems([{
+      id: '8f5d008d-6918-4e40-b90d-c0780ee9de71',
+      product_name: 'Caneca',
+      quantity: 2,
+      unit_price: 10,
+      personalizations: [],
+    }]);
+    const [novo] = buildAtomicQuoteItems([{
+      product_name: 'Boné',
+      quantity: 1,
+      unit_price: 5,
+      personalizations: [],
+    }]);
+
+    expect(persistido).toHaveProperty('id', '8f5d008d-6918-4e40-b90d-c0780ee9de71');
+    expect(novo).not.toHaveProperty('id');
+  });
 });

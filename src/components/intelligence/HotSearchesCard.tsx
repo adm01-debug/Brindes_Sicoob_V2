@@ -31,8 +31,9 @@ export function HotSearchesCard({ days }: HotSearchesCardProps) {
   const { data, isLoading } = useQuery({
     queryKey: ["hot-searches", days],
     queryFn: async (): Promise<HotSearchItem[]> => {
-      const { isDemoMode, MOCK_HOT_SEARCHES } = await import("@/pages/trends/trends-mock");
+      const { isDemoMode } = await import("@/pages/trends/is-demo-mode");
       if (isDemoMode()) {
+        const { MOCK_HOT_SEARCHES } = await import("@/pages/trends/trends-mock");
         return MOCK_HOT_SEARCHES.map(s => ({
           term: s.term,
           searchCount: s.count,

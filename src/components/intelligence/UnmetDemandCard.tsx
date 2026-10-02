@@ -29,8 +29,9 @@ export function UnmetDemandCard({ days }: UnmetDemandCardProps) {
   const { data, isLoading } = useQuery({
     queryKey: ["unmet-demand", days],
     queryFn: async (): Promise<UnmetDemandItem[]> => {
-      const { isDemoMode, MOCK_UNMET_DEMAND } = await import("@/pages/trends/trends-mock");
+      const { isDemoMode } = await import("@/pages/trends/is-demo-mode");
       if (isDemoMode()) {
+        const { MOCK_UNMET_DEMAND } = await import("@/pages/trends/trends-mock");
         const now = new Date().toISOString();
         return MOCK_UNMET_DEMAND.map(d => ({
           term: d.term, searchCount: d.count, lastSearchedAt: now,

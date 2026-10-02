@@ -173,12 +173,18 @@ export function buildPersonalizationsInsertPayload(
   }));
 }
 
+// Ids locais de UI (ex.: "item-2" do drag-and-drop) não são uuids do banco;
+// só um uuid real pode identificar a linha a preservar na RPC.
+const ITEM_ID_UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 /**
- * Monta o documento recebido pela RPC transacional. IDs, vínculo ao orçamento,
- * ordem e totais derivados são definidos novamente no banco.
+ * Monta o documento recebido pela RPC transacional. Itens carregados do banco
+ * enviam `id` para preservar a linha; itens novos vão sem `id` e nascem no banco.
+ * Vínculo ao orçamento, ordem e totais derivados são definidos novamente lá.
  */
 export function buildAtomicQuoteItems(items: QuoteItem[]): Json[] {
   return items.map((item) => ({
+    ...(item.id && ITEM_ID_UUID_RE.test(item.id) ? { id: item.id } : {}),
     product_id: emptyToNull(item.product_id),
     product_name: item.product_name,
     product_sku: emptyToNull(item.product_sku),
