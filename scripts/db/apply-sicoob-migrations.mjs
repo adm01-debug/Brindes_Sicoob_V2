@@ -27,6 +27,10 @@ const TARGETS = [
     file: "supabase/migrations/20260928182000_idempotent_quote_status_notifications.sql",
     sha256: "1bfe27ba7e9fddcfe08ed6fb16e1d0bd056cdff95b60a9a61a8f2548337a1a12",
   },
+  {
+    file: "supabase/migrations/20261002120000_quote_items_identity_preservation.sql",
+    sha256: "91981250b714f3945fe450654eacdc47534f20a696ad62e29507ad5ceb6c9beb",
+  },
 ];
 
 function sha256(value) {
@@ -267,17 +271,30 @@ async function validateContract(client, targets) {
         FROM pg_trigger t
         WHERE t.tgrelid = 'public.quotes'::regclass
           AND t.tgname = 'trg_notify_singular_quote_submission'
-          AND NOT t.tgisinternal) AS notification_trigger_definition
+          AND NOT t.tgisinternal) AS notification_trigger_definition,
+      (SELECT p.prosrc FROM pg_proc p
+        WHERE p.oid = to_regprocedure('public.save_quote_atomic(jsonb,jsonb,uuid,integer,jsonb)')) AS save_atomic_source,
+      COALESCE((SELECT NOT p.prosecdef AND p.proconfig @> ARRAY['search_path=pg_catalog, public']::text[]
+        FROM pg_proc p
+        WHERE p.oid = to_regprocedure('public.save_quote_atomic(jsonb,jsonb,uuid,integer,jsonb)')), false) AS save_atomic_security_safe,
+      has_function_privilege('authenticated', 'public.save_quote_atomic(jsonb,jsonb,uuid,integer,jsonb)', 'EXECUTE') AS save_atomic_authenticated_execute,
+      has_function_privilege('anon', 'public.save_quote_atomic(jsonb,jsonb,uuid,integer,jsonb)', 'EXECUTE') AS save_atomic_anon_execute,
+      COALESCE((SELECT bool_or(a.grantee = 0 AND a.privilege_type = 'EXECUTE')
+        FROM pg_proc p,
+          LATERAL aclexplode(COALESCE(p.proacl, acldefault('f', p.proowner))) a
+        WHERE p.oid = to_regprocedure('public.save_quote_atomic(jsonb,jsonb,uuid,integer,jsonb)')), false) AS save_atomic_public_execute
   `);
   const result = rows[0];
   const idempotencyMigration = targets.find((target) => target.version === "20260928173500");
   const statusMigration = targets.find((target) => target.version === "20260928182000");
-  if (!idempotencyMigration || !statusMigration) {
+  const identityMigration = targets.find((target) => target.version === "20261002120000");
+  if (!idempotencyMigration || !statusMigration || !identityMigration) {
     throw new Error("Allowlist incompleta para validar os corpos das funções críticas.");
   }
   const sourceHashesValid = typeof result?.idempotency_source === "string"
     && typeof result.status_source === "string"
     && typeof result.notification_source === "string"
+    && typeof result.save_atomic_source === "string"
     && sha256(result.idempotency_source.trim()) === sha256(
       extractFunctionBody(idempotencyMigration.sql, "save_quote_atomic_idempotent"),
     )
@@ -286,6 +303,9 @@ async function validateContract(client, targets) {
     )
     && sha256(result.notification_source.trim()) === sha256(
       extractFunctionBody(statusMigration.sql, "notify_singular_quote_submission"),
+    )
+    && sha256(result.save_atomic_source.trim()) === sha256(
+      extractFunctionBody(identityMigration.sql, "save_quote_atomic"),
     );
   const normalizeExpression = (value) => typeof value === "string"
     ? value.replace(/\s+/g, " ").trim()
@@ -327,10 +347,12 @@ async function validateContract(client, targets) {
     && !result.transition_assert_anon_execute && !result.transition_assert_public_execute
     && !result.notification_authenticated_execute && !result.notification_anon_execute
     && !result.notification_public_execute
-    && result.notification_trigger_safe && triggerDefinitionExact;
+    && result.notification_trigger_safe && triggerDefinitionExact
+    && result.save_atomic_security_safe && result.save_atomic_authenticated_execute
+    && !result.save_atomic_anon_execute && !result.save_atomic_public_execute;
   if (!valid) {
     const { idempotency_source: _idempotency, status_source: _status,
-      notification_source: _notification, ...diagnostic } = result ?? {};
+      notification_source: _notification, save_atomic_source: _save_atomic, ...diagnostic } = result ?? {};
     throw new Error(`Contrato remoto de idempotência inválido: ${JSON.stringify({
       ...diagnostic,
       source_hashes_valid: sourceHashesValid,
@@ -361,7 +383,8 @@ VALUES (
 );`).join("\n");
   const idempotencyMigration = targets.find((target) => target.version === "20260928173500");
   const statusMigration = targets.find((target) => target.version === "20260928182000");
-  if (!idempotencyMigration || !statusMigration) {
+  const identityMigration = targets.find((target) => target.version === "20261002120000");
+  if (!idempotencyMigration || !statusMigration || !identityMigration) {
     throw new Error("Allowlist incompleta para montar a validação transacional.");
   }
   const idempotencyBody = dollarQuote(
@@ -375,6 +398,10 @@ VALUES (
   const notificationBody = dollarQuote(
     extractFunctionBody(statusMigration.sql, "notify_singular_quote_submission"),
     "notification_body",
+  );
+  const saveAtomicBody = dollarQuote(
+    extractFunctionBody(identityMigration.sql, "save_quote_atomic"),
+    "save_atomic_body",
   );
 
   return `BEGIN;
@@ -409,6 +436,16 @@ BEGIN
         IS DISTINCT FROM ${statusBody}
      OR (SELECT btrim(prosrc, E' \n\r\t') FROM pg_proc WHERE oid = to_regprocedure('public.notify_singular_quote_submission()'))
         IS DISTINCT FROM ${notificationBody}
+     OR (SELECT btrim(prosrc, E' \n\r\t') FROM pg_proc WHERE oid = to_regprocedure('public.save_quote_atomic(jsonb,jsonb,uuid,integer,jsonb)'))
+        IS DISTINCT FROM ${saveAtomicBody}
+     OR NOT has_function_privilege('authenticated', 'public.save_quote_atomic(jsonb,jsonb,uuid,integer,jsonb)', 'EXECUTE')
+     OR has_function_privilege('anon', 'public.save_quote_atomic(jsonb,jsonb,uuid,integer,jsonb)', 'EXECUTE')
+     OR EXISTS (
+       SELECT 1 FROM pg_proc p,
+         LATERAL aclexplode(COALESCE(p.proacl, acldefault('f', p.proowner))) a
+       WHERE p.oid = to_regprocedure('public.save_quote_atomic(jsonb,jsonb,uuid,integer,jsonb)')
+         AND a.grantee = 0 AND a.privilege_type = 'EXECUTE'
+     )
      OR NOT has_function_privilege('authenticated', 'public.save_quote_atomic_idempotent(jsonb,jsonb,uuid,jsonb)', 'EXECUTE')
      OR has_function_privilege('anon', 'public.save_quote_atomic_idempotent(jsonb,jsonb,uuid,jsonb)', 'EXECUTE')
      OR EXISTS (
