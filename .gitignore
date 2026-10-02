@@ -69,3 +69,6 @@ audit_report.pdf
 # etapa 08) — se alguem rodar bun localmente por engano, o lock nao entra no repo.
 bun.lock
 bun.lockb
+
+# Saída gerada pelo graphify (grafo local por máquina)
+graphify-out/
