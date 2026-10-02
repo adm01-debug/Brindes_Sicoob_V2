@@ -11,8 +11,8 @@ Auditoria das 20 dimensões do plano-mestre (o template anuncia 22 mas enumera 2
 ├── Integrações: Bitrix24 (CRM/BizProc), Evolution/WhatsApp, Bling (NFe), Cloudflare Stream,
 │   cnpja, OpenAI/Gemini/ElevenLabs, Spotgifts
 ├── Ambientes: produção Vercel + previews por PR; Supabase único verificado
-├── Escala: 1.891 arquivos em src/ (~316k LOC) · 563 migrations · 412 arquivos de teste
-│   (5.591 testes, 112 skipped) · 128 specs e2e · ~110 rotas · 13 workflows GH
+├── Escala: 1.891 arquivos em src/ (~316k LOC) · 565 migrations · 416 arquivos de teste
+│   (5.592 testes, 112 skipped) · 128 specs e2e · ~110 rotas · 13 workflows GH
 ├── Último commit em main: 2026-10-01 (e3c62ebc3)
 └── Data do último deploy: NÃO AUDITÁVEL — sem acesso ao painel Vercel/Supabase remoto
 ```
@@ -21,7 +21,7 @@ Auditoria das 20 dimensões do plano-mestre (o template anuncia 22 mas enumera 2
 
 ### 1. Arquitetura — **7/10**
 - Evidências: separação `pages/`/`components/`/`hooks/`/`services/`/`lib/`; RPCs transacionais concentram escritas críticas (`save_quote_atomic`, `bulk_update_quote_status_atomic`); scripts de gate próprios.
-- Gaps: páginas monolíticas (TrendsPage 353 linhas/1 função, complexidade 34); alguns fluxos misturam UI+effects no mesmo arquivo.
+- Gaps: páginas monolíticas (TrendsPage 425 linhas/1 função, complexidade 34); alguns fluxos misturam UI+effects no mesmo arquivo.
 - Ações: extrair containers/hooks das páginas >300 linhas (lista em `lint:baseline`).
 
 ### 2. Autenticação — **8/10**
@@ -30,12 +30,12 @@ Auditoria das 20 dimensões do plano-mestre (o template anuncia 22 mas enumera 2
 - Ações: verificar enforcement de MFA para admins; documentar política de sessão em `docs/secrets.md`.
 
 ### 3. Autorização — **8/10**
-- Evidências: ~100% das tabelas com `ENABLE ROW LEVEL SECURITY` + policies (varredura regex em todas as 563 migrations); gate `check-seller-scope.mjs`; `get_user_org_ids`/`can_view_all_sales` para escopo organizacional; REVOKE EXECUTE em funções internas.
+- Evidências: ~100% das tabelas com `ENABLE ROW LEVEL SECURITY` + policies (varredura regex em todas as 565 migrations); gate `check-seller-scope.mjs`; `get_user_org_ids`/`can_view_all_sales` para escopo organizacional; REVOKE EXECUTE em funções internas.
 - Gaps: `check:security-definer-acl` depende de credenciais remotas (skip local); escopo por papel depende de dados de `profiles` (não auditável sem produção).
 - Ações: rodar `check:security-definer-acl` com credenciais em CI agendado.
 
 ### 4. Banco de Dados — **7/10**
-- Evidências: 563 migrations forward-only com gate de imutabilidade (`check-migration-immutability.mjs`); FKs com ON DELETE CASCADE; triggers de `row_version`; RPCs recalculam totais no servidor.
+- Evidências: 565 migrations forward-only com gate de imutabilidade (`check-migration-immutability.mjs`); FKs com ON DELETE CASCADE; triggers de `row_version`; RPCs recalculam totais no servidor.
 - Gaps: antes do PR #88, `save_quote_atomic` deletava e recriava itens a cada edição (churn de identidade, quebra vínculos derivados); tabelas auxiliares sem índice de cobertura verificado (db-performance-audit roda agendado — saída não auditável).
 - Ações: ✅ PR #88 (upsert-reconcile por id); revisar artefatos do db-performance-audit mensalmente.
 
@@ -62,8 +62,8 @@ Auditoria das 20 dimensões do plano-mestre (o template anuncia 22 mas enumera 2
 
 ### 9. Logging / Monitoring — **6/10**
 - Evidências: `src/lib/logger.ts` com níveis e gating por env; `structuredLogger.ts`, `bridgeCallMetrics.ts`, `secretsManagerCallMetrics.ts` no telemetry; `admin-audit-hook` edge function.
-- Gaps: destino agregador de logs não confirmado (Sentry importado mas DSN/sink não auditável); sem log retention policy documentada; 12 `console.*` residuais em 8 arquivos (1 removido no PR #88).
-- Ações: confirmar sink de logs (Sentry/Axiom/Datadog) e registrar em docs; varrer os 8 arquivos restantes de console.*.
+- Gaps: destino agregador de logs não confirmado (Sentry importado mas DSN/sink não auditável); sem log retention policy documentada; 307 `console.*` residuais em 153 arquivos — só 8 são `console.log`, o restante é warn/error (1 removido no PR #88).
+- Ações: confirmar sink de logs (Sentry/Axiom/Datadog) e registrar em docs; migrar os 8 `console.log` restantes para o logger estruturado.
 
 ### 10. Observabilidade — **6/10**
 - Evidências: `webVitals.ts`, `requestId.ts`, `longTaskWatchdog.ts`, `instrumentationControl.ts`; `check-edge-request-id-propagation.mjs` garante propagação.
@@ -76,7 +76,7 @@ Auditoria das 20 dimensões do plano-mestre (o template anuncia 22 mas enumera 2
 - Ações: extrair tabela de regras de cálculo para doc único (`docs/regras-orcamento.md`).
 
 ### 12. Manutenibilidade — **5,5/10**
-- Evidências: 3.248 erros eslint globais (gate diferencial impede crescimento); 153 erros tsc tolerados por baseline; 442 `any` em src/; funções com complexidade até 34.
+- Evidências: 3.247 erros eslint globais (gate diferencial impede crescimento); 153 erros tsc tolerados por baseline; 442 `any` em src/; funções com complexidade até 34.
 - Gaps: débito técnico legado grande; baselines não têm burn-down automático.
 - Ações: ratchet de `any` (contagem só desce — como o DP V3); orçamento semanal de redução de baseline eslint (ex.: −100/sprint).
 
@@ -101,7 +101,7 @@ Auditoria das 20 dimensões do plano-mestre (o template anuncia 22 mas enumera 2
 - Ações: CSP com nonce/hash (médio); estender `_shared/rate-limiter` às funções públicas restantes; confirmar proteção de branch no painel (humano).
 
 ### 17. Testes — **7,5/10**
-- Evidências: 5.591 testes passando / 112 skipped; cobertura alvo 80% stmts / 75% branches no CI; 128 specs e2e; testes de cenário SQL dockerizados com evidência; budget de skips críticos (41/41).
+- Evidências: 5.592 testes passando / 112 skipped; cobertura alvo 80% stmts / 75% branches no CI; 128 specs e2e; testes de cenário SQL dockerizados com evidência; budget de skips críticos (41/41).
 - Gaps: e2e sem credenciais funcionais (secrets ausentes → fluxos autenticados cegos); cobertura real por módulo não auditada aqui.
 - Ações: provisionar credenciais e2e (humano) + adicionar spec e2e do fluxo de orçamento quando credencial existir.
 
@@ -137,7 +137,7 @@ Auditoria das 20 dimensões do plano-mestre (o template anuncia 22 mas enumera 2
 ║ 9.  Logging / Monitoring         ║  6,0  ║ sink de logs não confirmado                         ║
 ║ 10. Observabilidade              ║  6,0  ║ sem SLOs/dashboards                                 ║
 ║ 11. Lógica de Negócio            ║  7,0  ║ regras de cálculo em dupla fonte                    ║
-║ 12. Manutenibilidade             ║  5,5  ║ 3.248 erros eslint + 153 tsc legados                ║
+║ 12. Manutenibilidade             ║  5,5  ║ 3.247 erros eslint + 153 tsc legados                ║
 ║ 13. Operacionalidade             ║  7,0  ║ runbook de incidente P0 ausente                     ║
 ║ 14. Performance                  ║  6,5  ║ chunks >600kB; sem manualChunks                     ║
 ║ 15. Qualidade de Código          ║  6,0  ║ complexidade/literais em páginas                    ║
@@ -160,7 +160,7 @@ Cálculo: (8+8+8+7,5)×3 + (7+6,5+7,5+7,5+7)×2 + (8+7+6+6+7+5,5+7+6,5+6+7) = 94
 | 1 | Preservar identidade de `quote_items` no save atômico | Alto | Médio | ✅ PR #88 |
 | 2 | Desempate `id` na paginação de pedidos Sicoob | Alto | Baixo | ✅ PR #88 |
 | 3 | `trends-mock` fora do chunk principal | Médio | Baixo | ✅ PR #88 |
-| 4 | `console.log` residual → logger | Baixo | Baixo | ✅ PR #88 (1 arquivo; restam 7) |
+| 4 | `console.log` residual → logger | Baixo | Baixo | ✅ PR #88 (1 arquivo; restam 7 dos 8 arquivos com console.log) |
 | 5 | Credenciais e2e (E2E_USER_*) no GitHub | Alto | Baixo | ⛔ humano — criar usuário no Supabase + secrets |
 | 6 | Estender rate-limiter às edge functions públicas | Alto | Médio | backlog |
 | 7 | CSP `script-src` sem unsafe-inline (nonce) | Alto | Médio | backlog |
@@ -173,7 +173,7 @@ Cálculo: (8+8+8+7,5)×3 + (7+6,5+7,5+7,5+7)×2 + (8+7+6+6+7+5,5+7+6,5+6+7) = 94
 | Onda | Escopo |
 |------|--------|
 | 🔴 Quick Wins (agora) | ✅ PR #88 (identidade de itens, paginação estável, mock lazy, log); credenciais e2e (humano); rate-limiter nas ~100 edge functions públicas restantes |
-| 🟠 Sprint 1 | CSP com nonce; ratchet `any`; manualChunks + orçamento de chunk; varrer 7 arquivos console.* restantes; regenerar types.ts por migration no CI |
+| 🟠 Sprint 1 | CSP com nonce; ratchet `any`; manualChunks + orçamento de chunk; migrar 8 console.log restantes para o logger; regenerar types.ts por migration no CI |
 | 🟡 Sprint 2 | SLOs/dashboards; burn-down de baselines (eslint −100/sprint); CODEOWNERS; runbook P0; extração de páginas >300 linhas |
 
 ## Não auditável (sem acesso)
