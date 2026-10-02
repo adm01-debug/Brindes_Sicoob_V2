@@ -44,8 +44,9 @@ export function TopCategoriesCard({ days }: TopCategoriesCardProps) {
   const { data, isLoading } = useQuery({
     queryKey: ["trends-top-categories", days],
     queryFn: async (): Promise<CategoryRow[]> => {
-      const { isDemoMode, MOCK_TOP_CATEGORIES } = await import("@/pages/trends/trends-mock");
+      const { isDemoMode } = await import("@/pages/trends/is-demo-mode");
       if (isDemoMode()) {
+        const { MOCK_TOP_CATEGORIES } = await import("@/pages/trends/trends-mock");
         return MOCK_TOP_CATEGORIES.map((c, idx) => ({
           category: c.category,
           views: c.views,

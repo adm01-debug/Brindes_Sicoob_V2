@@ -53,8 +53,9 @@ export function ConversionFunnel({ days }: ConversionFunnelProps) {
   const { data, isLoading } = useQuery({
     queryKey: ["conversion-funnel", days],
     queryFn: async () => {
-      const { isDemoMode, MOCK_FUNNEL } = await import("@/pages/trends/trends-mock");
+      const { isDemoMode } = await import("@/pages/trends/is-demo-mode");
       if (isDemoMode()) {
+        const { MOCK_FUNNEL } = await import("@/pages/trends/trends-mock");
         return {
           searches: 3_421,
           views: MOCK_FUNNEL.views,

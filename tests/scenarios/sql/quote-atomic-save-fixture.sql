@@ -58,7 +58,14 @@ CREATE TABLE public.quote_items (
   gender text,
   source_variant_id text,
   source_variant_sku text,
-  price_confirmed_at timestamptz
+  price_confirmed_at timestamptz,
+  catalog_checked_at timestamptz,
+  catalog_available_stock integer,
+  catalog_minimum_quantity integer,
+  catalog_valid_until timestamptz,
+  catalog_stock_is_reserved boolean NOT NULL DEFAULT false,
+  historical_unit_price numeric(14,4),
+  price_changed boolean NOT NULL DEFAULT false
 );
 
 CREATE TABLE public.quote_item_personalizations (

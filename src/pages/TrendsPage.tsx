@@ -265,7 +265,7 @@ export default function TrendsPage() {
   });
 
   // Mock do modo demo entra sob demanda, fora do chunk principal.
-  const { data: mock, isLoading: loadingMock } = useQuery({
+  const { data: mock, isLoading: loadingMock, isError: mockError } = useQuery({
     queryKey: ["trends-mock"],
     enabled: demo,
     staleTime: Infinity,
@@ -366,7 +366,8 @@ export default function TrendsPage() {
 
         {/* Falha ou carregamento não representam atividade zero. */}
         <TrendsKpiCards current={kpiCurrent} previous={kpiPrevious}
-          isLoading={loadingKpi} isError={kpiError} isDemo={demo} />
+          isLoading={demo ? loadingMock : loadingKpi}
+          isError={demo ? mockError : kpiError} isDemo={demo} />
 
         {/* Funil + Demanda Reprimida */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">

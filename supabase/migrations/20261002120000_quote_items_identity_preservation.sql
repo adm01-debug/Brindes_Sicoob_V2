@@ -296,7 +296,16 @@ BEGIN
         gender = NULLIF(v_item ->> 'gender', ''),
         source_variant_id = NULLIF(v_item ->> 'source_variant_id', ''),
         source_variant_sku = NULLIF(v_item ->> 'source_variant_sku', ''),
-        price_confirmed_at = NULLIF(v_item ->> 'price_confirmed_at', '')::timestamptz
+        price_confirmed_at = NULLIF(v_item ->> 'price_confirmed_at', '')::timestamptz,
+        -- Qualquer edição invalida a consulta ao catálogo da recompra, como o
+        -- antigo delete-recreate fazia ao nascer linhas novas sem esses campos.
+        catalog_checked_at = NULL,
+        catalog_available_stock = NULL,
+        catalog_minimum_quantity = NULL,
+        catalog_valid_until = NULL,
+        catalog_stock_is_reserved = false,
+        historical_unit_price = NULL,
+        price_changed = false
       WHERE id = v_item_id AND quote_id = v_quote.id
       RETURNING id INTO v_item_id;
       IF NOT FOUND THEN

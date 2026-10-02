@@ -29,8 +29,9 @@ export function TrendsInsightsCard({ days }: TrendsInsightsCardProps) {
   const { data, isLoading, isError, refetch, isFetching } = useQuery({
     queryKey: ["trends-insights", days, version],
     queryFn: async (): Promise<InsightResponse | null> => {
-      const { isDemoMode, MOCK_INSIGHTS } = await import("@/pages/trends/trends-mock");
+      const { isDemoMode } = await import("@/pages/trends/is-demo-mode");
       if (isDemoMode()) {
+        const { MOCK_INSIGHTS } = await import("@/pages/trends/trends-mock");
         // Simula latência leve para sensação real
         await new Promise(r => setTimeout(r, 400));
         return MOCK_INSIGHTS;

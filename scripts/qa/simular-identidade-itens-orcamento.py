@@ -179,25 +179,51 @@ try:
       JOIN public.quote_items i ON i.id = p.quote_item_id WHERE i.product_name='Caneca';
     """)) == "1"
 
+    # A edição invalida a consulta ao catálogo da recompra (efeito do antigo
+    # delete-recreate): campos de validade não sobrevivem ao save.
+    sql(f"""
+      UPDATE public.quote_items SET
+        catalog_checked_at = now(),
+        catalog_available_stock = 500,
+        catalog_minimum_quantity = 2,
+        catalog_valid_until = now() + interval '5 minutes',
+        catalog_stock_is_reserved = false,
+        historical_unit_price = 9.5,
+        price_changed = true
+      WHERE id = '{caneca_id}';
+    """)
+    catalog_edit = [item(name="Caneca", quantity=3, item_id=caneca_id)]
+    catalog_result = json.loads(scalar(rpc(
+        payload(catalog_edit), catalog_edit, quote_id=quote_id, version=2
+    )))
+    assert catalog_result["row_version"] == 3
+    assert scalar(sql(f"""
+      SELECT count(*) FROM public.quote_items WHERE id = '{caneca_id}'
+      AND catalog_checked_at IS NULL AND catalog_valid_until IS NULL
+      AND catalog_available_stock IS NULL AND catalog_minimum_quantity IS NULL
+      AND catalog_stock_is_reserved = false
+      AND historical_unit_price IS NULL AND price_changed = false;
+    """)) == "1"
+
     # Id declarado que não pertence ao orçamento recusa a gravação inteira.
     stale_items = [item(name="Caneca", quantity=3, item_id=camiseta_id)]
-    stale = rpc(payload(stale_items), stale_items, quote_id=quote_id, version=2, check=False)
+    stale = rpc(payload(stale_items), stale_items, quote_id=quote_id, version=3, check=False)
     assert stale.returncode != 0 and "itens do orçamento mudaram" in stale.stderr
     rows = item_rows(quote_id)
-    assert [r["product_name"] for r in rows] == ["Boné", "Caneca"]
-    assert scalar(sql(f"SELECT row_version FROM public.quotes WHERE id='{quote_id}';")) == "2"
+    assert [r["product_name"] for r in rows] == ["Caneca"]
+    assert scalar(sql(f"SELECT row_version FROM public.quotes WHERE id='{quote_id}';")) == "3"
 
     # Ids duplicados no payload são recusados.
     dup_items = [
         item(name="Caneca", quantity=3, item_id=caneca_id),
         item(name="Caneca 2", quantity=1, item_id=caneca_id),
     ]
-    dup = rpc(payload(dup_items), dup_items, quote_id=quote_id, version=2, check=False)
+    dup = rpc(payload(dup_items), dup_items, quote_id=quote_id, version=3, check=False)
     assert dup.returncode != 0 and "duplicados" in dup.stderr
 
     # Id com formato inválido é recusado.
     bad_items = [item(name="Caneca", quantity=3, item_id="nao-e-uuid")]
-    bad = rpc(payload(bad_items), bad_items, quote_id=quote_id, version=2, check=False)
+    bad = rpc(payload(bad_items), bad_items, quote_id=quote_id, version=3, check=False)
     assert bad.returncode != 0
 
     # Id de item de outro vendedor é invisível via RLS e recusado.
@@ -210,19 +236,20 @@ try:
         f"VALUES ('{other_quote}', 'Item alheio', 1, 1) RETURNING id;")
     other_item = scalar(sql(f"SELECT id FROM public.quote_items WHERE quote_id='{other_quote}';"))
     cross_items = [item(name="Caneca", quantity=3, item_id=other_item)]
-    cross = rpc(payload(cross_items), cross_items, quote_id=quote_id, version=2, check=False)
+    cross = rpc(payload(cross_items), cross_items, quote_id=quote_id, version=3, check=False)
     assert cross.returncode != 0 and "itens do orçamento mudaram" in cross.stderr
 
     # Cliente antigo (sem id) continua funcionando: recria tudo.
     legacy = [item(name="Caneca", quantity=4)]
-    legacy_result = json.loads(scalar(rpc(payload(legacy), legacy, quote_id=quote_id, version=2)))
-    assert legacy_result["row_version"] == 3
+    legacy_result = json.loads(scalar(rpc(payload(legacy), legacy, quote_id=quote_id, version=3)))
+    assert legacy_result["row_version"] == 4
     rows = item_rows(quote_id)
     assert len(rows) == 1 and rows[0]["id"] != caneca_id and rows[0]["quantity"] == 4
 
     result.update({
         "acl": "anon sem EXECUTE; authenticated autorizado e sujeito a RLS",
         "identidade": "itens com id são atualizados no lugar; ausentes saem; novos nascem com uuid",
+        "catalogo": "edição invalida a consulta de catálogo do item (validade não sobrevive ao save)",
         "criacao": "ids declarados na criação são ignorados e substituídos por uuids novos",
         "conflito": "id fora do orçamento, duplicado, inválido ou de outro vendedor recusa a gravação inteira",
         "retrocompatibilidade": "payload sem ids mantém o comportamento anterior (recria itens)",
