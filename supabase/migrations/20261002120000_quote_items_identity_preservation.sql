@@ -45,6 +45,8 @@ DECLARE
   v_description text;
   v_declared_item_ids uuid[];
   v_seen_item_ids uuid[] := '{}'::uuid[];
+  v_pending_deletes integer;
+  v_deleted_rows integer;
 BEGIN
   IF v_actor_id IS NULL THEN
     RAISE EXCEPTION USING ERRCODE = '42501', MESSAGE = 'Usuário não autenticado.';
@@ -317,7 +319,14 @@ BEGIN
 
     -- As personalizações são linhas-filha reescritas a cada salvamento;
     -- a identidade preservada é a do item-pai.
+    SELECT count(*) INTO v_pending_deletes
+    FROM public.quote_item_personalizations
+    WHERE quote_item_id = v_item_id;
     DELETE FROM public.quote_item_personalizations WHERE quote_item_id = v_item_id;
+    GET DIAGNOSTICS v_deleted_rows = ROW_COUNT;
+    IF v_deleted_rows < v_pending_deletes THEN
+      RAISE EXCEPTION USING ERRCODE = '42501', MESSAGE = 'Sem permissão para remover personalizações deste orçamento.';
+    END IF;
     FOR v_personalization IN
       SELECT value FROM jsonb_array_elements(COALESCE(v_item -> 'personalizations', '[]'::jsonb))
     LOOP
@@ -343,8 +352,18 @@ BEGIN
   END LOOP;
 
   -- Itens ausentes do payload deixam de existir; os preservados mantêm id.
+  -- DELETE filtrado pelo RLS não falha: confere a contagem para não
+  -- retornar sucesso com linhas remanescentes (ex.: supervisor sem escopo
+  -- de exclusão no orçamento de outro vendedor).
+  SELECT count(*) INTO v_pending_deletes
+  FROM public.quote_items
+  WHERE quote_id = v_quote.id AND NOT (id = ANY(v_seen_item_ids));
   DELETE FROM public.quote_items
   WHERE quote_id = v_quote.id AND NOT (id = ANY(v_seen_item_ids));
+  GET DIAGNOSTICS v_deleted_rows = ROW_COUNT;
+  IF v_deleted_rows < v_pending_deletes THEN
+    RAISE EXCEPTION USING ERRCODE = '42501', MESSAGE = 'Sem permissão para remover itens deste orçamento.';
+  END IF;
 
   IF jsonb_array_length(COALESCE(p_history, '[]'::jsonb)) = 0 THEN
     PERFORM public.append_quote_history_note(

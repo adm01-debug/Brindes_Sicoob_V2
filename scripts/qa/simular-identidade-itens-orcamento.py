@@ -93,7 +93,7 @@ def payload(items, *, markup=20, discount_percent=10, shipping=2):
     }
 
 
-def rpc(header, items, *, quote_id=None, version=None, check=True):
+def rpc(header, items, *, quote_id=None, version=None, check=True, seller=SELLER):
     quote_sql = json.dumps(header, ensure_ascii=False, separators=(",", ":"))
     items_sql = json.dumps(items, ensure_ascii=False, separators=(",", ":"))
     quote_id_sql = "NULL" if quote_id is None else f"'{quote_id}'::uuid"
@@ -103,6 +103,7 @@ def rpc(header, items, *, quote_id=None, version=None, check=True):
         f"$quote${quote_sql}$quote$::jsonb, $items${items_sql}$items$::jsonb, "
         f"{quote_id_sql}, {version_sql}, $history$[\"Histórico de teste\"]$history$::jsonb);",
         check=check,
+        seller=seller,
     )
 
 
@@ -239,6 +240,25 @@ try:
     cross = rpc(payload(cross_items), cross_items, quote_id=quote_id, version=3, check=False)
     assert cross.returncode != 0 and "itens do orçamento mudaram" in cross.stderr
 
+    # Supervisor: enxerga/atualiza itens, mas o escopo de DELETE é só do dono.
+    # DELETE filtrado pelo RLS deve falhar alto em vez de corromper o orçamento.
+    sql("""
+      DROP POLICY quote_owner ON public.quotes;
+      CREATE POLICY quotes_select_all ON public.quotes FOR SELECT TO authenticated USING (true);
+      CREATE POLICY quotes_update_all ON public.quotes FOR UPDATE TO authenticated USING (true) WITH CHECK (true);
+      CREATE POLICY quotes_insert_owner ON public.quotes FOR INSERT TO authenticated WITH CHECK (seller_id = auth.uid());
+      DROP POLICY quote_item_owner ON public.quote_items;
+      CREATE POLICY quote_items_select_all ON public.quote_items FOR SELECT TO authenticated USING (true);
+      CREATE POLICY quote_items_update_all ON public.quote_items FOR UPDATE TO authenticated USING (true) WITH CHECK (true);
+      CREATE POLICY quote_items_insert_all ON public.quote_items FOR INSERT TO authenticated WITH CHECK (true);
+      CREATE POLICY quote_items_delete_owner ON public.quote_items FOR DELETE TO authenticated
+        USING (EXISTS (SELECT 1 FROM public.quotes q WHERE q.id = quote_id AND q.seller_id = auth.uid()));
+    """)
+    sup = rpc(payload([]), [], quote_id=quote_id, version=3, check=False, seller=OTHER_SELLER)
+    assert sup.returncode != 0 and "Sem permissão para remover itens" in sup.stderr
+    assert scalar(sql(f"SELECT row_version FROM public.quotes WHERE id='{quote_id}';")) == "3"
+    assert [r["product_name"] for r in item_rows(quote_id)] == ["Caneca"]
+
     # Cliente antigo (sem id) continua funcionando: recria tudo.
     legacy = [item(name="Caneca", quantity=4)]
     legacy_result = json.loads(scalar(rpc(payload(legacy), legacy, quote_id=quote_id, version=3)))
@@ -252,6 +272,7 @@ try:
         "catalogo": "edição invalida a consulta de catálogo do item (validade não sobrevive ao save)",
         "criacao": "ids declarados na criação são ignorados e substituídos por uuids novos",
         "conflito": "id fora do orçamento, duplicado, inválido ou de outro vendedor recusa a gravação inteira",
+        "exclusao": "DELETE filtrado pelo RLS falha alto (42501) em vez de corromper o orçamento",
         "retrocompatibilidade": "payload sem ids mantém o comportamento anterior (recria itens)",
         "resultado": "aprovado",
     })

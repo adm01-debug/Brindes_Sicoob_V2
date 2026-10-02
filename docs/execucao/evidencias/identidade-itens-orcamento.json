@@ -10,6 +10,7 @@
   "catalogo": "edição invalida a consulta de catálogo do item (validade não sobrevive ao save)",
   "criacao": "ids declarados na criação são ignorados e substituídos por uuids novos",
   "conflito": "id fora do orçamento, duplicado, inválido ou de outro vendedor recusa a gravação inteira",
+  "exclusao": "DELETE filtrado pelo RLS falha alto (42501) em vez de corromper o orçamento",
   "retrocompatibilidade": "payload sem ids mantém o comportamento anterior (recria itens)",
   "resultado": "aprovado"
 }
