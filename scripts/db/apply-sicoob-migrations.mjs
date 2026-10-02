@@ -33,7 +33,7 @@ const TARGETS = [
   },
   {
     file: "supabase/migrations/20261002160000_quote_items_id_format_validation.sql",
-    sha256: "bc7436ffabefbc53013d6f02902694cacee90b0495395b104591434d0ecf2fb7",
+    sha256: "08426b1a05f7af3421035408d3d02d72d5a23d9c3261bdb2c9c6af8cb1621d73",
   },
 ];
 

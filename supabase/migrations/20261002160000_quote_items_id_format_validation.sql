@@ -1,8 +1,8 @@
 -- Preserva a identidade das linhas de quote_items no salvamento atômico e
 -- valida o formato dos identificadores antes de qualquer cast: um `id` de
--- item, `organization_id` ou `client_id` malformado passa a falhar com a
--- mesma classe de erro legível (22023) do restante da função, em vez do
--- 22P02 genérico de `::uuid`.
+-- item ou `organization_id` malformado passa a falhar com a mesma classe
+-- de erro legível (22023) do restante da função, em vez do 22P02 genérico
+-- de `::uuid`. `client_id` permanece texto livre (ID externo do CRM).
 -- Conteúdo idêntico a 20261002120000_quote_items_identity_preservation.sql,
 -- acrescido das checagens de formato.
 CREATE OR REPLACE FUNCTION public.save_quote_atomic(
@@ -143,16 +143,13 @@ BEGIN
     IF v_status <> 'draft' THEN
       RAISE EXCEPTION USING ERRCODE = '42501', MESSAGE = 'Um novo orçamento deve iniciar como rascunho.';
     END IF;
-    -- Identificadores precisam ser uuid bem formado antes de qualquer cast,
+    -- organization_id precisa ser uuid bem formado antes do cast,
     -- senão o banco responde 22P02 genérico em vez do padrão legível da função.
     IF NULLIF(trim(p_quote ->> 'organization_id'), '') IS NOT NULL
        AND p_quote ->> 'organization_id' !~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$' THEN
       RAISE EXCEPTION USING ERRCODE = '22023', MESSAGE = 'A organização informada é inválida.';
     END IF;
-    IF NULLIF(trim(p_quote ->> 'client_id'), '') IS NOT NULL
-       AND p_quote ->> 'client_id' !~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$' THEN
-      RAISE EXCEPTION USING ERRCODE = '22023', MESSAGE = 'O cliente informado é inválido.';
-    END IF;
+    -- client_id é texto livre (ID externo do CRM) — não se exige uuid aqui.
     v_organization_id := NULLIF(p_quote ->> 'organization_id', '')::uuid;
     IF v_organization_id IS NOT NULL
        AND NOT COALESCE(public.can_view_all_sales(), false)
