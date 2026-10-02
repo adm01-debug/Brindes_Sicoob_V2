@@ -91,14 +91,9 @@ export function buildMockDaily(days: number) {
   return { current, previous };
 }
 
-/**
- * Demo ligado por padrão (avaliação de viabilidade do módulo).
- * Para desligar: acessar /tendencias?demo=0
- */
-export function isDemoMode(): boolean {
-  if (typeof window === "undefined") return true;
-  return new URLSearchParams(window.location.search).get("demo") !== "0";
-}
+// Reexportado para manter compatível quem importa a flag daqui;
+// a implementação vive em is-demo-mode.ts para não arrastar este módulo.
+export { isDemoMode } from "./is-demo-mode";
 
 // =====================================================
 // Mocks adicionais para os demais cards do módulo

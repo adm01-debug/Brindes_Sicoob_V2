@@ -1,0 +1,14 @@
+{
+  "ambiente": "PostgreSQL 17 descartável, --network none; dados sintéticos",
+  "migracoes": [
+    "supabase/migrations/20260927190000_atomic_quote_save.sql",
+    "supabase/migrations/20261002120000_quote_items_identity_preservation.sql"
+  ],
+  "producao_verificada": false,
+  "acl": "anon sem EXECUTE; authenticated autorizado e sujeito a RLS",
+  "identidade": "itens com id são atualizados no lugar; ausentes saem; novos nascem com uuid",
+  "criacao": "ids declarados na criação são ignorados e substituídos por uuids novos",
+  "conflito": "id fora do orçamento, duplicado, inválido ou de outro vendedor recusa a gravação inteira",
+  "retrocompatibilidade": "payload sem ids mantém o comportamento anterior (recria itens)",
+  "resultado": "aprovado"
+}

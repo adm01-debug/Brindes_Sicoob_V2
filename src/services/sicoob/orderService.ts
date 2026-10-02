@@ -133,7 +133,9 @@ export const sicoobOrderService = {
       query = query.range(from, to);
     }
 
-    const { data, error, count } = await query.order("created_at", { ascending: false });
+    const { data, error, count } = await query
+      .order("created_at", { ascending: false })
+      .order("id", { ascending: false });
     if (error) throw error;
     
     return {

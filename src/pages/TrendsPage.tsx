@@ -27,14 +27,7 @@ import { useUrlState, useUrlBoolean } from "@/hooks/useUrlState";
 import { exportTrendsCsv } from "@/lib/trends-export";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
-import {
-  isDemoMode,
-  MOCK_KPI_CURRENT,
-  MOCK_KPI_PREVIOUS,
-  MOCK_PRODUCTS,
-  MOCK_SEARCHES,
-  buildMockDaily,
-} from "./trends/trends-mock";
+import { isDemoMode } from "./trends/is-demo-mode";
 import { Badge } from "@/components/ui/badge";
 
 type DateRange = "7d" | "30d" | "90d";
@@ -271,17 +264,26 @@ export default function TrendsPage() {
     },
   });
 
-  const kpiCurrent = demo ? MOCK_KPI_CURRENT : (kpiSnapshot?.current ?? { totalViews: 0, totalSearches: 0, uniqueProducts: 0, uniqueSearches: 0 });
-  const kpiPrevious = demo ? MOCK_KPI_PREVIOUS : (kpiSnapshot?.previous ?? { totalViews: 0, totalSearches: 0, uniqueProducts: 0, uniqueSearches: 0 });
+  // Mock do modo demo entra sob demanda, fora do chunk principal.
+  const { data: mock, isLoading: loadingMock } = useQuery({
+    queryKey: ["trends-mock"],
+    enabled: demo,
+    staleTime: Infinity,
+    queryFn: () => import("./trends/trends-mock"),
+  });
+
+  const kpiZero = { totalViews: 0, totalSearches: 0, uniqueProducts: 0, uniqueSearches: 0 };
+  const kpiCurrent = demo ? (mock?.MOCK_KPI_CURRENT ?? kpiZero) : (kpiSnapshot?.current ?? kpiZero);
+  const kpiPrevious = demo ? (mock?.MOCK_KPI_PREVIOUS ?? kpiZero) : (kpiSnapshot?.previous ?? kpiZero);
 
   // Override de demo para ranking, buscas e série diária
-  const mockDaily = useMemo(() => (demo ? buildMockDaily(days) : null), [demo, days]);
-  const displayProducts = demo ? MOCK_PRODUCTS : topProducts;
-  const displaySearches = demo ? MOCK_SEARCHES : topSearches;
+  const mockDaily = useMemo(() => (demo ? mock?.buildMockDaily(days) ?? null : null), [demo, mock, days]);
+  const displayProducts = demo ? mock?.MOCK_PRODUCTS : topProducts;
+  const displaySearches = demo ? mock?.MOCK_SEARCHES : topSearches;
   const displayDaily = demo ? mockDaily : dailyData;
-  const displayLoadingProducts = demo ? false : loadingProducts;
-  const displayLoadingSearches = demo ? false : loadingSearches;
-  const displayLoadingDaily = demo ? false : loadingDaily;
+  const displayLoadingProducts = demo ? loadingMock : loadingProducts;
+  const displayLoadingSearches = demo ? loadingMock : loadingSearches;
+  const displayLoadingDaily = demo ? loadingMock : loadingDaily;
 
   const handleRefresh = () => {
     if (!queryEnabled) return;
