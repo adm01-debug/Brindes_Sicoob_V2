@@ -88,7 +88,7 @@ function stripNonCode(sql) {
   return result;
 }
 
-function hasTransactionControl(sql) {
+export function hasTransactionControl(sql) {
   return stripNonCode(sql).split(";").some((statement) => {
     const head = statement.trimStart().toUpperCase();
     if (/^(BEGIN|START\s+TRANSACTION|COMMIT|ROLLBACK|ABORT)\b/.test(head)) return true;
