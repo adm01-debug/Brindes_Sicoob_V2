@@ -31,20 +31,70 @@ const TARGETS = [
     file: "supabase/migrations/20261002120000_quote_items_identity_preservation.sql",
     sha256: "91981250b714f3945fe450654eacdc47534f20a696ad62e29507ad5ceb6c9beb",
   },
+  {
+    file: "supabase/migrations/20261002160000_quote_items_id_format_validation.sql",
+    sha256: "08426b1a05f7af3421035408d3d02d72d5a23d9c3261bdb2c9c6af8cb1621d73",
+  },
 ];
 
 function sha256(value) {
   return createHash("sha256").update(value).digest("hex");
 }
 
-function hasTransactionControl(sql) {
-  const keywords = ["BEGIN", "COMMIT", "ROLLBACK"];
-  return sql.split("\n").some((line) => {
-    const normalized = line.trimStart().toUpperCase();
-    return keywords.some((keyword) => {
-      if (!normalized.startsWith(keyword)) return false;
-      return normalized.slice(keyword.length).trimStart().startsWith(";");
-    });
+// Remove comentários, literais e corpos dollar-quoted para inspecionar só os
+// statements de nível superior: o lote management-api executa tudo numa única
+// transação, então qualquer controle transacional na migration (incluindo as
+// formas estendidas END, ABORT, START TRANSACTION e COMMIT WORK/AND CHAIN ou o
+// comando no meio de uma linha) quebraria a promessa de aplicação atômica.
+function stripNonCode(sql) {
+  let result = "";
+  let index = 0;
+  while (index < sql.length) {
+    const char = sql[index];
+    const pair = sql.slice(index, index + 2);
+    if (pair === "--") {
+      const next = sql.indexOf("\n", index);
+      index = next < 0 ? sql.length : next + 1;
+      continue;
+    }
+    if (pair === "/*") {
+      const end = sql.indexOf("*/", index + 2);
+      index = end < 0 ? sql.length : end + 2;
+      continue;
+    }
+    if (char === "'" || char === '"') {
+      const quote = char;
+      index += 1;
+      while (index < sql.length) {
+        if (sql[index] === quote) {
+          if (sql[index + 1] === quote) { index += 2; continue; }
+          index += 1;
+          break;
+        }
+        index += 1;
+      }
+      continue;
+    }
+    const dollarTag = sql.slice(index).match(/^\$[A-Za-z_]*[A-Za-z0-9_]*\$/);
+    if (dollarTag) {
+      const tag = dollarTag[0];
+      const end = sql.indexOf(tag, index + tag.length);
+      index = end < 0 ? sql.length : end + tag.length;
+      continue;
+    }
+    result += char;
+    index += 1;
+  }
+  return result;
+}
+
+export function hasTransactionControl(sql) {
+  return stripNonCode(sql).split(";").some((statement) => {
+    const head = statement.trimStart().toUpperCase();
+    if (/^(BEGIN|START\s+TRANSACTION|COMMIT|ROLLBACK|ABORT)\b/.test(head)) return true;
+    // END como comando (abreviação de COMMIT): END, END WORK, END TRANSACTION,
+    // END AND [NO] CHAIN — só pode aparecer solto no nível superior.
+    return /^END(\s+(WORK|TRANSACTION|AND|NO|CHAIN)\b)*\s*$/.test(head);
   });
 }
 
@@ -112,6 +162,14 @@ function dollarQuote(value, label) {
     suffix += 1;
   } while (value.includes(delimiter));
   return `${delimiter}${value}${delimiter}`;
+}
+
+// A migration autorizada mais recente que redefine a função é a fonte do corpo
+// esperado: funções forward-only podem ser substituídas por migrations novas
+// sem que o arquivo antigo deixe de constar no ledger.
+function latestDefiner(targets, functionName) {
+  return [...targets].reverse().find((target) =>
+    target.sql.includes(`CREATE OR REPLACE FUNCTION public.${functionName}(`));
 }
 
 function extractFunctionBody(sql, functionName) {
@@ -282,13 +340,30 @@ async function validateContract(client, targets) {
       COALESCE((SELECT bool_or(a.grantee = 0 AND a.privilege_type = 'EXECUTE')
         FROM pg_proc p,
           LATERAL aclexplode(COALESCE(p.proacl, acldefault('f', p.proowner))) a
-        WHERE p.oid = to_regprocedure('public.save_quote_atomic(jsonb,jsonb,uuid,integer,jsonb)')), false) AS save_atomic_public_execute
+        WHERE p.oid = to_regprocedure('public.save_quote_atomic(jsonb,jsonb,uuid,integer,jsonb)')), false) AS save_atomic_public_execute,
+      EXISTS (
+        SELECT 1
+        FROM pg_proc p
+        JOIN (
+          SELECT to_regprocedure('public.save_quote_atomic(jsonb,jsonb,uuid,integer,jsonb)') AS oid
+          UNION ALL SELECT to_regprocedure('public.save_quote_atomic_idempotent(jsonb,jsonb,uuid,jsonb)')
+          UNION ALL SELECT to_regprocedure('public.bulk_update_quote_status_atomic(uuid[],integer[],text,text)')
+          UNION ALL SELECT to_regprocedure('public.assert_quote_transition(uuid,public.quotes,text)')
+          UNION ALL SELECT to_regprocedure('public.notify_singular_quote_submission()')
+        ) AS sig ON sig.oid = p.oid,
+        LATERAL aclexplode(COALESCE(p.proacl, acldefault('f', p.proowner))) a
+        WHERE a.privilege_type = 'EXECUTE'
+          AND a.grantee <> p.proowner
+          AND COALESCE((SELECT r.rolname FROM pg_roles r WHERE r.oid = a.grantee), 'PUBLIC')
+              NOT IN ('authenticated', 'service_role')
+      ) AS foreign_execute_granted
   `);
   const result = rows[0];
-  const idempotencyMigration = targets.find((target) => target.version === "20260928173500");
-  const statusMigration = targets.find((target) => target.version === "20260928182000");
-  const identityMigration = targets.find((target) => target.version === "20261002120000");
-  if (!idempotencyMigration || !statusMigration || !identityMigration) {
+  const idempotencyMigration = latestDefiner(targets, "save_quote_atomic_idempotent");
+  const statusMigration = latestDefiner(targets, "bulk_update_quote_status_atomic");
+  const notificationMigration = latestDefiner(targets, "notify_singular_quote_submission");
+  const identityMigration = latestDefiner(targets, "save_quote_atomic");
+  if (!idempotencyMigration || !statusMigration || !notificationMigration || !identityMigration) {
     throw new Error("Allowlist incompleta para validar os corpos das funções críticas.");
   }
   const sourceHashesValid = typeof result?.idempotency_source === "string"
@@ -302,7 +377,7 @@ async function validateContract(client, targets) {
       extractFunctionBody(statusMigration.sql, "bulk_update_quote_status_atomic"),
     )
     && sha256(result.notification_source.trim()) === sha256(
-      extractFunctionBody(statusMigration.sql, "notify_singular_quote_submission"),
+      extractFunctionBody(notificationMigration.sql, "notify_singular_quote_submission"),
     )
     && sha256(result.save_atomic_source.trim()) === sha256(
       extractFunctionBody(identityMigration.sql, "save_quote_atomic"),
@@ -349,7 +424,8 @@ async function validateContract(client, targets) {
     && !result.notification_public_execute
     && result.notification_trigger_safe && triggerDefinitionExact
     && result.save_atomic_security_safe && result.save_atomic_authenticated_execute
-    && !result.save_atomic_anon_execute && !result.save_atomic_public_execute;
+    && !result.save_atomic_anon_execute && !result.save_atomic_public_execute
+    && !result.foreign_execute_granted;
   if (!valid) {
     const { idempotency_source: _idempotency, status_source: _status,
       notification_source: _notification, save_atomic_source: _save_atomic, ...diagnostic } = result ?? {};
@@ -381,10 +457,11 @@ VALUES (
   ARRAY[${dollarQuote(target.sql, "ledger_sql")}]::text[],
   ${dollarQuote(target.name, "ledger_name")}
 );`).join("\n");
-  const idempotencyMigration = targets.find((target) => target.version === "20260928173500");
-  const statusMigration = targets.find((target) => target.version === "20260928182000");
-  const identityMigration = targets.find((target) => target.version === "20261002120000");
-  if (!idempotencyMigration || !statusMigration || !identityMigration) {
+  const idempotencyMigration = latestDefiner(targets, "save_quote_atomic_idempotent");
+  const statusMigration = latestDefiner(targets, "bulk_update_quote_status_atomic");
+  const notificationMigration = latestDefiner(targets, "notify_singular_quote_submission");
+  const identityMigration = latestDefiner(targets, "save_quote_atomic");
+  if (!idempotencyMigration || !statusMigration || !notificationMigration || !identityMigration) {
     throw new Error("Allowlist incompleta para montar a validação transacional.");
   }
   const idempotencyBody = dollarQuote(
@@ -396,7 +473,7 @@ VALUES (
     "status_body",
   );
   const notificationBody = dollarQuote(
-    extractFunctionBody(statusMigration.sql, "notify_singular_quote_submission"),
+    extractFunctionBody(notificationMigration.sql, "notify_singular_quote_submission"),
     "notification_body",
   );
   const saveAtomicBody = dollarQuote(
@@ -438,6 +515,32 @@ BEGIN
         IS DISTINCT FROM ${notificationBody}
      OR (SELECT btrim(prosrc, E' \n\r\t') FROM pg_proc WHERE oid = to_regprocedure('public.save_quote_atomic(jsonb,jsonb,uuid,integer,jsonb)'))
         IS DISTINCT FROM ${saveAtomicBody}
+     OR COALESCE((SELECT prosecdef OR NOT (proconfig @> ARRAY['search_path=pg_catalog, public']::text[])
+        FROM pg_proc WHERE oid = to_regprocedure('public.save_quote_atomic(jsonb,jsonb,uuid,integer,jsonb)')), true)
+     OR COALESCE((SELECT prosecdef OR NOT (proconfig @> ARRAY['search_path=pg_catalog, public']::text[])
+        FROM pg_proc WHERE oid = to_regprocedure('public.save_quote_atomic_idempotent(jsonb,jsonb,uuid,jsonb)')), true)
+     OR COALESCE((SELECT NOT prosecdef OR NOT (proconfig @> ARRAY['search_path=pg_catalog, public']::text[])
+        FROM pg_proc WHERE oid = to_regprocedure('public.bulk_update_quote_status_atomic(uuid[],integer[],text,text)')), true)
+     OR COALESCE((SELECT NOT prosecdef OR NOT (proconfig @> ARRAY['search_path=pg_catalog, public']::text[])
+        FROM pg_proc WHERE oid = to_regprocedure('public.notify_singular_quote_submission()')), true)
+     OR COALESCE((SELECT NOT prosecdef OR NOT (proconfig @> ARRAY['search_path=pg_catalog, public']::text[])
+        FROM pg_proc WHERE oid = to_regprocedure('public.assert_quote_transition(uuid,public.quotes,text)')), true)
+     OR EXISTS (
+       SELECT 1
+       FROM pg_proc p
+       JOIN (
+         SELECT to_regprocedure('public.save_quote_atomic(jsonb,jsonb,uuid,integer,jsonb)') AS oid
+         UNION ALL SELECT to_regprocedure('public.save_quote_atomic_idempotent(jsonb,jsonb,uuid,jsonb)')
+         UNION ALL SELECT to_regprocedure('public.bulk_update_quote_status_atomic(uuid[],integer[],text,text)')
+         UNION ALL SELECT to_regprocedure('public.assert_quote_transition(uuid,public.quotes,text)')
+         UNION ALL SELECT to_regprocedure('public.notify_singular_quote_submission()')
+       ) AS sig ON sig.oid = p.oid,
+       LATERAL aclexplode(COALESCE(p.proacl, acldefault('f', p.proowner))) a
+       WHERE a.privilege_type = 'EXECUTE'
+         AND a.grantee <> p.proowner
+         AND COALESCE((SELECT r.rolname FROM pg_roles r WHERE r.oid = a.grantee), 'PUBLIC')
+             NOT IN ('authenticated', 'service_role')
+     )
      OR NOT has_function_privilege('authenticated', 'public.save_quote_atomic(jsonb,jsonb,uuid,integer,jsonb)', 'EXECUTE')
      OR has_function_privilege('anon', 'public.save_quote_atomic(jsonb,jsonb,uuid,integer,jsonb)', 'EXECUTE')
      OR EXISTS (
