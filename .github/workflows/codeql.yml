@@ -67,25 +67,14 @@ jobs:
           # Mantemos a análise e preservamos o SARIF como artefato auditável.
           upload: never
 
-      - name: Validar que a análise gerou SARIF
-        run: |
-          python3 - <<'PY'
-          import glob, json, sys
-          files = glob.glob('sarif-results/*.sarif')
-          if not files:
-              sys.exit('CodeQL não gerou arquivo SARIF.')
-          runs = sum((json.load(open(path, encoding='utf-8')).get('runs', []) for path in files), [])
-          if not runs:
-              sys.exit('CodeQL gerou SARIF sem execução analisável.')
-          print(f'CodeQL gerou {len(files)} SARIF com {len(runs)} execução(ões).')
-          PY
+      - name: Publicar resumo e bloquear achados do SARIF
+        run: node scripts/check-codeql-sarif.mjs sarif-results
 
       - name: Preservar resultado SARIF como artefato
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
-        continue-on-error: true
         with:
           name: codeql-${{ matrix.language }}
           path: sarif-results/*.sarif
-          if-no-files-found: warn
+          if-no-files-found: error
           retention-days: 14
