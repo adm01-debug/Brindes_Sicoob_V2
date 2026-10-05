@@ -146,7 +146,14 @@ export async function basicA11yChecks(page: Page) {
         if (!visible) return false;
         const id = el.getAttribute("id");
         const hasLabelFor = id ? !!document.querySelector(`label[for="${id}"]`) : false;
-        const hasAria = !!el.getAttribute("aria-label")?.trim() || !!el.getAttribute("aria-labelledby")?.trim();
+        const labelledBy = el.getAttribute("aria-labelledby")?.trim();
+        const hasAriaLabelledBy = labelledBy
+          ?.split(/\s+/)
+          .some(labelId => {
+            const label = document.getElementById(labelId);
+            return !!(label?.textContent?.trim() || label?.getAttribute("aria-label")?.trim());
+          });
+        const hasAria = !!el.getAttribute("aria-label")?.trim() || !!hasAriaLabelledBy;
         const wrappedInLabel = el.closest("label") !== null;
         return !hasLabelFor && !hasAria && !wrappedInLabel;
       })
@@ -162,7 +169,14 @@ export async function basicA11yChecks(page: Page) {
         const visible = (b as HTMLElement).offsetParent !== null;
         if (!visible) return false;
         const text = (b.textContent ?? "").trim();
-        const hasAria = !!b.getAttribute("aria-label")?.trim() || !!b.getAttribute("aria-labelledby")?.trim();
+        const labelledBy = b.getAttribute("aria-labelledby")?.trim();
+        const hasAriaLabelledBy = labelledBy
+          ?.split(/\s+/)
+          .some(labelId => {
+            const label = document.getElementById(labelId);
+            return !!(label?.textContent?.trim() || label?.getAttribute("aria-label")?.trim());
+          });
+        const hasAria = !!b.getAttribute("aria-label")?.trim() || !!hasAriaLabelledBy;
         const id = b.getAttribute("id");
         const hasLabelFor = id ? !!document.querySelector(`label[for="${id}"]`) : false;
         return !text && !hasAria && !hasLabelFor;
