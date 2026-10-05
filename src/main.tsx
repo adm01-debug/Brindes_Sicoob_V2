@@ -67,10 +67,14 @@ createRoot(rootElement).render(
   </Fragment>
 );
 
-// Sinalizar que a renderização inicial ocorreu para remover o splash screen do HTML
+// Mantém o shell institucional por um paint completo enquanto o React conclui
+// o primeiro commit. Remover no primeiro callback de rAF apaga o splash antes
+// de ele ser pintado e cria um intervalo visual vazio em dispositivos lentos.
 requestAnimationFrame(() => {
-  const splash = document.getElementById('initial-splash');
-  splash?.remove();
+  requestAnimationFrame(() => {
+    const splash = document.getElementById('initial-splash');
+    splash?.remove();
+  });
 });
 
 // Registrar Service Worker para PWA (apenas em produção para evitar cache issues no preview)
