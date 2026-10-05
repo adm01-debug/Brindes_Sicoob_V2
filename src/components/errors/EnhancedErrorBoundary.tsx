@@ -1,7 +1,6 @@
 import { Component, type ErrorInfo, type ReactNode } from 'react';
 import { AlertTriangle, RefreshCw, Home, Bug, ChevronDown, ChevronUp, RotateCcw, Trash2, Copy, Check } from 'lucide-react';
 import { logger } from '@/lib/logger';
-import { reportError } from '@/lib/error-reporter';
 import { attemptChunkRecovery, isChunkLoadError } from '@/lib/chunk-recovery';
 
 interface Props {
@@ -93,12 +92,17 @@ class EnhancedErrorBoundary extends Component<Props, State> {
 
     this.props.onError?.(error, errorInfo);
 
-    // Report to centralized error tracking
-    reportError(error, {
-      type: 'react_error_boundary',
-      componentStack: errorInfo.componentStack?.slice(0, 1000),
-      retryCount: this.state.retryCount,
-    });
+    // O reporter inclui Supabase e Sentry. Carregá-lo somente quando o boundary
+    // captura uma falha mantém a observabilidade fora do caminho crítico do login.
+    void import('@/lib/error-reporter')
+      .then(({ reportError }) => reportError(error, {
+        type: 'react_error_boundary',
+        componentStack: errorInfo.componentStack?.slice(0, 1000),
+        retryCount: this.state.retryCount,
+      }))
+      .catch(() => {
+        // O logger acima preserva diagnóstico local se o próprio chunk falhar.
+      });
     if (this.isChunkError(error) && this.state.retryCount < MAX_AUTO_RETRIES) {
       this.setState({ isAutoRecovering: true });
       // Aciona recovery agressivo (hard reload + cache bust + purga SW).
