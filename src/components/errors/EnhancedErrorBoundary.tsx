@@ -94,12 +94,13 @@ class EnhancedErrorBoundary extends Component<Props, State> {
 
     // O reporter inclui Supabase e Sentry. Carregá-lo somente quando o boundary
     // captura uma falha mantém a observabilidade fora do caminho crítico do login.
+    const reportContext = {
+      type: 'react_error_boundary',
+      componentStack: errorInfo.componentStack?.slice(0, 1000),
+      retryCount: this.state.retryCount,
+    } as const;
     void import('@/lib/error-reporter')
-      .then(({ reportError }) => reportError(error, {
-        type: 'react_error_boundary',
-        componentStack: errorInfo.componentStack?.slice(0, 1000),
-        retryCount: this.state.retryCount,
-      }))
+      .then(({ reportError }) => reportError(error, reportContext))
       .catch(() => {
         // O logger acima preserva diagnóstico local se o próprio chunk falhar.
       });

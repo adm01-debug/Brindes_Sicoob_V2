@@ -40,7 +40,10 @@ describe('EnhancedErrorBoundary', () => {
     await waitFor(() => {
       expect(reportErrorMock).toHaveBeenCalledWith(
         expect.objectContaining({ message: 'falha controlada' }),
-        expect.objectContaining({ type: 'react_error_boundary' }),
+        expect.objectContaining({
+          type: 'react_error_boundary',
+          retryCount: 0,
+        }),
       );
     });
   });
