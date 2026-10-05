@@ -38,5 +38,7 @@ buildAuthedRouteSuite({
   setupSuccessMocks: async page => {
     await mockRestTable(page, "order_items", 200, []);
     await mockRestTable(page, "order_approval_history", 200, []);
+    await mockRestTable(page, "order_pilot_approvals", 200, []);
+    await mockRestTable(page, "order_audit_events", 200, []);
   },
 });

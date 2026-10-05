@@ -34,11 +34,13 @@ export const OnboardingTour = forwardRef<HTMLDivElement, any>(function Onboardin
     ? (() => {
         const left = Math.max(0, highlightRect.left - 4);
         const top = Math.max(0, highlightRect.top - 4);
+        const right = Math.min(window.innerWidth, highlightRect.right + 4);
+        const bottom = Math.min(window.innerHeight, highlightRect.bottom + 4);
         return {
           left,
           top,
-          width: Math.max(0, Math.min(highlightRect.width + 8, window.innerWidth - left)),
-          height: Math.max(0, Math.min(highlightRect.height + 8, window.innerHeight - top)),
+          width: Math.max(0, right - left),
+          height: Math.max(0, bottom - top),
         };
       })()
     : null;

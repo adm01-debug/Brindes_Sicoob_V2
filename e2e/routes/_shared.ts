@@ -146,7 +146,7 @@ export async function basicA11yChecks(page: Page) {
         if (!visible) return false;
         const id = el.getAttribute("id");
         const hasLabelFor = id ? !!document.querySelector(`label[for="${id}"]`) : false;
-        const hasAria = el.hasAttribute("aria-label") || el.hasAttribute("aria-labelledby");
+        const hasAria = !!el.getAttribute("aria-label")?.trim() || !!el.getAttribute("aria-labelledby")?.trim();
         const wrappedInLabel = el.closest("label") !== null;
         return !hasLabelFor && !hasAria && !wrappedInLabel;
       })
@@ -162,7 +162,7 @@ export async function basicA11yChecks(page: Page) {
         const visible = (b as HTMLElement).offsetParent !== null;
         if (!visible) return false;
         const text = (b.textContent ?? "").trim();
-        const hasAria = b.hasAttribute("aria-label") || b.hasAttribute("aria-labelledby");
+        const hasAria = !!b.getAttribute("aria-label")?.trim() || !!b.getAttribute("aria-labelledby")?.trim();
         const id = b.getAttribute("id");
         const hasLabelFor = id ? !!document.querySelector(`label[for="${id}"]`) : false;
         return !text && !hasAria && !hasLabelFor;

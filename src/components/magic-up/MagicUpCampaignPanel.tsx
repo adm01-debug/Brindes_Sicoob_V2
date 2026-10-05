@@ -50,7 +50,7 @@ export function MagicUpCampaignPanel({ brief, campaign, campaigns, onBriefChange
         ))}
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <div className="space-y-1.5"><Label className="text-xs text-muted-foreground">CTA</Label><Input aria-label="Chamada para ação da campanha" value={brief.cta} onChange={(e) => onBriefChange({ ...brief, cta: e.target.value })} className="h-9" /></div>
+        <div className="space-y-1.5"><Label className="text-xs text-muted-foreground">CTA</Label><Input aria-label="CTA da campanha" value={brief.cta} onChange={(e) => onBriefChange({ ...brief, cta: e.target.value })} className="h-9" /></div>
         <div className="space-y-1.5"><Label className="text-xs text-muted-foreground">Ocasião</Label><Input aria-label="Ocasião da campanha" value={brief.occasion} onChange={(e) => onBriefChange({ ...brief, occasion: e.target.value })} className="h-9" /></div>
       </div>
       <MagicUpCampaignSummary campaign={campaign} channel={brief.channel} objective={brief.objective} tone={brief.tone} onSave={onSave} />
