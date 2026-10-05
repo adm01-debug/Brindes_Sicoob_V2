@@ -69,6 +69,15 @@ const INTEGRATION_SPECS = [
   /search-stability\.spec\.ts/,
 ];
 
+// O argumento abaixo pertence ao Chromium. Mantê-lo no `use` global fazia o
+// projeto mobile (WebKit/iPhone) abortar antes de abrir qualquer rota.
+const CHROMIUM_DESKTOP = {
+  ...devices["Desktop Chrome"],
+  launchOptions: {
+    args: ["--disable-blink-features=AutomationControlled"],
+  },
+};
+
 export default defineConfig({
   testDir: "./e2e",
   globalSetup: path.resolve(__dirname, "e2e/global-setup.ts"),
@@ -107,9 +116,6 @@ export default defineConfig({
     actionTimeout: 10_000,
     navigationTimeout: 20_000,
     reducedMotion: "reduce",
-    launchOptions: {
-      args: ["--disable-blink-features=AutomationControlled"],
-    },
   },
   // ───────────────────────────────────────────────────────────
   // ISOLAMENTO @smoke (defesa em profundidade)
@@ -133,14 +139,14 @@ export default defineConfig({
     },
     {
       name: "chromium-public",
-      use: { ...devices["Desktop Chrome"] },
+      use: { ...CHROMIUM_DESKTOP },
       testIgnore: [/fixtures\/auth\.setup\.ts/, /flows\//, /routes\//, ...INTEGRATION_SPECS],
       grepInvert: /@smoke/,
     },
     {
       // Integrações e papéis só são válidos quando a CI possui uma conta E2E.
       name: "chromium-integration",
-      use: { ...devices["Desktop Chrome"], storageState: STORAGE_STATE },
+      use: { ...CHROMIUM_DESKTOP, storageState: STORAGE_STATE },
       dependencies: ["setup"],
       testMatch: INTEGRATION_SPECS,
       testIgnore: AUTHENTICATED_ROUTE_IGNORE,
@@ -148,7 +154,7 @@ export default defineConfig({
     },
     {
       name: "chromium-authed",
-      use: { ...devices["Desktop Chrome"], storageState: STORAGE_STATE },
+      use: { ...CHROMIUM_DESKTOP, storageState: STORAGE_STATE },
       dependencies: ["setup"],
       testMatch: /flows\/.*\.spec\.ts/,
       // Smoke roda no project dedicado abaixo (chromium-smoke) para evitar
@@ -163,7 +169,7 @@ export default defineConfig({
       // `npx playwright test --project=chromium-smoke --max-failures=3`.
       name: "chromium-smoke",
       use: {
-        ...devices["Desktop Chrome"],
+        ...CHROMIUM_DESKTOP,
         storageState: STORAGE_STATE,
         // Captura forçada por teste em falhas — independente do default global.
         // Garante diagnóstico visual completo no CI sem depender de retries.
@@ -184,14 +190,14 @@ export default defineConfig({
     {
       // Specs por rota — área pública (sem auth). Ex.: routes/public/*.spec.ts
       name: "routes-public",
-      use: { ...devices["Desktop Chrome"] },
+      use: { ...CHROMIUM_DESKTOP },
       testMatch: /routes\/public\/.*\.spec\.ts/,
       grepInvert: /@smoke/,
     },
     {
       // Specs por rota — áreas autenticadas (app, quotes, admin).
       name: "routes-authed",
-      use: { ...devices["Desktop Chrome"], storageState: STORAGE_STATE },
+      use: { ...CHROMIUM_DESKTOP, storageState: STORAGE_STATE },
       dependencies: ["setup"],
       testMatch: /routes\/(app|quotes|admin)\/.*\.spec\.ts/,
       testIgnore: AUTHENTICATED_ROUTE_IGNORE,
@@ -200,7 +206,7 @@ export default defineConfig({
     {
       // Sem credenciais, as rotas protegidas ainda precisam bloquear a sessão ausente.
       name: "routes-guards",
-      use: { ...devices["Desktop Chrome"] },
+      use: { ...CHROMIUM_DESKTOP },
       testMatch: /routes\/(app|quotes|admin)\/.*\.spec\.ts/,
       grep: /auth guard:/,
       grepInvert: /@smoke/,

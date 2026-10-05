@@ -4,13 +4,38 @@ import { HelmetProvider } from "react-helmet-async";
 import EnhancedErrorBoundary from "@/components/errors/EnhancedErrorBoundary";
 import AuthEntry from "./AuthEntry";
 import { injectRequestId } from "@/lib/request-id-injection";
-import { installGlobalErrorHandlers } from "@/lib/error-reporter";
 import "./index.css";
 
 
 // Inject traceability headers
 injectRequestId();
-installGlobalErrorHandlers();
+
+// Captura falhas do bootstrap sem promover o reporter completo (Supabase,
+// Sentry e telemetria) para o caminho crítico do login. A fila é drenada assim
+// que o módulo de observabilidade assume os listeners globais.
+const earlyRuntimeErrors: Array<{
+  error: Error;
+  metadata: Record<string, unknown>;
+}> = [];
+const queueEarlyRuntimeError = (error: Error, metadata: Record<string, unknown>) => {
+  if (earlyRuntimeErrors.length < 20) earlyRuntimeErrors.push({ error, metadata });
+};
+const onEarlyError = (event: ErrorEvent) => {
+  queueEarlyRuntimeError(event.error instanceof Error ? event.error : new Error(event.message), {
+    type: "unhandled_error",
+    filename: event.filename,
+    lineno: event.lineno,
+    colno: event.colno,
+  });
+};
+const onEarlyRejection = (event: PromiseRejectionEvent) => {
+  queueEarlyRuntimeError(
+    event.reason instanceof Error ? event.reason : new Error(String(event.reason)),
+    { type: "unhandled_promise_rejection" },
+  );
+};
+window.addEventListener("error", onEarlyError);
+window.addEventListener("unhandledrejection", onEarlyRejection);
 
 // A coleta usa PerformanceObserver com buffer e pode iniciar depois do paint.
 // Isso impede que telemetria concorra com a tela de autenticação.
@@ -24,6 +49,12 @@ if (import.meta.env.PROD) {
 // Os imports dinâmicos preservam a proteção sem onerar a primeira tela pública.
 globalThis.setTimeout(() => {
   void import("@/lib/sentry").then(({ initSentry }) => initSentry());
+  void import("@/lib/error-reporter").then(({ installGlobalErrorHandlers, reportError }) => {
+    window.removeEventListener("error", onEarlyError);
+    window.removeEventListener("unhandledrejection", onEarlyRejection);
+    installGlobalErrorHandlers();
+    earlyRuntimeErrors.splice(0).forEach(({ error, metadata }) => reportError(error, metadata));
+  });
   void import("@/lib/preview-auto-reload").then(({ setupPreviewAutoReload }) => setupPreviewAutoReload());
   void import("@/lib/diagnostics");
 }, 3_000);

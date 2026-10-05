@@ -64,6 +64,7 @@ export function OrderAuditTimeline({ orderId }: OrderAuditTimelineProps) {
         <div className="relative">
           <Search className="absolute left-2 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
           <Input 
+            aria-label="Buscar eventos da auditoria"
             placeholder="Buscar eventos..." 
             className="pl-8 h-8 text-xs" 
             value={search}
@@ -142,5 +143,4 @@ export function OrderAuditTimeline({ orderId }: OrderAuditTimelineProps) {
     </Card>
   );
 }
-
 
