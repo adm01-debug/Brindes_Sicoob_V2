@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { appendFile, readFile, readdir } from 'node:fs/promises';
+import { readFile, readdir } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import process from 'node:process';
 import { pathToFileURL } from 'node:url';
@@ -101,14 +101,12 @@ export function summaryMarkdown(report) {
 }
 
 async function main() {
-  const directory = resolve(process.argv[2] ?? 'sarif-results');
+  // O diretório é deliberadamente fixo: o gate não aceita caminhos fornecidos
+  // pela linha de comando e só lê a saída produzida pelo passo CodeQL anterior.
+  const directory = resolve('sarif-results');
   const report = await inspectSarif(directory);
   const summary = summaryMarkdown(report);
   process.stdout.write(summary);
-
-  if (process.env.GITHUB_STEP_SUMMARY) {
-    await appendFile(process.env.GITHUB_STEP_SUMMARY, summary, 'utf8');
-  }
 
   if (report.findings.length > 0) {
     throw new Error(`CodeQL encontrou ${report.findings.length} achado(s) de segurança.`);

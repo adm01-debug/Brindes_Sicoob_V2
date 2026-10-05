@@ -68,7 +68,9 @@ jobs:
           upload: never
 
       - name: Publicar resumo e bloquear achados do SARIF
-        run: node scripts/check-codeql-sarif.mjs sarif-results
+        run: |
+          set -o pipefail
+          node scripts/check-codeql-sarif.mjs | tee -a "$GITHUB_STEP_SUMMARY"
 
       - name: Preservar resultado SARIF como artefato
         if: always()
