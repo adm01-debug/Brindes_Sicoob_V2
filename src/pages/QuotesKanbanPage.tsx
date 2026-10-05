@@ -158,6 +158,7 @@ export default function QuotesKanbanPage() {
             <div className="relative w-full sm:w-64">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
+                aria-label="Buscar no funil de orçamentos"
                 placeholder="Nº ou Cliente..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
@@ -165,6 +166,7 @@ export default function QuotesKanbanPage() {
               />
               {search && (
                 <button
+                  aria-label="Limpar busca"
                   onClick={() => setSearch("")}
                   className="absolute right-3 top-1/2 -translate-y-1/2"
                 >

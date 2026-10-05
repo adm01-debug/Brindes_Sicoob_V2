@@ -101,6 +101,7 @@ export function MockupClientSelector({ selectedClient, onClientSelect }: MockupC
       <div className="relative z-50 isolate">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
+          aria-label="Buscar empresa para o mockup"
           ref={inputRef}
           placeholder="Buscar empresa..."
           value={searchQuery}

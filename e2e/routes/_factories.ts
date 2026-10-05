@@ -11,7 +11,7 @@
  *  7. @a11y básico
  *  8. @mobile sem overflow horizontal
  */
-import type { Page } from "@playwright/test";
+import type { Page, Request } from "@playwright/test";
 import { test, expect } from "../fixtures/test-base";
 import { gotoAndSettle } from "../helpers/nav";
 import {
@@ -152,7 +152,14 @@ export interface AuthedRouteSpec {
   name: string;
   path: string;
   /** Edge functions ou tabelas REST principais usadas pela rota. */
-  primary: { kind: "fn" | "rest"; key: string; successBody?: unknown };
+  primary: {
+    kind: "fn" | "rest";
+    key: string;
+    successBody?: unknown;
+    successBodyForRequest?: (request: Request) => unknown;
+  };
+  /** Mocks complementares necessários para que o cenário de sucesso seja isolado. */
+  setupSuccessMocks?: (page: Page) => Promise<void>;
   /** Asserts custom para o happy path (se omitido, valida apenas heading). */
   happyAssert?: (page: import("@playwright/test").Page) => Promise<void>;
 }
@@ -164,9 +171,13 @@ export function buildAuthedRouteSuite(spec: AuthedRouteSpec) {
     : new RegExp(`/rest/v1/${spec.primary.key}(\\?|$)`);
 
   const mockSuccess = async (page: import("@playwright/test").Page) => {
-    await page.route(route, r =>
-      r.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(spec.primary.successBody ?? []) }),
-    );
+    await page.route(route, r => {
+      const responseBody = spec.primary.successBodyForRequest
+        ? spec.primary.successBodyForRequest(r.request())
+        : spec.primary.successBody ?? [];
+      return r.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(responseBody) });
+    });
+    await spec.setupSuccessMocks?.(page);
   };
 
   test.describe(spec.name, () => {

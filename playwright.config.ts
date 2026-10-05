@@ -218,7 +218,7 @@ export default defineConfig({
     : {
         // Exporta a configuração pública versionada antes do Vite dev. Usar
         // `--mode production` ativaria Service Worker durante os testes.
-        command: `bash -c 'set -a; source .env.production; set +a; exec npm run dev -- --host 127.0.0.1 --port ${LOCAL_PORT}'`,
+        command: `bash -c 'if [[ -f .env.production ]]; then set -a; source .env.production; set +a; fi; exec npm run dev -- --host 127.0.0.1 --port ${LOCAL_PORT}'`,
         url: LOCAL_URL,
         // Reusar uma porta sem checar sua origem permitia executar a regressão
         // contra outro projeto local. Use E2E_BASE_URL para um servidor já validado.

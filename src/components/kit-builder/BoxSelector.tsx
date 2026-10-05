@@ -135,6 +135,7 @@ export function BoxSelector({
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
+            aria-label="Buscar caixa ou embalagem"
             placeholder="Buscar caixa ou embalagem..."
             value={searchValue}
             onChange={(e) => handleSearchChange(e.target.value)}

@@ -102,6 +102,8 @@ export function SavedViewsManager() {
                 <span className="truncate">{v.name}</span>
               </button>
               <button
+                type="button"
+                aria-label={`Excluir visão ${v.name}`}
                 onClick={() => deleteMutation.mutate(v.id)}
                 className="text-destructive hover:text-destructive/80 p-1"
                 title="Excluir"

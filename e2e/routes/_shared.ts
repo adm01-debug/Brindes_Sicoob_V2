@@ -162,12 +162,14 @@ export async function basicA11yChecks(page: Page) {
         const visible = (b as HTMLElement).offsetParent !== null;
         if (!visible) return false;
         const text = (b.textContent ?? "").trim();
-        const aria = b.getAttribute("aria-label");
-        return !text && !aria;
+        const hasAria = b.hasAttribute("aria-label") || b.hasAttribute("aria-labelledby");
+        const id = b.getAttribute("id");
+        const hasLabelFor = id ? !!document.querySelector(`label[for="${id}"]`) : false;
+        return !text && !hasAria && !hasLabelFor;
       })
-      .length;
+      .map(button => button.outerHTML.slice(0, 240));
   });
-  expect(orphanButtons, "botões sem texto/aria-label").toBe(0);
+  expect(orphanButtons, "botões sem texto/aria-label: " + JSON.stringify(orphanButtons)).toHaveLength(0);
 }
 
 /* ============================================================

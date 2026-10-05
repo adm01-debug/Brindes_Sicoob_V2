@@ -64,7 +64,7 @@ export default function AdvancedPriceSearchPage() {
             </CardHeader>
             <CardContent className="w-full max-w-[1920px] mx-auto px-3 sm:px-4 lg:px-6 xl:px-8 py-3 sm:py-4 space-y-3 sm:space-y-4 pb-24 md:pb-6 animate-fade-in">
               <FilterSection title="Buscar Produto" icon={Search}>
-                <Input placeholder="Nome ou SKU..." value={filters.searchQuery} onChange={e => updateFilter('searchQuery', e.target.value)} />
+                <Input aria-label="Buscar produto por nome ou SKU" placeholder="Nome ou SKU..." value={filters.searchQuery} onChange={e => updateFilter('searchQuery', e.target.value)} />
               </FilterSection>
 
               <FilterSection title="Categoria" icon={Package}>
@@ -124,11 +124,11 @@ export default function AdvancedPriceSearchPage() {
                   <div className="flex gap-2">
                     <div className="flex-1">
                       <Label className="text-xs text-muted-foreground">Mínimo</Label>
-                      <Input type="number" value={filters.priceRange[0]} onChange={e => updateFilter('priceRange', [parseFloat(e.target.value) || 0, filters.priceRange[1]])} className="mt-1" />
+                      <Input aria-label="Preço unitário mínimo" type="number" value={filters.priceRange[0]} onChange={e => updateFilter('priceRange', [parseFloat(e.target.value) || 0, filters.priceRange[1]])} className="mt-1" />
                     </div>
                     <div className="flex-1">
                       <Label className="text-xs text-muted-foreground">Máximo</Label>
-                      <Input type="number" value={filters.priceRange[1]} onChange={e => updateFilter('priceRange', [filters.priceRange[0], parseFloat(e.target.value) || 100])} className="mt-1" />
+                      <Input aria-label="Preço unitário máximo" type="number" value={filters.priceRange[1]} onChange={e => updateFilter('priceRange', [filters.priceRange[0], parseFloat(e.target.value) || 100])} className="mt-1" />
                     </div>
                   </div>
                   <Slider value={filters.priceRange} onValueChange={v => updateFilter('priceRange', v as [number, number])} min={0} max={200} step={1} className="mt-2" />
@@ -141,7 +141,7 @@ export default function AdvancedPriceSearchPage() {
 
               <div className="flex gap-2 pt-4 border-t">
                 <Button onClick={handleSearch} className="flex-1" disabled={isLoading}><Search className="h-4 w-4 mr-2" />Buscar</Button>
-                <Button variant="outline" onClick={handleReset}><RotateCcw className="h-4 w-4" /></Button>
+                <Button variant="outline" onClick={handleReset} aria-label="Limpar filtros"><RotateCcw className="h-4 w-4" /></Button>
               </div>
             </CardContent>
           </Card>
@@ -156,7 +156,7 @@ export default function AdvancedPriceSearchPage() {
               </p>
               <div className="flex items-center gap-1 bg-muted/50 rounded-lg p-1">
                 {([['cards', Grid3X3], ['table', Table2], ['list', List]] as const).map(([mode, Icon]) => (
-                  <Button key={mode} variant={viewMode === mode ? 'secondary' : 'ghost'} size="sm" onClick={() => setViewMode(mode)}><Icon className="h-4 w-4" /></Button>
+                  <Button key={mode} variant={viewMode === mode ? 'secondary' : 'ghost'} size="sm" onClick={() => setViewMode(mode)} aria-label={`Exibir resultados em ${mode === 'cards' ? 'grade' : mode === 'table' ? 'tabela' : 'lista'}`}><Icon className="h-4 w-4" /></Button>
                 ))}
               </div>
             </div>

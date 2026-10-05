@@ -143,7 +143,11 @@ export const PersistentBreadcrumbs = forwardRef<HTMLElement, PersistentBreadcrum
             {/* Dropdown for middle items */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button className="h-6 w-8 flex items-center justify-center hover:bg-muted/50 rounded-md transition-colors">
+                <button
+                  type="button"
+                  aria-label="Mostrar caminhos intermediários"
+                  className="h-6 w-8 flex items-center justify-center hover:bg-muted/50 rounded-md transition-colors"
+                >
                   <MoreHorizontal className="h-4 w-4 text-muted-foreground" />
                 </button>
               </DropdownMenuTrigger>

@@ -65,6 +65,7 @@ export function VariantStockTable({ products, isLoading }: VariantStockTableProp
       <div className="relative max-w-md">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
+          aria-label="Filtrar produtos por nome, SKU ou cor"
           placeholder="Filtrar por nome, SKU ou cor..."
           className="pl-9 pr-9"
           value={searchQuery}
@@ -72,6 +73,7 @@ export function VariantStockTable({ products, isLoading }: VariantStockTableProp
         />
         {searchQuery && (
           <Button
+            aria-label="Limpar filtro da tabela"
             variant="ghost"
             size="icon"
             className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7"

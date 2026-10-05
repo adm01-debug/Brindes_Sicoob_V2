@@ -63,6 +63,9 @@ jobs:
         with:
           category: '/language:${{ matrix.language }}'
           output: sarif-results
+          # O repositório privado não possui GitHub Code Scanning habilitado.
+          # Mantemos a análise e preservamos o SARIF como artefato auditável.
+          upload: never
 
       - name: Validar que a análise gerou SARIF
         run: |

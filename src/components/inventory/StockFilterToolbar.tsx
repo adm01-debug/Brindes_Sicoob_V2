@@ -327,13 +327,14 @@ export function StockFilterToolbar({
         <div className="relative flex-1 max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
+            aria-label="Buscar produtos no estoque"
             placeholder="Buscar produto, SKU ou cor..."
             value={localSearch}
             onChange={(e) => setLocalSearch(e.target.value)}
             className="pl-9 pr-8"
           />
           {localSearch && (
-            <button onClick={() => setLocalSearch('')} className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+            <button aria-label="Limpar busca" onClick={() => setLocalSearch('')} className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
               <X className="h-4 w-4" />
             </button>
           )}
@@ -346,6 +347,7 @@ export function StockFilterToolbar({
               <div className="relative w-full sm:w-48">
                 <ShoppingCart className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
+                  aria-label="Quantidade mínima necessária"
                   type="number"
                   placeholder="Preciso de X un..."
                   value={quantityInput}

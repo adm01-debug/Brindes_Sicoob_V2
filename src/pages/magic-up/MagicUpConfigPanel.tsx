@@ -118,6 +118,7 @@ function ClientCard({ m }: { m: MagicUpStateReturn }) {
           <div className="relative">
             <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
+              aria-label="Buscar empresa para a campanha"
               placeholder="Buscar empresa por nome..."
               value={m.clientSearch}
               onChange={(e) => { m.setClientSearch(e.target.value); m.setShowClientResults(true); }}
@@ -415,6 +416,7 @@ function SceneCard({ m }: { m: MagicUpStateReturn }) {
             Detalhes adicionais (complementa o cenário acima):
           </Label>
           <Textarea
+            aria-label="Detalhes adicionais do cenário"
             value={m.additionalDetails}
             onChange={(e) => m.setAdditionalDetails(e.target.value)}
             placeholder="Ex: A pessoa deve estar sorrindo, ambiente com tons quentes, foco no produto..."

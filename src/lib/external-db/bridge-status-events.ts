@@ -71,14 +71,13 @@ const COLD_START_PATTERNS = [
   'supabase_edge_runtime_error',
   'service is temporarily unavailable',
   'boot_error',
-  '503',
-  '502',
-  '504',
   'bad gateway',
   'function failed to start',
 ];
 
+const TRANSIENT_HTTP_STATUS_RE = /\b(?:502|503|504)\b/;
+
 export function isColdStartSignal(message: string): boolean {
   const lower = message.toLowerCase();
-  return COLD_START_PATTERNS.some(p => lower.includes(p));
+  return COLD_START_PATTERNS.some(p => lower.includes(p)) || TRANSIENT_HTTP_STATUS_RE.test(lower);
 }

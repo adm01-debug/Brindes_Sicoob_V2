@@ -405,7 +405,7 @@ export default function CollectionDetailPage() {
             <div className="flex items-center gap-3 flex-wrap">
               <div className="relative flex-1 max-w-sm">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input placeholder="Buscar na coleção..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-9" />
+                <Input aria-label="Buscar na coleção" placeholder="Buscar na coleção..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-9" />
               </div>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>

@@ -366,6 +366,7 @@ export function QuotesListPage() {
             <div className="relative flex-1 max-w-md">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
+                aria-label="Buscar orçamentos"
                 placeholder="Buscar por número, cliente ou empresa..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}

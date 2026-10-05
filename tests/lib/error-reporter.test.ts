@@ -41,6 +41,15 @@ describe('error-reporter', () => {
     window.history.replaceState({}, '', '/');
   });
 
+  it('não confunde números no caminho do stack com status HTTP transitório', async () => {
+    const { isTransientEdgeRuntimeError } = await import('@/lib/error-reporter');
+    const error = new Error('Falha de envio');
+    error.stack = 'Error: Falha de envio\n    at /workspace/chat-h206502/src/app.ts:10:2';
+
+    expect(isTransientEdgeRuntimeError(error)).toBe(false);
+    expect(isTransientEdgeRuntimeError('HTTP 502 Bad Gateway')).toBe(true);
+  });
+
   it('reportError queues an error and schedules flush', async () => {
     const { reportError } = await import('@/lib/error-reporter');
     const err = new Error('test error');
