@@ -75,7 +75,7 @@ const COLD_START_PATTERNS = [
   'function failed to start',
 ];
 
-const TRANSIENT_HTTP_STATUS_RE = /\b(?:http(?:\s+status)?|status(?:\s+code)?|returned|response(?:\s+status)?)\s*[:=]?\s*(?:502|503|504)\b/i;
+const TRANSIENT_HTTP_STATUS_RE = /(?:^|[^\w\-/.:])(?:502|503|504)(?![\w\-/.:])/;
 
 export function isColdStartSignal(message: string): boolean {
   const lower = message.toLowerCase();
