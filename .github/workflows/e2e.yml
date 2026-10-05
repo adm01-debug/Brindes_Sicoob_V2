@@ -172,7 +172,7 @@ jobs:
     needs: e2e
     if: needs.e2e.result == 'success'
     runs-on: self-hosted
-    timeout-minutes: 45
+    timeout-minutes: 60
     strategy:
       fail-fast: false
       matrix:

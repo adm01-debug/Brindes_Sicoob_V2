@@ -98,9 +98,12 @@ export default defineConfig({
     baseURL: process.env.E2E_BASE_URL ?? LOCAL_URL,
     headless: HEADLESS,
     testIdAttribute: "data-testid",
-    trace: "retain-on-failure",
-    screenshot: "on",
-    video: "on",
+    // Evita gravar centenas de MB nos casos aprovados. Em caso de falha, a
+    // primeira repetição ainda registra vídeo e trace, enquanto a captura de
+    // tela é produzida imediatamente pela tentativa que falhou.
+    trace: "on-first-retry",
+    screenshot: "only-on-failure",
+    video: "on-first-retry",
     actionTimeout: 10_000,
     navigationTimeout: 20_000,
     reducedMotion: "reduce",
