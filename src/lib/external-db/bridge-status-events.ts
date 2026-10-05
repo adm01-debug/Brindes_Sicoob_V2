@@ -76,7 +76,7 @@ const COLD_START_PATTERNS = [
 ];
 
 const CONTEXTUAL_HTTP_STATUS_RE = /\b(?:http(?:\s+status)?|status(?:\s+code)?|code|returned)\s*[:=]?\s*(?:502|503|504)(?=$|[\s,.;:!?()[\]{}])/i;
-const ISOLATED_HTTP_STATUS_RE = /(?:^|[^\w/.:\d-])(?:502|503|504)(?=$|[^\w/.:\d-])/;
+const ISOLATED_HTTP_STATUS_RE = /(?:^|[^\w/.:\d-])(?:502|503|504)(?=$|[\s,.;!?()[\]{}]|:(?!\s*\d))/;
 
 export function isColdStartSignal(message: string): boolean {
   const lower = message.toLowerCase();

@@ -12,12 +12,17 @@ describe('isColdStartSignal', () => {
     'function returned 504',
     'Edge function returned 503: Error',
     '503 Service Unavailable',
+    '503: Service Unavailable',
+    'Error 503: Service Unavailable',
+    '| 503: Service Unavailable',
   ])('reconhece status HTTP transitório em %s', message => {
     expect(isColdStartSignal(message)).toBe(true);
   });
 
   it.each([
     'at /workspace/src/app.ts:502:10',
+    '| 503:10',
+    '| 503: 10',
     'identificador item-502-falhou',
     'arquivo version.503 falhou',
     'function returned version.503',
