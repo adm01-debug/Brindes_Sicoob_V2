@@ -75,9 +75,12 @@ const COLD_START_PATTERNS = [
   'function failed to start',
 ];
 
-const TRANSIENT_HTTP_STATUS_RE = /(?:^|[^\w\-/.:])(?:502|503|504)(?![\w\-/.:])/;
+const CONTEXTUAL_HTTP_STATUS_RE = /\b(?:http(?:\s+status)?|status(?:\s+code)?|code)\s*[:=]?\s*(?:502|503|504)(?=$|[\s,.;:!?()[\]{}])/i;
+const ISOLATED_HTTP_STATUS_RE = /(?:^|[^\w/.:\d-])(?:502|503|504)(?=$|[^\w/.:\d-])/;
 
 export function isColdStartSignal(message: string): boolean {
   const lower = message.toLowerCase();
-  return COLD_START_PATTERNS.some(p => lower.includes(p)) || TRANSIENT_HTTP_STATUS_RE.test(lower);
+  return COLD_START_PATTERNS.some(p => lower.includes(p))
+    || CONTEXTUAL_HTTP_STATUS_RE.test(lower)
+    || ISOLATED_HTTP_STATUS_RE.test(lower);
 }

@@ -51,6 +51,7 @@ export function TagManager({ tags = [], onChange, className, readonly = false }:
             {!readonly && (
               <button
                 type="button"
+                aria-label={`Remover etiqueta ${tag}`}
                 onClick={() => removeTag(tag)}
                 className="hover:text-destructive transition-colors"
               >
@@ -66,6 +67,7 @@ export function TagManager({ tags = [], onChange, className, readonly = false }:
           <div className="relative flex-1">
             <TagIcon className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
             <Input
+              aria-label="Adicionar etiqueta"
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               onKeyDown={handleKeyDown}
