@@ -13,6 +13,11 @@ interface OrderAuditTimelineProps {
   orderId: string;
 }
 
+const SORT_ACTION_LABEL = {
+  asc: "Ordenar eventos do mais recente",
+  desc: "Ordenar eventos do mais antigo",
+} as const;
+
 export function OrderAuditTimeline({ orderId }: OrderAuditTimelineProps) {
   const [search, setSearch] = useState("");
   const [type, setType] = useState("all");
@@ -40,7 +45,12 @@ export function OrderAuditTimeline({ orderId }: OrderAuditTimelineProps) {
           <div className="flex items-center gap-2">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-8 w-8">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8"
+                  aria-label="Filtrar eventos da auditoria"
+                >
                   <Filter className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
@@ -55,6 +65,7 @@ export function OrderAuditTimeline({ orderId }: OrderAuditTimelineProps) {
               variant="ghost" 
               size="icon" 
               className="h-8 w-8" 
+              aria-label={SORT_ACTION_LABEL[sortOrder]}
               onClick={() => setSortOrder(prev => prev === "asc" ? "desc" : "asc")}
             >
               {sortOrder === "asc" ? <SortAsc className="h-4 w-4" /> : <SortDesc className="h-4 w-4" />}
@@ -143,4 +154,3 @@ export function OrderAuditTimeline({ orderId }: OrderAuditTimelineProps) {
     </Card>
   );
 }
-
