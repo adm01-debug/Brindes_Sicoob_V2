@@ -7,6 +7,11 @@ on:
         description: 'Digite PUBLICAR para enviar as funções ao ambiente de construção'
         required: true
         type: string
+      source_ref:
+        description: 'Branch, tag ou SHA cuja implementação deve ser publicada'
+        required: false
+        default: main
+        type: string
 
 permissions:
   contents: read
@@ -15,7 +20,7 @@ jobs:
   deploy:
     if: inputs.confirmar == 'PUBLICAR'
     name: Publicar funções canônicas Sicoob
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     timeout-minutes: 15
     environment: construction
     env:
@@ -24,6 +29,8 @@ jobs:
     steps:
       - name: Baixar fonte versionada
         uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.source_ref }}
 
       - name: Configurar Supabase CLI
         uses: supabase/setup-cli@v3
@@ -39,6 +46,7 @@ jobs:
         run: |
           set -euo pipefail
           for function_name in \
+            external-db-bridge \
             sicoob-approval-reconciliation \
             sicoob-artwork-register \
             sicoob-document-ingest \
@@ -53,6 +61,7 @@ jobs:
           set -euo pipefail
           published_functions="$(supabase functions list --project-ref "$SUPABASE_PROJECT_ID" --output-format json)"
           for function_name in \
+            external-db-bridge \
             sicoob-approval-reconciliation \
             sicoob-artwork-register \
             sicoob-document-ingest \
