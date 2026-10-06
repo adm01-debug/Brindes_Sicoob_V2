@@ -7,6 +7,12 @@ on:
   pull_request:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      source_ref:
+        description: 'Branch, tag ou SHA cuja jornada deve ser validada'
+        required: false
+        default: main
+        type: string
 
 permissions:
   contents: read
@@ -17,7 +23,7 @@ concurrency:
 
 jobs:
   e2e:
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     # O gate cobre 168 combinações de rota/viewport além do smoke. O limite
     # inclui instalação, servidor e upload das evidências no runner próprio.
     timeout-minutes: 35
@@ -37,6 +43,8 @@ jobs:
       VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
     steps:
       - uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.source_ref || github.sha }}
 
       - uses: actions/setup-node@v7.0.0
         with:
@@ -171,7 +179,7 @@ jobs:
     name: E2E regression — shard ${{ matrix.shard }}/2
     needs: e2e
     if: needs.e2e.result == 'success'
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     timeout-minutes: 25
     strategy:
       fail-fast: false
@@ -189,6 +197,8 @@ jobs:
       VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
     steps:
       - uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.source_ref || github.sha }}
 
       - uses: actions/setup-node@v7.0.0
         with:
