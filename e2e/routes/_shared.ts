@@ -63,7 +63,9 @@ export async function mockPublicRestResource(
     : scenario === "expired"
       ? { status: 200, body: expiredBody }
       : scenario === "notFound"
-        ? { status: 404, body: { message: "Recurso não encontrado" } }
+        // `.maybeSingle()` representa ausência como resposta 200 sem linha.
+        // Um 404 artificial transforma "não encontrado" em indisponibilidade.
+        ? { status: 200, body: null }
         : scenario === "invalidPayload"
           ? { status: 400, body: { message: "Requisição inválida" } }
           : scenario === "timeout"

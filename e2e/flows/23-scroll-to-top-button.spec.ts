@@ -29,7 +29,7 @@ const MAIN_MODULES = [
   "/orcamentos",
   "/colecoes",
   "/favoritos",
-  "/kits",
+  "/montar-kit",
 ] as const;
 
 test.describe("ScrollToTopButton — módulos principais", () => {

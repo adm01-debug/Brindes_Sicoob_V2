@@ -140,7 +140,16 @@ export default defineConfig({
     {
       name: "chromium-public",
       use: { ...CHROMIUM_DESKTOP },
-      testIgnore: [/fixtures\/auth\.setup\.ts/, /flows\//, /routes\//, ...INTEGRATION_SPECS],
+      // A resiliência PWA exige build/preview de produção e possui config
+      // dedicada (`playwright.pwa.config.ts`). O servidor deste projeto é o
+      // Vite dev, que intencionalmente não registra Service Worker.
+      testIgnore: [
+        /fixtures\/auth\.setup\.ts/,
+        /flows\//,
+        /routes\//,
+        /pwa-resilience\.spec\.ts/,
+        ...INTEGRATION_SPECS,
+      ],
       grepInvert: /@smoke/,
     },
     {
@@ -159,7 +168,9 @@ export default defineConfig({
       testMatch: /flows\/.*\.spec\.ts/,
       // Smoke roda no project dedicado abaixo (chromium-smoke) para evitar
       // execução duplicada e garantir ordem sequencial determinística.
-      testIgnore: AUTHENTICATED_FLOW_IGNORE,
+      // Parte das specs de integração vive sob `flows/`; sem esta exclusão,
+      // elas rodavam também aqui com outro contrato de autenticação.
+      testIgnore: [...AUTHENTICATED_FLOW_IGNORE, ...INTEGRATION_SPECS],
       grepInvert: /@smoke/,
     },
     {
