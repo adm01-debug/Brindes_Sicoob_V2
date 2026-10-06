@@ -180,7 +180,10 @@ jobs:
     needs: e2e
     if: needs.e2e.result == 'success'
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    # A matriz completa pode exceder 25 minutos em runners hospedados, mesmo
+    # com os dois shards ativos. O limite precisa permitir a coleta de todos
+    # os resultados, em vez de cancelar um shard antes do relatório final.
+    timeout-minutes: 40
     strategy:
       fail-fast: false
       matrix:
