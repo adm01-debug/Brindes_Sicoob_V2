@@ -80,7 +80,8 @@
     ]
   },
   "overrides": {
-    "braces": "$braces"
+    "braces": "$braces",
+    "source-map-js": "1.2.2"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
