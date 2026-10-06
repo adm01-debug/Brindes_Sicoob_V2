@@ -68,5 +68,5 @@ jobs:
             sicoob-kit-quote \
             sicoob-reorder
           do
-            echo "$published_functions" | jq -e --arg function_name "$function_name" '.[] | select(.slug == $function_name)' >/dev/null
+            echo "$published_functions" | jq -e --arg function_name "$function_name" '.. | objects | select(.slug == $function_name)' >/dev/null
           done
