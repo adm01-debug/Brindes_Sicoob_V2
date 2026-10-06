@@ -196,7 +196,7 @@ export default function Auth() {
   };
 
   return (
-    <main className="min-h-screen flex bg-[#F7FAFA] dark:bg-background" role="main" aria-label="Autenticação">
+    <main className="auth-entry-shell min-h-screen flex bg-[#F7FAFA] dark:bg-background" role="main" aria-label="Autenticação">
       <PageSEO
         title="Login"
         description="Acesse o Portal de Compras Sicoob. Faça login para gerenciar seus orçamentos e produtos."

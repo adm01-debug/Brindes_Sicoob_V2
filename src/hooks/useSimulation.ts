@@ -98,7 +98,7 @@ export function useSimulation() {
     queryKey: ["simulator-products-promobrind"],
     queryFn: async () => {
       const raw = await fetchPromobrindProducts({ limit: 500 });
-      return raw.filter(p => p.active !== false && p.is_active !== false)
+      return raw.filter(p => p.is_active !== false)
         .map(p => ({ id: p.id, name: p.name, sku: p.sku, price: getProductPrice(p), image_url: getProductImageUrl(p) })) as Product[];
     },
     staleTime: 5 * 60 * 1000,

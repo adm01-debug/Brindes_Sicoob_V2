@@ -35,11 +35,13 @@ export async function fetchPromobrindProducts(options?: {
   filters?: Record<string, unknown>;
   returnCount?: boolean;
 }): Promise<PromobrindProduct[] | { products: PromobrindProduct[]; count: number | null }> {
+  const requestedFilters = options?.filters ?? {};
+  const { active: legacyActive, ...filtersWithoutLegacyActive } = requestedFilters;
   const filters: Record<string, unknown> = {
-    ...(options?.filters?.active === undefined && options?.filters?.is_active === undefined
-      ? { active: true }
+    ...(filtersWithoutLegacyActive.is_active === undefined
+      ? { is_active: legacyActive ?? true }
       : {}),
-    ...options?.filters,
+    ...filtersWithoutLegacyActive,
   };
 
   if (options?.search) {

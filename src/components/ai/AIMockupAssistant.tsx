@@ -145,6 +145,7 @@ export function AIMockupAssistant({
       >
         <Button
           size="lg"
+          aria-label="Abrir assistente de mockup"
           className="h-14 w-14 rounded-full shadow-lg gap-0 p-0 relative overflow-hidden group bg-primary hover:bg-primary/90 text-primary-foreground border-0"
           onClick={() => setIsOpen(true)}
         >

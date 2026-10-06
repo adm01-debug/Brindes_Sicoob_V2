@@ -30,6 +30,21 @@ export const OnboardingTour = forwardRef<HTMLDivElement, any>(function Onboardin
   const [tooltipPosition, setTooltipPosition] = useState<TooltipPosition>({});
   const [highlightRect, setHighlightRect] = useState<DOMRect | null>(null);
 
+  const highlightBox = highlightRect
+    ? (() => {
+        const left = Math.max(0, highlightRect.left - 4);
+        const top = Math.max(0, highlightRect.top - 4);
+        const right = Math.min(window.innerWidth, highlightRect.right + 4);
+        const bottom = Math.min(window.innerHeight, highlightRect.bottom + 4);
+        return {
+          left,
+          top,
+          width: Math.max(0, right - left),
+          height: Math.max(0, bottom - top),
+        };
+      })()
+    : null;
+
   const updatePositions = useCallback(() => {
     if (!currentStepData) return;
 
@@ -150,7 +165,7 @@ export const OnboardingTour = forwardRef<HTMLDivElement, any>(function Onboardin
     <div ref={ref}>
       <AnimatePresence>
       {showTour && currentStepData && (
-      <div className="fixed inset-0 z-[100] pointer-events-none">
+      <div data-testid="onboarding-tour" className="fixed inset-0 z-[100] pointer-events-none">
         {/* Overlay with spotlight effect */}
         <motion.div
           initial={{ opacity: 0 }}
@@ -166,16 +181,16 @@ export const OnboardingTour = forwardRef<HTMLDivElement, any>(function Onboardin
         />
 
         {/* Highlight border around target element */}
-        {highlightRect && (
+        {highlightBox && (
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             className="absolute border-2 border-primary rounded-lg pointer-events-none"
             style={{
-              top: highlightRect.top - 4,
-              left: highlightRect.left - 4,
-              width: highlightRect.width + 8,
-              height: highlightRect.height + 8,
+              top: highlightBox.top,
+              left: highlightBox.left,
+              width: highlightBox.width,
+              height: highlightBox.height,
               boxShadow: "0 0 0 4px rgba(var(--primary), 0.2), 0 0 20px rgba(var(--primary), 0.4)",
             }}
           />

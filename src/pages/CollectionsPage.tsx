@@ -101,7 +101,7 @@ export default function CollectionsPage() {
           </Button>
           <div className="relative max-w-md flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input placeholder="Buscar coleções..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-9" />
+            <Input aria-label="Buscar coleções" placeholder="Buscar coleções..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-9" />
           </div>
           <div className="hidden sm:flex items-center gap-2 ml-auto">
             <CollectionsHeatmap />
@@ -205,7 +205,7 @@ export default function CollectionsPage() {
               <p className="text-xs text-muted-foreground flex-1">
                 <span className="font-medium text-foreground">Dica:</span> Selecione coleções marcando o checkbox nos cards para enviar todos os produtos para um orçamento de uma vez.
               </p>
-              <Button variant="ghost" size="sm" className="h-6 w-6 p-0 shrink-0 text-muted-foreground hover:text-foreground" onClick={() => setHintDismissed(true)}>
+              <Button variant="ghost" size="sm" aria-label="Fechar dica" className="h-6 w-6 p-0 shrink-0 text-muted-foreground hover:text-foreground" onClick={() => setHintDismissed(true)}>
                 <X className="h-3.5 w-3.5" />
               </Button>
             </motion.div>

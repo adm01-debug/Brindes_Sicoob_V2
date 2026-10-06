@@ -164,7 +164,7 @@ async function queryCurrentCatalog(userClient: SupabaseClient, source: ReorderSo
     body: {
       table: "products",
       operation: "select",
-      select: "id,name,sku,sale_price,base_price,primary_image_url,is_active,active,stock_quantity,min_quantity,min_order_quantity,is_stockout,last_stock_update_at,price_updated_at,price_verified_at,price_last_verified_at,price_freshness_threshold_days",
+      select: "id,name,sku,sale_price,base_price,primary_image_url,is_active,stock_quantity,min_quantity,min_order_quantity,is_stockout,last_stock_update_at,price_updated_at,price_verified_at,price_last_verified_at,price_freshness_threshold_days",
       filters: { id: productIds },
       limit: Math.min(productIds.length, 100),
     },

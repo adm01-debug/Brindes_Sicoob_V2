@@ -172,7 +172,7 @@ jobs:
     needs: e2e
     if: needs.e2e.result == 'success'
     runs-on: self-hosted
-    timeout-minutes: 25
+    timeout-minutes: 60
     strategy:
       fail-fast: false
       matrix:
@@ -213,6 +213,10 @@ jobs:
       - name: Run E2E regression (shard ${{ matrix.shard }}/2)
         run: |
           npx playwright test \
+            --project=chromium-public \
+            --project=chromium-authed \
+            --project=routes-public \
+            --project=routes-authed \
             --grep-invert @smoke \
             --shard=${{ matrix.shard }}/2 \
             --workers=2 \

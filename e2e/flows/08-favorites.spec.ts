@@ -146,14 +146,9 @@ test.describe("Fluxo: Favoritos", () => {
   test("lista de favoritos carrega", async ({ page }) => {
     await gotoAndSettle(page, "/favoritos");
     await expect(page).toHaveURL(/favoritos/);
-    // Header visível em qualquer estado (com itens ou empty state)
-    await expect(
-      page.locator(Sel.favorites.title).or(page.locator(Sel.favorites.emptyState)),
-    ).toBeVisible({ timeout: 15_000 });
-    // Quando o título aparece, valida h1 + Heart + fill-destructive antes de qualquer leitura
-    if (await page.locator(Sel.favorites.title).isVisible().catch(() => false)) {
-      await assertFavoritesHeaderVisuals(page);
-    }
+    // O cabeçalho existe tanto com itens quanto no estado vazio.
+    await expect(page.locator(Sel.favorites.title)).toBeVisible({ timeout: 15_000 });
+    await assertFavoritesHeaderVisuals(page);
   });
 
   test("favorita um produto, recarrega e ele persiste na lista", async ({ page }) => {

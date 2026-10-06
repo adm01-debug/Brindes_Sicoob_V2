@@ -20,7 +20,7 @@ test.describe("E2E — catálogo até novo orçamento", () => {
     await gotoAndSettle(page, "/orcamentos/novo");
     await expect(page).toHaveURL(/\/orcamentos\/novo/);
     await expect(page.getByTestId("page-title-orcamento-novo")).toHaveText(/Novo Orçamento/);
-    await expect(page.getByText("Itens do Orçamento", { exact: true })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Itens do Orçamento" })).toBeVisible();
     await expect(page.getByRole("button", { name: /Produto/ }).first()).toBeEnabled();
     await expect(page.getByText("Resumo", { exact: true }).first()).toBeVisible();
   });

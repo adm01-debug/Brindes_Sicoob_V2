@@ -132,7 +132,7 @@ export function CompanySearchDropdown({
     <div ref={wrapperRef} className="relative z-40">
       <div className="relative z-50 isolate">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
-        <Input autoFocus={isOpen} placeholder="Buscar empresa por nome, CNPJ..." value={searchTerm}
+        <Input aria-label="Buscar empresa por nome ou CNPJ" autoFocus={isOpen} placeholder="Buscar empresa por nome, CNPJ..." value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)} onFocus={() => setIsOpen(true)} className="pl-9 h-11 bg-background"
           onKeyDown={(e) => { if (e.key === "Escape") { setIsOpen(false); setSearchTerm(""); } }} />
         {(loadingCompanies || loadingSearch) && <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground animate-spin" />}

@@ -60,7 +60,7 @@ export function useKitStockValidation(
           table: 'products',
           operation: 'select',
           select: 'id, stock_quantity',
-          filters: { id: productIds, active: true },
+          filters: { id: productIds, is_active: true },
           limit: productIds.length,
         }),
       ]);

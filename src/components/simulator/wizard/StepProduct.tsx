@@ -111,6 +111,7 @@ export function StepProduct({ wizard }: StepProductProps) {
             ))}
           </div>
           <Input
+            aria-label="Quantidade de produtos"
             type="number"
             value={wizard.quantity}
             onChange={e => wizard.setQuantity(parseInt(e.target.value) || 1)}
@@ -159,6 +160,7 @@ export function StepProduct({ wizard }: StepProductProps) {
       <div className="relative">
         <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
         <Input
+          aria-label="Pesquisar produto para simulação"
           placeholder="Pesquisar por nome, SKU ou categoria..."
           value={searchTerm}
           onChange={e => setSearchTerm(e.target.value)}

@@ -6,7 +6,7 @@ import { logger } from '@/lib/logger';
 import { invokeExternalDb, invokeBatchBridge } from './bridge';
 import type { InvokeResult } from './bridge';
 
-const PRODUCT_SELECT_LIGHTWEIGHT = 'id, name, sku, supplier_reference, sale_price, cost_price, primary_image_url, supplier_id, category_id, main_category_id, brand, is_active, active, stock_quantity, min_quantity, is_kit, gender';
+const PRODUCT_SELECT_LIGHTWEIGHT = 'id, name, sku, supplier_reference, sale_price, cost_price, primary_image_url, supplier_id, category_id, main_category_id, brand, is_active, stock_quantity, min_quantity, is_kit, gender';
 const LIGHTWEIGHT_PAGE_SIZE = 500;          // antes 100 — reduz round-trips em 5x
 const LIGHTWEIGHT_MAX_CONCURRENCY = 3;       // antes 2 — bridge tem singleton + warmup
 const LIGHTWEIGHT_MIN_SPLIT_PAGE_SIZE = 125;
@@ -27,7 +27,6 @@ export interface LightweightProduct {
   main_category_id: string | null;
   brand: string | null;
   is_active: boolean;
-  active: boolean;
   stock_quantity?: number | null;
   min_quantity?: number | null;
   is_kit?: boolean | null;

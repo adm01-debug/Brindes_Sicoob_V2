@@ -84,6 +84,7 @@ export default function MockupHistoryPage() {
           <div className="relative max-w-md">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
+              aria-label="Buscar no histórico de mockups"
               placeholder="Buscar por produto, SKU ou cliente..."
               value={search}
               onChange={(e) => { setSearch(e.target.value); setPage(1); }}

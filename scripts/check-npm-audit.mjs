@@ -1,9 +1,38 @@
 import { execSync } from 'child_process';
+import { createRequire } from 'module';
 
 console.log('🛡️  SECURITY GATE: Running npm audit...');
 
 // Sem exceções por pacote: vulnerabilidades altas ou críticas bloqueiam o build.
 const ALLOWLIST = new Set();
+const require = createRequire(import.meta.url);
+
+function verifyBracesPatch() {
+  const braces = require('braces');
+  const { version } = require('braces/package.json');
+  if (version !== '3.0.4-sicoob.0') {
+    throw new Error(`Versão corrigida de braces não instalada: ${version}`);
+  }
+
+  const nestedInput = `${'{'.repeat(101)}x${'}'.repeat(101)}`;
+  try {
+    braces.parse(nestedInput);
+  } catch (error) {
+    if (error instanceof SyntaxError && error.message.includes('nesting depth')) {
+      return;
+    }
+    throw error;
+  }
+
+  throw new Error('A proteção de profundidade de braces não bloqueou a entrada adversarial.');
+}
+
+try {
+  verifyBracesPatch();
+} catch (error) {
+  console.error(`❌ SECURITY GATE FAILED: ${error.message}`);
+  process.exit(1);
+}
 
 function summarize(jsonStr) {
   let audit;

@@ -76,7 +76,7 @@ export function useKitBuilderQueries() {
   } = useQuery({
     queryKey: ['kit-builder', 'boxes', debouncedBoxSearch, boxDimFilters.minWidth ?? '', boxDimFilters.minHeight ?? '', boxDimFilters.minDepth ?? '', boxDimFilters.material ?? ''],
     queryFn: async () => {
-      const filters: Record<string, unknown> = { active: true };
+      const filters: Record<string, unknown> = { is_active: true };
       if (debouncedBoxSearch) filters._search = debouncedBoxSearch;
 
       const result = await invokeExternalDb<ExternalProductForKit>({
@@ -112,7 +112,7 @@ export function useKitBuilderQueries() {
   } = useQuery({
     queryKey: ['kit-builder', 'items', debouncedItemSearch],
     queryFn: async () => {
-      const filters: Record<string, unknown> = { active: true };
+      const filters: Record<string, unknown> = { is_active: true };
       if (debouncedItemSearch) filters._search = debouncedItemSearch;
 
       const result = await invokeExternalDb<ExternalProductForKit>({

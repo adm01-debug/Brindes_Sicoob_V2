@@ -203,7 +203,6 @@ export default function AdminProductFormPage() {
         min_quantity: data.min_quantity ?? 1,
         min_order_quantity: data.min_order_quantity ?? null,
         is_active: data.is_active,
-        active: data.is_active,
         is_featured: data.is_featured,
         is_bestseller: data.is_bestseller,
         is_new: data.is_new,

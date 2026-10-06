@@ -85,6 +85,7 @@ export function ProductSearch({ onSelect, selectedProduct }: ProductSearchProps)
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
         <Input
+          aria-label="Buscar produto para simulação de preços"
           placeholder="Buscar produto por nome ou SKU..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}

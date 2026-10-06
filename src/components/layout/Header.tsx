@@ -139,7 +139,7 @@ export function Header({ onMenuToggle, searchQuery, onSearchChange }: HeaderProp
               <BackButton variant="ghost" size="icon" showLabel={false} className="h-9 w-9 rounded-full" />
             ) : (
 
-              <div className="ml-1 mr-1 flex h-9 items-center rounded-lg bg-[#003641] px-2.5">
+              <div className="ml-1 mr-1 hidden h-9 items-center rounded-lg bg-[#003641] px-2.5 min-[400px]:flex">
                 <img 
                   src="/brand/sicoob-logo.png"
                   alt="Sicoob" 

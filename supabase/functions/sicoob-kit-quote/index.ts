@@ -147,8 +147,8 @@ Deno.serve(withStructuredLogging("sicoob-kit-quote", async (req) => {
         body: {
           table: 'products',
           operation: 'select',
-          select: 'id,name,sku,sale_price,base_price,primary_image_url,image_url,is_active,active,stock_quantity,min_quantity',
-          filters: { id: productIds, active: true },
+          select: 'id,name,sku,sale_price,base_price,primary_image_url,image_url,is_active,stock_quantity,min_quantity',
+          filters: { id: productIds, is_active: true },
           limit: productIds.length,
         },
       }),

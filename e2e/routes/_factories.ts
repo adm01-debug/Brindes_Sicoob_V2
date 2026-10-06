@@ -11,7 +11,7 @@
  *  7. @a11y básico
  *  8. @mobile sem overflow horizontal
  */
-import type { Page } from "@playwright/test";
+import type { Page, Request } from "@playwright/test";
 import { test, expect } from "../fixtures/test-base";
 import { gotoAndSettle } from "../helpers/nav";
 import {
@@ -35,6 +35,8 @@ export interface PublicTokenRouteSpec {
   successCopy: RegExp;
   /** RegExp para encontrar mensagem de "não encontrado/inválido". */
   notFoundCopy?: RegExp;
+  /** RegExp para o estado indisponível/5xx da rota. */
+  serviceUnavailableCopy?: RegExp;
   /** Mock do carregamento inicial; use para telas que consultam REST diretamente. */
   mockLoad?: (page: Page, scenario: PublicTokenScenario) => Promise<void>;
 }
@@ -43,6 +45,7 @@ export type PublicTokenScenario = "success" | "notFound" | "expired" | "invalidP
 
 export function buildPublicTokenSuite(spec: PublicTokenRouteSpec) {
   const notFound = spec.notFoundCopy ?? /n[aã]o encontrad[oa]|inválido|expirado|indisponível|sem.+acesso|proposta/i;
+  const serviceUnavailable = spec.serviceUnavailableCopy ?? /n[aã]o foi possível|indisponível|erro|tente novamente/i;
   const mockLoad = spec.mockLoad ?? ((page, scenario) => {
     const result: { status: number; body: unknown; delayMs?: number } = scenario === "success"
       ? { status: 200, body: spec.successBody }
@@ -120,7 +123,7 @@ export function buildPublicTokenSuite(spec: PublicTokenRouteSpec) {
       await mockLoad(page, "serviceUnavailable");
       await gotoAndSettle(page, spec.buildPath("ANY"));
       await waitRouteReady(page);
-      await expect(page.getByText(notFound).first()).toBeVisible({
+      await expect(page.getByText(serviceUnavailable).first()).toBeVisible({
         timeout: 10_000,
       });
     });
@@ -152,7 +155,14 @@ export interface AuthedRouteSpec {
   name: string;
   path: string;
   /** Edge functions ou tabelas REST principais usadas pela rota. */
-  primary: { kind: "fn" | "rest"; key: string; successBody?: unknown };
+  primary: {
+    kind: "fn" | "rest";
+    key: string;
+    successBody?: unknown;
+    successBodyForRequest?: (request: Request) => unknown;
+  };
+  /** Mocks complementares necessários para que o cenário de sucesso seja isolado. */
+  setupSuccessMocks?: (page: Page) => Promise<void>;
   /** Asserts custom para o happy path (se omitido, valida apenas heading). */
   happyAssert?: (page: import("@playwright/test").Page) => Promise<void>;
 }
@@ -164,9 +174,13 @@ export function buildAuthedRouteSuite(spec: AuthedRouteSpec) {
     : new RegExp(`/rest/v1/${spec.primary.key}(\\?|$)`);
 
   const mockSuccess = async (page: import("@playwright/test").Page) => {
-    await page.route(route, r =>
-      r.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(spec.primary.successBody ?? []) }),
-    );
+    await page.route(route, r => {
+      const responseBody = spec.primary.successBodyForRequest
+        ? spec.primary.successBodyForRequest(r.request())
+        : spec.primary.successBody ?? [];
+      return r.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(responseBody) });
+    });
+    await spec.setupSuccessMocks?.(page);
   };
 
   test.describe(spec.name, () => {

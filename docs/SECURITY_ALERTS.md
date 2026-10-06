@@ -58,7 +58,14 @@ CodeQL é o scanner de análise estática do GitHub. Roda no CI a cada PR + cron
 
 ### Onde ver os resultados
 
-Após o primeiro run completar, ir em https://github.com/adm01-debug/Promo_Gifts/security/code-scanning.
+Em cada execução do workflow **CodeQL**, consulte o resumo do job e baixe o
+artefato `codeql-javascript-typescript`, que preserva o SARIF por 14 dias. O
+gate `Publicar resumo e bloquear achados do SARIF` falha quando encontra um
+alerta.
+
+O workflow usa `upload: never` porque o Code Scanning não está habilitado neste
+repositório privado. Por isso, a tela **Security > Code scanning** não recebe os
+resultados dessa configuração.
 
 ---
 

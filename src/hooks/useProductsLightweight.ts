@@ -29,7 +29,7 @@ function mapLightweight(p: LightweightProduct): ProductLightweight {
     stock: p.stock_quantity ?? 0,
     brand: p.brand,
     category_id: p.category_id || p.main_category_id,
-    is_active: p.is_active || p.active,
+    is_active: p.is_active,
   };
 }
 
@@ -59,7 +59,7 @@ export function mapLightweightToProduct(p: LightweightProduct): Product {
     materials: [],
     supplier_reference: p.supplier_reference ?? null,
     brand: p.brand,
-    is_active: p.is_active || p.active,
+    is_active: p.is_active,
     minQuantity: p.min_quantity || 1,
     stockStatus: getStockStatus(stock),
     featured: false,
@@ -100,7 +100,7 @@ export const CATALOG_BATCH_PAGES = 4;
 // `price_updated_at` é o SSOT da idade do preço (trigger no BD externo).
 // `price_freshness_threshold_days` ainda NÃO existe no BD externo — quando
 // existir, basta acrescentar à lista; o mapper já trata como opcional.
-export const PRODUCT_SELECT_LIGHTWEIGHT = 'id, name, sku, sale_price, cost_price, primary_image_url, supplier_id, category_id, main_category_id, brand, is_active, active, stock_quantity, min_quantity, is_kit, gender, price_updated_at';
+export const PRODUCT_SELECT_LIGHTWEIGHT = 'id, name, sku, sale_price, cost_price, primary_image_url, supplier_id, category_id, main_category_id, brand, is_active, stock_quantity, min_quantity, is_kit, gender, price_updated_at';
 
 interface CatalogPage {
   products: Product[];
@@ -117,7 +117,7 @@ async function fetchCatalogPage(
   offset: number,
   search?: string,
 ): Promise<CatalogPage> {
-  const filters: Record<string, unknown> = { active: true };
+  const filters: Record<string, unknown> = { is_active: true };
   if (search) filters._search = search;
   const orderBy = { column: 'name', ascending: true };
 
@@ -147,7 +147,7 @@ async function fetchCatalogPage(
       limit: CATALOG_PAGE_SIZE,
       offset,
       orderBy,
-      filters: { active: true },
+      filters: { is_active: true },
     });
 
     return {

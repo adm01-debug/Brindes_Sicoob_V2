@@ -195,6 +195,7 @@ export function MockupProductSelector({ selection, onSelect, disabled }: MockupP
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
+            aria-label="Buscar produto para o mockup"
             placeholder="Buscar por nome ou SKU..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -219,6 +220,7 @@ export function MockupProductSelector({ selection, onSelect, disabled }: MockupP
                 : `${products.length} produtos disponíveis`}
           </p>
           <select
+            aria-label="Ordenar produtos"
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
             className="text-[11px] border rounded-md px-2 py-1 bg-background text-muted-foreground hover:text-foreground transition-colors cursor-pointer"

@@ -29,7 +29,7 @@ export function useCatalogPrefetch() {
             table: 'products',
             operation: 'select' as const,
             select: PRODUCT_SELECT_LIGHTWEIGHT,
-            filters: { active: true },
+            filters: { is_active: true },
             orderBy: { column: 'name', ascending: true },
             limit: CATALOG_PAGE_SIZE,
             offset: i * CATALOG_PAGE_SIZE,

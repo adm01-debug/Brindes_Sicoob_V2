@@ -67,9 +67,6 @@ const TRANSIENT_EDGE_RUNTIME_PATTERNS = [
   'service is temporarily unavailable',
   'boot_error',
   'function failed to start',
-  '\\b503\\b',
-  '\\b502\\b',
-  '\\b504\\b',
   'bad gateway',
   'gateway timeout',
 ];

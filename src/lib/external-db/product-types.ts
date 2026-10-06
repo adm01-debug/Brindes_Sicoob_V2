@@ -24,7 +24,6 @@ export interface PromobrindProduct {
   meta_description?: string | null;
   brand: string | null;
   is_active: boolean;
-  active: boolean;
   stock_quantity?: number | null;
   colors?: Array<string | { name: string; hex?: string; stock?: number }> | null;
   materials?: Array<string | Record<string, unknown>> | null;
@@ -113,7 +112,7 @@ export function getProductStock(product: PromobrindProduct): number {
 export const PRODUCT_SELECT_FIELDS_WITH_SALE =
   'id, name, sku, sale_price, cost_price, images, primary_image_url, ' +
   'category_id, main_category_id, supplier_id, supplier_reference, description, ' +
-  'short_description, meta_description, brand, is_active, active, stock_quantity, colors, ' +
+  'short_description, meta_description, brand, is_active, stock_quantity, colors, ' +
   'materials, dimensions, min_quantity, created_at, updated_at, price_updated_at, ' +
   'is_featured, is_bestseller, is_new, is_on_sale, is_kit, gender, ' +
   'height_cm, width_cm, length_cm, diameter_cm, weight_g, capacity_ml, ' +
@@ -123,7 +122,7 @@ export const PRODUCT_SELECT_FIELDS_WITH_SALE =
 export const PRODUCT_SELECT_FIELDS_LEGACY =
   'id, name, sku, cost_price, images, primary_image_url, ' +
   'category_id, main_category_id, supplier_id, supplier_reference, description, ' +
-  'short_description, meta_description, brand, is_active, active, stock_quantity, colors, ' +
+  'short_description, meta_description, brand, is_active, stock_quantity, colors, ' +
   'materials, dimensions, min_quantity, created_at, updated_at, price_updated_at, ' +
   'is_featured, is_bestseller, is_new, is_on_sale, is_kit, ' +
   'height_cm, width_cm, length_cm, diameter_cm, weight_g, capacity_ml, ' +
@@ -133,7 +132,7 @@ export const PRODUCT_SELECT_FIELDS_LEGACY =
 export const PRODUCT_SELECT_FIELDS_DETAIL =
   'id, name, sku, sale_price, cost_price, images, primary_image_url, ' +
   'category_id, main_category_id, supplier_id, supplier_reference, description, ' +
-  'short_description, meta_description, brand, is_active, active, stock_quantity, colors, ' +
+  'short_description, meta_description, brand, is_active, stock_quantity, colors, ' +
   'materials, dimensions, min_quantity, created_at, updated_at, price_updated_at, ' +
   'is_featured, is_bestseller, is_new, is_on_sale, is_kit, tags, ' +
   'height_cm, width_cm, length_cm, diameter_cm, weight_g, capacity_ml, ' +

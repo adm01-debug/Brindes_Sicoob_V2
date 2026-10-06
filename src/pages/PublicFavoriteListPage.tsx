@@ -47,6 +47,10 @@ export default function PublicFavoriteListPage() {
       return data as PublicList | null;
     },
     enabled: !!token,
+    // O cliente Supabase já repete falhas transitórias de transporte. Uma
+    // segunda camada de retries aqui prolongava o estado de carregamento por
+    // mais de 10 segundos antes de mostrar uma mensagem acionável.
+    retry: false,
   });
 
   const expired = useMemo(() => {
@@ -118,7 +122,21 @@ export default function PublicFavoriteListPage() {
     );
   }
 
-  if (listError || !list) {
+  if (listError) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center px-4">
+        <div className="text-center max-w-md">
+          <Lock className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
+          <h1 className="font-display text-xl font-semibold text-foreground mb-1">Não foi possível carregar a lista</h1>
+          <p className="text-muted-foreground text-sm">
+            O serviço está indisponível no momento. Tente novamente em instantes.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!list) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center px-4">
         <div className="text-center max-w-md">

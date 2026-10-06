@@ -64,7 +64,7 @@ async function fetchProductsByIds(ids: string[]): Promise<SimilarProductItem[]> 
     table: 'products',
     operation: 'select',
     select: SIMILAR_PRODUCT_SELECT,
-    filters: { id: ids, active: true },
+    filters: { id: ids, is_active: true },
     limit: ids.length,
   });
 
@@ -152,7 +152,7 @@ export function useSimilarProducts(product: Product | null | undefined) {
 
       // 3. Fallback: fetch related products from same supplier or category (lightweight)
       try {
-        const fallbackFilters: Record<string, unknown> = { active: true };
+        const fallbackFilters: Record<string, unknown> = { is_active: true };
         if (supplierId && supplierId !== 'unknown') {
           fallbackFilters.supplier_id = supplierId;
         } else if (categoryId) {

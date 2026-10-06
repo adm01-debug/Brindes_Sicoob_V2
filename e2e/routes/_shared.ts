@@ -63,7 +63,9 @@ export async function mockPublicRestResource(
     : scenario === "expired"
       ? { status: 200, body: expiredBody }
       : scenario === "notFound"
-        ? { status: 404, body: { message: "Recurso não encontrado" } }
+        // `.maybeSingle()` representa ausência como resposta 200 sem linha.
+        // Um 404 artificial transforma "não encontrado" em indisponibilidade.
+        ? { status: 200, body: null }
         : scenario === "invalidPayload"
           ? { status: 400, body: { message: "Requisição inválida" } }
           : scenario === "timeout"
@@ -146,7 +148,14 @@ export async function basicA11yChecks(page: Page) {
         if (!visible) return false;
         const id = el.getAttribute("id");
         const hasLabelFor = id ? !!document.querySelector(`label[for="${id}"]`) : false;
-        const hasAria = el.hasAttribute("aria-label") || el.hasAttribute("aria-labelledby");
+        const labelledBy = el.getAttribute("aria-labelledby")?.trim();
+        const hasAriaLabelledBy = labelledBy
+          ?.split(/\s+/)
+          .some(labelId => {
+            const label = document.getElementById(labelId);
+            return !!(label?.textContent?.trim() || label?.getAttribute("aria-label")?.trim());
+          });
+        const hasAria = !!el.getAttribute("aria-label")?.trim() || !!hasAriaLabelledBy;
         const wrappedInLabel = el.closest("label") !== null;
         return !hasLabelFor && !hasAria && !wrappedInLabel;
       })
@@ -162,12 +171,21 @@ export async function basicA11yChecks(page: Page) {
         const visible = (b as HTMLElement).offsetParent !== null;
         if (!visible) return false;
         const text = (b.textContent ?? "").trim();
-        const aria = b.getAttribute("aria-label");
-        return !text && !aria;
+        const labelledBy = b.getAttribute("aria-labelledby")?.trim();
+        const hasAriaLabelledBy = labelledBy
+          ?.split(/\s+/)
+          .some(labelId => {
+            const label = document.getElementById(labelId);
+            return !!(label?.textContent?.trim() || label?.getAttribute("aria-label")?.trim());
+          });
+        const hasAria = !!b.getAttribute("aria-label")?.trim() || !!hasAriaLabelledBy;
+        const id = b.getAttribute("id");
+        const hasLabelFor = id ? !!document.querySelector(`label[for="${id}"]`) : false;
+        return !text && !hasAria && !hasLabelFor;
       })
-      .length;
+      .map(button => button.outerHTML.slice(0, 240));
   });
-  expect(orphanButtons, "botões sem texto/aria-label").toBe(0);
+  expect(orphanButtons, "botões sem texto/aria-label: " + JSON.stringify(orphanButtons)).toHaveLength(0);
 }
 
 /* ============================================================

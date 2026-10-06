@@ -149,7 +149,7 @@ test.describe("P0 — RLS enforcement", () => {
           "Content-Type": "application/json",
           Prefer: "return=representation",
         },
-        body: JSON.stringify({ display_name: "PWNED" }),
+        body: JSON.stringify({ full_name: "PWNED" }),
       },
     );
     let body: unknown = null;

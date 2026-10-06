@@ -1,17 +1,44 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
+import { gotoAndSettle } from './helpers/nav';
+
+async function mockPendingOnboarding(page: Page): Promise<void> {
+  await page.route('**/rest/v1/user_onboarding*', async route => {
+    const method = route.request().method();
+
+    if (method === 'GET') {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          id: '00000000-0000-4000-8000-000000000001',
+          has_completed_tour: false,
+          current_step: 0,
+          completed_steps: [],
+        }),
+      });
+      return;
+    }
+
+    if (method === 'PATCH') {
+      await route.fulfill({ status: 204, body: '' });
+      return;
+    }
+
+    await route.fallback();
+  });
+}
 
 test.describe('Onboarding Tour', () => {
   test.beforeEach(async ({ page }) => {
-    // Login or bypass auth if needed - assuming existing session or common login helper
-    await page.goto('/');
-    
-    // Esperar carregar o app
-    await page.waitForLoadState('networkidle');
+    // Mantém o usuário canônico concluído para os demais testes e cria um
+    // estado pendente isolado somente nesta página.
+    await mockPendingOnboarding(page);
+    await gotoAndSettle(page, '/');
   });
 
   test('should complete the tour successfully', async ({ page }) => {
     // Verificar se o tour abriu (pelo menos o primeiro passo)
-    const tourOverlay = page.locator('div.fixed.inset-0.z-\\[100\\]');
+    const tourOverlay = page.getByTestId('onboarding-tour');
     await expect(tourOverlay).toBeVisible({ timeout: 10000 });
 
     // Verificar título do primeiro passo

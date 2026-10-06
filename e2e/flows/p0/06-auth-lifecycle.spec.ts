@@ -58,6 +58,23 @@ test.describe("P0 — Auth lifecycle (login/logout/refresh)", () => {
 
     // Simula expiração: TODA chamada subsequente ao /auth/v1/* responde 401.
     await mockSessionExpired(page);
+    // O SDK só tenta refresh quando a sessão local está vencida. Antecipar o
+    // vencimento evita que um access token ainda válido masque o 401 simulado.
+    await page.evaluate(() => {
+      for (const key of Object.keys(localStorage)) {
+        if (!/sb-.*-auth-token|supabase\.auth\.token/i.test(key)) continue;
+        const raw = localStorage.getItem(key);
+        if (!raw) continue;
+        try {
+          const session = JSON.parse(raw);
+          session.expires_at = 0;
+          if (session.currentSession) session.currentSession.expires_at = 0;
+          localStorage.setItem(key, JSON.stringify(session));
+        } catch {
+          // Um payload inválido também deve resultar em sessão descartada.
+        }
+      }
+    });
     await page.reload();
 
     // Pode redirecionar imediato OU exigir nova ação — em todo caso, a

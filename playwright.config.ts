@@ -69,6 +69,15 @@ const INTEGRATION_SPECS = [
   /search-stability\.spec\.ts/,
 ];
 
+// O argumento abaixo pertence ao Chromium. Mantê-lo no `use` global fazia o
+// projeto mobile (WebKit/iPhone) abortar antes de abrir qualquer rota.
+const CHROMIUM_DESKTOP = {
+  ...devices["Desktop Chrome"],
+  launchOptions: {
+    args: ["--disable-blink-features=AutomationControlled"],
+  },
+};
+
 export default defineConfig({
   testDir: "./e2e",
   globalSetup: path.resolve(__dirname, "e2e/global-setup.ts"),
@@ -98,15 +107,15 @@ export default defineConfig({
     baseURL: process.env.E2E_BASE_URL ?? LOCAL_URL,
     headless: HEADLESS,
     testIdAttribute: "data-testid",
-    trace: "retain-on-failure",
-    screenshot: "on",
-    video: "on",
+    // Evita gravar centenas de MB nos casos aprovados. Em caso de falha, a
+    // primeira repetição ainda registra vídeo e trace, enquanto a captura de
+    // tela é produzida imediatamente pela tentativa que falhou.
+    trace: "on-first-retry",
+    screenshot: "only-on-failure",
+    video: "on-first-retry",
     actionTimeout: 10_000,
     navigationTimeout: 20_000,
     reducedMotion: "reduce",
-    launchOptions: {
-      args: ["--disable-blink-features=AutomationControlled"],
-    },
   },
   // ───────────────────────────────────────────────────────────
   // ISOLAMENTO @smoke (defesa em profundidade)
@@ -130,14 +139,23 @@ export default defineConfig({
     },
     {
       name: "chromium-public",
-      use: { ...devices["Desktop Chrome"] },
-      testIgnore: [/fixtures\/auth\.setup\.ts/, /flows\//, /routes\//, ...INTEGRATION_SPECS],
+      use: { ...CHROMIUM_DESKTOP },
+      // A resiliência PWA exige build/preview de produção e possui config
+      // dedicada (`playwright.pwa.config.ts`). O servidor deste projeto é o
+      // Vite dev, que intencionalmente não registra Service Worker.
+      testIgnore: [
+        /fixtures\/auth\.setup\.ts/,
+        /flows\//,
+        /routes\//,
+        /pwa-resilience\.spec\.ts/,
+        ...INTEGRATION_SPECS,
+      ],
       grepInvert: /@smoke/,
     },
     {
       // Integrações e papéis só são válidos quando a CI possui uma conta E2E.
       name: "chromium-integration",
-      use: { ...devices["Desktop Chrome"], storageState: STORAGE_STATE },
+      use: { ...CHROMIUM_DESKTOP, storageState: STORAGE_STATE },
       dependencies: ["setup"],
       testMatch: INTEGRATION_SPECS,
       testIgnore: AUTHENTICATED_ROUTE_IGNORE,
@@ -145,12 +163,14 @@ export default defineConfig({
     },
     {
       name: "chromium-authed",
-      use: { ...devices["Desktop Chrome"], storageState: STORAGE_STATE },
+      use: { ...CHROMIUM_DESKTOP, storageState: STORAGE_STATE },
       dependencies: ["setup"],
       testMatch: /flows\/.*\.spec\.ts/,
       // Smoke roda no project dedicado abaixo (chromium-smoke) para evitar
       // execução duplicada e garantir ordem sequencial determinística.
-      testIgnore: AUTHENTICATED_FLOW_IGNORE,
+      // Parte das specs de integração vive sob `flows/`; sem esta exclusão,
+      // elas rodavam também aqui com outro contrato de autenticação.
+      testIgnore: [...AUTHENTICATED_FLOW_IGNORE, ...INTEGRATION_SPECS],
       grepInvert: /@smoke/,
     },
     {
@@ -160,7 +180,7 @@ export default defineConfig({
       // `npx playwright test --project=chromium-smoke --max-failures=3`.
       name: "chromium-smoke",
       use: {
-        ...devices["Desktop Chrome"],
+        ...CHROMIUM_DESKTOP,
         storageState: STORAGE_STATE,
         // Captura forçada por teste em falhas — independente do default global.
         // Garante diagnóstico visual completo no CI sem depender de retries.
@@ -181,14 +201,14 @@ export default defineConfig({
     {
       // Specs por rota — área pública (sem auth). Ex.: routes/public/*.spec.ts
       name: "routes-public",
-      use: { ...devices["Desktop Chrome"] },
+      use: { ...CHROMIUM_DESKTOP },
       testMatch: /routes\/public\/.*\.spec\.ts/,
       grepInvert: /@smoke/,
     },
     {
       // Specs por rota — áreas autenticadas (app, quotes, admin).
       name: "routes-authed",
-      use: { ...devices["Desktop Chrome"], storageState: STORAGE_STATE },
+      use: { ...CHROMIUM_DESKTOP, storageState: STORAGE_STATE },
       dependencies: ["setup"],
       testMatch: /routes\/(app|quotes|admin)\/.*\.spec\.ts/,
       testIgnore: AUTHENTICATED_ROUTE_IGNORE,
@@ -197,7 +217,7 @@ export default defineConfig({
     {
       // Sem credenciais, as rotas protegidas ainda precisam bloquear a sessão ausente.
       name: "routes-guards",
-      use: { ...devices["Desktop Chrome"] },
+      use: { ...CHROMIUM_DESKTOP },
       testMatch: /routes\/(app|quotes|admin)\/.*\.spec\.ts/,
       grep: /auth guard:/,
       grepInvert: /@smoke/,
@@ -218,7 +238,7 @@ export default defineConfig({
     : {
         // Exporta a configuração pública versionada antes do Vite dev. Usar
         // `--mode production` ativaria Service Worker durante os testes.
-        command: `bash -c 'set -a; source .env.production; set +a; exec npm run dev -- --host 127.0.0.1 --port ${LOCAL_PORT}'`,
+        command: `bash -c 'if [[ -f .env.production ]]; then set -a; source .env.production; set +a; fi; exec npm run dev -- --host 127.0.0.1 --port ${LOCAL_PORT}'`,
         url: LOCAL_URL,
         // Reusar uma porta sem checar sua origem permitia executar a regressão
         // contra outro projeto local. Use E2E_BASE_URL para um servidor já validado.
