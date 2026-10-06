@@ -118,7 +118,6 @@ export function useProductsManager() {
       if (activeFilters.is_kit) serverFilters.is_kit = true;
       if (activeFilters.is_active !== undefined && activeFilters.is_active !== 'all') {
         serverFilters.is_active = activeFilters.is_active;
-        serverFilters.active = activeFilters.is_active;
       }
 
       const result = await fetchPromobrindProducts({
@@ -145,7 +144,7 @@ export function useProductsManager() {
           category_id: p.category_id ?? p.main_category_id ?? null,
           supplier_id: p.supplier_id ?? null,
           supplier_reference: p.supplier_reference ?? null,
-          is_active: p.is_active ?? p.active ?? true,
+          is_active: p.is_active ?? true,
           images: imageUrl ? [imageUrl] : (Array.isArray(p.images) ? p.images : []),
           colors: Array.isArray(p.colors)
             ? p.colors.map((c) => (typeof c === 'string' ? { name: c } : c))
