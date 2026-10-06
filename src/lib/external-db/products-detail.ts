@@ -411,7 +411,7 @@ export async function fetchPromobrindCategories(): Promise<{ id: string; name: s
   } catch {
     const result = await invokeExternalDb<{ category_id: string; main_category_id: string }>({
       table: 'products', operation: 'select',
-      filters: { active: true }, select: 'category_id, main_category_id', limit: 1000,
+      filters: { is_active: true }, select: 'category_id, main_category_id', limit: 1000,
     });
     const uniqueIds = new Set<string>();
     (result.records ?? []).forEach(p => {

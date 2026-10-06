@@ -25,7 +25,6 @@ export interface ExternalProduct {
   description: string | null;
   brand: string | null;
   is_active: boolean;
-  active: boolean;
   stock_quantity: number | null;
 }
 
@@ -113,7 +112,7 @@ async function invokeExternalDb<T>(
 // ============================================
 
 // Select fields que existem no schema Promobrind (campos legados mantidos para fallback)
-const PRODUCT_SELECT = 'id, name, sku, sale_price, primary_image_url, category_id, main_category_id, supplier_reference, description, brand, is_active, active, stock_quantity';
+const PRODUCT_SELECT = 'id, name, sku, sale_price, primary_image_url, category_id, main_category_id, supplier_reference, description, brand, is_active, stock_quantity';
 
 /**
  * Busca produtos do banco externo Promobrind com imagens da nova tabela product_images
@@ -129,7 +128,7 @@ export function useExternalProductSearch(searchQuery: string) {
         invokeExternalDb<ExternalProduct>('products', 'select', {
           filters: {
             _name_prefix: normalizedSearch,
-            active: true,
+            is_active: true,
           },
           select: PRODUCT_SELECT,
           limit: 200,
@@ -138,7 +137,7 @@ export function useExternalProductSearch(searchQuery: string) {
         invokeExternalDb<ExternalProduct>('products', 'select', {
           filters: {
             _search: normalizedSearch,
-            active: true,
+            is_active: true,
           },
           select: PRODUCT_SELECT,
           limit: 500,
@@ -326,7 +325,7 @@ export function useExternalProductsList(options?: {
     queryFn: async () => {
       const result = await invokeExternalDb<ExternalProduct>('products', 'select', {
         filters: { 
-          active: true,
+          is_active: true,
         },
         select: 'id, name, sku, sale_price, image_url, images, primary_image_url, supplier_reference, brand',
         limit: options?.limit || 100,

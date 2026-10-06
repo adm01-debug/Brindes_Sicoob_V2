@@ -266,7 +266,7 @@ export function useProductsManager() {
     setIsBulkUpdating(true);
     try {
       await Promise.all(Array.from(selectedIds).map(id =>
-        invokeExternalDbSingle({ table: 'products', operation: 'update', id, data: { is_active: activate, active: activate, updated_at: new Date().toISOString() } })
+        invokeExternalDbSingle({ table: 'products', operation: 'update', id, data: { is_active: activate, updated_at: new Date().toISOString() } })
       ));
       toast.success(`${selectedIds.size} produto(s) ${activate ? 'ativado(s)' : 'desativado(s)'}`);
       setSelectedIds(new Set());

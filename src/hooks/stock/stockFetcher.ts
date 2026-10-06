@@ -169,7 +169,7 @@ export async function fetchAndProcessStockData(): Promise<{
 }> {
   const [allProducts, allVariants, allSupplierSources, allCategories, allSuppliers] = await Promise.all([
     fetchPaginatedFromBridge<ExternalProductWithVariants>(
-      'products', 'id,name,sku,min_quantity,stock_quantity,updated_at,category_id,supplier_id,brand', 1000, 100000, { active: true }
+      'products', 'id,name,sku,min_quantity,stock_quantity,updated_at,category_id,supplier_id,brand', 1000, 100000, { is_active: true }
     ),
     fetchPaginatedFromBridge<ExternalVariantStock>(
       'product_variants', 'id,product_id,sku,name,color_id,color_name,color_hex,color_code,stock_quantity,is_active,updated_at', 1000, 100000, { is_active: true }

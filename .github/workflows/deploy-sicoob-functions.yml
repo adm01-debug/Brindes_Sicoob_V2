@@ -39,6 +39,7 @@ jobs:
         run: |
           set -euo pipefail
           for function_name in \
+            external-db-bridge \
             sicoob-approval-reconciliation \
             sicoob-artwork-register \
             sicoob-document-ingest \
@@ -53,6 +54,7 @@ jobs:
           set -euo pipefail
           published_functions="$(supabase functions list --project-ref "$SUPABASE_PROJECT_ID" --output-format json)"
           for function_name in \
+            external-db-bridge \
             sicoob-approval-reconciliation \
             sicoob-artwork-register \
             sicoob-document-ingest \
