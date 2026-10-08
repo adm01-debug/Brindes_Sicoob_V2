@@ -4,7 +4,7 @@
  * Seletores: Sel.login (SSOT).
  */
 import { test, expect, requireAuth, requireAdmin } from '../fixtures/test-base';
-import { loginViaUI, logout } from '../helpers/auth';
+import { loginAs } from '../helpers/auth';
 import { gotoAndSettle, settleAfterAction } from '../helpers/nav';
 import { Sel } from '../fixtures/selectors';
 
@@ -25,13 +25,8 @@ test.describe('Fluxo: Admin guards', () => {
 
   test('admin acessa /admin/usuarios', async ({ page }) => {
     requireAdmin();
-    // O project já carrega a sessão do usuário comum. Encerre-a antes de
-    // autenticar o administrador para evitar o guard redirecionar /login.
-    await logout(page);
-    await loginViaUI(page, {
-      email: process.env.E2E_ADMIN_EMAIL!,
-      password: process.env.E2E_ADMIN_PASSWORD!,
-    });
+    // Restaura a sessão canônica e conclui o step-up TOTP quando necessário.
+    await loginAs(page, 'admin');
     await gotoAndSettle(page, '/admin/usuarios');
     await expect(page).toHaveURL(/admin\/usuarios/);
   });

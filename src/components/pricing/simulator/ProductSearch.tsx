@@ -67,7 +67,7 @@ function SearchField({ value, onChange }: { value: string; onChange: (value: str
   return (
     <div className="relative">
       <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-      <Input placeholder="Buscar produto por nome ou SKU..." value={value} onChange={(event) => onChange(event.target.value)} className="pl-9" autoFocus />
+      <Input aria-label="Buscar produto por nome ou SKU" placeholder="Buscar produto por nome ou SKU..." value={value} onChange={(event) => onChange(event.target.value)} className="pl-9" autoFocus />
     </div>
   );
 }

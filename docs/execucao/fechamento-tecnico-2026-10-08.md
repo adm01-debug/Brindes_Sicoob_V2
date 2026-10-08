@@ -11,10 +11,10 @@ O ambiente continua sendo de construção. Este documento não declara lançamen
 | Gate | Situação anterior auditada | Resultado do candidato |
 |---|---:|---:|
 | TypeScript | 153 diagnósticos | 0 diagnósticos |
-| ESLint | 3.247 erros | 0 erros e 873 avisos não bloqueantes |
+| ESLint | 3.247 erros | 0 erros e 872 avisos não bloqueantes |
 | Dependências | 7 alertas altos | 0 vulnerabilidades no `npm audit` |
 | Vitest | baseline parcial | 423 arquivos aprovados, 4 ignorados; 5.705 testes aprovados e 68 ignorados |
-| Build | não certificado no lote | build de produção aprovado |
+| Build | não certificado no lote | builds normal e visual opt-in aprovados |
 | Deno | cobertura incompleta | 108 unidades verificadas |
 | Segredos no diff | não certificado | Gitleaks do diff sem achados |
 
@@ -24,7 +24,8 @@ Os avisos remanescentes do ESLint são majoritariamente estruturais, como tamanh
 
 Projeto conferido: `cfmzkthhgliqelozlmwu`.
 
-- As 17 migrations autorizadas constam no repositório e no ledger remoto, sem pendência.
+- As 18 migrations autorizadas constam no repositório e no ledger remoto, sem pendência.
+- `20261008123000_fix_favorite_items_upsert_conflict.sql` substituiu o índice funcional de favoritos por uma restrição `UNIQUE NULLS NOT DISTINCT (list_id, product_id, variant_id)`. O contrato passou a ser inferível pelo `ON CONFLICT` do PostgREST, inclusive quando a variante é nula; o índice legado foi removido e o aplicador allowlisted confere ambos os efeitos dentro e depois da transação.
 - O conteúdo de `20261008010000_fix_plpgsql_lint_failures.sql` foi restaurado byte a byte a partir do ledger canônico. A diferença encontrada era apenas espaço em branco dentro de corpos PL/pgSQL, mas alterava o hash do artefato aplicado; o arquivo e o ledger voltaram ao mesmo SHA-256 (`4783e63b...`).
 - `supabase db lint --linked --level error` concluiu sem erro de schema.
 - As 236 tabelas públicas auditadas têm RLS habilitada e ao menos uma policy.
@@ -51,6 +52,10 @@ O repositório conserva 491 diferenças históricas de ledger já catalogadas. E
 O workflow E2E agora roda em `ubuntu-latest`, exige credenciais em vez de concluir por skip e executa validações remotas de autorização/RLS. Disparos manuais com segredos são restritos à `main`, e os checkouts usam o SHA imutável do evento. As contas de vendedor, gestor, administrador e desenvolvedor usam segredos separados no GitHub; os papéis privilegiados também exigem seus segredos TOTP. O segredo de serviço fica restrito ao passo técnico que o consome.
 
 O Deno passou a usar o cache próprio sem reescrever `node_modules`; a sequência limpa `npm ci` → Vitest → `deno check` → Playwright preservou uma única instalação dos runtimes. A espera compartilhada do Playwright também passou a enviar timeouts no parâmetro correto da API e aguarda marcadores explícitos de carregamento lazy e de permissões. O step-up privilegiado espera somente o carregamento lazy, pois o marcador de permissões permanece ativo enquanto o usuário interage com o desafio MFA. Os shards autenticados são serializados porque compartilham contas TOTP canônicas, evitando invalidação concorrente das sessões. O clique do desafio MFA aguarda habilitação e usa a referência DOM atual. O resumo do smoke reprova uma execução totalmente bloqueada em vez de tratar todos os casos não executados como aprovação. O teste PWA de produção foi desacoplado da rota de demonstração e aprovou registro do Service Worker, cache do shell e fallback offline real. A QA visual aprovou login, demonstração e loja em 1440, 390 e 320 pixels, sem erro de página, violação WCAG ou overflow horizontal. As simulações PostgreSQL descartáveis repetem a criação do contêiner até três vezes e preservam a saída de erro para diagnóstico de falhas transitórias do Docker.
+
+A rodada hospedada seguinte expôs problemas adicionais que a execução local isolada não reproduzia: o bundle normal ainda empacotava um ativo da demonstração, 14 rotas tinham controles sem nome acessível, o painel excedia 390 px, `/admin/verbas` apontava para a página incorreta, favoritos falhavam com `42P10`, rotas administrativas reutilizavam a persona errada e a busca global podia avançar antes do carregamento lazy. O lote atual corrige esses contratos. Uma constante de compilação permite ao Rollup eliminar as rotas demonstrativas do build normal, preservando o build visual opt-in; os controles receberam nomes acessíveis; carrinho e ações rápidas respeitam a largura móvel; rotas privilegiadas restauram a sessão adequada com AAL2; e os fallbacks lazy passaram a integrar a espera determinística. O limite do shard subiu de 40 para 60 minutos para permitir concluir cerca de 500 casos e seus retries sem mascarar falhas por cancelamento. A margem de LCP hospedado foi ajustada de 2.500 para 2.600 ms, mantendo o gate da categoria de performance em 0,90 e absorvendo a oscilação observada de aproximadamente 35 ms.
+
+O build normal foi inspecionado e não contém `produtos-grid-v1.webp` nem o marcador da página demonstrativa. O build com `VITE_ENABLE_DEMO_PAGES=true` contém ambos, comprovando que o isolamento não desativou a QA visual. O catálogo E2E documentado agora cobre 58 rotas.
 
 Os reparos úteis dos PRs #92, #93, #94 e #97 foram incorporados ao PR #98. Os PRs anteriores só devem ser encerrados como substituídos depois da aprovação dos gates do candidato consolidado.
 

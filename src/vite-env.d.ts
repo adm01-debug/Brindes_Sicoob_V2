@@ -1,5 +1,7 @@
 /// <reference types="vite/client" />
 
+declare const __ENABLE_DEMO_PAGES__: boolean;
+
 interface ImportMetaEnv {
   readonly VITE_ENABLE_DEMO_PAGES?: string;
   readonly VITE_SICOOB_TEST_USER_PASSWORD?: string;

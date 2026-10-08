@@ -44,7 +44,7 @@ export const adminRoutes = [
   }),
   defineRoute({
     path: '/admin/verbas',
-    component: lazyWithRetry(() => import('@/pages/admin/sicoob/SicoobManagementPage')),
+    component: lazyWithRetry(() => import('@/pages/admin/AdminVerbasPage')),
   }),
   defineRoute({
     path: '/admin/limites-desconto',

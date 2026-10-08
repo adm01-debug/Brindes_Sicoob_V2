@@ -100,6 +100,7 @@ export function OrderPilotWorkflow({ orderId }: OrderPilotWorkflowProps) {
             <p className="text-sm text-muted-foreground">Nenhum piloto enviado para este pedido.</p>
             <div className="space-y-2">
               <Textarea 
+                aria-label="Comentários sobre o piloto"
                 placeholder="Comentários sobre o piloto..." 
                 value={comment}
                 onChange={(e) => setComment(e.target.value)}
@@ -108,6 +109,7 @@ export function OrderPilotWorkflow({ orderId }: OrderPilotWorkflowProps) {
               <div className="flex gap-2">
                 <input 
                   type="text" 
+                  aria-label="URL da foto do piloto"
                   placeholder="URL da foto do piloto (mockup)" 
                   className="flex-1 text-sm border rounded px-3"
                   value={photoUrl}

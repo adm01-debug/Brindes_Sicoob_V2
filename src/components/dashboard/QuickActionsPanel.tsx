@@ -111,11 +111,11 @@ export function QuickActionsPanel() {
             <Button
               key={action.label}
               variant={action.variant}
-              className="h-auto py-4 px-4 flex flex-col items-center gap-2 relative"
+              className="h-auto min-w-0 whitespace-normal py-4 px-2 sm:px-4 flex flex-col items-center gap-2 relative"
               onClick={action.onClick}
             >
               <action.icon className="h-5 w-5" />
-              <span className="text-xs font-medium text-center leading-tight">{action.label}</span>
+              <span className="w-full break-words text-xs font-medium text-center leading-tight">{action.label}</span>
               {action.badge && (
                 <Badge
                   variant="destructive"

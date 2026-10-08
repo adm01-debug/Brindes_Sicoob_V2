@@ -96,6 +96,7 @@ function BasicFilters({ state }: { state: SearchState }) {
     <>
       <FilterSection title="Buscar Produto" icon={Search}>
         <Input
+          aria-label="Buscar produto por nome ou SKU"
           placeholder="Nome ou SKU..."
           value={filters.searchQuery}
           onChange={(event) => updateFilter('searchQuery', event.target.value)}
@@ -236,6 +237,7 @@ function PriceInput({
     <div className="flex-1">
       <Label className="text-xs text-muted-foreground">{label}</Label>
       <Input
+        aria-label={label}
         type="number"
         value={value}
         onChange={(event) => onChange(Number.parseFloat(event.target.value))}

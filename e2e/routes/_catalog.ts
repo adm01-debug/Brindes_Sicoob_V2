@@ -106,6 +106,7 @@ export const QUOTES_ROUTES: RouteEntry[] = [
  * Admin (requer role supervisor/dev)
  * ============================================================ */
 export const ADMIN_ROUTES: RouteEntry[] = [
+  { path: "/admin/verbas", area: "admin", requiresAdmin: true, feature: "admin-budgets" },
   { path: "/admin/usuarios", area: "admin", requiresAdmin: true, feature: "admin-users" },
   { path: "/admin/limites-desconto", area: "admin", requiresAdmin: true, feature: "admin-discount-limits" },
   { path: "/admin/cadastros", area: "admin", requiresAdmin: true, feature: "admin-registrations" },

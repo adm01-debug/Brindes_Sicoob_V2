@@ -83,6 +83,10 @@ const TARGETS = [
     file: "supabase/migrations/20261008043000_fix_anon_rls_and_semantic_ranking.sql",
     sha256: "cd03ea4e602b78c56053bfe2af3817658a6d45dca03f8fa0cb52250177cda030",
   },
+  {
+    file: "supabase/migrations/20261008123000_fix_favorite_items_upsert_conflict.sql",
+    sha256: "79496a33511eb0fcba9704b41ec97b33622e4b1afaebab6124767f1cd84b2ee6",
+  },
 ];
 
 function sha256(value) {
@@ -590,7 +594,18 @@ async function validateContract(client, targets) {
           AND cmd = 'ALL'
           AND qual = 'false'
           AND with_check = 'false'
-      ) AS pa_budgets_restrictive_policy_safe
+      ) AS pa_budgets_restrictive_policy_safe,
+      EXISTS (
+        SELECT 1
+        FROM pg_constraint
+        WHERE conrelid = 'public.favorite_items'::regclass
+          AND conname = 'favorite_items_list_product_variant_key'
+          AND contype = 'u'
+          AND pg_get_constraintdef(oid)
+            = 'UNIQUE NULLS NOT DISTINCT (list_id, product_id, variant_id)'
+      ) AS favorite_items_upsert_constraint_safe,
+      to_regclass('public.idx_favorite_items_unique') IS NULL
+        AS favorite_items_legacy_index_removed
   `);
   const result = rows[0];
   const idempotencyMigration = latestDefiner(targets, "save_quote_atomic_idempotent");
@@ -679,7 +694,9 @@ async function validateContract(client, targets) {
     && Number(result.anon_blocked_rls_dependency_count) === 0
     && Number(result.explicit_anon_policy_count) === 4
     && result.semantic_search_contract_safe
-    && result.pa_budgets_restrictive_policy_safe;
+    && result.pa_budgets_restrictive_policy_safe
+    && result.favorite_items_upsert_constraint_safe
+    && result.favorite_items_legacy_index_removed;
   if (!valid) {
     const diagnostic = { ...(result ?? {}) };
     delete diagnostic.idempotency_source;
@@ -1019,7 +1036,17 @@ BEGIN
          AND cmd = 'ALL'
          AND qual = 'false'
          AND with_check = 'false'
-     ) THEN
+     )
+     OR NOT EXISTS (
+       SELECT 1
+       FROM pg_constraint
+       WHERE conrelid = 'public.favorite_items'::regclass
+         AND conname = 'favorite_items_list_product_variant_key'
+         AND contype = 'u'
+         AND pg_get_constraintdef(oid)
+           = 'UNIQUE NULLS NOT DISTINCT (list_id, product_id, variant_id)'
+     )
+     OR to_regclass('public.idx_favorite_items_unique') IS NOT NULL THEN
     RAISE EXCEPTION 'O contrato crítico não foi produzido; lote cancelado.';
   END IF;
 END;

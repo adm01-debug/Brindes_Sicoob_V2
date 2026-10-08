@@ -227,7 +227,7 @@ function FilterInputs({ localSearch, setLocalSearch, quantityInput, setQuantityI
     <>
       <div className="relative flex-1 max-w-md">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-        <Input placeholder="Buscar produto, SKU ou cor..." value={localSearch} onChange={(event) => setLocalSearch(event.target.value)} className="pl-9 pr-8" />
+        <Input aria-label="Buscar produto, SKU ou cor" placeholder="Buscar produto, SKU ou cor..." value={localSearch} onChange={(event) => setLocalSearch(event.target.value)} className="pl-9 pr-8" />
         {localSearch && <button onClick={() => setLocalSearch('')} className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"><X className="h-4 w-4" /></button>}
       </div>
       <TooltipProvider>
@@ -235,7 +235,7 @@ function FilterInputs({ localSearch, setLocalSearch, quantityInput, setQuantityI
           <TooltipTrigger asChild>
             <div className="relative w-full sm:w-48">
               <ShoppingCart className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input type="number" placeholder="Preciso de X un..." value={quantityInput} onChange={(event) => setQuantityInput(event.target.value)} className="pl-9" min={0} />
+              <Input aria-label="Quantidade necessária" type="number" placeholder="Preciso de X un..." value={quantityInput} onChange={(event) => setQuantityInput(event.target.value)} className="pl-9" min={0} />
             </div>
           </TooltipTrigger>
           <TooltipContent side="bottom" className="max-w-[250px]"><p className="text-xs"><strong>Filtro de tiragem:</strong> mostra apenas produtos com estoque disponível ≥ a quantidade informada. Ideal para verificar se há estoque suficiente para um pedido.</p></TooltipContent>

@@ -73,7 +73,7 @@ function toggleCollectionSelection(state: CollectionsPageState) {
 function CollectionsToolbar({ state }: { state: CollectionsPageState }) {
   return <div className="flex items-center gap-3">
     <Button size="sm" className="h-8 px-3 text-xs" onClick={() => state.setIsCreateOpen(true)}><Plus className="h-3 w-3 mr-1" />Nova Coleção</Button>
-    <div className="relative max-w-md flex-1"><Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" /><Input placeholder="Buscar coleções..." value={state.searchQuery} onChange={(event) => state.setSearchQuery(event.target.value)} className="pl-9" /></div>
+    <div className="relative max-w-md flex-1"><Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" /><Input aria-label="Buscar coleções" placeholder="Buscar coleções..." value={state.searchQuery} onChange={(event) => state.setSearchQuery(event.target.value)} className="pl-9" /></div>
     <div className="hidden sm:flex items-center gap-2 ml-auto">
       <CollectionsHeatmap />
       {state.localCollections.length > 0 && <Button size="sm" variant={state.isSelectionMode ? "default" : "outline"} className="h-8 px-3 text-xs gap-1.5" onClick={() => toggleCollectionSelection(state)}><CheckSquare className="h-3.5 w-3.5" />{state.isSelectionMode ? "Selecionando" : "Selecionar"}</Button>}

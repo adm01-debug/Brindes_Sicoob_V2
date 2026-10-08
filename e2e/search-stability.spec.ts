@@ -2,7 +2,7 @@
  * E2E: estabilidade da busca global e do assistente de voz.
  */
 import { test, expect, type Page } from '@playwright/test';
-import { gotoAndSettle, settleAfterAction } from './helpers/nav';
+import { gotoAndSettle, settleAfterAction, waitForRouteIdle } from './helpers/nav';
 
 const SEARCH_TERM = 'caneta';
 
@@ -41,7 +41,7 @@ test.describe('Busca global', () => {
 
   test('abre, pesquisa e mantém o diálogo estável', async ({ page }) => {
     const errors = captureRuntimeErrors(page);
-    await gotoAndSettle(page, '/');
+    await gotoAndSettle(page, '/', { timeout: 45_000 });
 
     const searchTrigger = page
       .getByTestId('global-search-trigger')
@@ -63,12 +63,12 @@ test.describe('Busca global', () => {
 
   test('abre o assistente de voz sem erro de renderização', async ({ page }) => {
     const errors = captureRuntimeErrors(page);
-    await gotoAndSettle(page, '/');
+    await gotoAndSettle(page, '/', { timeout: 45_000 });
 
     const voiceTrigger = page.getByTestId('global-search-voice-trigger');
     await expect(voiceTrigger).toBeVisible({ timeout: 30_000 });
     await voiceTrigger.click();
-    await settleAfterAction(page, { timeout: 5_000 });
+    await waitForRouteIdle(page, { timeout: 45_000 });
     expectStableRuntime(errors);
     await expect(page.getByTestId('voice-search-dialog')).toBeVisible({ timeout: 30_000 });
   });
