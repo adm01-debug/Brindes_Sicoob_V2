@@ -1,6 +1,6 @@
 # 📚 Documentação do Gifts Store
 
-> **Estado atual do Sicoob (01/10/2026):** [execução e preflight do banco canônico](execucao/execucao-plano-2026-10-01.md), complementados pela [revisão das 150 etapas, workflows e pendências](execucao/revisao-do-plano-2026-10-01.md). O índice legado abaixo não certifica o estado atual; há referências históricas indisponíveis.
+> **Estado atual do Sicoob (08/10/2026):** [fechamento técnico do candidato de construção](execucao/fechamento-tecnico-2026-10-08.md), complementado pela [execução e preflight do banco canônico](execucao/execucao-plano-2026-10-01.md) e pela [revisão das 150 etapas, workflows e pendências](execucao/revisao-do-plano-2026-10-01.md). O índice legado abaixo não certifica o estado atual; há referências históricas indisponíveis.
 
 > Sistema de Catálogo de Brindes Promocionais  
 > **Idioma:** Português do Brasil 🇧🇷  
