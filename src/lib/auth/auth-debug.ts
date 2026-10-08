@@ -126,14 +126,14 @@ export function authDebugUrl(scope: string): void {
   const url = new URL(window.location.href);
   const hash = window.location.hash.startsWith("#") ? window.location.hash.slice(1) : "";
   const hashParams = new URLSearchParams(hash);
-  const safeQuery: Record<string, string> = {};
-  url.searchParams.forEach((v, k) => {
-    safeQuery[k] = k === "code" || k.includes("token") ? maskToken(v) : v;
-  });
-  const safeHash: Record<string, string> = {};
-  hashParams.forEach((v, k) => {
-    safeHash[k] = k.includes("token") ? maskToken(v) : v;
-  });
+  const safeQuery = Array.from(url.searchParams.entries(), ([key, value]) => ({
+    key,
+    value: key === "code" || key.includes("token") ? maskToken(value) : value,
+  }));
+  const safeHash = Array.from(hashParams.entries(), ([key, value]) => ({
+    key,
+    value: key.includes("token") ? maskToken(value) : value,
+  }));
   authDebug(scope, "url snapshot", {
     pathname: url.pathname,
     has_query: url.search.length > 0,

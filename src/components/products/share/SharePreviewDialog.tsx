@@ -109,8 +109,12 @@ function openProductShare(message: string, contact: ShareContactSelection | null
 }
 
 function usePhotoSelection(images: string[]) {
+  const selectionKey = images.join("\u0000");
+  const imageCount = images.length;
   const [selected, setSelected] = useState<Set<number>>(() => new Set(images.map((_, index) => index)));
-  useEffect(() => setSelected(new Set(images.map((_, index) => index))), [images]);
+  useEffect(() => {
+    setSelected(new Set(Array.from({ length: imageCount }, (_, index) => index)));
+  }, [imageCount, selectionKey]);
   const toggle = useCallback((index: number) => setSelected((current) => { const next = new Set(current); if (next.has(index)) { if (next.size > 1) next.delete(index); } else next.add(index); return next; }), []);
   const selectAll = useCallback(() => setSelected(new Set(images.map((_, index) => index))), [images]);
   const deselectAll = useCallback(() => setSelected(new Set([0])), []);
@@ -155,7 +159,10 @@ export function SharePreviewDialog({ open, onOpenChange, product, selectedVarian
   const [contactSelection, setContactSelection] = useState<ShareContactSelection | null>(null);
   const [previewMode, setPreviewMode] = useState(false);
 
-  const mainImages = useMemo(() => mainProductImages(product, selectedVariant?.thumbnailUrl), [product, selectedVariant?.thumbnailUrl]);
+  const mainImages = useMemo(
+    () => mainProductImages(product, selectedVariant?.thumbnailUrl),
+    [product, selectedVariant?.thumbnailUrl],
+  );
   const photos = usePhotoSelection(mainImages);
 
   const defaultMessage = useMemo(() => buildShareMessage(product, activeTemplate, selectedVariant?.variantName), [activeTemplate, product, selectedVariant?.variantName]);

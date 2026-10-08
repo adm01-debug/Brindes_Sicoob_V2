@@ -132,13 +132,7 @@ interface Props {
   status?: SecretStatus;
   helperText?: string;
   onSaved?: () => void;
-  /**
-   * Escopo opcional do rascunho (sessionStorage). Quando informado, o
-   * rascunho é isolado por conexão — assim o mesmo `secretName`
-   * (ex: BITRIX24_TOKEN) usado em conexões diferentes mantém valores
-   * digitados separados ao navegar entre abas/cards. Se omitido, cai no
-   * escopo legado global do secret (`_:secretName`).
-   */
+  /** Identifica a conexão usada para diagnóstico e para isolar o estado em memória. */
   connectionId?: string;
 }
 
@@ -505,10 +499,6 @@ function SecretDetails(props: {
 
 type TestDetails = ReturnType<typeof useConnectionTestDetails>["details"];
 
-function draftScopeFor(connectionId: string | undefined): string {
-  return connectionId ?? "_";
-}
-
 function testDetailsInput(tester: ReturnType<typeof mapConnectionToTester>, open: boolean, connectionId: string | undefined) {
   return {
     open: open && Boolean(tester),
@@ -542,28 +532,6 @@ function disabledSaveReason(saving: boolean, nameValidation: NameValidation, val
 function storedValueLooksSuspicious(editing: boolean, status: SecretStatus | undefined, minLength: number | undefined): boolean {
   if (editing || !status?.has_value || !minLength) return false;
   return (status.length ?? 0) < minLength;
-}
-
-interface StoredDraft {
-  value: string;
-  mode: "set" | "rotate";
-}
-
-function readStoredDraft(draftKey: string, legacyDraftKey: string): StoredDraft | null {
-  try {
-    const scopedRaw = sessionStorage.getItem(draftKey);
-    const raw = scopedRaw ?? sessionStorage.getItem(legacyDraftKey);
-    if (!raw) return null;
-    const parsed = JSON.parse(raw) as { value?: string; mode?: "set" | "rotate" };
-    if (!parsed.value || typeof parsed.value !== "string") return null;
-    if (!scopedRaw) {
-      sessionStorage.setItem(draftKey, raw);
-      sessionStorage.removeItem(legacyDraftKey);
-    }
-    return { value: parsed.value, mode: parsed.mode === "rotate" ? "rotate" : "set" };
-  } catch {
-    return null;
-  }
 }
 
 function abortCurrent(controllerRef: { current: AbortController | null }): void {
@@ -669,11 +637,6 @@ function showMutationSuccess({ mode, secretName, result, suffix, length, toastId
 
 export function SecretField({ label, secretName, status, helperText, onSaved, connectionId }: Props) {
   const { setSecret, rotateSecret } = useSecretsManager();
-  const draftScope = draftScopeFor(connectionId);
-  const draftKey = `secret-draft:${draftScope}:${secretName}`;
-  // Chaves legadas (versões anteriores escreviam sem escopo de conexão).
-  // Lidas como fallback para não perder rascunhos já em andamento.
-  const legacyDraftKey = `secret-draft:${secretName}`;
   const [editing, setEditing] = useState(false);
   const [mode, setMode] = useState<"set" | "rotate">("set");
   const [value, setValue] = useState("");
@@ -738,13 +701,11 @@ export function SecretField({ label, secretName, status, helperText, onSaved, co
     }
   };
 
-  // Reset transient state and re-hydrate the draft whenever the secretName
-  // OR connectionId changes — guarantees validation, button-enabled state,
-  // error/normalization banners and stored draft all match the NEW
-  // (secret, connection) tuple instead of leaking from the previous one.
-  const prevScopeKeyRef = useRef<string>(`${draftScope}:${secretName}`);
+  // Segredos permanecem somente na memória do componente. Ao trocar de
+  // credencial ou conexão, todo o estado sensível é descartado.
+  const prevScopeKeyRef = useRef<string>(`${connectionId ?? "_"}:${secretName}`);
   useEffect(() => {
-    const scopeKey = `${draftScope}:${secretName}`;
+    const scopeKey = `${connectionId ?? "_"}:${secretName}`;
     const prev = prevScopeKeyRef.current;
     if (prev !== scopeKey) {
       abortCurrent(abortRef);
@@ -764,21 +725,7 @@ export function SecretField({ label, secretName, status, helperText, onSaved, co
       setFlash(null);
       prevScopeKeyRef.current = scopeKey;
     }
-    const draft = readStoredDraft(draftKey, legacyDraftKey);
-    if (!draft) return;
-    setValue(draft.value);
-    setMode(draft.mode);
-    setEditing(true);
-  }, [secretName, draftKey, legacyDraftKey, draftScope]);
-
-  // Persist draft whenever editing with a non-empty value; clear on success/cancel
-  useEffect(() => {
-    if (editing && value.length > 0) {
-      try { sessionStorage.setItem(draftKey, JSON.stringify({ value, mode })); } catch { /* ignore quota */ }
-    } else {
-      try { sessionStorage.removeItem(draftKey); } catch { /* ignore */ }
-    }
-  }, [editing, value, mode, draftKey]);
+  }, [secretName, connectionId]);
 
 
 

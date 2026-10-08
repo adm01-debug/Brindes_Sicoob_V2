@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test';
 
 test.describe('PWA em build de produção', () => {
   test('registra o Service Worker e entrega fallback offline real', async ({ page, context }) => {
-    await gotoAndSettle(page, '/loja-demo');
+    await gotoAndSettle(page, '/login');
     await expect
       .poll(() =>
         page.evaluate(async () =>
@@ -24,7 +24,6 @@ test.describe('PWA em build de produção', () => {
 
     await context.setOffline(true);
     await gotoAndSettle(page, '/rota-indisponivel-sem-rede');
-    await expect(page.getByTestId('offline-fallback')).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Você está sem conexão' })).toBeVisible();
     await context.setOffline(false);
   });

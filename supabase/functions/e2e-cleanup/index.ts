@@ -405,7 +405,7 @@ Deno.serve(async (req: Request) => {
       duration_ms: Date.now() - startedAt,
     });
     return jsonResponse(
-      { error: "user_lookup_failed", details: String(err) },
+      { error: "user_lookup_failed" },
       500,
     );
   }
@@ -665,7 +665,7 @@ Deno.serve(async (req: Request) => {
     nameFilterPrefix,
     email,
     deleted,
-    errors,
+    errorTables: Object.keys(errors),
     totalMs: duration,
   });
 });

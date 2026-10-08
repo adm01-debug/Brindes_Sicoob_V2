@@ -61,12 +61,14 @@ export async function waitForRouteIdle(page: Page, opts?: { timeout?: number }) 
   const timeout = opts?.timeout ?? 10_000;
   await page.waitForLoadState('domcontentloaded', { timeout });
   await page
-    .waitForFunction(() => !document.querySelector('[data-state="loading"], [data-skeleton]'), {
-      timeout: Math.min(timeout, 8_000),
-    })
+    .waitForFunction(
+      () => !document.querySelector('[data-state="loading"], [data-skeleton]'),
+      undefined,
+      { timeout: Math.min(timeout, 8_000) },
+    )
     .catch(() => {});
   await page
-    .waitForFunction(() => !document.querySelector('[aria-busy="true"]'), {
+    .waitForFunction(() => !document.querySelector('[aria-busy="true"]'), undefined, {
       timeout: Math.min(timeout, 3_000),
     })
     .catch(() => {});
@@ -107,6 +109,7 @@ export async function gotoAndSettle(page: Page, path: string, opts?: { timeout?:
           const root = document.querySelector('#root');
           return !!root && root.children.length > 0;
         },
+        undefined,
         { timeout: 5_000 },
       )
       .catch(() => {
@@ -121,9 +124,11 @@ export async function gotoAndSettle(page: Page, path: string, opts?: { timeout?:
   await Promise.all([
     // Skeletons devem sumir.
     page
-      .waitForFunction(() => !document.querySelector('[data-state="loading"], [data-skeleton]'), {
-        timeout: 4_000,
-      })
+      .waitForFunction(
+        () => !document.querySelector('[data-state="loading"], [data-skeleton]'),
+        undefined,
+        { timeout: 4_000 },
+      )
       .catch(() => {
         /* tolerável: pode não haver skeleton */
       }),
@@ -134,6 +139,7 @@ export async function gotoAndSettle(page: Page, path: string, opts?: { timeout?:
           const busy = document.querySelector('[aria-busy="true"]');
           return !busy;
         },
+        undefined,
         { timeout: 2_500 },
       )
       .catch(() => {
@@ -152,9 +158,11 @@ export async function settleAfterAction(page: Page, opts?: { timeout?: number })
   const timeout = opts?.timeout ?? 5_000;
   await page.waitForLoadState('networkidle', { timeout }).catch(() => {});
   await page
-    .waitForFunction(() => !document.querySelector('[data-state="loading"], [data-skeleton]'), {
-      timeout,
-    })
+    .waitForFunction(
+      () => !document.querySelector('[data-state="loading"], [data-skeleton]'),
+      undefined,
+      { timeout },
+    )
     .catch(() => {});
 }
 

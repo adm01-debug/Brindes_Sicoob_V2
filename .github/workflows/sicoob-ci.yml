@@ -85,6 +85,7 @@ jobs:
         env:
           VITE_SUPABASE_URL: http://127.0.0.1:59999
           VITE_SUPABASE_PUBLISHABLE_KEY: chave-sintetica-apenas-para-qa
+          VITE_ENABLE_DEMO_PAGES: 'true'
         run: npm run build
       - name: Iniciar servidor de preview
         run: |

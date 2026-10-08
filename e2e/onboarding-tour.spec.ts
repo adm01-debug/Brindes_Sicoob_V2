@@ -1,5 +1,4 @@
 import { test, expect, type Page } from '@playwright/test';
-import { gotoAndSettle } from './helpers/nav';
 
 async function mockPendingOnboarding(page: Page): Promise<void> {
   await page.route('**/rest/v1/user_onboarding*', async (route) => {
@@ -33,7 +32,10 @@ test.describe('Onboarding Tour', () => {
     // Mantém o usuário canônico concluído para os demais testes e cria um
     // estado pendente isolado somente nesta página.
     await mockPendingOnboarding(page);
-    await gotoAndSettle(page, '/');
+    // Este spec valida o próprio tour. O helper global `gotoAndSettle`
+    // dispensa overlays de onboarding para não bloquear as demais jornadas.
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    await page.locator('#root').waitFor({ state: 'visible' });
   });
 
   test('should complete the tour successfully', async ({ page }) => {
@@ -42,20 +44,26 @@ test.describe('Onboarding Tour', () => {
     await expect(tourOverlay).toBeVisible({ timeout: 10000 });
 
     // Verificar título do primeiro passo
-    await expect(page.getByText('Bem-vindo ao Brindes Sicoob!')).toBeVisible();
+    await expect(
+      tourOverlay.getByRole('heading', { name: 'Bem-vindo ao Brindes Sicoob!' }),
+    ).toBeVisible();
 
     // Clicar em Próximo
-    await page.getByRole('button', { name: 'Próximo' }).click();
+    await tourOverlay.getByRole('button', { name: 'Próximo' }).click();
 
     // Verificar se avançou (título deve mudar)
-    await expect(page.getByText('Catálogo de Produtos')).toBeVisible();
+    await expect(
+      tourOverlay.getByRole('heading', { name: 'Catálogo de Produtos' }),
+    ).toBeVisible();
 
     // Clicar em Anterior
-    await page.getByRole('button', { name: 'Anterior' }).click();
-    await expect(page.getByText('Bem-vindo ao Brindes Sicoob!')).toBeVisible();
+    await tourOverlay.getByRole('button', { name: 'Anterior' }).click();
+    await expect(
+      tourOverlay.getByRole('heading', { name: 'Bem-vindo ao Brindes Sicoob!' }),
+    ).toBeVisible();
 
     // Pular tour pelo botão X
-    await page.getByLabel('Fechar').click();
+    await tourOverlay.getByLabel('Fechar').click();
 
     // Tour deve desaparecer
     await expect(tourOverlay).not.toBeVisible();
@@ -65,14 +73,17 @@ test.describe('Onboarding Tour', () => {
     // Simular um passo onde o target não existe (ou apenas observar o comportamento padrão)
     // O tour deve mostrar o tooltip centralizado se o target não for encontrado
 
-    // Avançar até o passo 3 (Busca Inteligente)
-    await page.getByRole('button', { name: 'Próximo' }).click();
-    await page.getByRole('button', { name: 'Próximo' }).click();
+    const tourOverlay = page.getByTestId('onboarding-tour');
+    await expect(tourOverlay).toBeVisible({ timeout: 10_000 });
 
-    await expect(page.getByText('Busca Inteligente')).toBeVisible();
+    // Avançar até o passo 3 (Busca Inteligente)
+    await tourOverlay.getByRole('button', { name: 'Próximo' }).click();
+    await tourOverlay.getByRole('button', { name: 'Próximo' }).click();
+
+    await expect(tourOverlay.getByRole('heading', { name: 'Busca Inteligente' })).toBeVisible();
 
     // O tooltip deve estar visível mesmo se o seletor falhar (fallback implementado)
-    const tooltip = page.locator('div.bg-card.border.border-border');
+    const tooltip = tourOverlay.locator('div.bg-card.border.border-border');
     await expect(tooltip).toBeVisible();
   });
 });

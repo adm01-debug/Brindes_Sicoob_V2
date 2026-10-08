@@ -56,7 +56,7 @@ function ProductsTable({ loading, products }: { loading: boolean; products: Exte
     rows = products.map((product) => <tr key={product.id} className="border-t hover:bg-muted/30 transition-colors">
       <td className="px-3 py-2 max-w-[280px] truncate" title={product.name}>{product.name || <span className="text-muted-foreground">(sem nome)</span>}</td>
       <td className="px-3 py-2 font-mono text-xs">{product.sku ?? "—"}</td><td className="px-3 py-2 text-xs">{product.brand ?? "—"}</td>
-      <td className="px-3 py-2 text-right tabular-nums">{fmtCurrency(product.price)}</td><td className="px-3 py-2 text-right tabular-nums">{product.stock ?? "—"}</td>
+      <td className="px-3 py-2 text-right tabular-nums">{fmtCurrency(product.sale_price ?? product.price)}</td><td className="px-3 py-2 text-right tabular-nums">{product.stock_quantity ?? product.stock ?? "—"}</td>
       <td className="px-3 py-2 text-center"><ActiveBadge active={product.is_active} /></td>
       <td className="px-3 py-2 text-xs text-muted-foreground">{product.updated_at ? new Date(product.updated_at).toLocaleString("pt-BR") : "—"}</td>
     </tr>);
@@ -91,7 +91,7 @@ function resultCount(props: PaginationBarProps): string {
 function PaginationBar(props: PaginationBarProps) {
   return (
     <div className="flex items-center justify-between gap-3 flex-wrap">
-      <div className="text-xs text-muted-foreground tabular-nums">{resultCount(props)}</div>
+      <div data-testid="bridge-products-count" className="text-xs text-muted-foreground tabular-nums">{resultCount(props)}</div>
       <div className="flex items-center gap-2"><Label htmlFor="bridge-products-page-size" className="text-xs">Por página</Label>
         <Select value={String(props.pageSize)} onValueChange={(value) => { props.onPageSizeChange(Number(value) as PageSize); props.onPageChange(1); }}>
           <SelectTrigger id="bridge-products-page-size" className="h-8 w-[80px]"><SelectValue /></SelectTrigger><SelectContent>{PAGE_SIZE_OPTIONS.map((size) => <SelectItem key={size} value={String(size)}>{size}</SelectItem>)}</SelectContent>
@@ -203,9 +203,9 @@ export function BridgeProductsPreviewPanel() {
     if (appliedSearch.trim().length > 0) f._search = appliedSearch.trim();
     if (appliedActive === "active") f.is_active = true;
     if (appliedActive === "inactive") f.is_active = false;
-    if (!isNullish(appliedMinPrice)) f.price_gte = appliedMinPrice;
-    if (!isNullish(appliedMaxPrice)) f.price_lte = appliedMaxPrice;
-    if (!isNullish(appliedMinStock)) f.stock_gte = appliedMinStock;
+    if (!isNullish(appliedMinPrice)) f.sale_price_gte = appliedMinPrice;
+    if (!isNullish(appliedMaxPrice)) f.sale_price_lte = appliedMaxPrice;
+    if (!isNullish(appliedMinStock)) f.stock_quantity_gte = appliedMinStock;
     return f;
   }, [appliedSearch, appliedActive, appliedMinPrice, appliedMaxPrice, appliedMinStock]);
 
@@ -215,10 +215,11 @@ export function BridgeProductsPreviewPanel() {
     const reqId = ++lastReqRef.current;
     await fetchAll({
       filters: buildFilters(),
-      select: "id,name,sku,price,stock,is_active,brand,supplier_id,updated_at",
+      select: "id,name,sku,sale_price,stock_quantity,is_active,brand,supplier_id,updated_at",
       orderBy: { column: "updated_at", ascending: false },
       limit: pageSize,
       offset: (page - 1) * pageSize,
+      countMode: "exact",
     });
     if (reqId !== lastReqRef.current) return;
   }, [buildFilters, fetchAll, page, pageSize]);
@@ -259,7 +260,7 @@ export function BridgeProductsPreviewPanel() {
   const endIdx = Math.min((page - 1) * pageSize + products.length, (count ?? 0));
 
   return (
-    <Card>
+    <Card data-testid="bridge-products-preview">
       <PreviewHeader loading={isLoading} onReload={() => { void loadPage(); }} />
 
       <CardContent className="space-y-4">

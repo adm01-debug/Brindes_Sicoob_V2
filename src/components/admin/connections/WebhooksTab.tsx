@@ -120,7 +120,8 @@ export function WebhooksTab() {
     if (!formIn.name || !formIn.source_system) { toast.error("Preencha nome e sistema"); return; }
     const { data: u } = await supabase.auth.getUser();
     if (!u.user) return;
-    const slug = formIn.source_system.toLowerCase().replace(/[^a-z0-9]+/g, "-") + "-" + Math.random().toString(36).slice(2, 8);
+    const suffix = crypto.randomUUID().replace(/-/g, "").slice(0, 8);
+    const slug = `${formIn.source_system.toLowerCase().replace(/[^a-z0-9]+/g, "-")}-${suffix}`;
     const secretRef = `INBOUND_WEBHOOK_HMAC_${slug.toUpperCase().replace(/-/g, "_")}`;
     const { error } = await supabase.from("inbound_webhook_endpoints").insert({
       slug, name: formIn.name, source_system: formIn.source_system,

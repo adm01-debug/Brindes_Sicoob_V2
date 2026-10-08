@@ -98,7 +98,7 @@ Deno.serve(async (req) => {
 
   if (runError) {
     log.error("qa_run_creation_failed", { err: runError });
-    return log.respond(new Response(JSON.stringify({ error: runError.message }), { status: 500 }));
+    return log.respond(new Response(JSON.stringify({ error: "qa_run_creation_failed" }), { status: 500 }));
   }
 
   const report: any = { runId: run.id, scenario, created: [], errors: [], details: [] };
@@ -184,7 +184,7 @@ Deno.serve(async (req) => {
       finished_at: new Date().toISOString() 
     }).eq("id", run.id);
     
-    return log.respond(new Response(JSON.stringify({ error: message, runId: run.id }), {
+    return log.respond(new Response(JSON.stringify({ error: "seed_qa_failed", runId: run.id }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" }
     }));

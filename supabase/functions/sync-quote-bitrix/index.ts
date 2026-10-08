@@ -455,11 +455,11 @@ Deno.serve(async (req) => {
       log.warn("circuit_breaker_open");
       return log.respond(circuitOpenResponse(error, corsHeaders));
     }
-    const message = error instanceof Error ? error.message : String(error);
     const status = error instanceof SyncQuoteError ? error.status : 500;
     log.error("request_failed", { err: error });
+    const publicMessage = status < 500 ? "Não foi possível sincronizar este orçamento." : "Erro interno ao sincronizar o orçamento.";
     return log.respond(new Response(
-      JSON.stringify({ success: false, error: message }),
+      JSON.stringify({ success: false, error: publicMessage }),
       { status, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     ));
   }

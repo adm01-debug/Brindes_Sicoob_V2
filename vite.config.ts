@@ -25,6 +25,10 @@ export default defineConfig(({ mode }) => ({
     alias: {
       '@': path.resolve(__dirname, './src'),
     },
+    // O layout híbrido npm/Deno cria links físicos distintos para os peers de
+    // algumas dependências. Sem deduplicação, o bundle de produção pode conter
+    // duas instâncias do React e quebrar hooks ao carregar o aplicativo interno.
+    dedupe: ['react', 'react-dom'],
   },
   
   esbuild: {

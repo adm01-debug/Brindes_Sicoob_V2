@@ -34,6 +34,8 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const STORAGE_STATE = path.resolve(__dirname, "e2e/.auth/storageState.json");
+const DEV_STORAGE_STATE = path.resolve(__dirname, "e2e/.auth/devStorageState.json");
+const MANAGER_STORAGE_STATE = path.resolve(__dirname, "e2e/.auth/managerStorageState.json");
 const ARTIFACTS_DIR = path.resolve(__dirname, "e2e-artifacts");
 const LOCAL_PORT = Math.max(1, Number.parseInt(process.env.E2E_PORT ?? "8080", 10) || 8080);
 const LOCAL_URL = `http://127.0.0.1:${LOCAL_PORT}`;
@@ -49,18 +51,30 @@ const RETRIES = process.env.E2E_RETRIES
     : 1;
 
 const HAS_E2E_USER = Boolean(process.env.E2E_USER_EMAIL && process.env.E2E_USER_PASSWORD);
+const HAS_E2E_DEV = Boolean(
+  process.env.E2E_DEV_EMAIL &&
+    process.env.E2E_DEV_PASSWORD &&
+    process.env.E2E_DEV_TOTP_SECRET,
+);
+const HAS_E2E_MANAGER = Boolean(
+  process.env.E2E_MANAGER_EMAIL && process.env.E2E_MANAGER_PASSWORD,
+);
 const AUTHENTICATED_FLOW_IGNORE = HAS_E2E_USER
   ? [/flows\/20-all-features-smoke\.spec\.ts/]
   : [/flows\//];
 const AUTHENTICATED_ROUTE_IGNORE = HAS_E2E_USER ? [] : [/./];
-const INTEGRATION_SPECS = [
+const DEV_INTEGRATION_IGNORE = HAS_E2E_DEV ? [] : [/./];
+const MANAGER_INTEGRATION_IGNORE = HAS_E2E_MANAGER ? [] : [/./];
+const DEV_INTEGRATION_SPECS = [
   /admin-conexoes-credentials-active-products\.spec\.ts/,
   /admin-conexoes-zone-collapse\.spec\.ts/,
+];
+const MANAGER_INTEGRATION_SPECS = [/editor-permissions\.spec\.ts/];
+const INTEGRATION_SPECS = [
   /admin-verbas-audit\.spec\.ts/,
   /audit-validation\.spec\.ts/,
   /critical-flows\/.*\.spec\.ts/,
   /discount-approval\.spec\.ts/,
-  /editor-permissions\.spec\.ts/,
   /matrix-automated\.spec\.ts/,
   /mockup-generate\.spec\.ts/,
   /onboarding-tour\.spec\.ts/,
@@ -140,6 +154,8 @@ export default defineConfig({
     {
       name: "setup",
       testMatch: /fixtures\/auth\.setup\.ts/,
+      fullyParallel: false,
+      workers: 1,
     },
     {
       name: "chromium-public",
@@ -152,9 +168,31 @@ export default defineConfig({
         /flows\//,
         /routes\//,
         /pwa-resilience\.spec\.ts/,
+        ...DEV_INTEGRATION_SPECS,
+        ...MANAGER_INTEGRATION_SPECS,
         ...INTEGRATION_SPECS,
       ],
       grepInvert: /@smoke/,
+    },
+    {
+      name: "chromium-manager-integration",
+      use: { ...CHROMIUM_DESKTOP, storageState: MANAGER_STORAGE_STATE },
+      dependencies: ["setup"],
+      testMatch: MANAGER_INTEGRATION_SPECS,
+      testIgnore: MANAGER_INTEGRATION_IGNORE,
+      grepInvert: /@smoke/,
+      fullyParallel: false,
+      workers: 1,
+    },
+    {
+      name: "chromium-dev-integration",
+      use: { ...CHROMIUM_DESKTOP, storageState: DEV_STORAGE_STATE },
+      dependencies: ["setup"],
+      testMatch: DEV_INTEGRATION_SPECS,
+      testIgnore: DEV_INTEGRATION_IGNORE,
+      grepInvert: /@smoke/,
+      fullyParallel: false,
+      workers: 1,
     },
     {
       // Integrações e papéis só são válidos quando a CI possui uma conta E2E.
@@ -179,7 +217,12 @@ export default defineConfig({
       // execução duplicada e garantir ordem sequencial determinística.
       // Parte das specs de integração vive sob `flows/`; sem esta exclusão,
       // elas rodavam também aqui com outro contrato de autenticação.
-      testIgnore: [...AUTHENTICATED_FLOW_IGNORE, ...INTEGRATION_SPECS],
+      testIgnore: [
+        ...AUTHENTICATED_FLOW_IGNORE,
+        ...DEV_INTEGRATION_SPECS,
+        ...MANAGER_INTEGRATION_SPECS,
+        ...INTEGRATION_SPECS,
+      ],
       grepInvert: /@smoke/,
     },
     {

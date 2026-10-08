@@ -180,6 +180,7 @@ test.describe("Fluxo: cookies/sessão e persistência de favoritos", () => {
           !!document.querySelector('[data-testid="page-title-favoritos"]') ||
           !!document.querySelector('[data-testid="login-form"], [data-testid="page-title-login"]') ||
           location.pathname.startsWith("/login"),
+        undefined,
         { timeout: 10_000 },
       )
       .catch(() => {});

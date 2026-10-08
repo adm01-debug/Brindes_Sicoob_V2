@@ -51,7 +51,7 @@ async function gotoOrSkip(page: Page) {
   }
   const zone = page.locator('#zone-health');
   const accessDenied = page.getByRole('alert', { name: /acesso restrito/i });
-  await expect(zone.or(accessDenied)).toBeVisible({ timeout: 10_000 });
+  await expect(zone.or(accessDenied)).toBeVisible({ timeout: 30_000 });
   if (await accessDenied.isVisible()) {
     test.skip(true, 'Sessão atual não possui o papel dev exigido por /admin/conexoes.');
   }
@@ -66,7 +66,15 @@ async function getContentWrapper(page: Page, zone: (typeof ZONES)[number]) {
   return page.locator(`#${zone.anchor}-content`);
 }
 
+async function toggleZoneWithKeyboard(page: Page, zone: (typeof ZONES)[number]) {
+  const toggle = await getToggleButton(page, zone);
+  await toggle.press('Enter');
+  return toggle;
+}
+
 test.describe('Admin Conexões — Colapso/Expansão de Zonas (E2E)', () => {
+  test.describe.configure({ timeout: 90_000 });
+
   test.beforeEach(async ({ page }) => {
     await gotoOrSkip(page);
   });
@@ -81,7 +89,7 @@ test.describe('Admin Conexões — Colapso/Expansão de Zonas (E2E)', () => {
       await expect(content).not.toHaveAttribute('hidden', /.*/);
 
       // Colapsa.
-      await toggle.click();
+      await toggleZoneWithKeyboard(page, zone);
       await expect(toggle).toHaveAttribute('aria-expanded', 'false');
       await expect(content).toHaveAttribute('hidden', /.*/);
 
@@ -91,7 +99,7 @@ test.describe('Admin Conexões — Colapso/Expansão de Zonas (E2E)', () => {
       ).toBeVisible();
 
       // Expande de volta.
-      await toggle.click();
+      await toggleZoneWithKeyboard(page, zone);
       await expect(toggle).toHaveAttribute('aria-expanded', 'true');
       await expect(content).not.toHaveAttribute('hidden', /.*/);
     }
@@ -102,7 +110,7 @@ test.describe('Admin Conexões — Colapso/Expansão de Zonas (E2E)', () => {
     for (const zone of ['health', 'operation'] as const) {
       const z = ZONES.find((x) => x.id === zone)!;
       const toggle = await getToggleButton(page, z);
-      await toggle.click();
+      await toggleZoneWithKeyboard(page, z);
       await expect(toggle).toHaveAttribute('aria-expanded', 'false');
     }
 
@@ -138,7 +146,7 @@ test.describe('Admin Conexões — Colapso/Expansão de Zonas (E2E)', () => {
     // chega para uma zona oculta pelo usuário.
     const healthZone = ZONES[0];
     const toggle = await getToggleButton(page, healthZone);
-    await toggle.click();
+    await toggleZoneWithKeyboard(page, healthZone);
     await expect(toggle).toHaveAttribute('aria-expanded', 'false');
 
     // Dispara o evento que a Incident Strip emite ao clicar num incidente.

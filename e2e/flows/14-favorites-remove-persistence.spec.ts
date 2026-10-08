@@ -228,9 +228,11 @@ async function reloadAndSettle(page: Page): Promise<void> {
     )
     .toBe(true);
   await page
-    .waitForFunction(() => !document.querySelector('[data-state="loading"], [data-skeleton]'), {
-      timeout: 6_000,
-    })
+    .waitForFunction(
+      () => !document.querySelector('[data-state="loading"], [data-skeleton]'),
+      undefined,
+      { timeout: 6_000 },
+    )
     .catch(() => {});
 }
 

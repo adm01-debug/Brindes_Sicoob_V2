@@ -6,7 +6,7 @@ import { defineRoute } from "@/lib/router-utils";
  * Refatoradas para excelência técnica 10/10
  */
 export const publicRoutes = [
-  ...(import.meta.env.DEV ? [
+  ...(import.meta.env.DEV || import.meta.env.VITE_ENABLE_DEMO_PAGES === "true" ? [
     defineRoute({
       path: "/loja-demo",
       component: lazyWithRetry(() => import("@/pages/sicoob/StorefrontDemoPage")),

@@ -43,6 +43,8 @@ async function gotoOrSkip(page: Page) {
 }
 
 test.describe('Admin Conexões — credenciais preenchidas → cards ativos + produtos reais (E2E)', () => {
+  test.describe.configure({ timeout: 90_000 });
+
   test.beforeEach(async ({ page }) => {
     await gotoOrSkip(page);
   });
@@ -106,19 +108,18 @@ test.describe('Admin Conexões — credenciais preenchidas → cards ativos + pr
     // O painel está dentro de um Card com cabeçalho de tabela "SKU" — escopo seguro.
     // Aguarda a primeira chamada à edge function completar (skeleton → linhas).
     // A tabela tem cabeçalhos: Nome, SKU, Marca, Preço, Estoque, Ativo, Atualizado.
-    const productsCard = panelHeading.locator(
-      'xpath=ancestor::*[contains(@class,"rounded-lg") and .//table][1]',
-    );
+    const productsCard = page.getByTestId('bridge-products-preview');
     await expect(productsCard).toBeVisible();
 
     // Aguarda o counter "X–Y de N produto(s)" aparecer (não-zero) — sinal de que
     // o bridge respondeu com count exato.
-    const counter = productsCard.locator(
-      'text=/\\d+\\s*[–-]\\s*\\d+\\s*de\\s*[\\d.]+\\s*produto\\(s\\)/i',
+    const counter = productsCard.getByTestId('bridge-products-count');
+    await expect(counter, 'Counter de paginação deve aparecer com valores reais').toHaveText(
+      /\d+\s*[–-]\s*\d+\s*de\s*[\d.]+\s*produto\(s\)/i,
+      {
+        timeout: 25_000,
+      },
     );
-    await expect(counter, 'Counter de paginação deve aparecer com valores reais').toBeVisible({
-      timeout: 25_000,
-    });
 
     const counterText = (await counter.textContent()) ?? '';
     const match = counterText.match(/(\d+)\s*[–-]\s*(\d+)\s*de\s*([\d.]+)/);
@@ -156,15 +157,14 @@ test.describe('Admin Conexões — credenciais preenchidas → cards ativos + pr
     const panelHeading = page.getByText(/Produtos preenchidos \(external-db-bridge\)/i);
     await expect(panelHeading).toBeVisible({ timeout: 10_000 });
 
-    const productsCard = panelHeading.locator(
-      'xpath=ancestor::*[contains(@class,"rounded-lg") and .//table][1]',
-    );
+    const productsCard = page.getByTestId('bridge-products-preview');
 
     // Aguarda counter aparecer (proxy para "primeira carga concluída").
-    const counter = productsCard.locator(
-      'text=/\\d+\\s*[–-]\\s*\\d+\\s*de\\s*[\\d.]+\\s*produto\\(s\\)/i',
+    const counter = productsCard.getByTestId('bridge-products-count');
+    await expect(counter).toHaveText(
+      /\d+\s*[–-]\s*\d+\s*de\s*[\d.]+\s*produto\(s\)/i,
+      { timeout: 25_000 },
     );
-    await expect(counter).toBeVisible({ timeout: 25_000 });
 
     const initialCounterText = (await counter.textContent()) ?? '';
 

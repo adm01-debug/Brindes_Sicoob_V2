@@ -168,7 +168,7 @@ BEGIN
     SELECT score INTO v_rls_score FROM public.qa_rls_audits ORDER BY audited_at DESC LIMIT 1;
     -- Conta logs de auditoria de admin nas últimas 24h
     SELECT count(*) INTO v_audit_count FROM public.admin_config_audit WHERE changed_at > now() - interval '24 hours';
-
+    
     RETURN jsonb_build_object(
         'rls_health', COALESCE(v_rls_score, 0),
         'recent_admin_changes', v_audit_count,
@@ -501,11 +501,11 @@ BEGIN
     -- Esta função requer privilégios de superuser ou configuração específica para EXPLAIN
     -- Em ambientes gerenciados, simulamos a captura ou usamos logs de sistema.
     -- Para este utilitário, registraremos a intenção de auditoria.
-
+    
     INSERT INTO public.sicoob_performance_reports (role_tested, table_name, execution_plan, total_time_ms)
     VALUES (_role_name, _table_name, '{"info": "Relatório gerado via auditoria de sistema"}'::jsonb, 0)
     RETURNING id INTO v_report_id;
-
+    
     RETURN v_report_id;
 END;
 $$;
@@ -518,7 +518,7 @@ CREATE OR REPLACE FUNCTION "public"."get_query_telemetry_p95"("window_minutes" i
     AS $$
 BEGIN
     RETURN QUERY
-    SELECT
+    SELECT 
         COALESCE(qt.rpc_name, qt.table_name, qt.operation) as op,
         percentile_cont(0.95) WITHIN GROUP (ORDER BY qt.duration_ms)::numeric as p95,
         AVG(qt.duration_ms)::numeric as avg,
@@ -735,32 +735,32 @@ BEGIN
     FOR UPDATE SKIP LOCKED
   ) LOOP
     BEGIN
-      UPDATE public.export_jobs
+      UPDATE public.export_jobs 
       SET status = 'processing', attempts = attempts + 1, updated_at = now()
       WHERE id = job.id;
 
       -- Auditoria de Exportação (Idempotente)
       INSERT INTO public.audit_log (user_id, action, entity_type, entity_id, new_values)
       VALUES (
-        job.user_id,
-        'export_batch_process',
-        'export_job',
-        job.id::text,
+        job.user_id, 
+        'export_batch_process', 
+        'export_job', 
+        job.id::text, 
         jsonb_build_object(
-          'type', job.export_type,
-          'filters', job.filters,
+          'type', job.export_type, 
+          'filters', job.filters, 
           'attempt', job.attempts + 1,
           'timestamp', now()
         )
       );
 
       -- Simulação de conclusão (o processamento real PDF/Excel seria assíncrono)
-      UPDATE public.export_jobs
+      UPDATE public.export_jobs 
       SET status = 'completed', updated_at = now()
       WHERE id = job.id;
 
     EXCEPTION WHEN OTHERS THEN
-      UPDATE public.export_jobs
+      UPDATE public.export_jobs 
       SET status = 'failed', error_message = SQLERRM, updated_at = now()
       WHERE id = job.id;
     END;
@@ -796,7 +796,7 @@ BEGIN
         'orders', orders_ok,
         'timestamp', now()
     );
-
+    
     RETURN result;
 END;
 $$;
@@ -1421,7 +1421,7 @@ BEGIN
         v_matched_field TEXT;
     BEGIN
         -- Extrair tags como array de texto
-        SELECT ARRAY_AGG(x)::TEXT[] INTO p_tags
+        SELECT ARRAY_AGG(x)::TEXT[] INTO p_tags 
         FROM jsonb_array_elements_text(COALESCE(p_item->'tags', '[]'::jsonb)) x;
 
         -- Calcular similaridade usando pg_trgm

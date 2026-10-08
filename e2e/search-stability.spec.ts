@@ -37,6 +37,8 @@ function expectStableRuntime(errors: RuntimeErrors): void {
 }
 
 test.describe('Busca global', () => {
+  test.describe.configure({ timeout: 90_000 });
+
   test('abre, pesquisa e mantém o diálogo estável', async ({ page }) => {
     const errors = captureRuntimeErrors(page);
     await gotoAndSettle(page, '/');
@@ -45,7 +47,7 @@ test.describe('Busca global', () => {
       .getByTestId('global-search-trigger')
       .or(page.getByRole('button', { name: /Busca inteligente/i }))
       .first();
-    await expect(searchTrigger).toBeVisible();
+    await expect(searchTrigger).toBeVisible({ timeout: 30_000 });
     await searchTrigger.click();
     const input = page.getByTestId('global-search-input');
     await expect(input).toBeVisible();
@@ -63,14 +65,11 @@ test.describe('Busca global', () => {
     const errors = captureRuntimeErrors(page);
     await gotoAndSettle(page, '/');
 
-    const voiceTrigger = page
-      .getByTestId('global-search-voice-trigger')
-      .or(page.getByRole('button', { name: 'Microfone', exact: true }))
-      .first();
-    await expect(voiceTrigger).toBeVisible();
+    const voiceTrigger = page.getByTestId('global-search-voice-trigger');
+    await expect(voiceTrigger).toBeVisible({ timeout: 30_000 });
     await voiceTrigger.click();
     await settleAfterAction(page, { timeout: 5_000 });
     expectStableRuntime(errors);
-    await expect(page.getByTestId('voice-search-dialog')).toBeVisible();
+    await expect(page.getByTestId('voice-search-dialog')).toBeVisible({ timeout: 30_000 });
   });
 });

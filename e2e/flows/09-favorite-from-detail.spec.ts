@@ -27,6 +27,7 @@ async function waitForReady(page: Page) {
   await page
     .waitForFunction(
       () => !document.querySelector('[data-state="loading"], [data-skeleton]'),
+      undefined,
       { timeout: 8_000 },
     )
     .catch(() => {});

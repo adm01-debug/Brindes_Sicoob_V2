@@ -94,7 +94,7 @@ async function assertHeaderSticky(
     window.scrollTo(0, 1500);
   });
 
-  await page.waitForFunction(() => window.scrollY > 1000, { timeout: 3000 });
+  await page.waitForFunction(() => window.scrollY > 1000, undefined, { timeout: 3000 });
 
   const scrolledBox = await header.boundingBox();
   expect(
@@ -239,7 +239,7 @@ test.describe('Header sticky — pós-login e navegação entre módulos', () =>
         }
         window.scrollTo(0, 1500);
       });
-      await page.waitForFunction(() => window.scrollY > 1000, { timeout: 3000 });
+      await page.waitForFunction(() => window.scrollY > 1000, undefined, { timeout: 3000 });
 
       const scrolledBox = await header.boundingBox();
       expect(scrolledBox, `sem boundingBox pós-scroll em ${route}`).not.toBeNull();

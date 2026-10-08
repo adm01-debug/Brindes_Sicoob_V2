@@ -13,7 +13,7 @@ O ambiente continua sendo de construção. Este documento não declara lançamen
 | TypeScript | 153 diagnósticos | 0 diagnósticos |
 | ESLint | 3.247 erros | 0 erros e 864 avisos não bloqueantes |
 | Dependências | 7 alertas altos | 0 vulnerabilidades no `npm audit` |
-| Vitest | baseline parcial | 418 arquivos aprovados, 4 ignorados; 5.684 testes aprovados e 68 ignorados |
+| Vitest | baseline parcial | 419 arquivos aprovados, 4 ignorados; 5.695 testes aprovados e 68 ignorados |
 | Build | não certificado no lote | build de produção aprovado |
 | Deno | cobertura incompleta | 108 unidades verificadas |
 | Segredos no diff | não certificado | Gitleaks do diff sem achados |
@@ -24,7 +24,8 @@ Os avisos remanescentes do ESLint são 805 ocorrências de tamanho de função, 
 
 Projeto conferido: `cfmzkthhgliqelozlmwu`.
 
-- As dez migrations de 07–08/10 constam no repositório e no ledger remoto.
+- As 16 migrations autorizadas constam no repositório e no ledger remoto, sem pendência.
+- O conteúdo de `20261008010000_fix_plpgsql_lint_failures.sql` foi restaurado byte a byte a partir do ledger canônico. A diferença encontrada era apenas espaço em branco dentro de corpos PL/pgSQL, mas alterava o hash do artefato aplicado; o arquivo e o ledger voltaram ao mesmo SHA-256 (`4783e63b...`).
 - `supabase db lint --linked --level error` concluiu sem erro de schema.
 - As 236 tabelas públicas auditadas têm RLS habilitada e ao menos uma policy.
 - A auditoria de ACL de funções `SECURITY DEFINER` não encontrou concessão proibida.
@@ -47,9 +48,11 @@ O repositório conserva 491 diferenças históricas de ledger já catalogadas. E
 
 O workflow E2E agora roda em `ubuntu-latest`, exige credenciais em vez de concluir por skip, executa validações remotas de autorização/RLS e aceita uma branch, tag ou SHA em disparo manual. As contas de vendedor, gestor, administrador e desenvolvedor usam segredos separados no GitHub; os papéis privilegiados também exigem seus segredos TOTP. O segredo de serviço fica restrito ao passo técnico que o consome.
 
+O Deno passou a usar o cache próprio sem reescrever `node_modules`; a sequência limpa `npm ci` → Vitest → `deno check` → Playwright preservou uma única instalação dos runtimes. A espera compartilhada do Playwright também passou a enviar timeouts no parâmetro correto da API, eliminando esperas até o limite global. O teste PWA de produção foi desacoplado da rota de demonstração e aprovou registro do Service Worker, cache do shell e fallback offline real. A QA visual aprovou login, demonstração e loja em 1440, 390 e 320 pixels, sem erro de página, violação WCAG ou overflow horizontal.
+
 Os reparos úteis dos PRs #92, #93, #94 e #97 foram incorporados ao PR #98. Os PRs anteriores só devem ser encerrados como substituídos depois da aprovação dos gates do candidato consolidado.
 
-Na estação local, a suíte de navegador autenticada anterior concluiu 277 casos com 185 aprovados, 92 skips explícitos e zero falhas. Uma rodada consolidada posterior revelou contratos frágeis e um conflito real entre o tour de onboarding e o gate MFA; ambos foram corrigidos. As repetições isoladas finais concluíram sem skip e sem falha: auditoria administrativa 4/4, catálogo 2/2, busca e voz 3/3 e matriz RBAC 9/9. A matriz comprovou vendedor, administrador e desenvolvedor com TOTP/AAL2, além de deep link e sessão ausente. O resultado integral da regressão de navegador permanece certificado pelo runner hospedado do PR #98, que dispõe de isolamento de memória.
+Na estação local, a suíte de navegador autenticada anterior concluiu 277 casos com 185 aprovados, 92 skips explícitos e zero falhas. Uma rodada consolidada posterior revelou contratos frágeis e um conflito real entre o tour de onboarding e o gate MFA; ambos foram corrigidos. A autenticação canônica criou e validou os quatro estados de sessão em sequência, incluindo administrador e desenvolvedor com TOTP/AAL2. A regressão genérica foi coberta em lotes equivalentes a 55 aprovações e um skip declarado; as suítes específicas de gestor e desenvolvedor cobriram 17/17 casos; e o smoke autenticado terminou com 38/38 aprovações. Os cenários incluem sessão, loja, catálogo, favoritos, orçamento, estoque, kits, mockups, BI, rotas públicas e RLS. A CI do PR #98 repete os gates obrigatórios em ambiente hospedado e isolado.
 
 ## Limites honestos do encerramento
 

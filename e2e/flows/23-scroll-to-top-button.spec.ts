@@ -73,7 +73,7 @@ test.describe('ScrollToTopButton — módulos principais', () => {
 
       // Rola para baixo (acima do threshold de 150px).
       await page.evaluate(() => window.scrollTo(0, 1500));
-      await page.waitForFunction(() => window.scrollY > 1000, { timeout: 3000 });
+      await page.waitForFunction(() => window.scrollY > 1000, undefined, { timeout: 3000 });
 
       // Botão aparece após scroll.
       await waitForTestIdVisible(page, 'scroll-to-top');
@@ -140,7 +140,7 @@ test.describe('ScrollToTopButton — módulos principais', () => {
         }
         window.scrollTo(0, 1500);
       });
-      await page.waitForFunction(() => window.scrollY > 1000, { timeout: 3000 });
+      await page.waitForFunction(() => window.scrollY > 1000, undefined, { timeout: 3000 });
 
       await waitForTestIdVisible(page, 'scroll-to-top');
       const button = page.locator(Sel.app.layout.scrollToTop);
@@ -198,7 +198,7 @@ test.describe('ScrollToTopButton — módulos principais', () => {
       }
       window.scrollTo(0, 1500);
     });
-    await page.waitForFunction(() => window.scrollY > 1000, { timeout: 3000 });
+    await page.waitForFunction(() => window.scrollY > 1000, undefined, { timeout: 3000 });
 
     await waitForTestIdVisible(page, 'scroll-to-top');
     const button = page.locator(Sel.app.layout.scrollToTop);

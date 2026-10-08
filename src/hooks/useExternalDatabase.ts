@@ -59,6 +59,7 @@ interface QueryOptions {
   orderBy?: { column: string; ascending?: boolean };
   limit?: number;
   offset?: number;
+  countMode?: 'exact' | 'planned' | 'estimated' | 'none';
 }
 
 interface QueryResult<T> {
@@ -87,7 +88,7 @@ async function invokeExternalOperation<T extends object>(
   operation: Operation,
   options?: QueryOptions & { data?: Partial<T> },
 ): Promise<EdgeFunctionEnvelope> {
-  const { data, filters, id, select, orderBy, limit, offset } = options ?? {};
+  const { data, filters, id, select, orderBy, limit, offset, countMode } = options ?? {};
   const { data: rawData, error } = await invokeWithRetry({
     table: tableName,
     operation,
@@ -98,6 +99,7 @@ async function invokeExternalOperation<T extends object>(
     orderBy,
     limit,
     offset,
+    countMode,
   });
   if (error) throw new Error(await extractFunctionErrorMessage(error));
   const response = rawData as EdgeFunctionEnvelope | null;

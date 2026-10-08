@@ -17,6 +17,9 @@
  *   await loginViaUI(page, { email, password, expectFail: true });
  */
 import { expect, type Page } from '@playwright/test';
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import * as OTPAuth from 'otpauth';
 
 import { Sel } from '../fixtures/selectors';
@@ -36,6 +39,23 @@ export interface LoginCreds {
 export type Role = 'user' | 'admin' | 'dev' | 'editor';
 
 const LOGIN_URL_RE = /\/login(\?|#|$)/;
+const AUTH_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../.auth');
+const TOTP_PERIOD_MS = 30_000;
+const lastTotpCodeByRole = new Map<'admin' | 'dev', string>();
+
+async function generateFreshTotp(
+  role: 'admin' | 'dev',
+  totp: OTPAuth.TOTP,
+): Promise<string> {
+  let code = totp.generate();
+  if (lastTotpCodeByRole.get(role) === code) {
+    const waitMs = TOTP_PERIOD_MS - (Date.now() % TOTP_PERIOD_MS) + 750;
+    await new Promise<void>((resolve) => globalThis.setTimeout(resolve, waitMs));
+    code = totp.generate();
+  }
+  lastTotpCodeByRole.set(role, code);
+  return code;
+}
 
 async function ensurePrivilegedAal2(page: Page, role: 'admin' | 'dev'): Promise<void> {
   await gotoAndSettle(page, role === 'dev' ? '/admin/telemetria' : '/admin/usuarios');
@@ -73,9 +93,18 @@ async function ensurePrivilegedAal2(page: Page, role: 'admin' | 'dev'): Promise<
     period: 30,
     secret: OTPAuth.Secret.fromBase32(secret),
   });
-  await challenge.getByLabel('Código de autenticação em duas etapas').fill(totp.generate());
-  await challenge.getByRole('button', { name: 'Verificar', exact: true }).click();
-  await expect(challenge).toBeHidden({ timeout: 10_000 });
+  const input = challenge.getByLabel('Código de autenticação em duas etapas');
+  const submit = challenge.getByRole('button', { name: 'Verificar', exact: true });
+  let verified = false;
+  for (let attempt = 0; attempt < 2 && !verified; attempt += 1) {
+    await input.fill(await generateFreshTotp(role, totp));
+    await submit.click();
+    verified = await challenge
+      .waitFor({ state: 'hidden', timeout: 10_000 })
+      .then(() => true)
+      .catch(() => false);
+  }
+  expect(verified, 'esperado elevar a sessão administrativa para AAL2').toBe(true);
   await expect(page.locator('main h1, main h2').first()).toBeVisible({ timeout: 10_000 });
 }
 
@@ -93,6 +122,65 @@ async function getStoredSessionEmail(page: Page): Promise<string | null> {
     }
     return null;
   });
+}
+
+interface StoredBrowserState {
+  origins?: Array<{
+    origin: string;
+    localStorage: Array<{ name: string; value: string }>;
+  }>;
+}
+
+function roleStoragePath(role: Role): string {
+  const filenames: Record<Role, string> = {
+    user: 'storageState.json',
+    admin: 'adminStorageState.json',
+    dev: 'devStorageState.json',
+    editor: 'managerStorageState.json',
+  };
+  return path.join(AUTH_DIR, filenames[role]);
+}
+
+async function restoreRoleStorage(page: Page, role: Role, email: string): Promise<boolean> {
+  const storagePath = roleStoragePath(role);
+  if (!fs.existsSync(storagePath)) return false;
+
+  let state: StoredBrowserState;
+  try {
+    state = JSON.parse(fs.readFileSync(storagePath, 'utf-8')) as StoredBrowserState;
+  } catch {
+    return false;
+  }
+
+  const currentOrigin = new URL(page.url()).origin;
+  const originState = state.origins?.find(({ origin }) => origin === currentOrigin);
+  if (!originState?.localStorage.length) return false;
+
+  await page.context().clearCookies();
+  await page.evaluate((entries) => {
+    localStorage.clear();
+    sessionStorage.clear();
+    for (const { name, value } of entries) localStorage.setItem(name, value);
+  }, originState.localStorage);
+  await page.reload({ waitUntil: 'domcontentloaded' });
+  let restoredEmail: string | null = null;
+  await expect
+    .poll(
+      async () => {
+        restoredEmail = await getStoredSessionEmail(page).catch(() => null);
+        return restoredEmail?.toLowerCase();
+      },
+      { timeout: 10_000, message: `aguardando restauração da sessão ${role}` },
+    )
+    .toBe(email.toLowerCase());
+  // A sessão já está no storage, mas o guard público ainda precisa concluir
+  // o redirecionamento de /login. Sem esta barreira, a próxima page.goto pode
+  // ser abortada pela navegação concorrente do React Router.
+  await expect(page, `esperado ativar a sessão ${role}`).not.toHaveURL(LOGIN_URL_RE, {
+    timeout: 10_000,
+  });
+  await waitForRouteIdle(page);
+  return true;
 }
 
 /**
@@ -167,6 +255,13 @@ export async function loginAs(page: Page, role: Role = 'user'): Promise<void> {
   }
 
   if (currentEmail || !LOGIN_URL_RE.test(page.url())) await logout(page);
+
+  if (await restoreRoleStorage(page, role, email!)) {
+    // Os estados privilegiados só são gravados pelo setup depois da elevação
+    // AAL2. Reabrir aqui uma rota administrativa duplicaria navegação em cada
+    // teste e criaria contenção artificial no backend.
+    return;
+  }
 
   await loginViaUI(page, { email: email!, password: password! });
   if (role === 'admin' || role === 'dev') await ensurePrivilegedAal2(page, role);
