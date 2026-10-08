@@ -19,19 +19,13 @@ function parseFavorites(raw: string): FavoriteItem[] {
     throw new TypeError("O armazenamento de favoritos deve conter uma lista");
   }
 
-  const favorites = parsed.filter((item): item is FavoriteItem =>
+  return parsed.filter((item): item is FavoriteItem =>
     typeof item === "object" &&
     item !== null &&
     typeof (item as FavoriteItem).productId === "string" &&
     (item as FavoriteItem).productId.trim().length > 0 &&
     typeof (item as FavoriteItem).addedAt === "string",
   );
-
-  if (favorites.length !== parsed.length) {
-    throw new TypeError("O armazenamento de favoritos contém itens inválidos");
-  }
-
-  return favorites;
 }
 
 export function useFavorites(options?: UseFavoritesOptions) {

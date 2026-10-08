@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { useReducedMotion } from "@/hooks/useReducedMotion";
+import { useEffect, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 
 interface ConfettiPiece {
   id: number;
@@ -20,10 +20,10 @@ interface MiniConfettiProps {
 }
 
 const defaultColors = [
-  "hsl(252 87% 64%)",   // primary
-  "hsl(142 71% 45%)",   // success
-  "hsl(45 93% 47%)",    // gold/accent
-  "hsl(25 95% 53%)",    // orange
+  'hsl(252 87% 64%)', // primary
+  'hsl(142 71% 45%)', // success
+  'hsl(45 93% 47%)', // gold/accent
+  'hsl(25 95% 53%)', // orange
 ];
 
 export function MiniConfetti({
@@ -38,7 +38,12 @@ export function MiniConfetti({
   const [isActive, setIsActive] = useState(false);
 
   useEffect(() => {
-    if (reducedMotion) { onComplete?.(); return; }
+    if (reducedMotion) {
+      setIsActive(false);
+      setPieces([]);
+      if (trigger) onComplete?.();
+      return;
+    }
     if (trigger && !isActive) {
       setIsActive(true);
       const newPieces: ConfettiPiece[] = Array.from({ length: count }, (_, i) => ({
@@ -47,7 +52,7 @@ export function MiniConfetti({
         color:
           colors[Math.floor(Math.random() * colors.length)] ??
           defaultColors[0] ??
-          "hsl(var(--primary))",
+          'hsl(var(--primary))',
         delay: Math.random() * 0.2,
         rotation: Math.random() * 360,
         size: Math.random() * 6 + 4,
@@ -72,14 +77,14 @@ export function MiniConfetti({
             key={piece.id}
             initial={{
               opacity: 1,
-              y: "50vh",
-              x: "50vw",
+              y: '50vh',
+              x: '50vw',
               rotate: 0,
               scale: 0,
             }}
             animate={{
               opacity: [1, 1, 0],
-              y: ["50vh", `${20 + Math.random() * 30}vh`, `${80 + Math.random() * 20}vh`],
+              y: ['50vh', `${20 + Math.random() * 30}vh`, `${80 + Math.random() * 20}vh`],
               x: [`50vw`, `${50 + piece.x}vw`, `${50 + piece.x * 1.5}vw`],
               rotate: [0, piece.rotation, piece.rotation * 2],
               scale: [0, 1, 0.5],
@@ -91,11 +96,11 @@ export function MiniConfetti({
               ease: [0.25, 0.46, 0.45, 0.94],
             }}
             style={{
-              position: "absolute",
+              position: 'absolute',
               width: piece.size,
               height: piece.size,
               backgroundColor: piece.color,
-              borderRadius: Math.random() > 0.5 ? "50%" : "2px",
+              borderRadius: Math.random() > 0.5 ? '50%' : '2px',
             }}
           />
         ))}

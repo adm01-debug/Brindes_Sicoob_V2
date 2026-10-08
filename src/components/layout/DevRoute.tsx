@@ -159,7 +159,10 @@ function useBlockedTarget(location: ReturnType<typeof useLocation>) {
 
 function RouteLoader() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
+    <div
+      data-route-pending="permissions"
+      className="flex min-h-screen items-center justify-center bg-background"
+    >
       <Loader2 className="h-8 w-8 animate-spin text-primary" />
     </div>
   );

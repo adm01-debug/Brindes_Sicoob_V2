@@ -26,7 +26,12 @@ interface ImageWithFallbackProps extends Omit<ImgHTMLAttributes<HTMLImageElement
   showShimmer?: boolean;
 }
 
-function resolveImageSource(error: boolean, urlCdn: string, urlOriginal: string | null | undefined, variant: CdnVariant) {
+function resolveImageSource(
+  error: boolean,
+  urlCdn: string,
+  urlOriginal: string | null | undefined,
+  variant: CdnVariant,
+) {
   if (error) return urlOriginal || '/placeholder.svg';
   return getCdnUrl(urlCdn, variant);
 }
@@ -54,8 +59,21 @@ function imageStateClass(loaded: boolean) {
 
 export const ImageWithFallback = forwardRef<HTMLImageElement, ImageWithFallbackProps>(
   function ImageWithFallback(
-    { urlCdn, urlOriginal, variant = 'public', context, responsive = false, className, alt, title, onLoad, onError, ...props },
-    ref
+    {
+      urlCdn,
+      urlOriginal,
+      variant = 'public',
+      context,
+      responsive = false,
+      showShimmer = true,
+      className,
+      alt,
+      title,
+      onLoad,
+      onError,
+      ...props
+    },
+    ref,
   ) {
     const [error, setError] = useState(false);
     const [loaded, setLoaded] = useState(false);
@@ -77,8 +95,8 @@ export const ImageWithFallback = forwardRef<HTMLImageElement, ImageWithFallbackP
 
     return (
       <div className={cn('relative overflow-hidden', className)}>
-      {/* Background while loading */}
-        <LoadingBackground loaded={loaded} />
+        {/* Background while loading */}
+        {showShimmer && <LoadingBackground loaded={loaded} />}
         <img
           ref={ref}
           src={src}
@@ -89,13 +107,13 @@ export const ImageWithFallback = forwardRef<HTMLImageElement, ImageWithFallbackP
           onError={handleError}
           onLoad={handleLoad}
           className={cn(
-            'w-full h-full object-cover transition-all duration-700 ease-out',
-            imageStateClass(loaded)
+            'h-full w-full object-cover transition-all duration-700 ease-out',
+            imageStateClass(loaded),
           )}
           draggable={false}
           {...props}
         />
       </div>
     );
-  }
+  },
 );

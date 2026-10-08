@@ -1,9 +1,17 @@
-import { type ReactNode } from "react";
-import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
-import { useLocation } from "react-router-dom";
-import { useNavigationStore } from "@/stores/useNavigationStore";
+import { type ReactNode } from 'react';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
+import { useLocation } from 'react-router-dom';
+import { useNavigationStore } from '@/stores/useNavigationStore';
 
-type TransitionVariant = "fade" | "slide-up" | "slide-left" | "slide-right" | "scale" | "fade-slide" | "dynamic-slide" | "morph";
+type TransitionVariant =
+  | 'fade'
+  | 'slide-up'
+  | 'slide-left'
+  | 'slide-right'
+  | 'scale'
+  | 'fade-slide'
+  | 'dynamic-slide'
+  | 'morph';
 
 interface PageTransitionProps {
   children: ReactNode;
@@ -14,7 +22,7 @@ interface PageTransitionProps {
 
 export function PageTransition({
   children,
-  variant = "fade-slide",
+  variant = 'fade-slide',
   duration = 0.3,
   className,
 }: PageTransitionProps) {
@@ -23,11 +31,11 @@ export function PageTransition({
   const shouldReduceMotion = useReducedMotion();
 
   const getVariants = () => {
-    if (variant === "dynamic-slide") {
+    if (variant === 'dynamic-slide') {
       return {
-        initial: { opacity: 0, x: direction === "forward" ? 20 : -20 },
+        initial: { opacity: 0, x: direction === 'forward' ? 20 : -20 },
         animate: { opacity: 1, x: 0 },
-        exit: { opacity: 0, x: direction === "forward" ? -20 : 20 },
+        exit: { opacity: 0, x: direction === 'forward' ? -20 : 20 },
       };
     }
 
@@ -37,17 +45,17 @@ export function PageTransition({
         animate: { opacity: 1 },
         exit: { opacity: 0 },
       },
-      "slide-up": {
+      'slide-up': {
         initial: { opacity: 0, y: 20 },
         animate: { opacity: 1, y: 0 },
         exit: { opacity: 0, y: -20 },
       },
-      "slide-left": {
+      'slide-left': {
         initial: { opacity: 0, x: 20 },
         animate: { opacity: 1, x: 0 },
         exit: { opacity: 0, x: -20 },
       },
-      "slide-right": {
+      'slide-right': {
         initial: { opacity: 0, x: -20 },
         animate: { opacity: 1, x: 0 },
         exit: { opacity: 0, x: 20 },
@@ -57,24 +65,28 @@ export function PageTransition({
         animate: { opacity: 1, scale: 1 },
         exit: { opacity: 0, scale: 1.05 },
       },
-      "fade-slide": {
+      'fade-slide': {
         initial: { opacity: 0, y: 6 },
         animate: { opacity: 1, y: 0 },
         exit: { opacity: 0, y: -4 },
       },
       morph: {
-        initial: { opacity: 0, scale: 0.98, filter: "blur(4px)" },
-        animate: { opacity: 1, scale: 1, filter: "blur(0px)" },
-        exit: { opacity: 0, scale: 1.02, filter: "blur(4px)" },
+        initial: { opacity: 0, scale: 0.98, filter: 'blur(4px)' },
+        animate: { opacity: 1, scale: 1, filter: 'blur(0px)' },
+        exit: { opacity: 0, scale: 1.02, filter: 'blur(4px)' },
       },
     };
-    return staticVariants[variant as keyof typeof staticVariants] || staticVariants["fade-slide"];
+    return staticVariants[variant as keyof typeof staticVariants] || staticVariants['fade-slide'];
   };
 
   const selectedVariant = getVariants();
 
   if (shouldReduceMotion) {
-    return <div className={className}>{children}</div>;
+    return (
+      <div key={location.pathname} className={className}>
+        {children}
+      </div>
+    );
   }
 
   return (
@@ -150,13 +162,7 @@ export function StaggerContainer({
   );
 }
 
-export function StaggerItem({
-  children,
-  className,
-}: {
-  children: ReactNode;
-  className?: string;
-}) {
+export function StaggerItem({ children, className }: { children: ReactNode; className?: string }) {
   return (
     <motion.div variants={itemVariants} className={className}>
       {children}
@@ -176,7 +182,7 @@ export function FadeInView({ children, className, delay = 0 }: FadeInViewProps) 
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-50px" }}
+      viewport={{ once: true, margin: '-50px' }}
       transition={{
         duration: 0.5,
         delay,

@@ -5,10 +5,6 @@ test.describe('AdminVerbasPage E2E', () => {
   test.beforeEach(async ({ page }) => {
     await gotoAndSettle(page, '/admin/verbas');
     await waitForRouteIdle(page);
-    const accessDenied = page.getByRole('heading', { name: /Acesso Negado/i });
-    if (await accessDenied.isVisible().catch(() => false)) {
-      test.skip(true, 'Sessão atual não possui o papel admin exigido por /admin/verbas.');
-    }
   });
 
   test('should navigate to changes history tab and see content', async ({ page }) => {

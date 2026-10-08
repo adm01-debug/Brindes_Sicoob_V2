@@ -33,7 +33,10 @@ function resolveRequiredRole(
 
 function RouteLoader({ showPermissionsMessage }: { showPermissionsMessage: boolean }) {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
+    <div
+      data-route-pending="permissions"
+      className="min-h-screen flex items-center justify-center bg-background"
+    >
       <div className="flex flex-col items-center gap-4">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
         {showPermissionsMessage && <p className="text-sm text-muted-foreground animate-pulse">Carregando permissões...</p>}

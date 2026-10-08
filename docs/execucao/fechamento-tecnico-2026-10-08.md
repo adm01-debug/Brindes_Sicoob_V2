@@ -11,24 +11,26 @@ O ambiente continua sendo de construção. Este documento não declara lançamen
 | Gate | Situação anterior auditada | Resultado do candidato |
 |---|---:|---:|
 | TypeScript | 153 diagnósticos | 0 diagnósticos |
-| ESLint | 3.247 erros | 0 erros e 864 avisos não bloqueantes |
+| ESLint | 3.247 erros | 0 erros e 873 avisos não bloqueantes |
 | Dependências | 7 alertas altos | 0 vulnerabilidades no `npm audit` |
-| Vitest | baseline parcial | 419 arquivos aprovados, 4 ignorados; 5.695 testes aprovados e 68 ignorados |
+| Vitest | baseline parcial | 423 arquivos aprovados, 4 ignorados; 5.705 testes aprovados e 68 ignorados |
 | Build | não certificado no lote | build de produção aprovado |
 | Deno | cobertura incompleta | 108 unidades verificadas |
 | Segredos no diff | não certificado | Gitleaks do diff sem achados |
 
-Os avisos remanescentes do ESLint são 805 ocorrências de tamanho de função, 22 duplicações de string, 18 dependências de hooks, 9 asserções não nulas, 7 nomes e 3 funções com muitos parâmetros. Eles permanecem visíveis, sem erro bloqueante e sem elevação de baseline.
+Os avisos remanescentes do ESLint são majoritariamente estruturais, como tamanho de funções, duplicações de strings e dependências de hooks. Eles permanecem visíveis, sem erro bloqueante e sem elevação de baseline.
 
 ## Banco canônico
 
 Projeto conferido: `cfmzkthhgliqelozlmwu`.
 
-- As 16 migrations autorizadas constam no repositório e no ledger remoto, sem pendência.
+- As 17 migrations autorizadas constam no repositório e no ledger remoto, sem pendência.
 - O conteúdo de `20261008010000_fix_plpgsql_lint_failures.sql` foi restaurado byte a byte a partir do ledger canônico. A diferença encontrada era apenas espaço em branco dentro de corpos PL/pgSQL, mas alterava o hash do artefato aplicado; o arquivo e o ledger voltaram ao mesmo SHA-256 (`4783e63b...`).
 - `supabase db lint --linked --level error` concluiu sem erro de schema.
 - As 236 tabelas públicas auditadas têm RLS habilitada e ao menos uma policy.
 - A auditoria de ACL de funções `SECURITY DEFINER` não encontrou concessão proibida.
+- O reparo de RLS restringiu 245 policies que dependiam de helpers vedados a `anon`, incluindo 168 policies consolidadas, sem devolver `EXECUTE` anônimo às funções sensíveis. Quatro policies mínimas preservam somente leitura pública de banners, seções e categorias ativas e inscrição na newsletter.
+- A busca semântica passou a classificar todos os candidatos antes do `LIMIT`; a validação real encontrou o resultado exato na posição 25 com limite 1 e consulta em caixa mista.
 - O inventário vivo corresponde ao snapshot versionado: 222 relações, 237 funções e 14 buckets, sem diferença.
 - As tabelas críticas `profiles`, `quote_history`, `quotes` e `workspace_notifications` não apresentaram RLS desabilitada, policy ausente ou policy permissiva irrestrita.
 - As personas de QA foram conferidas no Auth e em `user_roles`: vendedor, gestor de compras, administrador, desenvolvedor e gerente de PA. Administrador e desenvolvedor possuem TOTP verificado e atingiram AAL2 em sessão real.
@@ -46,11 +48,13 @@ O repositório conserva 491 diferenças históricas de ledger já catalogadas. E
 
 ## CI, E2E e reconciliação de PRs
 
-O workflow E2E agora roda em `ubuntu-latest`, exige credenciais em vez de concluir por skip, executa validações remotas de autorização/RLS e aceita uma branch, tag ou SHA em disparo manual. As contas de vendedor, gestor, administrador e desenvolvedor usam segredos separados no GitHub; os papéis privilegiados também exigem seus segredos TOTP. O segredo de serviço fica restrito ao passo técnico que o consome.
+O workflow E2E agora roda em `ubuntu-latest`, exige credenciais em vez de concluir por skip e executa validações remotas de autorização/RLS. Disparos manuais com segredos são restritos à `main`, e os checkouts usam o SHA imutável do evento. As contas de vendedor, gestor, administrador e desenvolvedor usam segredos separados no GitHub; os papéis privilegiados também exigem seus segredos TOTP. O segredo de serviço fica restrito ao passo técnico que o consome.
 
-O Deno passou a usar o cache próprio sem reescrever `node_modules`; a sequência limpa `npm ci` → Vitest → `deno check` → Playwright preservou uma única instalação dos runtimes. A espera compartilhada do Playwright também passou a enviar timeouts no parâmetro correto da API, eliminando esperas até o limite global. O teste PWA de produção foi desacoplado da rota de demonstração e aprovou registro do Service Worker, cache do shell e fallback offline real. A QA visual aprovou login, demonstração e loja em 1440, 390 e 320 pixels, sem erro de página, violação WCAG ou overflow horizontal.
+O Deno passou a usar o cache próprio sem reescrever `node_modules`; a sequência limpa `npm ci` → Vitest → `deno check` → Playwright preservou uma única instalação dos runtimes. A espera compartilhada do Playwright também passou a enviar timeouts no parâmetro correto da API e aguarda marcadores explícitos de carregamento lazy e de permissões. Os shards autenticados são serializados porque compartilham contas TOTP canônicas, evitando invalidação concorrente das sessões. O clique do desafio MFA aguarda habilitação e usa a referência DOM atual. O teste PWA de produção foi desacoplado da rota de demonstração e aprovou registro do Service Worker, cache do shell e fallback offline real. A QA visual aprovou login, demonstração e loja em 1440, 390 e 320 pixels, sem erro de página, violação WCAG ou overflow horizontal. As simulações PostgreSQL descartáveis repetem a criação do contêiner até três vezes e preservam a saída de erro para diagnóstico de falhas transitórias do Docker.
 
 Os reparos úteis dos PRs #92, #93, #94 e #97 foram incorporados ao PR #98. Os PRs anteriores só devem ser encerrados como substituídos depois da aprovação dos gates do candidato consolidado.
+
+A revisão automatizada do PR também foi reconciliada: IDs de empresas do carrinho permanecem vinculados ao CRM; a listagem percorre todas as páginas; filtros não modificam o estado padrão; a relevância textual ignora caixa; fornecedores usam a coluna `active`; o inventário compara contratos estruturais; e os acessos públicos não inicializam helpers de autorização restritos. Quatro testes de regressão específicos foram adicionados. A suíte de cenários de arquitetura e segurança aprovou 223 de 223 casos.
 
 Na estação local, a suíte de navegador autenticada anterior concluiu 277 casos com 185 aprovados, 92 skips explícitos e zero falhas. Uma rodada consolidada posterior revelou contratos frágeis e um conflito real entre o tour de onboarding e o gate MFA; ambos foram corrigidos. A autenticação canônica criou e validou os quatro estados de sessão em sequência, incluindo administrador e desenvolvedor com TOTP/AAL2. A regressão genérica foi coberta em lotes equivalentes a 55 aprovações e um skip declarado; as suítes específicas de gestor e desenvolvedor cobriram 17/17 casos; e o smoke autenticado terminou com 38/38 aprovações. Os cenários incluem sessão, loja, catálogo, favoritos, orçamento, estoque, kits, mockups, BI, rotas públicas e RLS. A CI do PR #98 repete os gates obrigatórios em ambiente hospedado e isolado.
 

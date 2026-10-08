@@ -60,6 +60,7 @@ async function injectAnimKill(page: Page) {
 export async function waitForRouteIdle(page: Page, opts?: { timeout?: number }) {
   const timeout = opts?.timeout ?? 10_000;
   await page.waitForLoadState('domcontentloaded', { timeout });
+  await page.locator('[data-route-pending]').first().waitFor({ state: 'detached', timeout });
   await page
     .waitForFunction(
       () => !document.querySelector('[data-state="loading"], [data-skeleton]'),
@@ -116,6 +117,13 @@ export async function gotoAndSettle(page: Page, path: string, opts?: { timeout?:
         /* tolerável: rotas que não usam #root */
       }),
   ]);
+
+  // Lazy loading e resolução de papéis fazem parte do carregamento da rota;
+  // prosseguir com o fallback ativo gerava aprovações e falhas aleatórias.
+  await page
+    .locator('[data-route-pending]')
+    .first()
+    .waitFor({ state: 'detached', timeout: opts?.timeout ?? 15_000 });
 
   // A preferência do tour é remota e pode ser recriada por uma limpeza E2E.
   // Nenhuma jornada comum deve ficar bloqueada por esse overlay.

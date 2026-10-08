@@ -39,3 +39,32 @@ test('comparação do inventário detecta deriva nas duas direções', () => {
     { kind: 'buckets', missing_live: [], missing_cache: ['artwork'] },
   ]);
 });
+
+test('comparação do inventário detecta alteração estrutural sem mudança de nomes', () => {
+  const expected = {
+    project_ref: 'cfmzkthhgliqelozlmwu',
+    relations: ['products'],
+    functions: ['search_products'],
+    buckets: ['products'],
+    contract_sha256: {
+      relations: { products: 'contrato-anterior' },
+      functions: { search_products: 'contrato-estavel' },
+      buckets: { products: 'contrato-estavel' },
+    },
+  };
+  const live = {
+    ...expected,
+    contract_sha256: {
+      ...expected.contract_sha256,
+      relations: { products: 'contrato-novo' },
+    },
+  };
+
+  assert.deepEqual(compareInventorySnapshots(expected, live), [
+    {
+      kind: 'contract_sha256',
+      contract_kind: 'relations',
+      changed: ['products'],
+    },
+  ]);
+});

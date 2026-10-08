@@ -34,6 +34,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const STORAGE_STATE = path.resolve(__dirname, "e2e/.auth/storageState.json");
+const ADMIN_STORAGE_STATE = path.resolve(__dirname, "e2e/.auth/adminStorageState.json");
 const DEV_STORAGE_STATE = path.resolve(__dirname, "e2e/.auth/devStorageState.json");
 const MANAGER_STORAGE_STATE = path.resolve(__dirname, "e2e/.auth/managerStorageState.json");
 const ARTIFACTS_DIR = path.resolve(__dirname, "e2e-artifacts");
@@ -59,19 +60,25 @@ const HAS_E2E_DEV = Boolean(
 const HAS_E2E_MANAGER = Boolean(
   process.env.E2E_MANAGER_EMAIL && process.env.E2E_MANAGER_PASSWORD,
 );
+const HAS_E2E_ADMIN = Boolean(
+  process.env.E2E_ADMIN_EMAIL &&
+    process.env.E2E_ADMIN_PASSWORD &&
+    process.env.E2E_ADMIN_TOTP_SECRET,
+);
 const AUTHENTICATED_FLOW_IGNORE = HAS_E2E_USER
   ? [/flows\/20-all-features-smoke\.spec\.ts/]
   : [/flows\//];
 const AUTHENTICATED_ROUTE_IGNORE = HAS_E2E_USER ? [] : [/./];
 const DEV_INTEGRATION_IGNORE = HAS_E2E_DEV ? [] : [/./];
 const MANAGER_INTEGRATION_IGNORE = HAS_E2E_MANAGER ? [] : [/./];
+const ADMIN_INTEGRATION_IGNORE = HAS_E2E_ADMIN ? [] : [/./];
 const DEV_INTEGRATION_SPECS = [
   /admin-conexoes-credentials-active-products\.spec\.ts/,
   /admin-conexoes-zone-collapse\.spec\.ts/,
 ];
 const MANAGER_INTEGRATION_SPECS = [/editor-permissions\.spec\.ts/];
+const ADMIN_INTEGRATION_SPECS = [/admin-verbas-audit\.spec\.ts/];
 const INTEGRATION_SPECS = [
-  /admin-verbas-audit\.spec\.ts/,
   /audit-validation\.spec\.ts/,
   /critical-flows\/.*\.spec\.ts/,
   /discount-approval\.spec\.ts/,
@@ -170,6 +177,7 @@ export default defineConfig({
         /pwa-resilience\.spec\.ts/,
         ...DEV_INTEGRATION_SPECS,
         ...MANAGER_INTEGRATION_SPECS,
+        ...ADMIN_INTEGRATION_SPECS,
         ...INTEGRATION_SPECS,
       ],
       grepInvert: /@smoke/,
@@ -190,6 +198,16 @@ export default defineConfig({
       dependencies: ["setup"],
       testMatch: DEV_INTEGRATION_SPECS,
       testIgnore: DEV_INTEGRATION_IGNORE,
+      grepInvert: /@smoke/,
+      fullyParallel: false,
+      workers: 1,
+    },
+    {
+      name: "chromium-admin-integration",
+      use: { ...CHROMIUM_DESKTOP, storageState: ADMIN_STORAGE_STATE },
+      dependencies: ["setup"],
+      testMatch: ADMIN_INTEGRATION_SPECS,
+      testIgnore: ADMIN_INTEGRATION_IGNORE,
       grepInvert: /@smoke/,
       fullyParallel: false,
       workers: 1,

@@ -11,7 +11,6 @@ describe('useFavoritesStore — hidratação defensiva', () => {
   it.each([
     ['JSON malformado', '{not-json'],
     ['objeto no lugar da lista', JSON.stringify({ productId: 'produto-1' })],
-    ['item sem identificador', JSON.stringify([{ addedAt: '2026-10-07T12:00:00.000Z' }])],
   ])('descarta %s sem corromper o estado', async (_label, raw) => {
     const consoleError = vi.spyOn(console, 'error').mockImplementation(() => undefined);
     localStorage.setItem(STORAGE_KEY, raw);
@@ -39,6 +38,19 @@ describe('useFavoritesStore — hidratação defensiva', () => {
     const { useFavoritesStore } = await import('@/stores/useFavoritesStore');
 
     expect(useFavoritesStore.getState().favorites).toEqual(favorites);
+    expect(useFavoritesStore.getState().favoriteCount).toBe(1);
+  });
+
+  it('descarta somente os itens inválidos de uma lista mista', async () => {
+    const valid = {
+      productId: 'produto-valido',
+      addedAt: '2026-10-07T12:00:00.000Z',
+    };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify([valid, null, { addedAt: valid.addedAt }]));
+
+    const { useFavoritesStore } = await import('@/stores/useFavoritesStore');
+
+    expect(useFavoritesStore.getState().favorites).toEqual([valid]);
     expect(useFavoritesStore.getState().favoriteCount).toBe(1);
   });
 });

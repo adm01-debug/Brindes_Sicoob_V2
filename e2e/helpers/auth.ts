@@ -98,7 +98,11 @@ async function ensurePrivilegedAal2(page: Page, role: 'admin' | 'dev'): Promise<
   let verified = false;
   for (let attempt = 0; attempt < 2 && !verified; attempt += 1) {
     await input.fill(await generateFreshTotp(role, totp));
-    await submit.click();
+    await expect(submit).toBeEnabled({ timeout: 10_000 });
+    // O diálogo recria o botão ao validar os seis dígitos. Um click com
+    // actionability pode se prender ao nó antigo e tentar novamente no botão
+    // novo já desabilitado; o click DOM resolve o locator atual uma única vez.
+    await submit.evaluate((button: HTMLButtonElement) => button.click());
     verified = await challenge
       .waitFor({ state: 'hidden', timeout: 10_000 })
       .then(() => true)

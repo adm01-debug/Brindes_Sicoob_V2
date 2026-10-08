@@ -38,7 +38,9 @@ import { ThemeInitializer } from '@/components/system/ThemeInitializer';
 const RouteSuspense = ({ children }: { children: ReactNode }) => {
   const { pathname } = useLocation();
   return (
-    <Suspense fallback={getFallback(pathname)}>{children}</Suspense>
+    <Suspense fallback={<div data-route-pending="lazy">{getFallback(pathname)}</div>}>
+      {children}
+    </Suspense>
   );
 };
 

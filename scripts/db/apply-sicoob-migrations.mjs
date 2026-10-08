@@ -79,6 +79,10 @@ const TARGETS = [
     file: "supabase/migrations/20261008030000_fix_sicoob_admin_audit_system_actor.sql",
     sha256: "9d0b40769b2098ebe6c3495db62010456a6fbe4dcb0013a17e8c5b2f08547b4b",
   },
+  {
+    file: "supabase/migrations/20261008043000_fix_anon_rls_and_semantic_ranking.sql",
+    sha256: "cd03ea4e602b78c56053bfe2af3817658a6d45dca03f8fa0cb52250177cda030",
+  },
 ];
 
 function sha256(value) {
@@ -518,12 +522,63 @@ async function validateContract(client, targets) {
         FROM pg_policies
         WHERE schemaname = 'public'
           AND policyname ~ '^sicoob_merged_[0-9a-f]{16}_(select|insert|update|delete)$'
+          AND roles = ARRAY['public']::name[]
+      ) AS consolidated_rls_public_policy_count,
+      (SELECT count(*)
+        FROM pg_policies
+        WHERE schemaname = 'public'
+          AND policyname ~ '^sicoob_merged_[0-9a-f]{16}_(select|insert|update|delete)$'
+          AND roles = ARRAY['authenticated', 'service_role']::name[]
+      ) AS consolidated_rls_protected_policy_count,
+      (SELECT count(*)
+        FROM pg_policies
+        WHERE schemaname = 'public'
+          AND policyname ~ '^sicoob_merged_[0-9a-f]{16}_(select|insert|update|delete)$'
           AND (
             permissive <> 'PERMISSIVE'
-            OR roles <> ARRAY['public']::name[]
+            OR NOT (
+              roles = ARRAY['public']::name[]
+              OR roles = ARRAY['authenticated', 'service_role']::name[]
+            )
             OR cmd = 'ALL'
           )
       ) AS invalid_consolidated_rls_policy_count,
+      (SELECT count(DISTINCT pol.oid)
+        FROM pg_policy AS pol
+        JOIN pg_class AS cls ON cls.oid = pol.polrelid
+        JOIN pg_namespace AS ns ON ns.oid = cls.relnamespace
+        JOIN pg_depend AS dep
+          ON dep.classid = 'pg_policy'::regclass
+         AND dep.objid = pol.oid
+         AND dep.refclassid = 'pg_proc'::regclass
+        JOIN pg_proc AS proc ON proc.oid = dep.refobjid
+        WHERE ns.nspname = 'public'
+          AND 0 = ANY (pol.polroles)
+          AND NOT has_function_privilege('anon', proc.oid, 'EXECUTE')
+      ) AS anon_blocked_rls_dependency_count,
+      (SELECT count(*)
+        FROM pg_policies
+        WHERE schemaname = 'public'
+          AND policyname = ANY (ARRAY[
+            'sicoob_anon_cms_banners_select',
+            'sicoob_anon_cms_sections_select',
+            'sicoob_anon_newsletter_insert',
+            'sicoob_anon_product_categories_select'
+          ])
+          AND roles = ARRAY['anon']::name[]
+          AND permissive = 'PERMISSIVE'
+      ) AS explicit_anon_policy_count,
+      COALESCE((SELECT
+          p.prosecdef
+          AND p.proconfig @> ARRAY['search_path=pg_catalog, public']::text[]
+          AND NOT has_function_privilege('anon', p.oid, 'EXECUTE')
+          AND NOT has_function_privilege('authenticated', p.oid, 'EXECUTE')
+          AND has_function_privilege('service_role', p.oid, 'EXECUTE')
+          AND p.prosrc LIKE '%ORDER BY ranked.score DESC%'
+        FROM pg_proc AS p
+        WHERE p.oid = to_regprocedure(
+          'public.search_products_semantic(text,jsonb,integer)'
+        )), false) AS semantic_search_contract_safe,
       EXISTS (
         SELECT 1
         FROM pg_policies
@@ -618,7 +673,12 @@ async function validateContract(client, targets) {
     && Number(result.rls_auth_initplan_candidate_count) === 0
     && Number(result.consolidated_rls_policy_count) === 227
     && Number(result.consolidated_rls_table_count) === 64
+    && Number(result.consolidated_rls_public_policy_count) === 59
+    && Number(result.consolidated_rls_protected_policy_count) === 168
     && Number(result.invalid_consolidated_rls_policy_count) === 0
+    && Number(result.anon_blocked_rls_dependency_count) === 0
+    && Number(result.explicit_anon_policy_count) === 4
+    && result.semantic_search_contract_safe
     && result.pa_budgets_restrictive_policy_safe;
   if (!valid) {
     const diagnostic = { ...(result ?? {}) };
@@ -888,6 +948,16 @@ BEGIN
        FROM pg_policies
        WHERE schemaname = 'public'
          AND policyname ~ '^sicoob_merged_[0-9a-f]{16}_(select|insert|update|delete)$') <> 64
+     OR (SELECT count(*)
+       FROM pg_policies
+       WHERE schemaname = 'public'
+         AND policyname ~ '^sicoob_merged_[0-9a-f]{16}_(select|insert|update|delete)$'
+         AND roles = ARRAY['public']::name[]) <> 59
+     OR (SELECT count(*)
+       FROM pg_policies
+       WHERE schemaname = 'public'
+         AND policyname ~ '^sicoob_merged_[0-9a-f]{16}_(select|insert|update|delete)$'
+         AND roles = ARRAY['authenticated', 'service_role']::name[]) <> 168
      OR EXISTS (
        SELECT 1
        FROM pg_policies
@@ -895,10 +965,49 @@ BEGIN
          AND policyname ~ '^sicoob_merged_[0-9a-f]{16}_(select|insert|update|delete)$'
          AND (
            permissive <> 'PERMISSIVE'
-           OR roles <> ARRAY['public']::name[]
+           OR NOT (
+             roles = ARRAY['public']::name[]
+             OR roles = ARRAY['authenticated', 'service_role']::name[]
+           )
            OR cmd = 'ALL'
          )
      )
+     OR EXISTS (
+       SELECT 1
+       FROM pg_policy AS pol
+       JOIN pg_class AS cls ON cls.oid = pol.polrelid
+       JOIN pg_namespace AS ns ON ns.oid = cls.relnamespace
+       JOIN pg_depend AS dep
+         ON dep.classid = 'pg_policy'::regclass
+        AND dep.objid = pol.oid
+        AND dep.refclassid = 'pg_proc'::regclass
+       JOIN pg_proc AS proc ON proc.oid = dep.refobjid
+       WHERE ns.nspname = 'public'
+         AND 0 = ANY (pol.polroles)
+         AND NOT has_function_privilege('anon', proc.oid, 'EXECUTE')
+     )
+     OR (SELECT count(*)
+       FROM pg_policies
+       WHERE schemaname = 'public'
+         AND policyname = ANY (ARRAY[
+           'sicoob_anon_cms_banners_select',
+           'sicoob_anon_cms_sections_select',
+           'sicoob_anon_newsletter_insert',
+           'sicoob_anon_product_categories_select'
+         ])
+         AND roles = ARRAY['anon']::name[]
+         AND permissive = 'PERMISSIVE') <> 4
+     OR COALESCE((SELECT
+       NOT p.prosecdef
+       OR NOT (p.proconfig @> ARRAY['search_path=pg_catalog, public']::text[])
+       OR has_function_privilege('anon', p.oid, 'EXECUTE')
+       OR has_function_privilege('authenticated', p.oid, 'EXECUTE')
+       OR NOT has_function_privilege('service_role', p.oid, 'EXECUTE')
+       OR p.prosrc NOT LIKE '%ORDER BY ranked.score DESC%'
+       FROM pg_proc AS p
+       WHERE p.oid = to_regprocedure(
+         'public.search_products_semantic(text,jsonb,integer)'
+       )), true)
      OR NOT EXISTS (
        SELECT 1
        FROM pg_policies

@@ -103,6 +103,26 @@ describe("product-mapper", () => {
       expect(result.images).toContain("/placeholder.svg");
     });
 
+    it("normaliza todos os formatos legados de imagem para URLs", () => {
+      const result = mapPromobrindToProduct({
+        ...baseProduct,
+        images: [
+          { url: "https://img.example.com/url.jpg" },
+          { src: "https://img.example.com/src.jpg" },
+          { image_url: "https://img.example.com/image-url.jpg" },
+          {},
+        ],
+      } as any);
+
+      expect(result.images).toEqual([
+        "https://img.example.com/url.jpg",
+        "https://img.example.com/src.jpg",
+        "https://img.example.com/image-url.jpg",
+      ]);
+      expect(result.image_url).toBe("https://img.example.com/url.jpg");
+      expect(result.images.every((image) => typeof image === "string")).toBe(true);
+    });
+
     it("parses marketing tags", () => {
       const withTags = {
         ...baseProduct,

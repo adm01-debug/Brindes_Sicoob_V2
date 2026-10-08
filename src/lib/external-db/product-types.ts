@@ -99,14 +99,26 @@ export interface PromobrindProduct {
   }> | null;
 }
 
+function normalizeImageUrl(candidate: unknown): string | null {
+  if (typeof candidate === 'string') return candidate.trim() || null;
+  if (typeof candidate !== 'object' || candidate === null || Array.isArray(candidate)) return null;
+
+  const legacyImage = candidate as Record<string, unknown>;
+  const value = ['url', 'src', 'image_url']
+    .map((key) => legacyImage[key])
+    .find((entry): entry is string => typeof entry === 'string' && entry.trim().length > 0);
+  return value?.trim() ?? null;
+}
+
 export function getProductImageUrl(
   product: {
     primary_image_url: PromobrindProduct['primary_image_url'];
     image_url?: PromobrindProduct['image_url'];
-    images?: PromobrindProduct['images'];
+    images?: unknown[] | null;
   },
 ): string | null {
-  return product.primary_image_url || product.image_url || (product.images?.[0] ?? null);
+  const candidates = [product.primary_image_url, product.image_url, ...(product.images ?? [])];
+  return candidates.map(normalizeImageUrl).find((value) => value !== null) ?? null;
 }
 
 export function getProductPrice(

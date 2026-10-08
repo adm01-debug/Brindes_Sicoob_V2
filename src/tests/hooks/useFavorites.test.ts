@@ -7,6 +7,9 @@ vi.mock('@/hooks/useProductAnalytics', () => ({
 
 import { useFavorites } from '@/hooks/useFavorites';
 
+const STORAGE_KEY = 'product-favorites';
+const ADDED_AT = '2026-10-06T12:00:00.000Z';
+
 describe('useFavorites', () => {
   beforeEach(() => {
     localStorage.clear();
@@ -14,7 +17,7 @@ describe('useFavorites', () => {
 
   it('descarta um payload inválido sem quebrar o estado da página', async () => {
     const consoleError = vi.spyOn(console, 'error').mockImplementation(() => undefined);
-    localStorage.setItem('product-favorites', JSON.stringify({ productId: 'produto-1' }));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ productId: 'produto-1' }));
 
     const { result } = renderHook(() => useFavorites());
 
@@ -27,8 +30,8 @@ describe('useFavorites', () => {
   });
 
   it('mantém itens válidos do armazenamento local', async () => {
-    localStorage.setItem('product-favorites', JSON.stringify([
-      { productId: 'produto-1', addedAt: '2026-10-06T12:00:00.000Z' },
+    localStorage.setItem(STORAGE_KEY, JSON.stringify([
+      { productId: 'produto-1', addedAt: ADDED_AT },
     ]));
 
     const { result } = renderHook(() => useFavorites());
@@ -36,7 +39,18 @@ describe('useFavorites', () => {
     await waitFor(() => expect(result.current.isLoaded).toBe(true));
 
     expect(result.current.favorites).toEqual([
-      { productId: 'produto-1', addedAt: '2026-10-06T12:00:00.000Z' },
+      { productId: 'produto-1', addedAt: ADDED_AT },
     ]);
+  });
+
+  it('preserva os favoritos válidos quando a lista contém itens corrompidos', async () => {
+    const valid = { productId: 'produto-1', addedAt: ADDED_AT };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify([valid, null, { productId: '' }]));
+
+    const { result } = renderHook(() => useFavorites());
+
+    await waitFor(() => expect(result.current.isLoaded).toBe(true));
+    expect(result.current.favorites).toEqual([valid]);
+    expect(JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]')).toEqual([valid]);
   });
 });

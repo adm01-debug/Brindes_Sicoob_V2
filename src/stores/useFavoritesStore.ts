@@ -54,10 +54,10 @@ function isFavoriteItem(value: unknown): value is FavoriteItem {
 
 function parseStoredFavorites(raw: string): FavoriteItem[] {
   const parsed: unknown = JSON.parse(raw);
-  if (!Array.isArray(parsed) || !parsed.every(isFavoriteItem)) {
+  if (!Array.isArray(parsed)) {
     throw new TypeError("O armazenamento de favoritos contém um payload inválido");
   }
-  return parsed;
+  return parsed.filter(isFavoriteItem);
 }
 
 function loadFromStorage(): FavoriteItem[] {

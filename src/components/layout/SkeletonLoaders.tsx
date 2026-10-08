@@ -53,12 +53,12 @@ export const CatalogSkeleton = makeSkeleton(
   () => (
     <>
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <Skeleton className="h-8 w-48" />
-        <div className="flex gap-2">
-          <Skeleton className="h-10 w-32" />
+      <div className="flex min-w-0 items-center justify-between gap-3">
+        <Skeleton className="h-8 w-32 sm:w-48" />
+        <div className="flex shrink-0 gap-2">
+          <Skeleton className="h-10 w-20 sm:w-32" />
           <Skeleton className="h-10 w-10" />
-          <Skeleton className="h-10 w-10" />
+          <Skeleton className="hidden h-10 w-10 sm:block" />
         </div>
       </div>
       {/* Toolbar / search */}
@@ -117,11 +117,11 @@ export const QuotesSkeleton = makeSkeleton(
   'QuotesSkeleton',
   () => (
     <>
-      <div className="flex items-center justify-between">
-        <Skeleton className="h-8 w-52" />
-        <Skeleton className="h-10 w-36" />
+      <div className="flex min-w-0 items-center justify-between gap-3">
+        <Skeleton className="h-8 w-36 sm:w-52" />
+        <Skeleton className="h-10 w-24 sm:w-36" />
       </div>
-      <div className="flex gap-2">
+      <div className="grid grid-cols-2 gap-2 sm:flex">
         {Array.from({ length: 4 }).map((_, i) => (
           <Skeleton key={i} className="h-9 w-24 rounded-full" />
         ))}
@@ -141,9 +141,9 @@ export const AdminSkeleton = makeSkeleton(
   'AdminSkeleton',
   () => (
     <>
-      <div className="flex items-center justify-between">
-        <Skeleton className="h-8 w-56" />
-        <Skeleton className="h-10 w-32" />
+      <div className="flex min-w-0 items-center justify-between gap-3">
+        <Skeleton className="h-8 w-36 sm:w-56" />
+        <Skeleton className="h-10 w-24 sm:w-32" />
       </div>
       {/* Stats row */}
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
@@ -228,9 +228,9 @@ export const ToolsSkeleton = makeSkeleton(
   'ToolsSkeleton',
   () => (
     <>
-      <div className="flex items-center justify-between">
-        <Skeleton className="h-8 w-52" />
-        <div className="flex gap-2">
+      <div className="flex min-w-0 items-center justify-between gap-3">
+        <Skeleton className="h-8 w-36 sm:w-52" />
+        <div className="flex shrink-0 gap-2">
           <Skeleton className="h-10 w-10 rounded-lg" />
           <Skeleton className="h-10 w-10 rounded-lg" />
         </div>

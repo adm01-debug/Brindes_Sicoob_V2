@@ -1,6 +1,6 @@
 /**
  * useProducts — Product data hooks
- * 
+ *
  * Hooks for fetching products from the external catalog.
  * Types and utilities are extracted to dedicated modules but
  * re-exported here for backward compatibility with 29+ consumers.
@@ -36,9 +36,11 @@ function compareSearchRelevance(first: Product, second: Product, term: string): 
 
 function matchesCategory(product: Product, category: string): boolean {
   const normalized = category.toLowerCase();
-  return Boolean(product.category_name?.toLowerCase().includes(normalized))
-    || product.category_id === category
-    || product.category?.id?.toString() === category;
+  return (
+    Boolean(product.category_name?.toLowerCase().includes(normalized)) ||
+    product.category_id === category ||
+    product.category?.id?.toString() === category
+  );
 }
 
 function applyProductFilters(products: Product[], filters?: ProductFilters): Product[] {
@@ -46,24 +48,27 @@ function applyProductFilters(products: Product[], filters?: ProductFilters): Pro
   const byCategory = filterByCategory(sorted, filters?.category);
   const byMinimum = filterByMinimumPrice(byCategory, filters?.minPrice);
   const byMaximum = filterByMaximumPrice(byMinimum, filters?.maxPrice);
-  return filters?.inStock ? byMaximum.filter(product => (product.stock || 0) > 0) : byMaximum;
+  return filters?.inStock ? byMaximum.filter((product) => (product.stock || 0) > 0) : byMaximum;
 }
 
 function sortProductsBySearch(products: Product[], search?: string): Product[] {
   if (!search) return [...products];
-  return [...products].sort((first, second) => compareSearchRelevance(first, second, search));
+  const normalizedSearch = search.toLowerCase();
+  return [...products].sort((first, second) =>
+    compareSearchRelevance(first, second, normalizedSearch),
+  );
 }
 
 function filterByCategory(products: Product[], category?: string): Product[] {
-  return category ? products.filter(product => matchesCategory(product, category)) : products;
+  return category ? products.filter((product) => matchesCategory(product, category)) : products;
 }
 
 function filterByMinimumPrice(products: Product[], minimum?: number): Product[] {
-  return minimum === undefined ? products : products.filter(product => product.price >= minimum);
+  return minimum === undefined ? products : products.filter((product) => product.price >= minimum);
 }
 
 function filterByMaximumPrice(products: Product[], maximum?: number): Product[] {
-  return maximum === undefined ? products : products.filter(product => product.price <= maximum);
+  return maximum === undefined ? products : products.filter((product) => product.price <= maximum);
 }
 
 /**
@@ -71,7 +76,7 @@ function filterByMaximumPrice(products: Product[], maximum?: number): Product[] 
  */
 export function useProducts(
   filters?: ProductFilters,
-  options?: Omit<UseQueryOptions<Product[]>, 'queryKey' | 'queryFn'>
+  options?: Omit<UseQueryOptions<Product[]>, 'queryKey' | 'queryFn'>,
 ) {
   return useQuery<Product[]>({
     queryKey: ['promobrind-products', filters],
@@ -137,7 +142,7 @@ export function useRelatedProducts(product: Product | null | undefined, limit = 
 
       return raw
         .map(mapPromobrindToProduct)
-        .filter(p => p.id !== productId)
+        .filter((p) => p.id !== productId)
         .slice(0, limit);
     },
     staleTime: 10 * 60 * 1000,

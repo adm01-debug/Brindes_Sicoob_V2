@@ -69,7 +69,8 @@
     "test:fuzzing": "vitest run tests/unit/fuzzing.test.ts",
     "test:scenarios": "node --test tests/scenarios/*.mjs",
     "qa:visual:login": "node scripts/qa/login-browser.mjs",
-    "qa:visual:demo": "node scripts/qa/demo-browser.mjs"
+    "qa:visual:demo": "node scripts/qa/demo-browser.mjs",
+    "audit:dossier": "playwright install chromium && node scripts/enterprise-dossier-builder.mjs"
   },
   "lint-staged": {
     "src/**/*.{ts,tsx}": [

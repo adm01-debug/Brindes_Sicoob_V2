@@ -27,6 +27,25 @@ export function compareInventorySnapshots(expected, live) {
       differences.push({ kind, missing_live: missingLive, missing_cache: missingCache });
     }
   }
+  if (expected.contract_sha256 && live.contract_sha256) {
+    for (const kind of ['relations', 'functions', 'buckets']) {
+      const expectedContracts = expected.contract_sha256[kind] ?? {};
+      const liveContracts = live.contract_sha256[kind] ?? {};
+      const changed = [
+        ...new Set([...Object.keys(expectedContracts), ...Object.keys(liveContracts)]),
+      ]
+        .filter(
+          (name) =>
+            expectedContracts[name] !== undefined &&
+            liveContracts[name] !== undefined &&
+            expectedContracts[name] !== liveContracts[name],
+        )
+        .sort();
+      if (changed.length) {
+        differences.push({ kind: 'contract_sha256', contract_kind: kind, changed });
+      }
+    }
+  }
   return differences;
 }
 

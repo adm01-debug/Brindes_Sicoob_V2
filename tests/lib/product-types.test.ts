@@ -35,6 +35,19 @@ describe('getProductImageUrl', () => {
     expect(getProductImageUrl(p)).toBe('arr.jpg');
   });
 
+  it.each([
+    [{ url: 'legacy-url.jpg' }, 'legacy-url.jpg'],
+    [{ src: 'legacy-src.jpg' }, 'legacy-src.jpg'],
+    [{ image_url: 'legacy-image-url.jpg' }, 'legacy-image-url.jpg'],
+  ])('normaliza objeto legado de imagem %o', (image, expected) => {
+    expect(getProductImageUrl({ ...baseProduct, images: [image] })).toBe(expected);
+  });
+
+  it('ignora valores inválidos até encontrar uma imagem utilizável', () => {
+    const images = [null, {}, { url: '  ' }, { src: 'valid.jpg' }];
+    expect(getProductImageUrl({ ...baseProduct, images })).toBe('valid.jpg');
+  });
+
   it('should return null when no images', () => {
     expect(getProductImageUrl(baseProduct)).toBeNull();
   });

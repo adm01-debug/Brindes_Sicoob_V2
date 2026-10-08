@@ -61,9 +61,22 @@ function normalizeMarketingTags(tags: unknown): Product['tags'] {
   };
 }
 
+function normalizeImageUrl(image: unknown): string | null {
+  if (typeof image === 'string') return image.trim() || null;
+  if (typeof image !== 'object' || image === null || Array.isArray(image)) return null;
+
+  const source = image as Record<string, unknown>;
+  for (const key of ['url', 'src', 'image_url']) {
+    const value = source[key];
+    if (typeof value === 'string' && value.trim()) return value.trim();
+  }
+
+  return null;
+}
+
 function productImages(product: PromobrindProduct, fallback: string | null): string[] {
   const images = Array.isArray(product.images)
-    ? product.images.filter((image): image is string => typeof image === 'string' && image.length > 0)
+    ? product.images.map(normalizeImageUrl).filter((image): image is string => image !== null)
     : [];
   if (images.length > 0) return images;
   return [fallback || '/placeholder.svg'];
