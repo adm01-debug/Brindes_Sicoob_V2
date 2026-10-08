@@ -28,6 +28,16 @@ async function dismissBlockingOnboarding(page: Page): Promise<void> {
   const visible = await tour.isVisible().catch(() => false);
   if (!visible) return;
 
+  // Gates de segurança têm precedência sobre o tour. Tentar clicar no tour
+  // enquanto um diálogo modal está aberto interage com conteúdo inacessível
+  // atrás do backdrop; o tour será dispensado na navegação seguinte.
+  const modalVisible = await page
+    .locator('[role="dialog"][aria-modal="true"]')
+    .first()
+    .isVisible()
+    .catch(() => false);
+  if (modalVisible) return;
+
   await tour.getByRole('button', { name: 'Pular', exact: true }).click();
   await tour.waitFor({ state: 'hidden', timeout: 5_000 });
 }

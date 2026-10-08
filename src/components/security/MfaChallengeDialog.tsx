@@ -41,6 +41,7 @@ function ChallengeContent({
     <div className="space-y-4">
       <Input
         value={code}
+        aria-label="Código de autenticação em duas etapas"
         onChange={(event) => onCodeChange(event.target.value.replace(/\D/g, '').slice(0, 6))}
         placeholder="000000"
         className="h-14 text-center font-mono text-2xl tracking-[0.5em]"
@@ -71,7 +72,8 @@ export function MfaChallengeDialog({ open }: MfaChallengeDialogProps) {
       }}
     >
       <DialogContent
-        className="max-w-md"
+        className="z-[120] max-w-md"
+        overlayClassName="z-[110]"
         onPointerDownOutside={(event) => event.preventDefault()}
         onEscapeKeyDown={(event) => event.preventDefault()}
       >

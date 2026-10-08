@@ -7,10 +7,10 @@ test.describe('Fluxo do Catálogo', () => {
   test('deve navegar pelos produtos e filtrar', async ({ page }) => {
     await gotoAndSettle(page, '/produtos');
 
-    await expect(page.getByTestId('page-title-dashboard')).toBeVisible();
-    await expect(page.getByRole('grid', { name: 'Catálogo de produtos' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /Catálogo de Produtos/ })).toBeVisible();
+    await expect(page.getByRole('article').first()).toBeVisible();
 
-    const searchInput = page.getByTestId('catalog-search-input');
+    const searchInput = page.getByRole('combobox', { name: 'Campo de busca' });
     await expect(searchInput).toBeVisible();
     await searchInput.fill(SEARCH_TERM);
     await searchInput.press('Enter');

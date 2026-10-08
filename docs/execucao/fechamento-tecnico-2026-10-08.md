@@ -30,7 +30,7 @@ Projeto conferido: `cfmzkthhgliqelozlmwu`.
 - A auditoria de ACL de funções `SECURITY DEFINER` não encontrou concessão proibida.
 - O inventário vivo corresponde ao snapshot versionado: 222 relações, 237 funções e 14 buckets, sem diferença.
 - As tabelas críticas `profiles`, `quote_history`, `quotes` e `workspace_notifications` não apresentaram RLS desabilitada, policy ausente ou policy permissiva irrestrita.
-- As personas de QA foram conferidas no Auth e em `user_roles`: vendedor, gestor de compras, administrador e gerente de PA.
+- As personas de QA foram conferidas no Auth e em `user_roles`: vendedor, gestor de compras, administrador, desenvolvedor e gerente de PA. Administrador e desenvolvedor possuem TOTP verificado e atingiram AAL2 em sessão real.
 
 O repositório conserva 491 diferenças históricas de ledger já catalogadas. Elas não foram reaplicadas em massa, pois nome de arquivo local não comprova ausência do efeito no banco. O gate usa baseline versionada e bloqueia diferença nova.
 
@@ -45,11 +45,11 @@ O repositório conserva 491 diferenças históricas de ledger já catalogadas. E
 
 ## CI, E2E e reconciliação de PRs
 
-O workflow E2E agora roda em `ubuntu-latest`, exige credenciais em vez de concluir por skip, executa validações remotas de autorização/RLS e aceita uma branch, tag ou SHA em disparo manual. As contas de vendedor, gestor e administrador usam segredos separados no GitHub; o segredo de serviço fica restrito ao passo técnico que o consome.
+O workflow E2E agora roda em `ubuntu-latest`, exige credenciais em vez de concluir por skip, executa validações remotas de autorização/RLS e aceita uma branch, tag ou SHA em disparo manual. As contas de vendedor, gestor, administrador e desenvolvedor usam segredos separados no GitHub; os papéis privilegiados também exigem seus segredos TOTP. O segredo de serviço fica restrito ao passo técnico que o consome.
 
 Os reparos úteis dos PRs #92, #93, #94 e #97 foram incorporados ao PR #98. Os PRs anteriores só devem ser encerrados como substituídos depois da aprovação dos gates do candidato consolidado.
 
-Na estação local, a suíte de navegador autenticada anterior concluiu 277 casos com 185 aprovados, 92 skips explícitos e zero falhas. Uma rodada consolidada posterior revelou seis testes frágeis; os casos de autenticação administrativa, papéis, catálogo e busca foram corrigidos. A repetição local final sofreu `SIGKILL` por pressão externa do host compartilhado, com 44 de 47 GiB de RAM e toda a swap ocupada. O resultado definitivo do navegador deve ser o do runner hospedado do PR #98.
+Na estação local, a suíte de navegador autenticada anterior concluiu 277 casos com 185 aprovados, 92 skips explícitos e zero falhas. Uma rodada consolidada posterior revelou contratos frágeis e um conflito real entre o tour de onboarding e o gate MFA; ambos foram corrigidos. As repetições isoladas finais concluíram sem skip e sem falha: auditoria administrativa 4/4, catálogo 2/2, busca e voz 3/3 e matriz RBAC 9/9. A matriz comprovou vendedor, administrador e desenvolvedor com TOTP/AAL2, além de deep link e sessão ausente. O resultado integral da regressão de navegador permanece certificado pelo runner hospedado do PR #98, que dispõe de isolamento de memória.
 
 ## Limites honestos do encerramento
 
@@ -62,4 +62,3 @@ O candidato fecha o passivo técnico mensurável deste lote e publica suas prova
 5. aceite final independente de produto, marketing, compras, financeiro e operação.
 
 Esses itens não são defeitos de código nem podem ser simulados como produção. Até sua autorização, o estado correto permanece **candidato de construção tecnicamente validado**, condicionado ao CI do PR #98.
-

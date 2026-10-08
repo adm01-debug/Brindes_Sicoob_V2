@@ -157,6 +157,7 @@ function EnrollmentVerification({
       <p className="text-sm text-muted-foreground">Digite o código de 6 dígitos do seu app:</p>
       <Input
         value={code}
+        aria-label="Código de autenticação para ativar duas etapas"
         onChange={(event) => onCodeChange(event.target.value.replace(/\D/g, '').slice(0, 6))}
         placeholder="000000"
         className="h-14 text-center font-mono text-2xl tracking-[0.5em]"
@@ -184,7 +185,7 @@ export function MfaEnrollmentDialog({
   const enrollment = useMfaEnrollment({ open, onOpenChange, enforce, redirectOnSuccess });
   return (
     <Dialog open={open} onOpenChange={enrollment.handleClose}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="z-[120] max-w-md" overlayClassName="z-[110]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <ShieldCheck className="h-5 w-5 text-primary" />

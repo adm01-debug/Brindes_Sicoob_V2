@@ -17,6 +17,7 @@
  *   await loginViaUI(page, { email, password, expectFail: true });
  */
 import { expect, type Page } from '@playwright/test';
+import * as OTPAuth from 'otpauth';
 
 import { Sel } from '../fixtures/selectors';
 import { test } from '../fixtures/test-base';
@@ -35,6 +36,48 @@ export interface LoginCreds {
 export type Role = 'user' | 'admin' | 'dev' | 'editor';
 
 const LOGIN_URL_RE = /\/login(\?|#|$)/;
+
+async function ensurePrivilegedAal2(page: Page, role: 'admin' | 'dev'): Promise<void> {
+  await gotoAndSettle(page, role === 'dev' ? '/admin/telemetria' : '/admin/usuarios');
+  const enrollment = page.getByRole('dialog', { name: 'Autenticação em duas etapas' });
+  const challenge = page.getByRole('dialog', { name: 'Verificação em duas etapas' });
+  let outcome = 'waiting';
+  await expect
+    .poll(
+      async () => {
+        if (await enrollment.isVisible().catch(() => false)) outcome = 'enrollment';
+        else if (await challenge.isVisible().catch(() => false)) outcome = 'challenge';
+        else if ((await page.locator('main h1, main h2').count()) > 0) outcome = 'ready';
+        return outcome;
+      },
+      { timeout: 10_000, message: 'aguardando gate MFA ou conteúdo administrativo' },
+    )
+    .not.toBe('waiting');
+
+  if (outcome === 'ready') return;
+  if (outcome === 'enrollment') {
+    throw new Error('A conta E2E administrativa não possui um fator TOTP verificado.');
+  }
+
+  const secret =
+    role === 'dev' ? process.env.E2E_DEV_TOTP_SECRET : process.env.E2E_ADMIN_TOTP_SECRET;
+  if (!secret) {
+    throw new Error(`E2E_${role.toUpperCase()}_TOTP_SECRET ausente para elevar a sessão a AAL2.`);
+  }
+  const totp = new OTPAuth.TOTP({
+    issuer: 'Supabase',
+    label:
+      (role === 'dev' ? process.env.E2E_DEV_EMAIL : process.env.E2E_ADMIN_EMAIL) ?? `${role}-e2e`,
+    algorithm: 'SHA1',
+    digits: 6,
+    period: 30,
+    secret: OTPAuth.Secret.fromBase32(secret),
+  });
+  await challenge.getByLabel('Código de autenticação em duas etapas').fill(totp.generate());
+  await challenge.getByRole('button', { name: 'Verificar', exact: true }).click();
+  await expect(challenge).toBeHidden({ timeout: 10_000 });
+  await expect(page.locator('main h1, main h2').first()).toBeVisible({ timeout: 10_000 });
+}
 
 async function getStoredSessionEmail(page: Page): Promise<string | null> {
   return page.evaluate(() => {
@@ -119,12 +162,14 @@ export async function loginAs(page: Page, role: Role = 'user'): Promise<void> {
   if (!/^https?:/i.test(page.url())) await gotoAndSettle(page, '/');
   const currentEmail = await getStoredSessionEmail(page);
   if (currentEmail?.toLowerCase() === email!.toLowerCase() && !LOGIN_URL_RE.test(page.url())) {
+    if (role === 'admin' || role === 'dev') await ensurePrivilegedAal2(page, role);
     return;
   }
 
   if (currentEmail || !LOGIN_URL_RE.test(page.url())) await logout(page);
 
   await loginViaUI(page, { email: email!, password: password! });
+  if (role === 'admin' || role === 'dev') await ensurePrivilegedAal2(page, role);
 }
 
 /**
