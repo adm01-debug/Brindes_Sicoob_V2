@@ -1,7 +1,6 @@
 import React, { type ReactNode, useMemo, useCallback, useState, useEffect, useRef } from "react";
-import { type Product } from "@/hooks/useProducts";
+import { mapPromobrindToProduct, type Product } from "@/hooks/useProducts";
 import { fetchPromobrindProducts } from "@/lib/external-db";
-import { mapPromobrindToProduct } from "@/hooks/useProducts";
 import { logger } from "@/lib/logger";
 import { ProductsContext } from "./ProductsContextDef";
 
@@ -65,6 +64,7 @@ export function ProductsProvider({ children }: { children: ReactNode }) {
           setCache(prev => {
             const next = new Map(prev);
             mapped.forEach(p => next.set(p.id, p));
+            cacheRef.current = next;
             return next;
           });
         }
@@ -139,7 +139,9 @@ export function ProductsProvider({ children }: { children: ReactNode }) {
           changed = true;
         }
       }
-      return changed ? next : prev;
+      if (!changed) return prev;
+      cacheRef.current = next;
+      return next;
     });
   }, []);
 
@@ -152,4 +154,3 @@ export function ProductsProvider({ children }: { children: ReactNode }) {
     </ProductsContext.Provider>
   );
 }
-

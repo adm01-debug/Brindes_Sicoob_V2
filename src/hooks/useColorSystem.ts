@@ -2,6 +2,8 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { logger } from "@/lib/logger";
 
+const EXTERNAL_DB_BRIDGE_FUNCTION = 'external-db-bridge';
+
 // =====================================================
 // TIPOS DO SISTEMA DE CORES (3 Níveis)
 // =====================================================
@@ -66,7 +68,7 @@ function externalRecords<T extends object>(response: { data?: unknown; error?: {
 
 async function fetchExternalColors() {
   // Buscar grupos de cores
-  const groupsResponse = await supabase.functions.invoke('external-db-bridge', {
+  const groupsResponse = await supabase.functions.invoke(EXTERNAL_DB_BRIDGE_FUNCTION, {
     body: {
       table: 'color_groups',
       operation: 'select',
@@ -79,7 +81,7 @@ async function fetchExternalColors() {
   const groups = externalRecords<ExternalColorGroup>(groupsResponse, 'grupos de cores');
 
   // Buscar variações de cores
-  const variationsResponse = await supabase.functions.invoke('external-db-bridge', {
+  const variationsResponse = await supabase.functions.invoke(EXTERNAL_DB_BRIDGE_FUNCTION, {
     body: {
       table: 'color_variations',
       operation: 'select',
@@ -114,7 +116,7 @@ async function fetchExternalColors() {
 }
 
 async function fetchExternalNuances(): Promise<ColorNuance[]> {
-  const response = await supabase.functions.invoke('external-db-bridge', {
+  const response = await supabase.functions.invoke(EXTERNAL_DB_BRIDGE_FUNCTION, {
     body: {
       table: 'color_nuances',
       operation: 'select',
@@ -200,7 +202,7 @@ export function useColorVariations(groupId: string | null) {
     queryFn: async () => {
       if (!groupId) return [];
 
-      const response = await supabase.functions.invoke('external-db-bridge', {
+      const response = await supabase.functions.invoke(EXTERNAL_DB_BRIDGE_FUNCTION, {
         body: {
           table: 'color_variations',
           operation: 'select',

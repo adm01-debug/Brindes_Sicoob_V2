@@ -46,7 +46,7 @@ async function ensureUser(user: any, log: any, password: string) {
     if (newUser?.user) user.id = newUser.user.id;
   }
 
-  await supabase.from("profiles").upsert({
+  const { error: profileError } = await supabase.from("profiles").upsert({
     id: user.id,
     user_id: user.id,
     email: user.email,
@@ -55,6 +55,13 @@ async function ensureUser(user: any, log: any, password: string) {
     pa_id: user.pa_id || null,
     cooperativa_id: user.cooperativa_id || null
   }, { onConflict: "id" });
+  if (profileError) throw profileError;
+
+  const { error: roleError } = await supabase.from("user_roles").upsert({
+    user_id: user.id,
+    role: user.role,
+  }, { onConflict: "user_id,role" });
+  if (roleError) throw roleError;
 }
 
 Deno.serve(async (req) => {

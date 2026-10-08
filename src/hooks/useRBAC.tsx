@@ -67,7 +67,6 @@ function toDbRole(role: RoleName): 'admin' | 'manager' | 'vendedor' {
 export function useRBAC() {
   const {
     role: authRole,
-    roles: authRoles,
     isLoading: authLoading,
     profile,
     user,

@@ -39,7 +39,7 @@ interface ExampleConfig {
   icon: typeof KeyRound;
   badge: string;
   functionName: string;
-  action: "mcp_full_issue" | "mcp_key_rotate" | "mcp_key_update";
+  action: "mcp_full_issue" | "mcp_key_rotate" | "mcp_full_escalate";
   actionLabel: string;
   targetRef: string | null;
   body: Record<string, unknown>;
@@ -127,7 +127,7 @@ if (result.status === "ok") {
     icon: ShieldCheck,
     badge: "mcp_key_update",
     functionName: "mcp-keys-update",
-    action: "mcp_key_update",
+    action: "mcp_full_escalate",
     actionLabel: "Escalar escopo de chave para FULL",
     targetRef: "00000000-0000-0000-0000-000000000000",
     body: {
@@ -140,7 +140,7 @@ if (changes.scope === "full" && current.scope !== "full") {
   const result = await invokeFullScopeFunction({
     challenge,
     functionName: "mcp-keys-update",
-    action: "mcp_key_update",
+    action: "mcp_full_escalate",
     actionLabel: "Escalar escopo de chave para FULL",
     targetRef: key.id,
     body: { key_id: key.id, ...changes },

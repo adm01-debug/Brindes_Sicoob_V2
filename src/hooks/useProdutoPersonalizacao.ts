@@ -30,10 +30,11 @@ export function useProdutoPersonalizacao(productId: string | null | undefined) {
     queryKey: ["produto-personalizacao", productId],
     enabled: !!productId,
     queryFn: async (): Promise<ComponentWithLocations[]> => {
+      if (!productId) throw new Error("Produto não identificado");
       const { data: components, error: cErr } = await supabase
         .from("product_components")
         .select("id, component_code, component_name, is_personalizable, sort_order")
-        .eq("product_id", productId!)
+        .eq("product_id", productId)
         .eq("is_active", true)
         .order("sort_order", { ascending: true });
 

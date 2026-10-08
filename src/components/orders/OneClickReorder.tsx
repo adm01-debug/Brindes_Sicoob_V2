@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { type MouseEvent, useState } from "react";
 import { RotateCcw, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -19,7 +19,7 @@ export function OneClickReorder({ orderId, variant = "outline", className, showL
   const [isProcessing, setIsProcessing] = useState(false);
   const navigate = useNavigate();
 
-  const handleReorder = async (e: React.MouseEvent) => {
+  const handleReorder = async (e: MouseEvent) => {
     e.stopPropagation();
     setIsProcessing(true);
     try {

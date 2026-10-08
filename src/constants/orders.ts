@@ -1,4 +1,4 @@
-import { OrderStatus } from "@/types/orders";
+import type { OrderStatus } from "@/types/orders";
 
 export const ORDER_STATUS_FLOW: OrderStatus[] = [
   "rascunho",

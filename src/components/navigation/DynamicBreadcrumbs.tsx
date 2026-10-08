@@ -1,5 +1,5 @@
-import { useMemo } from "react";
-import { Link, useLocation, useParams } from "react-router-dom";
+import { type ReactNode, useMemo } from "react";
+import { Link, useLocation } from "react-router-dom";
 import { ChevronRight, Home } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
@@ -9,7 +9,7 @@ import { canNavigateTo, isDevOnlyPath } from "@/lib/navigation/restricted-routes
 interface BreadcrumbItem {
   label: string;
   href?: string;
-  icon?: React.ReactNode;
+  icon?: ReactNode;
 }
 
 interface DynamicBreadcrumbsProps {
@@ -55,76 +55,70 @@ const routeLabels: Record<string, string> = {
   "registro": "Registro",
 };
 
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+function isRouteId(segment: string | undefined) {
+  return segment !== undefined && (UUID_PATTERN.test(segment) || /^\d+$/.test(segment));
+}
+
+function dynamicSegmentLabel(segment: string, previousSegment: string | undefined) {
+  if (previousSegment === "orcamentos") return `#${segment.slice(0, 8)}...`;
+  if (previousSegment === "pedidos") return "Pedido";
+  if (["clientes", "empresas"].includes(previousSegment ?? "")) return "Cliente";
+  return "Detalhes";
+}
+
+function routeIdBreadcrumb(segment: string, previousSegment: string | undefined, currentPath: string): BreadcrumbItem | null {
+  if (["produto", "produtos"].includes(previousSegment ?? "")) return null;
+  return { label: dynamicSegmentLabel(segment, previousSegment), href: currentPath };
+}
+
+function namedBreadcrumb(
+  segments: string[],
+  index: number,
+  currentPath: string,
+  permissions: { isDev: boolean; isAdmin: boolean },
+): BreadcrumbItem | null {
+  const segment = segments[index];
+  if (!segment || (!permissions.isDev && isDevOnlyPath(currentPath))) return null;
+  const label = routeLabels[segment] ?? `${segment.charAt(0).toUpperCase()}${segment.slice(1).replace(/-/g, " ")}`;
+  const hidesNextId = isRouteId(segments[index + 1]) && ["produto", "produtos"].includes(segment);
+  const isLastVisible = index >= segments.length - 1 || hidesNextId;
+  const navigable = canNavigateTo(currentPath, permissions);
+  return { label, href: isLastVisible || !navigable ? undefined : currentPath };
+}
+
+function breadcrumbForSegment(
+  segments: string[],
+  index: number,
+  currentPath: string,
+  permissions: { isDev: boolean; isAdmin: boolean },
+): BreadcrumbItem | null {
+  const segment = segments[index];
+  if (!segment) return null;
+  const previousSegment = segments[index - 1];
+  if (isRouteId(segment)) return routeIdBreadcrumb(segment, previousSegment, currentPath);
+  return namedBreadcrumb(segments, index, currentPath, permissions);
+}
+
+function buildBreadcrumbs(pathname: string, permissions: { isDev: boolean; isAdmin: boolean }) {
+  const segments = pathname.split("/").filter(Boolean);
+  const items: BreadcrumbItem[] = [{ label: "Início", href: "/", icon: <Home className="h-4 w-4" /> }];
+  segments.forEach((_, index) => {
+    const currentPath = `/${segments.slice(0, index + 1).join("/")}`;
+    const item = breadcrumbForSegment(segments, index, currentPath, permissions);
+    if (item) items.push(item);
+  });
+  return items;
+}
+
 export function DynamicBreadcrumbs({ customItems, className }: DynamicBreadcrumbsProps) {
   const location = useLocation();
-  const params = useParams();
   const { isDev, isAdmin } = useAuth();
 
   const breadcrumbs = useMemo(() => {
     if (customItems) return customItems;
-    
-    const pathSegments = location.pathname.split("/").filter(Boolean);
-    
-    // Always start with Home
-    const items: BreadcrumbItem[] = [
-      { label: "Início", href: "/", icon: <Home className="h-4 w-4" /> }
-    ];
-    
-    let currentPath = "";
-    
-    pathSegments.forEach((segment, index) => {
-      currentPath += `/${segment}`;
-      
-      // Check if segment is a dynamic param (UUID or ID)
-      const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(segment);
-      const isNumericId = /^\d+$/.test(segment);
-      
-      if (isUuid || isNumericId) {
-        const prevSegment = pathSegments[index - 1];
-        
-        // Para rotas de detalhe de produto (/produto/:id), o UUID é redundante
-        // pois o segmento "produto" já mostra "Detalhe do Produto"
-        if (prevSegment === "produto" || prevSegment === "produtos") {
-          return; // Pular — não adicionar UUID ao breadcrumb
-        }
-        
-        let label = "Detalhes";
-        if (prevSegment === "orcamentos") label = `#${segment.slice(0, 8)}...`;
-        else if (prevSegment === "pedidos") label = `Pedido`;
-        else if (prevSegment === "clientes" || prevSegment === "empresas") label = `Cliente`;
-        
-        items.push({ label, href: currentPath });
-      } else {
-        // Use mapping or capitalize
-        const label = routeLabels[segment] || 
-          segment.charAt(0).toUpperCase() + segment.slice(1).replace(/-/g, " ");
-        
-        // Verificar se o próximo segmento é um UUID/ID que será omitido (ex: /produto/:id)
-        const nextSegment = pathSegments[index + 1];
-        const nextIsSkippedId = nextSegment && (
-          /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(nextSegment) ||
-          /^\d+$/.test(nextSegment)
-        ) && (segment === "produto" || segment === "produtos");
-        
-        const isLastVisible = index >= pathSegments.length - 1 || nextIsSkippedId;
-
-        // Esconder link para rotas técnicas quando o usuário não tiver papel.
-        // Para rotas devOnly, ocultamos o item completamente para não-dev
-        // (defesa em profundidade — DevRoute também bloqueia o acesso).
-        if (!isDev && isDevOnlyPath(currentPath)) {
-          return;
-        }
-
-        const navigable = canNavigateTo(currentPath, { isDev, isAdmin });
-
-        items.push({
-          label,
-          href: isLastVisible || !navigable ? undefined : currentPath,
-        });
-      }
-    });
-
-    return items;
+    return buildBreadcrumbs(location.pathname, { isDev, isAdmin });
   }, [location.pathname, customItems, isDev, isAdmin]);
   
   // Don't show breadcrumbs on home or login pages
@@ -190,8 +184,9 @@ export function CompactBreadcrumbs({ className }: { className?: string }) {
   if (pathSegments.length <= 1) return null;
   
   const parentPath = "/" + pathSegments.slice(0, -1).join("/");
-  const parentLabel = routeLabels[pathSegments[pathSegments.length - 2]] || 
-    pathSegments[pathSegments.length - 2];
+  const parentSegment = pathSegments[pathSegments.length - 2];
+  if (!parentSegment) return null;
+  const parentLabel = routeLabels[parentSegment] || parentSegment;
   
   return (
     <Link

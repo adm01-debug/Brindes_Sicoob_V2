@@ -16,6 +16,36 @@ interface VariantRowProps {
   isNested?: boolean;
 }
 
+const DESTRUCTIVE_TEXT = "text-destructive";
+
+function currentStockColor(variant: VariantStock) {
+  if (variant.currentStock <= 0) return DESTRUCTIVE_TEXT;
+  if (variant.currentStock <= variant.minStock * 0.25) return DESTRUCTIVE_TEXT;
+  if (variant.currentStock <= variant.minStock) return "text-warning";
+  return "text-foreground";
+}
+
+function ReservedCell({ variant }: { variant: VariantStock }) {
+  if (variant.reservedStock <= 0) return <span className="text-muted-foreground">-</span>;
+  return <TooltipProvider><Tooltip><TooltipTrigger><span className="text-sm text-warning">-{variant.reservedStock}</span></TooltipTrigger><TooltipContent><p>{variant.reservedStock} unidades reservadas em pedidos</p></TooltipContent></Tooltip></TooltipProvider>;
+}
+
+function TransitCell({ variant }: { variant: VariantStock }) {
+  if (variant.inTransitStock <= 0) return <span className="text-muted-foreground">-</span>;
+  return <TooltipProvider><Tooltip><TooltipTrigger><span className="text-sm text-primary/80 flex items-center gap-1"><Truck className="h-3 w-3" />+{variant.inTransitStock}</span></TooltipTrigger><TooltipContent><p>{variant.inTransitStock} unidades em trânsito</p></TooltipContent></Tooltip></TooltipProvider>;
+}
+
+function stockoutColor(days: number) {
+  if (days <= 7) return DESTRUCTIVE_TEXT;
+  if (days <= 14) return "text-warning";
+  return "text-muted-foreground";
+}
+
+function StockoutCell({ days }: { days?: number }) {
+  if (days === undefined) return <span className="text-muted-foreground">-</span>;
+  return <TooltipProvider><Tooltip><TooltipTrigger><div className={cn("flex items-center gap-1 text-sm", stockoutColor(days))}><Clock className="h-3 w-3" />{days}d</div></TooltipTrigger><TooltipContent><p>Previsão de esgotamento em {days} dias</p></TooltipContent></Tooltip></TooltipProvider>;
+}
+
 export function VariantRow({ variant, isNested = false }: VariantRowProps) {
   return (
     <TableRow className={cn(isNested && "bg-muted/30")}>
@@ -29,13 +59,7 @@ export function VariantRow({ variant, isNested = false }: VariantRowProps) {
       </TableCell>
       <TableCell>
         <div className="flex items-center gap-2">
-          <span className={cn(
-            "font-semibold",
-            variant.currentStock <= 0 ? "text-destructive" :
-            variant.currentStock <= variant.minStock * 0.25 ? "text-destructive" :
-            variant.currentStock <= variant.minStock ? "text-warning" :
-            "text-foreground"
-          )}>
+          <span className={cn("font-semibold", currentStockColor(variant))}>
             {variant.currentStock}
           </span>
           <span className="text-xs text-muted-foreground">
@@ -47,18 +71,7 @@ export function VariantRow({ variant, isNested = false }: VariantRowProps) {
         <StockProgressBar current={variant.currentStock} min={variant.minStock} max={variant.maxStock} />
       </TableCell>
       <TableCell className="hidden lg:table-cell">
-        {variant.reservedStock > 0 ? (
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger>
-                <span className="text-sm text-warning">-{variant.reservedStock}</span>
-              </TooltipTrigger>
-              <TooltipContent><p>{variant.reservedStock} unidades reservadas em pedidos</p></TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-        ) : (
-          <span className="text-muted-foreground">-</span>
-        )}
+        <ReservedCell variant={variant} />
       </TableCell>
       <TableCell>
         <span className={cn("font-medium", variant.availableStock <= 0 ? "text-destructive" : "text-foreground")}>
@@ -66,42 +79,11 @@ export function VariantRow({ variant, isNested = false }: VariantRowProps) {
         </span>
       </TableCell>
       <TableCell className="hidden md:table-cell">
-        {variant.inTransitStock > 0 ? (
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger>
-                <span className="text-sm text-primary/80 flex items-center gap-1">
-                  <Truck className="h-3 w-3" />+{variant.inTransitStock}
-                </span>
-              </TooltipTrigger>
-              <TooltipContent><p>{variant.inTransitStock} unidades em trânsito</p></TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-        ) : (
-          <span className="text-muted-foreground">-</span>
-        )}
+        <TransitCell variant={variant} />
       </TableCell>
       <TableCell><StockStatusBadge status={variant.status} /></TableCell>
       <TableCell className="hidden sm:table-cell">
-        {variant.daysUntilStockout !== undefined ? (
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger>
-                <div className={cn(
-                  "flex items-center gap-1 text-sm",
-                  variant.daysUntilStockout <= 7 ? "text-destructive" :
-                  variant.daysUntilStockout <= 14 ? "text-warning" :
-                  "text-muted-foreground"
-                )}>
-                  <Clock className="h-3 w-3" />{variant.daysUntilStockout}d
-                </div>
-              </TooltipTrigger>
-              <TooltipContent><p>Previsão de esgotamento em {variant.daysUntilStockout} dias</p></TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-        ) : (
-          <span className="text-muted-foreground">-</span>
-        )}
+        <StockoutCell days={variant.daysUntilStockout} />
       </TableCell>
     </TableRow>
   );

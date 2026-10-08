@@ -72,6 +72,31 @@ const sizeConfig: Record<NonNullable<StockBadgeProps['size']>, SizeConfigEntry> 
   lg: { badge: 'text-sm px-2.5 py-1 gap-1.5', icon: 'h-4 w-4' },
 };
 
+function formatStockQuantity(quantity: number) {
+  if (quantity >= 1000) return `${(quantity / 1000).toFixed(1)}k`;
+  return quantity.toLocaleString('pt-BR');
+}
+
+function StockBadgeContent({ config, sizeStyles, showIcon, showQuantity, quantity }: {
+  config: StatusConfigEntry;
+  sizeStyles: SizeConfigEntry;
+  showIcon: boolean;
+  showQuantity: boolean;
+  quantity: number | undefined;
+}) {
+  const Icon = config.icon;
+  return <>{showIcon && <Icon className={sizeStyles.icon} />}<span>{showQuantity && quantity !== undefined ? <>{formatStockQuantity(quantity)} un.</> : config.shortLabel}</span></>;
+}
+
+function StockBadgeTooltip({ config, quantity, expectedDate, children }: {
+  config: StatusConfigEntry;
+  quantity: number | undefined;
+  expectedDate: string | undefined;
+  children: React.ReactNode;
+}) {
+  return <Tooltip><TooltipTrigger asChild>{children}</TooltipTrigger><TooltipContent><div className="text-xs space-y-1"><p className="font-medium">{config.label}</p>{quantity !== undefined && <p>Quantidade: {quantity.toLocaleString('pt-BR')} unidades</p>}{expectedDate && <p>Previsão: {new Date(expectedDate).toLocaleDateString('pt-BR')}</p>}</div></TooltipContent></Tooltip>;
+}
+
 export const StockBadge = React.forwardRef<HTMLDivElement, StockBadgeProps>(
   (
     {
@@ -88,15 +113,6 @@ export const StockBadge = React.forwardRef<HTMLDivElement, StockBadgeProps>(
   ) => {
     const config = statusConfig[status];
     const sizeStyles = sizeConfig[size];
-    const Icon = config.icon;
-
-    const formatQuantity = (qty: number) => {
-      if (qty >= 1000) {
-        return `${(qty / 1000).toFixed(1)}k`;
-      }
-      return qty.toLocaleString('pt-BR');
-    };
-
     const badgeContent = (
       <Badge
         ref={ref}
@@ -110,35 +126,13 @@ export const StockBadge = React.forwardRef<HTMLDivElement, StockBadgeProps>(
         )}
         {...props}
       >
-        {showIcon && <Icon className={sizeStyles.icon} />}
-        <span>
-          {showQuantity && quantity !== undefined ? (
-            <>{formatQuantity(quantity)} un.</>
-          ) : (
-            config.shortLabel
-          )}
-        </span>
+        <StockBadgeContent config={config} sizeStyles={sizeStyles} showIcon={showIcon} showQuantity={showQuantity} quantity={quantity} />
       </Badge>
     );
 
     // Se tem informação adicional, mostrar tooltip
     if (expectedDate || (quantity !== undefined && !showQuantity)) {
-      return (
-        <Tooltip>
-          <TooltipTrigger asChild>{badgeContent}</TooltipTrigger>
-          <TooltipContent>
-            <div className="text-xs space-y-1">
-              <p className="font-medium">{config.label}</p>
-              {quantity !== undefined && (
-                <p>Quantidade: {quantity.toLocaleString('pt-BR')} unidades</p>
-              )}
-              {expectedDate && (
-                <p>Previsão: {new Date(expectedDate).toLocaleDateString('pt-BR')}</p>
-              )}
-            </div>
-          </TooltipContent>
-        </Tooltip>
-      );
+      return <StockBadgeTooltip config={config} quantity={quantity} expectedDate={expectedDate}>{badgeContent}</StockBadgeTooltip>;
     }
 
     return badgeContent;
@@ -190,4 +184,3 @@ export const StockIndicator = React.forwardRef<HTMLSpanElement, StockIndicatorPr
 );
 
 StockIndicator.displayName = "StockIndicator";
-

@@ -1,6 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useMemo } from 'react';
 
 // ============================================================================
 // useAppHealth — KPIs da "Saúde da Aplicação"
@@ -87,8 +86,9 @@ export function useAppHealth(windowMinutes: HealthWindow) {
         window_minutes: windowMinutes,
       });
       if (error) throw error;
-      return (data as any[] || []).map(r => ({
-        operation: r.operation,
+      const rows = (Array.isArray(data) ? data : []) as Array<Record<string, unknown>>;
+      return rows.map(r => ({
+        operation: String(r.operation ?? ""),
         p95_ms: Number(r.p95_ms),
         avg_ms: Number(r.avg_ms),
         count: Number(r.count)

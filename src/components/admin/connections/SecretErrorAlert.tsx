@@ -41,6 +41,48 @@ function formatLatency(ms: number): string {
   return `${(ms / 1000).toFixed(ms < 10000 ? 2 : 1)} s`;
 }
 
+function ErrorMetadata({ httpStatus, latencyMs }: Pick<Props, 'httpStatus' | 'latencyMs'>) {
+  const validStatus = typeof httpStatus === "number" && Number.isFinite(httpStatus) ? httpStatus : null;
+  const validLatency = typeof latencyMs === "number" && Number.isFinite(latencyMs) && latencyMs >= 0 ? latencyMs : null;
+  if (validStatus === null && validLatency === null) return null;
+  return (
+    <div className="flex items-center gap-1.5 flex-wrap" aria-label="Métricas do último teste">
+      {validStatus !== null && (
+        <span className={cn("inline-flex items-center gap-1 rounded border px-1.5 py-0 text-[10px] font-mono font-semibold", statusTone(validStatus))} title={`HTTP ${validStatus}`}>
+          <Activity className="h-3 w-3" /> HTTP {validStatus}
+        </span>
+      )}
+      {validLatency !== null && (
+        <span className={cn("inline-flex items-center gap-1 rounded border px-1.5 py-0 text-[10px] font-mono font-semibold", latencyTone(validLatency))} title={`Latência total: ${validLatency} ms`}>
+          <Timer className="h-3 w-3" /> {formatLatency(validLatency)}
+        </span>
+      )}
+    </div>
+  );
+}
+
+function ErrorActions({ error, onRetry, retryLabel, retryDisabled, variant, onViewDetails, detailsLabel }: Pick<
+  Props,
+  'error' | 'onRetry' | 'retryLabel' | 'retryDisabled' | 'variant' | 'onViewDetails' | 'detailsLabel'
+>) {
+  const showRetry = Boolean(onRetry) && error.retryable;
+  if (!showRetry && !onViewDetails) return null;
+  return (
+    <div className="flex items-center gap-1 shrink-0 flex-wrap justify-end">
+      {showRetry && (
+        <Button size="sm" variant="outline" className={cn(variant === "expanded" ? "h-8" : "h-7 px-2")} onClick={onRetry} disabled={retryDisabled}>
+          <RefreshCw className={cn("mr-1", variant === "expanded" ? "h-3.5 w-3.5" : "h-3 w-3")} />{retryLabel}
+        </Button>
+      )}
+      {onViewDetails && (
+        <Button type="button" size="sm" variant="link" className={cn("text-destructive hover:text-destructive/80 px-1", variant === "expanded" ? "h-8" : "h-7")} onClick={onViewDetails} aria-label={`${detailsLabel} do erro`}>
+          <Info className={cn("mr-1", variant === "expanded" ? "h-3.5 w-3.5" : "h-3 w-3")} />{detailsLabel}
+        </Button>
+      )}
+    </div>
+  );
+}
+
 /**
  * Single source of truth for rendering credential/connection errors.
  * Same chip + headline + description + hint + retry button everywhere.
@@ -57,22 +99,17 @@ export function SecretErrorAlert({
   httpStatus,
   latencyMs,
 }: Props) {
-  const showRetry = !!onRetry && error.retryable;
-  const showDetails = !!onViewDetails;
-  const hasStatus = typeof httpStatus === "number" && Number.isFinite(httpStatus);
-  const hasLatency = typeof latencyMs === "number" && Number.isFinite(latencyMs) && latencyMs >= 0;
-  const showMetaRow = hasStatus || hasLatency;
   return (
     <div
       role="alert"
       className={cn(
         "rounded-md border border-destructive/30 bg-destructive/5 animate-in fade-in duration-200",
-        variant === "expanded" ? "p-3 space-y-2" : "px-2.5 py-2 text-xs",
+        (variant === "expanded" ? "p-3 space-y-2" : "px-2.5 py-2 text-xs"),
         className,
       )}
     >
       <div className="flex items-start justify-between gap-2">
-        <div className="flex items-start gap-1.5 text-destructive min-w-0">
+        {(<div className="flex items-start gap-1.5 text-destructive min-w-0">
           <AlertCircle className={cn("shrink-0", variant === "expanded" ? "h-4 w-4 mt-0.5" : "h-3.5 w-3.5 mt-0.5")} />
           <div className="min-w-0 space-y-1">
             <div className="flex items-center gap-1.5 flex-wrap">
@@ -83,34 +120,7 @@ export function SecretErrorAlert({
                 <span className="font-semibold text-foreground text-sm">{error.title}</span>
               )}
             </div>
-            {showMetaRow && (
-              <div className="flex items-center gap-1.5 flex-wrap" aria-label="Métricas do último teste">
-                {hasStatus && (
-                  <span
-                    className={cn(
-                      "inline-flex items-center gap-1 rounded border px-1.5 py-0 text-[10px] font-mono font-semibold",
-                      statusTone(httpStatus as number),
-                    )}
-                    title={`HTTP ${httpStatus}`}
-                  >
-                    <Activity className="h-3 w-3" />
-                    HTTP {httpStatus}
-                  </span>
-                )}
-                {hasLatency && (
-                  <span
-                    className={cn(
-                      "inline-flex items-center gap-1 rounded border px-1.5 py-0 text-[10px] font-mono font-semibold",
-                      latencyTone(latencyMs as number),
-                    )}
-                    title={`Latência total: ${latencyMs} ms`}
-                  >
-                    <Timer className="h-3 w-3" />
-                    {formatLatency(latencyMs as number)}
-                  </span>
-                )}
-              </div>
-            )}
+            <ErrorMetadata httpStatus={httpStatus} latencyMs={latencyMs} />
             <p className="text-destructive break-words leading-snug font-medium">
               {error.description}
             </p>
@@ -120,39 +130,8 @@ export function SecretErrorAlert({
               </p>
             )}
           </div>
-        </div>
-        {(showRetry || showDetails) && (
-          <div className="flex items-center gap-1 shrink-0 flex-wrap justify-end">
-            {showRetry && (
-              <Button
-                size="sm"
-                variant="outline"
-                className={cn(variant === "expanded" ? "h-8" : "h-7 px-2")}
-                onClick={onRetry}
-                disabled={retryDisabled}
-              >
-                <RefreshCw className={cn("mr-1", variant === "expanded" ? "h-3.5 w-3.5" : "h-3 w-3")} />
-                {retryLabel}
-              </Button>
-            )}
-            {showDetails && (
-              <Button
-                type="button"
-                size="sm"
-                variant="link"
-                className={cn(
-                  "text-destructive hover:text-destructive/80 px-1",
-                  variant === "expanded" ? "h-8" : "h-7",
-                )}
-                onClick={onViewDetails}
-                aria-label={`${detailsLabel} do erro`}
-              >
-                <Info className={cn("mr-1", variant === "expanded" ? "h-3.5 w-3.5" : "h-3 w-3")} />
-                {detailsLabel}
-              </Button>
-            )}
-          </div>
-        )}
+        </div>)}
+        <ErrorActions error={error} onRetry={onRetry} retryLabel={retryLabel} retryDisabled={retryDisabled} variant={variant} onViewDetails={onViewDetails} detailsLabel={detailsLabel} />
       </div>
     </div>
   );

@@ -21,6 +21,10 @@ interface Props {
   kitName: string;
 }
 
+function displayKitName(kitName: string) {
+  return kitName.length > 0 ? kitName : 'seu kit';
+}
+
 export function KitShareLinkDialog({ kitId, kitName }: Props) {
   const { generateShareLink, revokeShareLink, isLoading } = useKitShare();
   const [open, setOpen] = useState(false);
@@ -85,7 +89,7 @@ export function KitShareLinkDialog({ kitId, kitName }: Props) {
         <DialogHeader>
           <DialogTitle className="font-display">Compartilhar apresentação</DialogTitle>
           <DialogDescription>
-            Gere um link público de "{kitName || 'seu kit'}" para enviar ao cliente. O link expira em 30 dias e
+            Gere um link público de "{displayKitName(kitName)}" para enviar ao cliente. O link expira em 30 dias e
             esconde preços de custo.
           </DialogDescription>
         </DialogHeader>

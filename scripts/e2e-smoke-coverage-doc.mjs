@@ -73,27 +73,27 @@ function parseCatalog(src) {
 function parseSmokeCoverage(src) {
   const m = src.match(/const\s+SMOKE_COVERAGE\s*=\s*\[([\s\S]*?)\]\s*as const/);
   if (!m) throw new Error("SMOKE_COVERAGE não encontrado em 20-all-features-smoke.spec.ts");
-  return [...m[1].matchAll(/"([^"]+)"/g)].map((x) => x[1]);
+  return [...m[1].matchAll(/"([^"]+)"|'([^']+)'|`([^`]+)`/g)].map(
+    (match) => match[1] ?? match[2] ?? match[3],
+  );
 }
 
 /** Extrai descrições/numeração dos describes públicos do spec (90/91/92). */
 function parsePublicSmokeTests(src) {
-  const re = /test\(\s*"(\d{2})\s*·\s*([^"]+)"/g;
+  const re = /test\(\s*(?:"(\d{2})\s*·\s*([^"]+)"|'(\d{2})\s*·\s*([^']+)'|`(\d{2})\s*·\s*([^`]+)`)/g;
   const tests = [];
   let m;
   while ((m = re.exec(src)) !== null) {
+    const num = m[1] ?? m[3] ?? m[5];
+    const label = m[2] ?? m[4] ?? m[6];
     // 90-98 = smoke público; 99 = governança (ignorado).
-    const n = Number(m[1]);
-    if (n >= 90 && n <= 98) tests.push({ num: m[1], label: m[2] });
+    const n = Number(num);
+    if (n >= 90 && n <= 98) tests.push({ num, label });
   }
   return tests;
 }
 
 /* ── Geração do Markdown ───────────────────────────────────── */
-function badge(area) {
-  return { app: "🟢 app", admin: "🔴 admin", quotes: "🟡 quotes", public: "🌐 public" }[area] ?? area;
-}
-
 function buildMd({ entries, coverage, publicTests }) {
   const byFeat = new Map(entries.filter((e) => e.feature).map((e) => [e.feature, e]));
   const authedRows = coverage.map((feat, i) => {

@@ -13,6 +13,24 @@ interface OptimizedImageProps extends React.ImgHTMLAttributes<HTMLImageElement> 
   showSkeleton?: boolean;
 }
 
+function OptimizedImageSkeleton({ visible }: { visible: boolean }) {
+  if (!visible) return null;
+  return <Skeleton className="absolute inset-0 z-0" />;
+}
+
+function loadingMode(priority: boolean) {
+  return priority ? "eager" : "lazy";
+}
+
+function decodingMode(priority: boolean) {
+  return priority ? "sync" : "async";
+}
+
+function imageVisualClass(loaded: boolean, error: boolean) {
+  const loadClass = loaded ? "opacity-100 scale-100" : "opacity-0 scale-[1.02]";
+  return cn(loadClass, error && "object-center p-4 opacity-50");
+}
+
 /**
  * OptimizedImage — Componente de alta performance para imagens do catálogo.
  * 
@@ -60,22 +78,19 @@ export const OptimizedImage = React.forwardRef<HTMLImageElement, OptimizedImageP
         className={cn("relative overflow-hidden bg-muted/20", className)}
         style={{ aspectRatio }}
       >
-        {showSkeleton && !loaded && !error && (
-          <Skeleton className="absolute inset-0 z-0" />
-        )}
+        <OptimizedImageSkeleton visible={showSkeleton && !loaded && !error} />
 
         <img
           ref={ref}
           src={src}
           srcSet={srcSet}
           sizes={sizes}
-          loading={priority ? "eager" : "lazy"}
-          decoding={priority ? "sync" : "async"}
+          loading={loadingMode(priority)}
+          decoding={decodingMode(priority)}
           {...{ fetchpriority: priority ? "high" : "low" }}
           className={cn(
             "h-full w-full object-contain transition-all duration-500",
-            loaded ? "opacity-100 scale-100" : "opacity-0 scale-[1.02]",
-            error && "object-center p-4 opacity-50"
+            imageVisualClass(loaded, error)
           )}
           onLoad={(e) => {
             setLoaded(true);

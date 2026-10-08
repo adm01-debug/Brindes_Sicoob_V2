@@ -30,70 +30,85 @@ function formatDateTime(value: string | null): string {
   }).format(date);
 }
 
+function ValidityIcon({ expired }: { expired: boolean }) {
+  return expired ? <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0" aria-hidden="true" />
+    : <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0" aria-hidden="true" />;
+}
+
+function CatalogValidityContent({ state, expired, unsaved }: {
+  state: ReorderCatalogState; expired: boolean; unsaved: boolean;
+}) {
+  return <div className="flex items-start gap-3"><ValidityIcon expired={expired} /><div className="space-y-1">
+    <p className="text-sm font-semibold">{expired ? 'Revalide preço e disponibilidade' : 'Consulta atual do catálogo registrada'}</p>
+    <p className="text-xs leading-relaxed opacity-90">Consulta: {formatDateTime(state.catalog_revalidated_at)} · válida até{' '}
+      {formatDateTime(state.catalog_valid_until)}. O saldo exibido é informativo e não reserva estoque no fornecedor.</p>
+    {state.reorder_price_changed_items > 0 && <p className="text-xs font-medium">
+      {state.reorder_price_changed_items} item(ns) mudaram de preço em relação à origem.</p>}
+    {unsaved && <p className="text-xs font-medium">Salve ou descarte as alterações locais antes de reconsultar.</p>}
+  </div></div>;
+}
+
+function RevalidateButton({ loading, disabled, onClick }: { loading: boolean; disabled: boolean; onClick: () => void }) {
+  return <Button type="button" variant="outline" size="sm" className="shrink-0 gap-2 bg-background/80"
+    disabled={loading || disabled} onClick={onClick}>
+    {loading ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> : <RefreshCw className="h-4 w-4" aria-hidden="true" />}
+    {loading ? 'Reconsultando' : 'Reconsultar agora'}
+  </Button>;
+}
+
+function isCatalogExpired(state: ReorderCatalogState | null): boolean {
+  if (!state?.catalog_valid_until) return true;
+  return new Date(state.catalog_valid_until).getTime() <= Date.now();
+}
+
+async function revalidateCatalog(args: {
+  quoteId: string; load: () => Promise<void>; onRevalidated?: () => void | Promise<void>;
+  setRevalidating: (value: boolean) => void;
+}): Promise<void> {
+  args.setRevalidating(true);
+  try {
+    const result = await sicoobOrderService.revalidateReorderQuote(args.quoteId);
+    toast.success('Catálogo reconsultado', { description: result.priceChangedItems > 0
+      ? `${result.priceChangedItems} item(ns) receberam o preço atual. Revise o total antes de continuar.`
+      : 'Preço, mínimo e estoque foram confirmados novamente.' });
+    await args.load();
+    await args.onRevalidated?.();
+  } catch (error) {
+    toast.error('Não foi possível revalidar a recompra', { description: error instanceof Error ? error.message : 'Tente novamente em alguns instantes.' });
+  } finally { args.setRevalidating(false); }
+}
+
+function useCatalogRecord(quoteId?: string) {
+  const [state, setState] = useState<ReorderCatalogState | null>(null);
+  const [loading, setLoading] = useState(Boolean(quoteId));
+  const load = useCallback(async () => {
+    if (!quoteId) { setState(null); setLoading(false); return; }
+    // rls-allow: lookup por id específico; RLS valida ownership e organização do orçamento
+    const { data, error } = await supabase.from('quotes')
+      .select('reorder_source_order_id,reorder_source_quote_id,catalog_revalidated_at,catalog_valid_until,catalog_stock_is_reserved,reorder_price_changed_items')
+      .eq('id', quoteId).maybeSingle();
+    if (!error) setState(data);
+    setLoading(false);
+  }, [quoteId]);
+  useEffect(() => { void load(); }, [load]);
+  const expired = useMemo(() => isCatalogExpired(state), [state]);
+  return { state, loading, load, expired };
+}
+
 export function ReorderCatalogValidityBanner({
   quoteId,
   hasUnsavedChanges = false,
   onRevalidated,
 }: ReorderCatalogValidityBannerProps) {
-  const [state, setState] = useState<ReorderCatalogState | null>(null);
-  const [loading, setLoading] = useState(Boolean(quoteId));
   const [revalidating, setRevalidating] = useState(false);
-
-  const load = useCallback(async () => {
-    if (!quoteId) {
-      setState(null);
-      setLoading(false);
-      return;
-    }
-    const { data, error } = await supabase
-      // rls-allow: lookup por UUID; a RLS preserva o escopo do usuário autenticado.
-      .from('quotes')
-      .select(
-        'reorder_source_order_id,reorder_source_quote_id,catalog_revalidated_at,catalog_valid_until,catalog_stock_is_reserved,reorder_price_changed_items',
-      )
-      .eq('id', quoteId)
-      .maybeSingle();
-    if (error) {
-      setLoading(false);
-      return;
-    }
-    setState(data);
-    setLoading(false);
-  }, [quoteId]);
-
-  useEffect(() => {
-    void load();
-  }, [load]);
-
-  const expired = useMemo(() => {
-    if (!state?.catalog_valid_until) return true;
-    return new Date(state.catalog_valid_until).getTime() <= Date.now();
-  }, [state?.catalog_valid_until]);
+  const { state, loading, load, expired } = useCatalogRecord(quoteId);
 
   if (!quoteId || loading || !state) return null;
   if (!state.reorder_source_order_id && !state.reorder_source_quote_id) return null;
 
   const handleRevalidate = async () => {
     if (hasUnsavedChanges) return;
-    setRevalidating(true);
-    try {
-      const result = await sicoobOrderService.revalidateReorderQuote(quoteId);
-      toast.success('Catálogo reconsultado', {
-        description:
-          result.priceChangedItems > 0
-            ? `${result.priceChangedItems} item(ns) receberam o preço atual. Revise o total antes de continuar.`
-            : 'Preço, mínimo e estoque foram confirmados novamente.',
-      });
-      await load();
-      await onRevalidated?.();
-    } catch (error) {
-      toast.error('Não foi possível revalidar a recompra', {
-        description:
-          error instanceof Error ? error.message : 'Tente novamente em alguns instantes.',
-      });
-    } finally {
-      setRevalidating(false);
-    }
+    await revalidateCatalog({ quoteId, load, onRevalidated, setRevalidating });
   };
 
   return (
@@ -105,48 +120,8 @@ export function ReorderCatalogValidityBanner({
           : 'flex flex-col gap-3 rounded-xl border border-emerald-500/25 bg-emerald-500/10 p-4 text-emerald-900 dark:text-emerald-100 sm:flex-row sm:items-center sm:justify-between'
       }
     >
-      <div className="flex items-start gap-3">
-        {expired ? (
-          <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0" aria-hidden="true" />
-        ) : (
-          <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0" aria-hidden="true" />
-        )}
-        <div className="space-y-1">
-          <p className="text-sm font-semibold">
-            {expired ? 'Revalide preço e disponibilidade' : 'Consulta atual do catálogo registrada'}
-          </p>
-          <p className="text-xs leading-relaxed opacity-90">
-            Consulta: {formatDateTime(state.catalog_revalidated_at)} · válida até{' '}
-            {formatDateTime(state.catalog_valid_until)}. O saldo exibido é informativo e não reserva
-            estoque no fornecedor.
-          </p>
-          {state.reorder_price_changed_items > 0 && (
-            <p className="text-xs font-medium">
-              {state.reorder_price_changed_items} item(ns) mudaram de preço em relação à origem.
-            </p>
-          )}
-          {hasUnsavedChanges && (
-            <p className="text-xs font-medium">
-              Salve ou descarte as alterações locais antes de reconsultar.
-            </p>
-          )}
-        </div>
-      </div>
-      <Button
-        type="button"
-        variant="outline"
-        size="sm"
-        className="shrink-0 gap-2 bg-background/80"
-        disabled={revalidating || hasUnsavedChanges}
-        onClick={handleRevalidate}
-      >
-        {revalidating ? (
-          <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
-        ) : (
-          <RefreshCw className="h-4 w-4" aria-hidden="true" />
-        )}
-        {revalidating ? 'Reconsultando' : 'Reconsultar agora'}
-      </Button>
+      <CatalogValidityContent state={state} expired={expired} unsaved={hasUnsavedChanges} />
+      <RevalidateButton loading={revalidating} disabled={hasUnsavedChanges} onClick={handleRevalidate} />
     </div>
   );
 }

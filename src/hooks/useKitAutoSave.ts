@@ -60,6 +60,49 @@ function isCreatedKitAdoption(
   return currentKitId === persistedKitId && currentScope === `${userId}:new`;
 }
 
+function buildAutoSavePayload(userId: string, kitState: KitState, kitQuantity: number) {
+  return {
+    user_id: userId,
+    name: kitState.name || 'Kit sem nome',
+    status: 'draft' as const,
+    kit_type: kitState.kitType || 'montado',
+    box_data: kitState.box ? JSON.parse(JSON.stringify(kitState.box)) : null,
+    items_data: JSON.parse(JSON.stringify(kitState.items)),
+    personalization_data: JSON.parse(JSON.stringify(kitState.personalization)),
+    kit_quantity: kitQuantity,
+    box_price: kitState.boxPrice,
+    items_price: kitState.itemsPrice,
+    personalization_price: kitState.personalizationPrice,
+    total_price: kitState.totalPrice,
+    volume_usage_percent: kitState.volumeUsagePercent,
+    updated_at: new Date().toISOString(),
+  };
+}
+
+function isEmptyKit(kitState: KitState) {
+  return !kitState.box && kitState.items.length === 0;
+}
+
+async function persistAutoSave(
+  payload: ReturnType<typeof buildAutoSavePayload>,
+  kitId: string | null,
+  userId: string,
+) {
+  if (kitId) {
+    const result = await supabase
+      .from('custom_kits')
+      .update(payload)
+      .eq('id', kitId)
+      .eq('user_id', userId)
+      .select('id')
+      .maybeSingle();
+    requirePersistedKitId(result, 'O kit não foi encontrado ou você não tem permissão para atualizá-lo.');
+    return null;
+  }
+  const result = await supabase.from('custom_kits').insert(payload).select('id').single();
+  return requirePersistedKitId(result, 'O kit não retornou um identificador após o salvamento.');
+}
+
 export function useKitAutoSave(
   kitState: KitState,
   kitQuantity: number,
@@ -81,28 +124,20 @@ export function useKitAutoSave(
   const pendingSavesRef = useRef(0);
   const isFirstRender = useRef(true);
 
+  const adoptCreatedId = useCallback((createdId: string | null) => {
+    if (!createdId) return;
+    kitIdRef.current = createdId;
+    setAutoSavedKitId(createdId);
+    onKitIdCreated?.(createdId);
+  }, [onKitIdCreated]);
+
   const saveToDb = useCallback(async (snapshot: string) => {
     if (!user?.id) return;
 
     // Don't auto-save empty kits
-    if (!kitState.box && kitState.items.length === 0) return;
+    if (isEmptyKit(kitState)) return;
 
-    const payload = {
-      user_id: user.id,
-      name: kitState.name || 'Kit sem nome',
-      status: 'draft' as const,
-      kit_type: kitState.kitType || 'montado',
-      box_data: kitState.box ? JSON.parse(JSON.stringify(kitState.box)) : null,
-      items_data: JSON.parse(JSON.stringify(kitState.items)),
-      personalization_data: JSON.parse(JSON.stringify(kitState.personalization)),
-      kit_quantity: kitQuantity,
-      box_price: kitState.boxPrice,
-      items_price: kitState.itemsPrice,
-      personalization_price: kitState.personalizationPrice,
-      total_price: kitState.totalPrice,
-      volume_usage_percent: kitState.volumeUsagePercent,
-      updated_at: new Date().toISOString(),
-    };
+    const payload = buildAutoSavePayload(user.id, kitState, kitQuantity);
 
     const operationGeneration = scopeGenerationRef.current;
     const operationUserId = user.id;
@@ -114,27 +149,8 @@ export function useKitAutoSave(
     try {
       await previousSave;
       if (operationGeneration !== scopeGenerationRef.current) return;
-      const kitId = kitIdRef.current;
-      if (kitId) {
-        const result = await supabase
-          .from('custom_kits')
-          .update(payload)
-          .eq('id', kitId)
-          .eq('user_id', operationUserId)
-          .select('id')
-          .maybeSingle();
-        requirePersistedKitId(result, 'O kit não foi encontrado ou você não tem permissão para atualizá-lo.');
-      } else {
-        const result = await supabase
-          .from('custom_kits')
-          .insert(payload)
-          .select('id')
-          .single();
-        const createdId = requirePersistedKitId(result, 'O kit não retornou um identificador após o salvamento.');
-        kitIdRef.current = createdId;
-        setAutoSavedKitId(createdId);
-        onKitIdCreated?.(createdId);
-      }
+      const createdId = await persistAutoSave(payload, kitIdRef.current, operationUserId);
+      adoptCreatedId(createdId);
       if (operationGeneration === scopeGenerationRef.current) {
         persistedSnapshotRef.current = snapshot;
         setLastSavedAt(new Date());
@@ -155,7 +171,7 @@ export function useKitAutoSave(
         setIsSaving(pendingSavesRef.current > 0);
       }
     }
-  }, [user?.id, kitState, kitQuantity, onKitIdCreated]);
+  }, [adoptCreatedId, user?.id, kitState, kitQuantity]);
 
   // Create a snapshot hash to detect meaningful changes
   useEffect(() => {

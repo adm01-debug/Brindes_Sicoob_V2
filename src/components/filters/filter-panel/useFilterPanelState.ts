@@ -7,12 +7,10 @@ import { useRamoAtividadeFilter } from "@/hooks/useRamoAtividadeFilter";
 import { useAdvancedFilters, SORT_OPTIONS } from "@/hooks/useAdvancedFilters";
 import type { FilterState, FilterPanelProps } from "./types";
 
-export function useFilterPanelState(
-  filters: FilterState,
-  onFilterChange: FilterPanelProps["onFilterChange"],
-  products: FilterPanelProps["products"] = []
-) {
-  const [openSections, setOpenSections] = useState<string[]>([]);
+type Products = FilterPanelProps["products"];
+type MaterialState = ReturnType<typeof useMaterialFilter>;
+
+function usePanelSearchState(filters: FilterState, onFilterChange: FilterPanelProps["onFilterChange"]) {
   const [materialSearch, setMaterialSearch] = useState('');
   const [ramoSearch, setRamoSearch] = useState('');
   const [supplierSearch, setSupplierSearch] = useState('');
@@ -21,215 +19,162 @@ export function useFilterPanelState(
   const [publicoSearch, setPublicoSearch] = useState('');
   const [endoSearch, setEndoSearch] = useState('');
   const [filterSearch, setFilterSearch] = useState('');
-
   const [localSearch, setLocalSearch] = useState(filters.search);
   const debouncedSearch = useDebounce(localSearch, 500);
-
   useEffect(() => {
-    if (debouncedSearch !== filters.search) {
-      onFilterChange({ ...filters, search: debouncedSearch });
-    }
-  }, [debouncedSearch]);
-
+    if (debouncedSearch !== filters.search) onFilterChange({ ...filters, search: debouncedSearch });
+  }, [debouncedSearch, filters, onFilterChange]);
   useEffect(() => {
-    if (filters.search !== localSearch && filters.search === '') {
-      setLocalSearch('');
-    }
-  }, [filters.search]);
+    if (filters.search === '' && localSearch !== '') setLocalSearch('');
+  }, [filters.search, localSearch]);
+  return { materialSearch, setMaterialSearch, ramoSearch, setRamoSearch, supplierSearch, setSupplierSearch,
+    techniqueSearch, setTechniqueSearch, tagSearch, setTagSearch, publicoSearch, setPublicoSearch,
+    endoSearch, setEndoSearch, filterSearch, setFilterSearch, localSearch, setLocalSearch };
+}
 
-  const { data: categoryIcons = [] } = useCategoryIcons();
+type SearchState = ReturnType<typeof usePanelSearchState>;
 
-  const publicoAlvoOptions = useMemo(() => {
-    const set = new Set<string>();
-    products?.forEach(p => p.tags?.publicoAlvo?.forEach(v => set.add(v)));
-    return [...set].sort((a, b) => a.localeCompare(b));
-  }, [products]);
+function sortedTags(products: Products, key: "publicoAlvo" | "endomarketing") {
+  const values = new Set<string>();
+  for (const product of products ?? []) for (const value of product.tags?.[key] ?? []) values.add(value);
+  return [...values].sort((first, second) => first.localeCompare(second));
+}
 
-  const endomarketingOptions = useMemo(() => {
-    const set = new Set<string>();
-    products?.forEach(p => p.tags?.endomarketing?.forEach(v => set.add(v)));
-    return [...set].sort((a, b) => a.localeCompare(b));
-  }, [products]);
+function incrementCount(counts: Map<string, number>, value: string) {
+  const key = value.toLowerCase();
+  counts.set(key, (counts.get(key) ?? 0) + 1);
+}
 
-  const productCountsByRamo = useMemo(() => {
-    const ramoCounts = new Map<string, number>();
-    const segmentoCounts = new Map<string, number>();
-    products?.forEach(p => {
-      p.tags?.ramo?.forEach(r => {
-        const key = r.toLowerCase();
-        ramoCounts.set(key, (ramoCounts.get(key) || 0) + 1);
-      });
-      p.tags?.nicho?.forEach(n => {
-        const key = n.toLowerCase();
-        segmentoCounts.set(key, (segmentoCounts.get(key) || 0) + 1);
-      });
-    });
-    return { ramoCounts, segmentoCounts };
-  }, [products]);
+function countRamos(products: Products) {
+  const ramoCounts = new Map<string, number>();
+  const segmentoCounts = new Map<string, number>();
+  for (const product of products ?? []) {
+    for (const ramo of product.tags?.ramo ?? []) incrementCount(ramoCounts, ramo);
+    for (const nicho of product.tags?.nicho ?? []) incrementCount(segmentoCounts, nicho);
+  }
+  return { ramoCounts, segmentoCounts };
+}
 
-  const { techniqueOptions, tagOptions } = useAdvancedFilters();
-  const { suppliers: supplierOptions, isLoading: suppliersLoading } = useSuppliers();
+function useProductOptions(products: Products) {
+  const publicoAlvoOptions = useMemo(() => sortedTags(products, "publicoAlvo"), [products]);
+  const endomarketingOptions = useMemo(() => sortedTags(products, "endomarketing"), [products]);
+  const productCountsByRamo = useMemo(() => countRamos(products), [products]);
+  return { publicoAlvoOptions, endomarketingOptions, productCountsByRamo };
+}
 
-  const {
-    groups: materialGroups,
-    materials: allMaterials,
-    isLoading: materialsLoading,
-    filterState: materialFilterState,
-    toggleGroup: toggleMaterialGroup,
-    toggleType: toggleMaterialType,
-    isGroupSelected: isMaterialGroupSelected,
-    getTypesForGroup,
-    clearFilters: clearMaterialFilters,
-  } = useMaterialFilter();
+function selectedMaterialSections(groups: string[], types: string[], materials: MaterialState["materials"]) {
+  const sections = new Set(groups.map(slug => `mat-${slug}`));
+  for (const typeSlug of types) {
+    const item = materials.find(candidate => candidate.type_slug === typeSlug);
+    if (item) sections.add(`mat-${item.group_slug}`);
+  }
+  return sections;
+}
 
-  const {
-    groups: ramoGroups,
-    segmentos: allSegmentos,
-    isLoading: ramosLoading,
-    totalGroups: totalRamoGroups,
-    totalSegmentos: totalRamoSegmentos,
-    getSegmentosForRamo,
-  } = useRamoAtividadeFilter();
-
-  // Sync material sections open state
+function useOpenSections(material: MaterialState) {
+  const [openSections, setOpenSections] = useState<string[]>([]);
+  const selected = useMemo(() => selectedMaterialSections(material.filterState.selectedGroups, material.filterState.selectedTypes, material.materials),
+    [material.filterState.selectedGroups, material.filterState.selectedTypes, material.materials]);
   useEffect(() => {
-    if (materialGroups.length > 0 && (materialFilterState.selectedGroups.length > 0 || materialFilterState.selectedTypes.length > 0)) {
-      const groupsWithSelection = new Set<string>();
-      materialFilterState.selectedGroups.forEach(slug => groupsWithSelection.add(`mat-${slug}`));
-      materialFilterState.selectedTypes.forEach(typeSlug => {
-        const material = allMaterials.find(m => m.type_slug === typeSlug);
-        if (material) groupsWithSelection.add(`mat-${material.group_slug}`);
-      });
-      setOpenSections(prev => {
-        const newSections = [...prev];
-        groupsWithSelection.forEach(section => {
-          if (!newSections.includes(section)) newSections.push(section);
-        });
-        return newSections;
-      });
-    }
-  }, [materialFilterState.selectedGroups, materialFilterState.selectedTypes, materialGroups, allMaterials]);
+    if (material.groups.length === 0) return;
+    if (selected.size === 0) return;
+    setOpenSections(previous => [...new Set([...previous, ...selected])]);
+  }, [material.groups.length, selected]);
+  const toggleSection = useCallback((section: string) => setOpenSections(previous => previous.includes(section) ? previous.filter(item => item !== section) : [...previous, section]), []);
+  const collapseAllSections = useCallback(() => setOpenSections([]), []);
+  return { openSections, toggleSection, collapseAllSections };
+}
 
-  const stableSorted = (arr: string[] | undefined) => [...(arr ?? [])].slice().sort();
-  const prevMaterialFiltersRef = useRef<{ groups: string[]; types: string[] }>({ groups: [], types: [] });
+function sorted(values: string[] | undefined) { return [...(values ?? [])].sort(); }
+function sameValues(first: string[], second: string[]) { return JSON.stringify(sorted(first)) === JSON.stringify(sorted(second)); }
+function filterValues(values: string[] | undefined) { return values ?? []; }
+function materialChanged(groups: string[], types: string[], selectedGroups: string[], selectedTypes: string[]) {
+  return !sameValues(groups, selectedGroups) || !sameValues(types, selectedTypes);
+}
+function externallyReset(groups: string[], types: string[], previous: { groups: string[]; types: string[] }) {
+  return groups.length === 0 && types.length === 0 && (previous.groups.length > 0 || previous.types.length > 0);
+}
+function hasMaterialSelection(groups: string[], types: string[]) { return groups.length > 0 || types.length > 0; }
 
+function useMaterialBridge(filters: FilterState, onFilterChange: FilterPanelProps["onFilterChange"], material: MaterialState) {
+  const previous = useRef<{ groups: string[]; types: string[] }>({ groups: [], types: [] });
+  const { selectedGroups, selectedTypes } = material.filterState;
+  const clearFilters = material.clearFilters;
   useEffect(() => {
-    const currentMaterialGroups = filters.materialGroups || [];
-    const currentMaterialTypes = filters.materialTypes || [];
-    const groupsChanged = JSON.stringify(stableSorted(currentMaterialGroups)) !== JSON.stringify(stableSorted(materialFilterState.selectedGroups));
-    const typesChanged = JSON.stringify(stableSorted(currentMaterialTypes)) !== JSON.stringify(stableSorted(materialFilterState.selectedTypes));
-    if (groupsChanged || typesChanged) {
-      const wasExternallyReset =
-        currentMaterialGroups.length === 0 && currentMaterialTypes.length === 0 &&
-        (prevMaterialFiltersRef.current.groups.length > 0 || prevMaterialFiltersRef.current.types.length > 0);
-      if (wasExternallyReset && (materialFilterState.selectedGroups.length > 0 || materialFilterState.selectedTypes.length > 0)) {
-        clearMaterialFilters();
-      } else {
-        onFilterChange({
-          ...filters,
-          materialGroups: materialFilterState.selectedGroups,
-          materialTypes: materialFilterState.selectedTypes,
-        });
-      }
-    }
-    prevMaterialFiltersRef.current = { groups: currentMaterialGroups, types: currentMaterialTypes };
-  }, [materialFilterState.selectedGroups, materialFilterState.selectedTypes, filters.materialGroups, filters.materialTypes]);
+    const groups = filterValues(filters.materialGroups);
+    const types = filterValues(filters.materialTypes);
+    const changed = materialChanged(groups, types, selectedGroups, selectedTypes);
+    const reset = externallyReset(groups, types, previous.current);
+    const localHasSelection = hasMaterialSelection(selectedGroups, selectedTypes);
+    if (changed && reset && localHasSelection) clearFilters();
+    else if (changed) onFilterChange({ ...filters, materialGroups: selectedGroups, materialTypes: selectedTypes });
+    previous.current = { groups, types };
+  }, [filters, onFilterChange, clearFilters, selectedGroups, selectedTypes]);
+}
 
-  const toggleSection = useCallback((section: string) => {
-    setOpenSections(prev =>
-      prev.includes(section) ? prev.filter(s => s !== section) : [...prev, section]
-    );
-  }, []);
-
+function useFilterActions(filters: FilterState, onFilterChange: FilterPanelProps["onFilterChange"]) {
   const toggleArrayFilter = useCallback((key: keyof FilterState, value: string | number) => {
-    const currentValues = filters[key] as (string | number)[];
-    const newValues = currentValues.includes(value)
-      ? currentValues.filter(v => v !== value)
-      : [...currentValues, value];
-    onFilterChange({ ...filters, [key]: newValues });
+    const current = filters[key] as (string | number)[];
+    const next = current.includes(value) ? current.filter(item => item !== value) : [...current, value];
+    onFilterChange({ ...filters, [key]: next });
   }, [filters, onFilterChange]);
+  const toggleBooleanFilter = useCallback((key: keyof FilterState) => onFilterChange({ ...filters, [key]: !filters[key] }), [filters, onFilterChange]);
+  return { toggleArrayFilter, toggleBooleanFilter };
+}
 
-  const toggleBooleanFilter = useCallback((key: keyof FilterState) => {
-    onFilterChange({ ...filters, [key]: !filters[key] });
-  }, [filters, onFilterChange]);
+function length(values: unknown[] | undefined) { return values?.length ?? 0; }
+function activePrice(filters: FilterState) { return filters.priceRange[0] > 0 || filters.priceRange[1] < 9999; }
+function priceUpperLabel(value: number) { return value >= 9999 ? '∞' : value; }
 
-  const collapseAllSections = useCallback(() => {
-    setOpenSections([]);
-  }, []);
+function buildSectionCounts(filters: FilterState, material: MaterialState) {
+  const quick = [filters.isKit, filters.featured, filters.isNew, filters.hasPersonalization, filters.inStock, filters.hasCommercialPackaging].filter(Boolean).length;
+  return { temas: length(filters.sicoobThemes), "tiragem-minima": Number(Boolean(filters.minQuantity && filters.minQuantity > 0)),
+    cores: length(filters.colorGroups) + length(filters.colorVariations) + length(filters.colorNuances), categorias: length(filters.categories),
+    estoque: Number(filters.minStock > 0), preco: Number(activePrice(filters)), fornecedores: length(filters.suppliers), publico: length(filters.publicoAlvo),
+    "datas-comemorativas": length(filters.datasComemorativas), endomarketing: length(filters.endomarketing),
+    materiais: material.filterState.selectedGroups.length + material.filterState.selectedTypes.length,
+    "ramos-atividade": length(filters.ramosAtividade) + length(filters.segmentosAtividade), tecnicas: length(filters.techniques), tags: length(filters.tags),
+    genero: length(filters.gender), tamanhos: length(filters.sizes), "opcoes-rapidas": quick, ordenacao: Number(filters.sortBy !== 'name') } as Record<string, number>;
+}
 
-  const sectionCounts = useMemo(() => {
-    const colorCount = (filters.colorGroups?.length || 0) + (filters.colorVariations?.length || 0) + (filters.colorNuances?.length || 0);
-    const materialCount = materialFilterState.selectedGroups.length + materialFilterState.selectedTypes.length;
-    const ramoCount = (filters.ramosAtividade?.length || 0) + (filters.segmentosAtividade?.length || 0);
-    const quickCount = [filters.isKit, filters.featured, filters.isNew, filters.hasPersonalization, filters.inStock, filters.hasCommercialPackaging].filter(Boolean).length;
-    return {
-      temas: (filters.sicoobThemes || []).length,
-      "tiragem-minima": filters.minQuantity && filters.minQuantity > 0 ? 1 : 0,
-      cores: colorCount,
-      categorias: filters.categories?.length || 0,
-      estoque: filters.minStock > 0 ? 1 : 0,
-      preco: (filters.priceRange[0] > 0 || filters.priceRange[1] < 9999) ? 1 : 0,
-      fornecedores: filters.suppliers?.length || 0,
-      publico: filters.publicoAlvo?.length || 0,
-      "datas-comemorativas": filters.datasComemorativas?.length || 0,
-      endomarketing: filters.endomarketing?.length || 0,
-      materiais: materialCount,
-      "ramos-atividade": ramoCount,
-      tecnicas: (filters.techniques || []).length,
-      tags: (filters.tags || []).length,
-      genero: (filters.gender || []).length,
-      tamanhos: (filters.sizes || []).length,
-      "opcoes-rapidas": quickCount,
-      ordenacao: filters.sortBy !== 'name' ? 1 : 0,
-    } as Record<string, number>;
-  }, [filters, materialFilterState]);
+function buildSectionSummaries(filters: FilterState) {
+  const summaries: Record<string, string> = {};
+  if (activePrice(filters)) summaries.preco = `R$${filters.priceRange[0]}–${priceUpperLabel(filters.priceRange[1])}`;
+  if (filters.minStock > 0) summaries.estoque = `≥${filters.minStock} un.`;
+  if (filters.minQuantity && filters.minQuantity > 0) summaries["tiragem-minima"] = `≤${filters.minQuantity} un.`;
+  if (filters.sicoobThemes?.length > 0) summaries.temas = `${filters.sicoobThemes.length} sel.`;
+  if (filters.sortBy !== 'name') summaries.ordenacao = SORT_OPTIONS.find(option => option.value === filters.sortBy)?.label || '';
+  return summaries;
+}
 
-  const sectionSummaries = useMemo(() => {
-    const summaries: Record<string, string> = {};
-    if (filters.priceRange[0] > 0 || filters.priceRange[1] < 9999) {
-      summaries.preco = `R$${filters.priceRange[0]}–${filters.priceRange[1] >= 9999 ? '∞' : filters.priceRange[1]}`;
-    }
-    if (filters.minStock > 0) {
-      summaries.estoque = `≥${filters.minStock} un.`;
-    }
-    if (filters.minQuantity && filters.minQuantity > 0) {
-      summaries["tiragem-minima"] = `≤${filters.minQuantity} un.`;
-    }
-    if (filters.sicoobThemes?.length > 0) {
-      summaries.temas = `${filters.sicoobThemes.length} sel.`;
-    }
-    if (filters.sortBy !== 'name') {
-      const opt = SORT_OPTIONS.find(o => o.value === filters.sortBy);
-      summaries.ordenacao = opt?.label || '';
-    }
-    return summaries;
-  }, [filters]);
+function useSectionInfo(filters: FilterState, material: MaterialState, search: SearchState) {
+  const sectionCounts = useMemo(() => buildSectionCounts(filters, material), [filters, material]);
+  const sectionSummaries = useMemo(() => buildSectionSummaries(filters), [filters]);
+  const sectionMatchesSearch = useCallback((id: string, title: string) => {
+    if (!search.filterSearch) return true;
+    const query = search.filterSearch.toLowerCase();
+    return title.toLowerCase().includes(query) || id.toLowerCase().includes(query);
+  }, [search.filterSearch]);
+  return { sectionCounts, sectionSummaries, sectionMatchesSearch };
+}
 
-  const sectionMatchesSearch = useCallback((sectionId: string, sectionTitle: string) => {
-    if (!filterSearch) return true;
-    const q = filterSearch.toLowerCase();
-    return sectionTitle.toLowerCase().includes(q) || sectionId.toLowerCase().includes(q);
-  }, [filterSearch]);
-
-  return {
-    openSections, toggleSection, collapseAllSections,
-    materialSearch, setMaterialSearch,
-    ramoSearch, setRamoSearch,
-    supplierSearch, setSupplierSearch,
-    techniqueSearch, setTechniqueSearch,
-    tagSearch, setTagSearch,
-    publicoSearch, setPublicoSearch,
-    endoSearch, setEndoSearch,
-    filterSearch, setFilterSearch,
-    localSearch, setLocalSearch,
-    categoryIcons,
-    publicoAlvoOptions, endomarketingOptions, productCountsByRamo,
-    techniqueOptions, tagOptions,
-    supplierOptions, suppliersLoading,
-    materialGroups, allMaterials, materialsLoading, materialFilterState,
-    toggleMaterialGroup, toggleMaterialType, isMaterialGroupSelected, getTypesForGroup, clearMaterialFilters,
-    ramoGroups, allSegmentos, ramosLoading, totalRamoGroups, totalRamoSegmentos, getSegmentosForRamo,
-    toggleArrayFilter, toggleBooleanFilter,
-    sectionCounts, sectionSummaries, sectionMatchesSearch,
-  };
+export function useFilterPanelState(filters: FilterState, onFilterChange: FilterPanelProps["onFilterChange"], products: Products = []) {
+  const search = usePanelSearchState(filters, onFilterChange);
+  const productOptions = useProductOptions(products);
+  const { data: categoryIcons = [] } = useCategoryIcons();
+  const advanced = useAdvancedFilters();
+  const suppliers = useSuppliers();
+  const material = useMaterialFilter();
+  const ramo = useRamoAtividadeFilter();
+  const sections = useOpenSections(material);
+  useMaterialBridge(filters, onFilterChange, material);
+  const actions = useFilterActions(filters, onFilterChange);
+  const sectionInfo = useSectionInfo(filters, material, search);
+  return { ...sections, ...search, categoryIcons, ...productOptions, techniqueOptions: advanced.techniqueOptions, tagOptions: advanced.tagOptions,
+    supplierOptions: suppliers.suppliers, suppliersLoading: suppliers.isLoading, materialGroups: material.groups, allMaterials: material.materials,
+    materialsLoading: material.isLoading, materialFilterState: material.filterState, toggleMaterialGroup: material.toggleGroup,
+    toggleMaterialType: material.toggleType, isMaterialGroupSelected: material.isGroupSelected, getTypesForGroup: material.getTypesForGroup,
+    clearMaterialFilters: material.clearFilters, ramoGroups: ramo.groups, allSegmentos: ramo.segmentos, ramosLoading: ramo.isLoading,
+    totalRamoGroups: ramo.totalGroups, totalRamoSegmentos: ramo.totalSegmentos, getSegmentosForRamo: ramo.getSegmentosForRamo,
+    ...actions, ...sectionInfo };
 }

@@ -44,7 +44,10 @@ export function MiniConfetti({
       const newPieces: ConfettiPiece[] = Array.from({ length: count }, (_, i) => ({
         id: i,
         x: Math.random() * 100 - 50,
-        color: colors[Math.floor(Math.random() * colors.length)],
+        color:
+          colors[Math.floor(Math.random() * colors.length)] ??
+          defaultColors[0] ??
+          "hsl(var(--primary))",
         delay: Math.random() * 0.2,
         rotation: Math.random() * 360,
         size: Math.random() * 6 + 4,
@@ -59,7 +62,7 @@ export function MiniConfetti({
 
       return () => clearTimeout(timer);
     }
-  }, [trigger, count, duration, colors, onComplete, isActive]);
+  }, [trigger, count, duration, colors, onComplete, isActive, reducedMotion]);
 
   return (
     <div className="pointer-events-none fixed inset-0 z-50 overflow-hidden">

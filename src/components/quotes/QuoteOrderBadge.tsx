@@ -21,28 +21,23 @@ interface LinkedOrder {
   created_at: string;
 }
 
-export function QuoteOrderBadge({ quoteId, silent = true }: QuoteOrderBadgeProps) {
-  const navigate = useNavigate();
+function useLinkedOrder(quoteId: string): LinkedOrder | null {
   const [order, setOrder] = useState<LinkedOrder | null>(null);
-
   useEffect(() => {
     if (!quoteId) return;
     let cancelled = false;
-    (async () => {
-      const { data } = await supabase
-        // rls-allow: lookup por id específico; RLS valida ownership
-        .from("orders")
-        .select("id, order_number, created_at")
-        .eq("quote_id", quoteId)
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .maybeSingle();
-      if (!cancelled && data) setOrder(data as LinkedOrder);
-    })();
-    return () => {
-      cancelled = true;
-    };
+    // rls-allow: lookup por quote_id; RLS valida o vendedor e a organização do pedido
+    void supabase.from("orders").select("id, order_number, created_at").eq("quote_id", quoteId)
+      .order("created_at", { ascending: false }).limit(1).maybeSingle()
+      .then(({ data }) => { if (!cancelled && data) setOrder(data as LinkedOrder); });
+    return () => { cancelled = true; };
   }, [quoteId]);
+  return order;
+}
+
+export function QuoteOrderBadge({ quoteId, silent = true }: QuoteOrderBadgeProps) {
+  const navigate = useNavigate();
+  const order = useLinkedOrder(quoteId);
 
   if (!order) return silent ? null : null;
 

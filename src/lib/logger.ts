@@ -9,6 +9,7 @@
  */
 
 const isDev = import.meta.env.DEV;
+const browserConsole = globalThis.console;
 
 type LogLevel = 'debug' | 'info' | 'warn' | 'error';
 
@@ -40,21 +41,21 @@ export const logger = {
   debug(message: string, ...args: unknown[]): void {
     if (isDev) {
       const entry = formatEntry('debug', message, extractData(args));
-      console.debug(`[DEBUG] ${entry.timestamp}`, message, ...args);
+      browserConsole.debug(`[DEBUG] ${entry.timestamp}`, message, ...args);
     }
   },
 
   log(message: string, ...args: unknown[]): void {
     if (isDev) {
       const entry = formatEntry('info', message, extractData(args));
-      console.log(`[LOG] ${entry.timestamp}`, message, ...args);
+      browserConsole.log(`[LOG] ${entry.timestamp}`, message, ...args);
     }
   },
 
   info(message: string, ...args: unknown[]): void {
     if (isDev) {
       const entry = formatEntry('info', message, extractData(args));
-      console.info(`[INFO] ${entry.timestamp}`, message, ...args);
+      browserConsole.info(`[INFO] ${entry.timestamp}`, message, ...args);
     }
   },
 

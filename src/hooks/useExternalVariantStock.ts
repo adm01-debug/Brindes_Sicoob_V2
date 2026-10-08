@@ -18,6 +18,58 @@ export interface ExternalVariantStock {
   bitrix_product_id: string | number | null;
 }
 
+interface VariantImageRow {
+  id: string;
+  variant_id: string | null;
+  supplier_code: string | null;
+  url_cdn: string | null;
+  is_og_image: boolean | null;
+  is_primary: boolean | null;
+  image_type: string | null;
+}
+
+function indexImageVariant(image: VariantImageRow, index: Map<string, string>) {
+  if (!image.variant_id || !image.url_cdn) return;
+  if (!index.has(image.variant_id) || image.is_og_image) index.set(image.variant_id, image.url_cdn);
+}
+
+function indexImageCode(image: VariantImageRow, index: Map<string, string>) {
+  if (!image.supplier_code || !image.url_cdn) return;
+  const code = image.supplier_code.toUpperCase();
+  if (!index.has(code) || image.is_og_image) index.set(code, image.url_cdn);
+}
+
+function indexVariantImages(images: VariantImageRow[]) {
+  const byCode = new Map<string, string>();
+  const byVariantId = new Map<string, string>();
+  const primary = new Set<string>();
+  for (const image of images) {
+    if (!image.url_cdn || image.image_type === 'box') continue;
+    if (image.is_primary || image.is_og_image) primary.add(image.url_cdn);
+    indexImageVariant(image, byVariantId);
+    indexImageCode(image, byCode);
+  }
+  return { byCode, byVariantId, primary };
+}
+
+function withVariantThumbnail(
+  variant: ExternalVariantStock,
+  images: ReturnType<typeof indexVariantImages>,
+): ExternalVariantStock {
+  const variantImage = images.byVariantId.get(variant.id) || null;
+  const colorImage = variant.color_code ? images.byCode.get(variant.color_code.toUpperCase()) : null;
+  const selectedImage = variant.selected_thumbnail && !images.primary.has(variant.selected_thumbnail)
+    ? variant.selected_thumbnail
+    : null;
+  return {
+    ...variant,
+    next_entry_date: null,
+    next_entry_quantity: null,
+    selected_thumbnail: variantImage || colorImage || selectedImage || null,
+    images: variant.images as string[] | null,
+  };
+}
+
 /**
  * Hook to fetch product variants with optimized selective field loading.
  * Parallelizes variant and image fetching for maximum performance.
@@ -38,15 +90,7 @@ export function useExternalVariantStock(productId: string | undefined) {
           filters: { product_id: productId, is_active: true },
           limit: 100,
         }),
-        invokeExternalDb<{
-          id: string;
-          variant_id: string | null;
-          supplier_code: string | null;
-          url_cdn: string | null;
-          is_og_image: boolean | null;
-          is_primary: boolean | null;
-          image_type: string | null;
-        }>({
+        invokeExternalDb<VariantImageRow>({
           table: 'product_images',
           operation: 'select',
           select: 'id, variant_id, supplier_code, url_cdn, is_og_image, is_primary, image_type',
@@ -55,49 +99,8 @@ export function useExternalVariantStock(productId: string | undefined) {
         }),
       ]);
 
-      // Index images for fast lookup
-      const imagesByCode = new Map<string, string>();
-      const imagesByVariantId = new Map<string, string>();
-      const primaryImages = new Set<string>();
-
-      for (const img of imagesResult.records ?? []) {
-        if (!img.url_cdn) continue;
-        if (img.image_type === 'box') continue;
-
-        if (img.is_primary || img.is_og_image) {
-          primaryImages.add(img.url_cdn);
-        }
-
-        if (img.variant_id) {
-          if (!imagesByVariantId.has(img.variant_id) || img.is_og_image) {
-            imagesByVariantId.set(img.variant_id, img.url_cdn);
-          }
-        }
-
-        if (img.supplier_code) {
-          const code = img.supplier_code.toUpperCase();
-          if (!imagesByCode.has(code) || img.is_og_image) {
-            imagesByCode.set(code, img.url_cdn);
-          }
-        }
-      }
-
-      return (variantsResult.records ?? []).map(v => {
-        const variantImage = imagesByVariantId.get(v.id) || null;
-        const colorImage = v.color_code ? imagesByCode.get(v.color_code.toUpperCase()) : null;
-        const isMainImage = v.selected_thumbnail ? primaryImages.has(v.selected_thumbnail) : false;
-        const validSelectedThumb = v.selected_thumbnail && !isMainImage ? v.selected_thumbnail : null;
-        
-        const thumbnail = variantImage || colorImage || validSelectedThumb || null;
-
-        return {
-          ...v,
-          next_entry_date: null,
-          next_entry_quantity: null,
-          selected_thumbnail: thumbnail,
-          images: v.images as string[] | null,
-        };
-      });
+      const images = indexVariantImages(imagesResult.records ?? []);
+      return (variantsResult.records ?? []).map((variant) => withVariantThumbnail(variant, images));
     },
     enabled: !!productId,
     staleTime: 5 * 60 * 1000,

@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo, useRef, useEffect, useSyncExternalStore } from 'react';
+import { useState, useCallback, useMemo, useEffect, useSyncExternalStore } from 'react';
 import {
   getBridgeSamples,
   subscribeBridgeCalls,

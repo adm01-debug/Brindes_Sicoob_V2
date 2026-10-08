@@ -17,6 +17,32 @@ interface Props {
   clientPhone?: string | null;
 }
 
+function buildReactivationHook(favorite: ReturnType<typeof useClientCategoryAffinity>["favorite"], daysSinceLastOrder: number | null): string | null {
+  if (!favorite || daysSinceLastOrder === null) return null;
+  return `Última categoria forte: "${favorite.label}" (${favorite.revenueSharePct.toFixed(0)}% do histórico) — gancho natural de reativação.`;
+}
+
+function buildWhatsappMessage(clientName: string, favoriteLabel?: string): string {
+  if (favoriteLabel) {
+    return `Olá ${clientName}! Tudo bem? Faz um tempo que não conversamos — preparei novidades em ${favoriteLabel} para você.`;
+  }
+  return `Olá ${clientName}! Tudo bem? Faz um tempo que não conversamos — preparei algumas novidades para você.`;
+}
+
+function getRiskTheme(isHigh: boolean) {
+  return isHigh
+    ? {
+        card: "border-red-500/40 bg-gradient-to-r from-red-500/10 via-red-500/5 to-transparent",
+        icon: "bg-red-500/20 text-red-600 dark:text-red-400",
+        badge: "bg-red-500/15 text-red-700 dark:text-red-300",
+      }
+    : {
+        card: "border-amber-500/40 bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent",
+        icon: "bg-amber-500/20 text-amber-600 dark:text-amber-400",
+        badge: "bg-amber-500/15 text-amber-700 dark:text-amber-300",
+      };
+}
+
 export function ChurnRiskBanner({ clientId, clientName, clientPhone }: Props) {
   const risk = useChurnRisk(clientId);
   const cats = useClientCategoryAffinity(clientId);
@@ -24,25 +50,21 @@ export function ChurnRiskBanner({ clientId, clientName, clientPhone }: Props) {
 
   const isHigh = risk.severity === "high";
   const favorite = cats.favorite;
-  const reactivationHook =
-    favorite && risk.daysSinceLastOrder != null
-      ? `Última categoria forte: "${favorite.label}" (${favorite.revenueSharePct.toFixed(0)}% do histórico) — gancho natural de reativação.`
-      : null;
+  const reactivationHook = buildReactivationHook(favorite, risk.daysSinceLastOrder);
+  const theme = getRiskTheme(isHigh);
 
   return (
     <Card
       className={cn(
         "border-[1.5px] overflow-hidden",
-        isHigh
-          ? "border-red-500/40 bg-gradient-to-r from-red-500/10 via-red-500/5 to-transparent"
-          : "border-amber-500/40 bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent",
+        theme.card,
       )}
     >
       <CardContent className="p-4 flex items-start gap-3 flex-wrap">
         <div
           className={cn(
             "h-10 w-10 rounded-xl flex items-center justify-center shrink-0",
-            isHigh ? "bg-red-500/20 text-red-600 dark:text-red-400" : "bg-amber-500/20 text-amber-600 dark:text-amber-400",
+            theme.icon,
           )}
         >
           <AlertTriangle className="h-5 w-5" />
@@ -56,9 +78,7 @@ export function ChurnRiskBanner({ clientId, clientName, clientPhone }: Props) {
               variant="outline"
               className={cn(
                 "text-[10px] border-0",
-                isHigh
-                  ? "bg-red-500/15 text-red-700 dark:text-red-300"
-                  : "bg-amber-500/15 text-amber-700 dark:text-amber-300",
+                theme.badge,
               )}
             >
               {isHigh ? "ALTA" : "MÉDIA"}
@@ -85,11 +105,7 @@ export function ChurnRiskBanner({ clientId, clientName, clientPhone }: Props) {
             asChild
           >
             <a
-              href={`https://wa.me/${clientPhone.replace(/\D/g, "")}?text=${encodeURIComponent(
-                favorite
-                  ? `Olá ${clientName}! Tudo bem? Faz um tempo que não conversamos — preparei novidades em ${favorite.label} para você.`
-                  : `Olá ${clientName}! Tudo bem? Faz um tempo que não conversamos — preparei algumas novidades para você.`,
-              )}`}
+              href={`https://wa.me/${clientPhone.replace(/\D/g, "")}?text=${encodeURIComponent(buildWhatsappMessage(clientName, favorite?.label))}`}
               target="_blank"
               rel="noopener noreferrer"
             >
@@ -102,4 +118,3 @@ export function ChurnRiskBanner({ clientId, clientName, clientPhone }: Props) {
     </Card>
   );
 }
-

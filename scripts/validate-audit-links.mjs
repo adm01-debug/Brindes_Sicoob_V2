@@ -1,5 +1,4 @@
 import fs from 'fs';
-import { execSync } from 'child_process';
 
 /**
  * Enterprise Evidence Link Validator

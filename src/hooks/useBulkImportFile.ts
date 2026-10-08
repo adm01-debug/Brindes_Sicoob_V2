@@ -2,7 +2,7 @@
  * useBulkImportFile — Encapsulates file parsing, column mapping, and data transformation
  * for the BulkImportPanel component.
  */
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, type ChangeEvent, type DragEvent } from 'react';
 import { PRODUCT_FIELDS, type BulkImportRow, type ColumnMapping } from '@/hooks/useProductRegistration';
 
 const getXLSX = () => import('@e965/xlsx');
@@ -124,12 +124,12 @@ export function useBulkImportFile() {
     });
   }, [parsedData, columnMappings]);
 
-  const handleFileSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = useCallback((e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) parseFile(file);
   }, [parseFile]);
 
-  const handleDrop = useCallback((e: React.DragEvent) => {
+  const handleDrop = useCallback((e: DragEvent) => {
     e.preventDefault();
     setIsDragging(false);
     const file = e.dataTransfer.files?.[0];

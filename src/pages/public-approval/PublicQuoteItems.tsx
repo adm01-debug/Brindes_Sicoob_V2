@@ -4,7 +4,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Package, DollarSign, Truck, Palette, Sparkles } from "lucide-react";
+import { Package, Truck, Palette, Sparkles } from "lucide-react";
+import type { QuoteItem } from "@/hooks/quotes/quoteTypes";
 
 const SHIPPING_LABELS: Record<string, string> = {
   cif: "CIF (incluso)",
@@ -17,14 +18,14 @@ function formatCurrency(value: number) {
   return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value);
 }
 
-function calcPersTotal(item: any) {
+function calcPersTotal(item: QuoteItem) {
   return (item.personalizations || []).reduce(
-    (sum: number, p: any) => sum + (p.total_cost || 0), 0
+    (sum, p) => sum + (p.total_cost || 0), 0
   );
 }
 
 interface PublicQuoteItemsProps {
-  items: any[];
+  items: QuoteItem[];
 }
 
 export function PublicQuoteItemsList({ items }: PublicQuoteItemsProps) {
@@ -37,7 +38,7 @@ export function PublicQuoteItemsList({ items }: PublicQuoteItemsProps) {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
-        {items.map((item: any, idx: number) => (
+        {items.map((item, idx) => (
           <div key={item.id || idx} className="flex gap-3 py-3 border-b border-border/50 last:border-0">
             {item.product_image_url && (
               <img src={item.product_image_url} alt={item.product_name} className="w-16 h-16 object-cover rounded-lg border border-border/50" loading="lazy" />
@@ -55,9 +56,9 @@ export function PublicQuoteItemsList({ items }: PublicQuoteItemsProps) {
                   </Badge>
                 )}
               </div>
-              {item.personalizations?.length > 0 && (
+              {(item.personalizations?.length ?? 0) > 0 && (
                 <div className="mt-2 space-y-1">
-                  {item.personalizations.map((p: any, pIdx: number) => (
+                  {item.personalizations?.map((p, pIdx) => (
                     <div key={pIdx} className="flex items-center gap-2 text-xs text-muted-foreground bg-muted/30 rounded px-2 py-1">
                       <Sparkles className="h-3 w-3 text-primary shrink-0" />
                       <span>{p.technique_name || "Personalização"}</span>

@@ -90,11 +90,8 @@ export interface CatalogProduct {
   name: string;
   sku: string | null;
   sale_price: number | null;
-  base_price?: number | null;
   primary_image_url: string | null;
-  image_url?: string | null;
   is_active: boolean | null;
-  active?: boolean | null;
   stock_quantity: number | null;
   min_quantity: number | null;
   min_order_quantity?: number | null;
@@ -170,7 +167,7 @@ export function buildVerifiedReorderItems(
 
   const resolved: ResolvedItem[] = items.map((source) => {
     const product = source.product_id ? productsById.get(source.product_id) : undefined;
-    if (!product || product.is_active === false || product.active === false) {
+    if (!product || product.is_active === false) {
       throw new ReorderValidationError(`O produto “${source.product_name}” não está mais disponível no catálogo.`);
     }
     assertCatalogPriceFreshness(product, checkedAt);
@@ -186,7 +183,7 @@ export function buildVerifiedReorderItems(
       Number(product.min_order_quantity ?? 1),
     );
     const stock = Number(variant ? variant.stock_quantity : product.stock_quantity);
-    const price = Number(variant?.sale_price ?? product.sale_price ?? product.base_price ?? 0);
+    const price = Number(variant?.sale_price ?? product.sale_price ?? 0);
     const historicalPrice = source.unit_price == null ? null : Number(source.unit_price);
     if (!Number.isInteger(quantity) || quantity <= 0) throw new ReorderValidationError(`A quantidade de “${product.name}” é inválida.`);
     if (!Number.isFinite(price) || price <= 0) throw new ReorderValidationError(`O produto “${product.name}” está sem preço vigente.`);
@@ -233,7 +230,7 @@ export function buildVerifiedReorderItems(
     product_id: product.id,
     product_sku: variant?.sku || product.sku,
     product_name: product.name,
-    product_image_url: variant?.selected_thumbnail || product.primary_image_url || product.image_url || null,
+    product_image_url: variant?.selected_thumbnail || product.primary_image_url || null,
     quantity,
     unit_price: price,
     minimum_quantity: minimum,

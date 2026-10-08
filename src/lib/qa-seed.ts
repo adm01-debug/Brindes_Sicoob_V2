@@ -1,5 +1,4 @@
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
 import { createClientLogger } from "@/lib/telemetry/structuredLogger";
 
 const log = createClientLogger("qa-seed");
@@ -8,14 +7,6 @@ const log = createClientLogger("qa-seed");
  * Script de Seed QA para provisionamento de contas e cenários (§0-bis).
  * Executável via console ou gatilho administrativo.
  */
-
-const QA_PASSWORD = "Qa@Test2026";
-const QA_ACCOUNTS = [
-  { email: "qa+gerente@sicoob.test", role: "gerente_pa" },
-  { email: "qa+gestor@sicoob.test", role: "gestor_singular" },
-  { email: "qa+vendedor@sicoob.test", role: "vendedor" },
-  { email: "qa+admin@sicoob.test", role: "admin" },
-];
 
 export async function runQaSeed(scenario?: string) {
   log.info("started", { scenario });

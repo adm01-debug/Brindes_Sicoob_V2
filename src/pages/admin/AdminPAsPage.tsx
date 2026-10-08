@@ -4,21 +4,26 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Plus, Search, Pencil, Trash2, MapPin, Building, UserCircle, MapPinned } from "lucide-react";
+import { Plus, Search, Pencil, Trash2, MapPin, Building, MapPinned } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import type { Tables, TablesInsert } from "@/integrations/supabase/types";
+
+type PaRow = Tables<"postos_atendimento"> & { cooperativas: Pick<Tables<"cooperativas">, "nome" | "codigo"> | null };
+type SingularOption = Pick<Tables<"cooperativas">, "id" | "nome" | "codigo">;
+type PaFormData = TablesInsert<"postos_atendimento">;
 
 export default function AdminPAsPage() {
-  const [pas, setPas] = useState<any[]>([]);
-  const [singulares, setSingulares] = useState<any[]>([]);
+  const [pas, setPas] = useState<PaRow[]>([]);
+  const [singulares, setSingulares] = useState<SingularOption[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [isFormOpen, setIsFormOpen] = useState(false);
-  const [editingPa, setEditingPa] = useState<any>(null);
+  const [editingPa, setEditingPa] = useState<PaRow | null>(null);
 
   const fetchData = async () => {
     setIsLoading(true);
@@ -47,17 +52,14 @@ export default function AdminPAsPage() {
 
   useEffect(() => { fetchData(); }, []);
 
-  const handleSave = async (formData: any) => {
+  const handleSave = async (formData: PaFormData) => {
     try {
-      const dataToSave = { ...formData };
-      delete dataToSave.cooperativas; // Remove joined data
-
       if (editingPa) {
-        const { error } = await supabase.from('postos_atendimento').update(dataToSave).eq('id', editingPa.id);
+        const { error } = await supabase.from('postos_atendimento').update(formData).eq('id', editingPa.id);
         if (error) throw error;
         toast.success("PA atualizado com sucesso");
       } else {
-        const { error } = await supabase.from('postos_atendimento').insert(dataToSave);
+        const { error } = await supabase.from('postos_atendimento').insert(formData);
         if (error) throw error;
         toast.success("PA criado com sucesso");
       }
@@ -178,13 +180,21 @@ export default function AdminPAsPage() {
 }
 
 
-function PAFormDialog({ open, onOpenChange, pa, onSave, singulares }: any) {
-  const [formData, setFormData] = useState<any>({ nome: '', codigo: '', cooperativa_id: null, endereco: '', cidade: '', uf: '', is_active: true });
+interface PaFormDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  pa: PaRow | null;
+  onSave: (formData: PaFormData) => Promise<void>;
+  singulares: SingularOption[];
+}
+
+function PAFormDialog({ open, onOpenChange, pa, onSave, singulares }: PaFormDialogProps) {
+  const [formData, setFormData] = useState<PaFormData>({ nome: '', codigo: '', cooperativa_id: '', endereco: '', cidade: '', uf: '', is_active: true });
   const [isSaving, setIsSaving] = useState(false);
 
-  useEffect(() => { 
-    if (pa) setFormData(pa); 
-    else setFormData({ nome: '', codigo: '', cooperativa_id: singulares[0]?.id || null, endereco: '', cidade: '', uf: '', is_active: true }); 
+  useEffect(() => {
+    if (pa) setFormData(pa);
+    else setFormData({ nome: '', codigo: '', cooperativa_id: singulares[0]?.id || '', endereco: '', cidade: '', uf: '', is_active: true });
   }, [pa, open, singulares]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -225,7 +235,7 @@ function PAFormDialog({ open, onOpenChange, pa, onSave, singulares }: any) {
             <Select value={formData.cooperativa_id || ""} onValueChange={(val) => setFormData({ ...formData, cooperativa_id: val })}>
               <SelectTrigger className="rounded-xl h-11"><SelectValue placeholder="Selecione a Singular" /></SelectTrigger>
               <SelectContent>
-                {singulares.map((s: any) => <SelectItem key={s.id} value={s.id}>{s.nome} ({s.codigo})</SelectItem>)}
+                {singulares.map((s) => <SelectItem key={s.id} value={s.id}>{s.nome} ({s.codigo})</SelectItem>)}
               </SelectContent>
             </Select>
           </div>
@@ -233,17 +243,17 @@ function PAFormDialog({ open, onOpenChange, pa, onSave, singulares }: any) {
           <div className="grid grid-cols-3 gap-4">
             <div className="col-span-2 space-y-2">
               <Label htmlFor="cidade" className="text-xs font-bold uppercase">Cidade</Label>
-              <Input id="cidade" value={formData.cidade} onChange={(e) => setFormData({ ...formData, cidade: e.target.value })} className="rounded-xl" />
+              <Input id="cidade" value={formData.cidade ?? ""} onChange={(e) => setFormData({ ...formData, cidade: e.target.value })} className="rounded-xl" />
             </div>
             <div className="space-y-2">
               <Label htmlFor="uf" className="text-xs font-bold uppercase">UF</Label>
-              <Input id="uf" maxLength={2} value={formData.uf} onChange={(e) => setFormData({ ...formData, uf: e.target.value.toUpperCase() })} className="rounded-xl" />
+              <Input id="uf" maxLength={2} value={formData.uf ?? ""} onChange={(e) => setFormData({ ...formData, uf: e.target.value.toUpperCase() })} className="rounded-xl" />
             </div>
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="endereco" className="text-xs font-bold uppercase">Endereço Completo</Label>
-            <Input id="endereco" value={formData.endereco} onChange={(e) => setFormData({ ...formData, endereco: e.target.value })} className="rounded-xl" />
+            <Input id="endereco" value={formData.endereco ?? ""} onChange={(e) => setFormData({ ...formData, endereco: e.target.value })} className="rounded-xl" />
           </div>
 
           <div className="flex items-center gap-2 bg-muted/30 p-4 rounded-xl">

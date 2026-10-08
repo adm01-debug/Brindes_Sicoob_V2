@@ -68,9 +68,11 @@ function assertRlsBlocked(error: { code?: string; message?: string } | null) {
   const blocked =
     code === "42501" || // insufficient_privilege
     code === "PGRST301" || // RLS denial via PostgREST
+    code === "P0001" || // trigger guard_mcp_api_keys_writes
     msg.includes("row-level security") ||
     msg.includes("violates row-level security") ||
     msg.includes("permission denied") ||
+    msg.includes("direct writes") ||
     msg.includes("policy");
   assert(
     blocked,
@@ -188,11 +190,15 @@ Deno.test({
 
 Deno.test({
   name: "mcp_api_keys: service_role consegue INSERT/UPDATE/DELETE (caminho das edge functions)",
-  ignore: !hasService,
+  ignore: !hasService || !hasAnon || !hasJwtCreds,
   fn: async () => {
     const client = serviceClient();
+    const actorClient = await authedClient();
+    const { data: actorData, error: actorError } = await actorClient.auth.getUser();
+    assertEquals(actorError, null, `falha ao obter ator do teste: ${actorError?.message}`);
+    assert(actorData.user?.id, "ator autenticado deve possuir id");
     const probeName = `rls-test-service-${crypto.randomUUID()}`;
-    const fakeHash = "f".repeat(64);
+    const fakeHash = crypto.randomUUID().replaceAll("-", "").repeat(2);
 
     // INSERT
     const { data: inserted, error: insertErr } = await client
@@ -202,6 +208,7 @@ Deno.test({
         key_hash: fakeHash,
         key_prefix: "mcp_test",
         scopes: ["read"],
+        created_by: actorData.user.id,
       })
       .select("id")
       .single();
@@ -221,5 +228,6 @@ Deno.test({
       .delete()
       .eq("id", inserted!.id);
     assertEquals(deleteErr, null, `service_role DELETE falhou: ${deleteErr?.message}`);
+    await actorClient.auth.signOut();
   },
 });

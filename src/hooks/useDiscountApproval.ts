@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { logRlsDenial } from "@/lib/security/rls-denial-logger";
+import type { PostgrestError } from "@supabase/supabase-js";
 
 export interface DiscountApprovalRequest {
   id: string;
@@ -36,6 +37,183 @@ export interface DiscountApprovalWithQuote extends DiscountApprovalRequest {
   };
 }
 
+interface ApprovalRpcRow {
+  request_id: string;
+  max_allowed_percent: number;
+  negotiation_markup_percent: number | null;
+  real_discount_percent: number;
+}
+
+interface DecisionRpcRow {
+  seller_id: string;
+  requested_discount_percent: number;
+  quote_id: string;
+}
+
+async function requireApprovalRow(
+  result: ApprovalRpcRow[] | null,
+  error: PostgrestError | null,
+  quoteId: string,
+  ...request: [userId: string, requestedPercent: number]
+) {
+  const [userId, requestedPercent] = request;
+  if (error) {
+    await logRlsDenial(error, {
+      table: "discount_approval_requests", op: "INSERT",
+      endpoint: "useDiscountApproval.requestApproval",
+      targetId: quoteId,
+      targetSellerId: userId,
+      policyHint: "request_discount_approval_atomic",
+      querySummary: `requestedPct=${requestedPercent}`,
+    });
+  }
+  if (error || result?.length !== 1 || !result[0]) {
+    throw error ?? new Error("A solicitação de desconto não foi confirmada.");
+  }
+  return result[0];
+}
+
+async function notifyAdminsOfApprovalRequest(
+  userId: string,
+  quoteId: string,
+  requestedPercent: number,
+  approval: ApprovalRpcRow,
+) {
+  const authoritativeLimit = Number(approval.max_allowed_percent);
+  const markup = Number(approval.negotiation_markup_percent ?? 0);
+  await logNegotiationMarkup(userId, quoteId, approval, markup, authoritativeLimit);
+  const { data: admins, error: rolesError } = await supabase
+    .from("user_roles")
+    .select("user_id")
+    .eq("role", "admin");
+  if (rolesError) throw rolesError;
+  if (!admins?.length) return;
+  const { data: profile, error: profileError } = await supabase
+    .from("profiles")
+    .select("full_name")
+    .eq("user_id", userId)
+    .maybeSingle();
+  if (profileError) throw profileError;
+  const sellerName = profile?.full_name || "Vendedor";
+  const message = approvalRequestMessage(sellerName, requestedPercent, markup, authoritativeLimit);
+  const { error } = await supabase.from("workspace_notifications").insert(
+    admins.map((admin) => ({
+      user_id: admin.user_id,
+      title: "Solicitação de desconto",
+      message,
+      type: "warning",
+      category: "discount",
+      action_url: "/admin/usuarios?tab=discounts",
+    })),
+  );
+  if (error) throw error;
+}
+
+async function logNegotiationMarkup(
+  userId: string,
+  quoteId: string,
+  approval: ApprovalRpcRow,
+  ...pricing: [markup: number, authoritativeLimit: number]
+) {
+  const [markup, authoritativeLimit] = pricing;
+  if (markup <= 0) return;
+  const { error } = await supabase.from("admin_audit_log").insert({
+    user_id: userId,
+    action: "quote_negotiation_markup_applied",
+    resource_type: "quote",
+    resource_id: quoteId,
+    details: {
+      negotiation_markup_percent: markup,
+      real_discount_percent: approval.real_discount_percent,
+      max_allowed_percent: authoritativeLimit,
+      request_id: approval.request_id,
+      context: "discount_approval_request",
+    },
+  });
+  if (error) throw error;
+}
+
+function approvalRequestMessage(
+  sellerName: string,
+  requestedPercent: number,
+  markup: number,
+  authoritativeLimit: number,
+) {
+  if (markup > 0) {
+    return `${sellerName} solicitou desconto real de ${requestedPercent.toFixed(2)}% (markup +${markup.toFixed(1)}%, limite ${authoritativeLimit}%).`;
+  }
+  return `${sellerName} solicitou ${requestedPercent.toFixed(1)}% de desconto (limite ${authoritativeLimit}%).`;
+}
+
+async function notifyRequestBestEffort(
+  userId: string,
+  quoteId: string,
+  requestedPercent: number,
+  approval: ApprovalRpcRow,
+) {
+  try {
+    await notifyAdminsOfApprovalRequest(userId, quoteId, requestedPercent, approval);
+  } catch (error) {
+    console.error("A solicitação foi registrada, mas a notificação falhou:", error);
+    toast.warning("Solicitação registrada, mas a notificação precisa ser reenviada.");
+  }
+}
+
+async function requireDecisionRow(
+  result: DecisionRpcRow[] | null,
+  error: PostgrestError | null,
+  requestId: string,
+  approved: boolean,
+) {
+  if (error) {
+    await logRlsDenial(error, {
+      table: "discount_approval_requests", op: "UPDATE",
+      endpoint: "useDiscountApproval.respondToApproval",
+      targetId: requestId,
+      policyHint: "respond_discount_approval_atomic",
+      querySummary: `decision=${approved ? "approved" : "rejected"}`,
+    });
+  }
+  if (error || result?.length !== 1 || !result[0]) {
+    throw error ?? new Error("A decisão de desconto não foi confirmada.");
+  }
+  return result[0];
+}
+
+async function notifySellerOfDecision(
+  decision: DecisionRpcRow,
+  approved: boolean,
+  adminNotes?: string,
+) {
+  const rejectionSuffix = adminNotes
+    ? ` Motivo: ${adminNotes}`
+    : " Ajuste o desconto e tente novamente.";
+  const { error } = await supabase.from("workspace_notifications").insert({
+    user_id: decision.seller_id,
+    title: approved ? "Desconto aprovado ✅" : "Desconto rejeitado ❌",
+    message: approved
+      ? `Seu desconto de ${decision.requested_discount_percent}% foi aprovado. O orçamento está pronto para envio.`
+      : `Seu desconto de ${decision.requested_discount_percent}% foi rejeitado.${rejectionSuffix}`,
+    type: approved ? "success" : "error",
+    category: "discount",
+    action_url: `/orcamentos/${decision.quote_id}`,
+  });
+  if (error) throw error;
+}
+
+async function notifyDecisionBestEffort(
+  decision: DecisionRpcRow,
+  approved: boolean,
+  adminNotes?: string,
+) {
+  try {
+    await notifySellerOfDecision(decision, approved, adminNotes);
+  } catch (error) {
+    console.error("A decisão foi registrada, mas a notificação falhou:", error);
+    toast.warning("Decisão registrada, mas a notificação precisa ser reenviada.");
+  }
+}
+
 export function useDiscountApproval() {
   const { user } = useAuth();
   const [pendingRequests, setPendingRequests] = useState<DiscountApprovalWithQuote[]>([]);
@@ -64,74 +242,10 @@ export function useDiscountApproval() {
         p_quote_id: quoteId,
         p_expected_quote_row_version: quote.row_version,
         p_requested_discount_percent: requestedPercent,
-        p_seller_notes: sellerNotes || null,
+        p_seller_notes: sellerNotes || undefined,
       });
-      if (error || !result || result.length !== 1) {
-        if (error) await logRlsDenial(error, {
-          table: "discount_approval_requests", op: "INSERT",
-          endpoint: "useDiscountApproval.requestApproval",
-          targetId: quoteId,
-          targetSellerId: user.id,
-          policyHint: "request_discount_approval_atomic",
-          querySummary: `requestedPct=${requestedPercent}`,
-        });
-        throw error ?? new Error("A solicitação de desconto não foi confirmada.");
-      }
-
-      const approval = result[0];
-      if (!approval) throw new Error("A solicitação de desconto não retornou confirmação.");
-      const authoritativeLimit = Number(approval.max_allowed_percent);
-      const markup = Number(approval.negotiation_markup_percent ?? 0);
-      try {
-        if (markup > 0) {
-          const { error: auditError } = await supabase.from("admin_audit_log").insert({
-            user_id: user.id,
-            action: "quote_negotiation_markup_applied",
-            resource_type: "quote",
-            resource_id: quoteId,
-            details: {
-              negotiation_markup_percent: markup,
-              real_discount_percent: approval.real_discount_percent,
-              max_allowed_percent: authoritativeLimit,
-              request_id: approval.request_id,
-              context: "discount_approval_request",
-            },
-          });
-          if (auditError) throw auditError;
-        }
-
-        const { data: adminRoles, error: rolesError } = await supabase
-          .from("user_roles")
-          .select("user_id")
-          .eq("role", "admin");
-        if (rolesError) throw rolesError;
-        if (adminRoles?.length) {
-          const { data: profile, error: profileError } = await supabase
-            .from("profiles")
-            .select("full_name")
-            .eq("user_id", user.id)
-            .maybeSingle();
-          if (profileError) throw profileError;
-          const sellerName = profile?.full_name || "Vendedor";
-          const message = markup > 0
-            ? `${sellerName} solicitou desconto real de ${requestedPercent.toFixed(2)}% (markup +${markup.toFixed(1)}%, limite ${authoritativeLimit}%).`
-            : `${sellerName} solicitou ${requestedPercent.toFixed(1)}% de desconto (limite ${authoritativeLimit}%).`;
-          const { error: notificationError } = await supabase.from("workspace_notifications").insert(
-            adminRoles.map((admin) => ({
-              user_id: admin.user_id,
-              title: "Solicitação de desconto",
-              message,
-              type: "warning",
-              category: "discount",
-              action_url: "/admin/usuarios?tab=discounts",
-            })),
-          );
-          if (notificationError) throw notificationError;
-        }
-      } catch (notificationError) {
-        console.error("A solicitação foi registrada, mas a notificação falhou:", notificationError);
-        toast.warning("Solicitação registrada, mas a notificação precisa ser reenviada.");
-      }
+      const approval = await requireApprovalRow(result, error, quoteId, user.id, requestedPercent);
+      await notifyRequestBestEffort(user.id, quoteId, requestedPercent, approval);
 
       toast.success("Solicitação de aprovação enviada ao admin!");
       return true;
@@ -168,37 +282,10 @@ export function useDiscountApproval() {
         p_request_id: requestId,
         p_expected_quote_row_version: quote.row_version,
         p_approved: approved,
-        p_admin_notes: adminNotes || null,
+        p_admin_notes: adminNotes || undefined,
       });
-      if (error || !result || result.length !== 1) {
-        if (error) await logRlsDenial(error, {
-          table: "discount_approval_requests", op: "UPDATE",
-          endpoint: "useDiscountApproval.respondToApproval",
-          targetId: requestId,
-          policyHint: "respond_discount_approval_atomic",
-          querySummary: `decision=${approved ? "approved" : "rejected"}`,
-        });
-        throw error ?? new Error("A decisão de desconto não foi confirmada.");
-      }
-
-      const decision = result[0];
-      if (!decision) throw new Error("A decisão de desconto não retornou confirmação.");
-      try {
-        const { error: notificationError } = await supabase.from("workspace_notifications").insert({
-          user_id: decision.seller_id,
-          title: approved ? "Desconto aprovado ✅" : "Desconto rejeitado ❌",
-          message: approved
-            ? `Seu desconto de ${decision.requested_discount_percent}% foi aprovado. O orçamento está pronto para envio.`
-            : `Seu desconto de ${decision.requested_discount_percent}% foi rejeitado.${adminNotes ? ` Motivo: ${adminNotes}` : " Ajuste o desconto e tente novamente."}`,
-          type: approved ? "success" : "error",
-          category: "discount",
-          action_url: `/orcamentos/${decision.quote_id}`,
-        });
-        if (notificationError) throw notificationError;
-      } catch (notificationError) {
-        console.error("A decisão foi registrada, mas a notificação falhou:", notificationError);
-        toast.warning("Decisão registrada, mas a notificação precisa ser reenviada.");
-      }
+      const decision = await requireDecisionRow(result, error, requestId, approved);
+      await notifyDecisionBestEffort(decision, approved, adminNotes);
 
       toast.success(approved ? "Desconto aprovado!" : "Desconto rejeitado");
       return true;

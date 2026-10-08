@@ -7,6 +7,7 @@
  */
 
 import type { Session, User } from "@supabase/supabase-js";
+import { logger } from "@/lib/logger";
 
 const PREFIX = "[AUTH-DEBUG]";
 
@@ -31,7 +32,9 @@ function decodeJwtPayload(token: string | null | undefined): Record<string, unkn
   const parts = token.split(".");
   if (parts.length !== 3) return null;
   try {
-    const payload = parts[1].replace(/-/g, "+").replace(/_/g, "/");
+    const payloadPart = parts[1];
+    if (!payloadPart) return null;
+    const payload = payloadPart.replace(/-/g, "+").replace(/_/g, "/");
     const padded = payload + "=".repeat((4 - (payload.length % 4)) % 4);
     return JSON.parse(atob(padded));
   } catch {
@@ -85,7 +88,7 @@ export function summarizeSession(session: Session | null | undefined) {
 
 export function authDebug(scope: string, message: string, data?: unknown): void {
   const ts = new Date().toISOString();
-  console.log(`${PREFIX} [${ts}] [${scope}] ${message}`, data ?? "");
+  logger.debug(`${PREFIX} [${ts}] [${scope}] ${message}`, data ?? "");
   
   if (typeof window !== "undefined") {
     try {
@@ -94,7 +97,7 @@ export function authDebug(scope: string, message: string, data?: unknown): void 
       logs.push({ ts, scope, message, data, type: 'info' });
       localStorage.setItem('auth_debug_history', JSON.stringify(logs.slice(-50)));
       window.dispatchEvent(new CustomEvent('auth_debug_update'));
-    } catch (e) { /* ignore */ }
+    } catch { /* Histórico local é best-effort. */ }
   }
 }
 
@@ -113,7 +116,7 @@ export function authDebugError(scope: string, message: string, error: unknown): 
       logs.push({ ts, scope, message, data: normalized, type: 'error' });
       localStorage.setItem('auth_debug_history', JSON.stringify(logs.slice(-50)));
       window.dispatchEvent(new CustomEvent('auth_debug_update'));
-    } catch (e) { /* ignore */ }
+    } catch { /* Histórico local é best-effort. */ }
   }
 }
 
@@ -140,4 +143,4 @@ export function authDebugUrl(scope: string): void {
   });
 }
 
-export const __authDebugInternals = { maskToken, maskEmail, decodeJwtPayload };
+export const authDebugInternals = { maskToken, maskEmail, decodeJwtPayload };

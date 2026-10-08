@@ -4,6 +4,7 @@
  */
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import type { Json } from "@/integrations/supabase/types";
 
 export interface ComparisonWeights {
   price: number;
@@ -19,6 +20,14 @@ export const DEFAULT_WEIGHTS: ComparisonWeights = {
 };
 
 const LS_KEY = "comparison-weights";
+
+function parseComparisonWeights(value: Json): Partial<ComparisonWeights> {
+  if (typeof value !== "object" || value === null || Array.isArray(value)) return {};
+  return Object.fromEntries(
+    Object.entries(value).filter((entry): entry is [keyof ComparisonWeights, number] =>
+      entry[0] in DEFAULT_WEIGHTS && typeof entry[1] === "number"),
+  );
+}
 
 export function useComparisonWeights() {
   const [weights, setWeightsState] = useState<ComparisonWeights>(() => {
@@ -40,7 +49,7 @@ export function useComparisonWeights() {
         .eq("user_id", user.id)
         .maybeSingle();
       if (active && data?.comparison_weights) {
-        const w = { ...DEFAULT_WEIGHTS, ...(data.comparison_weights as any) };
+        const w = { ...DEFAULT_WEIGHTS, ...parseComparisonWeights(data.comparison_weights) };
         setWeightsState(w);
         localStorage.setItem(LS_KEY, JSON.stringify(w));
       }
@@ -56,7 +65,7 @@ export function useComparisonWeights() {
     if (!user) return;
     await supabase.from("user_preferences").upsert({
       user_id: user.id,
-      comparison_weights: next as any,
+      comparison_weights: { ...next },
     }, { onConflict: "user_id" });
   }, []);
 

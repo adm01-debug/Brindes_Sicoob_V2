@@ -7,13 +7,13 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   adaptPriceResponse,
   adaptPriceResponseWithMeta,
-  __resetSchemaStatsForTests,
+  resetSchemaStatsForTests,
   getSchemaStats,
   detectPriceSchema,
 } from '@/lib/personalization/adapters';
 
 beforeEach(() => {
-  __resetSchemaStatsForTests();
+  resetSchemaStatsForTests();
 });
 
 // ============================================

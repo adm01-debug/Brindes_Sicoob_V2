@@ -14,7 +14,7 @@
  */
 
 import { useQuery } from '@tanstack/react-query';
-import { invokeExternalDb, type InvokeResult } from '@/lib/external-db';
+import { invokeExternalDb } from '@/lib/external-db';
 import { logger } from "@/lib/logger";
 
 // ============================================
@@ -100,10 +100,9 @@ export async function fetchProductImagesBatch(productIds: string[]): Promise<Map
     (result.records ?? []).forEach(image => {
       if (!productIdSet.has(image.product_id)) return;
       
-      if (!imagesByProduct.has(image.product_id)) {
-        imagesByProduct.set(image.product_id, []);
-      }
-      imagesByProduct.get(image.product_id)!.push(image);
+      const productImages = imagesByProduct.get(image.product_id) ?? [];
+      productImages.push(image);
+      imagesByProduct.set(image.product_id, productImages);
     });
 
     return imagesByProduct;

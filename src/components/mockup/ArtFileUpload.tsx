@@ -20,6 +20,7 @@ const ACCEPTED_MIME = [
   "application/octet-stream",
 ];
 const MAX_SIZE_MB = 25;
+const ART_FILES_BUCKET = "mockup-art-files";
 
 export interface ArtFileAttachment {
   id: string;
@@ -49,6 +50,49 @@ function formatBytes(bytes: number | null): string {
   return `${(bytes / 1024 / 1024).toFixed(2)} MB`;
 }
 
+function validArtExtension(file: File) {
+  const extension = `.${file.name.split(".").pop()?.toLowerCase() ?? ""}`;
+  if (!ACCEPTED_EXTENSIONS.includes(extension)) {
+    toast.error(`${file.name}: formato não suportado (${ACCEPTED_EXTENSIONS.join(", ")})`);
+    return null;
+  }
+  if (file.size > MAX_SIZE_MB * 1024 * 1024) {
+    toast.error(`${file.name}: excede ${MAX_SIZE_MB}MB`);
+    return null;
+  }
+  return extension;
+}
+
+function fileContentType(file: File) {
+  return file.type.length > 0 ? file.type : "application/octet-stream";
+}
+
+function insertFailed(row: unknown, error: unknown) {
+  return Boolean(error) || !row;
+}
+
+async function uploadArtFile(file: File, { userId, mockupId, quoteId }: Pick<ArtFileUploadProps, "userId" | "mockupId" | "quoteId">): Promise<ArtFileAttachment | null> {
+  const extension = validArtExtension(file);
+  if (!extension) return null;
+  const safeName = file.name.replace(/[^a-zA-Z0-9.\-_]/g, "_");
+  const path = `${userId}/${Date.now()}-${safeName}`;
+  const { error: uploadError } = await supabase.storage.from(ART_FILES_BUCKET).upload(path, file, { contentType: fileContentType(file), upsert: false });
+  if (uploadError) {
+    console.error("[ArtFileUpload] upload error", uploadError);
+    toast.error(`Falha ao enviar ${file.name}`);
+    return null;
+  }
+  const { data: signed } = await supabase.storage.from(ART_FILES_BUCKET).createSignedUrl(path, 60 * 60 * 24 * 7);
+  const { data: row, error: insertError } = await supabase.from("art_file_attachments").insert({ user_id: userId, mockup_id: mockupId ?? null, quote_id: quoteId ?? null, file_url: signed?.signedUrl ?? "", file_path: path, original_name: file.name, mime_type: file.type.length > 0 ? file.type : null, file_size_bytes: file.size, file_extension: extension }).select().single();
+  if (insertFailed(row, insertError)) {
+    console.error("[ArtFileUpload] db insert error", insertError);
+    toast.error(`Falha ao registrar ${file.name}`);
+    await supabase.storage.from(ART_FILES_BUCKET).remove([path]);
+    return null;
+  }
+  return row as ArtFileAttachment;
+}
+
 export function ArtFileUpload({
   userId,
   mockupId,
@@ -75,57 +119,8 @@ export function ArtFileUpload({
       const uploaded: ArtFileAttachment[] = [];
 
       for (const file of list) {
-        const ext = `.${file.name.split(".").pop()?.toLowerCase() ?? ""}`;
-        if (!ACCEPTED_EXTENSIONS.includes(ext)) {
-          toast.error(`${file.name}: formato não suportado (${ACCEPTED_EXTENSIONS.join(", ")})`);
-          continue;
-        }
-        if (file.size > MAX_SIZE_MB * 1024 * 1024) {
-          toast.error(`${file.name}: excede ${MAX_SIZE_MB}MB`);
-          continue;
-        }
-
-        const safe = file.name.replace(/[^a-zA-Z0-9.\-_]/g, "_");
-        const path = `${userId}/${Date.now()}-${safe}`;
-
-        const { error: upErr } = await supabase.storage
-          .from("mockup-art-files")
-          .upload(path, file, { contentType: file.type || "application/octet-stream", upsert: false });
-
-        if (upErr) {
-          console.error("[ArtFileUpload] upload error", upErr);
-          toast.error(`Falha ao enviar ${file.name}`);
-          continue;
-        }
-
-        const { data: signed } = await supabase.storage
-          .from("mockup-art-files")
-          .createSignedUrl(path, 60 * 60 * 24 * 7);
-
-        const { data: row, error: insErr } = await supabase
-          .from("art_file_attachments")
-          .insert({
-            user_id: userId,
-            mockup_id: mockupId ?? null,
-            quote_id: quoteId ?? null,
-            file_url: signed?.signedUrl ?? "",
-            file_path: path,
-            original_name: file.name,
-            mime_type: file.type || null,
-            file_size_bytes: file.size,
-            file_extension: ext,
-          })
-          .select()
-          .single();
-
-        if (insErr || !row) {
-          console.error("[ArtFileUpload] db insert error", insErr);
-          toast.error(`Falha ao registrar ${file.name}`);
-          await supabase.storage.from("mockup-art-files").remove([path]);
-          continue;
-        }
-
-        uploaded.push(row as ArtFileAttachment);
+        const attachment = await uploadArtFile(file, { userId, mockupId, quoteId });
+        if (attachment) uploaded.push(attachment);
       }
 
       if (uploaded.length > 0) {
@@ -150,7 +145,7 @@ export function ArtFileUpload({
         return;
       }
 
-      await supabase.storage.from("mockup-art-files").remove([att.file_path]);
+      await supabase.storage.from(ART_FILES_BUCKET).remove([att.file_path]);
       onAttachmentsChange(attachments.filter((a) => a.id !== att.id));
       toast.success("Arquivo removido");
     },
@@ -159,7 +154,7 @@ export function ArtFileUpload({
 
   const handleDownload = useCallback(async (att: ArtFileAttachment) => {
     const { data, error } = await supabase.storage
-      .from("mockup-art-files")
+      .from(ART_FILES_BUCKET)
       .createSignedUrl(att.file_path, 60 * 5);
     if (error || !data?.signedUrl) {
       toast.error("Falha ao gerar link");

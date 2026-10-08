@@ -17,7 +17,7 @@ import {
   PRICE_PAYLOAD_EN_FUTURE,
 } from "../fixtures/personalization-payloads";
 import {
-  __resetSchemaStatsForTests,
+  resetSchemaStatsForTests,
   getContractMismatches,
 } from "@/lib/personalization/adapters";
 
@@ -31,7 +31,7 @@ const mockedRpc = invokeExternalRpc as unknown as ReturnType<typeof vi.fn>;
 
 beforeEach(() => {
   vi.clearAllMocks();
-  __resetSchemaStatsForTests();
+  resetSchemaStatsForTests();
 });
 
 describe("useCustomizationPriceCalculator", () => {

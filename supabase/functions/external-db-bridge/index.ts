@@ -35,6 +35,7 @@ import { resolveCredential } from "../_shared/credentials.ts";
 import { authorize, type AuthorizeResult } from "../_shared/authorize.ts";
 import { createReadOnlyCatalogFetch, isReadOnlyCatalogRequest } from "../_shared/external-read-only.ts";
 import { redactInternalCatalogFields } from "../_shared/catalog-redaction.ts";
+import { EXTERNAL_PRODUCT_LIGHTWEIGHT_SELECT } from "../_shared/external-product-contract.ts";
 
 const breaker = getBreaker("external-db");
 
@@ -1684,7 +1685,7 @@ function warmupExternalClient(): Promise<void> {
 warmupExternalClient();
 
 // Default lightweight columns for products table to avoid fetching heavy JSONB columns
-const PRODUCTS_LIGHTWEIGHT_SELECT = 'id,name,sku,sale_price,primary_image_url,category_id,main_category_id,supplier_id,supplier_reference,description,short_description,brand,is_active,active,stock_quantity,min_quantity,created_at,updated_at,is_featured,is_bestseller,is_new,is_on_sale,is_kit';
+const PRODUCTS_LIGHTWEIGHT_SELECT = EXTERNAL_PRODUCT_LIGHTWEIGHT_SELECT;
 
 // ============================================
 // PRODUCTS SELECT RESOLVER — single source of truth for the lightweight rule

@@ -20,6 +20,9 @@ interface RateLimitLog {
   created_at: string;
 }
 
+const getErrorMessage = (error: unknown) =>
+  error instanceof Error ? error.message : "Erro desconhecido";
+
 export default function RateLimitDashboardPage() {
   const [logs, setLogs] = useState<RateLimitLog[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -58,8 +61,8 @@ export default function RateLimitDashboardPage() {
         blockedRequests: blocked,
         uniqueIPs,
       });
-    } catch (error: any) {
-      toast({ title: 'Erro', description: error.message, variant: 'destructive' });
+    } catch (error: unknown) {
+      toast({ title: 'Erro', description: getErrorMessage(error), variant: 'destructive' });
     } finally {
       setIsLoading(false);
     }

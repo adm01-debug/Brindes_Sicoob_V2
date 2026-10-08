@@ -13,6 +13,60 @@ interface AdminRouteProps {
   requiredRole?: "dev" | "gestor_compras" | "supervisor";
 }
 
+function AdminRouteLoader() {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-background">
+      <Loader2 className="h-8 w-8 animate-spin text-primary" />
+    </div>
+  );
+}
+
+function EnrollmentGate({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
+  return (
+    <>
+      <AdminRouteLoader />
+      <MfaEnrollmentDialog open={open} onOpenChange={onOpenChange} enforce />
+    </>
+  );
+}
+
+function ChallengeGate() {
+  return (
+    <>
+      <AdminRouteLoader />
+      <MfaChallengeDialog open />
+    </>
+  );
+}
+
+function auditDeniedAccess(requiredRole: AdminRouteProps["requiredRole"]) {
+  void import("@/utils/adminAudit").then((module) => module.logAdminAction({
+    event_type: "SECURITY_CONFIG_CHANGE",
+    entity_type: "access_control",
+    metadata: {
+      action: "unauthorized_access_attempt",
+      path: window.location.pathname,
+      required_role: requiredRole || "admin",
+    },
+  }));
+}
+
+function isRouteLoading(isLoading: boolean, hasUser: boolean, rolesLoaded: boolean) {
+  return isLoading || (hasUser && !rolesLoaded);
+}
+
+function hasRoleLoadError(hasUser: boolean, rolesError: unknown) {
+  return hasUser && Boolean(rolesError);
+}
+
+function needsMfaChallenge(mfaRequired: boolean, currentAAL: string | null) {
+  return mfaRequired && currentAAL === "aal1";
+}
+
+function routeContent(children: ReactNode) {
+  return children ?? <Outlet />;
+}
+
 export function AdminRoute({ children, requiredRole }: AdminRouteProps) {
   const { user, roles, rolesLoaded, rolesError, isLoading, currentAAL, hasMFA, mfaRequired } = useAuth();
   const [enrollOpen, setEnrollOpen] = useState(false);
@@ -22,57 +76,30 @@ export function AdminRoute({ children, requiredRole }: AdminRouteProps) {
     if (hasAccess && !hasMFA && !isLoading && rolesLoaded) setEnrollOpen(true);
   }, [hasAccess, hasMFA, isLoading, rolesLoaded]);
 
-  if (isLoading || (user && !rolesLoaded)) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
+  if (isRouteLoading(isLoading, Boolean(user), rolesLoaded)) {
+    return <AdminRouteLoader />;
   }
 
-  if (user && rolesError) return <PermissionsError />;
+  if (hasRoleLoadError(Boolean(user), rolesError)) return <PermissionsError />;
 
   if (!user) {
     return <Navigate to="/login" replace />;
   }
 
   if (!hasAccess) {
-    // Audit failed access attempt
-    import("@/utils/adminAudit").then(m => m.logAdminAction({
-      event_type: 'SECURITY_CONFIG_CHANGE',
-      entity_type: 'access_control',
-      metadata: { 
-        action: 'unauthorized_access_attempt',
-        path: window.location.pathname,
-        required_role: requiredRole || 'admin'
-      }
-    }));
+    auditDeniedAccess(requiredRole);
     return <Navigate to="/403" replace />;
   }
 
   // Admin/manager sem MFA → mostra dialog de enrollment obrigatório (não renderiza filhos)
   if (!hasMFA) {
-    return (
-      <>
-        <div className="min-h-screen flex items-center justify-center bg-background">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        </div>
-        <MfaEnrollmentDialog open={enrollOpen} onOpenChange={setEnrollOpen} enforce />
-      </>
-    );
+    return <EnrollmentGate open={enrollOpen} onOpenChange={setEnrollOpen} />;
   }
 
   // Admin/manager com MFA mas sessão em aal1 → exige challenge antes de renderizar filhos
-  if (mfaRequired && currentAAL === "aal1") {
-    return (
-      <>
-        <div className="min-h-screen flex items-center justify-center bg-background">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        </div>
-        <MfaChallengeDialog open />
-      </>
-    );
+  if (needsMfaChallenge(mfaRequired, currentAAL)) {
+    return <ChallengeGate />;
   }
 
-  return children ?? <Outlet />;
+  return routeContent(children);
 }

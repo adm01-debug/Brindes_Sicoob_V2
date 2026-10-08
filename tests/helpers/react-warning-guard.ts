@@ -132,7 +132,7 @@ export function installReactWarningGuard(): ReactWarningGuard {
       const where = context ? ` (${context})` : "";
       const ctx = refContext.length
         ? "\n\nContexto adicional capturado:\n" +
-          refContext.map((m, i) => `  · ${m}`).join("\n")
+          refContext.map((m) => `  · ${m}`).join("\n")
         : "";
       throw new Error(
         `React ref warning detectado${where}:\n` +

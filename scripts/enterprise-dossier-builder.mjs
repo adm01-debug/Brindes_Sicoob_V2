@@ -2,10 +2,42 @@ import fs from 'fs';
 import { execSync } from 'child_process';
 import { createClient } from '@supabase/supabase-js';
 import fetch from 'node-fetch';
+import { marked } from 'marked';
+import { chromium } from '@playwright/test';
 
 const supabaseUrl = process.env.VITE_SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-const repoUrl = "https://github.com/promo-gifts/app"; // Base URL for evidence links
+async function renderMarkdownPdf(markdown, outputPath) {
+    const browser = await chromium.launch({
+        headless: true,
+        args: ['--no-sandbox', '--disable-setuid-sandbox'],
+    });
+    try {
+        const page = await browser.newPage();
+        const body = marked.parse(markdown);
+        await page.setContent(`<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <style>
+    @page { size: A4; margin: 10mm; }
+    body { color: #172026; font: 12px/1.55 Arial, sans-serif; }
+    h1, h2, h3 { color: #003641; break-after: avoid; }
+    h1 { font-size: 24px; } h2 { font-size: 18px; } h3 { font-size: 14px; }
+    table { border-collapse: collapse; width: 100%; }
+    th, td { border: 1px solid #cad5d4; padding: 6px; text-align: left; }
+    th { background: #e9f6f4; }
+    pre, code { white-space: pre-wrap; overflow-wrap: anywhere; }
+    a { color: #007f73; }
+  </style>
+</head>
+<body>${body}</body>
+</html>`, { waitUntil: 'load' });
+        await page.pdf({ path: outputPath, format: 'A4', margin: { top: '10mm', right: '10mm', bottom: '10mm', left: '10mm' }, printBackground: true });
+    } finally {
+        await browser.close();
+    }
+}
 
 async function getRlsCoverage() {
     try {
@@ -77,7 +109,7 @@ async function getCoverageMetrics() {
             const summary = JSON.parse(fs.readFileSync(summaryPath, 'utf8'));
             coverage = `${summary.total?.lines?.pct || 98.2}%`;
             isReal = true;
-        } catch (e) {
+        } catch {
             console.warn("⚠️ Erro ao ler summary de cobertura.");
         }
     }
@@ -215,8 +247,7 @@ As evidências abaixo foram extraídas diretamente do histórico de commits do r
 
     try {
         console.log('📄 Convertendo para PDF...');
-        execSync(`bunx md-to-pdf public/AUDIT_ENTERPRISE_FINAL.md --config-file .mdtopdf.json`);
-        fs.renameSync('public/AUDIT_ENTERPRISE_FINAL.pdf', `public/reports/AUDIT_REPORT_${commitHash}.pdf`);
+        await renderMarkdownPdf(finalContent, `public/reports/AUDIT_REPORT_${commitHash}.pdf`);
         fs.copyFileSync(`public/reports/AUDIT_REPORT_${commitHash}.pdf`, 'public/AUDIT_ENTERPRISE_FINAL.pdf');
         console.log(`✅ PDF gerado com sucesso: public/reports/AUDIT_REPORT_${commitHash}.pdf`);
     } catch (pdfError) {

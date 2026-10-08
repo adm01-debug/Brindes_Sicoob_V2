@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { toast } from "sonner";
 import { type PersonalizationArea } from "@/components/mockup/MultiAreaManager";
 import type { Json } from "@/integrations/supabase/types";
 
@@ -30,7 +29,7 @@ export function useMockupDraft(options: UseMockupDraftOptions = {}) {
   const [isLoading, setIsLoading] = useState(true);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Salvar no localStorage (imediato)
   const saveToLocal = useCallback((data: MockupDraftData) => {

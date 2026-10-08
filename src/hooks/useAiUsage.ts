@@ -37,6 +37,78 @@ export interface QuotaStatus {
   unlimited?: boolean;
 }
 
+interface AggregatedUsage {
+  count: number;
+  cost: number;
+  tokens: number;
+}
+
+function periodStart(period: "day" | "week" | "month") {
+  const now = new Date();
+  if (period === "day") return new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  if (period === "month") return new Date(now.getFullYear(), now.getMonth(), 1);
+  const start = new Date(now);
+  start.setDate(start.getDate() - 7);
+  return start;
+}
+
+function aggregateUsage(logs: AiUsageLog[], keyOf: (log: AiUsageLog) => string) {
+  const result = new Map<string, AggregatedUsage>();
+  for (const log of logs) {
+    const key = keyOf(log);
+    const current = result.get(key) || { count: 0, cost: 0, tokens: 0 };
+    current.count += 1;
+    current.cost += Number(log.estimated_cost_usd);
+    current.tokens += log.total_tokens;
+    result.set(key, current);
+  }
+  return result;
+}
+
+function namedEntries(map: Map<string, AggregatedUsage>) {
+  return Array.from(map.entries())
+    .map(([name, stats]) => ({ name, ...stats }))
+    .sort((a, b) => b.cost - a.cost);
+}
+
+function userEntries(map: Map<string, AggregatedUsage>) {
+  return Array.from(map.entries())
+    .map(([userId, stats]) => ({ userId, ...stats }))
+    .sort((a, b) => b.cost - a.cost);
+}
+
+function buildUsageStats(logs: AiUsageLog[]) {
+  const totalRequests = logs.length;
+  const successCount = logs.filter((log) => log.status === "success").length;
+  const byUser = aggregateUsage(logs, (log) => log.user_id);
+  const byFunction = aggregateUsage(logs, (log) => log.function_name);
+  const byModel = aggregateUsage(logs, (log) => log.model || "unknown");
+  const byDay = aggregateUsage(logs, (log) => log.created_at.slice(0, 10));
+  return {
+    totalRequests,
+    successCount,
+    errorCount: totalRequests - successCount,
+    totalTokens: logs.reduce((sum, log) => sum + log.total_tokens, 0),
+    totalCost: logs.reduce((sum, log) => sum + Number(log.estimated_cost_usd), 0),
+    byUser: userEntries(byUser),
+    byFunction: namedEntries(byFunction).sort((a, b) => b.count - a.count),
+    byModel: namedEntries(byModel).sort((a, b) => b.count - a.count),
+    byDay: namedEntries(byDay)
+      .map(({ name, ...stats }) => ({ date: name, ...stats }))
+      .sort((a, b) => a.date.localeCompare(b.date)),
+  };
+}
+
+async function fetchUsageStats(period: "day" | "week" | "month") {
+  const { data, error } = await supabase
+    .from("ai_usage_logs")
+    .select("*")
+    .gte("created_at", periodStart(period).toISOString())
+    .order("created_at", { ascending: true });
+  if (error) throw error;
+  return buildUsageStats((data || []) as AiUsageLog[]);
+}
+
 // Fetch user's quota status
 export function useAiQuotaStatus() {
   const { user } = useAuth();
@@ -138,84 +210,7 @@ export function useUpdateQuota() {
 export function useAiUsageStats(period: "day" | "week" | "month" = "month") {
   return useQuery({
     queryKey: ["ai-usage-stats", period],
-    queryFn: async () => {
-      const now = new Date();
-      let start: Date;
-      if (period === "day") start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-      else if (period === "week") {
-        start = new Date(now);
-        start.setDate(start.getDate() - 7);
-      } else {
-        start = new Date(now.getFullYear(), now.getMonth(), 1);
-      }
-
-      const { data, error } = await supabase
-        .from("ai_usage_logs")
-        .select("*")
-        .gte("created_at", start.toISOString())
-        .order("created_at", { ascending: true });
-      if (error) throw error;
-
-      const logs = (data || []) as AiUsageLog[];
-      const totalRequests = logs.length;
-      const successCount = logs.filter((l) => l.status === "success").length;
-      const totalTokens = logs.reduce((s, l) => s + l.total_tokens, 0);
-      const totalCost = logs.reduce((s, l) => s + Number(l.estimated_cost_usd), 0);
-
-      // Group by user
-      const byUser = new Map<string, { count: number; cost: number; tokens: number }>();
-      for (const log of logs) {
-        const u = byUser.get(log.user_id) || { count: 0, cost: 0, tokens: 0 };
-        u.count++;
-        u.cost += Number(log.estimated_cost_usd);
-        u.tokens += log.total_tokens;
-        byUser.set(log.user_id, u);
-      }
-
-      // Group by function
-      const byFunction = new Map<string, { count: number; cost: number; tokens: number }>();
-      for (const log of logs) {
-        const f = byFunction.get(log.function_name) || { count: 0, cost: 0, tokens: 0 };
-        f.count++;
-        f.cost += Number(log.estimated_cost_usd);
-        f.tokens += log.total_tokens;
-        byFunction.set(log.function_name, f);
-      }
-
-      // Group by model
-      const byModel = new Map<string, { count: number; cost: number; tokens: number }>();
-      for (const log of logs) {
-        const m = log.model || "unknown";
-        const entry = byModel.get(m) || { count: 0, cost: 0, tokens: 0 };
-        entry.count++;
-        entry.cost += Number(log.estimated_cost_usd);
-        entry.tokens += log.total_tokens;
-        byModel.set(m, entry);
-      }
-
-      // Daily breakdown for chart
-      const byDay = new Map<string, { count: number; cost: number; tokens: number }>();
-      for (const log of logs) {
-        const day = log.created_at.slice(0, 10);
-        const d = byDay.get(day) || { count: 0, cost: 0, tokens: 0 };
-        d.count++;
-        d.cost += Number(log.estimated_cost_usd);
-        d.tokens += log.total_tokens;
-        byDay.set(day, d);
-      }
-
-      return {
-        totalRequests,
-        successCount,
-        errorCount: totalRequests - successCount,
-        totalTokens,
-        totalCost,
-        byUser: Array.from(byUser.entries()).map(([userId, stats]) => ({ userId, ...stats })).sort((a, b) => b.cost - a.cost),
-        byFunction: Array.from(byFunction.entries()).map(([name, stats]) => ({ name, ...stats })).sort((a, b) => b.count - a.count),
-        byModel: Array.from(byModel.entries()).map(([name, stats]) => ({ name, ...stats })).sort((a, b) => b.count - a.count),
-        byDay: Array.from(byDay.entries()).map(([date, stats]) => ({ date, ...stats })).sort((a, b) => a.date.localeCompare(b.date)),
-      };
-    },
+    queryFn: () => fetchUsageStats(period),
     staleTime: 30_000,
   });
 }

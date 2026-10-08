@@ -4,7 +4,7 @@
  * Mesmo fluxo usado para Carrinho e Orçamento.
  */
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Badge } from '@/components/ui/badge';
+
 import { cn } from '@/lib/utils';
 import { Heart, GitCompare, FolderPlus, MessageCircle, FileText } from 'lucide-react';
 import { SingleVariantPicker } from '@/components/products/SingleVariantPicker';
@@ -54,14 +54,7 @@ interface VariantPickerDialogProps {
   onComplete: (variant: ExternalVariantStock | null) => void;
 }
 
-export function VariantPickerDialog({
-  open,
-  onOpenChange,
-  productId,
-  productName,
-  mode,
-  onComplete,
-}: VariantPickerDialogProps) {
+export function VariantPickerDialog({ open, onOpenChange, productId, productName, mode, onComplete }: VariantPickerDialogProps) {
   const config = MODE_CONFIG[mode];
   const Icon = config.icon;
 

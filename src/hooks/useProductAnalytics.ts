@@ -1,5 +1,4 @@
 import { useCallback } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { untypedFrom } from "@/lib/supabase-untyped";
 import { useAuth } from "@/contexts/AuthContext";
 

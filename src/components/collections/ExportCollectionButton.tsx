@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
 import type { Product } from "@/hooks/useProducts";
+import type { jsPDF } from "jspdf";
 import { formatCurrency } from "@/lib/format";
 
 interface Props {
@@ -22,6 +23,9 @@ interface Props {
   notesMap?: Map<string, string | undefined>;
   collectionName: string;
 }
+
+type PdfDocument = jsPDF;
+type CollectionVariant = NonNullable<Props["variantMap"]> extends Map<string, infer Variant> ? Variant : never;
 
 function downloadBlob(blob: Blob, filename: string) {
   const url = URL.createObjectURL(blob);
@@ -39,6 +43,54 @@ function csvEscape(v: unknown): string {
   const s = String(v);
   if (/[",\n;]/.test(s)) return `"${s.replace(/"/g, '""')}"`;
   return s;
+}
+
+interface PdfCardOptions {
+  readonly document: PdfDocument;
+  readonly product: Product;
+  readonly variant: CollectionVariant | undefined;
+  readonly note: string | undefined;
+  readonly x: number;
+  readonly y: number;
+  readonly width: number;
+  readonly height: number;
+}
+
+function addProductImage(options: Pick<PdfCardOptions, 'document' | 'x' | 'y' | 'width' | 'height'> & { readonly image: string | undefined }) {
+  if (!options.image) return;
+  try {
+    options.document.addImage(options.image, "JPEG", options.x + 4, options.y + 4, options.width - 8, options.height * 0.55, undefined, "FAST");
+  } catch {
+    // Uma imagem remota inválida não deve interromper a exportação dos demais produtos.
+  }
+}
+
+function addProductDetails({ document, product, variant, note, x, y, width, height }: PdfCardOptions) {
+  document.setFont("helvetica", "bold");
+  document.setFontSize(10);
+  const name = document.splitTextToSize(product.name, width - 8).slice(0, 2);
+  document.text(name, x + 4, y + height * 0.6 + 4);
+  document.setFont("helvetica", "normal");
+  document.setFontSize(8);
+  document.setTextColor(120);
+  document.text(product.sku ?? "—", x + 4, y + height * 0.6 + 14);
+  document.setFont("helvetica", "bold");
+  document.setTextColor(20);
+  document.setFontSize(11);
+  document.text(formatCurrency(product.price ?? 0), x + 4, y + height * 0.6 + 22);
+  document.setFont("helvetica", "normal");
+  document.setFontSize(7);
+  document.setTextColor(120);
+  if (variant?.color_name) document.text(`Cor: ${variant.color_name}`, x + 4, y + height * 0.6 + 28);
+  if (note) document.text(document.splitTextToSize(`✎ ${note}`, width - 8).slice(0, 2), x + 4, y + height * 0.6 + 33);
+}
+
+function addProductCard(options: PdfCardOptions) {
+  const { document, variant, product, x, y, width, height } = options;
+  document.setDrawColor(200);
+  document.roundedRect(x + 1, y + 1, width - 2, height - 2, 2, 2);
+  addProductImage({ document, image: variant?.thumbnail ?? product.images?.[0], x, y, width, height });
+  addProductDetails(options);
 }
 
 export function ExportCollectionButton({ products, variantMap, notesMap, collectionName }: Props) {
@@ -132,43 +184,12 @@ export function ExportCollectionButton({ products, variantMap, notesMap, collect
         const x = margin + col * cellW;
         const y = margin + 20 + row * cellH;
 
-        const p = products[i]!;
+        const p = products[i];
+        if (!p) break;
         const v = variantMap?.get(p.id);
         const note = notesMap?.get(p.id);
 
-        doc.setDrawColor(200);
-        doc.roundedRect(x + 1, y + 1, cellW - 2, cellH - 2, 2, 2);
-
-        const img = v?.thumbnail || p.images?.[0];
-        if (img) {
-          try {
-            const imgH = cellH * 0.55;
-            doc.addImage(img, "JPEG", x + 4, y + 4, cellW - 8, imgH, undefined, "FAST");
-          } catch { /* ignore */ }
-        }
-
-        doc.setFont("helvetica", "bold");
-        doc.setFontSize(10);
-        const name = doc.splitTextToSize(p.name, cellW - 8).slice(0, 2);
-        doc.text(name, x + 4, y + cellH * 0.6 + 4);
-
-        doc.setFont("helvetica", "normal");
-        doc.setFontSize(8);
-        doc.setTextColor(120);
-        doc.text(p.sku ?? "—", x + 4, y + cellH * 0.6 + 14);
-        doc.setFont("helvetica", "bold");
-        doc.setTextColor(20);
-        doc.setFontSize(11);
-        doc.text(formatCurrency(p.price ?? 0), x + 4, y + cellH * 0.6 + 22);
-
-        doc.setFont("helvetica", "normal");
-        doc.setFontSize(7);
-        doc.setTextColor(120);
-        if (v?.color_name) doc.text(`Cor: ${v.color_name}`, x + 4, y + cellH * 0.6 + 28);
-        if (note) {
-          const noteLines = doc.splitTextToSize(`✎ ${note}`, cellW - 8).slice(0, 2);
-          doc.text(noteLines, x + 4, y + cellH * 0.6 + 33);
-        }
+        addProductCard({ document: doc, product: p, variant: v, note, x, y, width: cellW, height: cellH });
 
         i++;
       }

@@ -38,8 +38,8 @@ export async function exportPDF(rows: TelemetryRow[], timeFilter: TimeFilter, cu
   const headers = ['Data/Hora', 'Operação', 'Tabela/RPC', 'Duração', 'Sev.', 'Regs', 'Limit', 'Erro'];
   const body = rows.map(r => [
     new Date(r.created_at).toLocaleString('pt-BR'), r.operation, r.table_name || r.rpc_name || '-',
-    `${r.duration_ms}ms`, r.severity, r.record_count != null ? String(r.record_count) : '-',
-    r.query_limit != null ? String(r.query_limit) : '-', (r.error_message || '-').slice(0, 60),
+    `${r.duration_ms}ms`, r.severity, r.record_count !== null && r.record_count !== undefined ? String(r.record_count) : '-',
+    r.query_limit !== null && r.query_limit !== undefined ? String(r.query_limit) : '-', (r.error_message || '-').slice(0, 60),
   ]);
   autoTable(doc, {
     head: [headers], body, startY: 28,

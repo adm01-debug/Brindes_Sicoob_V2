@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { type ElementType, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   X, DollarSign, Layers, Volume2, Tag, SlidersHorizontal, RotateCcw,
@@ -59,12 +59,8 @@ export function getActiveFilterLabels(f: FlowFilterState): { label: string; key:
     ["selectedEndomarketing","selectedEndomarketing"],["selectedNichos","selectedNichos"],["selectedTags","selectedTags"],
   ];
   arrayKeys.forEach(([k, key]) => (f[k] as string[]).forEach(v => labels.push({ label: v, key, value: v })));
-  if (f.onlyInStock) labels.push({ label: "Em estoque", key: "onlyInStock" });
-  if (f.onlyNew) labels.push({ label: "Novidades", key: "onlyNew" });
-  if (f.onlyKit) labels.push({ label: "Kits", key: "onlyKit" });
-  if (f.onlyBestseller) labels.push({ label: "+ Vendidos", key: "onlyBestseller" });
-  if (f.onlyFeatured) labels.push({ label: "Destaques", key: "onlyFeatured" });
-  if (f.hasPersonalization) labels.push({ label: "Personalização", key: "hasPersonalization" });
+  const booleanLabels: Array<[keyof FlowFilterState, string]> = [["onlyInStock", "Em estoque"], ["onlyNew", "Novidades"], ["onlyKit", "Kits"], ["onlyBestseller", "+ Vendidos"], ["onlyFeatured", "Destaques"], ["hasPersonalization", "Personalização"]];
+  booleanLabels.forEach(([key, label]) => { if (f[key]) labels.push({ label, key }); });
   return labels;
 }
 
@@ -76,7 +72,7 @@ export interface FlowFilterOptions {
 }
 
 // ─── Section definitions ────────────────────────────────
-const SECTION_GROUPS: { label: string; icon: React.ElementType; sections: { id: string; label: string; icon: React.ElementType }[] }[] = [
+const SECTION_GROUPS: { label: string; icon: ElementType; sections: { id: string; label: string; icon: ElementType }[] }[] = [
   { label: "PRODUTO", icon: Package, sections: [
     { id: "cores", label: "Cores", icon: Palette }, { id: "categorias", label: "Categorias", icon: Layers },
     { id: "materiais", label: "Materiais", icon: Gem }, { id: "genero", label: "Gênero", icon: Users },
@@ -105,116 +101,71 @@ interface FlowFilterPanelProps {
   activeFiltersCount: number; onReset: () => void;
 }
 
+function shouldShowSection(id: string, search: string, options: FlowFilterOptions) {
+  const query = search.toLowerCase();
+  const matches = !query || id.includes(query);
+  const optionMap: Record<string, string[]> = { cores: options.colors, categorias: options.categories, materiais: options.materials, fornecedores: options.suppliers, tecnicas: options.techniques, publico: options.publicoAlvo, datas: options.datasComemorativas, endomarketing: options.endomarketing, nichos: options.nichos, tags: options.tags };
+  const sectionOptions = optionMap[id];
+  return sectionOptions ? sectionOptions.length > 0 && matches : matches;
+}
+
+function sectionCount(id: string, filters: FlowFilterState) {
+  const map: Record<string, number> = {
+    preco: filters.priceMin || filters.priceMax ? 1 : 0, cores: filters.selectedColors.length,
+    categorias: filters.selectedCategories.length, materiais: filters.selectedMaterials.length,
+    genero: filters.selectedGenders.length, fornecedores: filters.selectedSuppliers.length,
+    tecnicas: filters.selectedTechniques.length, publico: filters.selectedPublicos.length,
+    datas: filters.selectedDatasComemorativas.length, endomarketing: filters.selectedEndomarketing.length,
+    nichos: filters.selectedNichos.length, tags: filters.selectedTags.length,
+    estoque: Number(filters.onlyInStock), rapidas: [filters.onlyNew, filters.onlyKit, filters.onlyBestseller, filters.onlyFeatured, filters.hasPersonalization].filter(Boolean).length,
+  };
+  return map[id] ?? 0;
+}
+
+function totalOptions(id: string, options: FlowFilterOptions) {
+  const map: Record<string, number> = { cores: options.colors.length, categorias: options.categories.length, materiais: options.materials.length, genero: GENDER_OPTIONS.length, fornecedores: options.suppliers.length, tecnicas: options.techniques.length, publico: options.publicoAlvo.length, datas: options.datasComemorativas.length, endomarketing: options.endomarketing.length, nichos: options.nichos.length, tags: options.tags.length, estoque: 1, rapidas: 5, preco: PRICE_PRESETS_COUNT };
+  return map[id] ?? 0;
+}
+
+interface DrawerProps extends FlowFilterPanelProps {
+  globalSearch: string;
+  setGlobalSearch: (value: string) => void;
+  openSections: Set<string>;
+  toggle: (id: string) => void;
+  update: (patch: Partial<FlowFilterState>) => void;
+  toggleArray: (key: keyof FlowFilterState, value: string) => void;
+}
+
+function FilterDrawer(props: DrawerProps) {
+  return <motion.div initial={{ x: "-100%", opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ x: "-100%", opacity: 0 }} transition={{ type: "spring", damping: 28, stiffness: 300 }} className="absolute left-0 top-0 bottom-0 z-30 w-[310px] max-w-[90%] bg-card/98 backdrop-blur-xl border-r border-border/20 rounded-l-2xl flex flex-col shadow-2xl shadow-black/20">
+    <div className="flex items-center justify-between px-4 pt-3.5 pb-2.5 border-b border-border/10"><div className="flex items-center gap-2.5"><div className="h-7 w-7 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center shadow-sm shadow-primary/5"><SlidersHorizontal className="h-3.5 w-3.5 text-primary" /></div><div><span className="text-sm font-semibold tracking-tight">Filtros</span>{props.activeFiltersCount > 0 ? <p className="text-[9px] text-primary font-bold leading-tight">{props.activeFiltersCount} ativo{props.activeFiltersCount > 1 ? "s" : ""}</p> : null}</div></div><div className="flex items-center gap-1">{props.activeFiltersCount > 0 ? <Button variant="ghost" size="sm" onClick={props.onReset} className="h-6 px-2 text-[9px] text-muted-foreground hover:text-destructive gap-1 rounded-lg"><RotateCcw className="h-2.5 w-2.5" />Limpar</Button> : null}<Button variant="ghost" size="sm" onClick={props.onClose} className="h-6 w-6 p-0 rounded-lg"><X className="h-3.5 w-3.5" /></Button></div></div>
+    <div className="px-3 pt-2 pb-1"><div className="relative"><Filter className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground/30" /><input value={props.globalSearch} onChange={(event) => props.setGlobalSearch(event.target.value)} placeholder="Buscar seção de filtro…" className="w-full h-7 pl-7 pr-2 rounded-lg border border-border/15 bg-muted/10 text-[11px] placeholder:text-muted-foreground/25 focus:outline-none focus:ring-1 focus:ring-primary/20 transition-all" /></div></div>
+    <ScrollArea className="flex-1 px-3"><div className="pb-3">{SECTION_GROUPS.map((group) => {
+      const visible = group.sections.filter((section) => shouldShowSection(section.id, props.globalSearch, props.options));
+      if (!visible.length) return null;
+      return <div key={group.label}><GroupSeparator label={group.label} icon={group.icon} />{visible.map((section) => <div key={section.id}><SectionRow icon={section.icon} label={section.label} isOpen={props.openSections.has(section.id)} onToggle={() => props.toggle(section.id)} count={sectionCount(section.id, props.filters)} totalOptions={totalOptions(section.id, props.options)} /><CollapsibleContent isOpen={props.openSections.has(section.id)}><SectionContent id={section.id} filters={props.filters} options={props.options} update={props.update} toggleArray={props.toggleArray} /></CollapsibleContent></div>)}</div>;
+    })}<div className="mt-4 pt-3 border-t border-border/10"><div className="flex items-center justify-between px-1 py-1"><div className="flex items-center gap-2.5"><div className="h-6 w-6 rounded-lg bg-muted/20 flex items-center justify-center"><Volume2 className="h-3 w-3 text-muted-foreground/40" /></div><div><span className="text-[11px] text-foreground/70 font-medium">Auto-play por voz</span><p className="text-[9px] text-muted-foreground/30 leading-tight">Reproduzir respostas automaticamente</p></div></div><Switch checked={props.autoPlayTts} onCheckedChange={props.onAutoPlayTtsChange} className="scale-[0.75] origin-right" /></div></div></div></ScrollArea>
+    <div className="px-3 py-2.5 border-t border-border/10"><Button size="sm" onClick={props.onClose} className="w-full h-9 rounded-xl text-[11px] font-semibold gap-1.5 shadow-sm"><Sparkles className="h-3 w-3" />Aplicar filtros{props.activeFiltersCount > 0 ? <span className="ml-1 h-4.5 min-w-5 px-1.5 rounded-full bg-primary-foreground/20 text-[10px] font-bold flex items-center justify-center">{props.activeFiltersCount}</span> : null}</Button></div>
+  </motion.div>;
+}
+
 // ─── Main Component ─────────────────────────────────────
 export function FlowFilterPanel({ isOpen, onClose, filters, onFiltersChange, options, autoPlayTts, onAutoPlayTtsChange, activeFiltersCount, onReset }: FlowFilterPanelProps) {
   const [openSections, setOpenSections] = useState<Set<string>>(new Set(["preco"]));
   const [globalSearch, setGlobalSearch] = useState("");
 
-  const toggle = (id: string) => setOpenSections(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; });
+  const toggle = (id: string) => setOpenSections(prev => {
+    const next = new Set(prev);
+    if (next.has(id)) next.delete(id);
+    else next.add(id);
+    return next;
+  });
   const update = (patch: Partial<FlowFilterState>) => onFiltersChange({ ...filters, ...patch });
   const toggleArray = (key: keyof FlowFilterState, value: string) => { const arr = filters[key] as string[]; update({ [key]: arr.includes(value) ? arr.filter(v => v !== value) : [...arr, value] }); };
 
-  const shouldShow = (id: string) => {
-    const q = globalSearch.toLowerCase();
-    const match = (sId: string, label: string) => !q || label.toLowerCase().includes(q) || sId.includes(q);
-    const optMap: Record<string, string[]> = { cores: options.colors, categorias: options.categories, materiais: options.materials, fornecedores: options.suppliers, tecnicas: options.techniques, publico: options.publicoAlvo, datas: options.datasComemorativas, endomarketing: options.endomarketing, nichos: options.nichos, tags: options.tags };
-    if (optMap[id]) return optMap[id].length > 0 && match(id, id);
-    return match(id, id);
-  };
-
-  const getCount = (id: string): number => {
-    const map: Record<string, number> = {
-      preco: (filters.priceMin || filters.priceMax) ? 1 : 0,
-      cores: filters.selectedColors.length, categorias: filters.selectedCategories.length,
-      materiais: filters.selectedMaterials.length, genero: filters.selectedGenders.length,
-      fornecedores: filters.selectedSuppliers.length, tecnicas: filters.selectedTechniques.length,
-      publico: filters.selectedPublicos.length, datas: filters.selectedDatasComemorativas.length,
-      endomarketing: filters.selectedEndomarketing.length, nichos: filters.selectedNichos.length,
-      tags: filters.selectedTags.length, estoque: [filters.onlyInStock].filter(Boolean).length,
-      rapidas: [filters.onlyNew, filters.onlyKit, filters.onlyBestseller, filters.onlyFeatured, filters.hasPersonalization].filter(Boolean).length,
-    };
-    return map[id] ?? 0;
-  };
-
-  const getTotalOptions = (id: string): number => {
-    const map: Record<string, number> = {
-      cores: options.colors.length, categorias: options.categories.length, materiais: options.materials.length,
-      genero: GENDER_OPTIONS.length, fornecedores: options.suppliers.length, tecnicas: options.techniques.length,
-      publico: options.publicoAlvo.length, datas: options.datasComemorativas.length, endomarketing: options.endomarketing.length,
-      nichos: options.nichos.length, tags: options.tags.length, estoque: 1, rapidas: 5, preco: PRICE_PRESETS_COUNT,
-    };
-    return map[id] ?? 0;
-  };
-
   return (
     <AnimatePresence>
-      {isOpen && (
-        <>
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}
-            className="absolute inset-0 bg-black/50 backdrop-blur-[3px] z-20 rounded-2xl" onClick={onClose} />
-          <motion.div initial={{ x: "-100%", opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ x: "-100%", opacity: 0 }}
-            transition={{ type: "spring", damping: 28, stiffness: 300 }}
-            className="absolute left-0 top-0 bottom-0 z-30 w-[310px] max-w-[90%] bg-card/98 backdrop-blur-xl border-r border-border/20 rounded-l-2xl flex flex-col shadow-2xl shadow-black/20">
-            {/* Header */}
-            <div className="flex items-center justify-between px-4 pt-3.5 pb-2.5 border-b border-border/10">
-              <div className="flex items-center gap-2.5">
-                <div className="h-7 w-7 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center shadow-sm shadow-primary/5"><SlidersHorizontal className="h-3.5 w-3.5 text-primary" /></div>
-                <div><span className="text-sm font-semibold tracking-tight">Filtros</span>{activeFiltersCount > 0 && <p className="text-[9px] text-primary font-bold leading-tight">{activeFiltersCount} ativo{activeFiltersCount > 1 ? "s" : ""}</p>}</div>
-              </div>
-              <div className="flex items-center gap-1">
-                {activeFiltersCount > 0 && <Button variant="ghost" size="sm" onClick={onReset} className="h-6 px-2 text-[9px] text-muted-foreground hover:text-destructive gap-1 rounded-lg"><RotateCcw className="h-2.5 w-2.5" />Limpar</Button>}
-                <Button variant="ghost" size="sm" onClick={onClose} className="h-6 w-6 p-0 rounded-lg"><X className="h-3.5 w-3.5" /></Button>
-              </div>
-            </div>
-            {/* Search */}
-            <div className="px-3 pt-2 pb-1">
-              <div className="relative"><Filter className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground/30" />
-                <input value={globalSearch} onChange={(e) => setGlobalSearch(e.target.value)} placeholder="Buscar seção de filtro…"
-                  className="w-full h-7 pl-7 pr-2 rounded-lg border border-border/15 bg-muted/10 text-[11px] placeholder:text-muted-foreground/25 focus:outline-none focus:ring-1 focus:ring-primary/20 transition-all" />
-              </div>
-            </div>
-            {/* Sections */}
-            <ScrollArea className="flex-1 px-3">
-              <div className="pb-3">
-                {SECTION_GROUPS.map((group) => {
-                  const vis = group.sections.filter(s => shouldShow(s.id));
-                  if (vis.length === 0) return null;
-                  return (
-                    <div key={group.label}>
-                      <GroupSeparator label={group.label} icon={group.icon} />
-                      {vis.map((sec) => (
-                        <div key={sec.id}>
-                          <SectionRow icon={sec.icon} label={sec.label} isOpen={openSections.has(sec.id)} onToggle={() => toggle(sec.id)} count={getCount(sec.id)} totalOptions={getTotalOptions(sec.id)} />
-                          <CollapsibleContent isOpen={openSections.has(sec.id)}>
-                            <SectionContent id={sec.id} filters={filters} options={options} update={update} toggleArray={toggleArray} />
-                          </CollapsibleContent>
-                        </div>
-                      ))}
-                    </div>
-                  );
-                })}
-                {/* Audio */}
-                <div className="mt-4 pt-3 border-t border-border/10">
-                  <div className="flex items-center justify-between px-1 py-1">
-                    <div className="flex items-center gap-2.5">
-                      <div className="h-6 w-6 rounded-lg bg-muted/20 flex items-center justify-center"><Volume2 className="h-3 w-3 text-muted-foreground/40" /></div>
-                      <div><span className="text-[11px] text-foreground/70 font-medium">Auto-play por voz</span><p className="text-[9px] text-muted-foreground/30 leading-tight">Reproduzir respostas automaticamente</p></div>
-                    </div>
-                    <Switch checked={autoPlayTts} onCheckedChange={onAutoPlayTtsChange} className="scale-[0.75] origin-right" />
-                  </div>
-                </div>
-              </div>
-            </ScrollArea>
-            {/* Footer */}
-            <div className="px-3 py-2.5 border-t border-border/10">
-              <Button size="sm" onClick={onClose} className="w-full h-9 rounded-xl text-[11px] font-semibold gap-1.5 shadow-sm">
-                <Sparkles className="h-3 w-3" />Aplicar filtros
-                {activeFiltersCount > 0 && <span className="ml-1 h-4.5 min-w-5 px-1.5 rounded-full bg-primary-foreground/20 text-[10px] font-bold flex items-center justify-center">{activeFiltersCount}</span>}
-              </Button>
-            </div>
-          </motion.div>
-        </>
-      )}
+      {isOpen ? <><motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }} className="absolute inset-0 bg-black/50 backdrop-blur-[3px] z-20 rounded-2xl" onClick={onClose} /><FilterDrawer isOpen={isOpen} onClose={onClose} filters={filters} onFiltersChange={onFiltersChange} options={options} autoPlayTts={autoPlayTts} onAutoPlayTtsChange={onAutoPlayTtsChange} activeFiltersCount={activeFiltersCount} onReset={onReset} globalSearch={globalSearch} setGlobalSearch={setGlobalSearch} openSections={openSections} toggle={toggle} update={update} toggleArray={toggleArray} /></> : null}
     </AnimatePresence>
   );
 }

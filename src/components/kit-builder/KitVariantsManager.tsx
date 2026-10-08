@@ -9,8 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { useKitVariants } from '@/hooks/useKitVariants';
-import { formatCurrency } from '@/lib/kit-builder';
-import type { KitState } from '@/lib/kit-builder';
+import { formatCurrency, type KitState } from '@/lib/kit-builder';
 
 interface Props {
   kitMasterId: string | undefined;

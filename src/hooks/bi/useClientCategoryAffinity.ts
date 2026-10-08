@@ -68,7 +68,7 @@ function buildMockResult(): ClientCategoryAffinityResult {
     const revenuePrevious = c.revenue * (1 - recentBias);
     const deltaPct = revenuePrevious > 0 ? ((revenueRecent - revenuePrevious) / revenuePrevious) * 100 : null;
     const trend: CategoryAggregate["trend"] =
-      deltaPct == null ? "stable" : deltaPct > 15 ? "up" : deltaPct < -15 ? "down" : "stable";
+      deltaPct === null || deltaPct === undefined ? "stable" : deltaPct > 15 ? "up" : deltaPct < -15 ? "down" : "stable";
     return {
       slug: meta.slug,
       label: c.category,
@@ -91,6 +91,94 @@ function buildMockResult(): ClientCategoryAffinityResult {
   };
 }
 
+function emptyCategory(row: ClientTopProductRow): CategoryAggregate {
+  const meta = resolveBICategory(row.product_name);
+  return {
+    slug: meta.slug,
+    label: meta.label,
+    occurrences: 0,
+    totalQuantity: 0,
+    totalRevenue: 0,
+    revenueSharePct: 0,
+    revenueRecent: 0,
+    revenuePrevious: 0,
+    deltaPct: null,
+    trend: "stable",
+    topProducts: [],
+  };
+}
+
+function addTemporalRevenue(
+  category: CategoryAggregate,
+  row: ClientTopProductRow,
+  revenue: number,
+  ...cutoffs: [recentCutoff: number, previousCutoff: number]
+) {
+  const [recentCutoff, previousCutoff] = cutoffs;
+  if (!row.last_quoted_at) return;
+  const timestamp = new Date(row.last_quoted_at).getTime();
+  if (Number.isNaN(timestamp)) return;
+  if (timestamp >= recentCutoff) category.revenueRecent += revenue;
+  else if (timestamp >= previousCutoff) category.revenuePrevious += revenue;
+}
+
+function aggregateCategories(rows: ClientTopProductRow[]) {
+  const ninetyDays = 90 * 24 * 60 * 60 * 1000;
+  const recentCutoff = Date.now() - ninetyDays;
+  const previousCutoff = Date.now() - 2 * ninetyDays;
+  const categories = new Map<string, CategoryAggregate>();
+  for (const row of rows) {
+    const key = resolveBICategory(row.product_name).slug;
+    const category = categories.get(key) ?? emptyCategory(row);
+    const revenue = Number(row.total_revenue) || 0;
+    category.occurrences += Number(row.occurrences) || 0;
+    category.totalQuantity += Number(row.total_quantity) || 0;
+    category.totalRevenue += revenue;
+    addTemporalRevenue(category, row, revenue, recentCutoff, previousCutoff);
+    category.topProducts.push({
+      productId: row.product_id,
+      productName: row.product_name,
+      imageUrl: row.product_image_url,
+      quantity: Number(row.total_quantity) || 0,
+      revenue,
+      avgPrice: Number(row.avg_unit_price) || 0,
+    });
+    categories.set(key, category);
+  }
+  return categories;
+}
+
+function categoryDelta(category: CategoryAggregate) {
+  if (category.revenuePrevious > 0) {
+    return ((category.revenueRecent - category.revenuePrevious) / category.revenuePrevious) * 100;
+  }
+  return category.revenueRecent > 0 ? 100 : null;
+}
+
+function categoryTrend(delta: number | null): CategoryAggregate["trend"] {
+  if (delta === null) return "stable";
+  if (delta > 15) return "up";
+  if (delta < -15) return "down";
+  return "stable";
+}
+
+function finalizeCategories(byCategory: Map<string, CategoryAggregate>) {
+  const totalRevenue = Array.from(byCategory.values())
+    .reduce((sum, category) => sum + category.totalRevenue, 0) || 1;
+  return Array.from(byCategory.values())
+    .map((category) => {
+      const deltaPct = categoryDelta(category);
+      return {
+        ...category,
+        revenueSharePct: (category.totalRevenue / totalRevenue) * 100,
+        deltaPct,
+        trend: categoryTrend(deltaPct),
+        topProducts: category.topProducts.sort((a, b) => b.revenue - a.revenue).slice(0, 5),
+      };
+    })
+    .sort((a, b) => b.totalRevenue - a.totalRevenue);
+}
+
 export function useClientCategoryAffinity(clientId?: string) {
   const query = useQuery<ClientTopProductRow[]>({
     queryKey: ["bi-client-category-affinity-raw", clientId],
@@ -111,75 +199,7 @@ export function useClientCategoryAffinity(clientId?: string) {
     const rows = query.data ?? [];
     if (rows.length === 0) return buildMockResult();
 
-    const now = Date.now();
-    const NINETY_DAYS = 90 * 24 * 60 * 60 * 1000;
-    const recentCutoff = now - NINETY_DAYS;
-    const previousCutoff = now - 2 * NINETY_DAYS;
-
-    const byCat = new Map<string, CategoryAggregate>();
-    for (const r of rows) {
-      const meta = resolveBICategory(r.product_name);
-      const key = meta.slug;
-      const cur =
-        byCat.get(key) ??
-        ({
-          slug: meta.slug,
-          label: meta.label,
-          occurrences: 0,
-          totalQuantity: 0,
-          totalRevenue: 0,
-          revenueSharePct: 0,
-          revenueRecent: 0,
-          revenuePrevious: 0,
-          deltaPct: null,
-          trend: "stable" as const,
-          topProducts: [],
-        } satisfies CategoryAggregate);
-      const revenue = Number(r.total_revenue) || 0;
-      cur.occurrences += Number(r.occurrences) || 0;
-      cur.totalQuantity += Number(r.total_quantity) || 0;
-      cur.totalRevenue += revenue;
-
-      // Bucket temporal — usa last_quoted_at como aproximação (RPC não retorna histórico granular).
-      if (r.last_quoted_at) {
-        const ts = new Date(r.last_quoted_at).getTime();
-        if (!Number.isNaN(ts)) {
-          if (ts >= recentCutoff) cur.revenueRecent += revenue;
-          else if (ts >= previousCutoff) cur.revenuePrevious += revenue;
-        }
-      }
-
-      cur.topProducts.push({
-        productId: r.product_id,
-        productName: r.product_name,
-        imageUrl: r.product_image_url,
-        quantity: Number(r.total_quantity) || 0,
-        revenue,
-        avgPrice: Number(r.avg_unit_price) || 0,
-      });
-      byCat.set(key, cur);
-    }
-
-    const totalRev = Array.from(byCat.values()).reduce((s, c) => s + c.totalRevenue, 0) || 1;
-    const categories = Array.from(byCat.values())
-      .map((c) => {
-        const deltaPct =
-          c.revenuePrevious > 0
-            ? ((c.revenueRecent - c.revenuePrevious) / c.revenuePrevious) * 100
-            : c.revenueRecent > 0
-              ? 100
-              : null;
-        const trend: CategoryAggregate["trend"] =
-          deltaPct == null ? "stable" : deltaPct > 15 ? "up" : deltaPct < -15 ? "down" : "stable";
-        return {
-          ...c,
-          revenueSharePct: (c.totalRevenue / totalRev) * 100,
-          deltaPct,
-          trend,
-          topProducts: c.topProducts.sort((a, b) => b.revenue - a.revenue).slice(0, 5),
-        };
-      })
-      .sort((a, b) => b.totalRevenue - a.totalRevenue);
+    const categories = finalizeCategories(aggregateCategories(rows));
 
     return {
       isMock: false,

@@ -21,24 +21,23 @@ interface QuoteConvertToOrderProps {
   onConverted?: () => void;
 }
 
-export function QuoteConvertToOrder({ quoteId, status, onConverted }: QuoteConvertToOrderProps) {
+function useOrderConversion(quoteId: string, onConverted?: () => void) {
   const { currentOrg } = useOrganization();
   const navigate = useNavigate();
-  const { mutate: convert, isPending: isConverting } = useConvertQuoteToOrder();
+  const { mutate: convert, isPending } = useConvertQuoteToOrder();
+  const convertQuote = () => convert({ quoteId, organizationId: currentOrg?.id || null }, {
+    onSuccess: (order) => {
+      navigate(`/sicoob/pedidos/${order.id}`);
+      onConverted?.();
+    },
+  });
+  return { convertQuote, isPending };
+}
+
+export function QuoteConvertToOrder({ quoteId, status, onConverted }: QuoteConvertToOrderProps) {
+  const { convertQuote: handleConvert, isPending: isConverting } = useOrderConversion(quoteId, onConverted);
 
   if (status !== "approved" && status !== "approved_singular") return null;
-
-  const handleConvert = () => {
-    convert({
-      quoteId,
-      organizationId: currentOrg?.id || null,
-    }, {
-      onSuccess: (order) => {
-        navigate(`/sicoob/pedidos/${order.id}`);
-        onConverted?.();
-      }
-    });
-  };
 
   return (
     <AlertDialog>

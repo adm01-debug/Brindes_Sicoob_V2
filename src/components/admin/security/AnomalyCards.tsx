@@ -14,6 +14,16 @@ interface AnomalyStats {
   loading: boolean;
 }
 
+function anomalySeverity(value: number, high: number, medium: number): "high" | "medium" | "low" {
+  if (value > high) return "high";
+  if (value > medium) return "medium";
+  return "low";
+}
+
+function shouldShowQuickBlock(stats: AnomalyStats): boolean {
+  return stats.loginFailures24h >= 10 || stats.tokenFailures24h >= 5 || stats.botHits24h >= 20;
+}
+
 export function AnomalyCards() {
   const [stats, setStats] = useState<AnomalyStats>({
     loginFailures24h: 0,
@@ -74,38 +84,37 @@ export function AnomalyCards() {
     };
   }, []);
 
-  const cards = [
+  const cards = ([
     {
       label: "Falhas de login",
       value: stats.loginFailures24h,
       icon: <KeyRound className="h-4 w-4" />,
-      severity: stats.loginFailures24h > 50 ? "high" : stats.loginFailures24h > 10 ? "medium" : "low",
+      severity: anomalySeverity(stats.loginFailures24h, 50, 10),
     },
     {
       label: "Bots bloqueados",
       value: stats.botHits24h,
       icon: <ShieldAlert className="h-4 w-4" />,
-      severity: stats.botHits24h > 100 ? "high" : stats.botHits24h > 20 ? "medium" : "low",
+      severity: anomalySeverity(stats.botHits24h, 100, 20),
     },
     {
       label: "Falhas de token público",
       value: stats.tokenFailures24h,
       icon: <AlertTriangle className="h-4 w-4" />,
-      severity: stats.tokenFailures24h > 20 ? "high" : stats.tokenFailures24h > 5 ? "medium" : "low",
+      severity: anomalySeverity(stats.tokenFailures24h, 20, 5),
     },
     {
       label: "IPs distintos em tokens",
       value: stats.distinctTokenIps24h,
       icon: <Activity className="h-4 w-4" />,
-      severity: stats.distinctTokenIps24h > 30 ? "high" : stats.distinctTokenIps24h > 10 ? "medium" : "low",
+      severity: anomalySeverity(stats.distinctTokenIps24h, 30, 10),
     },
-  ] as const;
+  ] as const);
 
-  const showQuickBlock =
-    stats.loginFailures24h >= 10 || stats.tokenFailures24h >= 5 || stats.botHits24h >= 20;
+  const showQuickBlock = shouldShowQuickBlock(stats);
 
   return (
-    <div className="space-y-3">
+    (<div className="space-y-3">
       <div className="grid gap-3 md:grid-cols-4">
         {cards.map((c) => (
           <Card key={c.label} className="border-[1.5px]">
@@ -151,6 +160,6 @@ export function AnomalyCards() {
       )}
 
       <TopOffenderIpsCard />
-    </div>
+    </div>)
   );
 }

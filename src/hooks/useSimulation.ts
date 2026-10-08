@@ -5,15 +5,14 @@ import { type ExternalTechnique } from "@/types/external-db";
 import { useState, useMemo, useCallback, useEffect, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { invokeExternalDb } from "@/lib/external-db";
+import { invokeExternalDb, fetchPromobrindProducts, getProductPrice, getProductImageUrl } from "@/lib/external-db";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { logger } from "@/lib/logger";
-import { fetchPromobrindProducts, getProductPrice, getProductImageUrl } from "@/lib/external-db";
 import { useMultipleTechniquePricing } from "./useTechniquePricingOptions";
 import { useSimulatorPreferences } from "./useSimulatorPreferences";
 import { fetchAllOptions } from "./simulation/simulationPriceFetcher";
-import { copyOptionToClipboard, copyAllOptionsToClipboard, formatCurrency as fmtCurrency } from "./simulation/simulationClipboard";
+import { copyOptionToClipboard, copyAllOptionsToClipboard } from "./simulation/simulationClipboard";
 import type { 
   Product, Client, Technique, TechniqueSettings, SimulationOption, SavedSimulation, SimulatorStep 
 } from "@/types/simulation";
@@ -34,13 +33,42 @@ type SavedSimulationRawRow = {
   client_id: string | null;
 };
 
+const SAVED_SIMULATIONS_QUERY_KEY = "saved-simulations";
+
+function externalNumber(value: unknown, fallback = 0): number {
+  return typeof value === "number" ? value : fallback;
+}
+
+function firstString(...values: unknown[]): string {
+  const value = values.find(candidate => typeof candidate === "string");
+  return typeof value === "string" ? value : "";
+}
+
+function firstNumber(...values: unknown[]): number {
+  const value = values.find(candidate => typeof candidate === "number");
+  return typeof value === "number" ? value : 0;
+}
+
+function mapExternalTechnique(technique: ExternalTechnique): Technique {
+  return {
+    id: technique.id,
+    code: firstString(technique.code, technique.technique_code),
+    name: firstString(technique.name, technique.technique_name),
+    description: typeof technique.description === "string" ? technique.description : null,
+    unit_cost: firstNumber(technique.handling_price, technique.unit_cost),
+    setup_cost: firstNumber(technique.setup_price, technique.setup_cost),
+    estimated_days: externalNumber(technique.sla_days),
+    min_quantity: externalNumber(technique.min_quantity, 1) || externalNumber(String(technique.min_quantity)),
+  };
+}
+
 export function useSimulation() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   
   const { 
     preferences, isLoaded: preferencesLoaded,
-    setLastQuantity, setLastProductId, setLastTechniques, setLastTechniqueSettings, setPreferredView, saveCurrentSession,
+    setLastQuantity, setLastProductId, setLastTechniques, setLastTechniqueSettings, setPreferredView,
   } = useSimulatorPreferences();
 
   // Wizard state
@@ -53,25 +81,23 @@ export function useSimulation() {
   const [selectedTechniques, setSelectedTechniquesState] = useState<string[]>([]);
   const [techniqueSettings, setTechniqueSettingsState] = useState<Record<string, TechniqueSettings>>({});
   const [simulationOptions, setSimulationOptions] = useState<SimulationOption[]>([]);
+  const { lastProductId, lastQuantity, lastTechniqueSettings, lastTechniques } = preferences;
 
   // Load preferences on mount
   useEffect(() => {
     if (preferencesLoaded) {
-      if (preferences.lastQuantity) setQuantityState(preferences.lastQuantity);
-      if (preferences.lastProductId) setSelectedProductIdState(preferences.lastProductId);
-      if (preferences.lastTechniques?.length) setSelectedTechniquesState(preferences.lastTechniques);
-      if (preferences.lastTechniqueSettings && Object.keys(preferences.lastTechniqueSettings).length > 0) {
-        setTechniqueSettingsState(preferences.lastTechniqueSettings);
+      if (lastQuantity) setQuantityState(lastQuantity);
+      if (lastProductId) setSelectedProductIdState(lastProductId);
+      if (lastTechniques?.length) setSelectedTechniquesState(lastTechniques);
+      if (lastTechniqueSettings && Object.keys(lastTechniqueSettings).length > 0) {
+        setTechniqueSettingsState(lastTechniqueSettings);
       }
     }
-  }, [preferencesLoaded]);
+  }, [lastProductId, lastQuantity, lastTechniqueSettings, lastTechniques, preferencesLoaded]);
 
   // Wrapped setters with persistence
   const setSelectedProductId = useCallback((id: string | null) => { setSelectedProductIdState(id); setLastProductId(id); }, [setLastProductId]);
   const setQuantity = useCallback((qty: number) => { setQuantityState(qty); setLastQuantity(qty); }, [setLastQuantity]);
-  const setSelectedTechniques = useCallback((techniques: string[]) => { setSelectedTechniquesState(techniques); setLastTechniques(techniques); }, [setLastTechniques]);
-  const setTechniqueSettings = useCallback((settings: Record<string, TechniqueSettings>) => { setTechniqueSettingsState(settings); setLastTechniqueSettings(settings); }, [setLastTechniqueSettings]);
-
   // Scenarios
   const [scenarioA, setScenarioA] = useState<SimulationScenario | null>(null);
   const [scenarioB, setScenarioB] = useState<SimulationScenario | null>(null);
@@ -98,7 +124,7 @@ export function useSimulation() {
     queryKey: ["simulator-products-promobrind"],
     queryFn: async () => {
       const raw = await fetchPromobrindProducts({ limit: 500 });
-      return raw.filter(p => p.active !== false && p.is_active !== false)
+      return raw.filter(p => p.is_active !== false)
         .map(p => ({ id: p.id, name: p.name, sku: p.sku, price: getProductPrice(p), image_url: getProductImageUrl(p) })) as Product[];
     },
     staleTime: 5 * 60 * 1000,
@@ -120,18 +146,7 @@ export function useSimulation() {
     queryKey: ["simulator-techniques-external"],
     queryFn: async (): Promise<Technique[]> => {
       const result = await invokeExternalDb<ExternalTechnique>({ table: "personalization_techniques", operation: "select", filters: { is_active: true }, orderBy: { column: "name", ascending: true }, limit: 100 });
-      const toStr = (v: unknown, fallback = ""): string => (typeof v === "string" ? v : fallback);
-      const toNum = (v: unknown, fallback = 0): number => (typeof v === "number" ? v : fallback);
-      return (result.records ?? []).map((t): Technique => ({
-        id: t.id,
-        code: t.code ?? t.technique_code ?? "",
-        name: t.name ?? t.technique_name ?? "",
-        description: typeof t.description === "string" ? t.description : null,
-        unit_cost: t.handling_price ?? t.unit_cost ?? toNum(t.unit_cost),
-        setup_cost: t.setup_price ?? t.setup_cost ?? toNum(t.setup_cost),
-        estimated_days: toNum(t.sla_days),
-        min_quantity: toNum(t.min_quantity, 1) || toNum(toStr(t.min_quantity)),
-      }));
+      return (result.records ?? []).map(mapExternalTechnique);
     },
   });
 
@@ -139,7 +154,7 @@ export function useSimulation() {
   const { isLoading: pricingLoading, getPricingInfo } = useMultipleTechniquePricing(techniqueCodes);
 
   const { data: savedSimulations, isLoading: savedSimulationsLoading } = useQuery({
-    queryKey: ["saved-simulations"],
+    queryKey: [SAVED_SIMULATIONS_QUERY_KEY],
     queryFn: async (): Promise<SavedSimulation[]> => {
       const { data, error } = await supabase
         .from("personalization_simulations")
@@ -340,13 +355,13 @@ export function useSimulation() {
       }]);
       if (error) throw error;
     },
-    onSuccess: () => { toast.success("Simulação salva com sucesso!"); setSaveDialogOpen(false); setSelectedClientId(null); setSimulationNotes(""); queryClient.invalidateQueries({ queryKey: ["saved-simulations"] }); },
+    onSuccess: () => { toast.success("Simulação salva com sucesso!"); setSaveDialogOpen(false); setSelectedClientId(null); setSimulationNotes(""); queryClient.invalidateQueries({ queryKey: [SAVED_SIMULATIONS_QUERY_KEY] }); },
     onError: () => { toast.error("Erro ao salvar simulação"); },
   });
 
   const deleteSimulationMutation = useMutation({
     mutationFn: async (id: string) => { const { error } = await supabase.from("personalization_simulations").delete().eq("id", id); if (error) throw error; },
-    onSuccess: () => { toast.success("Simulação excluída"); queryClient.invalidateQueries({ queryKey: ["saved-simulations"] }); },
+    onSuccess: () => { toast.success("Simulação excluída"); queryClient.invalidateQueries({ queryKey: [SAVED_SIMULATIONS_QUERY_KEY] }); },
     onError: () => { toast.error("Erro ao excluir simulação"); },
   });
 

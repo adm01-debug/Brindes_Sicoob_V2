@@ -45,6 +45,66 @@ export function getQuoteDraftIdForScope(scopeId: string): string {
   return draftId;
 }
 
+function statusIcon(status: SaveStatus) {
+  if (status === "saving") return <Loader2 className="h-4 w-4 animate-spin" />;
+  if (status === "saved") return <Check className="h-4 w-4 text-success" />;
+  if (status === "error") return <AlertCircle className="h-4 w-4 text-destructive" />;
+  if (status === "offline") return <CloudOff className="h-4 w-4 text-warning" />;
+  return <Cloud className="h-4 w-4" />;
+}
+
+function statusText(status: SaveStatus, hasChanges: boolean, lastSaved: Date | null): string {
+  if (status === "saving") return "Salvando...";
+  if (status === "saved") return "Salvo agora";
+  if (status === "error") return "Erro ao salvar";
+  if (status === "offline") return "Offline";
+  if (hasChanges) return "Alterações não salvas";
+  return lastSaved ? `Salvo às ${format(lastSaved, "HH:mm", { locale: ptBR })}` : "Salvo neste dispositivo";
+}
+
+function AutoSaveIndicator({ status, lastSaved, hasChanges, className }: {
+  status: SaveStatus; lastSaved: Date | null; hasChanges: boolean; className?: string;
+}) {
+  const label = statusText(status, hasChanges, lastSaved);
+  return <Tooltip><TooltipTrigger asChild><div className={cn("flex items-center gap-2", className)}>
+    <AnimatePresence mode="wait"><motion.div key={status} initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
+      exit={{ scale: 0.8, opacity: 0 }} transition={{ duration: 0.15 }}>{statusIcon(status)}</motion.div></AnimatePresence>
+    <span className="text-xs text-muted-foreground hidden sm:inline">{label}</span>
+    {hasChanges && status !== "saving" && <Badge variant="outline" className="text-[10px] h-5">Não salvo</Badge>}
+  </div></TooltipTrigger><TooltipContent><div className="text-xs space-y-1"><p className="font-medium">{label}</p>
+    {lastSaved && <p className="text-muted-foreground">Último salvamento: {format(lastSaved, "HH:mm:ss", { locale: ptBR })}</p>}
+  </div></TooltipContent></Tooltip>;
+}
+
+function useDraftLifecycle(args: {
+  data: unknown; storageKey: string; lastError: unknown; restore: () => unknown;
+  onChange?: (hasUnsavedChanges: boolean) => void; onRestore?: (data: Record<string, unknown>) => void;
+  setStatus: (status: SaveStatus) => void;
+}): boolean {
+  const { data, storageKey, lastError, restore, onChange, onRestore, setStatus } = args;
+  const [hasChanges, setHasChanges] = useState(false);
+  const initialDataRef = useRef<string | null>(null);
+  const currentDataRef = useRef(data);
+  const onRestoreRef = useRef(onRestore);
+  currentDataRef.current = data;
+  onRestoreRef.current = onRestore;
+  useEffect(() => { initialDataRef.current = JSON.stringify(currentDataRef.current); }, [storageKey]);
+  useEffect(() => { if (lastError) setStatus("error"); }, [lastError, setStatus]);
+  useEffect(() => {
+    const changed = JSON.stringify(data) !== initialDataRef.current;
+    setHasChanges(changed);
+    onChange?.(changed);
+    if (changed) setStatus(navigator.onLine ? "saving" : "offline");
+  }, [data, onChange, setStatus]);
+  useEffect(() => {
+    const restoreDraft = onRestoreRef.current;
+    const draft = restoreDraft ? restore() : null;
+    if (restoreDraft && draft && typeof draft === "object" && !Array.isArray(draft)
+      && JSON.stringify(draft) !== JSON.stringify(currentDataRef.current)) restoreDraft(draft as Record<string, unknown>);
+  }, [restore, storageKey]);
+  return hasChanges;
+}
+
 export function QuoteAutoSave({
   quoteId,
   scopeId,
@@ -55,9 +115,6 @@ export function QuoteAutoSave({
 }: QuoteAutoSaveProps) {
   const [status, setStatus] = useState<SaveStatus>("idle");
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
-  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
-
-  const initialDataRef = useRef<string | null>(null);
   const draftId = useMemo(() => scopeId ? getQuoteDraftIdForScope(scopeId) : null, [scopeId]);
   const storageKey = scopeId ? (quoteId ? `quote:${scopeId}:${quoteId}` : `draft:${scopeId}:${draftId}`) : "";
 
@@ -72,95 +129,7 @@ export function QuoteAutoSave({
     },
     onError: () => setStatus("error"),
   });
+  const hasUnsavedChanges = useDraftLifecycle({ data, storageKey, lastError, restore, onChange, onRestore, setStatus });
 
-  // Salvar estado inicial para comparação
-  useEffect(() => {
-    initialDataRef.current = JSON.stringify(data);
-  }, [storageKey]);
-
-  useEffect(() => {
-    if (lastError) setStatus("error");
-  }, [lastError]);
-
-  // Detectar mudanças (persistência real é feita pelo useAutoSave, debounced internamente)
-  useEffect(() => {
-    const currentData = JSON.stringify(data);
-    const hasChanges = currentData !== initialDataRef.current;
-
-    setHasUnsavedChanges(hasChanges);
-    onChange?.(hasChanges);
-
-    if (hasChanges) {
-      setStatus(navigator.onLine ? "saving" : "offline");
-    }
-  }, [data, onChange]);
-
-  // Restauração automática se houver draft no carregamento
-  useEffect(() => {
-    if (onRestore) {
-      const draft = restore();
-      if (draft && typeof draft === "object" && !Array.isArray(draft) && JSON.stringify(draft) !== JSON.stringify(data)) {
-        onRestore(draft as Record<string, unknown>);
-      }
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [restore, storageKey]);
-
-  const getStatusIcon = () => {
-    switch (status) {
-      case "saving": return <Loader2 className="h-4 w-4 animate-spin" />;
-      case "saved": return <Check className="h-4 w-4 text-success" />;
-      case "error": return <AlertCircle className="h-4 w-4 text-destructive" />;
-      case "offline": return <CloudOff className="h-4 w-4 text-warning" />;
-      default: return <Cloud className="h-4 w-4" />;
-    }
-  };
-
-  const getStatusText = () => {
-    switch (status) {
-      case "saving": return "Salvando...";
-      case "saved": return "Salvo agora";
-      case "error": return "Erro ao salvar";
-      case "offline": return "Offline";
-      default: return hasUnsavedChanges ? "Alterações não salvas" : lastSaved
-        ? `Salvo às ${format(lastSaved, "HH:mm", { locale: ptBR })}`
-        : "Salvo neste dispositivo";
-    }
-  };
-
-  return (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <div className={cn("flex items-center gap-2", className)}>
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={status}
-              initial={{ scale: 0.8, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.8, opacity: 0 }}
-              transition={{ duration: 0.15 }}
-            >
-              {getStatusIcon()}
-            </motion.div>
-          </AnimatePresence>
-          <span className="text-xs text-muted-foreground hidden sm:inline">
-            {getStatusText()}
-          </span>
-          {hasUnsavedChanges && status !== "saving" && (
-            <Badge variant="outline" className="text-[10px] h-5">Não salvo</Badge>
-          )}
-        </div>
-      </TooltipTrigger>
-      <TooltipContent>
-        <div className="text-xs space-y-1">
-          <p className="font-medium">{getStatusText()}</p>
-          {lastSaved && (
-            <p className="text-muted-foreground">
-              Último salvamento: {format(lastSaved, "HH:mm:ss", { locale: ptBR })}
-            </p>
-          )}
-        </div>
-      </TooltipContent>
-    </Tooltip>
-  );
+  return <AutoSaveIndicator status={status} lastSaved={lastSaved} hasChanges={hasUnsavedChanges} className={className} />;
 }

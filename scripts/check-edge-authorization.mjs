@@ -29,6 +29,7 @@ import { inspectAuthorization } from "./lib/edge-authorization-contract.mjs";
 
 const FN_DIR = "supabase/functions";
 const MANIFEST_PATH = `${FN_DIR}/_shared/edge-authz-manifest.ts`;
+const CONFIG_PATH = "supabase/config.toml";
 
 // 1) Carrega o manifest (parse via regex para evitar import dinâmico de TS)
 const manifestSrc = readFileSync(MANIFEST_PATH, "utf8");
@@ -41,7 +42,9 @@ const entries = new Map();
     const body = m[2];
     const cat = body.match(/category:\s*"([a-z]+)"/)?.[1];
     const enforcedBy = body.match(/enforcedBy:\s*"([a-z-]+)"/)?.[1] ?? "shared-authorize";
-    if (cat) entries.set(m[1], { category: cat, enforcedBy });
+    const gatewayMatch = body.match(/gatewayVerifyJwt:\s*(true|false)/)?.[1];
+    const gatewayVerifyJwt = gatewayMatch === undefined ? undefined : gatewayMatch === "true";
+    if (cat) entries.set(m[1], { category: cat, enforcedBy, gatewayVerifyJwt });
   }
 }
 
@@ -59,6 +62,19 @@ const fns = readdirSync(FN_DIR).filter((d) => {
 const errors = [];
 const warnings = [];
 
+// O CLI usa config.toml ao publicar. Funções que validam JWT no próprio
+// handler e aceitam publishable keys precisam registrar explicitamente o
+// comportamento do gateway para um redeploy não alterar o contrato remoto.
+const configSrc = readFileSync(CONFIG_PATH, "utf8");
+const gatewayConfig = new Map();
+{
+  const re = /^\[functions\.([a-z0-9-]+)\]\s*\nverify_jwt\s*=\s*(true|false)\s*$/gm;
+  let match;
+  while ((match = re.exec(configSrc)) !== null) {
+    gatewayConfig.set(match[1], match[2] === "true");
+  }
+}
+
 // 3) Coverage check
 const missingFromManifest = fns.filter((f) => !entries.has(f));
 const ghostInManifest = [...entries.keys()].filter((k) => !fns.includes(k));
@@ -74,6 +90,16 @@ for (const fn of ghostInManifest) {
     `[manifest] Manifest declara "${fn}" mas a função não existe em supabase/functions/. ` +
       `Remova a entrada ou recrie a função.`,
   );
+}
+for (const [fn, entry] of entries) {
+  if (entry.gatewayVerifyJwt === undefined) continue;
+  const configured = gatewayConfig.get(fn);
+  if (configured !== entry.gatewayVerifyJwt) {
+    errors.push(
+      `[gateway] ${fn}: manifest exige verify_jwt=${entry.gatewayVerifyJwt}, ` +
+        `mas supabase/config.toml registra ${configured ?? "nenhum valor"}.`,
+    );
+  }
 }
 
 // 4) Enforcement check para supervisor/dev

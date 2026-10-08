@@ -1,14 +1,17 @@
 # 🛡️ Security Alerts — Configuração Completa
 
-Este repo tem 4 camadas de defesa de segurança. As 2 primeiras já estão como código (este PR adiciona a 4ª). As 2 do meio precisam ser ativadas no UI.
+Este repositório usa cinco camadas de defesa. Dependabot Alerts e atualizações
+de segurança foram habilitados pela API em 07/10/2026. O CodeQL executa e
+preserva o SARIF como artefato; o upload para a tela de Code Scanning depende
+de um recurso indisponível no plano atual do repositório privado.
 
 | # | Camada | Onde | Status |
 |---|---|---|---|
 | 1 | Gitleaks (segredos no diff) | `.github/workflows/security.yml` | ✅ Ativo (mergeado anteriormente) |
 | 2 | Dependabot Updates (PRs de bumps) | `.github/dependabot.yml` | ✅ Ativo (mergeado anteriormente) |
-| 3 | Dependabot Security Alerts (CVEs) | UI Settings → Code security | ⏳ **Ativar** |
-| 4 | Code Scanning (CodeQL) | `.github/workflows/codeql.yml` | ✅ Ativo (este PR) |
-| 5 | Secret Scanning Alerts (segredos publicados) | UI Settings → Code security | ⏳ **Ativar** |
+| 3 | Dependabot Security Alerts (CVEs) | GitHub Security | ✅ Ativo e validado pela API em 07/10/2026 |
+| 4 | CodeQL local com SARIF | `.github/workflows/codeql.yml` | ✅ Gate e artefato ativos; upload nativo indisponível |
+| 5 | Secret Scanning Alerts (segredos publicados) | UI Settings → Code security | ⏳ Depende de GitHub Advanced Security/plano |
 
 ---
 
@@ -22,14 +25,16 @@ Exemplo real: se `next-auth@4.22.0` ganhar um CVE crítico amanhã, o Dependabot
 
 ### Como ativar
 
-1. Acessar https://github.com/adm01-debug/Promo_Gifts/settings/security_analysis
+1. Acessar https://github.com/adm01-debug/Brindes_Sicoob_V2/settings/security_analysis
 2. Em **Dependency graph**: ☑ Enabled
 3. Em **Dependabot alerts**: ☑ Enabled
 4. Em **Dependabot security updates**: ☑ Enabled (cria PRs automáticos)
 
 ### Validação
 
-Após ativar, ir em https://github.com/adm01-debug/Promo_Gifts/security/dependabot. Deve listar todos os alertas conhecidos para o `package-lock.json` atual.
+Conferir em https://github.com/adm01-debug/Brindes_Sicoob_V2/security/dependabot.
+Uma resposta HTTP 204 do endpoint de alertas e HTTP 200 do endpoint de
+correções automáticas comprovaram a configuração em 07/10/2026.
 
 ---
 
@@ -58,7 +63,14 @@ CodeQL é o scanner de análise estática do GitHub. Roda no CI a cada PR + cron
 
 ### Onde ver os resultados
 
-Após o primeiro run completar, ir em https://github.com/adm01-debug/Promo_Gifts/security/code-scanning.
+Em cada execução do workflow **CodeQL**, consulte o resumo do job e baixe o
+artefato `codeql-javascript-typescript`, que preserva o SARIF por 14 dias. O
+gate `Publicar resumo e bloquear achados do SARIF` falha quando encontra um
+alerta.
+
+O workflow usa `upload: never` porque o Code Scanning não está habilitado neste
+repositório privado. Por isso, a tela **Security > Code scanning** não recebe os
+resultados dessa configuração.
 
 ---
 
@@ -70,7 +82,7 @@ Diferente do Gitleaks (camada 1, que roda **localmente no CI**), o Secret Scanni
 
 ### Como ativar
 
-1. Acessar https://github.com/adm01-debug/Promo_Gifts/settings/security_analysis
+1. Acessar https://github.com/adm01-debug/Brindes_Sicoob_V2/settings/security_analysis
 2. Em **Secret scanning**: ☑ Enabled
 3. Em **Push protection**: ☑ Enabled (bloqueia o push antes mesmo de chegar no GitHub)
 
@@ -91,4 +103,6 @@ Push Protection elimina a janela de exposição. Vale a pena.
 - **CodeQL** (PR + cron) varre código por padrões inseguros
 - **Secret Scanning + Push Protection** (real-time) bloqueia secrets antes do push
 
-Camadas 1-2-4 são código (controladas via PRs). Camadas 3 e 5 são toggles UI controlados por você.
+Camadas 1, 2 e 4 são controladas por código. A camada 3 está habilitada na
+configuração do repositório. A camada 5 exige disponibilidade do recurso no
+plano GitHub antes de poder ser ativada.

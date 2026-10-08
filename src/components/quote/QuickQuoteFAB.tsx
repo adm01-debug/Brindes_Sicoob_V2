@@ -1,20 +1,14 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  FileText,
-  Plus,
-  X,
-  Wand2,
-  Calculator,
-  ShoppingCart,
-  Bot,
-} from "lucide-react";
+import { FileText, Plus, Wand2, Calculator, ShoppingCart, Bot } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { lazyWithRetry } from "@/lib/lazyWithRetry";
-import { Suspense } from "react";
 import { useOracleVoiceBridge } from "@/stores/oracleVoiceBridge";
+
+const NEW_QUOTE_PATH = "/orcamentos/novo";
+const MOCKUP_GENERATOR_PATH = "/mockup-generator";
 
 const ExpertChatDialog = lazyWithRetry(() => import("@/components/expert/ExpertChatDialog").then(m => ({ default: m.ExpertChatDialog })));
 
@@ -33,7 +27,7 @@ const quickActions: QuickAction[] = [
     label: "Novo Orçamento",
     description: "Criar orçamento do zero",
     icon: FileText,
-    href: "/orcamentos/novo",
+    href: NEW_QUOTE_PATH,
     color: "bg-primary text-primary-foreground",
   },
   {
@@ -41,7 +35,7 @@ const quickActions: QuickAction[] = [
     label: "Gerar Mockup",
     description: "Visualização com logo",
     icon: Wand2,
-    href: "/mockup-generator",
+    href: MOCKUP_GENERATOR_PATH,
     color: "bg-primary/80 text-primary-foreground",
   },
   {
@@ -75,7 +69,7 @@ interface QuickQuoteFABProps {
   productName?: string;
 }
 
-export function QuickQuoteFAB({ productId, productName }: QuickQuoteFABProps) {
+export function QuickQuoteFAB({ productId }: QuickQuoteFABProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [expertOpen, setExpertOpen] = useState(false);
   const [voiceInitialMessage, setVoiceInitialMessage] = useState<string | undefined>();
@@ -94,7 +88,7 @@ export function QuickQuoteFAB({ productId, productName }: QuickQuoteFABProps) {
   }, [bridgeOpen, expertOpen, pendingMessage]);
 
   // Don't show on certain pages
-  const hiddenPaths = ["/orcamentos/novo", "/login", "/mockup-generator"];
+  const hiddenPaths = [NEW_QUOTE_PATH, "/login", MOCKUP_GENERATOR_PATH];
   if (hiddenPaths.some((path) => location.pathname.startsWith(path))) {
     return null;
   }
@@ -113,9 +107,9 @@ export function QuickQuoteFAB({ productId, productName }: QuickQuoteFABProps) {
       return;
     }
     
-    if (productId && href === "/orcamentos/novo") {
+    if (productId && href === NEW_QUOTE_PATH) {
       navigate(`${href}?productId=${productId}`);
-    } else if (productId && href === "/mockup-generator") {
+    } else if (productId && href === MOCKUP_GENERATOR_PATH) {
       navigate(`${href}?productId=${productId}`);
     } else {
       navigate(href);

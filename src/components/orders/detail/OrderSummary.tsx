@@ -1,6 +1,6 @@
 import { Separator } from "@/components/ui/separator";
 import { formatCurrency } from "@/lib/format";
-import { OrderRow } from "@/types/orders";
+import { type OrderRow } from "@/types/orders";
 
 interface OrderSummaryProps {
   order: OrderRow;
@@ -9,7 +9,7 @@ interface OrderSummaryProps {
 export function OrderSummary({ order }: OrderSummaryProps) {
   return (
     <div className="space-y-2 mt-4">
-      {order.subtotal != null && (
+      {order.subtotal !== null && order.subtotal !== undefined && (
         <div className="flex justify-between text-sm">
           <span className="text-muted-foreground">Subtotal:</span>
           <span>{formatCurrency(order.subtotal)}</span>

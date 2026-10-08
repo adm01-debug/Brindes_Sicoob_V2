@@ -1,5 +1,13 @@
 import { describe, it, expect } from 'vitest';
-import { getProductImageUrl, getProductPrice, getProductStock, shouldFallbackSelect } from '@/lib/external-db/product-types';
+import {
+  getProductImageUrl,
+  getProductPrice,
+  getProductStock,
+  PRODUCT_SELECT_FIELDS_DETAIL,
+  PRODUCT_SELECT_FIELDS_LEGACY,
+  PRODUCT_SELECT_FIELDS_WITH_SALE,
+  shouldFallbackSelect,
+} from '@/lib/external-db/product-types';
 import type { PromobrindProduct } from '@/lib/external-db/product-types';
 
 const baseProduct: PromobrindProduct = {
@@ -76,5 +84,16 @@ describe('shouldFallbackSelect', () => {
 
   it('should handle string errors', () => {
     expect(shouldFallbackSelect('sale_price does not exist')).toBe(true);
+  });
+});
+
+describe('contrato de seleção do catálogo', () => {
+  it.each([
+    PRODUCT_SELECT_FIELDS_DETAIL,
+    PRODUCT_SELECT_FIELDS_WITH_SALE,
+    PRODUCT_SELECT_FIELDS_LEGACY,
+  ])('não solicita a coluna legada dimensions', (select) => {
+    expect(select.split(',').map((field) => field.trim())).not.toContain('dimensions');
+    expect(select).toContain('height_cm');
   });
 });

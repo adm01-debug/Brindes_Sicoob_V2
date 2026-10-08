@@ -13,7 +13,7 @@
  */
 import { test, expect, requireAuth } from "../fixtures/test-base";
 import { gotoAndSettle } from "../helpers/nav";
-import { installFavoritesCleanup } from "../helpers/favorites";
+import { installFavoritesCleanup, setCatalogFavorite } from "../helpers/favorites";
 import { Sel } from "../fixtures/selectors";
 import type { Page } from "@playwright/test";
 
@@ -97,14 +97,12 @@ test.describe("Persistência de favoritos via localStorage", () => {
     await gotoAndSettle(page, "/produtos");
     await waitForReady(page);
 
-    const before = await readStorage(page);
-
     // 1. Favorita o 1º card via UI
     const card = page.locator(Sel.product.card).first();
     await card.waitFor({ state: "visible", timeout: 15_000 });
-    const favBtn = card.locator(Sel.product.favorite).first();
-    await favBtn.waitFor({ state: "visible" });
-    await favBtn.click();
+    await setCatalogFavorite(page, card, false);
+    const before = await readStorage(page);
+    await setCatalogFavorite(page, card, true);
 
     // 2. Espera o storage refletir +1 item
     await expect

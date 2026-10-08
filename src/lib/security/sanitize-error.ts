@@ -57,6 +57,20 @@ interface ErrorLike {
   status?: number;
 }
 
+function sensitiveMessage(code: string): string {
+  if (code === "rate_limited") return SAFE_MESSAGES.RATE_LIMITED;
+  if (code === "step_up_required" || code === "step_up_invalid") return SAFE_MESSAGES.STEP_UP_EXPIRED;
+  return SAFE_MESSAGES.AUTH_GENERIC;
+}
+
+function statusMessage(status: number, code: string): string | null {
+  if (status === 401 || status === 403) return SAFE_MESSAGES.AUTH_GENERIC;
+  if (status === 422 || code === "validation_failed") return SAFE_MESSAGES.VALIDATION;
+  if (status === 429) return SAFE_MESSAGES.RATE_LIMITED;
+  if (status >= 500) return SAFE_MESSAGES.GENERIC;
+  return null;
+}
+
 /**
  * Recebe a resposta de uma edge function ou um Error e devolve uma
  * mensagem segura para exibir ao usuário.
@@ -75,18 +89,9 @@ export function sanitizeError(input: unknown): string {
   const code = String(obj.error ?? obj.code ?? "").toLowerCase();
   const status = obj.status ?? 0;
 
-  // 401/403 → sempre genérico (não diferencia autenticação de autorização)
-  if (status === 401 || status === 403) return SAFE_MESSAGES.AUTH_GENERIC;
-
-  if (SENSITIVE_CODES.has(code)) {
-    if (code === "rate_limited") return SAFE_MESSAGES.RATE_LIMITED;
-    if (code === "step_up_required" || code === "step_up_invalid") return SAFE_MESSAGES.STEP_UP_EXPIRED;
-    return SAFE_MESSAGES.AUTH_GENERIC;
-  }
-
-  if (status === 422 || code === "validation_failed") return SAFE_MESSAGES.VALIDATION;
-  if (status === 429) return SAFE_MESSAGES.RATE_LIMITED;
-  if (status >= 500) return SAFE_MESSAGES.GENERIC;
+  const byStatus = statusMessage(status, code);
+  if (byStatus) return byStatus;
+  if (SENSITIVE_CODES.has(code)) return sensitiveMessage(code);
 
   // Códigos não-sensíveis: pode usar a mensagem (já é da nossa Zod) — fallback genérico
   return SAFE_MESSAGES.GENERIC;

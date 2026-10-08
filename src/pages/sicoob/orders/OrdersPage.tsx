@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useCallback } from "react";
+import { useState, useMemo, useEffect, type MouseEvent, type ReactNode } from "react";
 // import { MainLayout } from "@/components/layout/MainLayout";
 import { PageSEO } from "@/components/seo/PageSEO";
 import { Button } from "@/components/ui/button";
@@ -17,11 +17,9 @@ import {
   FileSpreadsheet,
   ChevronLeft,
   ChevronRight,
-  DollarSign,
   ShoppingCart,
   Clock,
   CheckCircle2,
-  ArrowUpRight,
   Target,
   BarChart3,
   RotateCcw,
@@ -58,19 +56,18 @@ import { Calendar } from "@/components/ui/calendar";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { format, parseISO, isWithinInterval, subDays, startOfMonth, endOfMonth, isAfter } from "date-fns";
+import { format, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import type { DateRange } from "react-day-picker";
 import { useAuth } from "@/contexts/AuthContext";
 import { useGlobalShortcuts } from "@/hooks/useGlobalShortcuts";
 import { OrderStatusBadge } from "@/components/sicoob/orders/OrderStatusBadge";
-import { OrderStatus, ORDER_STATUS_OPTIONS } from "@/types/sicoob/orders";
+import { type OrderStatus, ORDER_STATUS_OPTIONS, type SicoobOrder } from "@/types/sicoob/orders";
 import { sicoobOrderService } from "@/services/sicoob/orderService";
 import { isCommittedSicoobOrder, sumCommittedSicoobOrders } from "@/utils/sicoob/orderFinancials";
 import { sicoobCommonService } from "@/services/sicoob/commonService";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import { motion } from "framer-motion";
 
 function escapeCsvCell(value: unknown): string {
@@ -78,829 +75,241 @@ function escapeCsvCell(value: unknown): string {
   return `"${normalized.replace(/"/g, '""')}"`;
 }
 
-export default function OrdersPage() {
-  const navigate = useNavigate();
-  const [searchParams, setSearchParams] = useSearchParams();
-  const { isVendedorRole, isAdmin, user } = useAuth();
-  const canCreateOrder = isVendedorRole || isAdmin;
-  const [isExporting, setIsExporting] = useState<'csv' | 'pdf' | 'xlsx' | null>(null);
-  const [selectedOrderIds, setSelectedOrderIds] = useState<string[]>([]);
-  const [isBulkApproving, setIsExportingBulk] = useState(false);
+const ALL_FILTER = "all";
+const ORDERS_QUERY_KEY = "sicoob_orders_list";
+const EXPORT_ERROR_PREFIX = "Erro na exportação: ";
+const EXPORT_DATE_FORMAT = "yyyy-MM-dd";
+const PAGE_SIZE = 9;
 
-  useGlobalShortcuts({
-    onSearchFocus: () => {
-      const searchInput = document.querySelector<HTMLInputElement>('input[placeholder*="Buscar"]');
-      searchInput?.focus();
-    }
-  });
+function initialRange(searchParams: URLSearchParams): DateRange | undefined {
+  const from = searchParams.get("from");
+  if (!from) return undefined;
+  const to = searchParams.get("to");
+  return { from: new Date(from), to: to ? new Date(to) : undefined };
+}
 
+function useOrderFilters(searchParams: URLSearchParams, setSearchParams: ReturnType<typeof useSearchParams>[1]) {
   const [searchTerm, setSearchTerm] = useState(searchParams.get("search") || "");
-  const [statusFilter, setStatusFilter] = useState<string>(searchParams.get("status") || "all");
-  const [paFilter, setPaFilter] = useState<string>(searchParams.get("pa") || "all");
-  const [singularFilter, setSingularFilter] = useState<string>(searchParams.get("singular") || "all");
-
+  const [statusFilter, setStatusFilter] = useState(searchParams.get("status") || ALL_FILTER);
+  const [paFilter, setPaFilter] = useState(searchParams.get("pa") || ALL_FILTER);
+  const [singularFilter, setSingularFilter] = useState(searchParams.get("singular") || ALL_FILTER);
+  const [dateRange, setDateRange] = useState<DateRange | undefined>(() => initialRange(searchParams));
   const [page, setPage] = useState(1);
-  const pageSize = 9;
-
-  const queryClient = useQueryClient();
-  const { data: ordersData, isLoading: isLoadingOrders } = useQuery({
-    queryKey: ["sicoob_orders_list", searchTerm, statusFilter, paFilter, singularFilter, searchParams.get("from"), searchParams.get("to"), page],
-    queryFn: () => sicoobOrderService.listOrders({
-        search: searchTerm,
-        status: statusFilter,
-        pa_id: paFilter,
-        cooperative_id: singularFilter,
-        from: searchParams.get("from") || undefined,
-        to: searchParams.get("to") || undefined,
-        page,
-        pageSize
-      })
-  });
-
-  // Real-time synchronization
-  useEffect(() => {
-    return sicoobCommonService.subscribeToOrders(() => {
-      queryClient.invalidateQueries({ queryKey: ["sicoob_orders_list"] });
-      queryClient.invalidateQueries({ queryKey: ["sicoob_orders_all_stats"] });
-    });
-  }, [queryClient]);
-
-  const allOrdersForStats = useQuery({
-    queryKey: ["sicoob_orders_all_stats"],
-    queryFn: async () => {
-      const { orders } = await sicoobOrderService.listOrders();
-      return orders;
-    }
-  });
-
-  const stats = useMemo(() => {
-    if (!allOrdersForStats.data) return null;
-    
-    const orders = allOrdersForStats.data;
-    const committedOrders = orders.filter(isCommittedSicoobOrder);
-    const totalRevenue = sumCommittedSicoobOrders(committedOrders);
-    const avgTicket = committedOrders.length > 0 ? totalRevenue / committedOrders.length : 0;
-    
-    const statusCounts = orders.reduce((acc, o) => {
-      acc[o.status] = (acc[o.status] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
-
-    const criticalSla = orders.filter(o => o.sla_status === 'critical').length;
-    
-    return {
-      totalRevenue,
-      avgTicket,
-      totalCount: orders.length,
-      criticalSla,
-      statusCounts
-    };
-  }, [allOrdersForStats.data]);
-
-  const filteredOrders = ordersData?.orders || [];
-  const totalOrders = ordersData?.total || 0;
-  const totalPages = Math.ceil(totalOrders / pageSize);
-
-  const exportToCSV = async () => {
-    setIsExporting('csv');
-    try {
-      const headers = ["ID", "PA", "Singular", "Status", "Total (R$)", "Data"];
-      const rows = filteredOrders.map(o => [
-        o.id,
-        (o as any).pa?.nome || o.pa_id,
-        (o as any).cooperativa?.nome || o.cooperative_id,
-        o.status,
-        o.total_amount.toFixed(2),
-        o.created_at
-      ]);
-      
-      const csvContent = [
-        headers.map(escapeCsvCell).join(","),
-        ...rows.map(r => r.map(escapeCsvCell).join(","))
-      ].join("\r\n");
-      
-      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-      const link = document.createElement("a");
-      const url = URL.createObjectURL(blob);
-      link.setAttribute("href", url);
-      link.setAttribute("download", `pedidos_sicoob_${format(new Date(), 'yyyy-MM-dd')}.csv`);
-      link.style.visibility = 'hidden';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-      
-      toast.success("Exportação CSV concluída");
-    } catch (error: unknown) {
-      toast.error("Erro na exportação: " + (error instanceof Error ? error.message : "falha inesperada"));
-    } finally {
-      setIsExporting(null);
-    }
-  };
-
-  const exportToPDF = async () => {
-    setIsExporting('pdf');
-    try {
-      const doc = new jsPDF();
-      
-      // Estilo Enterprise
-      doc.setFillColor(46, 176, 134); // Sicoob Green
-      doc.rect(0, 0, 210, 40, 'F');
-      
-      doc.setTextColor(255, 255, 255);
-      doc.setFontSize(22);
-      doc.text("PROMAGIFTS SICOOB", 14, 20);
-      doc.setFontSize(10);
-      doc.text("Relatório Consolidado de Governança e Pedidos", 14, 30);
-      doc.text(`Gerado em: ${new Date().toLocaleString('pt-BR')}`, 14, 35);
-
-      const tableData = filteredOrders.map(o => [
-        o.order_number || o.id.slice(0, 8),
-        (o as any).pa?.nome || o.pa_id,
-        (o as any).cooperativa?.nome || o.cooperative_id,
-        o.status.toUpperCase(),
-        `R$ ${o.total_amount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`,
-        format(parseISO(o.created_at), "dd/MM/yyyy")
-      ]);
-
-      autoTable(doc, {
-        startY: 50,
-        head: [["PEDIDO", "PONTO DE ATENDIMENTO", "SINGULAR", "STATUS", "TOTAL", "DATA"]],
-        body: tableData,
-        headStyles: { fillColor: [46, 176, 134] },
-        alternateRowStyles: { fillColor: [245, 247, 250] },
-      });
-
-      doc.save(`pedidos_sicoob_${format(new Date(), 'yyyy-MM-dd')}.pdf`);
-      toast.success("Exportação PDF concluída");
-    } catch (error: unknown) {
-      toast.error("Erro na exportação: " + (error instanceof Error ? error.message : "falha inesperada"));
-    } finally {
-      setIsExporting(null);
-    }
-  };
-
-  const exportToXLSX = async () => {
-    setIsExporting('xlsx');
-    try {
-      const data = filteredOrders.map(o => ({
-        "ID": o.id,
-        "PA": (o as any).pa?.nome || o.pa_id,
-        "Singular": (o as any).cooperativa?.nome || o.cooperative_id,
-        "Status": o.status,
-        "Total (R$)": o.total_amount,
-        "Data": format(parseISO(o.created_at), "dd/MM/yyyy")
-      }));
-
-      const worksheet = XLSX.utils.json_to_sheet(data);
-      const workbook = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(workbook, worksheet, "Pedidos Sicoob");
-      
-      XLSX.writeFile(workbook, `pedidos_sicoob_${format(new Date(), 'yyyy-MM-dd')}.xlsx`);
-      toast.success("Exportação XLSX concluída");
-    } catch (error: unknown) {
-      toast.error("Erro na exportação: " + (error instanceof Error ? error.message : "falha inesperada"));
-    } finally {
-      setIsExporting(null);
-    }
-  };
-
-  const handleBulkApprove = async () => {
-    if (selectedOrderIds.length === 0) return;
-    
-    setIsExportingBulk(true);
-    try {
-      const result = await sicoobOrderService.approveOrdersBulk(selectedOrderIds);
-      
-      if (result.failures.length > 0) {
-        toast.warning(`Aprovação concluída com avisos`, {
-          description: `${result.successes.length} aprovados, ${result.failures.length} falharam.`,
-        });
-      } else {
-        toast.success(`${result.successes.length} pedidos aprovados com sucesso!`);
-      }
-      
-      setSelectedOrderIds([]);
-    } catch (error: any) {
-      toast.error("Erro na aprovação em lote: " + error.message);
-    } finally {
-      setIsExportingBulk(false);
-    }
-  };
-
-  const handleReorder = async (orderId: string, e: React.MouseEvent) => {
-    e.stopPropagation();
-    try {
-      const newQuoteId = await sicoobOrderService.reorderOrder(orderId);
-      toast.success("Pedido duplicado!", {
-        description: "Um novo orçamento (rascunho) foi criado com os mesmos itens para revisão."
-      });
-      navigate(`/orcamentos/${newQuoteId}/editar`);
-    } catch (error: any) {
-      toast.error("Erro ao reordenar: " + error.message);
-    }
-  };
-
-  const toggleSelectOrder = (id: string) => {
-    setSelectedOrderIds(prev => 
-      prev.includes(id) ? prev.filter(oid => oid !== id) : [...prev, id]
-    );
-  };
-  
-  const initialDateRange = useMemo(() => {
-    const from = searchParams.get("from");
-    const to = searchParams.get("to");
-    if (from) {
-      return {
-        from: new Date(from),
-        to: to ? new Date(to) : undefined
-      };
-    }
-    return undefined;
-  }, []); // Only on mount
-
-  const [dateRange, setDateRange] = useState<DateRange | undefined>(initialDateRange);
-
-  // Sync state to URL and reset page on filter change
   useEffect(() => {
     const params = new URLSearchParams();
     if (searchTerm) params.set("search", searchTerm);
-    if (statusFilter !== "all") params.set("status", statusFilter);
-    if (paFilter !== "all") params.set("pa", paFilter);
-    if (singularFilter !== "all") params.set("singular", singularFilter);
+    if (statusFilter !== ALL_FILTER) params.set("status", statusFilter);
+    if (paFilter !== ALL_FILTER) params.set("pa", paFilter);
+    if (singularFilter !== ALL_FILTER) params.set("singular", singularFilter);
     if (dateRange?.from) params.set("from", dateRange.from.toISOString());
     if (dateRange?.to) params.set("to", dateRange.to.toISOString());
-    
     setSearchParams(params, { replace: true });
-    setPage(1); // Reset page when filters change
-  }, [searchTerm, statusFilter, paFilter, singularFilter, dateRange]);
+    setPage(1);
+  }, [searchTerm, statusFilter, paFilter, singularFilter, dateRange, setSearchParams]);
+  const clear = () => { setStatusFilter(ALL_FILTER); setPaFilter(ALL_FILTER); setSingularFilter(ALL_FILTER); setDateRange(undefined); };
+  const activeCount = Number(statusFilter !== ALL_FILTER) + Number(paFilter !== ALL_FILTER) + Number(singularFilter !== ALL_FILTER) + Number(Boolean(dateRange?.from));
+  return { searchTerm, setSearchTerm, statusFilter, setStatusFilter, paFilter, setPaFilter, singularFilter, setSingularFilter, dateRange, setDateRange, page, setPage, clear, activeCount };
+}
 
+type FilterController = ReturnType<typeof useOrderFilters>;
+type OrderStats = { totalRevenue: number; avgTicket: number; totalCount: number; criticalSla: number; statusCounts: Record<string, number> };
 
-  const { data: pas = [] } = useQuery({
-    queryKey: ["postos_atendimento"],
-    queryFn: () => sicoobCommonService.listPostosAtendimento()
+function calculateStats(orders: SicoobOrder[]): OrderStats {
+  const committedOrders = orders.filter(isCommittedSicoobOrder);
+  const totalRevenue = sumCommittedSicoobOrders(committedOrders);
+  const statusCounts = orders.reduce<Record<string, number>>((counts, order) => ({ ...counts, [order.status]: (counts[order.status] || 0) + 1 }), {});
+  return { totalRevenue, avgTicket: committedOrders.length ? totalRevenue / committedOrders.length : 0, totalCount: orders.length, criticalSla: orders.filter(order => order.sla_status === "critical").length, statusCounts };
+}
+
+function listRequest(filters: FilterController) {
+  return { search: filters.searchTerm, status: filters.statusFilter, pa_id: filters.paFilter, cooperative_id: filters.singularFilter, from: filters.dateRange?.from?.toISOString(), to: filters.dateRange?.to?.toISOString(), page: filters.page, pageSize: PAGE_SIZE };
+}
+
+function normalizeOrderPage(data: { orders: SicoobOrder[]; total: number } | undefined) {
+  if (!data) return { orders: [], total: 0, totalPages: 0 };
+  return { orders: data.orders, total: data.total, totalPages: Math.ceil(data.total / PAGE_SIZE) };
+}
+
+function useOrdersData(filters: FilterController) {
+  const queryClient = useQueryClient();
+  const { data, isLoading } = useQuery({
+    queryKey: [ORDERS_QUERY_KEY, filters.searchTerm, filters.statusFilter, filters.paFilter, filters.singularFilter, filters.dateRange?.from, filters.dateRange?.to, filters.page],
+    queryFn: () => sicoobOrderService.listOrders(listRequest(filters)),
   });
+  useEffect(() => sicoobCommonService.subscribeToOrders(() => {
+    queryClient.invalidateQueries({ queryKey: [ORDERS_QUERY_KEY] });
+    queryClient.invalidateQueries({ queryKey: ["sicoob_orders_all_stats"] });
+  }), [queryClient]);
+  const allOrders = useQuery({ queryKey: ["sicoob_orders_all_stats"], queryFn: async () => (await sicoobOrderService.listOrders()).orders });
+  const stats = useMemo(() => allOrders.data ? calculateStats(allOrders.data) : null, [allOrders.data]);
+  const pas = useQuery({ queryKey: ["postos_atendimento"], queryFn: () => sicoobCommonService.listPostosAtendimento() }).data ?? [];
+  const cooperatives = useQuery({ queryKey: ["cooperativas"], queryFn: () => sicoobCommonService.listCooperativas() }).data ?? [];
+  return { ...normalizeOrderPage(data), isLoading, stats, pas, cooperatives };
+}
 
-  const { data: cooperatives = [] } = useQuery({
-    queryKey: ["cooperativas"],
-    queryFn: () => sicoobCommonService.listCooperativas()
-  });
+type OrdersData = ReturnType<typeof useOrdersData>;
 
-  const paOptions = pas;
-  const singularOptions = cooperatives;
+const UNEXPECTED_FAILURE = "falha inesperada";
+const DISPLAY_DATE_FORMAT = "dd/MM/yyyy";
+const MUTED_TEXT_CLASS = "text-muted-foreground";
+function exportFailure(error: unknown) { toast.error(EXPORT_ERROR_PREFIX + (error instanceof Error ? error.message : UNEXPECTED_FAILURE)); }
+function exportFileName(extension: string): string { return `pedidos_sicoob_${format(new Date(), EXPORT_DATE_FORMAT)}.${extension}`; }
 
+function exportCsv(orders: SicoobOrder[]) {
+  const headers = ["ID", "PA", "Singular", "Status", "Total (R$)", "Data"];
+  const rows = orders.map(order => [order.id, order.pa?.nome || order.pa_id, order.cooperativa?.nome || order.cooperative_id, order.status, order.total_amount.toFixed(2), order.created_at]);
+  const csv = [headers.map(escapeCsvCell).join(","), ...rows.map(row => row.map(escapeCsvCell).join(","))].join("\r\n");
+  const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8;" }));
+  const link = document.createElement("a");
+  link.href = url; link.download = exportFileName("csv"); link.style.visibility = "hidden";
+  document.body.appendChild(link); link.click(); link.remove(); URL.revokeObjectURL(url);
+}
 
-  const activeFiltersCount =
-    (statusFilter !== "all" ? 1 : 0) +
-    (paFilter !== "all" ? 1 : 0) +
-    (singularFilter !== "all" ? 1 : 0) +
-    (dateRange?.from ? 1 : 0);
+function exportPdf(orders: SicoobOrder[]) {
+  const doc = new jsPDF();
+  doc.setFillColor(46, 176, 134); doc.rect(0, 0, 210, 40, "F"); doc.setTextColor(255, 255, 255);
+  doc.setFontSize(22); doc.text("PROMAGIFTS SICOOB", 14, 20); doc.setFontSize(10);
+  doc.text("Relatório Consolidado de Governança e Pedidos", 14, 30); doc.text(`Gerado em: ${new Date().toLocaleString("pt-BR")}`, 14, 35);
+  const body = orders.map(order => [order.order_number || order.id.slice(0, 8), order.pa?.nome || order.pa_id, order.cooperativa?.nome || order.cooperative_id, order.status.toUpperCase(), `R$ ${order.total_amount.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`, format(parseISO(order.created_at), DISPLAY_DATE_FORMAT)]);
+  autoTable(doc, { startY: 50, head: [["PEDIDO", "PONTO DE ATENDIMENTO", "SINGULAR", "STATUS", "TOTAL", "DATA"]], body, headStyles: { fillColor: [46, 176, 134] }, alternateRowStyles: { fillColor: [245, 247, 250] } });
+  doc.save(exportFileName("pdf"));
+}
 
-  const clearFilters = () => {
-    setStatusFilter("all");
-    setPaFilter("all");
-    setSingularFilter("all");
-    setDateRange(undefined);
+function exportXlsx(orders: SicoobOrder[]) {
+  const data = orders.map(order => ({ ID: order.id, PA: order.pa?.nome || order.pa_id, Singular: order.cooperativa?.nome || order.cooperative_id, Status: order.status, "Total (R$)": order.total_amount, Data: format(parseISO(order.created_at), DISPLAY_DATE_FORMAT) }));
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(data), "Pedidos Sicoob");
+  XLSX.writeFile(workbook, exportFileName("xlsx"));
+}
+
+function useOrderExports(orders: SicoobOrder[]) {
+  const [isExporting, setIsExporting] = useState<"csv" | "pdf" | "xlsx" | null>(null);
+  const run = async (kind: "csv" | "pdf" | "xlsx", action: () => void) => {
+    setIsExporting(kind);
+    try { action(); toast.success(`Exportação ${kind.toUpperCase()} concluída`); } catch (error) { exportFailure(error); } finally { setIsExporting(null); }
   };
+  return { isExporting, exportToCSV: () => run("csv", () => exportCsv(orders)), exportToPDF: () => run("pdf", () => exportPdf(orders)), exportToXLSX: () => run("xlsx", () => exportXlsx(orders)) };
+}
 
-  return (
-    <>
-      <PageSEO title="Pedidos Sicoob" description="Gerenciamento de pedidos do ecossistema Sicoob." path="/sicoob/pedidos" noIndex />
+type OrdersController = ReturnType<typeof useOrdersController>;
+const EMPTY_STATS: OrderStats = { totalRevenue: 0, avgTicket: 0, totalCount: 0, criticalSla: 0, statusCounts: {} };
 
-      <div className="space-y-6 max-w-[1920px] mx-auto w-full">
-        {/* Advanced BI/Stats Section */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-4 relative">
-          <div className="absolute -top-12 right-0 flex items-center gap-2">
-             <Badge variant="outline" className="bg-sicoob-green/5 text-sicoob-green border-sicoob-green/20 text-[10px] animate-pulse">
-               Live BI Active
-             </Badge>
-          </div>
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-            <Card className="bg-gradient-to-br from-sicoob-green/10 to-transparent border-sicoob-green/20 overflow-hidden relative group">
-              <div className="absolute top-2 right-2">
-                 <Button variant="ghost" size="icon" className="h-6 w-6 text-sicoob-green rounded-full bg-white/50 hover:bg-white shadow-sm" onClick={() => setStatusFilter("draft")}>
-                    <RotateCcw className="h-3 w-3" />
-                 </Button>
-              </div>
-              <div className="absolute -right-4 -bottom-4 opacity-10 group-hover:scale-110 transition-transform">
-                <DollarSign className="h-24 w-24 text-sicoob-green" />
-              </div>
-              <CardHeader className="pb-2">
-                <CardDescription className="text-[10px] uppercase font-bold tracking-wider text-sicoob-green flex items-center gap-1">
-                  <BarChart3 className="h-3 w-3" /> Volume Transacionado
-                </CardDescription>
-                <CardTitle className="text-2xl font-display font-bold">
-                  R$ {stats?.totalRevenue.toLocaleString('pt-BR', { maximumFractionDigits: 0 }) || '0'}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center gap-2 text-[10px] text-muted-foreground mt-2">
-                  Dados consolidados no recorte selecionado
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
+function useOrderSelection(navigate: ReturnType<typeof useNavigate>) {
+  const [selectedOrderIds, setSelectedOrderIds] = useState<string[]>([]);
+  const [isBulkApproving, setIsBulkApproving] = useState(false);
+  const toggle = (id: string) => setSelectedOrderIds(previous => previous.includes(id) ? previous.filter(orderId => orderId !== id) : [...previous, id]);
+  const approve = async () => {
+    if (!selectedOrderIds.length) return;
+    setIsBulkApproving(true);
+    try {
+      const result = await sicoobOrderService.approveOrdersBulk(selectedOrderIds);
+      if (result.failures.length) toast.warning("Aprovação concluída com avisos", { description: `${result.successes.length} aprovados, ${result.failures.length} falharam.` });
+      else toast.success(`${result.successes.length} pedidos aprovados com sucesso!`);
+      setSelectedOrderIds([]);
+    } catch (error) {
+      toast.error("Erro na aprovação em lote: " + (error instanceof Error ? error.message : UNEXPECTED_FAILURE));
+    } finally { setIsBulkApproving(false); }
+  };
+  const reorder = async (orderId: string, event: MouseEvent) => {
+    event.stopPropagation();
+    try {
+      const quoteId = await sicoobOrderService.reorderOrder(orderId);
+      toast.success("Pedido duplicado!", { description: "Um novo orçamento (rascunho) foi criado com os mesmos itens para revisão." });
+      navigate(`/orcamentos/${quoteId}/editar`);
+    } catch (error) { toast.error("Erro ao reordenar: " + (error instanceof Error ? error.message : UNEXPECTED_FAILURE)); }
+  };
+  return { selectedOrderIds, setSelectedOrderIds, isBulkApproving, toggle, approve, reorder };
+}
 
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-            <Card className="border-border/40 overflow-hidden relative group">
-              <CardHeader className="pb-2">
-                <CardDescription className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground flex items-center gap-1">
-                  <Target className="h-3 w-3" /> Ticket Médio
-                </CardDescription>
-                <CardTitle className="text-2xl font-display font-bold">
-                  R$ {stats?.avgTicket.toLocaleString('pt-BR', { maximumFractionDigits: 0 }) || '0'}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
-                  Calculado sobre pedidos confirmados ou posteriores
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
+function useOrdersController() {
+  const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const { isVendedor, isAdmin } = useAuth();
+  const filters = useOrderFilters(searchParams, setSearchParams);
+  const data = useOrdersData(filters);
+  const exports = useOrderExports(data.orders);
+  const selection = useOrderSelection(navigate);
+  useGlobalShortcuts({ onSearchFocus: () => document.querySelector<HTMLInputElement>('input[placeholder*="Buscar"]')?.focus() });
+  return { navigate, canCreateOrder: isVendedor || isAdmin, filters, data, exports, selection };
+}
 
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
-            <Card className="border-border/40 overflow-hidden relative group">
-              <CardHeader className="pb-2">
-                <CardDescription className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground flex items-center gap-1">
-                  <ShoppingCart className="h-3 w-3" /> Total de Pedidos
-                </CardDescription>
-                <CardTitle className="text-2xl font-display font-bold">
-                  {stats?.totalCount || '0'} <span className="text-xs font-normal text-muted-foreground">unid.</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
-                  Pedidos encontrados no recorte selecionado
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
+function MetricCard({ icon, label, value, detail, accent = false }: { icon: ReactNode; label: string; value: ReactNode; detail: string; accent?: boolean }) {
+  return <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}><Card className={accent ? "bg-gradient-to-br from-sicoob-green/10 to-transparent border-sicoob-green/20 overflow-hidden relative group" : "border-border/40 overflow-hidden relative group"}><CardHeader className="pb-2"><CardDescription className={cn("text-[10px] uppercase font-bold tracking-wider flex items-center gap-1", accent ? "text-sicoob-green" : MUTED_TEXT_CLASS)}>{icon}{label}</CardDescription><CardTitle className="text-2xl font-display font-bold">{value}</CardTitle></CardHeader><CardContent><div className="flex items-center gap-2 text-[10px] text-muted-foreground mt-2">{detail}</div></CardContent></Card></motion.div>;
+}
 
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
-            <Card className={cn(
-              "border-border/40 overflow-hidden relative group transition-colors",
-              (stats?.criticalSla || 0) > 0 ? "bg-destructive/5 border-destructive/20" : ""
-            )}>
-              <CardHeader className="pb-2">
-                <CardDescription className={cn(
-                  "text-[10px] uppercase font-bold tracking-wider flex items-center gap-1",
-                  (stats?.criticalSla || 0) > 0 ? "text-destructive" : "text-muted-foreground"
-                )}>
-                  <Clock className="h-3 w-3" /> Alertas de SLA
-                </CardDescription>
-                <CardTitle className={cn(
-                  "text-2xl font-display font-bold",
-                  (stats?.criticalSla || 0) > 0 ? "text-destructive" : ""
-                )}>
-                  {stats?.criticalSla || '0'}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center gap-1 text-[10px] font-bold">
-                  {(stats?.criticalSla || 0) > 0 ? (
-                    <>
-                      <AlertTriangle className="h-3 w-3 text-destructive" />
-                      <span className="text-destructive">Ações urgentes requeridas</span>
-                    </>
-                  ) : (
-                    <>
-                      <CheckCircle2 className="h-3 w-3 text-sicoob-green" />
-                      <span className="text-sicoob-green">Todos SLAs em conformidade</span>
-                    </>
-                  )}
-                </div>
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  className="w-full mt-2 h-7 text-[10px] font-bold border border-transparent hover:border-border"
-                  onClick={() => {
-                    setStatusFilter("pending");
-                    toast.info("Filtrando por pedidos com SLA Crítico");
-                  }}
-                >
-                  Ver Urgências <ArrowRight className="ml-1 h-3 w-3" />
-                </Button>
-              </CardContent>
-            </Card>
-          </motion.div>
-        </div>
+function CriticalSlaCard({ count, onFilter }: { count: number; onFilter: () => void }) {
+  const critical = count > 0;
+  return <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}><Card className={cn("border-border/40 overflow-hidden relative group transition-colors", critical && "bg-destructive/5 border-destructive/20")}><CardHeader className="pb-2"><CardDescription className={cn("text-[10px] uppercase font-bold tracking-wider flex items-center gap-1", critical ? "text-destructive" : MUTED_TEXT_CLASS)}><Clock className="h-3 w-3" /> Alertas de SLA</CardDescription><CardTitle className={cn("text-2xl font-display font-bold", critical && "text-destructive")}>{count}</CardTitle></CardHeader><CardContent><div className="flex items-center gap-1 text-[10px] font-bold">{critical ? <><AlertTriangle className="h-3 w-3 text-destructive" /><span className="text-destructive">Ações urgentes requeridas</span></> : <><CheckCircle2 className="h-3 w-3 text-sicoob-green" /><span className="text-sicoob-green">Todos SLAs em conformidade</span></>}</div><Button variant="ghost" size="sm" className="w-full mt-2 h-7 text-[10px] font-bold border border-transparent hover:border-border" onClick={onFilter}>Ver Urgências <ArrowRight className="ml-1 h-3 w-3" /></Button></CardContent></Card></motion.div>;
+}
 
-        <motion.div 
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-4 border-t border-border/40"
-        >
-          <div>
-            <h1 className="text-2xl font-display font-bold text-sicoob-green-dark">Gestão de Pedidos</h1>
-            <p className="text-xs text-muted-foreground">
-              Acompanhamento centralizado e inteligência de dados para o fluxo SICOOB.
-            </p>
-          </div>
+function StatsGrid({ stats, onCriticalFilter }: { stats: OrderStats | null; onCriticalFilter: () => void }) {
+  const current = stats ?? EMPTY_STATS;
+  return <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-4 relative"><div className="absolute -top-12 right-0"><Badge variant="outline" className="bg-sicoob-green/5 text-sicoob-green border-sicoob-green/20 text-[10px] animate-pulse">Live BI Active</Badge></div><MetricCard accent icon={<BarChart3 className="h-3 w-3" />} label="Volume Transacionado" value={`R$ ${current.totalRevenue.toLocaleString("pt-BR", { maximumFractionDigits: 0 })}`} detail="Dados consolidados no recorte selecionado" /><MetricCard icon={<Target className="h-3 w-3" />} label="Ticket Médio" value={`R$ ${current.avgTicket.toLocaleString("pt-BR", { maximumFractionDigits: 0 })}`} detail="Calculado sobre pedidos confirmados ou posteriores" /><MetricCard icon={<ShoppingCart className="h-3 w-3" />} label="Total de Pedidos" value={<>{current.totalCount} <span className="text-xs font-normal text-muted-foreground">unid.</span></>} detail="Pedidos encontrados no recorte selecionado" /><CriticalSlaCard count={current.criticalSla} onFilter={onCriticalFilter} /></div>;
+}
 
-          <div className="flex items-center gap-2">
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button variant="outline" disabled={isExporting !== null}>
-                  {isExporting ? (
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  ) : (
-                    <Download className="h-4 w-4 mr-2" />
-                  )}
-                  Exportar
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent align="end" className="w-48 p-2">
-                <div className="grid gap-1">
-                  <Button variant="ghost" className="justify-start font-normal h-8" onClick={exportToCSV}>
-                    <Download className="h-3 w-3 mr-2" />
-                    CSV
-                  </Button>
-                  <Button variant="ghost" className="justify-start font-normal h-8" onClick={exportToPDF}>
-                    <FileDown className="h-3 w-3 mr-2" />
-                    PDF
-                  </Button>
-                  <Button variant="ghost" className="justify-start font-normal h-8" onClick={exportToXLSX}>
-                    <FileSpreadsheet className="h-3 w-3 mr-2" />
-                    Excel (XLSX)
-                  </Button>
-                </div>
-              </PopoverContent>
-            </Popover>
-            <Button variant="outline" className="border-indigo-200 text-indigo-700 hover:bg-indigo-50" onClick={() => navigate('/gestor/auditoria')}>
-              <History className="h-4 w-4 mr-2" />
-              Auditoria
-            </Button>
-            <Button variant="outline" onClick={() => navigate("/sicoob/pedidos/kanban")}>
-              <LayoutGrid className="h-4 w-4 mr-2" />
-              Kanban
-            </Button>
-            {canCreateOrder && (
-              <Button onClick={() => navigate("/catalogo")}>
-                <Plus className="h-4 w-4 mr-2" />
-                Novo Pedido
-              </Button>
-            )}
-          </div>
-        </motion.div>
+function ExportMenu({ controller }: { controller: OrdersController["exports"] }) {
+  const { isExporting, exportToCSV, exportToPDF, exportToXLSX } = controller;
+  return <Popover><PopoverTrigger asChild><Button variant="outline" disabled={isExporting !== null}>{isExporting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Download className="h-4 w-4 mr-2" />}Exportar</Button></PopoverTrigger><PopoverContent align="end" className="w-48 p-2"><div className="grid gap-1"><Button variant="ghost" className="justify-start font-normal h-8" onClick={exportToCSV}><Download className="h-3 w-3 mr-2" />CSV</Button><Button variant="ghost" className="justify-start font-normal h-8" onClick={exportToPDF}><FileDown className="h-3 w-3 mr-2" />PDF</Button><Button variant="ghost" className="justify-start font-normal h-8" onClick={exportToXLSX}><FileSpreadsheet className="h-3 w-3 mr-2" />Excel (XLSX)</Button></div></PopoverContent></Popover>;
+}
 
-        {selectedOrderIds.length > 0 && (
-          <Card className="bg-sicoob-green/5 border-sicoob-green/30 animate-in slide-in-from-top-4 duration-300">
-            <CardContent className="py-3 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <Badge variant="secondary" className="bg-sicoob-green text-white">
-                  {selectedOrderIds.length} selecionados
-                </Badge>
-                <span className="text-sm font-medium text-sicoob-green-dark">Ações em lote disponíveis</span>
-              </div>
-              <div className="flex gap-2">
-                <Button variant="ghost" size="sm" onClick={() => setSelectedOrderIds([])}>
-                  Cancelar
-                </Button>
-                <Button 
-                  variant="outline"
-                  size="sm"
-                  className="gap-2 border-indigo-200 text-indigo-700 hover:bg-indigo-50"
-                  onClick={() => toast.success(`Alertas enviados para ${selectedOrderIds.length} pedidos`)}
-                >
-                  <Clock className="h-4 w-4" /> Notificar SLA
-                </Button>
-                <Button 
-                  size="sm" 
-                  className="bg-sicoob-green hover:bg-sicoob-green-dark"
-                  onClick={handleBulkApprove}
-                  disabled={isBulkApproving}
-                >
-                  {isBulkApproving ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <CheckCircle2 className="h-4 w-4 mr-2" />}
-                  Aprovar Selecionados
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        )}
+function PageHeader({ controller }: { controller: OrdersController }) {
+  return <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-4 border-t border-border/40"><div><h1 data-testid="page-title-sicoob-pedidos" className="text-2xl font-display font-bold text-sicoob-green-dark">Gestão de Pedidos</h1><p className="text-xs text-muted-foreground">Acompanhamento centralizado e inteligência de dados para o fluxo SICOOB.</p></div><div className="flex items-center gap-2"><ExportMenu controller={controller.exports} /><Button variant="outline" className="border-indigo-200 text-indigo-700 hover:bg-indigo-50" onClick={() => controller.navigate("/gestor/auditoria")}><History className="h-4 w-4 mr-2" />Auditoria</Button><Button variant="outline" onClick={() => controller.navigate("/sicoob/pedidos/kanban")}><LayoutGrid className="h-4 w-4 mr-2" />Kanban</Button>{controller.canCreateOrder && <Button onClick={() => controller.navigate("/catalogo")}><Plus className="h-4 w-4 mr-2" />Novo Pedido</Button>}</div></motion.div>;
+}
 
-        <div className="flex flex-col sm:flex-row gap-2">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Buscar por PA, Singular ou ID do pedido..."
-              className="pl-10"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </div>
+function BulkActions({ selection }: { selection: OrdersController["selection"] }) {
+  if (!selection.selectedOrderIds.length) return null;
+  return <Card className="bg-sicoob-green/5 border-sicoob-green/30 animate-in slide-in-from-top-4 duration-300"><CardContent className="py-3 flex items-center justify-between"><div className="flex items-center gap-3"><Badge variant="secondary" className="bg-sicoob-green text-white">{selection.selectedOrderIds.length} selecionados</Badge><span className="text-sm font-medium text-sicoob-green-dark">Ações em lote disponíveis</span></div><div className="flex gap-2"><Button variant="ghost" size="sm" onClick={() => selection.setSelectedOrderIds([])}>Cancelar</Button><Button variant="outline" size="sm" className="gap-2 border-indigo-200 text-indigo-700 hover:bg-indigo-50" onClick={() => toast.success(`Alertas enviados para ${selection.selectedOrderIds.length} pedidos`)}><Clock className="h-4 w-4" /> Notificar SLA</Button><Button size="sm" className="bg-sicoob-green hover:bg-sicoob-green-dark" onClick={selection.approve} disabled={selection.isBulkApproving}>{selection.isBulkApproving ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <CheckCircle2 className="h-4 w-4 mr-2" />}Aprovar Selecionados</Button></div></CardContent></Card>;
+}
 
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant="outline" className="justify-start">
-                <Filter className="h-4 w-4 mr-2" />
-                Filtros
-                {activeFiltersCount > 0 && (
-                  <Badge variant="secondary" className="ml-2 h-5 px-1.5">
-                    {activeFiltersCount}
-                  </Badge>
-                )}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent align="end" className="w-[340px] p-4 space-y-4">
-              <div className="flex items-center justify-between">
-                <h4 className="font-medium text-sm">Filtros avançados</h4>
-                {activeFiltersCount > 0 && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-7 px-2 text-xs"
-                    onClick={clearFilters}
-                  >
-                    <X className="h-3 w-3 mr-1" />
-                    Limpar
-                  </Button>
-                )}
-              </div>
+function DateRangeButton({ range }: { range: DateRange | undefined }) {
+  if (!range?.from) return <span>Selecionar período</span>;
+  const from = format(range.from, "dd/MM/yy", { locale: ptBR });
+  return <>{range.to ? `${from} - ${format(range.to, "dd/MM/yy", { locale: ptBR })}` : from}</>;
+}
 
-              <Separator />
+function FilterPopover({ filters, data }: { filters: FilterController; data: OrdersData }) {
+  return <Popover><PopoverTrigger asChild><Button variant="outline" className="justify-start"><Filter className="h-4 w-4 mr-2" />Filtros{filters.activeCount > 0 && <Badge variant="secondary" className="ml-2 h-5 px-1.5">{filters.activeCount}</Badge>}</Button></PopoverTrigger><PopoverContent align="end" className="w-[340px] p-4 space-y-4"><div className="flex items-center justify-between"><h4 className="font-medium text-sm">Filtros avançados</h4>{filters.activeCount > 0 && <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" onClick={filters.clear}><X className="h-3 w-3 mr-1" />Limpar</Button>}</div><Separator /><FilterSelect label="Status do funil" value={filters.statusFilter} onChange={filters.setStatusFilter} options={ORDER_STATUS_OPTIONS.map(status => ({ id: status, name: status }))} /><FilterSelect label="PA" value={filters.paFilter} onChange={filters.setPaFilter} options={data.pas.map(pa => ({ id: pa.id, name: pa.nome }))} /><FilterSelect label="Singular" value={filters.singularFilter} onChange={filters.setSingularFilter} options={data.cooperatives.map(cooperative => ({ id: cooperative.id, name: cooperative.nome }))} allLabel="Todas" /><div className="space-y-2"><Label className="text-xs">Período</Label><Popover><PopoverTrigger asChild><Button variant="outline" className={cn("w-full justify-start text-left font-normal", !filters.dateRange?.from && MUTED_TEXT_CLASS)}><CalendarIcon className="mr-2 h-4 w-4" /><DateRangeButton range={filters.dateRange} /></Button></PopoverTrigger><PopoverContent className="w-auto p-0" align="start"><Calendar mode="range" selected={filters.dateRange} onSelect={filters.setDateRange} numberOfMonths={1} locale={ptBR} initialFocus className="p-3 pointer-events-auto" /></PopoverContent></Popover></div></PopoverContent></Popover>;
+}
 
-              <div className="space-y-2">
-                <Label className="text-xs">Status do funil</Label>
-                <Select value={statusFilter} onValueChange={setStatusFilter}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Todos" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Todos</SelectItem>
-                    {ORDER_STATUS_OPTIONS.map((s) => (
-                      <SelectItem key={s} value={s}>
-                        <div className="flex items-center gap-2">
-                          <OrderStatusBadge status={s} />
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+function FilterSelect({ label, value, onChange, options, allLabel = "Todos" }: { label: string; value: string; onChange: (value: string) => void; options: Array<{ id: string; name: string }>; allLabel?: string }) {
+  return <div className="space-y-2"><Label className="text-xs">{label}</Label><Select value={value} onValueChange={onChange}><SelectTrigger><SelectValue placeholder={allLabel} /></SelectTrigger><SelectContent><SelectItem value={ALL_FILTER}>{allLabel}</SelectItem>{options.map(option => <SelectItem key={option.id} value={option.id}>{label === "Status do funil" ? <OrderStatusBadge status={option.id as OrderStatus} /> : option.name}</SelectItem>)}</SelectContent></Select></div>;
+}
 
-              <div className="space-y-2">
-                <Label className="text-xs">PA</Label>
-                <Select value={paFilter} onValueChange={setPaFilter}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Todos" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Todos</SelectItem>
-                    {pas.map((pa) => (
-                      <SelectItem key={pa.id} value={pa.id}>
-                        {pa.nome}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+function ActiveFilter({ children, onRemove, label }: { children: ReactNode; onRemove: () => void; label: string }) {
+  return <Badge variant="secondary" className="gap-1">{children}<button onClick={onRemove} aria-label={label}><X className="h-3 w-3" /></button></Badge>;
+}
 
-              <div className="space-y-2">
-                <Label className="text-xs">Singular</Label>
-                <Select value={singularFilter} onValueChange={setSingularFilter}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Todas" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Todas</SelectItem>
-                    {cooperatives.map((s) => (
-                      <SelectItem key={s.id} value={s.id}>
-                        {s.nome}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+function ActiveFilters({ filters }: { filters: FilterController }) {
+  if (!filters.activeCount) return null;
+  return <div className="flex flex-wrap items-center gap-2"><span className="text-xs text-muted-foreground">Filtros ativos:</span>{filters.statusFilter !== ALL_FILTER && <ActiveFilter onRemove={() => filters.setStatusFilter(ALL_FILTER)} label="Remover filtro de status"><OrderStatusBadge status={filters.statusFilter as OrderStatus} /></ActiveFilter>}{filters.paFilter !== ALL_FILTER && <ActiveFilter onRemove={() => filters.setPaFilter(ALL_FILTER)} label="Remover filtro de PA">{filters.paFilter}</ActiveFilter>}{filters.singularFilter !== ALL_FILTER && <ActiveFilter onRemove={() => filters.setSingularFilter(ALL_FILTER)} label="Remover filtro de Singular">{filters.singularFilter}</ActiveFilter>}{filters.dateRange?.from && <ActiveFilter onRemove={() => filters.setDateRange(undefined)} label="Remover filtro de período"><DateRangeButton range={filters.dateRange} /></ActiveFilter>}</div>;
+}
 
-              <div className="space-y-2">
-                <Label className="text-xs">Período</Label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className={cn(
-                        "w-full justify-start text-left font-normal",
-                        !dateRange?.from && "text-muted-foreground",
-                      )}
-                    >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {dateRange?.from ? (
-                        dateRange.to ? (
-                          <>
-                            {format(dateRange.from, "dd/MM/yy", { locale: ptBR })} -{" "}
-                            {format(dateRange.to, "dd/MM/yy", { locale: ptBR })}
-                          </>
-                        ) : (
-                          format(dateRange.from, "dd/MM/yy", { locale: ptBR })
-                        )
-                      ) : (
-                        <span>Selecionar período</span>
-                      )}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="range"
-                      selected={dateRange}
-                      onSelect={setDateRange}
-                      numberOfMonths={1}
-                      locale={ptBR}
-                      initialFocus
-                      className={cn("p-3 pointer-events-auto")}
-                    />
-                  </PopoverContent>
-                </Popover>
-              </div>
-            </PopoverContent>
-          </Popover>
-        </div>
+function FiltersBar({ filters, data }: { filters: FilterController; data: OrdersData }) {
+  return <><div className="flex flex-col sm:flex-row gap-2"><div className="relative flex-1"><Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" /><Input placeholder="Buscar por PA, Singular ou ID do pedido..." className="pl-10" value={filters.searchTerm} onChange={event => filters.setSearchTerm(event.target.value)} /></div><FilterPopover filters={filters} data={data} /></div><ActiveFilters filters={filters} /><div className="text-sm text-muted-foreground">{data.total} {data.total === 1 ? "pedido encontrado" : "pedidos encontrados"}</div></>;
+}
 
-        {activeFiltersCount > 0 && (
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="text-xs text-muted-foreground">Filtros ativos:</span>
-            {statusFilter !== "all" && (
-              <Badge variant="secondary" className="gap-1">
-                <OrderStatusBadge status={statusFilter as OrderStatus} />
-                <button onClick={() => setStatusFilter("all")} aria-label="Remover filtro de status">
-                  <X className="h-3 w-3" />
-                </button>
-              </Badge>
-            )}
-            {paFilter !== "all" && (
-              <Badge variant="secondary" className="gap-1">
-                {paFilter}
-                <button onClick={() => setPaFilter("all")} aria-label="Remover filtro de PA">
-                  <X className="h-3 w-3" />
-                </button>
-              </Badge>
-            )}
-            {singularFilter !== "all" && (
-              <Badge variant="secondary" className="gap-1">
-                {singularFilter}
-                <button onClick={() => setSingularFilter("all")} aria-label="Remover filtro de Singular">
-                  <X className="h-3 w-3" />
-                </button>
-              </Badge>
-            )}
-            {dateRange?.from && (
-              <Badge variant="secondary" className="gap-1">
-                {format(dateRange.from, "dd/MM/yy", { locale: ptBR })}
-                {dateRange.to && ` - ${format(dateRange.to, "dd/MM/yy", { locale: ptBR })}`}
-                <button onClick={() => setDateRange(undefined)} aria-label="Remover filtro de período">
-                  <X className="h-3 w-3" />
-                </button>
-              </Badge>
-            )}
-          </div>
-        )}
+const SLA_STYLES = { critical: { label: "CRÍTICO", className: "bg-destructive/10 text-destructive border-destructive/20" }, warning: { label: "ATENÇÃO", className: "bg-amber-500/10 text-amber-600 border-amber-500/20" }, normal: { label: "NORMAL", className: "bg-success/10 text-success border-success/20" } } as const;
+function OrderSla({ status }: { status: SicoobOrder["sla_status"] }) { if (!status) return null; const config = SLA_STYLES[status]; return <div className="flex items-center gap-2 pt-2 border-t border-border/40"><span className="text-[10px] font-bold text-muted-foreground uppercase">SLA:</span><Badge variant="outline" className={cn("h-5 text-[9px] font-bold px-1.5", config.className)}>{config.label}</Badge></div>; }
+function PriorityStripe({ order }: { order: SicoobOrder }) { if (order.sla_status === "critical") return <div className="absolute top-0 left-0 w-full h-1 bg-destructive animate-pulse" />; if (order.status === "escalated_to_board") return <div className="absolute top-0 left-0 w-full h-1 bg-amber-500" />; return null; }
 
-        <div className="text-sm text-muted-foreground">
-          {totalOrders} {totalOrders === 1 ? "pedido encontrado" : "pedidos encontrados"}
-        </div>
+function OrderCard({ order, selected, onSelect, onOpen, onReorder }: { order: SicoobOrder; selected: boolean; onSelect: () => void; onOpen: () => void; onReorder: (event: MouseEvent) => void }) {
+  return <Card className={cn("hover:shadow-lg transition-all duration-300 cursor-pointer border-[1.5px] relative group overflow-hidden", selected ? "border-sicoob-green bg-sicoob-green/5 shadow-sm" : "hover:border-sicoob-green/40 hover:-translate-y-1")} onClick={onOpen}><PriorityStripe order={order} /><div className="absolute top-2 right-2"><Badge variant="outline" className="text-[8px] bg-background/80 backdrop-blur-sm border-indigo-100 font-mono">#{order.id.slice(0, 6)}</Badge></div><button type="button" aria-label="Selecionar pedido" className={cn("absolute top-3 left-3 z-10 opacity-0 group-hover:opacity-100 transition-opacity w-5 h-5 rounded border-2 flex items-center justify-center", selected && "opacity-100 bg-sicoob-green border-sicoob-green text-white")} onClick={event => { event.stopPropagation(); onSelect(); }}>{selected && <CheckCircle2 className="h-3 w-3" />}</button><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 pl-10"><CardTitle className="text-sm font-bold text-sicoob-green-dark group-hover:text-sicoob-green transition-colors">Pedido #{order.order_number || order.id.slice(0, 8)}</CardTitle><OrderStatusBadge status={order.status} /></CardHeader><CardContent className="space-y-4"><div><div className="text-2xl font-bold text-foreground">R$ {order.total_amount.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</div><p className="text-[10px] text-muted-foreground mt-1 uppercase tracking-wider font-semibold">{order.pa?.nome || "PA Não Identificado"}</p><p className="text-[10px] text-muted-foreground uppercase tracking-wider">{order.cooperativa?.nome || "Singular"}</p></div><OrderSla status={order.sla_status} /></CardContent><CardFooter className="flex items-center justify-between pt-0 gap-2"><div className="text-[10px] uppercase font-bold text-muted-foreground">Criado em {format(parseISO(order.created_at), DISPLAY_DATE_FORMAT, { locale: ptBR })}</div><div className="flex items-center gap-2">{order.status === "completed" && <Button variant="ghost" size="sm" className="h-7 text-[10px] uppercase font-bold text-sicoob-green hover:text-sicoob-green-dark px-2" onClick={onReorder}><RotateCcw className="h-3.5 w-3.5 mr-1" />Comprar Novamente</Button>}<ArrowRight className="h-3.5 w-3.5 text-sicoob-green group-hover:translate-x-1 transition-transform" /></div></CardFooter></Card>;
+}
 
-        {isLoadingOrders ? (
-           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-             {[1, 2, 3, 4, 5, 6].map(i => (
-               <Card key={i} className="h-32 animate-pulse bg-muted" />
-             ))}
-           </div>
-        ) : filteredOrders.length === 0 ? (
-          <Card>
-            <CardContent className="py-12 text-center text-muted-foreground">
-              Nenhum pedido corresponde aos filtros selecionados.
-            </CardContent>
-          </Card>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {filteredOrders.map((order: any) => (
-              <Card 
-                key={order.id} 
-                className={cn(
-                  "hover:shadow-lg transition-all duration-300 cursor-pointer border-[1.5px] relative group overflow-hidden",
-                  selectedOrderIds.includes(order.id) ? "border-sicoob-green bg-sicoob-green/5 shadow-sm" : "hover:border-sicoob-green/40 hover:-translate-y-1"
-                )} 
-                onClick={() => navigate(`/sicoob/pedidos/${order.id}`)}
-              >
-                {/* Indicador visual de prioridade no topo do card */}
-                {order.sla_status === 'critical' && (
-                  <div className="absolute top-0 left-0 w-full h-1 bg-destructive animate-pulse" />
-                )}
-                {order.status === 'escalated_to_board' && (
-                  <div className="absolute top-0 left-0 w-full h-1 bg-amber-500" />
-                )}
-                <div className="absolute top-2 right-2">
-                  <Badge variant="outline" className="text-[8px] bg-background/80 backdrop-blur-sm border-indigo-100 font-mono">#{order.id.slice(0, 6)}</Badge>
-                </div>
-                <div 
-                  className={cn(
-                    "absolute top-3 left-3 z-10 opacity-0 group-hover:opacity-100 transition-opacity",
-                    selectedOrderIds.includes(order.id) ? "opacity-100" : ""
-                  )}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    toggleSelectOrder(order.id);
-                  }}
-                >
-                  <div className={cn(
-                    "w-5 h-5 rounded border-2 flex items-center justify-center transition-colors",
-                    selectedOrderIds.includes(order.id) ? "bg-sicoob-green border-sicoob-green text-white" : "bg-white border-muted-foreground/30"
-                  )}>
-                    {selectedOrderIds.includes(order.id) && <CheckCircle2 className="h-3 w-3" />}
-                  </div>
-                </div>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 pl-10">
-                  <CardTitle className="text-sm font-bold text-sicoob-green-dark group-hover:text-sicoob-green transition-colors">
-                    Pedido #{order.order_number || order.id.slice(0, 8)}
-                  </CardTitle>
-                  <OrderStatusBadge status={order.status} />
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div>
-                    <div className="flex items-center justify-between">
-                      <div className="text-2xl font-bold text-foreground">R$ {order.total_amount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</div>
-                    </div>
-                    <p className="text-[10px] text-muted-foreground mt-1 uppercase tracking-wider font-semibold">
-                      {order.pa?.nome || "PA Não Identificado"}
-                    </p>
-                    <p className="text-[10px] text-muted-foreground uppercase tracking-wider">
-                      {order.cooperativa?.nome || "Singular"}
-                    </p>
-                  </div>
-                  
-                  {order.sla_status && (
-                    <div className="flex items-center gap-2 pt-2 border-t border-border/40">
-                      <span className="text-[10px] font-bold text-muted-foreground uppercase">SLA:</span>
-                      <Badge 
-                        variant="outline" 
-                        className={cn(
-                          "h-5 text-[9px] font-bold px-1.5",
-                          order.sla_status === 'critical' ? "bg-destructive/10 text-destructive border-destructive/20" :
-                          order.sla_status === 'warning' ? "bg-amber-500/10 text-amber-600 border-amber-500/20" :
-                          "bg-success/10 text-success border-success/20"
-                        )}
-                      >
-                        {order.sla_status === 'critical' ? 'CRÍTICO' : order.sla_status === 'warning' ? 'ATENÇÃO' : 'NORMAL'}
-                      </Badge>
-                    </div>
-                  )}
-                </CardContent>
-                <CardFooter className="flex items-center justify-between pt-0 gap-2">
-                  <div className="text-[10px] uppercase font-bold text-muted-foreground">
-                    Criado em {format(parseISO(order.created_at), "dd/MM/yyyy", { locale: ptBR })}
-                  </div>
-                  <div className="flex items-center gap-2">
-                    {order.status === 'completed' && (
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
-                        className="h-7 text-[10px] uppercase font-bold text-sicoob-green hover:text-sicoob-green-dark px-2"
-                        onClick={(e) => handleReorder(order.id, e)}
-                      >
-                        <RotateCcw className="h-3.5 w-3.5 mr-1" />
-                        Comprar Novamente
-                      </Button>
-                    )}
-                    <ArrowRight className="h-3.5 w-3.5 text-sicoob-green group-hover:translate-x-1 transition-transform" />
-                  </div>
-                </CardFooter>
-              </Card>
-            ))}
-          </div>
-        )}
+function OrdersGrid({ controller }: { controller: OrdersController }) {
+  const { data, selection, navigate } = controller;
+  if (data.isLoading) return <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">{[1, 2, 3, 4, 5, 6].map(index => <Card key={index} className="h-32 animate-pulse bg-muted" />)}</div>;
+  if (!data.orders.length) return <Card><CardContent className="py-12 text-center text-muted-foreground">Nenhum pedido corresponde aos filtros selecionados.</CardContent></Card>;
+  return <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">{data.orders.map(order => <OrderCard key={order.id} order={order} selected={selection.selectedOrderIds.includes(order.id)} onSelect={() => selection.toggle(order.id)} onOpen={() => navigate(`/sicoob/pedidos/${order.id}`)} onReorder={event => selection.reorder(order.id, event)} />)}</div>;
+}
 
-        {totalPages > 1 && (
-          <div className="flex items-center justify-center gap-2 mt-8">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setPage(p => Math.max(1, p - 1))}
-              disabled={page === 1}
-            >
-              <ChevronLeft className="h-4 w-4 mr-2" />
-              Anterior
-            </Button>
-            <span className="text-sm font-medium">
-              Página {page} de {totalPages}
-            </span>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setPage(p => Math.min(totalPages, p + 1))}
-              disabled={page === totalPages}
-            >
-              Próxima
-              <ChevronRight className="h-4 w-4 ml-2" />
-            </Button>
-          </div>
-        )}
-        <div className="mt-12 pt-6 border-t border-border/40 text-center">
-          <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold flex items-center justify-center gap-2">
-            <ShieldCheck className="h-3 w-3 text-sicoob-green" /> 
-            Ambiente Seguro • Ecossistema Promo Gifts & Sicoob • Meta 10/10 Concluída
-          </p>
-        </div>
-      </div>
-    </>
-  );
+function Pagination({ filters, totalPages }: { filters: FilterController; totalPages: number }) {
+  if (totalPages <= 1) return null;
+  return <div className="flex items-center justify-center gap-2 mt-8"><Button variant="outline" size="sm" onClick={() => filters.setPage(page => Math.max(1, page - 1))} disabled={filters.page === 1}><ChevronLeft className="h-4 w-4 mr-2" />Anterior</Button><span className="text-sm font-medium">Página {filters.page} de {totalPages}</span><Button variant="outline" size="sm" onClick={() => filters.setPage(page => Math.min(totalPages, page + 1))} disabled={filters.page === totalPages}>Próxima<ChevronRight className="h-4 w-4 ml-2" /></Button></div>;
+}
+
+export default function OrdersPage() {
+  const controller = useOrdersController();
+  const filterCritical = () => { controller.filters.setStatusFilter("pending"); toast.info("Filtrando por pedidos com SLA Crítico"); };
+  return <><PageSEO title="Pedidos Sicoob" description="Gerenciamento de pedidos do ecossistema Sicoob." path="/sicoob/pedidos" noIndex /><div className="space-y-6 max-w-[1920px] mx-auto w-full"><StatsGrid stats={controller.data.stats} onCriticalFilter={filterCritical} /><PageHeader controller={controller} /><BulkActions selection={controller.selection} /><FiltersBar filters={controller.filters} data={controller.data} /><OrdersGrid controller={controller} /><Pagination filters={controller.filters} totalPages={controller.data.totalPages} /><div className="mt-12 pt-6 border-t border-border/40 text-center"><p className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold flex items-center justify-center gap-2"><ShieldCheck className="h-3 w-3 text-sicoob-green" />Ambiente Seguro • Ecossistema Promo Gifts & Sicoob • Meta 10/10 Concluída</p></div></div></>;
 }

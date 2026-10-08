@@ -26,13 +26,14 @@ export function CompareEmptyStateSmart() {
       try {
         const { data } = await supabase.rpc("get_top_compared_products", { p_limit: 6 });
         if (cancelled) return;
-        const ids = (data ?? []).map((r: any) => r.product_id);
+        const rows = (data ?? []) as Array<{ product_id: string }>;
+        const ids = rows.map((row) => row.product_id);
         setTopIds(ids);
         if (ids.length === 0) {
           logger.warn("[CompareEmptyStateSmart] RPC retornou 0 ids — fallback acionado");
         }
       } catch (err) {
-        logger.warn("[CompareEmptyStateSmart] RPC falhou — fallback acionado", err as any);
+        logger.warn("[CompareEmptyStateSmart] RPC falhou — fallback acionado", err);
       } finally {
         if (!cancelled) setLoading(false);
       }

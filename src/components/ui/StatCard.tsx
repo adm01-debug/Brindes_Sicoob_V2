@@ -50,11 +50,36 @@ const variantStyles: Record<StatVariant, { bg: string; icon: string; glow: strin
   },
 };
 
+function Trend({ trend }: { trend?: StatCardProps["trend"] }) {
+  if (!trend) return null;
+  const positive = trend.value >= 0;
+  return (
+    <div className="flex items-center gap-1 pt-1">
+      <span className={cn("text-xs font-medium", positive ? "text-success" : "text-destructive")}>{positive ? "+" : ""}{trend.value}%</span>
+      {trend.label && <span className="text-xs text-muted-foreground">{trend.label}</span>}
+    </div>
+  );
+}
+
+function variantGlowClass(variant: StatVariant) {
+  if (variant === "success") return "bg-success";
+  if (variant === "warning") return "bg-warning";
+  if (variant === "danger") return "bg-destructive";
+  if (variant === "info") return "bg-info";
+  if (variant === "orange") return "bg-orange";
+  return undefined;
+}
+
+function StatIcon({ icon, styles }: { icon: LucideIcon; styles: (typeof variantStyles)[StatVariant] }) {
+  const IconComponent = icon;
+  return <div className={cn("flex h-12 w-12 shrink-0 items-center justify-center rounded-xl transition-all duration-300", styles.bg, styles.glow)}><IconComponent className={cn("h-6 w-6", styles.icon)} /></div>;
+}
+
 export function StatCard({
   title,
   value,
   subtitle,
-  icon: Icon,
+  icon,
   variant = "default",
   trend,
   className,
@@ -78,50 +103,19 @@ export function StatCard({
           <p className="text-2xl font-bold tracking-tight text-foreground">
             {value}
           </p>
-          {subtitle && (
-            <p className="text-xs text-muted-foreground">{subtitle}</p>
-          )}
-          {trend && (
-            <div className="flex items-center gap-1 pt-1">
-              <span
-                className={cn(
-                  "text-xs font-medium",
-                  trend.value >= 0 ? "text-success" : "text-destructive"
-                )}
-              >
-                {trend.value >= 0 ? "+" : ""}
-                {trend.value}%
-              </span>
-              {trend.label && (
-                <span className="text-xs text-muted-foreground">
-                  {trend.label}
-                </span>
-              )}
-            </div>
-          )}
+          {subtitle && <p className="text-xs text-muted-foreground">{subtitle}</p>}
+          <Trend trend={trend} />
         </div>
 
         {/* Icon container with colored background */}
-        <div
-          className={cn(
-            "flex h-12 w-12 shrink-0 items-center justify-center rounded-xl transition-all duration-300",
-            styles.bg,
-            styles.glow
-          )}
-        >
-          <Icon className={cn("h-6 w-6", styles.icon)} />
-        </div>
+        <StatIcon icon={icon} styles={styles} />
       </div>
 
       {/* Subtle gradient overlay */}
       <div
         className={cn(
           "absolute -right-8 -top-8 h-24 w-24 rounded-full opacity-10 blur-2xl",
-          variant === "success" && "bg-success",
-          variant === "warning" && "bg-warning",
-          variant === "danger" && "bg-destructive",
-          variant === "info" && "bg-info",
-          variant === "orange" && "bg-orange"
+          variantGlowClass(variant)
         )}
       />
     </div>
@@ -140,11 +134,12 @@ interface MiniStatCardProps {
 export function MiniStatCard({
   title,
   value,
-  icon: Icon,
+  icon,
   variant = "default",
   className,
 }: MiniStatCardProps) {
   const styles = variantStyles[variant];
+  const IconComponent = icon;
 
   return (
     <div
@@ -160,7 +155,7 @@ export function MiniStatCard({
           styles.bg
         )}
       >
-        <Icon className={cn("h-4 w-4", styles.icon)} />
+        <IconComponent className={cn("h-4 w-4", styles.icon)} />
       </div>
       <div className="min-w-0 flex-1">
         <p className="truncate text-xs text-muted-foreground">{title}</p>

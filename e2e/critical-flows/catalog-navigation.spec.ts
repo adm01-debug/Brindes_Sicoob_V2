@@ -1,20 +1,19 @@
+import { gotoAndSettle } from '../helpers/nav';
 import { test, expect } from '@playwright/test';
+
+const SEARCH_TERM = 'teste';
 
 test.describe('Fluxo do Catálogo', () => {
   test('deve navegar pelos produtos e filtrar', async ({ page }) => {
-    await page.goto('/produtos');
-    
-    // Verifica se a lista de produtos carregou
-    const productGrid = page.locator('[data-testid="product-grid"]');
-    // Se o test-id não existir, tenta capturar por texto ou classe comum
-    const isVisible = await page.getByText(/Produtos|Catálogo/i).first().isVisible();
-    expect(isVisible).toBeTruthy();
+    await gotoAndSettle(page, '/produtos');
 
-    // Simula busca
-    const searchInput = page.getByPlaceholder(/Buscar|Pesquisar/i);
-    if (await searchInput.isVisible()) {
-      await searchInput.fill('teste');
-      await page.keyboard.press('Enter');
-    }
+    await expect(page.getByTestId('page-title-dashboard')).toBeVisible();
+    await expect(page.getByRole('grid', { name: 'Catálogo de produtos' })).toBeVisible();
+
+    const searchInput = page.getByTestId('catalog-search-input');
+    await expect(searchInput).toBeVisible();
+    await searchInput.fill(SEARCH_TERM);
+    await searchInput.press('Enter');
+    await expect(searchInput).toHaveValue(SEARCH_TERM);
   });
 });

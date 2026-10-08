@@ -24,97 +24,90 @@ interface ShortcutHandlers {
 // "G then K" sequence buffer (vim-style chord) — opens kit library
 let lastGAt = 0;
 
+function isEditableElement(target: EventTarget | null): boolean {
+  const element = target as HTMLElement | null;
+  return Boolean(element && (element.tagName === "INPUT" || element.tagName === "TEXTAREA" || element.isContentEditable));
+}
+
+function handleSmartBack(event: KeyboardEvent, isInput: boolean): boolean {
+  const requested = event.key === "Backspace" || (event.altKey && event.key === "ArrowLeft");
+  if (isInput || !requested) return false;
+  window.dispatchEvent(new CustomEvent('smart-back'));
+  event.preventDefault();
+  return true;
+}
+
+function handleAltNavigation(event: KeyboardEvent, isInput: boolean, navigate: (path: string) => void): boolean {
+  if (!event.altKey || isInput) return false;
+  const destinations: Record<string, string> = { g: "/sicoob/pedidos", v: "/sicoob/pedidos/kanban" };
+  const destination = destinations[event.key.toLowerCase()];
+  if (!destination) return false;
+  event.preventDefault();
+  navigate(destination);
+  return true;
+}
+
+function handleKitChord(event: KeyboardEvent, isModified: boolean, isInput: boolean, navigate: (path: string) => void): boolean {
+  if (isModified || event.altKey || event.shiftKey || isInput) return false;
+  const key = event.key.toLowerCase();
+  if (key === "g") {
+    lastGAt = Date.now();
+    return true;
+  }
+  if (key !== "k" || Date.now() - lastGAt >= 800) return false;
+  event.preventDefault();
+  lastGAt = 0;
+  navigate("/meus-kits");
+  return true;
+}
+
+function handleSearchShortcut(event: KeyboardEvent, handlers?: ShortcutHandlers): boolean {
+  if (event.key !== "k") return false;
+  event.preventDefault();
+  const searchInput = document.querySelector<HTMLInputElement>('input[type="search"], input[aria-label="Campo de busca"]');
+  searchInput?.focus();
+  searchInput?.select();
+  handlers?.onSearchFocus?.();
+  return true;
+}
+
+function handleOracleShortcut(event: KeyboardEvent, isInput: boolean, openOracle: () => void): boolean {
+  if (event.key !== "j" || isInput) return false;
+  event.preventDefault();
+  openOracle();
+  return true;
+}
+
+function handleNewQuoteShortcut(event: KeyboardEvent, isInput: boolean, navigate: (path: string) => void): boolean {
+  if (event.key !== "N" || !event.shiftKey || isInput) return false;
+  event.preventDefault();
+  navigate("/orcamentos/novo");
+  return true;
+}
+
+function handleCartShortcut(event: KeyboardEvent, isInput: boolean, handlers?: ShortcutHandlers): boolean {
+  if (event.key.toLowerCase() !== "c" || !event.shiftKey || isInput) return false;
+  event.preventDefault();
+  handlers?.onToggleCart?.();
+  return true;
+}
+
 export function useGlobalShortcuts(handlers?: ShortcutHandlers) {
   const navigate = useNavigate();
   const openOracle = useOracleVoiceBridge((s) => s.openOracle);
 
-  const { goBack } = useOracleVoiceBridge((s) => ({ openOracle: s.openOracle, goBack: () => window.history.back() })); // Placeholder for real goBack
-  // Actually I should use useSmartNavigation here but I can't import it easily without causing circular deps if I'm not careful.
-  // Let's use a simpler approach.
-  
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
       const isMod = e.metaKey || e.ctrlKey;
-      const target = e.target as HTMLElement;
-      const isInput =
-        target.tagName === "INPUT" ||
-        target.tagName === "TEXTAREA" ||
-        target.isContentEditable;
-
-      // Backspace or Alt+ArrowLeft for Back
-      if (!isInput && (e.key === "Backspace" || (e.altKey && e.key === "ArrowLeft"))) {
-        // We'll let the custom BackButton logic handle it or just use browser back
-        // But for perfection, we should trigger the smart back.
-        // I'll emit a custom event that MainLayout or useSmartNavigation listens to.
-        window.dispatchEvent(new CustomEvent('smart-back'));
-        e.preventDefault();
-        return;
-      }
-
-      // Alt shortcuts (Navigation)
-      if (e.altKey && !isInput) {
-        if (e.key === "g" || e.key === "G") {
-          e.preventDefault();
-          navigate("/sicoob/pedidos");
-          return;
-        }
-        if (e.key === "v" || e.key === "V") {
-          e.preventDefault();
-          navigate("/sicoob/pedidos/kanban");
-          return;
-        }
-      }
-
-      // G then K (within 800ms) → open kit library — no modifier, ignored in inputs
-      if (!isMod && !e.altKey && !e.shiftKey && !isInput) {
-        if (e.key === "g" || e.key === "G") {
-          lastGAt = Date.now();
-          return;
-        }
-        if ((e.key === "k" || e.key === "K") && Date.now() - lastGAt < 800) {
-          e.preventDefault();
-          lastGAt = 0;
-          navigate("/meus-kits");
-          return;
-        }
-      }
-
+      const isInput = isEditableElement(e.target);
+      if (handleSmartBack(e, isInput)) return;
+      if (handleAltNavigation(e, isInput, navigate)) return;
+      if (handleKitChord(e, isMod, isInput, navigate)) return;
       if (!isMod) return;
-
-      // Ctrl/Cmd + K → Focus search (works even inside inputs)
-      if (e.key === "k") {
-        e.preventDefault();
-        const searchInput = document.querySelector<HTMLInputElement>(
-          'input[type="search"], input[aria-label="Campo de busca"]'
-        );
-        if (searchInput) {
-          searchInput.focus();
-          searchInput.select();
-        }
-        handlers?.onSearchFocus?.();
-        return;
-      }
-
-      // Ctrl/Cmd + J → Open Flow (no conflict with browser shortcuts)
-      if (e.key === "j" && !isInput) {
-        e.preventDefault();
-        openOracle();
-        return;
-      }
-
-      // Ctrl/Cmd + Shift + N → New quote (Shift avoids browser new-window)
-      if (e.key === "N" && e.shiftKey && !isInput) {
-        e.preventDefault();
-        navigate("/orcamentos/novo");
-        return;
-      }
-
-      // Ctrl/Cmd + Shift + C → Open cart
-      if ((e.key === "C" || e.key === "c") && e.shiftKey && !isInput) {
-        e.preventDefault();
-        handlers?.onToggleCart?.();
-        return;
-      }
+      if (handleSearchShortcut(e, handlers)) return;
+      if (handleOracleShortcut(e, isInput, openOracle)) return;
+      if (handleNewQuoteShortcut(e, isInput, navigate)) return;
+      handleCartShortcut(e, isInput, handlers);
     },
     [navigate, openOracle, handlers]
   );

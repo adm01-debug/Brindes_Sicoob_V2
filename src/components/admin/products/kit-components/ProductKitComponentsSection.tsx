@@ -21,12 +21,129 @@ import { ComponentMediaManager } from './ComponentMediaManager';
 import { PrintAreasManager } from './PrintAreasManager';
 import { VolumeValidation } from './VolumeValidation';
 import { fetchKitComponents, fetchPrintAreas, createComponent, updateComponent, deleteComponent } from './api';
-import type { KitComponent, ComponentFormData, BoxInternalDimensions } from './types';
-import { EMPTY_FORM } from './types';
+import { type KitComponent, type ComponentFormData, type BoxInternalDimensions, EMPTY_FORM } from "./types";
 
 interface ProductKitComponentsSectionProps {
   productId: string;
   boxInternalDimensions?: BoxInternalDimensions;
+}
+
+function nullableTrim(value: string): string | null {
+  return value.trim() || null;
+}
+
+function formText(value: string | null | undefined): string {
+  return value || '';
+}
+
+function formNumber(value: number | null | undefined, fallback: number): number {
+  return value ?? fallback;
+}
+
+function formBoolean(value: boolean | null | undefined, fallback: boolean): boolean {
+  return value ?? fallback;
+}
+
+function componentPayload(formData: ComponentFormData) {
+  return {
+    component_name: formData.component_name.trim(),
+    component_type_code: nullableTrim(formData.component_type_code),
+    component_code: nullableTrim(formData.component_code),
+    component_sku: nullableTrim(formData.component_sku),
+    supplier_component_code: nullableTrim(formData.supplier_component_code),
+    component_description: nullableTrim(formData.component_description),
+    quantity: formData.quantity,
+    display_order: formData.display_order,
+    material: nullableTrim(formData.material),
+    color: nullableTrim(formData.color),
+    height_mm: formData.height_mm,
+    width_mm: formData.width_mm,
+    length_mm: formData.length_mm,
+    weight_g: formData.weight_g,
+    is_optional: formData.is_optional,
+    is_packaging: formData.is_packaging,
+    is_replaceable: formData.is_replaceable,
+    allows_personalization: formData.allows_personalization,
+    personalization_notes: nullableTrim(formData.personalization_notes),
+    primary_image_url: nullableTrim(formData.primary_image_url),
+    notes: nullableTrim(formData.notes),
+  };
+}
+
+function componentFormData(component: KitComponent): ComponentFormData {
+  return {
+    component_name: formText(component.component_name),
+    component_type_code: formText(component.component_type_code),
+    component_code: formText(component.component_code),
+    component_sku: formText(component.component_sku),
+    supplier_component_code: formText(component.supplier_component_code),
+    component_description: formText(component.component_description),
+    quantity: formNumber(component.quantity, 1),
+    display_order: formNumber(component.display_order, 0),
+    material: formText(component.material),
+    color: formText(component.color),
+    height_mm: component.height_mm,
+    width_mm: component.width_mm,
+    length_mm: component.length_mm,
+    weight_g: component.weight_g,
+    is_optional: formBoolean(component.is_optional, false),
+    is_packaging: formBoolean(component.is_packaging, false),
+    is_replaceable: formBoolean(component.is_replaceable, false),
+    allows_personalization: formBoolean(component.allows_personalization, true),
+    personalization_notes: formText(component.personalization_notes),
+    primary_image_url: formText(component.primary_image_url),
+    notes: formText(component.notes),
+  };
+}
+
+function ComponentFlags({ component }: { component: KitComponent }) {
+  return (
+    <div className="flex flex-wrap gap-1 mt-0.5">
+      {component.is_optional && <Badge variant="outline" className="text-[9px] px-1 py-0">Opcional</Badge>}
+      {component.is_packaging && <Badge variant="outline" className="text-[9px] px-1 py-0">Embalagem</Badge>}
+      {component.allows_personalization && <Badge className="bg-primary/15 text-primary border-primary/30 text-[9px] px-1 py-0">Personalizável</Badge>}
+    </div>
+  );
+}
+
+function ComponentDisplay({ component, productId, onDelete, onEdit }: { component: KitComponent; productId: string; onDelete: (component: KitComponent) => void; onEdit: (id: string) => void }) {
+  return (
+    <div className="space-y-0.5">
+      <div className={cn('flex items-center gap-2.5 rounded-lg border p-2.5 transition-colors group', 'hover:bg-accent/50')}>
+        {component.primary_image_url ? <img src={component.primary_image_url} alt={formText(component.component_name)} className="w-10 h-10 rounded-md object-contain border shrink-0 bg-muted/30" loading="lazy" /> : <div className="w-10 h-10 rounded-md border shrink-0 bg-muted flex items-center justify-center"><Package className="h-4 w-4 text-muted-foreground" /></div>}
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-1.5"><p className="text-xs font-medium truncate">{component.component_name || 'Sem nome'}</p>{component.component_type_code && <Badge variant="secondary" className="text-[9px] px-1 py-0 uppercase">{component.component_type_code}</Badge>}</div>
+          <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
+            {component.component_sku && <span className="font-mono">{component.component_sku}</span>}<span>Qtd: {component.quantity ?? 1}</span>{component.material && <span>• {component.material}</span>}{component.color && <span>• {component.color}</span>}
+          </div>
+          <ComponentFlags component={component} />
+        </div>
+        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+          <Button type="button" variant="ghost" size="icon" aria-label="Editar" className="h-7 w-7" onClick={() => onEdit(component.id)}><Pencil className="h-3 w-3" /></Button>
+          <Button type="button" variant="ghost" size="icon" aria-label="Excluir" className="h-7 w-7 text-destructive hover:text-destructive" onClick={() => onDelete(component)}><Trash2 className="h-3 w-3" /></Button>
+        </div>
+      </div>
+      {component.allows_personalization && <PrintAreasManager componentId={component.id} componentName={formText(component.component_name)} />}
+      <ComponentMediaManager componentId={component.id} productId={productId} componentName={formText(component.component_name)} />
+    </div>
+  );
+}
+
+function KitComponentRow({ component, productId, editing, isSaving, onCancelEdit, onDelete, onEdit, onUpdate }: { component: KitComponent; productId: string; editing: boolean; isSaving: boolean; onCancelEdit: () => void; onDelete: (component: KitComponent) => void; onEdit: (id: string) => void; onUpdate: (id: string, data: ComponentFormData) => void }) {
+  if (editing) return <ComponentForm initial={componentFormData(component)} onSave={(data) => onUpdate(component.id, data)} onCancel={onCancelEdit} isSaving={isSaving} />;
+  return <ComponentDisplay component={component} productId={productId} onDelete={onDelete} onEdit={onEdit} />;
+}
+
+function KitSummary({ components, isCreating, onCreate }: { components: KitComponent[]; isCreating: boolean; onCreate: () => void }) {
+  const itemTotal = components.reduce((sum, component) => sum + formNumber(component.quantity, 1), 0);
+  return (
+    <div className="flex items-center justify-between">
+      <div className="flex items-center gap-3 text-sm text-muted-foreground">
+        {components.length > 0 ? <><span className="font-medium text-foreground">{components.length} componentes</span><span>•</span><span>Total itens: <span className="font-medium text-foreground">{itemTotal}</span></span></> : <span className="flex items-center gap-2"><Boxes className="h-4 w-4" /> Nenhum componente cadastrado</span>}
+      </div>
+      {!isCreating && <Button type="button" variant="outline" size="sm" onClick={onCreate}><Plus className="h-3.5 w-3.5 mr-1" /> Novo Componente</Button>}
+    </div>
+  );
 }
 
 export function ProductKitComponentsSection({ productId, boxInternalDimensions }: ProductKitComponentsSectionProps) {
@@ -63,34 +180,10 @@ export function ProductKitComponentsSection({ productId, boxInternalDimensions }
     queryClient.invalidateQueries({ queryKey: ['kit-components', productId] });
   }, [queryClient, productId]);
 
-  const buildPayload = (formData: ComponentFormData) => ({
-    component_name: formData.component_name.trim(),
-    component_type_code: formData.component_type_code.trim() || null,
-    component_code: formData.component_code.trim() || null,
-    component_sku: formData.component_sku.trim() || null,
-    supplier_component_code: formData.supplier_component_code.trim() || null,
-    component_description: formData.component_description.trim() || null,
-    quantity: formData.quantity,
-    display_order: formData.display_order,
-    material: formData.material.trim() || null,
-    color: formData.color.trim() || null,
-    height_mm: formData.height_mm,
-    width_mm: formData.width_mm,
-    length_mm: formData.length_mm,
-    weight_g: formData.weight_g,
-    is_optional: formData.is_optional,
-    is_packaging: formData.is_packaging,
-    is_replaceable: formData.is_replaceable,
-    allows_personalization: formData.allows_personalization,
-    personalization_notes: formData.personalization_notes.trim() || null,
-    primary_image_url: formData.primary_image_url.trim() || null,
-    notes: formData.notes.trim() || null,
-  });
-
   const handleCreate = async (formData: ComponentFormData) => {
     setIsSaving(true);
     try {
-      await createComponent({ kit_product_id: productId, ...buildPayload(formData) });
+      await createComponent({ kit_product_id: productId, ...componentPayload(formData) });
       toast.success('Componente criado com sucesso');
       setIsCreating(false);
       invalidate();
@@ -104,7 +197,7 @@ export function ProductKitComponentsSection({ productId, boxInternalDimensions }
   const handleUpdate = async (compId: string, formData: ComponentFormData) => {
     setIsSaving(true);
     try {
-      await updateComponent(compId, buildPayload(formData));
+      await updateComponent(compId, componentPayload(formData));
       toast.success('Componente atualizado');
       setEditingId(null);
       invalidate();
@@ -147,25 +240,8 @@ export function ProductKitComponentsSection({ productId, boxInternalDimensions }
   }
 
   return (
-    <div className="space-y-3">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3 text-sm text-muted-foreground">
-          {components.length > 0 ? (
-            <>
-              <span className="font-medium text-foreground">{components.length} componentes</span>
-              <span>•</span>
-              <span>Total itens: <span className="font-medium text-foreground">{components.reduce((s, c) => s + (c.quantity ?? 1), 0)}</span></span>
-            </>
-          ) : (
-            <span className="flex items-center gap-2"><Boxes className="h-4 w-4" /> Nenhum componente cadastrado</span>
-          )}
-        </div>
-        {!isCreating && (
-          <Button type="button" variant="outline" size="sm" onClick={() => { setIsCreating(true); setEditingId(null); }}>
-            <Plus className="h-3.5 w-3.5 mr-1" /> Novo Componente
-          </Button>
-        )}
-      </div>
+    (<div className="space-y-3">
+      <KitSummary components={components} isCreating={isCreating} onCreate={() => { setIsCreating(true); setEditingId(null); }} />
 
       {components.length > 0 && <VolumeValidation components={components} boxDimensions={boxInternalDimensions} />}
 
@@ -175,78 +251,19 @@ export function ProductKitComponentsSection({ productId, boxInternalDimensions }
 
       <ScrollArea className={components.length > 5 ? 'h-[500px]' : ''}>
         <div className="space-y-2">
-          {components.map((comp) => {
-            if (editingId === comp.id) {
-              return (
-                <ComponentForm
-                  key={comp.id}
-                  initial={{
-                    component_name: comp.component_name || '', component_type_code: comp.component_type_code || '',
-                    component_code: comp.component_code || '', component_sku: comp.component_sku || '',
-                    supplier_component_code: comp.supplier_component_code || '', component_description: comp.component_description || '',
-                    quantity: comp.quantity ?? 1, display_order: comp.display_order ?? 0,
-                    material: comp.material || '', color: comp.color || '',
-                    height_mm: comp.height_mm, width_mm: comp.width_mm, length_mm: comp.length_mm, weight_g: comp.weight_g,
-                    is_optional: comp.is_optional ?? false, is_packaging: comp.is_packaging ?? false,
-                    is_replaceable: comp.is_replaceable ?? false, allows_personalization: comp.allows_personalization ?? true,
-                    personalization_notes: comp.personalization_notes || '', primary_image_url: comp.primary_image_url || '',
-                    notes: comp.notes || '',
-                  }}
-                  onSave={(data) => handleUpdate(comp.id, data)}
-                  onCancel={() => setEditingId(null)}
-                  isSaving={isSaving}
-                />
-              );
-            }
-
-            return (
-              <div key={comp.id} className="space-y-0.5">
-                <div className={cn('flex items-center gap-2.5 rounded-lg border p-2.5 transition-colors group', 'hover:bg-accent/50')}>
-                  {comp.primary_image_url ? (
-                    
-<img src={comp.primary_image_url} alt={comp.component_name || ''} className="w-10 h-10 rounded-md object-contain border shrink-0 bg-muted/30"  loading="lazy" />
-                  ) : (
-                    <div className="w-10 h-10 rounded-md border shrink-0 bg-muted flex items-center justify-center">
-                      <Package className="h-4 w-4 text-muted-foreground" />
-                    </div>
-                  )}
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-1.5">
-                      <p className="text-xs font-medium truncate">{comp.component_name || 'Sem nome'}</p>
-                      {comp.component_type_code && <Badge variant="secondary" className="text-[9px] px-1 py-0 uppercase">{comp.component_type_code}</Badge>}
-                    </div>
-                    <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
-                      {comp.component_sku && <span className="font-mono">{comp.component_sku}</span>}
-                      <span>Qtd: {comp.quantity ?? 1}</span>
-                      {comp.material && <span>• {comp.material}</span>}
-                      {comp.color && <span>• {comp.color}</span>}
-                    </div>
-                    <div className="flex flex-wrap gap-1 mt-0.5">
-                      {comp.is_optional && <Badge variant="outline" className="text-[9px] px-1 py-0">Opcional</Badge>}
-                      {comp.is_packaging && <Badge variant="outline" className="text-[9px] px-1 py-0">Embalagem</Badge>}
-                      {comp.allows_personalization && <Badge className="bg-primary/15 text-primary border-primary/30 text-[9px] px-1 py-0">Personalizável</Badge>}
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
-                    <Button type="button" variant="ghost" size="icon" aria-label="Editar" className="h-7 w-7" onClick={() => { setEditingId(comp.id); setIsCreating(false); }}>
-                      <Pencil className="h-3 w-3" />
-                    </Button>
-                    <Button type="button" variant="ghost" size="icon" aria-label="Excluir" className="h-7 w-7 text-destructive hover:text-destructive" onClick={() => setDeleteTarget(comp)}>
-                      <Trash2 className="h-3 w-3" />
-                    </Button>
-                  </div>
-                </div>
-                {comp.allows_personalization && (
-                  <PrintAreasManager componentId={comp.id} componentName={comp.component_name || ''} />
-                )}
-                <ComponentMediaManager
-                  componentId={comp.id}
-                  productId={productId}
-                  componentName={comp.component_name || ''}
-                />
-              </div>
-            );
-          })}
+          {components.map((component) => (
+            <KitComponentRow
+              key={component.id}
+              component={component}
+              productId={productId}
+              editing={editingId === component.id}
+              isSaving={isSaving}
+              onCancelEdit={() => setEditingId(null)}
+              onDelete={setDeleteTarget}
+              onEdit={(id) => { setEditingId(id); setIsCreating(false); }}
+              onUpdate={handleUpdate}
+            />
+          ))}
         </div>
       </ScrollArea>
 
@@ -267,6 +284,6 @@ export function ProductKitComponentsSection({ productId, boxInternalDimensions }
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
+    </div>)
   );
 }

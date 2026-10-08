@@ -157,6 +157,8 @@ export const Sel = {
     actionsToggle: TID("product-card-actions-toggle"),
     /** Botão final "Adicionar ao Carrinho" dentro do popover QuickAddToQuote. */
     cardAddToCart: TID("product-card-add-to-cart"),
+    /** CTA principal do card que abre o QuickAddToQuote. */
+    cardQuoteTrigger: TID("product-card-quote-trigger"),
     /** Botão "Adicionar" no quick-add inline do EnhancedProductCard. */
     cardQuickAdd: TID("product-card-quick-add"),
     /** Botão "Adicionar ao Orçamento" do QuickView. */
@@ -297,6 +299,11 @@ export const Sel = {
     notFound: TID("app-not-found"),
     /** Tela de acesso negado (DevAccessDeniedPage). */
     accessDenied: TID("app-access-denied"),
+    /** Tela de acesso negado genérica (ForbiddenPage). */
+    forbidden: TID("app-forbidden"),
+    /** Identificador e CTA contextual da tela de negação técnica. */
+    devAccessRequestId: TID("dev-access-request-id"),
+    devAccessContextualCta: TID("dev-access-contextual-cta"),
     /**
      * Header global do MainLayout — sticky no topo do viewport.
      * Alias de `Sel.app.layout.header`, mantido para retrocompatibilidade.

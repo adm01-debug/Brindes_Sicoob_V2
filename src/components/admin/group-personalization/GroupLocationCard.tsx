@@ -12,18 +12,18 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { Plus, Trash2, Loader2, Check, X } from "lucide-react";
 import { InlineEditField } from "../InlineEditField";
 import { ImageUploadButton } from "../ImageUploadButton";
-import type { GroupLocation, GroupLocationTechnique, Technique } from "../hooks/useGroupPersonalization";
+import type { GroupLocation, GroupLocationTechnique, Technique, UpdateData } from "../hooks/useGroupPersonalization";
 
 interface GroupLocationCardProps {
   location: GroupLocation;
   selectedGroup: string | null;
   techniques: Technique[] | undefined;
   locationTechniques: GroupLocationTechnique[];
-  onUpdateLocation: (data: { id: string; [key: string]: any }) => void;
+  onUpdateLocation: (data: UpdateData) => void;
   onDeleteLocation: (id: string) => void;
   onAddTechnique: (data: { group_location_id: string; technique_id: string; max_colors?: number }) => void;
   addTechniquePending: boolean;
-  onUpdateTechnique: (data: { id: string; [key: string]: any }) => void;
+  onUpdateTechnique: (data: UpdateData) => void;
   onDeleteTechnique: (id: string) => void;
 }
 

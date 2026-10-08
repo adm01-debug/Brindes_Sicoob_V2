@@ -2,11 +2,7 @@
  * Integration tests for Auth page — validates form rendering, validation schemas,
  * and tab switching without requiring real Supabase connection.
  */
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import React from 'react';
+import { describe, it, expect } from 'vitest';
 import { z } from 'zod';
 
 // ============================================

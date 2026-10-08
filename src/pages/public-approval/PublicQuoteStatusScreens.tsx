@@ -8,7 +8,7 @@ import {
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { PageSEO } from "@/components/seo/PageSEO";
-import type { SignatureReceipt } from "./usePublicQuoteApproval";
+import type { AlreadyRespondedData, SignatureReceipt } from "./usePublicQuoteApproval";
 
 function formatDocMask(digits?: string): string {
   if (!digits) return "";
@@ -46,7 +46,7 @@ export function ExpiredScreen() {
   );
 }
 
-export function AlreadyRespondedScreen({ data }: { data: any }) {
+export function AlreadyRespondedScreen({ data }: { data: AlreadyRespondedData }) {
   const isApproved = data.response === "approved";
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">

@@ -10,6 +10,25 @@ interface NoveltyBadgeProps {
   className?: string;
 }
 
+function noveltyVariant(daysElapsed: number) {
+  if (daysElapsed <= 5) return "bg-success text-success-foreground shadow-[0_0_0_1px_hsl(var(--success)/0.3),0_2px_8px_hsl(var(--success)/0.25)] hover:shadow-[0_0_0_1px_hsl(var(--success)/0.4),0_4px_12px_hsl(var(--success)/0.35)]";
+  if (daysElapsed <= 15) return "bg-success/80 text-success-foreground";
+  if (daysElapsed <= 23) return "bg-warning/80 text-warning-foreground";
+  return "bg-orange/80 text-orange-foreground";
+}
+
+function noveltySize(size: NonNullable<NoveltyBadgeProps['size']>) {
+  if (size === "sm") return "text-[9px] px-1.5 py-0.5 gap-0.5";
+  if (size === "lg") return "text-sm px-3 py-1.5 gap-1.5";
+  return "text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 gap-1";
+}
+
+function noveltyLabel(daysElapsed: number) {
+  if (daysElapsed === 0) return "Novidade hoje!";
+  if (daysElapsed === 1) return "Novidade 1 dia";
+  return `Novidade ${daysElapsed} dias`;
+}
+
 /**
  * Badge de novidade com cores dinâmicas baseadas na recência:
  * - Verde vibrante: muito novo (≤5 dias desde criação)
@@ -17,51 +36,15 @@ interface NoveltyBadgeProps {
  * - Amarelo: moderado (16-23 dias)
  * - Laranja: quase saindo (24-30 dias)
  */
-export function NoveltyBadge({ 
-  daysRemaining, 
-  showDays = true,
-  size = "md",
-  className 
-}: NoveltyBadgeProps) {
+export function NoveltyBadge({ daysRemaining, showDays = true, size = "md", className }: NoveltyBadgeProps) {
   const daysElapsed = 30 - daysRemaining;
-
-  const getVariantClasses = () => {
-    if (daysElapsed <= 5) {
-      // Very fresh — vibrant success green with glow
-      return "bg-success text-success-foreground shadow-[0_0_0_1px_hsl(var(--success)/0.3),0_2px_8px_hsl(var(--success)/0.25)] hover:shadow-[0_0_0_1px_hsl(var(--success)/0.4),0_4px_12px_hsl(var(--success)/0.35)]";
-    }
-    if (daysElapsed <= 15) {
-      // Fresh — success 
-      return "bg-success/80 text-success-foreground";
-    }
-    if (daysElapsed <= 23) {
-      // Moderate — warning
-      return "bg-warning/80 text-warning-foreground";
-    }
-    // Aging — orange
-    return "bg-orange/80 text-orange-foreground";
-  };
-
-  const getSizeClasses = () => {
-    switch (size) {
-      case "sm": return "text-[9px] px-1.5 py-0.5 gap-0.5";
-      case "lg": return "text-sm px-3 py-1.5 gap-1.5";
-      default: return "text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 gap-1";
-    }
-  };
-
-  const getLabel = () => {
-    if (daysElapsed === 0) return "Novidade hoje!";
-    if (daysElapsed === 1) return "Novidade 1 dia";
-    return `Novidade ${daysElapsed} dias`;
-  };
 
   const content = (
     <Badge 
       className={cn(
         "inline-flex items-center font-semibold rounded-full transition-shadow duration-300",
-        getVariantClasses(),
-        getSizeClasses(),
+        noveltyVariant(daysElapsed),
+        noveltySize(size),
         daysElapsed <= 2 && "animate-[badge-pop_0.4s_ease-out]",
         className
       )}
@@ -69,7 +52,7 @@ export function NoveltyBadge({
       {daysElapsed <= 5 && <Sparkles className={cn(
         size === "sm" ? "h-2.5 w-2.5" : size === "lg" ? "h-4 w-4" : "h-2.5 w-2.5 sm:h-3 sm:w-3"
       )} />}
-      <span>{showDays ? getLabel() : "Novidade"}</span>
+      <span>{showDays ? noveltyLabel(daysElapsed) : "Novidade"}</span>
     </Badge>
   );
 

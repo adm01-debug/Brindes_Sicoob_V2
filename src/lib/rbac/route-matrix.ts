@@ -121,19 +121,25 @@ export function summarizeRoutes(routes: RbacRouteEntry[] = RBAC_ROUTES) {
  * e usar o guard DevRoute. Retorna lista de inconsistências.
  */
 export function findInconsistencies(routes: RbacRouteEntry[] = RBAC_ROUTES): string[] {
+  return routes.flatMap(routeInconsistencies);
+}
+
+function routeInconsistencies(route: RbacRouteEntry): string[] {
   const issues: string[] = [];
-  for (const r of routes) {
-    if (r.role === "dev" && r.guard !== "DevRoute") {
-      issues.push(`${r.path}: role=dev mas guard=${r.guard}`);
+  if (route.role === "dev") {
+    if (route.guard !== "DevRoute") {
+      issues.push(`${route.path}: role=dev mas guard=${route.guard}`);
     }
-    if (r.role === "dev" && !r.mfaAal2) {
-      issues.push(`${r.path}: role=dev sem MFA/AAL2`);
+    if (!route.mfaAal2) {
+      issues.push(`${route.path}: role=dev sem MFA/AAL2`);
     }
-    if (r.role === "admin" && !["AdminRoute", "DevRoute"].includes(r.guard)) {
-      issues.push(`${r.path}: role=admin mas guard=${r.guard}`);
+  }
+  if (route.role === "admin") {
+    if (!["AdminRoute", "DevRoute"].includes(route.guard)) {
+      issues.push(`${route.path}: role=admin mas guard=${route.guard}`);
     }
-    if (r.role === "admin" && !r.mfaAal2) {
-      issues.push(`${r.path}: role=admin sem MFA/AAL2`);
+    if (!route.mfaAal2) {
+      issues.push(`${route.path}: role=admin sem MFA/AAL2`);
     }
   }
   return issues;

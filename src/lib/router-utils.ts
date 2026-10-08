@@ -1,12 +1,12 @@
 import { type ComponentType } from "react";
 
-export type RouteConfig = {
+export type RouteConfig<Props = Record<string, never>> = {
   path: string;
-  component: ComponentType<any>;
+  component: ComponentType<Props>;
   exact?: boolean;
 };
 
-export interface TypedRoute<P extends string> extends RouteConfig {
+export interface TypedRoute<P extends string, Props = Record<string, never>> extends RouteConfig<Props> {
   readonly path: P;
 }
 
@@ -14,7 +14,7 @@ export interface TypedRoute<P extends string> extends RouteConfig {
  * Helper to define routes with strict path types.
  * Use ":param" for dynamic segments.
  */
-export function defineRoute<P extends string>(config: TypedRoute<P>): TypedRoute<P> {
+export function defineRoute<P extends string, Props = Record<string, never>>(config: TypedRoute<P, Props>): TypedRoute<P, Props> {
   return config;
 }
 

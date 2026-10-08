@@ -26,8 +26,9 @@ export function SupplierSales({ days = 30, categoryId, supplierId, productId, ca
     );
   }
 
-  const maxRevenue = hasData ? Math.max(...suppliers!.map(s => s.revenue)) : 0;
-  const totalRevenue = hasData ? suppliers!.reduce((s, su) => s + su.revenue, 0) : 0;
+  const supplierRows = suppliers ?? [];
+  const maxRevenue = hasData ? Math.max(...supplierRows.map(s => s.revenue)) : 0;
+  const totalRevenue = hasData ? supplierRows.reduce((s, su) => s + su.revenue, 0) : 0;
 
   // Use opacity-based approach so bars follow the skin
   const getBarOpacity = (i: number) => Math.max(1 - i * 0.07, 0.4);
@@ -56,7 +57,7 @@ export function SupplierSales({ days = 30, categoryId, supplierId, productId, ca
             description={categoryName ? `Nenhum fornecedor com vendas em "${categoryName}".` : "Nenhum fornecedor registrou vendas neste período."}
           />
         ) : (
-          suppliers!.map((supplier, i) => {
+          supplierRows.map((supplier, i) => {
             const pct = maxRevenue > 0 ? (supplier.revenue / maxRevenue) * 100 : 0;
             const share = totalRevenue > 0 ? ((supplier.revenue / totalRevenue) * 100).toFixed(1) : '0';
             return (

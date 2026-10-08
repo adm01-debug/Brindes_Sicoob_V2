@@ -6,13 +6,12 @@ import { logger } from "./logger";
  * Utility for calling Supabase Edge Functions with a Circuit Breaker.
  * Prevents retry loops and protects the system during outages.
  */
-export async function invokeEdgeFunction<T = any>(
+export async function invokeEdgeFunction<T = unknown>(
   functionName: string,
   options: {
-    body?: any;
+    body?: object;
     headers?: Record<string, string>;
     method?: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
-    query_params?: Record<string, string>;
   } = {}
 ): Promise<T> {
   const breaker = getCircuitBreaker(`edge-function-${functionName}`, {
@@ -25,7 +24,6 @@ export async function invokeEdgeFunction<T = any>(
       body: options.body,
       headers: options.headers,
       method: options.method,
-      queryParams: options.query_params,
     });
 
     if (error) {

@@ -42,7 +42,7 @@ import {
   subscribeSecretsManagerCalls,
   type SecretsManagerCallSample,
 } from "@/lib/telemetry/secretsManagerCallMetrics";
-import { useSecretsManager } from "@/hooks/useSecretsManager";
+import { useSecretsManager, type SecretError } from "@/hooks/useSecretsManager";
 import { toast } from "sonner";
 
 const MAX_RECENT = 8;
@@ -79,6 +79,44 @@ function copyToClipboard(text: string, label = "Copiado") {
   );
 }
 
+function isHealthyResponse(error: unknown, data: unknown): boolean {
+  if (error || !data || typeof data !== "object") return false;
+  return (data as { ok?: boolean }).ok !== false;
+}
+
+function responseErrorMessage(error: { message?: string } | null, data: unknown): string | undefined {
+  if (error?.message) return error.message;
+  if (!data || typeof data !== "object") return undefined;
+  const payload = data as { ok?: boolean; error?: { message?: string } };
+  return payload.ok === false ? payload.error?.message : undefined;
+}
+
+function ListErrorAlert({ error }: { error: SecretError | null }) {
+  if (!error) return null;
+  const { title, hint } = describeListError(error.code, error.message);
+  const accessError = ["unauthenticated", "forbidden", "permission_denied"].includes(error.code);
+  return (
+    <Alert variant="destructive" role="alert" aria-live="polite">
+      {accessError ? <Lock className="h-4 w-4" /> : <ShieldAlert className="h-4 w-4" />}
+      <AlertTitle className="text-sm">{title}</AlertTitle>
+      <AlertDescription>
+        <p className="text-xs">{hint}</p>
+        <p className="mt-2 text-[10px] font-mono text-muted-foreground">código: {error.code}</p>
+      </AlertDescription>
+    </Alert>
+  );
+}
+
+function bootBadgeFor(ok: boolean | undefined) {
+  if (ok === undefined) {
+    return { label: "Sem heartbeat", cls: "border-muted-foreground/40 bg-muted/40 text-muted-foreground", Icon: Clock };
+  }
+  if (ok) {
+    return { label: "Operacional", cls: "border-success/40 bg-success/10 text-success", Icon: CheckCircle2 };
+  }
+  return { label: "Falhou", cls: "border-destructive/40 bg-destructive/10 text-destructive", Icon: XCircle };
+}
+
 export function SecretsManagerHealthPanel({ className }: { className?: string }) {
   // Reage ao mesmo hook compartilhado que alimenta a página — não dispara
   // novas chamadas sozinho (não chama list() no mount).
@@ -106,7 +144,8 @@ export function SecretsManagerHealthPanel({ className }: { className?: string })
   // mesmo sem clicar em "Testar agora".
   const inferredBoot = useMemo(() => {
     for (let i = samples.length - 1; i >= 0; i--) {
-      const s = samples[i]!;
+      const s = samples[i];
+      if (!s) continue;
       if (s.action === "list" || s.action === "status") return s;
     }
     return null;
@@ -149,11 +188,8 @@ export function SecretsManagerHealthPanel({ className }: { className?: string })
       const durationMs = Math.round(performance.now() - startedAt);
       const ctx = (error as { context?: Response } | null)?.context;
       const status = ctx?.status;
-      const ok = !error && !!data && (data as { ok?: boolean }).ok !== false;
-      const errorMessage = error?.message
-        ?? (data && (data as { ok?: boolean }).ok === false
-          ? (data as { error?: { message?: string } }).error?.message
-          : undefined);
+      const ok = isHealthyResponse(error, data);
+      const errorMessage = responseErrorMessage(error, data);
 
       // Alimenta o mesmo buffer das chamadas reais para aparecer na lista.
       recordSecretsManagerCall({
@@ -194,14 +230,10 @@ export function SecretsManagerHealthPanel({ className }: { className?: string })
   const errorCount = samples.filter((s) => !s.ok).length;
   const totalCount = samples.length;
 
-  const bootBadge = !boot
-    ? { label: "Sem heartbeat", cls: "border-muted-foreground/40 bg-muted/40 text-muted-foreground", Icon: Clock }
-    : boot.ok
-      ? { label: "Operacional", cls: "border-success/40 bg-success/10 text-success", Icon: CheckCircle2 }
-      : { label: "Falhou", cls: "border-destructive/40 bg-destructive/10 text-destructive", Icon: XCircle };
+  const bootBadge = bootBadgeFor(boot?.ok);
 
   return (
-    <Card className={className} data-testid="secrets-manager-health-panel">
+    (<Card className={className} data-testid="secrets-manager-health-panel">
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between gap-3 flex-wrap">
           <div className="flex items-center gap-2">
@@ -250,7 +282,7 @@ export function SecretsManagerHealthPanel({ className }: { className?: string })
           {boot?.requestId && (
             <button
               type="button"
-              onClick={() => copyToClipboard(boot.requestId!, "request_id copiado")}
+              onClick={() => boot.requestId && copyToClipboard(boot.requestId, "request_id copiado")}
               className="ml-auto inline-flex items-center gap-1 text-[11px] font-mono text-muted-foreground hover:text-foreground"
               title="Copiar request_id para correlacionar com edge logs"
             >
@@ -261,25 +293,7 @@ export function SecretsManagerHealthPanel({ className }: { className?: string })
         </div>
 
         {/* Erro de leitura corrente (do hook compartilhado) */}
-        {listError && (() => {
-          const { title, hint } = describeListError(listError.code, listError.message);
-          return (
-            <Alert variant="destructive" role="alert" aria-live="polite">
-              {listError.code === "unauthenticated" || listError.code === "forbidden" || listError.code === "permission_denied" ? (
-                <Lock className="h-4 w-4" />
-              ) : (
-                <ShieldAlert className="h-4 w-4" />
-              )}
-              <AlertTitle className="text-sm">{title}</AlertTitle>
-              <AlertDescription>
-                <p className="text-xs">{hint}</p>
-                <p className="mt-2 text-[10px] font-mono text-muted-foreground">
-                  código: {listError.code}
-                </p>
-              </AlertDescription>
-            </Alert>
-          );
-        })()}
+        <ListErrorAlert error={listError} />
 
         {/* Últimas chamadas */}
         <div>
@@ -305,7 +319,21 @@ export function SecretsManagerHealthPanel({ className }: { className?: string })
           )}
         </div>
       </CardContent>
-    </Card>
+    </Card>)
+  );
+}
+
+function SampleRequestIdButton({ requestId }: { requestId?: string }) {
+  if (!requestId) return null;
+  const copy = () => navigator.clipboard.writeText(requestId).then(
+    () => toast.success("request_id copiado", { description: requestId }),
+    () => toast.error("Não foi possível copiar"),
+  );
+  return (
+    <button type="button" onClick={copy} className="ml-auto inline-flex items-center gap-1 text-[10px] font-mono text-muted-foreground hover:text-foreground" title="Copiar request_id">
+      <Copy className="h-3 w-3" />
+      {requestId.slice(0, 8)}…
+    </button>
   );
 }
 
@@ -343,22 +371,7 @@ function SampleRow({ sample }: { sample: SecretsManagerCallSample }) {
           · {sample.errorMessage}
         </span>
       )}
-      {sample.requestId && (
-        <button
-          type="button"
-          onClick={() => {
-            navigator.clipboard.writeText(sample.requestId!).then(
-              () => toast.success("request_id copiado", { description: sample.requestId }),
-              () => toast.error("Não foi possível copiar"),
-            );
-          }}
-          className="ml-auto inline-flex items-center gap-1 text-[10px] font-mono text-muted-foreground hover:text-foreground"
-          title="Copiar request_id"
-        >
-          <Copy className="h-3 w-3" />
-          {sample.requestId.slice(0, 8)}…
-        </button>
-      )}
+      <SampleRequestIdButton requestId={sample.requestId} />
     </li>
   );
 }

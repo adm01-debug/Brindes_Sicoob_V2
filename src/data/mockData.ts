@@ -105,6 +105,21 @@ export interface PurchaseItem {
   color: ProductColor;
 }
 
+const LABOR_DAY = 'DIA DO TRABALHADOR';
+const ONBOARDING_KIT = 'ONBOARDING | KIT BOAS-VINDAS';
+const WORKPLACE_SAFETY = 'CIPA | SIPAT';
+const AWARD_CAMPAIGN = 'PREMIAÇÃO | INCENTIVO';
+const QUALITY_OF_LIFE = 'QUALIDADE DE VIDA';
+const SALES_CONVENTION = 'CONVENÇÃO DE VENDAS';
+const OFFICE_SEGMENT = 'Escritório';
+const SQUEEZE_NAME = 'Squeeze Plástico 700ml';
+const BARBECUE_KIT_NAME = 'Kit Churrasco Premium 10 Peças';
+const PREMIUM_SHIRT_NAME = 'Camiseta Algodão Premium';
+const NOTEBOOK_BACKPACK_NAME = 'Mochila Notebook 15"';
+const THERMAL_BOTTLE_NAME = 'Garrafa Térmica 500ml';
+const COTTON_CAP_NAME = 'Boné 5 Painéis Algodão';
+const THERMAL_BOTTLE_IMAGE = 'https://images.unsplash.com/photo-1602143407151-7111542de6e8?w=400';
+
 // Cores disponíveis
 export const COLORS: ProductColor[] = [
   { name: 'Vermelho', hex: '#EF4444', group: 'VERMELHO' },
@@ -125,11 +140,16 @@ export const COLORS: ProductColor[] = [
 
 // Helpers seguros para indexação de arrays mockados (noUncheckedIndexedAccess)
 function getColor(index: number): ProductColor {
-  return COLORS[index] ?? COLORS[0]!;
+  return COLORS[index] ?? { name: 'Branco', hex: '#FFFFFF', group: 'BRANCO' };
 }
 
 function getSupplier(index: number): Supplier {
-  return SUPPLIERS[index] ?? SUPPLIERS[0]!;
+  return SUPPLIERS[index] ?? { id: 'unknown', name: 'Fornecedor não informado' };
+}
+
+function getCategory(id: number | string): Category {
+  return CATEGORIES.find((category) => category.id === id)
+    ?? { id, name: 'Categoria não informada' };
 }
 
 // Categorias principais de Produtos Sicoob
@@ -168,18 +188,18 @@ export const DATAS_COMEMORATIVAS = [
   'DIA DOS PAIS', 'DIA DAS MÃES', 'DIA DAS CRIANÇAS', 'NATAL', 'PÁSCOA',
   'ANO NOVO', 'DIA DO MÉDICO', 'DIA DO ADVOGADO', 'DIA DO ENGENHEIRO',
   'DIA DA SECRETÁRIA', 'DIA DO PROFESSOR', 'DIA DO CONTADOR',
-  'DIA DO TRABALHADOR', 'DIA DA MULHER', 'DIA DO HOMEM', 'NOVEMBRO AZUL',
+  LABOR_DAY, 'DIA DA MULHER', 'DIA DO HOMEM', 'NOVEMBRO AZUL',
   'OUTUBRO ROSA', 'SETEMBRO AMARELO', 'CARNAVAL', 'FESTA JUNINA',
   'DIA DOS NAMORADOS',
 ];
 
 // Endomarketing
 export const ENDOMARKETING = [
-  'ONBOARDING | KIT BOAS-VINDAS', 'TEMPO DE CASA | ANIVERSÁRIO EMPRESA',
-  'CIPA | SIPAT', 'PREMIAÇÃO | INCENTIVO', 'RECONHECIMENTO',
+  ONBOARDING_KIT, 'TEMPO DE CASA | ANIVERSÁRIO EMPRESA',
+  WORKPLACE_SAFETY, AWARD_CAMPAIGN, 'RECONHECIMENTO',
   'INTEGRAÇÃO | TEAM BUILDING', 'TREINAMENTO | CAPACITAÇÃO',
-  'FIM DE ANO | CONFRATERNIZAÇÃO', 'QUALIDADE DE VIDA',
-  'CAMPANHA INTERNA', 'CONVENÇÃO DE VENDAS',
+  'FIM DE ANO | CONFRATERNIZAÇÃO', QUALITY_OF_LIFE,
+  'CAMPANHA INTERNA', SALES_CONVENTION,
 ];
 
 // Nichos
@@ -216,15 +236,15 @@ export const PRODUCTS: Product[] = [
   {
     id: 'prod-001',
     sku: 'SQ-700-PLAS',
-    name: 'Squeeze Plástico 700ml',
+    name: SQUEEZE_NAME,
     description: 'Squeeze de plástico resistente com tampa rosqueável e bico dosador. Capacidade 700ml. Ideal para academias, esportes e uso diário.',
     price: 12.90,
     minQuantity: 100,
-    category: CATEGORIES.find(c => c.id === 202)!, // ESPORTES | AVENTURA | LAZER
+    category: getCategory(202), // ESPORTES | AVENTURA | LAZER
     subcategory: 'Squeezes',
     groups: [
-      CATEGORIES.find(c => c.id === 222)!, // SAÚDE | BELEZA | BEM ESTAR
-      CATEGORIES.find(c => c.id === 196)!, // ECOLOGIA
+      getCategory(222), // SAÚDE | BELEZA | BEM ESTAR
+      getCategory(196), // ECOLOGIA
     ],
     colors: [getColor(0), getColor(1), getColor(2), getColor(3), getColor(4)],
     materials: ['PLÁSTICO'],
@@ -233,22 +253,22 @@ export const PRODUCTS: Product[] = [
     stockStatus: 'in-stock',
     isKit: false,
     images: [
-      'https://images.unsplash.com/photo-1602143407151-7111542de6e8?w=400',
+      THERMAL_BOTTLE_IMAGE,
       'https://images.unsplash.com/photo-1523362628745-0c100150b504?w=400',
     ],
     tags: {
       publicoAlvo: ['UNISSEX', 'ESPORTISTA'],
-      datasComemorativas: ['DIA DO TRABALHADOR'],
-      endomarketing: ['QUALIDADE DE VIDA', 'CIPA | SIPAT'],
+      datasComemorativas: [LABOR_DAY],
+      endomarketing: [QUALITY_OF_LIFE, WORKPLACE_SAFETY],
       ramo: ['Indústria'],
       nicho: ['Saúde'],
     },
     variations: [
-      { id: 'var-001-1', sku: 'SQ-700-PLAS-PRT', color: getColor(4), stock: 1500, image: 'https://images.unsplash.com/photo-1602143407151-7111542de6e8?w=400' },
+      { id: 'var-001-1', sku: 'SQ-700-PLAS-PRT', color: getColor(4), stock: 1500, image: THERMAL_BOTTLE_IMAGE },
       { id: 'var-001-2', sku: 'SQ-700-PLAS-BRC', color: getColor(3), stock: 2300, image: 'https://images.unsplash.com/photo-1523362628745-0c100150b504?w=400' },
-      { id: 'var-001-3', sku: 'SQ-700-PLAS-AZL', color: getColor(1), stock: 800, image: 'https://images.unsplash.com/photo-1602143407151-7111542de6e8?w=400' },
-      { id: 'var-001-4', sku: 'SQ-700-PLAS-VRM', color: getColor(0), stock: 450, image: 'https://images.unsplash.com/photo-1602143407151-7111542de6e8?w=400' },
-      { id: 'var-001-5', sku: 'SQ-700-PLAS-VRD', color: getColor(2), stock: 320, image: 'https://images.unsplash.com/photo-1602143407151-7111542de6e8?w=400' },
+      { id: 'var-001-3', sku: 'SQ-700-PLAS-AZL', color: getColor(1), stock: 800, image: THERMAL_BOTTLE_IMAGE },
+      { id: 'var-001-4', sku: 'SQ-700-PLAS-VRM', color: getColor(0), stock: 450, image: THERMAL_BOTTLE_IMAGE },
+      { id: 'var-001-5', sku: 'SQ-700-PLAS-VRD', color: getColor(2), stock: 320, image: THERMAL_BOTTLE_IMAGE },
     ],
     featured: true,
   },
@@ -259,11 +279,11 @@ export const PRODUCTS: Product[] = [
     description: 'Caneca de metal com acabamento brilhante. Capacidade 350ml. Perfeita para café, chá e bebidas quentes.',
     price: 28.50,
     minQuantity: 50,
-    category: CATEGORIES.find(c => c.id === 124)!, // BAR | COZINHA
+    category: getCategory(124), // BAR | COZINHA
     subcategory: 'Canecas',
     groups: [
-      CATEGORIES.find(c => c.id === 214)!, // PAPELARIA | ESCRITÓRIO
-      CATEGORIES.find(c => c.id === 226)!, // UTENSÍLIOS | DECORAÇÃO
+      getCategory(214), // PAPELARIA | ESCRITÓRIO
+      getCategory(226), // UTENSÍLIOS | DECORAÇÃO
     ],
     colors: [getColor(3), getColor(4), getColor(8), getColor(9)],
     materials: ['METAL', 'AÇO INOX'],
@@ -277,9 +297,9 @@ export const PRODUCTS: Product[] = [
     ],
     tags: {
       publicoAlvo: ['UNISSEX', 'EXECUTIVO'],
-      datasComemorativas: ['NATAL', 'DIA DO TRABALHADOR'],
-      endomarketing: ['ONBOARDING | KIT BOAS-VINDAS', 'RECONHECIMENTO'],
-      ramo: ['Escritório'],
+      datasComemorativas: ['NATAL', LABOR_DAY],
+      endomarketing: [ONBOARDING_KIT, 'RECONHECIMENTO'],
+      ramo: [OFFICE_SEGMENT],
       nicho: ['Financeiro', 'TI'],
     },
     newArrival: true,
@@ -287,16 +307,16 @@ export const PRODUCTS: Product[] = [
   {
     id: 'prod-003',
     sku: 'KIT-CHUR-10P',
-    name: 'Kit Churrasco Premium 10 Peças',
+    name: BARBECUE_KIT_NAME,
     description: 'Kit completo para churrasco com 10 peças em aço inox. Inclui faca, garfo, chaira, pegador, espetos e avental em estojo de madeira.',
     price: 189.90,
     minQuantity: 20,
-    category: CATEGORIES.find(c => c.id === 124)!, // BAR | COZINHA
+    category: getCategory(124), // BAR | COZINHA
     subcategory: 'Kit Churrasco',
     groups: [
-      CATEGORIES.find(c => c.id === 210)!, // KIT GOURMET
-      CATEGORIES.find(c => c.id === 192)!, // AGRO
-      CATEGORIES.find(c => c.id === 126)!, // FERRAMENTAS | UTILIDADES
+      getCategory(210), // KIT GOURMET
+      getCategory(192), // AGRO
+      getCategory(126), // FERRAMENTAS | UTILIDADES
     ],
     colors: [getColor(4), getColor(10)],
     materials: ['AÇO INOX', 'MADEIRA', 'COURO'],
@@ -323,7 +343,7 @@ export const PRODUCTS: Product[] = [
     tags: {
       publicoAlvo: ['HOMEM', 'EXECUTIVO'],
       datasComemorativas: ['DIA DOS PAIS', 'NATAL'],
-      endomarketing: ['PREMIAÇÃO | INCENTIVO', 'RECONHECIMENTO'],
+      endomarketing: [AWARD_CAMPAIGN, 'RECONHECIMENTO'],
       ramo: ['Agropecuária'],
       nicho: ['Agro'],
     },
@@ -376,7 +396,7 @@ export const PRODUCTS: Product[] = [
     description: 'Pen drive 32GB com sistema giratório em metal. Compatível com USB 3.0. Alta velocidade de transferência.',
     price: 35.00,
     minQuantity: 50,
-    category: CATEGORIES.find(c => c.id === 224)!,
+    category: getCategory(224),
     subcategory: 'Pen Drives',
     colors: [getColor(0), getColor(1), getColor(2), getColor(4), getColor(9)],
     materials: ['METAL', 'PLÁSTICO'],
@@ -391,7 +411,7 @@ export const PRODUCTS: Product[] = [
     tags: {
       publicoAlvo: ['UNISSEX', 'EXECUTIVO'],
       datasComemorativas: ['NATAL'],
-      endomarketing: ['ONBOARDING | KIT BOAS-VINDAS', 'TREINAMENTO | CAPACITAÇÃO'],
+      endomarketing: [ONBOARDING_KIT, 'TREINAMENTO | CAPACITAÇÃO'],
       ramo: ['Tecnologia'],
       nicho: ['TI'],
     },
@@ -399,11 +419,11 @@ export const PRODUCTS: Product[] = [
   {
     id: 'prod-005',
     sku: 'CAM-ALG-PP',
-    name: 'Camiseta Algodão Premium',
+    name: PREMIUM_SHIRT_NAME,
     description: 'Camiseta 100% algodão penteado, 180g/m². Corte regular, gola reforçada. Disponível em diversos tamanhos.',
     price: 42.00,
     minQuantity: 30,
-    category: CATEGORIES.find(c => c.id === 220)!,
+    category: getCategory(220),
     subcategory: 'Camisetas',
     colors: [getColor(3), getColor(4), getColor(1), getColor(0), getColor(8)],
     materials: ['ALGODÃO'],
@@ -417,8 +437,8 @@ export const PRODUCTS: Product[] = [
     ],
     tags: {
       publicoAlvo: ['UNISSEX'],
-      datasComemorativas: ['DIA DO TRABALHADOR'],
-      endomarketing: ['ONBOARDING | KIT BOAS-VINDAS', 'CONVENÇÃO DE VENDAS'],
+      datasComemorativas: [LABOR_DAY],
+      endomarketing: [ONBOARDING_KIT, SALES_CONVENTION],
       ramo: ['Indústria'],
       nicho: ['Indústria Têxtil'],
     },
@@ -427,11 +447,11 @@ export const PRODUCTS: Product[] = [
   {
     id: 'prod-006',
     sku: 'MOC-NOT-15',
-    name: 'Mochila Notebook 15"',
+    name: NOTEBOOK_BACKPACK_NAME,
     description: 'Mochila executiva para notebook até 15". Compartimento acolchoado, bolsos organizadores, alças ergonômicas.',
     price: 89.90,
     minQuantity: 25,
-    category: CATEGORIES.find(c => c.id === 214)!,
+    category: getCategory(214),
     subcategory: 'Mochilas',
     colors: [getColor(4), getColor(8), getColor(1)],
     materials: ['POLIÉSTER', 'PLÁSTICO'],
@@ -446,7 +466,7 @@ export const PRODUCTS: Product[] = [
     tags: {
       publicoAlvo: ['UNISSEX', 'EXECUTIVO'],
       datasComemorativas: ['NATAL'],
-      endomarketing: ['ONBOARDING | KIT BOAS-VINDAS', 'PREMIAÇÃO | INCENTIVO'],
+      endomarketing: [ONBOARDING_KIT, AWARD_CAMPAIGN],
       ramo: ['Tecnologia'],
       nicho: ['TI', 'Financeiro'],
     },
@@ -455,11 +475,11 @@ export const PRODUCTS: Product[] = [
   {
     id: 'prod-007',
     sku: 'GAR-TER-500',
-    name: 'Garrafa Térmica 500ml',
+    name: THERMAL_BOTTLE_NAME,
     description: 'Garrafa térmica de aço inox com parede dupla. Mantém bebidas quentes por 12h e frias por 24h.',
     price: 65.00,
     minQuantity: 30,
-    category: CATEGORIES.find(c => c.id === 124)!,
+    category: getCategory(124),
     subcategory: 'Garrafas Térmicas',
     colors: [getColor(4), getColor(3), getColor(1), getColor(0), getColor(2)],
     materials: ['AÇO INOX'],
@@ -468,14 +488,14 @@ export const PRODUCTS: Product[] = [
     stockStatus: 'in-stock',
     isKit: false,
     images: [
-      'https://images.unsplash.com/photo-1602143407151-7111542de6e8?w=400',
+      THERMAL_BOTTLE_IMAGE,
       'https://images.unsplash.com/photo-1570831739435-6601aa3fa4fb?w=400',
     ],
     tags: {
       publicoAlvo: ['UNISSEX'],
-      datasComemorativas: ['DIA DO TRABALHADOR', 'NATAL'],
-      endomarketing: ['QUALIDADE DE VIDA', 'CIPA | SIPAT'],
-      ramo: ['Escritório'],
+      datasComemorativas: [LABOR_DAY, 'NATAL'],
+      endomarketing: [QUALITY_OF_LIFE, WORKPLACE_SAFETY],
+      ramo: [OFFICE_SEGMENT],
       nicho: ['Saúde'],
     },
   },
@@ -486,7 +506,7 @@ export const PRODUCTS: Product[] = [
     description: 'Caderno A5 com capa em papel reciclado e caneta de bambu. 80 folhas pautadas. Produto ecológico.',
     price: 18.90,
     minQuantity: 100,
-    category: CATEGORIES.find(c => c.id === 196)!,
+    category: getCategory(196),
     subcategory: 'Cadernos',
     colors: [getColor(2), getColor(10)],
     materials: ['PAPEL', 'BAMBU'],
@@ -501,7 +521,7 @@ export const PRODUCTS: Product[] = [
     tags: {
       publicoAlvo: ['UNISSEX'],
       datasComemorativas: ['DIA DO MEIO AMBIENTE'],
-      endomarketing: ['ONBOARDING | KIT BOAS-VINDAS'],
+      endomarketing: [ONBOARDING_KIT],
       ramo: ['Educação'],
       nicho: ['Educação'],
     },
@@ -510,11 +530,11 @@ export const PRODUCTS: Product[] = [
   {
     id: 'prod-009',
     sku: 'BON-5P-ALG',
-    name: 'Boné 5 Painéis Algodão',
+    name: COTTON_CAP_NAME,
     description: 'Boné 5 painéis em algodão com fechamento em velcro. Aba curva pré-formada.',
     price: 15.50,
     minQuantity: 100,
-    category: CATEGORIES.find(c => c.id === 220)!,
+    category: getCategory(220),
     subcategory: 'Bonés',
     colors: COLORS.slice(0, 8),
     materials: ['ALGODÃO'],
@@ -529,7 +549,7 @@ export const PRODUCTS: Product[] = [
     tags: {
       publicoAlvo: ['UNISSEX'],
       datasComemorativas: ['CARNAVAL', 'FESTA JUNINA'],
-      endomarketing: ['CONVENÇÃO DE VENDAS', 'INTEGRAÇÃO | TEAM BUILDING'],
+      endomarketing: [SALES_CONVENTION, 'INTEGRAÇÃO | TEAM BUILDING'],
       ramo: ['Esportes'],
       nicho: ['Agro'],
     },
@@ -541,7 +561,7 @@ export const PRODUCTS: Product[] = [
     description: 'Carregador portátil 10000mAh com 2 saídas USB. Design slim e leve. Indicador LED de carga.',
     price: 75.00,
     minQuantity: 25,
-    category: CATEGORIES.find(c => c.id === 224)!,
+    category: getCategory(224),
     subcategory: 'Power Banks',
     colors: [getColor(3), getColor(4), getColor(1), getColor(0)],
     materials: ['PLÁSTICO', 'METAL'],
@@ -556,7 +576,7 @@ export const PRODUCTS: Product[] = [
     tags: {
       publicoAlvo: ['UNISSEX', 'EXECUTIVO'],
       datasComemorativas: ['NATAL'],
-      endomarketing: ['PREMIAÇÃO | INCENTIVO', 'ONBOARDING | KIT BOAS-VINDAS'],
+      endomarketing: [AWARD_CAMPAIGN, ONBOARDING_KIT],
       ramo: ['Tecnologia'],
       nicho: ['TI'],
     },
@@ -569,7 +589,7 @@ export const PRODUCTS: Product[] = [
     description: 'Guarda-chuva automático com abertura e fechamento por botão. Estrutura reforçada, tecido impermeável.',
     price: 48.00,
     minQuantity: 50,
-    category: CATEGORIES.find(c => c.id === 220)!,
+    category: getCategory(220),
     subcategory: 'Guarda-Chuvas',
     colors: [getColor(4), getColor(1), getColor(0), getColor(8)],
     materials: ['POLIÉSTER', 'METAL'],
@@ -584,8 +604,8 @@ export const PRODUCTS: Product[] = [
     tags: {
       publicoAlvo: ['UNISSEX', 'EXECUTIVO'],
       datasComemorativas: [],
-      endomarketing: ['ONBOARDING | KIT BOAS-VINDAS'],
-      ramo: ['Escritório'],
+      endomarketing: [ONBOARDING_KIT],
+      ramo: [OFFICE_SEGMENT],
       nicho: ['Financeiro'],
     },
   },
@@ -596,7 +616,7 @@ export const PRODUCTS: Product[] = [
     description: 'Kit escritório com porta-canetas, bloco de notas, caneta, clips e borracha. Organização elegante para sua mesa.',
     price: 55.00,
     minQuantity: 30,
-    category: CATEGORIES.find(c => c.id === 214)!,
+    category: getCategory(214),
     subcategory: 'Kits Escritório',
     colors: [getColor(4), getColor(3), getColor(1)],
     materials: ['PLÁSTICO', 'PAPEL', 'METAL'],
@@ -618,8 +638,8 @@ export const PRODUCTS: Product[] = [
     tags: {
       publicoAlvo: ['UNISSEX', 'SECRETÁRIA', 'EXECUTIVO'],
       datasComemorativas: ['DIA DA SECRETÁRIA'],
-      endomarketing: ['ONBOARDING | KIT BOAS-VINDAS'],
-      ramo: ['Escritório'],
+      endomarketing: [ONBOARDING_KIT],
+      ramo: [OFFICE_SEGMENT],
       nicho: ['Financeiro', 'TI'],
     },
     newArrival: true,
@@ -647,8 +667,8 @@ export const CLIENTS: Client[] = [
         id: 'pur-001',
         date: '2024-01-10',
         products: [
-          { productId: 'prod-001', productName: 'Squeeze Plástico 700ml', quantity: 500, unitPrice: 12.90, color: getColor(2) },
-          { productId: 'prod-005', productName: 'Camiseta Algodão Premium', quantity: 200, unitPrice: 42.00, color: getColor(3) },
+          { productId: 'prod-001', productName: SQUEEZE_NAME, quantity: 500, unitPrice: 12.90, color: getColor(2) },
+          { productId: 'prod-005', productName: PREMIUM_SHIRT_NAME, quantity: 200, unitPrice: 42.00, color: getColor(3) },
         ],
         total: 14850.00,
         status: 'completed',
@@ -657,7 +677,7 @@ export const CLIENTS: Client[] = [
         id: 'pur-002',
         date: '2023-11-20',
         products: [
-          { productId: 'prod-006', productName: 'Mochila Notebook 15"', quantity: 100, unitPrice: 89.90, color: getColor(4) },
+          { productId: 'prod-006', productName: NOTEBOOK_BACKPACK_NAME, quantity: 100, unitPrice: 89.90, color: getColor(4) },
         ],
         total: 8990.00,
         status: 'completed',
@@ -693,8 +713,8 @@ export const CLIENTS: Client[] = [
         id: 'pur-004',
         date: '2024-01-05',
         products: [
-          { productId: 'prod-003', productName: 'Kit Churrasco Premium 10 Peças', quantity: 150, unitPrice: 189.90, color: getColor(4) },
-          { productId: 'prod-009', productName: 'Boné 5 Painéis Algodão', quantity: 1000, unitPrice: 15.50, color: getColor(2) },
+          { productId: 'prod-003', productName: BARBECUE_KIT_NAME, quantity: 150, unitPrice: 189.90, color: getColor(4) },
+          { productId: 'prod-009', productName: COTTON_CAP_NAME, quantity: 1000, unitPrice: 15.50, color: getColor(2) },
         ],
         total: 43985.00,
         status: 'completed',
@@ -703,7 +723,7 @@ export const CLIENTS: Client[] = [
         id: 'pur-005',
         date: '2023-12-01',
         products: [
-          { productId: 'prod-007', productName: 'Garrafa Térmica 500ml', quantity: 500, unitPrice: 65.00, color: getColor(2) },
+          { productId: 'prod-007', productName: THERMAL_BOTTLE_NAME, quantity: 500, unitPrice: 65.00, color: getColor(2) },
         ],
         total: 32500.00,
         status: 'completed',
@@ -729,7 +749,7 @@ export const CLIENTS: Client[] = [
         id: 'pur-006',
         date: '2023-12-15',
         products: [
-          { productId: 'prod-001', productName: 'Squeeze Plástico 700ml', quantity: 1000, unitPrice: 12.90, color: getColor(2) },
+          { productId: 'prod-001', productName: SQUEEZE_NAME, quantity: 1000, unitPrice: 12.90, color: getColor(2) },
           { productId: 'prod-008', productName: 'Caderno Ecológico A5', quantity: 500, unitPrice: 18.90, color: getColor(2) },
         ],
         total: 22350.00,
@@ -757,7 +777,7 @@ export const CLIENTS: Client[] = [
         date: '2024-01-12',
         products: [
           { productId: 'prod-010', productName: 'Power Bank 10000mAh Slim', quantity: 500, unitPrice: 75.00, color: getColor(5) },
-          { productId: 'prod-006', productName: 'Mochila Notebook 15"', quantity: 300, unitPrice: 89.90, color: getColor(1) },
+          { productId: 'prod-006', productName: NOTEBOOK_BACKPACK_NAME, quantity: 300, unitPrice: 89.90, color: getColor(1) },
         ],
         total: 64470.00,
         status: 'completed',
@@ -766,7 +786,7 @@ export const CLIENTS: Client[] = [
         id: 'pur-008',
         date: '2023-10-20',
         products: [
-          { productId: 'prod-005', productName: 'Camiseta Algodão Premium', quantity: 2000, unitPrice: 42.00, color: getColor(5) },
+          { productId: 'prod-005', productName: PREMIUM_SHIRT_NAME, quantity: 2000, unitPrice: 42.00, color: getColor(5) },
         ],
         total: 84000.00,
         status: 'completed',
@@ -792,9 +812,9 @@ export const CLIENTS: Client[] = [
         id: 'pur-009',
         date: '2024-01-08',
         products: [
-          { productId: 'prod-003', productName: 'Kit Churrasco Premium 10 Peças', quantity: 200, unitPrice: 189.90, color: getColor(4) },
-          { productId: 'prod-007', productName: 'Garrafa Térmica 500ml', quantity: 800, unitPrice: 65.00, color: getColor(2) },
-          { productId: 'prod-009', productName: 'Boné 5 Painéis Algodão', quantity: 2000, unitPrice: 15.50, color: getColor(6) },
+          { productId: 'prod-003', productName: BARBECUE_KIT_NAME, quantity: 200, unitPrice: 189.90, color: getColor(4) },
+          { productId: 'prod-007', productName: THERMAL_BOTTLE_NAME, quantity: 800, unitPrice: 65.00, color: getColor(2) },
+          { productId: 'prod-009', productName: COTTON_CAP_NAME, quantity: 2000, unitPrice: 15.50, color: getColor(6) },
         ],
         total: 120980.00,
         status: 'completed',

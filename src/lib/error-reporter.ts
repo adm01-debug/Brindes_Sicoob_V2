@@ -45,7 +45,8 @@ function installBridgeListenerOnce() {
     if (e.type !== 'recovered') return;
     // Bridge recuperou: descarta todos os 503/boot ainda pendentes na janela.
     while (COLD_START_BUFFER.length > 0) {
-      const pending = COLD_START_BUFFER.shift()!;
+      const pending = COLD_START_BUFFER.shift();
+      if (!pending) continue;
       clearTimeout(pending.timer);
       logger.debug('[ErrorReporter] Discarded cold-start false positive after bridge recovery');
     }
@@ -67,9 +68,6 @@ const TRANSIENT_EDGE_RUNTIME_PATTERNS = [
   'service is temporarily unavailable',
   'boot_error',
   'function failed to start',
-  '\\b503\\b',
-  '\\b502\\b',
-  '\\b504\\b',
   'bad gateway',
   'gateway timeout',
 ];
@@ -84,11 +82,6 @@ export function isTransientEdgeRuntimeError(input: string | Error | null | undef
   // isColdStartSignal cobre o vocabulário oficial da bridge; o regex local
   // amplia para variações que podem chegar do Error Boundary sem passar pela bridge.
   return isColdStartSignal(haystack) || TRANSIENT_RE.test(haystack);
-}
-
-function isColdStartReport(report: ErrorReport): boolean {
-  const haystack = `${report.message} ${report.stack ?? ''}`;
-  return isTransientEdgeRuntimeError(haystack);
 }
 
 async function flushErrors() {
@@ -144,28 +137,40 @@ function enqueueReport(report: ErrorReport) {
   }
 }
 
+function errorCategory(transient: boolean, originalType?: string): string {
+  if (transient) return 'transient_edge_runtime';
+  return originalType === 'react_error_boundary' ? 'blank_screen' : 'app_error';
+}
+
+function enrichedErrorMetadata(metadata: Record<string, unknown> | undefined, transient: boolean, originalType?: string): Record<string, unknown> {
+  return {
+    ...metadata,
+    category: errorCategory(transient, originalType),
+    platform: typeof window !== 'undefined' ? 'browser' : 'server',
+    environment: import.meta.env?.MODE || 'production',
+    ...(transient ? { type: 'transient_edge_runtime', original_type: originalType } : {}),
+  };
+}
+
+function deferTransientError(error: Error, report: ErrorReport, metadata: Record<string, unknown>): void {
+  installBridgeListenerOnce();
+  const entry: DeferredColdStart = {
+    report,
+    timer: setTimeout(() => {
+      const index = COLD_START_BUFFER.indexOf(entry);
+      if (index >= 0) COLD_START_BUFFER.splice(index, 1);
+      captureException(error, { ...metadata, cold_start_unrecovered: true });
+      enqueueReport({ ...report, metadata: { ...(report.metadata ?? {}), cold_start_unrecovered: true } });
+    }, COLD_START_DEFER_MS),
+  };
+  COLD_START_BUFFER.push(entry);
+}
+
 export function reportError(error: Error, metadata?: Record<string, unknown>) {
   const originalType = typeof metadata?.type === 'string' ? metadata.type : undefined;
   const transient = isTransientEdgeRuntimeError(error);
 
-  // Categoria explícita ajuda dashboards a separar "tela branca real"
-  // de incidentes transitórios de runtime/cold-start de edge functions.
-  const category = transient
-    ? 'transient_edge_runtime'
-    : originalType === 'react_error_boundary'
-      ? 'blank_screen'
-      : 'app_error';
-
-  const enrichedMetadata: Record<string, unknown> = {
-    ...metadata,
-    category,
-    platform: typeof window !== 'undefined' ? 'browser' : 'server',
-    environment: (import.meta as any).env?.MODE || 'production',
-    // Quando o erro é transitório, sobrescreve o `type` para que filtros
-    // legados (que agrupam por type=react_error_boundary/unhandled_*)
-    // não contabilizem como blank screen.
-    ...(transient ? { type: 'transient_edge_runtime', original_type: originalType } : {}),
-  };
+  const enrichedMetadata = enrichedErrorMetadata(metadata, transient, originalType);
 
   const report: ErrorReport = {
     message: error.message,
@@ -183,22 +188,7 @@ export function reportError(error: Error, metadata?: Record<string, unknown>) {
   // da janela. Caller pode forçar registro imediato via metadata.skipColdStartDefer = true.
   const skipDefer = metadata?.skipColdStartDefer === true;
   if (!skipDefer && transient) {
-    installBridgeListenerOnce();
-    const entry: DeferredColdStart = {
-      report,
-      timer: setTimeout(() => {
-        const idx = COLD_START_BUFFER.indexOf(entry);
-        if (idx >= 0) COLD_START_BUFFER.splice(idx, 1);
-        // Não recuperou na janela: registra mantendo a categoria transitória
-        // (não escala para "blank screen") e marca como não recuperado.
-        captureException(error, { ...enrichedMetadata, cold_start_unrecovered: true });
-        enqueueReport({
-          ...report,
-          metadata: { ...(report.metadata ?? {}), cold_start_unrecovered: true },
-        });
-      }, COLD_START_DEFER_MS),
-    };
-    COLD_START_BUFFER.push(entry);
+    deferTransientError(error, report, enrichedMetadata);
     return;
   }
 

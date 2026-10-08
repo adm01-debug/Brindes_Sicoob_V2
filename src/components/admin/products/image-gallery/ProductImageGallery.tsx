@@ -3,7 +3,7 @@
  * All logic extracted to useProductImageGallery hook.
  * All UI sections extracted to sub-components.
  */
-import { Filter, Loader2, ImageIcon, Info } from 'lucide-react';
+import { Filter, Loader2 } from "lucide-react";
 import { useProductImageGallery } from './useProductImageGallery';
 import { ImageFilterBar } from './ImageFilterBar';
 import { ImageBulkToolbar } from './ImageBulkToolbar';
@@ -20,6 +20,26 @@ interface ProductImageGalleryProps {
   productId?: string;
 }
 
+type GalleryModel = ReturnType<typeof useProductImageGallery>;
+
+function GalleryControls({ gallery, images, hasVariants }: { gallery: GalleryModel; images: string[]; hasVariants: boolean }) {
+  const showFilters = gallery.externalImages.length > 0 || images.length > 3;
+  return <>{showFilters && <ImageFilterBar filterMode={gallery.filterMode} setFilterMode={gallery.setFilterMode} typeFilter={gallery.typeFilter} setTypeFilter={gallery.setTypeFilter} stats={gallery.stats} activeTypes={gallery.activeTypes} variantMap={gallery.variantMap} hasVariants={hasVariants} />}{images.length > 0 && <ImageBulkToolbar bulkMode={gallery.bulkMode} setBulkMode={gallery.setBulkMode} clearSelection={gallery.clearSelection} selectAll={gallery.selectAll} filteredImagesCount={gallery.filteredImages.length} selectedUrls={gallery.selectedUrls} setSelectedUrls={gallery.setSelectedUrls} bulkUpdateType={gallery.bulkUpdateType} bulkUpdateVariant={gallery.bulkUpdateVariant} bulkUpdateAltText={gallery.bulkUpdateAltText} requestBulkDelete={() => gallery.setDeleteConfirm({ type: 'bulk' })} isBulkUpdating={gallery.isBulkUpdating} variants={gallery.variants} />}</>;
+}
+
+function GalleryImages({ gallery, images, hasPrimary, hasOgImage }: { gallery: GalleryModel; images: string[]; hasPrimary: boolean; hasOgImage: boolean }) {
+  return <>{gallery.filteredImages.length > 0 && <ImageGrid filteredImages={gallery.filteredImages} images={images} extImageMap={gallery.extImageMap} variantMap={gallery.variantMap} bulkMode={gallery.bulkMode} selectedUrls={gallery.selectedUrls} editingIndex={gallery.editingIndex} dragIndex={gallery.dragIndex} dragOverIndex={gallery.dragOverIndex} toggleSelect={gallery.toggleSelect} handleDragStart={gallery.handleDragStart} handleDragOver={gallery.handleDragOver} handleDrop={gallery.handleDrop} handleDragEnd={gallery.handleDragEnd} setPreviewUrl={gallery.setPreviewUrl} setEditingIndex={gallery.setEditingIndex} handleSetPrimary={gallery.handleSetPrimary} requestRemove={(url) => gallery.setDeleteConfirm({ type: 'single', url })} updateExternalImageMeta={gallery.updateExternalImageMeta} />}{gallery.filteredImages.length === 0 && images.length > 0 && <div className="text-center py-6 text-sm text-muted-foreground"><Filter className="h-5 w-5 mx-auto mb-2 opacity-40" />Nenhuma imagem corresponde ao filtro selecionado</div>}{gallery.externalImages.length > 0 && <ImageStatsBar stats={gallery.stats} hasPrimary={hasPrimary} hasOgImage={hasOgImage} />}</>;
+}
+
+function GalleryDeleteDialog({ gallery }: { gallery: GalleryModel }) {
+  const confirm = () => {
+    if (gallery.deleteConfirm?.type === 'single' && gallery.deleteConfirm.url) gallery.handleRemove(gallery.deleteConfirm.url);
+    else if (gallery.deleteConfirm?.type === 'bulk') gallery.bulkDelete();
+    gallery.setDeleteConfirm(null);
+  };
+  return <ConfirmDeleteDialog open={Boolean(gallery.deleteConfirm)} onCancel={() => gallery.setDeleteConfirm(null)} onConfirm={confirm} title={gallery.deleteConfirm?.type === 'bulk' ? 'Remover imagens selecionadas' : 'Remover imagem'} count={gallery.deleteConfirm?.type === 'bulk' ? gallery.selectedUrls.size : 1} />;
+}
+
 export function ProductImageGallery({ images, onChange, folder = 'products', productId }: ProductImageGalleryProps) {
   const g = useProductImageGallery({ images, onChange, folder, productId });
   const hasVariants = g.stats.byVariant.size > 0;
@@ -29,68 +49,19 @@ export function ProductImageGallery({ images, onChange, folder = 'products', pro
   return (
     <div className="space-y-3">
       {/* Loading state */}
-      {g.isLoadingExt && productId && (
+      {(g.isLoadingExt && productId && (
         <div className="flex items-center justify-center py-4 text-muted-foreground">
           <Loader2 className="h-4 w-4 animate-spin mr-2" />
           <span className="text-sm">Carregando imagens...</span>
         </div>
-      )}
+      ))}
 
 
       {/* Filter bar — show when there are images (not just external) */}
-      {(g.externalImages.length > 0 || images.length > 3) && (
-        <ImageFilterBar
-          filterMode={g.filterMode} setFilterMode={g.setFilterMode}
-          typeFilter={g.typeFilter} setTypeFilter={g.setTypeFilter}
-          stats={g.stats} activeTypes={g.activeTypes}
-          variantMap={g.variantMap} hasVariants={hasVariants}
-        />
-      )}
-
-      {/* Bulk toolbar */}
-      {images.length > 0 && (
-        <ImageBulkToolbar
-          bulkMode={g.bulkMode} setBulkMode={g.setBulkMode}
-          clearSelection={g.clearSelection} selectAll={g.selectAll}
-          filteredImagesCount={g.filteredImages.length}
-          selectedUrls={g.selectedUrls} setSelectedUrls={g.setSelectedUrls}
-          bulkUpdateType={g.bulkUpdateType} bulkUpdateVariant={g.bulkUpdateVariant}
-          bulkUpdateAltText={g.bulkUpdateAltText}
-          requestBulkDelete={() => g.setDeleteConfirm({ type: 'bulk' })}
-          isBulkUpdating={g.isBulkUpdating}
-          variants={g.variants}
-        />
-      )}
+      <GalleryControls gallery={g} images={images} hasVariants={hasVariants} />
 
       {/* Image grid */}
-      {g.filteredImages.length > 0 && (
-        <ImageGrid
-          filteredImages={g.filteredImages} images={images}
-          extImageMap={g.extImageMap} variantMap={g.variantMap}
-          bulkMode={g.bulkMode} selectedUrls={g.selectedUrls}
-          editingIndex={g.editingIndex} dragIndex={g.dragIndex} dragOverIndex={g.dragOverIndex}
-          toggleSelect={g.toggleSelect}
-          handleDragStart={g.handleDragStart} handleDragOver={g.handleDragOver}
-          handleDrop={g.handleDrop} handleDragEnd={g.handleDragEnd}
-          setPreviewUrl={g.setPreviewUrl} setEditingIndex={g.setEditingIndex}
-          handleSetPrimary={g.handleSetPrimary}
-          requestRemove={(url) => g.setDeleteConfirm({ type: 'single', url })}
-          updateExternalImageMeta={g.updateExternalImageMeta}
-        />
-      )}
-
-      {/* Empty filtered state */}
-      {g.filteredImages.length === 0 && images.length > 0 && (
-        <div className="text-center py-6 text-sm text-muted-foreground">
-          <Filter className="h-5 w-5 mx-auto mb-2 opacity-40" />
-          Nenhuma imagem corresponde ao filtro selecionado
-        </div>
-      )}
-
-      {/* Stats bar with SEO indicator */}
-      {g.externalImages.length > 0 && (
-        <ImageStatsBar stats={g.stats} hasPrimary={hasPrimary} hasOgImage={hasOgImage} />
-      )}
+      <GalleryImages gallery={g} images={images} hasPrimary={hasPrimary} hasOgImage={hasOgImage} />
 
       {/* Upload area */}
       <ImageUploadArea
@@ -113,20 +84,7 @@ export function ProductImageGallery({ images, onChange, folder = 'products', pro
       />
 
       {/* Confirm delete dialog */}
-      <ConfirmDeleteDialog
-        open={!!g.deleteConfirm}
-        onCancel={() => g.setDeleteConfirm(null)}
-        onConfirm={() => {
-          if (g.deleteConfirm?.type === 'single' && g.deleteConfirm.url) {
-            g.handleRemove(g.deleteConfirm.url);
-          } else if (g.deleteConfirm?.type === 'bulk') {
-            g.bulkDelete();
-          }
-          g.setDeleteConfirm(null);
-        }}
-        title={g.deleteConfirm?.type === 'bulk' ? 'Remover imagens selecionadas' : 'Remover imagem'}
-        count={g.deleteConfirm?.type === 'bulk' ? g.selectedUrls.size : 1}
-      />
+      <GalleryDeleteDialog gallery={g} />
     </div>
   );
 }

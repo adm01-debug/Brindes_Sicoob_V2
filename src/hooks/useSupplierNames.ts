@@ -3,8 +3,7 @@
  * Consulta a tabela 'suppliers' no banco externo.
  */
 import { useQuery } from '@tanstack/react-query';
-import { invokeBatchBridge } from '@/lib/external-db';
-import type { BatchQuery } from '@/lib/external-db';
+import { invokeBatchBridge, type BatchQuery } from '@/lib/external-db';
 
 /**
  * Busca nomes dos fornecedores para um conjunto de IDs.

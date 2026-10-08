@@ -45,6 +45,80 @@ const ACTIONS = [
   "mcp_key.update_denied",
 ];
 
+type BaseAttempt = Omit<StepUpAttemptRow, "reason">;
+type ProfileMap = Record<string, { email?: string | null; full_name?: string | null }>;
+type KeyMap = Record<string, { name?: string | null; key_prefix?: string | null }>;
+
+function stepUpRows(rows: BaseAttempt[]): BaseAttempt[] {
+  return rows.filter((row) => {
+    const reason = row.details?.reason;
+    return typeof reason === "string" && REASONS.includes(reason as StepUpReason);
+  });
+}
+
+async function fetchProfiles(userIds: string[]): Promise<ProfileMap> {
+  if (userIds.length === 0) return {};
+  const { data } = await supabase.from("profiles").select("user_id, email, full_name").in("user_id", userIds);
+  return Object.fromEntries((data ?? []).map((profile) => [profile.user_id, { email: profile.email, full_name: profile.full_name }]));
+}
+
+async function fetchKeys(keyIds: string[]): Promise<KeyMap> {
+  if (keyIds.length === 0) return {};
+  const { data } = await supabase.from("mcp_api_keys").select("id, name, key_prefix").in("id", keyIds);
+  return Object.fromEntries((data ?? []).map((key) => [key.id, { name: key.name, key_prefix: key.key_prefix }]));
+}
+
+async function fetchAttemptLookups(rows: BaseAttempt[]) {
+  const userIds = [...new Set(rows.flatMap((row) => row.user_id ? [row.user_id] : []))];
+  const keyIds = [...new Set(rows.flatMap((row) => row.resource_id ? [row.resource_id] : []))];
+  const [profiles, keys] = await Promise.all([fetchProfiles(userIds), fetchKeys(keyIds)]);
+  return { profiles, keys };
+}
+
+function nullableString(value: unknown): string | null {
+  return typeof value === "string" ? value : null;
+}
+
+function enrichAttempt(row: BaseAttempt, profiles: ProfileMap, keys: KeyMap): StepUpAttemptRow {
+  const details = row.details ?? {};
+  const profile = row.user_id ? profiles[row.user_id] : undefined;
+  const key = row.resource_id ? keys[row.resource_id] : undefined;
+  const profileValues = profile || {};
+  const keyValues = key || {};
+  return {
+    ...row,
+    reason: String(details.reason || "") as StepUpReason,
+    scope: nullableString(details.scope),
+    detail: nullableString(details.detail),
+    expected_action: nullableString(details.expected_action),
+    actor_email: nullableString(profileValues.email),
+    actor_name: nullableString(profileValues.full_name),
+    key_prefix: nullableString(keyValues.key_prefix),
+    key_name: nullableString(keyValues.name),
+  };
+}
+
+function filterAttempts(rows: StepUpAttemptRow[], filters: StepUpFilters): StepUpAttemptRow[] {
+  return rows.filter((row) => {
+    if (filters.reason !== "all" && row.reason !== filters.reason) return false;
+    if (!filters.userQuery) return true;
+    const query = filters.userQuery.toLowerCase();
+    const searchable = `${row.actor_email ?? ""} ${row.actor_name ?? ""} ${row.user_id ?? ""}`.toLowerCase();
+    return searchable.includes(query);
+  });
+}
+
+function attemptCounts(rows: StepUpAttemptRow[]) {
+  return {
+    total: rows.length,
+    required: rows.filter((row) => row.reason === "step_up_required").length,
+    invalid: rows.filter((row) => row.reason === "step_up_invalid").length,
+    issue: rows.filter((row) => row.action === "mcp_key.issue_denied").length,
+    rotate: rows.filter((row) => row.action === "mcp_key.rotate_denied").length,
+    update: rows.filter((row) => row.action === "mcp_key.update_denied").length,
+  };
+}
+
 export function useStepUpAttempts() {
   const [allRows, setAllRows] = useState<StepUpAttemptRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -75,50 +149,9 @@ export function useStepUpAttempts() {
       return;
     }
 
-    const base = (data ?? []) as Array<Omit<StepUpAttemptRow, "reason">>;
-    // Filtra por reason no cliente (json field)
-    const onlyStepUp = base.filter((r) => {
-      const reason = (r.details as Record<string, unknown> | null)?.reason as string | undefined;
-      return reason && REASONS.includes(reason as StepUpReason);
-    });
-
-    const userIds = Array.from(new Set(onlyStepUp.map((r) => r.user_id).filter(Boolean))) as string[];
-    const keyIds = Array.from(new Set(onlyStepUp.map((r) => r.resource_id).filter(Boolean))) as string[];
-
-    const [profilesRes, keysRes] = await Promise.all([
-      userIds.length
-        ? supabase.from("profiles").select("user_id, email, full_name").in("user_id", userIds)
-        : Promise.resolve({ data: [] as Array<{ user_id: string; email?: string | null; full_name?: string | null }> }),
-      keyIds.length
-        ? supabase.from("mcp_api_keys").select("id, name, key_prefix").in("id", keyIds)
-        : Promise.resolve({ data: [] as Array<{ id: string; name?: string | null; key_prefix?: string | null }> }),
-    ]);
-
-    const profiles: Record<string, { email?: string | null; full_name?: string | null }> = {};
-    (profilesRes.data ?? []).forEach((p) => {
-      profiles[p.user_id] = { email: p.email, full_name: p.full_name };
-    });
-    const keys: Record<string, { name?: string | null; key_prefix?: string | null }> = {};
-    (keysRes.data ?? []).forEach((k) => {
-      keys[k.id] = { name: k.name, key_prefix: k.key_prefix };
-    });
-
-    const enriched: StepUpAttemptRow[] = onlyStepUp.map((r) => {
-      const d = (r.details ?? {}) as Record<string, unknown>;
-      const prof = r.user_id ? profiles[r.user_id] : undefined;
-      const key = r.resource_id ? keys[r.resource_id] : undefined;
-      return {
-        ...r,
-        reason: String(d.reason ?? "") as StepUpReason,
-        scope: (d.scope as string | undefined) ?? null,
-        detail: (d.detail as string | undefined) ?? null,
-        expected_action: (d.expected_action as string | undefined) ?? null,
-        actor_email: prof?.email ?? null,
-        actor_name: prof?.full_name ?? null,
-        key_prefix: key?.key_prefix ?? null,
-        key_name: key?.name ?? null,
-      };
-    });
+    const onlyStepUp = stepUpRows((data ?? []) as BaseAttempt[]);
+    const { profiles, keys } = await fetchAttemptLookups(onlyStepUp);
+    const enriched = onlyStepUp.map((row) => enrichAttempt(row, profiles, keys));
 
     setAllRows(enriched);
     setLoading(false);
@@ -126,26 +159,8 @@ export function useStepUpAttempts() {
 
   useEffect(() => { load(); }, [load]);
 
-  const rows = useMemo(() => {
-    return allRows.filter((r) => {
-      if (filters.reason !== "all" && r.reason !== filters.reason) return false;
-      if (filters.userQuery) {
-        const q = filters.userQuery.toLowerCase();
-        const hay = `${r.actor_email ?? ""} ${r.actor_name ?? ""} ${r.user_id ?? ""}`.toLowerCase();
-        if (!hay.includes(q)) return false;
-      }
-      return true;
-    });
-  }, [allRows, filters.reason, filters.userQuery]);
-
-  const counts = useMemo(() => ({
-    total: allRows.length,
-    required: allRows.filter((r) => r.reason === "step_up_required").length,
-    invalid: allRows.filter((r) => r.reason === "step_up_invalid").length,
-    issue: allRows.filter((r) => r.action === "mcp_key.issue_denied").length,
-    rotate: allRows.filter((r) => r.action === "mcp_key.rotate_denied").length,
-    update: allRows.filter((r) => r.action === "mcp_key.update_denied").length,
-  }), [allRows]);
+  const rows = useMemo(() => filterAttempts(allRows, filters), [allRows, filters]);
+  const counts = useMemo(() => attemptCounts(allRows), [allRows]);
 
   return { rows, allRows, loading, filters, setFilters, counts, reload: load };
 }

@@ -38,7 +38,7 @@ for (const fn of FILES) {
   try { src = readFileSync(path, "utf8"); } catch { continue; }
 
   // Só age se o arquivo referencia `corsHeaders` mas não declara.
-  const hasReference = /(?<![\w.\$"'`])corsHeaders(?![\w$])/.test(src);
+  const hasReference = /(?<![\w.$"'`])corsHeaders(?![\w$])/.test(src);
   const hasDeclaration = /(?:const|let|var)\s+corsHeaders\b/.test(src);
   if (!hasReference || hasDeclaration) continue;
 

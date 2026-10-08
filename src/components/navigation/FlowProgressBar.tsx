@@ -13,19 +13,17 @@ interface FlowProgressBarProps {
   variant?: "dots" | "lines" | "numbers";
 }
 
-export function FlowProgressBar({
-  steps,
-  currentStepIndex,
-  className,
-  variant = "lines",
-}: FlowProgressBarProps) {
+export function FlowProgressBar({ steps, currentStepIndex, className }: FlowProgressBarProps) {
+  if (steps.length === 0) return null;
+
   const progress = ((currentStepIndex + 1) / steps.length) * 100;
+  const currentStepLabel = steps[currentStepIndex]?.label ?? "Etapa";
 
   return (
     <div className={cn("w-full space-y-3 py-4", className)}>
       <div className="flex items-center justify-between text-[10px] uppercase tracking-widest text-muted-foreground font-semibold px-1">
         <span>Etapa {currentStepIndex + 1} de {steps.length}</span>
-        <span>{steps[currentStepIndex].label}</span>
+        <span>{currentStepLabel}</span>
       </div>
 
       <div className="relative h-1.5 w-full bg-muted rounded-full overflow-hidden">

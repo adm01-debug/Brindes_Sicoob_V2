@@ -4,6 +4,8 @@
 
 import { Star, ImageIcon, ZoomIn, Eye, Layers, Package, Film, Type } from 'lucide-react';
 
+const PRIMARY_TEXT = 'text-primary';
+
 export interface ExternalImage {
   id: string;
   product_id: string;
@@ -33,12 +35,12 @@ export const IMAGE_TYPES = [
   { value: 'gallery', label: 'Galeria', icon: ImageIcon, color: 'text-info' },
   { value: 'detail', label: 'Detalhe', icon: ZoomIn, color: 'text-success' },
   { value: 'ambient', label: 'Ambientada', icon: Eye, color: 'text-sky-500' },
-  { value: 'component', label: 'Componente', icon: Layers, color: 'text-primary' },
+  { value: 'component', label: 'Componente', icon: Layers, color: PRIMARY_TEXT },
   { value: 'box', label: 'Embalagem', icon: Package, color: 'text-orange' },
-  { value: 'mockup', label: 'Mockup', icon: Eye, color: 'text-primary' },
+  { value: 'mockup', label: 'Mockup', icon: Eye, color: PRIMARY_TEXT },
   { value: 'video', label: 'Vídeo', icon: Film, color: 'text-destructive' },
   { value: 'set', label: 'Conjunto', icon: Layers, color: 'text-success' },
-  { value: 'logo', label: 'Logo', icon: Type, color: 'text-primary' },
+  { value: 'logo', label: 'Logo', icon: Type, color: PRIMARY_TEXT },
 ];
 
 export type FilterMode = 'all' | 'general' | 'by-variant' | string;

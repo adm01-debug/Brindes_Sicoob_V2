@@ -61,17 +61,8 @@ async function testRLS() {
 
   console.log(`📝 Registro de teste criado para B: ${quoteB.id}`);
 
-  // 3. Simular acesso do Usuário A ao registro do Usuário B
-  // Para simular RLS no lado do cliente, precisamos de um token JWT do Usuário A
-  // Podemos gerar um token usando a service role (impersonation)
-  const { data: authData, error: authErr } = await adminClient.auth.admin.generateLink({
-    type: 'magiclink',
-    email: userA.email,
-  });
-
-  // Nota: generateLink não dá o token diretamente, mas podemos usar sign-in ou apenas confiar na Edge Function rls-audit
-  // que já faz essa lógica. 
-  
+  // 3. Simular acesso do Usuário A ao registro do Usuário B.
+  // A Edge Function realiza a auditoria sem disparar um magic link para o usuário.
   console.log('🔗 Chamando Edge Function rls-audit para auditoria profunda...');
   
   // Como não temos o token fácil aqui sem simular login completo, vamos chamar a function

@@ -61,7 +61,7 @@ export function SingleContactDisplay({ contact, contactId, onContactChange, onCo
       onContactChange?.(contact.id);
       onContactInfoChange?.({ id: contact.id, name: contact.name, email: contact.email || undefined, phone: contact.phone || undefined, cargo: contact.cargo || undefined });
     }
-  }, [contact.id]);
+  }, [contact.cargo, contact.email, contact.id, contact.name, contact.phone, contactId, onContactChange, onContactInfoChange]);
 
   return (
     <div className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm">

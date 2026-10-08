@@ -41,46 +41,47 @@ interface ClientRow {
   sources: Set<Source>;
 }
 
+type ClientSourceRow = { client_name: string | null; client_company: string | null; client_email: string | null; client_phone: string | null; total: number | null; updated_at: string };
+
+function firstClientValue(...values: Array<string | null>) {
+  return values.find((value) => Boolean(value)) ?? "";
+}
+
+function createClientRow(id: string, row: ClientSourceRow): ClientRow {
+  return { key: id, name: firstClientValue(row.client_name, row.client_company, row.client_email) || "Cliente", company: row.client_company, email: row.client_email, phone: row.client_phone, quotes: 0, orders: 0, total: 0, lastInteraction: row.updated_at, sources: new Set() };
+}
+
+function mergeClientSource(client: ClientRow, source: Source, row: ClientSourceRow) {
+  client.sources.add(source);
+  if (source === "quote") client.quotes += 1;
+  else client.orders += 1;
+  client.total += Number(row.total ?? 0);
+  if (row.updated_at > client.lastInteraction) client.lastInteraction = row.updated_at;
+  client.email ??= row.client_email;
+  client.phone ??= row.client_phone;
+  client.company ??= row.client_company;
+}
+
 const SOURCE_OPTIONS = [
   { value: "quote", label: "Com propostas" },
   { value: "order", label: "Com pedidos" },
 ];
 
 function aggregate(
-  quotes: Array<{ client_name: string | null; client_company: string | null; client_email: string | null; client_phone: string | null; total: number | null; updated_at: string }>,
-  orders: Array<{ client_name: string | null; client_company: string | null; client_email: string | null; client_phone: string | null; total: number | null; updated_at: string }>,
+  quotes: ClientSourceRow[],
+  orders: ClientSourceRow[],
 ): ClientRow[] {
   const map = new Map<string, ClientRow>();
   const upsert = (
     src: Source,
-    row: { client_name: string | null; client_company: string | null; client_email: string | null; client_phone: string | null; total: number | null; updated_at: string },
+    row: ClientSourceRow,
   ) => {
-    const id = (row.client_company || row.client_name || row.client_email || "").trim().toLowerCase();
+    const id = firstClientValue(row.client_company, row.client_name, row.client_email).trim().toLowerCase();
     if (!id) return;
-    let r = map.get(id);
-    if (!r) {
-      r = {
-        key: id,
-        name: row.client_name || row.client_company || row.client_email || "Cliente",
-        company: row.client_company,
-        email: row.client_email,
-        phone: row.client_phone,
-        quotes: 0,
-        orders: 0,
-        total: 0,
-        lastInteraction: row.updated_at,
-        sources: new Set(),
-      };
-      map.set(id, r);
-    }
-    r.sources.add(src);
-    if (src === "quote") r.quotes += 1;
-    else r.orders += 1;
-    r.total += Number(row.total ?? 0);
-    if (row.updated_at > r.lastInteraction) r.lastInteraction = row.updated_at;
-    r.email = r.email || row.client_email;
-    r.phone = r.phone || row.client_phone;
-    r.company = r.company || row.client_company;
+    const existing = map.get(id);
+    const client = existing ?? createClientRow(id, row);
+    if (!existing) map.set(id, client);
+    mergeClientSource(client, src, row);
   };
   for (const q of quotes) upsert("quote", q);
   for (const o of orders) upsert("order", o);
@@ -109,16 +110,17 @@ export function MyClientsWidget() {
     staleTime: 60_000,
     initialPageParam: null as string | null,
     queryFn: async ({ pageParam }) => {
+      if (!user) return { quotes: [], orders: [] };
       const baseQuotes = supabase
         .from("quotes")
         .select("client_name, client_company, client_email, client_phone, total, updated_at")
-        .eq("seller_id", user!.id)
+        .eq("seller_id", user.id)
         .order("updated_at", { ascending: false })
         .limit(PAGE_SIZE);
       const baseOrders = supabase
         .from("orders")
         .select("client_name, client_company, client_email, client_phone, total, updated_at")
-        .eq("seller_id", user!.id)
+        .eq("seller_id", user.id)
         .order("updated_at", { ascending: false })
         .limit(PAGE_SIZE);
       const qQuery = pageParam ? baseQuotes.lt("updated_at", pageParam) : baseQuotes;

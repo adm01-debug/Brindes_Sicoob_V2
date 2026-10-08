@@ -7,17 +7,7 @@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { 
-  MapPin, 
-  Ruler, 
-  Maximize2, 
-  Palette,
-  ChevronRight,
-  ChevronLeft,
-  CheckCircle2,
-  Layers,
-  AlertTriangle,
-} from 'lucide-react';
+import { MapPin, Ruler, Palette, ChevronRight, ChevronLeft, CheckCircle2, Layers } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import type { UseSimulatorWizardReturn } from '@/hooks/simulator/useSimulatorWizard';

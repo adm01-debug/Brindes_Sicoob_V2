@@ -8,12 +8,14 @@ export interface OnboardingStep {
   route?: string;
 }
 
+const SIDEBAR_TOUR_SELECTOR = "[data-tour='sidebar']";
+
 export const ONBOARDING_STEPS: OnboardingStep[] = [
   {
     id: "welcome",
     title: "Bem-vindo ao Brindes Sicoob!",
     description: "Vamos fazer um tour completo pelas funcionalidades do sistema. Você descobrirá recursos poderosos para turbinar suas vendas!",
-    targetSelector: "[data-tour='sidebar']",
+    targetSelector: SIDEBAR_TOUR_SELECTOR,
     position: "right",
   },
   {
@@ -50,7 +52,7 @@ export const ONBOARDING_STEPS: OnboardingStep[] = [
     id: "collections",
     title: "Coleções Personalizadas",
     description: "Organize produtos em coleções temáticas. Ideal para apresentar seleções especiais para diferentes clientes ou campanhas!",
-    targetSelector: "[data-tour='sidebar']",
+    targetSelector: SIDEBAR_TOUR_SELECTOR,
     position: "right",
     route: "/colecoes",
   },
@@ -58,7 +60,7 @@ export const ONBOARDING_STEPS: OnboardingStep[] = [
     id: "simulator",
     title: "Simulador de Personalização",
     description: "Calcule custos de personalização em tempo real. Configure técnicas (silk, bordado, laser), posições, cores e quantidades!",
-    targetSelector: "[data-tour='sidebar']",
+    targetSelector: SIDEBAR_TOUR_SELECTOR,
     position: "right",
     route: "/simulador",
   },
@@ -66,7 +68,7 @@ export const ONBOARDING_STEPS: OnboardingStep[] = [
     id: "mockup",
     title: "Gerador de Mockups",
     description: "Crie visualizações profissionais com logo do cliente! Posicione a arte, ajuste tamanho e gere mockups para apresentações.",
-    targetSelector: "[data-tour='sidebar']",
+    targetSelector: SIDEBAR_TOUR_SELECTOR,
     position: "right",
     route: "/mockup-generator",
   },
@@ -74,7 +76,7 @@ export const ONBOARDING_STEPS: OnboardingStep[] = [
     id: "trends",
     title: "Análise de Tendências",
     description: "Descubra produtos em alta, categorias mais buscadas e padrões de compra. Antecipe demandas e surpreenda seus clientes!",
-    targetSelector: "[data-tour='sidebar']",
+    targetSelector: SIDEBAR_TOUR_SELECTOR,
     position: "right",
     route: "/tendencias",
   },
@@ -89,14 +91,14 @@ export const ONBOARDING_STEPS: OnboardingStep[] = [
     id: "expert-chat",
     title: "Chat com Especialista IA",
     description: "Precisa de ajuda? O botão flutuante de chat conecta você a um especialista IA que conhece todo o catálogo e pode sugerir produtos!",
-    targetSelector: "[data-tour='sidebar']",
+    targetSelector: SIDEBAR_TOUR_SELECTOR,
     position: "right",
   },
   {
     id: "compare",
     title: "Comparador de Produtos",
     description: "Selecione até 4 produtos para comparar lado a lado. Compare preços, especificações e opções de personalização de fornecedores!",
-    targetSelector: "[data-tour='sidebar']",
+    targetSelector: SIDEBAR_TOUR_SELECTOR,
     position: "right",
     route: "/comparar",
   },
@@ -104,7 +106,7 @@ export const ONBOARDING_STEPS: OnboardingStep[] = [
     id: "orders",
     title: "Gestão de Pedidos",
     description: "Acompanhe pedidos do início ao fim. Controle status de produção, fulfillment, rastreamento e histórico completo de alterações.",
-    targetSelector: "[data-tour='sidebar']",
+    targetSelector: SIDEBAR_TOUR_SELECTOR,
     position: "right",
     route: "/pedidos",
   },
@@ -112,7 +114,7 @@ export const ONBOARDING_STEPS: OnboardingStep[] = [
     id: "complete",
     title: "Pronto para vender!",
     description: "Você completou o tour! Explore todas as funcionalidades e use o botão de ajuda (?) no canto inferior direito para refazer o tour.",
-    targetSelector: "[data-tour='sidebar']",
+    targetSelector: SIDEBAR_TOUR_SELECTOR,
     position: "right",
   },
 ];

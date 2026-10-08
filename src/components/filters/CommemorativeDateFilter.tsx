@@ -1,7 +1,7 @@
 import { useActiveCommemorativeDates, type CommemorativeDate } from "@/hooks/useCommemorativeDates";
 import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ScrollArea } from "@/components/ui/scroll-area";
+
 
 interface CommemorativeDateFilterProps {
   selectedDates: string[];
@@ -88,7 +88,7 @@ interface CommemorativeDateItemProps {
   compact?: boolean;
 }
 
-function CommemorativeDateItem({ date, isSelected, onSelect, compact }: CommemorativeDateItemProps) {
+function CommemorativeDateItem({ date, isSelected, onSelect }: CommemorativeDateItemProps) {
   const daysUntilText = getDaysUntilText(date.days_until);
 
   return (

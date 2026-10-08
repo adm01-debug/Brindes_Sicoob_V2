@@ -37,6 +37,23 @@ interface QuoteDetail {
   items: QuoteItem[];
 }
 
+async function fetchQuoteDetail(id: string): Promise<QuoteDetail | null> {
+  const { data: quote } = await supabase
+    // rls-allow: lookup por id específico; RLS valida ownership
+    .from("quotes")
+    .select("id, quote_number, version, status, subtotal, total, discount_amount, discount_percent, shipping_cost, payment_terms, delivery_time, notes, created_at")
+    .eq("id", id)
+    .single();
+
+  if (!quote) return null;
+  const { data: items } = await supabase
+    .from("quote_items")
+    .select("id, product_name, product_sku, quantity, unit_price, subtotal, color_name")
+    .eq("quote_id", id)
+    .order("sort_order", { ascending: true });
+  return { ...quote, items: items || [] } as QuoteDetail;
+}
+
 interface QuoteVersionCompareProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -56,7 +73,7 @@ function DiffBadge({ oldVal, newVal, format: fmt }: { oldVal: number; newVal: nu
   return <Badge className="bg-destructive/15 text-destructive border-destructive/20"><TrendingDown className="h-3 w-3 mr-1" />-{formatted}</Badge>;
 }
 
-function ComparisonRow({ label, valA, valB }: { label: string; valA: any; valB: any }) {
+function ComparisonRow({ label, valA, valB }: { label: string; valA: string | number | null; valB: string | number | null }) {
   const hasChanged = valA !== valB;
   return (
     <div className={cn("grid grid-cols-12 gap-2 text-xs py-2 border-b last:border-0", hasChanged ? "bg-amber-500/5" : "")}>
@@ -72,7 +89,7 @@ function ComparisonRow({ label, valA, valB }: { label: string; valA: any; valB: 
 
 import { cn } from "@/lib/utils";
 
-export function QuoteVersionCompare({ open, onOpenChange, versions, currentQuoteId }: QuoteVersionCompareProps) {
+function useVersionComparison(versions: QuoteVersion[]) {
   const [leftId, setLeftId] = useState<string>("");
   const [rightId, setRightId] = useState<string>("");
   const [leftDetail, setLeftDetail] = useState<QuoteDetail | null>(null);
@@ -81,52 +98,115 @@ export function QuoteVersionCompare({ open, onOpenChange, versions, currentQuote
 
   useEffect(() => {
     if (versions.length >= 2) {
-      setLeftId(versions[versions.length - 2]!.id);
-      setRightId(versions[versions.length - 1]!.id);
+      const leftVersion = versions[versions.length - 2];
+      const rightVersion = versions[versions.length - 1];
+      if (!leftVersion || !rightVersion) return;
+      setLeftId(leftVersion.id);
+      setRightId(rightVersion.id);
     }
   }, [versions]);
 
   useEffect(() => {
     if (!leftId || !rightId) return;
-    loadDetails();
-  }, [leftId, rightId]);
-
-  async function loadDetails() {
+    let active = true;
     setLoading(true);
-    try {
-      const [left, right] = await Promise.all([fetchQuoteDetail(leftId), fetchQuoteDetail(rightId)]);
-      setLeftDetail(left);
-      setRightDetail(right);
-    } finally {
-      setLoading(false);
-    }
-  }
+    void Promise.all([fetchQuoteDetail(leftId), fetchQuoteDetail(rightId)])
+      .then(([left, right]) => {
+        if (!active) return;
+        setLeftDetail(left);
+        setRightDetail(right);
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+    return () => { active = false; };
+  }, [leftId, rightId]);
+  return { leftId, setLeftId, rightId, setRightId, leftDetail, rightDetail, loading };
+}
 
-  async function fetchQuoteDetail(id: string): Promise<QuoteDetail | null> {
-    const { data: quote } = await supabase
-      // rls-allow: lookup por id específico; RLS valida ownership
-      .from("quotes")
-      .select("id, quote_number, version, status, subtotal, total, discount_amount, discount_percent, shipping_cost, payment_terms, delivery_time, notes, created_at")
-      .eq("id", id)
-      .single();
+const STATUS_LABELS: Record<string, string> = {
+  draft: "Rascunho", sent: "Enviado", approved: "Aprovado", rejected: "Rejeitado", expired: "Expirado",
+};
 
-    if (!quote) return null;
+function VersionSelectors({ versions, leftId, rightId, setLeftId, setRightId }: {
+  versions: QuoteVersion[]; leftId: string; rightId: string;
+  setLeftId: (id: string) => void; setRightId: (id: string) => void;
+}) {
+  const selector = (id: string, setId: (value: string) => void) => <Select value={id} onValueChange={setId}>
+    <SelectTrigger><SelectValue placeholder="Selecionar versão" /></SelectTrigger><SelectContent>
+      {versions.map((version) => <SelectItem key={version.id} value={version.id}>v{version.version} — {version.quote_number}</SelectItem>)}
+    </SelectContent></Select>;
+  return <div className="flex items-center gap-4 mb-4"><div className="flex-1">
+    <label className="text-xs text-muted-foreground mb-1 block">Versão A</label>{selector(leftId, setLeftId)}
+  </div><ArrowRight className="h-5 w-5 text-muted-foreground mt-5" /><div className="flex-1">
+    <label className="text-xs text-muted-foreground mb-1 block">Versão B</label>{selector(rightId, setRightId)}
+  </div></div>;
+}
 
-    const { data: items } = await supabase
-      .from("quote_items")
-      .select("id, product_name, product_sku, quantity, unit_price, subtotal, color_name")
-      .eq("quote_id", id)
-      .order("sort_order", { ascending: true });
+function VersionSummaryCard({ detail, highlighted }: { detail: QuoteDetail; highlighted: boolean }) {
+  return <Card className={highlighted ? "border-primary/30" : ""}><CardHeader className="pb-2">
+    <CardTitle className="text-sm flex items-center justify-between"><span>v{detail.version} — {detail.quote_number}</span>
+      <Badge variant={detail.status === "approved" ? "default" : "outline"}>{STATUS_LABELS[detail.status] || detail.status}</Badge>
+    </CardTitle><p className="text-xs text-muted-foreground">
+      {format(new Date(detail.created_at), "dd/MM/yyyy HH:mm", { locale: ptBR })}</p>
+  </CardHeader><CardContent className="space-y-2 text-sm">
+    <div className="flex justify-between"><span className="text-muted-foreground">Subtotal</span><span className="font-medium">{formatCurrency(detail.subtotal)}</span></div>
+    <div className="flex justify-between"><span className="text-muted-foreground">Desconto</span><span>{detail.discount_percent}% ({formatCurrency(detail.discount_amount)})</span></div>
+    <div className="flex justify-between"><span className="text-muted-foreground">Frete</span><span>{formatCurrency(detail.shipping_cost || 0)}</span></div>
+    <Separator /><div className="flex justify-between font-semibold"><span>Total</span><span>{formatCurrency(detail.total)}</span></div>
+    <div className="flex justify-between text-xs"><span className="text-muted-foreground">Itens</span><span>{detail.items.length}</span></div>
+  </CardContent></Card>;
+}
 
-    return { ...quote, items: items || [] } as QuoteDetail;
-  }
+function ComparisonDetails({ left, right }: { left: QuoteDetail; right: QuoteDetail }) {
+  return <><div className="grid grid-cols-2 gap-4"><VersionSummaryCard detail={left} highlighted={false} />
+    <VersionSummaryCard detail={right} highlighted /></div>
+    <Card><CardHeader className="pb-2"><CardTitle className="text-sm">Condições e Termos</CardTitle></CardHeader>
+      <CardContent><div className="space-y-2"><ComparisonRow label="Pagamento" valA={left.payment_terms} valB={right.payment_terms} />
+        <ComparisonRow label="Entrega" valA={left.delivery_time} valB={right.delivery_time} />
+        <ComparisonRow label="Observações" valA={left.notes} valB={right.notes} /></div></CardContent></Card>
+    <DifferencesCard left={left} right={right} /><ItemsComparison left={left} right={right} /></>;
+}
 
-  const statusLabels: Record<string, string> = {
-    draft: "Rascunho", sent: "Enviado", approved: "Aprovado", rejected: "Rejeitado", expired: "Expirado",
-  };
+function DifferencesCard({ left, right }: { left: QuoteDetail; right: QuoteDetail }) {
+  return <Card className="bg-muted/30"><CardHeader className="pb-2"><CardTitle className="text-sm">Diferenças</CardTitle></CardHeader>
+    <CardContent className="flex flex-wrap gap-3">
+      <div className="flex items-center gap-2 text-sm"><span className="text-muted-foreground">Total:</span>
+        <DiffBadge oldVal={left.total} newVal={right.total} format={formatCurrency} /></div>
+      <div className="flex items-center gap-2 text-sm"><span className="text-muted-foreground">Itens:</span>
+        <DiffBadge oldVal={left.items.length} newVal={right.items.length} /></div>
+      <div className="flex items-center gap-2 text-sm"><span className="text-muted-foreground">Desconto:</span>
+        <DiffBadge oldVal={left.discount_percent} newVal={right.discount_percent} format={(value) => `${value}%`} /></div>
+    </CardContent></Card>;
+}
 
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+function ComparedItem({ item, other }: { item: QuoteItem; other: QuoteDetail }) {
+  const otherItem = other.items.find((candidate) => candidate.product_sku === item.product_sku);
+  const isNew = !otherItem;
+  const changed = otherItem && (otherItem.quantity !== item.quantity || otherItem.unit_price !== item.unit_price);
+  const style = isNew ? "border-success/30 bg-success/5/50 dark:bg-success/10"
+    : changed ? "border-warning/30 bg-warning/5/50 dark:bg-warning/10" : "border-border";
+  return <div className={`p-2 rounded-lg border text-xs ${style}`}><p className="font-medium truncate">{item.product_name}</p>
+    <div className="flex justify-between mt-1 text-muted-foreground"><span>{item.quantity}x {formatCurrency(item.unit_price)}</span>
+      <span className="font-medium text-foreground">{formatCurrency(item.subtotal || item.quantity * item.unit_price)}</span></div>
+    {isNew && <Badge className="mt-1 bg-primary text-[10px] h-4">Novo</Badge>}
+    {changed && <Badge className="mt-1 bg-warning text-[10px] h-4">Alterado</Badge>}</div>;
+}
+
+function ItemsComparison({ left, right }: { left: QuoteDetail; right: QuoteDetail }) {
+  return <Card><CardHeader className="pb-2"><CardTitle className="text-sm">Itens do Orçamento</CardTitle></CardHeader>
+    <CardContent><div className="grid grid-cols-2 gap-4">{[left, right].map((detail) => {
+      const other = detail === left ? right : left;
+      return <div key={detail.id} className="space-y-2"><p className="text-xs font-medium text-muted-foreground mb-2">v{detail.version}</p>
+        {detail.items.map((item) => <ComparedItem key={item.id} item={item} other={other} />)}
+        {detail.items.length === 0 && <p className="text-xs text-muted-foreground italic">Nenhum item</p>}</div>;
+    })}</div></CardContent></Card>;
+}
+
+export function QuoteVersionCompare({ open, onOpenChange, versions }: QuoteVersionCompareProps) {
+  const comparison = useVersionComparison(versions);
+
+  return <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-5xl max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
@@ -135,151 +215,12 @@ export function QuoteVersionCompare({ open, onOpenChange, versions, currentQuote
           </DialogTitle>
         </DialogHeader>
 
-        {/* Version selectors */}
-        <div className="flex items-center gap-4 mb-4">
-          <div className="flex-1">
-            <label className="text-xs text-muted-foreground mb-1 block">Versão A</label>
-            <Select value={leftId} onValueChange={setLeftId}>
-              <SelectTrigger><SelectValue placeholder="Selecionar versão" /></SelectTrigger>
-              <SelectContent>
-                {versions.map(v => (
-                  <SelectItem key={v.id} value={v.id}>v{v.version} — {v.quote_number}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <ArrowRight className="h-5 w-5 text-muted-foreground mt-5" />
-          <div className="flex-1">
-            <label className="text-xs text-muted-foreground mb-1 block">Versão B</label>
-            <Select value={rightId} onValueChange={setRightId}>
-              <SelectTrigger><SelectValue placeholder="Selecionar versão" /></SelectTrigger>
-              <SelectContent>
-                {versions.map(v => (
-                  <SelectItem key={v.id} value={v.id}>v{v.version} — {v.quote_number}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-
-        {loading && <div className="text-center py-8 text-muted-foreground">Carregando...</div>}
-
-        {leftDetail && rightDetail && !loading && (
-          <div className="space-y-4">
-            {/* Summary comparison */}
-            <div className="grid grid-cols-2 gap-4">
-              {[leftDetail, rightDetail].map((detail, idx) => (
-                <Card key={detail.id} className={idx === 1 ? "border-primary/30" : ""}>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm flex items-center justify-between">
-                      <span>v{detail.version} — {detail.quote_number}</span>
-                      <Badge variant={detail.status === "approved" ? "default" : "outline"}>
-                        {statusLabels[detail.status] || detail.status}
-                      </Badge>
-                    </CardTitle>
-                    <p className="text-xs text-muted-foreground">
-                      {format(new Date(detail.created_at), "dd/MM/yyyy HH:mm", { locale: ptBR })}
-                    </p>
-                  </CardHeader>
-                  <CardContent className="space-y-2 text-sm">
-                    <div className="flex justify-between"><span className="text-muted-foreground">Subtotal</span><span className="font-medium">{formatCurrency(detail.subtotal)}</span></div>
-                    <div className="flex justify-between"><span className="text-muted-foreground">Desconto</span><span>{detail.discount_percent}% ({formatCurrency(detail.discount_amount)})</span></div>
-                    <div className="flex justify-between"><span className="text-muted-foreground">Frete</span><span>{formatCurrency(detail.shipping_cost || 0)}</span></div>
-                    <Separator />
-                    <div className="flex justify-between font-semibold"><span>Total</span><span>{formatCurrency(detail.total)}</span></div>
-                    <div className="flex justify-between text-xs"><span className="text-muted-foreground">Itens</span><span>{detail.items.length}</span></div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-            
-            {/* Metadata Comparison */}
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm">Condições e Termos</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  <ComparisonRow 
-                    label="Pagamento" 
-                    valA={leftDetail.payment_terms} 
-                    valB={rightDetail.payment_terms} 
-                  />
-                  <ComparisonRow 
-                    label="Entrega" 
-                    valA={leftDetail.delivery_time} 
-                    valB={rightDetail.delivery_time} 
-                  />
-                  <ComparisonRow 
-                    label="Observações" 
-                    valA={leftDetail.notes} 
-                    valB={rightDetail.notes} 
-                  />
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Differences summary */}
-            <Card className="bg-muted/30">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm">Diferenças</CardTitle>
-              </CardHeader>
-              <CardContent className="flex flex-wrap gap-3">
-                <div className="flex items-center gap-2 text-sm">
-                  <span className="text-muted-foreground">Total:</span>
-                  <DiffBadge oldVal={leftDetail.total} newVal={rightDetail.total} format={formatCurrency} />
-                </div>
-                <div className="flex items-center gap-2 text-sm">
-                  <span className="text-muted-foreground">Itens:</span>
-                  <DiffBadge oldVal={leftDetail.items.length} newVal={rightDetail.items.length} />
-                </div>
-                <div className="flex items-center gap-2 text-sm">
-                  <span className="text-muted-foreground">Desconto:</span>
-                  <DiffBadge oldVal={leftDetail.discount_percent} newVal={rightDetail.discount_percent} format={(v) => `${v}%`} />
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Items comparison */}
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm">Itens do Orçamento</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-2 gap-4">
-                  {[leftDetail, rightDetail].map((detail) => (
-                    <div key={detail.id} className="space-y-2">
-                      <p className="text-xs font-medium text-muted-foreground mb-2">v{detail.version}</p>
-                      {detail.items.map((item, i) => {
-                        const otherDetail = detail === leftDetail ? rightDetail : leftDetail;
-                        const otherItem = otherDetail.items.find(oi => oi.product_sku === item.product_sku);
-                        const isNew = !otherItem;
-                        const changed = otherItem && (otherItem.quantity !== item.quantity || otherItem.unit_price !== item.unit_price);
-
-                        return (
-                          <div
-                            key={item.id}
-                            className={`p-2 rounded-lg border text-xs ${isNew ? "border-success/30 bg-success/5/50 dark:bg-success/10" : changed ? "border-warning/30 bg-warning/5/50 dark:bg-warning/10" : "border-border"}`}
-                          >
-                            <p className="font-medium truncate">{item.product_name}</p>
-                            <div className="flex justify-between mt-1 text-muted-foreground">
-                              <span>{item.quantity}x {formatCurrency(item.unit_price)}</span>
-                              <span className="font-medium text-foreground">{formatCurrency(item.subtotal || item.quantity * item.unit_price)}</span>
-                            </div>
-                            {isNew && <Badge className="mt-1 bg-primary text-[10px] h-4">Novo</Badge>}
-                            {changed && <Badge className="mt-1 bg-warning text-[10px] h-4">Alterado</Badge>}
-                          </div>
-                        );
-                      })}
-                      {detail.items.length === 0 && <p className="text-xs text-muted-foreground italic">Nenhum item</p>}
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        )}
+        <VersionSelectors versions={versions} leftId={comparison.leftId} rightId={comparison.rightId}
+          setLeftId={comparison.setLeftId} setRightId={comparison.setRightId} />
+        {comparison.loading && <div className="text-center py-8 text-muted-foreground">Carregando...</div>}
+        {comparison.leftDetail && comparison.rightDetail && !comparison.loading && <div className="space-y-4">
+          <ComparisonDetails left={comparison.leftDetail} right={comparison.rightDetail} />
+        </div>}
       </DialogContent>
-    </Dialog>
-  );
+    </Dialog>;
 }

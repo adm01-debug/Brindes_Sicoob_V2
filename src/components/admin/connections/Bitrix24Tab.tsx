@@ -17,6 +17,47 @@ import { ConnectionPreflightAlert } from "./ConnectionPreflightAlert";
 import { TestProgressIndicator, type TestProgressPhase } from "./TestProgressIndicator";
 import { RetestCooldownSelector } from "./RetestCooldownSelector";
 
+function connectionStatus(configured: boolean, last: LastTestInfo | null): "active" | "error" | "unconfigured" {
+  if (!configured) return "unconfigured";
+  if (last?.ok === false) return "error";
+  return "active";
+}
+
+function testTitle(issueCount: number, configured: boolean, looksValid: boolean): string {
+  if (issueCount > 0) return "Corrija o campo acima antes de testar";
+  if (!configured) return "Configure o Webhook URL primeiro";
+  if (!looksValid) return "Webhook com formato suspeito (comprimento curto) — re-salve antes de testar";
+  return "Testar conexão";
+}
+
+function retestReason(issueCount: number, configured: boolean): string {
+  if (issueCount > 0) return "Corrija os campos sinalizados acima antes de testar";
+  if (!configured) return "Configure o Webhook URL primeiro";
+  return "Webhook com formato suspeito — re-salve antes de testar";
+}
+
+function progressMessage(last: LastTestInfo | null): string | null {
+  if (!last) return null;
+  if (last.ok) return `HTTP ${last.status ?? 200}`;
+  return last.message ?? null;
+}
+
+function credentialsLookValid(configured: boolean, suspicious: boolean): boolean {
+  return configured && !suspicious;
+}
+
+function canRunTest(looksValid: boolean, issueCount: number): boolean {
+  return looksValid && issueCount === 0;
+}
+
+interface BitrixCardProps {
+  status: "active" | "error" | "unconfigured"; wh: ReturnType<typeof useSecretsManager>["secrets"][number] | undefined; get: (name: string) => ReturnType<typeof useSecretsManager>["secrets"][number] | undefined; list: () => void; issues: ReturnType<typeof getPreflightIssues>; isTesting: boolean; canTest: boolean; credsOk: boolean; credsLooksValid: boolean; onTest: () => Promise<void>; timelineOpen: boolean; setTimelineOpen: (open: boolean) => void; phase: TestProgressPhase; setPhase: (phase: TestProgressPhase) => void; last: LastTestInfo | null; setDetailsDialogOpen: (open: boolean) => void; historyKey: number; pendingStartedAt: string | null; detailsDialogOpen: boolean;
+}
+
+function BitrixCard(props: BitrixCardProps) {
+  return <Card data-retest-scope tabIndex={0} className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"><CardHeader><div className="flex items-start justify-between"><div className="flex items-center gap-2"><Briefcase className="h-5 w-5 text-primary" /><CardTitle>Bitrix24</CardTitle></div><ConnectionStatusBadge status={props.status} /></div><CardDescription>Sincronização automática de orçamentos e contatos com o Bitrix24.</CardDescription></CardHeader><CardContent className="space-y-4 max-w-2xl"><SecretField label="Webhook URL completa" secretName="BITRIX24_WEBHOOK_URL" status={props.wh} onSaved={props.list} connectionId="bitrix24" helperText="Ex: https://seudominio.bitrix24.com.br/rest/1/abc123xyz/" /><SecretField label="Domínio Bitrix24" secretName="BITRIX24_DOMAIN" status={props.get("BITRIX24_DOMAIN")} onSaved={props.list} connectionId="bitrix24" /><SecretField label="User ID" secretName="BITRIX24_USER_ID" status={props.get("BITRIX24_USER_ID")} onSaved={props.list} connectionId="bitrix24" /><SecretField label="Token" secretName="BITRIX24_TOKEN" status={props.get("BITRIX24_TOKEN")} onSaved={props.list} connectionId="bitrix24" /><ConnectionPreflightAlert issues={props.issues} /><div className="pt-2 flex flex-wrap gap-2"><Button size="sm" disabled={props.isTesting || !props.canTest} title={testTitle(props.issues.length, props.credsOk, props.credsLooksValid)} onClick={() => void props.onTest()}>{props.isTesting ? "Testando…" : "Testar conexão (crm.contact.fields)"}</Button><ConnectionTimelineDrawer type="bitrix24" label="Bitrix24" open={props.timelineOpen} onOpenChange={props.setTimelineOpen} /><RefreshFromDbButton onRefreshed={() => void props.list()} /><RetestCooldownSelector className="ml-auto" /></div><TestProgressIndicator phase={props.phase} latencyMs={props.last?.latency_ms ?? null} message={progressMessage(props.last)} onDismiss={() => props.setPhase("idle")} /><LastTestLine info={props.last} autoFocusOnFailure onClick={props.last?.tested_at ? () => props.setDetailsDialogOpen(true) : undefined} action={<RetestButton onRetest={props.onTest} disabled={!props.canTest} cooldownKey="bitrix24" disabledReason={retestReason(props.issues.length, props.credsOk)} />} /><ConnectionTestHistoryPanel type="bitrix24" label="Bitrix24" refreshKey={props.historyKey} pendingTest={props.pendingStartedAt ? { startedAt: props.pendingStartedAt } : null} /><ConnectionTestDetailsDialog open={props.detailsDialogOpen} onOpenChange={props.setDetailsDialogOpen} connectionType="bitrix24" connectionLabel="Bitrix24" onViewFullHistory={() => props.setTimelineOpen(true)} /></CardContent></Card>;
+}
+
 export function Bitrix24Tab() {
   const { secrets, list } = useSecretsManager();
   const { test, isTesting, fetchLastTest } = useConnectionTester();
@@ -37,16 +78,14 @@ export function Bitrix24Tab() {
 
   const get = (n: string) => secrets.find((s) => s.name === n);
   const wh = get("BITRIX24_WEBHOOK_URL");
-  const credsOk = !!wh?.has_value;
+  const credsOk = (!!wh?.has_value);
   const suspicious = hasSuspiciousLength(secrets, ["BITRIX24_WEBHOOK_URL"]);
-  const credsLooksValid = credsOk && !suspicious;
+  const credsLooksValid = credentialsLookValid(credsOk, suspicious);
   const preflightIssues = getPreflightIssues(secrets, [
     { name: "BITRIX24_WEBHOOK_URL", label: "Webhook URL" },
   ]);
-  const canTest = credsLooksValid && preflightIssues.length === 0;
-  const status: "active" | "error" | "unconfigured" = !credsOk
-    ? "unconfigured"
-    : last?.ok === false ? "error" : "active";
+  const canTest = canRunTest(credsLooksValid, preflightIssues.length);
+  const status = connectionStatus(credsOk, last);
 
   const onTest = async () => {
     setPhase("running");
@@ -58,79 +97,5 @@ export function Bitrix24Tab() {
     setPhase(r.ok ? "completed" : "failed");
   };
 
-  return (
-    <Card data-retest-scope tabIndex={0} className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
-      <CardHeader>
-        <div className="flex items-start justify-between">
-          <div className="flex items-center gap-2">
-            <Briefcase className="h-5 w-5 text-primary" />
-            <CardTitle>Bitrix24</CardTitle>
-          </div>
-          <ConnectionStatusBadge status={status} />
-        </div>
-        <CardDescription>
-          Sincronização automática de orçamentos e contatos com o Bitrix24.
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4 max-w-2xl">
-        <SecretField label="Webhook URL completa"
-          secretName="BITRIX24_WEBHOOK_URL" status={wh} onSaved={list} connectionId="bitrix24"
-          helperText="Ex: https://seudominio.bitrix24.com.br/rest/1/abc123xyz/" />
-        <SecretField label="Domínio Bitrix24"
-          secretName="BITRIX24_DOMAIN" status={get("BITRIX24_DOMAIN")} onSaved={list} connectionId="bitrix24" />
-        <SecretField label="User ID" secretName="BITRIX24_USER_ID" status={get("BITRIX24_USER_ID")} onSaved={list} connectionId="bitrix24" />
-        <SecretField label="Token" secretName="BITRIX24_TOKEN" status={get("BITRIX24_TOKEN")} onSaved={list} connectionId="bitrix24" />
-        <ConnectionPreflightAlert issues={preflightIssues} />
-        <div className="pt-2 flex flex-wrap gap-2">
-          <Button size="sm" disabled={isTesting || !canTest}
-            title={preflightIssues.length > 0
-              ? "Corrija o campo acima antes de testar"
-              : !credsOk ? "Configure o Webhook URL primeiro"
-              : !credsLooksValid ? "Webhook com formato suspeito (comprimento curto) — re-salve antes de testar"
-              : "Testar conexão"}
-            onClick={onTest}>
-            {isTesting ? "Testando…" : "Testar conexão (crm.contact.fields)"}
-          </Button>
-          <ConnectionTimelineDrawer type="bitrix24" label="Bitrix24" open={timelineOpen} onOpenChange={setTimelineOpen} />
-          <RefreshFromDbButton onRefreshed={() => { void list(); }} />
-          <RetestCooldownSelector className="ml-auto" />
-        </div>
-        <TestProgressIndicator
-          phase={phase}
-          latencyMs={last?.latency_ms ?? null}
-          message={last?.ok ? `HTTP ${last?.status ?? 200}` : (last?.message ?? null)}
-          onDismiss={() => setPhase("idle")}
-        />
-        <LastTestLine
-          info={last}
-          autoFocusOnFailure
-          onClick={last?.tested_at ? () => setDetailsDialogOpen(true) : undefined}
-          action={
-            <RetestButton
-              onRetest={onTest}
-              disabled={!canTest}
-              cooldownKey="bitrix24"
-              disabledReason={preflightIssues.length > 0
-                ? "Corrija os campos sinalizados acima antes de testar"
-                : !credsOk ? "Configure o Webhook URL primeiro"
-                : "Webhook com formato suspeito — re-salve antes de testar"}
-            />
-          }
-        />
-        <ConnectionTestHistoryPanel
-          type="bitrix24"
-          label="Bitrix24"
-          refreshKey={historyKey}
-          pendingTest={pendingStartedAt ? { startedAt: pendingStartedAt } : null}
-        />
-        <ConnectionTestDetailsDialog
-          open={detailsDialogOpen}
-          onOpenChange={setDetailsDialogOpen}
-          connectionType="bitrix24"
-          connectionLabel="Bitrix24"
-          onViewFullHistory={() => setTimelineOpen(true)}
-        />
-      </CardContent>
-    </Card>
-  );
+  return <BitrixCard status={status} wh={wh} get={get} list={list} issues={preflightIssues} isTesting={isTesting} canTest={canTest} credsOk={credsOk} credsLooksValid={credsLooksValid} onTest={onTest} timelineOpen={timelineOpen} setTimelineOpen={setTimelineOpen} phase={phase} setPhase={setPhase} last={last} setDetailsDialogOpen={setDetailsDialogOpen} historyKey={historyKey} pendingStartedAt={pendingStartedAt} detailsDialogOpen={detailsDialogOpen} />;
 }

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type FormEvent } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -31,6 +31,10 @@ import { Plus, Filter, AlertCircle, ShieldAlert } from "lucide-react";
 import { toast } from "sonner";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useAuth } from "@/contexts/AuthContext";
+import type { TablesInsert } from "@/integrations/supabase/types";
+
+const getErrorMessage = (error: unknown) =>
+  error instanceof Error ? error.message : "Erro desconhecido";
 
 export const BudgetsTab = () => {
   const { isSupervisorOrAbove } = useAuth();
@@ -71,7 +75,7 @@ export const BudgetsTab = () => {
   });
 
   const createMutation = useMutation({
-    mutationFn: async (newBudget: any) => {
+    mutationFn: async (newBudget: TablesInsert<"pa_budgets">) => {
       const { data, error } = await supabase
         .from("pa_budgets")
         .insert([newBudget])
@@ -85,12 +89,12 @@ export const BudgetsTab = () => {
       toast.success("Verba definida com sucesso");
       setIsCreateOpen(false);
     },
-    onError: (error: any) => {
-      toast.error(`Erro: ${error.message}`);
+    onError: (error: unknown) => {
+      toast.error(`Erro: ${getErrorMessage(error)}`);
     },
   });
 
-  const handleCreate = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleCreate = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setValidationError(null);
     const formData = new FormData(e.currentTarget);
@@ -120,7 +124,7 @@ export const BudgetsTab = () => {
     }
 
     createMutation.mutate({
-      pa_id: formData.get("pa_id"),
+      pa_id: formData.get("pa_id") as string,
       mes: month,
       ano: year,
       verba_total: amount,
@@ -183,7 +187,7 @@ export const BudgetsTab = () => {
                         <SelectValue placeholder="Selecione o PA" />
                       </SelectTrigger>
                       <SelectContent>
-                        {pas?.map((pa: any) => (
+                        {pas?.map((pa) => (
                           <SelectItem key={pa.id} value={pa.id}>
                             {pa.cooperativa?.codigo} - {pa.nome} ({pa.codigo})
                           </SelectItem>
@@ -280,7 +284,7 @@ export const BudgetsTab = () => {
                 </TableCell>
               </TableRow>
             ) : (
-              budgets?.map((b: any) => {
+              budgets?.map((b) => {
                 const balance = b.verba_total - b.verba_consumida;
                 const percentage = (b.verba_consumida / b.verba_total) * 100;
                 return (

@@ -14,18 +14,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import {
-  Activity,
-  Sparkles,
-  ArrowRight,
-  Phone,
-  CalendarClock,
-  MessageSquare,
-  TrendingUp,
-  AlertTriangle,
-  CheckCircle2,
-  Info,
-} from "lucide-react";
+import { Activity, Sparkles, ArrowRight, Phone, CalendarClock, MessageSquare, TrendingUp, AlertTriangle, CheckCircle2, Info, Star, Target as TargetIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useClientHealthScore } from "@/hooks/bi/useClientHealthScore";
 import { useClientAffinity } from "@/hooks/bi/useClientAffinity";
@@ -33,7 +22,6 @@ import { useIndustryTrends } from "@/hooks/bi/useIndustryTrends";
 import { useClientCategoryAffinity } from "@/hooks/bi/useClientCategoryAffinity";
 import { useIndustryCategoryTrends } from "@/hooks/bi/useIndustryCategoryTrends";
 import { ConfirmQuoteSuggestionsModal, type SuggestionItem } from "./ConfirmQuoteSuggestionsModal";
-import { Star, Target as TargetIcon } from "lucide-react";
 
 interface Props {
   clientId: string;

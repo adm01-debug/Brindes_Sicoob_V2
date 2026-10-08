@@ -1,3 +1,4 @@
+import type { MouseEvent } from "react";
 import { motion } from "framer-motion";
 import { Loader2, MessageSquare, Trash2, Search, CalendarDays } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -16,7 +17,7 @@ interface ChatHistoryPanelProps {
   onDateFilterChange: (f: "all" | "today" | "week" | "month") => void;
   currentConversationId: string | null;
   onLoadConversation: (c: ExpertConversation) => void;
-  onDeleteConversation: (e: React.MouseEvent, id: string) => void;
+  onDeleteConversation: (e: MouseEvent, id: string) => void;
 }
 
 export function ChatHistoryPanel({

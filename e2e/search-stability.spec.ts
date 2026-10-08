@@ -1,73 +1,76 @@
 /**
- * E2E: Global Search Stability and Reliability
+ * E2E: estabilidade da busca global e do assistente de voz.
  */
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
+import { gotoAndSettle, settleAfterAction } from './helpers/nav';
 
-test.describe('Global Search', () => {
-  test.beforeEach(async ({ page }) => {
-    // Log console errors to fail the test if any occur
-    page.on('console', msg => {
-      if (msg.type() === 'error') {
-        throw new Error(`Console error detected: ${msg.text()}`);
-      }
-    });
+const SEARCH_TERM = 'caneta';
 
-    // Monitor network requests for 4xx/5xx errors
-    page.on('requestfailed', request => {
-      throw new Error(`Request failed: ${request.url()} - ${request.failure()?.errorText}`);
-    });
+interface RuntimeErrors {
+  console: string[];
+  page: string[];
+  network: string[];
+}
 
-    page.on('response', response => {
-      if (response.status() >= 400 && !response.url().includes('supabase.co')) {
-         // We exclude Supabase sometimes as it might return 400 for legitimate things like "no session"
-         // but general app routes should be fine
-         console.warn(`Response status ${response.status()} for ${response.url()}`);
-      }
-    });
-
-    await page.goto('/');
+function captureRuntimeErrors(page: Page): RuntimeErrors {
+  const errors: RuntimeErrors = { console: [], page: [], network: [] };
+  page.on('console', (message) => {
+    if (message.type() !== 'error') return;
+    // O Chromium reporta respostas HTTP esperadas como console.error sem
+    // informar a URL. Falhas de transporte continuam cobertas abaixo.
+    if (/^Failed to load resource: the server responded with a status of \d+/.test(message.text())) return;
+    errors.console.push(message.text());
   });
+  page.on('pageerror', (error) => errors.page.push(error.message));
+  page.on('requestfailed', (request) => {
+    const reason = request.failure()?.errorText ?? 'falha desconhecida';
+    if (/ERR_ABORTED|ERR_NETWORK_CHANGED/.test(reason)) return;
+    errors.network.push(`${request.resourceType()}: ${request.url()} — ${reason}`);
+  });
+  return errors;
+}
 
-  test('should open global search and show results without console errors', async ({ page }) => {
-    // Wait for the trigger to be available
-    const trigger = page.getByTestId('global-search-trigger');
-    await expect(trigger).toBeVisible();
+function expectStableRuntime(errors: RuntimeErrors): void {
+  expect(errors.page, 'erros JavaScript não tratados').toEqual([]);
+  expect(errors.console, 'mensagens console.error').toEqual([]);
+  expect(errors.network, 'requisições inesperadamente interrompidas').toEqual([]);
+}
 
-    // Open palette
-    await trigger.click();
+test.describe('Busca global', () => {
+  test('abre, pesquisa e mantém o diálogo estável', async ({ page }) => {
+    const errors = captureRuntimeErrors(page);
+    await gotoAndSettle(page, '/');
 
-    // Verify input is focused (accessibility)
+    const searchTrigger = page
+      .getByTestId('global-search-trigger')
+      .or(page.getByRole('button', { name: /Busca inteligente/i }))
+      .first();
+    await expect(searchTrigger).toBeVisible();
+    await searchTrigger.click();
     const input = page.getByTestId('global-search-input');
     await expect(input).toBeVisible();
     await expect(input).toBeFocused();
 
-    // Type a query
-    await input.fill('caneta');
+    await input.fill(SEARCH_TERM);
+    await settleAfterAction(page, { timeout: 2_000 });
 
-    // Wait for results to appear or loading state
-    // Note: In E2E, semantic-search might be slow or return empty if not seeded
-    // We mainly check that it doesn't crash
-    await page.waitForTimeout(1000); 
-
-    // Check that we don't have the "Cannot convert undefined or null to object" crash
-    // If it crashed, the page would likely be blank or have a generic error overlay
-    await expect(page.getByText('Busca inteligente...')).toBeHidden(); // It's open, so trigger label should be hidden in dialog? No, trigger is in the background.
-    
-    // Better: check for footer shortcuts which are always present when open
-    await expect(page.getByText('Selecionar')).toBeVisible();
+    await expect(page.getByTestId('global-search-results')).toBeVisible();
+    await expect(page.getByTestId('global-search-footer')).toBeVisible();
+    expectStableRuntime(errors);
   });
 
-  test('should handle voice overlay toggle', async ({ page }) => {
-    await page.goto('/');
-    
-    const micBtn = page.getByLabel('Microfone');
-    await expect(micBtn).toBeVisible();
-    
-    await micBtn.click();
-    
-    // Check if voice overlay (lazy loaded) appears
-    // We look for any text that might be in the voice overlay or the dialog backdrop
-    // Since it's a Suspend/Lazy, we wait a bit
-    await page.waitForSelector('text=IA', { timeout: 5000 });
+  test('abre o assistente de voz sem erro de renderização', async ({ page }) => {
+    const errors = captureRuntimeErrors(page);
+    await gotoAndSettle(page, '/');
+
+    const voiceTrigger = page
+      .getByTestId('global-search-voice-trigger')
+      .or(page.getByRole('button', { name: 'Microfone', exact: true }))
+      .first();
+    await expect(voiceTrigger).toBeVisible();
+    await voiceTrigger.click();
+    await settleAfterAction(page, { timeout: 5_000 });
+    expectStableRuntime(errors);
+    await expect(page.getByTestId('voice-search-dialog')).toBeVisible();
   });
 });

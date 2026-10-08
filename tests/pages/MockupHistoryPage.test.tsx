@@ -101,3 +101,4 @@ describe("MockupHistoryPage", () => {
     expect(screen.getByText("Mockups Gerados")).toBeInTheDocument();
   });
 });
+import React from 'react';

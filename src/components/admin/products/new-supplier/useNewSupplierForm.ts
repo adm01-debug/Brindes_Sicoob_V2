@@ -1,13 +1,211 @@
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, type ChangeEvent } from 'react';
 import { searchCrm } from '@/lib/crm-db';
 import { applyPixMask, validatePixKey } from '@/utils/pixMask';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
-import { maskCnpj, maskPhone, validateCnpj, maskCep } from '@/utils/masks';
+import { validateCnpj, maskCep } from "@/utils/masks";
 import { fetchAddressByCep } from '@/utils/viacep';
-import { fetchCnpjData } from '@/utils/cnpj-lookup';
+import { fetchCnpjData, type CnpjData } from '@/utils/cnpj-lookup';
+import { invokeExternalDb, invokeExternalDbSingle } from '@/lib/external-db';
 import { logger } from '@/lib/logger';
 import { type SupplierContact, type PixKey, createEmptyContact, createEmptyPixKey, ORGANIZATION_ID } from './types';
+
+function trimmedOrNull(value: string): string | null {
+  return value.trim() || null;
+}
+
+function findPixDuplicate(keys: PixKey[]): string | null {
+  const seen = new Set<string>();
+  for (const key of keys) {
+    const normalized = key.chave.trim().toLowerCase();
+    if (!normalized) continue;
+    if (seen.has(normalized)) return normalized;
+    seen.add(normalized);
+  }
+  return null;
+}
+
+function validateNewSupplier(name: string, cnpj: string, pixKeys: PixKey[]): string | null {
+  if (!name.trim()) return 'Nome do fornecedor é obrigatório';
+  const duplicatePix = findPixDuplicate(pixKeys);
+  if (duplicatePix) return `Chave PIX duplicada: "${duplicatePix}". Remova a duplicata antes de salvar.`;
+  const invalidPix = pixKeys.find(key => key.chave.trim() && validatePixKey(key.chave, key.tipo));
+  if (invalidPix) return validatePixKey(invalidPix.chave, invalidPix.tipo);
+  const digits = cnpj.replace(/\D/g, '');
+  return digits && !validateCnpj(digits) ? 'CNPJ informado é inválido' : null;
+}
+
+function validateLogoFile(file: File): string | null {
+  if (!file.type.startsWith('image/')) return 'Selecione uma imagem';
+  if (file.size > 2 * 1024 * 1024) return 'Máximo 2MB';
+  return null;
+}
+
+async function uploadSupplierLogo(file: File): Promise<string> {
+  const extension = file.name.split('.').pop()?.toLowerCase() || 'png';
+  const filePath = `suppliers/new-${Date.now()}.${extension}`;
+  const { error } = await supabase.storage.from('supplier-logos').upload(filePath, file, { upsert: true });
+  if (error) throw error;
+  return supabase.storage.from('supplier-logos').getPublicUrl(filePath).data.publicUrl;
+}
+
+interface CnpjSetters {
+  name: (value: string) => void;
+  tradingName: (value: string) => void;
+  street: (value: string) => void;
+  number: (value: string) => void;
+  complement: (value: string) => void;
+  district: (value: string) => void;
+  city: (value: string) => void;
+  state: (value: string) => void;
+  cep: (value: string) => void;
+  email: (value: string) => void;
+  phone: (value: string) => void;
+}
+
+function populateFromCnpj(data: CnpjData, setters: CnpjSetters): void {
+  const assignments: Array<[string | null, (value: string) => void]> = [
+    [data.razao_social, setters.name],
+    [data.nome_fantasia, setters.tradingName],
+    [data.logradouro, setters.street],
+    [data.numero, setters.number],
+    [data.complemento, setters.complement],
+    [data.bairro, setters.district],
+    [data.cidade, setters.city],
+    [data.estado, setters.state],
+    [data.cep ? maskCep(data.cep) : null, setters.cep],
+    [data.email, setters.email],
+    [data.telefone, setters.phone],
+  ];
+  for (const [value, setter] of assignments) {
+    if (value) setter(value);
+  }
+}
+
+interface DuplicateCandidate {
+  value: string | null;
+  field: 'cnpj' | 'name' | 'trading_name';
+  select: string;
+  description: string;
+  logLabel: string;
+}
+
+async function queryNewSupplierDuplicate(candidate: DuplicateCandidate): Promise<string | null> {
+  if (!candidate.value) return null;
+  try {
+    const result = await invokeExternalDb<Record<string, string>>({
+      table: 'suppliers',
+      operation: 'select',
+      select: candidate.select,
+      filters: { [candidate.field]: candidate.value },
+      limit: 1,
+    });
+    const duplicate = result.records?.[0];
+    if (!duplicate) return null;
+    const displayName = duplicate[candidate.field] || duplicate.name;
+    return `Já existe um fornecedor com ${candidate.description}: "${displayName}".`;
+  } catch (error) {
+    logger.warn(`[NewSupplierDialog] Falha ao verificar duplicidade de ${candidate.logLabel}:`, error);
+    return null;
+  }
+}
+
+async function findNewSupplierDuplicate(name: string, tradingName: string, cnpj: string): Promise<string | null> {
+  const cnpjDigits = cnpj.replace(/\D/g, '');
+  const candidates: DuplicateCandidate[] = [
+    { value: cnpjDigits.length === 14 ? trimmedOrNull(cnpj) : null, field: 'cnpj', select: 'id,name,cnpj', description: 'este CNPJ', logLabel: 'CNPJ' },
+    { value: trimmedOrNull(name), field: 'name', select: 'id,name', description: 'este nome', logLabel: 'nome' },
+    { value: trimmedOrNull(tradingName), field: 'trading_name', select: 'id,name,trading_name', description: 'este Nome Fantasia', logLabel: 'nome fantasia' },
+  ];
+  for (const candidate of candidates) {
+    const message = await queryNewSupplierDuplicate(candidate);
+    if (message) return message;
+  }
+  return null;
+}
+
+function parseOptionalFloat(value: string): number | null {
+  return value ? parseFloat(value) : null;
+}
+
+function parseOptionalInteger(value: string): number | null {
+  return value ? parseInt(value) : null;
+}
+
+function buildSupplierCode(code: string, name: string): string {
+  if (code.trim()) return code.trim();
+  return name.trim().toUpperCase().replace(/\s+/g, '_').replace(/[^A-Z0-9_]/g, '').slice(0, 20);
+}
+
+interface NewSupplierPayloadInput {
+  name: string;
+  code: string;
+  tradingName: string;
+  cnpj: string;
+  active: boolean;
+  contacts: SupplierContact[];
+  address: string | null;
+  website: string;
+  defaultMarkup: string;
+  minOrderValue: string;
+  deliveryTimeDays: string;
+  paymentTerms: string;
+  shippingTerms: string;
+  priority: string;
+  notes: string | null;
+  productSupplier: boolean;
+  engravingSupplier: boolean;
+  logoUrl: string;
+}
+
+function buildNewSupplierPayload(input: NewSupplierPayloadInput): Record<string, unknown> {
+  const primaryContact = input.contacts[0] ?? createEmptyContact();
+  const now = new Date().toISOString();
+  const data: Record<string, unknown> = {
+    name: input.name.trim(),
+    code: buildSupplierCode(input.code, input.name),
+    trading_name: trimmedOrNull(input.tradingName),
+    cnpj: trimmedOrNull(input.cnpj),
+    active: input.active,
+    organization_id: ORGANIZATION_ID,
+    contact_name: trimmedOrNull(primaryContact.name),
+    contact_person: trimmedOrNull(primaryContact.role),
+    email: trimmedOrNull(primaryContact.email),
+    phone: trimmedOrNull(primaryContact.phone),
+    address: input.address,
+    website: trimmedOrNull(input.website),
+    default_markup_percent: parseOptionalFloat(input.defaultMarkup),
+    min_order_value: parseOptionalFloat(input.minOrderValue),
+    minimum_order_value: parseOptionalFloat(input.minOrderValue),
+    delivery_time_days: parseOptionalInteger(input.deliveryTimeDays),
+    payment_terms: trimmedOrNull(input.paymentTerms),
+    shipping_terms: trimmedOrNull(input.shippingTerms),
+    priority: parseOptionalInteger(input.priority) ?? 50,
+    notes: input.notes,
+    is_product_supplier: input.productSupplier,
+    is_engraving_supplier: input.engravingSupplier,
+    created_at: now,
+    updated_at: now,
+  };
+  if (input.logoUrl) data.logo_url = input.logoUrl;
+  return data;
+}
+
+function buildSupplierAddress(parts: {
+  streetType: string;
+  street: string;
+  number: string;
+  complement: string;
+  district: string;
+  city: string;
+  state: string;
+  cep: string;
+}): string | null {
+  const street = parts.streetType && parts.street ? `${parts.streetType} ${parts.street}` : parts.street;
+  const values = [street, parts.number, parts.complement, parts.district, parts.city, parts.state];
+  if (parts.cep) values.push(`CEP ${parts.cep}`);
+  return values.filter(Boolean).join(', ') || null;
+}
 
 export function useNewSupplierForm(onCreated: (id: string) => void) {
   const [open, setOpen] = useState(false);
@@ -100,17 +298,6 @@ export function useNewSupplierForm(onCreated: (id: string) => void) {
     }
   }, []);
 
-  const hasPixDuplicate = (keys: PixKey[]): string | null => {
-    const filled = keys.filter(k => k.chave.trim());
-    const seen = new Set<string>();
-    for (const k of filled) {
-      const norm = k.chave.trim().toLowerCase();
-      if (seen.has(norm)) return norm;
-      seen.add(norm);
-    }
-    return null;
-  };
-
   const updatePixKey = (id: string, field: keyof Omit<PixKey, 'id'>, value: string | boolean) => {
     setPixKeys(prev => {
       const updated = prev.map(k => {
@@ -122,7 +309,7 @@ export function useNewSupplierForm(onCreated: (id: string) => void) {
         return next;
       });
       if (field === 'chave' && typeof value === 'string' && value.trim()) {
-        const dup = hasPixDuplicate(updated);
+        const dup = findPixDuplicate(updated);
         if (dup) toast.warning(`Chave PIX "${dup}" já existe neste fornecedor`);
       }
       return updated;
@@ -132,7 +319,8 @@ export function useNewSupplierForm(onCreated: (id: string) => void) {
   const addPixKey = () => setPixKeys(prev => [...prev, createEmptyPixKey(prev.length === 0)]);
   const removePixKey = (id: string) => setPixKeys(prev => {
     const next = prev.filter(k => k.id !== id);
-    if (next.length > 0 && !next.some(k => k.principal)) next[0]!.principal = true;
+    const firstKey = next[0];
+    if (firstKey && !next.some((key) => key.principal)) firstKey.principal = true;
     return next.length > 0 ? next : [createEmptyPixKey(true)];
   });
 
@@ -159,22 +347,17 @@ export function useNewSupplierForm(onCreated: (id: string) => void) {
     setLogoUrl('');
   };
 
-  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleLogoUpload = async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (!file.type.startsWith('image/')) { toast.error('Selecione uma imagem'); return; }
-    if (file.size > 2 * 1024 * 1024) { toast.error('Máximo 2MB'); return; }
+    const validationError = validateLogoFile(file);
+    if (validationError) { toast.error(validationError); return; }
     setUploadingLogo(true);
     try {
-      const ext = file.name.split('.').pop()?.toLowerCase() || 'png';
-      const filePath = `suppliers/new-${Date.now()}.${ext}`;
-      const { error } = await supabase.storage.from('supplier-logos').upload(filePath, file, { upsert: true });
-      if (error) throw error;
-      const { data: urlData } = supabase.storage.from('supplier-logos').getPublicUrl(filePath);
-      setLogoUrl(urlData.publicUrl);
+      setLogoUrl(await uploadSupplierLogo(file));
       toast.success('Logo enviada');
     } catch (err: unknown) {
-      toast.error((err as Error).message || 'Erro ao enviar logo');
+      toast.error(((err as Error).message || 'Erro ao enviar logo'));
     } finally {
       setUploadingLogo(false);
       if (logoInputRef.current) logoInputRef.current.value = '';
@@ -188,22 +371,24 @@ export function useNewSupplierForm(onCreated: (id: string) => void) {
     try {
       const data = await fetchCnpjData(digits);
       if (data) {
-        if (data.razao_social) setName(data.razao_social);
-        if (data.nome_fantasia) setTradingName(data.nome_fantasia);
-        if (data.logradouro) setLogradouro(data.logradouro);
-        if (data.numero) setNumero(data.numero);
-        if (data.complemento) setComplemento(data.complemento);
-        if (data.bairro) setBairro(data.bairro);
-        if (data.cidade) setCidade(data.cidade);
-        if (data.estado) setEstado(data.estado);
-        if (data.cep) setCep(maskCep(data.cep));
-        // contacts nunca fica vazio (removeContact bloqueia remover o último) — asserção segura.
-        if (data.email) updateContact(contacts[0]!.id, 'email', data.email);
-        if (data.telefone) updateContact(contacts[0]!.id, 'phone', data.telefone);
+        const primaryContactId = contacts[0]?.id;
+        populateFromCnpj(data, {
+          name: setName,
+          tradingName: setTradingName,
+          street: setLogradouro,
+          number: setNumero,
+          complement: setComplemento,
+          district: setBairro,
+          city: setCidade,
+          state: setEstado,
+          cep: setCep,
+          email: value => { if (primaryContactId) updateContact(primaryContactId, 'email', value); },
+          phone: value => { if (primaryContactId) updateContact(primaryContactId, 'phone', value); },
+        });
         toast.success('Dados preenchidos via CNPJ!');
       }
     } catch (err: unknown) {
-      toast.error((err as Error).message || 'Erro ao consultar CNPJ');
+      toast.error(((err as Error).message || 'Erro ao consultar CNPJ'));
     } finally {
       setFetchingCnpj(false);
     }
@@ -224,62 +409,31 @@ export function useNewSupplierForm(onCreated: (id: string) => void) {
   };
 
   const handleCreate = async () => {
-    if (!name.trim()) { toast.error('Nome do fornecedor é obrigatório'); return; }
-    const dupPix = hasPixDuplicate(pixKeys);
-    if (dupPix) { toast.error(`Chave PIX duplicada: "${dupPix}". Remova a duplicata antes de salvar.`); return; }
-    const invalidPix = pixKeys.filter(k => k.chave.trim()).find(k => validatePixKey(k.chave, k.tipo));
-    if (invalidPix) { toast.error(validatePixKey(invalidPix.chave, invalidPix.tipo)!); return; }
-    const cnpjDigits = cnpj.replace(/\D/g, '');
-    if (cnpjDigits.length > 0 && !validateCnpj(cnpjDigits)) { setCnpjError('CNPJ inválido'); toast.error('CNPJ informado é inválido'); return; }
+    const validationError = validateNewSupplier(name, cnpj, pixKeys);
+    if (validationError) {
+      if (validationError.includes('CNPJ')) setCnpjError('CNPJ inválido');
+      toast.error(validationError);
+      return;
+    }
     setCnpjError('');
     setSaving(true);
-
-    // Duplicate checks
-    if (cnpjDigits.length === 14) {
-      try {
-        const { invokeExternalDb } = await import('@/lib/external-db');
-        const existing = await invokeExternalDb<{ id: string; name: string; cnpj: string }>({ table: 'suppliers', operation: 'select', select: 'id,name,cnpj', filters: { cnpj: cnpj.trim() }, limit: 1 });
-        if (existing.records && existing.records.length > 0) { toast.error(`Já existe um fornecedor com este CNPJ: "${existing.records[0]!.name}".`); setSaving(false); return; }
-      } catch (err) { logger.warn('[NewSupplierDialog] Falha ao verificar duplicidade de CNPJ:', err); }
-    }
     try {
-      const { invokeExternalDb: invokeDbName } = await import('@/lib/external-db');
-      const existingByName = await invokeDbName<{ id: string; name: string }>({ table: 'suppliers', operation: 'select', select: 'id,name', filters: { name: name.trim() }, limit: 1 });
-      if (existingByName.records && existingByName.records.length > 0) { toast.error(`Já existe um fornecedor com este nome: "${existingByName.records[0]!.name}".`); setSaving(false); return; }
-    } catch (err) { logger.warn('[NewSupplierDialog] Falha ao verificar duplicidade de nome:', err); }
-    if (tradingName.trim()) {
-      try {
-        const { invokeExternalDb: invokeDbTN } = await import('@/lib/external-db');
-        const existingByTN = await invokeDbTN<{ id: string; name: string; trading_name: string }>({ table: 'suppliers', operation: 'select', select: 'id,name,trading_name', filters: { trading_name: tradingName.trim() }, limit: 1 });
-        if (existingByTN.records && existingByTN.records.length > 0) { const first = existingByTN.records[0]!; toast.error(`Já existe um fornecedor com este Nome Fantasia: "${first.trading_name || first.name}".`); setSaving(false); return; }
-      } catch (err) { logger.warn('[NewSupplierDialog] Falha ao verificar duplicidade de nome fantasia:', err); }
-    }
-
-    try {
-      const { invokeExternalDbSingle } = await import('@/lib/external-db');
-      const now = new Date().toISOString();
-      const generatedCode = code.trim() || name.trim().toUpperCase().replace(/\s+/g, '_').replace(/[^A-Z0-9_]/g, '').slice(0, 20);
-      const addressParts = [tipoLogradouro && logradouro ? `${tipoLogradouro} ${logradouro}` : logradouro, numero, complemento, bairro, cidade, estado, cep ? `CEP ${cep}` : null].filter(Boolean).join(', ') || null;
-
-      const notesValue = buildNotesField(notes, contacts, formaPagamento, pixKeys, foneFixo1, foneFixo2, inscricaoEstadual, regimeTributario, estadoFaturamento, transportadoraPadrao, transportadoraId);
-
-      const data: Record<string, unknown> = {
-        name: name.trim(), code: generatedCode, trading_name: tradingName.trim() || null, cnpj: cnpj.trim() || null,
-        active: isActive, organization_id: ORGANIZATION_ID,
-        contact_name: contacts[0]?.name?.trim() || null, contact_person: contacts[0]?.role?.trim() || null,
-        email: contacts[0]?.email?.trim() || null, phone: contacts[0]?.phone?.trim() || null,
-        address: addressParts, website: website.trim() || null,
-        default_markup_percent: defaultMarkup ? parseFloat(defaultMarkup) : null,
-        min_order_value: minOrderValue ? parseFloat(minOrderValue) : null,
-        minimum_order_value: minOrderValue ? parseFloat(minOrderValue) : null,
-        delivery_time_days: deliveryTimeDays ? parseInt(deliveryTimeDays) : null,
-        payment_terms: paymentTerms.trim() || null, shipping_terms: shippingTerms.trim() || null,
-        priority: priority ? parseInt(priority) : 50, notes: notesValue,
-        is_product_supplier: isProductSupplier, is_engraving_supplier: isEngravingSupplier,
-        created_at: now, updated_at: now,
-      };
-      if (logoUrl) data.logo_url = logoUrl;
-
+      const duplicateError = await findNewSupplierDuplicate(name, tradingName, cnpj);
+      if (duplicateError) { toast.error(duplicateError); return; }
+      const address = buildSupplierAddress({
+        streetType: tipoLogradouro, street: logradouro, number: numero, complement: complemento,
+        district: bairro, city: cidade, state: estado, cep,
+      });
+      const notesValue = buildNotesField({
+        notes, contacts, paymentMethods: formaPagamento, pixKeys, phone1: foneFixo1, phone2: foneFixo2,
+        registration: inscricaoEstadual, taxRegime: regimeTributario, billingState: estadoFaturamento,
+        carrierName: transportadoraPadrao, carrierId: transportadoraId,
+      });
+      const data = buildNewSupplierPayload({
+        name, code, tradingName, cnpj, active: isActive, contacts, address, website,
+        defaultMarkup, minOrderValue, deliveryTimeDays, paymentTerms, shippingTerms, priority,
+        notes: notesValue, productSupplier: isProductSupplier, engravingSupplier: isEngravingSupplier, logoUrl,
+      });
       const result = await invokeExternalDbSingle<{ id: string }>({ table: 'suppliers', operation: 'insert', data });
       if (result?.id) {
         onCreated(result.id);
@@ -288,7 +442,7 @@ export function useNewSupplierForm(onCreated: (id: string) => void) {
         resetForm();
       }
     } catch (err: unknown) {
-      toast.error((err as Error).message || 'Erro ao criar fornecedor');
+      toast.error(((err as Error).message || 'Erro ao criar fornecedor'));
     } finally {
       setSaving(false);
     }
@@ -321,28 +475,83 @@ export function useNewSupplierForm(onCreated: (id: string) => void) {
   };
 }
 
-function buildNotesField(
-  notes: string, contacts: SupplierContact[], formaPagamento: string[], pixKeys: PixKey[],
-  foneFixo1: string, foneFixo2: string, inscricaoEstadual: string, regimeTributario: string,
-  estadoFaturamento: string, transportadoraPadrao: string, transportadoraId: string
-): string | null {
-  const parts: string[] = [];
-  if (notes.trim()) parts.push(notes.trim());
-  const c0 = contacts[0];
-  if (c0?.signature?.trim() || c0?.nickname?.trim()) {
-    parts.push(`[Contato 1 extras: Assinatura: ${c0.signature?.trim() || '-'}, Apelido: ${c0.nickname?.trim() || '-'}]`);
-  }
-  const extraContacts = contacts.slice(1).filter(c => c.name.trim());
-  if (extraContacts.length > 0) {
-    parts.push(`[Contatos adicionais: ${extraContacts.map(c => `${c.role || 'N/A'} - ${c.name} (${c.email || '-'}, ${c.phone || '-'}, Assinatura: ${c.signature?.trim() || '-'}, Apelido: ${c.nickname?.trim() || '-'})`).join('; ')}]`);
-  }
-  if (formaPagamento.length > 0 || pixKeys.some(k => k.chave.trim())) {
-    const now_date = new Date().toISOString().split('T')[0];
-    const pixData = pixKeys.filter(k => k.chave.trim()).map(k => `${k.tipo || '-'}|${k.chave}|${k.favorecido || '-'}|${k.principal ? '1' : '0'}`).join(';;');
-    parts.push(`[Financeiro: Forma: ${formaPagamento.join(',') || '-'}, PIX: ${pixData || '-'}, PIX Atualizado: ${now_date}]`);
-  }
-  if (foneFixo1.trim() || foneFixo2.trim()) parts.push(`[Fones Fixos: 01: ${foneFixo1.trim() || '-'}, 02: ${foneFixo2.trim() || '-'}]`);
-  if (inscricaoEstadual.trim() || regimeTributario || estadoFaturamento) parts.push(`[Fiscal: IE: ${inscricaoEstadual.trim() || '-'}, Regime: ${regimeTributario || '-'}, UF Faturamento: ${estadoFaturamento || '-'}]`);
-  if (transportadoraPadrao.trim()) parts.push(`[Transportadora: ${transportadoraPadrao.trim()}, ID: ${transportadoraId || '-'}]`);
+export type NewSupplierFormState = ReturnType<typeof useNewSupplierForm>;
+
+interface NotesFieldInput {
+  notes: string;
+  contacts: SupplierContact[];
+  paymentMethods: string[];
+  pixKeys: PixKey[];
+  phone1: string;
+  phone2: string;
+  registration: string;
+  taxRegime: string;
+  billingState: string;
+  carrierName: string;
+  carrierId: string;
+}
+
+function buildNotesField(input: NotesFieldInput): string | null {
+  const parts = [
+    trimmedOrNull(input.notes),
+    ...buildContactNotes(input.contacts),
+    buildFinancialNote(input.paymentMethods, input.pixKeys),
+    buildPhoneNote(input.phone1, input.phone2),
+    buildFiscalNote(input.registration, input.taxRegime, input.billingState),
+    buildCarrierNote(input.carrierName, input.carrierId),
+  ].filter((part): part is string => Boolean(part));
   return parts.join('\n') || null;
+}
+
+function buildPrimaryContactNote(contact: SupplierContact | undefined): string | null {
+  if (!contact) return null;
+  const signature = contact.signature?.trim() || '';
+  const nickname = contact.nickname?.trim() || '';
+  if (!signature && !nickname) return null;
+  return `[Contato 1 extras: Assinatura: ${signature || '-'}, Apelido: ${nickname || '-'}]`;
+}
+
+function serializeExtraContact(contact: SupplierContact): string {
+  const signature = contact.signature?.trim() || '-';
+  const nickname = contact.nickname?.trim() || '-';
+  return `${contact.role || 'N/A'} - ${contact.name} (${contact.email || '-'}, ${contact.phone || '-'}, Assinatura: ${signature}, Apelido: ${nickname})`;
+}
+
+function buildExtraContactsNote(contacts: SupplierContact[]): string | null {
+  const extras = contacts.slice(1).filter(contact => contact.name.trim()).map(serializeExtraContact);
+  return extras.length > 0 ? `[Contatos adicionais: ${extras.join('; ')}]` : null;
+}
+
+function buildContactNotes(contacts: SupplierContact[]): Array<string | null> {
+  return [buildPrimaryContactNote(contacts[0]), buildExtraContactsNote(contacts)];
+}
+
+function serializePixKey(key: PixKey): string {
+  return `${key.tipo || '-'}|${key.chave}|${key.favorecido || '-'}|${key.principal ? '1' : '0'}`;
+}
+
+function buildFinancialNote(paymentMethods: string[], pixKeys: PixKey[]): string | null {
+  const populatedKeys = pixKeys.filter(key => key.chave.trim());
+  if (paymentMethods.length === 0 && populatedKeys.length === 0) return null;
+  const date = new Date().toISOString().split('T')[0];
+  const methods = paymentMethods.join(',') || '-';
+  const pixData = populatedKeys.map(serializePixKey).join(';;') || '-';
+  return `[Financeiro: Forma: ${methods}, PIX: ${pixData}, PIX Atualizado: ${date}]`;
+}
+
+function buildPhoneNote(phone1: string, phone2: string): string | null {
+  const primary = phone1.trim();
+  const secondary = phone2.trim();
+  return primary || secondary ? `[Fones Fixos: 01: ${primary || '-'}, 02: ${secondary || '-'}]` : null;
+}
+
+function buildFiscalNote(registration: string, regime: string, state: string): string | null {
+  const normalizedRegistration = registration.trim();
+  if (!normalizedRegistration && !regime && !state) return null;
+  return `[Fiscal: IE: ${normalizedRegistration || '-'}, Regime: ${regime || '-'}, UF Faturamento: ${state || '-'}]`;
+}
+
+function buildCarrierNote(name: string, id: string): string | null {
+  const normalizedName = name.trim();
+  return normalizedName ? `[Transportadora: ${normalizedName}, ID: ${id || '-'}]` : null;
 }

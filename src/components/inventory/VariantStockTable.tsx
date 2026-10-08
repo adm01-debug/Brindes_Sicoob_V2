@@ -1,5 +1,5 @@
 
-import { useState, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { 
   Package, 
   Search,
@@ -15,7 +15,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { cn } from '@/lib/utils';
+
 import { 
   type ProductStockSummary, 
 } from '@/types/stock';
@@ -25,6 +25,19 @@ import { VariantRow } from './rows/VariantRow';
 interface VariantStockTableProps {
   products: ProductStockSummary[];
   isLoading?: boolean;
+}
+
+function StockSearch({ value, onChange }: { value: string; onChange: (value: string) => void }) {
+  return <div className="relative max-w-md"><Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" /><Input placeholder="Filtrar por nome, SKU ou cor..." className="pl-9 pr-9" value={value} onChange={(event) => onChange(event.target.value)} />{value && <Button variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7" onClick={() => onChange("")}><X className="h-4 w-4" /></Button>}</div>;
+}
+
+function StockRows({ products, expanded, toggle }: { products: ProductStockSummary[]; expanded: Set<string>; toggle: (id: string) => void }) {
+  if (products.length === 0) return <TableRow><TableCell colSpan={9} className="h-32 text-center text-muted-foreground">Nenhum produto encontrado com os filtros aplicados.</TableCell></TableRow>;
+  return <>{products.map((product) => <React.Fragment key={product.productId}><ProductRow product={product} isExpanded={expanded.has(product.productId)} onToggle={() => toggle(product.productId)} />{expanded.has(product.productId) && product.variants.map((variant) => <VariantRow key={variant.id} variant={variant} isNested />)}</React.Fragment>)}</>;
+}
+
+function StockTable({ products, expanded, toggle }: { products: ProductStockSummary[]; expanded: Set<string>; toggle: (id: string) => void }) {
+  return <div className="rounded-md border bg-card overflow-hidden"><Table><TableHeader><TableRow className="bg-muted/50 hover:bg-muted/50"><TableHead className="w-[300px]">Produto / SKU</TableHead><TableHead className="hidden md:table-cell">Cód. Variante</TableHead><TableHead>Estoque Atual</TableHead><TableHead className="hidden sm:table-cell w-[140px]">Nível</TableHead><TableHead className="hidden lg:table-cell">Reservado</TableHead><TableHead>Disponível</TableHead><TableHead className="hidden md:table-cell">Em Trânsito</TableHead><TableHead>Status</TableHead><TableHead className="hidden sm:table-cell">Previsão</TableHead></TableRow></TableHeader><TableBody><StockRows products={products} expanded={expanded} toggle={toggle} /></TableBody></Table></div>;
 }
 
 export function VariantStockTable({ products, isLoading }: VariantStockTableProps) {
@@ -62,67 +75,8 @@ export function VariantStockTable({ products, isLoading }: VariantStockTableProp
 
   return (
     <div className="space-y-4">
-      <div className="relative max-w-md">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-        <Input
-          placeholder="Filtrar por nome, SKU ou cor..."
-          className="pl-9 pr-9"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-        />
-        {searchQuery && (
-          <Button
-            variant="ghost"
-            size="icon"
-            className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7"
-            onClick={() => setSearchQuery('')}
-          >
-            <X className="h-4 w-4" />
-          </Button>
-        )}
-      </div>
-
-      <div className="rounded-md border bg-card overflow-hidden">
-        <Table>
-          <TableHeader>
-            <TableRow className="bg-muted/50 hover:bg-muted/50">
-              <TableHead className="w-[300px]">Produto / SKU</TableHead>
-              <TableHead className="hidden md:table-cell">Cód. Variante</TableHead>
-              <TableHead>Estoque Atual</TableHead>
-              <TableHead className="hidden sm:table-cell w-[140px]">Nível</TableHead>
-              <TableHead className="hidden lg:table-cell">Reservado</TableHead>
-              <TableHead>Disponível</TableHead>
-              <TableHead className="hidden md:table-cell">Em Trânsito</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="hidden sm:table-cell">Previsão</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filteredProducts.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={9} className="h-32 text-center text-muted-foreground">
-                  Nenhum produto encontrado com os filtros aplicados.
-                </TableCell>
-              </TableRow>
-            ) : (
-              filteredProducts.map((product) => (
-                <React.Fragment key={product.productId}>
-                  <ProductRow 
-                    product={product} 
-                    isExpanded={expandedProducts.has(product.productId)}
-                    onToggle={() => toggleProduct(product.productId)}
-                  />
-                  {expandedProducts.has(product.productId) && product.variants.map((variant) => (
-                    <VariantRow key={variant.id} variant={variant} isNested />
-                  ))}
-                </React.Fragment>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </div>
+      <StockSearch value={searchQuery} onChange={setSearchQuery} />
+      <StockTable products={filteredProducts} expanded={expandedProducts} toggle={toggleProduct} />
     </div>
   );
 }
-
-import React from 'react';

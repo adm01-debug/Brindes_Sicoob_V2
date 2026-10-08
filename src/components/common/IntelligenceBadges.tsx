@@ -9,6 +9,9 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { cn } from "@/lib/utils";
 import type { IntelligenceBadge, IntelligenceBadgeType } from "@/hooks/useProductIntelligenceBadges";
 
+const PRIMARY_BADGE_COLORS = 'bg-primary/15 text-primary border-primary/30';
+const PULSE_ANIMATION = 'animate-pulse';
+
 const badgeConfig: Record<IntelligenceBadgeType, {
   icon: typeof Flame;
   colors: string;
@@ -16,24 +19,24 @@ const badgeConfig: Record<IntelligenceBadgeType, {
 }> = {
   'featured': {
     icon: Sparkles,
-    colors: 'bg-primary/15 text-primary border-primary/30',
+    colors: PRIMARY_BADGE_COLORS,
   },
   'new-arrival': {
     icon: Star,
-    colors: 'bg-primary/15 text-primary border-primary/30',
+    colors: PRIMARY_BADGE_COLORS,
   },
   'on-sale': {
     icon: Tag,
-    colors: 'bg-primary/15 text-primary border-primary/30',
-    animation: 'animate-pulse',
+    colors: PRIMARY_BADGE_COLORS,
+    animation: PULSE_ANIMATION,
   },
   'best-seller': {
     icon: Flame,
-    colors: 'bg-primary/15 text-primary border-primary/30',
+    colors: PRIMARY_BADGE_COLORS,
   },
   'popular': {
     icon: Zap,
-    colors: 'bg-primary/15 text-primary border-primary/30',
+    colors: PRIMARY_BADGE_COLORS,
   },
   'normal': {
     icon: Package,
@@ -41,13 +44,13 @@ const badgeConfig: Record<IntelligenceBadgeType, {
   },
   'emergente': {
     icon: Rocket,
-    colors: 'bg-primary/15 text-primary border-primary/30',
-    animation: 'animate-pulse',
+    colors: PRIMARY_BADGE_COLORS,
+    animation: PULSE_ANIMATION,
   },
   'last-units': {
     icon: AlertTriangle,
     colors: 'bg-destructive/15 text-destructive border-destructive/30',
-    animation: 'animate-pulse',
+    animation: PULSE_ANIMATION,
   },
 };
 
@@ -95,7 +98,7 @@ export function IntelligenceBadges({ badges, turnoverScore, isDemo, className }:
         );
       })}
 
-      {turnoverScore != null && (
+      {turnoverScore !== null && turnoverScore !== undefined && (
         <Tooltip>
           <TooltipTrigger asChild>
             <motion.div

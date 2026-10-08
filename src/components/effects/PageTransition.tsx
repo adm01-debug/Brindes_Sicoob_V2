@@ -1,5 +1,5 @@
 import { type ReactNode } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { useLocation } from "react-router-dom";
 import { useNavigationStore } from "@/stores/useNavigationStore";
 
@@ -20,6 +20,7 @@ export function PageTransition({
 }: PageTransitionProps) {
   const location = useLocation();
   const direction = useNavigationStore((s) => s.direction);
+  const shouldReduceMotion = useReducedMotion();
 
   const getVariants = () => {
     if (variant === "dynamic-slide") {
@@ -71,6 +72,10 @@ export function PageTransition({
   };
 
   const selectedVariant = getVariants();
+
+  if (shouldReduceMotion) {
+    return <div className={className}>{children}</div>;
+  }
 
   return (
     <AnimatePresence mode="wait" initial={false}>

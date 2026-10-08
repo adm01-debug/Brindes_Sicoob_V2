@@ -32,6 +32,28 @@ function isRetryableError(msg: string): boolean {
   return RETRYABLE_PATTERNS.some(p => lower.includes(p.toLowerCase()));
 }
 
+interface RpcAttempt<T> {
+  value?: T;
+  message?: string;
+}
+
+async function runRpcAttempt<T>(
+  rpcName: string,
+  params: Record<string, unknown>,
+): Promise<RpcAttempt<T>> {
+  const { data, error } = await supabase.functions.invoke('external-db-bridge', {
+    body: { operation: 'rpc', rpcName, rpcParams: params },
+  });
+  if (!error && data?.success) return { value: data.data as T };
+  return { message: error?.message || data?.error || 'Erro na RPC' };
+}
+
+async function waitBeforeRetry(attempt: number, rpcName: string, message: string): Promise<void> {
+  const waitMs = INITIAL_BACKOFF_MS * Math.pow(2, attempt);
+  logger.warn(`[external-rpc] Retry ${attempt + 1}/${MAX_RETRIES} for ${rpcName} after ${waitMs}ms: ${message}`);
+  await new Promise((resolve) => setTimeout(resolve, waitMs));
+}
+
 /**
  * Invoca uma RPC no banco externo via edge function.
  * Retry automático (3x, backoff exponencial) para erros de timeout/rede.
@@ -41,28 +63,14 @@ export async function invokeExternalRpc<T>(
   params: Record<string, unknown>
 ): Promise<T> {
   return externalRpcBreaker.execute(async () => {
-    for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
-      const { data, error } = await supabase.functions.invoke('external-db-bridge', {
-        body: {
-          operation: 'rpc',
-          rpcName,
-          rpcParams: params,
-        },
-      });
+    for (let attempt = 0; attempt <= MAX_RETRIES; attempt += 1) {
+      const result = await runRpcAttempt<T>(rpcName, params);
+      if (result.value !== undefined) return result.value;
 
-      if (!error && data?.success) {
-        return data.data as T;
-      }
-
-      const msg = error?.message || data?.error || 'Erro na RPC';
-      if (attempt < MAX_RETRIES && isRetryableError(msg)) {
-        const delay = INITIAL_BACKOFF_MS * Math.pow(2, attempt);
-        logger.warn(`[external-rpc] Retry ${attempt + 1}/${MAX_RETRIES} for ${rpcName} after ${delay}ms: ${msg}`);
-        await new Promise(r => setTimeout(r, delay));
-        continue;
-      }
-
-      throw new Error(msg);
+      const message = result.message || 'Erro na RPC';
+      const shouldRetry = attempt < MAX_RETRIES && isRetryableError(message);
+      if (!shouldRetry) throw new Error(message);
+      await waitBeforeRetry(attempt, rpcName, message);
     }
 
     throw new Error('Max retries exceeded');

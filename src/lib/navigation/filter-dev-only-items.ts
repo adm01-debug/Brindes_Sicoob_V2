@@ -37,9 +37,14 @@ export function isItemVisibleForRoles<T extends NavFlagItem>(
 ): boolean {
   if (item.devOnly && !roles.isDev) return false;
   if (item.adminOnly && !roles.isAdmin) return false;
-  if (item.href && isDevOnlyPath(item.href) && !roles.isDev) return false;
-  if (item.href && isAdminOnlyPath(item.href) && !roles.isAdmin) return false;
+  if (!isPathVisible(item.href, roles)) return false;
   return true;
+}
+
+function isPathVisible(href: string | null | undefined, roles: NavRoles): boolean {
+  if (!href) return true;
+  if (isDevOnlyPath(href) && !roles.isDev) return false;
+  return !isAdminOnlyPath(href) || roles.isAdmin;
 }
 
 export function filterDevOnlyItems<T extends NavFlagItem>(

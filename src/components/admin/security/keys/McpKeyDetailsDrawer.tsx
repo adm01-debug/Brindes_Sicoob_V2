@@ -35,6 +35,101 @@ const ACTION_LABELS: Record<string, string> = {
   "mcp_key.revoked": "Revogada",
 };
 
+function statusLabel(status: McpKeyRow['status']): string {
+  if (status === 'active') return 'Ativa';
+  if (status === 'expired') return 'Expirada';
+  return 'Revogada';
+}
+
+function formatOptionalDate(value: string | null, fallback: string): string {
+  if (!value) return fallback;
+  return format(new Date(value), "dd/MM/yyyy HH:mm", { locale: ptBR });
+}
+
+function KeyStatus({ source }: { source: McpKeyRow }) {
+  return (
+    <section className="space-y-1">
+      <h3 className="text-xs uppercase tracking-wide text-muted-foreground">Status</h3>
+      <div className="flex flex-wrap gap-1">
+        <Badge variant={source.status === "active" ? "outline" : "destructive"}>{statusLabel(source.status)}</Badge>
+        {source.is_full && <Badge variant="destructive">FULL</Badge>}
+      </div>
+    </section>
+  );
+}
+
+function KeyScopes({ source }: { source: McpKeyRow }) {
+  return (
+    <section className="space-y-1">
+      <h3 className="text-xs uppercase tracking-wide text-muted-foreground">Escopos</h3>
+      <div className="flex flex-wrap gap-1">{source.scopes.map(scope => <Badge key={scope} variant={scope === "*" ? "destructive" : "secondary"} className="font-mono text-xs">{scope}</Badge>)}</div>
+    </section>
+  );
+}
+
+function KeyDates({ source }: { source: McpKeyRow }) {
+  return (
+    <section className="space-y-1">
+      <h3 className="text-xs uppercase tracking-wide text-muted-foreground">Datas</h3>
+      <ul className="space-y-0.5 text-muted-foreground">
+        <li>Criada em: {formatOptionalDate(source.created_at, '—')}</li>
+        <li>Expira: {formatOptionalDate(source.expires_at, 'sem expiração')}</li>
+        <li>Último uso: {formatOptionalDate(source.last_used_at, 'nunca usada')}</li>
+        {source.revoked_at && <li>Revogada em: {formatOptionalDate(source.revoked_at, '—')}</li>}
+      </ul>
+    </section>
+  );
+}
+
+function KeyCreator({ source }: { source: McpKeyRow }) {
+  const creator = source.creator_name ?? source.creator_email ?? source.created_by;
+  return (
+    <section className="space-y-1">
+      <h3 className="text-xs uppercase tracking-wide text-muted-foreground">Criador</h3>
+      <p>{creator}</p>
+      {source.creator_email && source.creator_name && <p className="text-xs text-muted-foreground">{source.creator_email}</p>}
+    </section>
+  );
+}
+
+function OptionalKeyDetails({ source }: { source: McpKeyRow }) {
+  return (
+    <>
+      {source.rotated_from && <section className="space-y-1"><h3 className="text-xs uppercase tracking-wide text-muted-foreground">Origem da rotação</h3><p className="text-xs font-mono break-all">{source.rotated_from}</p></section>}
+      {source.description && <section className="space-y-1"><h3 className="text-xs uppercase tracking-wide text-muted-foreground">Justificativa registrada</h3><p className="text-xs italic">"{source.description}"</p></section>}
+    </>
+  );
+}
+
+function AuditHistory({ entries, loading }: { entries: AuditEntry[]; loading: boolean }) {
+  let content = <p className="text-xs text-muted-foreground">Nenhum evento registrado.</p>;
+  if (loading) {
+    content = <div className="space-y-2"><Skeleton className="h-12 w-full" /><Skeleton className="h-12 w-full" /></div>;
+  } else if (entries.length > 0) {
+    content = (
+      <ul className="space-y-2">
+        {entries.map(entry => <li key={entry.id} className="border border-border rounded-md p-2"><div className="flex items-center justify-between text-xs"><Badge variant="outline" className="text-xs">{ACTION_LABELS[entry.action] ?? entry.action}</Badge><span className="text-muted-foreground">{format(new Date(entry.created_at), "dd/MM HH:mm:ss", { locale: ptBR })}</span></div>{entry.ip_address && <p className="text-[10px] text-muted-foreground mt-1 font-mono">IP: {entry.ip_address}</p>}</li>)}
+      </ul>
+    );
+  }
+  return <section className="space-y-2"><h3 className="text-xs uppercase tracking-wide text-muted-foreground flex items-center gap-1"><ClipboardList className="h-3 w-3" /> Histórico de auditoria</h3>{content}</section>;
+}
+
+function KeyDetails({ source, entries, loading }: { source: McpKeyRow; entries: AuditEntry[]; loading: boolean }) {
+  return (
+    <ScrollArea className="flex-1 -mr-6 pr-6 mt-4">
+      <div className="space-y-4 text-sm">
+        <KeyStatus source={source} />
+        <KeyScopes source={source} />
+        <KeyDates source={source} />
+        <KeyCreator source={source} />
+        <OptionalKeyDetails source={source} />
+        <AuditHistory entries={entries} loading={loading} />
+      </div>
+    </ScrollArea>
+  );
+}
+
 export function McpKeyDetailsDrawer({ source, open, onOpenChange }: Props) {
   const [entries, setEntries] = useState<AuditEntry[]>([]);
   const [loading, setLoading] = useState(false);
@@ -62,7 +157,7 @@ export function McpKeyDetailsDrawer({ source, open, onOpenChange }: Props) {
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent className="w-full sm:max-w-lg overflow-hidden flex flex-col">
-        <SheetHeader>
+        {(<SheetHeader>
           <SheetTitle className="flex items-center gap-2">
             {source?.is_full && <ShieldAlert className="h-4 w-4 text-destructive" />}
             {source?.name ?? "Chave MCP"}
@@ -70,100 +165,9 @@ export function McpKeyDetailsDrawer({ source, open, onOpenChange }: Props) {
           <SheetDescription>
             <code className="font-mono text-xs">{source?.key_prefix}…</code>
           </SheetDescription>
-        </SheetHeader>
+        </SheetHeader>)}
 
-        {source && (
-          <ScrollArea className="flex-1 -mr-6 pr-6 mt-4">
-            <div className="space-y-4 text-sm">
-              <section className="space-y-1">
-                <h3 className="text-xs uppercase tracking-wide text-muted-foreground">Status</h3>
-                <div className="flex flex-wrap gap-1">
-                  <Badge variant={source.status === "active" ? "outline" : "destructive"}>
-                    {source.status === "active" ? "Ativa" : source.status === "expired" ? "Expirada" : "Revogada"}
-                  </Badge>
-                  {source.is_full && <Badge variant="destructive">FULL</Badge>}
-                </div>
-              </section>
-
-              <section className="space-y-1">
-                <h3 className="text-xs uppercase tracking-wide text-muted-foreground">Escopos</h3>
-                <div className="flex flex-wrap gap-1">
-                  {source.scopes.map((s) => (
-                    <Badge key={s} variant={s === "*" ? "destructive" : "secondary"} className="font-mono text-xs">
-                      {s}
-                    </Badge>
-                  ))}
-                </div>
-              </section>
-
-              <section className="space-y-1">
-                <h3 className="text-xs uppercase tracking-wide text-muted-foreground">Datas</h3>
-                <ul className="space-y-0.5 text-muted-foreground">
-                  <li>Criada em: {format(new Date(source.created_at), "dd/MM/yyyy HH:mm", { locale: ptBR })}</li>
-                  <li>Expira: {source.expires_at ? format(new Date(source.expires_at), "dd/MM/yyyy HH:mm", { locale: ptBR }) : "sem expiração"}</li>
-                  <li>Último uso: {source.last_used_at ? format(new Date(source.last_used_at), "dd/MM/yyyy HH:mm", { locale: ptBR }) : "nunca usada"}</li>
-                  {source.revoked_at && (
-                    <li>Revogada em: {format(new Date(source.revoked_at), "dd/MM/yyyy HH:mm", { locale: ptBR })}</li>
-                  )}
-                </ul>
-              </section>
-
-              <section className="space-y-1">
-                <h3 className="text-xs uppercase tracking-wide text-muted-foreground">Criador</h3>
-                <p>{source.creator_name ?? source.creator_email ?? source.created_by}</p>
-                {source.creator_email && source.creator_name && (
-                  <p className="text-xs text-muted-foreground">{source.creator_email}</p>
-                )}
-              </section>
-
-              {source.rotated_from && (
-                <section className="space-y-1">
-                  <h3 className="text-xs uppercase tracking-wide text-muted-foreground">Origem da rotação</h3>
-                  <p className="text-xs font-mono break-all">{source.rotated_from}</p>
-                </section>
-              )}
-
-              {source.description && (
-                <section className="space-y-1">
-                  <h3 className="text-xs uppercase tracking-wide text-muted-foreground">Justificativa registrada</h3>
-                  <p className="text-xs italic">"{source.description}"</p>
-                </section>
-              )}
-
-              <section className="space-y-2">
-                <h3 className="text-xs uppercase tracking-wide text-muted-foreground flex items-center gap-1">
-                  <ClipboardList className="h-3 w-3" /> Histórico de auditoria
-                </h3>
-                {loading ? (
-                  <div className="space-y-2">
-                    <Skeleton className="h-12 w-full" />
-                    <Skeleton className="h-12 w-full" />
-                  </div>
-                ) : entries.length === 0 ? (
-                  <p className="text-xs text-muted-foreground">Nenhum evento registrado.</p>
-                ) : (
-                  <ul className="space-y-2">
-                    {entries.map((e) => (
-                      <li key={e.id} className="border border-border rounded-md p-2">
-                        <div className="flex items-center justify-between text-xs">
-                          <Badge variant="outline" className="text-xs">
-                            {ACTION_LABELS[e.action] ?? e.action}
-                          </Badge>
-                          <span className="text-muted-foreground">
-                            {format(new Date(e.created_at), "dd/MM HH:mm:ss", { locale: ptBR })}
-                          </span>
-                        </div>
-                        {e.ip_address && (
-                          <p className="text-[10px] text-muted-foreground mt-1 font-mono">IP: {e.ip_address}</p>
-                        )}
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </section>
-            </div>
-          </ScrollArea>
-        )}
+        {source && <KeyDetails source={source} entries={entries} loading={loading} />}
       </SheetContent>
     </Sheet>
   );

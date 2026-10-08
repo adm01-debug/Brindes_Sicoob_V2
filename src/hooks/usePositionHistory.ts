@@ -21,6 +21,18 @@ interface UsePositionHistoryOptions {
   enabled?: boolean;
 }
 
+function isEditableTarget(target: EventTarget | null) {
+  if (!(target instanceof HTMLElement)) return false;
+  return target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable;
+}
+
+function requestedHistoryAction(event: KeyboardEvent): "undo" | "redo" | null {
+  if (!event.ctrlKey && !event.metaKey) return null;
+  if (event.key === "z" && !event.shiftKey) return "undo";
+  if ((event.key === "z" && event.shiftKey) || event.key === "y") return "redo";
+  return null;
+}
+
 export function usePositionHistory(options: UsePositionHistoryOptions = {}) {
   const { maxHistory = 30, enabled = true } = options;
 
@@ -49,8 +61,7 @@ export function usePositionHistory(options: UsePositionHistoryOptions = {}) {
       return newHistory;
     });
     setHistoryIndex(prev => {
-      const newIndex = Math.min(prev + 1, maxHistory - 1);
-      return newIndex;
+      return Math.min(prev + 1, maxHistory - 1);
     });
   }, [historyIndex, maxHistory]);
 
@@ -86,30 +97,12 @@ export function usePositionHistory(options: UsePositionHistoryOptions = {}) {
     if (!enabled) return;
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      const target = e.target as HTMLElement;
-      if (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable) return;
-
-      const isCtrl = e.ctrlKey || e.metaKey;
-
-      // Ctrl+Z → Undo
-      if (isCtrl && e.key === "z" && !e.shiftKey) {
-        e.preventDefault();
-        const state = undo();
-        if (state && onUndoRedoRef.current) {
-          onUndoRedoRef.current.onApply(state);
-        }
-        return;
-      }
-
-      // Ctrl+Shift+Z or Ctrl+Y → Redo
-      if (isCtrl && ((e.key === "z" && e.shiftKey) || e.key === "y")) {
-        e.preventDefault();
-        const state = redo();
-        if (state && onUndoRedoRef.current) {
-          onUndoRedoRef.current.onApply(state);
-        }
-        return;
-      }
+      if (isEditableTarget(e.target)) return;
+      const action = requestedHistoryAction(e);
+      if (!action) return;
+      e.preventDefault();
+      const state = action === "undo" ? undo() : redo();
+      if (state) onUndoRedoRef.current?.onApply(state);
     };
 
     document.addEventListener("keydown", handleKeyDown);

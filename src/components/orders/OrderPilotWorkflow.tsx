@@ -18,7 +18,7 @@ const statusConfig = {
 };
 
 export function OrderPilotWorkflow({ orderId }: OrderPilotWorkflowProps) {
-  const { approvals, createApproval, updateStatus, isLoading } = usePilotApprovals(orderId);
+  const { approvals, createApproval, updateStatus } = usePilotApprovals(orderId);
   const [comment, setComment] = useState("");
   const [photoUrl, setPhotoUrl] = useState("");
 

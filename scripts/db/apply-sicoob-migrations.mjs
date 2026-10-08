@@ -16,6 +16,10 @@ const ROOT = process.cwd();
 const PROJECT_REF = "cfmzkthhgliqelozlmwu";
 const TARGETS = [
   {
+    file: "supabase/migrations/20260928140600_rls_deny_all_internal_tables.sql",
+    sha256: "00a3379cc3a0a5942c193b55e9e98a5d29bb70ec9bfd8b085a6b6461dddcedf3",
+  },
+  {
     file: "supabase/migrations/20260928162048_quote_save_idempotency.sql",
     sha256: "37944cf181bebbe5fe934b3409cf16d7a83883fc6c1a43e79beca9881c64f78b",
   },
@@ -34,6 +38,46 @@ const TARGETS = [
   {
     file: "supabase/migrations/20261002160000_quote_items_id_format_validation.sql",
     sha256: "08426b1a05f7af3421035408d3d02d72d5a23d9c3261bdb2c9c6af8cb1621d73",
+  },
+  {
+    file: "supabase/migrations/20261007212428_remove_obsolete_admin_audit_crons.sql",
+    sha256: "1300c79473d64da3513453d61ab876914bc871e67e0a808a9cece0266b011696",
+  },
+  {
+    file: "supabase/migrations/20261007214000_harden_remaining_function_search_paths.sql",
+    sha256: "f2a64d01abbd63c2de231fbba6640742bc5ea69e2a108b88269963a65d289811",
+  },
+  {
+    file: "supabase/migrations/20261007220500_revoke_anon_security_helper_execute.sql",
+    sha256: "9f1b97bccc4e58b04c23c81db3858d772b4bec89c1804d84674157bf9a202e15",
+  },
+  {
+    file: "supabase/migrations/20261007223000_consolidate_mcp_api_key_audit_triggers.sql",
+    sha256: "34f0808a6652910272d7b6149c27662f539aad60daff8c699fc0427319480ab4",
+  },
+  {
+    file: "supabase/migrations/20261007230000_optimize_foreign_keys_and_duplicate_indexes.sql",
+    sha256: "3384be5a4f330beae08085e075932c575043337f956a35355aadc14c146e29c1",
+  },
+  {
+    file: "supabase/migrations/20261007231500_optimize_rls_auth_initplans.sql",
+    sha256: "dea4699031202f9585e8f5a719f2aa18902a4a7102c1a5f4d4a679dd69862aae",
+  },
+  {
+    file: "supabase/migrations/20261007233000_consolidate_permissive_rls_policies.sql",
+    sha256: "0569dcbf761e9362c99cf54692d1e8ed45d6c7507c928dedb573a48519f1ed07",
+  },
+  {
+    file: "supabase/migrations/20261008010000_fix_plpgsql_lint_failures.sql",
+    sha256: "4783e63b4fc12fd2800331278f81863263719d5cd7db235e86daf07c243bb6b8",
+  },
+  {
+    file: "supabase/migrations/20261008023000_fix_profiles_update_rls_recursion.sql",
+    sha256: "75cac09536a3d6a6f8c4a9bcd63705bdc3df2ca4429522c3bb50e6757710cbf3",
+  },
+  {
+    file: "supabase/migrations/20261008030000_fix_sicoob_admin_audit_system_actor.sql",
+    sha256: "9d0b40769b2098ebe6c3495db62010456a6fbe4dcb0013a17e8c5b2f08547b4b",
   },
 ];
 
@@ -356,7 +400,142 @@ async function validateContract(client, targets) {
           AND a.grantee <> p.proowner
           AND COALESCE((SELECT r.rolname FROM pg_roles r WHERE r.oid = a.grantee), 'PUBLIC')
               NOT IN ('authenticated', 'service_role')
-      ) AS foreign_execute_granted
+      ) AS foreign_execute_granted,
+      (SELECT count(*)
+        FROM pg_policies
+        WHERE schemaname = 'public'
+          AND tablename = ANY(ARRAY[
+            'bitrix_clients', 'bitrix_deals', 'bitrix_sync_logs',
+            'order_duplicate_requests', 'quote_approval_evidence_keys',
+            'sicoob_approval_deliveries', 'sicoob_approval_delivery_archive',
+            'sicoob_approval_worker_dispatches', 'webhook_configs'
+          ])
+          AND policyname = 'deny_non_service_role'
+          AND permissive = 'RESTRICTIVE'
+          AND roles = ARRAY['public']::name[]
+          AND cmd = 'ALL'
+          AND qual = 'false') AS internal_deny_policy_count,
+      (SELECT count(*) FROM cron.job
+        WHERE jobname IN ('archive-old-admin-audit-logs', 'trim-connection-test-history')) AS obsolete_cron_count,
+      to_regprocedure('public.archive_old_admin_audit_logs()') IS NULL AS archive_function_removed,
+      EXISTS (
+        SELECT 1 FROM pg_trigger
+        WHERE tgrelid = 'public.connection_test_history'::regclass
+          AND tgname = 'trg_trim_connection_test_history'
+          AND NOT tgisinternal
+          AND tgenabled = 'O'
+      ) AS trim_trigger_safe,
+      (SELECT count(*)
+        FROM pg_proc AS p
+        WHERE p.oid = ANY (ARRAY[
+          'public.handle_updated_at()'::regprocedure,
+          'public.sync_is_active_with_deleted_at()'::regprocedure,
+          'public.determine_sicoob_order_flow_status()'::regprocedure,
+          'public.update_notification_updated_at()'::regprocedure
+        ]::oid[])
+          AND p.proconfig @> ARRAY['search_path=pg_catalog, public']::text[]
+      ) AS hardened_search_path_count,
+      (SELECT count(*)
+        FROM pg_trigger
+        WHERE tgrelid = 'public.mcp_api_keys'::regclass
+          AND tgname = ANY(ARRAY[
+            'trg_audit_mcp_key_insert',
+            'trg_audit_mcp_key_revoke',
+            'trg_log_mcp_key_changes'
+          ])
+          AND NOT tgisinternal
+      ) AS legacy_mcp_audit_trigger_count,
+      EXISTS (
+        SELECT 1 FROM pg_trigger
+        WHERE tgrelid = 'public.mcp_api_keys'::regclass
+          AND tgname = 'trg_audit_mcp_api_keys'
+          AND NOT tgisinternal
+          AND tgenabled = 'O'
+      ) AS canonical_mcp_audit_trigger_enabled,
+      EXISTS (
+        SELECT 1 FROM pg_trigger
+        WHERE tgrelid = 'public.mcp_api_keys'::regclass
+          AND tgname = 'trg_guard_mcp_api_keys'
+          AND NOT tgisinternal
+          AND tgenabled = 'O'
+      ) AS mcp_write_guard_enabled,
+      (SELECT count(*)
+        FROM unnest(ARRAY[
+          'public.idx_bitrix_sync_logs_synced_by',
+          'public.idx_password_reset_requests_reviewed_by',
+          'public.idx_password_reset_requests_user_id',
+          'public.idx_quote_approval_tokens_signature_key_id',
+          'public.idx_quote_save_idempotency_quote_id',
+          'public.idx_sicoob_approval_delegations_pa_id',
+          'public.idx_sicoob_approval_delegations_revoked_by',
+          'public.idx_sicoob_approval_deliveries_supersedes_delivery',
+          'public.idx_sicoob_approval_requests_delegation',
+          'public.idx_sicoob_approval_requests_delegator',
+          'public.idx_sicoob_document_registry_order_id',
+          'public.idx_sicoob_document_registry_uploaded_by',
+          'public.idx_sicoob_invitations_access_revoked_by',
+          'public.idx_sicoob_invitations_revoked_by',
+          'public.idx_sicoob_invitations_superseded_by',
+          'public.idx_sicoob_shipments_photo_uploaded_by',
+          'public.idx_sicoob_reorder_requests_quote_id'
+        ]::text[]) AS expected(index_name)
+        WHERE to_regclass(expected.index_name) IS NOT NULL
+      ) AS covered_fk_index_count,
+      (SELECT count(*)
+        FROM unnest(ARRAY[
+          'public.idx_admin_audit_log_y2026_m05_created_at',
+          'public.idx_admin_audit_log_y2026_m06_created_at',
+          'public.idx_invoices_order',
+          'public.idx_profiles_cooperativa',
+          'public.idx_profiles_pa',
+          'public.idx_personalizations_item',
+          'public.idx_fk_sicoob_delivery_allocations_order_item_id_fkey',
+          'public.idx_fk_sicoob_delivery_destinations_pa_id_fkey',
+          'public.idx_fk_sicoob_delivery_receipt_events_received_by_fkey'
+        ]::text[]) AS obsolete(index_name)
+        WHERE to_regclass(obsolete.index_name) IS NOT NULL
+      ) AS obsolete_duplicate_index_count,
+      (SELECT count(*)
+        FROM pg_policies
+        WHERE schemaname = 'public'
+          AND (
+            COALESCE(qual, '') ~ 'auth\\.(uid|role|jwt)\\(\\)'
+            OR COALESCE(with_check, '') ~ 'auth\\.(uid|role|jwt)\\(\\)'
+          )
+          AND CONCAT_WS(' ', qual, with_check) !~* 'select\\s+auth\\.(uid|role|jwt)\\(\\)'
+      ) AS rls_auth_initplan_candidate_count,
+      (SELECT count(*)
+        FROM pg_policies
+        WHERE schemaname = 'public'
+          AND policyname ~ '^sicoob_merged_[0-9a-f]{16}_(select|insert|update|delete)$'
+      ) AS consolidated_rls_policy_count,
+      (SELECT count(DISTINCT tablename)
+        FROM pg_policies
+        WHERE schemaname = 'public'
+          AND policyname ~ '^sicoob_merged_[0-9a-f]{16}_(select|insert|update|delete)$'
+      ) AS consolidated_rls_table_count,
+      (SELECT count(*)
+        FROM pg_policies
+        WHERE schemaname = 'public'
+          AND policyname ~ '^sicoob_merged_[0-9a-f]{16}_(select|insert|update|delete)$'
+          AND (
+            permissive <> 'PERMISSIVE'
+            OR roles <> ARRAY['public']::name[]
+            OR cmd = 'ALL'
+          )
+      ) AS invalid_consolidated_rls_policy_count,
+      EXISTS (
+        SELECT 1
+        FROM pg_policies
+        WHERE schemaname = 'public'
+          AND tablename = 'pa_budgets'
+          AND policyname = 'pa_budgets_anon_deny'
+          AND permissive = 'RESTRICTIVE'
+          AND roles = ARRAY['anon']::name[]
+          AND cmd = 'ALL'
+          AND qual = 'false'
+          AND with_check = 'false'
+      ) AS pa_budgets_restrictive_policy_safe
   `);
   const result = rows[0];
   const idempotencyMigration = latestDefiner(targets, "save_quote_atomic_idempotent");
@@ -425,10 +604,28 @@ async function validateContract(client, targets) {
     && result.notification_trigger_safe && triggerDefinitionExact
     && result.save_atomic_security_safe && result.save_atomic_authenticated_execute
     && !result.save_atomic_anon_execute && !result.save_atomic_public_execute
-    && !result.foreign_execute_granted;
+    && !result.foreign_execute_granted
+    && Number(result.internal_deny_policy_count) === 9
+    && Number(result.obsolete_cron_count) === 0
+    && result.archive_function_removed
+    && result.trim_trigger_safe
+    && Number(result.hardened_search_path_count) === 4
+    && Number(result.legacy_mcp_audit_trigger_count) === 0
+    && result.canonical_mcp_audit_trigger_enabled
+    && result.mcp_write_guard_enabled
+    && Number(result.covered_fk_index_count) === 17
+    && Number(result.obsolete_duplicate_index_count) === 0
+    && Number(result.rls_auth_initplan_candidate_count) === 0
+    && Number(result.consolidated_rls_policy_count) === 227
+    && Number(result.consolidated_rls_table_count) === 64
+    && Number(result.invalid_consolidated_rls_policy_count) === 0
+    && result.pa_budgets_restrictive_policy_safe;
   if (!valid) {
-    const { idempotency_source: _idempotency, status_source: _status,
-      notification_source: _notification, save_atomic_source: _save_atomic, ...diagnostic } = result ?? {};
+    const diagnostic = { ...(result ?? {}) };
+    delete diagnostic.idempotency_source;
+    delete diagnostic.status_source;
+    delete diagnostic.notification_source;
+    delete diagnostic.save_atomic_source;
     throw new Error(`Contrato remoto de idempotência inválido: ${JSON.stringify({
       ...diagnostic,
       source_hashes_valid: sourceHashesValid,
@@ -587,6 +784,132 @@ BEGIN
          AND tgname = 'trg_notify_singular_quote_submission'
          AND NOT tgisinternal
          AND tgenabled = 'O'
+     )
+     OR (SELECT count(*) FROM pg_policies
+         WHERE schemaname = 'public'
+           AND tablename = ANY(ARRAY[
+             'bitrix_clients', 'bitrix_deals', 'bitrix_sync_logs',
+             'order_duplicate_requests', 'quote_approval_evidence_keys',
+             'sicoob_approval_deliveries', 'sicoob_approval_delivery_archive',
+             'sicoob_approval_worker_dispatches', 'webhook_configs'
+           ])
+           AND policyname = 'deny_non_service_role'
+           AND permissive = 'RESTRICTIVE'
+           AND roles = ARRAY['public']::name[]
+           AND cmd = 'ALL'
+           AND qual = 'false') <> 9
+     OR EXISTS (
+       SELECT 1 FROM cron.job
+       WHERE jobname IN ('archive-old-admin-audit-logs', 'trim-connection-test-history')
+     )
+     OR to_regprocedure('public.archive_old_admin_audit_logs()') IS NOT NULL
+     OR NOT EXISTS (
+       SELECT 1 FROM pg_trigger
+       WHERE tgrelid = 'public.connection_test_history'::regclass
+         AND tgname = 'trg_trim_connection_test_history'
+         AND NOT tgisinternal
+         AND tgenabled = 'O'
+     )
+     OR EXISTS (
+       SELECT 1 FROM pg_trigger
+       WHERE tgrelid = 'public.mcp_api_keys'::regclass
+         AND tgname = ANY(ARRAY[
+           'trg_audit_mcp_key_insert',
+           'trg_audit_mcp_key_revoke',
+           'trg_log_mcp_key_changes'
+         ])
+         AND NOT tgisinternal
+     )
+     OR NOT EXISTS (
+       SELECT 1 FROM pg_trigger
+       WHERE tgrelid = 'public.mcp_api_keys'::regclass
+         AND tgname = 'trg_audit_mcp_api_keys'
+         AND NOT tgisinternal
+         AND tgenabled = 'O'
+     )
+     OR NOT EXISTS (
+       SELECT 1 FROM pg_trigger
+       WHERE tgrelid = 'public.mcp_api_keys'::regclass
+         AND tgname = 'trg_guard_mcp_api_keys'
+         AND NOT tgisinternal
+         AND tgenabled = 'O'
+     )
+     OR (SELECT count(*)
+       FROM unnest(ARRAY[
+         'public.idx_bitrix_sync_logs_synced_by',
+         'public.idx_password_reset_requests_reviewed_by',
+         'public.idx_password_reset_requests_user_id',
+         'public.idx_quote_approval_tokens_signature_key_id',
+         'public.idx_quote_save_idempotency_quote_id',
+         'public.idx_sicoob_approval_delegations_pa_id',
+         'public.idx_sicoob_approval_delegations_revoked_by',
+         'public.idx_sicoob_approval_deliveries_supersedes_delivery',
+         'public.idx_sicoob_approval_requests_delegation',
+         'public.idx_sicoob_approval_requests_delegator',
+         'public.idx_sicoob_document_registry_order_id',
+         'public.idx_sicoob_document_registry_uploaded_by',
+         'public.idx_sicoob_invitations_access_revoked_by',
+         'public.idx_sicoob_invitations_revoked_by',
+         'public.idx_sicoob_invitations_superseded_by',
+         'public.idx_sicoob_shipments_photo_uploaded_by',
+         'public.idx_sicoob_reorder_requests_quote_id'
+       ]::text[]) AS expected(index_name)
+       WHERE to_regclass(expected.index_name) IS NOT NULL) <> 17
+     OR EXISTS (
+       SELECT 1
+       FROM unnest(ARRAY[
+         'public.idx_admin_audit_log_y2026_m05_created_at',
+         'public.idx_admin_audit_log_y2026_m06_created_at',
+         'public.idx_invoices_order',
+         'public.idx_profiles_cooperativa',
+         'public.idx_profiles_pa',
+         'public.idx_personalizations_item',
+         'public.idx_fk_sicoob_delivery_allocations_order_item_id_fkey',
+         'public.idx_fk_sicoob_delivery_destinations_pa_id_fkey',
+         'public.idx_fk_sicoob_delivery_receipt_events_received_by_fkey'
+       ]::text[]) AS obsolete(index_name)
+       WHERE to_regclass(obsolete.index_name) IS NOT NULL
+     )
+     OR EXISTS (
+       SELECT 1
+       FROM pg_policies
+       WHERE schemaname = 'public'
+         AND (
+           COALESCE(qual, '') ~ 'auth\\.(uid|role|jwt)\\(\\)'
+           OR COALESCE(with_check, '') ~ 'auth\\.(uid|role|jwt)\\(\\)'
+         )
+         AND CONCAT_WS(' ', qual, with_check) !~* 'select\\s+auth\\.(uid|role|jwt)\\(\\)'
+     )
+     OR (SELECT count(*)
+       FROM pg_policies
+       WHERE schemaname = 'public'
+         AND policyname ~ '^sicoob_merged_[0-9a-f]{16}_(select|insert|update|delete)$') <> 227
+     OR (SELECT count(DISTINCT tablename)
+       FROM pg_policies
+       WHERE schemaname = 'public'
+         AND policyname ~ '^sicoob_merged_[0-9a-f]{16}_(select|insert|update|delete)$') <> 64
+     OR EXISTS (
+       SELECT 1
+       FROM pg_policies
+       WHERE schemaname = 'public'
+         AND policyname ~ '^sicoob_merged_[0-9a-f]{16}_(select|insert|update|delete)$'
+         AND (
+           permissive <> 'PERMISSIVE'
+           OR roles <> ARRAY['public']::name[]
+           OR cmd = 'ALL'
+         )
+     )
+     OR NOT EXISTS (
+       SELECT 1
+       FROM pg_policies
+       WHERE schemaname = 'public'
+         AND tablename = 'pa_budgets'
+         AND policyname = 'pa_budgets_anon_deny'
+         AND permissive = 'RESTRICTIVE'
+         AND roles = ARRAY['anon']::name[]
+         AND cmd = 'ALL'
+         AND qual = 'false'
+         AND with_check = 'false'
      ) THEN
     RAISE EXCEPTION 'O contrato crítico não foi produzido; lote cancelado.';
   END IF;

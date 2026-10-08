@@ -17,6 +17,29 @@ interface UseProductsByCategoryResult {
   refetch: () => Promise<void>;
 }
 
+interface CategoryProductsResponse {
+  productIds: string[];
+  categoriesUsed?: number;
+  source?: string | null;
+}
+
+async function loadCategoryProducts(categoryIds: string[], includeDescendants: boolean): Promise<CategoryProductsResponse> {
+  const { data, error } = await supabase.functions.invoke('categories-api', {
+    body: { action: 'products_by_categories', categoryIds, includeDescendants },
+  });
+  if (error) throw new Error(error.message);
+  if (!data.success) throw new Error(data.error || 'Erro ao buscar produtos por categoria');
+  return {
+    productIds: data.productIds || [],
+    categoriesUsed: data.categoriesUsed,
+    source: data.source,
+  };
+}
+
+function alreadyLoaded(currentKey: string, requestedKey: string, productCount: number): boolean {
+  return currentKey === requestedKey && productCount > 0;
+}
+
 /**
  * Hook para buscar IDs de produtos vinculados a categorias via tabela relacional
  * Usa a tabela product_category_assignments (ou fallbacks)
@@ -46,10 +69,8 @@ export function useProductsByCategory({
   }, [categoryIds.length]);
 
   const fetchProductIds = useCallback(async () => {
-    // Evitar chamadas duplicadas
     if (isFetchingRef.current) return;
-    if (lastFetchedKey.current === categoryIdsKey && productIds.size > 0) return;
-    
+    if (alreadyLoaded(lastFetchedKey.current, categoryIdsKey, productIds.size)) return;
     if (!hasFilter || !enabled) {
       setProductIds(new Set());
       setCategoriesCount(0);
@@ -63,25 +84,10 @@ export function useProductsByCategory({
     setError(null);
 
     try {
-      const { data, error: invokeError } = await supabase.functions.invoke('categories-api', {
-        body: {
-          action: 'products_by_categories',
-          categoryIds,
-          includeDescendants,
-        },
-      });
-
-      if (invokeError) {
-        throw new Error(invokeError.message);
-      }
-
-      if (!data.success) {
-        throw new Error(data.error || 'Erro ao buscar produtos por categoria');
-      }
-
-      setProductIds(new Set(data.productIds || []));
-      setCategoriesCount(data.categoriesUsed || categoryIds.length);
-      setSource(data.source || null);
+      const result = await loadCategoryProducts(categoryIds, includeDescendants);
+      setProductIds(new Set(result.productIds));
+      setCategoriesCount(result.categoriesUsed || categoryIds.length);
+      setSource(result.source || null);
       lastFetchedKey.current = categoryIdsKey;
 
     } catch (err) {
@@ -93,7 +99,7 @@ export function useProductsByCategory({
       setIsLoading(false);
       isFetchingRef.current = false;
     }
-  }, [categoryIdsKey, includeDescendants, hasFilter, enabled, categoryIds]);
+  }, [categoryIdsKey, includeDescendants, hasFilter, enabled, categoryIds, productIds.size]);
 
   // Buscar quando a chave de categorias muda
   useEffect(() => {

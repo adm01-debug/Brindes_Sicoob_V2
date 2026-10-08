@@ -20,6 +20,91 @@ interface ProductVideoGalleryProps {
   productId?: string;
 }
 
+type GalleryState = ReturnType<typeof useProductVideoGallery>;
+type PreviewVideo = NonNullable<GalleryState['previewVideo']>;
+
+function VariantFilter({ gallery }: { gallery: GalleryState }) {
+  if (gallery.variants.length === 0) return null;
+  return (
+    <Select value={gallery.filterVariant} onValueChange={gallery.setFilterVariant}>
+      <SelectTrigger className="h-7 w-[160px] text-[11px]"><SelectValue placeholder="Variação" /></SelectTrigger>
+      <SelectContent>
+        <SelectItem value="all" className="text-xs"><span className="flex items-center gap-1.5"><Palette className="h-3 w-3 text-muted-foreground" />Todas as variações</span></SelectItem>
+        <SelectItem value="general" className="text-xs"><span className="flex items-center gap-1.5"><Video className="h-3 w-3 text-muted-foreground" />Sem variação (geral)</span></SelectItem>
+        {gallery.variants.map(variant => <SelectItem key={variant.id} value={variant.id} className="text-xs"><span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full border border-border/60 shrink-0" style={{ backgroundColor: variant.color_hex || '#999' }} />{variant.color_name || variant.name}</span></SelectItem>)}
+      </SelectContent>
+    </Select>
+  );
+}
+
+function ThumbnailButton({ gallery }: { gallery: GalleryState }) {
+  const missingCount = gallery.videos.filter(video => !video.url_thumbnail && !video.source_youtube_id).length;
+  if (missingCount === 0) return null;
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <Button type="button" variant="ghost" size="sm" className="h-7 text-[10px] text-muted-foreground hover:text-primary" onClick={gallery.bulkRegenerateThumbnails} disabled={gallery.isBulkRegenerating}>
+          {gallery.isBulkRegenerating ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <RefreshCw className="h-3 w-3 mr-1" />} Gerar thumbnails
+        </Button>
+      </TooltipTrigger>
+      <TooltipContent className="text-xs">Gerar thumbnails para {missingCount} vídeo(s)</TooltipContent>
+    </Tooltip>
+  );
+}
+
+function GalleryFilters({ gallery }: { gallery: GalleryState }) {
+  if (gallery.videos.length === 0) return null;
+  return (
+    <div className="flex flex-wrap items-center gap-2 p-2.5 rounded-lg bg-muted/20 border border-border/30">
+      <Filter className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+      <Select value={gallery.filterType} onValueChange={gallery.setFilterType}>
+        <SelectTrigger className="h-7 w-[120px] text-[11px]"><SelectValue placeholder="Tipo" /></SelectTrigger>
+        <SelectContent><SelectItem value="all" className="text-xs">Todos os tipos</SelectItem>{VIDEO_TYPES.map(type => <SelectItem key={type.value} value={type.value} className="text-xs"><span className="flex items-center gap-1.5"><type.icon className={`h-3 w-3 ${type.color}`} />{type.label}</span></SelectItem>)}</SelectContent>
+      </Select>
+      <VariantFilter gallery={gallery} />
+      {gallery.hasFilters && <Button type="button" variant="ghost" size="sm" className="h-7 text-[10px] text-muted-foreground" onClick={() => { gallery.setFilterVariant('all'); gallery.setFilterType('all'); }}>Limpar filtros</Button>}
+      <ThumbnailButton gallery={gallery} />
+      <span className="ml-auto text-[10px] text-muted-foreground">{gallery.filteredVideos.length}/{gallery.videos.length}</span>
+    </div>
+  );
+}
+
+function VideoPreviewMeta({ video, gallery }: { video: PreviewVideo; gallery: GalleryState }) {
+  const typeLabel = video.video_type ? VIDEO_TYPES.find(type => type.value === video.video_type)?.label : undefined;
+  const links = gallery.videoLinksMap.get(video.id) || [];
+  return (
+    <div className="flex flex-wrap gap-2 px-2 pb-1 text-[11px] text-muted-foreground">
+      {video.title && <span className="font-medium text-foreground/70">{video.title}</span>}
+      {video.video_type && <Badge variant="secondary" className="text-[10px]">{typeLabel || video.video_type}</Badge>}
+      {links.map(link => <Badge key={link.id} variant="outline" className="text-[10px] flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: link.variant_color_hex || '#999' }} />{link.variant_name}</Badge>)}
+      {video.file_size_bytes && video.file_size_bytes > 0 && <span>{formatBytes(video.file_size_bytes)}</span>}
+    </div>
+  );
+}
+
+function VideoPreviewDialog({ gallery }: { gallery: GalleryState }) {
+  const video = gallery.previewVideo;
+  const embedUrl = video ? getCloudflareEmbedUrl(video.url_stream, { autoplay: true }) : null;
+  return (
+    <Dialog open={Boolean(video)} onOpenChange={() => gallery.setPreviewVideo(null)}>
+      <DialogContent className="max-w-3xl p-2">
+        {video && (
+          <div className="space-y-2">
+            <div className="aspect-video rounded-md overflow-hidden bg-black">
+              {embedUrl ? <iframe src={embedUrl} className="w-full h-full" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen /> : <div className="w-full h-full flex items-center justify-center text-muted-foreground"><Film className="h-8 w-8 opacity-40" /></div>}
+            </div>
+            <VideoPreviewMeta video={video} gallery={gallery} />
+          </div>
+        )}
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function VideoGalleryContent({ gallery, productId }: { gallery: GalleryState; productId?: string }) {
+  return <div className="space-y-4"><GalleryFilters gallery={gallery} />{gallery.filteredVideos.length > 0 && <VideoGrid filteredVideos={gallery.filteredVideos} videoLinksMap={gallery.videoLinksMap} variantMap={gallery.variantMap} variants={gallery.variants} linkingVideoId={gallery.linkingVideoId} setLinkingVideoId={gallery.setLinkingVideoId} editingVideoId={gallery.editingVideoId} setEditingVideoId={gallery.setEditingVideoId} regeneratingId={gallery.regeneratingId} dragIndex={gallery.dragIndex} dragOverIndex={gallery.dragOverIndex} getThumbnail={gallery.getThumbnail} setPreviewVideo={gallery.setPreviewVideo} linkVideoToVariant={gallery.linkVideoToVariant} unlinkVideoFromVariant={gallery.unlinkVideoFromVariant} regenerateThumbnail={gallery.regenerateThumbnail} requestRemove={gallery.setDeleteConfirm} updateVideoMeta={gallery.updateVideoMeta} handleDragStart={gallery.handleVideoDragStart} handleDragOver={gallery.handleVideoDragOver} handleDrop={gallery.handleVideoDrop} handleDragEnd={gallery.handleVideoDragEnd} />}{gallery.videos.length > 0 && <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] text-muted-foreground px-1 py-1.5 rounded-lg bg-muted/20 border border-border/30"><span className="font-medium text-foreground/70">{gallery.stats.total} vídeo(s)</span><span className="flex items-center gap-1"><Link2 className="h-2.5 w-2.5" />{gallery.stats.linked} vinculado(s)</span></div>}<VideoUploadArea productId={productId} variants={gallery.variants} uploadVideoType={gallery.uploadVideoType} setUploadVideoType={gallery.setUploadVideoType} uploadVariant={gallery.uploadVariant} setUploadVariant={gallery.setUploadVariant} isUploading={gallery.isUploading} uploadCount={gallery.uploadCount} uploadProgress={gallery.uploadProgress} isDragOver={gallery.isDragOver} fileInputRef={gallery.fileInputRef} handleFileSelect={gallery.handleFileSelect} handleDragOverZone={gallery.handleDragOverZone} handleDragLeaveZone={gallery.handleDragLeaveZone} handleDropZone={gallery.handleDropZone} youtubeUrl={gallery.youtubeUrl} setYoutubeUrl={gallery.setYoutubeUrl} addYoutubeVideo={gallery.addYoutubeVideo} isAddingYoutube={gallery.isAddingYoutube} /><VideoPreviewDialog gallery={gallery} /><ConfirmDeleteDialog open={Boolean(gallery.deleteConfirm)} onCancel={() => gallery.setDeleteConfirm(null)} onConfirm={() => { if (gallery.deleteConfirm) gallery.handleRemove(gallery.deleteConfirm); gallery.setDeleteConfirm(null); }} title="Remover vídeo" description="Tem certeza que deseja remover este vídeo? Esta ação não pode ser desfeita." /></div>;
+}
+
 export function ProductVideoGallery({ productId }: ProductVideoGalleryProps) {
   const g = useProductVideoGallery(productId);
 
@@ -32,182 +117,5 @@ export function ProductVideoGallery({ productId }: ProductVideoGalleryProps) {
     );
   }
 
-  return (
-    <div className="space-y-4">
-      {/* Filter bar */}
-      {g.videos.length > 0 && (
-        <div className="flex flex-wrap items-center gap-2 p-2.5 rounded-lg bg-muted/20 border border-border/30">
-          <Filter className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-          <Select value={g.filterType} onValueChange={g.setFilterType}>
-            <SelectTrigger className="h-7 w-[120px] text-[11px]"><SelectValue placeholder="Tipo" /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all" className="text-xs">Todos os tipos</SelectItem>
-              {VIDEO_TYPES.map(t => (
-                <SelectItem key={t.value} value={t.value} className="text-xs">
-                  <span className="flex items-center gap-1.5"><t.icon className={`h-3 w-3 ${t.color}`} />{t.label}</span>
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          {g.variants.length > 0 && (
-            <Select value={g.filterVariant} onValueChange={g.setFilterVariant}>
-              <SelectTrigger className="h-7 w-[160px] text-[11px]"><SelectValue placeholder="Variação" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all" className="text-xs">
-                  <span className="flex items-center gap-1.5"><Palette className="h-3 w-3 text-muted-foreground" />Todas as variações</span>
-                </SelectItem>
-                <SelectItem value="general" className="text-xs">
-                  <span className="flex items-center gap-1.5"><Video className="h-3 w-3 text-muted-foreground" />Sem variação (geral)</span>
-                </SelectItem>
-                {g.variants.map(v => (
-                  <SelectItem key={v.id} value={v.id} className="text-xs">
-                    <span className="flex items-center gap-1.5">
-                      <span className="w-3 h-3 rounded-full border border-border/60 shrink-0" style={{ backgroundColor: v.color_hex || '#999' }} />
-                      {v.color_name || v.name}
-                    </span>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          )}
-          {g.hasFilters && (
-            <Button type="button" variant="ghost" size="sm" className="h-7 text-[10px] text-muted-foreground"
-              onClick={() => { g.setFilterVariant('all'); g.setFilterType('all'); }}>
-              Limpar filtros
-            </Button>
-          )}
-          {g.videos.some(v => !v.url_thumbnail && !v.source_youtube_id) && (
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button type="button" variant="ghost" size="sm" className="h-7 text-[10px] text-muted-foreground hover:text-primary"
-                  onClick={g.bulkRegenerateThumbnails} disabled={g.isBulkRegenerating}>
-                  {g.isBulkRegenerating ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <RefreshCw className="h-3 w-3 mr-1" />}
-                  Gerar thumbnails
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent className="text-xs">
-                Gerar thumbnails para {g.videos.filter(v => !v.url_thumbnail && !v.source_youtube_id).length} vídeo(s)
-              </TooltipContent>
-            </Tooltip>
-          )}
-          <span className="ml-auto text-[10px] text-muted-foreground">{g.filteredVideos.length}/{g.videos.length}</span>
-        </div>
-      )}
-
-      {/* Video grid */}
-      {g.filteredVideos.length > 0 && (
-        <VideoGrid
-          filteredVideos={g.filteredVideos}
-          videoLinksMap={g.videoLinksMap}
-          variantMap={g.variantMap}
-          variants={g.variants}
-          linkingVideoId={g.linkingVideoId}
-          setLinkingVideoId={g.setLinkingVideoId}
-          editingVideoId={g.editingVideoId}
-          setEditingVideoId={g.setEditingVideoId}
-          regeneratingId={g.regeneratingId}
-          dragIndex={g.dragIndex}
-          dragOverIndex={g.dragOverIndex}
-          getThumbnail={g.getThumbnail}
-          setPreviewVideo={g.setPreviewVideo}
-          linkVideoToVariant={g.linkVideoToVariant}
-          unlinkVideoFromVariant={g.unlinkVideoFromVariant}
-          regenerateThumbnail={g.regenerateThumbnail}
-          requestRemove={(id) => g.setDeleteConfirm(id)}
-          updateVideoMeta={g.updateVideoMeta}
-          handleDragStart={g.handleVideoDragStart}
-          handleDragOver={g.handleVideoDragOver}
-          handleDrop={g.handleVideoDrop}
-          handleDragEnd={g.handleVideoDragEnd}
-        />
-      )}
-
-      {/* Stats */}
-      {g.videos.length > 0 && (
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] text-muted-foreground px-1 py-1.5 rounded-lg bg-muted/20 border border-border/30">
-          <span className="font-medium text-foreground/70">{g.stats.total} vídeo(s)</span>
-          <span className="flex items-center gap-1"><Link2 className="h-2.5 w-2.5" />{g.stats.linked} vinculado(s)</span>
-        </div>
-      )}
-
-      {/* Upload area */}
-      <VideoUploadArea
-        productId={productId}
-        variants={g.variants}
-        uploadVideoType={g.uploadVideoType}
-        setUploadVideoType={g.setUploadVideoType}
-        uploadVariant={g.uploadVariant}
-        setUploadVariant={g.setUploadVariant}
-        isUploading={g.isUploading}
-        uploadCount={g.uploadCount}
-        uploadProgress={g.uploadProgress}
-        isDragOver={g.isDragOver}
-        fileInputRef={g.fileInputRef}
-        handleFileSelect={g.handleFileSelect}
-        handleDragOverZone={g.handleDragOverZone}
-        handleDragLeaveZone={g.handleDragLeaveZone}
-        handleDropZone={g.handleDropZone}
-        youtubeUrl={g.youtubeUrl}
-        setYoutubeUrl={g.setYoutubeUrl}
-        addYoutubeVideo={g.addYoutubeVideo}
-        isAddingYoutube={g.isAddingYoutube}
-      />
-
-
-      {/* Preview dialog */}
-      <Dialog open={!!g.previewVideo} onOpenChange={() => g.setPreviewVideo(null)}>
-        <DialogContent className="max-w-3xl p-2">
-          {g.previewVideo && (
-            <div className="space-y-2">
-                <div className="aspect-video rounded-md overflow-hidden bg-black">
-                  {(() => {
-                    const embedUrl = getCloudflareEmbedUrl(g.previewVideo.url_stream, { autoplay: true });
-
-                    return embedUrl ? (
-                      <iframe
-                        src={embedUrl}
-                        className="w-full h-full"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                        allowFullScreen
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-muted-foreground"><Film className="h-8 w-8 opacity-40" /></div>
-                    );
-                  })()}
-                </div>
-              <div className="flex flex-wrap gap-2 px-2 pb-1 text-[11px] text-muted-foreground">
-                {g.previewVideo.title && <span className="font-medium text-foreground/70">{g.previewVideo.title}</span>}
-                {g.previewVideo.video_type && (
-                  <Badge variant="secondary" className="text-[10px]">
-                    {VIDEO_TYPES.find(t => t.value === g.previewVideo!.video_type)?.label || g.previewVideo.video_type}
-                  </Badge>
-                )}
-                {(g.videoLinksMap.get(g.previewVideo.id) || []).map(link => (
-                  <Badge key={link.id} variant="outline" className="text-[10px] flex items-center gap-1">
-                    <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: link.variant_color_hex || '#999' }} />
-                    {link.variant_name}
-                  </Badge>
-                ))}
-                {g.previewVideo.file_size_bytes && g.previewVideo.file_size_bytes > 0 && (
-                  <span>{formatBytes(g.previewVideo.file_size_bytes)}</span>
-                )}
-              </div>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
-
-      {/* Confirm delete dialog */}
-      <ConfirmDeleteDialog
-        open={!!g.deleteConfirm}
-        onCancel={() => g.setDeleteConfirm(null)}
-        onConfirm={() => {
-          if (g.deleteConfirm) g.handleRemove(g.deleteConfirm);
-          g.setDeleteConfirm(null);
-        }}
-        title="Remover vídeo"
-        description="Tem certeza que deseja remover este vídeo? Esta ação não pode ser desfeita."
-      />
-    </div>
-  );
+  return <VideoGalleryContent gallery={g} productId={productId} />;
 }

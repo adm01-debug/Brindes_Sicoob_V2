@@ -74,14 +74,15 @@ export function validateImportedTemplates(data: unknown): ExportedTemplate | nul
     return null;
   }
 
-  // Validate each template has required fields
-  for (const template of obj.templates) {
-    if (typeof template !== 'object' || !template) return null;
-    const t = template as Record<string, unknown>;
-    if (!t.name || typeof t.name !== 'string') return null;
-  }
+  if (!obj.templates.every(isValidImportedTemplate)) return null;
 
   return data as ExportedTemplate;
+}
+
+function isValidImportedTemplate(template: unknown): boolean {
+  if (typeof template !== 'object' || !template) return false;
+  const name = (template as Record<string, unknown>).name;
+  return typeof name === 'string' && name.length > 0;
 }
 
 /**

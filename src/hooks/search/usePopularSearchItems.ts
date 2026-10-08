@@ -25,8 +25,9 @@ export function usePopularSearchItems(enabled: boolean) {
 
       const viewCounts = viewsData.reduce((acc: Record<string, { count: number; name: string; sku: string }>, v) => {
         if (v.product_id) {
-          if (!acc[v.product_id]) acc[v.product_id] = { count: 0, name: v.product_name ?? "", sku: v.product_sku || "" };
-          acc[v.product_id].count++;
+          const current = acc[v.product_id] ?? { count: 0, name: v.product_name ?? "", sku: v.product_sku || "" };
+          current.count += 1;
+          acc[v.product_id] = current;
         }
         return acc;
       }, {});
@@ -46,4 +47,3 @@ export function usePopularSearchItems(enabled: boolean) {
     staleTime: 15 * 60 * 1000, // 15 minutes
   });
 }
-

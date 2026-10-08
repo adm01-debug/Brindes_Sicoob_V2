@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { type LucideIcon, TrendingUp, TrendingDown, Minus } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
@@ -66,6 +67,25 @@ const sizeStyles = {
   },
 };
 
+function resolveTrendDirection(trend: DataCardProps["trend"]): TrendDirection {
+  if (trend?.direction) return trend.direction;
+  if (!trend || trend.value === 0) return "neutral";
+  return trend.value > 0 ? "up" : "down";
+}
+
+function TrendDisplay({ trend }: { trend: DataCardProps["trend"] }) {
+  if (!trend) return null;
+  const direction = resolveTrendDirection(trend);
+  const icons = { up: TrendingUp, down: TrendingDown, neutral: Minus };
+  const colors = { up: "text-success", down: "text-destructive", neutral: "text-muted-foreground" };
+  const TrendIcon = icons[direction];
+  return <div className={cn("flex items-center gap-0.5 text-xs font-medium", colors[direction])}><TrendIcon className="h-3 w-3" aria-hidden="true" /><span>{Math.abs(trend.value)}%</span>{trend.label ? <span className="text-muted-foreground font-normal">{trend.label}</span> : null}</div>;
+}
+
+function displayMetric(value: string | number) {
+  return typeof value === "number" ? value.toLocaleString("pt-BR") : value;
+}
+
 /**
  * DataCard - Card de métricas com suporte a tendências
  * 
@@ -79,7 +99,7 @@ const sizeStyles = {
  * />
  */
 export function DataCard({
-  icon: Icon,
+  icon,
   value,
   label,
   trend,
@@ -88,16 +108,9 @@ export function DataCard({
   className,
   onClick,
 }: DataCardProps) {
+  const Icon = icon;
   const styles = variantStyles[variant];
   const sizes = sizeStyles[size];
-
-  const trendDirection = trend?.direction || (trend?.value && trend.value > 0 ? "up" : trend?.value && trend.value < 0 ? "down" : "neutral");
-
-  const TrendIcon = trendDirection === "up" 
-    ? TrendingUp 
-    : trendDirection === "down" 
-      ? TrendingDown 
-      : Minus;
 
   return (
     <Card 
@@ -114,30 +127,13 @@ export function DataCard({
         </div>
         <div className="flex-1 min-w-0">
           <p className={cn("font-bold tracking-tight", sizes.value)}>
-            {typeof value === "number" ? value.toLocaleString("pt-BR") : value}
+            {displayMetric(value)}
           </p>
           <div className="flex items-center gap-2">
             <p className={cn("text-muted-foreground truncate", sizes.label)}>
               {label}
             </p>
-            {trend && (
-              <div 
-                className={cn(
-                  "flex items-center gap-0.5 text-xs font-medium",
-                  trendDirection === "up" && "text-success",
-                  trendDirection === "down" && "text-destructive",
-                  trendDirection === "neutral" && "text-muted-foreground"
-                )}
-              >
-                <TrendIcon className="h-3 w-3" aria-hidden="true" />
-                <span>{Math.abs(trend.value)}%</span>
-                {trend.label && (
-                  <span className="text-muted-foreground font-normal">
-                    {trend.label}
-                  </span>
-                )}
-              </div>
-            )}
+            <TrendDisplay trend={trend} />
           </div>
         </div>
       </CardContent>
@@ -147,7 +143,7 @@ export function DataCard({
 
 // Grid wrapper for DataCards
 interface DataCardGridProps {
-  children: React.ReactNode;
+  children: ReactNode;
   columns?: 2 | 3 | 4 | 5;
   className?: string;
 }
@@ -173,7 +169,7 @@ export function DataCardGrid({ children, columns = 4, className }: DataCardGridP
 interface MiniStatCardProps {
   label: string;
   value: string | number;
-  icon?: React.ReactNode;
+  icon?: ReactNode;
   color?: "default" | "primary" | "success" | "warning" | "destructive";
   className?: string;
 }

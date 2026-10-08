@@ -2,18 +2,19 @@
  * ComparisonPresentationLauncher — Slide deck fullscreen 1 produto/slide + slide final tabela.
  * Atalhos: ← → navega, Esc fecha, F fullscreen do browser.
  */
-import { useState, useEffect, useCallback } from "react";
+import { type ReactNode, useState, useEffect, useCallback } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ChevronLeft, ChevronRight, X, Maximize, Crown, Presentation } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useComparisonScore } from "@/hooks/useComparisonScore";
+import type { Product } from "@/hooks/useProducts";
 
 interface Props {
-  products: any[];
+  products: Product[];
   formatCurrency: (v: number) => string;
-  trigger?: React.ReactNode;
+  trigger?: ReactNode;
 }
 
 export function ComparisonPresentationLauncher({ products, formatCurrency, trigger }: Props) {
@@ -50,6 +51,7 @@ export function ComparisonPresentationLauncher({ products, formatCurrency, trigg
   }, [open]);
 
   const isFinal = slide === products.length;
+  const activeProduct = products[slide];
 
   return (
     <>
@@ -69,7 +71,7 @@ export function ComparisonPresentationLauncher({ products, formatCurrency, trigg
               <div className="flex items-center gap-3">
                 <Badge variant="outline">{slide + 1} / {totalSlides}</Badge>
                 <span className="text-sm text-muted-foreground">
-                  {isFinal ? "Resumo comparativo" : products[slide]?.name}
+                  {isFinal || !activeProduct ? "Resumo comparativo" : activeProduct.name}
                 </span>
               </div>
               <div className="flex items-center gap-2">
@@ -84,10 +86,10 @@ export function ComparisonPresentationLauncher({ products, formatCurrency, trigg
 
             {/* Slide content */}
             <div className="flex-1 overflow-auto p-8 sm:p-12">
-              {isFinal ? (
+              {isFinal || !activeProduct ? (
                 <FinalSlide products={products} formatCurrency={formatCurrency} winnerIdx={winnerIdx} />
               ) : (
-                <ProductSlide product={products[slide]} idx={slide} formatCurrency={formatCurrency} isWinner={winnerIdx === slide} />
+                <ProductSlide product={activeProduct} idx={slide} formatCurrency={formatCurrency} isWinner={winnerIdx === slide} />
               )}
             </div>
 
@@ -123,12 +125,11 @@ export function ComparisonPresentationLauncher({ products, formatCurrency, trigg
 }
 
 function ProductSlide({ product, idx, formatCurrency, isWinner }: {
-  product: any;
+  product: Product;
   idx: number;
   formatCurrency: (v: number) => string;
   isWinner: boolean;
 }) {
-  if (!product) return null;
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 max-w-7xl mx-auto h-full items-center">
       <div className="relative aspect-square rounded-2xl bg-muted overflow-hidden">
@@ -168,7 +169,7 @@ function Stat({ label, value }: { label: string; value: string | number }) {
 }
 
 function FinalSlide({ products, formatCurrency, winnerIdx }: {
-  products: any[];
+  products: Product[];
   formatCurrency: (v: number) => string;
   winnerIdx: number;
 }) {

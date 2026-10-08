@@ -1,56 +1,21 @@
 import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-// import { MainLayout } from "@/components/layout/MainLayout";
 import { PageSEO } from "@/components/seo/PageSEO";
 import { Card, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import {
-  FileText,
-  Plus,
-  Search,
-  BookTemplate,
-  ArrowUpDown,
-  AlertTriangle,
-  CheckCircle2,
-  Clock,
-  TrendingUp,
-  TrendingDown,
-  DollarSign,
-  Loader2,
-} from "lucide-react";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { FileText, Plus, Search, BookTemplate, ArrowUpDown, AlertTriangle, CheckCircle2, Clock, TrendingUp, TrendingDown, DollarSign, Loader2, Download, FileSpreadsheet } from "lucide-react";
 import { useQuotes } from "@/hooks/quotes/useQuotes";
 import type { Quote } from "@/hooks/quotes/quoteTypes";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRBAC } from "@/hooks/useRBAC";
 import Fuse from "fuse.js";
 import { format } from "date-fns";
-// DynamicBreadcrumbs removido: o MainLayout já renderiza PersistentBreadcrumbs sticky.
 import { EmptyState } from "@/components/ui/EmptyState";
 import { QuoteCardSkeleton } from "@/components/common/ContextualSkeleton";
 import { FadeInView, AnimatedCounter } from "@/components/common/MicroInteractions";
@@ -60,444 +25,136 @@ import { QuotesFunnelChart } from "@/components/quotes/QuotesFunnelChart";
 import { useQuoteFunnel } from "@/hooks/useQuoteFunnel";
 import { useQuoteViewedMap } from "@/hooks/useQuoteViewedMap";
 import { exportToExcel, exportToPDF } from "@/utils/orderExportUtils";
-import { Download, FileSpreadsheet } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 
-
 type SortOption = "newest" | "oldest" | "highest" | "lowest" | "expiring";
-
+const DATE_FORMAT = "dd/MM/yyyy";
 const sortOptions: { value: SortOption; label: string }[] = [
-  { value: "newest", label: "Mais recentes" },
-  { value: "oldest", label: "Mais antigos" },
-  { value: "highest", label: "Maior valor" },
-  { value: "lowest", label: "Menor valor" },
+  { value: "newest", label: "Mais recentes" }, { value: "oldest", label: "Mais antigos" },
+  { value: "highest", label: "Maior valor" }, { value: "lowest", label: "Menor valor" },
   { value: "expiring", label: "Vencimento próximo" },
 ];
 
+function quoteDateTimestamp(value: string | null | undefined) { return value ? new Date(value).getTime() : 0; }
+function quoteExpiryTimestamp(value: string | null | undefined) { return value ? new Date(value).getTime() : Infinity; }
+function quoteTotal(quote: Quote) { return quote.total ?? 0; }
+function hasQuoteId(quote: Quote): quote is Quote & { id: string } { return Boolean(quote.id); }
+function formatCurrency(value: number) { return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value); }
 
-export function QuotesListPage() {
+const QUOTE_COMPARATORS: Record<SortOption, (left: Quote, right: Quote) => number> = {
+  newest: (left, right) => quoteDateTimestamp(right.created_at) - quoteDateTimestamp(left.created_at),
+  oldest: (left, right) => quoteDateTimestamp(left.created_at) - quoteDateTimestamp(right.created_at),
+  highest: (left, right) => quoteTotal(right) - quoteTotal(left),
+  lowest: (left, right) => quoteTotal(left) - quoteTotal(right),
+  expiring: (left, right) => quoteExpiryTimestamp(left.valid_until) - quoteExpiryTimestamp(right.valid_until),
+};
+
+interface QuoteFilterOptions { searchTerm: string; statusFilter: string; quoteFuse: Fuse<Quote>; sortBy: SortOption }
+function filterAndSortQuotes(quotes: Quote[], options: QuoteFilterOptions) {
+  let results = options.searchTerm.length >= 2 ? options.quoteFuse.search(options.searchTerm).map((result) => result.item) : quotes;
+  if (options.statusFilter !== "all") results = results.filter((quote) => quote.status === options.statusFilter);
+  return [...results].sort(QUOTE_COMPARATORS[options.sortBy]);
+}
+
+function calculateKpis(quotes: Quote[]) {
+  const approvedQuotes = quotes.filter((quote) => quote.status === "approved" || quote.status === "approved_singular");
+  const total = quotes.length;
+  const approved = approvedQuotes.length;
+  return {
+    total, approved,
+    pending: quotes.filter((quote) => ["pending", "sent", "pending_singular_approval"].includes(quote.status)).length,
+    pendingSingular: quotes.filter((quote) => quote.status === "pending_singular_approval").length,
+    totalValue: quotes.reduce((sum, quote) => sum + quoteTotal(quote), 0),
+    approvedValue: approvedQuotes.reduce((sum, quote) => sum + quoteTotal(quote), 0),
+    conversionRate: total > 0 ? Math.round((approved / total) * 100) : 0,
+  };
+}
+
+function buildExportRows(quotes: Quote[]) {
+  return quotes.map((quote) => ({ ...quote, status_label: quote.status, total_formatted: quoteTotal(quote).toLocaleString("pt-BR", { style: "currency", currency: "BRL" }), valid_until_formatted: quote.valid_until ? format(new Date(quote.valid_until), DATE_FORMAT) : "-", created_at: quote.created_at || new Date(0).toISOString() }));
+}
+
+function useQuotesListState() {
   const navigate = useNavigate();
   const { isGestorCompras, isDev } = useAuth();
   const { isSupervisorOrAbove } = useRBAC();
-  const { quotes, isLoading, error, deleteQuote, reorderQuote, updateQuoteStatus } = useQuotes();
-
+  const quotesApi = useQuotes();
   const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [statusFilter, setStatusFilter] = useState("all");
   const [sortBy, setSortBy] = useState<SortOption>("newest");
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const [bulkDeleteIds, setBulkDeleteIds] = useState<string[]>([]);
-  
-
-  // ── KPIs ──
-  const kpis = useMemo(() => {
-    const total = quotes.length;
-    const approved = quotes.filter(q => q.status === "approved" || q.status === "approved_singular").length;
-    const pending = quotes.filter(q => ["pending", "sent", "pending_singular_approval"].includes(q.status)).length;
-    const pendingSingular = quotes.filter(q => q.status === "pending_singular_approval").length;
-    const totalValue = quotes.reduce((sum, q) => sum + (q.total || 0), 0);
-    const approvedValue = quotes.filter(q => q.status === "approved" || q.status === "approved_singular").reduce((sum, q) => sum + (q.total || 0), 0);
-    const conversionRate = total > 0 ? Math.round((approved / total) * 100) : 0;
-
-    return { total, approved, pending, pendingSingular, totalValue, approvedValue, conversionRate };
-  }, [quotes]);
-
-  // ── Funil + ciclo médio ──
-  const allQuoteIds = useMemo(() => quotes.map((q) => q.id!).filter(Boolean), [quotes]);
+  const kpis = useMemo(() => calculateKpis(quotesApi.quotes), [quotesApi.quotes]);
+  const allQuoteIds = useMemo(() => quotesApi.quotes.filter(hasQuoteId).map((quote) => quote.id), [quotesApi.quotes]);
   const allViewedMap = useQuoteViewedMap(allQuoteIds);
-  const funnelData = useQuoteFunnel(quotes, allViewedMap);
+  const funnelData = useQuoteFunnel(quotesApi.quotes, allViewedMap);
+  const quoteFuse = useMemo(() => new Fuse(quotesApi.quotes, { keys: [{ name: "quote_number", weight: 0.4 }, { name: "client_name", weight: 0.3 }, { name: "client_company", weight: 0.2 }, { name: "notes", weight: 0.1 }], threshold: 0.4, distance: 100, includeScore: true, minMatchCharLength: 2, ignoreLocation: true }), [quotesApi.quotes]);
+  const filteredQuotes = useMemo(() => filterAndSortQuotes(quotesApi.quotes, { searchTerm, statusFilter, quoteFuse, sortBy }), [quotesApi.quotes, searchTerm, statusFilter, quoteFuse, sortBy]);
+  const handleDelete = async () => { if (deleteConfirmId) await quotesApi.deleteQuote(deleteConfirmId); setDeleteConfirmId(null); };
+  const handleBulkDelete = async () => { for (const id of bulkDeleteIds) await quotesApi.deleteQuote(id); setBulkDeleteIds([]); };
+  const clearFilters = () => { setSearchTerm(""); setStatusFilter("all"); setSortBy("newest"); };
+  return { navigate, isGestorCompras, isDev, isSupervisorOrAbove, ...quotesApi, searchTerm, setSearchTerm, statusFilter, setStatusFilter, sortBy, setSortBy, deleteConfirmId, setDeleteConfirmId, bulkDeleteIds, setBulkDeleteIds, kpis, funnelData, filteredQuotes, handleDelete, handleBulkDelete, clearFilters };
+}
 
-  // ── Fuse.js fuzzy search ──
-  const quoteFuse = useMemo(() => {
-    return new Fuse(quotes, {
-      keys: [
-        { name: "quote_number", weight: 0.4 },
-        { name: "client_name", weight: 0.3 },
-        { name: "client_company", weight: 0.2 },
-        { name: "notes", weight: 0.1 },
-      ],
-      threshold: 0.4,
-      distance: 100,
-      includeScore: true,
-      minMatchCharLength: 2,
-      ignoreLocation: true,
-    });
-  }, [quotes]);
+type QuotesState = ReturnType<typeof useQuotesListState>;
 
-  const filteredQuotes = useMemo(() => {
-    let results = quotes;
+function QuotesLoading() {
+  return <div className="w-full max-w-[1920px] mx-auto px-3 sm:px-4 lg:px-6 xl:px-8 py-3 sm:py-4 space-y-4 pb-24 md:pb-6 animate-fade-in"><div className="flex items-center justify-between gap-3"><div><h1 className="text-2xl lg:text-3xl font-display font-bold text-foreground flex items-center gap-2"><FileText className="h-7 w-7" />Orçamentos</h1><p className="text-xs text-muted-foreground mt-1 inline-flex items-center gap-1.5"><Loader2 className="h-3 w-3 animate-spin" />Carregando orçamentos…</p></div></div><div className="grid gap-3">{[1, 2, 3, 4, 5].map((item) => <QuoteCardSkeleton key={item} />)}</div></div>;
+}
 
-    if (searchTerm && searchTerm.length >= 2) {
-      const fuseResults = quoteFuse.search(searchTerm);
-      results = fuseResults.map((r) => r.item);
-    }
+function exportQuotes(quotes: Quote[], kind: "excel" | "pdf") {
+  const rows = buildExportRows(quotes);
+  if (kind === "excel") exportToExcel(rows, "orcamentos"); else exportToPDF(rows, "orcamentos");
+}
 
-    if (statusFilter !== "all") {
-      results = results.filter((quote) => quote.status === statusFilter);
-    }
+function QuotesHeader({ state }: { state: QuotesState }) {
+  return <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"><FadeInView><div><h1 data-testid="page-title-orcamentos" className="text-2xl lg:text-3xl font-display font-bold text-foreground flex items-center gap-2"><FileText className="h-7 w-7" />Orçamentos</h1><p className="text-muted-foreground mt-1"><AnimatedCounter value={state.filteredQuotes.length} /> orçamento(s) encontrado(s)</p></div></FadeInView><div className="flex gap-2"><DropdownMenu><DropdownMenuTrigger asChild><Button variant="outline"><Download className="h-4 w-4 mr-2" />Exportar</Button></DropdownMenuTrigger><DropdownMenuContent align="end"><DropdownMenuItem onClick={() => exportQuotes(state.filteredQuotes, "excel")}><FileSpreadsheet className="h-4 w-4 mr-2" /> Excel (.xlsx)</DropdownMenuItem><DropdownMenuItem onClick={() => exportQuotes(state.filteredQuotes, "pdf")}><FileText className="h-4 w-4 mr-2" /> PDF (.pdf)</DropdownMenuItem></DropdownMenuContent></DropdownMenu><Tooltip><TooltipTrigger asChild><Button variant="outline" onClick={() => state.navigate("/orcamentos/templates")}><BookTemplate className="h-4 w-4 mr-2" />Templates</Button></TooltipTrigger><TooltipContent><p>Modelos pré-configurados para agilizar orçamentos</p></TooltipContent></Tooltip><Button data-testid="quote-new-button" onClick={() => state.navigate("/orcamentos/novo")}><Plus className="h-4 w-4 mr-2" />Novo Orçamento</Button></div></div>;
+}
 
-    // Sort
-    results = [...results].sort((a, b) => {
-      switch (sortBy) {
-        case "newest":
-          return new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime();
-        case "oldest":
-          return new Date(a.created_at || 0).getTime() - new Date(b.created_at || 0).getTime();
-        case "highest":
-          return (b.total || 0) - (a.total || 0);
-        case "lowest":
-          return (a.total || 0) - (b.total || 0);
-        case "expiring": {
-          const aDate = a.valid_until ? new Date(a.valid_until).getTime() : Infinity;
-          const bDate = b.valid_until ? new Date(b.valid_until).getTime() : Infinity;
-          return aDate - bDate;
-        }
-        default:
-          return 0;
-      }
-    });
+function QuotesKpis({ state }: { state: QuotesState }) {
+  const managerView = state.isGestorCompras || state.isDev;
+  const hasPending = managerView && state.kpis.pendingSingular > 0;
+  return <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3"><Card className="sm:col-span-2 md:col-span-1 border-primary/30 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent shadow-glow-primary/10"><CardContent className="p-4 flex items-center gap-3"><div className="h-11 w-11 rounded-xl bg-primary/20 flex items-center justify-center shrink-0 ring-1 ring-primary/30"><DollarSign className="h-5 w-5 text-primary" /></div><div className="min-w-0"><p className="text-xs text-muted-foreground">Total em Aberto</p><p className="text-lg font-display font-extrabold text-foreground truncate">{formatCurrency(state.kpis.totalValue)}</p></div></CardContent></Card><Card className="border-border/50"><CardContent className="p-3 flex items-center gap-3"><div className="h-9 w-9 rounded-lg bg-success/15 flex items-center justify-center shrink-0"><CheckCircle2 className="h-4 w-4 text-success" /></div><div className="min-w-0"><p className="text-xs text-muted-foreground">Aprovados</p><p className="text-sm font-bold text-foreground">{state.kpis.approved} <span className="text-xs font-normal text-muted-foreground">({formatCurrency(state.kpis.approvedValue)})</span></p></div></CardContent></Card><Card className={cn("border-border/50", hasPending && "border-emerald-500/50 bg-emerald-50/50")}><CardContent className="p-3 flex items-center gap-3"><div className={cn("h-9 w-9 rounded-lg flex items-center justify-center shrink-0", hasPending ? "bg-emerald-500/20" : "bg-warning/15")}><Clock className={cn("h-4 w-4", hasPending ? "text-emerald-600" : "text-warning")} /></div><div className="min-w-0"><p className="text-xs text-muted-foreground">{managerView ? "Aguardando Vc" : "Pendentes"}</p><p className={cn("text-sm font-bold", hasPending ? "text-emerald-700" : "text-foreground")}>{managerView ? state.kpis.pendingSingular : state.kpis.pending}</p></div></CardContent></Card><Card className="border-border/50"><CardContent className="p-3 flex items-center gap-3"><div className="h-9 w-9 rounded-lg bg-info/15 flex items-center justify-center shrink-0"><TrendingUp className="h-4 w-4 text-info" /></div><div className="min-w-0"><p className="text-xs text-muted-foreground">Conversão</p><div className="flex items-center gap-1.5"><p className="text-sm font-bold text-foreground">{state.kpis.conversionRate}%</p>{state.kpis.conversionRate >= 20 ? <span className="text-[10px] font-semibold text-success flex items-center gap-0.5"><TrendingUp className="h-3 w-3" /> Bom</span> : <span className="text-[10px] font-semibold text-warning flex items-center gap-0.5"><TrendingDown className="h-3 w-3" /> Baixa</span>}</div></div></CardContent></Card></div>;
+}
 
-    return results;
-  }, [quotes, searchTerm, statusFilter, quoteFuse, sortBy]);
+function QuotesFilters({ state }: { state: QuotesState }) {
+  return <><div className="flex flex-col sm:flex-row gap-3"><div className="relative flex-1 max-w-md"><Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" /><Input placeholder="Buscar por número, cliente ou empresa..." value={state.searchTerm} onChange={(event) => state.setSearchTerm(event.target.value)} className="pl-9" /></div><Select value={state.sortBy} onValueChange={(value) => state.setSortBy(value as SortOption)}><SelectTrigger className="w-[180px]"><ArrowUpDown className="h-4 w-4 mr-2" /><SelectValue placeholder="Ordenar" /></SelectTrigger><SelectContent>{sortOptions.map((option) => <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>)}</SelectContent></Select></div><QuotesStatusChips quotes={state.quotes} value={state.statusFilter} onChange={state.setStatusFilter} /></>;
+}
 
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat("pt-BR", {
-      style: "currency",
-      currency: "BRL",
-    }).format(value);
-  };
+async function updateBulkStatus(state: QuotesState, ids: string[], status: string) {
+  if (status === "approved") { toast.error("A aprovação final exige o PDF assinado no detalhe de cada orçamento."); return; }
+  let successCount = 0;
+  for (const id of ids) if (await state.updateQuoteStatus(id, status as Quote["status"])) successCount++;
+  toast.success(`${successCount} orçamento(s) atualizado(s)`);
+}
 
-  const handleDelete = async () => {
-    if (deleteConfirmId) {
-      await deleteQuote(deleteConfirmId);
-      setDeleteConfirmId(null);
-    }
-  };
+function exportSelectedQuotes(state: QuotesState, ids: string[]) {
+  const selected = state.filteredQuotes.filter(hasQuoteId).filter((quote) => ids.includes(quote.id));
+  import("@/utils/excelExport").then(({ exportToExcel: exportRows }) => {
+    exportRows({ filename: "orcamentos_selecionados", columns: [{ key: "Número", header: "Número" }, { key: "Empresa", header: "Empresa" }, { key: "Contato", header: "Contato" }, { key: "Status", header: "Status" }, { key: "Valor", header: "Valor" }, { key: "Data", header: "Data" }], data: selected.map((quote) => ({ Número: quote.quote_number, Empresa: quote.client_company || "", Contato: quote.client_name || "", Status: quote.status, Valor: quoteTotal(quote), Data: quote.created_at ? format(new Date(quote.created_at), DATE_FORMAT) : "" })) });
+    toast.success(`${ids.length} orçamento(s) exportado(s)`);
+  });
+}
 
-  const handleBulkDelete = async () => {
-    for (const id of bulkDeleteIds) {
-      await deleteQuote(id);
-    }
-    setBulkDeleteIds([]);
-  };
+function QuotesResults({ state }: { state: QuotesState }) {
+  const hasActiveFilters = Boolean(state.searchTerm) || state.statusFilter !== "all";
+  if (state.filteredQuotes.length === 0) return <ScrollArea className="h-[calc(100vh-360px)] min-h-[400px]"><EmptyState variant="quotes" title={hasActiveFilters ? "Nenhum resultado para esses filtros" : "Nenhum orçamento encontrado"} description={hasActiveFilters ? "Ajuste a busca ou os chips de status, ou limpe todos os filtros." : "Crie seu primeiro orçamento e comece a vender."} action={hasActiveFilters ? { label: "Limpar filtros", onClick: state.clearFilters } : { label: "Criar Orçamento", onClick: () => state.navigate("/orcamentos/novo") }} /></ScrollArea>;
+  return <ScrollArea className="h-[calc(100vh-360px)] min-h-[400px]"><QuotesConfigurableList quotes={state.filteredQuotes} isSupervisor={state.isSupervisorOrAbove} onDelete={state.setDeleteConfirmId} onBulkDelete={state.setBulkDeleteIds} onBulkStatusChange={(ids, status) => updateBulkStatus(state, ids, status)} onBulkExport={(ids) => exportSelectedQuotes(state, ids)} onDuplicate={state.reorderQuote} onMarkApproved={async (id) => { toast.info("Gere e assine o PDF no detalhe do orçamento para concluir a aprovação."); state.navigate(`/orcamentos/${id}`); }} /></ScrollArea>;
+}
 
-  if (isLoading) {
-    return (
-      <>
-        <div className="w-full max-w-[1920px] mx-auto px-3 sm:px-4 lg:px-6 xl:px-8 py-3 sm:py-4 space-y-4 pb-24 md:pb-6 animate-fade-in">
-          {/* Breadcrumb global vem do MainLayout (sticky) — não duplicar aqui. */}
-          <div className="flex items-center justify-between gap-3">
-            <div>
-              <h1 className="text-2xl lg:text-3xl font-display font-bold text-foreground flex items-center gap-2">
-                <FileText className="h-7 w-7" />
-                Orçamentos
-              </h1>
-              <p className="text-xs text-muted-foreground mt-1 inline-flex items-center gap-1.5">
-                <Loader2 className="h-3 w-3 animate-spin" />
-                Carregando orçamentos…
-              </p>
-            </div>
-          </div>
-          <div className="grid gap-3">
-            {[1, 2, 3, 4, 5].map((i) => (
-              <QuoteCardSkeleton key={i} />
-            ))}
-          </div>
-        </div>
-      </>
-    );
-  }
+function QuotesDialogs({ state }: { state: QuotesState }) {
+  return <><AlertDialog open={Boolean(state.deleteConfirmId)} onOpenChange={() => state.setDeleteConfirmId(null)}><AlertDialogContent><AlertDialogHeader><AlertDialogTitle>Confirmar Exclusão</AlertDialogTitle><AlertDialogDescription>Tem certeza que deseja excluir este orçamento? Esta ação não pode ser desfeita.</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel>Cancelar</AlertDialogCancel><AlertDialogAction onClick={state.handleDelete} className="bg-destructive text-destructive-foreground">Excluir</AlertDialogAction></AlertDialogFooter></AlertDialogContent></AlertDialog><AlertDialog open={state.bulkDeleteIds.length > 0} onOpenChange={() => state.setBulkDeleteIds([])}><AlertDialogContent><AlertDialogHeader><AlertDialogTitle>Confirmar Exclusão em Massa</AlertDialogTitle><AlertDialogDescription>Tem certeza que deseja excluir <strong>{state.bulkDeleteIds.length}</strong> orçamento(s)? Esta ação não pode ser desfeita.</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel>Cancelar</AlertDialogCancel><AlertDialogAction onClick={state.handleBulkDelete} className="bg-destructive text-destructive-foreground">Excluir {state.bulkDeleteIds.length} orçamento(s)</AlertDialogAction></AlertDialogFooter></AlertDialogContent></AlertDialog></>;
+}
 
-  const hasActiveFilters = !!searchTerm || statusFilter !== "all";
-  const handleClearFilters = () => {
-    setSearchTerm("");
-    setStatusFilter("all");
-    setSortBy("newest");
-  };
+function QuotesLoaded({ state }: { state: QuotesState }) {
+  return <><PageSEO title="Orçamentos" description="Gerencie seus orçamentos. Crie, edite e acompanhe propostas comerciais." path="/orcamentos" /><TooltipProvider><div className="space-y-5"><QuotesHeader state={state} /><QuotesKpis state={state} />{state.quotes.length > 0 && <QuotesFunnelChart data={state.funnelData} />}{state.error && <div className="flex items-center gap-3 rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3"><AlertTriangle className="h-5 w-5 text-destructive shrink-0" /><div className="min-w-0"><p className="text-sm font-medium text-destructive">Módulo de orçamentos indisponível</p><p className="text-xs text-muted-foreground mt-0.5">{state.error}</p></div></div>}<QuotesFilters state={state} /><QuotesResults state={state} /></div><QuotesDialogs state={state} /></TooltipProvider></>;
+}
 
-  return (
-    <>
-      <PageSEO title="Orçamentos" description="Gerencie seus orçamentos. Crie, edite e acompanhe propostas comerciais." path="/orcamentos" />
-      <TooltipProvider>
-        <div className="space-y-5">
-
-          {/* Header */}
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <FadeInView>
-              <div>
-                <h1 data-testid="page-title-orcamentos" className="text-2xl lg:text-3xl font-display font-bold text-foreground flex items-center gap-2">
-                  <FileText className="h-7 w-7" />
-                  Orçamentos
-                </h1>
-                <p className="text-muted-foreground mt-1">
-                  <AnimatedCounter value={filteredQuotes.length} /> orçamento(s) encontrado(s)
-                </p>
-              </div>
-            </FadeInView>
-            <div className="flex gap-2">
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline">
-                    <Download className="h-4 w-4 mr-2" />
-                    Exportar
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={() => {
-                    const data = filteredQuotes.map(q => ({
-                      ...q,
-                      status_label: q.status, // Need better labels
-                      total_formatted: (q.total || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }),
-                      valid_until_formatted: q.valid_until ? format(new Date(q.valid_until), 'dd/MM/yyyy') : '-'
-                    }));
-                    exportToExcel(data, 'orcamentos');
-                  }}>
-                    <FileSpreadsheet className="h-4 w-4 mr-2" /> Excel (.xlsx)
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => {
-                    const data = filteredQuotes.map(q => ({
-                      ...q,
-                      status_label: q.status,
-                      total_formatted: (q.total || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }),
-                      valid_until_formatted: q.valid_until ? format(new Date(q.valid_until), 'dd/MM/yyyy') : '-'
-                    }));
-                    exportToPDF(data, 'orcamentos');
-                  }}>
-                    <FileText className="h-4 w-4 mr-2" /> PDF (.pdf)
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button variant="outline" onClick={() => navigate("/orcamentos/templates")}>
-                    <BookTemplate className="h-4 w-4 mr-2" />
-                    Templates
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Modelos pré-configurados para agilizar orçamentos</p>
-                </TooltipContent>
-              </Tooltip>
-              <Button data-testid="quote-new-button" onClick={() => navigate("/orcamentos/novo")}>
-                <Plus className="h-4 w-4 mr-2" />
-                Novo Orçamento
-              </Button>
-            </div>
-          </div>
-
-          {/* KPI Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
-            <Card className="sm:col-span-2 md:col-span-1 border-primary/30 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent shadow-glow-primary/10">
-              <CardContent className="p-4 flex items-center gap-3">
-                <div className="h-11 w-11 rounded-xl bg-primary/20 flex items-center justify-center shrink-0 ring-1 ring-primary/30">
-                  <DollarSign className="h-5 w-5 text-primary" />
-                </div>
-                <div className="min-w-0">
-                  <p className="text-xs text-muted-foreground">Total em Aberto</p>
-                  <p className="text-lg font-display font-extrabold text-foreground truncate">{formatCurrency(kpis.totalValue)}</p>
-                </div>
-              </CardContent>
-            </Card>
-            <Card className="border-border/50">
-              <CardContent className="p-3 flex items-center gap-3">
-                <div className="h-9 w-9 rounded-lg bg-success/15 flex items-center justify-center shrink-0">
-                  <CheckCircle2 className="h-4 w-4 text-success" />
-                </div>
-                <div className="min-w-0">
-                  <p className="text-xs text-muted-foreground">Aprovados</p>
-                  <p className="text-sm font-bold text-foreground">{kpis.approved} <span className="text-xs font-normal text-muted-foreground">({formatCurrency(kpis.approvedValue)})</span></p>
-                </div>
-              </CardContent>
-            </Card>
-            <Card className={cn("border-border/50", (isGestorCompras || isDev) && kpis.pendingSingular > 0 && "border-emerald-500/50 bg-emerald-50/50")}>
-              <CardContent className="p-3 flex items-center gap-3">
-                <div className={cn("h-9 w-9 rounded-lg flex items-center justify-center shrink-0", (isGestorCompras || isDev) && kpis.pendingSingular > 0 ? "bg-emerald-500/20" : "bg-warning/15")}>
-                  <Clock className={cn("h-4 w-4", (isGestorCompras || isDev) && kpis.pendingSingular > 0 ? "text-emerald-600" : "text-warning")} />
-                </div>
-                <div className="min-w-0">
-                  <p className="text-xs text-muted-foreground">{(isGestorCompras || isDev) ? "Aguardando Vc" : "Pendentes"}</p>
-                  <p className={cn("text-sm font-bold", (isGestorCompras || isDev) && kpis.pendingSingular > 0 ? "text-emerald-700" : "text-foreground")}>
-                    {(isGestorCompras || isDev) ? kpis.pendingSingular : kpis.pending}
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-            <Card className="border-border/50">
-              <CardContent className="p-3 flex items-center gap-3">
-                <div className="h-9 w-9 rounded-lg bg-info/15 flex items-center justify-center shrink-0">
-                  <TrendingUp className="h-4 w-4 text-info" />
-                </div>
-                <div className="min-w-0">
-                  <p className="text-xs text-muted-foreground">Conversão</p>
-                  <div className="flex items-center gap-1.5">
-                    <p className="text-sm font-bold text-foreground">{kpis.conversionRate}%</p>
-                    {Number(kpis.conversionRate) >= 20 ? (
-                      <span className="text-[10px] font-semibold text-success flex items-center gap-0.5">
-                        <TrendingUp className="h-3 w-3" /> Bom
-                      </span>
-                    ) : (
-                      <span className="text-[10px] font-semibold text-warning flex items-center gap-0.5">
-                        <TrendingDown className="h-3 w-3" /> Baixa
-                      </span>
-                    )}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Funil de vendas */}
-          {quotes.length > 0 && <QuotesFunnelChart data={funnelData} />}
-
-          {/* Error banner */}
-          {error && (
-            <div className="flex items-center gap-3 rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3">
-              <AlertTriangle className="h-5 w-5 text-destructive shrink-0" />
-              <div className="min-w-0">
-                <p className="text-sm font-medium text-destructive">Módulo de orçamentos indisponível</p>
-                <p className="text-xs text-muted-foreground mt-0.5">{error}</p>
-              </div>
-            </div>
-          )}
-
-          {/* Filters + Sort */}
-          <div className="flex flex-col sm:flex-row gap-3">
-            <div className="relative flex-1 max-w-md">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Buscar por número, cliente ou empresa..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-9"
-              />
-            </div>
-            <Select value={sortBy} onValueChange={(v) => setSortBy(v as SortOption)}>
-              <SelectTrigger className="w-[180px]">
-                <ArrowUpDown className="h-4 w-4 mr-2" />
-                <SelectValue placeholder="Ordenar" />
-              </SelectTrigger>
-              <SelectContent>
-                {sortOptions.map((opt) => (
-                  <SelectItem key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Status chips */}
-          <QuotesStatusChips quotes={quotes} value={statusFilter} onChange={setStatusFilter} />
-
-          {/* Quotes List */}
-          <ScrollArea className="h-[calc(100vh-360px)] min-h-[400px]">
-            {filteredQuotes.length === 0 ? (
-              <EmptyState
-                variant="quotes"
-                title={hasActiveFilters ? "Nenhum resultado para esses filtros" : "Nenhum orçamento encontrado"}
-                description={
-                  hasActiveFilters
-                    ? "Ajuste a busca ou os chips de status, ou limpe todos os filtros."
-                    : "Crie seu primeiro orçamento e comece a vender."
-                }
-                action={
-                  hasActiveFilters
-                    ? { label: "Limpar filtros", onClick: handleClearFilters }
-                    : { label: "Criar Orçamento", onClick: () => navigate("/orcamentos/novo") }
-                }
-              />
-            ) : (
-              <QuotesConfigurableList
-                quotes={filteredQuotes}
-                isSupervisor={isSupervisorOrAbove}
-                onDelete={(id) => setDeleteConfirmId(id)}
-                onBulkDelete={(ids) => setBulkDeleteIds(ids)}
-                onBulkStatusChange={async (ids, status) => {
-                  if (status === "approved") {
-                    toast.error("A aprovação final exige o PDF assinado no detalhe de cada orçamento.");
-                    return;
-                  }
-                  let successCount = 0;
-                  for (const id of ids) {
-                    const ok = await updateQuoteStatus(id, status as Quote["status"]);
-                    if (ok) successCount++;
-                  }
-                  toast.success(`${successCount} orçamento(s) atualizado(s)`);
-                }}
-                onBulkExport={(ids) => {
-                  const selected = filteredQuotes.filter((q) => ids.includes(q.id!));
-                  import("@/utils/excelExport").then(({ exportToExcel }) => {
-                    exportToExcel({
-                      filename: "orcamentos_selecionados",
-                      columns: [
-                        { key: "Número", header: "Número" },
-                        { key: "Empresa", header: "Empresa" },
-                        { key: "Contato", header: "Contato" },
-                        { key: "Status", header: "Status" },
-                        { key: "Valor", header: "Valor" },
-                        { key: "Data", header: "Data" },
-                      ],
-                      data: selected.map((q) => ({
-                        Número: q.quote_number,
-                        Empresa: q.client_company || "",
-                        Contato: q.client_name || "",
-                        Status: q.status,
-                        Valor: q.total || 0,
-                        Data: q.created_at ? format(new Date(q.created_at), "dd/MM/yyyy") : "",
-                      })),
-                    });
-                    toast.success(`${ids.length} orçamento(s) exportado(s)`);
-                  });
-                }}
-                onDuplicate={(id) => reorderQuote(id)}
-                onMarkApproved={async (id) => {
-                  toast.info("Gere e assine o PDF no detalhe do orçamento para concluir a aprovação.");
-                  navigate(`/orcamentos/${id}`);
-                }}
-              />
-            )}
-          </ScrollArea>
-        </div>
-
-        {/* Delete Confirmation Dialog */}
-        <AlertDialog open={!!deleteConfirmId} onOpenChange={() => setDeleteConfirmId(null)}>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Confirmar Exclusão</AlertDialogTitle>
-              <AlertDialogDescription>
-                Tem certeza que deseja excluir este orçamento? Esta ação não pode ser desfeita.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancelar</AlertDialogCancel>
-              <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground">
-                Excluir
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
-
-        {/* Bulk Delete Confirmation Dialog */}
-        <AlertDialog open={bulkDeleteIds.length > 0} onOpenChange={() => setBulkDeleteIds([])}>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Confirmar Exclusão em Massa</AlertDialogTitle>
-              <AlertDialogDescription>
-                Tem certeza que deseja excluir <strong>{bulkDeleteIds.length}</strong> orçamento(s)? Esta ação não pode ser desfeita.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancelar</AlertDialogCancel>
-              <AlertDialogAction onClick={handleBulkDelete} className="bg-destructive text-destructive-foreground">
-                Excluir {bulkDeleteIds.length} orçamento(s)
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
-      </TooltipProvider>
-    </>
-  );
+export function QuotesListPage() {
+  const state = useQuotesListState();
+  if (state.isLoading) return <QuotesLoading />;
+  return <QuotesLoaded state={state} />;
 }
 
 export default QuotesListPage;

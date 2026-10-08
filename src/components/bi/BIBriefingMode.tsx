@@ -134,9 +134,9 @@ export function BIBriefingMode({ open, onOpenChange, clientId, clientName, ramoA
       catLines.push(`🏷️ Categorias favoritas:`);
       categoryHighlights.favorites.forEach((f) => {
         const trendStr =
-          f.trend === "up" && f.deltaPct != null
+          f.trend === "up" && f.deltaPct !== null && f.deltaPct !== undefined
             ? ` (↑${Math.round(f.deltaPct)}% vs 90d ant.)`
-            : f.trend === "down" && f.deltaPct != null
+            : f.trend === "down" && f.deltaPct !== null && f.deltaPct !== undefined
               ? ` (↓${Math.round(f.deltaPct)}% vs 90d ant.)`
               : "";
         catLines.push(`  • ${f.label} — ${f.sharePct}% das compras${trendStr}`);
@@ -230,12 +230,12 @@ export function BIBriefingMode({ open, onOpenChange, clientId, clientName, ramoA
                       </div>
                       <div className="flex items-center gap-1.5 shrink-0">
                         <span className="text-xs font-semibold tabular-nums">{f.sharePct}%</span>
-                        {f.trend === "up" && f.deltaPct != null && (
+                        {f.trend === "up" && f.deltaPct !== null && f.deltaPct !== undefined && (
                           <span className="text-[10px] text-emerald-600 dark:text-emerald-400 tabular-nums">
                             ↑{Math.round(f.deltaPct)}%
                           </span>
                         )}
-                        {f.trend === "down" && f.deltaPct != null && (
+                        {f.trend === "down" && f.deltaPct !== null && f.deltaPct !== undefined && (
                           <span className="text-[10px] text-red-600 dark:text-red-400 tabular-nums">
                             ↓{Math.round(f.deltaPct)}%
                           </span>

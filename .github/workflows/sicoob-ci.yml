@@ -39,14 +39,13 @@ concurrency:
 jobs:
   transacoes:
     name: Verba e aprovação transacionais
-    runs-on: self-hosted
-    timeout-minutes: 10
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
       - name: Executar PostgreSQL isolado e casos concorrentes
-        continue-on-error: true
         run: |
           python3 scripts/qa/simular-verba-atomica.py
           python3 scripts/qa/simular-eventos-status-sicoob.py
@@ -64,19 +63,19 @@ jobs:
 
   experiencia:
     name: Entrada e demonstração responsivas
-    runs-on: self-hosted
-    timeout-minutes: 20
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
-      - uses: actions/setup-node@v7.0.0
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: 24
           cache: npm
       - run: npm ci --no-audit --no-fund
       - name: Cache Playwright browsers
-        uses: actions/cache@v6
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
         with:
           path: ~/.cache/ms-playwright
           key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
@@ -100,7 +99,6 @@ jobs:
           cat /tmp/portal-sicoob-vite.log
           exit 1
       - name: Validar WCAG, responsividade e execução
-        continue-on-error: true
         run: |
           npm run qa:visual:login
           npm run qa:visual:demo
@@ -112,7 +110,7 @@ jobs:
       - name: Publicar evidências em caso de falha
         if: failure()
         continue-on-error: true
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: evidencias-visuais-sicoob
           path: docs/execucao/evidencias/visual/

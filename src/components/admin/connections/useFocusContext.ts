@@ -79,4 +79,5 @@ export function readFocusContextOnce(): FocusContext {
   return loadInitial();
 }
 
-export const __TEST__ = { STORAGE_KEY, TTL_MS };
+const testExports = { STORAGE_KEY, TTL_MS };
+export { testExports as __TEST__ };

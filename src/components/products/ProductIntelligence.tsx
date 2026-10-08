@@ -1,11 +1,5 @@
-import { 
-  Eye, 
-  Users, 
-  BarChart3,
-  Package,
-  Target,
-  Zap
-} from "lucide-react";
+import type { ComponentType } from "react";
+import { BarChart3, Package, Target, Zap } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useNavigate } from "react-router-dom";
@@ -18,7 +12,22 @@ interface ProductIntelligenceProps {
   productName?: string;
 }
 
-export function ProductIntelligence({ productId, productSku, productName }: ProductIntelligenceProps) {
+type BoughtProduct = NonNullable<ReturnType<typeof useProductRecommendations>['frequentlyBoughtTogether']['data']>[number];
+
+function IntelligenceHeader() {
+  return <div className="flex items-center gap-2"><div className="w-7 h-7 rounded-lg skin-icon flex items-center justify-center"><BarChart3 className="h-3.5 w-3.5" /></div><div><h2 className="font-display font-semibold text-sm text-foreground">Inteligência do Produto</h2><p className="text-[11px] text-muted-foreground leading-none">Dados e insights baseados em histórico real</p></div></div>;
+}
+
+function EmptyIntelligence() {
+  return <Card className="border-dashed"><CardContent className="flex flex-col items-center justify-center py-6 text-center"><div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center mb-2"><BarChart3 className="h-5 w-5 text-muted-foreground" /></div><h3 className="font-display font-semibold text-sm mb-1">Ainda não há dados</h3><p className="text-muted-foreground text-xs max-w-xs">Conforme o produto for visualizado e cotado, insights aparecerão aqui.</p></CardContent></Card>;
+}
+
+function BoughtTogether({ products, onOpen }: { products: BoughtProduct[] | undefined; onOpen: (product: BoughtProduct) => void }) {
+  if (!products?.length) return null;
+  return <Card><CardContent className="p-3"><div className="flex items-center gap-1.5 mb-2"><Zap className="h-3.5 w-3.5 text-warning" /><span className="text-xs font-medium text-muted-foreground">Comprados Juntos</span></div><div className="flex gap-2 overflow-x-auto pb-1">{products.map((product) => <div key={product.productSku || product.productId} className="group flex-shrink-0 w-16 cursor-pointer" onClick={() => onOpen(product)}><div className="w-16 h-16 rounded-lg overflow-hidden bg-muted border border-border/50 group-hover:border-primary/30 transition-colors">{product.productImage ? <img src={product.productImage} alt={product.productName} className="w-full h-full object-cover" loading="lazy" /> : <div className="w-full h-full flex items-center justify-center"><Package className="h-4 w-4 text-muted-foreground" /></div>}</div><p className="text-[10px] truncate mt-0.5">{product.productName}</p></div>)}</div></CardContent></Card>;
+}
+
+export function ProductIntelligence({ productId, productSku }: ProductIntelligenceProps) {
   const navigate = useNavigate();
   const { data: insights, isLoading: insightsLoading } = useProductInsights(productId, productSku);
   const { frequentlyBoughtTogether } = useProductRecommendations(productId, productSku);
@@ -31,29 +40,10 @@ export function ProductIntelligence({ productId, productSku, productName }: Prod
 
   return (
     <div className="space-y-3">
-      {/* Header compacto */}
-      <div className="flex items-center gap-2">
-        <div className="w-7 h-7 rounded-lg skin-icon flex items-center justify-center">
-          <BarChart3 className="h-3.5 w-3.5" />
-        </div>
-        <div>
-          <h2 className="font-display font-semibold text-sm text-foreground">Inteligência do Produto</h2>
-          <p className="text-[11px] text-muted-foreground leading-none">Dados e insights baseados em histórico real</p>
-        </div>
-      </div>
+      <IntelligenceHeader />
 
       {!hasData ? (
-        <Card className="border-dashed">
-          <CardContent className="flex flex-col items-center justify-center py-6 text-center">
-            <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center mb-2">
-              <BarChart3 className="h-5 w-5 text-muted-foreground" />
-            </div>
-            <h3 className="font-display font-semibold text-sm mb-1">Ainda não há dados</h3>
-            <p className="text-muted-foreground text-xs max-w-xs">
-              Conforme o produto for visualizado e cotado, insights aparecerão aqui.
-            </p>
-          </CardContent>
-        </Card>
+        <EmptyIntelligence />
       ) : (
         <>
           {/* Métrica de conversão */}
@@ -63,51 +53,21 @@ export function ProductIntelligence({ productId, productSku, productName }: Prod
         </>
       )}
 
-      {/* Frequentemente Comprados Juntos */}
-      {frequentlyBoughtTogether.data && frequentlyBoughtTogether.data.length > 0 && (
-        <Card>
-          <CardContent className="p-3">
-            <div className="flex items-center gap-1.5 mb-2">
-              <Zap className="h-3.5 w-3.5 text-warning" />
-              <span className="text-xs font-medium text-muted-foreground">Comprados Juntos</span>
-            </div>
-            <div className="flex gap-2 overflow-x-auto pb-1">
-              {frequentlyBoughtTogether.data.map((product) => (
-                <div 
-                  key={product.productSku || product.productId}
-                  className="group flex-shrink-0 w-16 cursor-pointer"
-                  onClick={() => product.productId && navigate(`/produto/${product.productId}`)}
-                >
-                  <div className="w-16 h-16 rounded-lg overflow-hidden bg-muted border border-border/50 group-hover:border-primary/30 transition-colors">
-                    {product.productImage ? (
-                      
-<img src={product.productImage} alt={product.productName} className="w-full h-full object-cover"  loading="lazy" />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center">
-                        <Package className="h-4 w-4 text-muted-foreground" />
-                      </div>
-                    )}
-                  </div>
-                  <p className="text-[10px] truncate mt-0.5">{product.productName}</p>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
+      <BoughtTogether products={frequentlyBoughtTogether.data} onOpen={(product) => { if (product.productId) navigate(`/produto/${product.productId}`); }} />
 
     </div>
   );
 }
 
 interface MetricCardProps {
-  icon: React.ComponentType<{ className?: string }>;
+  icon: ComponentType<{ className?: string }>;
   label: string;
   value: number | string;
   color: 'blue' | 'amber' | 'green' | 'purple';
 }
 
-function MetricCard({ icon: Icon, label, value, color }: MetricCardProps) {
+function MetricCard({ icon, label, value, color }: MetricCardProps) {
+  const IconComponent = icon;
   const iconColor = {
     blue: 'text-primary',
     amber: 'text-warning',
@@ -125,7 +85,7 @@ function MetricCard({ icon: Icon, label, value, color }: MetricCardProps) {
     <Card>
       <CardContent className="p-2.5">
         <div className={cn("w-7 h-7 rounded-lg flex items-center justify-center mb-1.5", bgColor[color])}>
-          <Icon className={cn("h-3.5 w-3.5", iconColor[color])} />
+          <IconComponent className={cn("h-3.5 w-3.5", iconColor[color])} />
         </div>
         <p className="text-lg font-bold leading-none">{value}</p>
         <p className="text-[10px] text-muted-foreground mt-0.5">{label}</p>

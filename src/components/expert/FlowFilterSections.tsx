@@ -23,87 +23,73 @@ interface SectionContentProps {
   toggleArray: (key: keyof FlowFilterState, value: string) => void;
 }
 
-export function SectionContent({ id, filters, options, update, toggleArray }: SectionContentProps) {
+function PriceSection({ filters, update }: Pick<SectionContentProps, "filters" | "update">) {
   const handlePreset = (min: string, max: string) => {
     if (filters.priceMin === min && filters.priceMax === max) update({ priceMin: "", priceMax: "" });
     else update({ priceMin: min, priceMax: max });
   };
+  const updatePrice = (key: "priceMin" | "priceMax", value: string) => {
+    if (value === "" || Number(value) >= 0) update({ [key]: value });
+  };
+  return (
+    <div className="space-y-2">
+      <div className="flex flex-wrap gap-1.5">
+        {PRICE_PRESETS.map(preset => <button key={preset.label} onClick={() => handlePreset(preset.min, preset.max)} className={cn("px-2.5 py-1 rounded-lg text-[10px] font-semibold border transition-all duration-150", filters.priceMin === preset.min && filters.priceMax === preset.max ? "bg-primary/15 text-primary border-primary/30 shadow-sm shadow-primary/5" : "bg-muted/5 border-border/15 text-muted-foreground/45 hover:border-primary/20 hover:text-foreground")}>{preset.label}</button>)}
+      </div>
+      <div className="flex items-center gap-2">
+        <PriceInput value={filters.priceMin} placeholder="Mín" onChange={value => updatePrice("priceMin", value)} />
+        <div className="h-px w-3 bg-border/25" />
+        <PriceInput value={filters.priceMax} placeholder="Máx" onChange={value => updatePrice("priceMax", value)} />
+      </div>
+    </div>
+  );
+}
 
-  switch (id) {
-    case "preco":
-      return (
-        <div className="space-y-2">
-          <div className="flex flex-wrap gap-1.5">
-            {PRICE_PRESETS.map((p) => {
-              const isActive = filters.priceMin === p.min && filters.priceMax === p.max;
-              return (
-                <button key={p.label} onClick={() => handlePreset(p.min, p.max)}
-                  className={cn("px-2.5 py-1 rounded-lg text-[10px] font-semibold border transition-all duration-150",
-                    isActive ? "bg-primary/15 text-primary border-primary/30 shadow-sm shadow-primary/5" : "bg-muted/5 border-border/15 text-muted-foreground/45 hover:border-primary/20 hover:text-foreground"
-                  )}>{p.label}</button>
-              );
-            })}
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="flex-1 relative">
-              <span className="absolute left-2 top-1/2 -translate-y-1/2 text-[9px] text-muted-foreground/35 font-medium">R$</span>
-              <input type="number" min={0} step="0.01" value={filters.priceMin}
-                onChange={(e) => { const v = e.target.value; if (v === "" || Number(v) >= 0) update({ priceMin: v }); }}
-                placeholder="Mín"
-                className={cn("w-full h-7 pl-6 pr-2 rounded-lg text-[11px] bg-background/30 border transition-all focus:outline-none focus:ring-1 focus:ring-primary/25",
-                  filters.priceMin ? "border-primary/30 text-primary font-medium" : "border-border/15 text-foreground/70")} />
-            </div>
-            <div className="h-px w-3 bg-border/25" />
-            <div className="flex-1 relative">
-              <span className="absolute left-2 top-1/2 -translate-y-1/2 text-[9px] text-muted-foreground/35 font-medium">R$</span>
-              <input type="number" min={0} step="0.01" value={filters.priceMax}
-                onChange={(e) => { const v = e.target.value; if (v === "" || Number(v) >= 0) update({ priceMax: v }); }}
-                placeholder="Máx"
-                className={cn("w-full h-7 pl-6 pr-2 rounded-lg text-[11px] bg-background/30 border transition-all focus:outline-none focus:ring-1 focus:ring-primary/25",
-                  filters.priceMax ? "border-primary/30 text-primary font-medium" : "border-border/15 text-foreground/70")} />
-            </div>
-          </div>
-        </div>
-      );
-    case "cores": return <MultiChipGrid items={options.colors} selected={filters.selectedColors} onToggle={(v) => toggleArray("selectedColors", v)} searchable placeholder="Buscar cor…" />;
-    case "categorias": return <MultiChipGrid items={options.categories} selected={filters.selectedCategories} onToggle={(v) => toggleArray("selectedCategories", v)} searchable placeholder="Buscar categoria…" maxVisible={20} />;
-    case "materiais": return <MultiChipGrid items={options.materials} selected={filters.selectedMaterials} onToggle={(v) => toggleArray("selectedMaterials", v)} searchable placeholder="Buscar material…" />;
-    case "genero": return <MultiChipGrid items={GENDER_OPTIONS} selected={filters.selectedGenders} onToggle={(v) => toggleArray("selectedGenders", v)} />;
-    case "fornecedores": return <MultiChipGrid items={options.suppliers} selected={filters.selectedSuppliers} onToggle={(v) => toggleArray("selectedSuppliers", v)} searchable placeholder="Buscar fornecedor…" />;
-    case "tecnicas": return <MultiChipGrid items={options.techniques} selected={filters.selectedTechniques} onToggle={(v) => toggleArray("selectedTechniques", v)} searchable placeholder="Buscar técnica…" />;
-    case "publico": return <MultiChipGrid items={options.publicoAlvo} selected={filters.selectedPublicos} onToggle={(v) => toggleArray("selectedPublicos", v)} searchable placeholder="Buscar público…" />;
-    case "datas": return <MultiChipGrid items={options.datasComemorativas} selected={filters.selectedDatasComemorativas} onToggle={(v) => toggleArray("selectedDatasComemorativas", v)} searchable placeholder="Buscar data…" />;
-    case "endomarketing": return <MultiChipGrid items={options.endomarketing} selected={filters.selectedEndomarketing} onToggle={(v) => toggleArray("selectedEndomarketing", v)} />;
-    case "nichos": return <MultiChipGrid items={options.nichos} selected={filters.selectedNichos} onToggle={(v) => toggleArray("selectedNichos", v)} searchable placeholder="Buscar nicho…" />;
-    case "tags": return <MultiChipGrid items={options.tags} selected={filters.selectedTags} onToggle={(v) => toggleArray("selectedTags", v)} searchable placeholder="Buscar tag…" />;
-    case "estoque":
-      return (
-        <div className="space-y-1.5">
-          <div className="flex items-center justify-between py-0.5">
-            <span className="text-[11px] text-foreground/70">Apenas com estoque</span>
-            <Switch checked={filters.onlyInStock} onCheckedChange={(v) => update({ onlyInStock: v })} className="scale-[0.75] origin-right" />
-          </div>
-        </div>
-      );
-    case "rapidas":
-      return (
-        <div className="space-y-1">
-          {([
-            { key: "onlyNew" as const, label: "🆕 Novidades", desc: "Lançamentos recentes" },
-            { key: "onlyFeatured" as const, label: "⭐ Destaques", desc: "Produtos em destaque" },
-            { key: "onlyKit" as const, label: "📦 Kits", desc: "Kits e combos" },
-            { key: "onlyBestseller" as const, label: "🏆 Mais vendidos", desc: "Campeões de venda" },
-            { key: "hasPersonalization" as const, label: "🎨 Personalização", desc: "Aceita gravação" },
-          ]).map(({ key, label, desc }) => (
-            <div key={key} className="flex items-center justify-between py-1 group/quick">
-              <div><span className="text-[11px] text-foreground/80 font-medium">{label}</span><p className="text-[9px] text-muted-foreground/30 leading-tight">{desc}</p></div>
-              <Switch checked={filters[key]} onCheckedChange={(v) => update({ [key]: v })} className="scale-[0.75] origin-right" />
-            </div>
-          ))}
-        </div>
-      );
-    default: return null;
-  }
+function PriceInput({ value, placeholder, onChange }: { value: string; placeholder: string; onChange: (value: string) => void }) {
+  return <div className="flex-1 relative"><span className="absolute left-2 top-1/2 -translate-y-1/2 text-[9px] text-muted-foreground/35 font-medium">R$</span><input type="number" min={0} step="0.01" value={value} onChange={event => onChange(event.target.value)} placeholder={placeholder} className={cn("w-full h-7 pl-6 pr-2 rounded-lg text-[11px] bg-background/30 border transition-all focus:outline-none focus:ring-1 focus:ring-primary/25", value ? "border-primary/30 text-primary font-medium" : "border-border/15 text-foreground/70")} /></div>;
+}
+
+const QUICK_FILTERS = [
+  { key: "onlyNew", label: "🆕 Novidades", desc: "Lançamentos recentes" },
+  { key: "onlyFeatured", label: "⭐ Destaques", desc: "Produtos em destaque" },
+  { key: "onlyKit", label: "📦 Kits", desc: "Kits e combos" },
+  { key: "onlyBestseller", label: "🏆 Mais vendidos", desc: "Campeões de venda" },
+  { key: "hasPersonalization", label: "🎨 Personalização", desc: "Aceita gravação" },
+] as const;
+
+function QuickFilters({ filters, update }: Pick<SectionContentProps, "filters" | "update">) {
+  return <div className="space-y-1">{QUICK_FILTERS.map(({ key, label, desc }) => <div key={key} className="flex items-center justify-between py-1 group/quick"><div><span className="text-[11px] text-foreground/80 font-medium">{label}</span><p className="text-[9px] text-muted-foreground/30 leading-tight">{desc}</p></div><Switch checked={filters[key]} onCheckedChange={value => update({ [key]: value })} className="scale-[0.75] origin-right" /></div>)}</div>;
+}
+
+type OptionKey = keyof FlowFilterOptions;
+type SelectionKey = "selectedColors" | "selectedCategories" | "selectedMaterials" | "selectedGenders" | "selectedSuppliers" | "selectedTechniques" | "selectedPublicos" | "selectedDatasComemorativas" | "selectedEndomarketing" | "selectedNichos" | "selectedTags";
+interface ChipSectionConfig { optionKey?: OptionKey; selectionKey: SelectionKey; items?: string[]; placeholder?: string; maxVisible?: number }
+const CHIP_SECTIONS: Record<string, ChipSectionConfig> = {
+  cores: { optionKey: "colors", selectionKey: "selectedColors", placeholder: "Buscar cor…" },
+  categorias: { optionKey: "categories", selectionKey: "selectedCategories", placeholder: "Buscar categoria…", maxVisible: 20 },
+  materiais: { optionKey: "materials", selectionKey: "selectedMaterials", placeholder: "Buscar material…" },
+  genero: { items: GENDER_OPTIONS, selectionKey: "selectedGenders" },
+  fornecedores: { optionKey: "suppliers", selectionKey: "selectedSuppliers", placeholder: "Buscar fornecedor…" },
+  tecnicas: { optionKey: "techniques", selectionKey: "selectedTechniques", placeholder: "Buscar técnica…" },
+  publico: { optionKey: "publicoAlvo", selectionKey: "selectedPublicos", placeholder: "Buscar público…" },
+  datas: { optionKey: "datasComemorativas", selectionKey: "selectedDatasComemorativas", placeholder: "Buscar data…" },
+  endomarketing: { optionKey: "endomarketing", selectionKey: "selectedEndomarketing" },
+  nichos: { optionKey: "nichos", selectionKey: "selectedNichos", placeholder: "Buscar nicho…" },
+  tags: { optionKey: "tags", selectionKey: "selectedTags", placeholder: "Buscar tag…" },
+};
+
+function ChipSection({ config, filters, options, toggleArray }: Omit<SectionContentProps, "id" | "update"> & { config: ChipSectionConfig }) {
+  const items = config.items ?? (config.optionKey ? options[config.optionKey] : []);
+  return <MultiChipGrid items={items} selected={filters[config.selectionKey]} onToggle={value => toggleArray(config.selectionKey, value)} searchable={Boolean(config.placeholder)} placeholder={config.placeholder} maxVisible={config.maxVisible} />;
+}
+
+export function SectionContent({ id, filters, options, update, toggleArray }: SectionContentProps) {
+  if (id === "preco") return <PriceSection filters={filters} update={update} />;
+  if (id === "estoque") return <div className="space-y-1.5"><div className="flex items-center justify-between py-0.5"><span className="text-[11px] text-foreground/70">Apenas com estoque</span><Switch checked={filters.onlyInStock} onCheckedChange={value => update({ onlyInStock: value })} className="scale-[0.75] origin-right" /></div></div>;
+  if (id === "rapidas") return <QuickFilters filters={filters} update={update} />;
+  const config = CHIP_SECTIONS[id];
+  if (!config) return null;
+  return <ChipSection config={config} filters={filters} options={options} toggleArray={toggleArray} />;
 }
 
 // Re-export constants for external use

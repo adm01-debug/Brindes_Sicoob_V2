@@ -16,6 +16,19 @@ interface Props {
   counts: { total: number; issued: number; rotated: number; updated: number; revoked: number; escalated: number };
 }
 
+function AuditCounts({ counts }: Pick<Props, "counts">) {
+  return (
+    <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
+      <span>Total: <strong className="text-foreground">{counts.total}</strong></span>
+      <span>Emitidas: <strong className="text-foreground">{counts.issued}</strong></span>
+      <span>Rotacionadas: <strong className="text-foreground">{counts.rotated}</strong></span>
+      <span>Editadas: <strong className="text-foreground">{counts.updated}</strong></span>
+      <span>Revogadas: <strong className="text-foreground">{counts.revoked}</strong></span>
+      {counts.escalated > 0 && <span className="text-destructive">Escalações FULL: <strong>{counts.escalated}</strong></span>}
+    </div>
+  );
+}
+
 export function McpAuditFilters({ filters, onChange, onExport, onReload, counts }: Props) {
   return (
     <div className="flex flex-col gap-3">
@@ -56,24 +69,13 @@ export function McpAuditFilters({ filters, onChange, onExport, onReload, counts 
           <ShieldAlert className="h-4 w-4 mr-1" /> Só FULL
         </Toggle>
 
-        <Button size="sm" variant="ghost" onClick={onReload} aria-label="Recarregar">
-          <RefreshCw className="h-4 w-4" />
-        </Button>
+        <Button size="sm" variant="ghost" onClick={onReload} aria-label="Recarregar"><RefreshCw className="h-4 w-4" /></Button>
         <Button size="sm" variant="outline" onClick={onExport} aria-label="Exportar CSV">
           <Download className="h-4 w-4 mr-1" /> CSV
         </Button>
       </div>
 
-      <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
-        <span>Total: <strong className="text-foreground">{counts.total}</strong></span>
-        <span>Emitidas: <strong className="text-foreground">{counts.issued}</strong></span>
-        <span>Rotacionadas: <strong className="text-foreground">{counts.rotated}</strong></span>
-        <span>Editadas: <strong className="text-foreground">{counts.updated}</strong></span>
-        <span>Revogadas: <strong className="text-foreground">{counts.revoked}</strong></span>
-        {counts.escalated > 0 && (
-          <span className="text-destructive">Escalações FULL: <strong>{counts.escalated}</strong></span>
-        )}
-      </div>
+      <AuditCounts counts={counts} />
     </div>
   );
 }

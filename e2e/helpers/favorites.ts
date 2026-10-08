@@ -8,7 +8,7 @@
  * Equivalente a um `try/finally` por teste, sem precisar envolver cada
  * assertion em try/catch.
  */
-import type { Page, TestType } from "@playwright/test";
+import type { Locator, Page, TestType } from "@playwright/test";
 import { expect } from "@playwright/test";
 import { Sel } from "../fixtures/selectors";
 
@@ -44,6 +44,75 @@ export async function writeFavoritesStorage(
     },
     { key: STORAGE_KEY, value: items },
   );
+}
+
+/**
+ * Abre as ações rápidas do card e devolve o toggle de favorito acionável.
+ * No desktop os botões expandidos existem no DOM, mas ficam sem eventos até
+ * o usuário abrir o menu; clicar neles diretamente não representa a jornada.
+ */
+export async function openCatalogFavoriteAction(card: Locator): Promise<Locator> {
+  await card.hover();
+  const toggle = card.locator(Sel.product.actionsToggle).first();
+  await expect(toggle).toBeVisible({ timeout: 10_000 });
+  if ((await toggle.getAttribute("data-actions-open")) !== "true") {
+    await toggle.click();
+  }
+  await expect(toggle).toHaveAttribute("data-actions-open", "true");
+
+  const favorite = card.locator(Sel.product.favorite).first();
+  await expect(favorite).toBeVisible({ timeout: 10_000 });
+  return favorite;
+}
+
+/** Define o estado do favorito percorrendo também o seletor de variante. */
+export async function setCatalogFavorite(
+  page: Page,
+  card: Locator,
+  desired: boolean,
+): Promise<Locator> {
+  const favorite = await openCatalogFavoriteAction(card);
+  const current = (await favorite.getAttribute("aria-pressed")) === "true";
+  if (current === desired) return favorite;
+
+  await favorite.click();
+  if (desired) {
+    const noVariant = page.locator(Sel.variant.noVariant).first();
+    await expect(noVariant).toBeVisible({ timeout: 10_000 });
+    await noVariant.click();
+  }
+
+  const productId = await card.getAttribute("data-product-id");
+  if (!productId) throw new Error("Card do catálogo sem data-product-id");
+  await expect
+    .poll(
+      () =>
+        page.evaluate(
+          ({ key, id }) => {
+            try {
+              const parsed = JSON.parse(localStorage.getItem(key) ?? "[]") as FavoriteItem[];
+              return parsed.some((item) => item.productId === id);
+            } catch {
+              return false;
+            }
+          },
+          { key: STORAGE_KEY, id: productId },
+        ),
+      { message: "localStorage não refletiu o favorito", timeout: 10_000 },
+    )
+    .toBe(desired);
+
+  await expect
+    .poll(
+      () =>
+        card
+          .locator(Sel.product.favorite)
+          .first()
+          .getAttribute("aria-pressed"),
+      { timeout: 10_000 },
+    )
+    .toBe(String(desired));
+  return card.locator(Sel.product.favorite).first();
 }
 
 /**

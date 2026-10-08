@@ -55,10 +55,11 @@ export function MyDiscountRequestsWidget() {
     staleTime: 30_000,
     initialPageParam: null as string | null,
     queryFn: async ({ pageParam }) => {
+      if (!user) return [];
       let q = supabase
         .from("discount_approval_requests")
         .select("id, status, requested_discount_percent, quote_id, created_at")
-        .eq("seller_id", user!.id)
+        .eq("seller_id", user.id)
         .order("created_at", { ascending: false })
         .limit(PAGE_SIZE);
       if (pageParam) q = q.lt("created_at", pageParam);

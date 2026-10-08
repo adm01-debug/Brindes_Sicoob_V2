@@ -1,13 +1,14 @@
 import { useState, useCallback } from "react";
 import { toast } from "sonner";
-import { techniqueNeedsColorConfig, classifyTechnique } from "@/components/mockup/techniqueColorUtils";
+import { techniqueNeedsColorConfig, classifyTechnique, type TechniqueColorConfig } from "@/components/mockup/techniqueColorUtils";
+import type { Technique } from "@/hooks/mockup/mockupGenerationService";
 
 interface TechniqueHandlersOptions {
   hasLogo: boolean;
-  selectedTechnique: any;
-  setSelectedTechnique: (t: any) => void;
-  setGeneratedMockup: (m: any) => void;
-  setTechniqueColorConfig: (c: any) => void;
+  selectedTechnique: Technique | null;
+  setSelectedTechnique: (technique: Technique | null) => void;
+  setGeneratedMockup: (mockup: string | null) => void;
+  setTechniqueColorConfig: (config: TechniqueColorConfig | null) => void;
 }
 
 export function useTechniqueHandlers({
@@ -17,11 +18,11 @@ export function useTechniqueHandlers({
   setGeneratedMockup,
   setTechniqueColorConfig,
 }: TechniqueHandlersOptions) {
-  const [pendingTechnique, setPendingTechnique] = useState<any>(null);
+  const [pendingTechnique, setPendingTechnique] = useState<Technique | null>(null);
   const [techniqueChangeDialogOpen, setTechniqueChangeDialogOpen] = useState(false);
   const [colorConfigDialogOpen, setColorConfigDialogOpen] = useState(false);
 
-  const handleTechniqueChange = useCallback((technique: any) => {
+  const handleTechniqueChange = useCallback((technique: Technique | null) => {
     if (hasLogo && selectedTechnique && technique && technique.id !== selectedTechnique.id) {
       setPendingTechnique(technique);
       setTechniqueChangeDialogOpen(true);

@@ -9,7 +9,6 @@ import { useQuery } from '@tanstack/react-query';
 import { invokeExternalDb } from '@/lib/external-db';
 import {
   type KitBox,
-  type KitItem,
   type BoxFilters,
   type ItemFilters,
   type ExternalProductForKit,
@@ -23,9 +22,12 @@ function filterBoxes(boxes: KitBox[], search: string | null, dimFilters?: Omit<B
     const q = search.toLowerCase();
     filtered = filtered.filter(b => b.name.toLowerCase().includes(q) || b.sku.toLowerCase().includes(q));
   }
-  if (dimFilters?.minWidth) filtered = filtered.filter(b => b.internalWidth >= dimFilters.minWidth!);
-  if (dimFilters?.minHeight) filtered = filtered.filter(b => b.internalHeight >= dimFilters.minHeight!);
-  if (dimFilters?.minDepth) filtered = filtered.filter(b => b.internalDepth >= dimFilters.minDepth!);
+  const minWidth = dimFilters?.minWidth;
+  const minHeight = dimFilters?.minHeight;
+  const minDepth = dimFilters?.minDepth;
+  if (minWidth) filtered = filtered.filter(b => b.internalWidth >= minWidth);
+  if (minHeight) filtered = filtered.filter(b => b.internalHeight >= minHeight);
+  if (minDepth) filtered = filtered.filter(b => b.internalDepth >= minDepth);
   if (dimFilters?.material) filtered = filtered.filter(b => b.material === dimFilters.material);
   return filtered;
 }
@@ -76,7 +78,7 @@ export function useKitBuilderQueries() {
   } = useQuery({
     queryKey: ['kit-builder', 'boxes', debouncedBoxSearch, boxDimFilters.minWidth ?? '', boxDimFilters.minHeight ?? '', boxDimFilters.minDepth ?? '', boxDimFilters.material ?? ''],
     queryFn: async () => {
-      const filters: Record<string, unknown> = { active: true };
+      const filters: Record<string, unknown> = { is_active: true };
       if (debouncedBoxSearch) filters._search = debouncedBoxSearch;
 
       const result = await invokeExternalDb<ExternalProductForKit>({
@@ -112,7 +114,7 @@ export function useKitBuilderQueries() {
   } = useQuery({
     queryKey: ['kit-builder', 'items', debouncedItemSearch],
     queryFn: async () => {
-      const filters: Record<string, unknown> = { active: true };
+      const filters: Record<string, unknown> = { is_active: true };
       if (debouncedItemSearch) filters._search = debouncedItemSearch;
 
       const result = await invokeExternalDb<ExternalProductForKit>({
@@ -125,11 +127,9 @@ export function useKitBuilderQueries() {
         countMode: 'none',
       });
 
-      const items = (result.records ?? [])
+      return (result.records ?? [])
         .filter(p => p.packing_classification !== 'embalagem')
         .map(p => transformToKitItem(p));
-
-      return items;
     },
     staleTime: 5 * 60 * 1000,
     retry: 1,

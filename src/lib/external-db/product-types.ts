@@ -7,10 +7,11 @@ export interface PromobrindProduct {
   name: string;
   sku: string;
   sale_price?: number | null;
-  cost_price?: number | null;
-  /** @deprecated Use sale_price */
+  /** Alias legado aceito apenas na normalização de payloads antigos. */
   base_price?: number | null;
-  image_url: string | null;
+  cost_price?: number | null;
+  /** Campo derivado pela camada de UI; não existe na tabela `products`. */
+  image_url?: string | null;
   images: string[] | null;
   primary_image_url: string | null;
   og_image_url?: string | null;
@@ -24,9 +25,18 @@ export interface PromobrindProduct {
   meta_description?: string | null;
   brand: string | null;
   is_active: boolean;
-  active: boolean;
+  /** Alias legado aceito apenas na normalização de payloads antigos. */
+  active?: boolean | null;
   stock_quantity?: number | null;
-  colors?: Array<string | { name: string; hex?: string; stock?: number }> | null;
+  colors?: Array<string | {
+    name: string;
+    hex?: string;
+    stock?: number;
+    sku?: string;
+    image?: string | null;
+    images?: string[];
+    size_code?: string | null;
+  }> | null;
   materials?: Array<string | Record<string, unknown>> | null;
   dimensions?: string | null;
   min_quantity?: number | null;
@@ -71,6 +81,7 @@ export interface PromobrindProduct {
   category_name?: string | null;
   tags?: Record<string, unknown> | null;
   price_updated_at?: string | null;
+  /** Campo futuro/derivado; ainda não faz parte dos selects do banco externo. */
   price_freshness_threshold_days?: number | null;
   lead_time_days?: number | null;
   kit_components?: Array<{
@@ -82,13 +93,16 @@ export interface PromobrindProduct {
     material: string | null; primary_image_url: string | null;
     height_mm: number | null; width_mm: number | null; length_mm: number | null;
     weight_g: number | null; notes: string | null;
+    component_type_code?: string | null; supplier_component_code?: string | null;
+    component_description?: string | null; personalization_notes?: string | null;
+    color?: string | null;
   }> | null;
 }
 
 export function getProductImageUrl(
   product: {
     primary_image_url: PromobrindProduct['primary_image_url'];
-    image_url: PromobrindProduct['image_url'];
+    image_url?: PromobrindProduct['image_url'];
     images?: PromobrindProduct['images'];
   },
 ): string | null {
@@ -110,38 +124,32 @@ export function getProductStock(product: PromobrindProduct): number {
 // trigger on the external Promobrind DB whenever any price field changes.
 // `price_freshness_threshold_days` does NOT exist in the external DB and was
 // removed from all selects to eliminate "column does not exist" errors.
-export const PRODUCT_SELECT_FIELDS_WITH_SALE =
-  'id, name, sku, sale_price, cost_price, images, primary_image_url, ' +
+const PRODUCT_IDENTITY_FIELDS = 'id, name, sku';
+const PRODUCT_COMMON_FIELDS =
+  'cost_price, images, primary_image_url, ' +
   'category_id, main_category_id, supplier_id, supplier_reference, description, ' +
-  'short_description, meta_description, brand, is_active, active, stock_quantity, colors, ' +
-  'materials, dimensions, min_quantity, created_at, updated_at, price_updated_at, ' +
-  'is_featured, is_bestseller, is_new, is_on_sale, is_kit, gender, ' +
-  'height_cm, width_cm, length_cm, diameter_cm, weight_g, capacity_ml, ' +
+  'short_description, meta_description, brand, is_active, stock_quantity, colors, ' +
+  'materials, min_quantity, created_at, updated_at, price_updated_at, ' +
+  'is_featured, is_bestseller, is_new, is_on_sale, is_kit';
+const PRODUCT_DIMENSION_FIELDS = 'height_cm, width_cm, length_cm, diameter_cm, weight_g, capacity_ml';
+const PRODUCT_PACKAGING_FIELDS =
   'packing_type, packing_classification, has_commercial_packaging, repacking_type, packaging_context, ' +
   'box_image, box_width_mm, box_height_mm, box_length_mm, box_weight_kg, box_quantity, box_volume_cm3';
+
+export const PRODUCT_SELECT_FIELDS_WITH_SALE =
+  `${PRODUCT_IDENTITY_FIELDS}, sale_price, ${PRODUCT_COMMON_FIELDS}, gender, ` +
+  `${PRODUCT_DIMENSION_FIELDS}, ${PRODUCT_PACKAGING_FIELDS}`;
 
 export const PRODUCT_SELECT_FIELDS_LEGACY =
-  'id, name, sku, cost_price, images, primary_image_url, ' +
-  'category_id, main_category_id, supplier_id, supplier_reference, description, ' +
-  'short_description, meta_description, brand, is_active, active, stock_quantity, colors, ' +
-  'materials, dimensions, min_quantity, created_at, updated_at, price_updated_at, ' +
-  'is_featured, is_bestseller, is_new, is_on_sale, is_kit, ' +
-  'height_cm, width_cm, length_cm, diameter_cm, weight_g, capacity_ml, ' +
-  'packing_type, packing_classification, has_commercial_packaging, repacking_type, packaging_context, ' +
-  'box_image, box_width_mm, box_height_mm, box_length_mm, box_weight_kg, box_quantity, box_volume_cm3';
+  `${PRODUCT_IDENTITY_FIELDS}, ${PRODUCT_COMMON_FIELDS}, ` +
+  `${PRODUCT_DIMENSION_FIELDS}, ${PRODUCT_PACKAGING_FIELDS}`;
 
 export const PRODUCT_SELECT_FIELDS_DETAIL =
-  'id, name, sku, sale_price, cost_price, images, primary_image_url, ' +
-  'category_id, main_category_id, supplier_id, supplier_reference, description, ' +
-  'short_description, meta_description, brand, is_active, active, stock_quantity, colors, ' +
-  'materials, dimensions, min_quantity, created_at, updated_at, price_updated_at, ' +
-  'is_featured, is_bestseller, is_new, is_on_sale, is_kit, tags, ' +
-  'height_cm, width_cm, length_cm, diameter_cm, weight_g, capacity_ml, ' +
-  'packing_type, packing_classification, has_commercial_packaging, repacking_type, packaging_context, ' +
-  'box_image, box_width_mm, box_height_mm, box_length_mm, box_weight_kg, box_quantity, box_volume_cm3';
+  `${PRODUCT_IDENTITY_FIELDS}, sale_price, ${PRODUCT_COMMON_FIELDS}, tags, ` +
+  `${PRODUCT_DIMENSION_FIELDS}, ${PRODUCT_PACKAGING_FIELDS}`;
 
 // #2: also trigger fallback when orderBy hits a missing column
 export function shouldFallbackSelect(err: unknown) {
   const msg = err instanceof Error ? err.message : String(err);
-  return /(sale_price|base_price|image_url|supplier_name|category_name|product_videos|selected_images|gender|price_updated_at|price_freshness_threshold_days|does not exist|não existe|undefined column|column .+ does not exist|could not identify an ordering operator|order by)/i.test(msg);
+  return /(sale_price|base_price|gender|price_updated_at|does not exist|não existe|undefined column|column .+ does not exist|could not identify an ordering operator|order by)/i.test(msg);
 }

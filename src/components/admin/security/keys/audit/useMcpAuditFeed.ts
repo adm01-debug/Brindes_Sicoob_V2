@@ -59,6 +59,58 @@ export interface AuditFilters {
 
 const PAGE_SIZE = 50;
 
+type AuditProfiles = Record<string, { email?: string | null; full_name?: string | null }>;
+
+async function fetchAuditProfiles(rows: AuditFeedRow[]): Promise<AuditProfiles> {
+  const userIds = [...new Set(rows.flatMap((row) => row.user_id ? [row.user_id] : []))];
+  if (userIds.length === 0) return {};
+  const { data } = await supabase.from("profiles").select("user_id, email, full_name").in("user_id", userIds);
+  return Object.fromEntries((data ?? []).map((profile) => [profile.user_id, { email: profile.email, full_name: profile.full_name }]));
+}
+
+function auditScopes(details: Record<string, unknown>): string[] {
+  const after = details.after && typeof details.after === "object" && !Array.isArray(details.after)
+    ? details.after as Record<string, unknown>
+    : {};
+  const rawScopes = details.scopes ?? after.scopes;
+  return Array.isArray(rawScopes) ? rawScopes.map(String) : [];
+}
+
+function enrichAuditRow(row: AuditFeedRow, profiles: AuditProfiles): AuditFeedRow {
+  const details = row.details ?? {};
+  const profile = row.user_id ? profiles[row.user_id] : undefined;
+  const scopes = auditScopes(details);
+  return {
+    ...row,
+    actor_email: profile?.email ?? null,
+    actor_name: profile?.full_name ?? null,
+    key_prefix: details.key_prefix as string | undefined ?? null,
+    is_full: scopes.includes("*") || details.is_full_access === true,
+    escalated: details.escalated_to_full === true || row.action === "mcp_key.scope_escalated",
+  };
+}
+
+function filterAuditRows(rows: AuditFeedRow[], filters: AuditFilters): AuditFeedRow[] {
+  return rows.filter((row) => {
+    if (filters.onlyFull && !row.is_full) return false;
+    if (!filters.query) return true;
+    const query = filters.query.toLowerCase();
+    const searchable = `${row.actor_email ?? ""} ${row.actor_name ?? ""} ${row.key_prefix ?? ""} ${row.action}`.toLowerCase();
+    return searchable.includes(query);
+  });
+}
+
+function auditCounts(rows: AuditFeedRow[]) {
+  return {
+    total: rows.length,
+    issued: rows.filter((row) => row.action === "mcp_key.issued").length,
+    rotated: rows.filter((row) => row.action === "mcp_key.rotated").length,
+    updated: rows.filter((row) => row.action === "mcp_key.updated").length,
+    revoked: rows.filter((row) => row.action === "mcp_key.revoked").length,
+    escalated: rows.filter((row) => row.escalated).length,
+  };
+}
+
 export function useMcpAuditFeed() {
   const [rows, setRows] = useState<AuditFeedRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -89,33 +141,8 @@ export function useMcpAuditFeed() {
     }
 
     const base = (data ?? []) as AuditFeedRow[];
-    const userIds = Array.from(new Set(base.map((r) => r.user_id).filter(Boolean))) as string[];
-    let profiles: Record<string, { email?: string | null; full_name?: string | null }> = {};
-    if (userIds.length > 0) {
-      const { data: profs } = await supabase
-        .from("profiles")
-        .select("user_id, email, full_name")
-        .in("user_id", userIds);
-      (profs ?? []).forEach((p: { user_id: string; email?: string | null; full_name?: string | null }) => {
-        profiles[p.user_id] = { email: p.email, full_name: p.full_name };
-      });
-    }
-
-    const enriched = base.map<AuditFeedRow>((r) => {
-      const d = (r.details ?? {}) as Record<string, unknown>;
-      const scopes = (d.scopes ?? d.after?.["scopes"] ?? []) as string[];
-      const isFull = Array.isArray(scopes) && scopes.includes("*") || d.is_full_access === true;
-      const escalated = d.escalated_to_full === true || r.action === "mcp_key.scope_escalated";
-      const prof = r.user_id ? profiles[r.user_id] : undefined;
-      return {
-        ...r,
-        actor_email: prof?.email ?? null,
-        actor_name: prof?.full_name ?? null,
-        key_prefix: (d.key_prefix as string | undefined) ?? null,
-        is_full: isFull,
-        escalated,
-      };
-    });
+    const profiles = await fetchAuditProfiles(base);
+    const enriched = base.map((row) => enrichAuditRow(row, profiles));
 
     setRows(enriched);
     setLoading(false);
@@ -123,26 +150,8 @@ export function useMcpAuditFeed() {
 
   useEffect(() => { load(); }, [load]);
 
-  const filtered = useMemo(() => {
-    return rows.filter((r) => {
-      if (filters.onlyFull && !r.is_full) return false;
-      if (filters.query) {
-        const q = filters.query.toLowerCase();
-        const hay = `${r.actor_email ?? ""} ${r.actor_name ?? ""} ${r.key_prefix ?? ""} ${r.action}`.toLowerCase();
-        if (!hay.includes(q)) return false;
-      }
-      return true;
-    });
-  }, [rows, filters.onlyFull, filters.query]);
-
-  const counts = useMemo(() => ({
-    total: rows.length,
-    issued: rows.filter((r) => r.action === "mcp_key.issued").length,
-    rotated: rows.filter((r) => r.action === "mcp_key.rotated").length,
-    updated: rows.filter((r) => r.action === "mcp_key.updated").length,
-    revoked: rows.filter((r) => r.action === "mcp_key.revoked").length,
-    escalated: rows.filter((r) => r.escalated).length,
-  }), [rows]);
+  const filtered = useMemo(() => filterAuditRows(rows, filters), [rows, filters]);
+  const counts = useMemo(() => auditCounts(rows), [rows]);
 
   return { rows: filtered, allRows: rows, loading, filters, setFilters, counts, reload: load };
 }

@@ -10,43 +10,62 @@ const nullableNumber = (value: number | null | undefined): number | null => valu
 const arrayOrEmpty = <T>(value: T[] | null | undefined): T[] => value ?? [];
 const quoteItemUnitCost = (item: QuoteItem): number => item.unit_cost || item.unit_price * 0.7;
 
-export function calculateQuoteTotals(quote: Partial<Quote>, items: QuoteItem[], negotiationMarkup?: number, discountType: 'percent' | 'amount' = 'percent', discountValue: number = 0) {
+function personalizationTotal(item: QuoteItem): number {
+  return arrayOrEmpty(item.personalizations).reduce((sum, personalization) => sum + numberOr(personalization.total_cost, 0), 0);
+}
+
+function personalizationCost(item: QuoteItem): number {
+  return arrayOrEmpty(item.personalizations).reduce((sum, personalization) => {
+    const quantity = numberOr(personalization.personalized_quantity, item.quantity);
+    return sum + numberOr(personalization.unit_cost, 0) * quantity + numberOr(personalization.setup_cost, 0);
+  }, 0);
+}
+
+function clampNegotiationMarkup(quote: Partial<Quote>, requested?: number): number {
+  return Math.min(50, Math.max(0, requested ?? quote.negotiation_markup_percent ?? 0));
+}
+
+function presentedSubtotal(realSubtotal: number, markup: number): number {
+  return markup > 0 ? Math.round(realSubtotal * (1 + markup / 100) * 100) / 100 : realSubtotal;
+}
+
+function discountAmountFor(subtotal: number, discountType: 'percent' | 'amount', discountValue: number): number {
+  return discountType === 'percent' ? subtotal * (discountValue / 100) : discountValue;
+}
+
+function quoteShippingCost(quote: Partial<Quote>): number {
+  return quote.shipping_type === "fob" || quote.shipping_type === "fob_pre" ? numberOr(quote.shipping_cost, 0) : 0;
+}
+
+export function calculateQuoteTotals(
+  quote: Partial<Quote>,
+  ...options: [items: QuoteItem[], negotiationMarkup?: number, discountType?: 'percent' | 'amount', discountValue?: number]
+) {
+  const [items, negotiationMarkup, discountType = 'percent', discountValue = 0] = options;
   // Subtotal real = soma direta dos itens + personalizações (sem markup)
   const realSubtotal = items.reduce((sum, item) => {
     const baseTotal = item.quantity * item.unit_price;
-    const persTotal = (item.personalizations || []).reduce((pSum, p) => pSum + (p.total_cost || 0), 0);
-    return sum + baseTotal + persTotal;
+    return sum + baseTotal + personalizationTotal(item);
   }, 0);
 
   // Custo total = soma do custo dos produtos + custo das personalizações
   const totalCost = items.reduce((sum, item) => {
-    const productCost = (item.unit_cost || item.unit_price * 0.7) * item.quantity;
-    const persCost = (item.personalizations || []).reduce((pSum, p) => {
-      const uCost = p.unit_cost || 0;
-      const sCost = p.setup_cost || 0;
-      const qty = p.personalized_quantity || item.quantity;
-      return pSum + (uCost * qty) + sCost;
-    }, 0);
-    return sum + productCost + persCost;
+    const productCost = quoteItemUnitCost(item) * item.quantity;
+    return sum + productCost + personalizationCost(item);
   }, 0);
 
   // Margem de negociação (clamp 0–50)
-  const markup = Math.min(50, Math.max(0, (negotiationMarkup ?? quote.negotiation_markup_percent) || 0));
+  const markup = clampNegotiationMarkup(quote, negotiationMarkup);
 
   // Subtotal apresentado = subtotal real * (1 + markup/100)
-  const subtotal = markup > 0
-    ? Math.round(realSubtotal * (1 + markup / 100) * 100) / 100
-    : realSubtotal;
+  const subtotal = presentedSubtotal(realSubtotal, markup);
 
   // Custo REAL (usado para calcular margem bruta correta)
   const realTotalCost = totalCost;
 
   // Desconto APARENTE aplicado sobre subtotal apresentado
-  const discountAmount = (discountType === 'percent' || (discountValue > 0 && !discountType))
-    ? subtotal * (discountValue / 100)
-    : discountValue;
-  const shippingCostValue = (quote.shipping_type === "fob" || quote.shipping_type === "fob_pre")
-    ? (quote.shipping_cost || 0) : 0;
+  const discountAmount = discountAmountFor(subtotal, discountType, discountValue);
+  const shippingCostValue = quoteShippingCost(quote);
   const total = subtotal - discountAmount + shippingCostValue;
 
   // Desconto REAL: comparado ao subtotal real (usado para alçada)
@@ -65,27 +84,27 @@ export function buildInsertPayload(
   totals: { subtotal: number; discountAmount: number; total: number; totalCost: number }
 ): TablesInsert<"quotes"> {
   return {
-    client_id: quote.client_id || null,
-    client_name: quote.client_name || null,
-    client_email: quote.client_email || null,
-    client_phone: quote.client_phone || null,
-    client_company: quote.client_company || null,
+    client_id: emptyToNull(quote.client_id),
+    client_name: emptyToNull(quote.client_name),
+    client_email: emptyToNull(quote.client_email),
+    client_phone: emptyToNull(quote.client_phone),
+    client_company: emptyToNull(quote.client_company),
     seller_id: userId,
     organization_id: orgId,
-    status: quote.status || "draft",
+    status: quote.status ?? "draft",
     subtotal: totals.subtotal,
-    discount_percent: quote.discount_percent || 0,
+    discount_percent: numberOr(quote.discount_percent, 0),
     discount_amount: totals.discountAmount,
     total: totals.total,
     total_cost: totals.totalCost,
-    negotiation_markup_percent: quote.negotiation_markup_percent || 0,
-    payment_terms: quote.payment_terms || null,
-    delivery_time: quote.delivery_time || null,
-    shipping_type: quote.shipping_type || null,
-    shipping_cost: quote.shipping_cost || 0,
-    notes: quote.notes || null,
-    internal_notes: quote.internal_notes || null,
-    valid_until: quote.valid_until || null,
+    negotiation_markup_percent: numberOr(quote.negotiation_markup_percent, 0),
+    payment_terms: emptyToNull(quote.payment_terms),
+    delivery_time: emptyToNull(quote.delivery_time),
+    shipping_type: emptyToNull(quote.shipping_type),
+    shipping_cost: numberOr(quote.shipping_cost, 0),
+    notes: emptyToNull(quote.notes),
+    internal_notes: emptyToNull(quote.internal_notes),
+    valid_until: emptyToNull(quote.valid_until),
   };
 }
 
@@ -94,25 +113,25 @@ export function buildUpdatePayload(
   totals: { subtotal: number; discountAmount: number; total: number; totalCost: number }
 ): TablesUpdate<"quotes"> {
   const payload: TablesUpdate<"quotes"> = {
-    client_id: quote.client_id || null,
-    client_name: quote.client_name || null,
-    client_email: quote.client_email || null,
-    client_phone: quote.client_phone || null,
-    client_company: quote.client_company || null,
+    client_id: emptyToNull(quote.client_id),
+    client_name: emptyToNull(quote.client_name),
+    client_email: emptyToNull(quote.client_email),
+    client_phone: emptyToNull(quote.client_phone),
+    client_company: emptyToNull(quote.client_company),
     status: quote.status,
     subtotal: totals.subtotal,
-    discount_percent: quote.discount_percent || 0,
+    discount_percent: numberOr(quote.discount_percent, 0),
     discount_amount: totals.discountAmount,
     total: totals.total,
     total_cost: totals.totalCost,
-    negotiation_markup_percent: quote.negotiation_markup_percent || 0,
-    payment_terms: quote.payment_terms || null,
-    delivery_time: quote.delivery_time || null,
-    shipping_type: quote.shipping_type || null,
-    shipping_cost: quote.shipping_cost || 0,
-    notes: quote.notes || null,
-    internal_notes: quote.internal_notes || null,
-    valid_until: quote.valid_until || null,
+    negotiation_markup_percent: numberOr(quote.negotiation_markup_percent, 0),
+    payment_terms: emptyToNull(quote.payment_terms),
+    delivery_time: emptyToNull(quote.delivery_time),
+    shipping_type: emptyToNull(quote.shipping_type),
+    shipping_cost: numberOr(quote.shipping_cost, 0),
+    notes: emptyToNull(quote.notes),
+    internal_notes: emptyToNull(quote.internal_notes),
+    valid_until: emptyToNull(quote.valid_until),
     updated_at: new Date().toISOString(),
   };
 
@@ -128,26 +147,26 @@ export function buildItemsInsertPayload(
   quoteId: string
 ): TablesInsert<"quote_items">[] {
   return items.map((item, index) => {
-    const itemSubtotal = item.quantity * item.unit_price + (item.personalizations || []).reduce((sum, p) => sum + (p.total_cost || 0), 0);
+    const itemSubtotal = item.quantity * item.unit_price + personalizationTotal(item);
     return {
       quote_id: quoteId,
       product_id: item.product_id,
       product_name: item.product_name,
-      product_sku: item.product_sku || null,
-      product_image_url: item.product_image_url || null,
+      product_sku: emptyToNull(item.product_sku),
+      product_image_url: emptyToNull(item.product_image_url),
       quantity: item.quantity,
       unit_price: item.unit_price,
-      unit_cost: item.unit_cost || 0,
-      color_name: item.color_name || null,
-      color_hex: item.color_hex || null,
-      size_code: item.size_code || null,
-      gender: item.gender || null,
-      notes: item.notes || null,
+      unit_cost: numberOr(item.unit_cost, 0),
+      color_name: emptyToNull(item.color_name),
+      color_hex: emptyToNull(item.color_hex),
+      size_code: emptyToNull(item.size_code),
+      gender: emptyToNull(item.gender),
+      notes: emptyToNull(item.notes),
       sort_order: index,
-      kit_group_id: item.kit_group_id || null,
-      kit_name: item.kit_name || null,
-      source_variant_id: item.source_variant_id || null,
-      source_variant_sku: item.source_variant_sku || null,
+      kit_group_id: emptyToNull(item.kit_group_id),
+      kit_name: emptyToNull(item.kit_name),
+      source_variant_id: emptyToNull(item.source_variant_id),
+      source_variant_sku: emptyToNull(item.source_variant_sku),
       price_confirmed_at: item.price_confirmed_at ?? null,
       subtotal: itemSubtotal,
       total_price: itemSubtotal,

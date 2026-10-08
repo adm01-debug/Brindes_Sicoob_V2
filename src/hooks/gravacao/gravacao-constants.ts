@@ -9,14 +9,16 @@ import type { TabelaPrecoOficial, FaixaPrecoOficial } from './gravacao-types';
 // CONSTANTES
 // ============================================
 
+const LASER_TECHNIQUE_COLOR = 'bg-red-100 text-red-800';
+
 export const TECHNIQUE_COLORS: Record<string, string> = {
   SERIGRAFIA: 'bg-blue-100 text-blue-800',
   SERITEX: 'bg-blue-100 text-blue-800',
-  LASER: 'bg-red-100 text-red-800',
-  FIBER: 'bg-red-100 text-red-800',
-  LASER_CO2: 'bg-red-100 text-red-800',
-  CO2: 'bg-red-100 text-red-800',
-  LASER_UV: 'bg-red-100 text-red-800',
+  LASER: LASER_TECHNIQUE_COLOR,
+  FIBER: LASER_TECHNIQUE_COLOR,
+  LASER_CO2: LASER_TECHNIQUE_COLOR,
+  CO2: LASER_TECHNIQUE_COLOR,
+  LASER_UV: LASER_TECHNIQUE_COLOR,
   UV_DIGITAL: 'bg-purple-100 text-purple-800',
   DIGITAL: 'bg-purple-100 text-purple-800',
   TAMPOGRAFIA: 'bg-green-100 text-green-800',
@@ -102,7 +104,7 @@ export function getTechniqueIcon(codigo: string): string {
 }
 
 export function formatPrice(value: number | null | undefined): string {
-  if (value == null) return '-';
+  if (value === null || value === undefined) return '-';
   return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
 }
 
@@ -132,13 +134,14 @@ export function findPriceTier(quantidade: number, faixas: FaixaPrecoOficial[]): 
       return faixa;
     }
   }
-  return faixas.length > 0 ? faixas[faixas.length - 1] : null;
+  return faixas[faixas.length - 1] ?? null;
 }
 
 export function calculateCustomizationTotal(
   quantidade: number, numCores: number, tabela: TabelaPrecoOficial,
-  faixas: FaixaPrecoOficial[], markupPercent: number = 115
+  ...pricing: [faixas: FaixaPrecoOficial[], markupPercent?: number]
 ) {
+  const [faixas, markupPercent = 115] = pricing;
   const faixa = findPriceTier(quantidade, faixas);
   const markupMultiplier = 1 + (markupPercent / 100);
 

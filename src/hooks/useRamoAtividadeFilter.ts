@@ -51,11 +51,14 @@ export function useRamoAtividadeFilter(): UseRamoAtividadeFilterReturn {
   const { data: groupsData, isLoading: groupsLoading, error: groupsError } = useRamosAtividadeGroups();
   const { data: segmentosData, isLoading: segmentosLoading, error: segmentosError } = useSegmentosCompletos();
 
-  const groups = groupsData?.groups || [];
-  const segmentos = segmentosData?.segmentos || [];
-  const byRamo = segmentosData?.byRamo || new Map<string, SegmentoComplete[]>();
-  const totalGroups = groupsData?.totalGroups || 0;
-  const totalSegmentos = groupsData?.totalSegmentos || 0;
+  const groups = useMemo(() => groupsData?.groups || [], [groupsData?.groups]);
+  const segmentos = useMemo(() => segmentosData?.segmentos || [], [segmentosData?.segmentos]);
+  const byRamo = useMemo(
+    () => segmentosData?.byRamo || new Map<string, SegmentoComplete[]>(),
+    [segmentosData?.byRamo],
+  );
+  const totalGroups = useMemo(() => groupsData?.totalGroups || 0, [groupsData?.totalGroups]);
+  const totalSegmentos = useMemo(() => groupsData?.totalSegmentos || 0, [groupsData?.totalSegmentos]);
 
   const isLoading = groupsLoading || segmentosLoading;
   const error = groupsError || segmentosError;

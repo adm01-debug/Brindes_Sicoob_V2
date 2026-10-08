@@ -39,7 +39,7 @@ export function TemplateTableView({ templates, getSellerName, formatCurrency, ca
                   <div><div className="font-medium">{template.name}</div>{template.description && <div className="text-sm text-muted-foreground truncate max-w-[200px]">{template.description}</div>}</div>
                 </TableCell>
                 <TableCell><div className="flex items-center gap-2"><User className="h-4 w-4 text-muted-foreground" /><span className="text-sm">{getSellerName(template.seller_id)}</span></div></TableCell>
-                <TableCell className="text-center"><Badge variant="secondary">{template.items_data.length}</Badge></TableCell>
+                <TableCell className="text-center"><Badge variant="secondary">{(template.items_data ?? []).length}</Badge></TableCell>
                 <TableCell className="text-right font-medium">{formatCurrency(calculateTotal(template))}</TableCell>
                 <TableCell className="text-center">{template.is_default && <Badge variant="outline" className="gap-1"><Star className="h-3 w-3 fill-current" />Padrão</Badge>}</TableCell>
                 <TableCell className="text-right text-sm text-muted-foreground">{format(new Date(template.updated_at), "dd/MM/yy", { locale: ptBR })}</TableCell>

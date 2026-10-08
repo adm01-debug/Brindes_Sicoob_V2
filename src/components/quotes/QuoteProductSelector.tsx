@@ -1,6 +1,6 @@
 import React from "react";
 import { QuoteBuilderProductSearch } from "./QuoteBuilderProductSearch";
-import { ExternalVariantStock } from "@/hooks/useExternalVariantStock";
+import { type ExternalVariantStock } from "@/hooks/useExternalVariantStock";
 
 interface Product {
   id: string;

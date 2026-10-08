@@ -19,7 +19,7 @@ jobs:
   migrate:
     if: github.ref == 'refs/heads/main' && inputs.confirmar == 'APLICAR'
     name: Aplicar somente migrations autorizadas
-    runs-on: [self-hosted, Linux, X64]
+    runs-on: ubuntu-latest
     timeout-minutes: 20
     environment: construction
     steps:

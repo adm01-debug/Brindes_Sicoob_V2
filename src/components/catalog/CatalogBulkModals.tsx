@@ -37,7 +37,7 @@ export function CatalogBulkModals({ sel, selectionMode, totalCount }: CatalogBul
         <AddToCollectionModal
           open={sel.collectionModalOpen}
           onOpenChange={(open) => { sel.setCollectionModalOpen(open); if (!open) sel.clearSelection(); }}
-          productId={sel.firstSelectedId}
+          productId={sel.firstSelectedId ?? ""}
           productName={`${sel.selectedIds.size} produtos selecionados`}
         />
       )}

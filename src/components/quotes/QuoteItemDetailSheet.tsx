@@ -27,18 +27,18 @@ interface Personalization {
   unit_cost?: number;
   total_cost?: number;
   notes?: string;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 interface QuoteItem {
   product_name: string;
-  product_sku?: string;
-  product_image_url?: string;
-  color_name?: string;
-  color_hex?: string;
+  product_sku?: string | null;
+  product_image_url?: string | null;
+  color_name?: string | null;
+  color_hex?: string | null;
   quantity: number;
   unit_price: number;
-  notes?: string;
+  notes?: string | null;
   personalizations?: Personalization[];
 }
 
@@ -69,8 +69,8 @@ function getNextTier(qty: number) {
 
 function getCurrentTierLabel(qty: number) {
   for (let i = QUANTITY_TIERS.length - 1; i >= 0; i--) {
-    if (qty >= QUANTITY_TIERS[i]!.min) {
-      const t = QUANTITY_TIERS[i]!;
+    const t = QUANTITY_TIERS[i];
+    if (t && qty >= t.min) {
       return t.max ? `${t.min}-${t.max}` : `${t.min}+`;
     }
   }
@@ -99,11 +99,94 @@ function NextTierHint({ currentQty }: { currentQty: number }) {
     </div>
   );
 }
+
+function personalizationUnitCost(personalization: Personalization, quantity: number): number {
+  if (quantity <= 0) return 0;
+  return Math.round(((personalization.total_cost || 0) / quantity) * 100) / 100;
+}
+
+function ProductSku({ item }: { item: QuoteItem }) {
+  if (!item.product_sku) return null;
+  return <span className="inline-flex items-center gap-1 font-mono text-xs px-1.5 py-0.5 rounded border mb-1"
+      style={{ backgroundColor: item.color_hex ? `${item.color_hex}22` : undefined, borderColor: item.color_hex || 'hsl(var(--border))', color: item.color_hex || 'hsl(var(--foreground))' }}>
+      {item.color_hex && <span className="w-2.5 h-2.5 rounded-full border border-border/50" style={{ backgroundColor: item.color_hex }} />}
+      {item.product_sku}{item.color_name ? `-${item.color_name}` : ''}</span>;
+}
+
+function ProductColor({ item }: { item: QuoteItem }) {
+  if (item.product_sku || !item.color_name) return null;
+  return <div className="flex items-center gap-1.5 mt-1.5">{item.color_hex && <span
+    className="w-3.5 h-3.5 rounded-full border border-border" style={{ backgroundColor: item.color_hex }} />}
+    <span className="text-sm text-muted-foreground">{item.color_name}</span></div>;
+}
+
+function ProductInfo({ item }: { item: QuoteItem }) {
+  return <div className="flex items-start gap-3">{item.product_image_url && <img src={item.product_image_url} alt={item.product_name}
+    className="w-16 h-16 object-cover rounded-lg border border-border" loading="lazy" />}<div className="flex-1 min-w-0">
+    <ProductSku item={item} />
+    <p className="font-semibold text-foreground">{item.product_name}</p>
+    <ProductColor item={item} />
+  </div></div>;
+}
+
+function PricingSummary({ item, personalizations, allInUnit }: { item: QuoteItem; personalizations: Personalization[]; allInUnit: number }) {
+  const personalizationUnit = personalizations.reduce((sum, personalization) => sum + personalizationUnitCost(personalization, item.quantity), 0);
+  return <div><h4 className="text-sm font-semibold text-foreground flex items-center gap-2 mb-3"><DollarSign className="h-4 w-4 text-primary" />Preços</h4>
+    <div className="space-y-2 text-sm"><div className="flex justify-between"><span className="text-muted-foreground">Preço unitário (produto)</span><span className="font-medium">{fmt(item.unit_price)}</span></div>
+      {personalizations.length > 0 && <div className="flex justify-between"><span className="text-muted-foreground">Preço unitário (gravação)</span><span className="font-medium">{fmt(personalizationUnit)}</span></div>}
+      <div className="flex justify-between font-semibold border-t border-border/50 pt-2"><span className="text-foreground">Unitário all-in</span><span className="text-primary">{fmt(allInUnit)}</span></div>
+      <div className="flex justify-between"><span className="text-muted-foreground">Quantidade</span><span className="font-medium">{item.quantity}
+        <span className="text-xs text-muted-foreground ml-1.5">(faixa {getCurrentTierLabel(item.quantity)} un)</span></span></div>
+      <div className="flex justify-between font-semibold border-t border-border/50 pt-2"><span className="text-foreground">Total do item</span>
+        <span className="text-foreground">{fmt(Math.round(allInUnit * item.quantity * 100) / 100)}</span></div>
+    </div>
+  </div>;
+}
+
+function PersonalizationMetadata({ personalization }: { personalization: Personalization }) {
+  const parsed = parseNotesField(personalization.notes || '');
+  const dimensions = parsed.dimensions || (personalization.width_cm && personalization.height_cm ? `${personalization.width_cm}×${personalization.height_cm} cm` : null);
+  return <div className="grid grid-cols-2 gap-2 text-xs">{parsed.location && <div className="flex items-center gap-1.5"><MapPin className="h-3.5 w-3.5 text-muted-foreground" />
+      <span className="text-muted-foreground">Local:</span><span className="font-medium text-foreground">{parsed.location}</span></div>}
+      {parsed.code && <div className="flex items-center gap-1.5"><Layers className="h-3.5 w-3.5 text-muted-foreground" />
+        <span className="text-muted-foreground">Código:</span><span className="font-mono font-medium text-foreground">{parsed.code}</span></div>}
+      {dimensions && <div className="flex items-center gap-1.5"><Ruler className="h-3.5 w-3.5 text-muted-foreground" />
+        <span className="text-muted-foreground">Tamanho:</span><span className="font-medium text-foreground">{dimensions}</span></div>}
+      <div className="flex items-center gap-1.5"><Palette className="h-3.5 w-3.5 text-muted-foreground" /><span className="text-muted-foreground">Cores:</span>
+        <span className="font-medium text-foreground">{personalization.colors_count || 1}</span></div>
+      {personalization.area_cm2 && <div className="flex items-center gap-1.5"><Package className="h-3.5 w-3.5 text-muted-foreground" />
+        <span className="text-muted-foreground">Área:</span><span className="font-medium text-foreground">{personalization.area_cm2} cm²</span></div>}
+    </div>;
+}
+
+function PersonalizationDetail({ personalization, quantity }: { personalization: Personalization; quantity: number }) {
+  const unit = personalizationUnitCost(personalization, quantity);
+  const total = Math.round(unit * quantity * 100) / 100;
+  return <div className="space-y-3"><div className="bg-muted/50 rounded-lg p-3 space-y-2.5 border border-border/50">
+    <div className="flex items-center gap-2"><Badge className="bg-primary/10 text-primary border-primary/20 hover:bg-primary/10">✦ {personalization.technique_name || 'Gravação'}</Badge></div>
+    <PersonalizationMetadata personalization={personalization} /><Separator className="my-1" /><div className="grid grid-cols-3 gap-2 text-xs">
+      <div><span className="text-muted-foreground block">Unitário</span><span className="font-semibold text-foreground">{fmt(unit)}</span></div>
+      <div><span className="text-muted-foreground block">Setup</span><span className="font-semibold text-foreground">{fmt(personalization.setup_cost || 0)}</span></div>
+      <div><span className="text-muted-foreground block">Total</span><span className="font-semibold text-primary">{fmt(total)}</span></div>
+    </div></div><NextTierHint currentQty={quantity} /></div>;
+}
+
+function PersonalizationDetails({ personalizations, quantity }: { personalizations: Personalization[]; quantity: number }) {
+  if (personalizations.length === 0) return null;
+  return <><Separator /><div><h4 className="text-sm font-semibold text-foreground flex items-center gap-2 mb-3"><Wrench className="h-4 w-4 text-primary" />
+    Personalização ({personalizations.length})</h4><div className="space-y-4">{personalizations.map((personalization, index) =>
+      <PersonalizationDetail key={`${personalization.technique_id || personalization.technique_name}-${index}`} personalization={personalization} quantity={quantity} />)}</div></div></>;
+}
+
+function ItemNotes({ notes }: { notes: string | null | undefined }) {
+  if (!notes || notes.includes('|||')) return null;
+  return <><Separator /><div><h4 className="text-sm font-semibold text-foreground mb-2">Observações</h4><p className="text-sm text-muted-foreground">{notes}</p></div></>;
+}
+
 export function QuoteItemDetailSheet({ item }: { item: QuoteItem }) {
   const personalizations = item.personalizations || [];
   const allInUnit = item.unit_price + personalizations.reduce((sum, p) => {
-    const pTotal = p.total_cost || 0;
-    return sum + (item.quantity > 0 ? Math.round((pTotal / item.quantity) * 100) / 100 : 0);
+    return sum + personalizationUnitCost(p, item.quantity);
   }, 0);
 
   return (
@@ -120,191 +203,11 @@ export function QuoteItemDetailSheet({ item }: { item: QuoteItem }) {
         </SheetHeader>
 
         <div className="mt-6 space-y-6">
-          {/* Product Info */}
-          <div className="flex items-start gap-3">
-            {item.product_image_url && (
-              <img
-                src={item.product_image_url}
-                alt={item.product_name}
-                className="w-16 h-16 object-cover rounded-lg border border-border" loading="lazy" />
-            )}
-            <div className="flex-1 min-w-0">
-              {item.product_sku && (
-                <span 
-                  className="inline-flex items-center gap-1 font-mono text-xs px-1.5 py-0.5 rounded border mb-1"
-                  style={{ 
-                    backgroundColor: item.color_hex ? `${item.color_hex}22` : undefined,
-                    borderColor: item.color_hex || 'hsl(var(--border))',
-                    color: item.color_hex || 'hsl(var(--foreground))'
-                  }}
-                >
-                  {item.color_hex && (
-                    <span className="w-2.5 h-2.5 rounded-full border border-border/50" style={{ backgroundColor: item.color_hex }} />
-                  )}
-                  {item.product_sku}{item.color_name ? `-${item.color_name}` : ''}
-                </span>
-              )}
-              <p className="font-semibold text-foreground">{item.product_name}</p>
-              {!item.product_sku && item.color_name && (
-                <div className="flex items-center gap-1.5 mt-1.5">
-                  {item.color_hex && (
-                    <span className="w-3.5 h-3.5 rounded-full border border-border" style={{ backgroundColor: item.color_hex }} />
-                  )}
-                  <span className="text-sm text-muted-foreground">{item.color_name}</span>
-                </div>
-              )}
-            </div>
-          </div>
-
+          <ProductInfo item={item} />
           <Separator />
-
-          {/* Pricing Summary */}
-          <div>
-            <h4 className="text-sm font-semibold text-foreground flex items-center gap-2 mb-3">
-              <DollarSign className="h-4 w-4 text-primary" />
-              Preços
-            </h4>
-            <div className="space-y-2 text-sm">
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Preço unitário (produto)</span>
-                <span className="font-medium">{fmt(item.unit_price)}</span>
-              </div>
-              {personalizations.length > 0 && (
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Preço unitário (gravação)</span>
-                  <span className="font-medium">
-                    {fmt(personalizations.reduce((sum, p) => {
-                      const pTotal = p.total_cost || 0;
-                      return sum + (item.quantity > 0 ? Math.round((pTotal / item.quantity) * 100) / 100 : 0);
-                    }, 0))}
-                  </span>
-                </div>
-              )}
-              <div className="flex justify-between font-semibold border-t border-border/50 pt-2">
-                <span className="text-foreground">Unitário all-in</span>
-                <span className="text-primary">{fmt(allInUnit)}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Quantidade</span>
-                <span className="font-medium">
-                  {item.quantity}
-                  <span className="text-xs text-muted-foreground ml-1.5">
-                    (faixa {getCurrentTierLabel(item.quantity)} un)
-                  </span>
-                </span>
-              </div>
-              <div className="flex justify-between font-semibold border-t border-border/50 pt-2">
-                <span className="text-foreground">Total do item</span>
-                <span className="text-foreground">{fmt(Math.round(allInUnit * item.quantity * 100) / 100)}</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Personalizations Detail */}
-          {personalizations.length > 0 && (
-            <>
-              <Separator />
-              <div>
-                <h4 className="text-sm font-semibold text-foreground flex items-center gap-2 mb-3">
-                  <Wrench className="h-4 w-4 text-primary" />
-                  Personalização ({personalizations.length})
-                </h4>
-                <div className="space-y-4">
-                  {personalizations.map((p, idx) => {
-                    const parsed = parseNotesField(p.notes || "");
-                    const unitRounded = item.quantity > 0
-                      ? Math.round(((p.total_cost || 0) / item.quantity) * 100) / 100
-                      : 0;
-                    const totalRounded = Math.round(unitRounded * item.quantity * 100) / 100;
-
-                    return (
-                      <div key={idx} className="space-y-3">
-                        <div className="bg-muted/50 rounded-lg p-3 space-y-2.5 border border-border/50">
-                          {/* Technique */}
-                          <div className="flex items-center gap-2">
-                            <Badge className="bg-primary/10 text-primary border-primary/20 hover:bg-primary/10">
-                              ✦ {p.technique_name || "Gravação"}
-                            </Badge>
-                          </div>
-
-                          <div className="grid grid-cols-2 gap-2 text-xs">
-                            {parsed.location && (
-                              <div className="flex items-center gap-1.5">
-                                <MapPin className="h-3.5 w-3.5 text-muted-foreground" />
-                                <span className="text-muted-foreground">Local:</span>
-                                <span className="font-medium text-foreground">{parsed.location}</span>
-                              </div>
-                            )}
-                            {parsed.code && (
-                              <div className="flex items-center gap-1.5">
-                                <Layers className="h-3.5 w-3.5 text-muted-foreground" />
-                                <span className="text-muted-foreground">Código:</span>
-                                <span className="font-mono font-medium text-foreground">{parsed.code}</span>
-                              </div>
-                            )}
-                            {(parsed.dimensions || (p.width_cm && p.height_cm)) && (
-                              <div className="flex items-center gap-1.5">
-                                <Ruler className="h-3.5 w-3.5 text-muted-foreground" />
-                                <span className="text-muted-foreground">Tamanho:</span>
-                                <span className="font-medium text-foreground">
-                                  {parsed.dimensions || `${p.width_cm}×${p.height_cm} cm`}
-                                </span>
-                              </div>
-                            )}
-                            <div className="flex items-center gap-1.5">
-                              <Palette className="h-3.5 w-3.5 text-muted-foreground" />
-                              <span className="text-muted-foreground">Cores:</span>
-                              <span className="font-medium text-foreground">{p.colors_count || 1}</span>
-                            </div>
-                            {p.area_cm2 && (
-                              <div className="flex items-center gap-1.5">
-                                <Package className="h-3.5 w-3.5 text-muted-foreground" />
-                                <span className="text-muted-foreground">Área:</span>
-                                <span className="font-medium text-foreground">{p.area_cm2} cm²</span>
-                              </div>
-                            )}
-                          </div>
-
-                          {/* Costs */}
-                          <Separator className="my-1" />
-                          <div className="grid grid-cols-3 gap-2 text-xs">
-                            <div>
-                              <span className="text-muted-foreground block">Unitário</span>
-                              <span className="font-semibold text-foreground">{fmt(unitRounded)}</span>
-                            </div>
-                            <div>
-                              <span className="text-muted-foreground block">Setup</span>
-                              <span className="font-semibold text-foreground">{fmt(p.setup_cost || 0)}</span>
-                            </div>
-                            <div>
-                              <span className="text-muted-foreground block">Total</span>
-                              <span className="font-semibold text-primary">{fmt(totalRounded)}</span>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Next Tier Hint */}
-                        {getNextTier(item.quantity) && (
-                          <NextTierHint currentQty={item.quantity} />
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            </>
-          )}
-
-          {/* Item Notes */}
-          {item.notes && !item.notes.includes("|||") && (
-            <>
-              <Separator />
-              <div>
-                <h4 className="text-sm font-semibold text-foreground mb-2">Observações</h4>
-                <p className="text-sm text-muted-foreground">{item.notes}</p>
-              </div>
-            </>
-          )}
+          <PricingSummary item={item} personalizations={personalizations} allInUnit={allInUnit} />
+          <PersonalizationDetails personalizations={personalizations} quantity={item.quantity} />
+          <ItemNotes notes={item.notes} />
         </div>
       </SheetContent>
     </Sheet>

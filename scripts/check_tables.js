@@ -1,6 +1,5 @@
 
 import fs from 'fs';
-import path from 'fs';
 
 const externalTables = [
   'products', 'categories', 'suppliers', 'tags', 'product_images', 'product_videos',

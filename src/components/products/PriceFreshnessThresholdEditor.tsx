@@ -35,6 +35,46 @@ interface Props {
   currentEffectiveDays: number;
 }
 
+function resolveInitialThreshold(overrideDays: number | undefined, currentDays: number): FreshnessThreshold {
+  if (overrideDays !== undefined) return overrideDays as FreshnessThreshold;
+  if (ALLOWED_FRESHNESS_THRESHOLDS.includes(currentDays as FreshnessThreshold)) return currentDays as FreshnessThreshold;
+  return 60;
+}
+
+function ThresholdOptions({ selected, onChange }: { selected: FreshnessThreshold; onChange: (value: FreshnessThreshold) => void }) {
+  return (
+    <RadioGroup value={String(selected)} onValueChange={(value) => onChange(Number(value) as FreshnessThreshold)} className="gap-2">
+      {ALLOWED_FRESHNESS_THRESHOLDS.map((days) => (
+        <div key={days} className="flex items-center gap-2">
+          <RadioGroupItem value={String(days)} id={`pft-${days}`} />
+          <Label htmlFor={`pft-${days}`} className="flex flex-1 cursor-pointer items-center justify-between text-sm"><span>{days} dias</span>{days === 60 && <span className="text-[10px] text-muted-foreground">padrão</span>}</Label>
+        </div>
+      ))}
+    </RadioGroup>
+  );
+}
+
+function ThresholdActions({ isOverride, busy, changed, saving, onReset, onSave }: { isOverride: boolean; busy: boolean; changed: boolean; saving: boolean; onReset: () => void; onSave: () => void }) {
+  return (
+    <div className="flex items-center justify-between gap-2 pt-1">
+      <Button variant="ghost" size="sm" className="text-xs" disabled={!isOverride || busy} onClick={onReset}>Restaurar padrão</Button>
+      <Button size="sm" className="text-xs" disabled={busy || !changed} onClick={onSave}>{saving ? <Loader2 className="mr-1 h-3 w-3 animate-spin" /> : null}Salvar</Button>
+    </div>
+  );
+}
+
+function ThresholdPanel({ selected, onChange, actions }: { selected: FreshnessThreshold; onChange: (value: FreshnessThreshold) => void; actions: Parameters<typeof ThresholdActions>[0] }) {
+  return (
+    <PopoverContent className="w-72" align="start">
+      <div className="space-y-3">
+        <div><h4 className="text-sm font-semibold text-foreground">Validade do preço</h4><p className="mt-1 text-xs text-muted-foreground">Define quando o sistema avisará que o preço pode estar defasado para este produto.</p></div>
+        <ThresholdOptions selected={selected} onChange={onChange} />
+        <ThresholdActions {...actions} />
+      </div>
+    </PopoverContent>
+  );
+}
+
 export function PriceFreshnessThresholdEditor({
   productId,
   currentEffectiveDays,
@@ -46,19 +86,13 @@ export function PriceFreshnessThresholdEditor({
   const remove = useDeleteFreshnessOverride();
 
   // Estado local controla a seleção dentro do popover.
-  const initial: FreshnessThreshold =
-    (override?.threshold_days as FreshnessThreshold | undefined) ??
-    (ALLOWED_FRESHNESS_THRESHOLDS.includes(
-      currentEffectiveDays as FreshnessThreshold,
-    )
-      ? (currentEffectiveDays as FreshnessThreshold)
-      : 60);
+  const initial = resolveInitialThreshold(override?.threshold_days, currentEffectiveDays);
   const [selected, setSelected] = useState<FreshnessThreshold>(initial);
 
   if (!isAdmin) return null;
 
   const isOverride = !!override;
-  const busy = upsert.isPending || remove.isPending || isLoading;
+  const busy = [upsert.isPending, remove.isPending, isLoading].some(Boolean);
 
   return (
     <Popover
@@ -84,72 +118,7 @@ export function PriceFreshnessThresholdEditor({
           )}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-72" align="start">
-        <div className="space-y-3">
-          <div>
-            <h4 className="text-sm font-semibold text-foreground">
-              Validade do preço
-            </h4>
-            <p className="mt-1 text-xs text-muted-foreground">
-              Define quando o sistema avisará que o preço pode estar defasado
-              para este produto.
-            </p>
-          </div>
-
-          <RadioGroup
-            value={String(selected)}
-            onValueChange={(v) => setSelected(Number(v) as FreshnessThreshold)}
-            className="gap-2"
-          >
-            {ALLOWED_FRESHNESS_THRESHOLDS.map((days) => (
-              <div key={days} className="flex items-center gap-2">
-                <RadioGroupItem value={String(days)} id={`pft-${days}`} />
-                <Label
-                  htmlFor={`pft-${days}`}
-                  className="flex flex-1 cursor-pointer items-center justify-between text-sm"
-                >
-                  <span>{days} dias</span>
-                  {days === 60 && (
-                    <span className="text-[10px] text-muted-foreground">
-                      padrão
-                    </span>
-                  )}
-                </Label>
-              </div>
-            ))}
-          </RadioGroup>
-
-          <div className="flex items-center justify-between gap-2 pt-1">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-xs"
-              disabled={!isOverride || busy}
-              onClick={() =>
-                remove.mutate(productId, { onSuccess: () => setOpen(false) })
-              }
-            >
-              Restaurar padrão
-            </Button>
-            <Button
-              size="sm"
-              className="text-xs"
-              disabled={busy || selected === initial}
-              onClick={() =>
-                upsert.mutate(
-                  { productId, thresholdDays: selected },
-                  { onSuccess: () => setOpen(false) },
-                )
-              }
-            >
-              {upsert.isPending ? (
-                <Loader2 className="mr-1 h-3 w-3 animate-spin" />
-              ) : null}
-              Salvar
-            </Button>
-          </div>
-        </div>
-      </PopoverContent>
+      <ThresholdPanel selected={selected} onChange={setSelected} actions={{ isOverride, busy, changed: selected !== initial, saving: upsert.isPending, onReset: () => remove.mutate(productId, { onSuccess: () => setOpen(false) }), onSave: () => upsert.mutate({ productId, thresholdDays: selected }, { onSuccess: () => setOpen(false) }) }} />
     </Popover>
   );
 }

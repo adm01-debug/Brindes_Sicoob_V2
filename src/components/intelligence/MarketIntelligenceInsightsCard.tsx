@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 /**
  * MarketIntelligenceInsightsCard — narrativa em IA dos dados do dashboard de Inteligência de Mercado.
  * Consome a edge function `market-intelligence-insights` (Lovable AI).
@@ -35,6 +36,49 @@ interface InsightResponse {
   generated_at?: string;
 }
 
+function useMarketInsights(props: Props) {
+  const { toast } = useToast();
+  return useQuery({
+    queryKey: ["market-intelligence-insights", props.days, props.categoryId, props.supplierId, props.productId],
+    queryFn: async (): Promise<InsightResponse> => {
+      const { data, error } = await supabase.functions.invoke("market-intelligence-insights", { body: props });
+      if (!error) return data as InsightResponse;
+      if (error.message?.includes("429")) toast({ title: "Limite de IA atingido", description: "Aguarde alguns instantes ou verifique sua quota.", variant: "destructive" });
+      else if (error.message?.includes("402")) toast({ title: "Sem créditos de IA", description: "Adicione créditos no workspace.", variant: "destructive" });
+      throw error;
+    },
+    staleTime: 1000 * 60 * 5,
+    retry: false,
+  });
+}
+
+function InsightsHeader({ data, days, filters }: { data: InsightResponse | undefined; days: number; filters: string[] }) {
+  return (
+    <CardHeader className="pb-3"><div className="min-w-0">
+      <CardTitle className="flex items-center gap-2 text-base"><Sparkles className="h-5 w-5 text-primary" />Insights da IA
+        {data?.cached ? <Tooltip><TooltipTrigger asChild><Badge variant="outline" className="text-[10px] px-1.5 py-0 border-chart-2/40 text-chart-2 gap-1"><Database className="h-2.5 w-2.5" /> Cache</Badge></TooltipTrigger><TooltipContent><p className="text-xs">Gerado em {data.generated_at ? new Date(data.generated_at).toLocaleString("pt-BR") : "—"}.</p></TooltipContent></Tooltip> : null}
+      </CardTitle>
+      <CardDescription className="flex flex-wrap items-center gap-1.5 mt-1"><span>Análise dos últimos {days} dias</span>{filters.map((filter) => <Badge key={filter} variant="outline" className="text-[10px] px-1.5 py-0 border-primary/30 text-primary">{filter}</Badge>)}</CardDescription>
+    </div></CardHeader>
+  );
+}
+
+function InsightHighlights({ highlights }: { highlights: string[] | undefined }) {
+  if (!highlights?.length) return null;
+  return <div className="flex items-start gap-2 p-2.5 rounded-md bg-card/60 border border-border/40 animate-fade-in" style={{ animationDelay: "200ms" }}><div className="shrink-0 mt-0.5"><Star className="h-4 w-4 text-chart-5" /></div><div className="min-w-0"><p className="text-[10px] uppercase tracking-wide text-muted-foreground font-semibold">Destaques</p><ul className="text-sm text-foreground/90 leading-relaxed list-disc pl-4 space-y-0.5">{highlights.map((highlight) => <li key={highlight}>{highlight}</li>)}</ul></div></div>;
+}
+
+function InsightData({ data }: { data: InsightResponse }) {
+  if (data.empty) return <div className="flex items-start gap-3 p-4 rounded-md bg-muted/40 border border-dashed border-border"><Inbox className="h-5 w-5 text-muted-foreground shrink-0 mt-0.5" /><div className="space-y-1.5"><p className="text-sm font-medium text-foreground">{data.summary}</p><p className="text-xs text-muted-foreground">{data.next_action}</p></div></div>;
+  return <div className="space-y-3 text-sm">{data.summary ? <p className="font-medium text-foreground leading-relaxed animate-fade-in">{data.summary}</p> : null}<div className="grid gap-2.5"><InsightRow icon={<TrendingUp className="h-4 w-4 text-chart-2" />} label="O que mudou" text={data.what_changed} delay={50} /><InsightRow icon={<Lightbulb className="h-4 w-4 text-chart-4" />} label="Por quê" text={data.why} delay={100} /><InsightRow icon={<Sparkles className="h-4 w-4 text-primary" />} label="Próxima ação" text={data.next_action} delay={150} /><InsightHighlights highlights={data.highlights} /></div></div>;
+}
+
+function InsightsContent({ data, isLoading, isError }: { data: InsightResponse | undefined; isLoading: boolean; isError: boolean }) {
+  if (isLoading) return <div className="space-y-3"><Skeleton className="h-4 w-3/4" /><Skeleton className="h-4 w-full" /><Skeleton className="h-4 w-5/6" /></div>;
+  if (isError) return <div className="flex items-start gap-2 text-sm text-muted-foreground"><AlertTriangle className="h-4 w-4 text-destructive shrink-0 mt-0.5" /><span>Não foi possível gerar insights agora. Tente novamente em instantes.</span></div>;
+  return data ? <InsightData data={data} /> : null;
+}
+
 export function MarketIntelligenceInsightsCard({
   days,
   categoryId,
@@ -44,30 +88,8 @@ export function MarketIntelligenceInsightsCard({
   supplierName,
   productName,
 }: Props) {
-  const { toast } = useToast();
-
-  const { data, isLoading, isError } = useQuery({
-    queryKey: ["market-intelligence-insights", days, categoryId, supplierId, productId],
-    queryFn: async (): Promise<InsightResponse> => {
-      const { data, error } = await supabase.functions.invoke("market-intelligence-insights", {
-        body: {
-          days, categoryId, supplierId, productId,
-          categoryName, supplierName, productName,
-        },
-      });
-      if (error) {
-        if (error.message?.includes("429")) {
-          toast({ title: "Limite de IA atingido", description: "Aguarde alguns instantes ou verifique sua quota.", variant: "destructive" });
-        } else if (error.message?.includes("402")) {
-          toast({ title: "Sem créditos de IA", description: "Adicione créditos no workspace.", variant: "destructive" });
-        }
-        throw error;
-      }
-      return data as InsightResponse;
-    },
-    staleTime: 1000 * 60 * 5,
-    retry: false,
-  });
+  const props = { days, categoryId, supplierId, productId, categoryName, supplierName, productName };
+  const { data, isLoading, isError } = useMarketInsights(props);
 
   const filterChips = [
     categoryName && `Categoria: ${categoryName}`,
@@ -78,83 +100,8 @@ export function MarketIntelligenceInsightsCard({
   return (
     <TooltipProvider>
       <Card className="border-primary/30 bg-gradient-to-br from-primary/5 via-background to-chart-2/5 animate-fade-in">
-        <CardHeader className="pb-3">
-          <div className="min-w-0">
-            <CardTitle className="flex items-center gap-2 text-base">
-              <Sparkles className="h-5 w-5 text-primary" />
-              Insights da IA
-              {data?.cached && (
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Badge variant="outline" className="text-[10px] px-1.5 py-0 border-chart-2/40 text-chart-2 gap-1">
-                      <Database className="h-2.5 w-2.5" /> Cache
-                    </Badge>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p className="text-xs">
-                      Gerado em {data.generated_at ? new Date(data.generated_at).toLocaleString("pt-BR") : "—"}.
-                    </p>
-                  </TooltipContent>
-                </Tooltip>
-              )}
-            </CardTitle>
-            <CardDescription className="flex flex-wrap items-center gap-1.5 mt-1">
-              <span>Análise dos últimos {days} dias</span>
-              {filterChips.map((c) => (
-                <Badge key={c} variant="outline" className="text-[10px] px-1.5 py-0 border-primary/30 text-primary">
-                  {c}
-                </Badge>
-              ))}
-            </CardDescription>
-          </div>
-        </CardHeader>
-        <CardContent>
-          {isLoading ? (
-            <div className="space-y-3">
-              <Skeleton className="h-4 w-3/4" />
-              <Skeleton className="h-4 w-full" />
-              <Skeleton className="h-4 w-5/6" />
-            </div>
-          ) : isError ? (
-            <div className="flex items-start gap-2 text-sm text-muted-foreground">
-              <AlertTriangle className="h-4 w-4 text-destructive shrink-0 mt-0.5" />
-              <span>Não foi possível gerar insights agora. Tente novamente em instantes.</span>
-            </div>
-          ) : data?.empty ? (
-            <div className="flex items-start gap-3 p-4 rounded-md bg-muted/40 border border-dashed border-border">
-              <Inbox className="h-5 w-5 text-muted-foreground shrink-0 mt-0.5" />
-              <div className="space-y-1.5">
-                <p className="text-sm font-medium text-foreground">{data.summary}</p>
-                <p className="text-xs text-muted-foreground">{data.next_action}</p>
-              </div>
-            </div>
-          ) : data ? (
-            <div className="space-y-3 text-sm">
-              {data.summary && (
-                <p className="font-medium text-foreground leading-relaxed animate-fade-in">{data.summary}</p>
-              )}
-              <div className="grid gap-2.5">
-                <InsightRow icon={<TrendingUp className="h-4 w-4 text-chart-2" />} label="O que mudou" text={data.what_changed} delay={50} />
-                <InsightRow icon={<Lightbulb className="h-4 w-4 text-chart-4" />} label="Por quê" text={data.why} delay={100} />
-                <InsightRow icon={<Sparkles className="h-4 w-4 text-primary" />} label="Próxima ação" text={data.next_action} delay={150} />
-                {data.highlights && data.highlights.length > 0 && (
-                  <div
-                    className="flex items-start gap-2 p-2.5 rounded-md bg-card/60 border border-border/40 animate-fade-in"
-                    style={{ animationDelay: "200ms" }}
-                  >
-                    <div className="shrink-0 mt-0.5"><Star className="h-4 w-4 text-chart-5" /></div>
-                    <div className="min-w-0">
-                      <p className="text-[10px] uppercase tracking-wide text-muted-foreground font-semibold">Destaques</p>
-                      <ul className="text-sm text-foreground/90 leading-relaxed list-disc pl-4 space-y-0.5">
-                        {data.highlights.map((h, i) => <li key={i}>{h}</li>)}
-                      </ul>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          ) : null}
-        </CardContent>
+        <InsightsHeader data={data} days={days} filters={filterChips} />
+        <CardContent><InsightsContent data={data} isLoading={isLoading} isError={isError} /></CardContent>
       </Card>
     </TooltipProvider>
   );
@@ -166,7 +113,7 @@ function InsightRow({
   text,
   delay = 0,
 }: {
-  icon: React.ReactNode;
+  icon: ReactNode;
   label: string;
   text?: string;
   delay?: number;

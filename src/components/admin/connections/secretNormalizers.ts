@@ -12,6 +12,10 @@ export interface NormalizationResult {
   changes: string[];
 }
 
+const TRAILING_SLASH_REMOVED = "barra final removida";
+const QUERY_REMOVED = "query removida";
+const FRAGMENT_REMOVED = "fragmento removido";
+
 function stripQuotes(s: string, changes: string[]): string {
   if (s.length >= 2) {
     const first = s[0];
@@ -47,6 +51,19 @@ function stripBearer(s: string, changes: string[]): string {
   return s;
 }
 
+function recordSupabaseUrlChanges(url: URL, raw: string, rebuilt: string, changes: string[]): void {
+  if (url.hostname.toLowerCase() !== url.hostname) changes.push("host normalizado para minúsculas");
+  const originalUrl = `${url.protocol}//${url.hostname}${url.pathname.replace(/\/$/, "")}${url.search}${url.hash}`;
+  if (rebuilt === originalUrl) {
+    if (raw.endsWith("/")) changes.push(TRAILING_SLASH_REMOVED);
+    return;
+  }
+  if (url.pathname && url.pathname !== "/") changes.push("caminho removido");
+  if (url.search) changes.push(QUERY_REMOVED);
+  if (url.hash) changes.push(FRAGMENT_REMOVED);
+  if (raw.endsWith("/") && rebuilt !== raw) changes.push(TRAILING_SLASH_REMOVED);
+}
+
 function normalizeSupabaseUrl(raw: string): NormalizationResult {
   const changes: string[] = [];
   let v = trimEdges(raw, changes);
@@ -55,16 +72,8 @@ function normalizeSupabaseUrl(raw: string): NormalizationResult {
   try {
     const u = new URL(v);
     const host = u.hostname.toLowerCase();
-    if (host !== u.hostname) changes.push("host normalizado para minúsculas");
     const rebuilt = `${u.protocol}//${host}`;
-    if (rebuilt !== `${u.protocol}//${u.hostname}${u.pathname.replace(/\/$/, "")}${u.search}${u.hash}`) {
-      if (u.pathname && u.pathname !== "/" && u.pathname !== "") changes.push("caminho removido");
-      if (u.search) changes.push("query removida");
-      if (u.hash) changes.push("fragmento removido");
-      if (v.endsWith("/") && rebuilt !== v) changes.push("barra final removida");
-    } else if (v.endsWith("/")) {
-      changes.push("barra final removida");
-    }
+    recordSupabaseUrlChanges(u, v, rebuilt, changes);
     return { value: rebuilt, changes };
   } catch {
     // Not a parseable URL — leave as-is, validator will catch it.
@@ -87,8 +96,8 @@ function normalizeBitrixWebhook(raw: string): NormalizationResult {
   v = stripQuotes(v, changes);
   try {
     const u = new URL(v);
-    if (u.search) changes.push("query removida");
-    if (u.hash) changes.push("fragmento removido");
+    if (u.search) changes.push(QUERY_REMOVED);
+    if (u.hash) changes.push(FRAGMENT_REMOVED);
     let path = u.pathname;
     if (!path.endsWith("/")) {
       path += "/";
@@ -109,7 +118,7 @@ function normalizeBitrixDomain(raw: string): NormalizationResult {
   if (v !== before) changes.push("protocolo removido");
   if (v.endsWith("/")) {
     v = v.replace(/\/+$/, "");
-    changes.push("barra final removida");
+    changes.push(TRAILING_SLASH_REMOVED);
   }
   const lower = v.toLowerCase();
   if (lower !== v) changes.push("host normalizado para minúsculas");
@@ -118,7 +127,7 @@ function normalizeBitrixDomain(raw: string): NormalizationResult {
 
 function normalizeDigitsOnly(raw: string): NormalizationResult {
   const changes: string[] = [];
-  let v = trimEdges(raw, changes);
+  const v = trimEdges(raw, changes);
   const stripped = v.replace(/\D+/g, "");
   if (stripped !== v) changes.push("caracteres não-numéricos removidos");
   return { value: stripped, changes };
@@ -131,9 +140,9 @@ function normalizeN8nBaseUrl(raw: string): NormalizationResult {
   try {
     const u = new URL(v);
     if (u.pathname && u.pathname !== "/" && u.pathname !== "") changes.push("caminho removido");
-    if (u.search) changes.push("query removida");
-    if (u.hash) changes.push("fragmento removido");
-    if (v.endsWith("/")) changes.push("barra final removida");
+    if (u.search) changes.push(QUERY_REMOVED);
+    if (u.hash) changes.push(FRAGMENT_REMOVED);
+    if (v.endsWith("/")) changes.push(TRAILING_SLASH_REMOVED);
     return { value: `${u.protocol}//${u.hostname.toLowerCase()}`, changes };
   } catch {
     return { value: v, changes };
@@ -161,26 +170,28 @@ function normalizeDefault(raw: string): NormalizationResult {
   return { value: v, changes };
 }
 
+type SecretNormalizer = (raw: string) => NormalizationResult;
+
+const SECRET_NORMALIZERS: Record<string, SecretNormalizer> = {
+  EXTERNAL_PROMOBRIND_URL: normalizeSupabaseUrl,
+  EXTERNAL_CRM_URL: normalizeSupabaseUrl,
+  EXTERNAL_PROMOBRIND_ANON_KEY: normalizeJwt,
+  EXTERNAL_PROMOBRIND_SERVICE_ROLE_KEY: normalizeJwt,
+  EXTERNAL_CRM_ANON_KEY: normalizeJwt,
+  EXTERNAL_CRM_SERVICE_ROLE_KEY: normalizeJwt,
+  BITRIX24_WEBHOOK_URL: normalizeBitrixWebhook,
+  BITRIX24_DOMAIN: normalizeBitrixDomain,
+  BITRIX24_USER_ID: normalizeDigitsOnly,
+  BITRIX24_TOKEN: normalizeSecretToken,
+  N8N_BASE_URL: normalizeN8nBaseUrl,
+  N8N_API_KEY: normalizeJwt,
+  MCP_SERVER_URL: normalizeMcpUrl,
+  MCP_SHARED_SECRET: normalizeSecretToken,
+};
+
 export function normalizeSecret(name: string, raw: string): NormalizationResult {
-  if (name === "EXTERNAL_PROMOBRIND_URL" || name === "EXTERNAL_CRM_URL") {
-    return normalizeSupabaseUrl(raw);
-  }
-  if (
-    name === "EXTERNAL_PROMOBRIND_ANON_KEY" ||
-    name === "EXTERNAL_PROMOBRIND_SERVICE_ROLE_KEY" ||
-    name === "EXTERNAL_CRM_ANON_KEY" ||
-    name === "EXTERNAL_CRM_SERVICE_ROLE_KEY"
-  ) {
-    return normalizeJwt(raw);
-  }
-  if (name === "BITRIX24_WEBHOOK_URL") return normalizeBitrixWebhook(raw);
-  if (name === "BITRIX24_DOMAIN") return normalizeBitrixDomain(raw);
-  if (name === "BITRIX24_USER_ID") return normalizeDigitsOnly(raw);
-  if (name === "BITRIX24_TOKEN") return normalizeSecretToken(raw);
-  if (name === "N8N_BASE_URL") return normalizeN8nBaseUrl(raw);
-  if (name === "N8N_API_KEY") return normalizeJwt(raw);
-  if (name === "MCP_SERVER_URL") return normalizeMcpUrl(raw);
-  if (name === "MCP_SHARED_SECRET") return normalizeSecretToken(raw);
+  const normalizer = SECRET_NORMALIZERS[name];
+  if (normalizer) return normalizer(raw);
   if (/_HMAC_|_SECRET_|_HMAC$|_SECRET$/.test(name)) return normalizeSecretToken(raw);
   return normalizeDefault(raw);
 }

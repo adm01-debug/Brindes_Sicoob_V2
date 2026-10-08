@@ -91,6 +91,10 @@ export interface ColumnMapping {
   required: boolean;
 }
 
+function recordsOrEmpty<T>(result: { records?: T[] } | null | undefined) {
+  return result?.records ?? [];
+}
+
 // Hook principal de cadastro
 export function useProductRegistration() {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -137,9 +141,9 @@ export function useProductRegistration() {
         fetchMaterialsAll({ limit: 500 }),
       ]);
       setReferenceData({
-        categories: categoriesResult?.records || [], suppliers: suppliersResult?.records || [],
-        techniques: techniquesResult?.records || [], tags: tagsResult?.records || [],
-        colors: colorsResult?.records || [], materials: materialsResult?.records || [],
+        categories: recordsOrEmpty(categoriesResult), suppliers: recordsOrEmpty(suppliersResult),
+        techniques: recordsOrEmpty(techniquesResult), tags: recordsOrEmpty(tagsResult),
+        colors: recordsOrEmpty(colorsResult), materials: recordsOrEmpty(materialsResult),
         isLoading: false, error: null,
       });
     } catch (error) {

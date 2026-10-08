@@ -2,7 +2,7 @@
  * AdminTemplatesManager — Refactored orchestrator
  * Table/Grid views extracted to ./admin-templates/
  */
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -29,127 +29,135 @@ interface Seller {
   email: string;
 }
 
-export function AdminTemplatesManager({ onEditTemplate }: AdminTemplatesManagerProps) {
-  const { user } = useAuth();
-  const { templates, isLoading, fetchTemplates, deleteTemplate } = useQuoteTemplates();
+function formatCurrency(value: number) {
+  return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value);
+}
+
+function calculateTotal(template: QuoteTemplate) {
+  const itemsTotal = (template.items_data ?? []).reduce((sum, item) => {
+    const personalizationCost = item.personalizations?.reduce(
+      (personalizationSum, personalization) => personalizationSum
+        + (personalization.unitCost || 0) * item.quantity + (personalization.setupCost || 0), 0) || 0;
+    return sum + item.quantity * item.unitPrice + personalizationCost;
+  }, 0);
+  const discountPercent = template.discount_percent ?? 0;
+  const discountAmount = template.discount_amount ?? 0;
+  return itemsTotal - (discountPercent > 0 ? itemsTotal * (discountPercent / 100) : discountAmount);
+}
+
+function useTemplateSellers(templates: QuoteTemplate[]) {
   const [sellers, setSellers] = useState<Seller[]>([]);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedSellerId, setSelectedSellerId] = useState<string>("all");
-  const [viewMode, setViewMode] = useState<"grid" | "table">("table");
-  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
-  const [cloneDialogOpen, setCloneDialogOpen] = useState(false);
-  const [cloneTemplateId, setCloneTemplateId] = useState<string | null>(null);
-  const [targetSellerId, setTargetSellerId] = useState<string>("");
-
-  // Carrega os vendedores donos dos templates existentes
   useEffect(() => {
-    const sellerIds = Array.from(
-      new Set(templates.map((t) => t.seller_id).filter((id): id is string => !!id))
-    );
-    if (sellerIds.length === 0) {
-      setSellers([]);
-      return;
-    }
-
+    const sellerIds = Array.from(new Set(templates.map((template) => template.seller_id)
+      .filter((id): id is string => Boolean(id))));
+    if (sellerIds.length === 0) { setSellers([]); return; }
     let cancelled = false;
-    supabase
-      .from("profiles")
-      .select("user_id, full_name, email")
-      .in("user_id", sellerIds)
+    void supabase.from("profiles").select("user_id, full_name, email").in("user_id", sellerIds)
       .then(({ data, error }) => {
-        if (cancelled || error || !data) return;
-        setSellers(
-          data.map((p) => ({
-            id: p.user_id,
-            full_name: p.full_name,
-            email: p.email ?? "",
-          }))
-        );
+        if (!cancelled && !error && data) setSellers(data.map((profile) => ({
+          id: profile.user_id, full_name: profile.full_name, email: profile.email ?? "",
+        })));
       });
-
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, [templates]);
+  return sellers;
+}
 
-  const getSellerName = (sellerId: string) => {
-    const seller = sellers.find((s) => s.id === sellerId);
-    return seller?.full_name || seller?.email || "Vendedor desconhecido";
-  };
-
-  const filteredTemplates = useMemo(
-    () =>
-      templates.filter((t) => {
-        const matchesSearch =
-          t.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          (t.description?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false);
-        const matchesSeller = selectedSellerId === "all" || t.seller_id === selectedSellerId;
-        return matchesSearch && matchesSeller;
-      }),
-    [templates, searchTerm, selectedSellerId]
-  );
-
-  const templatesBySeller = useMemo(() => {
-    const grouped: Record<string, QuoteTemplate[]> = {};
-    filteredTemplates.forEach((t) => {
-      const key = t.seller_id ?? "sem-vendedor";
-      if (!grouped[key]) grouped[key] = [];
-      grouped[key].push(t);
-    });
+function useTemplateFilters(templates: QuoteTemplate[]) {
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedSellerId, setSelectedSellerId] = useState("all");
+  const filteredTemplates = useMemo(() => templates.filter((template) => {
+    const search = searchTerm.toLowerCase();
+    const matchesSearch = template.name.toLowerCase().includes(search)
+      || (template.description?.toLowerCase().includes(search) ?? false);
+    return matchesSearch && (selectedSellerId === "all" || template.seller_id === selectedSellerId);
+  }), [templates, searchTerm, selectedSellerId]);
+  const templatesBySeller = useMemo(() => filteredTemplates.reduce<Record<string, QuoteTemplate[]>>((grouped, template) => {
+    const key = template.seller_id ?? "sem-vendedor";
+    (grouped[key] ??= []).push(template);
     return grouped;
-  }, [filteredTemplates]);
+  }, {}), [filteredTemplates]);
+  return { searchTerm, setSearchTerm, selectedSellerId, setSelectedSellerId, filteredTemplates, templatesBySeller };
+}
 
-  const formatCurrency = (value: number) =>
-    new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value);
-
-  const calculateTotal = useCallback((template: QuoteTemplate) => {
-    const items = template.items_data ?? [];
-    const itemsTotal = items.reduce((sum, item) => {
-      const personalizationCost =
-        item.personalizations?.reduce(
-          (pSum, p) => pSum + (p.unitCost || 0) * item.quantity + (p.setupCost || 0),
-          0
-        ) || 0;
-      return sum + item.quantity * item.unitPrice + personalizationCost;
-    }, 0);
-    const discountPercent = template.discount_percent ?? 0;
-    const discountAmount = template.discount_amount ?? 0;
-    const discountValue = discountPercent > 0 ? itemsTotal * (discountPercent / 100) : discountAmount;
-    return itemsTotal - discountValue;
-  }, []);
-
+function useTemplateActions(templates: QuoteTemplate[], deleteTemplate: (id: string) => Promise<void>, fetchTemplates: () => void) {
+  const { user } = useAuth();
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+  const [cloneTemplateId, setCloneTemplateId] = useState<string | null>(null);
+  const [targetSellerId, setTargetSellerId] = useState("");
   const handleDelete = async () => {
-    if (deleteConfirmId) {
-      await deleteTemplate(deleteConfirmId);
-      setDeleteConfirmId(null);
-    }
+    if (!deleteConfirmId) return;
+    await deleteTemplate(deleteConfirmId);
+    setDeleteConfirmId(null);
   };
-
   const handleClone = async () => {
     if (!cloneTemplateId || !targetSellerId || !user) return;
-    const source = templates.find((t) => t.id === cloneTemplateId);
+    const source = templates.find((template) => template.id === cloneTemplateId);
     if (!source) return;
-
     try {
-      const { id, ...rest } = source;
-      const { error } = await supabase.from("quote_templates").insert({
-        ...rest,
-        items_data: rest.items_data ? JSON.parse(JSON.stringify(rest.items_data)) : null,
-        created_by: user.id,
-        seller_id: targetSellerId,
-      });
+      const { error } = await supabase.from("quote_templates").insert({ ...source,
+        items_data: source.items_data ? JSON.parse(JSON.stringify(source.items_data)) : null,
+        created_by: user.id, seller_id: targetSellerId });
       if (error) throw error;
-      toast.success("Template clonado com sucesso!");
-      fetchTemplates();
-    } catch (err) {
-      console.error("Error cloning template:", err);
-      toast.error("Erro ao clonar template");
-    } finally {
-      setCloneDialogOpen(false);
-      setCloneTemplateId(null);
-      setTargetSellerId("");
-    }
+      toast.success("Template clonado com sucesso!"); fetchTemplates();
+    } catch (error) { console.error("Error cloning template:", error); toast.error("Erro ao clonar template"); }
+    finally { setCloneTemplateId(null); setTargetSellerId(""); }
   };
+  return { deleteConfirmId, setDeleteConfirmId, cloneTemplateId, setCloneTemplateId, targetSellerId,
+    setTargetSellerId, handleDelete, handleClone };
+}
+
+type TemplateFilters = ReturnType<typeof useTemplateFilters>;
+type TemplateActions = ReturnType<typeof useTemplateActions>;
+
+function TemplatesToolbar({ filters, sellers, viewMode, setViewMode }: {
+  filters: TemplateFilters; sellers: Seller[]; viewMode: "grid" | "table"; setViewMode: (mode: "grid" | "table") => void;
+}) {
+  const exportName = `templates-all-${new Date().toISOString().split('T')[0]}.json`;
+  return <><div className="flex flex-col sm:flex-row items-start sm:items-center gap-3"><div className="relative flex-1 w-full">
+    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+    <Input placeholder="Buscar templates..." value={filters.searchTerm}
+      onChange={(event) => filters.setSearchTerm(event.target.value)} className="pl-9" />
+  </div><div className="flex items-center gap-2 w-full sm:w-auto"><Select value={filters.selectedSellerId} onValueChange={filters.setSelectedSellerId}>
+    <SelectTrigger className="w-full sm:w-[200px]"><Filter className="h-4 w-4 mr-2" /><SelectValue placeholder="Filtrar por vendedor" /></SelectTrigger>
+    <SelectContent><SelectItem value="all"><span className="flex items-center gap-2"><Users className="h-4 w-4" />Todos os vendedores</span></SelectItem>
+      <Separator className="my-1" />{sellers.map((seller) => <SelectItem key={seller.id} value={seller.id}>
+        <span className="flex items-center gap-2"><User className="h-4 w-4" />{seller.full_name || seller.email}</span></SelectItem>)}</SelectContent>
+  </Select>{filters.filteredTemplates.length > 0 && <Button variant="outline" size="sm"
+    onClick={() => exportTemplatesToJson(filters.filteredTemplates, exportName)}><Download className="h-4 w-4 mr-2" />Exportar</Button>}
+    <div className="flex items-center border rounded-md"><Button variant={viewMode === "table" ? "secondary" : "ghost"} size="icon" aria-label="Lista"
+      className="h-9 w-9 rounded-r-none" onClick={() => setViewMode("table")}><List className="h-4 w-4" /></Button>
+      <Button variant={viewMode === "grid" ? "secondary" : "ghost"} size="icon" aria-label="Grid"
+        className="h-9 w-9 rounded-l-none" onClick={() => setViewMode("grid")}><LayoutGrid className="h-4 w-4" /></Button></div>
+  </div></div><div className="flex items-center gap-4 text-sm text-muted-foreground">
+    <span>{filters.filteredTemplates.length} templates encontrados</span><span>•</span>
+    <span>{Object.keys(filters.templatesBySeller).length} vendedores</span></div></>;
+}
+
+function TemplatesResult({ filters, sellers, viewMode, actions, onEdit }: {
+  filters: TemplateFilters; sellers: Seller[]; viewMode: "grid" | "table"; actions: TemplateActions;
+  onEdit?: (template: QuoteTemplate) => void;
+}) {
+  const getSellerName = (id: string) => {
+    const seller = sellers.find((candidate) => candidate.id === id);
+    return seller?.full_name || seller?.email || "Vendedor desconhecido";
+  };
+  const openClone = (id: string) => actions.setCloneTemplateId(id);
+  if (filters.filteredTemplates.length === 0) return <Card><CardContent className="flex flex-col items-center justify-center py-12 text-center">
+    <FileText className="h-12 w-12 text-muted-foreground mb-4" /><h3 className="font-display font-medium text-lg mb-2">Nenhum template encontrado</h3>
+    <p className="text-muted-foreground">{filters.searchTerm || filters.selectedSellerId !== "all" ? "Tente ajustar os filtros de busca" : "Não há templates cadastrados no sistema"}</p>
+  </CardContent></Card>;
+  const shared = { getSellerName, formatCurrency, calculateTotal, onEdit, onClone: openClone, onDelete: actions.setDeleteConfirmId };
+  return viewMode === "table" ? <TemplateTableView templates={filters.filteredTemplates} {...shared} />
+    : <TemplateGridView templatesBySeller={filters.templatesBySeller} {...shared} />;
+}
+
+export function AdminTemplatesManager({ onEditTemplate }: AdminTemplatesManagerProps) {
+  const { templates, isLoading, fetchTemplates, deleteTemplate } = useQuoteTemplates();
+  const sellers = useTemplateSellers(templates);
+  const filters = useTemplateFilters(templates);
+  const actions = useTemplateActions(templates, deleteTemplate, fetchTemplates);
+  const [viewMode, setViewMode] = useState<"grid" | "table">("table");
 
   if (isLoading)
     return (
@@ -164,44 +172,10 @@ export function AdminTemplatesManager({ onEditTemplate }: AdminTemplatesManagerP
       </div>
     );
 
-  return (
-    <div className="space-y-4">
-      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
-        <div className="relative flex-1 w-full">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input placeholder="Buscar templates..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-9" />
-        </div>
-        <div className="flex items-center gap-2 w-full sm:w-auto">
-          <Select value={selectedSellerId} onValueChange={setSelectedSellerId}>
-            <SelectTrigger className="w-full sm:w-[200px]"><Filter className="h-4 w-4 mr-2" /><SelectValue placeholder="Filtrar por vendedor" /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all"><span className="flex items-center gap-2"><Users className="h-4 w-4" />Todos os vendedores</span></SelectItem>
-              <Separator className="my-1" />
-              {sellers.map((s) => <SelectItem key={s.id} value={s.id}><span className="flex items-center gap-2"><User className="h-4 w-4" />{s.full_name || s.email}</span></SelectItem>)}
-            </SelectContent>
-          </Select>
-          {filteredTemplates.length > 0 && <Button variant="outline" size="sm" onClick={() => exportTemplatesToJson(filteredTemplates, `templates-all-${new Date().toISOString().split('T')[0]}.json`)}><Download className="h-4 w-4 mr-2" />Exportar</Button>}
-          <div className="flex items-center border rounded-md">
-            <Button variant={viewMode === "table" ? "secondary" : "ghost"} size="icon" aria-label="Lista" className="h-9 w-9 rounded-r-none" onClick={() => setViewMode("table")}><List className="h-4 w-4" /></Button>
-            <Button variant={viewMode === "grid" ? "secondary" : "ghost"} size="icon" aria-label="Grid" className="h-9 w-9 rounded-l-none" onClick={() => setViewMode("grid")}><LayoutGrid className="h-4 w-4" /></Button>
-          </div>
-        </div>
-      </div>
-
-      <div className="flex items-center gap-4 text-sm text-muted-foreground">
-        <span>{filteredTemplates.length} templates encontrados</span><span>•</span><span>{Object.keys(templatesBySeller).length} vendedores</span>
-      </div>
-
-      {filteredTemplates.length === 0 ? (
-        <Card><CardContent className="flex flex-col items-center justify-center py-12 text-center"><FileText className="h-12 w-12 text-muted-foreground mb-4" /><h3 className="font-display font-medium text-lg mb-2">Nenhum template encontrado</h3><p className="text-muted-foreground">{searchTerm || selectedSellerId !== "all" ? "Tente ajustar os filtros de busca" : "Não há templates cadastrados no sistema"}</p></CardContent></Card>
-      ) : viewMode === "table" ? (
-        <TemplateTableView templates={filteredTemplates} getSellerName={getSellerName} formatCurrency={formatCurrency} calculateTotal={calculateTotal} onEdit={onEditTemplate} onClone={(id) => { setCloneTemplateId(id); setCloneDialogOpen(true); }} onDelete={setDeleteConfirmId} />
-      ) : (
-        <TemplateGridView templatesBySeller={templatesBySeller} getSellerName={getSellerName} formatCurrency={formatCurrency} calculateTotal={calculateTotal} onEdit={onEditTemplate} onClone={(id) => { setCloneTemplateId(id); setCloneDialogOpen(true); }} onDelete={setDeleteConfirmId} />
-      )}
-
-      <TemplateDeleteDialog open={!!deleteConfirmId} onClose={() => setDeleteConfirmId(null)} onConfirm={handleDelete} />
-      <TemplateCloneDialog open={cloneDialogOpen} onClose={() => { setCloneDialogOpen(false); setCloneTemplateId(null); setTargetSellerId(""); }} onConfirm={handleClone} sellers={sellers} targetSellerId={targetSellerId} setTargetSellerId={setTargetSellerId} />
-    </div>
-  );
+  return <div className="space-y-4"><TemplatesToolbar filters={filters} sellers={sellers} viewMode={viewMode} setViewMode={setViewMode} />
+    <TemplatesResult filters={filters} sellers={sellers} viewMode={viewMode} actions={actions} onEdit={onEditTemplate} />
+    <TemplateDeleteDialog open={Boolean(actions.deleteConfirmId)} onClose={() => actions.setDeleteConfirmId(null)} onConfirm={actions.handleDelete} />
+    <TemplateCloneDialog open={Boolean(actions.cloneTemplateId)} onClose={() => { actions.setCloneTemplateId(null); actions.setTargetSellerId(""); }}
+      onConfirm={actions.handleClone} sellers={sellers} targetSellerId={actions.targetSellerId} setTargetSellerId={actions.setTargetSellerId} />
+  </div>;
 }

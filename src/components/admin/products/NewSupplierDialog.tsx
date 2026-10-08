@@ -1,13 +1,12 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Plus, Loader2, Building2, Phone, DollarSign, Settings2, MapPin, Globe, Landmark } from 'lucide-react';
+import { Plus, Loader2, Building2, Phone, DollarSign, Settings2, MapPin, Globe, Landmark, Trash2 } from "lucide-react";
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Trash2, X } from 'lucide-react';
 import { applyPixMask, pixPlaceholder, validatePixKey } from '@/utils/pixMask';
 import { type NewSupplierDialogProps } from './new-supplier/types';
 import { useNewSupplierForm } from './new-supplier/useNewSupplierForm';

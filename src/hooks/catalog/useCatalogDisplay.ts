@@ -1,5 +1,6 @@
 import { useState, useCallback, useEffect } from "react";
 import { getDefaultColumns, STORAGE_KEY as GRID_COLUMNS_KEY, type ColumnCount } from "@/components/products/ColumnSelector";
+import { logger } from "@/lib/logger";
 
 export type ViewMode = "grid" | "list" | "table";
 export type SortOption = "name" | "price-asc" | "price-desc" | "stock" | "newest" | "color-match" | "best-seller-supplier" | "best-seller-promo";
@@ -10,7 +11,9 @@ function getPersistedViewMode(): ViewMode {
   try {
     const saved = localStorage.getItem(VIEW_MODE_KEY);
     if (saved === "grid" || saved === "list" || saved === "table") return saved;
-  } catch {}
+  } catch (error) {
+    logger.warn("Não foi possível ler o modo de exibição do catálogo", error);
+  }
   return "grid";
 }
 
@@ -18,13 +21,21 @@ export function useCatalogDisplay() {
   const [viewMode, setViewModeState] = useState<ViewMode>(getPersistedViewMode);
   const setViewMode = useCallback((mode: ViewMode) => {
     setViewModeState(mode);
-    try { localStorage.setItem(VIEW_MODE_KEY, mode); } catch {}
+    try {
+      localStorage.setItem(VIEW_MODE_KEY, mode);
+    } catch (error) {
+      logger.warn("Não foi possível salvar o modo de exibição do catálogo", error);
+    }
   }, []);
 
   const [gridColumns, setGridColumnsState] = useState<ColumnCount>(getDefaultColumns);
   const setGridColumns = useCallback((cols: ColumnCount) => {
     setGridColumnsState(cols);
-    try { localStorage.setItem(GRID_COLUMNS_KEY, String(cols)); } catch {}
+    try {
+      localStorage.setItem(GRID_COLUMNS_KEY, String(cols));
+    } catch (error) {
+      logger.warn("Não foi possível salvar as colunas do catálogo", error);
+    }
   }, []);
 
   const [sortBy, setSortBy] = useState<SortOption>("name");

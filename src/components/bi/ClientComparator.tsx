@@ -4,7 +4,7 @@
  */
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+
 import { Skeleton } from "@/components/ui/skeleton";
 import { CheckCircle2, AlertTriangle, X, Trophy, Minus } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -29,6 +29,25 @@ function tierBadge(tier: ClientComparisonRow["tier"]) {
     default:
       return { color: "text-muted-foreground bg-muted", icon: Minus, label: "—" };
   }
+}
+
+function formatDaysSinceOrder(days: number | null | undefined): string {
+  return days === null || days === undefined ? "—" : `${days}d`;
+}
+
+function CategoryMetric({ label, share, variant }: { label: string | null; share: number; variant: "favorite" | "opportunity" }) {
+  if (!label) return <span className="text-muted-foreground">—</span>;
+  const className = variant === "favorite"
+    ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
+    : "border-violet-500/30 bg-violet-500/10 text-violet-700 dark:text-violet-300";
+  return (
+    <>
+      <span className="truncate">{label}</span>
+      <Badge variant="outline" className={cn("text-[9px] h-4 px-1 shrink-0 tabular-nums", className)}>
+        {variant === "opportunity" && "setor "}{share}%
+      </Badge>
+    </>
+  );
 }
 
 function ClientColumn({ clientId, onRemove }: { clientId: string; onRemove: () => void }) {
@@ -91,7 +110,7 @@ function ClientColumn({ clientId, onRemove }: { clientId: string; onRemove: () =
         <div className="flex justify-between gap-2">
           <dt className="text-muted-foreground">Última compra</dt>
           <dd className="font-medium tabular-nums">
-            {row.daysSinceLastOrder != null ? `${row.daysSinceLastOrder}d` : "—"}
+            {formatDaysSinceOrder(row.daysSinceLastOrder)}
           </dd>
         </div>
         <div className="flex justify-between gap-2">
@@ -103,31 +122,13 @@ function ClientColumn({ clientId, onRemove }: { clientId: string; onRemove: () =
         <div className="flex justify-between gap-2 items-center">
           <dt className="text-muted-foreground">Categoria favorita</dt>
           <dd className="font-medium truncate max-w-[140px] flex items-center gap-1.5" title={row.favoriteCategoryLabel ?? "—"}>
-            {row.favoriteCategoryLabel ? (
-              <>
-                <span className="truncate">{row.favoriteCategoryLabel}</span>
-                <Badge variant="outline" className="text-[9px] h-4 px-1 border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 shrink-0 tabular-nums">
-                  {row.favoriteCategorySharePct}%
-                </Badge>
-              </>
-            ) : (
-              <span className="text-muted-foreground">—</span>
-            )}
+            <CategoryMetric label={row.favoriteCategoryLabel} share={row.favoriteCategorySharePct} variant="favorite" />
           </dd>
         </div>
         <div className="flex justify-between gap-2 items-center">
           <dt className="text-muted-foreground">Categoria oportunidade</dt>
           <dd className="font-medium truncate max-w-[140px] flex items-center gap-1.5" title={row.opportunityCategoryLabel ?? "—"}>
-            {row.opportunityCategoryLabel ? (
-              <>
-                <span className="truncate">{row.opportunityCategoryLabel}</span>
-                <Badge variant="outline" className="text-[9px] h-4 px-1 border-violet-500/30 bg-violet-500/10 text-violet-700 dark:text-violet-300 shrink-0 tabular-nums">
-                  setor {row.opportunityCategorySharePct}%
-                </Badge>
-              </>
-            ) : (
-              <span className="text-muted-foreground">—</span>
-            )}
+            <CategoryMetric label={row.opportunityCategoryLabel} share={row.opportunityCategorySharePct} variant="opportunity" />
           </dd>
         </div>
         <div className="flex justify-between gap-2">

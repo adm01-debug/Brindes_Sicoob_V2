@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Copy, Check, Share2, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import type { Json } from "@/integrations/supabase/types";
 import type { CompareItem } from "@/stores/useComparisonStore";
 
 interface Props {
@@ -44,7 +45,7 @@ export function ShareComparisonDialog({ open, onOpenChange, compareItems, client
           user_id: userData.user.id,
           client_id: clientId ?? null,
           client_name: clientName ?? null,
-          items: compareItems as any,
+          items: JSON.parse(JSON.stringify(compareItems)) as Json,
           is_public: true,
           share_expires_at: expiresAt,
         })

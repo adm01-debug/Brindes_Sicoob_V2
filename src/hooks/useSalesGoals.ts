@@ -4,6 +4,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { startOfMonth, endOfMonth, startOfWeek, endOfWeek, startOfQuarter, endOfQuarter, format } from "date-fns";
 
+const SALES_GOALS_QUERY_KEY = "sales-goals";
+const ACTIVE_SALES_GOAL_QUERY_KEY = "active-sales-goal";
 
 export interface SalesGoal {
   id: string;
@@ -30,6 +32,36 @@ export interface CreateGoalInput {
   target_conversions?: number;
 }
 
+interface GoalProgressIncrement {
+  addValue: number;
+  addQuotes: number;
+  addConversions: number;
+}
+
+function targetWasReached(current: number, target: number) {
+  return target === 0 || current >= target;
+}
+
+function calculateProgressUpdate(goal: SalesGoal, increment: GoalProgressIncrement) {
+  const currentValue = goal.current_value || 0;
+  const currentQuotes = goal.current_quotes || 0;
+  const currentConversions = goal.current_conversions || 0;
+  const newValue = currentValue + increment.addValue;
+  const newQuotes = currentQuotes + increment.addQuotes;
+  const newConversions = currentConversions + increment.addConversions;
+  const targetQuotes = goal.target_quotes ?? 0;
+  const targetConversions = goal.target_conversions ?? 0;
+  const isAchieved = newValue >= goal.target_value
+    && targetWasReached(newQuotes, targetQuotes)
+    && targetWasReached(newConversions, targetConversions);
+  return { newValue, newQuotes, newConversions, isAchieved };
+}
+
+function resolveAchievedAt(goal: SalesGoal, isAchieved: boolean) {
+  if (isAchieved && !goal.is_achieved) return new Date().toISOString();
+  return goal.achieved_at;
+}
+
 export function useSalesGoals() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
@@ -51,7 +83,7 @@ export function useSalesGoals() {
 
   // Fetch current goals
   const { data: goals, isLoading } = useQuery({
-    queryKey: ["sales-goals", user?.id],
+    queryKey: [SALES_GOALS_QUERY_KEY, user?.id],
     queryFn: async () => {
       if (!user?.id) return [];
 
@@ -69,7 +101,7 @@ export function useSalesGoals() {
 
   // Get active goal for current period
   const { data: activeGoal, isLoading: isLoadingActive } = useQuery({
-    queryKey: ["active-sales-goal", user?.id],
+    queryKey: [ACTIVE_SALES_GOAL_QUERY_KEY, user?.id],
     queryFn: async () => {
       if (!user?.id) return null;
 
@@ -118,8 +150,8 @@ export function useSalesGoals() {
       return data as SalesGoal;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["sales-goals"] });
-      queryClient.invalidateQueries({ queryKey: ["active-sales-goal"] });
+      queryClient.invalidateQueries({ queryKey: [SALES_GOALS_QUERY_KEY] });
+      queryClient.invalidateQueries({ queryKey: [ACTIVE_SALES_GOAL_QUERY_KEY] });
       toast.success("Meta criada com sucesso!");
     },
     onError: (error) => {
@@ -151,19 +183,13 @@ export function useSalesGoals() {
 
       if (fetchError) throw fetchError;
 
-      const newValue = (currentGoal.current_value || 0) + addValue;
-      const newQuotes = (currentGoal.current_quotes || 0) + addQuotes;
-      const newConversions = (currentGoal.current_conversions || 0) + addConversions;
-
-      // Check if goal is achieved
-      const targetQuotes = currentGoal.target_quotes ?? 0;
-      const targetConversions = currentGoal.target_conversions ?? 0;
-      const isAchieved =
-        newValue >= currentGoal.target_value &&
-        (targetQuotes === 0 || newQuotes >= targetQuotes) &&
-        (targetConversions === 0 || newConversions >= targetConversions);
-
-      const wasNotAchieved = !currentGoal.is_achieved;
+      const goal = currentGoal as SalesGoal;
+      const { newValue, newQuotes, newConversions, isAchieved } = calculateProgressUpdate(goal, {
+        addValue,
+        addQuotes,
+        addConversions,
+      });
+      const justAchieved = isAchieved && !goal.is_achieved;
 
       const { data, error } = await supabase
         .from("sales_goals")
@@ -172,7 +198,7 @@ export function useSalesGoals() {
           current_quotes: newQuotes,
           current_conversions: newConversions,
           is_achieved: isAchieved,
-          achieved_at: isAchieved && wasNotAchieved ? new Date().toISOString() : currentGoal.achieved_at,
+          achieved_at: resolveAchievedAt(goal, isAchieved),
         })
         .eq("id", goalId)
         .select()
@@ -180,11 +206,11 @@ export function useSalesGoals() {
 
       if (error) throw error;
 
-      return { goal: data as SalesGoal, justAchieved: isAchieved && wasNotAchieved };
+      return { goal: data as SalesGoal, justAchieved };
     },
     onSuccess: async ({ justAchieved }) => {
-      queryClient.invalidateQueries({ queryKey: ["sales-goals"] });
-      queryClient.invalidateQueries({ queryKey: ["active-sales-goal"] });
+      queryClient.invalidateQueries({ queryKey: [SALES_GOALS_QUERY_KEY] });
+      queryClient.invalidateQueries({ queryKey: [ACTIVE_SALES_GOAL_QUERY_KEY] });
 
       if (justAchieved) {
         toast.success("🎉 Meta atingida!", {
@@ -204,8 +230,8 @@ export function useSalesGoals() {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["sales-goals"] });
-      queryClient.invalidateQueries({ queryKey: ["active-sales-goal"] });
+      queryClient.invalidateQueries({ queryKey: [SALES_GOALS_QUERY_KEY] });
+      queryClient.invalidateQueries({ queryKey: [ACTIVE_SALES_GOAL_QUERY_KEY] });
       toast.success("Meta excluída");
     },
   });

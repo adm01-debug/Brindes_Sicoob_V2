@@ -87,10 +87,10 @@ export function useAccessSecurity() {
     toast.success("Configurações atualizadas");
   };
 
-  const addIp = async (ip_address: string, label?: string) => {
+  const addIp = async (ipAddress: string, label?: string) => {
     const { data, error } = await supabase
       .from("ip_whitelist")
-      .insert({ ip_address, label: label || null })
+      .insert({ ip_address: ipAddress, label: label || null })
       .select()
       .single();
     if (error) {
@@ -110,16 +110,16 @@ export function useAccessSecurity() {
     toast.success("IP removido");
   };
 
-  const toggleIp = async (id: string, is_active: boolean) => {
-    const { error } = await supabase.from("ip_whitelist").update({ is_active }).eq("id", id);
+  const toggleIp = async (id: string, isActive: boolean) => {
+    const { error } = await supabase.from("ip_whitelist").update({ is_active: isActive }).eq("id", id);
     if (error) { toast.error("Erro ao atualizar IP"); return; }
-    setIps(prev => prev.map(ip => ip.id === id ? { ...ip, is_active } : ip));
+    setIps(prev => prev.map(ip => ip.id === id ? { ...ip, is_active: isActive } : ip));
   };
 
-  const addCity = async (city_name: string, state?: string, country_code = "BR") => {
+  const addCity = async (cityName: string, state?: string, countryCode = "BR") => {
     const { data, error } = await supabase
       .from("city_whitelist")
-      .insert({ city_name, state: state || null, country_code })
+      .insert({ city_name: cityName, state: state || null, country_code: countryCode })
       .select()
       .single();
     if (error) {
@@ -139,10 +139,10 @@ export function useAccessSecurity() {
     toast.success("Cidade removida");
   };
 
-  const toggleCity = async (id: string, is_active: boolean) => {
-    const { error } = await supabase.from("city_whitelist").update({ is_active }).eq("id", id);
+  const toggleCity = async (id: string, isActive: boolean) => {
+    const { error } = await supabase.from("city_whitelist").update({ is_active: isActive }).eq("id", id);
     if (error) { toast.error("Erro ao atualizar cidade"); return; }
-    setCities(prev => prev.map(c => c.id === id ? { ...c, is_active } : c));
+    setCities(prev => prev.map(c => c.id === id ? { ...c, is_active: isActive } : c));
   };
 
   return {

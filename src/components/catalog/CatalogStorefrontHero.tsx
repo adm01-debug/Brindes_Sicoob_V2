@@ -68,7 +68,7 @@ export function CatalogStorefrontHero({ onBrowse, onSelectIntent, onSelectBudget
         <div className="absolute inset-0 bg-gradient-to-r from-[#f7f4ec] via-[#f7f4ec]/95 to-[#f7f4ec]/5 sm:via-[#f7f4ec]/80 lg:via-[#f7f4ec]/55" />
         <div className="relative z-10 flex min-h-[31rem] max-w-[43rem] flex-col justify-center px-6 py-10 sm:min-h-[34rem] sm:px-10 lg:min-h-[31rem] lg:px-14">
           <span className="mb-5 w-fit rounded-full bg-[#c9f1e9] px-3 py-1 text-xs font-bold tracking-wide text-[#005f5b]">Curadoria para cooperativas</span>
-          <h1 id="storefront-title" className="max-w-[10ch] font-display text-4xl font-bold leading-[0.98] tracking-[-0.035em] text-[#003f46] sm:text-5xl lg:text-6xl">
+          <h1 id="storefront-title" data-testid="page-title-dashboard" className="max-w-[10ch] font-display text-4xl font-bold leading-[0.98] tracking-[-0.035em] text-[#003f46] sm:text-5xl lg:text-6xl">
             Brindes que aproximam pessoas da sua cooperativa.
           </h1>
           <p className="mt-6 max-w-xl text-base leading-7 text-[#335d61] sm:text-lg">
@@ -112,22 +112,23 @@ export function CatalogStorefrontHero({ onBrowse, onSelectIntent, onSelectBudget
         <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#00877c]">Compre pelo seu objetivo</p>
         <h2 className="mt-2 font-display text-2xl font-bold tracking-tight text-[#003f46] sm:text-3xl">Qual momento você quer tornar especial?</h2>
         <div className="mt-5 flex snap-x snap-mandatory gap-3 overflow-x-auto pb-2 [scrollbar-width:none] sm:grid sm:grid-cols-2 sm:overflow-visible sm:pb-0 xl:grid-cols-4">
-          {purchaseIntents.map(({ label, description, query, icon: Icon, tone }) => (
-            <button
+          {purchaseIntents.map(({ label, description, query, icon, tone }) => {
+            const IntentIcon = icon;
+            return <button
               key={label}
               type="button"
               onClick={() => onSelectIntent(query)}
               className="group flex min-h-[7.5rem] min-w-[16rem] snap-start items-center gap-4 rounded-2xl border border-[#d8e5e3] bg-white p-4 text-left shadow-[0_10px_30px_-26px_rgba(0,70,76,0.9)] transition hover:-translate-y-0.5 hover:border-[#79cfc6] hover:shadow-[0_18px_36px_-26px_rgba(0,70,76,0.8)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#008b80] focus-visible:ring-offset-2 sm:min-w-0"
             >
               <span className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl ${tone}`}>
-                <Icon className="h-5 w-5" aria-hidden="true" />
+                <IntentIcon className="h-5 w-5" aria-hidden="true" />
               </span>
               <span>
                 <span className="block font-display text-base font-bold text-[#003f46] group-hover:text-[#007d74]">{label}</span>
                 <span className="mt-1 block text-sm leading-5 text-[#557276]">{description}</span>
               </span>
-            </button>
-          ))}
+            </button>;
+          })}
         </div>
       </div>
 

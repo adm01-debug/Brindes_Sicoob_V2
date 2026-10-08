@@ -5,7 +5,7 @@
  * Since the edge function runs in Deno, we extract & re-implement the pure
  * logic here for comprehensive unit testing in Vitest.
  */
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, beforeEach } from "vitest";
 
 // ============================================
 // Re-implement pure functions from the edge function
@@ -225,9 +225,9 @@ describe("external-db-bridge — getResourceGroup", () => {
   });
 
   it("returns null for system tables (not in any whitelist)", () => {
-    expect(getResourceGroup("audit_log")).toBeNull();
-    expect(getResourceGroup("payments")).toBeNull();
-    expect(getResourceGroup("notifications")).toBeNull();
+    for (const table of SYSTEM_TABLES) {
+      expect(getResourceGroup(table)).toBeNull();
+    }
   });
 
   // business_sectors appears in both PRODUCT_TABLES and COMPANY_TABLES

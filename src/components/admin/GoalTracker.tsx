@@ -4,31 +4,32 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Target, TrendingUp } from "lucide-react";
 
+async function fetchGoalStats() {
+  const startOfMonth = new Date();
+  startOfMonth.setDate(1);
+  startOfMonth.setHours(0, 0, 0, 0);
+
+  const { data: orders } = await supabase
+    // rls-allow: indicador administrativo; RLS aplica papel e organização
+    .from("orders")
+    .select("total")
+    .gte("created_at", startOfMonth.toISOString());
+  const { data: setting } = await supabase
+    .from("admin_settings")
+    .select("value")
+    .eq("key", "monthly_sales_goal")
+    .maybeSingle();
+  const currentSales = orders?.reduce((sum, order) => sum + (order.total || 0), 0) || 0;
+  const configuredGoal = setting?.value && typeof setting.value === "object" && !Array.isArray(setting.value)
+    ? setting.value.amount
+    : undefined;
+  return { currentSales, goal: typeof configuredGoal === "number" ? configuredGoal : 100000 };
+}
+
 export function GoalTracker() {
   const { data: stats } = useQuery({
     queryKey: ["admin_goal_tracker"],
-    queryFn: async () => {
-      const startOfMonth = new Date();
-      startOfMonth.setDate(1);
-      startOfMonth.setHours(0, 0, 0, 0);
-
-      const { data: orders } = await supabase
-        // rls-allow: indicador administrativo; RLS aplica papel e organização
-        .from("orders")
-        .select("total")
-        .gte("created_at", startOfMonth.toISOString());
-      
-      const { data: setting } = await supabase
-        .from("admin_settings")
-        .select("value")
-        .eq("key", "monthly_sales_goal")
-        .maybeSingle();
-
-      const currentSales = orders?.reduce((sum, o) => sum + (o.total || 0), 0) || 0;
-      const goal = (setting?.value as any)?.amount || 100000; // Default goal 100k
-
-      return { currentSales, goal };
-    }
+    queryFn: fetchGoalStats,
   });
 
   if (!stats) return null;

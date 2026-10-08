@@ -50,6 +50,20 @@ const ACTION_META: Record<RepairAction["action"], { label: string; variant: "des
   failed:        { label: "Falhou",         variant: "destructive", icon: AlertTriangle },
 };
 
+function AppliedRepairAlert({ applied }: { applied: RepairResult | null }) {
+  if (!applied) return null;
+  return (
+    <Alert>
+      <CheckCircle2 className="h-4 w-4 text-success" />
+      <AlertTitle>Reparo aplicado</AlertTitle>
+      <AlertDescription className="text-xs">
+        Todas as ações foram gravadas em <code>ownership_repair_logs</code>. Rode uma nova
+        auditoria para confirmar que as lacunas foram fechadas.
+      </AlertDescription>
+    </Alert>
+  );
+}
+
 export function OwnershipRepairDialog({ reportId, hasIssues }: Props) {
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
@@ -64,8 +78,7 @@ export function OwnershipRepairDialog({ reportId, hasIssues }: Props) {
         body: { report_id: reportId, dry_run: dryRun, triggered_by: dryRun ? "dry_run" : "apply" },
       });
       if (error) throw error;
-      const result = (data as { result: RepairResult }).result;
-      return result;
+      return (data as { result: RepairResult }).result;
     } catch (e) {
       console.error(e);
       toast.error(`Falha no reparo: ${(e as Error).message}`);
@@ -102,10 +115,10 @@ export function OwnershipRepairDialog({ reportId, hasIssues }: Props) {
     setApplied(null);
   }
 
-  const display = applied ?? preview;
+  const display = (applied ?? preview);
 
   return (
-    <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) reset(); }}>
+    (<Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) reset(); }}>
       <DialogTrigger asChild>
         <Button variant="outline" disabled={!hasIssues} className="gap-2">
           <Wrench className="h-4 w-4" /> Reparar registros
@@ -192,16 +205,7 @@ export function OwnershipRepairDialog({ reportId, hasIssues }: Props) {
                 </Table>
               </div>
 
-              {applied && (
-                <Alert>
-                  <CheckCircle2 className="h-4 w-4 text-success" />
-                  <AlertTitle>Reparo aplicado</AlertTitle>
-                  <AlertDescription className="text-xs">
-                    Todas as ações foram gravadas em <code>ownership_repair_logs</code>. Rode uma nova
-                    auditoria para confirmar que as lacunas foram fechadas.
-                  </AlertDescription>
-                </Alert>
-              )}
+              <AppliedRepairAlert applied={applied} />
             </>
           )}
         </div>
@@ -222,11 +226,12 @@ export function OwnershipRepairDialog({ reportId, hasIssues }: Props) {
           </Button>
         </DialogFooter>
       </DialogContent>
-    </Dialog>
+    </Dialog>)
   );
 }
 
-function Stat({ label, value, icon: Icon, tone }: { label: string; value: number; icon: typeof Trash2; tone: "destructive" | "warning" | "muted" }) {
+function Stat({ label, value, icon, tone }: { label: string; value: number; icon: typeof Trash2; tone: "destructive" | "warning" | "muted" }) {
+  const StatIcon = icon;
   const toneClass =
     tone === "destructive" ? "text-destructive" :
     tone === "warning"     ? "text-amber-600 dark:text-amber-400" :
@@ -234,7 +239,7 @@ function Stat({ label, value, icon: Icon, tone }: { label: string; value: number
   return (
     <div className="border rounded-md p-3">
       <div className="flex items-center gap-2 text-xs text-muted-foreground">
-        <Icon className="h-3.5 w-3.5" /> {label}
+        <StatIcon className="h-3.5 w-3.5" /> {label}
       </div>
       <div className={`text-2xl font-bold mt-1 ${toneClass}`}>{value}</div>
     </div>

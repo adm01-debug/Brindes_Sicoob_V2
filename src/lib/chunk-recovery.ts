@@ -26,6 +26,15 @@ import { logger } from "@/lib/logger";
 const STORAGE_KEY = "__chunk_recovery__";
 const WINDOW_MS = 30_000;
 const MAX_HARD_RELOADS = 2;
+const CHUNK_ERROR_PATTERNS = [
+  "Failed to fetch dynamically imported module",
+  "error loading dynamically imported module",
+  "Loading chunk",
+  "ChunkLoadError",
+  "Importing a module script failed",
+  "Unable to preload CSS",
+  "Precondition Failed",
+];
 
 interface RecoveryState {
   attempts: number;
@@ -71,31 +80,20 @@ export function clearChunkRecoveryState(): void {
  */
 export function isChunkLoadError(error: unknown): boolean {
   if (!error) return false;
-
-  // Response de fetch direto (raro neste path mas suportado)
-  if (typeof Response !== "undefined" && error instanceof Response) {
-    return error.status === 502 || error.status === 503 || error.status === 504;
-  }
-
-  const message =
-    error instanceof Error
-      ? error.message
-      : typeof error === "string"
-        ? error
-        : "";
-
+  if (isFailedChunkResponse(error)) return true;
+  const message = errorMessage(error);
   if (!message) return false;
+  return CHUNK_ERROR_PATTERNS.some(pattern => message.includes(pattern)) || /\b(412|502|503|504)\b/.test(message);
+}
 
-  return (
-    message.includes("Failed to fetch dynamically imported module") ||
-    message.includes("error loading dynamically imported module") ||
-    message.includes("Loading chunk") ||
-    message.includes("ChunkLoadError") ||
-    message.includes("Importing a module script failed") ||
-    message.includes("Unable to preload CSS") ||
-    /\b(412|502|503|504)\b/.test(message) ||
-    message.includes("Precondition Failed")
-  );
+function isFailedChunkResponse(error: unknown): boolean {
+  if (typeof Response === "undefined" || !(error instanceof Response)) return false;
+  return error.status === 502 || error.status === 503 || error.status === 504;
+}
+
+function errorMessage(error: unknown): string {
+  if (error instanceof Error) return error.message;
+  return typeof error === "string" ? error : "";
 }
 
 /**

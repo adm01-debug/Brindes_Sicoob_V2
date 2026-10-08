@@ -15,8 +15,9 @@ export function exportTrendsCsv(
   rows: Array<Record<string, unknown>>,
   columns?: Array<{ key: string; header: string }>,
 ): void {
-  if (!rows.length) return;
-  const cols = columns ?? Object.keys(rows[0]).map(k => ({ key: k, header: k }));
+  const firstRow = rows[0];
+  if (!firstRow) return;
+  const cols = columns ?? Object.keys(firstRow).map(k => ({ key: k, header: k }));
   const header = cols.map(c => escapeCsv(c.header)).join(",");
   const body = rows
     .map(r => cols.map(c => escapeCsv(r[c.key])).join(","))

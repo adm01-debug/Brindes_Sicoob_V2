@@ -112,6 +112,7 @@ const App = () => {
 
                             {/* Admin & Sicoob Group */}
                             <Route element={<AdminRoute />}>
+                              <Route path="/admin/aprovacoes-desconto" element={<Navigate to="/admin/usuarios?tab=discounts" replace />} />
                               {adminRoutes.map(r => (
                                 <Route key={r.path} path={r.path} element={<RouteSuspense><r.component /></RouteSuspense>} />
                               ))}

@@ -360,7 +360,6 @@ export const notificationsMetrics = {
       state.triggerToFetchTtlBreaches += 1;
       // Always warn on breach — even with debug OFF — since this signals
       // a real regression of the prefetch debounce vs TTL contract.
-      // eslint-disable-next-line no-console
       console.warn(
         `[notifications-metrics] trigger→fetch exceeded TTL window (${totalMs}ms >= ${TRIGGER_TO_FETCH_TTL_MS}ms)`,
         full

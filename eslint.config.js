@@ -7,7 +7,6 @@ import typescriptParser from '@typescript-eslint/parser';
 import jsxA11y from 'eslint-plugin-jsx-a11y';
 import sonarjs from 'eslint-plugin-sonarjs';
 
-
 // Parser options compartilhados — apontam para o tsconfig.eslint.json que
 // inclui src/, e2e/, tests/ e scripts/. Isso evita o erro
 // "ESLint was configured to run on `<file>` using `parserOptions.project`
@@ -30,6 +29,7 @@ export default [
       'coverage',
       'playwright-report',
       'test-results',
+      'vendor',
       'supabase/functions/**',
       '*.config.js',
       '*.config.ts',
@@ -59,8 +59,7 @@ export default [
       'react-hooks': reactHooks,
       '@typescript-eslint': typescript,
       'jsx-a11y': jsxA11y,
-      'sonarjs': sonarjs,
-
+      sonarjs: sonarjs,
     },
     rules: {
       ...js.configs.recommended.rules,
@@ -71,8 +70,14 @@ export default [
       // TypeScript strict rules
       '@typescript-eslint/explicit-module-boundary-types': 'off',
       '@typescript-eslint/no-explicit-any': 'error',
-      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
-      '@typescript-eslint/consistent-type-imports': ['error', { prefer: 'type-imports', fixStyle: 'inline-type-imports' }],
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
+      ],
+      '@typescript-eslint/consistent-type-imports': [
+        'error',
+        { prefer: 'type-imports', fixStyle: 'inline-type-imports' },
+      ],
       '@typescript-eslint/no-non-null-assertion': 'warn',
       '@typescript-eslint/naming-convention': [
         'warn',
@@ -80,7 +85,11 @@ export default [
         { selector: 'typeAlias', format: ['PascalCase'] },
         { selector: 'enum', format: ['PascalCase'] },
         { selector: 'enumMember', format: ['UPPER_CASE', 'PascalCase'] },
-        { selector: 'variable', modifiers: ['const', 'exported'], format: ['camelCase', 'PascalCase', 'UPPER_CASE'] },
+        {
+          selector: 'variable',
+          modifiers: ['const', 'exported'],
+          format: ['camelCase', 'PascalCase', 'UPPER_CASE'],
+        },
         { selector: 'function', format: ['camelCase', 'PascalCase'] },
         { selector: 'parameter', format: ['camelCase'], leadingUnderscore: 'allow' },
         { selector: 'typeLike', format: ['PascalCase'] },
@@ -92,26 +101,25 @@ export default [
       'no-duplicate-imports': 'error',
       'no-else-return': 'warn',
       'prefer-const': 'error',
-      'eqeqeq': ['error', 'always'],
+      eqeqeq: ['error', 'always'],
 
       // React
       'react-hooks/rules-of-hooks': 'error',
       'react-hooks/exhaustive-deps': 'warn',
       'jsx-a11y/anchor-is-valid': 'warn',
-      
+
       // Clean Code & Complexity (SonarJS)
       'sonarjs/cognitive-complexity': ['error', 15],
       'sonarjs/no-duplicate-string': 'warn',
       'sonarjs/no-identical-functions': 'error',
       'sonarjs/prefer-immediate-return': 'warn',
-      'complexity': ['error', 10],
+      complexity: ['error', 10],
       // O ESLint 9.39.x pode acessar uma linha inexistente em funções que
       // terminam no EOF ao filtrar comentários ou linhas vazias (Node 24.20).
       // A regra continua ativa como aviso usando a contagem física estável.
       'max-lines-per-function': ['warn', { max: 50, skipBlankLines: false, skipComments: false }],
       'max-depth': ['error', 4],
       'max-params': ['warn', 4],
-
     },
     settings: {
       react: { version: 'detect' },
@@ -134,7 +142,10 @@ export default [
       ...typescript.configs.recommended.rules,
       // E2E tem fixtures, helpers e selectors — relaxar regras de produção:
       '@typescript-eslint/no-explicit-any': 'warn',
-      '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
+      '@typescript-eslint/no-unused-vars': [
+        'warn',
+        { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
+      ],
       '@typescript-eslint/no-non-null-assertion': 'off',
       'no-console': 'off',
       'no-empty-pattern': 'off', // Playwright fixtures: ({}, testInfo) => ...
@@ -169,8 +180,7 @@ export default [
         {
           // page.fill(<sel>, "literal-sem-prefixo-E2E")
           // Detecta literais que NÃO começam com "[E2E" (cobre "[E2E]" global e "[E2E:slug]" escopado).
-          selector:
-            "CallExpression[callee.property.name='fill'] > Literal[value=/^(?!\\[E2E).+/]",
+          selector: "CallExpression[callee.property.name='fill'] > Literal[value=/^(?!\\[E2E).+/]",
           message:
             'Proibido `.fill("literal")` em campos de specs — use `resources.createX()` (fixture) ou `e2eName(label, { prefix })` para garantir cleanup escopado por spec.',
         },
@@ -186,7 +196,7 @@ export default [
     languageOptions: {
       parser: typescriptParser,
       parserOptions: tsParserOptions,
-      globals: { ...globals.node, ...globals.browser },
+      globals: { ...globals.node, ...globals.browser, ...globals.vitest },
     },
     plugins: {
       react,
@@ -198,8 +208,13 @@ export default [
       ...typescript.configs.recommended.rules,
       'react/react-in-jsx-scope': 'off',
       'react/prop-types': 'off',
-      '@typescript-eslint/no-explicit-any': 'warn',
-      '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
+      // Mocks atravessam contratos parciais e APIs de terceiros; o código de produção
+      // permanece coberto pela regra estrita definida no bloco principal.
+      '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/no-unused-vars': [
+        'warn',
+        { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
+      ],
       '@typescript-eslint/no-non-null-assertion': 'off',
       'no-console': 'off',
       // Tests podem usar mocks/stubs com nomes não convencionais

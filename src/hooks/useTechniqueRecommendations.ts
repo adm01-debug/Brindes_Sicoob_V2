@@ -126,7 +126,7 @@ function extractKeywords(product: Product | null): string[] {
   ].filter(Boolean).join(' ').toLowerCase();
   
   // Extrair palavras individuais
-  const words = text.split(/[\s\-_\/,]+/).filter(w => w.length > 2);
+  const words = text.split(/[\s\-_/ ,]+/).filter(w => w.length > 2);
   
   return [...new Set(words)];
 }
@@ -160,22 +160,33 @@ function calculateRecommendationScore(
   // Normalizar score para 0-100
   score = Math.min(100, Math.round(score));
   
-  // Gerar razão
-  if (matchedKeywords.length > 0) {
-    reasons.push(`Ideal para ${matchedKeywords.slice(0, 2).join(', ')}`);
-  }
-  if (technique.estimated_days <= 3) {
-    reasons.push('Entrega rápida');
-  }
-  if (technique.unit_cost < 2) {
-    reasons.push('Ótimo custo-benefício');
-  }
+  reasons.push(...recommendationReasons(technique, matchedKeywords));
   
   return {
     score,
     matchedKeywords,
-    reason: reasons.length > 0 ? reasons[0]! : 'Técnica compatível',
+    reason: reasons[0] ?? 'Técnica compatível',
   };
+}
+
+function recommendationReasons(technique: Technique, matchedKeywords: string[]) {
+  const reasons: string[] = [];
+  if (matchedKeywords.length > 0) reasons.push(`Ideal para ${matchedKeywords.slice(0, 2).join(', ')}`);
+  if (technique.estimated_days <= 3) reasons.push('Entrega rápida');
+  if (technique.unit_cost < 2) reasons.push('Ótimo custo-benefício');
+  return reasons;
+}
+
+function selectedOrder(aSelected: boolean, bSelected: boolean) {
+  if (aSelected && !bSelected) return -1;
+  if (!aSelected && bSelected) return 1;
+  return 0;
+}
+
+function recommendationOrder(a: TechniqueWithRecommendation, b: TechniqueWithRecommendation) {
+  if (a.recommendation.isRecommended && !b.recommendation.isRecommended) return -1;
+  if (!a.recommendation.isRecommended && b.recommendation.isRecommended) return 1;
+  return b.recommendation.recommendationScore - a.recommendation.recommendationScore;
 }
 
 /**
@@ -252,19 +263,17 @@ export function sortTechniques(
   sortBy: SortOption,
   selectedIds: string[] = []
 ): TechniqueWithRecommendation[] {
-  const sorted = [...techniques].sort((a, b) => {
+  return [...techniques].sort((a, b) => {
     // Selecionadas sempre primeiro
     const aSelected = selectedIds.includes(a.id);
     const bSelected = selectedIds.includes(b.id);
-    if (aSelected && !bSelected) return -1;
-    if (!aSelected && bSelected) return 1;
+    const selectionOrder = selectedOrder(aSelected, bSelected);
+    if (selectionOrder !== 0) return selectionOrder;
     
     switch (sortBy) {
       case 'recommended':
         // Por score de recomendação
-        if (a.recommendation.isRecommended && !b.recommendation.isRecommended) return -1;
-        if (!a.recommendation.isRecommended && b.recommendation.isRecommended) return 1;
-        return b.recommendation.recommendationScore - a.recommendation.recommendationScore;
+        return recommendationOrder(a, b);
         
       case 'price_asc':
         return a.unit_cost - b.unit_cost;
@@ -285,6 +294,4 @@ export function sortTechniques(
         return 0;
     }
   });
-  
-  return sorted;
 }

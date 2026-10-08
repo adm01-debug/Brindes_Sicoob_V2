@@ -1,6 +1,6 @@
 import { Zap, MousePointerClick, Wifi } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { ratioTone } from "./utils";
+
 
 interface EfficiencyGridProps {
   triggers: number;
@@ -9,20 +9,16 @@ interface EfficiencyGridProps {
   byTrigger: Record<string, number>;
   byFetch: Record<string, number>;
   fetchesByTtlWindow: { withinTtl: number; afterTtl: number };
-  coalescingByTrigger: Record<string, any>;
+  coalescingByTrigger: Record<string, {
+    triggers: number;
+    fetches: number;
+    saved: number;
+    efficiency: number;
+  }>;
 }
 
-export function EfficiencyGrid({
-  triggers,
-  fetches,
-  ratio,
-  byTrigger,
-  byFetch,
-  fetchesByTtlWindow,
-  coalescingByTrigger
-}: EfficiencyGridProps) {
+export function EfficiencyGrid({ triggers, fetches, ratio, byTrigger, byFetch, fetchesByTtlWindow }: EfficiencyGridProps) {
   const ttlWithinPct = fetches === 0 ? 0 : Math.round((fetchesByTtlWindow.withinTtl / fetches) * 100);
-  const ttlAfterPct = fetches === 0 ? 0 : Math.round((fetchesByTtlWindow.afterTtl / fetches) * 100);
 
   return (
     <div className="mb-2 rounded border border-border/40 bg-background/60 px-2 py-1.5 font-mono text-muted-foreground">
@@ -41,7 +37,7 @@ export function EfficiencyGrid({
           triggers
         </span>
         <span className="tabular-nums text-right text-foreground">{triggers}</span>
-        {Object.entries(byTrigger).map(([source, count]) => (
+        {Object.entries(byTrigger).map(([source]) => (
           <span key={source} className="pl-3.5">· {source}</span>
         ))}
         {Object.entries(byTrigger).map(([source, count]) => (
@@ -53,7 +49,7 @@ export function EfficiencyGrid({
           fetches
         </span>
         <span className="tabular-nums text-right text-foreground mt-0.5">{fetches}</span>
-        {Object.entries(byFetch).map(([type, count]) => (
+        {Object.entries(byFetch).map(([type]) => (
           <span key={type} className="pl-3.5">· {type}</span>
         ))}
         {Object.entries(byFetch).map(([type, count]) => (

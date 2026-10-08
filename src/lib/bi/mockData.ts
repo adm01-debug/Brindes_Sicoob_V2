@@ -66,8 +66,10 @@ export function getMockIndustryTrends(ramo?: string | null): MockIndustryTrend[]
   ];
   // pequena variação cosmética por ramo
   if (ramo?.toLowerCase().includes("tecnolog")) {
-    base[4]!.unitsSold = 1200;
-    base[2]!.unitsSold = 950;
+    const fifthProduct = base[4];
+    const thirdProduct = base[2];
+    if (fifthProduct) fifthProduct.unitsSold = 1200;
+    if (thirdProduct) thirdProduct.unitsSold = 950;
   }
   return base;
 }
@@ -116,7 +118,7 @@ export function getMockSeasonality(): {
 
   const client: MockSeasonalityClientCell[] = clientPattern.map((q, i) => ({
     month: i + 1,
-    monthLabel: MONTH_LABELS_PT[i]!,
+    monthLabel: MONTH_LABELS_PT[i] ?? String(i + 1),
     quotesCount: q,
     totalRevenue: q * 3200, // ticket médio simulado
     avgTicket: 3200,
@@ -126,7 +128,7 @@ export function getMockSeasonality(): {
 
   const industry: MockSeasonalityIndustryCell[] = industryPattern.map((q, i) => ({
     month: i + 1,
-    monthLabel: MONTH_LABELS_PT[i]!,
+    monthLabel: MONTH_LABELS_PT[i] ?? String(i + 1),
     avgQuotesPerCompany: q,
     avgRevenuePerCompany: q * 2800,
     sharePercent: (q / totalInd) * 100,

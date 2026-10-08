@@ -10,7 +10,8 @@ interface RiskKpiProps {
   warning?: boolean;
 }
 
-export function RiskKpi({ icon: Icon, label, value, sub, alert, warning }: RiskKpiProps) {
+export function RiskKpi({ icon, label, value, sub, alert, warning }: RiskKpiProps) {
+  const IconComponent = icon;
   return (
     <div
       className={cn(
@@ -21,7 +22,7 @@ export function RiskKpi({ icon: Icon, label, value, sub, alert, warning }: RiskK
       role="status"
     >
       <div className="flex items-center justify-center gap-1 mb-0.5">
-        <Icon className={cn("h-2.5 w-2.5",
+        <IconComponent className={cn("h-2.5 w-2.5",
           alert ? "text-destructive" :
           warning ? "text-warning" : "text-muted-foreground"
         )} aria-hidden="true" />

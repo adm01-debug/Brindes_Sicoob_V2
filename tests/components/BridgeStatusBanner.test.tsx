@@ -78,7 +78,7 @@ beforeEach(() => {
 describe('BridgeStatusBanner — visibilidade por papel e ambiente', () => {
   it('usuário NÃO-dev: registra listener, oculta infra ("degraded") mas exibe crítico ("unavailable")', () => {
     mockUseAuth.mockReturnValue({ isDev: false });
-    const { container } = render(<BridgeStatusBanner />);
+    render(<BridgeStatusBanner />);
 
     expect(onBridgeStatusMock).toHaveBeenCalledTimes(1);
     

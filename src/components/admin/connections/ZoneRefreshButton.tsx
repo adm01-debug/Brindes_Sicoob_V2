@@ -27,6 +27,30 @@ export interface ZoneRefreshButtonProps {
   className?: string;
 }
 
+function useZoneRefresh({ queryKeys, onRefresh, successMessage }: Pick<ZoneRefreshButtonProps, "queryKeys" | "onRefresh" | "successMessage">) {
+  const queryClient = useQueryClient();
+  const [pending, setPending] = useState(false);
+  const mounted = useRef(false);
+  const pendingTimer = useRef<ReturnType<typeof setTimeout>>();
+  useEffect(() => {
+    mounted.current = true;
+    return () => { mounted.current = false; clearTimeout(pendingTimer.current); };
+  }, []);
+  const fetchingCount = useIsFetching({ predicate: (query) => queryKeys.some((target) => target.every((segment, index) => query.queryKey[index] === segment)) });
+  const refresh = useCallback(async () => {
+    setPending(true);
+    try {
+      await Promise.all(queryKeys.map((key) => queryClient.invalidateQueries({ queryKey: key as unknown[] })));
+      if (!mounted.current) return;
+      onRefresh?.();
+      if (successMessage) toast.success(successMessage, { duration: 2000 });
+    } finally {
+      if (mounted.current) pendingTimer.current = setTimeout(() => setPending(false), 250);
+    }
+  }, [queryClient, queryKeys, onRefresh, successMessage]);
+  return { isLoading: pending || fetchingCount > 0, refresh };
+}
+
 export function ZoneRefreshButton({
   queryKeys,
   label,
@@ -34,44 +58,7 @@ export function ZoneRefreshButton({
   successMessage,
   className,
 }: ZoneRefreshButtonProps) {
-  const qc = useQueryClient();
-  const [pending, setPending] = useState(false);
-  const mounted = useRef(false);
-  const pendingTimer = useRef<ReturnType<typeof setTimeout>>();
-
-  useEffect(() => {
-    mounted.current = true;
-    return () => {
-      mounted.current = false;
-      clearTimeout(pendingTimer.current);
-    };
-  }, []);
-
-  // isFetching agregado para qualquer uma das queryKeys da zona
-  const fetchingCount = useIsFetching({
-    predicate: (q) =>
-      queryKeys.some((target) =>
-        target.every((seg, i) => q.queryKey[i] === seg),
-      ),
-  });
-  const isLoading = pending || fetchingCount > 0;
-
-  const handleClick = useCallback(async () => {
-    setPending(true);
-    try {
-      await Promise.all(
-        queryKeys.map((key) => qc.invalidateQueries({ queryKey: key as unknown[] })),
-      );
-      if (!mounted.current) return;
-      onRefresh?.();
-      if (successMessage) toast.success(successMessage, { duration: 2000 });
-    } finally {
-      // Pequeno delay para o spinner não desaparecer instantaneamente
-      if (mounted.current) {
-        pendingTimer.current = setTimeout(() => setPending(false), 250);
-      }
-    }
-  }, [qc, queryKeys, onRefresh, successMessage]);
+  const { isLoading, refresh } = useZoneRefresh({ queryKeys, onRefresh, successMessage });
 
   return (
     <TooltipProvider delayDuration={200}>
@@ -79,7 +66,7 @@ export function ZoneRefreshButton({
         <TooltipTrigger asChild>
           <button
             type="button"
-            onClick={handleClick}
+            onClick={refresh}
             disabled={isLoading}
             aria-label={label}
             className={cn(

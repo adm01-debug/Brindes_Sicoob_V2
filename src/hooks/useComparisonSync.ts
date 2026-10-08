@@ -7,8 +7,70 @@
 import { useEffect, useRef } from "react";
 import { useComparisonStore, type CompareItem } from "@/stores/useComparisonStore";
 import { supabase } from "@/integrations/supabase/client";
+import type { Json } from "@/integrations/supabase/types";
 
 const CURRENT_SLOT_KEY = "current"; // marker no campo client_name para o slot "atual"
+
+function comparisonKey(item: CompareItem): string {
+  return item.variant?.variant_id
+    ? `${item.productId}::${item.variant.variant_id}`
+    : item.productId;
+}
+
+function mergeComparisonItems(local: CompareItem[], remote: CompareItem[]): CompareItem[] {
+  const seen = new Set<string>();
+  const merged: CompareItem[] = [];
+  for (const item of [...local, ...remote]) {
+    const key = comparisonKey(item);
+    if (seen.has(key) || merged.length >= 4) continue;
+    seen.add(key);
+    merged.push(item);
+  }
+  return merged;
+}
+
+function applyMergedComparison(local: CompareItem[], merged: CompareItem[]): void {
+  if (JSON.stringify(merged) === JSON.stringify(local)) return;
+  useComparisonStore.setState({
+    compareItems: merged,
+    compareIds: merged.map((item) => item.productId),
+    compareCount: merged.length,
+    canAddMore: merged.length < 4,
+  });
+}
+
+async function fetchRemoteComparison(userId: string): Promise<CompareItem[]> {
+  const { data: rows } = await supabase
+    .from("user_comparisons")
+    .select("id, items, updated_at")
+    .eq("user_id", userId)
+    .eq("client_name", CURRENT_SLOT_KEY)
+    .is("share_token", null)
+    .order("updated_at", { ascending: false })
+    .limit(1);
+  return (rows?.[0]?.items as CompareItem[] | undefined) ?? [];
+}
+
+async function hydrateComparison(
+  isMounted: () => boolean,
+  userIdRef: { current: string | null },
+  hydratedRef: { current: boolean },
+): Promise<void> {
+  const { data } = await supabase.auth.getUser();
+  const userId = data.user?.id ?? null;
+  if (!isMounted() || !userId) return;
+  userIdRef.current = userId;
+
+  try {
+    const remote = await fetchRemoteComparison(userId);
+    const local = useComparisonStore.getState().compareItems;
+    applyMergedComparison(local, mergeComparisonItems(local, remote));
+  } catch (error) {
+    console.warn("[useComparisonSync] hydrate failed", error);
+  } finally {
+    hydratedRef.current = true;
+  }
+}
 
 export function useComparisonSync() {
   const { compareItems } = useComparisonStore();
@@ -18,51 +80,7 @@ export function useComparisonSync() {
   // Hidratação inicial ao logar
   useEffect(() => {
     let mounted = true;
-    (async () => {
-      const { data } = await supabase.auth.getUser();
-      const userId = data.user?.id ?? null;
-      if (!mounted || !userId) return;
-      userIdRef.current = userId;
-
-      try {
-        const { data: rows } = await supabase
-          .from("user_comparisons")
-          .select("id, items, updated_at")
-          .eq("user_id", userId)
-          .eq("client_name", CURRENT_SLOT_KEY)
-          .is("share_token", null)
-          .order("updated_at", { ascending: false })
-          .limit(1);
-
-        const remote = (rows?.[0]?.items as CompareItem[] | undefined) ?? [];
-        const local = useComparisonStore.getState().compareItems;
-
-        // Merge inteligente: união preservando ordem local primeiro, max 4
-        const seen = new Set<string>();
-        const keyOf = (i: CompareItem) => i.variant?.variant_id ? `${i.productId}::${i.variant.variant_id}` : i.productId;
-        const merged: CompareItem[] = [];
-        for (const item of [...local, ...remote]) {
-          const k = keyOf(item);
-          if (!seen.has(k) && merged.length < 4) {
-            seen.add(k);
-            merged.push(item);
-          }
-        }
-        // Aplicar merge no store
-        if (JSON.stringify(merged) !== JSON.stringify(local)) {
-          useComparisonStore.setState({
-            compareItems: merged,
-            compareIds: merged.map(i => i.productId),
-            compareCount: merged.length,
-            canAddMore: merged.length < 4,
-          });
-        }
-      } catch (e) {
-        console.warn("[useComparisonSync] hydrate failed", e);
-      } finally {
-        hydratedRef.current = true;
-      }
-    })();
+    void hydrateComparison(() => mounted, userIdRef, hydratedRef);
     return () => { mounted = false; };
   }, []);
 
@@ -84,7 +102,7 @@ export function useComparisonSync() {
         if (existing) {
           await supabase
             .from("user_comparisons")
-            .update({ items: compareItems as any, updated_at: new Date().toISOString() })
+            .update({ items: compareItems as unknown as Json, updated_at: new Date().toISOString() })
             .eq("id", existing.id);
         } else if (compareItems.length > 0) {
           await supabase
@@ -92,7 +110,7 @@ export function useComparisonSync() {
             .insert({
               user_id: userId,
               client_name: CURRENT_SLOT_KEY,
-              items: compareItems as any,
+              items: compareItems as unknown as Json,
               is_public: false,
             });
         }

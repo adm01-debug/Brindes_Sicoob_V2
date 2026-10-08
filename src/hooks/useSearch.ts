@@ -33,7 +33,10 @@ export function useSearch(products: Product[] = [], historyScope?: string) {
   const [isLoaded, setIsLoaded] = useState(false);
   const historyKey = useMemo(() => getHistoryKey(historyScope), [historyScope]);
 
-  const availableProducts = products.length > 0 ? products : (productsContext?.products || []);
+  const availableProducts = useMemo(
+    () => products.length > 0 ? products : (productsContext?.products || []),
+    [products, productsContext?.products],
+  );
 
   // Categorias e fornecedores do catálogo real — antes vinham de listas
   // hardcoded em @/data/mockData (nomes reais como "BRINDES SICOOB", "XBZ

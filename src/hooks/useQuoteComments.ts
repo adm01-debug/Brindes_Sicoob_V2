@@ -64,9 +64,11 @@ export function useQuoteComments(quoteId: string | undefined) {
       enriched
         .filter((c) => c.parent_id)
         .forEach((c) => {
-          const arr = childMap.get(c.parent_id!) || [];
+          const parentId = c.parent_id;
+          if (!parentId) return;
+          const arr = childMap.get(parentId) || [];
           arr.push(c);
-          childMap.set(c.parent_id!, arr);
+          childMap.set(parentId, arr);
         });
 
       topLevel.forEach((c) => {

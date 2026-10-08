@@ -2,7 +2,7 @@
  * MockupBeforeAfter — Slider comparison between positioning preview and AI result
  */
 
-import { useState, useRef, useCallback } from "react";
+import { type PointerEvent, useState, useRef, useCallback } from "react";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeftRight } from "lucide-react";
@@ -30,13 +30,13 @@ export function MockupBeforeAfter({
     setSliderPosition(Math.max(2, Math.min(98, x)));
   }, []);
 
-  const handlePointerDown = useCallback((e: React.PointerEvent) => {
+  const handlePointerDown = useCallback((e: PointerEvent) => {
     isDragging.current = true;
     (e.target as HTMLElement).setPointerCapture(e.pointerId);
     updatePosition(e.clientX);
   }, [updatePosition]);
 
-  const handlePointerMove = useCallback((e: React.PointerEvent) => {
+  const handlePointerMove = useCallback((e: PointerEvent) => {
     if (!isDragging.current) return;
     updatePosition(e.clientX);
   }, [updatePosition]);

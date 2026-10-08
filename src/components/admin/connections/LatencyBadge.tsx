@@ -1,7 +1,8 @@
+import { isNullish } from "@/components/admin/utils/nullish";
 import { cn } from "@/lib/utils";
 
 export function LatencyBadge({ ms, className }: { ms: number | null; className?: string }) {
-  if (ms == null) return <span className={cn("text-xs text-muted-foreground", className)}>—</span>;
+  if (isNullish(ms)) return <span className={cn("text-xs text-muted-foreground", className)}>—</span>;
   const cls =
     ms < 500
       ? "bg-green-500/10 text-green-700 border-green-500/30 dark:text-green-400"

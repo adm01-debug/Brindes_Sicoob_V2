@@ -4,7 +4,7 @@
 import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  FolderOpen, MoreVertical, Pencil, Copy, Star,
+  MoreVertical, Pencil, Copy, Star,
   Trash2, Package, Clock, ArrowUp, ArrowDown, ArrowUpDown,
   Filter,
 } from "lucide-react";
@@ -17,17 +17,10 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import type { Collection } from "@/hooks/useCollections";
+import type { Product } from "@/hooks/useProducts";
 
 type SortKey = "name" | "products" | "featured" | "updated";
 type SortDir = "asc" | "desc";
-type FilterType = "all" | "featured" | "with-products" | "empty";
-
-const FILTER_OPTIONS: { value: FilterType; label: string; icon?: React.ReactNode }[] = [
-  { value: "all", label: "Todas" },
-  { value: "featured", label: "Destacadas", icon: <Star className="h-3 w-3" /> },
-  { value: "with-products", label: "Com produtos", icon: <Package className="h-3 w-3" /> },
-  { value: "empty", label: "Vazias", icon: <FolderOpen className="h-3 w-3" /> },
-];
 
 function SortHeader({ label, sortKey, currentKey, currentDir, onSort, className }: {
   label: string; sortKey: SortKey; currentKey: SortKey | null; currentDir: SortDir;
@@ -56,7 +49,7 @@ function SortHeader({ label, sortKey, currentKey, currentDir, onSort, className 
 
 interface CollectionTableRowProps {
   collection: Collection;
-  products: any[];
+  products: Product[];
   isSelected: boolean;
   isSelectionMode: boolean;
   onToggleSelect: () => void;
@@ -69,14 +62,14 @@ interface CollectionTableRowProps {
   index: number;
 }
 
-function CollectionTableRow({
-  collection, products, isSelected, isSelectionMode,
-  onToggleSelect, onNavigate, onEdit, onClone, onToggleFeatured, onDelete,
-  updatedAgo, index,
-}: CollectionTableRowProps) {
+function selectedRowClass(selected: boolean) {
+  return selected ? "bg-primary/5" : undefined;
+}
+
+function CollectionTableRow({ collection, products, isSelected, onToggleSelect, onNavigate, onEdit, onClone, onToggleFeatured, onDelete, updatedAgo, index }: CollectionTableRowProps) {
   const previewImage = products[0]?.images?.[0];
-  const iconChar = collection.icon || "📁";
-  const iconColor = collection.color || "#6366f1";
+  const iconChar = collection.icon ?? "📁";
+  const iconColor = collection.color ?? "#6366f1";
 
   return (
     <motion.tr
@@ -85,7 +78,7 @@ function CollectionTableRow({
       transition={{ delay: index * 0.03 }}
       className={cn(
         "group border-b border-border/50 hover:bg-muted/30 transition-colors cursor-pointer",
-        isSelected && "bg-primary/5"
+        selectedRowClass(isSelected)
       )}
       onClick={onNavigate}
     >
@@ -162,7 +155,7 @@ function CollectionTableRow({
 
 interface CollectionTableViewProps {
   collections: Collection[];
-  getCollectionProducts: (id: string) => any[];
+  getCollectionProducts: (id: string) => Product[];
   selectedCollectionIds: Set<string>;
   isSelectionMode: boolean;
   onToggleSelect: (id: string) => void;

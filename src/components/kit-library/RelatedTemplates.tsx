@@ -1,3 +1,4 @@
+import type { ComponentType } from "react";
 /**
  * RelatedTemplates — Mostra 2-3 templates da mesma categoria sob o template atual.
  */
@@ -27,7 +28,7 @@ export function RelatedTemplates({ current, all, onSelect }: Props) {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
         {related.map((t) => {
           const Icon =
-            (Lucide as unknown as Record<string, React.ComponentType<{ className?: string }>>)[t.icon] ||
+            (Lucide as unknown as Record<string, ComponentType<{ className?: string }>>)[t.icon] ||
             Lucide.Package;
           return (
             <button

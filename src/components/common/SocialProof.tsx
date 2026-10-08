@@ -15,6 +15,11 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
+const PRIMARY_TONE = "bg-primary/10 text-primary";
+const WARNING_TONE = "bg-warning/10 text-warning";
+const PRIMARY_TEXT = "text-primary";
+const SUCCESS_TEXT = "text-success";
+
 // Product popularity badge
 interface PopularityBadgeProps {
   views?: number;
@@ -33,7 +38,7 @@ export function PopularityBadge({
     views: {
       icon: Users,
       label: `${views?.toLocaleString("pt-BR")} visualizações`,
-      color: "bg-primary/10 text-primary"
+      color: PRIMARY_TONE
     },
     sales: {
       icon: TrendingUp,
@@ -43,12 +48,12 @@ export function PopularityBadge({
     trending: {
       icon: Flame,
       label: "Em alta",
-      color: "bg-primary/10 text-primary"
+      color: PRIMARY_TONE
     },
     bestseller: {
       icon: Crown,
       label: "Mais vendido",
-      color: "bg-warning/10 text-warning"
+      color: WARNING_TONE
     }
   };
 
@@ -87,43 +92,43 @@ const trustBadges: Record<TrustBadgeType, { icon: React.ElementType; label: stri
   verified: {
     icon: ShieldCheck,
     label: "Fornecedor verificado",
-    color: "text-primary",
-    bg: "bg-primary/10 text-primary",
+    color: PRIMARY_TEXT,
+    bg: PRIMARY_TONE,
   },
   fast: {
     icon: Zap,
     label: "Entrega rápida",
     color: "text-warning",
-    bg: "bg-warning/10 text-warning",
+    bg: WARNING_TONE,
   },
   quality: {
     icon: Award,
     label: "Alta qualidade",
-    color: "text-primary",
-    bg: "bg-primary/10 text-primary",
+    color: PRIMARY_TEXT,
+    bg: PRIMARY_TONE,
   },
   secure: {
     icon: ShieldCheck,
     label: "Compra segura",
-    color: "text-success",
+    color: SUCCESS_TEXT,
     bg: "bg-success/10 text-success",
   },
   popular: {
     icon: ThumbsUp,
     label: "Escolha popular",
-    color: "text-primary",
-    bg: "bg-primary/10 text-primary",
+    color: PRIMARY_TEXT,
+    bg: PRIMARY_TONE,
   },
   new: {
     icon: Zap,
     label: "Novidade",
-    color: "text-success",
+    color: SUCCESS_TEXT,
     bg: "bg-success/20 text-success border border-success/30",
   },
   sale: {
     icon: Flame,
     label: "Promoção",
-    color: "text-primary",
+    color: PRIMARY_TEXT,
     bg: "bg-primary/20 text-primary border border-primary/30",
   },
   bestseller: {
@@ -135,7 +140,7 @@ const trustBadges: Record<TrustBadgeType, { icon: React.ElementType; label: stri
   freeShipping: {
     icon: TrendingUp,
     label: "Frete grátis",
-    color: "text-success",
+    color: SUCCESS_TEXT,
     bg: "bg-success/20 text-success border border-success/30",
   },
 };
@@ -369,7 +374,7 @@ export function LowStockAlert({
       animate={{ opacity: 1, x: 0 }}
       className={cn(
         "flex items-center gap-2 px-3 py-1.5 rounded-lg",
-        "bg-warning/10 text-warning",
+        WARNING_TONE,
         "text-sm font-medium",
         className
       )}

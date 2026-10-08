@@ -2,10 +2,8 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { cn } from '@/lib/utils';
 import { Save, X } from 'lucide-react';
-import type { ExternalVideo } from './types';
-import { VIDEO_TYPES } from './types';
+import { type ExternalVideo, VIDEO_TYPES } from "./types";
 
 interface Props {
   video: ExternalVideo;

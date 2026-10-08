@@ -2,15 +2,14 @@
  * Dimensions section — Product physical dimensions + internal dims for box products
  */
 import { Input } from '@/components/ui/input';
-import { FieldLabel, SectionCard } from '../ProductFormHelpers';
+import { FieldLabel, SectionCard, type FormSectionProps } from "../ProductFormHelpers";
 import { Ruler } from 'lucide-react';
-import type { FormSectionProps } from '../ProductFormHelpers';
 
 interface Props extends FormSectionProps {
   isBoxProduct: boolean;
 }
 
-export function ProductDimensionsSection({ register, numericProps, isBoxProduct }: Props) {
+export function ProductDimensionsSection({ numericProps, isBoxProduct }: Props) {
   return (
     <SectionCard id="dimensions" title="Dimensões" icon={Ruler} subtitle="Dimensões do produto">
       <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-3">

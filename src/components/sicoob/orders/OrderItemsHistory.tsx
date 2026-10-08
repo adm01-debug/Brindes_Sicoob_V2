@@ -1,9 +1,15 @@
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { History } from "lucide-react";
-import { SicoobOrderItemLog } from "@/types/sicoob/orders";
+import { type SicoobOrderItemLog } from "@/types/sicoob/orders";
+import { type Json } from "@/integrations/supabase/types";
 
 interface OrderItemsHistoryProps {
   logs?: SicoobOrderItemLog[];
+}
+
+function itemSnapshot(value: Json | null): Record<string, Json | undefined> {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return {};
+  return value;
 }
 
 export const OrderItemsHistory = ({ logs }: OrderItemsHistoryProps) => {
@@ -19,8 +25,12 @@ export const OrderItemsHistory = ({ logs }: OrderItemsHistoryProps) => {
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          {logs.map((log) => (
-            <div key={log.id} className="text-sm border-l-2 border-muted pl-4 py-1">
+          {logs.map((log) => {
+            const newItem = itemSnapshot(log.new_data);
+            const oldItem = itemSnapshot(log.old_data);
+
+            return (
+              <div key={log.id} className="text-sm border-l-2 border-muted pl-4 py-1">
               <div className="flex justify-between items-start mb-1">
                 <span className="font-medium">
                   {log.action === 'INSERT' ? 'Item Adicionado' : 
@@ -35,14 +45,15 @@ export const OrderItemsHistory = ({ logs }: OrderItemsHistoryProps) => {
               </p>
               <div className="mt-1 text-xs">
                 {log.action === 'INSERT' && (
-                  <span>Produto: {log.new_data?.product_name} (Qtd: {log.new_data?.quantity})</span>
+                  <span>Produto: {String(newItem.product_name ?? '')} (Qtd: {String(newItem.quantity ?? '')})</span>
                 )}
                 {log.action === 'DELETE' && (
-                  <span>Produto: {log.old_data?.product_name}</span>
+                  <span>Produto: {String(oldItem.product_name ?? '')}</span>
                 )}
               </div>
             </div>
-          ))}
+            );
+          })}
         </div>
       </CardContent>
     </Card>

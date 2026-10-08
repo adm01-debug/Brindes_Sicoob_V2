@@ -16,19 +16,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  Building2,
-  TrendingDown,
-  TrendingUp,
-  Package,
-  Check,
-  Crown,
-  ArrowRight,
-  Minus,
-} from "lucide-react";
+import { Building2, TrendingDown, TrendingUp, Package, Crown, ArrowRight, Minus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useSupplierComparison } from "@/hooks/useSupplierComparison";
 import type { Product } from "@/hooks/useProducts";
+
+const SUCCESS_TEXT = "text-success";
 
 interface SupplierComparisonModalProps {
   product?: Product | null;
@@ -37,12 +30,20 @@ interface SupplierComparisonModalProps {
   onOpenChange: (open: boolean) => void;
 }
 
-export function SupplierComparisonModal({
-  product,
-  productId,
-  open,
-  onOpenChange,
-}: SupplierComparisonModalProps) {
+function SupplierHighlights({ lowestPrice, bestStock }: { lowestPrice: boolean; bestStock: boolean }) {
+  if (lowestPrice) return <Badge variant="default" className="text-xs bg-success"><Crown className="h-3 w-3 mr-1" />Melhor Preço</Badge>;
+  if (bestStock) return <Badge variant="default" className="text-xs bg-primary"><Package className="h-3 w-3 mr-1" />Melhor Estoque</Badge>;
+  return null;
+}
+
+function PriceDifference({ base, difference, percent, format }: { base: boolean; difference: number; percent: number; format: (value: number) => string }) {
+  if (base) return <span className="text-muted-foreground">-</span>;
+  if (difference > 0) return <div className="flex items-center justify-center gap-1 text-destructive"><TrendingUp className="h-4 w-4" /><span className="text-sm font-medium">{format(percent)}</span></div>;
+  if (difference < 0) return <div className="flex items-center justify-center gap-1 text-success"><TrendingDown className="h-4 w-4" /><span className="text-sm font-medium">{format(percent)}</span></div>;
+  return <div className="flex items-center justify-center gap-1 text-muted-foreground"><Minus className="h-4 w-4" /><span className="text-sm">Igual</span></div>;
+}
+
+export function SupplierComparisonModal({ product, open, onOpenChange }: SupplierComparisonModalProps) {
   const navigate = useNavigate();
   const comparison = useSupplierComparison(product ?? null);
 
@@ -61,13 +62,13 @@ export function SupplierComparisonModal({
   const getStockStatusLabel = (status: string) => {
     switch (status) {
       case "in-stock":
-        return { label: "Em estoque", color: "text-success" };
+        return { label: "Em estoque", color: SUCCESS_TEXT };
       case "low-stock":
         return { label: "Estoque baixo", color: "text-warning" };
       case "out-of-stock":
         return { label: "Sem estoque", color: "text-destructive" };
       default:
-        return { label: "Em estoque", color: "text-success" };
+        return { label: "Em estoque", color: SUCCESS_TEXT };
     }
   };
 
@@ -214,24 +215,7 @@ export function SupplierComparisonModal({
                               <Building2 className="h-3 w-3 mr-1" />
                               {product.supplier.name}
                             </Badge>
-                            {isLowestPrice && (
-                              <Badge
-                                variant="default"
-                                className="text-xs bg-success"
-                              >
-                                <Crown className="h-3 w-3 mr-1" />
-                                Melhor Preço
-                              </Badge>
-                            )}
-                            {isBestStock && !isLowestPrice && (
-                              <Badge
-                                variant="default"
-                                className="text-xs bg-primary"
-                              >
-                                <Package className="h-3 w-3 mr-1" />
-                                Melhor Estoque
-                              </Badge>
-                            )}
+                            <SupplierHighlights lowestPrice={isLowestPrice} bestStock={isBestStock} />
                           </div>
                           <p className="text-xs text-muted-foreground font-mono">
                             {product.sku}
@@ -242,35 +226,14 @@ export function SupplierComparisonModal({
                         <span
                           className={cn(
                             "text-lg font-bold",
-                            isLowestPrice ? "text-success" : "text-foreground"
+                            isLowestPrice ? SUCCESS_TEXT : "text-foreground"
                           )}
                         >
                           {formatCurrency(product.price)}
                         </span>
                       </TableCell>
                       <TableCell className="text-center">
-                        {isBase ? (
-                          <span className="text-muted-foreground">-</span>
-                        ) : priceDiff > 0 ? (
-                          <div className="flex items-center justify-center gap-1 text-destructive">
-                            <TrendingUp className="h-4 w-4" />
-                            <span className="text-sm font-medium">
-                              {formatPercent(priceDiffPercent)}
-                            </span>
-                          </div>
-                        ) : priceDiff < 0 ? (
-                          <div className="flex items-center justify-center gap-1 text-success">
-                            <TrendingDown className="h-4 w-4" />
-                            <span className="text-sm font-medium">
-                              {formatPercent(priceDiffPercent)}
-                            </span>
-                          </div>
-                        ) : (
-                          <div className="flex items-center justify-center gap-1 text-muted-foreground">
-                            <Minus className="h-4 w-4" />
-                            <span className="text-sm">Igual</span>
-                          </div>
-                        )}
+                        <PriceDifference base={isBase} difference={priceDiff} percent={priceDiffPercent} format={formatPercent} />
                       </TableCell>
                       <TableCell className="text-center">
                         <div className="flex flex-col items-center gap-1">

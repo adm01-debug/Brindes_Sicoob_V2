@@ -77,11 +77,12 @@ export function deriveProductRecurrenceSignals(
   }>();
 
   for (const item of items) {
-    if (!item.order_id || !orderDates.has(item.order_id)) continue;
+    if (!item.order_id) continue;
+    const observedAt = orderDates.get(item.order_id);
+    if (!observedAt) continue;
     const name = item.product_name.trim();
     if (!name) continue;
     const key = name.toLocaleLowerCase("pt-BR");
-    const observedAt = orderDates.get(item.order_id)!;
     const current = products.get(key) ?? {
       name,
       orderIds: new Set<string>(),

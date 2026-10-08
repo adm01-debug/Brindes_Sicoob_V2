@@ -82,11 +82,35 @@ const variantStyles = {
   },
 };
 
+function numericStatValue(value: number | string) {
+  const numericValue = typeof value === 'string' ? parseInt(value.replace(/\D/g, ''), 10) : value;
+  const isNumeric = typeof value === 'number' || /^\d/.test(value);
+  return { numericValue, isNumeric: isNumeric && !Number.isNaN(numericValue) };
+}
+
+function StatTrend({ trend }: { trend: StatCardProps['trend'] }) {
+  if (!trend) return null;
+  const isPositive = trend.value >= 0;
+  return <p className={cn("text-xs flex items-center gap-1 font-medium", isPositive ? "text-success" : "text-destructive")}>{isPositive ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}<span className="truncate">{trend.label}</span></p>;
+}
+
+function StatClickHint({ clickHint, onClick }: Pick<StatCardProps, 'clickHint' | 'onClick'>) {
+  if (!clickHint || !onClick) return null;
+  return <div className="absolute bottom-0 left-0 right-0 text-center text-[9px] text-muted-foreground/0 group-hover:text-muted-foreground/60 transition-colors pb-1">{clickHint}</div>;
+}
+
+function statCardClassName(styles: typeof variantStyles.default, onClick: StatCardProps['onClick'], isActive: boolean | undefined) {
+  return cn("group relative w-full overflow-hidden rounded-xl border text-left", "transition-all duration-300 ease-out", styles.base, onClick && "cursor-pointer", styles.hover, "active:scale-[0.97]", isActive && "ring-2 ring-offset-2 ring-offset-background shadow-lg scale-[1.02]", isActive && styles.active, isActive && styles.glowColor);
+}
+
+function StatIcon({ icon, styles, isActive }: { icon: React.ReactNode; styles: typeof variantStyles.default; isActive: boolean | undefined }) {
+  return <div className={cn("h-12 w-12 rounded-xl flex items-center justify-center shrink-0 transition-all duration-300", isActive ? `${styles.iconBg} shadow-sm` : "bg-muted/50 group-hover:scale-110", styles.iconColor)} aria-hidden="true">{icon}</div>;
+}
+
 export function StatCard({ title, value, icon, trend, variant = 'default', onClick, clickHint, isActive, subtitle }: StatCardProps) {
   const styles = variantStyles[variant];
 
-  const numericValue = typeof value === 'string' ? parseInt(value.replace(/\D/g, ''), 10) : value;
-  const isNumeric = typeof numericValue === 'number' && !isNaN(numericValue) && typeof value !== 'string' || (typeof value === 'string' && /^\d/.test(value));
+  const { numericValue, isNumeric } = numericStatValue(value);
   const animatedValue = useCountUp(isNumeric ? numericValue : 0);
   
   const displayValue = isNumeric
@@ -101,17 +125,7 @@ export function StatCard({ title, value, icon, trend, variant = 'default', onCli
         e.stopPropagation();
         onClick?.();
       }}
-      className={cn(
-        "group relative w-full overflow-hidden rounded-xl border text-left",
-        "transition-all duration-300 ease-out",
-        styles.base,
-        onClick && "cursor-pointer",
-        styles.hover,
-        "active:scale-[0.97]",
-        isActive && "ring-2 ring-offset-2 ring-offset-background shadow-lg scale-[1.02]",
-        isActive && styles.active,
-        isActive && styles.glowColor,
-      )}
+      className={statCardClassName(styles, onClick, isActive)}
       aria-label={`${title}: ${value}${clickHint ? `. ${clickHint}` : ''}`}
       aria-pressed={isActive}
     >
@@ -130,32 +144,14 @@ export function StatCard({ title, value, icon, trend, variant = 'default', onCli
             {subtitle && (
               <p className="text-[10px] text-muted-foreground/70 truncate">{subtitle}</p>
             )}
-            {trend && (
-              <p className={cn(
-                "text-xs flex items-center gap-1 font-medium",
-                trend.value >= 0 ? "text-success" : "text-destructive"
-              )}>
-                {trend.value >= 0 ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
-                <span className="truncate">{trend.label}</span>
-              </p>
-            )}
+            <StatTrend trend={trend} />
           </div>
-          <div className={cn(
-            "h-12 w-12 rounded-xl flex items-center justify-center shrink-0 transition-all duration-300",
-            isActive ? `${styles.iconBg} shadow-sm` : "bg-muted/50 group-hover:scale-110",
-            styles.iconColor,
-          )} aria-hidden="true">
-            {icon}
-          </div>
+          <StatIcon icon={icon} styles={styles} isActive={isActive} />
         </div>
       </div>
 
       {/* Click hint on hover */}
-      {clickHint && onClick && (
-        <div className="absolute bottom-0 left-0 right-0 text-center text-[9px] text-muted-foreground/0 group-hover:text-muted-foreground/60 transition-colors pb-1">
-          {clickHint}
-        </div>
-      )}
+      <StatClickHint clickHint={clickHint} onClick={onClick} />
     </button>
   );
 }

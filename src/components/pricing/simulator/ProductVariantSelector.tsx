@@ -30,6 +30,40 @@ function sizeSort(a: string, b: string): number {
   return a.localeCompare(b, 'pt-BR');
 }
 
+function groupVariants(variants: ProductVariant[], enabled: boolean) {
+  if (!enabled) return null;
+  const groups = new Map<string, ProductVariant[]>();
+  for (const variant of variants) {
+    const key = variant.name.length > 0 ? variant.name : 'Padrão';
+    const group = groups.get(key) ?? [];
+    group.push(variant);
+    groups.set(key, group);
+  }
+  for (const group of groups.values()) group.sort((a, b) => sizeSort(a.size_code ?? '', b.size_code ?? ''));
+  return groups;
+}
+
+function SizeChip({ variant, selected, onSelect }: { variant: ProductVariant; selected: boolean; onSelect: (variant: ProductVariant | null) => void }) {
+  const outOfStock = (variant.stock ?? 1) === 0;
+  return <button onClick={() => onSelect(selected ? null : variant)} disabled={outOfStock} className={cn('flex items-center gap-1.5 px-2.5 py-1.5 rounded-md border text-xs font-medium transition-all', selected ? 'border-primary bg-primary/15 text-primary ring-1 ring-primary/30' : 'border-border bg-card hover:border-primary/50 hover:bg-accent text-foreground', outOfStock ? 'opacity-40 cursor-not-allowed' : undefined)}><Ruler className="h-3 w-3" />{variant.size_code ?? '—'}{selected ? <Check className="h-3 w-3" /> : null}</button>;
+}
+
+function ColorGroup({ colorName, variants, selectedVariant, onSelect }: { colorName: string; variants: ProductVariant[]; selectedVariant: ProductVariant | null; onSelect: (variant: ProductVariant | null) => void }) {
+  const selected = variants.some((variant) => selectedVariant?.code === variant.code);
+  return <div className={cn('rounded-lg border p-3 space-y-2 transition-colors', selected ? 'border-primary/40 bg-primary/5' : 'border-border')}><div className="flex items-center gap-2"><div className={cn('w-5 h-5 rounded-full border-2 shrink-0', selected ? 'border-primary' : 'border-muted-foreground/30')} style={{ backgroundColor: variants[0]?.hex ?? '#888' }} /><span className="text-sm font-medium">{colorName}</span></div><div className="flex flex-wrap gap-1.5 pl-7">{variants.map((variant) => <SizeChip key={variant.code} variant={variant} selected={selectedVariant?.code === variant.code} onSelect={onSelect} />)}</div></div>;
+}
+
+function FlatVariant({ variant, selected, onSelect }: { variant: ProductVariant; selected: boolean; onSelect: (variant: ProductVariant | null) => void }) {
+  const outOfStock = (variant.stock ?? 1) === 0;
+  return <button onClick={() => onSelect(selected ? null : variant)} disabled={outOfStock} className={cn('group relative flex items-center gap-2 px-3 py-2 rounded-lg border transition-all', selected ? 'border-primary bg-primary/10 ring-2 ring-primary/30' : 'border-border bg-card hover:border-primary/50 hover:bg-accent', outOfStock ? 'opacity-50 cursor-not-allowed' : undefined)}><div className={cn('w-5 h-5 rounded-full border-2 transition-all', selected ? 'border-primary' : 'border-muted-foreground/30')} style={{ backgroundColor: variant.hex ?? '#888' }}>{selected ? <Check className="w-3 h-3 text-primary-foreground absolute top-1/2 left-[14px] -translate-y-1/2" /> : null}</div><span className="text-sm font-medium">{variant.name}</span>{outOfStock ? <Badge variant="secondary" className="text-xs px-1.5 py-0">Sem estoque</Badge> : null}</button>;
+}
+
+function SelectionSummary({ variant }: { variant: ProductVariant | null }) {
+  if (!variant) return null;
+  const hasStock = variant.stock !== undefined && variant.stock > 0;
+  return <p className="text-xs text-muted-foreground">Selecionado: <strong>{variant.name}</strong>{variant.size_code ? <span className="ml-1">— Tamanho: <strong>{variant.size_code}</strong></span> : null}{hasStock ? <span className="ml-2 text-success">({variant.stock} em estoque)</span> : null}</p>;
+}
+
 export function ProductVariantSelector({
   variants,
   selectedVariant,
@@ -40,20 +74,7 @@ export function ProductVariantSelector({
   const hasSizes = useMemo(() => variants.some(v => v.size_code), [variants]);
 
   // Group by color when sizes exist
-  const grouped = useMemo(() => {
-    if (!hasSizes) return null;
-    const map = new Map<string, ProductVariant[]>();
-    for (const v of variants) {
-      const key = v.name || 'Padrão';
-      if (!map.has(key)) map.set(key, []);
-      map.get(key)!.push(v);
-    }
-    // Sort sizes within each group
-    for (const [, group] of map) {
-      group.sort((a, b) => sizeSort(a.size_code || '', b.size_code || ''));
-    }
-    return map;
-  }, [variants, hasSizes]);
+  const grouped = useMemo(() => groupVariants(variants, hasSizes), [variants, hasSizes]);
 
   const sortedVariants = useMemo(() => {
     if (hasSizes) return variants; // grouped view handles display
@@ -66,18 +87,20 @@ export function ProductVariantSelector({
     });
   }, [variants, hasSizes]);
 
-  if (!variants || variants.length === 0) return null;
+  if (variants.length === 0) return null;
 
   // Single variant — just show info
   if (variants.length === 1 && !hasSizes) {
+    const variant = variants[0];
+    if (!variant) return null;
     return (
       <div className="p-3 rounded-lg bg-muted/50 flex items-center gap-3">
         <div
           className="w-6 h-6 rounded-full border-2 border-border"
-          style={{ backgroundColor: variants[0]!.hex || '#888' }}
+          style={{ backgroundColor: variant.hex ?? '#888' }}
         />
         <span className="text-sm">
-          Cor: <strong>{variants[0]!.name}</strong>
+          Cor: <strong>{variant.name}</strong>
         </span>
       </div>
     );
@@ -95,119 +118,17 @@ export function ProductVariantSelector({
       {/* ── Grouped by color with size chips ── */}
       {hasSizes && grouped ? (
         <div className="space-y-3">
-          {Array.from(grouped.entries()).map(([colorName, group]) => {
-            const hex = group[0]?.hex;
-            const anySelected = group.some(v => selectedVariant?.code === v.code);
-
-            return (
-              <div
-                key={colorName}
-                className={cn(
-                  'rounded-lg border p-3 space-y-2 transition-colors',
-                  anySelected ? 'border-primary/40 bg-primary/5' : 'border-border',
-                )}
-              >
-                {/* Color header */}
-                <div className="flex items-center gap-2">
-                  <div
-                    className={cn(
-                      'w-5 h-5 rounded-full border-2 shrink-0',
-                      anySelected ? 'border-primary' : 'border-muted-foreground/30',
-                    )}
-                    style={{ backgroundColor: hex || '#888' }}
-                  />
-                  <span className="text-sm font-medium">{colorName}</span>
-                </div>
-
-                {/* Size chips */}
-                <div className="flex flex-wrap gap-1.5 pl-7">
-                  {group.map(variant => {
-                    const isSelected = selectedVariant?.code === variant.code;
-                    const isOutOfStock = (variant.stock ?? 1) === 0;
-
-                    return (
-                      <button
-                        key={variant.code}
-                        onClick={() => onSelect(isSelected ? null : variant)}
-                        disabled={isOutOfStock}
-                        className={cn(
-                          'flex items-center gap-1.5 px-2.5 py-1.5 rounded-md border text-xs font-medium transition-all',
-                          isSelected
-                            ? 'border-primary bg-primary/15 text-primary ring-1 ring-primary/30'
-                            : 'border-border bg-card hover:border-primary/50 hover:bg-accent text-foreground',
-                          isOutOfStock && 'opacity-40 cursor-not-allowed',
-                        )}
-                      >
-                        <Ruler className="h-3 w-3" />
-                        {variant.size_code || '—'}
-                        {isSelected && <Check className="h-3 w-3" />}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            );
-          })}
+          {Array.from(grouped.entries()).map(([colorName, group]) => <ColorGroup key={colorName} colorName={colorName} variants={group} selectedVariant={selectedVariant} onSelect={onSelect} />)}
         </div>
       ) : (
         /* ── Flat color list (no sizes) ── */
         <div className="flex flex-wrap gap-2">
-          {sortedVariants.map((variant) => {
-            const isSelected = selectedVariant?.code === variant.code;
-            const isOutOfStock = (variant.stock ?? 1) === 0;
-
-            return (
-              <button
-                key={variant.code}
-                onClick={() => onSelect(isSelected ? null : variant)}
-                disabled={isOutOfStock}
-                className={cn(
-                  'group relative flex items-center gap-2 px-3 py-2 rounded-lg border transition-all',
-                  isSelected
-                    ? 'border-primary bg-primary/10 ring-2 ring-primary/30'
-                    : 'border-border bg-card hover:border-primary/50 hover:bg-accent',
-                  isOutOfStock && 'opacity-50 cursor-not-allowed'
-                )}
-              >
-                <div
-                  className={cn(
-                    'w-5 h-5 rounded-full border-2 transition-all',
-                    isSelected ? 'border-primary' : 'border-muted-foreground/30'
-                  )}
-                  style={{ backgroundColor: variant.hex || '#888' }}
-                >
-                  {isSelected && (
-                    <Check className="w-3 h-3 text-primary-foreground absolute top-1/2 left-[14px] -translate-y-1/2" />
-                  )}
-                </div>
-
-                <span className="text-sm font-medium">{variant.name}</span>
-
-                {isOutOfStock && (
-                  <Badge variant="secondary" className="text-xs px-1.5 py-0">
-                    Sem estoque
-                  </Badge>
-                )}
-              </button>
-            );
-          })}
+          {sortedVariants.map((variant) => <FlatVariant key={variant.code} variant={variant} selected={selectedVariant?.code === variant.code} onSelect={onSelect} />)}
         </div>
       )}
 
       {/* Selection summary */}
-      {selectedVariant && (
-        <p className="text-xs text-muted-foreground">
-          Selecionado: <strong>{selectedVariant.name}</strong>
-          {selectedVariant.size_code && (
-            <span className="ml-1">
-              — Tamanho: <strong>{selectedVariant.size_code}</strong>
-            </span>
-          )}
-          {selectedVariant.stock !== undefined && selectedVariant.stock > 0 && (
-            <span className="ml-2 text-success">({selectedVariant.stock} em estoque)</span>
-          )}
-        </p>
-      )}
+      <SelectionSummary variant={selectedVariant} />
     </div>
   );
 }

@@ -23,7 +23,62 @@ interface FailedDelivery {
   outbound_webhooks: { name: string; url: string; active: boolean } | null;
 }
 
+interface FailedDeliveriesData {
+  rows: FailedDelivery[];
+  count: number;
+}
+
+function deliveryRows(data: FailedDeliveriesData | undefined): FailedDelivery[] {
+  return data?.rows ?? [];
+}
+
+function deliveryTotal(data: FailedDeliveriesData | undefined): number {
+  return data?.count ?? 0;
+}
+
 const PAGE_SIZE = 25;
+
+function exportDeliveryRows(rows: FailedDelivery[]) {
+  return rows.map(delivery => ({
+    webhook: delivery.outbound_webhooks?.name ?? "",
+    webhook_url: delivery.outbound_webhooks?.url ?? "",
+    event: delivery.event,
+    status_code: delivery.status_code,
+    attempt: delivery.attempt,
+    error_message: delivery.error_message ?? "",
+    delivered_at: delivery.delivered_at,
+  }));
+}
+
+function FailedDeliveriesHeader({ total, rows, eventFilter, isFetching, onFilterChange, onRefresh }: {
+  total: number;
+  rows: FailedDelivery[];
+  eventFilter: string;
+  isFetching: boolean;
+  onFilterChange: (value: string) => void;
+  onRefresh: () => void;
+}) {
+  const deliveryLabel = total === 1 ? "entrega" : "entregas";
+  return (
+    <CardHeader>
+      <div className="flex items-center justify-between gap-2 flex-wrap">
+        <div>
+          <CardTitle className="flex items-center gap-2 text-base">
+            <AlertTriangle className="h-4 w-4 text-destructive" /> Entregas falhas
+          </CardTitle>
+          <CardDescription>{total} {deliveryLabel} sem sucesso. Reenvie manualmente quando o destino estiver de volta.</CardDescription>
+        </div>
+        <div className="flex gap-2 items-center">
+          <Input value={eventFilter} onChange={(event) => onFilterChange(event.target.value)} placeholder="Filtrar por evento…" className="h-8 w-48 text-xs" />
+          <ExportButton filename="failed-deliveries" rows={exportDeliveryRows(rows)} formats={["csv", "json"]} />
+          <Button size="sm" variant="ghost" onClick={onRefresh} disabled={isFetching}>
+            <RefreshCw className={`h-3 w-3 ${isFetching ? "animate-spin" : ""}`} />
+          </Button>
+        </div>
+      </div>
+    </CardHeader>
+  );
+}
 
 export function FailedDeliveriesPanel() {
   const qc = useQueryClient();
@@ -67,54 +122,26 @@ export function FailedDeliveriesPanel() {
     }
   };
 
-  const total = data?.count ?? 0;
+  const rows = deliveryRows(data);
+  const total = deliveryTotal(data);
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex items-center justify-between gap-2 flex-wrap">
-          <div>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <AlertTriangle className="h-4 w-4 text-destructive" />
-              Entregas falhas
-            </CardTitle>
-            <CardDescription>
-              {total} {total === 1 ? "entrega" : "entregas"} sem sucesso. Reenvie manualmente quando o destino estiver de volta.
-            </CardDescription>
-          </div>
-          <div className="flex gap-2 items-center">
-            <Input
-              value={eventFilter}
-              onChange={(e) => { setEventFilter(e.target.value); setPage(0); }}
-              placeholder="Filtrar por evento…"
-              className="h-8 w-48 text-xs"
-            />
-            <ExportButton
-              filename="failed-deliveries"
-              rows={(data?.rows ?? []).map((d) => ({
-                webhook: d.outbound_webhooks?.name ?? "",
-                webhook_url: d.outbound_webhooks?.url ?? "",
-                event: d.event,
-                status_code: d.status_code,
-                attempt: d.attempt,
-                error_message: d.error_message ?? "",
-                delivered_at: d.delivered_at,
-              }))}
-              formats={["csv", "json"]}
-            />
-            <Button size="sm" variant="ghost" onClick={() => refetch()} disabled={isFetching}>
-              <RefreshCw className={`h-3 w-3 ${isFetching ? "animate-spin" : ""}`} />
-            </Button>
-          </div>
-        </div>
-      </CardHeader>
+    (<Card>
+      <FailedDeliveriesHeader
+        total={total}
+        rows={rows}
+        eventFilter={eventFilter}
+        isFetching={isFetching}
+        onFilterChange={(value) => { setEventFilter(value); setPage(0); }}
+        onRefresh={() => { void refetch(); }}
+      />
       <CardContent>
         {isLoading ? (
           <div className="space-y-2">{Array.from({ length: 4 }).map((_, i) => (
             <div key={i} className="h-10 bg-muted/30 rounded animate-pulse" />
           ))}</div>
-        ) : (data?.rows.length ?? 0) === 0 ? (
+        ) : rows.length === 0 ? (
           <p className="text-sm text-muted-foreground py-6 text-center">
             🎉 Nenhuma entrega falha. Tudo em ordem.
           </p>
@@ -132,7 +159,7 @@ export function FailedDeliveriesPanel() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {data!.rows.map((d) => (
+                {rows.map((d) => (
                   <TableRow key={d.id}>
                     <TableCell>
                       <div className="font-medium text-sm">{d.outbound_webhooks?.name ?? "—"}</div>
@@ -183,6 +210,6 @@ export function FailedDeliveriesPanel() {
           </>
         )}
       </CardContent>
-    </Card>
+    </Card>)
   );
 }

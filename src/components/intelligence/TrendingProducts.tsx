@@ -58,7 +58,7 @@ export function TrendingProducts({ days = 30, categoryId, supplierId, productId,
           />
         ) : (
           <div className="divide-y divide-border">
-            {products!.map((product, index) => (
+            {(products ?? []).map((product, index) => (
               <div
                 key={product.productSku || product.productId}
                 className="flex items-center gap-3 px-4 py-2.5 hover:bg-muted/30 cursor-pointer transition-colors"

@@ -31,6 +31,38 @@ export {
 import type { CategoryOption, TechniqueOption, SupplierOption, ColorOption, ColorGroupData, TagData, AdvancedFilterState } from '@/types/advancedFilters';
 import { defaultAdvancedFilters } from '@/constants/filters';
 
+function countActiveFilters(filters: AdvancedFilterState) {
+  const arrayCount = [
+    filters.categories,
+    filters.suppliers,
+    filters.colors,
+    filters.materials,
+    filters.techniques,
+    filters.tags,
+    filters.colorGroups,
+    filters.colorVariations,
+    filters.colorNuances,
+    filters.datasComemorativas,
+    filters.publicoAlvo,
+    filters.endomarketing,
+    filters.ramosAtividade,
+    filters.segmentosAtividade,
+    filters.gender ?? [],
+  ].reduce((sum, values) => sum + values.length, 0);
+  const scalarCount = [
+    Boolean(filters.search),
+    filters.priceRange[0] > 0 || filters.priceRange[1] < 1000,
+    filters.quantityRange[0] > 1 || filters.quantityRange[1] < 10000,
+    filters.stockStatus !== 'all',
+    filters.isKit,
+    filters.isFeatured,
+    filters.isNew,
+    filters.hasPersonalization,
+    filters.maxLeadTimeDays !== null,
+  ].filter(Boolean).length;
+  return arrayCount + scalarCount;
+}
+
 // ============================================
 // HOOK PRINCIPAL
 // ============================================
@@ -45,6 +77,11 @@ export function useAdvancedFilters() {
   const suppliersDB = useExternalSuppliers();
   const colorGroupsDB = useExternalDatabase<ColorGroupData>('color_groups');
   const tagsDB = useExternalDatabase<TagData>('tags');
+  const fetchCategories = categoriesDB.fetchAll;
+  const fetchTechniques = techniquesDB.fetchAll;
+  const fetchSuppliers = suppliersDB.fetchAll;
+  const fetchColorGroups = colorGroupsDB.fetchAll;
+  const fetchTags = tagsDB.fetchAll;
 
   // Buscar dados iniciais
   useEffect(() => {
@@ -52,11 +89,11 @@ export function useAdvancedFilters() {
       setIsLoading(true);
       try {
         await Promise.all([
-          categoriesDB.fetchAll({ filters: { is_active: true }, limit: 500 }),
-          techniquesDB.fetchAll({ filters: { is_active: true }, limit: 100 }),
-          suppliersDB.fetchAll({ limit: 100 }),
-          colorGroupsDB.fetchAll({ filters: { is_active: true }, limit: 100 }),
-          tagsDB.fetchAll({ limit: 200 }),
+          fetchCategories({ filters: { is_active: true }, limit: 500 }),
+          fetchTechniques({ filters: { is_active: true }, limit: 100 }),
+          fetchSuppliers({ limit: 100 }),
+          fetchColorGroups({ filters: { is_active: true }, limit: 100 }),
+          fetchTags({ limit: 200 }),
         ]);
       } catch (error) {
         console.error('Erro ao carregar opções de filtros:', error);
@@ -66,7 +103,7 @@ export function useAdvancedFilters() {
     };
 
     loadFilterOptions();
-  }, []);
+  }, [fetchCategories, fetchColorGroups, fetchSuppliers, fetchTags, fetchTechniques]);
 
   // Transformar categorias em árvore hierárquica
   const categoryTree = useMemo((): CategoryOption[] => {
@@ -193,34 +230,7 @@ export function useAdvancedFilters() {
   }, []);
 
   // Contador de filtros ativos
-  const activeFiltersCount = useMemo(() => {
-    let count = 0;
-    if (filters.search) count++;
-    if (filters.categories.length) count += filters.categories.length;
-    if (filters.suppliers.length) count += filters.suppliers.length;
-    if (filters.colors.length) count += filters.colors.length;
-    if (filters.materials.length) count += filters.materials.length;
-    if (filters.techniques.length) count += filters.techniques.length;
-    if (filters.tags.length) count += filters.tags.length;
-    if (filters.colorGroups.length) count += filters.colorGroups.length;
-    if (filters.colorVariations.length) count += filters.colorVariations.length;
-    if (filters.colorNuances.length) count += filters.colorNuances.length;
-    if (filters.datasComemorativas.length) count += filters.datasComemorativas.length;
-    if (filters.publicoAlvo.length) count += filters.publicoAlvo.length;
-    if (filters.endomarketing.length) count += filters.endomarketing.length;
-    if (filters.ramosAtividade.length) count += filters.ramosAtividade.length;
-    if (filters.segmentosAtividade.length) count += filters.segmentosAtividade.length;
-    if (filters.priceRange[0] > 0 || filters.priceRange[1] < 1000) count++;
-    if (filters.quantityRange[0] > 1 || filters.quantityRange[1] < 10000) count++;
-    if (filters.stockStatus !== 'all') count++;
-    if (filters.isKit) count++;
-    if (filters.isFeatured) count++;
-    if (filters.isNew) count++;
-    if (filters.hasPersonalization) count++;
-    if (filters.maxLeadTimeDays !== null) count++;
-    if (filters.gender?.length) count += filters.gender.length;
-    return count;
-  }, [filters]);
+  const activeFiltersCount = useMemo(() => countActiveFilters(filters), [filters]);
 
   // Verificar se há filtros ativos em um grupo específico
   const hasActiveFiltersInGroup = useCallback((keys: (keyof AdvancedFilterState)[]) => {

@@ -62,10 +62,11 @@ try {
 
 /** @type {SmokeRow[]} */
 const rows = [];
+const ANSI_ESCAPE_PATTERN = new RegExp(`${String.fromCharCode(27)}\\[[0-9;]*m`, "g");
 
 /** Extrai NN + label do título "NN · Nome legível" (separadores `·` ou `-`). */
 function parseTitle(rawTitle) {
-  const m = rawTitle.match(/^\s*(\d{2})\s*[·\-]\s*(.+?)\s*$/);
+  const m = rawTitle.match(/^\s*(\d{2})\s*[·-]\s*(.+?)\s*$/);
   if (m) return { num: m[1], label: m[2] };
   return { num: "??", label: rawTitle.trim() };
 }
@@ -100,7 +101,7 @@ function walkSuites(suites = [], parentTitles = [], inheritedFile = "") {
           const errorMsg =
             (last.error?.message || last.errors?.[0]?.message || "")
               .toString()
-              .replace(/\u001b\[[0-9;]*m/g, "")
+              .replace(ANSI_ESCAPE_PATTERN, "")
               .trim();
           const errorFirstLine = errorMsg.split("\n")[0].slice(0, 220);
 
@@ -362,7 +363,7 @@ if (isCI && (failed.length > 0 || flaky.length > 0)) {
 }
 
 /* ── Bloco FINAL SUMMARY (sempre impresso, sem ANSI) ─────────────────── */
-const plain = (s) => s.replace(/\u001b\[[0-9;]*m/g, "");
+const plain = (s) => s.replace(ANSI_ESCAPE_PATTERN, "");
 const sep = "─".repeat(72);
 const finalLines = [
   "",

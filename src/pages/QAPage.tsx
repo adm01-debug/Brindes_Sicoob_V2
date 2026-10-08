@@ -17,7 +17,6 @@ import { devInfraGate } from "@/lib/system/dev-gate/DevInfraGate";
 
 export default function QAPage() {
   const [viewportWidth, setViewportWidth] = useState("100%");
-  const [burstCount, setBurstCount] = useState(0);
   const [renderCount, setRenderCount] = useState(0);
   const lastRenderCountRef = useRef(0);
 
@@ -32,8 +31,6 @@ export default function QAPage() {
 
   const runBurstTest = () => {
     const burstSize = 10;
-    setBurstCount(burstSize);
-    
     // Simula múltiplas escritas rápidas no localStorage
     for (let i = 0; i < burstSize; i++) {
       const val = i % 2 === 0 ? 'true' : 'false';

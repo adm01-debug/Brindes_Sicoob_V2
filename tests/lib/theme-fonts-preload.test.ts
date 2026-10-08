@@ -1,5 +1,5 @@
 /**
- * Garante que o `index.html` pré-carrega TODAS as fontes que o sistema
+ * Garante que o `index.html` carrega de forma assíncrona TODAS as fontes que o sistema
  * de skins precisa: Plus Jakarta Sans (clássicas), Outfit (clássicas) e
  * Inter (skins Opera GX, família do Cloudflare Sans).
  */
@@ -22,8 +22,8 @@ describe('index.html — preload de fontes', () => {
     expect(indexHtml).toContain('Inter');
   });
 
-  it('usa preload + media swap para não bloquear render', () => {
-    expect(indexHtml).toMatch(/rel="preload"\s+as="style"/);
+  it('usa media swap para não bloquear render', () => {
+    expect(indexHtml).not.toMatch(/rel="preload"\s+as="style"/);
     expect(indexHtml).toMatch(/media="print"\s+onload="this\.media='all'"/);
   });
 

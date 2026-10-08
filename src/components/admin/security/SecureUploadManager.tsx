@@ -4,26 +4,21 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
-import { 
-  ShieldCheck, 
-  Upload, 
-  AlertTriangle, 
-  CheckCircle2, 
-  XCircle, 
-  History, 
-  Search,
-  RefreshCw,
-  Clock,
-  ShieldAlert,
-  FileSearch,
-  Lock
-} from "lucide-react";
+import { Upload, CheckCircle2, XCircle, History, Search, RefreshCw, Clock, ShieldAlert, FileSearch, Lock } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import type { Database, Json } from "@/integrations/supabase/types";
+
+type FileScanLog = Database["public"]["Tables"]["file_scan_logs"]["Row"];
+
+function getMaliciousCount(scanResult: Json): number {
+  if (!scanResult || typeof scanResult !== "object" || Array.isArray(scanResult)) return 0;
+  return typeof scanResult.malicious === "number" ? scanResult.malicious : 0;
+}
 
 export function SecureUploadManager() {
-  const [logs, setLogs] = useState<any[]>([]);
+  const [logs, setLogs] = useState<FileScanLog[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isUploading, setIsUploading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -39,7 +34,7 @@ export function SecureUploadManager() {
 
       if (error) throw error;
       setLogs(data || []);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error fetching logs:", error);
       toast.error("Erro ao carregar logs de auditoria");
     } finally {
@@ -61,7 +56,7 @@ export function SecureUploadManager() {
     formData.append("folder", "dev-test");
 
     try {
-      const { data, error } = await supabase.functions.invoke("secure-upload", {
+      const { error } = await supabase.functions.invoke("secure-upload", {
         body: formData,
       });
 
@@ -76,7 +71,7 @@ export function SecureUploadManager() {
 
       toast.success("Upload realizado com sucesso e verificado!");
       fetchLogs();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Test upload error:", error);
       toast.error("Erro ao realizar upload de teste");
     } finally {
@@ -222,7 +217,7 @@ export function SecureUploadManager() {
                       <td className="p-3 whitespace-nowrap text-muted-foreground">
                         <div className="flex items-center gap-1.5">
                           <Clock className="h-3 w-3" />
-                          {format(new Date(log.created_at), "dd/MM/yyyy HH:mm", { locale: ptBR })}
+                          {format(new Date(log.created_at ?? 0), "dd/MM/yyyy HH:mm", { locale: ptBR })}
                         </div>
                       </td>
                       <td className="p-3 max-w-[200px] truncate font-mono text-[11px]" title={log.path}>
@@ -245,8 +240,8 @@ export function SecureUploadManager() {
                         )}
                       </td>
                       <td className="p-3">
-                        {log.scan_result?.malicious > 0 ? (
-                          <span className="text-destructive font-bold">{log.scan_result.malicious}!</span>
+                        {getMaliciousCount(log.scan_result) > 0 ? (
+                          <span className="text-destructive font-bold">{getMaliciousCount(log.scan_result)}!</span>
                         ) : (
                           <span className="text-success">0</span>
                         )}

@@ -10,12 +10,12 @@ import {
   adaptFaixaPrecoRow,
   adaptPrintAreaTechniqueRow,
   buildTecnicaUpdatePayload,
-  __resetSchemaStatsForTests,
+  resetSchemaStatsForTests,
   getLegacyFieldsSeen,
 } from '@/lib/personalization/adapters';
 
 beforeEach(() => {
-  __resetSchemaStatsForTests();
+  resetSchemaStatsForTests();
 });
 
 describe('adaptTecnicaRow', () => {

@@ -10,8 +10,7 @@ interface UserStatsCardsProps {
 }
 
 export function UserStatsCards({ total, devCount, supervisorCount, agenteCount, pendingCount }: UserStatsCardsProps) {
-  return (
-    <div className="grid gap-4 md:grid-cols-5">
+  return (<div className="grid gap-4 md:grid-cols-5">
       <Card className="border-border/50">
         <CardHeader className="flex flex-row items-center justify-between pb-2">
           <CardTitle className="text-sm font-medium">Total de usuários</CardTitle>
@@ -57,6 +56,5 @@ export function UserStatsCards({ total, devCount, supervisorCount, agenteCount, 
           <div className="text-2xl font-bold text-warning">{pendingCount}</div>
         </CardContent>
       </Card>
-    </div>
-  );
+    </div>);
 }

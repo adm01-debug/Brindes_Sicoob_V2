@@ -423,7 +423,7 @@ async function semanticProductSearch(
     const { data } = await extClient
       .from("products")
       .select(productCols)
-      .eq("active", true)
+      .eq("is_active", true)
       .ilike("name", `%${term}%`)
       .limit(15);
     if (data) exactResults.push(...data);
@@ -442,7 +442,7 @@ async function semanticProductSearch(
     const { data, error } = await extClient
       .from("products")
       .select(productCols)
-      .eq("active", true)
+      .eq("is_active", true)
       .or(orParts.join(","))
       .limit(limit);
 
@@ -472,7 +472,7 @@ async function semanticProductSearch(
       const { data } = await extClient
         .from("products")
         .select(productCols)
-        .eq("active", true)
+        .eq("is_active", true)
         .in("category_id", catIds)
         .limit(30);
       if (data) categoryResults = data;
@@ -836,7 +836,7 @@ ${topProducts.length > 0
       console.error("External DB env vars not set — cannot fetch products");
     } else if (expansion.intent === "product_search" || expansion.intent === "proposal" || expansion.searchTerms.length > 0 || fallbackTerms.length > 0) {
       const extClient = createClient(EXT_URL, EXT_KEY, { global: { fetch: createReadOnlyCatalogFetch() } });
-      const PRODUCT_COLS = "id, name, sku, sale_price, primary_image_url, category_id, supplier_id, description, brand, gender, is_kit, stock_quantity, min_quantity, tags, active";
+      const PRODUCT_COLS = "id, name, sku, sale_price, primary_image_url, category_id, supplier_id, description, brand, gender, is_kit, stock_quantity, min_quantity, tags, is_active";
 
       // ── Resolve category IDs from names (DB-level join) ──
       let resolvedCategoryIds: string[] = [];
@@ -921,7 +921,7 @@ ${topProducts.length > 0
       let productsQuery = extClient
         .from("products")
         .select(PRODUCT_COLS)
-        .eq("active", true);
+        .eq("is_active", true);
 
       if (priceMin !== null && priceMin !== undefined) productsQuery = productsQuery.gte("sale_price", priceMin);
       if (priceMax !== null && priceMax !== undefined) productsQuery = productsQuery.lte("sale_price", priceMax);
@@ -971,7 +971,7 @@ ${topProducts.length > 0
             const { data: extraProducts } = await extClient
               .from("products")
               .select(PRODUCT_COLS)
-              .eq("active", true)
+              .eq("is_active", true)
               .in("id", missingIds);
             if (extraProducts) categoryAssignProducts = extraProducts;
             console.log(`🏷️ N:N category assignments added ${categoryAssignProducts.length} extra products`);
@@ -1096,7 +1096,7 @@ ${generalPool.map(p => buildProductDescription(p)).join("\n\n")}
         let q = extClient
           .from("products")
           .select("id, name, sku, sale_price, primary_image_url, category_id, description, brand, stock_quantity")
-          .eq("active", true);
+          .eq("is_active", true);
 
         if (priceMin !== null && priceMin !== undefined) q = q.gte("sale_price", priceMin);
         if (priceMax !== null && priceMax !== undefined) q = q.lte("sale_price", priceMax);

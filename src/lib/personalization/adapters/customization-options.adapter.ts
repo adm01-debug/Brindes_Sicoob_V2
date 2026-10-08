@@ -48,23 +48,29 @@ function toBool(v: unknown, fallback = false): boolean {
   return fallback;
 }
 
+function stringValue(raw: Raw, ...keys: string[]): string {
+  return String(pick(raw, ...keys) ?? '');
+}
+
+function nullableNumber(raw: Raw, ...keys: string[]): number | null {
+  const value = pick<number | null>(raw, ...keys);
+  return value === null || value === undefined ? null : toNumber(value);
+}
+
 function adaptOption(raw: Raw): TechniqueOption {
   const maxWidth = toNumber(pick(raw, 'max_width', 'largura_max'));
   const maxHeight = toNumber(pick(raw, 'max_height', 'altura_max'));
-  const gravLargura = pick<number | null>(raw, 'gravacao_largura_max', 'print_max_width');
-  const gravAltura = pick<number | null>(raw, 'gravacao_altura_max', 'print_max_height');
-
   return {
-    technique_id: String(pick(raw, 'technique_id', 'tecnica_id', 'id') ?? ''),
-    codigo_tabela: String(pick(raw, 'codigo_tabela', 'table_code', 'code') ?? ''),
-    tecnica_nome: String(pick(raw, 'tecnica_nome', 'technique_name', 'name', 'nome') ?? ''),
-    grupo_tecnica: String(pick(raw, 'grupo_tecnica', 'technique_group', 'group_code') ?? ''),
-    variacao_label: String(pick(raw, 'variacao_label', 'variation_label') ?? ''),
+    technique_id: stringValue(raw, 'technique_id', 'tecnica_id', 'id'),
+    codigo_tabela: stringValue(raw, 'codigo_tabela', 'table_code', 'code'),
+    tecnica_nome: stringValue(raw, 'tecnica_nome', 'technique_name', 'name', 'nome'),
+    grupo_tecnica: stringValue(raw, 'grupo_tecnica', 'technique_group', 'group_code'),
+    variacao_label: stringValue(raw, 'variacao_label', 'variation_label'),
 
     max_width: maxWidth,
     max_height: maxHeight,
-    gravacao_largura_max: gravLargura == null ? null : toNumber(gravLargura),
-    gravacao_altura_max: gravAltura == null ? null : toNumber(gravAltura),
+    gravacao_largura_max: nullableNumber(raw, 'gravacao_largura_max', 'print_max_width'),
+    gravacao_altura_max: nullableNumber(raw, 'gravacao_altura_max', 'print_max_height'),
     efetiva_largura_max: toNumber(
       pick(raw, 'efetiva_largura_max', 'effective_max_width', 'max_width_effective'),
       maxWidth,

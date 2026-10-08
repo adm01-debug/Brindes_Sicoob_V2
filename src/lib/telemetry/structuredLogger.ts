@@ -16,6 +16,8 @@
 import { captureException } from '@/lib/sentry';
 import { newRequestId, REQUEST_ID_HEADER } from '@/lib/telemetry/requestId';
 
+const browserConsole = globalThis.console;
+
 export type LogLevel = 'debug' | 'info' | 'warn' | 'error';
 
 export interface ClientLogger {
@@ -43,14 +45,48 @@ function serializeErr(value: unknown): Record<string, unknown> {
   return { value: String(value) };
 }
 
-function emit(
-  level: LogLevel,
-  scope: string,
-  requestId: string,
-  event: string,
-  base: Record<string, unknown>,
+function appendFields(
+  payload: Record<string, unknown>,
   fields: Record<string, unknown> | undefined,
 ): void {
+  if (!fields) return;
+  for (const [key, value] of Object.entries(fields)) {
+    payload[key] = ['err', 'error'].includes(key) ? serializeErr(value) : value;
+  }
+}
+
+function emitToConsole(level: LogLevel, tag: string, payload: Record<string, unknown>): void {
+  if (import.meta.env.DEV) {
+    const logger = level === 'warn'
+      ? browserConsole.warn
+      : level === 'error' ? browserConsole.error : browserConsole.log;
+    logger(tag, payload);
+    return;
+  }
+  const json = JSON.stringify(payload);
+  if (level === 'error') console.error(json);
+  else if (level === 'warn') console.warn(json);
+  else browserConsole.log(json);
+}
+
+interface LogEventContext {
+  level: LogLevel;
+  scope: string;
+  requestId: string;
+  event: string;
+  fields?: Record<string, unknown>;
+}
+
+function forwardErrorToSentry(context: LogEventContext, payload: Record<string, unknown>): void {
+  const { level, scope, requestId, event, fields } = context;
+  if (level !== 'error') return;
+  const error = fields?.err ?? fields?.error;
+  const errorObject = error instanceof Error ? error : new Error(`${scope}.${event}`);
+  captureException(errorObject, { tags: { scope, event, request_id: requestId }, extra: payload });
+}
+
+function emit(context: LogEventContext, base: Record<string, unknown>): void {
+  const { level, scope, requestId, event, fields } = context;
   const payload: Record<string, unknown> = {
     ts: new Date().toISOString(),
     level,
@@ -59,30 +95,10 @@ function emit(
     event,
     ...base,
   };
-  if (fields) {
-    for (const [k, v] of Object.entries(fields)) {
-      payload[k] = k === 'err' || k === 'error' ? serializeErr(v) : v;
-    }
-  }
-
-  const isDev = import.meta.env.DEV;
+  appendFields(payload, fields);
   const tag = `[${scope}:${event}]`;
-  if (isDev) {
-    const fn = level === 'warn' ? console.warn : level === 'error' ? console.error : console.log;
-    fn(tag, payload);
-  } else {
-    const json = JSON.stringify(payload);
-    if (level === 'error') console.error(json);
-    else if (level === 'warn') console.warn(json);
-    else console.log(json);
-  }
-
-  // Sentry forwarding
-  if (level === 'error') {
-    const err = (fields?.err ?? fields?.error) as unknown;
-    const errorObj = err instanceof Error ? err : new Error(`${scope}.${event}`);
-    captureException(errorObj, { tags: { scope, event, request_id: requestId }, extra: payload });
-  }
+  emitToConsole(level, tag, payload);
+  forwardErrorToSentry(context, payload);
 }
 
 export function createClientLogger(scope: string, opts: LoggerOptions = {}): ClientLogger {
@@ -92,10 +108,10 @@ export function createClientLogger(scope: string, opts: LoggerOptions = {}): Cli
   const build = (s: string, b: Record<string, unknown>): ClientLogger => ({
     scope: s,
     requestId,
-    debug: (event, fields) => emit('debug', s, requestId, event, b, fields),
-    info: (event, fields) => emit('info', s, requestId, event, b, fields),
-    warn: (event, fields) => emit('warn', s, requestId, event, b, fields),
-    error: (event, fields) => emit('error', s, requestId, event, b, fields),
+    debug: (event, fields) => emit({ level: 'debug', scope: s, requestId, event, fields }, b),
+    info: (event, fields) => emit({ level: 'info', scope: s, requestId, event, fields }, b),
+    warn: (event, fields) => emit({ level: 'warn', scope: s, requestId, event, fields }, b),
+    error: (event, fields) => emit({ level: 'error', scope: s, requestId, event, fields }, b),
     child: (sub, extra) => build(`${s}.${sub}`, { ...b, ...(extra ?? {}) }),
     headers: () => ({ [REQUEST_ID_HEADER]: requestId }),
   });

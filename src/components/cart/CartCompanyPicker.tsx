@@ -5,23 +5,13 @@
 import { useState, useMemo, useCallback, useRef, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import Fuse from "fuse.js";
-import { Building2, Search, Loader2, Plus } from "lucide-react";
+import { Building2, Search, Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
-import { selectCrm, searchCrm } from "@/lib/crm-db";
-import { getCompanyDisplayName, type CrmCompany } from "@/types/crm";
 import { useSellerCartContext, type CreateCartInput } from "@/contexts/SellerCartContext";
-
-interface CompanyItem {
-  id: string;
-  name: string;
-  razao_social: string;
-  nome_fantasia: string | null;
-  ramo: string | null;
-  logo_url: string | null;
-}
+import { fetchCartCompanyOptions, type CartCompanyOption as CompanyItem } from "./cart-company-options";
 
 interface CartCompanyPickerProps {
   onCreated?: () => void;
@@ -30,15 +20,8 @@ interface CartCompanyPickerProps {
 
 export function CartCompanyPicker({ onCreated, onCancel }: CartCompanyPickerProps) {
   const [searchTerm, setSearchTerm] = useState("");
-  const [debouncedSearch, setDebouncedSearch] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
   const { createCart, canCreateCart } = useSellerCartContext();
-
-  // Debounce server search
-  useEffect(() => {
-    const timer = setTimeout(() => setDebouncedSearch(searchTerm), 300);
-    return () => clearTimeout(timer);
-  }, [searchTerm]);
 
   // Focus input on mount
   useEffect(() => {
@@ -47,45 +30,9 @@ export function CartCompanyPicker({ onCreated, onCancel }: CartCompanyPickerProp
 
   // Local companies cache
   const { data: localCompanies = [], isLoading: loadingLocal } = useQuery<CompanyItem[]>({
-    queryKey: ["cart-companies-local"],
-    queryFn: async () => {
-      const companies = await selectCrm<CrmCompany>("companies", {
-        select: "id, razao_social, nome_fantasia, logo_url, ramo_atividade",
-        filters: { deleted_at: null, is_customer: true },
-        orderBy: { column: "razao_social", ascending: true },
-        limit: 100,
-      });
-      return companies.map((c): CompanyItem => ({
-        id: c.id,
-        name: getCompanyDisplayName(c),
-        razao_social: c.razao_social,
-        nome_fantasia: c.nome_fantasia || null,
-        ramo: c.ramo_atividade || null,
-        logo_url: c.logo_url || null,
-      }));
-    },
+    queryKey: ["cart-sicoob-company-options"],
+    queryFn: fetchCartCompanyOptions,
     staleTime: 15 * 60 * 1000,
-  });
-
-  // Server search for long queries
-  const { data: serverResults = [], isLoading: loadingServer } = useQuery<CompanyItem[]>({
-    queryKey: ["cart-companies-search", debouncedSearch],
-    queryFn: async () => {
-      if (debouncedSearch.length < 3) return [];
-      const results = await searchCrm<CrmCompany>("companies", "razao_social", debouncedSearch, {
-        orderBy: { column: "razao_social", ascending: true },
-        limit: 20,
-      });
-      return results.map((c): CompanyItem => ({
-        id: c.id,
-        name: getCompanyDisplayName(c),
-        razao_social: c.razao_social,
-        nome_fantasia: c.nome_fantasia || null,
-        ramo: c.ramo_atividade || null,
-        logo_url: c.logo_url || null,
-      }));
-    },
-    enabled: debouncedSearch.length >= 3,
   });
 
   // Fuse.js for local fuzzy search
@@ -99,19 +46,8 @@ export function CartCompanyPicker({ onCreated, onCancel }: CartCompanyPickerProp
   const filteredCompanies = useMemo(() => {
     if (!searchTerm) return localCompanies.slice(0, 20);
 
-    const localResults = fuse.search(searchTerm).map(r => r.item);
-    
-    // Merge server results (deduplicate)
-    const ids = new Set(localResults.map(c => c.id));
-    const merged = [...localResults];
-    for (const sr of serverResults) {
-      if (!ids.has(sr.id)) {
-        merged.push(sr);
-        ids.add(sr.id);
-      }
-    }
-    return merged.slice(0, 30);
-  }, [searchTerm, fuse, localCompanies, serverResults]);
+    return fuse.search(searchTerm).map(result => result.item).slice(0, 30);
+  }, [searchTerm, fuse, localCompanies]);
 
   const handleSelect = useCallback(async (company: CompanyItem) => {
     const input: CreateCartInput = {
@@ -120,11 +56,11 @@ export function CartCompanyPicker({ onCreated, onCancel }: CartCompanyPickerProp
       company_location: company.ramo || undefined,
       company_logo_url: company.logo_url || undefined,
     };
-    await createCart(input);
-    onCreated?.();
+    const result = await createCart(input);
+    if (result) onCreated?.();
   }, [createCart, onCreated]);
 
-  const isLoading = loadingLocal || loadingServer;
+  const isLoading = loadingLocal;
 
   return (
     <div className="space-y-2">
@@ -157,6 +93,8 @@ export function CartCompanyPicker({ onCreated, onCancel }: CartCompanyPickerProp
             <button
               key={company.id}
               type="button"
+              data-testid="cart-company-picker-select"
+              data-company-id={company.id}
               className={cn(
                 "w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-left",
                 "hover:bg-accent/50 transition-colors text-sm"

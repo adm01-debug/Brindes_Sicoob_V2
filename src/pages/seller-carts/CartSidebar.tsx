@@ -26,6 +26,7 @@ import {
   ArrowRight, Weight, Box, Building2, Sparkles, Trash2,
 } from "lucide-react";
 import type { UseMutationResult } from "@tanstack/react-query";
+import type { Product } from "@/hooks/useProducts";
 
 interface CartSidebarProps {
   cart: SellerCart;
@@ -34,7 +35,7 @@ interface CartSidebarProps {
   cartTotalQty: number;
   cartAge: number;
   weightVolume: { weightKg: number; volumeM3: number; volumeCm3: number } | null;
-  allProducts: unknown[];
+  allProducts: Product[];
   templates: { id: string; name: string; description?: string | null; items: CartTemplateItem[]; created_at?: string }[];
   canCreateCart: boolean;
   onGenerateQuote: (cart: SellerCart) => void;
@@ -141,7 +142,16 @@ export function CartSidebar({
         <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
           <Sparkles className="h-3.5 w-3.5 text-warning" /> Insights
         </h4>
-        <SmartSuggestions cart={cart} allProducts={allProducts} />
+        <SmartSuggestions
+          cart={cart}
+          allProducts={allProducts.map((product) => ({
+            id: product.id,
+            name: product.name,
+            category_name: product.category_name ?? undefined,
+            category: product.category,
+            is_active: product.is_active,
+          }))}
+        />
         <ActionHistoryPanel cartId={cart.id} />
         {cartAge >= 3 && (
           <p className="text-[10px] text-warning bg-warning/5 rounded-lg px-2.5 py-1.5 border border-warning/10">

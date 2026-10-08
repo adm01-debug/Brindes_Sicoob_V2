@@ -1,4 +1,4 @@
-import { useRef, useCallback, useState, useEffect } from "react";
+import { type ReactNode, type RefObject, useRef, useCallback, useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { motion, AnimatePresence } from "framer-motion";
@@ -35,7 +35,7 @@ interface VirtualizedProductGridProps {
   /** Filtros de cor ativos para mostrar imagem específica da cor no card */
   activeColorFilter?: ActiveColorFilter | null;
   /** Column selector React node to render in the filter bar */
-  columnSelector?: React.ReactNode;
+  columnSelector?: ReactNode;
   /** External selection mode */
   selectionMode?: boolean;
   /** External selected IDs */
@@ -44,109 +44,138 @@ interface VirtualizedProductGridProps {
   onToggleSelect?: (id: string) => void;
 }
 
-export function VirtualizedProductGrid({
-  products,
-  isLoading = false,
-  hasMore = false,
-  onLoadMore,
-  columns = 4,
-  onProductClick,
-  isFavorited,
-  onToggleFavorite,
-  isInCompare,
-  onToggleCompare,
-  canAddToCompare = true,
-  onShare,
-  activeFiltersCount = 0,
-  sortBy = "name",
-  onSortChange,
-  onOpenFilters,
-  onClearFilters,
-  viewMode = "grid",
-  onViewModeChange,
-  showFilterBar = true,
-  activeColorFilter,
-  columnSelector,
-  selectionMode = false,
-  selectedIds,
-  onToggleSelect,
-}: VirtualizedProductGridProps) {
-  const parentRef = useRef<HTMLDivElement>(null);
-  const [loadingMore, setLoadingMore] = useState(false);
-  const [showScrollTop, setShowScrollTop] = useState(false);
+type ProductActions = Pick<VirtualizedProductGridProps, "onProductClick" | "isFavorited" | "onToggleFavorite" | "isInCompare" | "onToggleCompare" | "canAddToCompare" | "onShare" | "activeColorFilter" | "selectionMode" | "selectedIds" | "onToggleSelect">;
 
-  // In list mode, always 1 column; in grid mode use columns prop
+function GridProductCell({ product, actions }: { product: Product; actions: ProductActions }) {
+  const selected = actions.selectedIds?.has(product.id) ?? false;
+  return (
+    <div className={cn("relative transition-all duration-200", actions.selectionMode && selected && "ring-2 ring-primary/50 rounded-2xl shadow-md")} style={{ zIndex: 1 }}>
+      {actions.selectionMode && <button className={cn("absolute top-2 left-2 z-20 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all duration-200", selected ? "bg-primary border-primary text-primary-foreground scale-100" : "border-muted-foreground/40 bg-card/80 backdrop-blur-sm hover:border-primary/60")} onClick={(event) => { event.stopPropagation(); actions.onToggleSelect?.(product.id); }}>{selected && <svg className="w-3.5 h-3.5" viewBox="0 0 14 14" fill="none"><path d="M11.5 3.5L5.5 10L2.5 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>}</button>}
+      <ProductCard product={product} onClick={() => actions.onProductClick?.(product)} isFavorited={actions.isFavorited?.(product.id)} onToggleFavorite={actions.onToggleFavorite} isInCompare={actions.isInCompare?.(product.id)} onToggleCompare={actions.onToggleCompare} canAddToCompare={actions.canAddToCompare} onShare={actions.onShare} activeColorFilter={actions.activeColorFilter} />
+    </div>
+  );
+}
+
+function ProductCell({ product, viewMode, actions }: { product: Product; viewMode: VirtualizedProductGridProps["viewMode"]; actions: ProductActions }) {
+  if (viewMode === "list") return <ProductListItem product={product} onClick={() => actions.onProductClick?.(product)} isFavorited={actions.isFavorited?.(product.id)} onToggleFavorite={actions.onToggleFavorite} isInCompare={actions.isInCompare?.(product.id)} onToggleCompare={actions.onToggleCompare} canAddToCompare={actions.canAddToCompare} activeColorFilter={actions.activeColorFilter} />;
+  return <GridProductCell product={product} actions={actions} />;
+}
+
+function rowStyle(viewMode: VirtualizedProductGridProps["viewMode"], effectiveColumns: number, columnGap: number, rowGap: number) {
+  const shared = { position: "absolute" as const, top: 0, left: 0, width: "100%", paddingLeft: "0.5rem", paddingRight: "1.5rem", paddingBottom: `${rowGap}px` };
+  if (viewMode === "list") return { ...shared, display: "flex", flexDirection: "column" as const };
+  return { ...shared, display: "grid", gridTemplateColumns: `repeat(${effectiveColumns}, minmax(0, 1fr))`, columnGap: `${columnGap}px`, isolation: "isolate" as const };
+}
+
+function ProductVirtualRow({ row, rowCount, hasMore, products, effectiveColumns, viewMode, columnGap, rowGap, measureElement, actions }: { row: { index: number; size: number; start: number; key: string | number | bigint }; rowCount: number; hasMore: boolean; products: Product[]; effectiveColumns: number; viewMode: VirtualizedProductGridProps["viewMode"]; columnGap: number; rowGap: number; measureElement: (node: Element | null) => void; actions: ProductActions }) {
+  if (row.index === rowCount && hasMore) {
+    return <div key="loader" style={{ position: "absolute", top: 0, left: 0, width: "100%", height: `${row.size}px`, transform: `translateY(${row.start}px)` }} className="flex items-center justify-center py-8"><div className="flex items-center gap-2 text-muted-foreground"><Loader2 className="h-5 w-5 animate-spin" /><span>Carregando mais produtos...</span></div></div>;
+  }
+  const startIndex = row.index * effectiveColumns;
+  const rowProducts = products.slice(startIndex, startIndex + effectiveColumns);
+  return (
+    <div key={row.key} data-index={row.index} ref={measureElement} style={{ ...rowStyle(viewMode, effectiveColumns, columnGap, rowGap), transform: `translateY(${row.start}px)` }}>
+      {rowProducts.map((product) => <ProductCell key={product.id} product={product} viewMode={viewMode} actions={actions} />)}
+    </div>
+  );
+}
+
+function gridMetrics(columns: number, viewMode: VirtualizedProductGridProps["viewMode"]) {
   const effectiveColumns = viewMode === "list" ? 1 : columns;
+  const columnGap = effectiveColumns >= 8 ? 16 : effectiveColumns >= 6 ? 24 : 32;
+  const rowGap = viewMode === "list" ? 8 : 32;
+  const estimatedRowHeight = viewMode === "list" ? 88 : effectiveColumns >= 8 ? 420 : effectiveColumns >= 6 ? 460 : 520;
+  return { effectiveColumns, columnGap, rowGap, estimatedRowHeight };
+}
 
-  // Column gap varies by density, row gap is always consistent (16px = gap-y-4)
-  const getColumnGapPx = () => {
-    if (effectiveColumns >= 8) return 16;
-    if (effectiveColumns >= 6) return 24;
-    return 32;
-  };
-  const colGapPx = getColumnGapPx();
-  const rowGapPx = viewMode === "list" ? 8 : 32; // list: compact 8px gap; grid: 32px
+function VirtualFilterBar({ props }: { props: Pick<VirtualizedProductGridProps, "showFilterBar" | "onSortChange" | "onOpenFilters" | "onClearFilters" | "onViewModeChange" | "activeFiltersCount" | "products" | "sortBy" | "viewMode" | "columnSelector"> }) {
+  const { showFilterBar, onSortChange, onOpenFilters, onClearFilters, onViewModeChange, activeFiltersCount, products, sortBy, viewMode, columnSelector } = props;
+  if (!showFilterBar || !onSortChange || !onOpenFilters || !onClearFilters || !onViewModeChange) return null;
+  return <div className="sticky top-[calc(var(--header-h,56px)+var(--breadcrumb-h,0px))] z-20 bg-background/95 backdrop-blur-md border-b border-border px-4 py-2.5 mb-2"><InlineFilterBar activeFiltersCount={activeFiltersCount ?? 0} totalProducts={products.length} sortBy={sortBy ?? "name"} onSortChange={onSortChange} onOpenFilters={onOpenFilters} onClearFilters={onClearFilters} viewMode={viewMode ?? "grid"} onViewModeChange={onViewModeChange} columnSelector={columnSelector} /></div>;
+}
 
-  // Calculate rows based on columns
-  const rowCount = Math.ceil(products.length / effectiveColumns);
-  const estimatedRowHeight = viewMode === "list" 
-    ? 88  // compact list item height
-    : (effectiveColumns >= 8 ? 420 : effectiveColumns >= 6 ? 460 : 520);
+function ScrollTopButton({ visible, onClick }: { visible: boolean; onClick: () => void }) {
+  return <AnimatePresence>{visible && <motion.button initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.8 }} className="absolute bottom-4 right-4 p-3 rounded-full bg-primary text-primary-foreground shadow-lg hover:bg-primary/90 transition-colors z-30" onClick={onClick} title="Voltar ao topo"><ArrowUp className="h-5 w-5" /></motion.button>}</AnimatePresence>;
+}
 
-  const virtualizer = useVirtualizer({
-    count: hasMore ? rowCount + 1 : rowCount,
+function LoadingProductGrid() {
+  return <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">{Array.from({ length: 12 }).map((_, index) => <ProductCardSkeleton key={index} />)}</div>;
+}
+
+interface ProductVirtualizerOptions {
+  parentRef: RefObject<HTMLDivElement>;
+  rowCount: number;
+  hasMore: boolean;
+  estimatedRowHeight: number;
+  viewMode: VirtualizedProductGridProps["viewMode"];
+}
+
+function useProductVirtualizer({ parentRef, rowCount, hasMore, estimatedRowHeight, viewMode }: ProductVirtualizerOptions) {
+  return useVirtualizer({
+    count: rowCount + Number(hasMore),
     getScrollElement: () => parentRef.current,
     estimateSize: () => estimatedRowHeight,
     overscan: viewMode === "list" ? 8 : 3,
-    measureElement: (el) => el.getBoundingClientRect().height,
+    measureElement: (element) => element.getBoundingClientRect().height,
   });
+}
 
-  const virtualItems = virtualizer.getVirtualItems();
+function isInitialProductLoad(isLoading: boolean, productCount: number) {
+  return isLoading && productCount === 0;
+}
 
-  // Infinite scroll: load more when reaching the bottom
+function normalizeGridProps(props: VirtualizedProductGridProps) {
+  return {
+    ...props,
+    isLoading: props.isLoading ?? false,
+    hasMore: props.hasMore ?? false,
+    columns: props.columns ?? 4,
+    canAddToCompare: props.canAddToCompare ?? true,
+    activeFiltersCount: props.activeFiltersCount ?? 0,
+    sortBy: props.sortBy ?? "name",
+    viewMode: props.viewMode ?? "grid",
+    showFilterBar: props.showFilterBar ?? true,
+    selectionMode: props.selectionMode ?? false,
+  };
+}
+
+function useVirtualScroll({ hasMore, isLoading, onLoadMore, productCount }: { hasMore: boolean; isLoading: boolean; onLoadMore?: () => void; productCount: number }) {
+  const parentRef = useRef<HTMLDivElement>(null);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [showScrollTop, setShowScrollTop] = useState(false);
   const handleScroll = useCallback(() => {
     if (!parentRef.current) return;
-
     const { scrollTop, scrollHeight, clientHeight } = parentRef.current;
-    
-    // Show scroll-to-top button after scrolling 300px
     setShowScrollTop(scrollTop > 300);
-    
-    // Load more when 500px from bottom
-    if (!hasMore || loadingMore || isLoading) return;
-    const scrollThreshold = 500;
-
-    if (scrollHeight - scrollTop - clientHeight < scrollThreshold) {
-      setLoadingMore(true);
-      onLoadMore?.();
-    }
+    if (!hasMore || loadingMore || isLoading || scrollHeight - scrollTop - clientHeight >= 500) return;
+    setLoadingMore(true); onLoadMore?.();
   }, [hasMore, loadingMore, isLoading, onLoadMore]);
-
   useEffect(() => {
     const element = parentRef.current;
     if (!element) return;
-
     element.addEventListener("scroll", handleScroll, { passive: true });
     return () => element.removeEventListener("scroll", handleScroll);
   }, [handleScroll]);
+  useEffect(() => { setLoadingMore(false); }, [productCount]);
+  const scrollToTop = () => parentRef.current?.scrollTo({ top: 0, behavior: "smooth" });
+  return { parentRef, showScrollTop, scrollToTop };
+}
 
-  // Reset loadingMore when products change
-  useEffect(() => {
-    setLoadingMore(false);
-  }, [products.length]);
+export function VirtualizedProductGrid(props: VirtualizedProductGridProps) {
+  const { products, isLoading, hasMore, onLoadMore, columns, onProductClick, isFavorited, onToggleFavorite, isInCompare, onToggleCompare, canAddToCompare, onShare, activeFiltersCount, sortBy, onSortChange, onOpenFilters, onClearFilters, viewMode, onViewModeChange, showFilterBar, activeColorFilter, columnSelector, selectionMode, selectedIds, onToggleSelect } = normalizeGridProps(props);
+  const { parentRef, showScrollTop, scrollToTop } = useVirtualScroll({ hasMore, isLoading, onLoadMore, productCount: products.length });
 
-  const scrollToTop = () => {
-    parentRef.current?.scrollTo({ top: 0, behavior: "smooth" });
-  };
+  // In list mode, always 1 column; in grid mode use columns prop
+  const { effectiveColumns, columnGap, rowGap, estimatedRowHeight } = gridMetrics(columns, viewMode);
 
-  if (isLoading && products.length === 0) {
-    return (
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-        {Array.from({ length: 12 }).map((_, i) => (
-          <ProductCardSkeleton key={i} />
-        ))}
-      </div>
-    );
+  // Calculate rows based on columns
+  const rowCount = Math.ceil(products.length / effectiveColumns);
+  const virtualizer = useProductVirtualizer({ parentRef, rowCount, hasMore, estimatedRowHeight, viewMode });
+
+  const virtualItems = virtualizer.getVirtualItems();
+
+  if (isInitialProductLoad(isLoading, products.length)) {
+    return <LoadingProductGrid />;
   }
 
   return (
@@ -159,21 +188,7 @@ export function VirtualizedProductGrid({
         style={{ contain: "strict" }}
       >
         {/* Barra de filtros sticky DENTRO do container de scroll */}
-        {showFilterBar && onSortChange && onOpenFilters && onClearFilters && onViewModeChange && (
-          <div className="sticky top-[calc(var(--header-h,56px)+var(--breadcrumb-h,0px))] z-20 bg-background/95 backdrop-blur-md border-b border-border px-4 py-2.5 mb-2">
-             <InlineFilterBar
-              activeFiltersCount={activeFiltersCount}
-              totalProducts={products.length}
-              sortBy={sortBy}
-              onSortChange={onSortChange}
-              onOpenFilters={onOpenFilters}
-              onClearFilters={onClearFilters}
-              viewMode={viewMode}
-              onViewModeChange={onViewModeChange}
-              columnSelector={columnSelector}
-            />
-          </div>
-        )}
+        <VirtualFilterBar props={{ showFilterBar, onSortChange, onOpenFilters, onClearFilters, onViewModeChange, activeFiltersCount, products, sortBy, viewMode, columnSelector }} />
         
         <div
           style={{
@@ -183,142 +198,12 @@ export function VirtualizedProductGrid({
             padding: "1rem",
           }}
         >
-          {virtualItems.map((virtualRow) => {
-            const isLoaderRow = virtualRow.index === rowCount && hasMore;
-
-            if (isLoaderRow) {
-              return (
-                <div
-                  key="loader"
-                  style={{
-                    position: "absolute",
-                    top: 0,
-                    left: 0,
-                    width: "100%",
-                    height: `${virtualRow.size}px`,
-                    transform: `translateY(${virtualRow.start}px)`,
-                  }}
-                  className="flex items-center justify-center py-8"
-                >
-                  <div className="flex items-center gap-2 text-muted-foreground">
-                    <Loader2 className="h-5 w-5 animate-spin" />
-                    <span>Carregando mais produtos...</span>
-                  </div>
-                </div>
-              );
-            }
-
-            // Get products for this row
-            const startIndex = virtualRow.index * effectiveColumns;
-            const rowProducts = products.slice(startIndex, startIndex + effectiveColumns);
-
-            return (
-              <div
-                key={virtualRow.key}
-                data-index={virtualRow.index}
-                ref={virtualizer.measureElement}
-                style={{
-                  position: "absolute",
-                  top: 0,
-                  left: 0,
-                  width: "100%",
-                  transform: `translateY(${virtualRow.start}px)`,
-                  ...(viewMode === "list"
-                    ? {
-                        display: "flex",
-                        flexDirection: "column" as const,
-                        paddingLeft: "0.5rem",
-                        paddingRight: "1.5rem",
-                        paddingBottom: `${rowGapPx}px`,
-                      }
-                    : {
-                        display: "grid",
-                        gridTemplateColumns: `repeat(${effectiveColumns}, minmax(0, 1fr))`,
-                        columnGap: `${colGapPx}px`,
-                        paddingLeft: "0.5rem",
-                        paddingRight: "1.5rem",
-                        paddingBottom: `${rowGapPx}px`,
-                        isolation: "isolate",
-                      }),
-                }}
-              >
-                {rowProducts.map((product, colIndex) =>
-                  viewMode === "list" ? (
-                    <ProductListItem
-                      key={product.id}
-                      product={product}
-                      onClick={() => onProductClick?.(product)}
-                      isFavorited={isFavorited?.(product.id)}
-                      onToggleFavorite={onToggleFavorite}
-                      isInCompare={isInCompare?.(product.id)}
-                      onToggleCompare={onToggleCompare}
-                      canAddToCompare={canAddToCompare}
-                      activeColorFilter={activeColorFilter}
-                    />
-                  ) : (
-                    <div
-                      key={product.id}
-                      className={cn(
-                        "relative transition-all duration-200",
-                        selectionMode && selectedIds?.has(product.id) && "ring-2 ring-primary/50 rounded-2xl shadow-md"
-                      )}
-                      style={{ zIndex: 1 }}
-                    >
-                      {selectionMode && (
-                        <button
-                          className={cn(
-                            "absolute top-2 left-2 z-20 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all duration-200",
-                            selectedIds?.has(product.id)
-                              ? "bg-primary border-primary text-primary-foreground scale-100"
-                              : "border-muted-foreground/40 bg-card/80 backdrop-blur-sm hover:border-primary/60"
-                          )}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onToggleSelect?.(product.id);
-                          }}
-                        >
-                          {selectedIds?.has(product.id) && (
-                            <svg className="w-3.5 h-3.5" viewBox="0 0 14 14" fill="none">
-                              <path d="M11.5 3.5L5.5 10L2.5 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                            </svg>
-                          )}
-                        </button>
-                      )}
-                      <ProductCard
-                        product={product}
-                        onClick={() => onProductClick?.(product)}
-                        isFavorited={isFavorited?.(product.id)}
-                        onToggleFavorite={onToggleFavorite}
-                        isInCompare={isInCompare?.(product.id)}
-                        onToggleCompare={onToggleCompare}
-                        canAddToCompare={canAddToCompare}
-                        onShare={onShare}
-                        activeColorFilter={activeColorFilter}
-                      />
-                    </div>
-                  )
-                )}
-              </div>
-            );
-          })}
+          {virtualItems.map((row) => <ProductVirtualRow key={row.key} row={row} rowCount={rowCount} hasMore={hasMore} products={products} effectiveColumns={effectiveColumns} viewMode={viewMode} columnGap={columnGap} rowGap={rowGap} measureElement={virtualizer.measureElement} actions={{ onProductClick, isFavorited, onToggleFavorite, isInCompare, onToggleCompare, canAddToCompare, onShare, activeColorFilter, selectionMode, selectedIds, onToggleSelect }} />)}
         </div>
       </div>
 
       {/* Scroll to top button - posicionado dentro do container */}
-      <AnimatePresence>
-        {showScrollTop && (
-          <motion.button
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.8 }}
-            className="absolute bottom-4 right-4 p-3 rounded-full bg-primary text-primary-foreground shadow-lg hover:bg-primary/90 transition-colors z-30"
-            onClick={scrollToTop}
-            title="Voltar ao topo"
-          >
-            <ArrowUp className="h-5 w-5" />
-          </motion.button>
-        )}
-      </AnimatePresence>
+      <ScrollTopButton visible={showScrollTop} onClick={scrollToTop} />
     </div>
   );
 }

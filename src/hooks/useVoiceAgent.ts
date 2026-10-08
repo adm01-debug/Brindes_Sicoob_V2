@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from "react";
-import { useScribe } from "@elevenlabs/react";
+import { CommitStrategy, useScribe } from "@elevenlabs/react";
 
 import { playTtsAudio } from "./voice/playTtsAudio";
 import { processVoiceTranscript } from "./voice/processTranscript";
@@ -20,6 +20,14 @@ export type { VoiceAgentAction, VoiceAgentPhase } from "./voice/types";
 const ERROR_RESET_DELAY_MS = 5000;
 const PROCESSING_ERROR_RESET_DELAY_MS = 3000;
 const SESSION_START_TIMEOUT_MS = 4000; // Reduced for faster fallback
+
+function scribeIsStarting(isStarting: boolean, status: string | undefined) {
+  return isStarting || status === "connecting";
+}
+
+function hasActiveScribe(status: string, isConnected: boolean) {
+  return status !== "disconnected" || isConnected;
+}
 
 export function useVoiceAgent({ onAction, onError }: UseVoiceAgentOptions = {}) {
   // === Stable refs for callbacks to avoid dependency churn ===
@@ -80,7 +88,7 @@ export function useVoiceAgent({ onAction, onError }: UseVoiceAgentOptions = {}) 
 
   const scribe = useScribe({
     modelId: "scribe_v2_realtime",
-    commitStrategy: "vad",
+    commitStrategy: CommitStrategy.VAD,
     onConnect: () => {
       logger.log("[Voice] Scribe socket connected");
     },
@@ -230,7 +238,7 @@ export function useVoiceAgent({ onAction, onError }: UseVoiceAgentOptions = {}) 
   }, [clearResetPhaseTimer, clearSessionStartTimer, scheduleIdleReset]);
 
   // === Handle Scribe errors — try fallback ===
-  const handleScribeError = useCallback((err: unknown) => {
+  const handleScribeError = useCallback(() => {
     // Invalidate cached token since connection failed
     invalidateScribeTokenCache();
     // Only log at debug level — this is expected when ElevenLabs is unavailable
@@ -278,13 +286,14 @@ export function useVoiceAgent({ onAction, onError }: UseVoiceAgentOptions = {}) 
 
   const startListening = useCallback(async () => {
     const scribeStatus = scribe.status ?? "disconnected";
-    if (isStartingRef.current || scribeStatus === "connecting") return;
+    if (scribeIsStarting(isStartingRef.current, scribe.status)) return;
 
     clearResetPhaseTimer();
     clearSessionStartTimer();
 
     // Disconnect any existing connections
-    if (scribeStatus !== "disconnected" || scribe.isConnected) {
+    const hasScribeConnection = hasActiveScribe(scribeStatus, scribe.isConnected);
+    if (hasScribeConnection) {
       forceDisconnectScribe();
     }
     if (isWebSpeechActive()) {
@@ -320,7 +329,7 @@ export function useVoiceAgent({ onAction, onError }: UseVoiceAgentOptions = {}) 
       sessionStartTimerRef.current = setTimeout(() => {
         if (!isStartingRef.current) return;
         // Timeout → try fallback
-        handleScribeError(new Error("Scribe session start timeout"));
+        handleScribeError();
       }, SESSION_START_TIMEOUT_MS);
 
       await scribe.connect({
@@ -405,7 +414,8 @@ export function useVoiceAgent({ onAction, onError }: UseVoiceAgentOptions = {}) 
       clearSessionStartTimer();
       try {
         disconnectScribeRef.current();
-      } catch {
+      } catch (error) {
+        logger.warn("Falha ao encerrar a sessão de transcrição", error);
       }
       stopWebSpeech();
       stopSpeakingRef.current?.();

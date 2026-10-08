@@ -25,6 +25,23 @@ function formatRelative(iso: string): string {
   return `há ${d}d`;
 }
 
+function RotationSummary({ latest }: { latest: RotationHistoryEntry }) {
+  const author = latest.rotated_by_email ?? "autor desconhecido";
+  return (
+    <span>
+      Última rotação <span className="font-medium text-foreground">{formatRelative(latest.rotated_at)}</span>
+      {" • "}
+      <span className="font-mono">
+        {latest.previous_suffix ? formatMaskedSuffix(latest.previous_suffix) : "(env)"}
+        {" → "}
+        {formatMaskedSuffix(latest.new_suffix)}
+      </span>
+      {" • "}
+      por <span className="font-medium">{author}</span>
+    </span>
+  );
+}
+
 export function RotationHistoryRow({ secretName, refreshKey = 0 }: Props) {
   const { getRotationHistory } = useSecretsManager();
   const [latest, setLatest] = useState<RotationHistoryEntry | null>(null);
@@ -43,23 +60,11 @@ export function RotationHistoryRow({ secretName, refreshKey = 0 }: Props) {
 
   if (!loaded || !latest) return null;
 
-  const author = latest.rotated_by_email ?? "autor desconhecido";
-
   return (
     <>
       <div className="text-xs flex flex-wrap items-center gap-1.5 text-muted-foreground animate-in fade-in duration-300">
         <RotateCw className="h-3 w-3 text-primary shrink-0" />
-        <span>
-          Última rotação <span className="font-medium text-foreground">{formatRelative(latest.rotated_at)}</span>
-          {" • "}
-          <span className="font-mono">
-            {latest.previous_suffix ? formatMaskedSuffix(latest.previous_suffix) : "(env)"}
-            {" → "}
-            {formatMaskedSuffix(latest.new_suffix)}
-          </span>
-          {" • "}
-          por <span className="font-medium">{author}</span>
-        </span>
+        <RotationSummary latest={latest} />
         <Button
           size="sm"
           variant="link"

@@ -11,6 +11,22 @@ interface QuoteTemplatesListProps {
   onEditTemplate: (template: QuoteTemplate) => void;
 }
 
+function TemplateCard({ template, onEdit, onDelete }: { template: QuoteTemplate; onEdit: (template: QuoteTemplate) => void; onDelete: (id: string) => void }) {
+  return <Card className="overflow-hidden group hover:border-primary/40 transition-all duration-300 rounded-2xl"><CardContent className="p-0">
+    <div className="p-5 space-y-4"><div className="flex justify-between items-start"><div className="space-y-1"><div className="flex items-center gap-2">
+      <h3 className="font-bold text-lg">{template.name}</h3><Badge variant={template.is_public ? "default" : "secondary"} className="h-5 px-1.5 text-[9px] uppercase tracking-wider">
+        {template.is_public ? <Globe className="h-3 w-3 mr-1" /> : <Lock className="h-3 w-3 mr-1" />}{template.is_public ? "Público" : "Privado"}</Badge>
+    </div><p className="text-sm text-muted-foreground line-clamp-2 h-10">{template.description || "Nenhuma descrição informada."}</p></div></div>
+      <div className="flex items-center gap-2"><Badge variant="outline" className="text-[11px] h-6 bg-primary/5">{(template.items_data as unknown[])?.length || 0} Itens</Badge>
+        {template.discount_percent && <Badge variant="outline" className="text-[11px] h-6 text-green-600 bg-green-50 border-green-200">-{template.discount_percent}%</Badge>}
+      </div></div><div className="px-5 py-3 bg-muted/30 flex items-center justify-between border-t border-border/50">
+      <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-widest">Ações</span><div className="flex items-center gap-1">
+        <Button variant="ghost" size="icon" className="h-8 w-8 hover:text-primary" onClick={() => onEdit(template)}><Edit2 className="h-4 w-4" /></Button>
+        <Button variant="ghost" size="icon" className="h-8 w-8 hover:text-destructive" onClick={() => onDelete(template.id)}><Trash2 className="h-4 w-4" /></Button>
+      </div></div>
+  </CardContent></Card>;
+}
+
 export function QuoteTemplatesList({ onCreateTemplate, onEditTemplate }: QuoteTemplatesListProps) {
   const { templates, isLoading, deleteTemplate } = useQuoteTemplates();
 
@@ -49,59 +65,7 @@ export function QuoteTemplatesList({ onCreateTemplate, onEditTemplate }: QuoteTe
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {templates.map((template) => (
-            <Card key={template.id} className="overflow-hidden group hover:border-primary/40 transition-all duration-300 rounded-2xl">
-              <CardContent className="p-0">
-                <div className="p-5 space-y-4">
-                  <div className="flex justify-between items-start">
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2">
-                        <h3 className="font-bold text-lg">{template.name}</h3>
-                        <Badge variant={template.is_public ? "default" : "secondary"} className="h-5 px-1.5 text-[9px] uppercase tracking-wider">
-                          {template.is_public ? <Globe className="h-3 w-3 mr-1" /> : <Lock className="h-3 w-3 mr-1" />}
-                          {template.is_public ? "Público" : "Privado"}
-                        </Badge>
-                      </div>
-                      <p className="text-sm text-muted-foreground line-clamp-2 h-10">
-                        {template.description || "Nenhuma descrição informada."}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <Badge variant="outline" className="text-[11px] h-6 bg-primary/5">
-                      {(template.items_data as any[])?.length || 0} Itens
-                    </Badge>
-                    {template.discount_percent && (
-                      <Badge variant="outline" className="text-[11px] h-6 text-green-600 bg-green-50 border-green-200">
-                        -{template.discount_percent}%
-                      </Badge>
-                    )}
-                  </div>
-                </div>
-
-                <div className="px-5 py-3 bg-muted/30 flex items-center justify-between border-t border-border/50">
-                  <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-widest">Ações</span>
-                  <div className="flex items-center gap-1">
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
-                      className="h-8 w-8 hover:text-primary"
-                      onClick={() => onEditTemplate(template)}
-                    >
-                      <Edit2 className="h-4 w-4" />
-                    </Button>
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
-                      className="h-8 w-8 hover:text-destructive"
-                      onClick={() => deleteTemplate(template.id)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            <TemplateCard key={template.id} template={template} onEdit={onEditTemplate} onDelete={deleteTemplate} />
           ))}
         </div>
       )}

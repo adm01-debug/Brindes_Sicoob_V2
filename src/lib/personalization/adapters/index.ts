@@ -49,10 +49,9 @@ export {
   recordContractMismatch,
   getContractMismatches,
   getRecentMismatches,
-  __resetSchemaStatsForTests,
+  resetSchemaStatsForTests,
   type PriceSchemaVersion,
   type SchemaStats,
   type FullSchemaStats,
   type ContractMismatchEntry,
 } from './schema-detection';
-

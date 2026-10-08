@@ -3,7 +3,6 @@
  * Fonte única de verdade para labels, cores e estilos de cada status.
  */
 
-import type { QuoteStatus } from "@/types/quote";
 
 export interface QuoteStatusConfig {
   label: string;
@@ -17,10 +16,12 @@ export interface QuoteStatusConfig {
   icon?: string;
 }
 
+const MUTED_FOREGROUND_COLOR = "hsl(var(--muted-foreground))";
+
 export const QUOTE_STATUS_CONFIG: Record<string, QuoteStatusConfig> = {
   draft: {
     label: "Rascunho",
-    color: "hsl(var(--muted-foreground))",
+    color: MUTED_FOREGROUND_COLOR,
     badgeVariant: "secondary",
     badgeClassName: "bg-warning/10 text-warning border-warning/40 border-dashed",
   },
@@ -83,7 +84,7 @@ export const QUOTE_STATUS_CONFIG: Record<string, QuoteStatusConfig> = {
   },
   expired: {
     label: "Expirado",
-    color: "hsl(var(--muted-foreground))",
+    color: MUTED_FOREGROUND_COLOR,
     badgeVariant: "secondary",
     badgeClassName: "bg-muted text-muted-foreground border-muted",
   },
@@ -96,5 +97,5 @@ export function getQuoteStatusLabel(status: string): string {
 
 /** Helper: get status color for charts */
 export function getQuoteStatusColor(status: string): string {
-  return QUOTE_STATUS_CONFIG[status]?.color || "hsl(var(--muted-foreground))";
+  return QUOTE_STATUS_CONFIG[status]?.color || MUTED_FOREGROUND_COLOR;
 }

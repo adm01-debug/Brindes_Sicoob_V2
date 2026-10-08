@@ -1,8 +1,8 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Sparkles, CalendarPlus, CalendarRange, CalendarDays, Building2 } from "lucide-react";
-import { useNoveltyStats } from "@/hooks/useNovelties";
+import { useNoveltyStats, type NoveltyStatsDisplay } from "@/hooks/useNovelties";
 import { cn } from "@/lib/utils";
-import { useState, useEffect } from "react";
+import { type ReactNode, useState, useEffect } from "react";
 
 function useCountUp(end: number, duration: number = 800) {
   const [count, setCount] = useState(0);
@@ -26,7 +26,7 @@ interface StatCardProps {
   value: number;
   suffix?: string;
   subtitle?: string;
-  icon: React.ReactNode;
+  icon: ReactNode;
   variant: "success" | "warning" | "info" | "default" | "orange";
   delay?: number;
 }
@@ -75,90 +75,39 @@ function StatCard({ label, value, suffix = "", subtitle, icon, variant, delay = 
   );
 }
 
-function StatCardSkeleton() {
-  return (
-    <Card className="border-border/50">
-      <CardContent className="p-3 sm:p-4">
-        <div className="flex items-center gap-3">
-          <div className="h-10 w-10 sm:h-11 sm:w-11 rounded-lg shimmer" />
-          <div className="space-y-2">
-            <div className="h-6 w-16 rounded shimmer" style={{ animationDelay: '100ms' }} />
-            <div className="h-4 w-24 rounded shimmer" style={{ animationDelay: '200ms' }} />
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  );
+function LoadingStats() {
+  return <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">{Array.from({ length: 5 }).map((_, index) => <Card key={index} className="border-border/50"><CardContent className="p-3 sm:p-4"><div className="flex items-center gap-3"><div className="h-10 w-10 sm:h-11 sm:w-11 rounded-lg bg-muted/50 flex items-center justify-center"><div className="w-4 h-4 border-2 border-primary/40 border-t-transparent rounded-full animate-spin" /></div><div className="space-y-1.5"><div className="text-lg font-bold tabular-nums text-muted-foreground/40">--</div><div className="text-[10px] text-muted-foreground/30">carregando...</div></div></div></CardContent></Card>)}</div>;
+}
+
+interface NoveltyStats {
+  arrivedToday: number;
+  arrivedThisWeek: number;
+  arrivedLast15Days: number;
+  topSupplierCount: number;
+  topSupplierName: string;
+  activeNovelties: number;
+  noveltyRate: number;
+}
+
+function numeric(value: number | undefined): number { return value ?? 0; }
+function supplierName(value: string | null | undefined): string { return value ?? "—"; }
+
+function normalizeStats(stats: NoveltyStatsDisplay | undefined): NoveltyStats {
+  return { arrivedToday: numeric(stats?.arrivedToday), arrivedThisWeek: numeric(stats?.arrivedThisWeek), arrivedLast15Days: numeric(stats?.arrivedLast15Days), topSupplierCount: numeric(stats?.topSupplierCount), topSupplierName: supplierName(stats?.topSupplierName), activeNovelties: numeric(stats?.activeNovelties), noveltyRate: numeric(stats?.noveltyRate) };
+}
+
+function StatsCards({ stats }: { stats: NoveltyStats }) {
+  return <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4"><StatCard label="Chegaram Hoje" value={stats.arrivedToday} icon={<CalendarPlus className="h-4 w-4 sm:h-5 sm:w-5" />} variant="orange" /><StatCard label="Últimos 7 Dias" value={stats.arrivedThisWeek} icon={<CalendarRange className="h-4 w-4 sm:h-5 sm:w-5" />} variant="success" delay={100} /><StatCard label="Últimos 15 Dias" value={stats.arrivedLast15Days} icon={<CalendarDays className="h-4 w-4 sm:h-5 sm:w-5" />} variant="warning" delay={150} /><StatCard label="Top Fornecedor" value={stats.topSupplierCount} subtitle={stats.topSupplierName} icon={<Building2 className="h-4 w-4 sm:h-5 sm:w-5" />} variant="info" delay={200} /><StatCard label="Novidades Ativas" value={stats.activeNovelties} suffix={stats.noveltyRate ? ` (${stats.noveltyRate}%)` : ""} icon={<Sparkles className="h-4 w-4 sm:h-5 sm:w-5" />} variant="default" delay={300} /></div>;
 }
 
 export function NoveltyStatsCards() {
   const { data: stats, isLoading, error } = useNoveltyStats();
 
-  if (isLoading) {
-    return (
-      <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
-        {Array.from({ length: 5 }).map((_, i) => (
-          <Card key={i} className="border-border/50">
-            <CardContent className="p-3 sm:p-4">
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 sm:h-11 sm:w-11 rounded-lg bg-muted/50 flex items-center justify-center">
-                  <div className="w-4 h-4 border-2 border-primary/40 border-t-transparent rounded-full animate-spin" />
-                </div>
-                <div className="space-y-1.5">
-                  <div className="text-lg font-bold tabular-nums text-muted-foreground/40">--</div>
-                  <div className="text-[10px] text-muted-foreground/30">carregando...</div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-    );
-  }
+  if (isLoading) return <LoadingStats />;
 
   if (error) {
     console.error('Erro ao carregar estatísticas:', error);
   }
 
-  return (
-    <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
-      <StatCard
-        label="Chegaram Hoje"
-        value={stats?.arrivedToday || 0}
-        icon={<CalendarPlus className="h-4 w-4 sm:h-5 sm:w-5" />}
-        variant="orange"
-        delay={0}
-      />
-      <StatCard
-        label="Últimos 7 Dias"
-        value={stats?.arrivedThisWeek || 0}
-        icon={<CalendarRange className="h-4 w-4 sm:h-5 sm:w-5" />}
-        variant="success"
-        delay={100}
-      />
-      <StatCard
-        label="Últimos 15 Dias"
-        value={stats?.arrivedLast15Days || 0}
-        icon={<CalendarDays className="h-4 w-4 sm:h-5 sm:w-5" />}
-        variant="warning"
-        delay={150}
-      />
-      <StatCard
-        label="Top Fornecedor"
-        value={stats?.topSupplierCount || 0}
-        subtitle={stats?.topSupplierName || "—"}
-        icon={<Building2 className="h-4 w-4 sm:h-5 sm:w-5" />}
-        variant="info"
-        delay={200}
-      />
-      <StatCard
-        label="Novidades Ativas"
-        value={stats?.activeNovelties || 0}
-        suffix={stats?.noveltyRate ? ` (${stats.noveltyRate}%)` : ""}
-        icon={<Sparkles className="h-4 w-4 sm:h-5 sm:w-5" />}
-        variant="default"
-        delay={300}
-      />
-    </div>
-  );
+  return <StatsCards stats={normalizeStats(stats)} />;
 }

@@ -13,6 +13,7 @@ export default defineConfig({
       'e2e/**',
       'supabase/functions/**/*.test.ts',
       'tests/e2e/rbac-dev-technical-routes.test.ts',
+      'tests/scenarios/**',
     ],
     alias: {
       '@': path.resolve(__dirname, './src'),

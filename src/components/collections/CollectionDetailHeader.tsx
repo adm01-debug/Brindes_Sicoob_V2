@@ -3,10 +3,7 @@
  * Contains back button, collection info, CRM badge, share, export and action buttons.
  */
 import { motion } from "framer-motion";
-import {
-  ArrowLeft, Monitor, Package, FileText, Clock, Users, Share2,
-  ArrowRight,
-} from "lucide-react";
+import { Monitor, Package, FileText, Clock, Users, Share2, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ExportCollectionButton } from "./ExportCollectionButton";
@@ -35,20 +32,7 @@ interface CollectionDetailHeaderProps {
   showShare?: boolean;
 }
 
-export function CollectionDetailHeader({
-  collection,
-  productCount,
-  isLoading,
-  updatedAgo,
-  products,
-  variantMap,
-  notesMap,
-  onBack,
-  onCreateQuote,
-  onPresent,
-  onShare,
-  showShare,
-}: CollectionDetailHeaderProps) {
+export function CollectionDetailHeader({ collection, productCount, isLoading, updatedAgo, products, variantMap, notesMap, onCreateQuote, onPresent, onShare, showShare }: CollectionDetailHeaderProps) {
   return (
     <div className="flex flex-col gap-3">
       <div className="flex items-start gap-4">

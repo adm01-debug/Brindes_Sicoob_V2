@@ -1,12 +1,12 @@
-import { type ReactNode, useEffect, useState } from "react";
-import { Navigate, Outlet, useLocation } from "react-router-dom";
-import { Loader2 } from "lucide-react";
-import { useAuth } from "@/contexts/AuthContext";
-import { toast } from "sonner";
-import { MfaEnrollmentDialog } from "@/components/security/MfaEnrollmentDialog";
-import { MfaChallengeDialog } from "@/components/security/MfaChallengeDialog";
-import { logAccessDenied } from "@/lib/access/log-access-denied";
-import { DevAccessDeniedPage } from "@/components/access/DevAccessDeniedPage";
+import { type ReactNode, useEffect, useState } from 'react';
+import { Navigate, Outlet, useLocation } from 'react-router-dom';
+import { Loader2 } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
+import { toast } from 'sonner';
+import { MfaEnrollmentDialog } from '@/components/security/MfaEnrollmentDialog';
+import { MfaChallengeDialog } from '@/components/security/MfaChallengeDialog';
+import { logAccessDenied } from '@/lib/access/log-access-denied';
+import { DevAccessDeniedPage } from '@/components/access/DevAccessDeniedPage';
 
 interface DevRouteProps {
   children?: ReactNode;
@@ -34,80 +34,61 @@ interface DevRouteProps {
  *      • Retorno para destino seguro (supervisor → /admin/usuarios, agente → /).
  */
 export function DevRoute({ children }: DevRouteProps) {
-  const {
-    user,
-    isDev,
-    isLoading,
-    currentAAL,
-    hasMFA,
-    mfaRequired,
-    role,
-  } = useAuth();
+  const auth = useAuth();
   const location = useLocation();
   const [enrollOpen, setEnrollOpen] = useState(false);
-
   const blockedPath = location.pathname;
-  // Snapshot da rota bloqueada (path + search + hash + state) capturado na
-  // primeira renderização, para que "Tentar novamente" preserve o location
-  // state original mesmo após re-renders ou depois de abrir/fechar diálogos.
-  const [blockedTarget] = useState(() => ({
-    pathname: location.pathname,
-    search: location.search,
-    hash: location.hash,
-    state: location.state,
-  }));
+  const blockedTarget = useBlockedTarget(location);
   const blockedFullPath = `${blockedTarget.pathname}${blockedTarget.search}${blockedTarget.hash}`;
-
-  // Abre enrollment automaticamente para dev sem MFA cadastrado.
   useEffect(() => {
-    if (!isLoading && user && isDev && !hasMFA) {
+    if (!auth.isLoading && auth.user && auth.isDev && !auth.hasMFA) {
       setEnrollOpen(true);
     }
-  }, [isLoading, user, isDev, hasMFA]);
+  }, [auth.isLoading, auth.user, auth.isDev, auth.hasMFA]);
+  useDevAccessDeniedNotice({
+    isLoading: auth.isLoading,
+    user: auth.user,
+    isDev: auth.isDev,
+    blockedPath,
+    role: auth.role,
+  });
+  return (
+    <DevRouteResult
+      auth={auth}
+      location={location}
+      blockedTarget={blockedTarget}
+      blockedFullPath={blockedFullPath}
+      enrollOpen={enrollOpen}
+      setEnrollOpen={setEnrollOpen}
+    >
+      {children}
+    </DevRouteResult>
+  );
+}
 
-  // Toast informativo ao bloquear — coalescido por janela de 60s/usuário
-  // para não disparar repetidamente quando o usuário navega entre rotas
-  // técnicas (ex.: /telemetria → /conexoes → /seguranca). O `id` estável
-  // já evita empilhamento dentro da mesma sessão de Sonner; a janela em
-  // sessionStorage cobre o caso de remontagem por mudança de rota.
-  useEffect(() => {
-    if (isLoading || !user || isDev) return;
+interface DevRouteResultProps {
+  auth: ReturnType<typeof useAuth>;
+  location: ReturnType<typeof useLocation>;
+  blockedTarget: ReturnType<typeof useBlockedTarget>;
+  blockedFullPath: string;
+  enrollOpen: boolean;
+  setEnrollOpen: (open: boolean) => void;
+  children?: ReactNode;
+}
 
-    const TOAST_ID = "dev-route-blocked";
-    const STORAGE_KEY = `dev-route-toast:${user.id}`;
-    const WINDOW_MS = 60_000;
-    let shouldShow = true;
-    try {
-      const last = Number(sessionStorage.getItem(STORAGE_KEY) ?? "0");
-      if (last && Date.now() - last < WINDOW_MS) shouldShow = false;
-      else sessionStorage.setItem(STORAGE_KEY, String(Date.now()));
-    } catch {
-      // sessionStorage indisponível (modo privado etc.) — segue mostrando.
-    }
+function DevRouteResult({
+  auth,
+  location,
+  blockedTarget,
+  blockedFullPath,
+  enrollOpen,
+  setEnrollOpen,
+  children,
+}: DevRouteResultProps) {
+  const { user, isDev, isLoading, currentAAL, hasMFA, mfaRequired, role } = auth;
+  const blockedPath = location.pathname;
 
-    if (shouldShow) {
-      toast.error("Acesso restrito", {
-        id: TOAST_ID,
-        description: "Área exclusiva da equipe técnica.",
-        duration: 4000,
-      });
-    }
-
-    void logAccessDenied({
-      userId: user.id,
-      blockedPath,
-      requiredRole: "dev",
-      userRole: role,
-    });
-  }, [isLoading, user, isDev, blockedPath, role]);
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
-  }
+  if (isLoading) return <RouteLoader />;
 
   if (!user) {
     return <Navigate to="/login" state={{ from: location }} replace />;
@@ -115,36 +96,14 @@ export function DevRoute({ children }: DevRouteProps) {
 
   // Hardening MFA/AAL2 — só aplicável a usuários `dev` (que efetivamente passariam).
   // Não-dev segue para a tela de bloqueio com ações contextuais (sem pedir MFA).
-  if (isDev && !hasMFA) {
-    return (
-      <>
-        <div className="min-h-screen flex items-center justify-center bg-background">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        </div>
-        <MfaEnrollmentDialog
-          open={enrollOpen}
-          onOpenChange={setEnrollOpen}
-          enforce
-        />
-      </>
-    );
-  }
-
-  if (isDev && mfaRequired && currentAAL === "aal1") {
-    return (
-      <>
-        <div className="min-h-screen flex items-center justify-center bg-background">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        </div>
-        <MfaChallengeDialog open />
-      </>
-    );
+  if (isDev && (!hasMFA || (mfaRequired && currentAAL === 'aal1'))) {
+    return <DevMfaGate hasMFA={hasMFA} enrollOpen={enrollOpen} setEnrollOpen={setEnrollOpen} />;
   }
 
   if (!isDev) {
     return (
-      <DevAccessDeniedPage
-        user={{ id: user.id, email: user.email }}
+      <DeniedDevRoute
+        user={user}
         role={role}
         blockedPath={blockedPath}
         blockedFullPath={blockedFullPath}
@@ -154,4 +113,88 @@ export function DevRoute({ children }: DevRouteProps) {
   }
 
   return children ?? <Outlet />;
+}
+
+function DevMfaGate({ hasMFA, enrollOpen, setEnrollOpen }: { hasMFA: boolean; enrollOpen: boolean; setEnrollOpen: (open: boolean) => void }) {
+  return (
+    <>
+      <RouteLoader />
+      {hasMFA ? <MfaChallengeDialog open /> : <MfaEnrollmentDialog open={enrollOpen} onOpenChange={setEnrollOpen} enforce />}
+    </>
+  );
+}
+
+function DeniedDevRoute({
+  user,
+  role,
+  blockedPath,
+  blockedFullPath,
+  blockedState,
+}: Pick<DevRouteResultProps, 'blockedFullPath'> & {
+  user: NonNullable<ReturnType<typeof useAuth>['user']>;
+  role: ReturnType<typeof useAuth>['role'];
+  blockedPath: string;
+  blockedState: unknown;
+}) {
+  return (
+    <DevAccessDeniedPage
+      user={{ id: user.id, email: user.email }}
+      role={role}
+      blockedPath={blockedPath}
+      blockedFullPath={blockedFullPath}
+      blockedState={blockedState}
+    />
+  );
+}
+
+function useBlockedTarget(location: ReturnType<typeof useLocation>) {
+  const [target] = useState(() => ({
+    pathname: location.pathname,
+    search: location.search,
+    hash: location.hash,
+    state: location.state,
+  }));
+  return target;
+}
+
+function RouteLoader() {
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-background">
+      <Loader2 className="h-8 w-8 animate-spin text-primary" />
+    </div>
+  );
+}
+
+function shouldShowBlockedToast(userId: string) {
+  const storageKey = `dev-route-toast:${userId}`;
+  try {
+    const last = Number(sessionStorage.getItem(storageKey) ?? '0');
+    if (last && Date.now() - last < 60_000) return false;
+    sessionStorage.setItem(storageKey, String(Date.now()));
+  } catch {
+    return true;
+  }
+  return true;
+}
+
+function useDevAccessDeniedNotice({
+  isLoading,
+  user,
+  isDev,
+  blockedPath,
+  role,
+}: Pick<ReturnType<typeof useAuth>, 'isLoading' | 'user' | 'isDev' | 'role'> & {
+  blockedPath: string;
+}) {
+  useEffect(() => {
+    if (isLoading || !user || isDev) return;
+    if (shouldShowBlockedToast(user.id)) {
+      toast.error('Acesso restrito', {
+        id: 'dev-route-blocked',
+        description: 'Área exclusiva da equipe técnica.',
+        duration: 4000,
+      });
+    }
+    void logAccessDenied({ userId: user.id, blockedPath, requiredRole: 'dev', userRole: role });
+  }, [isLoading, user, isDev, blockedPath, role]);
 }

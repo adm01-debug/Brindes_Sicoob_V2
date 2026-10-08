@@ -116,7 +116,7 @@ test.describe("Fluxo: payload inválido em /favoritos não corrompe contador", (
 
         // 4. Página NÃO crashou — título do h1 está presente
         await expect(page.locator(Sel.favorites.title)).toBeVisible({ timeout: 10_000 });
-        await expect(page.locator(Sel.favorites.title)).toHaveText("Meus Favoritos");
+        await expect(page.locator(Sel.favorites.title)).toHaveText("Meus Produtos Favoritos");
 
         // 5. NENHUM erro fatal de runtime (uncaught) deve ter ocorrido
         expect(

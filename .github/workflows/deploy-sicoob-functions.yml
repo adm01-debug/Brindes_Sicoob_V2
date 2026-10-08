@@ -7,18 +7,13 @@ on:
         description: 'Digite PUBLICAR para enviar as funções ao ambiente de construção'
         required: true
         type: string
-      source_ref:
-        description: 'Branch, tag ou SHA cuja implementação deve ser publicada'
-        required: false
-        default: main
-        type: string
 
 permissions:
   contents: read
 
 jobs:
   deploy:
-    if: inputs.confirmar == 'PUBLICAR'
+    if: inputs.confirmar == 'PUBLICAR' && github.ref == 'refs/heads/main'
     name: Publicar funções canônicas Sicoob
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -28,14 +23,12 @@ jobs:
       SUPABASE_PROJECT_ID: ${{ secrets.VITE_SUPABASE_PROJECT_ID }}
     steps:
       - name: Baixar fonte versionada
-        uses: actions/checkout@v7
-        with:
-          ref: ${{ inputs.source_ref }}
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Configurar Supabase CLI
-        uses: supabase/setup-cli@v3
+        uses: supabase/setup-cli@45a513f8c64c0bc8e0e3dfe572b5c95be85f6359 # v3
         with:
-          version: 2.115.0
+          version: 2.120.0
 
       - name: Validar credenciais de publicação
         run: |
@@ -45,7 +38,9 @@ jobs:
       - name: Publicar funções Sicoob
         run: |
           set -euo pipefail
+          supabase functions list --project-ref "$SUPABASE_PROJECT_ID" --output-format json > /tmp/functions-before.json
           for function_name in \
+            expert-chat \
             external-db-bridge \
             sicoob-approval-reconciliation \
             sicoob-artwork-register \
@@ -61,6 +56,7 @@ jobs:
           set -euo pipefail
           published_functions="$(supabase functions list --project-ref "$SUPABASE_PROJECT_ID" --output-format json)"
           for function_name in \
+            expert-chat \
             external-db-bridge \
             sicoob-approval-reconciliation \
             sicoob-artwork-register \
@@ -68,5 +64,10 @@ jobs:
             sicoob-kit-quote \
             sicoob-reorder
           do
-            echo "$published_functions" | jq -e --arg function_name "$function_name" '.. | objects | select(.slug == $function_name)' >/dev/null
+            previous_version="$(jq -r --arg function_name "$function_name" '[(.functions // .)[] | select(.slug == $function_name) | .version] | first // 0' /tmp/functions-before.json)"
+            current_version="$(echo "$published_functions" | jq -r --arg function_name "$function_name" '[(.functions // .)[] | select(.slug == $function_name) | .version] | first // 0')"
+            if ! [[ "$current_version" =~ ^[0-9]+$ ]] || (( current_version <= previous_version )); then
+              echo "::error title=Publicação não confirmada::$function_name permaneceu na versão $current_version (anterior: $previous_version)."
+              exit 1
+            fi
           done

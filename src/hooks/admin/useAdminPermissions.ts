@@ -14,41 +14,43 @@ export type AdminModule =
 
 export function useAdminPermissions() {
   const { isDev, isSupervisor, isGestorCompras } = useAuth();
+  const adminAccess = isDev || isSupervisor;
+  const purchasingAccess = adminAccess || isGestorCompras;
 
   const permissions = useMemo(() => {
     return {
-      canAccessUsers: isDev || isSupervisor,
-      canAccessProducts: isDev || isSupervisor || isGestorCompras,
-      canAccessCategories: isDev || isSupervisor || isGestorCompras,
-      canAccessNewsletter: isDev || isSupervisor,
-      canAccessCMS: isDev || isSupervisor,
+      canAccessUsers: adminAccess,
+      canAccessProducts: purchasingAccess,
+      canAccessCategories: purchasingAccess,
+      canAccessNewsletter: adminAccess,
+      canAccessCMS: adminAccess,
       canAccessTelemetry: isDev,
       canAccessSecurity: isDev,
-      canAccessCampaigns: isDev || isSupervisor || isGestorCompras,
-      canAccessBudgets: isDev || isSupervisor || isGestorCompras,
+      canAccessCampaigns: purchasingAccess,
+      canAccessBudgets: purchasingAccess,
       
       // Actions
-      canEdit: isDev || isSupervisor,
-      canDelete: isDev || isSupervisor,
-      canImport: isDev || isSupervisor,
-      canExport: isDev || isSupervisor,
-      canPublish: isDev || isSupervisor,
+      canEdit: adminAccess,
+      canDelete: adminAccess,
+      canImport: adminAccess,
+      canExport: adminAccess,
+      canPublish: adminAccess,
     };
-  }, [isDev, isSupervisor, isGestorCompras]);
+  }, [adminAccess, isDev, purchasingAccess]);
 
   const checkModuleAccess = (module: AdminModule) => {
-    switch (module) {
-      case 'users': return permissions.canAccessUsers;
-      case 'products': return permissions.canAccessProducts;
-      case 'categories': return permissions.canAccessCategories;
-      case 'newsletter': return permissions.canAccessNewsletter;
-      case 'cms': return permissions.canAccessCMS;
-      case 'telemetry': return permissions.canAccessTelemetry;
-      case 'security': return permissions.canAccessSecurity;
-      case 'campaigns': return permissions.canAccessCampaigns;
-      case 'budgets': return permissions.canAccessBudgets;
-      default: return false;
-    }
+    const access: Record<AdminModule, boolean> = {
+      users: permissions.canAccessUsers,
+      products: permissions.canAccessProducts,
+      categories: permissions.canAccessCategories,
+      newsletter: permissions.canAccessNewsletter,
+      cms: permissions.canAccessCMS,
+      telemetry: permissions.canAccessTelemetry,
+      security: permissions.canAccessSecurity,
+      campaigns: permissions.canAccessCampaigns,
+      budgets: permissions.canAccessBudgets,
+    };
+    return access[module];
   };
 
   return { ...permissions, checkModuleAccess };

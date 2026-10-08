@@ -1,11 +1,12 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { sicoobOrderService } from "@/services/sicoob/orderService";
 import { toast } from "sonner";
+import { requireOrderId } from "@/hooks/orders/require-order-id";
 
 export const useSicoobOrder = (id?: string) => {
   return useQuery({
     queryKey: ["sicoob_order", id],
-    queryFn: () => sicoobOrderService.getOrderById(id!),
+    queryFn: () => sicoobOrderService.getOrderById(requireOrderId(id)),
     enabled: !!id,
   });
 };
@@ -13,13 +14,13 @@ export const useSicoobOrder = (id?: string) => {
 export const useSicoobOrderDetails = (orderId?: string) => {
   const itemsQuery = useQuery({
     queryKey: ["sicoob_order_items", orderId],
-    queryFn: () => sicoobOrderService.getOrderItems(orderId!),
+    queryFn: () => sicoobOrderService.getOrderItems(requireOrderId(orderId)),
     enabled: !!orderId,
   });
 
   const logsQuery = useQuery({
     queryKey: ["sicoob_order_item_logs", orderId],
-    queryFn: () => sicoobOrderService.getItemLogs(orderId!),
+    queryFn: () => sicoobOrderService.getItemLogs(requireOrderId(orderId)),
     enabled: !!orderId,
   });
 
@@ -49,8 +50,8 @@ export const useUpdateSicoobOrderStatus = () => {
       queryClient.invalidateQueries({ queryKey: ["sicoob_order_history", variables.orderId] });
       toast.success("Status do pedido atualizado com sucesso!");
     },
-    onError: (err: any) => {
-      toast.error("Erro ao atualizar status: " + err.message);
+    onError: (err: unknown) => {
+      toast.error("Erro ao atualizar status: " + (err instanceof Error ? err.message : String(err)));
     }
   });
 };

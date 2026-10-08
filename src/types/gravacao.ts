@@ -171,11 +171,13 @@ export interface PersonalizacaoSelecionada {
 /**
  * Cores por técnica para badges
  */
+const LASER_TECHNIQUE_COLOR = 'bg-red-100 text-red-800';
+
 export const TECHNIQUE_COLORS: Record<string, string> = {
   SERIGRAFIA: 'bg-blue-100 text-blue-800',
-  LASER: 'bg-red-100 text-red-800',
-  LASER_CO2: 'bg-red-100 text-red-800',
-  LASER_UV: 'bg-red-100 text-red-800',
+  LASER: LASER_TECHNIQUE_COLOR,
+  LASER_CO2: LASER_TECHNIQUE_COLOR,
+  LASER_UV: LASER_TECHNIQUE_COLOR,
   UV_DIGITAL: 'bg-purple-100 text-purple-800',
   TAMPOGRAFIA: 'bg-green-100 text-green-800',
   BORDADO: 'bg-yellow-100 text-yellow-800',

@@ -30,15 +30,19 @@ interface KitRow {
   items_data: unknown;
 }
 
+function extractItem(item: unknown): { sku: string; name: string } | null {
+  const record = item as Record<string, unknown>;
+  const skuValue = record.sku ?? record.product_sku ?? record.code;
+  if (!skuValue) return null;
+  const sku = String(skuValue);
+  const nameValue = record.name ?? record.product_name;
+  return { sku: sku.toLowerCase(), name: nameValue ? String(nameValue) : sku };
+}
+
 function extractItems(items: unknown): Array<{ sku: string; name: string }> {
   if (!Array.isArray(items)) return [];
   return items
-    .map((i) => {
-      const r = i as Record<string, unknown>;
-      const sku = (r?.sku ?? r?.product_sku ?? r?.code) as string | undefined;
-      const name = (r?.name ?? r?.product_name) as string | undefined;
-      return sku ? { sku: String(sku).toLowerCase(), name: name ?? String(sku) } : null;
-    })
+    .map(extractItem)
     .filter((x): x is { sku: string; name: string } => !!x);
 }
 
@@ -169,153 +173,103 @@ export default function KitTemplatesMetricsPage() {
           </Card>
         </div>
 
-        {/* Templates table */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Ranking de templates</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {loadingTemplates ? (
-              <div className="space-y-2">
-                {[1, 2, 3].map((i) => <Skeleton key={i} className="h-10 w-full" />)}
-              </div>
-            ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Template</TableHead>
-                    <TableHead>Categoria</TableHead>
-                    <TableHead className="text-right">Preço</TableHead>
-                    <TableHead className="text-right">Clonagens</TableHead>
-                    <TableHead>Última atualização</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {(templates ?? []).map((t) => (
-                    <TableRow key={t.id}>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <span
-                            className="h-2 w-2 rounded-full"
-                            style={{ backgroundColor: t.color }}
-                          />
-                          <span className="font-medium">{t.name}</span>
-                          {t.tag && <Badge variant="outline" className="text-[10px]">{t.tag}</Badge>}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="secondary" className="text-[10px]">{t.category}</Badge>
-                      </TableCell>
-                      <TableCell className="text-right tabular-nums">{formatCurrency(t.total_price)}</TableCell>
-                      <TableCell className="text-right">
-                        <Badge variant={t.usage_count >= 5 ? 'default' : 'outline'}>
-                          {t.usage_count}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-xs text-muted-foreground">
-                        {new Date(t.updated_at).toLocaleDateString('pt-BR')}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Heatmap items */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Top 20 itens mais usados em kits</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {loadingHeatmap ? (
-              <div className="space-y-2">
-                {[1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-8 w-full" />)}
-              </div>
-            ) : (heatmap ?? []).length === 0 ? (
-              <p className="text-sm text-muted-foreground">Sem dados ainda.</p>
-            ) : (
-              <div className="space-y-1.5">
-                {(heatmap ?? []).map((item, idx) => (
-                  <div key={item.sku} className="flex items-center gap-3 text-sm">
-                    <span className="text-muted-foreground tabular-nums w-6 text-right">{idx + 1}.</span>
-                    <span className="truncate flex-1 font-medium">{item.name}</span>
-                    <span className="text-xs text-muted-foreground tabular-nums">{item.count}×</span>
-                    <div className="w-32 h-2 bg-muted rounded-full overflow-hidden">
-                      <div
-                        className="h-full bg-primary"
-                        style={{ width: `${(item.count / maxCount) * 100}%` }}
-                      />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Conversão de compartilhamentos */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base flex items-center gap-2">
-              <Share2 className="h-4 w-4 text-primary" />
-              Conversão de compartilhamentos
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {loadingShare ? (
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                {[1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-20" />)}
-              </div>
-            ) : !shareConversion || shareConversion.generated === 0 ? (
-              <p className="text-sm text-muted-foreground py-4">
-                Nenhum link de apresentação gerado ainda.
-              </p>
-            ) : (
-              <div className="space-y-4">
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                  <div className="rounded-lg border bg-card/40 p-3">
-                    <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Gerados</p>
-                    <p className="text-2xl font-display font-semibold tabular-nums">{shareConversion.generated}</p>
-                  </div>
-                  <div className="rounded-lg border bg-card/40 p-3">
-                    <p className="text-[10px] uppercase tracking-wider text-muted-foreground flex items-center gap-1">
-                      <Eye className="h-3 w-3" /> Visualizados
-                    </p>
-                    <p className="text-2xl font-display font-semibold tabular-nums">{shareConversion.viewed}</p>
-                  </div>
-                  <div className="rounded-lg border bg-card/40 p-3">
-                    <p className="text-[10px] uppercase tracking-wider text-muted-foreground flex items-center gap-1">
-                      <Percent className="h-3 w-3" /> Taxa
-                    </p>
-                    <p className="text-2xl font-display font-semibold tabular-nums text-primary">
-                      {shareConversion.rate.toFixed(1)}%
-                    </p>
-                  </div>
-                  <div className="rounded-lg border bg-card/40 p-3">
-                    <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Ativos / Revogados</p>
-                    <p className="text-sm font-medium tabular-nums mt-1">
-                      <span className="text-success">{shareConversion.active}</span>
-                      <span className="text-muted-foreground"> / </span>
-                      <span className="text-destructive">{shareConversion.revoked}</span>
-                    </p>
-                  </div>
-                </div>
-
-                <div className="rounded-lg border bg-muted/30 p-3 text-sm">
-                  <p className="font-medium mb-1">Últimos 30 dias</p>
-                  <p className="text-muted-foreground text-xs">
-                    {shareConversion.recent} link{shareConversion.recent === 1 ? '' : 's'} gerado{shareConversion.recent === 1 ? '' : 's'} •{' '}
-                    {shareConversion.recentViewed} visualizado{shareConversion.recentViewed === 1 ? '' : 's'} •{' '}
-                    <span className="text-primary font-medium">{shareConversion.recentRate.toFixed(1)}%</span> de conversão
-                  </p>
-                </div>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+        <TemplatesRankingCard loading={loadingTemplates} templates={templates ?? []} />
+        <ItemsHeatmapCard loading={loadingHeatmap} items={heatmap ?? []} maxCount={maxCount} />
+        <ShareConversionCard loading={loadingShare} conversion={shareConversion} />
       </div>
     </>
+  );
+}
+
+function TemplatesRankingCard({ loading, templates }: { loading: boolean; templates: TemplateRow[] }) {
+  return (
+    <Card>
+      <CardHeader><CardTitle className="text-base">Ranking de templates</CardTitle></CardHeader>
+      <CardContent>
+        {loading ? <div className="space-y-2">{[1, 2, 3].map((index) => <Skeleton key={index} className="h-10 w-full" />)}</div> : (
+          <Table>
+            <TableHeader><TableRow><TableHead>Template</TableHead><TableHead>Categoria</TableHead>
+              <TableHead className="text-right">Preço</TableHead><TableHead className="text-right">Clonagens</TableHead>
+              <TableHead>Última atualização</TableHead></TableRow></TableHeader>
+            <TableBody>{templates.map((template) => (
+              <TableRow key={template.id}>
+                <TableCell><div className="flex items-center gap-2">
+                  <span className="h-2 w-2 rounded-full" style={{ backgroundColor: template.color }} />
+                  <span className="font-medium">{template.name}</span>
+                  {template.tag && <Badge variant="outline" className="text-[10px]">{template.tag}</Badge>}
+                </div></TableCell>
+                <TableCell><Badge variant="secondary" className="text-[10px]">{template.category}</Badge></TableCell>
+                <TableCell className="text-right tabular-nums">{formatCurrency(template.total_price)}</TableCell>
+                <TableCell className="text-right"><Badge variant={template.usage_count >= 5 ? 'default' : 'outline'}>{template.usage_count}</Badge></TableCell>
+                <TableCell className="text-xs text-muted-foreground">{new Date(template.updated_at).toLocaleDateString('pt-BR')}</TableCell>
+              </TableRow>
+            ))}</TableBody>
+          </Table>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+interface HeatmapItem { sku: string; name: string; count: number }
+
+function ItemsHeatmapCard({ loading, items, maxCount }: { loading: boolean; items: HeatmapItem[]; maxCount: number }) {
+  let content;
+  if (loading) content = <div className="space-y-2">{[1, 2, 3, 4].map((index) => <Skeleton key={index} className="h-8 w-full" />)}</div>;
+  else if (items.length === 0) content = <p className="text-sm text-muted-foreground">Sem dados ainda.</p>;
+  else content = <div className="space-y-1.5">{items.map((item, index) => (
+    <div key={item.sku} className="flex items-center gap-3 text-sm">
+      <span className="text-muted-foreground tabular-nums w-6 text-right">{index + 1}.</span>
+      <span className="truncate flex-1 font-medium">{item.name}</span>
+      <span className="text-xs text-muted-foreground tabular-nums">{item.count}×</span>
+      <div className="w-32 h-2 bg-muted rounded-full overflow-hidden">
+        <div className="h-full bg-primary" style={{ width: `${(item.count / maxCount) * 100}%` }} />
+      </div>
+    </div>
+  ))}</div>;
+  return <Card><CardHeader><CardTitle className="text-base">Top 20 itens mais usados em kits</CardTitle></CardHeader><CardContent>{content}</CardContent></Card>;
+}
+
+interface ShareConversion {
+  generated: number; active: number; revoked: number; viewed: number; rate: number;
+  recent: number; recentViewed: number; recentRate: number;
+}
+
+function pluralSuffix(value: number): string { return value === 1 ? '' : 's'; }
+
+function ShareConversionCard({ loading, conversion }: { loading: boolean; conversion: ShareConversion | undefined }) {
+  let content;
+  if (loading) {
+    content = <div className="grid grid-cols-2 md:grid-cols-4 gap-3">{[1, 2, 3, 4].map((index) => <Skeleton key={index} className="h-20" />)}</div>;
+  } else if (!conversion || conversion.generated === 0) {
+    content = <p className="text-sm text-muted-foreground py-4">Nenhum link de apresentação gerado ainda.</p>;
+  } else {
+    content = <ShareConversionDetails conversion={conversion} />;
+  }
+  return (
+    <Card><CardHeader><CardTitle className="text-base flex items-center gap-2">
+      <Share2 className="h-4 w-4 text-primary" />Conversão de compartilhamentos
+    </CardTitle></CardHeader><CardContent>{content}</CardContent></Card>
+  );
+}
+
+function ShareConversionDetails({ conversion }: { conversion: ShareConversion }) {
+  return (
+    <div className="space-y-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div className="rounded-lg border bg-card/40 p-3"><p className="text-[10px] uppercase tracking-wider text-muted-foreground">Gerados</p><p className="text-2xl font-display font-semibold tabular-nums">{conversion.generated}</p></div>
+        <div className="rounded-lg border bg-card/40 p-3"><p className="text-[10px] uppercase tracking-wider text-muted-foreground flex items-center gap-1"><Eye className="h-3 w-3" /> Visualizados</p><p className="text-2xl font-display font-semibold tabular-nums">{conversion.viewed}</p></div>
+        <div className="rounded-lg border bg-card/40 p-3"><p className="text-[10px] uppercase tracking-wider text-muted-foreground flex items-center gap-1"><Percent className="h-3 w-3" /> Taxa</p><p className="text-2xl font-display font-semibold tabular-nums text-primary">{conversion.rate.toFixed(1)}%</p></div>
+        <div className="rounded-lg border bg-card/40 p-3"><p className="text-[10px] uppercase tracking-wider text-muted-foreground">Ativos / Revogados</p><p className="text-sm font-medium tabular-nums mt-1"><span className="text-success">{conversion.active}</span><span className="text-muted-foreground"> / </span><span className="text-destructive">{conversion.revoked}</span></p></div>
+      </div>
+      <div className="rounded-lg border bg-muted/30 p-3 text-sm">
+        <p className="font-medium mb-1">Últimos 30 dias</p>
+        <p className="text-muted-foreground text-xs">
+          {conversion.recent} link{pluralSuffix(conversion.recent)} gerado{pluralSuffix(conversion.recent)} •{' '}
+          {conversion.recentViewed} visualizado{pluralSuffix(conversion.recentViewed)} •{' '}
+          <span className="text-primary font-medium">{conversion.recentRate.toFixed(1)}%</span> de conversão
+        </p>
+      </div>
+    </div>
   );
 }

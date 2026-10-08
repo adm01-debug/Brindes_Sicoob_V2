@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { type MouseEvent, useState } from "react";
 import { RotateCcw, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
+
 import { useNavigate } from "react-router-dom";
 import { useQuotes } from "@/hooks/quotes/useQuotes";
 import { cn } from "@/lib/utils";
@@ -21,7 +21,7 @@ export function OneClickReorderQuote({ quoteId, variant = "outline", className, 
   const navigate = useNavigate();
   const { reorderQuote } = useQuotes();
 
-  const handleReorder = async (e: React.MouseEvent) => {
+  const handleReorder = async (e: MouseEvent) => {
     e.stopPropagation();
     setIsProcessing(true);
     try {

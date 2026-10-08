@@ -6,7 +6,7 @@
  * auto-clears and calls `onCaptured`.
  */
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type RefObject } from "react";
 import { createPortal } from "react-dom";
 import { MockupApprovalTemplate } from "./MockupApprovalTemplate";
 import { supabase } from "@/integrations/supabase/client";
@@ -24,13 +24,80 @@ interface OffscreenLayoutCaptureProps {
   onCaptured?: (recordId: string) => void;
 }
 
-export function OffscreenLayoutCapture({ request, onCaptured }: OffscreenLayoutCaptureProps) {
-  const templateRef = useRef<HTMLDivElement>(null);
+const wait = (milliseconds: number) => new Promise<void>((resolve) => {
+  setTimeout(resolve, milliseconds);
+});
+
+function waitForImage(image: HTMLImageElement) {
+  if (image.complete) return Promise.resolve();
+  return new Promise<void>((resolve) => {
+    image.onload = () => resolve();
+    image.onerror = () => resolve();
+    setTimeout(resolve, 8000);
+  });
+}
+
+async function waitForImages(element: HTMLElement) {
+  const images = Array.from(element.querySelectorAll("img"));
+  await Promise.all(images.map(waitForImage));
+}
+
+async function renderLayout(element: HTMLElement) {
+  const html2canvas = (await import("html2canvas")).default;
+  const canvas = await html2canvas(element, {
+    scale: 1.5,
+    useCORS: true,
+    allowTaint: true,
+    backgroundColor: "#ffffff",
+    logging: false,
+  });
+  return canvas.toDataURL("image/jpeg", 0.85);
+}
+
+async function uploadLayout(dataUrl: string, userId: string) {
+  const blob = await (await fetch(dataUrl)).blob();
+  const storagePath = `${userId}/mockup-layouts/layout-${Date.now()}.jpg`;
+  const { error } = await supabase.storage
+    .from("mockup-art-files")
+    .upload(storagePath, blob, { contentType: "image/jpeg", upsert: true });
+  if (error) throw error;
+  return supabase.storage.from("mockup-art-files").getPublicUrl(storagePath).data.publicUrl;
+}
+
+async function saveLayoutUrl(recordId: string, layoutUrl: string) {
+  const { error } = await supabase
+    .from("generated_mockups")
+    .update({ layout_url: layoutUrl })
+    .eq("id", recordId);
+  if (error) throw error;
+}
+
+interface CaptureContext {
+  element: HTMLElement;
+  request: LayoutCaptureRequest;
+  isMounted: () => boolean;
+}
+
+async function captureLayout({ element, request, isMounted }: CaptureContext) {
+  await waitForImages(element);
+  await wait(500);
+  if (!isMounted()) return false;
+  const dataUrl = await renderLayout(element);
+  if (!isMounted()) return false;
+  const publicUrl = await uploadLayout(dataUrl, request.userId);
+  await saveLayoutUrl(request.recordId, publicUrl);
+  return true;
+}
+
+function useOffscreenCapture(
+  request: LayoutCaptureRequest | null,
+  onCaptured: OffscreenLayoutCaptureProps["onCaptured"],
+  templateRef: RefObject<HTMLDivElement>,
+) {
   const [isCapturing, setIsCapturing] = useState(false);
   const processedRef = useRef<string | null>(null);
   const mountedRef = useRef(true);
 
-  // Track mount state and reset processedRef on unmount
   useEffect(() => {
     mountedRef.current = true;
     return () => {
@@ -38,100 +105,37 @@ export function OffscreenLayoutCapture({ request, onCaptured }: OffscreenLayoutC
       processedRef.current = null;
     };
   }, []);
-
   useEffect(() => {
     if (!request || isCapturing || processedRef.current === request.recordId) return;
 
     const capture = async () => {
-      // Wait for template to render
-      await new Promise(r => setTimeout(r, 500));
-      if (!templateRef.current || !mountedRef.current) return;
-
-      // Wait for all images inside the template to load
-      const images = templateRef.current.querySelectorAll("img");
-      if (images.length > 0) {
-        await Promise.all(
-          Array.from(images).map(
-            (img) =>
-              img.complete
-                ? Promise.resolve()
-                : new Promise<void>((resolve) => {
-                    img.onload = () => resolve();
-                    img.onerror = () => resolve(); // don't block on broken images
-                    // Timeout safety: resolve after 8s even if image never loads
-                    setTimeout(resolve, 8000);
-                  })
-          )
-        );
-      }
-
-      // Extra buffer for rendering after images load
-      await new Promise(r => setTimeout(r, 500));
-      if (!templateRef.current || !mountedRef.current) return;
+      await wait(500);
+      const element = templateRef.current;
+      if (!element || !mountedRef.current) return;
 
       setIsCapturing(true);
       processedRef.current = request.recordId;
-      const currentRecordId = request.recordId;
-
       try {
-        const html2canvas = (await import("html2canvas")).default;
-        const canvas = await html2canvas(templateRef.current, {
-          scale: 1.5,
-          useCORS: true,
-          allowTaint: true,
-          backgroundColor: "#ffffff",
-          logging: false,
-        });
-
-        if (!mountedRef.current) return;
-
-        const dataUrl = canvas.toDataURL("image/jpeg", 0.85);
-
-        // Upload to storage
-        const blob = await (await fetch(dataUrl)).blob();
-        const fileName = `layout-${Date.now()}.jpg`;
-        const storagePath = `${request.userId}/mockup-layouts/${fileName}`;
-        const { error: uploadError } = await supabase.storage
-          .from("mockup-art-files")
-          .upload(storagePath, blob, { contentType: "image/jpeg", upsert: true });
-
-        if (uploadError) {
-          console.error("Layout auto-capture upload error:", uploadError);
-          return;
-        }
-
-        const { data: urlData } = supabase.storage
-          .from("mockup-art-files")
-          .getPublicUrl(storagePath);
-
-        // Update DB record
-        const { error: updateError } = await supabase
-          .from("generated_mockups")
-          .update({ layout_url: urlData.publicUrl })
-          .eq("id", currentRecordId);
-
-        if (updateError) {
-          console.error("Layout auto-capture DB update error:", updateError);
-          return;
-        }
-
-        logger.log("Layout auto-captured for record:", currentRecordId);
-        if (mountedRef.current) {
-          onCaptured?.(currentRecordId);
-        }
+        const captured = await captureLayout({ element, request, isMounted: () => mountedRef.current });
+        if (!captured) return;
+        logger.log("Layout auto-captured for record:", request.recordId);
+        if (mountedRef.current) onCaptured?.(request.recordId);
       } catch (err) {
         console.error("Layout auto-capture error:", err);
       } finally {
         if (mountedRef.current) setIsCapturing(false);
       }
     };
+    void capture();
+  }, [request, isCapturing, onCaptured, templateRef]);
+}
 
-    capture();
-  }, [request?.recordId, isCapturing]);
+export function OffscreenLayoutCapture({ request, onCaptured }: OffscreenLayoutCaptureProps) {
+  const templateRef = useRef<HTMLDivElement>(null);
+  useOffscreenCapture(request, onCaptured, templateRef);
 
   if (!request) return null;
 
-  // Render off-screen via portal
   return createPortal(
     <div
       style={{

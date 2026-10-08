@@ -17,6 +17,46 @@ import type {
 // TABLE SELECTION
 // ============================================
 
+function preferMatches(candidates: PriceTableInput[], predicate: (table: PriceTableInput) => boolean): PriceTableInput[] {
+  const matches = candidates.filter(predicate);
+  return matches.length > 0 ? matches : candidates;
+}
+
+function filterByTechniqueName(candidates: PriceTableInput[], name?: string): PriceTableInput[] {
+  if (!name) return candidates;
+  const normalized = name.toLowerCase();
+  return preferMatches(candidates, table => table.techniqueName.toLowerCase().includes(normalized));
+}
+
+function filterByTechniqueCode(candidates: PriceTableInput[], code?: string): PriceTableInput[] {
+  if (!code) return candidates;
+  const normalized = code.toLowerCase();
+  return preferMatches(candidates, table => table.tableCode.toLowerCase().includes(normalized) || normalized.includes(table.tableCode.toLowerCase()));
+}
+
+function compareColorCapacity(first: PriceTableInput, second: PriceTableInput, colors: number): number {
+  const firstFits = first.maxColors !== null && first.maxColors >= colors;
+  const secondFits = second.maxColors !== null && second.maxColors >= colors;
+  if (firstFits !== secondFits) return firstFits ? -1 : 1;
+  const firstCapacity = first.maxColors || 0;
+  const secondCapacity = second.maxColors || 0;
+  return firstFits ? firstCapacity - secondCapacity : secondCapacity - firstCapacity;
+}
+
+function sortByColorCapacity(candidates: PriceTableInput[], colors?: number): PriceTableInput[] {
+  if (!colors) return candidates;
+  return candidates.sort((first, second) => compareColorCapacity(first, second, colors));
+}
+
+function filterByDimensions(candidates: PriceTableInput[], criteria: TableSelectionCriteria): PriceTableInput[] {
+  if (!criteria.widthCm || !criteria.heightCm) return candidates;
+  const { widthCm, heightCm } = criteria;
+  return preferMatches(candidates, table =>
+    (table.maxWidthCm === null || table.maxWidthCm >= widthCm) &&
+    (table.maxHeightCm === null || table.maxHeightCm >= heightCm),
+  );
+}
+
 /**
  * Seleciona a melhor tabela de preço para os critérios dados
  * Prioridade: cores -> dimensões -> primeira disponível
@@ -27,57 +67,13 @@ export function selectBestTable(
 ): PriceTableInput | null {
   if (tables.length === 0) return null;
   
-  // Filtrar apenas tabelas ativas
   let candidates = tables.filter(t => t.isActive);
-  
   if (candidates.length === 0) return null;
-  
-  // Filtrar por nome da técnica
-  if (criteria.techniqueName) {
-    const byName = candidates.filter(t => 
-      t.techniqueName.toLowerCase().includes(criteria.techniqueName!.toLowerCase())
-    );
-    if (byName.length > 0) candidates = byName;
-  }
-  
-  // Filtrar por código da técnica
-  if (criteria.techniqueCode) {
-    const byCode = candidates.filter(t =>
-      t.tableCode.toLowerCase().includes(criteria.techniqueCode!.toLowerCase()) ||
-      criteria.techniqueCode!.toLowerCase().includes(t.tableCode.toLowerCase())
-    );
-    if (byCode.length > 0) candidates = byCode;
-  }
-  
-  // Ordenar por número de cores (preferir a que atende exatamente)
-  if (criteria.colors) {
-    candidates.sort((a, b) => {
-      const aFits = a.maxColors !== null && a.maxColors >= criteria.colors!;
-      const bFits = b.maxColors !== null && b.maxColors >= criteria.colors!;
-      
-      if (aFits && !bFits) return -1;
-      if (!aFits && bFits) return 1;
-      
-      // Preferir a menor que ainda atende
-      if (aFits && bFits) {
-        return (a.maxColors || 0) - (b.maxColors || 0);
-      }
-      
-      // Se nenhuma atende, preferir a maior
-      return (b.maxColors || 0) - (a.maxColors || 0);
-    });
-  }
-  
-  // Filtrar por dimensões
-  if (criteria.widthCm && criteria.heightCm) {
-    const byDimensions = candidates.filter(t =>
-      (t.maxWidthCm === null || t.maxWidthCm >= criteria.widthCm!) &&
-      (t.maxHeightCm === null || t.maxHeightCm >= criteria.heightCm!)
-    );
-    if (byDimensions.length > 0) candidates = byDimensions;
-  }
-  
-  return candidates[0];
+  candidates = filterByTechniqueName(candidates, criteria.techniqueName);
+  candidates = filterByTechniqueCode(candidates, criteria.techniqueCode);
+  candidates = sortByColorCapacity(candidates, criteria.colors);
+  candidates = filterByDimensions(candidates, criteria);
+  return candidates[0] ?? null;
 }
 
 /**
@@ -105,10 +101,9 @@ export function groupTablesByTechnique(
   
   for (const table of tables) {
     const key = table.techniqueName;
-    if (!grouped.has(key)) {
-      grouped.set(key, []);
-    }
-    grouped.get(key)!.push(table);
+    const group = grouped.get(key) ?? [];
+    group.push(table);
+    grouped.set(key, group);
   }
   
   return grouped;
@@ -242,47 +237,31 @@ export function calculateTableScore(
   table: PriceTableInput,
   criteria: TableSelectionCriteria
 ): number {
-  let score = 0;
-  
-  // Base: tabela ativa
-  if (table.isActive) score += 100;
-  
-  // Match por nome
-  if (criteria.techniqueName) {
-    const nameMatch = table.techniqueName.toLowerCase().includes(
-      criteria.techniqueName.toLowerCase()
-    );
-    if (nameMatch) score += 50;
-  }
-  
-  // Match por código
-  if (criteria.techniqueCode) {
-    const codeMatch = table.tableCode.toLowerCase().includes(
-      criteria.techniqueCode.toLowerCase()
-    );
-    if (codeMatch) score += 50;
-  }
-  
-  // Match por cores
-  if (criteria.colors && table.maxColors !== null) {
-    if (table.maxColors >= criteria.colors) {
-      // Quanto mais próximo do necessário, melhor
-      score += 30 - Math.min(table.maxColors - criteria.colors, 30);
-    } else {
-      score -= 20; // Penaliza se não atende
-    }
-  }
-  
-  // Match por dimensões
-  if (criteria.widthCm && criteria.heightCm) {
-    const fitsWidth = table.maxWidthCm === null || table.maxWidthCm >= criteria.widthCm;
-    const fitsHeight = table.maxHeightCm === null || table.maxHeightCm >= criteria.heightCm;
-    
-    if (fitsWidth && fitsHeight) score += 20;
-    else score -= 10;
-  }
-  
-  return score;
+  return activeScore(table)
+    + textMatchScore(table.techniqueName, criteria.techniqueName)
+    + textMatchScore(table.tableCode, criteria.techniqueCode)
+    + colorScore(table, criteria.colors)
+    + dimensionScore(table, criteria);
+}
+
+function activeScore(table: PriceTableInput): number {
+  return table.isActive ? 100 : 0;
+}
+
+function textMatchScore(value: string, requested?: string): number {
+  return requested && value.toLowerCase().includes(requested.toLowerCase()) ? 50 : 0;
+}
+
+function colorScore(table: PriceTableInput, colors?: number): number {
+  if (!colors || table.maxColors === null) return 0;
+  return table.maxColors >= colors ? 30 - Math.min(table.maxColors - colors, 30) : -20;
+}
+
+function dimensionScore(table: PriceTableInput, criteria: TableSelectionCriteria): number {
+  if (!criteria.widthCm || !criteria.heightCm) return 0;
+  const fitsWidth = table.maxWidthCm === null || table.maxWidthCm >= criteria.widthCm;
+  const fitsHeight = table.maxHeightCm === null || table.maxHeightCm >= criteria.heightCm;
+  return fitsWidth && fitsHeight ? 20 : -10;
 }
 
 /**

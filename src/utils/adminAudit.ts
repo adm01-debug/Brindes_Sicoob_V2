@@ -1,5 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
+import type { Json } from "@/integrations/supabase/types";
 
 export type AuditEventType = 
   | 'CREATE' 
@@ -16,17 +17,17 @@ interface LogAdminActionParams {
   event_type: AuditEventType;
   entity_type: string;
   entity_id?: string;
-  payload?: any;
-  previous_state?: any;
-  metadata?: Record<string, any>;
+  payload?: Json;
+  previous_state?: Json;
+  metadata?: Record<string, Json>;
 }
 
 export async function logAdminAction({
-  event_type,
-  entity_type,
-  entity_id,
+  event_type: eventType,
+  entity_type: entityType,
+  entity_id: entityId,
   payload,
-  previous_state,
+  previous_state: previousState,
   metadata
 }: LogAdminActionParams) {
   try {
@@ -37,11 +38,11 @@ export async function logAdminAction({
 
     const { error } = await supabase.functions.invoke('admin-audit-hook', {
       body: {
-        event_type,
-        entity_type,
-        entity_id,
+        event_type: eventType,
+        entity_type: entityType,
+        entity_id: entityId,
         payload,
-        previous_state,
+        previous_state: previousState,
         metadata
       },
       headers: {

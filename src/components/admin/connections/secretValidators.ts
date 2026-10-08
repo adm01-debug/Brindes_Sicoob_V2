@@ -1,5 +1,7 @@
 import type { SecretStatus } from "@/hooks/useSecretsManager";
 
+const SUPABASE_JWT_HINT = "Token JWT do Supabase (eyJ…)";
+
 export interface ValidatorRule {
   /** Returns true if the value is a valid format. */
   test: (v: string) => boolean;
@@ -68,25 +70,25 @@ export const SECRET_VALIDATORS: Record<string, ValidatorRule> = {
   EXTERNAL_PROMOBRIND_ANON_KEY: {
     test: isJwt,
     message: "Anon Key deve ser um JWT (eyJ…, ≥100 chars).",
-    hint: "Token JWT do Supabase (eyJ…)",
+    hint: SUPABASE_JWT_HINT,
     minLength: 100,
   },
   EXTERNAL_PROMOBRIND_SERVICE_ROLE_KEY: {
     test: isJwt,
     message: "Service Role Key deve ser um JWT (eyJ…, ≥100 chars).",
-    hint: "Token JWT do Supabase (eyJ…)",
+    hint: SUPABASE_JWT_HINT,
     minLength: 100,
   },
   EXTERNAL_CRM_ANON_KEY: {
     test: isJwt,
     message: "Anon Key deve ser um JWT (eyJ…, ≥100 chars).",
-    hint: "Token JWT do Supabase (eyJ…)",
+    hint: SUPABASE_JWT_HINT,
     minLength: 100,
   },
   EXTERNAL_CRM_SERVICE_ROLE_KEY: {
     test: isJwt,
     message: "Service Role Key deve ser um JWT (eyJ…, ≥100 chars).",
-    hint: "Token JWT do Supabase (eyJ…)",
+    hint: SUPABASE_JWT_HINT,
     minLength: 100,
   },
   BITRIX24_WEBHOOK_URL: {
@@ -158,6 +160,30 @@ const DEFAULT_RULE: ValidatorRule = {
  */
 export const MIN_SUFFIX_LENGTH = 4;
 
+const SUPABASE_URL_SECRET_NAMES = new Set(["EXTERNAL_PROMOBRIND_URL", "EXTERNAL_CRM_URL"]);
+const SUPABASE_JWT_SECRET_NAMES = new Set([
+  "EXTERNAL_PROMOBRIND_ANON_KEY",
+  "EXTERNAL_PROMOBRIND_SERVICE_ROLE_KEY",
+  "EXTERNAL_CRM_ANON_KEY",
+  "EXTERNAL_CRM_SERVICE_ROLE_KEY",
+]);
+
+function shortValueMessage(length: number): string {
+  const unit = length === 1 ? "caractere" : "caracteres";
+  return `Valor muito curto: ${length} ${unit}. O sufixo mascarado (••••XXXX) exige pelo menos ${MIN_SUFFIX_LENGTH} caracteres para ser exibido com segurança.`;
+}
+
+function specializedValidationMessage(name: string, value: string, rule: ValidatorRule): string {
+  if (SUPABASE_URL_SECRET_NAMES.has(name)) {
+    return urlEndsWithSupabase(value).message ?? rule.message;
+  }
+  if (SUPABASE_JWT_SECRET_NAMES.has(name)) {
+    const label = name.includes("SERVICE_ROLE") ? "Service Role Key" : "Anon Key";
+    return jwtRule(label, value).message ?? rule.message;
+  }
+  return rule.message;
+}
+
 export function validateSecret(name: string, value: string): ValidationResult {
   const rule = SECRET_VALIDATORS[name] ?? DEFAULT_RULE;
   if (value.length === 0) {
@@ -169,28 +195,14 @@ export function validateSecret(name: string, value: string): ValidationResult {
   if (value.length < MIN_SUFFIX_LENGTH) {
     return {
       ok: false,
-      message: `Valor muito curto: ${value.length} ${value.length === 1 ? "caractere" : "caracteres"}. O sufixo mascarado (••••XXXX) exige pelo menos ${MIN_SUFFIX_LENGTH} caracteres para ser exibido com segurança.`,
+      message: shortValueMessage(value.length),
       hint: rule.hint,
     };
   }
   if (rule.test(value)) {
     return { ok: true, hint: rule.hint };
   }
-  // Specialized message for Supabase URLs
-  if (name === "EXTERNAL_PROMOBRIND_URL" || name === "EXTERNAL_CRM_URL") {
-    const detail = urlEndsWithSupabase(value);
-    if (!detail.ok) return { ok: false, message: detail.message, hint: rule.hint };
-  }
-  if (
-    name === "EXTERNAL_PROMOBRIND_ANON_KEY" ||
-    name === "EXTERNAL_PROMOBRIND_SERVICE_ROLE_KEY" ||
-    name === "EXTERNAL_CRM_ANON_KEY" ||
-    name === "EXTERNAL_CRM_SERVICE_ROLE_KEY"
-  ) {
-    const label = name.includes("SERVICE_ROLE") ? "Service Role Key" : "Anon Key";
-    return { ok: false, message: jwtRule(label, value).message, hint: rule.hint };
-  }
-  return { ok: false, message: rule.message, hint: rule.hint };
+  return { ok: false, message: specializedValidationMessage(name, value, rule), hint: rule.hint };
 }
 
 /**
@@ -269,4 +281,3 @@ export function getPreflightIssues(
   }
   return issues;
 }
-

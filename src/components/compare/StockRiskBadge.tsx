@@ -4,9 +4,10 @@
  */
 import { Badge } from "@/components/ui/badge";
 import { AlertTriangle, ShieldCheck } from "lucide-react";
+import type { Product } from "@/hooks/useProducts";
 
 interface Props {
-  product: any;
+  product: Product;
 }
 
 export function StockRiskBadge({ product }: Props) {

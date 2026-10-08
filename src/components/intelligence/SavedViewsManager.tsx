@@ -13,6 +13,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
+const SAVED_VIEWS_QUERY_KEY = "saved-trends-views";
+
 interface SavedView {
   id: string;
   name: string;
@@ -30,7 +32,7 @@ export function SavedViewsManager() {
   const [open, setOpen] = useState(false);
 
   const { data: views = [] } = useQuery({
-    queryKey: ["saved-trends-views", user?.id],
+    queryKey: [SAVED_VIEWS_QUERY_KEY, user?.id],
     enabled: !!user,
     queryFn: async (): Promise<SavedView[]> => {
       const { data, error } = await supabase
@@ -53,7 +55,7 @@ export function SavedViewsManager() {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["saved-trends-views"] });
+      queryClient.invalidateQueries({ queryKey: [SAVED_VIEWS_QUERY_KEY] });
       toast({ title: "Visão salva", description: "Você pode aplicá-la novamente a qualquer momento." });
       setName("");
       setOpen(false);
@@ -69,7 +71,7 @@ export function SavedViewsManager() {
         .eq("id", id);
       if (error) throw error;
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["saved-trends-views"] }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: [SAVED_VIEWS_QUERY_KEY] }),
   });
 
   const applyView = (view: SavedView) => {
@@ -102,6 +104,8 @@ export function SavedViewsManager() {
                 <span className="truncate">{v.name}</span>
               </button>
               <button
+                type="button"
+                aria-label={`Excluir visão ${v.name}`}
                 onClick={() => deleteMutation.mutate(v.id)}
                 className="text-destructive hover:text-destructive/80 p-1"
                 title="Excluir"

@@ -2,7 +2,7 @@
  * useWizardPersistence - localStorage session management for simulator wizard
  */
 
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 import type { SimulatorWizardState } from '@/types/domain/simulator-wizard';
 
 const STORAGE_KEY = 'simulator_wizard_session';
@@ -53,5 +53,5 @@ export function useWizardPersistence(state: SimulatorWizardState) {
     if (state.selectedProduct) {
       saveSession(state);
     }
-  }, [state.selectedProduct, state.quantity, state.personalizations, state.currentStep]);
+  }, [state]);
 }

@@ -1,12 +1,35 @@
 import { useCallback, useEffect } from 'react';
 import { onLCP, onCLS, onINP, onTTFB, type Metric } from 'web-vitals';
 import { supabase } from "@/integrations/supabase/client";
+import type { Json } from "@/integrations/supabase/types";
+import { logger } from "@/lib/logger";
 
 interface WebVitalsConfig {
 
   sampleRate?: number;
   onReport?: (metric: Metric) => void;
   debug?: boolean;
+}
+
+function metricSeverity(rating: Metric["rating"]): "error" | "warning" | "info" {
+  if (rating === "poor") return "error";
+  if (rating === "needs-improvement") return "warning";
+  return "info";
+}
+
+async function persistMetric(metric: Metric, metadata: Json, debug: boolean): Promise<void> {
+  if (window.location.hostname === "localhost") return;
+  try {
+    await supabase.from("telemetry_events").insert({
+      event_type: "web_vitals",
+      severity: metricSeverity(metric.rating),
+      url: window.location.pathname,
+      metadata,
+      user_agent: navigator.userAgent,
+    });
+  } catch (error) {
+    if (debug) console.error("Failed to send web vitals:", error);
+  }
 }
 
 /**
@@ -23,7 +46,7 @@ export function useWebVitals({ sampleRate = 1.0, onReport, debug = false }: WebV
     if (Math.random() > sampleRate) return;
 
     if (debug) {
-      console.log(`[Web Vitals] ${metric.name}:`, metric.value, metric);
+      logger.debug(`[Web Vitals] ${metric.name}:`, metric.value, metric);
     }
 
     if (onReport) {
@@ -37,25 +60,13 @@ export function useWebVitals({ sampleRate = 1.0, onReport, debug = false }: WebV
       rating: metric.rating,
       delta: metric.delta,
       id: metric.id,
-      navigationType: (metric as any).navigationType,
+      navigationType: (metric as Metric & { navigationType?: string }).navigationType,
       device: getDeviceType(),
-      connection: (navigator as any).connection?.effectiveType || 'unknown',
+      connection: (navigator as Navigator & { connection?: { effectiveType?: string } }).connection?.effectiveType || 'unknown',
       version: "2.0.0", // Idealmente dinâmico do package.json ou env
     };
 
-    if (window.location.hostname !== 'localhost') {
-      try {
-        await supabase.from('telemetry_events').insert({
-          event_type: 'web_vitals',
-          severity: metric.rating === 'poor' ? 'error' : metric.rating === 'needs-improvement' ? 'warning' : 'info',
-          url: window.location.pathname,
-          metadata,
-          user_agent: navigator.userAgent
-        });
-      } catch (err) {
-        if (debug) console.error('Failed to send web vitals:', err);
-      }
-    }
+    await persistMetric(metric, metadata, debug);
   }, [sampleRate, onReport, debug]);
 
   useEffect(() => {
@@ -73,4 +84,3 @@ function getDeviceType() {
   if (/Mobile|Android|iP(hone|od)|IEMobile|BlackBerry|Kindle|Silk-Accelerated/i.test(ua)) return 'mobile';
   return 'desktop';
 }
-

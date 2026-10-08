@@ -5,5 +5,5 @@ import { devInfraGate } from './dev-gate/DevInfraGate';
  * Mantido para compatibilidade durante a migração.
  */
 export function shouldShowDevInfraMessages(isDev: boolean): boolean {
-  return devInfraGate.shouldShow(isDev);
+  return devInfraGate.shouldShow(isDev ? ["dev"] : []);
 }

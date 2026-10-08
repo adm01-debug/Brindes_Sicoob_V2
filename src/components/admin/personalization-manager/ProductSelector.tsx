@@ -17,10 +17,7 @@ interface ProductSelectorProps {
   productGroups?: ProductGroup[];
 }
 
-export function ProductSelector({
-  searchQuery, setSearchQuery, selectedProduct, setSelectedProduct,
-  productsLoading, filteredProducts, totalProducts, allMemberships, productGroups,
-}: ProductSelectorProps) {
+export function ProductSelector({ searchQuery, setSearchQuery, selectedProduct, setSelectedProduct, productsLoading, filteredProducts, totalProducts, allMemberships, productGroups }: ProductSelectorProps) {
   return (
     <Card>
       <CardHeader>

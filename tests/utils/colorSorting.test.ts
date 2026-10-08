@@ -30,7 +30,7 @@ describe("colorSorting", () => {
     });
 
     it("handles empty array", () => {
-      expect(sortByColorGroup([], i => "")).toEqual([]);
+      expect(sortByColorGroup([], () => "")).toEqual([]);
     });
 
     it("uses hex luminance as tiebreaker", () => {

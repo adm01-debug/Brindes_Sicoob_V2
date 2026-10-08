@@ -5,9 +5,8 @@
  * live in variant_supplier_sources and are shown in the Supplier section.
  */
 import { Input } from '@/components/ui/input';
-import { FieldLabel, SectionCard } from '../ProductFormHelpers';
+import { FieldLabel, SectionCard, type FormSectionProps } from "../ProductFormHelpers";
 import { FileText } from 'lucide-react';
-import type { FormSectionProps } from '../ProductFormHelpers';
 
 type Props = FormSectionProps;
 

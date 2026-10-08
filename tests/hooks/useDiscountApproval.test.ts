@@ -2,8 +2,7 @@
  * Comprehensive tests for the Discount Approval Workflow
  * Covers: useDiscountApproval, useSellerDiscountLimits, DiscountApprovalHeaderBadge
  */
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { renderHook, act } from "@testing-library/react";
+import { describe, it, expect, vi } from "vitest";
 
 // ── Supabase mock with chainable query builder ──
 const mockChain = () => {
@@ -26,8 +25,6 @@ const mockChain = () => {
   chain[Symbol.for("then")] = chain.then;
   return chain;
 };
-
-let fromMock: ReturnType<typeof mockChain>;
 
 vi.mock("@/integrations/supabase/client", () => {
   const chain = mockChain();
@@ -65,9 +62,6 @@ vi.mock("sonner", () => ({
 }));
 
 // ── Import after mocks ──
-import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
-
 // ─────────────────────────────────────────────────────────────
 // 1. Interface & Type Validation
 // ─────────────────────────────────────────────────────────────
@@ -237,9 +231,10 @@ describe("DiscountApprovalHeaderBadge display logic", () => {
   });
 
   it("handles singular/plural tooltip text", () => {
-    expect(1 !== 1 ? "s" : "").toBe("");
-    expect(2 !== 1 ? "s" : "").toBe("s");
-    expect(0 !== 1 ? "s" : "").toBe("s");
+    const pluralSuffix = (count: number) => (count !== 1 ? "s" : "");
+    expect(pluralSuffix(1)).toBe("");
+    expect(pluralSuffix(2)).toBe("s");
+    expect(pluralSuffix(0)).toBe("s");
   });
 });
 

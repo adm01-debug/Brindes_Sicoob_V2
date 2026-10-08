@@ -1,15 +1,23 @@
 /**
  * useEngravingWizard — Business logic for the engraving wizard
  */
+import { isNullish } from "@/components/admin/utils/nullish";
 import { useState, useCallback, useMemo } from 'react';
 import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import type {
-  ExternalTechnique, PrintAreaTechnique, EnrichedArea,
-  WizardStep, DetailFormState,
-} from './types';
-import { DEFAULT_DETAIL_FORM } from './types';
+
+const EXTERNAL_DB_BRIDGE = 'external-db-bridge';
+import { type ExternalTechnique, type PrintAreaTechnique, type EnrichedArea, type WizardStep, type DetailFormState, DEFAULT_DETAIL_FORM } from "./types";
+
+function chooseDisplayAreas(
+  isEdit: boolean,
+  productId: string | undefined,
+  savedAreas: EnrichedArea[],
+  localAreas: EnrichedArea[],
+): EnrichedArea[] {
+  return isEdit && productId ? savedAreas : localAreas;
+}
 
 export function useEngravingWizard(productId: string | undefined, isEdit: boolean) {
   const queryClient = useQueryClient();
@@ -29,7 +37,7 @@ export function useEngravingWizard(productId: string | undefined, isEdit: boolea
   const { data: techniques = [], isLoading: loadingTechs } = useQuery({
     queryKey: ['external-techniques-catalog'],
     queryFn: async (): Promise<ExternalTechnique[]> => {
-      const { data, error } = await supabase.functions.invoke('external-db-bridge', {
+      const { data, error } = await supabase.functions.invoke(EXTERNAL_DB_BRIDGE, {
         body: { table: 'tecnica_gravacao', operation: 'select', orderBy: { column: 'nome', ascending: true }, limit: 200 },
       });
       if (error) throw new Error(error.message);
@@ -46,10 +54,10 @@ export function useEngravingWizard(productId: string | undefined, isEdit: boolea
   }, [techniques]);
 
   // Fetch saved areas
-  const { data: savedAreas = [], isLoading: loadingAreas } = useQuery({
+  const { data: savedAreas = [], isLoading: loadingAreas } = useQuery(({
     queryKey: ['print-area-techniques', productId],
     queryFn: async (): Promise<EnrichedArea[]> => {
-      const { data, error } = await supabase.functions.invoke('external-db-bridge', {
+      const { data, error } = await supabase.functions.invoke(EXTERNAL_DB_BRIDGE, {
         body: { table: 'print_area_techniques', operation: 'select', filters: { product_id: productId }, orderBy: { column: 'technique_order', ascending: true }, limit: 100 },
       });
       if (error) throw new Error(error.message);
@@ -58,20 +66,20 @@ export function useEngravingWizard(productId: string | undefined, isEdit: boolea
       return records.map(area => enrichArea(area, techById));
     },
     enabled: !!productId && isEdit && techniques.length > 0,
-  });
+  }));
 
   const enrichedLocalAreas = useMemo((): EnrichedArea[] =>
     localAreas.map(area => enrichArea(area, techById, area._techData)),
   [localAreas, techById]);
 
-  const displayAreas: EnrichedArea[] = isEdit && productId ? savedAreas : enrichedLocalAreas;
+  const displayAreas = chooseDisplayAreas(isEdit, productId, savedAreas, enrichedLocalAreas);
 
   // Mutations
   const invalidate = () => queryClient.invalidateQueries({ queryKey: ['print-area-techniques', productId] });
 
   const createMutation = useMutation({
     mutationFn: async (area: Omit<PrintAreaTechnique, 'id' | 'created_at' | 'updated_at'>) => {
-      const { data, error } = await supabase.functions.invoke('external-db-bridge', {
+      const { data, error } = await supabase.functions.invoke(EXTERNAL_DB_BRIDGE, {
         body: { table: 'print_area_techniques', operation: 'insert', data: area },
       });
       if (error) throw new Error(error.message);
@@ -83,7 +91,7 @@ export function useEngravingWizard(productId: string | undefined, isEdit: boolea
 
   const updateMutation = useMutation({
     mutationFn: async ({ id, ...payload }: { id: string } & Record<string, unknown>) => {
-      const { data, error } = await supabase.functions.invoke('external-db-bridge', {
+      const { data, error } = await supabase.functions.invoke(EXTERNAL_DB_BRIDGE, {
         body: { table: 'print_area_techniques', operation: 'update', id, data: payload },
       });
       if (error) throw new Error(error.message);
@@ -95,7 +103,7 @@ export function useEngravingWizard(productId: string | undefined, isEdit: boolea
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
-      const { data, error } = await supabase.functions.invoke('external-db-bridge', {
+      const { data, error } = await supabase.functions.invoke(EXTERNAL_DB_BRIDGE, {
         body: { table: 'print_area_techniques', operation: 'delete', id },
       });
       if (error) throw new Error(error.message);
@@ -198,8 +206,8 @@ export function useEngravingWizard(productId: string | undefined, isEdit: boolea
   }, [filteredTechniques]);
 
   const wizardStepIndex = WIZARD_STEPS_IDS.indexOf(wizardStep);
-  const isBusy = createMutation.isPending || updateMutation.isPending || deleteMutation.isPending;
-  const isLoading = loadingTechs || (isEdit && loadingAreas);
+  const isBusy = (createMutation.isPending || updateMutation.isPending || deleteMutation.isPending);
+  const isLoading = (loadingTechs || (isEdit && loadingAreas));
 
   return {
     wizardStep, setWizardStep, expandedId, setExpandedId,
@@ -219,14 +227,27 @@ export function useEngravingWizard(productId: string | undefined, isEdit: boolea
 const WIZARD_STEPS_IDS: WizardStep[] = ['component', 'location', 'technique', 'details'];
 
 function enrichArea(area: PrintAreaTechnique, techById: Map<string, ExternalTechnique>, override?: ExternalTechnique): EnrichedArea {
-  const tech = override || techById.get(area.tabela_preco_id);
+  const tech = override ?? techById.get(area.tabela_preco_id);
   return {
     ...area,
-    technique_name: tech?.nome || '—',
-    technique_code: tech?.codigo_curto || '—',
-    technique_group: tech?.grupo_tecnica || '',
-    max_colors: tech?.max_cores != null ? (typeof tech.max_cores === 'string' ? parseInt(tech.max_cores, 10) : tech.max_cores) : null,
-    setup_cost: tech?.custo_setup ?? null,
-    charges_per_color: tech?.cobra_por_cor ?? false,
+    technique_name: textOr(tech?.nome, '—'),
+    technique_code: textOr(tech?.codigo_curto, '—'),
+    technique_group: textOr(tech?.grupo_tecnica, ''),
+    max_colors: normalizeMaxColors(tech?.max_cores),
+    setup_cost: nullableNumber(tech?.custo_setup),
+    charges_per_color: tech?.cobra_por_cor === true,
   };
+}
+
+function textOr(value: string | null | undefined, fallback: string): string {
+  return value || fallback;
+}
+
+function normalizeMaxColors(value: string | number | null | undefined): number | null {
+  if (isNullish(value)) return null;
+  return typeof value === 'string' ? parseInt(value, 10) : value;
+}
+
+function nullableNumber(value: number | null | undefined): number | null {
+  return value ?? null;
 }

@@ -19,6 +19,38 @@ import { toast } from "sonner";
 
 const SKIP_CONFIRM_KEY = "connections.global_refresh.skip_confirm";
 
+function reportRefresh(
+  cacheResult: PromiseSettledResult<{ ok: boolean }>,
+  listResult: PromiseSettledResult<unknown>,
+  hookResult: PromiseSettledResult<unknown>,
+  elapsed: string,
+) {
+  const cacheOk = cacheResult.status === "fulfilled" && cacheResult.value.ok;
+  const listOk = listResult.status === "fulfilled";
+  const hookOk = hookResult.status === "fulfilled";
+  const credentialCount = listOk && Array.isArray(listResult.value) ? listResult.value.length : 0;
+  const okCount = [cacheOk, listOk, hookOk].filter(Boolean).length;
+  if (okCount === 3) {
+    toast.success("Tudo atualizado do banco", { description: `Cache invalidado · ${credentialCount} credenciais relidas · status das conexões recarregado (${elapsed}s)` });
+    return;
+  }
+  if (okCount === 0) {
+    toast.error("Falha ao atualizar do banco", { description: "Nenhuma das operações concluiu com sucesso." });
+    return;
+  }
+  const failed = [!cacheOk && "cache", !listOk && "credenciais", !hookOk && "status"].filter((value): value is string => Boolean(value));
+  toast.warning("Atualização parcial", { description: `Falhou: ${failed.join(", ")} (${elapsed}s)` });
+}
+
+function isRefreshShortcut(event: KeyboardEvent): boolean {
+  if (event.key !== "r" && event.key !== "R") return false;
+  if (event.ctrlKey || event.metaKey || event.altKey || event.shiftKey) return false;
+  const target = event.target as HTMLElement | null;
+  if (!target) return false;
+  if (["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName) || target.isContentEditable) return false;
+  return true;
+}
+
 
 interface GlobalRefreshFromDbButtonProps {
   /** Callback executed in parallel with cache invalidation + secret list refresh. */
@@ -59,7 +91,7 @@ export function GlobalRefreshFromDbButton({
   useEffect(() => () => { if (intervalRef.current) clearInterval(intervalRef.current); }, []);
 
   const runRefresh = useCallback(async () => {
-    if (isRunning || inCooldown) return;
+    if ((isRunning || inCooldown)) return;
     setIsRunning(true);
     const startedAt = Date.now();
     try {
@@ -70,31 +102,7 @@ export function GlobalRefreshFromDbButton({
       ]);
       const elapsed = ((Date.now() - startedAt) / 1000).toFixed(1);
 
-      const cacheOk = cacheRes.status === "fulfilled" && cacheRes.value.ok;
-      const listOk = listRes.status === "fulfilled";
-      const hookOk = hookRes.status === "fulfilled";
-
-      const credCount = listOk && Array.isArray(listRes.value) ? listRes.value.length : 0;
-
-      const okCount = [cacheOk, listOk, hookOk].filter(Boolean).length;
-
-      if (okCount === 3) {
-        toast.success("Tudo atualizado do banco", {
-          description: `Cache invalidado · ${credCount} credenciais relidas · status das conexões recarregado (${elapsed}s)`,
-        });
-      } else if (okCount === 0) {
-        toast.error("Falha ao atualizar do banco", {
-          description: "Nenhuma das operações concluiu com sucesso.",
-        });
-      } else {
-        const failed: string[] = [];
-        if (!cacheOk) failed.push("cache");
-        if (!listOk) failed.push("credenciais");
-        if (!hookOk) failed.push("status");
-        toast.warning("Atualização parcial", {
-          description: `Falhou: ${failed.join(", ")} (${elapsed}s)`,
-        });
-      }
+      reportRefresh(cacheRes, listRes, hookRes, elapsed);
     } finally {
       setIsRunning(false);
       setCooldownUntil(Date.now() + cooldownMs);
@@ -123,12 +131,7 @@ export function GlobalRefreshFromDbButton({
   useEffect(() => {
     if (!enableShortcut) return;
     function onKey(e: KeyboardEvent) {
-      if (e.key !== "r" && e.key !== "R") return;
-      if (e.ctrlKey || e.metaKey || e.altKey || e.shiftKey) return;
-      const t = e.target as HTMLElement | null;
-      if (!t) return;
-      const tag = t.tagName;
-      if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT" || t.isContentEditable) return;
+      if (!isRefreshShortcut(e)) return;
       e.preventDefault();
       requestConfirm();
     }
@@ -215,4 +218,3 @@ export function GlobalRefreshFromDbButton({
     </>
   );
 }
-

@@ -2,23 +2,162 @@
  * useWizardPricing - Price comparison & recalculation logic for simulator wizard
  */
 
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, type Dispatch } from 'react';
 import { toast } from 'sonner';
 import { invokeExternalRpc } from '@/lib/external-rpc';
-import type { CustomizationPriceResponse, CustomizationPriceFlat } from '@/hooks/useGravacaoPriceV2';
+import type { CustomizationPriceResponse } from '@/hooks/useGravacaoPriceV2';
 import { adaptPriceResponse } from '@/lib/personalization/adapters';
 import type {
   SimulatorWizardState,
   WizardAction,
   TechniqueComparisonResult,
   Personalization,
-  AvailableTechnique,
 } from '@/types/domain/simulator-wizard';
 import { logger } from "@/lib/logger";
 
 interface UseWizardPricingParams {
   state: SimulatorWizardState;
-  dispatch: React.Dispatch<WizardAction>;
+  dispatch: Dispatch<WizardAction>;
+}
+
+type WizardTechnique = NonNullable<SimulatorWizardState['selectedLocation']>['availableTechniques'][number];
+
+function wizardEffectiveColors(technique: WizardTechnique, requested: number): number {
+  if (technique.cobraPorCor === false || technique.maxColors === 0 || technique.maxColors === 1) return 1;
+  return requested;
+}
+
+function wizardRpcParams(
+  technique: WizardTechnique,
+  specs: SimulatorWizardState['engravingSpecs'],
+  quantity: number,
+): Record<string, unknown> {
+  const params: Record<string, unknown> = {
+    p_area_id: technique.printAreaId,
+    p_quantidade: quantity,
+    p_num_cores: wizardEffectiveColors(technique, specs.colors),
+  };
+  if (technique.usaDimensao !== false && specs.width > 0 && specs.height > 0) {
+    params.p_largura_cm = specs.width;
+    params.p_altura_cm = specs.height;
+  }
+  return params;
+}
+
+function findPersonalizationTechnique(state: SimulatorWizardState, personalization: Personalization) {
+  return state.availableLocations
+    .flatMap(location => location.availableTechniques)
+    .find(technique => technique.printAreaId === personalization.technique.id);
+}
+
+async function recalculatePersonalization(
+  personalization: Personalization,
+  state: SimulatorWizardState,
+  dispatch: Dispatch<WizardAction>,
+): Promise<void> {
+  try {
+    const technique = findPersonalizationTechnique(state, personalization);
+    if (!technique) return;
+    const result = await invokeExternalRpc<CustomizationPriceResponse>(
+      'fn_get_customization_price',
+      wizardRpcParams(technique, personalization.specs, state.quantity),
+    );
+    if (!result?.success) return;
+    const price = adaptPriceResponse(result as unknown as Record<string, unknown>);
+    dispatch({
+      type: 'RECALC_PERSONALIZATION_PRICING',
+      payload: {
+        personalizationId: personalization.id,
+        pricing: {
+          unitPrice: price.unit_price,
+          setupPrice: price.faturamento_minimo_gravacao,
+          subtotal: price.subtotal_pecas,
+          totalPrice: price.total_price,
+          costPerUnit: state.quantity > 0 ? price.total_price / state.quantity : 0,
+          budgetCode: price.codigo_orcamento,
+          productionDays: price.production_days,
+        },
+      },
+    });
+  } catch (error) {
+    logger.warn(`Erro ao recalcular preço para ${personalization.technique.name}:`, error);
+  }
+}
+
+async function recalculatePersonalizations(
+  personalizations: Personalization[],
+  state: SimulatorWizardState,
+  dispatch: Dispatch<WizardAction>,
+): Promise<void> {
+  await Promise.all(personalizations.map(item => recalculatePersonalization(item, state, dispatch)));
+  toast.success('Preços recalculados para nova tiragem!');
+}
+
+function techniqueUnavailableReason(technique: WizardTechnique, requestedColors: number): string | null {
+  if (technique.hasPricing === false) return 'Preço sob consulta';
+  if (technique.maxColors !== null && technique.maxColors > 0 && requestedColors > technique.maxColors) {
+    return `Máximo ${technique.maxColors} ${technique.maxColors === 1 ? 'cor' : 'cores'}`;
+  }
+  return null;
+}
+
+async function fetchTechniquePrice(
+  technique: WizardTechnique,
+  state: SimulatorWizardState,
+): Promise<TechniqueComparisonResult> {
+  const unavailableReason = techniqueUnavailableReason(technique, state.engravingSpecs.colors);
+  if (unavailableReason) return createUnavailableResult(technique, unavailableReason);
+  try {
+    const result = await invokeExternalRpc<CustomizationPriceResponse>(
+      'fn_get_customization_price',
+      wizardRpcParams(technique, state.engravingSpecs, state.quantity),
+    );
+    if (!result?.success) return createUnavailableResult(technique, 'Erro no cálculo de preço');
+    const price = adaptPriceResponse(result as unknown as Record<string, unknown>);
+    return {
+      techniqueId: technique.techniqueId,
+      techniqueName: price.technique || technique.techniqueName,
+      techniqueCode: price.tabela_codigo_curto || technique.techniqueCode,
+      printAreaId: technique.printAreaId,
+      maxColors: price.max_cores ?? technique.maxColors,
+      isAvailable: true,
+      unitPrice: price.unit_price,
+      setupPrice: price.faturamento_minimo_gravacao,
+      subtotal: price.subtotal_pecas,
+      totalPrice: price.total_price,
+      costPerUnit: state.quantity > 0 ? price.total_price / state.quantity : 0,
+      minimumApplied: price.minimum_applied,
+      budgetCode: price.codigo_orcamento,
+      productionDays: price.production_days,
+      markupPercent: price.markup_percent,
+      marginPercent: price.margin_percent,
+      tierUsed: price.tier_used,
+      tierMinQty: price.tier_min_qty,
+      tierMaxQty: price.tier_max_qty,
+      rawData: result as unknown as Record<string, unknown>,
+    };
+  } catch (error) {
+    logger.warn(`Erro ao calcular preço para ${technique.techniqueName}:`, error);
+    return createUnavailableResult(technique, 'Erro ao calcular preço');
+  }
+}
+
+function markComparisonHighlights(results: TechniqueComparisonResult[]): TechniqueComparisonResult[] {
+  const available = results.filter(result => result.isAvailable);
+  if (available.length === 0) return results;
+  const cheapest = [...available].sort((a, b) => a.totalPrice - b.totalPrice)[0];
+  const fastest = [...available].sort((a, b) =>
+    (a.productionDays || 999) - (b.productionDays || 999)
+  )[0];
+  if (!cheapest || !fastest) return results;
+  for (const result of available) {
+    result.isCheapest = result.printAreaId === cheapest.printAreaId;
+    result.isFastest = result.printAreaId === fastest.printAreaId && available.length > 1;
+  }
+  return [
+    ...available.sort((a, b) => a.totalPrice - b.totalPrice),
+    ...results.filter(result => !result.isAvailable),
+  ];
 }
 
 export function useWizardPricing({ state, dispatch }: UseWizardPricingParams) {
@@ -36,62 +175,14 @@ export function useWizardPricing({ state, dispatch }: UseWizardPricingParams) {
 
     if (recalcTimerRef.current) clearTimeout(recalcTimerRef.current);
 
-    recalcTimerRef.current = setTimeout(async () => {
-      for (const pers of persToRecalc) {
-        try {
-          const tech = state.availableLocations
-            .flatMap(loc => loc.availableTechniques)
-            .find(t => t.printAreaId === pers.technique.id);
-
-          const usaDimensao = tech?.usaDimensao !== false;
-          const cobraPorCor = tech?.cobraPorCor !== false;
-          const effectiveColors = (!cobraPorCor || (tech?.maxColors ?? 0) <= 1) ? 1 : pers.specs.colors;
-
-          const rpcParams: Record<string, unknown> = {
-            p_area_id: pers.technique.id,
-            p_quantidade: state.quantity,
-            p_num_cores: effectiveColors,
-          };
-
-          if (usaDimensao && pers.specs.width > 0 && pers.specs.height > 0) {
-            rpcParams.p_largura_cm = pers.specs.width;
-            rpcParams.p_altura_cm = pers.specs.height;
-          }
-
-          const result = await invokeExternalRpc<CustomizationPriceResponse>(
-            'fn_get_customization_price',
-            rpcParams
-          );
-
-          if (result?.success) {
-            const flat = adaptPriceResponse(result as unknown as Record<string, unknown>);
-            dispatch({
-              type: 'RECALC_PERSONALIZATION_PRICING',
-              payload: {
-                personalizationId: pers.id,
-                pricing: {
-                  unitPrice: flat.unit_price,
-                  setupPrice: flat.faturamento_minimo_gravacao,
-                  subtotal: flat.subtotal_pecas,
-                  totalPrice: flat.total_price,
-                  costPerUnit: state.quantity > 0 ? flat.total_price / state.quantity : 0,
-                  budgetCode: flat.codigo_orcamento,
-                  productionDays: flat.production_days,
-                },
-              },
-            });
-          }
-        } catch (err) {
-          logger.warn(`Erro ao recalcular preço para ${pers.technique.name}:`, err);
-        }
-      }
-      toast.success('Preços recalculados para nova tiragem!');
+    recalcTimerRef.current = setTimeout(() => {
+      void recalculatePersonalizations(persToRecalc, state, dispatch);
     }, 600);
 
     return () => {
       if (recalcTimerRef.current) clearTimeout(recalcTimerRef.current);
     };
-  }, [state.personalizations, state.quantity, state.availableLocations, dispatch]);
+  }, [dispatch, state]);
 
   // ============================================
   // COMPARAÇÃO DE PREÇOS
@@ -113,101 +204,8 @@ export function useWizardPricing({ state, dispatch }: UseWizardPricingParams) {
     dispatch({ type: 'SET_ERROR', payload: null });
 
     try {
-      const allResults: TechniqueComparisonResult[] = [];
-
-      const promises = techniques.map(async (tech) => {
-        if (tech.hasPricing === false) {
-          allResults.push(createUnavailableResult(tech, 'Preço sob consulta'));
-          return;
-        }
-
-        if (tech.maxColors !== null && tech.maxColors > 0 && state.engravingSpecs.colors > tech.maxColors) {
-          allResults.push(createUnavailableResult(
-            tech,
-            `Máximo ${tech.maxColors} ${tech.maxColors === 1 ? 'cor' : 'cores'}`
-          ));
-          return;
-        }
-
-        const cobraPorCor = tech.cobraPorCor !== false;
-        const effectiveColors = (!cobraPorCor || tech.maxColors === 0 || tech.maxColors === 1)
-          ? 1
-          : state.engravingSpecs.colors;
-
-        try {
-          const usaDimensao = tech.usaDimensao !== false;
-          const rpcParams: Record<string, unknown> = {
-            p_area_id: tech.printAreaId,
-            p_quantidade: state.quantity,
-            p_num_cores: effectiveColors,
-          };
-
-          if (usaDimensao && state.engravingSpecs.width > 0 && state.engravingSpecs.height > 0) {
-            rpcParams.p_largura_cm = state.engravingSpecs.width;
-            rpcParams.p_altura_cm = state.engravingSpecs.height;
-          }
-
-          const result = await invokeExternalRpc<CustomizationPriceResponse>(
-            'fn_get_customization_price',
-            rpcParams
-          );
-
-          if (!result || !result.success) {
-            allResults.push(createUnavailableResult(tech, 'Erro no cálculo de preço'));
-            return;
-          }
-
-          const flat = adaptPriceResponse(result as unknown as Record<string, unknown>);
-
-          allResults.push({
-            techniqueId: tech.techniqueId,
-            techniqueName: flat.technique || tech.techniqueName,
-            techniqueCode: flat.tabela_codigo_curto || tech.techniqueCode,
-            printAreaId: tech.printAreaId,
-            maxColors: flat.max_cores ?? tech.maxColors,
-            isAvailable: true,
-            unitPrice: flat.unit_price,
-            setupPrice: flat.faturamento_minimo_gravacao,
-            subtotal: flat.subtotal_pecas,
-            totalPrice: flat.total_price,
-            costPerUnit: state.quantity > 0 ? flat.total_price / state.quantity : 0,
-            minimumApplied: flat.minimum_applied,
-            budgetCode: flat.codigo_orcamento,
-            productionDays: flat.production_days,
-            markupPercent: flat.markup_percent,
-            marginPercent: flat.margin_percent,
-            tierUsed: flat.tier_used,
-            tierMinQty: flat.tier_min_qty,
-            tierMaxQty: flat.tier_max_qty,
-            rawData: result as unknown as Record<string, unknown>,
-          });
-        } catch (err) {
-          logger.warn(`Erro ao calcular preço para ${tech.techniqueName}:`, err);
-          allResults.push(createUnavailableResult(tech, 'Erro ao calcular preço'));
-        }
-      });
-
-      await Promise.all(promises);
-
-      const available = allResults.filter(r => r.isAvailable);
-      if (available.length > 0) {
-        const cheapest = [...available].sort((a, b) => a.totalPrice - b.totalPrice)[0]!;
-        const fastest = [...available].sort((a, b) =>
-          (a.productionDays || 999) - (b.productionDays || 999)
-        )[0]!;
-
-        allResults.forEach(r => {
-          if (r.isAvailable) {
-            r.isCheapest = r.printAreaId === cheapest.printAreaId;
-            r.isFastest = r.printAreaId === fastest.printAreaId && available.length > 1;
-          }
-        });
-      }
-
-      const sorted = [
-        ...available.sort((a, b) => a.totalPrice - b.totalPrice),
-        ...allResults.filter(r => !r.isAvailable),
-      ];
+      const allResults = await Promise.all(techniques.map(technique => fetchTechniquePrice(technique, state)));
+      const sorted = markComparisonHighlights(allResults);
 
       dispatch({ type: 'SET_COMPARISON_RESULTS', payload: sorted });
       dispatch({ type: 'SET_STEP', payload: 'comparison' });
@@ -218,7 +216,7 @@ export function useWizardPricing({ state, dispatch }: UseWizardPricingParams) {
     } finally {
       dispatch({ type: 'SET_CALCULATING', payload: false });
     }
-  }, [state.selectedLocation, state.quantity, state.engravingSpecs, dispatch]);
+  }, [dispatch, state]);
 
   // Confirmar técnica selecionada → cria personalização
   const confirmTechnique = useCallback((comparison: TechniqueComparisonResult) => {

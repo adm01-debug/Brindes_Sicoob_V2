@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useCallback } from "react";
+import React, { useRef, useEffect } from "react";
 import type { VoiceAgentPhase } from "@/hooks/useVoiceAgent";
 
 interface Particle {
@@ -19,6 +19,24 @@ interface FloatingParticlesProps {
 }
 
 type PhaseConfigKey = VoiceAgentPhase | "booting";
+type PhaseConfig = typeof PHASE_CONFIG["idle"];
+
+interface CanvasSize {
+  width: number;
+  height: number;
+}
+
+interface ParticleConnection {
+  first: Particle;
+  second: Particle;
+  firstAlpha: number;
+  secondAlpha: number;
+}
+
+interface ParticleRenderState {
+  particles: Particle[];
+  alphas: number[];
+}
 
 const PHASE_CONFIG: Record<PhaseConfigKey, { count: number; speed: number; hueRange: [number, number]; sizeRange: [number, number] }> = {
   idle: { count: 20, speed: 0.3, hueRange: [220, 260], sizeRange: [1, 2.5] },
@@ -33,27 +51,102 @@ const CONNECTION_DIST = 120;
 
 function lerp(a: number, b: number, t: number) { return a + (b - a) * t; }
 
+function createParticle(width: number, height: number, config: PhaseConfig): Particle {
+  const angle = Math.random() * Math.PI * 2;
+  const speed = (Math.random() * 0.5 + 0.5) * config.speed;
+  return { x: Math.random() * width, y: Math.random() * height, vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed, size: lerp(config.sizeRange[0], config.sizeRange[1], Math.random()), opacity: Math.random() * 0.4 + 0.1, hue: lerp(config.hueRange[0], config.hueRange[1], Math.random()), life: 0, maxLife: 200 + Math.random() * 300 };
+}
+
+function resizeCanvas(canvas: HTMLCanvasElement, context: CanvasRenderingContext2D) {
+  const ratio = window.devicePixelRatio || 1;
+  const rect = canvas.parentElement?.getBoundingClientRect();
+  if (!rect) return;
+  canvas.width = rect.width * ratio;
+  canvas.height = rect.height * ratio;
+  canvas.style.width = `${rect.width}px`;
+  canvas.style.height = `${rect.height}px`;
+  context.setTransform(ratio, 0, 0, ratio, 0, 0);
+}
+
+function syncParticles(particles: Particle[], count: number, size: CanvasSize, config: PhaseConfig) {
+  while (particles.length < count) particles.push(createParticle(size.width, size.height, config));
+  if (particles.length > count + 10) particles.splice(count);
+}
+
+function particleAlpha(particle: Particle): number {
+  const ratio = particle.life / particle.maxLife;
+  if (ratio < 0.1) return particle.opacity * ratio / 0.1;
+  if (ratio > 0.8) return particle.opacity * (1 - ratio) / 0.2;
+  return particle.opacity;
+}
+
+function updateParticles(particles: Particle[], width: number, height: number): number[] {
+  return particles.map(particle => {
+    particle.life++;
+    particle.x += particle.vx;
+    particle.y += particle.vy;
+    particle.vx += (Math.random() - 0.5) * 0.02;
+    particle.vy += (Math.random() - 0.5) * 0.02;
+    if (particle.x < -10) particle.x = width + 10;
+    if (particle.x > width + 10) particle.x = -10;
+    if (particle.y < -10) particle.y = height + 10;
+    if (particle.y > height + 10) particle.y = -10;
+    return particleAlpha(particle);
+  });
+}
+
+function drawConnection(context: CanvasRenderingContext2D, connection: ParticleConnection) {
+  const { first, second, firstAlpha, secondAlpha } = connection;
+  const dx = first.x - second.x;
+  const dy = first.y - second.y;
+  const distance = Math.sqrt(dx * dx + dy * dy);
+  if (distance >= CONNECTION_DIST) return;
+  const lineAlpha = (1 - distance / CONNECTION_DIST) * Math.min(firstAlpha, secondAlpha) * 0.6;
+  context.strokeStyle = `hsla(${(first.hue + second.hue) / 2}, 60%, 60%, ${lineAlpha})`;
+  context.beginPath();
+  context.moveTo(first.x, first.y);
+  context.lineTo(second.x, second.y);
+  context.stroke();
+}
+
+function drawConnections(context: CanvasRenderingContext2D, particles: Particle[], alphas: number[]) {
+  context.lineWidth = 0.8;
+  particles.forEach((first, index) => particles.slice(index + 1).forEach(second => drawConnection(context, {
+    first,
+    second,
+    firstAlpha: alphas[index] ?? 0,
+    secondAlpha: alphas[particles.indexOf(second)] ?? 0,
+  })));
+}
+
+function drawParticle(context: CanvasRenderingContext2D, particle: Particle, alpha: number) {
+  const gradient = context.createRadialGradient(particle.x, particle.y, 0, particle.x, particle.y, particle.size * 3);
+  gradient.addColorStop(0, `hsla(${particle.hue}, 80%, 70%, ${alpha})`);
+  gradient.addColorStop(0.5, `hsla(${particle.hue}, 60%, 50%, ${alpha * 0.3})`);
+  gradient.addColorStop(1, `hsla(${particle.hue}, 40%, 30%, 0)`);
+  context.beginPath();
+  context.arc(particle.x, particle.y, particle.size * 3, 0, Math.PI * 2);
+  context.fillStyle = gradient;
+  context.fill();
+  context.beginPath();
+  context.arc(particle.x, particle.y, particle.size * 0.6, 0, Math.PI * 2);
+  context.fillStyle = `hsla(${particle.hue}, 90%, 80%, ${alpha * 0.8})`;
+  context.fill();
+}
+
+function drawParticles(context: CanvasRenderingContext2D, state: ParticleRenderState, size: CanvasSize, config: PhaseConfig) {
+  const { particles, alphas } = state;
+  particles.forEach((particle, index) => {
+    drawParticle(context, particle, alphas[index] ?? 0);
+    if (particle.life >= particle.maxLife) particles[index] = createParticle(size.width, size.height, config);
+  });
+}
+
 export const FloatingParticles: React.FC<FloatingParticlesProps> = React.memo(({ phase, isBooting }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const particlesRef = useRef<Particle[]>([]);
   const animRef = useRef<number>(0);
   const configKey: PhaseConfigKey = isBooting ? "booting" : phase;
-
-  const createParticle = useCallback((w: number, h: number, cfg: typeof PHASE_CONFIG["idle"]): Particle => {
-    const angle = Math.random() * Math.PI * 2;
-    const speed = (Math.random() * 0.5 + 0.5) * cfg.speed;
-    return {
-      x: Math.random() * w,
-      y: Math.random() * h,
-      vx: Math.cos(angle) * speed,
-      vy: Math.sin(angle) * speed,
-      size: lerp(cfg.sizeRange[0], cfg.sizeRange[1], Math.random()),
-      opacity: Math.random() * 0.4 + 0.1,
-      hue: lerp(cfg.hueRange[0], cfg.hueRange[1], Math.random()),
-      life: 0,
-      maxLife: 200 + Math.random() * 300,
-    };
-  }, []);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -61,107 +154,21 @@ export const FloatingParticles: React.FC<FloatingParticlesProps> = React.memo(({
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    const resize = () => {
-      const dpr = window.devicePixelRatio || 1;
-      const rect = canvas.parentElement?.getBoundingClientRect();
-      if (!rect) return;
-      canvas.width = rect.width * dpr;
-      canvas.height = rect.height * dpr;
-      canvas.style.width = `${rect.width}px`;
-      canvas.style.height = `${rect.height}px`;
-      ctx.scale(dpr, dpr);
-    };
+    const resize = () => resizeCanvas(canvas, ctx);
     resize();
 
     const draw = () => {
-      const w = canvas.width / (window.devicePixelRatio || 1);
-      const h = canvas.height / (window.devicePixelRatio || 1);
-      const cfg = PHASE_CONFIG[configKey];
-
-      ctx.clearRect(0, 0, w, h);
-
-      // Ensure particle count matches config
-      while (particlesRef.current.length < cfg.count) {
-        particlesRef.current.push(createParticle(w, h, cfg));
-      }
-      if (particlesRef.current.length > cfg.count + 10) {
-        particlesRef.current.splice(cfg.count);
-      }
-
-      // First pass: update positions and compute alphas
-      const alphas: number[] = [];
+      const ratio = window.devicePixelRatio || 1;
+      const width = canvas.width / ratio;
+      const height = canvas.height / ratio;
+      const size = { width, height };
+      const config = PHASE_CONFIG[configKey];
       const particles = particlesRef.current;
-      for (let i = 0; i < particles.length; i++) {
-        const p = particles[i];
-        if (!p) continue;
-        p.life++;
-        p.x += p.vx;
-        p.y += p.vy;
-        p.vx += (Math.random() - 0.5) * 0.02;
-        p.vy += (Math.random() - 0.5) * 0.02;
-
-        const lifeRatio = p.life / p.maxLife;
-        let alpha = p.opacity;
-        if (lifeRatio < 0.1) alpha *= lifeRatio / 0.1;
-        else if (lifeRatio > 0.8) alpha *= (1 - lifeRatio) / 0.2;
-        alphas[i] = alpha;
-
-        if (p.x < -10) p.x = w + 10;
-        if (p.x > w + 10) p.x = -10;
-        if (p.y < -10) p.y = h + 10;
-        if (p.y > h + 10) p.y = -10;
-      }
-
-      // Draw constellation lines
-      ctx.lineWidth = 0.8;
-      for (let i = 0; i < particles.length; i++) {
-        const a = particles[i];
-        if (!a) continue;
-        for (let j = i + 1; j < particles.length; j++) {
-          const b = particles[j];
-          if (!b) continue;
-          const dx = a.x - b.x;
-          const dy = a.y - b.y;
-          const dist = Math.sqrt(dx * dx + dy * dy);
-          const alphaI = alphas[i] ?? 0;
-          const alphaJ = alphas[j] ?? 0;
-          if (dist < CONNECTION_DIST) {
-            const lineAlpha = (1 - dist / CONNECTION_DIST) * Math.min(alphaI, alphaJ) * 0.6;
-            const hue = (a.hue + b.hue) / 2;
-            ctx.strokeStyle = `hsla(${hue}, 60%, 60%, ${lineAlpha})`;
-            ctx.beginPath();
-            ctx.moveTo(a.x, a.y);
-            ctx.lineTo(b.x, b.y);
-            ctx.stroke();
-          }
-        }
-      }
-
-      // Draw particles
-      for (let i = 0; i < particles.length; i++) {
-        const p = particles[i];
-        if (!p) continue;
-        const alpha = alphas[i] ?? 0;
-
-        const gradient = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.size * 3);
-        gradient.addColorStop(0, `hsla(${p.hue}, 80%, 70%, ${alpha})`);
-        gradient.addColorStop(0.5, `hsla(${p.hue}, 60%, 50%, ${alpha * 0.3})`);
-        gradient.addColorStop(1, `hsla(${p.hue}, 40%, 30%, 0)`);
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.size * 3, 0, Math.PI * 2);
-        ctx.fillStyle = gradient;
-        ctx.fill();
-
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.size * 0.6, 0, Math.PI * 2);
-        ctx.fillStyle = `hsla(${p.hue}, 90%, 80%, ${alpha * 0.8})`;
-        ctx.fill();
-
-        if (p.life >= p.maxLife) {
-          particles[i] = createParticle(w, h, cfg);
-        }
-      }
-
+      ctx.clearRect(0, 0, width, height);
+      syncParticles(particles, config.count, size, config);
+      const alphas = updateParticles(particles, width, height);
+      drawConnections(ctx, particles, alphas);
+      drawParticles(ctx, { particles, alphas }, size, config);
       animRef.current = requestAnimationFrame(draw);
     };
 
@@ -172,7 +179,7 @@ export const FloatingParticles: React.FC<FloatingParticlesProps> = React.memo(({
       cancelAnimationFrame(animRef.current);
       window.removeEventListener("resize", resize);
     };
-  }, [configKey, createParticle]);
+  }, [configKey]);
 
   return (
     <canvas

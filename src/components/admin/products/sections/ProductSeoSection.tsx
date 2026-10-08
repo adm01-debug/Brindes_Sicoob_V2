@@ -3,9 +3,8 @@
  */
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { FieldLabel, SectionCard } from '../ProductFormHelpers';
+import { FieldLabel, SectionCard, type FormSectionProps } from "../ProductFormHelpers";
 import { Globe } from 'lucide-react';
-import type { FormSectionProps } from '../ProductFormHelpers';
 
 type Props = FormSectionProps;
 

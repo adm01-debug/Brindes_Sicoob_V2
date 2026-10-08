@@ -65,6 +65,83 @@ function isRetryable(status: number): boolean {
   return status >= 500 && status < 600;
 }
 
+class RetryableRecommendationError extends Error {}
+
+function validateRecommendationInput(
+  client: ClientProfile,
+  products: ProductForRecommendation[],
+): void {
+  if (!client.name) throw new Error("Nome do cliente é obrigatório");
+  if (!products.length) throw new Error("É necessário fornecer pelo menos um produto");
+}
+
+async function getAccessToken(): Promise<string> {
+  const { data: sessionData } = await supabase.auth.getSession();
+  const token = sessionData?.session?.access_token;
+  if (!token) throw new Error("Usuário não autenticado");
+  return token;
+}
+
+async function parseRecommendationResponse(
+  response: Response,
+): Promise<AIRecommendationsResult> {
+  if (response.ok) return response.json() as Promise<AIRecommendationsResult>;
+  if (response.status === 429) {
+    throw new Error("Limite de requisições excedido. Tente novamente em alguns minutos.");
+  }
+  if (response.status === 402) {
+    throw new Error("Créditos de IA esgotados. Contate o administrador.");
+  }
+  if (isRetryable(response.status)) {
+    throw new RetryableRecommendationError(`Erro do servidor: ${response.status}`);
+  }
+  const details = await response.text().catch(() => "");
+  throw new Error(`Erro ao gerar recomendações: ${response.status} ${details}`);
+}
+
+async function requestRecommendationAttempt(
+  client: ClientProfile,
+  products: ProductForRecommendation[],
+  token: string,
+  signal: AbortSignal,
+): Promise<AIRecommendationsResult> {
+  const response = await fetch(getSupabaseFunctionUrl("ai-recommendations"), {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      apikey: supabasePublishableKey,
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ client, products }),
+    signal,
+  });
+  return parseRecommendationResponse(response);
+}
+
+async function requestRecommendationsWithRetry(
+  client: ClientProfile,
+  products: ProductForRecommendation[],
+  token: string,
+  signal: AbortSignal,
+): Promise<AIRecommendationsResult> {
+  for (let attempt = 0; attempt <= MAX_RETRIES; attempt += 1) {
+    if (signal.aborted) throw new DOMException("Requisição cancelada", "AbortError");
+    if (attempt > 0) await delay(INITIAL_BACKOFF_MS * Math.pow(2, attempt - 1));
+
+    try {
+      return await requestRecommendationAttempt(client, products, token, signal);
+    } catch (error) {
+      const canRetry = error instanceof RetryableRecommendationError && attempt < MAX_RETRIES;
+      if (!canRetry) throw error;
+    }
+  }
+  throw new Error("Não foi possível gerar recomendações");
+}
+
+function isAbortError(error: unknown): boolean {
+  return error instanceof DOMException && error.name === "AbortError";
+}
+
 // ============================================
 // HOOK
 // ============================================
@@ -89,15 +166,8 @@ export function useAIRecommendations() {
       setData(null);
 
       try {
-        // Validações
-        if (!client.name) {
-          throw new Error("Nome do cliente é obrigatório");
-        }
-        if (!products.length) {
-          throw new Error("É necessário fornecer pelo menos um produto");
-        }
+        validateRecommendationInput(client, products);
 
-        // Verifica cache
         const key = cacheKey(client, products);
         const cached = cacheRef.current.get(key);
         if (cached) {
@@ -105,79 +175,13 @@ export function useAIRecommendations() {
           return cached;
         }
 
-        // Autenticação
-        const { data: sessionData } = await supabase.auth.getSession();
-        const token = sessionData?.session?.access_token;
-        if (!token) {
-          throw new Error("Usuário não autenticado");
-        }
-
-        // Fetch com retry
-        let lastError: Error | null = null;
-
-        for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
-          if (controller.signal.aborted) {
-            throw new DOMException("Requisição cancelada", "AbortError");
-          }
-
-          if (attempt > 0) {
-            await delay(INITIAL_BACKOFF_MS * Math.pow(2, attempt - 1));
-          }
-
-          try {
-            const response = await fetch(
-              getSupabaseFunctionUrl('ai-recommendations'),
-              {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                  apikey: supabasePublishableKey,
-                  Authorization: `Bearer ${token}`,
-                },
-                body: JSON.stringify({ client, products }),
-                signal: controller.signal,
-              }
-            );
-
-            if (!response.ok) {
-              if (response.status === 429) {
-                throw new Error("Limite de requisições excedido. Tente novamente em alguns minutos.");
-              }
-              if (response.status === 402) {
-                throw new Error("Créditos de IA esgotados. Contate o administrador.");
-              }
-              if (isRetryable(response.status) && attempt < MAX_RETRIES) {
-                lastError = new Error(`Erro do servidor: ${response.status}`);
-                continue;
-              }
-              const errText = await response.text().catch(() => "");
-              throw new Error(`Erro ao gerar recomendações: ${response.status} ${errText}`);
-            }
-
-            const result: AIRecommendationsResult = await response.json();
-            cacheRef.current.set(key, result);
-            setData(result);
-            return result;
-          } catch (fetchErr) {
-            if (fetchErr instanceof DOMException && fetchErr.name === "AbortError") {
-              throw fetchErr;
-            }
-            if ((fetchErr as Error).message?.includes("Limite") ||
-                (fetchErr as Error).message?.includes("Créditos")) {
-              throw fetchErr;
-            }
-            lastError = fetchErr instanceof Error ? fetchErr : new Error(String(fetchErr));
-            if (attempt >= MAX_RETRIES) throw lastError;
-          }
-        }
-
-        if (lastError) throw lastError;
-        return null;
+        const token = await getAccessToken();
+        const result = await requestRecommendationsWithRetry(client, products, token, controller.signal);
+        cacheRef.current.set(key, result);
+        setData(result);
+        return result;
       } catch (err) {
-        // Ignora silenciosamente requisições abortadas
-        if (err instanceof DOMException && err.name === "AbortError") {
-          return null;
-        }
+        if (isAbortError(err)) return null;
         const message = err instanceof Error ? err.message : "Erro desconhecido";
         setError(message);
         toast.error(message);

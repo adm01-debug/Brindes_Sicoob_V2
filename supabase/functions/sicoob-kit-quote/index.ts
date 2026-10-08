@@ -12,6 +12,10 @@ import {
   type VerifiedKitPersonalization,
 } from './catalog.ts';
 import { hashKitQuoteIntent } from './idempotency.ts';
+import {
+  EXTERNAL_ACTIVE_PRODUCT_FILTER,
+  EXTERNAL_PRODUCT_CORE_SELECT,
+} from '../_shared/external-product-contract.ts';
 
 interface KitQuoteBody {
   kitName?: unknown;
@@ -147,8 +151,8 @@ Deno.serve(withStructuredLogging("sicoob-kit-quote", async (req) => {
         body: {
           table: 'products',
           operation: 'select',
-          select: 'id,name,sku,sale_price,base_price,primary_image_url,image_url,is_active,active,stock_quantity,min_quantity',
-          filters: { id: productIds, active: true },
+          select: EXTERNAL_PRODUCT_CORE_SELECT,
+          filters: { id: productIds, ...EXTERNAL_ACTIVE_PRODUCT_FILTER },
           limit: productIds.length,
         },
       }),

@@ -4,14 +4,18 @@ import { motion, AnimatePresence } from "framer-motion";
 import Fuse from "fuse.js";
 import { Search, ArrowRight, Command, Clock, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Badge } from "@/components/ui/badge";
+
 import { buildSpotlightItems, type SpotlightItem } from "./spotlight/SpotlightItems";
 import { useAuth } from "@/contexts/AuthContext";
 import { filterByRoutePermission } from "@/lib/navigation/filter-restricted-items";
 
+function isSpotlightShortcut(event: KeyboardEvent) {
+  return (event.metaKey || event.ctrlKey) && event.key === "k";
+}
+
 // SpotlightItem type imported from ./spotlight/SpotlightItems
 
-export const EnhancedSpotlight = forwardRef<HTMLDivElement, any>(function EnhancedSpotlight(_props, ref) {
+export const EnhancedSpotlight = forwardRef<HTMLDivElement, unknown>(function EnhancedSpotlight(_props, ref) {
   const [isOpen, setIsOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [selectedIndex, setSelectedIndex] = useState(0);
@@ -26,17 +30,17 @@ export const EnhancedSpotlight = forwardRef<HTMLDivElement, any>(function Enhanc
     if (stored) {
       try {
         setRecentActions(JSON.parse(stored));
-      } catch (e) {
+      } catch {
         // Ignore parse errors
       }
     }
   }, []);
 
-  const addToRecent = (id: string) => {
+  const addToRecent = useCallback((id: string) => {
     const updated = [id, ...recentActions.filter((r) => r !== id)].slice(0, 5);
     setRecentActions(updated);
     localStorage.setItem("spotlight-recent", JSON.stringify(updated));
-  };
+  }, [recentActions]);
 
   const items: SpotlightItem[] = useMemo(() => {
     const all = buildSpotlightItems(navigate);
@@ -100,10 +104,9 @@ export const EnhancedSpotlight = forwardRef<HTMLDivElement, any>(function Enhanc
       // Skip if already in recentes
       if (groups["Recentes"]?.some((r) => r.id === item.id)) return;
 
-      if (!groups[item.category]) {
-        groups[item.category] = [];
-      }
-      groups[item.category].push(item);
+      const categoryItems = groups[item.category] ?? [];
+      categoryItems.push(item);
+      groups[item.category] = categoryItems;
     });
 
     return groups;
@@ -114,11 +117,19 @@ export const EnhancedSpotlight = forwardRef<HTMLDivElement, any>(function Enhanc
     return Object.values(groupedItems).flat();
   }, [groupedItems]);
 
+  const handleSelect = useCallback((item: SpotlightItem) => {
+    addToRecent(item.id);
+    item.action();
+    setIsOpen(false);
+    setQuery("");
+    setSelectedIndex(0);
+  }, [addToRecent]);
+
   // Keyboard handlers
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
       // Toggle with Cmd+K / Ctrl+K
-      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+      if (isSpotlightShortcut(e)) {
         e.preventDefault();
         setIsOpen((prev) => !prev);
         setQuery("");
@@ -153,7 +164,7 @@ export const EnhancedSpotlight = forwardRef<HTMLDivElement, any>(function Enhanc
         handleSelect(flatItems[selectedIndex]);
       }
     },
-    [isOpen, flatItems, selectedIndex]
+    [isOpen, flatItems, selectedIndex, handleSelect]
   );
 
   useEffect(() => {
@@ -172,14 +183,6 @@ export const EnhancedSpotlight = forwardRef<HTMLDivElement, any>(function Enhanc
       setTimeout(() => inputRef.current?.focus(), 50);
     }
   }, [isOpen]);
-
-  const handleSelect = (item: SpotlightItem) => {
-    addToRecent(item.id);
-    item.action();
-    setIsOpen(false);
-    setQuery("");
-    setSelectedIndex(0);
-  };
 
   return (
     <div ref={ref}>

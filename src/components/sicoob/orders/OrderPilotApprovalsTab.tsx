@@ -147,7 +147,7 @@ export function OrderPilotApprovalsTab({ orderId }: OrderPilotApprovalsTabProps)
                       Aprovar Piloto
                     </Button>
                     <Button 
-                      variant="warning"
+                      variant="orange"
                       onClick={() => handleAction(approval.id, 'revision')}
                       disabled={updateApprovalStatus.isPending}
                     >

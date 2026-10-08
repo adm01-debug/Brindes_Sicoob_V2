@@ -118,6 +118,53 @@ export async function processLogoForLaser(
 
 // ─── Serigrafia processor ─────────────────────────────────────────────────────
 
+interface PaletteEntry {
+  hex: string;
+  pantoneCode: string;
+  rgb: [number, number, number];
+}
+
+function nearestPaletteColor(
+  red: number,
+  green: number,
+  blue: number,
+  palette: PaletteEntry[],
+): [number, number, number] {
+  let nearest: PaletteEntry | undefined;
+  let bestDistance = Infinity;
+  for (const entry of palette) {
+    const [paletteRed, paletteGreen, paletteBlue] = entry.rgb;
+    const distance = (red - paletteRed) ** 2 + (green - paletteGreen) ** 2 + (blue - paletteBlue) ** 2;
+    if (distance < bestDistance) {
+      bestDistance = distance;
+      nearest = entry;
+    }
+  }
+  return nearest?.rgb ?? [0, 0, 0];
+}
+
+function recolorPixel(data: Uint8ClampedArray, index: number, palette: PaletteEntry[]): void {
+  const red = data[index] ?? 0;
+  const green = data[index + 1] ?? 0;
+  const blue = data[index + 2] ?? 0;
+  const alpha = data[index + 3] ?? 0;
+  if (alpha < 30 || (0.2126 * red + 0.7152 * green + 0.0722 * blue > 220 && alpha > 200)) {
+    data[index + 3] = 0;
+    return;
+  }
+  const [targetRed, targetGreen, targetBlue] = nearestPaletteColor(red, green, blue, palette);
+  data[index] = targetRed;
+  data[index + 1] = targetGreen;
+  data[index + 2] = targetBlue;
+  data[index + 3] = 255;
+}
+
+function applySerigraphyPalette(imageData: ImageData, palette: PaletteEntry[]): void {
+  for (let index = 0; index < imageData.data.length; index += 4) {
+    recolorPixel(imageData.data, index, palette);
+  }
+}
+
 /**
  * Processes a logo for serigrafia (screen printing):
  * - Transparent/white pixels → transparent (preserve gaps)
@@ -161,49 +208,7 @@ export async function processLogoForSerigrafia(
       URL.revokeObjectURL(blobUrl);
 
       const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-      const data = imageData.data;
-      const WHITE_THRESHOLD = 220;
-
-      for (let i = 0; i < data.length; i += 4) {
-        const r = data[i] ?? 0;
-        const g = data[i + 1] ?? 0;
-        const b = data[i + 2] ?? 0;
-        const a = data[i + 3] ?? 0;
-
-        // Skip fully/mostly transparent pixels
-        if (a < 30) {
-          data[i + 3] = 0;
-          continue;
-        }
-
-        // White/near-white pixels → transparent (preserve internal gaps/negative spaces)
-        const luminance = 0.2126 * r + 0.7152 * g + 0.0722 * b;
-        if (luminance > WHITE_THRESHOLD && a > 200) {
-          data[i + 3] = 0;
-          continue;
-        }
-
-        // Find nearest color in palette by squared RGB distance
-        let bestIdx = 0;
-        let bestDist = Infinity;
-        for (let p = 0; p < palette.length; p++) {
-          const entry = palette[p];
-          if (!entry) continue;
-          const [pR, pG, pB] = entry.rgb;
-          const dist = (r - pR) ** 2 + (g - pG) ** 2 + (b - pB) ** 2;
-          if (dist < bestDist) {
-            bestDist = dist;
-            bestIdx = p;
-          }
-        }
-
-        const bestEntry = palette[bestIdx];
-        const [tR, tG, tB] = bestEntry ? bestEntry.rgb : [0, 0, 0];
-        data[i] = tR;
-        data[i + 1] = tG;
-        data[i + 2] = tB;
-        data[i + 3] = 255; // Solid — 100% monochromatic per color
-      }
+      applySerigraphyPalette(imageData, palette);
 
       ctx.putImageData(imageData, 0, 0);
       resolve(canvas.toDataURL("image/png"));
@@ -219,12 +224,7 @@ export async function processLogoForSerigrafia(
 }
 
 function hexToRgbInternal(hex: string): [number, number, number] {
-  const h = hex.replace("#", "");
-  return [
-    parseInt(h.slice(0, 2), 16),
-    parseInt(h.slice(2, 4), 16),
-    parseInt(h.slice(4, 6), 16),
-  ];
+  return hexToRgb(hex);
 }
 
 async function fetchAsBlob(url: string): Promise<Blob> {

@@ -27,69 +27,60 @@ interface AggRow {
   reasons: Set<string>;
 }
 
+function aggregateRow(map: Map<string, AggRow>, key: string): AggRow {
+  const existing = map.get(key);
+  if (existing) return existing;
+  const created = { key, total: 0, blocked: 0, reasons: new Set<string>() };
+  map.set(key, created);
+  return created;
+}
+
+function aggregateLogs(botLogs: BotLog[]) {
+  const ipMap = new Map<string, AggRow>();
+  const endpointMap = new Map<string, AggRow>();
+  const reasonMap = new Map<string, number>();
+  for (const log of botLogs) {
+    const ip = aggregateRow(ipMap, log.ip_address);
+    ip.total += 1;
+    if (log.blocked) ip.blocked += 1;
+    ip.reasons.add(log.detection_reason);
+    const endpoint = aggregateRow(endpointMap, log.endpoint);
+    endpoint.total += 1;
+    if (log.blocked) endpoint.blocked += 1;
+    endpoint.reasons.add(log.detection_reason);
+    reasonMap.set(log.detection_reason, (reasonMap.get(log.detection_reason) || 0) + 1);
+  }
+  return { ipMap, endpointMap, reasonMap };
+}
+
+function buildTimeline(botLogs: BotLog[]) {
+  const now = Date.now();
+  const buckets: { hour: string; total: number; blocked: number; ts: number }[] = [];
+  for (let index = 23; index >= 0; index--) {
+    const ts = now - index * 3600_000;
+    buckets.push({ ts: Math.floor(ts / 3600_000) * 3600_000, hour: `${String(new Date(ts).getHours()).padStart(2, "0")}h`, total: 0, blocked: 0 });
+  }
+  for (const log of botLogs) {
+    const bucketTs = Math.floor(new Date(log.created_at).getTime() / 3600_000) * 3600_000;
+    const bucket = buckets.find((candidate) => candidate.ts === bucketTs);
+    if (!bucket) continue;
+    bucket.total += 1;
+    if (log.blocked) bucket.blocked += 1;
+  }
+  return buckets;
+}
+
+function buildAnalytics(botLogs: BotLog[]) {
+  const { ipMap, endpointMap, reasonMap } = aggregateLogs(botLogs);
+  const byTotal = (left: AggRow, right: AggRow) => right.total - left.total;
+  const topIps = Array.from(ipMap.values()).sort(byTotal).slice(0, 10);
+  const topEndpoints = Array.from(endpointMap.values()).sort(byTotal).slice(0, 10);
+  const topReasons = Array.from(reasonMap.entries()).sort((left, right) => right[1] - left[1]).slice(0, 6).map(([reason, count]) => ({ reason, count }));
+  return { topIps, topEndpoints, timeline: buildTimeline(botLogs), topReasons };
+}
+
 export function SecurityAnalytics({ botLogs, onBlockIp }: Props) {
-  const { topIps, topEndpoints, timeline, topReasons } = useMemo(() => {
-    const ipMap = new Map<string, AggRow>();
-    const epMap = new Map<string, AggRow>();
-    const reasonMap = new Map<string, number>();
-
-    for (const log of botLogs) {
-      // IPs
-      let ip = ipMap.get(log.ip_address);
-      if (!ip) {
-        ip = { key: log.ip_address, total: 0, blocked: 0, reasons: new Set() };
-        ipMap.set(log.ip_address, ip);
-      }
-      ip.total += 1;
-      if (log.blocked) ip.blocked += 1;
-      ip.reasons.add(log.detection_reason);
-
-      // Endpoints
-      let ep = epMap.get(log.endpoint);
-      if (!ep) {
-        ep = { key: log.endpoint, total: 0, blocked: 0, reasons: new Set() };
-        epMap.set(log.endpoint, ep);
-      }
-      ep.total += 1;
-      if (log.blocked) ep.blocked += 1;
-      ep.reasons.add(log.detection_reason);
-
-      // Reasons
-      reasonMap.set(log.detection_reason, (reasonMap.get(log.detection_reason) || 0) + 1);
-    }
-
-    const topIps = Array.from(ipMap.values()).sort((a, b) => b.total - a.total).slice(0, 10);
-    const topEndpoints = Array.from(epMap.values()).sort((a, b) => b.total - a.total).slice(0, 10);
-    const topReasons = Array.from(reasonMap.entries())
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 6)
-      .map(([reason, count]) => ({ reason, count }));
-
-    // Timeline: last 24h bucketed per hour
-    const now = Date.now();
-    const buckets: { hour: string; total: number; blocked: number; ts: number }[] = [];
-    for (let i = 23; i >= 0; i--) {
-      const ts = now - i * 3600_000;
-      const d = new Date(ts);
-      buckets.push({
-        ts: Math.floor(ts / 3600_000) * 3600_000,
-        hour: `${String(d.getHours()).padStart(2, "0")}h`,
-        total: 0,
-        blocked: 0,
-      });
-    }
-    for (const log of botLogs) {
-      const t = new Date(log.created_at).getTime();
-      const bucketTs = Math.floor(t / 3600_000) * 3600_000;
-      const bucket = buckets.find((b) => b.ts === bucketTs);
-      if (bucket) {
-        bucket.total += 1;
-        if (log.blocked) bucket.blocked += 1;
-      }
-    }
-
-    return { topIps, topEndpoints, timeline: buckets, topReasons };
-  }, [botLogs]);
+  const { topIps, topEndpoints, timeline, topReasons } = useMemo(() => buildAnalytics(botLogs), [botLogs]);
 
   return (
     <div className="space-y-4">

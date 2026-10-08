@@ -12,7 +12,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
-import { searchPantone, type PantoneColor } from '@/data/pantone-coated';
+import { searchPantone } from '@/data/pantone-coated';
 import type { DetectedColor } from '@/hooks/useLogoColorAnalysis';
 
 interface LogoColorAnalyzerProps {
@@ -53,7 +53,7 @@ export function LogoColorAnalyzer({
 
   if (colors.length === 0) return null;
 
-  const exceedsMax = maxColors != null && colors.length > maxColors;
+  const exceedsMax = maxColors !== null && maxColors !== undefined && colors.length > maxColors;
 
   return (
     <div className={cn("space-y-3", className)}>
@@ -146,7 +146,7 @@ interface PantoneDropdownProps {
   onChange: (code: string) => void;
 }
 
-function PantoneDropdown({ selectedCode, pantoneHex, deltaE, onChange }: PantoneDropdownProps) {
+function PantoneDropdown({ selectedCode, pantoneHex, onChange }: PantoneDropdownProps) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
 

@@ -30,7 +30,7 @@ concurrency:
 jobs:
   analyze:
     name: Analyze (${{ matrix.language }})
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     timeout-minutes: 30
     strategy:
       fail-fast: false
@@ -41,8 +41,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      # O runner self-hosted ainda expõe Node 12 no PATH. O analisador
-      # JavaScript/TypeScript atual do CodeQL exige uma versão suportada.
       - name: Preparar Node.js para análise
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
@@ -63,26 +61,21 @@ jobs:
         with:
           category: '/language:${{ matrix.language }}'
           output: sarif-results
+          # O recurso GitHub Code Scanning não está habilitado neste repositório
+          # privado. A análise continua obrigatória e o SARIF é preservado como
+          # artefato, sem tentar um upload que a API rejeita com HTTP 403.
+          upload: never
 
-      - name: Validar que a análise gerou SARIF
+      - name: Publicar resumo e bloquear achados do SARIF
         run: |
-          python3 - <<'PY'
-          import glob, json, sys
-          files = glob.glob('sarif-results/*.sarif')
-          if not files:
-              sys.exit('CodeQL não gerou arquivo SARIF.')
-          runs = sum((json.load(open(path, encoding='utf-8')).get('runs', []) for path in files), [])
-          if not runs:
-              sys.exit('CodeQL gerou SARIF sem execução analisável.')
-          print(f'CodeQL gerou {len(files)} SARIF com {len(runs)} execução(ões).')
-          PY
+          set -o pipefail
+          node scripts/check-codeql-sarif.mjs | tee -a "$GITHUB_STEP_SUMMARY"
 
       - name: Preservar resultado SARIF como artefato
         if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
-        continue-on-error: true
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: codeql-${{ matrix.language }}
           path: sarif-results/*.sarif
-          if-no-files-found: warn
+          if-no-files-found: error
           retention-days: 14

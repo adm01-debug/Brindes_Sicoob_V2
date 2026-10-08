@@ -2,9 +2,8 @@
  * Marketing texts section — key benefits and use cases
  */
 import { Textarea } from '@/components/ui/textarea';
-import { FieldLabel, SectionCard } from '../ProductFormHelpers';
+import { FieldLabel, SectionCard, type FormSectionProps } from "../ProductFormHelpers";
 import { Megaphone } from 'lucide-react';
-import type { FormSectionProps } from '../ProductFormHelpers';
 
 type Props = Pick<FormSectionProps, 'register'>;
 

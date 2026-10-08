@@ -87,12 +87,13 @@ export class CircuitBreaker {
 const breakers = new Map<string, CircuitBreaker>();
 
 export function getCircuitBreaker(name: string, options?: Partial<CircuitBreakerOptions>): CircuitBreaker {
-  if (!breakers.has(name)) {
-    breakers.set(name, new CircuitBreaker(name, {
-      failureThreshold: options?.failureThreshold ?? 5,
-      resetTimeout: options?.resetTimeout ?? 30000,
-      onStateChange: options?.onStateChange,
-    }));
-  }
-  return breakers.get(name)!;
+  const existing = breakers.get(name);
+  if (existing) return existing;
+  const created = new CircuitBreaker(name, {
+    failureThreshold: options?.failureThreshold ?? 5,
+    resetTimeout: options?.resetTimeout ?? 30000,
+    onStateChange: options?.onStateChange,
+  });
+  breakers.set(name, created);
+  return created;
 }

@@ -4,7 +4,7 @@
  * Gradientes, badges, color dots, contadores hierárquicos
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, type ElementType } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -13,6 +13,8 @@ import { Input } from '@/components/ui/input';
 import { X, Users, Calendar, Megaphone, ChevronDown, Search, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+
+const PRIMARY_TEXT = "text-primary";
 import { PUBLICO_ALVO, DATAS_COMEMORATIVAS, ENDOMARKETING } from '@/data/mockData';
 
 interface ProductMarketingSectionProps {
@@ -32,23 +34,36 @@ function toArray(value: unknown): string[] {
   return [];
 }
 
+function recordValue(value: unknown): Record<string, unknown> {
+  return value && typeof value === 'object' && !Array.isArray(value) ? value as Record<string, unknown> : {};
+}
+
+function parseTags(value: unknown): Record<string, unknown> {
+  if (typeof value !== 'string') return recordValue(value);
+  try { return recordValue(JSON.parse(value)); } catch { return {}; }
+}
+
+function tagsFromResponse(data: unknown): Record<string, unknown> {
+  const root = recordValue(data);
+  const payload = recordValue(root.data);
+  const records = Array.isArray(payload.records) ? payload.records : [];
+  const product = recordValue(records[0] ?? payload);
+  return parseTags(product.tags);
+}
+
 async function fetchProductTags(productId: string): Promise<ProductTags> {
   const { data, error } = await supabase.functions.invoke('external-db-bridge', {
     body: { table: 'products', operation: 'select', id: productId },
   });
   if (error) throw new Error(error.message);
 
-  const product = data?.data?.records?.[0] || data?.data;
-  const raw = product?.tags;
-  const tags = typeof raw === 'string'
-    ? (() => { try { return JSON.parse(raw); } catch { return {}; } })()
-    : (raw || {});
+  const tags = tagsFromResponse(data);
 
-  return {
+  return ({
     publicoAlvo: toArray(tags.publicoAlvo ?? tags.publico_alvo),
     datasComemorativas: toArray(tags.datasComemorativas ?? tags.datas_comemorativas),
     endomarketing: toArray(tags.endomarketing),
-  };
+  });
 }
 
 async function saveProductTags(productId: string, tags: ProductTags): Promise<void> {
@@ -77,13 +92,36 @@ const CATEGORY_COLORS: Record<CategoryKey, string> = {
 const CATEGORIES: {
   key: CategoryKey;
   label: string;
-  icon: React.ElementType;
+  icon: ElementType;
   options: string[];
 }[] = [
   { key: 'publicoAlvo', label: 'Público-Alvo', icon: Users, options: [...PUBLICO_ALVO].sort((a, b) => a.localeCompare(b, 'pt-BR')) },
   { key: 'datasComemorativas', label: 'Datas Comemorativas', icon: Calendar, options: [...DATAS_COMEMORATIVAS].sort((a, b) => a.localeCompare(b, 'pt-BR')) },
   { key: 'endomarketing', label: 'Endomarketing', icon: Megaphone, options: [...ENDOMARKETING].sort((a, b) => a.localeCompare(b, 'pt-BR')) },
 ];
+
+type MarketingCategory = (typeof CATEGORIES)[number];
+
+function CategoryHeader({ category, color, selectedCount, optionCount, open, onToggle }: { category: MarketingCategory; color: string; selectedCount: number; optionCount: number; open: boolean; onToggle: () => void }) {
+  const CategoryIcon = category.icon;
+  const selected = selectedCount > 0;
+  return <div className="flex items-center gap-2 p-2.5"><button type="button" onClick={onToggle} className={cn("p-1 rounded-md transition-all duration-200", open ? "bg-primary/10" : "bg-muted hover:bg-muted/80")}><ChevronDown className={cn("h-3.5 w-3.5 transition-transform duration-200", open ? "rotate-180 text-primary" : "text-muted-foreground")} /></button><div className={cn("w-4 h-4 rounded-full flex-shrink-0 ring-2 ring-offset-1 ring-offset-background transition-all", selected ? "ring-primary/50 scale-110" : "ring-border/50")} style={{ backgroundColor: color, boxShadow: `0 2px 8px ${color}40` }} /><CategoryIcon className={cn("h-3.5 w-3.5 flex-shrink-0 transition-colors", selected ? PRIMARY_TEXT : "text-muted-foreground")} /><span className={cn("text-sm font-medium truncate flex-1 transition-colors", selected ? PRIMARY_TEXT : "text-foreground")}>{category.label}</span><div className="flex items-center gap-1.5 flex-shrink-0">{selectedCount > 0 && <span className="bg-primary text-primary-foreground text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center">{selectedCount}</span>}<span className={cn("text-[11px] px-1.5 py-0.5 rounded-full", selected ? "bg-primary/20 text-primary font-medium" : "bg-muted text-muted-foreground")}>{optionCount}</span></div></div>;
+}
+
+function CategoryOptions({ categoryKey, options, selected, color, togglingKeys, onToggle }: { categoryKey: CategoryKey; options: string[]; selected: string[]; color: string; togglingKeys: Set<string>; onToggle: (item: string) => void }) {
+  return <div className="px-2.5 pb-2.5 space-y-0.5"><div className="border-t border-border/30 pt-2 ml-8">{options.map((option) => { const isSelected = selected.includes(option); const isToggling = togglingKeys.has(`${categoryKey}::${option}`); return <label key={option} className={cn("flex items-center gap-2.5 py-1.5 px-2.5 rounded-md cursor-pointer text-sm transition-all duration-150", isSelected ? "bg-primary/15 text-foreground font-medium shadow-sm" : "text-muted-foreground hover:bg-muted/60 hover:text-foreground")}>{isToggling ? <Loader2 className="w-4 h-4 animate-spin text-primary flex-shrink-0" /> : <Checkbox checked={isSelected} onCheckedChange={() => onToggle(option)} className="data-[state=checked]:bg-primary data-[state=checked]:border-primary" />}<span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: color }} /><span className="truncate flex-1">{option}</span>{isSelected && <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />}</label>; })}</div></div>;
+}
+
+function MarketingCategoryGroup({ category, tags, search, openGroups, togglingKeys, onToggleGroup, onToggleItem }: { category: MarketingCategory; tags: ProductTags; search: string; openGroups: Set<string>; togglingKeys: Set<string>; onToggleGroup: () => void; onToggleItem: (item: string) => void }) {
+  const selected = tags[category.key] ?? [];
+  const query = search.toLowerCase();
+  const filteredOptions = search ? category.options.filter((option) => option.toLowerCase().includes(query)) : category.options;
+  if (search && filteredOptions.length === 0 && !category.label.toLowerCase().includes(query)) return null;
+  const open = openGroups.has(category.key) || Boolean(search);
+  const hasSelection = selected.length > 0;
+  const color = CATEGORY_COLORS[category.key];
+  return <div className={cn("rounded-lg overflow-hidden transition-all duration-200", hasSelection ? "bg-gradient-to-r from-primary/10 to-primary/5 ring-1 ring-primary/30" : "bg-muted/30 hover:bg-muted/50")}><CategoryHeader category={category} color={color} selectedCount={selected.length} optionCount={filteredOptions.length} open={open} onToggle={onToggleGroup} />{open && filteredOptions.length > 0 && <CategoryOptions categoryKey={category.key} options={filteredOptions} selected={selected} color={color} togglingKeys={togglingKeys} onToggle={onToggleItem} />}</div>;
+}
 
 export function ProductMarketingSection({ productId }: ProductMarketingSectionProps) {
   const [tags, setTags] = useState<ProductTags>({ publicoAlvo: [], datasComemorativas: [], endomarketing: [] });
@@ -160,8 +198,6 @@ export function ProductMarketingSection({ productId }: ProductMarketingSectionPr
 
   const totalSelected = CATEGORIES.reduce((sum, cat) => sum + (tags[cat.key]?.length || 0), 0);
   const totalOptions = CATEGORIES.reduce((sum, cat) => sum + cat.options.length, 0);
-  const searchLower = search.toLowerCase();
-
   return (
     <div className="space-y-3">
       {/* Badges dos selecionados */}
@@ -234,7 +270,7 @@ export function ProductMarketingSection({ productId }: ProductMarketingSectionPr
         <span>•</span>
         <span>{totalOptions} opções</span>
         <span>•</span>
-        <span className={cn("font-medium", totalSelected > 0 && "text-primary")}>
+        <span className={cn("font-medium", totalSelected > 0 && PRIMARY_TEXT)}>
           {totalSelected} selecionados
         </span>
       </div>
@@ -242,137 +278,7 @@ export function ProductMarketingSection({ productId }: ProductMarketingSectionPr
       {/* Árvore de categorias */}
       <ScrollArea className="h-56">
         <div className="space-y-1.5 pr-3">
-          {CATEGORIES.map(({ key, label, icon: Icon, options }) => {
-            const selected = tags[key] || [];
-            const color = CATEGORY_COLORS[key];
-            const filteredOptions = search
-              ? options.filter(o => o.toLowerCase().includes(searchLower))
-              : options;
-
-            if (search && filteredOptions.length === 0 && !label.toLowerCase().includes(searchLower)) return null;
-
-            const linkedInCat = selected.length;
-            const isOpen = openGroups.has(key) || !!search;
-            const hasAnySelection = linkedInCat > 0;
-
-            return (
-              <div
-                key={key}
-                className={cn(
-                  "rounded-lg overflow-hidden transition-all duration-200",
-                  hasAnySelection
-                    ? "bg-gradient-to-r from-primary/10 to-primary/5 ring-1 ring-primary/30"
-                    : "bg-muted/30 hover:bg-muted/50"
-                )}
-              >
-                {/* Header */}
-                <div className="flex items-center gap-2 p-2.5">
-                  <button
-                    type="button"
-                    onClick={() => toggleGroup(key)}
-                    className={cn(
-                      "p-1 rounded-md transition-all duration-200",
-                      isOpen ? "bg-primary/10" : "bg-muted hover:bg-muted/80"
-                    )}
-                  >
-                    <ChevronDown className={cn(
-                      "h-3.5 w-3.5 transition-transform duration-200",
-                      isOpen ? "rotate-180 text-primary" : "text-muted-foreground"
-                    )} />
-                  </button>
-
-                  <div
-                    className={cn(
-                      "w-4 h-4 rounded-full flex-shrink-0 ring-2 ring-offset-1 ring-offset-background transition-all",
-                      hasAnySelection ? "ring-primary/50 scale-110" : "ring-border/50"
-                    )}
-                    style={{
-                      backgroundColor: color,
-                      boxShadow: `0 2px 8px ${color}40`,
-                    }}
-                  />
-
-                  <Icon className={cn(
-                    "h-3.5 w-3.5 flex-shrink-0 transition-colors",
-                    hasAnySelection ? "text-primary" : "text-muted-foreground"
-                  )} />
-
-                  <span className={cn(
-                    "text-sm font-medium truncate flex-1 transition-colors",
-                    hasAnySelection ? "text-primary" : "text-foreground"
-                  )}>
-                    {label}
-                  </span>
-
-                  <div className="flex items-center gap-1.5 flex-shrink-0">
-                    {linkedInCat > 0 && (
-                      <span className="bg-primary text-primary-foreground text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center">
-                        {linkedInCat}
-                      </span>
-                    )}
-                    <span className={cn(
-                      "text-[11px] px-1.5 py-0.5 rounded-full",
-                      hasAnySelection
-                        ? "bg-primary/20 text-primary font-medium"
-                        : "bg-muted text-muted-foreground"
-                    )}>
-                      {filteredOptions.length}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Opções */}
-                {isOpen && filteredOptions.length > 0 && (
-                  <div className="px-2.5 pb-2.5 space-y-0.5">
-                    <div className="border-t border-border/30 pt-2 ml-8">
-                      {filteredOptions.map(opt => {
-                        const isSelected = selected.includes(opt);
-                        return (
-                          <label
-                            key={opt}
-                            className={cn(
-                              "flex items-center gap-2.5 py-1.5 px-2.5 rounded-md cursor-pointer text-sm transition-all duration-150",
-                              isSelected
-                                ? "bg-primary/15 text-foreground font-medium shadow-sm"
-                                : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
-                            )}
-                          >
-                            {togglingKeys.has(`${key}::${opt}`) ? (
-                              <Loader2 className="w-4 h-4 animate-spin text-primary flex-shrink-0" />
-                            ) : (
-                              <Checkbox
-                                checked={isSelected}
-                                onCheckedChange={() => toggleItem(key, opt)}
-                                className="data-[state=checked]:bg-primary data-[state=checked]:border-primary"
-                              />
-                            )}
-                            <span
-                              className="w-2 h-2 rounded-full flex-shrink-0"
-                              style={{ backgroundColor: color }}
-                            />
-                            <span className="truncate flex-1">{opt}</span>
-                            {isSelected && (
-                              <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-                            )}
-                          </label>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
-
-                {isOpen && filteredOptions.length === 0 && (
-                  <div className="px-2.5 pb-2.5">
-                    <div className="border-t border-border/30 pt-2 ml-8">
-                      <p className="text-xs text-muted-foreground italic py-2">
-                        Nenhuma opção encontrada
-                      </p>
-                    </div>
-                  </div>
-                )}
-              </div>
-            );
-          })}
+          {CATEGORIES.map((category) => <MarketingCategoryGroup key={category.key} category={category} tags={tags} search={search} openGroups={openGroups} togglingKeys={togglingKeys} onToggleGroup={() => toggleGroup(category.key)} onToggleItem={(item) => void toggleItem(category.key, item)} />)}
         </div>
       </ScrollArea>
     </div>

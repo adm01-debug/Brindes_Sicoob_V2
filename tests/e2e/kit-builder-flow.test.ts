@@ -2,7 +2,7 @@
  * Comprehensive E2E tests for Kit Builder flows
  * Covers full user journeys through the kit assembly wizard
  */
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect } from "vitest";
 
 // These are behavioral/logic tests simulating full kit builder flows
 

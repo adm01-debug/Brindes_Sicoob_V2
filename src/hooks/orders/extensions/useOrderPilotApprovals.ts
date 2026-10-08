@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { requireOrderId } from '@/hooks/orders/require-order-id';
 
 export interface OrderPilotApproval {
   id: string;
@@ -45,7 +46,7 @@ export function useOrderPilotApprovals(orderId?: string) {
       const { data, error } = await supabase
         .from('sicoob_order_artwork_versions')
         .select('id, version, status, file_path, feedback, identity_snapshot, is_latest')
-        .eq('order_id', orderId!)
+        .eq('order_id', requireOrderId(orderId))
         .order('version', { ascending: false });
       if (error) throw error;
 
@@ -68,7 +69,7 @@ export function useOrderPilotApprovals(orderId?: string) {
       const { error } = await supabase.rpc('decide_sicoob_order_artwork', {
         p_artwork_id: payload.id,
         p_status: payload.status,
-        p_feedback: payload.feedback?.trim() || null,
+        p_feedback: payload.feedback?.trim() || undefined,
       });
       if (error) throw error;
     },

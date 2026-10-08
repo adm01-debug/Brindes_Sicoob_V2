@@ -16,12 +16,12 @@
  *   await loginAs(page, "admin");                 // admin
  *   await loginViaUI(page, { email, password, expectFail: true });
  */
-import { expect, type Page } from "@playwright/test";
+import { expect, type Page } from '@playwright/test';
 
-import { Sel } from "../fixtures/selectors";
-import { test } from "../fixtures/test-base";
-import { gotoAndSettle, waitForRouteIdle } from "./nav";
-import { clickTestId } from "./waits";
+import { Sel } from '../fixtures/selectors';
+import { test } from '../fixtures/test-base';
+import { gotoAndSettle, waitForRouteIdle } from './nav';
+import { clickTestId } from './waits';
 
 export interface LoginCreds {
   email: string;
@@ -32,9 +32,25 @@ export interface LoginCreds {
   timeoutMs?: number;
 }
 
-export type Role = "user" | "admin" | "dev" | "editor";
+export type Role = 'user' | 'admin' | 'dev' | 'editor';
 
 const LOGIN_URL_RE = /\/login(\?|#|$)/;
+
+async function getStoredSessionEmail(page: Page): Promise<string | null> {
+  return page.evaluate(() => {
+    for (const key of Object.keys(localStorage)) {
+      if (!/sb-.*-auth-token/.test(key)) continue;
+      try {
+        const session = JSON.parse(localStorage.getItem(key) ?? '{}');
+        const email = session?.user?.email ?? session?.currentSession?.user?.email;
+        if (typeof email === 'string') return email;
+      } catch {
+        // Ignora entradas de storage que não representam uma sessão Supabase.
+      }
+    }
+    return null;
+  });
+}
 
 /**
  * Executa o fluxo de login via UI usando seletores SSOT.
@@ -43,29 +59,29 @@ const LOGIN_URL_RE = /\/login(\?|#|$)/;
  */
 export async function loginViaUI(page: Page, creds: LoginCreds): Promise<boolean> {
   const timeout = creds.timeoutMs ?? 20_000;
-  await gotoAndSettle(page, "/login");
+  // Se o guard já enviou a SPA para /login, preserve o location.state.from.
+  // Navegar novamente para a mesma URL apagaria o destino do deep link.
+  if (!LOGIN_URL_RE.test(page.url())) await gotoAndSettle(page, '/login');
 
   const emailLoc = page.locator(Sel.login.email).first();
   const passLoc = page.locator(Sel.login.password).first();
-  await emailLoc.waitFor({ state: "visible", timeout: 10_000 });
+  await emailLoc.waitFor({ state: 'visible', timeout: 10_000 });
   await emailLoc.fill(creds.email);
   await passLoc.fill(creds.password);
 
-  await clickTestId(page, "login-submit");
+  await clickTestId(page, 'login-submit');
 
   if (creds.expectFail) {
     // Continua em /login OU mostra mensagem de erro — auto-retry expect.
-    await expect(page, "esperado falhar e permanecer em /login").toHaveURL(
-      LOGIN_URL_RE,
-      { timeout: 8_000 },
-    );
+    await expect(page, 'esperado falhar e permanecer em /login').toHaveURL(LOGIN_URL_RE, {
+      timeout: 8_000,
+    });
     return false;
   }
 
-  await expect(page, "esperado redirect para fora de /login").not.toHaveURL(
-    LOGIN_URL_RE,
-    { timeout },
-  );
+  await expect(page, 'esperado redirect para fora de /login').not.toHaveURL(LOGIN_URL_RE, {
+    timeout,
+  });
   await waitForRouteIdle(page);
   return true;
 }
@@ -75,26 +91,38 @@ export async function loginViaUI(page: Page, creds: LoginCreds): Promise<boolean
  * `storageState` quando já existe sessão. Marca o teste como `skip` se as
  * variáveis de ambiente não estiverem configuradas.
  */
-export async function loginAs(page: Page, role: Role = "user"): Promise<void> {
-  const email = role === "dev" ? process.env.E2E_DEV_EMAIL : 
-                role === "admin" ? process.env.E2E_ADMIN_EMAIL : 
-                role === "editor" ? (process.env.E2E_MANAGER_EMAIL || process.env.E2E_ADMIN_EMAIL) : 
-                process.env.E2E_USER_EMAIL;
-  const password = role === "dev" ? process.env.E2E_DEV_PASSWORD : 
-                   role === "admin" ? process.env.E2E_ADMIN_PASSWORD : 
-                   role === "editor" ? (process.env.E2E_MANAGER_PASSWORD || process.env.E2E_ADMIN_PASSWORD) : 
-                   process.env.E2E_USER_PASSWORD;
+export async function loginAs(page: Page, role: Role = 'user'): Promise<void> {
+  const email =
+    role === 'dev'
+      ? process.env.E2E_DEV_EMAIL
+      : role === 'admin'
+        ? process.env.E2E_ADMIN_EMAIL
+        : role === 'editor'
+          ? process.env.E2E_MANAGER_EMAIL || process.env.E2E_ADMIN_EMAIL
+          : process.env.E2E_VIEWER_EMAIL || process.env.E2E_USER_EMAIL;
+  const password =
+    role === 'dev'
+      ? process.env.E2E_DEV_PASSWORD
+      : role === 'admin'
+        ? process.env.E2E_ADMIN_PASSWORD
+        : role === 'editor'
+          ? process.env.E2E_MANAGER_PASSWORD || process.env.E2E_ADMIN_PASSWORD
+          : process.env.E2E_VIEWER_PASSWORD || process.env.E2E_USER_PASSWORD;
 
   if (!email || !password) {
     test.skip(true, `Credenciais E2E_${role.toUpperCase()}_EMAIL/PASSWORD ausentes`);
   }
 
-  // Se já estamos autenticados (storageState aplicado pelo project), uma
-  // visita rápida à home não deve cair em /login.
-  await gotoAndSettle(page, "/");
-  if (!LOGIN_URL_RE.test(page.url())) {
+  // Reaproveita a sessão somente quando ela pertence exatamente à conta
+  // solicitada. Isso impede que uma matriz multi-papel valide todos os casos
+  // com o usuário carregado pelo storageState global.
+  if (!/^https?:/i.test(page.url())) await gotoAndSettle(page, '/');
+  const currentEmail = await getStoredSessionEmail(page);
+  if (currentEmail?.toLowerCase() === email!.toLowerCase() && !LOGIN_URL_RE.test(page.url())) {
     return;
   }
+
+  if (currentEmail || !LOGIN_URL_RE.test(page.url())) await logout(page);
 
   await loginViaUI(page, { email: email!, password: password! });
 }
@@ -104,23 +132,36 @@ export async function loginAs(page: Page, role: Role = "user"): Promise<void> {
  * usuário visível, faz fallback removendo o storage manualmente.
  */
 export async function logout(page: Page): Promise<void> {
-  await page.context().clearCookies().catch(() => {});
-  await page.evaluate(() => {
-    try { localStorage.clear(); sessionStorage.clear(); } catch { /* noop */ }
-  }).catch(() => {});
-  await gotoAndSettle(page, "/login");
+  if (!/^https?:/i.test(page.url())) {
+    await page.goto('/login', { waitUntil: 'domcontentloaded' });
+  }
+  await page
+    .context()
+    .clearCookies()
+    .catch(() => {});
+  await page
+    .evaluate(() => {
+      try {
+        localStorage.clear();
+        sessionStorage.clear();
+      } catch {
+        /* noop */
+      }
+    })
+    .catch(() => {});
+  await gotoAndSettle(page, '/login');
   await expect(page).toHaveURL(LOGIN_URL_RE, { timeout: 8_000 });
 }
 
 /** Asserts reutilizáveis. */
 export async function expectAuthenticated(page: Page): Promise<void> {
-  await expect(page, "deveria estar autenticado").not.toHaveURL(LOGIN_URL_RE, {
+  await expect(page, 'deveria estar autenticado').not.toHaveURL(LOGIN_URL_RE, {
     timeout: 5_000,
   });
 }
 
 export async function expectUnauthenticated(page: Page): Promise<void> {
-  await expect(page, "deveria estar deslogado / em /login").toHaveURL(LOGIN_URL_RE, {
+  await expect(page, 'deveria estar deslogado / em /login').toHaveURL(LOGIN_URL_RE, {
     timeout: 5_000,
   });
 }

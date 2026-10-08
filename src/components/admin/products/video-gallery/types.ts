@@ -106,7 +106,7 @@ export function parseYouTubeId(input: string): string | null {
   ];
   for (const p of patterns) {
     const m = input.match(p);
-    if (m) return m[1];
+    if (m) return m[1] ?? null;
   }
   return null;
 }

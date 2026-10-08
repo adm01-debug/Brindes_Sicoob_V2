@@ -1,3 +1,4 @@
+import type { ComponentType } from "react";
 /**
  * Kit Builder Header — 2-tier premium layout
  * Tier 1: Identity (name + status badges) — stripe + colored icon refletem identidade
@@ -49,20 +50,50 @@ interface KitBuilderHeaderProps {
   currentKitId?: string;
 }
 
-export function KitBuilderHeader({
-  kitName, onKitNameChange, isValid, isSaving, isAutoSaving, lastSavedAt, autoSaveError, onRetryAutoSave, hasContent, isExistingKit,
-  canUndo, canRedo, identity, onIdentityChange, onSave, onUndo, onRedo, onReset, onAIApply,
-  kitState, templateId, currentKitId,
-}: KitBuilderHeaderProps) {
-  const navigate = useNavigate();
+function SaveStatus({ props }: { props: KitBuilderHeaderProps }) {
+  if (props.isAutoSaving) return <Badge variant="outline" className="text-[10px] gap-1 h-5"><Loader2 className="h-2.5 w-2.5 animate-spin" /> Salvando…</Badge>;
+  if (props.autoSaveError) return <Button variant="outline" size="sm" className="h-5 px-1.5 text-[10px] text-destructive" onClick={props.onRetryAutoSave}>Falha ao salvar — tentar novamente</Button>;
+  if (props.lastSavedAt) return <Badge variant="outline" className="text-[10px] gap-1 h-5 border-success/40 text-success"><Cloud className="h-2.5 w-2.5" />Salvo {props.lastSavedAt.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}</Badge>;
+  return null;
+}
+
+function KitStatus({ props }: { props: KitBuilderHeaderProps }) {
+  return <div className="flex items-center gap-1.5 mt-0.5 text-xs text-muted-foreground flex-wrap"><span>Kit Maker</span>
+    {props.templateId ? <Badge className="text-[10px] gap-1 h-5 bg-primary/15 text-primary border-primary/30"><Sparkles className="h-2.5 w-2.5" /> Editando template do sistema</Badge> : null}
+    {props.identity?.tag ? <Badge variant="secondary" className="text-[10px] h-5">{props.identity.tag}</Badge> : null}
+    <SaveStatus props={props} />
+    {props.isValid && props.hasContent && !props.isAutoSaving ? <Badge className="text-[10px] gap-1 h-5 bg-success/15 text-success border-success/30 hover:bg-success/20">✓ Kit válido</Badge> : null}
+  </div>;
+}
+
+function HistoryActions({ props }: { props: KitBuilderHeaderProps }) {
+  return <><TooltipProvider><Tooltip><TooltipTrigger asChild><Button variant="ghost" size="icon" aria-label="Desfazer" disabled={!props.canUndo} onClick={props.onUndo}><Undo2 className="h-4 w-4" /></Button></TooltipTrigger><TooltipContent>Desfazer (Ctrl+Z)</TooltipContent></Tooltip></TooltipProvider><TooltipProvider><Tooltip><TooltipTrigger asChild><Button variant="ghost" size="icon" aria-label="Refazer" disabled={!props.canRedo} onClick={props.onRedo}><Redo2 className="h-4 w-4" /></Button></TooltipTrigger><TooltipContent>Refazer (Ctrl+Y)</TooltipContent></Tooltip></TooltipProvider></>;
+}
+
+function TemplateAction({ props }: { props: KitBuilderHeaderProps }) {
   const { isAdmin } = useRBAC();
   const { saveAsTemplate, isSavingTemplate } = useTemplateSnapshot();
-  const SaveIcon = isSaving ? Loader2 : (lastSavedAt && !isAutoSaving) ? Check : Save;
+  const kitState = props.kitState;
+  if (!isAdmin || !kitState || !props.hasContent) return null;
+  const label = props.templateId ? "Atualizar template" : "Salvar como template";
+  const tooltip = props.templateId ? "Atualizar template do sistema" : "Salvar este kit como template do sistema (admin)";
+  return <TooltipProvider><Tooltip><TooltipTrigger asChild><Button variant="outline" size="sm" onClick={() => saveAsTemplate({ kitState, templateId: props.templateId })} disabled={isSavingTemplate} className="gap-2 border-primary/40 text-primary hover:bg-primary/10" aria-label="Salvar como template do sistema">{isSavingTemplate ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}<span className="hidden md:inline">{label}</span></Button></TooltipTrigger><TooltipContent>{tooltip}</TooltipContent></Tooltip></TooltipProvider>;
+}
 
-  const identityColor = identity?.color || '#3B82F6';
-  const identityIconName = identity?.icon || 'Package';
+function KitActions({ props }: { props: KitBuilderHeaderProps }) {
+  const navigate = useNavigate();
+  const SaveIcon = props.isSaving ? Loader2 : props.lastSavedAt && !props.isAutoSaving ? Check : Save;
+  return <div className="flex items-center gap-2 shrink-0"><HistoryActions props={props} /><KitIdentityPicker identity={props.identity} onChange={props.onIdentityChange} /><KitShareLinkDialog kitId={props.currentKitId} kitName={props.kitName} />
+    <TooltipProvider><Tooltip><TooltipTrigger asChild><Button variant="outline" size="sm" onClick={() => navigate("/meus-kits")} className="gap-2" aria-label="Abrir biblioteca de kits"><Library className="h-4 w-4" /><span className="hidden md:inline">Biblioteca</span></Button></TooltipTrigger><TooltipContent>Abrir biblioteca de kits</TooltipContent></Tooltip></TooltipProvider>
+    <TemplateAction props={props} /><Button variant={props.isValid && props.hasContent ? "default" : "outline"} onClick={props.onSave} disabled={props.isSaving || !props.hasContent} className="font-medium"><SaveIcon className={cn("h-4 w-4 mr-2", props.isSaving && "animate-spin")} />{props.isExistingKit ? "Atualizar" : "Salvar"}</Button><Button variant="outline" onClick={props.onReset} className="font-medium text-destructive hover:text-destructive"><RotateCcw className="h-4 w-4 mr-2" /> Novo kit</Button><div className="hidden lg:block"><KitAIPromptDialog onApply={props.onAIApply} /></div>
+  </div>;
+}
+
+export function KitBuilderHeader(props: KitBuilderHeaderProps) {
+  const identityColor = props.identity?.color || '#3B82F6';
+  const identityIconName = props.identity?.icon || 'Package';
   const IdentityIcon =
-    (Lucide as unknown as Record<string, React.ComponentType<{ className?: string; strokeWidth?: number }>>)[identityIconName] ||
+    (Lucide as unknown as Record<string, ComponentType<{ className?: string; strokeWidth?: number }>>)[identityIconName] ||
     Lucide.Package;
 
   return (
@@ -90,137 +121,18 @@ export function KitBuilderHeader({
           </div>
           <div className="flex-1 min-w-0">
             <Input
-              value={kitName}
-              onChange={(e) => onKitNameChange(e.target.value)}
+              value={props.kitName}
+              onChange={(e) => props.onKitNameChange(e.target.value)}
               placeholder="Kit sem nome"
               aria-label="Nome do kit"
               className={cn(
                 'font-display font-bold text-2xl tracking-tight border-0 px-0 h-auto py-0 bg-transparent shadow-none focus-visible:ring-0 focus-visible:ring-offset-0',
-                !kitName && 'italic text-muted-foreground',
+                !props.kitName && 'italic text-muted-foreground',
               )}
             />
-            <div className="flex items-center gap-1.5 mt-0.5 text-xs text-muted-foreground flex-wrap">
-              <span>Kit Maker</span>
-              {templateId && (
-                <Badge className="text-[10px] gap-1 h-5 bg-primary/15 text-primary border-primary/30">
-                  <Sparkles className="h-2.5 w-2.5" /> Editando template do sistema
-                </Badge>
-              )}
-              {identity?.tag && (
-                <Badge variant="secondary" className="text-[10px] h-5">{identity.tag}</Badge>
-              )}
-              {lastSavedAt && !isAutoSaving && (
-                <Badge variant="outline" className="text-[10px] gap-1 h-5 border-success/40 text-success">
-                  <Cloud className="h-2.5 w-2.5" />
-                  Salvo {lastSavedAt.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
-                </Badge>
-              )}
-              {isAutoSaving && (
-                <Badge variant="outline" className="text-[10px] gap-1 h-5">
-                  <Loader2 className="h-2.5 w-2.5 animate-spin" /> Salvando…
-                </Badge>
-              )}
-              {autoSaveError && !isAutoSaving && (
-                <Button variant="outline" size="sm" className="h-5 px-1.5 text-[10px] text-destructive" onClick={onRetryAutoSave}>
-                  Falha ao salvar — tentar novamente
-                </Button>
-              )}
-              {isValid && hasContent && !isAutoSaving && (
-                <Badge className="text-[10px] gap-1 h-5 bg-success/15 text-success border-success/30 hover:bg-success/20">
-                  ✓ Kit válido
-                </Badge>
-              )}
-            </div>
+            <KitStatus props={props} />
           </div>
-
-          {/* TIER 2 — Primary actions */}
-          <div className="flex items-center gap-2 shrink-0">
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button variant="ghost" size="icon" aria-label="Desfazer" disabled={!canUndo} onClick={onUndo}>
-                    <Undo2 className="h-4 w-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>Desfazer (Ctrl+Z)</TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button variant="ghost" size="icon" aria-label="Refazer" disabled={!canRedo} onClick={onRedo}>
-                    <Redo2 className="h-4 w-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>Refazer (Ctrl+Y)</TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-
-            <KitIdentityPicker identity={identity} onChange={onIdentityChange} />
-
-            <KitShareLinkDialog kitId={currentKitId} kitName={kitName} />
-
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => navigate('/meus-kits')}
-                    className="gap-2"
-                    aria-label="Abrir biblioteca de kits"
-                  >
-                    <Library className="h-4 w-4" />
-                    <span className="hidden md:inline">Biblioteca</span>
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>Abrir biblioteca de kits</TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-
-            {isAdmin && kitState && hasContent && (
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => saveAsTemplate({ kitState, templateId })}
-                      disabled={isSavingTemplate}
-                      className="gap-2 border-primary/40 text-primary hover:bg-primary/10"
-                      aria-label="Salvar como template do sistema"
-                    >
-                      {isSavingTemplate ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
-                      <span className="hidden md:inline">{templateId ? 'Atualizar template' : 'Salvar como template'}</span>
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>{templateId ? 'Atualizar template do sistema' : 'Salvar este kit como template do sistema (admin)'}</TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            )}
-
-            <Button
-              variant={isValid && hasContent ? 'default' : 'outline'}
-              onClick={onSave}
-              disabled={isSaving || !hasContent}
-              className="font-medium"
-            >
-              <SaveIcon className={cn('h-4 w-4 mr-2', isSaving && 'animate-spin')} />
-              {isExistingKit ? 'Atualizar' : 'Salvar'}
-            </Button>
-
-            <Button
-              variant="outline"
-              onClick={onReset}
-              className="font-medium text-destructive hover:text-destructive"
-            >
-              <RotateCcw className="h-4 w-4 mr-2" /> Novo kit
-            </Button>
-
-            <div className="hidden lg:block">
-              <KitAIPromptDialog onApply={onAIApply} />
-            </div>
-          </div>
+          <KitActions props={props} />
         </div>
       </div>
     </header>

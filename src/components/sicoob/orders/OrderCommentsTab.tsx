@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { type FormEvent, useState } from "react";
 import { useOrderComments } from "@/hooks/orders/extensions";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -18,12 +18,12 @@ interface OrderCommentsTabProps {
 }
 
 export const OrderCommentsTab = ({ orderId }: OrderCommentsTabProps) => {
-  const { profile, isSupervisorOrAbove } = useAuth();
+  const { isSupervisorOrAbove } = useAuth();
   const [newComment, setNewComment] = useState("");
   const [isInternal, setIsInternal] = useState(false);
   const { comments, addComment, isLoading } = useOrderComments(orderId);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     if (!newComment.trim()) return;
 
@@ -135,7 +135,7 @@ export const OrderCommentsTab = ({ orderId }: OrderCommentsTabProps) => {
               <div className="flex items-start justify-between">
                 <div className="flex items-center gap-3">
                   <Avatar className="h-8 w-8 border">
-                    <AvatarImage src={comment.author?.avatar_url} />
+                    <AvatarImage src={comment.author?.avatar_url ?? undefined} />
                     <AvatarFallback className="bg-muted text-[10px]">
                       {comment.author?.full_name?.substring(0, 2).toUpperCase() || "US"}
                     </AvatarFallback>

@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 import { Badge } from "@/components/ui/badge";
 import { Info, Palette, Clock, Layers, Ruler, Wrench } from "lucide-react";
@@ -22,7 +23,7 @@ interface Technique {
 
 interface TechniqueTooltipProps {
   technique: Technique;
-  children: React.ReactNode;
+  children: ReactNode;
   className?: string;
 }
 
@@ -125,6 +126,44 @@ function getTechniqueInfo(technique: Technique) {
   return TECHNIQUE_INFO.default;
 }
 
+function DetailRow({ icon, label, children }: { icon: ReactNode; label: string; children: ReactNode }) {
+  return <div className="flex items-start gap-2 text-xs">{icon}<div><span className="text-muted-foreground">{label}:</span><span className="ml-1 font-medium">{children}</span></div></div>;
+}
+
+function LocationDetail({ technique }: { technique: Technique }) {
+  return technique.locationName ? <DetailRow icon={<Layers className="h-3.5 w-3.5 text-muted-foreground mt-0.5" />} label="Local">{technique.locationName}</DetailRow> : null;
+}
+
+function VariationDetail({ technique }: { technique: Technique }) {
+  return technique.variationLabel ? <DetailRow icon={<Info className="h-3.5 w-3.5 text-muted-foreground mt-0.5" />} label="Variação">{technique.variationLabel}{technique.groupCode ? <span className="ml-1 text-muted-foreground">({technique.groupCode})</span> : null}</DetailRow> : null;
+}
+
+function SizeDetail({ technique }: { technique: Technique }) {
+  return technique.maxWidth && technique.maxHeight ? <DetailRow icon={<Ruler className="h-3.5 w-3.5 text-muted-foreground mt-0.5" />} label="Máx"><span className="tabular-nums">{technique.maxWidth}×{technique.maxHeight} cm</span></DetailRow> : null;
+}
+
+function ColorDetail({ technique }: { technique: Technique }) {
+  if (technique.maxColors === null || technique.maxColors === undefined) return null;
+  return <DetailRow icon={<Palette className="h-3.5 w-3.5 text-muted-foreground mt-0.5" />} label="Máx cores">{technique.maxColors}{technique.chargesPerColor ? <span className="ml-1 text-[10px] text-muted-foreground">(cobra por cor)</span> : null}</DetailRow>;
+}
+
+function SetupDetail({ technique }: { technique: Technique }) {
+  return technique.setupCost && technique.setupCost > 0 ? <DetailRow icon={<Wrench className="h-3.5 w-3.5 text-muted-foreground mt-0.5" />} label="Setup"><span className="tabular-nums">R$ {technique.setupCost.toFixed(2)}</span></DetailRow> : null;
+}
+
+function TechniqueRealDetails({ technique }: { technique: Technique }) {
+  const hasDetails = [technique.locationName, technique.maxWidth, technique.maxColors, technique.setupCost, technique.groupCode, technique.variationLabel, technique.isCurved].some(Boolean);
+  if (!hasDetails) return null;
+  return <div className="pt-2 border-t mt-2 space-y-1.5">
+    <LocationDetail technique={technique} /><VariationDetail technique={technique} /><SizeDetail technique={technique} /><ColorDetail technique={technique} /><SetupDetail technique={technique} />
+    {technique.isCurved ? <Badge variant="outline" className="text-[10px]">Suporta curvo</Badge> : null}
+  </div>;
+}
+
+function BasicTechniqueDetails({ info }: { info: (typeof TECHNIQUE_INFO)[TechniqueInfoKey] }) {
+  return <><div className="flex items-start gap-2 text-sm"><Clock className="h-4 w-4 text-muted-foreground mt-0.5" /><div><span className="text-muted-foreground">Durabilidade:</span><span className="ml-1 font-medium">{info.durability}</span></div></div><div className="flex items-start gap-2 text-sm"><Palette className="h-4 w-4 text-muted-foreground mt-0.5" /><div><span className="text-muted-foreground">Cores:</span><span className="ml-1 font-medium">{info.colors}</span></div></div><div className="flex items-start gap-2 text-sm"><Info className="h-4 w-4 text-muted-foreground mt-0.5" /><div><span className="text-muted-foreground">Ideal para:</span><span className="ml-1 font-medium">{info.bestFor}</span></div></div></>;
+}
+
 export function TechniqueTooltip({ technique, children, className }: TechniqueTooltipProps) {
   const info = getTechniqueInfo(technique);
 
@@ -149,85 +188,9 @@ export function TechniqueTooltip({ technique, children, className }: TechniqueTo
 
         {/* Details */}
         <div className="p-3 space-y-2">
-          <div className="flex items-start gap-2 text-sm">
-            <Clock className="h-4 w-4 text-muted-foreground mt-0.5" />
-            <div>
-              <span className="text-muted-foreground">Durabilidade:</span>
-              <span className="ml-1 font-medium">{info.durability}</span>
-            </div>
-          </div>
+          <BasicTechniqueDetails info={info} />
 
-          <div className="flex items-start gap-2 text-sm">
-            <Palette className="h-4 w-4 text-muted-foreground mt-0.5" />
-            <div>
-              <span className="text-muted-foreground">Cores:</span>
-              <span className="ml-1 font-medium">{info.colors}</span>
-            </div>
-          </div>
-
-          <div className="flex items-start gap-2 text-sm">
-            <Info className="h-4 w-4 text-muted-foreground mt-0.5" />
-            <div>
-              <span className="text-muted-foreground">Ideal para:</span>
-              <span className="ml-1 font-medium">{info.bestFor}</span>
-            </div>
-          </div>
-
-          {/* ─── Dados reais do produto/área (vindos do RPC) ─── */}
-          {(technique.locationName || technique.maxWidth || technique.maxColors != null || technique.setupCost != null || technique.groupCode || technique.variationLabel || technique.isCurved) && (
-            <div className="pt-2 border-t mt-2 space-y-1.5">
-              {technique.locationName && (
-                <div className="flex items-start gap-2 text-xs">
-                  <Layers className="h-3.5 w-3.5 text-muted-foreground mt-0.5" />
-                  <div>
-                    <span className="text-muted-foreground">Local:</span>
-                    <span className="ml-1 font-medium">{technique.locationName}</span>
-                  </div>
-                </div>
-              )}
-              {technique.variationLabel && (
-                <div className="flex items-start gap-2 text-xs">
-                  <Info className="h-3.5 w-3.5 text-muted-foreground mt-0.5" />
-                  <div>
-                    <span className="text-muted-foreground">Variação:</span>
-                    <span className="ml-1 font-medium">{technique.variationLabel}</span>
-                    {technique.groupCode && <span className="ml-1 text-muted-foreground">({technique.groupCode})</span>}
-                  </div>
-                </div>
-              )}
-              {technique.maxWidth && technique.maxHeight && (
-                <div className="flex items-start gap-2 text-xs">
-                  <Ruler className="h-3.5 w-3.5 text-muted-foreground mt-0.5" />
-                  <div>
-                    <span className="text-muted-foreground">Máx:</span>
-                    <span className="ml-1 font-medium tabular-nums">{technique.maxWidth}×{technique.maxHeight} cm</span>
-                  </div>
-                </div>
-              )}
-              {technique.maxColors != null && (
-                <div className="flex items-start gap-2 text-xs">
-                  <Palette className="h-3.5 w-3.5 text-muted-foreground mt-0.5" />
-                  <div>
-                    <span className="text-muted-foreground">Máx cores:</span>
-                    <span className="ml-1 font-medium">{technique.maxColors}</span>
-                    {technique.chargesPerColor && <span className="ml-1 text-[10px] text-muted-foreground">(cobra por cor)</span>}
-                  </div>
-                </div>
-              )}
-              {technique.setupCost != null && technique.setupCost > 0 && (
-                <div className="flex items-start gap-2 text-xs">
-                  <Wrench className="h-3.5 w-3.5 text-muted-foreground mt-0.5" />
-                  <div>
-                    <span className="text-muted-foreground">Setup:</span>
-                    <span className="ml-1 font-medium tabular-nums">R$ {technique.setupCost.toFixed(2)}</span>
-                  </div>
-                </div>
-              )}
-              {technique.isCurved && (
-                <Badge variant="outline" className="text-[10px]">Suporta curvo</Badge>
-              )}
-            </div>
-          )}
+          <TechniqueRealDetails technique={technique} />
 
           {/* Visual Style Preview */}
           <div className="pt-2 border-t mt-2">

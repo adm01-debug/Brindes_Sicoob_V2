@@ -11,31 +11,19 @@ interface SegmentoCheckboxProps {
   compact?: boolean;
 }
 
-export function SegmentoCheckbox({
-  segmento,
-  isSelected,
-  onToggle,
-  ramoHexCode,
-  compact = false,
-}: SegmentoCheckboxProps) {
+function CompactSegment({ segmento, isSelected, onToggle }: Omit<SegmentoCheckboxProps, "compact">) {
+  return (
+    <label className={cn("flex items-center gap-2 py-1 px-2 rounded cursor-pointer transition-colors",
+      isSelected ? "bg-primary/10 text-primary" : "hover:bg-muted/50 text-foreground")}>
+      <Checkbox checked={isSelected} onCheckedChange={() => onToggle(segmento.segmento_slug)} className="w-3.5 h-3.5" />
+      <span className="text-xs truncate flex-1">{segmento.segmento_name}</span>
+    </label>
+  );
+}
+
+export function SegmentoCheckbox({ segmento, isSelected, onToggle, compact = false }: SegmentoCheckboxProps) {
   if (compact) {
-    return (
-      <label className={cn(
-        "flex items-center gap-2 py-1 px-2 rounded cursor-pointer transition-colors",
-        isSelected 
-          ? "bg-primary/10 text-primary" 
-          : "hover:bg-muted/50 text-foreground"
-      )}>
-        <Checkbox
-          checked={isSelected}
-          onCheckedChange={() => onToggle(segmento.segmento_slug)}
-          className="w-3.5 h-3.5"
-        />
-        <span className="text-xs truncate flex-1">
-          {segmento.segmento_name}
-        </span>
-      </label>
-    );
+    return <CompactSegment segmento={segmento} isSelected={isSelected} onToggle={onToggle} />;
   }
 
   return (

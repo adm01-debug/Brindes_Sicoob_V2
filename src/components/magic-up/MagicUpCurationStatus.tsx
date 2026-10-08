@@ -1,12 +1,12 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { CURATION_STATUSES, type MagicUpCurationStatus } from "@/pages/magic-up/magicUpStrategy";
+import { CURATION_STATUSES, type MagicUpCurationStatus as MagicUpCurationStatusValue } from "@/pages/magic-up/magicUpStrategy";
 import { cn } from "@/lib/utils";
 
 interface MagicUpCurationStatusProps {
-  value: MagicUpCurationStatus;
+  value: MagicUpCurationStatusValue;
   disabled?: boolean;
-  onChange: (status: MagicUpCurationStatus) => void;
+  onChange: (status: MagicUpCurationStatusValue) => void;
 }
 
 export function MagicUpCurationStatus({ value, disabled, onChange }: MagicUpCurationStatusProps) {

@@ -15,9 +15,10 @@ import {
   DEFAULT_SCORE_WEIGHTS,
   type ComparisonScoreWeights,
 } from "@/hooks/useComparisonScore";
+import type { Product } from "@/hooks/useProducts";
 
 interface ComparisonScoreCardProps {
-  products: any[];
+  products: Product[];
   className?: string;
 }
 
@@ -55,7 +56,7 @@ export function ComparisonScoreCard({ products, className }: ComparisonScoreCard
               <Badge className="bg-amber-500/20 text-amber-700 dark:text-amber-300 border-amber-500/40 gap-1">
                 <Sparkles className="h-3 w-3" /> Recomendado
               </Badge>
-              <span className="text-2xl font-bold text-foreground">{winner!.total}</span>
+              <span className="text-2xl font-bold text-foreground">{winner?.total ?? 0}</span>
               <span className="text-sm text-muted-foreground">/ 100</span>
             </div>
             <p className="text-sm font-medium text-foreground line-clamp-1 mt-0.5">

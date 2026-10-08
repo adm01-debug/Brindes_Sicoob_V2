@@ -59,41 +59,42 @@ function ProductMiniCard({ product, onClick }: { product: Product; onClick: () =
   );
 }
 
+function relatedTo(current: Product, products: Product[], maxItems: number) {
+  const sameCategory = products.filter((product) => product.id !== current.id && product.category.id === current.category.id);
+  let related = [...sameCategory];
+  if (related.length < maxItems) {
+    const materials = Array.isArray(current.materials) ? current.materials : [];
+    related = related.concat(products.filter((product) => product.id !== current.id && !sameCategory.includes(product) && (Array.isArray(product.materials) ? product.materials : []).some((material) => materials.includes(material))));
+  }
+  if (related.length < maxItems) {
+    const colorGroups = current.colors.map((color) => color.group);
+    related = related.concat(products.filter((product) => product.id !== current.id && !related.includes(product) && product.colors.some((color) => colorGroups.includes(color.group))));
+  }
+  return related.slice(0, maxItems);
+}
+
+function recommendationScore(product: Product, current: Product, currentTags: string[]) {
+  const tags = [...product.tags.publicoAlvo, ...product.tags.datasComemorativas, ...product.tags.nicho];
+  let score = tags.filter((tag) => currentTags.includes(tag)).length * 2;
+  if (product.supplier.id === current.supplier.id) score += 1;
+  if (product.featured) score += 1;
+  if (Math.abs(product.price - current.price) < current.price * 0.3) score += 1;
+  return score;
+}
+
+function recommendedFor(current: Product, products: Product[], maxItems: number) {
+  const tags = [...current.tags.publicoAlvo, ...current.tags.datasComemorativas, ...current.tags.nicho];
+  return products.filter((product) => product.id !== current.id).map((product) => ({ product, score: recommendationScore(product, current, tags) })).filter((item) => item.score > 0).sort((left, right) => right.score - left.score).slice(0, maxItems).map((item) => item.product);
+}
+
+function ProductCards({ products, onOpen }: { products: Product[]; onOpen: (product: Product) => void }) {
+  return <div className="grid grid-cols-2 md:grid-cols-4 gap-4">{products.map((product, index) => <div key={product.id} className="animate-fade-in" style={{ animationDelay: `${index * 100}ms` }}><ProductMiniCard product={product} onClick={() => onOpen(product)} /></div>)}</div>;
+}
+
 export function RelatedProducts({ currentProduct, allProducts, maxItems = 4 }: RelatedProductsProps) {
   const navigate = useNavigate();
 
-  const relatedProducts = useMemo(() => {
-    // Find products in the same category, excluding current product
-    const sameCategory = allProducts.filter(
-      p => p.id !== currentProduct.id && p.category.id === currentProduct.category.id
-    );
-
-    // If not enough in same category, add products with similar materials
-    let related = [...sameCategory];
-    
-    if (related.length < maxItems) {
-      const currentMaterials = Array.isArray(currentProduct.materials) ? currentProduct.materials : [];
-      const sameMaterial = allProducts.filter(
-        p => p.id !== currentProduct.id && 
-             !sameCategory.includes(p) &&
-             (Array.isArray(p.materials) ? p.materials : []).some(m => currentMaterials.includes(m))
-      );
-      related = [...related, ...sameMaterial];
-    }
-
-    // If still not enough, add products with similar colors
-    if (related.length < maxItems) {
-      const currentColorGroups = currentProduct.colors.map(c => c.group);
-      const sameColors = allProducts.filter(
-        p => p.id !== currentProduct.id && 
-             !related.includes(p) &&
-             p.colors.some(c => currentColorGroups.includes(c.group))
-      );
-      related = [...related, ...sameColors];
-    }
-
-    return related.slice(0, maxItems);
-  }, [currentProduct, allProducts, maxItems]);
+  const relatedProducts = useMemo(() => relatedTo(currentProduct, allProducts, maxItems), [currentProduct, allProducts, maxItems]);
 
   if (relatedProducts.length === 0) return null;
 
@@ -114,20 +115,7 @@ export function RelatedProducts({ currentProduct, allProducts, maxItems = 4 }: R
         </Button>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {relatedProducts.map((product, index) => (
-          <div
-            key={product.id}
-            className="animate-fade-in"
-            style={{ animationDelay: `${index * 100}ms` }}
-          >
-            <ProductMiniCard
-              product={product}
-              onClick={() => navigate(`/produto/${product.id}`)}
-            />
-          </div>
-        ))}
-      </div>
+      <ProductCards products={relatedProducts} onOpen={(product) => navigate(`/produto/${product.id}`)} />
     </section>
   );
 }
@@ -141,47 +129,7 @@ interface RecommendedProductsProps {
 export function RecommendedProducts({ currentProduct, allProducts, maxItems = 4 }: RecommendedProductsProps) {
   const navigate = useNavigate();
 
-  const recommendedProducts = useMemo(() => {
-    // Find products with similar tags
-    const currentTags = [
-      ...currentProduct.tags.publicoAlvo,
-      ...currentProduct.tags.datasComemorativas,
-      ...currentProduct.tags.nicho
-    ];
-
-    const scored = allProducts
-      .filter(p => p.id !== currentProduct.id)
-      .map(p => {
-        const productTags = [
-          ...p.tags.publicoAlvo,
-          ...p.tags.datasComemorativas,
-          ...p.tags.nicho
-        ];
-        
-        let score = 0;
-        
-        // Tag matching
-        score += productTags.filter(t => currentTags.includes(t)).length * 2;
-        
-        // Same supplier bonus
-        if (p.supplier.id === currentProduct.supplier.id) score += 1;
-        
-        // Featured bonus
-        if (p.featured) score += 1;
-        
-        // Similar price range bonus
-        const priceDiff = Math.abs(p.price - currentProduct.price);
-        if (priceDiff < currentProduct.price * 0.3) score += 1;
-
-        return { product: p, score };
-      })
-      .filter(item => item.score > 0)
-      .sort((a, b) => b.score - a.score)
-      .slice(0, maxItems)
-      .map(item => item.product);
-
-    return scored;
-  }, [currentProduct, allProducts, maxItems]);
+  const recommendedProducts = useMemo(() => recommendedFor(currentProduct, allProducts, maxItems), [currentProduct, allProducts, maxItems]);
 
   if (recommendedProducts.length === 0) return null;
 
@@ -201,20 +149,7 @@ export function RecommendedProducts({ currentProduct, allProducts, maxItems = 4 
         </div>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {recommendedProducts.map((product, index) => (
-          <div
-            key={product.id}
-            className="animate-fade-in"
-            style={{ animationDelay: `${index * 100}ms` }}
-          >
-            <ProductMiniCard
-              product={product}
-              onClick={() => navigate(`/produto/${product.id}`)}
-            />
-          </div>
-        ))}
-      </div>
+      <ProductCards products={recommendedProducts} onOpen={(product) => navigate(`/produto/${product.id}`)} />
     </section>
   );
 }

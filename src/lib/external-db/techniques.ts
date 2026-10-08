@@ -2,6 +2,7 @@
  * Techniques and Print Areas for Promobrind.
  */
 import { invokeExternalDb } from './bridge';
+import type { PrintAreaFromProduct } from '@/lib/fetch-print-areas';
 
 export interface PromobrindPrintArea {
   id: string;
@@ -47,27 +48,91 @@ export interface PromobrindTechnique {
 
 const TECHNIQUE_SELECT_FIELDS = 'id, codigo, code, nome, name, descricao, description, permite_cores, requires_color_count, max_cores, max_colors, cobra_por_cor, price_by_color, cobra_por_area, price_by_area, ativo, is_active, tempo_producao_dias, estimated_days, ordem_exibicao, display_order';
 
+function firstField(row: Record<string, unknown>, ...keys: string[]): unknown {
+  for (const key of keys) {
+    const value = row[key];
+    if (value !== null && value !== undefined) return value;
+  }
+  return undefined;
+}
+
+function optionalString(value: unknown): string | undefined {
+  if (value === null || value === undefined) return undefined;
+  return typeof value === 'string' ? value : String(value);
+}
+
+function optionalBoolean(value: unknown): boolean | undefined {
+  if (value === null || value === undefined) return undefined;
+  return typeof value === 'boolean' ? value : Boolean(value);
+}
+
+function optionalNumber(value: unknown): number | undefined {
+  if (value === null || value === undefined) return undefined;
+  return typeof value === 'number' ? value : Number(value);
+}
+
+function firstTruthy<T>(fallback: T, ...values: Array<T | null | undefined | false | '' | 0>): T {
+  for (const value of values) {
+    if (value) return value as T;
+  }
+  return fallback;
+}
+
+function printAreaTechniqueFields(technique?: Record<string, unknown>, fallbackId?: string) {
+  return {
+    technique_id: firstTruthy<string | null>(null, technique?.id as string | undefined, fallbackId),
+    technique_code: optionalString(technique?.codigo) ?? null,
+    technique_name: optionalString(technique?.nome) ?? null,
+    max_colors: optionalNumber(technique?.max_cores) ?? null,
+  };
+}
+
 function mapTechniqueFields(t: Record<string, unknown>): PromobrindTechnique {
-  const maxCoresRaw = t.max_cores ?? t.max_colors;
+  const maxCoresRaw = firstField(t, 'max_cores', 'max_colors');
   const maxCores = typeof maxCoresRaw === 'number' ? maxCoresRaw : typeof maxCoresRaw === 'string' ? Number(maxCoresRaw) : null;
-  const str = (v: unknown): string | undefined => typeof v === 'string' ? v : v == null ? undefined : String(v);
-  const bool = (v: unknown): boolean | undefined => typeof v === 'boolean' ? v : v == null ? undefined : Boolean(v);
-  const num = (v: unknown): number | undefined => typeof v === 'number' ? v : v == null ? undefined : Number(v);
   return {
     ...t,
     id: t.id as string,
-    code: str(t.codigo ?? t.code),
-    name: str(t.nome ?? t.name) ?? '',
-    description: str(t.descricao ?? t.description) ?? null,
-    requires_color_count: bool(t.permite_cores ?? t.requires_color_count),
+    code: optionalString(firstField(t, 'codigo', 'code')),
+    name: optionalString(firstField(t, 'nome', 'name')) ?? '',
+    description: optionalString(firstField(t, 'descricao', 'description')) ?? null,
+    requires_color_count: optionalBoolean(firstField(t, 'permite_cores', 'requires_color_count')),
     max_colors: Number.isFinite(maxCores as number) ? (maxCores as number) : null,
-    price_by_color: bool(t.cobra_por_cor ?? t.price_by_color),
-    price_by_area: bool(t.cobra_por_area ?? t.price_by_area),
-    is_active: bool(t.ativo ?? t.is_active) ?? true,
-    estimated_days: num(t.tempo_producao_dias ?? t.estimated_days) ?? null,
-    display_order: num(t.ordem_exibicao ?? t.display_order),
+    price_by_color: optionalBoolean(firstField(t, 'cobra_por_cor', 'price_by_color')),
+    price_by_area: optionalBoolean(firstField(t, 'cobra_por_area', 'price_by_area')),
+    is_active: optionalBoolean(firstField(t, 'ativo', 'is_active')) ?? true,
+    estimated_days: optionalNumber(firstField(t, 'tempo_producao_dias', 'estimated_days')) ?? null,
+    display_order: optionalNumber(firstField(t, 'ordem_exibicao', 'display_order')),
     setup_price: null, handling_price: null, setup_cost: null, unit_cost: null, min_quantity: null,
   };
+}
+
+function mappedPrintArea(
+  area: PrintAreaFromProduct,
+  productId: string,
+  technique?: Record<string, unknown>,
+  fallbackTechniqueId?: string,
+): PromobrindPrintArea {
+  return {
+    id: area.id,
+    product_id: productId,
+    area_code: firstTruthy('', area.area_code),
+    area_name: firstTruthy('', area.area_name, area.location_name),
+    component_name: area.component_name,
+    location_name: area.location_name,
+    max_width_cm: area.max_width,
+    max_height_cm: area.max_height,
+    max_area_cm2: null,
+    is_curved: Boolean(area.is_curved),
+    ...printAreaTechniqueFields(technique, fallbackTechniqueId),
+    is_default: Boolean(area.is_primary),
+    area_image_url: null,
+  };
+}
+
+function expandPrintArea(area: PrintAreaFromProduct, productId: string, techniques: Map<string, Record<string, unknown>>): PromobrindPrintArea[] {
+  if (area.allowed_technique_ids.length === 0) return [mappedPrintArea(area, productId)];
+  return area.allowed_technique_ids.map(techniqueId => mappedPrintArea(area, productId, techniques.get(techniqueId), techniqueId));
 }
 
 export async function fetchPromobrindPrintAreas(productId: string): Promise<PromobrindPrintArea[]> {
@@ -80,40 +145,7 @@ export async function fetchPromobrindPrintAreas(productId: string): Promise<Prom
     filters: { ativo: true }, limit: 100,
   });
   const techById = new Map((techResult.records || []).map((t) => [t.id as string, t]));
-  const result: PromobrindPrintArea[] = [];
-
-  for (const area of areas) {
-    const allowedIds = area.allowed_technique_ids || [];
-    if (allowedIds.length === 0) {
-      result.push({
-        id: area.id, product_id: productId,
-        area_code: area.area_code || '', area_name: area.area_name || area.location_name || '',
-        component_name: area.component_name, location_name: area.location_name,
-        max_width_cm: area.max_width, max_height_cm: area.max_height,
-        max_area_cm2: null, is_curved: area.is_curved ?? false,
-        technique_id: null, technique_code: null,
-        technique_name: null, max_colors: null,
-        is_default: area.is_primary ?? false, area_image_url: null,
-      });
-    } else {
-      for (const tid of allowedIds) {
-        const tech = techById.get(tid);
-        result.push({
-          id: area.id, product_id: productId,
-          area_code: area.area_code || '', area_name: area.area_name || area.location_name || '',
-          component_name: area.component_name, location_name: area.location_name,
-          max_width_cm: area.max_width, max_height_cm: area.max_height,
-          max_area_cm2: null, is_curved: area.is_curved ?? false,
-          technique_id: (tech?.id as string | undefined) || tid,
-          technique_code: (tech?.codigo as string | undefined) ?? null,
-          technique_name: (tech?.nome as string | undefined) ?? null,
-          max_colors: (tech?.max_cores as number | undefined) ?? null,
-          is_default: area.is_primary ?? false, area_image_url: null,
-        });
-      }
-    }
-  }
-  return result;
+  return areas.flatMap(area => expandPrintArea(area, productId, techById));
 }
 
 export async function fetchPromobrindTechniques(options?: {

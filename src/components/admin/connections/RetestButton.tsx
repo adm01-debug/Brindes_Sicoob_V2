@@ -59,6 +59,46 @@ function writePersistedCooldown(key: string | undefined, until: number): void {
   }
 }
 
+function resolveDisabledKind(isRunning: boolean, disabled: boolean, inCooldown: boolean): DisabledKind {
+  if (isRunning) return "running";
+  if (disabled) return "credentials";
+  if (inCooldown) return "cooldown";
+  return null;
+}
+
+function retestTooltip(kind: DisabledKind, secondsLeft: number, disabledReason?: string) {
+  if (kind === "running") return { title: "Teste em andamento", body: "Aguarde a resposta do serviço antes de disparar novamente." };
+  if (kind === "credentials") return { title: "Credenciais inválidas ou ausentes", body: disabledReason ?? "Preencha e salve as credenciais obrigatórias antes de testar." };
+  if (kind === "cooldown") return { title: `Aguarde ${secondsLeft}s (debounce)`, body: "Pequena pausa entre testes para evitar disparos acidentais e respeitar limites do serviço externo." };
+  return { title: "Disparar novo teste", body: "Executa imediatamente um teste manual e grava no histórico." };
+}
+
+function retestLabel(isRunning: boolean, inCooldown: boolean, secondsLeft: number): string {
+  if (isRunning) return "Testando…";
+  if (inCooldown) return `Aguarde ${secondsLeft}s`;
+  return "Testar novamente";
+}
+
+function matchesShortcut(event: KeyboardEvent, target: string): boolean {
+  if (event.defaultPrevented || event.repeat) return false;
+  if (event.metaKey || event.ctrlKey || event.altKey) return false;
+  return event.key.toLowerCase() === target;
+}
+
+function isTypingElement(active: HTMLElement | null): boolean {
+  const blockedTags = new Set(["INPUT", "TEXTAREA", "SELECT"]);
+  return Boolean(active && (blockedTags.has(active.tagName) || active.isContentEditable));
+}
+
+function shortcutScope(event: KeyboardEvent, target: string, wrapper: HTMLSpanElement | null): HTMLElement | null {
+  if (!matchesShortcut(event, target)) return null;
+  const active = document.activeElement as HTMLElement | null;
+  if (isTypingElement(active)) return null;
+  const scope = wrapper?.closest<HTMLElement>("[data-retest-scope]") ?? null;
+  if (!scope || (!scope.contains(active) && active !== scope)) return null;
+  return scope;
+}
+
 export function RetestButton({
   onRetest,
   disabled = false,
@@ -70,7 +110,7 @@ export function RetestButton({
 }: RetestButtonProps) {
   // Global admin-controlled cooldown; explicit prop wins when provided.
   const { cooldownMs: globalCooldownMs } = useRetestCooldownSetting();
-  const effectiveCooldownMs = cooldownMs ?? globalCooldownMs;
+  const effectiveCooldownMs = (cooldownMs ?? globalCooldownMs);
   const [isRunning, setIsRunning] = useState(false);
   // Lazy init from sessionStorage so cooldown survives a remount.
   const [cooldownUntil, setCooldownUntil] = useState<number>(() => readPersistedCooldown(cooldownKey));
@@ -81,7 +121,7 @@ export function RetestButton({
   const timedOutRef = useRef(false);
 
   const inCooldown = cooldownUntil > now;
-  const secondsLeft = inCooldown ? Math.max(1, Math.ceil((cooldownUntil - now) / 1000)) : 0;
+  const secondsLeft = (inCooldown ? Math.max(1, Math.ceil((cooldownUntil - now) / 1000)) : 0);
 
   // Re-sync from storage if key changes mid-life (rare, but safe).
   useEffect(() => {
@@ -183,22 +223,7 @@ export function RetestButton({
     if (!shortcutKey) return;
     const target = shortcutKey.toLowerCase();
     const onKey = (e: KeyboardEvent) => {
-      if (e.defaultPrevented || e.repeat) return;
-      if (e.key.toLowerCase() !== target) return;
-      if (e.metaKey || e.ctrlKey || e.altKey) return;
-      // Don't hijack typing inside form fields / contenteditable.
-      const active = document.activeElement as HTMLElement | null;
-      if (active) {
-        const tag = active.tagName;
-        if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
-        if (active.isContentEditable) return;
-      }
-      const wrapper = wrapperRef.current;
-      if (!wrapper) return;
-      const scope = wrapper.closest<HTMLElement>("[data-retest-scope]");
-      if (!scope) return;
-      // Only fire if focus is inside this scope (or scope itself is focused).
-      if (!scope.contains(active) && active !== scope) return;
+      if (!shortcutScope(e, target, wrapperRef.current)) return;
       e.preventDefault();
       handleClick();
     };
@@ -206,49 +231,14 @@ export function RetestButton({
     return () => document.removeEventListener("keydown", onKey);
   }, [shortcutKey, handleClick]);
 
-  const disabledKind: DisabledKind = isRunning
-    ? "running"
-    : disabled
-      ? "credentials"
-      : inCooldown
-        ? "cooldown"
-        : null;
-
-  const tooltip = (() => {
-    switch (disabledKind) {
-      case "running":
-        return {
-          title: "Teste em andamento",
-          body: "Aguarde a resposta do serviço antes de disparar novamente.",
-        };
-      case "credentials":
-        return {
-          title: "Credenciais inválidas ou ausentes",
-          body: disabledReason ?? "Preencha e salve as credenciais obrigatórias antes de testar.",
-        };
-      case "cooldown":
-        return {
-          title: `Aguarde ${secondsLeft}s (debounce)`,
-          body: "Pequena pausa entre testes para evitar disparos acidentais e respeitar limites do serviço externo.",
-        };
-      default:
-        return {
-          title: "Disparar novo teste",
-          body: "Executa imediatamente um teste manual e grava no histórico.",
-        };
-    }
-  })();
-
-  const label = isRunning
-    ? "Testando…"
-    : inCooldown
-      ? `Aguarde ${secondsLeft}s`
-      : "Testar novamente";
+  const disabledKind = resolveDisabledKind(isRunning, disabled, inCooldown);
+  const tooltip = retestTooltip(disabledKind, secondsLeft, disabledReason);
+  const label = retestLabel(isRunning, inCooldown, secondsLeft);
 
   const isDisabled = disabledKind !== null;
 
   const button = (
-    <Button
+    (<Button
       type="button"
       variant="ghost"
       size="sm"
@@ -259,11 +249,11 @@ export function RetestButton({
     >
       <RefreshCw className={cn("h-3.5 w-3.5", isRunning && "animate-spin")} />
       {label}
-    </Button>
+    </Button>)
   );
 
   return (
-    <TooltipProvider delayDuration={150}>
+    (<TooltipProvider delayDuration={150}>
       <Tooltip>
         <TooltipTrigger asChild>
           <span ref={wrapperRef} className="inline-flex">{button}</span>
@@ -280,6 +270,6 @@ export function RetestButton({
           <p className="text-muted-foreground mt-0.5">{tooltip.body}</p>
         </TooltipContent>
       </Tooltip>
-    </TooltipProvider>
+    </TooltipProvider>)
   );
 }

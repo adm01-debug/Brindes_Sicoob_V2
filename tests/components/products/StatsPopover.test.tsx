@@ -3,7 +3,6 @@
  * Tests: rendering, edge cases, data integrity, performance, accessibility
  */
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import React from "react";
 
 // ============================================
 // UNIT TESTS: statBadges calculation logic (FIXED VERSION)

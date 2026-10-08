@@ -34,7 +34,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
     const rawApi = readFileSync(apiFile), rawBuckets = readFileSync(bucketsFile);
     const sha = content => createHash('sha256').update(content).digest('hex');
     const result = buildApiInventory(JSON.parse(rawApi), JSON.parse(rawBuckets), capturedAt,
-      { openapi: sha(rawApi), buckets: sha(rawBuckets) });
+      { rest_contract: sha(rawApi), storage_contract: sha(rawBuckets) });
     writeFileSync(join(dirname(fileURLToPath(import.meta.url)), '.inventory-cache.json'), JSON.stringify(result, null, 2) + '\n');
     console.log(`Inventário importado: ${result.relations.length} relações, ${result.functions.length} RPCs e ${result.buckets.length} buckets.`);
   } catch (error) { console.error(error.message); process.exitCode = 2; }

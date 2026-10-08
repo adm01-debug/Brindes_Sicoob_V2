@@ -22,29 +22,29 @@ interface Snapshot {
   failures: string[];
 }
 
-export function HardeningTrendChart() {
+function useHardeningTrend() {
   const [data, setData] = useState<Snapshot[]>([]);
   const [loading, setLoading] = useState(true);
-
   useEffect(() => {
-    const load = async () => {
+    void (async () => {
       const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
-      const { data: rows } = await supabase
-        .from("hardening_health_snapshots")
-        .select("id, snapshot_at, score, max_score, failures")
-        .gte("snapshot_at", since)
-        .order("snapshot_at", { ascending: true });
+      const { data: rows } = await supabase.from("hardening_health_snapshots").select("id, snapshot_at, score, max_score, failures").gte("snapshot_at", since).order("snapshot_at", { ascending: true });
       setData((rows || []) as Snapshot[]);
       setLoading(false);
-    };
-    void load();
+    })();
   }, []);
+  return { data, loading };
+}
 
-  const chartData = data.map((d) => ({
-    label: format(new Date(d.snapshot_at), "dd/MM", { locale: ptBR }),
-    score: d.score,
-    max: d.max_score,
-  }));
+function TrendContent({ data, loading }: { data: Snapshot[]; loading: boolean }) {
+  if (loading) return <p className="text-sm text-muted-foreground">Carregando…</p>;
+  const chartData = data.map(snapshot => ({ label: format(new Date(snapshot.snapshot_at), "dd/MM", { locale: ptBR }), score: snapshot.score, max: snapshot.max_score }));
+  if (chartData.length === 0) return <p className="text-sm text-muted-foreground">Ainda sem snapshots registrados — o primeiro será gerado às 04:05 UTC.</p>;
+  return <div className="h-48 w-full"><ResponsiveContainer width="100%" height="100%"><LineChart data={chartData}><XAxis dataKey="label" tick={{ fontSize: 11 }} /><YAxis domain={[0, 5]} tick={{ fontSize: 11 }} width={24} /><Tooltip contentStyle={{ background: "hsl(var(--popover))", border: "1px solid hsl(var(--border))", borderRadius: 6, fontSize: 12 }} /><Line type="monotone" dataKey="score" stroke="hsl(var(--primary))" strokeWidth={2} dot={{ r: 3 }} /></LineChart></ResponsiveContainer></div>;
+}
+
+export function HardeningTrendChart() {
+  const { data, loading } = useHardeningTrend();
 
   const last = data[data.length - 1];
   const min = data.length > 0 ? Math.min(...data.map((d) => d.score)) : null;
@@ -69,39 +69,7 @@ export function HardeningTrendChart() {
           </div>
         )}
       </CardHeader>
-      <CardContent>
-        {loading ? (
-          <p className="text-sm text-muted-foreground">Carregando…</p>
-        ) : chartData.length === 0 ? (
-          <p className="text-sm text-muted-foreground">
-            Ainda sem snapshots registrados — o primeiro será gerado às 04:05 UTC.
-          </p>
-        ) : (
-          <div className="h-48 w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={chartData}>
-                <XAxis dataKey="label" tick={{ fontSize: 11 }} />
-                <YAxis domain={[0, 5]} tick={{ fontSize: 11 }} width={24} />
-                <Tooltip
-                  contentStyle={{
-                    background: "hsl(var(--popover))",
-                    border: "1px solid hsl(var(--border))",
-                    borderRadius: 6,
-                    fontSize: 12,
-                  }}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="score"
-                  stroke="hsl(var(--primary))"
-                  strokeWidth={2}
-                  dot={{ r: 3 }}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-        )}
-      </CardContent>
+      <CardContent><TrendContent data={data} loading={loading} /></CardContent>
     </Card>
   );
 }

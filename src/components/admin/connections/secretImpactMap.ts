@@ -23,6 +23,11 @@ export interface SecretImpact {
   severity: "critical" | "high" | "medium" | "low";
 }
 
+const BITRIX_SCREEN = "/admin/conexoes → aba Bitrix24";
+const MCP_SCREEN = "/admin/conexoes → aba MCP";
+const MCP_SOURCE_TOOLS = "Tools de código-fonte do MCP server";
+const QUOTES_SCREEN = "/orcamentos";
+
 const PROMOBRIND_FULL: SecretImpact = {
   system: "Banco externo Promobrind (catálogo SSOT)",
   screens: [
@@ -94,7 +99,7 @@ export const SECRET_IMPACT_MAP: Readonly<Record<string, SecretImpact>> = {
     screens: [
       "/orcamentos (status sync)",
       "/orcamentos/:id (push para Bitrix)",
-      "/admin/conexoes → aba Bitrix24",
+      BITRIX_SCREEN,
     ],
     flows: [
       "Push de orçamentos aprovados como deals",
@@ -105,19 +110,19 @@ export const SECRET_IMPACT_MAP: Readonly<Record<string, SecretImpact>> = {
   },
   BITRIX24_DOMAIN: {
     system: "Bitrix24 — base URL",
-    screens: ["/orcamentos", "/admin/conexoes → aba Bitrix24"],
+    screens: [QUOTES_SCREEN, BITRIX_SCREEN],
     flows: ["Resolução de URL para todas as chamadas Bitrix"],
     severity: "high",
   },
   BITRIX24_USER_ID: {
     system: "Bitrix24 — autenticação",
-    screens: ["/orcamentos", "/admin/conexoes → aba Bitrix24"],
+    screens: [QUOTES_SCREEN, BITRIX_SCREEN],
     flows: ["Autenticação de webhooks; deals criados sem owner correto"],
     severity: "medium",
   },
   BITRIX24_TOKEN: {
     system: "Bitrix24 — autenticação",
-    screens: ["/orcamentos", "/admin/conexoes → aba Bitrix24"],
+    screens: [QUOTES_SCREEN, BITRIX_SCREEN],
     flows: ["Validação de webhook; sync falha em 401"],
     severity: "high",
   },
@@ -145,7 +150,7 @@ export const SECRET_IMPACT_MAP: Readonly<Record<string, SecretImpact>> = {
   // MCP (model context protocol)
   MCP_SHARED_SECRET: {
     system: "MCP — integração com IA externa",
-    screens: ["/admin/conexoes → aba MCP", "Flow (assistente IA)"],
+    screens: [MCP_SCREEN, "Flow (assistente IA)"],
     flows: [
       "Validação de requisições MCP",
       "Compartilhamento de contexto com agentes externos",
@@ -157,8 +162,8 @@ export const SECRET_IMPACT_MAP: Readonly<Record<string, SecretImpact>> = {
   GITHUB_TOKEN: {
     system: "GitHub — Personal Access Token (MCP full)",
     screens: [
-      "/admin/conexoes → aba MCP",
-      "Tools de código-fonte do MCP server",
+      MCP_SCREEN,
+      MCP_SOURCE_TOOLS,
       "Flow / agentes externos com chave MCP '*'",
     ],
     flows: [
@@ -171,7 +176,7 @@ export const SECRET_IMPACT_MAP: Readonly<Record<string, SecretImpact>> = {
   },
   GITHUB_REPO: {
     system: "GitHub — repositório alvo (owner/repo)",
-    screens: ["/admin/conexoes → aba MCP", "Tools de código-fonte do MCP server"],
+    screens: [MCP_SCREEN, MCP_SOURCE_TOOLS],
     flows: [
       "list_repo_files — sem o repo, não há onde listar (falha com 'repo undefined')",
       "read_repo_file — leitura de qualquer arquivo é abortada antes da chamada HTTP",
@@ -181,7 +186,7 @@ export const SECRET_IMPACT_MAP: Readonly<Record<string, SecretImpact>> = {
   },
   GITHUB_DEFAULT_BRANCH: {
     system: "GitHub — branch padrão para escrita",
-    screens: ["/admin/conexoes → aba MCP", "Tools de código-fonte do MCP server"],
+    screens: [MCP_SCREEN, MCP_SOURCE_TOOLS],
     flows: [
       "list_repo_files — usado como ref padrão quando o agente não especifica branch",
       "read_repo_file — define de qual branch o conteúdo é lido (default → main se ausente)",

@@ -16,9 +16,12 @@ interface RouteContext {
 }
 
 interface UseContextualSuggestionsOptions {
-  appliedFilters?: Record<string, any>;
+  appliedFilters?: Record<string, unknown>;
   searchQuery?: string;
 }
+
+const GO_TO_QUOTES_SUGGESTION = 'ir para orçamentos';
+const GO_TO_CATALOG_SUGGESTION = 'ir para catálogo';
 
 const ROUTE_PATTERNS: Record<string, RouteContext['section']> = {
   '/': 'products',
@@ -41,7 +44,7 @@ const SECTION_SUGGESTIONS: Record<RouteContext['section'], ContextualSuggestion[
     { id: 'prod-4', text: 'filtrar por ecológicos', type: 'filter', icon: '🌱', priority: 7 },
     { id: 'prod-5', text: 'mostrar em estoque', type: 'filter', icon: '📦', priority: 6 },
     { id: 'prod-6', text: 'ordenar por preço', type: 'filter', icon: '💰', priority: 5 },
-    { id: 'prod-7', text: 'ir para orçamentos', type: 'navigation', icon: '📋', priority: 4 },
+    { id: 'prod-7', text: GO_TO_QUOTES_SUGGESTION, type: 'navigation', icon: '📋', priority: 4 },
     { id: 'prod-8', text: 'novo orçamento', type: 'action', icon: '➕', priority: 3 },
   ],
   quotes: [
@@ -57,7 +60,7 @@ const SECTION_SUGGESTIONS: Record<RouteContext['section'], ContextualSuggestion[
     { id: 'order-2', text: 'pedidos prontos', type: 'filter', icon: '✅', priority: 9 },
     { id: 'order-3', text: 'pedidos pendentes', type: 'filter', icon: '⏳', priority: 8 },
     { id: 'order-4', text: 'pedidos enviados', type: 'filter', icon: '🚚', priority: 7 },
-    { id: 'order-5', text: 'ir para orçamentos', type: 'navigation', icon: '📋', priority: 6 },
+    { id: 'order-5', text: GO_TO_QUOTES_SUGGESTION, type: 'navigation', icon: '📋', priority: 6 },
     { id: 'order-6', text: 'buscar pedido', type: 'search', icon: '🔍', priority: 5 },
   ],
   clients: [
@@ -65,31 +68,31 @@ const SECTION_SUGGESTIONS: Record<RouteContext['section'], ContextualSuggestion[
     { id: 'client-2', text: 'clientes recentes', type: 'filter', icon: '🆕', priority: 9 },
     { id: 'client-3', text: 'buscar por nome', type: 'search', icon: '👤', priority: 8 },
     { id: 'client-4', text: 'buscar por email', type: 'search', icon: '📧', priority: 7 },
-    { id: 'client-5', text: 'ir para orçamentos', type: 'navigation', icon: '📋', priority: 6 },
+    { id: 'client-5', text: GO_TO_QUOTES_SUGGESTION, type: 'navigation', icon: '📋', priority: 6 },
     { id: 'client-6', text: 'novo orçamento', type: 'action', icon: '➕', priority: 5 },
   ],
   collections: [
     { id: 'col-1', text: 'minhas coleções', type: 'filter', icon: '📁', priority: 10 },
     { id: 'col-2', text: 'ir para favoritos', type: 'navigation', icon: '❤️', priority: 9 },
     { id: 'col-3', text: 'buscar produto', type: 'search', icon: '🔍', priority: 8 },
-    { id: 'col-4', text: 'ir para catálogo', type: 'navigation', icon: '📦', priority: 7 },
+    { id: 'col-4', text: GO_TO_CATALOG_SUGGESTION, type: 'navigation', icon: '📦', priority: 7 },
   ],
   admin: [
     { id: 'admin-1', text: 'métricas de vendas', type: 'navigation', icon: '📊', priority: 10 },
     { id: 'admin-2', text: 'produtos mais vistos', type: 'filter', icon: '👁️', priority: 9 },
-    { id: 'admin-3', text: 'ir para catálogo', type: 'navigation', icon: '📦', priority: 8 },
+    { id: 'admin-3', text: GO_TO_CATALOG_SUGGESTION, type: 'navigation', icon: '📦', priority: 8 },
     { id: 'admin-4', text: 'ir para clientes', type: 'navigation', icon: '👥', priority: 7 },
   ],
   other: [
-    { id: 'other-1', text: 'ir para catálogo', type: 'navigation', icon: '📦', priority: 10 },
-    { id: 'other-2', text: 'ir para orçamentos', type: 'navigation', icon: '📋', priority: 9 },
+    { id: 'other-1', text: GO_TO_CATALOG_SUGGESTION, type: 'navigation', icon: '📦', priority: 10 },
+    { id: 'other-2', text: GO_TO_QUOTES_SUGGESTION, type: 'navigation', icon: '📋', priority: 9 },
     { id: 'other-3', text: 'ir para pedidos', type: 'navigation', icon: '🚚', priority: 8 },
     { id: 'other-4', text: 'buscar produto', type: 'search', icon: '🔍', priority: 7 },
   ],
 };
 
 // Contextual suggestions based on applied filters
-const getFilterBasedSuggestions = (filters: Record<string, any>): ContextualSuggestion[] => {
+const getFilterBasedSuggestions = (filters: Record<string, unknown>): ContextualSuggestion[] => {
   const suggestions: ContextualSuggestion[] = [];
 
   if (filters.category) {
@@ -254,7 +257,7 @@ export const useContextualSuggestions = (options: UseContextualSuggestionsOption
       .filter(s => s.text.toLowerCase().includes(normalizedQuery))
       .sort((a, b) => {
         // Prioritize starts-with matches
-        const aStartsWith = s => s.text.toLowerCase().startsWith(normalizedQuery);
+        const aStartsWith = (s: ContextualSuggestion) => s.text.toLowerCase().startsWith(normalizedQuery);
         if (aStartsWith(a) && !aStartsWith(b)) return -1;
         if (!aStartsWith(a) && aStartsWith(b)) return 1;
         return b.priority - a.priority;

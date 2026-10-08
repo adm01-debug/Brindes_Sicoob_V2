@@ -6,9 +6,10 @@ import Fuse from "fuse.js";
 import { findKnownHex } from "@/hooks/useProducts";
 import { dedupeById, rankProductSearchResults, createProductFuseOptions } from "@/utils/product-search";
 import type { Product, RawProductColor } from "@/types/quote-builder";
+import { fetchPromobrindProducts, getProductImageUrl, type PromobrindProduct } from "@/lib/external-db";
 
 // Mapeamento interno para simplificar o hook principal
-function mapQuoteSearchProduct(p: Record<string, any>, getProductImageUrl: (product: any) => string | null): Product {
+function mapQuoteSearchProduct(p: PromobrindProduct): Product {
   const imgUrl = getProductImageUrl(p);
   const images = (p.images && p.images.length > 0) ? p.images : (imgUrl ? [imgUrl] : []);
 
@@ -16,7 +17,7 @@ function mapQuoteSearchProduct(p: Record<string, any>, getProductImageUrl: (prod
     id: p.id,
     name: p.name,
     sku: p.sku,
-    price: p.sale_price ?? p.base_price ?? 0,
+    price: p.sale_price ?? 0,
     costPrice: p.cost_price ?? 0,
     images,
     colors: (p.colors || []).map((c: string | RawProductColor) => {
@@ -25,19 +26,20 @@ function mapQuoteSearchProduct(p: Record<string, any>, getProductImageUrl: (prod
       return { name, hex, stock: typeof c === 'string' ? undefined : c.stock };
     }),
     minQuantity: p.min_quantity ?? 1,
-    totalStock: p.stock_quantity ?? (p.colors || []).reduce((sum: number, c: any) => sum + (typeof c === 'object' ? (c.stock ?? 0) : 0), 0),
+    totalStock: p.stock_quantity ?? (p.colors || []).reduce(
+      (sum, color) => sum + (typeof color === 'object' ? (color.stock ?? 0) : 0),
+      0,
+    ),
     priceUpdatedAt: p.price_updated_at,
-    priceFreshnessThresholdDays: p.price_freshness_threshold_days,
   };
 }
 
 async function loadQuoteSearchProducts(search: string): Promise<Product[]> {
-  const { fetchPromobrindProducts, getProductImageUrl } = await import("@/lib/external-db");
   const normalizedSearch = search.trim();
 
   if (!normalizedSearch) {
     const productsData = await fetchPromobrindProducts({ limit: 20 });
-    return productsData.map((p) => mapQuoteSearchProduct(p, getProductImageUrl));
+    return productsData.map(mapQuoteSearchProduct);
   }
 
   const [prefixMatches, broadMatches] = await Promise.all([
@@ -46,7 +48,7 @@ async function loadQuoteSearchProducts(search: string): Promise<Product[]> {
   ]);
 
   const mergedProducts = dedupeById([...prefixMatches, ...broadMatches]).map((product) =>
-    mapQuoteSearchProduct(product, getProductImageUrl)
+    mapQuoteSearchProduct(product)
   );
   
   const fuse = new Fuse(mergedProducts, createProductFuseOptions<Product>());
